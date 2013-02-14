@@ -1,0 +1,14 @@
+.. module:: GeoExt.data
+    :synopsis: A collection of map data related cl***REMOVED***es.
+
+:mod:`GeoExt.data`
+==================
+
+The :mod:`GeoExt.data` module contains cl***REMOVED***es that extend map related
+functionality to ``Ext.data`` cl***REMOVED***es.
+
+.. toctree::
+   :maxdepth: 1
+   :glob:
+   
+   data/*

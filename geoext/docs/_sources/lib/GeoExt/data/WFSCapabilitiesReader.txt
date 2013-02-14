@@ -1,0 +1,46 @@
+
+.. currentmodule:: GeoExt.data
+
+:cl***REMOVED***:`GeoExt.data.WFSCapabilitiesReader`
+================================================================================
+
+
+.. csscl***REMOVED***:: meta
+
+
+Extends
+    * `Ext.data.DataReader <http://dev.sencha.com/deploy/dev/docs/?cl***REMOVED***=Ext.data.DataReader>`_
+    
+
+
+
+
+
+
+.. cl***REMOVED***:: WFSCapabilitiesReader(meta, recordType)
+
+    :param meta: ``Object`` Reader configuration from which:
+        ``layerOptions`` is an optional object (or function that returns
+        an object) p***REMOVED***ed as default options to the
+        ``OpenLayers.Layer.Vector`` constructor.
+        ``protocolOptions`` is an optional set of parameters to p***REMOVED*** to the
+        ``OpenLayers.Protocol.WFS`` constructor.
+    :param recordType: ``Array | Ext.data.Record`` An array of field
+        configuration objects or a record object.  Default is
+        :cl***REMOVED***:`GeoExt.data.LayerRecord`.
+
+    Data reader cl***REMOVED*** to create an array of
+    :cl***REMOVED***:`GeoExt.data.LayerRecord` objects from a WFS GetCapabilities
+    response.
+
+
+    
+
+
+
+
+
+
+
+
+

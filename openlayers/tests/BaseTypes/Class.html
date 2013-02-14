@@ -1,0 +1,350 @@
+<html>
+<head>
+  <script src="../OLLoader.js"></script>
+  <script type="text/javascript">
+
+    function test_Cl***REMOVED***(t) {
+        t.plan(1);
+        var MyCl***REMOVED*** = OpenLayers.Cl***REMOVED***({
+            initialize: function () {
+                t.ok(false, "initialize should not be called");
+            }
+        });
+        t.ok(true,
+             "defining a cl***REMOVED*** does not call the constructor for the cl***REMOVED***");
+    }
+
+    function test_Cl***REMOVED***_constructor(t) {
+        t.plan(7);
+        
+        var MyCl***REMOVED*** = OpenLayers.Cl***REMOVED***({
+            prop: null,
+            cl***REMOVED***Prop: {'bad': 'practice'},
+            initialize: function(a1, a2) {
+                this.prop = "instance property";
+                t.ok(true,
+                     "initialize is called when a new instance is created");
+                t.eq(a1, arg1,
+                     "initialize is called with the proper first argument");
+                t.eq(a2, arg2,
+                     "initialize is called with the proper second argument");
+            },
+            CLASS_NAME: "MyCl***REMOVED***"
+        });
+
+        var arg1 = "anArg";
+        var arg2 = {"another": "arg"};
+        var myObj = new MyCl***REMOVED***(arg1, arg2);
+        t.eq(MyCl***REMOVED***.prop, null,
+             "creating a new instance doesn't modify the cl***REMOVED***");
+        t.eq(myObj.prop, "instance property",
+             "the new instance is ***REMOVED***igned a property in the constructor");
+        t.eq(myObj["CLASS_NAME"], "MyCl***REMOVED***",
+             "the new object is an instance of MyCl***REMOVED***");
+
+        // allow for modification of cl***REMOVED*** properties
+        MyCl***REMOVED***.prototype.cl***REMOVED***Prop.bad = "good";
+        t.eq(myObj.cl***REMOVED***Prop.bad, "good",
+             "modifying a cl***REMOVED*** property modifies properties of the instance");
+    }
+
+    function test_Cl***REMOVED***_inheritance(t) {
+        t.plan(7);
+        
+        var BaseCl***REMOVED*** = OpenLayers.Cl***REMOVED***({
+            prop: "base",
+            initialize: function() {
+                t.ok(false,
+                     "base cl***REMOVED*** constructor is not called during inheritance");
+            },
+            toString: function() {
+                return "toString inherited";
+            },
+            CLASS_NAME: "BaseCl***REMOVED***"
+        });
+        
+        var ChildCl***REMOVED*** = OpenLayers.Cl***REMOVED***(BaseCl***REMOVED***, {
+            initialize: function() {
+                t.ok(true,
+                     "child cl***REMOVED*** constructor is called in creating an instance");
+            },
+            CLASS_NAME: "ChildCl***REMOVED***"
+        });
+        
+        var child = new ChildCl***REMOVED***();
+        t.eq(child.prop, "base",
+             "instance of child inherits properties from base");
+        t.eq(child.toString(), "toString inherited",
+             "instance of child inherits toString method from base");
+        t.eq(child["CLASS_NAME"],
+             "ChildCl***REMOVED***",
+             "new object is an instance of the child cl***REMOVED***");
+        
+        var F = OpenLayers.Cl***REMOVED***(Object, {});
+        t.ok(!("initialize" in Object.prototype), "no messing with non OL prototypes");
+
+        // test with an abstract cl***REMOVED*** (i.e. a cl***REMOVED*** that doesn't have an initialize
+        // method) as the parent cl***REMOVED***
+        var Vehicule = OpenLayers.Cl***REMOVED***({
+            numWheels: null
+        });
+        var Bike = OpenLayers.Cl***REMOVED***(Vehicule, {
+            initialize: function() {
+                this.numWheels = 2;
+            }
+        });
+        var b = new Bike();
+        t.ok(b instanceof Vehicule, "a bike is a vehicule");
+        
+        // test inheritance with something that has a non-function initialize property
+        var P = OpenLayers.Cl***REMOVED***({
+            initialize: "foo"
+        });
+        var C = OpenLayers.Cl***REMOVED***(P, {
+            initialize: function() {
+                // p***REMOVED***
+            }
+        });
+        var c = new C();
+        t.eq(P.prototype.initialize, "foo", "Cl***REMOVED*** restores custom initialize property.");
+        
+    }
+    
+    function test_Cl***REMOVED***_multiple_inheritance(t) {
+        t.plan(7);
+        var BaseCl***REMOVED***1 = OpenLayers.Cl***REMOVED***({
+            override: "base1",
+            prop: "base1",
+            variable: null,
+            initialize: function() {
+                t.ok(true,
+                     "only called when an instance of this cl***REMOVED*** is created");
+            },
+            CLASS_NAME: "BaseCl***REMOVED***1"
+        });
+
+        var BaseCl***REMOVED***2 = OpenLayers.Cl***REMOVED***({
+            override: "base2",
+            initialize: function() {
+                t.ok(false,
+                     "base cl***REMOVED*** constructor is not called during inheritance");
+            },
+            CLASS_NAME: "BaseCl***REMOVED***1"
+        });
+        
+        var ChildCl***REMOVED*** = OpenLayers.Cl***REMOVED***(BaseCl***REMOVED***1, BaseCl***REMOVED***2, {
+            initialize: function(arg) {
+                if(this.prop == "base1") {
+                    this.variable = "child";
+                }
+                t.ok(true,
+                     "only child cl***REMOVED*** constructor is called on initialization");
+            },
+            CLASS_NAME: "ChildCl***REMOVED***"
+        });
+        
+        var arg = "child";
+        var child = new ChildCl***REMOVED***(arg);
+        t.eq(child.variable, arg,
+             "inheritance works before construction");
+        t.eq(child.prop, "base1",
+             "properties are inherited with multiple cl***REMOVED***es")
+        t.eq(child.override, "base2",
+             "properties are inherited in the expected order");
+        t.eq(child["CLASS_NAME"],
+             "ChildCl***REMOVED***",
+             "object is an instance of child cl***REMOVED***");
+        
+        var base1 = new BaseCl***REMOVED***1();
+        t.eq(base1.override, "base1",
+             "inheritance doesn't mess with parents");
+
+    }
+
+    function test_inheritance_chain(t) {
+        t.plan(1);
+        var A = new OpenLayers.Cl***REMOVED***({
+            initialize: function() {
+                this.a = 'foo';
+            }
+        });
+        var B = new OpenLayers.Cl***REMOVED***(A, {});
+        var C = new OpenLayers.Cl***REMOVED***(B, {
+            initialize: function() {
+                B.prototype.initialize.apply(this, arguments);
+                this.a = this.a + 'bar';
+            }
+        });
+        var c = new C;
+        t.eq(c.a, 'foobar', 'constructor at the root is called');
+    }
+    
+
+    function test_Cl***REMOVED***_isInstanceOf(t) {
+        t.plan(7);
+        var wms = new OpenLayers.Layer.WMS({});
+        var drag = new OpenLayers.Control.DragFeature({});
+        t.ok(wms instanceof OpenLayers.Layer.WMS, "isInstanceOf(WMS)");
+        t.ok(wms instanceof OpenLayers.Layer, "isInstanceOf(Layer)");
+        t.ok(!(wms instanceof OpenLayers.Format), "not isInstanceOf(Format)");
+        t.ok(drag instanceof OpenLayers.Control, "drag is a control");
+        t.ok(!(drag instanceof OpenLayers.Layer), "drag is not a layer");
+
+        //test a cl***REMOVED*** with multiple inheritance
+        var BadCl***REMOVED***=OpenLayers.Cl***REMOVED***(OpenLayers.Layer.WMS, OpenLayers.Control.DragFeature);
+        var bad = new BadCl***REMOVED***({});
+        t.ok(!(bad instanceof OpenLayers.Control), "bad is a control, but it is also a layer and we cannot have two supercl***REMOVED***es");
+        t.ok(bad instanceof OpenLayers.Layer, "bad is a layer, it inherits from the layer first");
+    }
+
+    //
+    // IGN's GeoPortal API overwrite prototypes of OpenLayers constructors.
+    // The tests below aim to cover their usage pattens.
+    //
+
+    // the overwrite function under test
+    function overwrite(C, o) {
+        if(typeof o.initialize === "function" &&
+            C === C.prototype.initialize) {
+            // OL 2.11
+
+            var proto = C.prototype;
+            var staticProps = OpenLayers.Util.extend({}, C);
+
+            C = o.initialize;
+
+            C.prototype = proto;
+            OpenLayers.Util.extend(C, staticProps);
+        }
+        OpenLayers.Util.extend(C.prototype, o);
+        return C;
+    }
+
+    function test_overwrite_1(t) {
+        // overwrite constructor
+        t.plan(1);
+        var A = OpenLayers.Cl***REMOVED***({
+            initialize: function() {
+                this.a = "foo";
+            }
+        });
+        A = overwrite(A, {
+            initialize: function() {
+                this.a = "bar";
+            }
+        });
+        var a = new A;
+        t.eq(a.a, "bar", "ctor overwritten");
+    }
+
+    function test_overwrite_2(t) {
+        // overwrite regular method
+        t.plan(1);
+        var A = OpenLayers.Cl***REMOVED***({
+            initialize: function() {
+            },
+            method: function() {
+                this.a = "foo";
+            }
+        });
+        A = overwrite(A, {
+            method: function() {
+                this.a = "bar";
+            }
+        });
+        var a = new A;
+        a.method();
+        t.eq(a.a, "bar", "method overwritten");
+    }
+
+    function test_overwrite_3(t) {
+        // overwrite constructor of subcl***REMOVED***
+        t.plan(1);
+        var A = OpenLayers.Cl***REMOVED***({
+            initialize: function() {
+                this.a = "foo";
+            }
+        });
+        var B = OpenLayers.Cl***REMOVED***(A, {
+            initialize: function() {
+                A.prototype.initialize.call(this);
+            }
+        });
+        B = overwrite(B, {
+            initialize: function() {
+                A.prototype.initialize.call(this);
+                this.a = "bar";
+            }
+        });
+        var b = new B;
+        t.eq(b.a, "bar", "ctor overwritten");
+    }
+
+    function test_overwrite_4(t) {
+        // overwrite constructor of parent cl***REMOVED***
+        t.plan(1);
+        var A = OpenLayers.Cl***REMOVED***({
+            initialize: function() {
+                this.a = "foo";
+            }
+        });
+        var B = OpenLayers.Cl***REMOVED***(A, {
+            initialize: function() {
+                A.prototype.initialize.call(this);
+            }
+        });
+        A = overwrite(A, {
+            initialize: function() {
+                this.a = "bar";
+            }
+        });
+        var b = new B;
+        t.eq(b.a, "bar", "ctor overwritten");
+    }
+
+    function test_overwrite_5(t) {
+        // overwrite constructor of parent cl***REMOVED***, which itself
+        // doesn't defined "initialize"
+        t.plan(2);
+        var A = OpenLayers.Cl***REMOVED***({
+            initialize: function() {
+                this.a = "foo";
+            }
+        });
+        var B = OpenLayers.Cl***REMOVED***(A, {});
+        var _A = A;
+        A = overwrite(A, {
+            initialize: function() {
+                this.a = "bar";
+            }
+        });
+        var b = new B;
+        t.ok(A.prototype === _A.prototype, "A and _A share the prototype");
+        t.eq(b.a, "bar", "ctor overwritten");
+    }
+
+    function test_overwrite_6(t) {
+        // with static methods
+        t.plan(1);
+        var A = OpenLayers.Cl***REMOVED***({
+            initialize: function() {
+            }
+        });
+        A.staticMethod = function() {};
+        A = overwrite(A, {
+            initialize: function() {
+            }
+        });
+        var exc = false;
+        try {
+            A.staticMethod();
+        } catch(e) {
+            exc = true;
+        }
+        t.ok(!exc, "static method still there");
+    }
+  </script>
+</head>
+<body>
+</body>
+</html>

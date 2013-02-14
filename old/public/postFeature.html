@@ -1,0 +1,219 @@
+
+
+
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <title>SAGE Create Feature Tool</title>
+
+<!-- ExtJS -->
+<link rel="stylesheet" type="text/css" href="extjs/resources/css/ext-all.css" />
+<script type="text/javascript" src="extjs/ext-all.js"></script>
+
+<script>
+Ext.require([
+    //'Ext.form.*',
+    //'Ext.layout.container.Column',
+    //'Ext.tab.Panel'
+    '*'
+]);
+
+Ext.onReady(function() {
+    Ext.QuickTips.init();
+
+Ext.define('Team', {
+    extend: 'Ext.data.Model',
+    fields: ['_id', 'team_name']
+});
+
+var teamStore = new Ext.data.Store({
+    // store configs
+    storeId: 'teamsStore',
+	autoLoad: true,
+	model: 'Team',
+    proxy: {
+        type: 'ajax',
+        url: 'api/v1/teams',
+        reader: {
+            type: 'json'
+        }
+    }
+});
+
+Ext.define('ObservationLevel', {
+    extend: 'Ext.data.Model',
+    fields: ['_id', 'observation_level']
+});
+
+var observationLevelStore = new Ext.data.Store({
+    // store configs
+    storeId: 'observationLevelsStore',
+	autoLoad: true,
+	model: 'ObservationLevel',
+    proxy: {
+        type: 'ajax',
+        url: 'api/v1/observationLevels',
+        reader: {
+            type: 'json'
+        }
+    }
+});
+
+Ext.define('ObservationType', {
+    extend: 'Ext.data.Model',
+    fields: ['_id', 'observation_type']
+});
+
+var observationTypeStore = new Ext.data.Store({
+    // store configs
+    storeId: 'observationTypesStore',
+	autoLoad: true,
+	model: 'ObservationType',
+    proxy: {
+        type: 'ajax',
+        url: 'api/v1/observationTypes',
+        reader: {
+            type: 'json'
+        }
+    }
+});
+
+
+
+var required = '<span style="color:red;font-weight:bold" data-qtip="Required">*</span>';
+
+var postFeatureForm = Ext.widget({
+	xtype: 'form',
+	layout: 'form',
+	style: 'margin:0 auto;margin-top:100px;',
+	collapsible: false,
+	id: 'postFeature',
+	url: 'api/v1/esriFeatures/',
+	frame: true,
+	title: 'Post a Feature',
+	bodyPadding: '5 5 0',
+	width: 400,
+	fieldDefaults: {
+		msgTarget: 'side',
+		labelWidth: 75
+	},
+	defaultType: 'textfield',
+	items: [{
+		fieldLabel: 'X',
+		afterLabelTextTpl: required,
+		name: 'x',
+		allowBlank: false
+	},{
+		fieldLabel: 'Y',
+		afterLabelTextTpl: required,
+		name: 'y',
+		allowBlank: false
+	},{
+		fieldLabel: 'Address',
+		name: 'ADDRESS'
+	}, {
+		fieldLabel: 'Event Date',
+		name: 'EVENTDATE',
+		xtype: 'datefield',
+		format: 'Y-m-d g:i:s A'
+	}, {
+		xtype: 'combobox',
+		fieldLabel: 'Type',
+		name: 'TYPE',
+		store: observationTypeStore,
+		valueField: 'observation_type',
+		displayField: 'observation_type',
+		typeAhead: true,
+		queryMode: 'local',
+		afterLabelTextTpl: required,
+		emptyText: 'Select a Type...',
+		allowBlank: false
+	}, {
+		xtype: 'combobox',
+		fieldLabel: 'Level',
+		name: 'EVENTLEVEL',
+		store: observationLevelStore,
+		valueField: 'observation_level',
+		displayField: 'observation_level',
+		typeAhead: true,
+		queryMode: 'local',
+		afterLabelTextTpl: required,
+		emptyText: 'Select a Level...',
+		allowBlank: false
+	}, {
+		xtype: 'combobox',
+		fieldLabel: 'Team',
+		name: 'TEAM',
+		store: teamStore,
+		valueField: 'team_name',
+		displayField: 'team_name',
+		typeAhead: true,
+		queryMode: 'local',
+		afterLabelTextTpl: required,
+		emptyText: 'Select a team...',
+		allowBlank: false
+	}, {			
+		fieldLabel: 'Description',
+		name: 'DESCRIPTION'
+	}, {			
+		fieldLabel: 'USNG',
+		name: 'USNG'
+	}, {
+		fieldLabel: 'Unit',
+		name: 'UNIT'
+	}, {
+		xtype: 'hiddenfield',
+		name: 'EVENTCLEAR',
+		value: 0
+	}],
+
+	buttons: [{
+		text: 'Save',
+		handler: function() {
+			this.up('form').getForm().isValid();
+			
+			//var myEpoch = myDate.getTime()/1000.0;
+			
+			postFeatureForm.getForm().submit();
+		}
+	},{
+		text: 'Cancel',
+		handler: function() {
+			this.up('form').getForm().reset();
+		}
+	}]
+});
+
+//var main = Ext.create('Ext.container.Viewport', {
+//    layout: 'border',
+//    items: [{
+//        region: 'west',
+//        title: 'Information',
+//        split: true,
+//		border: false,
+//        width: 300
+//    }, {
+//        region: 'east',
+//		border: false,
+//        width: 300
+//    }, {
+//        region: 'center',
+//		border: false,
+//        items: postFeatureForm
+//    }]
+//});
+
+    postFeatureForm.render(document.body);
+
+
+
+});
+
+
+</script>
+
+</head>
+
+</html>

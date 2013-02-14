@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).cl***REMOVED***Name = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre cl***REMOVED***="prettyprint lang-js"><span id='Ext-direct-RemotingEvent'>/**
+</span> * @cl***REMOVED*** Ext.direct.RemotingEvent
+ * An event that is fired when data is received from a 
+ * {@link Ext.direct.RemotingProvider}. Contains a method to the
+ * related tra***REMOVED***ction for the direct request, see {@link #getTra***REMOVED***ction}
+ */
+Ext.define('Ext.direct.RemotingEvent', {
+    
+    /* Begin Definitions */
+   
+    extend: 'Ext.direct.Event',
+    
+    alias: 'direct.rpc',
+    
+    /* End Definitions */
+    
+<span id='Ext-direct-RemotingEvent-method-getTra***REMOVED***ction'>    /**
+</span>     * Get the tra***REMOVED***ction ***REMOVED***ociated with this event.
+     * @return {Ext.direct.Tra***REMOVED***ction} The tra***REMOVED***ction
+     */
+    getTra***REMOVED***ction: function(){
+        return this.tra***REMOVED***ction || Ext.direct.Manager.getTra***REMOVED***ction(this.tid);
+    }
+});
+</pre>
+</body>
+</html>

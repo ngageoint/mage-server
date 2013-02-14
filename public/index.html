@@ -1,0 +1,235 @@
+<link href="extjs/resources/css/ext-all.css" type="text/css" rel="stylesheet">
+<script src="extjs/ext-all-debug.js" type="text/javascript"></script>
+
+
+<script>
+
+Ext.onReady(function() {
+
+    //we want to setup a model and store instead of using dataUrl
+    Ext.define('Services', {
+        extend: 'Ext.data.Model',
+        fields: [
+            {name: 'task',     type: 'string'},
+            {name: 'user',     type: 'string'}
+        ]
+    });
+	
+    var ***REMOVED***sStore = Ext.create('Ext.data.TreeStore', {
+        root: {
+            expanded: true
+        },
+        proxy: {
+            type: 'ajax',
+            url: '***REMOVED***s.json'
+        }
+    });
+
+    // Go ahead and create the TreePanel now so that we can use it below
+     var treePanel = Ext.create('Ext.tree.Panel', {
+        id: 'tree-panel',
+        title: 'SAGE REST Services',
+        region:'north',
+        split: true,
+        height: 360,
+        minSize: 150,
+        rootVisible: false,
+        autoScroll: true,
+        store: ***REMOVED***sStore
+    });
+
+	    // Assign the changeLayout function to be called on tree node click.
+    treePanel.getSelectionModel().on('select', function(selModel, record) {
+		console.log(record);
+        if (record.get('leaf')) {
+		
+			var URLSetter = record.getId() + '.html';
+				
+			Ext.getCmp('content-panel').layout.setActiveItem(record.getId());
+					
+            //Ext.getCmp('content-panel').layout.setActiveItem(record.getId() + '-panel');
+            // if (!detailEl) {
+            //    var bd = Ext.getCmp('details-panel').body;
+            //    bd.update('').setStyle('background','#fff');
+            //   detailEl = bd.createChild(); //create default empty div
+            //}
+            //detailEl.hide().update(Ext.getDom(record.getId() + '-details').innerHTML).slideIn('l', {stopAnimation:true,duration: 200});
+        }
+    });
+	
+    var detailsPanel = {
+        id: 'details-panel',
+        title: 'Details',
+        region: 'center',
+        bodyStyle: 'padding-bottom:15px;background:#eee;',
+        autoScroll: true,
+        html:'Click on a particular ***REMOVED*** to see its properties and data.'
+    };
+
+	var contentPanel = {
+		id: 'content-panel',
+		region: 'center', // this is what makes this panel into a region within the containing layout
+		layout: 'card',
+		margins: '2 5 5 0',
+		activeItem: 0,
+		border: false,
+		autoScroll: true,
+		preventBodyReset: true, // important
+		items: [{
+			id: 'card-0',			
+			autoLoad: 'api/',
+			scripts:true,
+			preventBodyReset: true, // important
+	    },{
+			id: 'get_all_esri_features',
+			autoLoad:{
+				url: 'api/v1/esriFeatures/',
+				scripts:true
+			}
+	    },{
+			id: 'get_single_esri_feature',
+			autoLoad:{
+				url: 'api/v1/esriFeatures/1/',
+				scripts:true
+			}
+			
+	    }]
+    };
+
+
+	
+    var viewport = Ext.create('Ext.Viewport', {
+        layout: {
+            type: 'border',
+            padding: 5
+        },
+        defaults: {
+            split: true
+        },
+        items: [{
+            xtype: 'box',
+            id: 'header',
+            region: 'north',
+            html: '<h1>SAGE REST Services API Interactive Documentation</h1>',
+            height: 30
+        },{
+		
+            layout: 'border',
+            id: 'layout-browser',
+            region:'west',
+            border: false,
+            split:true,
+            margins: '2 0 5 5',
+            width: 275,
+            minSize: 100,
+            maxSize: 500,
+            items: [treePanel, detailsPanel]
+        },
+			contentPanel
+		]
+    });
+	
+	
+});
+
+
+
+/*
+Ext.require([
+	'*',
+    'Ext.data.*',
+    'Ext.grid.*',
+    'Ext.tree.*'
+]);
+
+Ext.onReady(function() {
+
+    var viewport = Ext.create('Ext.Viewport', {
+        layout: {
+            type: 'border',
+            padding: 5
+        },
+        defaults: {
+            split: true
+        },
+        items: [{
+            region: 'north',
+            collapsible: true,
+            title: 'North',
+            split: true,
+            height: 100,
+            minHeight: 60,
+            html: 'north'
+        },{
+            region: 'west',
+            collapsible: false,
+            title: 'Starts at width 30%',
+            split: true,
+            width: '20%',
+			layout: 'fit',
+            minWidth: 100,
+            minHeight: 140,
+            items:[tree]
+        },{
+            region: 'center',
+            html: 'center center',
+            title: 'Center',
+            minHeight: 80
+        },{
+            region: 'east',
+            collapsible: true,
+            floatable: true,
+            split: true,
+            width: 200,
+            minWidth: 120,
+            minHeight: 140,
+            title: 'East',
+            layout: {
+                type: 'vbox',
+                padding: 5,
+                align: 'stretch'
+            }
+        },{
+            region: 'south',
+            height: 100,
+            split: true,
+            collapsible: true,
+            title: 'Splitter above me',
+            minHeight: 60,
+            html: 'center south',
+            weight: -100
+        }]
+    });
+});
+*/
+</script>
+
+
+
+<!--
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>SAGE RESTful API Services Index</title>
+
+<style type="text/css">
+	body {
+		text-align:center;
+	}
+</style>
+</head>
+
+<body>
+<img src="images/sage_leaf.jpg" width="200" height="200" alt="Sage Leaf"><br />
+
+    <h1>
+        Situational Analysis GEOINT Environment
+        <br />
+        (SAGE)
+    </h1>
+    <p><a href="api">API</a></p>
+</body>
+</html>
+-->

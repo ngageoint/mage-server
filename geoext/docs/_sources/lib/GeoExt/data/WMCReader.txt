@@ -1,0 +1,41 @@
+
+.. currentmodule:: GeoExt.data
+
+:cl***REMOVED***:`GeoExt.data.WMCReader`
+================================================================================
+
+
+.. csscl***REMOVED***:: meta
+
+
+Extends
+    * `Ext.data.DataReader <http://dev.sencha.com/deploy/dev/docs/?cl***REMOVED***=Ext.data.DataReader>`_
+    
+
+
+
+
+
+
+.. cl***REMOVED***:: WMCReader(meta, recordType)
+
+    :param meta: ``Object`` Reader configuration.
+    :param recordType: ``Array | Ext.data.Record`` An array of field
+        configuration objects or a record object.  Default is
+        :cl***REMOVED***:`GeoExt.data.LayerRecord`.
+
+    Data reader cl***REMOVED*** to create an array of
+    :cl***REMOVED***:`GeoExt.data.LayerRecord` objects from a WMS GetCapabilities
+    response.
+
+
+    
+
+
+
+
+
+
+
+
+

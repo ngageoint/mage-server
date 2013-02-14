@@ -1,0 +1,66 @@
+
+.. currentmodule:: GeoExt.form
+
+:cl***REMOVED***:`GeoExt.form.BasicForm`
+================================================================================
+
+
+.. csscl***REMOVED***:: meta
+
+
+Extends
+    * `Ext.form.BasicForm <http://dev.sencha.com/deploy/dev/docs/?cl***REMOVED***=Ext.form.BasicForm>`_
+    
+
+
+
+
+
+
+.. cl***REMOVED***:: BasicForm(config)
+
+    A specific ``Ext.form.BasicForm`` whose doAction method creates
+    a :cl***REMOVED***:`GeoExt.form.SearchAction` if it is p***REMOVED***ed the string
+    "search" as its first argument.
+
+    In most cases one would not use this cl***REMOVED*** directly, but
+    :cl***REMOVED***:`GeoExt.form.FormPanel` instead.
+
+
+    
+
+
+
+
+
+
+Public Methods
+--------------
+
+Public methods in addition to those
+listed for `Ext.form.BasicForm <http://dev.sencha.com/deploy/dev/docs/?cl***REMOVED***=Ext.form.BasicForm>`_.
+
+
+.. method:: BasicForm.doAction
+
+    :param action: ``String or Ext.form.Action`` Either the name
+        of the action or a ``Ext.form.Action`` instance.
+    :param options: ``Object`` The options p***REMOVED***ed to the Action
+        constructor.
+    :return: :cl***REMOVED***:`GeoExt.form.BasicForm` This form.
+    
+    Performs the action, if the string "search" is p***REMOVED***ed as the
+    first argument then a :cl***REMOVED***:`GeoExt.form.SearchAction` is created.
+
+.. method:: BasicForm.search
+
+    :param options: ``Object`` The options p***REMOVED***ed to the Action
+        constructor.
+    :return: :cl***REMOVED***:`GeoExt.form.BasicForm` This form.
+    
+    Shortcut to do a search action.
+
+
+
+
+

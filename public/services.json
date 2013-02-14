@@ -1,0 +1,68 @@
+{ 
+text: '.',
+children: [{
+    text:'ESRI Styled Services',
+    children:[{
+        text:'GET',
+		children:[{
+			text:'GET All Features',
+			id:'get_all_esri_features',
+			leaf:true
+		},{
+			text:'GET Single Feature',
+			id:'get_single_esri_feature',
+			leaf:true
+		},{
+			text:'GET All Attachments for Single Feature',
+			id:'get_all_esri_attachments',
+			leaf:true
+		}]
+    },{
+		text:'POST',
+		children:[{
+			text:'POST Single Feature',
+			id:'post_single_esri_feature',
+			leaf:true
+		}, {
+			text:'POST Single Attachment',
+			id:'post_single_esri_attachment',
+			leaf:true
+		}]
+    },{
+		text:'PUT (update)',
+		children:[{
+			text:'PUT (Update) Single Feature',
+			id:'put_single_esri_feature',
+			leaf:true
+		}]
+    },{
+		text:'DELETE',
+		children:[{
+			text:'DELETE Single Feature',
+			id:'delete_single_esri_feature',
+			leaf:true
+		}]
+    }]
+}, {
+    text:'SAGE Styled Services',
+    children:[{
+        text:'GET',
+		children:[{
+			text:'GET All Features',
+			id:'get_all_sage_features',
+			leaf:true
+		},{
+			text:'GET Single Feature',
+			id:'get_single_sage_feature',
+			leaf:true
+		}]
+    },{
+		text:'POST',
+		children:[{
+			text:'POST Single Feature',
+			id:'post_single_sage_feature',
+			leaf:true
+		}]
+    }]
+}]
+}

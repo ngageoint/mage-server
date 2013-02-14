@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).cl***REMOVED***Name = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre cl***REMOVED***="prettyprint lang-js"><span id='Ext-layout-Cl***REMOVED***List'>/**
+</span> * This cl***REMOVED*** provides a DOM Cl***REMOVED***List API to buffer access to an element's cl***REMOVED***.
+ * Instances of this cl***REMOVED*** are created by {@link Ext.layout.ContextItem#getCl***REMOVED***List}.
+ */
+Ext.define('Ext.layout.Cl***REMOVED***List', (function () {
+
+    var splitWords = Ext.String.splitWords,
+        toMap = Ext.Array.toMap;
+
+    return {
+        dirty: false,
+
+        constructor: function (owner) {
+            this.owner = owner;
+            this.map = toMap(this.cl***REMOVED***es = splitWords(owner.el.cl***REMOVED***Name));
+        },
+
+<span id='Ext-layout-Cl***REMOVED***List-method-add'>        /**
+</span>         * Adds a single cl***REMOVED*** to the cl***REMOVED*** list.
+         */
+        add: function (cls) {
+            var me = this;
+
+            if (!me.map[cls]) {
+                me.map[cls] = true;
+                me.cl***REMOVED***es.push(cls);
+                if (!me.dirty) {
+                    me.dirty = true;
+                    me.owner.markDirty();
+                }
+            }
+        },
+
+<span id='Ext-layout-Cl***REMOVED***List-method-addMany'>        /**
+</span>         * Adds one or more cl***REMOVED***es in an array or space-delimited string to the cl***REMOVED*** list.
+         */
+        addMany: function (cl***REMOVED***es) {
+            Ext.each(splitWords(cl***REMOVED***es), this.add, this);
+        },
+
+        contains: function (cls) {
+            return this.map[cls];
+        },
+
+        flush: function () {
+            this.owner.el.cl***REMOVED***Name = this.cl***REMOVED***es.join(' ');
+            this.dirty = false;
+        },
+
+<span id='Ext-layout-Cl***REMOVED***List-method-remove'>        /**
+</span>         * Removes a single cl***REMOVED*** from the cl***REMOVED*** list.
+         */
+        remove: function (cls) {
+            var me = this;
+
+            if (me.map[cls]) {
+                delete me.map[cls];
+                me.cl***REMOVED***es = Ext.Array.filter(me.cl***REMOVED***es, function (c) {
+                    return c != cls;
+                });
+                if (!me.dirty) {
+                    me.dirty = true;
+                    me.owner.markDirty();
+                }
+            }
+        },
+
+<span id='Ext-layout-Cl***REMOVED***List-method-removeMany'>        /**
+</span>         * Removes one or more cl***REMOVED***es in an array or space-delimited string from the cl***REMOVED***
+         * list.
+         */
+        removeMany: function (cl***REMOVED***es) {
+            var me = this,
+                remove = toMap(splitWords(cl***REMOVED***es));
+
+            me.cl***REMOVED***es = Ext.Array.filter(me.cl***REMOVED***es, function (c) {
+                if (!remove[c]) {
+                    return true;
+                }
+
+                delete me.map[c];
+                if (!me.dirty) {
+                    me.dirty = true;
+                    me.owner.markDirty();
+                }
+                return false;
+            });
+        }
+    };
+}()));
+</pre>
+</body>
+</html>
