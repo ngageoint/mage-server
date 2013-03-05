@@ -25,7 +25,7 @@ dev_server = {
 		util.debug('SAGE Node Server: Starting server.');
 		that.watchFiles();
 
-		this.process = child_process.spawn(process.argv[0], ['app.js']);
+		this.process = child_process.spawn(process.argv[0], ['sage.js']);
 
 		this.process.stdout.addListener('data', function(data) {
 			process.stdout.write(data);
