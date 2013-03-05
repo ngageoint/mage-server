@@ -285,8 +285,6 @@ module.exports = function(app, models, fs) {
         return;
       }
 
-      console.log('WLN - found attachment: ' + JSON.stringify(attachment));
-
       var file = fs.readFileSync('/data/sage/uploads/' + attachment.name);
       res.writeHead(200, {
         "Content-Type": attachment.contentType,

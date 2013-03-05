@@ -3,7 +3,6 @@ var mongoose = require('mongoose');
 var path = require("path");
 var fs = require('fs');
 var static = require('node-static');
-var formidable = require('formidable');
 
 var app = express();
 
