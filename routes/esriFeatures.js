@@ -136,6 +136,20 @@ module.exports = function(app, models, fs) {
   });
 
   // Gets all the ESRI Styled records built for the ESRI format and syntax
+  app.get('/esriFeatureServer/v1/features', function (req, res){
+    console.log("SAGE ESRI Features GET REST Service Requested");
+
+    models.Feature.getFeatures(function (features) {
+      var esriFeatures = new EsriFeatures();
+      features.forEach(function(feature) {
+        esriFeatures.add(feature);
+      });
+
+      res.send(esriFeatures.getResponse());
+    });
+  }); 
+
+  // Queries for ESRI Styled records built for the ESRI format and syntax
   app.get('/esriFeatureServer/v1/features/query', function (req, res){
     console.log("SAGE ESRI Features GET REST Service Requested");
 

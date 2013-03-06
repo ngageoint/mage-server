@@ -2,11 +2,9 @@ var express = require("express");
 var mongoose = require('mongoose');
 var path = require("path");
 var fs = require('fs');
-var static = require('node-static');
 
 var app = express();
 
-var application_root = __dirname;
 var dbPath = 'mongodb://localhost/sagedb';
 
 // Configuration of the SAGE Express server
@@ -14,28 +12,31 @@ app.configure(function () {
   app.use(express.bodyParser());
   app.use(express.methodOverride());
   app.use(app.router);
-  app.use(express.static(path.join(application_root, "public")));
-  app.use('/uploads', express.static(path.join(application_root, "uploads")));
-  app.use('/extjs', express.static(path.join(application_root, "extjs")));
-  app.use('/geoext', express.static(path.join(application_root, "geoext")));
-  app.use('/***REMOVED***s', express.static(path.join(application_root, "***REMOVED***s")));
+
+  // app.use(express.static(path.join(__dirname, "public")));
+  // app.use('/uploads', express.static(path.join(__dirname, "uploads")));
+  // app.use('/extjs', express.static(path.join(__dirname, "extjs")));
+  // app.use('/geoext', express.static(path.join(__dirname, "geoext")));
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+
   mongoose.connect(dbPath, function(err) {
     if (err) throw err;
   });
+
   app.use(function(err, req, res, next){
+    console.log('WLN - not good, something bad happened ')
     console.error(err.stack);
     res.send(500, 'Something broke!');
   });
 });
 
 // Import models
-var counters = require('./models/Counters')(mongoose);
+var counters = require('./models/counters')(mongoose);
 var models = {
-  Feature: require('./models/Feature')(mongoose, counters),
-  Team: require('./models/Team')(mongoose),
-  ObservationLevel: require('./models/ObservationLevel')(mongoose),
-  ObservationType: require('./models/ObservationType')(mongoose)
+  Feature: require('./models/feature')(mongoose, counters),
+  Team: require('./models/team')(mongoose),
+  ObservationLevel: require('./models/observationlevel')(mongoose),
+  ObservationType: require('./models/observationyype')(mongoose)
 }
 
 // Import routes
