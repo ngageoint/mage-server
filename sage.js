@@ -20,7 +20,6 @@ app.configure(function () {
   app.use('/extjs', express.static(path.join(__dirname, "extjs")));
   app.use('/geoext', express.static(path.join(__dirname, "geoext")));
   app.use(function(err, req, res, next) {
-    console.error('Error making request: ' + JSON.stringify(req));
     console.error(err.stack);
     res.send(500, 'Internal server error.');
   });
