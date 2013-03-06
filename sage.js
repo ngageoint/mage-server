@@ -36,7 +36,7 @@ var models = {
   Feature: require('./models/feature')(mongoose, counters),
   Team: require('./models/team')(mongoose),
   ObservationLevel: require('./models/observationlevel')(mongoose),
-  ObservationType: require('./models/observationyype')(mongoose)
+  ObservationType: require('./models/observationtype')(mongoose)
 }
 
 // Import routes
