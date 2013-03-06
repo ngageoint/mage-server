@@ -45,7 +45,8 @@ module.exports = function(mongoose, counters) {
 
   var getFeatures = function(callback) {
     var query = {};
-    Feature.find(query, function (err, features) {
+    var fields = {'attachments': 0}; 
+    Feature.find(query, fields, function (err, features) {
       if (err) {
         console.log("Error finding features in mongo: " + err);
       }
@@ -54,9 +55,19 @@ module.exports = function(mongoose, counters) {
     });
   }
 
-  var getFeature = function(id, callback) {
-    var query = {"attributes.OBJECTID": id};
+  var getFeatureByObjectId = function(objectId, callback) {
+    var query = {"attributes.OBJECTID": objectId};
     Feature.findOne(query, function (err, feature) {
+      if (err) {
+        console.log("Error finding feature in mongo: " + err);
+      }
+      callback(feature);
+    });
+  }
+
+  var getFeatureById = function(id, callback) {
+    var fields = {'attachments': 0}; 
+    Feature.findOne(id, fields, function (err, feature) {
       if (err) {
         console.log("Error finding feature in mongo: " + err);
       }
@@ -186,7 +197,8 @@ module.exports = function(mongoose, counters) {
 
   return {
     getFeatures: getFeatures,
-    getFeature: getFeature,
+    getFeatureById: getFeatureById,
+    getFeatureByObjectId: getFeatureByObjectId,
     createFeature: createFeature,
     updateFeature: updateFeature,
     getAttachments: getAttachments,

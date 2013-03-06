@@ -168,7 +168,7 @@ module.exports = function(app, models, fs) {
   app.get('/esriFeatureServer/v1/features/:id', function (req, res) {
     console.log("SAGE ESRI Features (ID) GET REST Service Requested");
     
-    models.Feature.getFeature(req.params.id, function(feature) {
+    models.Feature.getFeatureByObjectId(req.params.id, function(feature) {
       if (!feature) {
         res.send(JSON.stringify({
           error: {
@@ -315,8 +315,8 @@ module.exports = function(app, models, fs) {
 
     fs.renameSync(req.files.attachment.path, "/data/sage/uploads/" + req.files.attachment.filename);
 
-    var featureId = req.params.id;
-    models.Feature.getFeature(featureId, function(feature) {
+    var objectId = req.params.id;
+    models.Feature.getFeatureByObjectId(objectId, function(feature) {
       if (!feature) {
         var response = JSON.stringify({
           addAttachmentResult: {

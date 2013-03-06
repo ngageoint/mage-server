@@ -1,247 +1,184 @@
 // feature routes
 module.exports = function(app, models, fs) {
 
+  var Formatter = function(format) {
+    return format == 'geojson' ? new GeoJsonFormatter() : new JsonFormatter();
+  }
+
+  function  JsonFormatter() {
+    var format = function(data) {
+      return data;
+    }
+
+    return {
+      format: format
+    }
+  }
+
+  function GeoJsonFormatter() {
+
+    var transformFeature = function(feature) {
+      return {
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: [feature.geometry.x, feature.geometry.y]
+        },
+        properties: {
+          id: feature._id,
+          eventtype: feature.attributes.TYPE,
+          eventlevel: feature.attributes.EVENTLEVEL,
+          eventclear: feature.attributes.EVENTCLEAR,
+          eventdate: feature.attributes.EVENTDATE,
+          description: feature.attributes.DESCRIPTION,
+          address: feature.attributes.ADDRESS,
+          team: feature.attributes.TEAM,
+          unit: feature.attributes.UNIT,
+          usng: feature.attributes.USNG
+        }
+      }
+    }
+
+    var format = function(data) {
+      var result;
+
+      if (data instanceof Array) {
+        result = {
+          type: 'FeatureCollection',
+          features: []
+        }
+
+        data.forEach(function(feature) {
+          result.features.push(transformFeature(feature));
+        });
+      } else {
+        result = transformFeature(data);
+      }
+
+      return result;
+    }
+
+    return {
+      format: format
+    }
+  }
+
   // Gets all the features with universal JSON formatting   
-  app.get('/api/v1/features', function (req, res){
+  app.get('/featureServer/v1/features', function (req, res){
     console.log("SAGE Features GET REST Service Requested");
 
-    return models.FeatureModel.find({}, {'_id': 1, 'geometry': 1, 'attributes': 1}, function (err, features) {
-      if( err || !features.length) {
-        console.log("No records were found.");  
-        return res.send("No records were found.");
+    // get format parameter, default to json if not present
+    var format = req.param('f', 'json');
+
+    models.Feature.getFeatures(function (features) {
+      var response = [];
+      var formatter = Formatter(format);
+      if (features) {
+        response = formatter.format(features);
       }
-      else {
-        return res.send(features);
-      };
+
+      res.send(JSON.stringify(response));
     });
   });
 
   // This function gets one feature with universal JSON formatting  
-  app.get('/api/v1/features/:id', function (req, res){
+  app.get('/featureServer/v1/features/:id', function (req, res) {
     console.log("SAGE Features (ID) GET REST Service Requested");
     
-    return models.FeatureModel.findOne({
-       "attributes.OBJECTID": req.params.id
-    },{
-      '_id': 0, 
-      'geometry': 1, 
-      'attributes': 1
-    }, 
-    function (err, feature) {
+    // get format parameter, default to json if not present
+    var format = req.param('f', 'json');
 
-    // THIS IS TO USE THE MONGO OBJECT IT //
-    //return FeatureModel.findById(req.params.id, function (err, feature) {
-      if (!err) {
-        return res.send(feature);
-      } else {
-        return console.log(err);
+    models.Feature.getFeatureById(req.params.id, function(feature) {
+      var response = {};
+      var formatter = Formatter(format);
+      if (feature) {
+        response = formatter.format(feature);
       }
+
+      res.send(JSON.stringify(response));
     });
   }); 
 
   // This function creates a new Feature  
-  app.post('/api/v1/features', function (req, res){
+  app.post('/featureServer/v1/features', function (req, res) {
     console.log("SAGE Features POST REST Service Requested");
 
-        var newID;
-        var maxID = 0;
-        
-    models.FeatureModel.find({}, {'_id': 1, 'geometry': 1, 'attributes': 1}, function (err, features) {
-      if (!err) {   
-        // Gets the Max OBJECTID from the Features Table
-        features.forEach( function(allESRIRecords) {
-          if (maxID < allESRIRecords.attributes.OBJECTID) {
-            maxID = allESRIRecords.attributes.OBJECTID
-          }
-        });
-        
-        newID = maxID + 1;
-        
-        //return res.send(""+maxID);
-        
-      } else {
-        return res.send(err);
-      };
-    }); 
-    
-    var feature;
-    console.log("POST: ");
-    console.log(req.body);
-    
-    feature = new models.FeatureModel({
-      geometry: {
-        x: req.body.x,
-        y: req.body.y
-      },
-      attributes: {
-        OBJECTID: maxID,  
-        ADDRESS: req.body.ADDRESS,  
-        EVENTDATE: req.body.EVENTDATE,  
-        TYPE: req.body.TYPE,  
-        EVENTLEVEL: req.body.EVENTLEVEL,  
-        TEAM: req.body.TEAM, 
-        DESCRIPTION: req.body.DESCRIPTION,  
-        USNG: req.body.USNG,  
-        EVENTCLEAR: req.body.EVENTCLEAR,
-        UNIT: req.body.UNIT
-      }
+    var data = JSON.parse(req.query.features);
+    models.Feature.createFeature(data[0], function(err, feature) {
+      var response = {};
+      if (feature) {
+        response = feature;
+      } 
 
+      res.send(JSON.stringify(feature));
     });
-    feature.save(function (err) {
-      if (!err) {
-        return console.log("Feature with ID: " + feature.id + " created.");
-      } else {
-        return console.log(err);
-      }
-    });
-    return res.send(feature);
   }); 
 
 
   // This function will update a feature by the ID
-  app.put('/api/v1/features/:id', function (req, res){
+  app.put('/featureServer/v1/features/:id', function (req, res) {
     console.log("SAGE Features (ID) UPDATE REST Service Requested");
     
-    return models.FeatureModel.findById(req.params.id, function (err, feature) { 
-      
-      feature.geometry.x = req.body.x;
-      feature.geometry.y = req.body.y;
-      feature.attributes.OBJECTID = req.body.OBJECTID;
-      feature.attributes.ADDRESS = req.body.ADDRESS;
-      feature.attributes.EVENTDATE = req.body.EVENTDATE;  
-      feature.attributes.TYPE = req.body.TYPE;  
-      feature.attributes.EVENTLEVEL = req.body.EVENTLEVEL;
-      feature.attributes.TEAM = req.body.TEAM;
-      feature.attributes.DESCRIPTION = req.body.DESCRIPTION; 
-      feature.attributes.USNG = req.body.USNG;
-      feature.attributes.EVENTCLEAR = req.body.EVENTCLEAR;
-      feature.attributes.UNIT = req.body.UNIT;
-      
-      return feature.save(function (err) {
-        if (!err) {
-          console.log("updated");
-        } else {
-          console.log(err);
-        }
-      return res.send(feature);
-      });
+    var features = JSON.parse(req.query.features);
+    models.Feature.updateFeature(features[0].attributes, function(err, feature) {
+      var response = {};
+      if (feature) {
+        response = feature;
+      }
+
+      res.send(JSON.stringify(response));
     });
   }); 
 
+  // TODO implement delete feature
   // This function deletes one feature based on ID
-  app.delete('/api/v1/features/:id', function (req, res){
-    console.log("SAGE Features (ID) DELETE REST Service Requested");
+  // app.delete('/featureServer/v1/features/:id', function (req, res) {
+  //   console.log("SAGE Features (ID) DELETE REST Service Requested");
+  // }); 
 
-    return models.FeatureModel.findById(req.params.id, function (err, feature) {
-      return product.remove(function (err) {
-        if (!err) {
-          console.log("Feature with ID: " + req.params.id + " deleted.");
-          return res.send('');
-        } else {
-          console.log(err);
-        }
-      });
-    });
-  }); 
-
-  // Get Map Points in GeoJSON format
-  app.get('/api/v1/featureMapPoints', function (req, res){
-    console.log("SAGE Get Feature Map Points REST Service Requested");
-    
-    return models.FeatureModel.find({}, {'_id': 0}, function (err, features) {
-      
-      var mapStringBegin = "{\"type\": \"FeatureCollection\", \"features\": [";
-      var mapStringEnd = "]}";
-      var fullString = "";
-      var indGeometry = "";
-      var indAttributes = "";
-      
-      fullString = mapStringBegin;
-      
-      var count = 0;
-
-      if( err || !features.length) {
-        console.log("No records were found.");
-        return res.send("{\"objectIdFieldName\": \"OBJECTID\",\"globalIdFieldName\": \"\",\"features\": []}");  
-        
-      }
-      else {
-        features.forEach( function(allMapPoints) {
-          
-          count = count + 1;
-          
-          mapPoint = "\"geometry\": { \"type\": \"Point\", \"coordinates\": [" + 
-            allMapPoints.geometry.x + 
-            ", " + 
-            allMapPoints.geometry.y + 
-            "]}, \"type\": \"Feature\", \"properties\": {" + 
-            "\"eventtype\": \"" + allMapPoints.attributes.TYPE +
-            "\", \"eventlevel\": \"" + allMapPoints.attributes.EVENTLEVEL +       
-            "\", \"address\": \"" + allMapPoints.attributes.ADDRESS +
-            "\", \"description\": \"" + allMapPoints.attributes.DESCRIPTION +
-            "\", \"eventclear\": \"" + allMapPoints.attributes.EVENTCLEAR +
-            "\", \"eventdate\": \"" + allMapPoints.attributes.EVENTDATE +
-            "\", \"team\": \"" + allMapPoints.attributes.TEAM +
-            "\", \"unit\": \"" + allMapPoints.attributes.UNIT +
-            "\", \"usng\": \"" + allMapPoints.attributes.USNG +
-            "\"}, \"id\": " + 
-            allMapPoints.attributes.OBJECTID;
-          
-          fullString = fullString + "{" + mapPoint + "}";
-          
-          if (count < features.length) {
-            fullString = fullString + ", ";
-          }
-        })
-          
-        fullString = fullString + mapStringEnd;
-      
-        return res.send(fullString);
-      };
-    });
-
-  });
-
+  // TODO this should just be a param on GET features
   // Get Map Points in JSON format
-  app.get('/api/v1/featureMapPointsJSON', function (req, res){
-    console.log("SAGE Get Feature Map Points REST Service Requested");
+  // app.get('/api/v1/featureMapPointsJSON', function (req, res){
+  //   console.log("SAGE Get Feature Map Points REST Service Requested");
     
-    return models.FeatureModel.find({}, {'_id': 0}, function (err, features) {
+  //   models.Feature.getFeatures(function (features) {
       
-      var mapStringBegin = "{\"features\": [";
-      var mapStringEnd = "]}";
-      var fullString = "";
-      var indGeometry = "";
-      var indAttributes = "";
-      
-      fullString = mapStringBegin;
-      
-      var count = 0;
+  //     console.log(JSON.stringify(features));
 
-      if( err || !features.length) {
-        console.log("No records were found.");
-        return res.send("{\"objectIdFieldName\": \"OBJECTID\",\"globalIdFieldName\": \"\",\"features\": []}");  
+  //     var mapStringBegin = "{\"features\": [";
+  //     var mapStringEnd = "]}";
+  //     var fullString = "";
+  //     var indGeometry = "";
+  //     var indAttributes = "";
+      
+  //     fullString = mapStringBegin;
+      
+  //     var count = 0;
+
+  //     if(!features.length) {
+  //       console.log("No records were found.");
+  //       return res.send("{\"objectIdFieldName\": \"OBJECTID\",\"globalIdFieldName\": \"\",\"features\": []}");  
         
-      }
-      else {
-        features.forEach( function(allMapPoints) {
+  //     }
+  //     else {
+  //       features.forEach( function(allMapPoints) {
           
-          count = count + 1;
+  //         count = count + 1;
           
-          mapPoint = "\"geometry\": {" +  allMapPoints.geometry.x + ", " + allMapPoints.geometry.y + "}";
+  //         mapPoint = "\"geometry\": {" +  allMapPoints.geometry.x + ", " + allMapPoints.geometry.y + "}";
           
-          if (count < features.length) {
-            fullString = fullString + ", ";
-          }
-        })
+  //         if (count < features.length) {
+  //           fullString = fullString + ", ";
+  //         }
+  //       })
           
-        fullString = fullString + mapStringEnd;
+  //       fullString = fullString + mapStringEnd;
       
-        return res.send(fullString);
-      };
-    });
+  //       return res.send(fullString);
+  //     };
+  //   });
 
-  });
+  // });
 
   // This function will update a feature by the ID
   app.put('/api/v1/features/', function (req, res){
@@ -270,41 +207,42 @@ module.exports = function(app, models, fs) {
     });
   });
 
-  // Gets all the features with universal JSON formatting   
-  app.get('/api/v1/getIDs', function (req, res){
-    console.log("SAGE Get IDs GET REST Service Requested");
+  // TODO this should just be a param on GET features
+  // // Gets all the features with universal JSON formatting   
+  // app.get('/api/v1/getIDs', function (req, res){
+  //   console.log("SAGE Get IDs GET REST Service Requested");
 
-    return models.FeatureModel.find({}, {'_id': 0, 'attributes.OBJECTID': 1}, function (err, features) {
+  //   return models.FeatureModel.find({}, {'_id': 0, 'attributes.OBJECTID': 1}, function (err, features) {
       
 
-      var fullString = "{\"object_ids\": [";
-      var object_ids = "";
+  //     var fullString = "{\"object_ids\": [";
+  //     var object_ids = "";
       
-      var count = 0;
+  //     var count = 0;
 
-      if( err || !features.length) {
-        console.log("No records were found.");  
-        return res.send("No records were found.");
-      }
-      else {
+  //     if( err || !features.length) {
+  //       console.log("No records were found.");  
+  //       return res.send("No records were found.");
+  //     }
+  //     else {
         
-        features.forEach( function(allESRIRecords) {
+  //       features.forEach( function(allESRIRecords) {
           
-          count = count + 1;
+  //         count = count + 1;
                   
-          object_ids = "{ \"OBJECTID\": " + allESRIRecords.attributes.OBJECTID + "}";
+  //         object_ids = "{ \"OBJECTID\": " + allESRIRecords.attributes.OBJECTID + "}";
           
-          fullString = fullString + object_ids;
+  //         fullString = fullString + object_ids;
           
-          if (count < features.length) {
-            fullString = fullString + ", ";
-          }     
-        })
+  //         if (count < features.length) {
+  //           fullString = fullString + ", ";
+  //         }     
+  //       })
           
-        fullString = fullString + "]}";
+  //       fullString = fullString + "]}";
       
-        return res.send(fullString);
-      };
-    });
-  });
+  //       return res.send(fullString);
+  //     };
+  //   });
+  // });
 }

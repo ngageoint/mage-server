@@ -117,7 +117,10 @@ Ext.onReady(function() {
         proxy: new GeoExt.data.ProtocolProxy({
             protocol: new OpenLayers.Protocol.HTTP({
                 //url: "./summits.json",
-				url: "api/v1/featureMapPoints",
+				url: "featureServer/v1/features",
+				params: {
+					f: 'geojson'
+				},
 				format: new OpenLayers.Format.GeoJSON({
 					'internalProjection': new OpenLayers.Projection("EPSG:900913"),
 					'externalProjection': new OpenLayers.Projection("EPSG:4326")
@@ -177,7 +180,7 @@ Ext.onReady(function() {
             location: feature,
             width:200,
 			height:200,
-            html: bogusMarkup,
+            html: feature.data.description,
             maximizable: true,
             collapsible: true
         });
