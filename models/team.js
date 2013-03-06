@@ -3,7 +3,7 @@ module.exports = function(mongoose) {
   var Schema = mongoose.Schema;  
 
   // Creates the Schema for the Teams object
-  var Team = new Schema({ 
+  var TeamSchema = new Schema({ 
       team_name: { type: String, required: false }
     },{ 
       versionKey: false 
@@ -11,9 +11,9 @@ module.exports = function(mongoose) {
   );
 
   // Creates the Model for the Attachments Schema
-  var TeamModel = mongoose.model('Team', Team);
+  var Team = mongoose.model('Team', TeamSchema);
 
   return {
-    TeamModel: TeamModel
+    Team: Team
   }
 }

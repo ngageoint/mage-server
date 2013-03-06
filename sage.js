@@ -9,37 +9,32 @@ var dbPath = 'mongodb://localhost/sagedb';
 
 // Configuration of the SAGE Express server
 app.configure(function () {
-  app.use(express.bodyParser());
-  app.use(express.methodOverride());
-  app.use(app.router);
-
-  // app.use(express.static(path.join(__dirname, "public")));
-  // app.use('/uploads', express.static(path.join(__dirname, "uploads")));
-  // app.use('/extjs', express.static(path.join(__dirname, "extjs")));
-  // app.use('/geoext', express.static(path.join(__dirname, "geoext")));
-  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-
   mongoose.connect(dbPath, function(err) {
     if (err) throw err;
   });
 
-  app.use(function(err, req, res, next){
-    console.log('WLN - not good, something bad happened ')
+  app.use(express.bodyParser());
+  app.use(express.methodOverride());
+  app.use(app.router);
+  app.use(express.static(path.join(__dirname, "public")));
+  app.use('/extjs', express.static(path.join(__dirname, "extjs")));
+  app.use('/geoext', express.static(path.join(__dirname, "geoext")));
+  app.use(function(err, req, res, next) {
+    console.error('Error making request: ' + JSON.stringify(req));
     console.error(err.stack);
-    res.send(500, 'Something broke!');
+    res.send(500, 'Internal server error.');
   });
 });
 
 // Import models
-var counters = require('./models/counters')(mongoose);
 var models = {
-  Feature: require('./models/feature')(mongoose, counters),
+  Feature: require('./models/feature')(mongoose),
   Team: require('./models/team')(mongoose),
   ObservationLevel: require('./models/observationlevel')(mongoose),
   ObservationType: require('./models/observationtype')(mongoose)
 }
 
-// Import routes
+// Dynamically import all routes
 fs.readdirSync('routes').forEach(function(file) {
   if (file[0] == '.') return;
   var route = file.substr(0, file.indexOf('.'));
@@ -52,10 +47,10 @@ app.get('/api/v1/teams', function (req, res){
   return models.TeamModel.find({}, function (err, teams) {
     if( err || !teams.length) {
       console.log("No teams were found.");  
-      return res.send("No teams were found.");
+      res.send("No teams were found.");
     }
     else {
-      return res.send(teams);
+      res.send(teams);
     };
   });
 });
@@ -66,10 +61,10 @@ app.get('/api/v1/observationLevels', function (req, res){
   return models.ObservationLevelModel.find({}, function (err, observation_levels) {
     if( err || !observation_levels.length) {
       console.log("No observation levels were found."); 
-      return res.send("No observation levels were found.");
+      res.send("No observation levels were found.");
     }
     else {
-      return res.send(observation_levels);
+      res.send(observation_levels);
     };
   });
 });
@@ -80,10 +75,10 @@ app.get('/api/v1/observationTypes', function (req, res){
   return models.ObservationTypeModel.find({}, function (err, observation_types) {
     if( err || !observation_types.length) {
       console.log("No observation types were found.");  
-      return res.send("No observation types were found.");
+      res.send("No observation types were found.");
     }
     else {
-      return res.send(observation_types);
+      res.send(observation_types);
     };
   });
 });

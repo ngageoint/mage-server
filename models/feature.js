@@ -1,21 +1,23 @@
 module.exports = function(mongoose, counters) {
+  // This is the sequence/counter model for one-up fields like OBJECTID
+  var counters = require('./counters')(mongoose);
+
   // Creates a new Mongoose Schema object
   var Schema = mongoose.Schema;
 
   // Creates the Schema for the Features object (mimics ESRI)
-  var Attachment = new Schema({
+  var AttachmentSchema = new Schema({
       id: { type: Number, required: true, index: {unique: true} },
       contentType: { type: String, required: false },  
       size: { type: String, required: false },  
       name: { type: String, required: false }
-      // featureId: {type: Schema.Types.ObjectId}
     },{
       versionKey: false 
     }
   );
 
   // Creates the Schema for the Attachments object
-  var Feature = new Schema({  
+  var FeatureSchema = new Schema({  
       geometry: {
         x: { type: Number, required: false },  
         y: { type: Number, required: false }
@@ -32,14 +34,14 @@ module.exports = function(mongoose, counters) {
         EVENTCLEAR: { type: Number, unique: false },
         UNIT: { type: String, required: false }
       },
-      attachments: [Attachment]
+      attachments: [AttachmentSchema]
     },{ 
       versionKey: false 
     }
   );
 
   // Creates the Model for the Features Schema
-  var Feature = mongoose.model('Feature', Feature);
+  var Feature = mongoose.model('Feature', FeatureSchema);
 
   var getFeatures = function(callback) {
     var query = {};
@@ -153,7 +155,6 @@ module.exports = function(mongoose, counters) {
         contentType: files.attachment.type,  
         size: files.attachment.size,  
         name: files.attachment.name
-        // featureId: feature._id
       };
 
       feature.attachments.push(attachment);

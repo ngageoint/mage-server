@@ -3,7 +3,7 @@ module.exports = function(mongoose) {
   var Schema = mongoose.Schema;  
 
   // Creates the Schema for the Observation Level object
-  var ObservationLevel = new Schema({ 
+  var ObservationLevelSchema = new Schema({ 
       observation_level: { type: String, required: false }
     },{ 
       versionKey: false 
@@ -11,7 +11,7 @@ module.exports = function(mongoose) {
   );
 
   // Creates the Model for the Attachments Schema
-  var ObservationLevelModel = mongoose.model('ObservationLevel', ObservationLevel);
+  var ObservationLevel = mongoose.model('ObservationLevel', ObservationLevelSchema);
 
   return {
     ObservationLevel: ObservationLevel

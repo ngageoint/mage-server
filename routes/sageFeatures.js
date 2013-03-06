@@ -4,6 +4,7 @@ module.exports = function(app, models, fs) {
   // Gets all the features with universal JSON formatting   
   app.get('/api/v1/features', function (req, res){
     console.log("SAGE Features GET REST Service Requested");
+
     return models.FeatureModel.find({}, {'_id': 1, 'geometry': 1, 'attributes': 1}, function (err, features) {
       if( err || !features.length) {
         console.log("No records were found.");  

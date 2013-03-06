@@ -2,25 +2,18 @@ var util = require('util');
 var fs = require('fs');
 var child_process = require('child_process');
 
-
-
-
-dev_server = {
-
+server = {
 	process: null,
-
 	files: [],
-
 	restarting: false,
 
-	'restart': function() {
+	restart: function() {
 		this.restarting = true;
 		util.debug('SAGE Node Server: Stopping server for restart.');
 		this.process.kill();
 		util.debug('SAGE Node Server: Server successfully restarted.');
 	},
-
-	'start': function() {
+	start: function() {
 		var that = this;
 		util.debug('SAGE Node Server: Starting server.');
 		that.watchFiles();
@@ -45,8 +38,7 @@ dev_server = {
 			}
 		});
 	},
-
-	'watchFiles': function() {
+	watchFiles: function() {
 		var that = this;
 
 		child_process.exec('find . | grep "\.js$"', function(error, stdout, stder) {
@@ -64,7 +56,7 @@ dev_server = {
 		});
 	},
 
-	'unwatchFiles': function() {
+	unwatchFiles: function() {
 		this.files.forEach(function(file) {
 			fs.unwatchFile(file);
 		});
@@ -72,4 +64,4 @@ dev_server = {
 	}
 }
 
-dev_server.start();
+server.start();

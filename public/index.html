@@ -77,19 +77,19 @@ Ext.onReady(function() {
 		preventBodyReset: true, // important
 		items: [{
 			id: 'card-0',			
-			autoLoad: 'api/',
+			autoLoad: 'esriFeatureServer/',
 			scripts:true,
 			preventBodyReset: true, // important
 	    },{
 			id: 'get_all_esri_features',
 			autoLoad:{
-				url: 'api/v1/esriFeatures/',
+				url: 'esriFeatureServer/v1/features/',
 				scripts:true
 			}
 	    },{
 			id: 'get_single_esri_feature',
 			autoLoad:{
-				url: 'api/v1/esriFeatures/1/',
+				url: 'esriFeatureServer/v1/features/1/',
 				scripts:true
 			}
 			

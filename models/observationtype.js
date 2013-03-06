@@ -3,14 +3,14 @@ module.exports = function(mongoose) {
   var Schema = mongoose.Schema;
 
   // Creates the Schema for the Observation Type object
-  var ObservationType = new Schema({ 
+  var ObservationTypeSchema = new Schema({ 
       observation_type: { type: String, required: false }
     },{
       versionKey: false 
     });
 
     // Creates the Model for the Attachments Schema
-  var ObservationTypeModel = mongoose.model('ObservationType', ObservationType);
+  var ObservationType = mongoose.model('ObservationType', ObservationTypeSchema);
 
   return {
     ObservationType: ObservationType

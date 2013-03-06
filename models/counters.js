@@ -3,7 +3,7 @@ module.exports = function(mongoose) {
   var Schema = mongoose.Schema;  
 
   // Collection to hold counters/sequences for ids
-  var Counters = new Schema({  
+  var CountersSchema = new Schema({  
       _id: { type: String, required: true },  
       sequence: { type: Number, required: true }
     },{ 
@@ -12,7 +12,7 @@ module.exports = function(mongoose) {
   );
 
   // Creates the Model for the Attachments Schema
-  var Counters = mongoose.model('Counters', Counters);
+  var Counters = mongoose.model('Counters', CountersSchema);
 
   var getNext = function(collection, callback) {
     var query = {_id: collection};
