@@ -1,0 +1,48 @@
+@font-face {
+	font-family: Futura;
+	font-weight: regular;
+	src: url('../fonts/Futura.ttc');
+}
+
+h1, h2, h3, h4, h5 {
+	font-family: Futura, sans-serif;
+	color: #2B2620;
+}
+
+a {
+	color: #009933;
+}
+
+body {
+	background: #CFE4C3;
+	color: #2B2620;
+}
+
+.navbar-inner {
+	background: #648D53;
+	color: #F5F3DA;
+}
+
+.navbar .brand {
+		font-family: Futura, sans-serif;
+    color: #CFE4C3;
+    display: block;
+    float: left;
+    font-size: 20px;
+    font-weight: 200;
+    margin-left: -20px;
+    padding: 10px 20px;
+    text-shadow: 0 1px 0 #2B2620;
+}
+
+.navbar .nav > li > a {
+    color: #F5F3DA;
+    float: none;
+    padding: 10px 15px;
+    text-decoration: none;
+    text-shadow: 0 1px 0 #2B2620;
+}
+
+.well {
+	background: #efefef;
+}

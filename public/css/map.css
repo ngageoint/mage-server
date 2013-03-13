@@ -1,0 +1,74 @@
+html, body, div.leaflet-container {
+	height: 100%;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+/* CLEAR FIX*/
+.clearfix:after {content: ".";
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;}
+.clearfix {display: inline-block;}
+/* Hides from IE-mac \*/
+* html .clearfix { height: 1%;}
+.clearfix {display: block;}
+/* End hide from IE-mac */
+
+.navbar {
+	margin-bottom: 0;
+}
+
+.container-fluid {
+	padding-left: 0;
+	padding-right: 0;
+}
+
+
+/* Buttons */
+#geo {
+	position: absolute;
+	height: 50px;
+	width: 50px;
+	bottom: 5px;
+	left: 15px;
+	z-index: 2000;
+}
+
+#new-observation {
+	position: absolute;
+	height: 50px;
+	width: 50px;
+	bottom: 5px;
+	left: 80px;
+	z-index: 2000;
+}
+
+#observation-panel {
+	padding: 20px;
+	background: #CFE4C3;
+	position: absolute;
+	height: 90%;
+	width: 85%;
+	max-width: 430px;
+	max-height: 400px;
+	left: 5px;
+	top: 5px;
+	z-index: 2000;
+	overflow: auto;
+}
+
+#observation-panel > form > span > button {
+	width: 130px;
+}
+
+/* Overrides */
+.form-horizontal .control-group {
+	margin-bottom: 10px;
+}
+
+textarea {
+	height: 75px;
+}

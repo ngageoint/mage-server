@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html ng-app="sage">
+<head>
+	<title>SAGE</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.css" />
+	<link rel="stylesheet" href="css/bootstrap.min.css" />
+	<link rel="stylesheet" href="css/bootstrap-responsive.min.css"/>
+	<link rel="stylesheet" href="css/style.css"/>
+	<link rel="stylesheet" href="css/map.css"/>
+
+	<script type="text/javascript" src="js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="js/jquery/jquery.min.js"></script>
+	<script src="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
+	<script type="text/javascript" src="js/angular/angular.js"></script>
+	<script type="text/javascript" src="js/angular-ui/build/angular-ui.js"></script>
+	<script type="text/javascript" src="js/angular-leaflet-directive.js"></script>
+	<script type="text/javascript" src="js/controller.js"></script>
+
+	<link rel="apple-touch-icon" href="img/touch-icon-iphone.png" />
+	<link rel="apple-touch-icon" sizes="72x72" href="img/touch-icon-ipad.png" />
+	<link rel="apple-touch-icon" sizes="114x114" href="img/touch-icon-iphone-retina.png" />
+	<link rel="apple-touch-icon" sizes="144x144" href="img/touch-icon-ipad-retina.png" />
+</head>
+<body ng-controller="MapController">
+	<div cl***REMOVED***="navbar hidden-phone">
+    <div cl***REMOVED***="navbar-inner">
+      <div cl***REMOVED***="container">
+        <a cl***REMOVED***="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          <span cl***REMOVED***="icon-bar"></span>
+          <span cl***REMOVED***="icon-bar"></span>
+          <span cl***REMOVED***="icon-bar"></span>
+        </a>
+        <a cl***REMOVED***="brand" href="#">SAGE</a>
+        <div cl***REMOVED***="nav-collapse collapse">
+          <ul cl***REMOVED***="nav">
+            <li><a href="#">API Documentation</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+  </div>
+  <leaflet marker="marker" center="center" zoom="zoom" draggable="true"></leaflet>
+  <div>
+  	<button cl***REMOVED***="btn" id="geo" ng-click="geolocate()" ngm-tap="geolocate()"><i cl***REMOVED***="icon-map-marker"></i></button>
+  </div>
+
+  <div>
+  	<button cl***REMOVED***="btn" id="new-observation" ng-click="newObservation()" ngm-tap="newObservation()"><i cl***REMOVED***="icon-plus"></i></button>
+  </div>
+
+  <div id="observation-panel" cl***REMOVED***="hide">
+		<form cl***REMOVED***="form-horizontal">
+			<div cl***REMOVED***="control-group">
+		    <label cl***REMOVED***="control-label" for="type">Type</label>
+		    <div cl***REMOVED***="controls">
+		      <select>
+		      	<option>Animal issue</option>
+		      	<option>Chemical hazard</option>
+		      	<option>Command post</option>
+		      	<option>Confirmed victim</option>
+		      	<option>Confirmed Victim removed</option>
+		      	<option>Emergency collection point</option>
+		      	<option>Fire</option>
+		      	<option>Helicopter landing site</option>
+		      	<option>Human remains</option>
+		      	<option>Possible criminal activity</option>
+		      	<option>Shelter in place</option>
+		      	<option>Special needs</option>
+		      	<option>Staging area</option>
+		      	<option>Start search</option>
+		      	<option>Stop search</option>
+		      	<option>Structure damaged but safe</option>
+		      	<option>Structure major damage no entry</option>
+		      	<option>Structure no damage</option>
+		      	<option>Victim detected</option>
+		      	<option>Water level</option>
+		      </select>
+		    </div>
+		  </div>
+		  <div cl***REMOVED***="control-group">
+		    <label cl***REMOVED***="control-label" for="level">Level</label>
+		    <div cl***REMOVED***="controls">
+		      <select>
+		      	<option>Normal</option>
+		      	<option>Yellow</option>
+		      	<option>Red</option>
+		      </select>
+		    </div>
+		  </div>
+		  <div cl***REMOVED***="control-group">
+		    <label cl***REMOVED***="control-label" for="team">Team</label>
+		    <div cl***REMOVED***="controls">
+		      <select>
+		      	<option>AZ-TF1</option>
+		      	<option>CA-TF1</option>
+		      	<option>CA-TF2</option>
+		      	<option>CA-TF3</option>
+		      	<option>CA-TF4</option>
+		      	<option>CA-TF5</option>
+		      	<option>CA-TF6</option>
+		      	<option>CA-TF7</option>
+		      	<option>IN-TF8</option>
+		      	<option>MA-TF1</option>
+		      	<option>MD-TF1</option>
+		      	<option>MO-TF1</option>
+		      	<option>NE-TF1</option>
+		      	<option>NM-TF1</option>
+		      	<option>NV-TF1</option>
+		      	<option>NY-TF1</option>
+		      	<option>OH-TF1</option>
+		      	<option>PA-TF1</option>
+		      	<option>TN-TF1</option>
+		      	<option>TX-TF1</option>
+		      	<option>UT-TF1</option>
+		      	<option>VA-TF1</option>
+		      	<option>VA-TF2</option>
+		      	<option>WA-TF1</option>
+		      	<option>Other</option>
+		      </select>
+		    </div>
+		  </div>
+		  <div cl***REMOVED***="control-group">
+		    <label cl***REMOVED***="control-label" for="unit">Unit</label>
+		    <div cl***REMOVED***="controls">
+		      <input/>
+		    </div>
+		  </div>
+		  <div cl***REMOVED***="control-group">
+		    <label cl***REMOVED***="control-label" for="unit">Description</label>
+		    <div cl***REMOVED***="controls">
+		      <textarea></textarea>
+		    </div>
+		  </div>
+		  <span>
+		  	<button cl***REMOVED***="btn btn-inverse" ng-click="saveObservation()" ngm-tap="saveObservation()">Cancel</button>
+		  	<button cl***REMOVED***="btn" ng-click="saveObservation()" ngm-tap="saveObservation()">Submit</button>
+		 	</span>
+		</form>
+  </div>
+</body>
+</html>
