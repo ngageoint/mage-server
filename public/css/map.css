@@ -26,6 +26,9 @@ html, body, div.leaflet-container {
 	padding-right: 0;
 }
 
+.sage-color {
+	color: #648D52;
+}
 
 /* Buttons */
 #geo {
@@ -33,7 +36,16 @@ html, body, div.leaflet-container {
 	height: 50px;
 	width: 50px;
 	bottom: 5px;
-	left: 15px;
+	left: 5px;
+	z-index: 2000;
+}
+
+#goto-address {
+	position: absolute;
+	height: 50px;
+	width: 50px;
+	bottom: 5px;
+	left: 68px;
 	z-index: 2000;
 }
 
@@ -42,15 +54,76 @@ html, body, div.leaflet-container {
 	height: 50px;
 	width: 50px;
 	bottom: 5px;
-	left: 80px;
+	left: 133px;
 	z-index: 2000;
 }
 
+#refresh-points {
+	position: absolute;
+	height: 50px;
+	width: 50px;
+	bottom: 5px;
+	left: 198px;
+	z-index: 2000;
+}
+
+#fft-btn {
+	position: absolute;
+	height: 50px;
+	width: 50px;
+	bottom: 5px;
+	left: 263px;
+	z-index: 2000;
+}
+
+/* Panels and their contents */
 #observation-panel {
 	padding: 20px;
 	background: #CFE4C3;
 	position: absolute;
 	height: 90%;
+	width: 85%;
+	max-width: 430px;
+	max-height: 400px;
+	left: 5px;
+	top: 5px;
+	z-index: 2000;
+	overflow: auto;
+}
+
+#goto-address-panel {
+	padding: 20px;
+	background: #CFE4C3;
+	position: absolute;
+	height: 100px;
+	width: 85%;
+	max-width: 430px;
+	max-height: 400px;
+	left: 5px;
+	top: 5px;
+	z-index: 2000;
+	overflow: auto;
+}
+
+#refresh-panel {
+	padding: 20px;
+	background: #CFE4C3;
+	position: absolute;
+	height: 35px;
+	width: 85%;
+	max-width: 430px;
+	max-height: 400px;
+	left: 5px;
+	top: 5px;
+	z-index: 2000;
+	overflow: auto;
+}
+
+#fft-panel {
+	padding: 20px;
+	background: #CFE4C3;
+	position: absolute;
+	height: 200px;
 	width: 85%;
 	max-width: 430px;
 	max-height: 400px;

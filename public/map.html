@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html ng-app="sage">
 <head>
-	<title>SAGE</title>
+	<title>SAGE - Map Portal</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.css" />
 	<link rel="stylesheet" href="css/bootstrap.min.css" />
 	<link rel="stylesheet" href="css/bootstrap-responsive.min.css"/>
+	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<!--[if IE 7]>
+	<link rel="stylesheet" href="css/font-awesome-ie7.min.css">
+	<![endif]-->
 	<link rel="stylesheet" href="css/style.css"/>
 	<link rel="stylesheet" href="css/map.css"/>
 
-	<script type="text/javascript" src="js/bootstrap.min.js"></script>
+	<!--<script type="text/javascript" src="js/bootstrap.min.js"></script>-->
 	<script type="text/javascript" src="js/jquery/jquery.min.js"></script>
 	<script src="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
 	<script type="text/javascript" src="js/angular/angular.js"></script>
@@ -41,13 +45,33 @@
       </div>
     </div>
   </div>
+  
+  <!-- The map directive -->
   <leaflet marker="marker" center="center" zoom="zoom" draggable="true"></leaflet>
-  <div>
-  	<button cl***REMOVED***="btn" id="geo" ng-click="geolocate()" ngm-tap="geolocate()"><i cl***REMOVED***="icon-map-marker"></i></button>
-  </div>
+  
+  <!-- Button bar -->
+  <div id="button-bar">
+  	<button cl***REMOVED***="btn" id="geo" ng-click="geolocate()" ngm-tap="geolocate()"><i cl***REMOVED***="icon-map-marker icon-large sage-color"></i></button>
+  	<button cl***REMOVED***="btn" id="goto-address" ng-click="openGotoAddress()" ngm-tap="openGotoAddress()"><i cl***REMOVED***="icon-search icon-large sage-color"></i></button>
+  	<button cl***REMOVED***="btn" id="new-observation" ng-click="newObservation()" ngm-tap="newObservation()"><i cl***REMOVED***="icon-plus icon-large sage-color"></i></button>
+  	<button cl***REMOVED***="btn" id="refresh-points" ng-click="refreshPoints()" ngm-tap="refreshPoints()"><i cl***REMOVED***="icon-cloud-download icon-large sage-color"></i></button>
+  	<button cl***REMOVED***="btn" id="fft-btn" ng-click="fft()" ngm-tap="fft()"><i cl***REMOVED***="icon-group icon-large sage-color"></i></button>
+	</div>
 
-  <div>
-  	<button cl***REMOVED***="btn" id="new-observation" ng-click="newObservation()" ngm-tap="newObservation()"><i cl***REMOVED***="icon-plus"></i></button>
+	<!-- Panels -->
+	<div id="goto-address-panel" cl***REMOVED***="hide">
+		<form cl***REMOVED***="form-horizontal">
+		  <div cl***REMOVED***="control-group">
+		    <label cl***REMOVED***="control-label" for="address">Go to Address</label>
+		    <div cl***REMOVED***="controls">
+		      <input ng-model="address"/>
+		    </div>
+		  </div>
+		  <span>
+		  	<button cl***REMOVED***="btn btn-inverse" ng-click="dismissGotoAddress()" ngm-tap="dismissGotoAddress()">Cancel</button>
+		  	<button cl***REMOVED***="btn" ng-click="gotoAddress()" ngm-tap="gotoAddress()">Go</button>
+		 	</span>
+		</form>
   </div>
 
   <div id="observation-panel" cl***REMOVED***="hide">
@@ -55,82 +79,31 @@
 			<div cl***REMOVED***="control-group">
 		    <label cl***REMOVED***="control-label" for="type">Type</label>
 		    <div cl***REMOVED***="controls">
-		      <select>
-		      	<option>Animal issue</option>
-		      	<option>Chemical hazard</option>
-		      	<option>Command post</option>
-		      	<option>Confirmed victim</option>
-		      	<option>Confirmed Victim removed</option>
-		      	<option>Emergency collection point</option>
-		      	<option>Fire</option>
-		      	<option>Helicopter landing site</option>
-		      	<option>Human remains</option>
-		      	<option>Possible criminal activity</option>
-		      	<option>Shelter in place</option>
-		      	<option>Special needs</option>
-		      	<option>Staging area</option>
-		      	<option>Start search</option>
-		      	<option>Stop search</option>
-		      	<option>Structure damaged but safe</option>
-		      	<option>Structure major damage no entry</option>
-		      	<option>Structure no damage</option>
-		      	<option>Victim detected</option>
-		      	<option>Water level</option>
-		      </select>
+		      <select ng-model="observationType" ng-options="type.title for type in observationTypes"></select>
 		    </div>
 		  </div>
 		  <div cl***REMOVED***="control-group">
 		    <label cl***REMOVED***="control-label" for="level">Level</label>
 		    <div cl***REMOVED***="controls">
-		      <select>
-		      	<option>Normal</option>
-		      	<option>Yellow</option>
-		      	<option>Red</option>
-		      </select>
+		      <select ng-model="level" ng-options="level.color for level in levels"></select>
 		    </div>
 		  </div>
 		  <div cl***REMOVED***="control-group">
 		    <label cl***REMOVED***="control-label" for="team">Team</label>
 		    <div cl***REMOVED***="controls">
-		      <select>
-		      	<option>AZ-TF1</option>
-		      	<option>CA-TF1</option>
-		      	<option>CA-TF2</option>
-		      	<option>CA-TF3</option>
-		      	<option>CA-TF4</option>
-		      	<option>CA-TF5</option>
-		      	<option>CA-TF6</option>
-		      	<option>CA-TF7</option>
-		      	<option>IN-TF8</option>
-		      	<option>MA-TF1</option>
-		      	<option>MD-TF1</option>
-		      	<option>MO-TF1</option>
-		      	<option>NE-TF1</option>
-		      	<option>NM-TF1</option>
-		      	<option>NV-TF1</option>
-		      	<option>NY-TF1</option>
-		      	<option>OH-TF1</option>
-		      	<option>PA-TF1</option>
-		      	<option>TN-TF1</option>
-		      	<option>TX-TF1</option>
-		      	<option>UT-TF1</option>
-		      	<option>VA-TF1</option>
-		      	<option>VA-TF2</option>
-		      	<option>WA-TF1</option>
-		      	<option>Other</option>
-		      </select>
+		      <select ng-model="team" ng-options="team.name for team in teams"></select>
 		    </div>
 		  </div>
 		  <div cl***REMOVED***="control-group">
 		    <label cl***REMOVED***="control-label" for="unit">Unit</label>
 		    <div cl***REMOVED***="controls">
-		      <input/>
+		      <input ng-model="unit"/>
 		    </div>
 		  </div>
 		  <div cl***REMOVED***="control-group">
 		    <label cl***REMOVED***="control-label" for="unit">Description</label>
 		    <div cl***REMOVED***="controls">
-		      <textarea></textarea>
+		      <textarea ng-model="description"></textarea>
 		    </div>
 		  </div>
 		  <span>
@@ -138,6 +111,21 @@
 		  	<button cl***REMOVED***="btn" ng-click="saveObservation()" ngm-tap="saveObservation()">Submit</button>
 		 	</span>
 		</form>
+  </div>
+
+  <div id="refresh-panel" cl***REMOVED***="hide">
+		<i cl***REMOVED***="icon-spin icon-spinner icon-large"></i> Synchronizing
+		<span>
+	  	<button cl***REMOVED***="btn" ng-click="dismissRefresh()" ngm-tap="dismissRefresh()">Ok</button>
+	 	</span>
+  </div>
+
+  <div id="fft-panel" cl***REMOVED***="hide">
+  	<h3>Friendly Force Tracking</h3>
+	  <span>
+	  	<button cl***REMOVED***="btn btn-inverse" ng-click="dismissFft()" ngm-tap="dismissFft()">Cancel</button>
+	  	<button cl***REMOVED***="btn" ng-click="dismissFft()" ngm-tap="dismissFft()">Go</button>
+	 	</span>
   </div>
 </body>
 </html>

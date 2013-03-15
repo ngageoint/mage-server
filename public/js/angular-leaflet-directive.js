@@ -13,12 +13,12 @@
 				message: "=message",
 				zoom: "=zoom"
 			},
-			template: '<div cl***REMOVED***="map"></div>',
+			template: '<div id="map" cl***REMOVED***="map"></div>',
 			link: function (scope, element, attrs, ctrl) {
                 var $el = element[0],
 				    map = new L.Map($el);
 
-			    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 12 }).addTo(map);
+			    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
 
                 // Default center of the map
                 var point = new L.LatLng(40.094882122321145, -3.8232421874999996);
