@@ -13,6 +13,14 @@ function MapController($scope, $log, $http, $injector) {
     if($(window).width() > 767) {
       $('#map').css('height', ($(window).height() - 40));
     }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        console.log("lat " + position.coords.latitude + " lon " + position.coords.longitude);
+        $scope.center = { lat: position.coords.latitude, lng: position.coords.longitude };
+        $scope.zoom = 12;
+      });
+    }
   });
 
   $(window).resize(function () {
@@ -81,9 +89,10 @@ function MapController($scope, $log, $http, $injector) {
   $scope.description;
 
   $scope.geolocate = function () {
+    console.log("in geolocate");
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(position) {
-        console.log("lat " + position.coords.latitude + " lon " + position.coords.longitude + " accuracy " + position.accuracy);
+        console.log("lat " + position.coords.latitude + " lon " + position.coords.longitude);
         $scope.center = { lat: position.coords.latitude, lng: position.coords.longitude };
         $scope.zoom = 12;
 
@@ -93,20 +102,6 @@ function MapController($scope, $log, $http, $injector) {
 
   $scope.newObservation = function () {
     console.log("in new observation");
-    
-    /*$http.post('http://ec2-23-21-10-48.compute-1.amazonaws.com/sage/esriFeatureServer/v1/features/', {params: {"callback": "JSON_CALLBACK"},
-      headers: {"Accepts": "application/json", "Content-Type": "application/json"}}).
-      success(function (data, status, headers, config) {
-          $scope.points = data;
-          for(var i = 0; i < data.length; i++){
-              console.log("Data: "+i+"= "+angular.toJson(data[i]));
-          }
-      }).
-      error(function (data, status, headers, config) {
-          $log.log("Error logging in got status: " + status);
-      });*/
-
-
     $('#observation-panel').removeCl***REMOVED***('hide');
   }
 
@@ -121,6 +116,22 @@ function MapController($scope, $log, $http, $injector) {
   $scope.saveObservation = function () {
     console.log("in new observation");
     // add code to send the observation to the server here
+
+    console.log("Team: " + $scope.team.name + ", Level: " + $scope.level.color + ", Observation Type: " + $scope.observationType.title + ", Unit: " + $scope.unit + ", Description: " + $scope.description);
+    
+    /*[{"geometry":{"x": $scope.center.lat, "y":$scope.center.lng,"attributes":{"OBJECTID":11220,"ADDRESS":null,"EVENTDATE":1361401500000,"TYPE":"Animal Issue","EVENTLEVEL":"Normal","TEAM":"AZ-TF1","DESCRIPTION":"hey-o! 12345","USNG":"13S ED 11672 90984","EVENTCLEAR":0,"UNIT":null}}]&f=pjson
+    $http.post('http://ec2-23-21-10-48.compute-1.amazonaws.com/sage/esriFeatureServer/v1/features/', {params: {"callback": "JSON_CALLBACK"},
+      headers: {"Accepts": "application/json", "Content-Type": "application/json"}}).
+      success(function (data, status, headers, config) {
+          $scope.points = data;
+          for(var i = 0; i < data.length; i++){
+              console.log("Data: "+i+"= "+angular.toJson(data[i]));
+          }
+      }).
+      error(function (data, status, headers, config) {
+          $log.log("Error logging in got status: " + status);
+      });*/
+
     $('#observation-panel').addCl***REMOVED***('hide');
   }
 
