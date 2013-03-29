@@ -1,10 +1,14 @@
 var express = require("express");
 var mongoose = require('mongoose');
 var path = require("path");
-var fs = require('fs');
+var fs = require('fs-extra');
+var argv = require('optimist')
+  .default('a', '/var/lib/sage/attachments')
+  .argv;
 
 var app = express();
 
+var attachmentBase = argv.a + '/';
 var dbPath = 'mongodb://localhost/sagedb';
 
 // Configuration of the SAGE Express server
@@ -12,6 +16,9 @@ app.configure(function () {
   mongoose.connect(dbPath, function(err) {
     if (err) throw err;
   });
+  mongoose.set('debug', true);
+
+  app.set('attachmentBase', attachmentBase);
 
   app.use(express.bodyParser());
   app.use(express.methodOverride());
@@ -21,16 +28,24 @@ app.configure(function () {
   app.use('/geoext', express.static(path.join(__dirname, "geoext")));
   app.use(function(err, req, res, next) {
     console.error(err.stack);
-    res.send(500, 'Internal server error.');
+    res.send(500, 'Internal server error, please contact SAGE administrator.');
   });
 });
 
-// Import models
+// Create directory for storing SAGE media attachments
+fs.mkdirp(attachmentBase, function(err) {
+  if (err) {
+    console.error("Could not create directory to store SAGE media attachments. "  + err);
+  } else {
+    console.log("Using '" + attachmentBase + "' as base directory for feature attachments.");
+  }
+});
+
+// Import static models
+var counters = require('./models/counters')(mongoose);
 var models = {
-  Feature: require('./models/feature')(mongoose),
-  Team: require('./models/team')(mongoose),
-  ObservationLevel: require('./models/observationlevel')(mongoose),
-  ObservationType: require('./models/observationtype')(mongoose)
+  Layer: require('./models/layer')(mongoose, counters),
+  Feature: require('./models/feature')(mongoose, counters)
 }
 
 // Dynamically import all routes
@@ -38,48 +53,6 @@ fs.readdirSync('routes').forEach(function(file) {
   if (file[0] == '.') return;
   var route = file.substr(0, file.indexOf('.'));
   require('./routes/' + route)(app, models, fs);
-});
-
-// Gets all the Teams with universal JSON formatting    
-app.get('/api/v1/teams', function (req, res){
-  console.log("SAGE Team GET REST Service Requested");
-  return models.TeamModel.find({}, function (err, teams) {
-    if( err || !teams.length) {
-      console.log("No teams were found.");  
-      res.send("No teams were found.");
-    }
-    else {
-      res.send(teams);
-    };
-  });
-});
-
-// Gets all the Observation Levels with universal JSON formatting   
-app.get('/api/v1/observationLevels', function (req, res){
-  console.log("SAGE Observation Levels GET REST Service Requested");
-  return models.ObservationLevelModel.find({}, function (err, observation_levels) {
-    if( err || !observation_levels.length) {
-      console.log("No observation levels were found."); 
-      res.send("No observation levels were found.");
-    }
-    else {
-      res.send(observation_levels);
-    };
-  });
-});
-
-// Gets all the Observation Types with universal JSON formatting    
-app.get('/api/v1/observationTypes', function (req, res){
-  console.log("SAGE Observation Types GET REST Service Requested");
-  return models.ObservationTypeModel.find({}, function (err, observation_types) {
-    if( err || !observation_types.length) {
-      console.log("No observation types were found.");  
-      res.send("No observation types were found.");
-    }
-    else {
-      res.send(observation_types);
-    };
-  });
 });
 
 // Launches the Node.js Express Server

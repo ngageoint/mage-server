@@ -14,20 +14,37 @@ module.exports = function(mongoose) {
   // Creates the Model for the Attachments Schema
   var Counters = mongoose.model('Counters', CountersSchema);
 
+  var range = function(start, end) {
+    var values = [];
+    for (var i = start; i <= end; i++) {
+      values.push(i);
+    }
+
+    return values;
+  }
+
   var getNext = function(collection, callback) {
+    getGroup(collection, 1, function(ids) {
+      callback(ids[0]);
+    });
+  }
+
+  var getGroup = function(collection, amount, callback) {
     var query = {_id: collection};
-    var update = {$inc: {sequence: 1}};
-    var options = {new: true, upsert: true};
+    var update = {$inc: {sequence: amount}};
+    var options = {upsert: true};
     Counters.findOneAndUpdate(query, update, options, function(err, counter) {
       if (err) {
         console.log(JSON.stringify(err));
       }
 
-      callback(counter.sequence);
+      var ids = range(counter.sequence, counter.sequence + amount);
+      callback(ids);
     });
   }
 
   return {
-    getNext: getNext
+    getNext: getNext,
+    getGroup: getGroup
   }
 }
