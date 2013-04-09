@@ -29,6 +29,14 @@ function MapController($scope, $log, $http, $injector) {
     }
   }).resize();
 
+  /* Data models for the settings */
+  $scope.baseMaps = [{type: "Open Street Map"},
+                     {type: "Google Maps"}];
+
+  $scope.layers = [{name: "Hurricane Sandy", id: "0", checked: "true"},
+                   {name: "Joplin Tornado", id: "1", checked: "false"},
+                   {name: "Sendai Earthquake", id: "2", checked: "false"}];
+
   /* Data models for the observation form comboboxes */
   $scope.teams = [{name: "AZ-TF1"},
                   {name: "CA-TF1"},
@@ -87,6 +95,7 @@ function MapController($scope, $log, $http, $injector) {
   $scope.observationType = $scope.observationTypes[0];
   $scope.unit;
   $scope.description;
+  $scope.baseMap = $scope.baseMaps[0];
 
   $scope.geolocate = function () {
     console.log("in geolocate");
@@ -98,6 +107,23 @@ function MapController($scope, $log, $http, $injector) {
 
       });
     }
+  }
+
+
+  $scope.openSettings = function () {
+    console.log("in open settings");
+    $('#settings-panel').removeCl***REMOVED***('hide');
+  }
+
+  $scope.closeSettings = function () {
+    console.log("in new observation");
+    $('#settings-panel').addCl***REMOVED***('hide');
+  }
+
+  $scope.saveSettings = function () {
+    console.log("in new observation");
+    // add code to send the observation to the server here
+    $('#settings-panel').addCl***REMOVED***('hide');
   }
 
   $scope.newObservation = function () {
@@ -119,8 +145,8 @@ function MapController($scope, $log, $http, $injector) {
 
     console.log("Team: " + $scope.team.name + ", Level: " + $scope.level.color + ", Observation Type: " + $scope.observationType.title + ", Unit: " + $scope.unit + ", Description: " + $scope.description);
     
-    /*[{"geometry":{"x": $scope.center.lat, "y":$scope.center.lng,"attributes":{"OBJECTID":11220,"ADDRESS":null,"EVENTDATE":1361401500000,"TYPE":"Animal Issue","EVENTLEVEL":"Normal","TEAM":"AZ-TF1","DESCRIPTION":"hey-o! 12345","USNG":"13S ED 11672 90984","EVENTCLEAR":0,"UNIT":null}}]&f=pjson
-    $http.post('http://ec2-23-21-10-48.compute-1.amazonaws.com/sage/esriFeatureServer/v1/features/', {params: {"callback": "JSON_CALLBACK"},
+    [{"geometry":{"x": $scope.center.lat, "y":$scope.center.lng,"attributes":{"OBJECTID":11220,"ADDRESS":null,"EVENTDATE":1361401500000,"TYPE":$scope.observationType,"EVENTLEVEL":$scope.level,"TEAM":$scope.team,"DESCRIPTION":$scope.description,"USNG":"13S ED 11672 90984","EVENTCLEAR":0,"UNIT":null}}}]&f=pjson
+    $http.post('http://ec2-23-21-10-48.compute-1.amazonaws.com/sage/sage/FeatureServer/2/', {params: {"callback": "JSON_CALLBACK"},
       headers: {"Accepts": "application/json", "Content-Type": "application/json"}}).
       success(function (data, status, headers, config) {
           $scope.points = data;
@@ -130,7 +156,7 @@ function MapController($scope, $log, $http, $injector) {
       }).
       error(function (data, status, headers, config) {
           $log.log("Error logging in got status: " + status);
-      });*/
+      });
 
     $('#observation-panel').addCl***REMOVED***('hide');
   }

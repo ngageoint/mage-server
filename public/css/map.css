@@ -31,6 +31,28 @@ html, body, div.leaflet-container {
 }
 
 /* Buttons */
+@media all and (max-width: 699px) {
+	#settings {
+		position: absolute;
+		height: 50px;
+		width: 50px;
+		top: 16px;
+		right: 5px;
+		z-index: 2000;
+	}	
+}
+
+@media all and (min-width: 700px) {
+	#settings {
+		position: absolute;
+		height: 50px;
+		width: 50px;
+		top: 56px;
+		right: 5px;
+		z-index: 2000;
+	}
+}
+
 #geo {
 	position: absolute;
 	height: 50px;
@@ -77,6 +99,20 @@ html, body, div.leaflet-container {
 }
 
 /* Panels and their contents */
+#settings-panel {
+	padding: 20px;
+	background: #CFE4C3;
+	position: absolute;
+	height: 90%;
+	width: 85%;
+	max-width: 430px;
+	max-height: 400px;
+	left: 5px;
+	top: 5px;
+	z-index: 2000;
+	overflow: auto;
+}
+
 #observation-panel {
 	padding: 20px;
 	background: #CFE4C3;

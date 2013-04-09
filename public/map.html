@@ -49,6 +49,9 @@
   <!-- The map directive -->
   <leaflet marker="marker" center="center" zoom="zoom" draggable="true"></leaflet>
   
+  <!-- Settings / layer picker button -->
+  <button cl***REMOVED***="btn" id="settings" ng-click="openSettings()" ngm-tap="openSettings()"><i cl***REMOVED***="icon-cog icon-large sage-color"></i></button>
+
   <!-- Button bar -->
   <div id="button-bar">
   	<button cl***REMOVED***="btn" id="geo" ng-click="geolocate()" ngm-tap="geolocate()"><i cl***REMOVED***="icon-map-marker icon-large sage-color"></i></button>
@@ -59,6 +62,26 @@
 	</div>
 
 	<!-- Panels -->
+	<div id="settings-panel" cl***REMOVED***="hide">
+		<h3>Settings</h3>
+		<form cl***REMOVED***="form-horizontal">
+			<div cl***REMOVED***="control-group">
+		    <label cl***REMOVED***="control-label" for="type">Base map</label>
+		    <div cl***REMOVED***="controls">
+		      <select ng-model="baseMap" ng-options="map.type for map in baseMaps"></select>
+		    </div>
+		  </div>
+		  <h4>Event layers</h4>
+		  <div ng-repeat="layer in layers" cl***REMOVED***="control-group">
+		    <input type="checkbox" ng-checked="layer.checked"> {{layer.name}}
+		  </div>
+		  <span>
+		  	<button cl***REMOVED***="btn btn-inverse" ng-click="closeSettings()" ngm-tap="closeSettings()">Cancel</button>
+		  	<button cl***REMOVED***="btn" ng-click="saveSettings()" ngm-tap="saveSettings()">Submit</button>
+		 	</span>
+		</form>
+  </div>
+
 	<div id="goto-address-panel" cl***REMOVED***="hide">
 		<form cl***REMOVED***="form-horizontal">
 		  <div cl***REMOVED***="control-group">
