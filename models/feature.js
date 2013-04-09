@@ -6,7 +6,8 @@ module.exports = function(mongoose, counters) {
     id: { type: Number, required: true, unique: true },
     contentType: { type: String, required: false },  
     size: { type: String, required: false },  
-    name: { type: String, required: false }
+    name: { type: String, required: false },
+    relativePath: { type: String, required: true }
   });
 
   // Creates the Schema for the Attachments object
@@ -68,7 +69,8 @@ module.exports = function(mongoose, counters) {
   }
 
   var createFeatures = function(layer, data, callback) {
-    counters.getGroup('feature', data.length, function(ids) {
+    var counter = 'feature' + layer.id;
+    counters.getGroup(counter, data.length, function(ids) {
       var features = [];
       data.forEach(function(feature, index) {
         features.push({
@@ -159,34 +161,33 @@ module.exports = function(mongoose, counters) {
     callback(attachment);
   }
 
-  var addAttachment = function(feature, files, callback) {
-    counters.getNext('attachment', function(id) {
-      var attachment = {
-        id: id,
-        contentType: files.attachment.type,  
-        size: files.attachment.size,  
-        name: files.attachment.name
-      };
+  var addAttachment = function(layer, objectId, file, callback) {
+    var attachment = {
+      id: file.id,
+      contentType: file.type,  
+      size: file.size,  
+      name: file.name,
+      relativePath: file.relativePath
+    };
 
-      feature.attachments.push(attachment);
+    var condition = {'attributes.OBJECTID': objectId};
+    var update = {'$push': { attachments: attachment } };
+    featureModel(layer).update(condition, update, function(err, feature) {
+      if (err) {
+        console.log('Error updating attachments from DB', err);
+      }
 
-      feature.save(function(err, feature) {
-        if (err) {
-          console.log(JSON.stringify(err));
-        }
-
-        callback(err, attachment);
-      });
+      callback(err, attachment);
     });
   }
 
-  var updateAttachment = function(layer, attachmentId, files, callback) {
+  var updateAttachment = function(layer, attachmentId, file, callback) {
     var condition = {'attachments.id': attachmentId};
     var update = {
       '$set': {
-        'attachments.$.name': files.attachment.name,
-        'attachments.$.type': files.attachment.type,
-        'attachments.$.size': files.attachment.size
+        'attachments.$.name': filesname,
+        'attachments.$.type': file.type,
+        'attachments.$.size': file.size
       }
     };
 

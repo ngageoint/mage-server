@@ -19,7 +19,6 @@ module.exports = function(app, models) {
       if (!layers) return;
 
       if (Array.isArray(layers)) {
-        console.log("its an array");
         layers.forEach(function(layer) {
           addLayer(layer);
         });
@@ -61,12 +60,6 @@ module.exports = function(app, models) {
     console.log("SAGE Layers GET REST Service Requested");
 
     models.Layer.getAll(function (layers) {
-      if (Array.isArray(layers)) {
-        console.log('its an array');
-      } else {
-        console.log('not an array: ' + JSON.stringify(layers));
-      }
-
       var response = new LayerResponse();
       response.add(layers);
       res.json(response.toObject());

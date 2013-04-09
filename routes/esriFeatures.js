@@ -1,65 +1,5 @@
 // ESRI feature routes
-module.exports = function(app, models, fs) {
-
-  function EsriFeatures() {
-    var content = {
-      'objectIdFieldName' : 'OBJECTID',
-      'globalIdFieldName' : '',
-      'features' : []
-    };
-
-    var createMetadata = function() {
-      content.geometryType = 'esriGeometryPoint';
-      content.spatialReference = { 'wkid' : 4326 };
-      content.fields = [
-        { name: 'OBJECTID', alias: 'OBJECTID', type: 'esriFieldTypeOID' },
-        { name: 'ADDRESS', alias: 'ADDRESS', type: 'esriFieldTypeString', length: 255 },
-        { name: 'EVENTDATE', alias: 'EVENTDATE', type: 'esriFieldTypeDate', length: 36 },
-        { name: 'TYPE', alias: 'TYPE', type: 'esriFieldTypeString', length: 50 },
-        { name: 'EVENTLEVEL', alias: 'LEVEL', type: 'esriFieldTypeString', length: 50 },
-        { name: 'TEAM', alias: 'TEAM', type: 'esriFieldTypeString', length: 50 },
-        { name: 'DESCRIPTION', alias: 'DESCRIPTION', type: 'esriFieldTypeString', length: 1073741822 },
-        { name: 'USNG', alias: 'USNG', type: 'esriFieldTypeString', length: 255 },
-        { name: 'EVENTCLEAR', alias: 'EVENTCLEAR', type: 'esriFieldTypeDate', length: 36 },
-        { name: 'UNIT', alias: 'UNIT', type: 'esriFieldTypeString', length: 100 }
-      ];
-    }
-
-    var add = function(feature) {
-      if (!feature) return;
-
-      // If we have added at least on feature create the metadata
-      if (content.features.length == 0) {
-        createMetadata();
-      }
-
-      // TODO this needs to be dynamic depending on what people are inserting
-      content.features.push({
-        geometry: { x: feature.geometry.x, y: feature.geometry.y },
-        attributes: {
-          OBJECTID: feature.attributes.OBJECTID,
-          ADDRESS: feature.attributes.ADDRESS,
-          EVENTDATE: feature.attributes.EVENTDATE,
-          TYPE: feature.attributes.TYPE,
-          EVENTLEVEL: feature.attributes.EVENTLEVEL,
-          TEAM: feature.attributes.TEAM,
-          DESCRIPTION: feature.attributes.DESCRIPTION,
-          USNG: feature.attributes.USNG,
-          EVENTCLEAR: feature.attributes.EVENTCLEAR,
-          UNIT: feature.attributes.UNIT
-        }
-      });
-    }
-
-    var features = function() {
-      return content;
-    }
-
-    return {
-      add : add,
-      features : features
-    }
-  }
+module.exports = function(app, models, fs, transformers) {
 
   function EsriAttachments() {
     var content = {
@@ -87,8 +27,15 @@ module.exports = function(app, models, fs) {
     }
   }
 
-  var getAttachmentDir = function(layer) {
-    return app.get('attachmentBase') + layer.collectionName + '/';
+  var createAttachmentPath = function(layer, attachment) {
+    var now = new Date();
+    var path = [
+      layer.collectionName, 
+      now.getFullYear(), 
+      now.getMonth() + 1, 
+      now.getDate()].join("/");
+
+    return path;
   }
 
   app.param(function(name, fn) {
@@ -105,9 +52,16 @@ module.exports = function(app, models, fs) {
     }
   });
 
-  app.param('featureObjectId', /^\d+$/);
+  app.param('objectId', /^\d+$/);  //ensure objectId is a number
+  app.param('objectId', function(req, res, next, objectId) {
+    var id = parseInt(objectId, 10);
+    req.objectId = id;
+    next();
+  });
 
-  // Grab the layer for any endpoint that uses featureObjectId
+  app.param('featureObjectId', /^\d+$/); //ensure featureObjectId is a number
+
+  // Grab the feature for any endpoint that uses featureObjectId
   app.param('featureObjectId', function(req, res, next, objectId) {
     var id = parseInt(objectId, 10);
     models.Feature.getFeatureByObjectId(req.layer, id, function(feature) {
@@ -131,14 +85,25 @@ module.exports = function(app, models, fs) {
   app.get('/FeatureServer/:layerId/query', function (req, res) {
     console.log("SAGE ESRI Features GET REST Service Requested");
 
-    // TODO ignore query parameters for now and reaturn all features.
-    models.Feature.getFeatures(req.layer, function (features) {
-      var esriFeatures = new EsriFeatures();
-      features.forEach(function(feature) {
-        esriFeatures.add(feature);
-      });
+    var returnGeometry = req.param('returnGeometry');
+    if (returnGeometry) {
+      returnGeometry = returnGeometry === 'true';
+    } else {
+      returnGeometry = true;
+    }
 
-      res.json(esriFeatures.features());
+    var outFields = req.param('outFields');
+    var filter = null;
+    if ((!outFields && returnGeometry) || (outFields && outFields !== '*')) {
+      filter = {returnGeometry: returnGeometry};
+      if (outFields) {
+        filter.outFields = outFields.split(",");
+      }
+    }
+
+    models.Feature.getFeatures(req.layer, function (features) {
+      var response = transformers.esri.transform(features, filter);
+      res.json(response);
     });
   }); 
 
@@ -146,9 +111,11 @@ module.exports = function(app, models, fs) {
   app.get('/FeatureServer/:layerId/:featureObjectId', function (req, res) {
     console.log("SAGE ESRI Features (ID) GET REST Service Requested");
 
-    var esriFeatures = new EsriFeatures();
-    esriFeatures.add(req.feature);
-    res.send(esriFeatures.features());
+    res.json({
+      geometry: req.feature.geometry,
+      attributes: req.feature.attributes
+    });
+    
   }); 
 
   // This function creates a new ESRI Style Feature 
@@ -317,11 +284,10 @@ module.exports = function(app, models, fs) {
   });
 
   // This function gets a specific attachment for an ESRI feature 
-  app.get('/FeatureServer/:layerId/:featureObjectId/attachments/:attachmentId', function(req, res){
+  app.get('/FeatureServer/:layerId/:featureObjectId/attachments/:attachmentId', function(req, res, next) {
     console.log("SAGE ESRI Features (ID) Attachments (ID) GET REST Service Requested");
 
     var attachmentId = req.params.attachmentId;
-
     models.Feature.getAttachment(req.feature, attachmentId, function(attachment) {
       if (!attachment) {
         var errorResponse = {
@@ -331,50 +297,56 @@ module.exports = function(app, models, fs) {
             details: []
           }
         };
-        res.json(errorResponse);
-        return;
+        return res.json(errorResponse);
       }
 
-      var path = getAttachmentDir(req.layer);
-      var file = fs.readFileSync(path + attachment.name);
-      res.writeHead(200, {
-        "Content-Type": attachment.contentType,
-        "Content-Length": attachment.size,
-        'Content-disposition': 'attachment; filename=' + attachment.name
-       });
-      res.end(file, 'binary');
+      var path = app.get('attachmentBase') + attachment.relativePath;
+      fs.readFile(path, function(err, data) {
+        if (err) next(err);
+
+        res.writeHead(200, {
+          "Content-Type": attachment.contentType,
+          "Content-Length": attachment.size,
+          'Content-disposition': 'attachment; filename=' + attachment.name
+         });
+        res.end(data, 'binary');
+      });
     });
   });
 
   // This function will add an attachment for a particular ESRI record 
-  app.post('/FeatureServer/:layerId/:featureObjectId/addAttachment', function(req, res, next) {
+  app.post('/FeatureServer/:layerId/:objectId/addAttachment', function(req, res, next) {
     console.log("SAGE ESRI Features (ID) Attachments POST REST Service Requested");
 
-    var path = getAttachmentDir(req.layer);
+    var counter = 'attachment' + req.layer.id;
+    models.Counters.getNext(counter, function(id) {
 
-    // move file upload to its new home
-    fs.mkdirp(path, function(err) {
-      if (err) return next(err);
-
-      fs.rename(req.files.attachment.path, path + req.files.attachment.filename, function(err) {
+      var relativePath = createAttachmentPath(req.layer, req.files.attachment)
+      // move file upload to its new home
+      fs.mkdirp(app.get('attachmentBase') + relativePath, function(err) {
         if (err) return next(err);
 
-        models.Feature.addAttachment(req.feature, req.files, function(err, attachment) {
+        req.files.attachment.id = id;
+        req.files.attachment.relativePath = relativePath + "/" + id + "_" + req.files.attachment.filename;
+        fs.rename(req.files.attachment.path, app.get('attachmentBase') + req.files.attachment.relativePath, function(err) {
           if (err) return next(err);
 
-          var response = {
-            addAttachmentResult: {
-              objectId: attachment ? attachment.id : -1,
-              globalId: null,
-              success: attachment ? true : false
-            }
-          };
+          models.Feature.addAttachment(req.layer, req.objectId, req.files.attachment, function(err, attachment) {
+            if (err) return next(err);
 
-          res.json(response);
+            var response = {
+              addAttachmentResult: {
+                objectId: attachment ? attachment.id : -1,
+                globalId: null,
+                success: attachment ? true : false
+              }
+            };
+
+            res.json(response);
+          });  
         });
       });
     });
-
   });
 
   // This function will update the specified attachment for the given list of attachment ids
@@ -395,15 +367,17 @@ module.exports = function(app, models, fs) {
 
     var attachmentId = parseInt(attachmentId, 10);
 
+    var relativePath = createAttachmentPath(req.layer, req.files.attachment)
     // move file upload to its new home
-    var path = getAttachmentDir(req.layer);
-    fs.mkdirp(path, function(err) {
+    fs.mkdirp(app.get('attachmentBase') + relativePath, function(err) {
       if (err) return next(err);
 
-      fs.rename(req.files.attachment.path, path + req.files.attachment.filename, function(err) {
+      req.files.attachment.id = attachmentId;
+      req.files.attachment.relativePath = relativePath + "/" + attachmentId + "_" + req.files.attachment.filename;
+      fs.rename(req.files.attachment.path, app.get('attachmentBase') + req.files.attachment.relativePath, function(err) {
         if (err) return next(err);
 
-        models.Feature.updateAttachment(req.layer, attachmentId, req.files, function(err) {
+        models.Feature.updateAttachment(req.layer, attachmentId, req.files.attachment, function(err) {
           if (err) return next(err);
 
           res.json({
@@ -413,7 +387,8 @@ module.exports = function(app, models, fs) {
               success: true
             }
           });
-        });
+
+        });  
       });
     });
   });

@@ -44,15 +44,20 @@ fs.mkdirp(attachmentBase, function(err) {
 // Import static models
 var counters = require('./models/counters')(mongoose);
 var models = {
+  Counters: counters,
   Layer: require('./models/layer')(mongoose, counters),
   Feature: require('./models/feature')(mongoose, counters)
+}
+
+var tranformers = {
+  esri: require('./transformers/esri')()
 }
 
 // Dynamically import all routes
 fs.readdirSync('routes').forEach(function(file) {
   if (file[0] == '.') return;
   var route = file.substr(0, file.indexOf('.'));
-  require('./routes/' + route)(app, models, fs);
+  require('./routes/' + route)(app, models, fs, tranformers);
 });
 
 // Launches the Node.js Express Server
