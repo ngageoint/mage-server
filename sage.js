@@ -16,7 +16,7 @@ app.configure(function () {
   mongoose.connect(dbPath, function(err) {
     if (err) throw err;
   });
-  mongoose.set('debug', true);
+  //mongoose.set('debug', true);
 
   app.set('attachmentBase', attachmentBase);
 
@@ -50,7 +50,7 @@ var models = {
 }
 
 var tranformers = {
-  esri: require('./transformers/esri')()
+  esri: require('./transformers/esriTransformer')()
 }
 
 // Dynamically import all routes

@@ -71,14 +71,17 @@ module.exports = function(app, models) {
     console.log("SAGE Layers (ID) GET REST Service Requested");
 
     var layer = req.layer;
-    console.log('Here is the layer: ' + JSON.stringify(layer));
-    res.json(layer);
+    return res.send(layer);
   });
 
   // Create a new layer
   app.post('/FeatureServer', function(req, res) {
-    var name = req.query.name;
-    var fields = req.query.fields;
+    var name = req.param('name');
+    if (!name) {
+      res.send(400, "Cannot create layer, invalid parameters.  'name' parameter is required");
+    }
+
+    var fields = req.param('fields');
 
     var layer = {name: name, fields: fields};
     models.Layer.create(layer, function(err, layer) {
