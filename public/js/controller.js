@@ -210,7 +210,7 @@ function LayerController($scope, $log, $http, $injector) {
   console.log('getting layers...');
   $http.get('http://ec2-23-21-10-48.compute-1.amazonaws.com/sage/FeatureServer/').
       success(function (data, status, headers, config) {
-          $scope.layers = data;
+          $scope.layers = data.layers;
           for(var i = 0; i < data.length; i++){
               console.log("Data: "+i+"= "+angular.toJson(data[i]));
           }

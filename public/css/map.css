@@ -26,10 +26,6 @@ html, body, div.leaflet-container {
 	padding-right: 0;
 }
 
-.sage-color {
-	color: #648D52;
-}
-
 /* Buttons */
 @media all and (max-width: 699px) {
 	#settings {
