@@ -25,8 +25,8 @@
 				<div style="border-right: 1px solid #648D53; height: 925px;">
 					<h3>Layers</h3>
 					<a id="new-layer-btn" ng-click="newLayer" ngm-tap="newLayer" cl***REMOVED***="btn"><i cl***REMOVED***="icon-plus sage-color"></i> New Layer</a>
-					<ul style="list-style: none;">
-						<li ng-repeat="layer in layers">{{layer.name}}</li>
+					<ul style="list-style: none;" cl***REMOVED***="top-gap">
+						<li ng-repeat="layer in layers"><a ng-click="viewLayer">{{layer.name}}</a></li>
 					</ul>
 				</div>
 			</div>
