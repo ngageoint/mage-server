@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html ng-app="sage">
+<head>
+	<title>SAGE</title>
+	<link rel="stylesheet" href="css/bootstrap.min.css" />
+	<link rel="stylesheet" href="css/bootstrap-responsive.min.css"/>
+	<link rel="stylesheet" href="css/style.css"/>
+
+	<script type="text/javascript" src="js/jquery/jquery.min.js"></script>
+	<script src="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
+	<script type="text/javascript" src="js/angular/angular.js"></script>
+	<script type="text/javascript" src="js/angular-ui/build/angular-ui.js"></script>
+	<script type="text/javascript" src="js/angular-leaflet-directive.js"></script>
+	<script type="text/javascript" src="js/controller.js"></script>
+</head>
+<body ng-controller="LayerController">
+	<div cl***REMOVED***="navbar">
+    <div cl***REMOVED***="navbar-inner">
+	    <a cl***REMOVED***="brand" href="#"><i cl***REMOVED***="icon-white icon-leaf" style="margin-right:10px;"></i>SAGE</a>
+    </div>
+  </div>
+	<div cl***REMOVED***="container">
+		<div cl***REMOVED***="row">
+			<div cl***REMOVED***="span2">
+				<div style="border-right: 1px solid #648D53; height: 925px;">
+					<h3>Layers</h3>
+					<ul>
+						<li ng-repeat="layer in layers">{{layer.name}}</li>
+					</ul>
+				</div>
+			</div>
+			<div cl***REMOVED***="span10">
+				<h3>Layer Manager</h3>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

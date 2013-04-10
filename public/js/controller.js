@@ -2,6 +2,10 @@
 
 angular.module("sage", ["ui", "leaflet-directive"]);
 
+/*
+  Handle communication between the server and the map.
+  Load observations, allow users to view them, and allow them to add new ones themselves.
+*/
 function MapController($scope, $log, $http, $injector) {
 	/* Some map defaults */
   $scope.center = { lat: 39.8282, lng: -98.5795 };
@@ -145,9 +149,9 @@ function MapController($scope, $log, $http, $injector) {
 
     console.log("Team: " + $scope.team.name + ", Level: " + $scope.level.color + ", Observation Type: " + $scope.observationType.title + ", Unit: " + $scope.unit + ", Description: " + $scope.description);
     
-    [{"geometry":{"x": $scope.center.lat, "y":$scope.center.lng,"attributes":{"OBJECTID":11220,"ADDRESS":null,"EVENTDATE":1361401500000,"TYPE":$scope.observationType,"EVENTLEVEL":$scope.level,"TEAM":$scope.team,"DESCRIPTION":$scope.description,"USNG":"13S ED 11672 90984","EVENTCLEAR":0,"UNIT":null}}}]&f=pjson
-    $http.post('http://ec2-23-21-10-48.compute-1.amazonaws.com/sage/sage/FeatureServer/2/', {params: {"callback": "JSON_CALLBACK"},
-      headers: {"Accepts": "application/json", "Content-Type": "application/json"}}).
+    var ob = [{"geometry":{"x": $scope.center.lat, "y":$scope.center.lng,"attributes":{"EVENTDATE":new Date().getTime(),"TYPE":$scope.observationType,"EVENTLEVEL":$scope.level,"TEAM":$scope.team,"DESCRIPTION":$scope.description,"EVENTCLEAR":0,"UNIT":$scope.unit}}}]
+    //'http://ec2-23-21-10-48.compute-1.amazonaws.com/sage/sage/FeatureServer/2/addFeatures'
+    $http.post('http://ec2-23-21-10-48.compute-1.amazonaws.com/sage/FeatureServer/2/addFeatures?features=' + ob, ob).
       success(function (data, status, headers, config) {
           $scope.points = data;
           for(var i = 0; i < data.length; i++){
@@ -155,7 +159,7 @@ function MapController($scope, $log, $http, $injector) {
           }
       }).
       error(function (data, status, headers, config) {
-          $log.log("Error logging in got status: " + status);
+          $log.log("Error adding feature: " + status);
       });
 
     $('#observation-panel').addCl***REMOVED***('hide');
@@ -195,4 +199,24 @@ function MapController($scope, $log, $http, $injector) {
     $('#fft-panel').addCl***REMOVED***('hide'); 
     console.log("inFFT");
   }
+}
+
+
+/*
+  
+*/
+function LayerController($scope, $log, $http, $injector) {
+  $scope.layers = [];
+  console.log('getting layers...');
+  $http.get('http://ec2-23-21-10-48.compute-1.amazonaws.com/sage/FeatureServer/').
+      success(function (data, status, headers, config) {
+          $scope.layers = data;
+          for(var i = 0; i < data.length; i++){
+              console.log("Data: "+i+"= "+angular.toJson(data[i]));
+          }
+      }).
+      error(function (data, status, headers, config) {
+          $log.log("Error getting layers: " + status);
+      });
+
 }
