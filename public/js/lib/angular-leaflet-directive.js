@@ -11,9 +11,10 @@
 				center: "=center",
 				marker: "=marker",
 				message: "=message",
-				zoom: "=zoom"
+				zoom: "=zoom",
+				multiMarkers: "=multimarkers",
 			},
-			template: '<div id="map" cl***REMOVED***="map"></div>',
+			template: '<div cl***REMOVED***="map"></div>',
 			link: function (scope, element, attrs, ctrl) {
                 var $el = element[0],
 				    map = new L.Map($el);
@@ -32,18 +33,22 @@
                     var zoom = scope.zoom || 8;
                     map.setView(center, zoom);
 
-                    var marker = new L.marker(scope.center, { draggable: attrs.markcenter ? false:true });
+					var marker = new L.marker(scope.center, {
+						draggable: attrs.markcenter ? false:true
+					});
 			        if (attrs.markcenter || attrs.marker) {
                         map.addLayer(marker);
 
-                        if (scope.message) {
-                            marker.bindPopup("<strong>" + scope.message + "</strong>", { closeButton: false });
-                            marker.openPopup();
-                        }
                         if (attrs.marker) {
                             scope.marker.lat = marker.getLatLng().lat;
                             scope.marker.lng = marker.getLatLng().lng;
                         }
+
+						scope.$watch("message", function(newValue) {
+                            marker.bindPopup("<strong>" + newValue + "</strong>",
+								{ closeButton: true });
+                            //marker.openPopup();
+						});
 		            }
 
                     // Listen for map drags
@@ -78,10 +83,11 @@
                         map.setZoom(newValue);
                     });
 
-		            map.on("zoomend", function (e) {
-			            scope.zoom = map.getZoom();
-			            scope.$apply();
-		            });
+					map.on("zoomend", function (e) {
+						scope.$apply(function (s) {
+							s.zoom = map.getZoom();
+						});
+					});
 
                     if (attrs.marker) {
 
@@ -125,13 +131,50 @@
                                 marker.setLatLng(new L.LatLng(newValue, marker.getLatLng().lng));
                             });
 
-			            }());
+						}());
 
-		            }
+					}
+				});
 
-                });
+				if (attrs.multimarkers) {
+					var markers_dict = [];
+					scope.$watch("multiMarkers", function(newMarkerList) {
+						for (var mkey in scope.multiMarkers) {
+							(function(mkey) {
+								var mark_dat = scope.multiMarkers[mkey];
+								var marker = new L.marker(
+									scope.multiMarkers[mkey],
+									{
+										draggable: mark_dat.draggable ? true:false
+									}
+								);
 
-            }
+								marker.on("dragstart", function(e) {
+									dragging_marker = true;
+								});
+
+								marker.on("drag", function (e) {
+									scope.$apply(function (s) {
+										mark_dat.lat = marker.getLatLng().lat;
+										mark_dat.lng = marker.getLatLng().lng;
+									});
+								});
+
+								marker.on("dragend", function(e) {
+									dragging_marker = false;
+								});
+
+								scope.$watch('multiMarkers.'+mkey, function() {
+									marker.setLatLng(scope.multiMarkers[mkey]);
+								}, true);
+
+								map.addLayer(marker);
+								markers_dict[mkey] = marker;
+							})(mkey);
+						} // for mkey in multiMarkers
+					}); // watch multiMarkers
+				} // if attrs.multiMarkers
+			} // end of link function
 		};
 	});
 

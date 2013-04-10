@@ -6,12 +6,13 @@
 	<link rel="stylesheet" href="css/bootstrap-responsive.min.css"/>
 	<link rel="stylesheet" href="css/style.css"/>
 
-	<script type="text/javascript" src="js/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="js/lib/jquery/jquery.min.js"></script>
 	<script src="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
-	<script type="text/javascript" src="js/angular/angular.js"></script>
-	<script type="text/javascript" src="js/angular-ui/build/angular-ui.js"></script>
-	<script type="text/javascript" src="js/angular-leaflet-directive.js"></script>
-	<script type="text/javascript" src="js/controller.js"></script>
+	<script type="text/javascript" src="js/lib/angular/angular.js"></script>
+	<script type="text/javascript" src="js/lib/angular-ui/build/angular-ui.js"></script>
+	<script type="text/javascript" src="js/lib/angular-leaflet-directive.js"></script>
+	<script type="text/javascript" src="js/app/***REMOVED***s.js"></script>
+	<script type="text/javascript" src="js/app/LayerController.js"></script>
 </head>
 <body ng-controller="LayerController">
 	<div cl***REMOVED***="navbar">
@@ -24,14 +25,26 @@
 			<div cl***REMOVED***="span2">
 				<div style="border-right: 1px solid #648D53; height: 925px;">
 					<h3>Layers</h3>
-					<a id="new-layer-btn" ng-click="newLayer" ngm-tap="newLayer" cl***REMOVED***="btn"><i cl***REMOVED***="icon-plus sage-color"></i> New Layer</a>
+					<a id="new-layer-btn" ng-click="newLayer()" ngm-tap="newLayer()" cl***REMOVED***="btn"><i cl***REMOVED***="icon-plus sage-color"></i> New Layer</a>
 					<ul style="list-style: none;" cl***REMOVED***="top-gap">
-						<li ng-repeat="layer in layers"><a ng-click="viewLayer">{{layer.name}}</a></li>
+						<li ng-repeat="layer in layers"><a ng-click="viewLayer()">{{layer.name}}</a></li>
 					</ul>
+					<p id="instructions" cl***REMOVED***="hide">
+						There are no layers on this server. Click the new layer button to get started.
+					</p>
 				</div>
 			</div>
 			<div cl***REMOVED***="span10">
-				<h3>Layer Manager</h3>
+				<h3>{{layer.name}}</h3>
+				<form ng-submit="saveLayer()" id="new-layer-form" cl***REMOVED***="hide">
+					 <fieldset>
+						<legend>New Layer</legend>
+						<label>Layer name</label>
+						<input type="text" placeholder="i.e. HurricaneSandy" ng-model="layerName">
+						<span cl***REMOVED***="help-block">A name that corresponds to the type of data you will be storing</span>
+						<button type="submit" cl***REMOVED***="btn">Submit</button>
+					</fieldset>
+				</form>
 			</div>
 		</div>
 	</div>

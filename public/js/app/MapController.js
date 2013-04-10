@@ -1,22 +1,39 @@
 'use strict';
 
-angular.module("sage", ["ui", "leaflet-directive"]);
+angular.module("sage", ["ui", "leaflet-directive", "sage.***REMOVED***s"]);
 
 /*
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($scope, $log, $http, $injector) {
+function MapController($scope, $log, $http, $injector, appConstants) {
 	/* Some map defaults */
   $scope.center = { lat: 39.8282, lng: -98.5795 };
   $scope.marker = { lat: 39.8282, lng: -98.5795 };
-  $scope.zoom = 3;
+  $scope.zoom = 4;
+  $scope.points = [];
+  $scope.multimarkers = {};
 
-  // handle desktop browsers so that they play nice with the bootstrap navbar.
+  /* Data models for the settings */
+  $scope.baseMaps = [{type: "Open Street Map"}];
+  $scope.layers = [];
+  $scope.currentLayerId = 0;
+
   $(document).ready(function() {
+    // handle desktop browsers so that they play nice with the bootstrap navbar.
     if($(window).width() > 767) {
       $('#map').css('height', ($(window).height() - 40));
     }
+
+    $http.get(appConstants.rootUrl + '/FeatureServer/').
+        success(function (data, status, headers, config) {
+            console.log('got layers');
+            $scope.layers = data.layers;
+            $('#layer-select-panel').removeCl***REMOVED***('hide');
+        }).
+        error(function (data, status, headers, config) {
+            $log.log("Error getting layers: " + status);
+        });
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(position) {
@@ -32,14 +49,6 @@ function MapController($scope, $log, $http, $injector) {
       $('#map').css('height', ($(window).height() - 40));
     }
   }).resize();
-
-  /* Data models for the settings */
-  $scope.baseMaps = [{type: "Open Street Map"},
-                     {type: "Google Maps"}];
-
-  $scope.layers = [{name: "Hurricane Sandy", id: "0", checked: "true"},
-                   {name: "Joplin Tornado", id: "1", checked: "false"},
-                   {name: "Sendai Earthquake", id: "2", checked: "false"}];
 
   /* Data models for the observation form comboboxes */
   $scope.teams = [{name: "AZ-TF1"},
@@ -119,6 +128,11 @@ function MapController($scope, $log, $http, $injector) {
     $('#settings-panel').removeCl***REMOVED***('hide');
   }
 
+  $scope.selectLayer = function () {
+    console.log("layer selected");
+    $('#layer-select-panel').addCl***REMOVED***('hide');
+  }
+
   $scope.closeSettings = function () {
     console.log("in new observation");
     $('#settings-panel').addCl***REMOVED***('hide');
@@ -149,9 +163,9 @@ function MapController($scope, $log, $http, $injector) {
 
     console.log("Team: " + $scope.team.name + ", Level: " + $scope.level.color + ", Observation Type: " + $scope.observationType.title + ", Unit: " + $scope.unit + ", Description: " + $scope.description);
     
-    var ob = [{"geometry":{"x": $scope.center.lat, "y":$scope.center.lng,"attributes":{"EVENTDATE":new Date().getTime(),"TYPE":$scope.observationType,"EVENTLEVEL":$scope.level,"TEAM":$scope.team,"DESCRIPTION":$scope.description,"EVENTCLEAR":0,"UNIT":$scope.unit}}}]
-    //'http://ec2-23-21-10-48.compute-1.amazonaws.com/sage/sage/FeatureServer/2/addFeatures'
-    $http.post('http://ec2-23-21-10-48.compute-1.amazonaws.com/sage/FeatureServer/2/addFeatures?features=' + ob, ob).
+    var ob = [{"geometry":{"x": $scope.center.lat, "y":$scope.center.lng},"attributes":{"EVENTDATE":new Date().getTime(),"TYPE":$scope.observationType.title,"EVENTLEVEL":$scope.level.color,"TEAM":$scope.team.name,"DESCRIPTION":$scope.description,"EVENTCLEAR":0,"UNIT":$scope.unit}}]
+
+    $http.post(appConstants.rootUrl + '/FeatureServer/'+ $scope.currentLayerId +'/addFeatures', "features=" + JSON.stringify(ob), {headers: {'Content-Type': 'application/x-www-form-urlencoded'}}).
       success(function (data, status, headers, config) {
           $scope.points = data;
           for(var i = 0; i < data.length; i++){
@@ -164,7 +178,7 @@ function MapController($scope, $log, $http, $injector) {
 
     $('#observation-panel').addCl***REMOVED***('hide');
   }
-
+  
   $scope.openGotoAddress = function () {
     console.log("in goto address");
     $('#goto-address-panel').removeCl***REMOVED***('hide');
@@ -180,9 +194,28 @@ function MapController($scope, $log, $http, $injector) {
     $('#goto-address-panel').addCl***REMOVED***('hide');
   }
 
+  $scope.$watch('points', function() {
+    console.log($scope.points);
+    for (var i = 0; i <  $scope.points.length; i++) {
+      console.log($scope.points[i].geometry.x + ", " + $scope.points[i].geometry.y);
+      $scope.multimarkers["'"+$scope.points[i].attributes.OBJECTID+"'"] = {lat: $scope.points[i].geometry.x, lng: $scope.points[i].geometry.y,draggable: false,};
+    }
+    console.log($scope.multimarkers);
+  });
+
   $scope.refreshPoints = function () {
     console.log("in refresh points");
     $('#refresh-panel').removeCl***REMOVED***('hide');
+    $http.get(appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/query?outFields=OBJECTID').
+        success(function (data, status, headers, config) {
+            console.log('got points');
+            $scope.points = data.features;
+        }).
+        error(function (data, status, headers, config) {
+            $log.log("Error getting layers: " + status);
+        });
+
+    $('#refresh-panel').addCl***REMOVED***('hide');
   }
 
   $scope.dismissRefresh = function () {
@@ -199,24 +232,4 @@ function MapController($scope, $log, $http, $injector) {
     $('#fft-panel').addCl***REMOVED***('hide'); 
     console.log("inFFT");
   }
-}
-
-
-/*
-  
-*/
-function LayerController($scope, $log, $http, $injector) {
-  $scope.layers = [];
-  console.log('getting layers...');
-  $http.get('http://ec2-23-21-10-48.compute-1.amazonaws.com/sage/FeatureServer/').
-      success(function (data, status, headers, config) {
-          $scope.layers = data.layers;
-          for(var i = 0; i < data.length; i++){
-              console.log("Data: "+i+"= "+angular.toJson(data[i]));
-          }
-      }).
-      error(function (data, status, headers, config) {
-          $log.log("Error getting layers: " + status);
-      });
-
 }

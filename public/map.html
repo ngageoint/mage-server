@@ -15,12 +15,13 @@
 	<link rel="stylesheet" href="css/map.css"/>
 
 	<!--<script type="text/javascript" src="js/bootstrap.min.js"></script>-->
-	<script type="text/javascript" src="js/jquery/jquery.min.js"></script>
+	<script type="text/javascript" src="js/lib/jquery/jquery.min.js"></script>
 	<script src="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
-	<script type="text/javascript" src="js/angular/angular.js"></script>
-	<script type="text/javascript" src="js/angular-ui/build/angular-ui.js"></script>
-	<script type="text/javascript" src="js/angular-leaflet-directive.js"></script>
-	<script type="text/javascript" src="js/controller.js"></script>
+	<script type="text/javascript" src="js/lib/angular/angular.js"></script>
+	<script type="text/javascript" src="js/lib/angular-ui/build/angular-ui.js"></script>
+	<script type="text/javascript" src="js/lib/angular-leaflet-directive.js"></script>
+	<script type="text/javascript" src="js/app/***REMOVED***s.js"></script>
+	<script type="text/javascript" src="js/app/MapController.js"></script>
 
 	<link rel="apple-touch-icon" href="img/touch-icon-iphone.png" />
 	<link rel="apple-touch-icon" sizes="72x72" href="img/touch-icon-ipad.png" />
@@ -47,7 +48,7 @@
   </div>
   
   <!-- The map directive -->
-  <leaflet marker="marker" center="center" zoom="zoom" draggable="true"></leaflet>
+  <leaflet marker="marker" center="center" zoom="zoom" multimarkers="multimarkers" draggable="true"></leaflet>
   
   <!-- Settings / layer picker button -->
   <button cl***REMOVED***="btn" id="settings" ng-click="openSettings()" ngm-tap="openSettings()"><i cl***REMOVED***="icon-cog icon-large sage-color"></i></button>
@@ -62,6 +63,17 @@
 	</div>
 
 	<!-- Panels -->
+	<!-- Show this one on startup and make the user select a layer, there may be a better way to handle the multiple layers, but until we figure it out, make them pick one on load. -->
+	<div id="layer-select-panel" cl***REMOVED***="hide">
+		<h4>Select an event to begin adding observations</h4>
+		<form cl***REMOVED***="form-horizontal">
+		  <select ng-model="currentLayerId" ng-options="layer.id as layer.name for layer in layers"></select>
+		  <span>
+		  	<button cl***REMOVED***="btn" ng-click="selectLayer()" ngm-tap="saveSettings()">Ok</button>
+		 	</span>
+		</form>
+  </div>
+
 	<div id="settings-panel" cl***REMOVED***="hide">
 		<h3>Settings</h3>
 		<form cl***REMOVED***="form-horizontal">
@@ -72,9 +84,7 @@
 		    </div>
 		  </div>
 		  <h4>Event layers</h4>
-		  <div ng-repeat="layer in layers" cl***REMOVED***="control-group">
-		    <input type="checkbox" ng-checked="layer.checked"> {{layer.name}}
-		  </div>
+		  <select ng-model="currentLayerId" ng-options="layer.id as layer.name for layer in layers"></select>
 		  <span>
 		  	<button cl***REMOVED***="btn btn-inverse" ng-click="closeSettings()" ngm-tap="closeSettings()">Cancel</button>
 		  	<button cl***REMOVED***="btn" ng-click="saveSettings()" ngm-tap="saveSettings()">Submit</button>
@@ -130,7 +140,7 @@
 		    </div>
 		  </div>
 		  <span>
-		  	<button cl***REMOVED***="btn btn-inverse" ng-click="saveObservation()" ngm-tap="saveObservation()">Cancel</button>
+		  	<button cl***REMOVED***="btn btn-inverse" ng-click="cancelObservation()" ngm-tap="cancelObservation()">Cancel</button>
 		  	<button cl***REMOVED***="btn" ng-click="saveObservation()" ngm-tap="saveObservation()">Submit</button>
 		 	</span>
 		</form>
