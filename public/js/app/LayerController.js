@@ -1,5 +1,7 @@
 'use strict';
 
+angular.module("sage", ["ui", "leaflet-directive", "sage.***REMOVED***s"]);
+
 /*
   
 */
