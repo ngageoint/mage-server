@@ -12,7 +12,7 @@ function LayerController($scope, $log, $http, $injector, appConstants) {
   $scope.getLayers = function() {
     console.log('getting layers...');
     //http://ec2-23-21-10-48.compute-1.amazonaws.com/sage
-    $http.get('http://localhost:4242/FeatureServer/').
+    $http.get(appConstants.rootUrl + '/FeatureServer/').
         success(function (data, status, headers, config) {
             $scope.layers = data.layers;
             if(data.layers.length == 0) {
