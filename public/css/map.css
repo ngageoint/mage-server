@@ -95,88 +95,37 @@ html, body, div.leaflet-container {
 }
 
 /* Panels and their contents */
-#layer-select-panel {
+.panel {
 	padding: 20px;
-	background: #CFE4C3;
-	position: absolute;
-	height: 90%;
-	width: 85%;
-	max-width: 430px;
-	max-height: 400px;
 	left: 5px;
 	top: 5px;
 	z-index: 2000;
 	overflow: auto;
-}
-
-#settings-panel {
-	padding: 20px;
 	background: #CFE4C3;
 	position: absolute;
 	height: 90%;
 	width: 85%;
-	max-width: 430px;
-	max-height: 400px;
-	left: 5px;
-	top: 5px;
-	z-index: 2000;
-	overflow: auto;
 }
 
-#observation-panel {
-	padding: 20px;
-	background: #CFE4C3;
-	position: absolute;
-	height: 90%;
-	width: 85%;
-	max-width: 430px;
-	max-height: 400px;
-	left: 5px;
-	top: 5px;
-	z-index: 2000;
-	overflow: auto;
+@media all and (min-width: 520px) {
+	.panel {
+		margin-top: 45px;
+	}
 }
 
-#goto-address-panel {
-	padding: 20px;
-	background: #CFE4C3;
-	position: absolute;
+.panel-large {
+	max-height: 400px;
+	max-width: 430px;
+}
+
+.panel-medium {
 	height: 100px;
-	width: 85%;
 	max-width: 430px;
-	max-height: 400px;
-	left: 5px;
-	top: 5px;
-	z-index: 2000;
-	overflow: auto;
 }
 
-#refresh-panel {
-	padding: 20px;
-	background: #CFE4C3;
-	position: absolute;
+.panel-small {
 	height: 35px;
-	width: 85%;
 	max-width: 430px;
-	max-height: 400px;
-	left: 5px;
-	top: 5px;
-	z-index: 2000;
-	overflow: auto;
-}
-
-#fft-panel {
-	padding: 20px;
-	background: #CFE4C3;
-	position: absolute;
-	height: 200px;
-	width: 85%;
-	max-width: 430px;
-	max-height: 400px;
-	left: 5px;
-	top: 5px;
-	z-index: 2000;
-	overflow: auto;
 }
 
 #observation-panel > form > span > button {

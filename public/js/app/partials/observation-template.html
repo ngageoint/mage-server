@@ -1,0 +1,38 @@
+<div id="observation-panel" cl***REMOVED***="hide panel panel-large">
+	<form cl***REMOVED***="form-horizontal">
+		<div cl***REMOVED***="control-group">
+	    <label cl***REMOVED***="control-label" for="type">Type</label>
+	    <div cl***REMOVED***="controls">
+	      <select ng-model="observation.attributes.TYPE" ng-options="type.title for type in observationTypes"></select>
+	    </div>
+	  </div>
+	  <div cl***REMOVED***="control-group">
+	    <label cl***REMOVED***="control-label" for="level">Level</label>
+	    <div cl***REMOVED***="controls">
+	      <select ng-model="observation.attributes.EVENTLEVEL" ng-options="level.color for level in levels"></select>
+	    </div>
+	  </div>
+	  <div cl***REMOVED***="control-group">
+	    <label cl***REMOVED***="control-label" for="team">Team</label>
+	    <div cl***REMOVED***="controls">
+	      <select ng-selected="team" ng-options="team.name for team in teams"></select>
+	    </div>
+	  </div>
+	  <div cl***REMOVED***="control-group">
+	    <label cl***REMOVED***="control-label" for="unit">Unit</label>
+	    <div cl***REMOVED***="controls">
+	      <input ng-model="observation.attributes.UNIT"/>
+	    </div>
+	  </div>
+	  <div cl***REMOVED***="control-group">
+	    <label cl***REMOVED***="control-label" for="unit">Description</label>
+	    <div cl***REMOVED***="controls">
+	      <textarea ng-model="observation.attributes.DESCRIPTION"></textarea>
+	    </div>
+	  </div>
+	  <span>
+	  	<button cl***REMOVED***="btn btn-inverse" ng-click="cancelObservation()" ngm-tap="cancelObservation()">Cancel</button>
+	  	<button cl***REMOVED***="btn" ng-click="saveObservation()" ngm-tap="saveObservation()">Submit</button>
+	 	</span>
+	</form>
+</div>

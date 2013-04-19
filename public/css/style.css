@@ -1,11 +1,11 @@
 @font-face {
-	font-family: Futura;
+	font-family: SansBetween;
 	font-weight: regular;
-	src: url('../fonts/Futura.ttc');
+	src: url('../fonts/SANSB___.TTF');
 }
 
 h1, h2, h3, h4, h5 {
-	font-family: Futura, sans-serif;
+	font-family: SansBetween, Arial, sans-serif;
 	color: #2B2620;
 }
 
@@ -24,7 +24,7 @@ body {
 }
 
 .navbar .brand {
-		font-family: Futura, sans-serif;
+	font-family: SansBetween, sans-serif;
     color: #CFE4C3;
     display: block;
     float: left;

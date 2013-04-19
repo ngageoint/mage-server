@@ -4,7 +4,7 @@
 	<title>SAGE - Map Portal</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="apple-mobile-web-app-capable" content="yes">
-	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.css" />
+	<link rel="stylesheet" href="css/leaflet.css" />
 	<link rel="stylesheet" href="css/bootstrap.min.css" />
 	<link rel="stylesheet" href="css/bootstrap-responsive.min.css"/>
 	<link rel="stylesheet" href="css/font-awesome.min.css">
@@ -16,12 +16,14 @@
 
 	<!--<script type="text/javascript" src="js/bootstrap.min.js"></script>-->
 	<script type="text/javascript" src="js/lib/jquery/jquery.min.js"></script>
-	<script src="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
+	<script type="text/javascript" src="js/lib/underscore-min.js"></script>
+	<script src="js/lib/leaflet/leaflet.js"></script>
 	<script type="text/javascript" src="js/lib/angular/angular.js"></script>
 	<script type="text/javascript" src="js/lib/angular-ui/build/angular-ui.js"></script>
 	<script type="text/javascript" src="js/lib/angular-leaflet-directive.js"></script>
 	<script type="text/javascript" src="js/app/***REMOVED***s.js"></script>
 	<script type="text/javascript" src="js/app/MapController.js"></script>
+	<script type="text/javascript" src="js/app/directives/observation.js"></script>
 
 	<link rel="apple-touch-icon" href="img/touch-icon-iphone.png" />
 	<link rel="apple-touch-icon" sizes="72x72" href="img/touch-icon-ipad.png" />
@@ -37,10 +39,10 @@
           <span cl***REMOVED***="icon-bar"></span>
           <span cl***REMOVED***="icon-bar"></span>
         </a>
-        <a cl***REMOVED***="brand" href="#">SAGE</a>
+        <a cl***REMOVED***="brand" href="/"><i cl***REMOVED***="icon-white icon-leaf" style="margin-right:10px;"></i>SAGE</a>
         <div cl***REMOVED***="nav-collapse collapse">
           <ul cl***REMOVED***="nav">
-            <li><a href="#">API Documentation</a></li>
+            <li><a href="layers.html">Layer Manager</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -48,7 +50,10 @@
   </div>
   
   <!-- The map directive -->
-  <leaflet marker="marker" center="center" zoom="zoom" multimarkers="multimarkers" draggable="true"></leaflet>
+  <leaflet marker="marker" center="center" zoom="zoom" multimarkers="multiMarkers" message="message" draggable="true" observationid="observationId"></leaflet>
+
+  <!-- The observation panel dialog, currently only works for looking at/editing points. Need to circle back around and get it tied in to work for creating points -->
+  <div observation observationid="observationId" marker="marker" currentlayerid="currentLayerId"></div>
   
   <!-- Settings / layer picker button -->
   <button cl***REMOVED***="btn" id="settings" ng-click="openSettings()" ngm-tap="openSettings()"><i cl***REMOVED***="icon-cog icon-large sage-color"></i></button>
@@ -64,7 +69,7 @@
 
 	<!-- Panels -->
 	<!-- Show this one on startup and make the user select a layer, there may be a better way to handle the multiple layers, but until we figure it out, make them pick one on load. -->
-	<div id="layer-select-panel" cl***REMOVED***="hide">
+	<div id="layer-select-panel" cl***REMOVED***="hide panel panel-medium">
 		<h4>Select an event to begin adding observations</h4>
 		<form cl***REMOVED***="form-horizontal">
 		  <select ng-model="currentLayerId" ng-options="layer.id as layer.name for layer in layers"></select>
@@ -74,7 +79,7 @@
 		</form>
   </div>
 
-	<div id="settings-panel" cl***REMOVED***="hide">
+	<div id="settings-panel" cl***REMOVED***="hide panel panel-large">
 		<h3>Settings</h3>
 		<form cl***REMOVED***="form-horizontal">
 			<div cl***REMOVED***="control-group">
@@ -92,7 +97,7 @@
 		</form>
   </div>
 
-	<div id="goto-address-panel" cl***REMOVED***="hide">
+	<div id="goto-address-panel" cl***REMOVED***="hide panel panel-medium">
 		<form cl***REMOVED***="form-horizontal">
 		  <div cl***REMOVED***="control-group">
 		    <label cl***REMOVED***="control-label" for="address">Go to Address</label>
@@ -107,53 +112,14 @@
 		</form>
   </div>
 
-  <div id="observation-panel" cl***REMOVED***="hide">
-		<form cl***REMOVED***="form-horizontal">
-			<div cl***REMOVED***="control-group">
-		    <label cl***REMOVED***="control-label" for="type">Type</label>
-		    <div cl***REMOVED***="controls">
-		      <select ng-model="observationType" ng-options="type.title for type in observationTypes"></select>
-		    </div>
-		  </div>
-		  <div cl***REMOVED***="control-group">
-		    <label cl***REMOVED***="control-label" for="level">Level</label>
-		    <div cl***REMOVED***="controls">
-		      <select ng-model="level" ng-options="level.color for level in levels"></select>
-		    </div>
-		  </div>
-		  <div cl***REMOVED***="control-group">
-		    <label cl***REMOVED***="control-label" for="team">Team</label>
-		    <div cl***REMOVED***="controls">
-		      <select ng-model="team" ng-options="team.name for team in teams"></select>
-		    </div>
-		  </div>
-		  <div cl***REMOVED***="control-group">
-		    <label cl***REMOVED***="control-label" for="unit">Unit</label>
-		    <div cl***REMOVED***="controls">
-		      <input ng-model="unit"/>
-		    </div>
-		  </div>
-		  <div cl***REMOVED***="control-group">
-		    <label cl***REMOVED***="control-label" for="unit">Description</label>
-		    <div cl***REMOVED***="controls">
-		      <textarea ng-model="description"></textarea>
-		    </div>
-		  </div>
-		  <span>
-		  	<button cl***REMOVED***="btn btn-inverse" ng-click="cancelObservation()" ngm-tap="cancelObservation()">Cancel</button>
-		  	<button cl***REMOVED***="btn" ng-click="saveObservation()" ngm-tap="saveObservation()">Submit</button>
-		 	</span>
-		</form>
-  </div>
-
-  <div id="refresh-panel" cl***REMOVED***="hide">
+  <div id="refresh-panel" cl***REMOVED***="hide panel panel-small">
 		<i cl***REMOVED***="icon-spin icon-spinner icon-large"></i> Synchronizing
 		<span>
 	  	<button cl***REMOVED***="btn" ng-click="dismissRefresh()" ngm-tap="dismissRefresh()">Ok</button>
 	 	</span>
   </div>
 
-  <div id="fft-panel" cl***REMOVED***="hide">
+  <div id="fft-panel" cl***REMOVED***="hide panel panel-medium">
   	<h3>Friendly Force Tracking</h3>
 	  <span>
 	  	<button cl***REMOVED***="btn btn-inverse" ng-click="dismissFft()" ngm-tap="dismissFft()">Cancel</button>

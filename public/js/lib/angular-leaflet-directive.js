@@ -1,8 +1,8 @@
 (function () {
 
-	var leafletDirective = angular.module("leaflet-directive", []);
+	var leafletDirective = angular.module("leaflet-directive", ["sage.***REMOVED***s"]);
 
-	leafletDirective.directive("leaflet", function ($http, $log) {
+	leafletDirective.directive("leaflet", function ($http, $log, appConstants) {
 		return {
 			restrict: "E",
 			replace: true,
@@ -13,25 +13,26 @@
 				message: "=message",
 				zoom: "=zoom",
 				multiMarkers: "=multimarkers",
+				observationId: "=observationid",
 			},
 			template: '<div cl***REMOVED***="map"></div>',
 			link: function (scope, element, attrs, ctrl) {
-                var $el = element[0],
-				    map = new L.Map($el);
+        var $el = element[0],
+				map = new L.Map($el);
 
-			    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+			  L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
 
-                // Default center of the map
-                var point = new L.LatLng(40.094882122321145, -3.8232421874999996);
-                map.setView(point, 5);
+        // Default center of the map
+        var point = new L.LatLng(40.094882122321145, -3.8232421874999996);
+        map.setView(point, 5);
 
-                scope.$watch("center", function(center) {
-                    if (center === undefined) return;
+        scope.$watch("center", function(center) {
+            if (center === undefined) return;
 
-                    // Center of the map
-                    center = new L.LatLng(scope.center.lat, scope.center.lng);
-                    var zoom = scope.zoom || 8;
-                    map.setView(center, zoom);
+            // Center of the map
+            center = new L.LatLng(scope.center.lat, scope.center.lng);
+            var zoom = scope.zoom || 8;
+            map.setView(center, zoom);
 
 					var marker = new L.marker(scope.center, {
 						draggable: attrs.markcenter ? false:true
@@ -137,15 +138,27 @@
 				});
 
 				if (attrs.multimarkers) {
+					var greenIcon = L.icon({
+				    iconUrl: appConstants.rootUrl + '/js/lib/leaflet/images/marker-icon-green.png',
+				    shadowUrl: appConstants.rootUrl + '/js/lib/leaflet/images/marker-shadow.png',
+
+				    iconSize:     [25, 41], // size of the icon
+				    shadowSize:   [41, 41], // size of the shadow
+				    iconAnchor:   [12, 41], // point of the icon which will correspond to marker's location
+				    shadowAnchor: [12, 41],  // the same for the shadow
+				    popupAnchor:  [1, -34] // point from which the popup should open relative to the iconAnchor
+					});
 					var markers_dict = [];
 					scope.$watch("multiMarkers", function(newMarkerList) {
+						console.log('multimarker change');
 						for (var mkey in scope.multiMarkers) {
 							(function(mkey) {
 								var mark_dat = scope.multiMarkers[mkey];
 								var marker = new L.marker(
 									scope.multiMarkers[mkey],
 									{
-										draggable: mark_dat.draggable ? true:false
+										draggable: mark_dat.draggable ? true:false,
+										icon: greenIcon
 									}
 								);
 
@@ -164,18 +177,24 @@
 									dragging_marker = false;
 								});
 
-								scope.$watch('multiMarkers.'+mkey, function() {
+								scope.$watch('multiMarkers['+mkey+']', function() {
 									marker.setLatLng(scope.multiMarkers[mkey]);
 								}, true);
+
+								marker.on("click", function(e) {
+									scope.$apply(function(s) {
+										scope.observationId = mark_dat.id;
+										console.log("up in the angular directive marker id [" + mark_dat.id + "] observationid [" + scope.observationId + "]");
+									});
+								});
 
 								map.addLayer(marker);
 								markers_dict[mkey] = marker;
 							})(mkey);
 						} // for mkey in multiMarkers
-					}); // watch multiMarkers
+					}); // watch multiMarkers   add , true here to make it work
 				} // if attrs.multiMarkers
 			} // end of link function
 		};
 	});
-
 }());
