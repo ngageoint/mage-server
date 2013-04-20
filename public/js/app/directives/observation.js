@@ -18,8 +18,8 @@ sage.directive('observation', function($http) {
 		  $scope.team = teams[0];
 		  $scope.level = levels[0];
 		  $scope.observationType = observationTypes[0];
-		  $scope.unit;
-		  $scope.description;
+		  $scope.unit = "";
+		  $scope.description = "";
 
 
 			/*
@@ -40,11 +40,22 @@ sage.directive('observation', function($http) {
 			      success(function (data, status, headers, config) {
 			          $scope.observation = data;
 			          $scope.team = _.find($scope.teams, function (t) {
-								  return t === $scope.observation.attributes.TEAM;
+								  if(t.name == $scope.observation.attributes.TEAM) {
+								  	return t;
+								  }
 								});
 								$scope.level = _.find($scope.levels, function (l) {
-								  return l === $scope.observation.attributes.EVENTLEVEL;
+								  if (l.color == $scope.observation.attributes.EVENTLEVEL){
+								  	return l;
+								  }
 								});
+								$scope.observationType = _.find($scope.observationTypes, function (o) {
+								  if (o.title == $scope.observation.attributes.TYPE){
+								  	return o;
+								  }
+								});
+								$scope.description = $scope.observation.attributes.DESCRIPTION;
+								$scope.unit = $scope.observation.attributes.unit;
 			      }).
 			      error(function (data, status, headers, config) {
 			          $log.log("Error adding feature: " + status);
