@@ -82,11 +82,28 @@ module.exports = function(jsol) {
       case 'esriGeometryPolygon':
         return parsePolygon(text);
       default:
-        throw("None supported geometry type: " + type);
+        throw("Unsupported geometry type: " + type);
     }
   };
 
+  var formatPoint = function(geometry) {
+    return {
+      x: geometry.coordinates[0],
+      y: geometry.coordinates[1]
+    };
+  }
+
+  var formatGeometry = function(geometry) {
+    switch (geometry.type) {
+      case 'Point':
+        return formatPoint(geometry);
+      default:
+        throw("Unsupported geometry type: " + type);
+    }
+  }
+
   return {
-    parseGeometry: parseGeometry
+    parseGeometry: parseGeometry,
+    formatGeometry: formatGeometry
   }
 }

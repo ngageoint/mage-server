@@ -21,7 +21,7 @@ module.exports = function(geometry) {
     if (!options.properties) {
       // include all properties
       return {
-        geometry: geometry.formatPoint(feature.geometry),
+        geometry: geometry.formatGeometry(feature.geometry),
         attributes: feature.properties
       }; 
     } else {
@@ -29,7 +29,7 @@ module.exports = function(geometry) {
 
       // handle geometry
       if (options.properties.returnGeometry) {
-        xform.geometry = geometry.formatPoint(feature.geometry);
+        xform.geometry = geometry.formatGeometry(feature.geometry);
       }
 
       // handle attributes
