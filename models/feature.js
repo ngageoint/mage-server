@@ -13,10 +13,10 @@ module.exports = function(mongoose, counters) {
   // Creates the Schema for the Attachments object
   var FeatureSchema = new Schema({
     geometry: {
-      x: { type: Number, required: false },  
-      y: { type: Number, required: false }
-    },  
-    attributes: Schema.Types.Mixed,
+      type: { type: String, required: true },
+      coordinates: { type: Array, required: true}
+    },
+    properties: Schema.Types.Mixed,
     attachments: [AttachmentSchema]
   });
 
@@ -34,10 +34,21 @@ module.exports = function(mongoose, counters) {
     return model;
   }
 
-  var getFeatures = function(layer, callback) {
-    var query = {};
-    var fields = {'attachments': 0}; 
-    featureModel(layer).find(query, fields, function (err, features) {
+  var getFeatures = function(layer, filter, callback) {
+    var conditions = {};
+    var fields = {'attachments': 0};
+
+    var query = featureModel(layer).find(conditions, fields);
+
+    // Filter by geometry
+    if (filter.geometry) {
+      query.where('geometry').intersects.geometry({ 
+        type: filter.geometry.type, 
+        coordinates: filter.geometry.coordinates 
+      });
+    }
+
+    query.exec(function (err, features) {
       if (err) {
         console.log("Error finding features in mongo: " + err);
       }
@@ -47,7 +58,7 @@ module.exports = function(mongoose, counters) {
   }
 
   var getFeatureByObjectId = function(layer, objectId, callback) {
-    var query = {'attributes.OBJECTID': objectId};
+    var query = {'properties.OBJECTID': objectId};
     featureModel(layer).findOne(query, function (err, feature) {
       if (err) {
         console.log("Error finding feature in mongo: " + err);
@@ -68,63 +79,40 @@ module.exports = function(mongoose, counters) {
     });
   }
 
-  var createFeatures = function(layer, data, callback) {
+  var createFeature = function(layer, data, callback) {
     var counter = 'feature' + layer.id;
-    counters.getGroup(counter, data.length, function(ids) {
-      var features = [];
-      data.forEach(function(feature, index) {
-        features.push({
-          geometry: {
-            x: feature.geometry.x ? feature.geometry.x : "",
-            y: feature.geometry.y ? feature.geometry.y : ""
-          },
-          attributes: {
-            OBJECTID: ids[index],
-            ADDRESS: feature.attributes.ADDRESS ? feature.attributes.ADDRESS : "",  
-            EVENTDATE: feature.attributes.EVENTDATE ? feature.attributes.EVENTDATE : "",
-            TYPE: feature.attributes.TYPE ? feature.attributes.TYPE : "",  
-            EVENTLEVEL: feature.attributes.EVENTLEVEL ? feature.attributes.EVENTLEVEL : "",  
-            TEAM: feature.attributes.TEAM ? feature.attributes.TEAM : "", 
-            DESCRIPTION: feature.attributes.DESCRIPTION ? feature.attributes.DESCRIPTION : "",  
-            USNG: feature.attributes.USNG ? feature.attributes.USNG : "",  
-            EVENTCLEAR: feature.attributes.EVENTCLEAR ? feature.attributes.EVENTCLEAR : "",
-            UNIT: feature.attributes.UNIT ? feature.attributes.UNIT : ""
-          }
-        });
-      });
+    counters.getNext(counter, function(id) {
+      var properties = data.properties ? data.properties : {};
+      properties.OBJECTID = id;
 
-      var Feature = featureModel(layer);
-      Feature.create(features, function(err) {
-        var newFeatures = err ? [] : Array.prototype.slice.call(arguments, 1);
+      var feature = {
+        geometry: {
+          type: 'Point',
+          coordinates: [data.geometry.x, data.geometry.y]
+        },
+        properties: properties
+      };
 
+      featureModel(layer).create(feature, function(err, newFeature) {
         if (err) {
           console.log(JSON.stringify(err));
         }
 
-        callback(features, newFeatures);
+        callback(newFeature);
       });
     });
   }
 
   var updateFeature = function(layer, data, callback) {
-    var query = {'attributes.OBJECTID': data.attributes.OBJECTID};
+    var query = {'properties.OBJECTID': data.properties.OBJECTID};
+
+    var properties = data.properties ? data.properties : {};
     var update = {
       geometry: {
-        x: data.geometry.x ? data.geometry.x : "",
-        y: data.geometry.y ? data.geometry.y : ""
+        type: 'Point',
+        coordinates: [data.geometry.x, data.geometry.y]
       },
-      attributes: {
-        OBJECTID: data.attributes.OBJECTID,
-        ADDRESS: data.attributes.ADDRESS ? data.attributes.ADDRESS : "",  
-        EVENTDATE: data.attributes.EVENTDATE ? data.attributes.EVENTDATE : "",
-        TYPE: data.attributes.TYPE ? data.attributes.TYPE : "",  
-        EVENTLEVEL: data.attributes.EVENTLEVEL ? data.attributes.EVENTLEVEL : "",  
-        TEAM: data.attributes.TEAM ? data.attributes.TEAM : "", 
-        DESCRIPTION: data.attributes.DESCRIPTION ? data.attributes.DESCRIPTION : "",  
-        USNG: data.attributes.USNG ? data.attributes.USNG : "",  
-        EVENTCLEAR: data.attributes.EVENTCLEAR ? data.attributes.EVENTCLEAR : "",
-        UNIT: data.attributes.UNIT ? data.attributes.UNIT : ""
-      }
+      properties: properties
     };
 
     var options = {new: true};
@@ -133,7 +121,7 @@ module.exports = function(mongoose, counters) {
         console.log('Could not update feature', err);
       }
 
-      callback(err, update, feature);
+      callback(err, feature);
     });
   }
 
@@ -214,7 +202,7 @@ module.exports = function(mongoose, counters) {
     getFeatures: getFeatures,
     getFeatureById: getFeatureById,
     getFeatureByObjectId: getFeatureByObjectId,
-    createFeatures: createFeatures,
+    createFeature: createFeature,
     updateFeature: updateFeature,
     removeFeature: removeFeature,
     getAttachments: getAttachments,

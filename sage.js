@@ -2,6 +2,7 @@ var express = require("express");
 var mongoose = require('mongoose');
 var path = require("path");
 var fs = require('fs-extra');
+var async = require('async');
 var argv = require('optimist')
   .default('a', '/var/lib/sage/attachments')
   .argv;
@@ -16,7 +17,7 @@ app.configure(function () {
   mongoose.connect(dbPath, function(err) {
     if (err) throw err;
   });
-  //mongoose.set('debug', true);
+  mongoose.set('debug', true);
 
   app.set('attachmentBase', attachmentBase);
 
@@ -46,18 +47,26 @@ var counters = require('./models/counters')(mongoose);
 var models = {
   Counters: counters,
   Layer: require('./models/layer')(mongoose, counters),
-  Feature: require('./models/feature')(mongoose, counters)
+  Feature: require('./models/feature')(mongoose, counters, async)
+}
+
+// pull in any utilities
+var jsol = require('./utilities/jsol');
+var geometry = require('./utilities/geometry')(jsol);
+var utilities = {
+  jsol: jsol,
+  geometry: geometry
 }
 
 var tranformers = {
-  esri: require('./transformers/esriTransformer')()
+  esri: require('./transformers/esri')(geometry)
 }
 
 // Dynamically import all routes
 fs.readdirSync('routes').forEach(function(file) {
   if (file[0] == '.') return;
   var route = file.substr(0, file.indexOf('.'));
-  require('./routes/' + route)(app, models, fs, tranformers);
+  require('./routes/' + route)(app, models, fs, tranformers, async, utilities);
 });
 
 // Launches the Node.js Express Server

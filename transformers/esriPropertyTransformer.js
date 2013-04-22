@@ -17,9 +17,9 @@ module.exports = function(fields) {
     var attributes = null;
     if (outFields) {
       attributes = {};
-      for (var attribute in feature.attributes) {
-        if (include(attribute, outFields)) {
-          attributes[attribute] = feature.attributes[attribute];
+      for (var property in feature.properties) {
+        if (include(property, outFields)) {
+          attributes[property] = feature.properties[property];
         }
       }
 

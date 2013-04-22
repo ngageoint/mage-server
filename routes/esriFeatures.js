@@ -1,5 +1,6 @@
 // ESRI feature routes
-module.exports = function(app, models, fs, transformers) {
+module.exports = function(app, models, fs, transformers, async, utilities) {
+  var geo = utilities.geometry;
 
   function EsriAttachments() {
     var content = {
@@ -81,30 +82,141 @@ module.exports = function(app, models, fs, transformers) {
     });
   });
 
-  // Queries for ESRI Styled records built for the ESRI format and syntax
-  app.get('/FeatureServer/:layerId/query', function (req, res) {
-    console.log("SAGE ESRI Features GET REST Service Requested");
+  var parseQueryParams = function(req, res, next) {
+    var parameters = {};
 
     var returnGeometry = req.param('returnGeometry');
     if (returnGeometry) {
       returnGeometry = returnGeometry === 'true';
-    } else {
-      returnGeometry = true;
-    }
+    } 
+
+    // else {
+    //   returnGeometry = true;
+    // }
 
     var outFields = req.param('outFields');
-    var filter = null;
     if ((!outFields && returnGeometry) || (outFields && outFields !== '*')) {
-      filter = {returnGeometry: returnGeometry};
+      parameters.fields = {returnGeometry: returnGeometry};
       if (outFields) {
-        filter.outFields = outFields.split(",");
+        parameters.fields.outFields = outFields.split(",");
       }
     }
 
-    models.Feature.getFeatures(req.layer, function (features) {
-      var response = transformers.esri.transform(features, filter);
-      res.json(response);
-    });
+    var geometry = req.param('geometry');
+
+    if (geometry) {
+      parameters.geometryType = req.param('geometryType');
+      if (!parameters.geometryType) {
+        parameters.geometryType = 'esriGeometryEnvelope'
+      }
+
+      try {
+        parameters.geometry = geo.parseGeometry(parameters.geometryType, geometry);
+      } catch (e) {
+        return res.send(400, e);
+      }
+    }
+
+    req.parameters = parameters;
+
+    next();
+  }
+
+  // Queries for ESRI Styled records built for the ESRI format and syntax
+  app.get('/FeatureServer/:layerId/query', parseQueryParams, function (req, res) {
+    console.log("SAGE ESRI Features GET REST Service Requested");
+
+    var filters = [{}];
+
+    var geometry = req.parameters.geometry;
+    if (geometry) {
+      var geometryType = req.parameters.geometryType;
+
+      switch (geometryType) {
+        case 'esriGeometryPoint':
+          filters = [];
+          filter = {
+            geometry: {
+              type: 'Point',
+              coordinates: [geometry.x, geometry.y]
+            }
+          };
+
+          filters.push(filter);
+          break;
+        case 'esriGeometryEnvelope':
+          filters = [];
+
+          // TODO hack until mongo fixes queries for more than
+          // 180 degrees longitude.  Create 2 queries if we cross
+          // the prime meridian 
+          if (geometry.xmax > 0 && geometry.xmin < 0) {
+            filter = {
+              geometry: {
+                type: 'Polygon',
+                coordinates: [ [ 
+                  [geometry.xmin, geometry.ymin], 
+                  [0, geometry.ymin], 
+                  [0, geometry.ymax], 
+                  [geometry.xmin, geometry.ymax], 
+                  [geometry.xmin, geometry.ymin] 
+                ] ]
+              }
+            };
+
+            filters.push(filter);
+
+            filter = {
+              geometry: {
+                type: 'Polygon',
+                coordinates: [ [ 
+                  [0, geometry.ymin], 
+                  [geometry.xmax, geometry.ymin], 
+                  [geometry.xmax, geometry.ymax], 
+                  [0, geometry.ymax], 
+                  [0, geometry.ymin] 
+                ] ]
+              }
+            };
+   
+            filters.push(filter);
+          } else {
+            filter = {
+              geometry: {
+                type: 'Polygon',
+                coordinates: [ [ 
+                  [geometry.xmin, geometry.ymin], 
+                  [geometry.xmax, geometry.ymin], 
+                  [geometry.xmax, geometry.ymax], 
+                  [geometry.xmin, geometry.ymax], 
+                  [geometry.xmin, geometry.ymin] 
+                ] ]
+              }
+            };
+
+            filters.push(filter);
+          }
+        break;
+        case 'esriGeometryPolygon':
+          filters = [geometry];
+        break;
+      }
+    }
+
+    allFeatures = [];
+    async.each(
+      filters, 
+      function(filter, done) {
+        models.Feature.getFeatures(req.layer, filter, function (features) {
+          allFeatures = allFeatures.concat(features);
+          done();
+        });
+      },
+      function(err) {
+        var response = transformers.esri.transform(allFeatures, req.parameters.fields);
+        res.json(response);
+      }
+    );
   }); 
 
   // Gets one ESRI Styled record built for the ESRI format and syntax
@@ -113,7 +225,7 @@ module.exports = function(app, models, fs, transformers) {
 
     res.json({
       geometry: req.feature.geometry,
-      attributes: req.feature.attributes
+      attributes: req.feature.properties
     });
     
   }); 
@@ -136,21 +248,27 @@ module.exports = function(app, models, fs, transformers) {
     }
 
     features = JSON.parse(features);
-    models.Feature.createFeatures(req.layer, features, function(features) {
-      var response = {
-        addResults: []
-      };
 
-      features.forEach(function(feature) {
-        response.addResults.push({
-          objectId: feature.attributes.OBJECTID,
-          globalId: null,
-          success: true
+    var addResults = [];
+    async.each(
+      features,
+      function(feature, done) {
+        models.Feature.createFeature(req.layer, {geometry: feature.geometry, properties: feature.attributes}, function(newFeature) {
+          addResults.push({
+            globalId: null,
+            objectId: newFeature ? newFeature.properties.OBJECTID : -1,
+            success: newFeature ? true : false
+          });
+
+          done();
         });
-      });
-
-      res.json(response);
-    });
+      },
+      function(err) {
+        res.json({
+          addResults: addResults
+        });
+      }
+    );
   });
 
   // This function will update a feature by the ID
@@ -160,49 +278,46 @@ module.exports = function(app, models, fs, transformers) {
     var features = req.param('features');
     if (!features) {
       //TODO need common cl***REMOVED*** to house error object
-      res.json({
+      return res.json({
         error: {
           code:400,
           message: "Cannot add features. Invalid parameters.",
           details: ["'features' param not specified"]
         }
       });
-      return;
     }
 
     features = JSON.parse(features);
-    var results = [];
-    var onUpdate = function(err, feature, newFeature) {
-      if (err || !newFeature) {
-        results.push({
-          objectId: feature.attributes.OBJECTID,
-          globalId: null,
-          success: false,
-          error: {
-            code: -1,
-            description: 'Update for the object was not attempted. Object may not exist.'
-          }
-        });
-      } else {
-        results.push({
-          objectId: newFeature.attributes.OBJECTID,
-          globalId: null,
-          success: true
-        });
-      }
+    var updateResults = [];
+    var updateFeature = function(feature, done) {
+      models.Feature.updateFeature(req.layer, {geometry: feature.geometry, properties: feature.attributes}, function(err, newFeature) {
+        if (err || !newFeature) {
+          updateResults.push({
+            objectId: feature.attributes.OBJECTID,
+            globalId: null,
+            success: false,
+            error: {
+              code: -1,
+              description: 'Update for the object was not attempted. Object may not exist.'
+            }
+          });
+        } else {
+          updateResults.push({
+            objectId: newFeature.properties.OBJECTID,
+            globalId: null,
+            success: true
+          });
+        }
 
-      if (!features.length) {
-        return res.json({updateResults: results});
-      }
-
-      models.Feature.updateFeature(req.layer, features.pop(), onUpdate);
+        done();
+      });
     }
 
-    if (features.length) {
-      models.Feature.updateFeature(req.layer, features.pop(), onUpdate);
-    } else {
-      res.json({updateResults: results});
-    }
+    async.each(features, updateFeature, function(err) {
+      res.json({
+        updateResults: updateResults
+      });
+    });
   });
 
   app.post('/FeatureServer/:layerId/deleteFeatures', function(req, res) {

@@ -54,7 +54,10 @@ module.exports = function(mongoose, counters) {
       }
 
       // Create an index on the id field (not same as _id, which automatically gets an index)
-      collection.ensureIndex({'attributes.OBJECTID': 1}, {unique: true, background: true}, callback);
+      collection.ensureIndex({'properties.OBJECTID': 1}, {unique: true, background: true}, callback);
+
+      // Create an index on the goemetry field
+      collection.ensureIndex({'geometry': '2dsphere'}, callback);
 
       // Create an index on the attachment.id field
       collection.ensureIndex({'attachments.id': 1}, {unique: true, background: true, sparse: true}, callback);
