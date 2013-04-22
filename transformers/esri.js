@@ -78,12 +78,12 @@ module.exports = function(geometry) {
           response.fields.push(fields[field]);
         }
       } else {
-        if (filter.returnGeometry) {
+        if (properties.returnGeometry) {
           response.geometryType = 'esriGeometryPoint';
           response.spatialReference = { 'wkid' : 4326 };
         }
 
-        if (filter.outFields) {
+        if (properties.outFields) {
           response.fields = [];
           for (var field in fields) {
             if (include(field, properties.outFields)) {

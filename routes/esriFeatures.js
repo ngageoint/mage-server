@@ -88,11 +88,9 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
     var returnGeometry = req.param('returnGeometry');
     if (returnGeometry) {
       returnGeometry = returnGeometry === 'true';
-    } 
-
-    // else {
-    //   returnGeometry = true;
-    // }
+    } else {
+      returnGeometry = true;
+    }
 
     var outFields = req.param('outFields');
     if ((!outFields && returnGeometry) || (outFields && outFields !== '*')) {
