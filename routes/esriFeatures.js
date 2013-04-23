@@ -206,7 +206,10 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
       filters, 
       function(filter, done) {
         models.Feature.getFeatures(req.layer, filter, function (features) {
-          allFeatures = allFeatures.concat(features);
+          if (features) {
+            allFeatures = allFeatures.concat(features);
+          }
+
           done();
         });
       },
