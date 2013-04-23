@@ -14,12 +14,15 @@ sage.directive('observation', function($http) {
 		  $scope.observationTypes = observationTypes;
 
 		  $scope.observation = {}; // need to clean all of this up and figure out how to make it generic
-
 		  $scope.team = teams[0];
 		  $scope.level = levels[0];
 		  $scope.observationType = observationTypes[0];
 		  $scope.unit = "";
 		  $scope.description = "";
+		  $scope.attachment = "";
+
+		  // this is a hack, need to start using the ui-bootstrap, couldnt get the yo-dawged directive's scopes to play nice 
+   		$scope.selectedTab = 1;
 
 
 			/*
@@ -32,6 +35,11 @@ sage.directive('observation', function($http) {
 					$('#observation-panel').addCl***REMOVED***('hide');
 					console.log ('id = 0');
 				} else if($scope.observationId == -1) {	// creating a new observation 
+					$scope.team = teams[0];
+				  $scope.level = levels[0];
+				  $scope.observationType = observationTypes[0];
+				  $scope.unit = "";
+				  $scope.description = "";
 					$('#observation-panel').removeCl***REMOVED***('hide');
 					console.log('id = -1');
 				} else if ($scope.observationId > 1) {  // look up the observation and show it in the dialog
@@ -55,7 +63,7 @@ sage.directive('observation', function($http) {
 								  }
 								});
 								$scope.description = $scope.observation.attributes.DESCRIPTION;
-								$scope.unit = $scope.observation.attributes.unit;
+								$scope.unit = $scope.observation.attributes.UNIT;
 			      }).
 			      error(function (data, status, headers, config) {
 			          $log.log("Error adding feature: " + status);
@@ -77,24 +85,42 @@ sage.directive('observation', function($http) {
 		  /* Send the observation to the server */
 		  $scope.saveObservation = function () {
 		    console.log("in new observation");
-		    // add code to send the observation to the server here
-
 		    console.log("Team: " + $scope.team.name + ", Level: " + $scope.level.color + ", Observation Type: " + $scope.observationType.title + ", Unit: " + $scope.unit + ", Description: " + $scope.description);
 		    
-		    var ob = [{"geometry":{"x": $scope.marker.lat, "y":$scope.marker.lng},"attributes":{"EVENTDATE":new Date().getTime(),"TYPE":$scope.observationType.title,"EVENTLEVEL":$scope.level.color,"TEAM":$scope.team.name,"DESCRIPTION":$scope.description,"EVENTCLEAR":0,"UNIT":$scope.unit}}]
+		    var operation = "";
+		    var ob = [];
+		    if ($scope.observationId > 0) {
+		    	operation = "updateFeatures";
+		    	ob = [{"geometry":{"x": $scope.observation.geometry.coordinates[0], "y":$scope.observation.geometry.coordinates[1]},"attributes":{"OBJECTID": $scope.observationId, "EVENTDATE":new Date().getTime(),"TYPE":$scope.observationType.title,"EVENTLEVEL":$scope.level.color,"TEAM":$scope.team.name,"DESCRIPTION":$scope.description,"EVENTCLEAR":0,"UNIT":$scope.unit}}]
+		    } else {
+		    	operation = "addFeatures";
+		    	ob = [{"geometry":{"x": $scope.marker.lng, "y":$scope.marker.lat},"attributes":{"EVENTDATE":new Date().getTime(),"TYPE":$scope.observationType.title,"EVENTLEVEL":$scope.level.color,"TEAM":$scope.team.name,"DESCRIPTION":$scope.description,"EVENTCLEAR":0,"UNIT":$scope.unit}}]
+		    }
 
-		    $http.post(appConstants.rootUrl + '/FeatureServer/'+ $scope.currentLayerId +'/addFeatures', "features=" + JSON.stringify(ob), {headers: {'Content-Type': 'application/x-www-form-urlencoded'}}).
-		      success(function (data, status, headers, config) {
-		          $scope.points = data;
-		          for(var i = 0; i < data.length; i++){
-		              console.log("Data: "+i+"= "+angular.toJson(data[i]));
-		          }
-		      }).
-		      error(function (data, status, headers, config) {
-		          $log.log("Error adding feature: " + status);
-		      });
+	    	$http.post(appConstants.rootUrl + '/FeatureServer/'+ $scope.currentLayerId + '/' + operation, "features=" + JSON.stringify(ob), {headers: {'Content-Type': 'application/x-www-form-urlencoded'}}).
+	      success(function (data, status, headers, config) {
+	          if ($scope.attachment != "") {
+	          	var objectId = data.addResults[0].objectId;
+	          	
+	          	$http.post(appConstants.rootUrl + '/FeatureServer/'+ $scope.currentLayerId + "/" + objectId + "/addAttachment", "attachment=" + $scope.attachment, {headers: {'Content-Type': 'application/x-www-form-urlencoded'}}).
+	          	success(function (data, status, headers, config) {
+	          		console.log("added attachment!");	
+	          	}).error(function (data, status, headers, config) {
+	          		console.log("unable to add attachment! " + status);	
+	          	});
+	          }
+	      }).
+	      error(function (data, status, headers, config) {
+	          $log.log("Error adding feature: " + status);
+	      });	
+		    
+		    $scope.observationId = 0; // hide the observation panel
+		  } // end of saveObservation
 
-		    $('#observation-panel').addCl***REMOVED***('hide');
+		  $scope.setFile = function (element) {
+		  	 $scope.$apply(function($scope) {
+            $scope.attachment = element.files[0];
+        });
 		  }
 
 		} // directive controller

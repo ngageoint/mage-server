@@ -168,8 +168,8 @@
 
 								marker.on("drag", function (e) {
 									scope.$apply(function (s) {
-										mark_dat.lat = marker.getLatLng().lat;
-										mark_dat.lng = marker.getLatLng().lng;
+										mark_dat.y = marker.getLatLng().lat;
+										mark_dat.x = marker.getLatLng().lng;
 									});
 								});
 

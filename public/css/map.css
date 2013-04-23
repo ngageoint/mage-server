@@ -141,3 +141,8 @@ html, body, div.leaflet-container {
 textarea {
 	height: 75px;
 }
+
+.nav-pills>.active>a, .nav-pills>.active>a:hover, .nav-pills>.active>a:focus {
+	background: #648D53;
+	color: #F5F3DA;
+}

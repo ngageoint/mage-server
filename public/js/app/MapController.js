@@ -1,6 +1,6 @@
 'use strict';
 
-var sage = angular.module("sage", ["ui", "leaflet-directive", "sage.***REMOVED***s"]);
+var sage = angular.module("sage", ["ui.bootstrap", "leaflet-directive", "sage.***REMOVED***s"]);
 
 /*
   Handle communication between the server and the map.
@@ -128,7 +128,7 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
             var markers = {};
             for (var i = 0; i <  $scope.points.length; i++) {
               console.log($scope.points[i].geometry.x + ", " + $scope.points[i].geometry.y);
-              markers[$scope.points[i].attributes.OBJECTID] = {lat: $scope.points[i].geometry.x, lng: $scope.points[i].geometry.y,draggable: false, id: $scope.points[i].attributes.OBJECTID};
+              markers[$scope.points[i].attributes.OBJECTID] = {lat: $scope.points[i].geometry.y, lng: $scope.points[i].geometry.x,draggable: false, id: $scope.points[i].attributes.OBJECTID};
             }
             $scope.multiMarkers = markers;
         }).
