@@ -52,14 +52,14 @@ var models = {
 
 // pull in any utilities
 var jsol = require('./utilities/jsol');
-var geometry = require('./utilities/geometry')(jsol);
+var geometryFormat = require('./utilities/geometryFormat')(jsol);
 var utilities = {
   jsol: jsol,
-  geometry: geometry
+  geometryFormat: geometryFormat
 }
 
 var tranformers = {
-  esri: require('./transformers/esri')(geometry)
+  esri: require('./transformers/esri')(geometryFormat)
 }
 
 // Dynamically import all routes

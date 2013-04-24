@@ -42,10 +42,7 @@ module.exports = function(mongoose, counters) {
 
     // Filter by geometry
     if (filter.geometry) {
-      query.where('geometry').intersects.geometry({ 
-        type: filter.geometry.type, 
-        coordinates: filter.geometry.coordinates 
-      });
+      query.where('geometry').intersects.geometry(filter.geometry);
     }
 
     query.exec(function (err, features) {

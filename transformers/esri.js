@@ -1,4 +1,4 @@
-module.exports = function(geometry) {
+module.exports = function(geometryFormat) {
   // TODO this needs to come from the DB, either default or per layer
   var fields = {
     OBJECTID: { name: 'OBJECTID', alias: 'OBJECTID', type: 'esriFieldTypeOID' },
@@ -21,7 +21,7 @@ module.exports = function(geometry) {
     if (!options.properties) {
       // include all properties
       return {
-        geometry: geometry.formatGeometry(feature.geometry),
+        geometry: geometryFormat.format(feature.geometry),
         attributes: feature.properties
       }; 
     } else {
@@ -29,7 +29,7 @@ module.exports = function(geometry) {
 
       // handle geometry
       if (options.properties.returnGeometry) {
-        xform.geometry = geometry.formatGeometry(feature.geometry);
+        xform.geometry = geometryFormat.format(feature.geometry);
       }
 
       // handle attributes

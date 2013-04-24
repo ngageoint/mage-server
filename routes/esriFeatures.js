@@ -1,6 +1,6 @@
 // ESRI feature routes
 module.exports = function(app, models, fs, transformers, async, utilities) {
-  var geo = utilities.geometry;
+  var geometryFormat = utilities.geometryFormat;
 
   function EsriAttachments() {
     var content = {
@@ -101,7 +101,6 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
     }
 
     var geometry = req.param('geometry');
-
     if (geometry) {
       parameters.geometryType = req.param('geometryType');
       if (!parameters.geometryType) {
@@ -109,7 +108,7 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
       }
 
       try {
-        parameters.geometry = geo.parseGeometry(parameters.geometryType, geometry);
+        parameters.geometries = geometryFormat.parse(parameters.geometryType, geometry);
       } catch (e) {
         return res.send(400, e);
       }
@@ -124,100 +123,47 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
   app.get('/FeatureServer/:layerId/query', parseQueryParams, function (req, res) {
     console.log("SAGE ESRI Features GET REST Service Requested");
 
-    var filters = [{}];
+    // create filters for feature query
+    var filters = null;
 
-    var geometry = req.parameters.geometry;
-    if (geometry) {
-      var geometryType = req.parameters.geometryType;
-
-      switch (geometryType) {
-        case 'esriGeometryPoint':
-          filters = [];
-          filter = {
-            geometry: {
-              type: 'Point',
-              coordinates: [geometry.x, geometry.y]
-            }
-          };
-
-          filters.push(filter);
-          break;
-        case 'esriGeometryEnvelope':
-          filters = [];
-
-          // TODO hack until mongo fixes queries for more than
-          // 180 degrees longitude.  Create 2 queries if we cross
-          // the prime meridian 
-          if (geometry.xmax > 0 && geometry.xmin < 0) {
-            filter = {
-              geometry: {
-                type: 'Polygon',
-                coordinates: [ [ 
-                  [geometry.xmin, geometry.ymin], 
-                  [0, geometry.ymin], 
-                  [0, geometry.ymax], 
-                  [geometry.xmin, geometry.ymax], 
-                  [geometry.xmin, geometry.ymin] 
-                ] ]
-              }
-            };
-
-            filters.push(filter);
-
-            filter = {
-              geometry: {
-                type: 'Polygon',
-                coordinates: [ [ 
-                  [0, geometry.ymin], 
-                  [geometry.xmax, geometry.ymin], 
-                  [geometry.xmax, geometry.ymax], 
-                  [0, geometry.ymax], 
-                  [0, geometry.ymin] 
-                ] ]
-              }
-            };
-   
-            filters.push(filter);
-          } else {
-            filter = {
-              geometry: {
-                type: 'Polygon',
-                coordinates: [ [ 
-                  [geometry.xmin, geometry.ymin], 
-                  [geometry.xmax, geometry.ymin], 
-                  [geometry.xmax, geometry.ymax], 
-                  [geometry.xmin, geometry.ymax], 
-                  [geometry.xmin, geometry.ymin] 
-                ] ]
-              }
-            };
-
-            filters.push(filter);
-          }
-        break;
-        case 'esriGeometryPolygon':
-          filters = [geometry];
-        break;
-      }
+    var geometries = req.parameters.geometries;
+    if (geometries) {
+      filters = [];
+      geometries.forEach(function(geometry) {
+        filters.push({
+          geometry: geometry
+        });
+      });
     }
 
-    allFeatures = [];
-    async.each(
-      filters, 
-      function(filter, done) {
-        models.Feature.getFeatures(req.layer, filter, function (features) {
-          if (features) {
-            allFeatures = allFeatures.concat(features);
-          }
+    var respond = function(features) {
+      var response = transformers.esri.transform(features, req.parameters.fields);
+      res.json(response);
+    }
 
-          done();
-        });
-      },
-      function(err) {
-        var response = transformers.esri.transform(allFeatures, req.parameters.fields);
-        res.json(response);
-      }
-    );
+    if (filters) {
+      allFeatures = [];
+      async.each(
+        filters, 
+        function(filter, done) {
+          models.Feature.getFeatures(req.layer, filter, function (features) {
+            if (features) {
+              allFeatures = allFeatures.concat(features);
+            }
+
+            done();
+          });
+        },
+        function(err) {
+          respond(allFeatures);
+        }
+      );
+    } else {
+      var filter = {};
+      models.Feature.getFeatures(req.layer, filter, function (features) {
+        respond(features);
+      });
+    }
   }); 
 
   // Gets one ESRI Styled record built for the ESRI format and syntax
@@ -247,6 +193,9 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
       });
       return;
     }
+
+    //tmp
+    console.log('features: ' + features);
 
     features = JSON.parse(features);
 

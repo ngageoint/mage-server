@@ -33,6 +33,10 @@ module.exports = function(jsol) {
     // Make sure leading/trailing whitespace is removed
     text = text.replace(trim, "");
 
+    var one = text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, "@");
+    var two = one.replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, "]");
+    var three = two.replace(/\w*\s*\:/g, ":");
+
     // Make sure the incoming text is actual JSOL (or Javascript Object Literal)
     // Logic borrowed from http://json.org/json2.js
     if ( /^[\],:{}\s]*$/.test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, "@")
