@@ -89,7 +89,14 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
             var markers = $scope.multiMarkers;
             for (var i = 0; i <  crowdrank.length; i++) {
               //console.log(crowdrank[i].geometry.coordinates[0] + ", " + crowdrank.geometry.coordinates[1]);
-              markers[crowdrank[i].properties.tag_id] = {lat: crowdrank[i].geometry.coordinates[1], lng: crowdrank[i].geometry.coordinates[0], draggable: false, id: crowdrank[i].properties.tag_id, icon_url: crowdrank[i].properties.icon_url, chip_url: crowdrank[i].properties.chip_url, chip_bounds: crowdrank[i].properties.chip_bounds.coordinates};
+              markers[crowdrank[i].properties.tag_id] = {
+                lat: crowdrank[i].geometry.coordinates[1], 
+                lng: crowdrank[i].geometry.coordinates[0], 
+                draggable: false, 
+                id: crowdrank[i].properties.tag_id, 
+                icon_url: crowdrank[i].properties.icon_url, 
+                chip_url: crowdrank[i].properties.chip_url, 
+                chip_bounds: crowdrank[i].properties.chip_bounds};
             }
             $scope.multiMarkers = markers;
         }).

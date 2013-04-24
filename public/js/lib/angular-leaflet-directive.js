@@ -181,8 +181,9 @@
 
 								if (mark_dat.chip_url && mark_dat.chip_bounds) {
 									var imageUrl = mark_dat.chip_url;
-									var southWest = new L.LatLng(mark_dat.chip_bounds[0][3][1], mark_dat.chip_bounds[0][3][0]),
-									    northEast = new L.LatLng(mark_dat.chip_bounds[0][1][1], mark_dat.chip_bounds[0][1][0]),
+									var coordinates = mark_dat.chip_bounds.coordinates;
+									var southWest = new L.LatLng(coordinates[0][3][1], coordinates[0][3][0]),
+									    northEast = new L.LatLng(coordinates[0][1][1],coordinates[0][1][0]),
 									    bounds = new L.LatLngBounds(southWest, northEast); 
 									L.imageOverlay(imageUrl, bounds).addTo(map).bringToFront();
 								}
