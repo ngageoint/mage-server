@@ -14,12 +14,17 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
   $scope.zoom = 4;
   $scope.points = [];
   $scope.multiMarkers = {};
+  $scope.externalLayer = "";
   $scope.observationId = 0;
 
   /* Data models for the settings */
   $scope.baseMaps = [{type: "Open Street Map"}];
   $scope.layers = [];
-  $scope.externalLayers = [{name: "Digital Globe Crowd Rank", enabled: false, url: "http://mapper_dev.tomnod.com/nod/api/stlouistornado/sage/30", type: "chip"}];
+  $scope.externalLayers = [{
+    name: "Digital Globe Crowd Rank Base Layer", enabled: false, url: "http://sip.tomnod.com/sip/c6754f6173d059ac82729b6243148a08/256", type: "base"
+  },{
+    name: "Digital Globe Crowd Rank Features", enabled: false, url: "http://mapper_dev.tomnod.com/nod/api/stlouistornado/sage/30", type: "chip"
+  }];
   $scope.currentLayerId = 0;
 
 
@@ -76,7 +81,8 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
   }, true); 
 
   $scope.changeLayerStatus = function(url, type, enabled) {
-    $http.jsonp(url, {params: {"callback": "JSON_CALLBACK"}, headers: {"Accepts": "application/json", "Content-Type": "application/json"}}). //
+    if (type === 'chip') {
+      $http.jsonp(url, {params: {"callback": "JSON_CALLBACK"}, headers: {"Accepts": "application/json", "Content-Type": "application/json"}}). //
         success(function (data, status, headers, config) {
             console.log('got points');
             var crowdrank = data.features;
@@ -90,7 +96,10 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
         error(function (data, status, headers, config) {
             console.log("Error getting layers: " + status);
         });
-    console.log("layer changed " + enabled + " type " + type + " url" + url);
+      console.log("layer changed " + enabled + " type " + type + " url" + url);
+    } else if (type === 'base') {
+      $scope.externalLayer = url;
+    }
   }
 
   $scope.openSettings = function () {

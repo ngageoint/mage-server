@@ -13,7 +13,8 @@
 				message: "=message",
 				zoom: "=zoom",
 				multiMarkers: "=multimarkers",
-				observationId: "=observationid",
+				externalLayer: "=externallayer",
+				observationId: "=observationid"
 			},
 			template: '<div cl***REMOVED***="map"></div>',
 			link: function (scope, element, attrs, ctrl) {
@@ -221,6 +222,12 @@
 						// map.addLayer(markers); // for clusters
 					}, true); // watch multiMarkers   add , true here to make it work
 				} // if attrs.multiMarkers
+				scope.$watch("externalLayer", function(oldVal, newVal) {
+					if (!scope.externalLayer) return;
+					var url = scope.externalLayer + '/{z}/{x}/{y}.jpg';
+					//L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+					L.tileLayer(url).addTo(map).bringToFront();
+				}, true);
 			} // end of link function
 		};
 	});
