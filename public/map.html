@@ -8,6 +8,8 @@
 	<link rel="stylesheet" href="css/bootstrap.min.css" />
 	<link rel="stylesheet" href="css/bootstrap-responsive.min.css"/>
 	<link rel="stylesheet" href="css/font-awesome.min.css">
+	<link rel="stylesheet" href="css/MarkerCluster.css">
+	<link rel="stylesheet" href="css/MarkerCluster.Default.css">
 	<!--[if IE 7]>
 	<link rel="stylesheet" href="css/font-awesome-ie7.min.css">
 	<![endif]-->
@@ -18,6 +20,7 @@
 	<script type="text/javascript" src="js/lib/jquery/jquery.min.js"></script>
 	<script type="text/javascript" src="js/lib/underscore-min.js"></script>
 	<script src="js/lib/leaflet/leaflet.js"></script>
+	<script src="js/lib/leaflet/leaflet.markercluster-src.js"></script>
 	<script type="text/javascript" src="js/lib/angular/angular.js"></script>
 	<script type="text/javascript" src="js/lib/ui-bootstrap/ui-bootstrap-0.2.0.js"></script>
 	<script type="text/javascript" src="js/lib/angular-leaflet-directive.js"></script>
@@ -88,13 +91,15 @@
 		      <select ng-model="baseMap" ng-options="map.type for map in baseMaps"></select>
 		    </div>
 		  </div>
-		  <h4>Event layers</h4>
-		  <select ng-model="currentLayerId" ng-options="layer.id as layer.name for layer in layers"></select>
-		  <span>
-		  	<button cl***REMOVED***="btn btn-inverse" ng-click="closeSettings()" ngm-tap="closeSettings()">Cancel</button>
-		  	<button cl***REMOVED***="btn" ng-click="saveSettings()" ngm-tap="saveSettings()">Submit</button>
-		 	</span>
+		  <h4>External layers</h4>
+		  <label cl***REMOVED***="checkbox" ng-repeat="layer in externalLayers">
+				<input type="checkbox" ng-model="layer.checked" ng-click="changeLayerStatus(layer.url, layer.type, layer.enabled)">{{layer.name}}
+			</label>
 		</form>
+		<span>
+	  	<button cl***REMOVED***="btn btn-inverse" ng-click="closeSettings()" ngm-tap="closeSettings()">Cancel</button>
+	  	<button cl***REMOVED***="btn" ng-click="saveSettings()" ngm-tap="saveSettings()">Ok</button>
+	 	</span>
   </div>
 
 	<div id="goto-address-panel" cl***REMOVED***="hide panel panel-medium">

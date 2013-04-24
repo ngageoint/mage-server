@@ -48,7 +48,7 @@
     	<div cl***REMOVED***="control-group">
 		    <label cl***REMOVED***="control-label" for="unit">Select File</label>
 		    <div cl***REMOVED***="controls">
-		      <input type="file" onchange="angular.element(this).scope().setFile(this)"> <!-- hax for file upload -->
+		      <input type="file" id="fileupload" name="files[]" multiple data-url="{{fileUploadUrl}}" onchange="angular.element(this).scope().setFile(this)"> <!-- hax for file upload -->
 		    </div>
 		  </div>
     </form>

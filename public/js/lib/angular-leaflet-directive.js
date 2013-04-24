@@ -149,18 +149,43 @@
 				    popupAnchor:  [1, -34] // point from which the popup should open relative to the iconAnchor
 					});
 					var markers_dict = [];
-					scope.$watch("multiMarkers", function(newMarkerList) {
+					scope.$watch("multiMarkers", function(newMarkerList, oldMarkerList) {
 						console.log('multimarker change');
+						//var markers = new L.MarkerClusterGroup(); // for clusters
 						for (var mkey in scope.multiMarkers) {
 							(function(mkey) {
 								var mark_dat = scope.multiMarkers[mkey];
-								var marker = new L.marker(
-									scope.multiMarkers[mkey],
-									{
-										draggable: mark_dat.draggable ? true:false,
-										icon: greenIcon
-									}
-								);
+
+								var marker = {};
+
+								if (mark_dat.icon_url) {
+									var iconTmp = L.icon({iconUrl: mark_dat.icon_url});
+
+									marker = new L.marker(
+										scope.multiMarkers[mkey],
+										{
+											draggable: mark_dat.draggable ? true:false,
+											icon: iconTmp
+										}
+									);
+								} else {
+									marker = new L.marker(
+										scope.multiMarkers[mkey],
+										{
+											draggable: mark_dat.draggable ? true:false,
+											icon: greenIcon
+										}
+									);
+								}
+
+								if (mark_dat.chip_url) {
+									var imageUrl = mark_dat.chip_url;
+									var southWest = new L.LatLng(mark_dat.chip_bounds[0][3][1], mark_dat.chip_bounds[0][3][0]),
+									    northEast = new L.LatLng(mark_dat.chip_bounds[0][1][1], mark_dat.chip_bounds[0][1][0]),
+									    bounds = new L.LatLngBounds(southWest, northEast); 
+									    //imageBounds = [mark_dat.chip_bounds[0][3], mark_dat.chip_bounds[0][1]]; //
+									L.imageOverlay(imageUrl, bounds).addTo(map).bringToFront();
+								}
 
 								marker.on("dragstart", function(e) {
 									dragging_marker = true;
@@ -189,10 +214,12 @@
 								});
 
 								map.addLayer(marker);
+								//markers.addLayer(marker); // for clusters
 								markers_dict[mkey] = marker;
 							})(mkey);
 						} // for mkey in multiMarkers
-					}); // watch multiMarkers   add , true here to make it work
+						// map.addLayer(markers); // for clusters
+					}, true); // watch multiMarkers   add , true here to make it work
 				} // if attrs.multiMarkers
 			} // end of link function
 		};

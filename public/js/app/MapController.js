@@ -19,7 +19,9 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
   /* Data models for the settings */
   $scope.baseMaps = [{type: "Open Street Map"}];
   $scope.layers = [];
+  $scope.externalLayers = [{name: "Digital Globe Crowd Rank", enabled: false, url: "http://mapper_dev.tomnod.com/nod/api/stlouistornado/sage/30", type: "chip"}];
   $scope.currentLayerId = 0;
+
 
   $(document).ready(function() {
     // handle desktop browsers so that they play nice with the bootstrap navbar.
@@ -72,6 +74,24 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
   $scope.$watch("$scope.observationId", function(oldValue, newValue) {
     console.log("Observation ID changed " + $scope.observationId);
   }, true); 
+
+  $scope.changeLayerStatus = function(url, type, enabled) {
+    $http.jsonp(url, {params: {"callback": "JSON_CALLBACK"}, headers: {"Accepts": "application/json", "Content-Type": "application/json"}}). //
+        success(function (data, status, headers, config) {
+            console.log('got points');
+            var crowdrank = data.features;
+            var markers = $scope.multiMarkers;
+            for (var i = 0; i <  crowdrank.length; i++) {
+              //console.log(crowdrank[i].geometry.coordinates[0] + ", " + crowdrank.geometry.coordinates[1]);
+              markers[crowdrank[i].properties.tag_id] = {lat: crowdrank[i].geometry.coordinates[1], lng: crowdrank[i].geometry.coordinates[0], draggable: false, id: crowdrank[i].properties.tag_id, icon_url: crowdrank[i].properties.icon_url, chip_url: crowdrank[i].properties.chip_url, chip_bounds: crowdrank[i].properties.chip_bounds.coordinates};
+            }
+            $scope.multiMarkers = markers;
+        }).
+        error(function (data, status, headers, config) {
+            console.log("Error getting layers: " + status);
+        });
+    console.log("layer changed " + enabled + " type " + type + " url" + url);
+  }
 
   $scope.openSettings = function () {
     console.log("in open settings");

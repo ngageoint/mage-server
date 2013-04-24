@@ -20,6 +20,7 @@ sage.directive('observation', function($http) {
 		  $scope.unit = "";
 		  $scope.description = "";
 		  $scope.attachment = "";
+		  $scope.fileUploadUrl = "";
 
 		  // this is a hack, need to start using the ui-bootstrap, couldnt get the yo-dawged directive's scopes to play nice 
    		$scope.selectedTab = 1;
@@ -101,13 +102,8 @@ sage.directive('observation', function($http) {
 	      success(function (data, status, headers, config) {
 	          if ($scope.attachment != "") {
 	          	var objectId = data.addResults[0].objectId;
-	          	
-	          	$http.post(appConstants.rootUrl + '/FeatureServer/'+ $scope.currentLayerId + "/" + objectId + "/addAttachment", "attachment=" + $scope.attachment, {headers: {'Content-Type': 'application/x-www-form-urlencoded'}}).
-	          	success(function (data, status, headers, config) {
-	          		console.log("added attachment!");	
-	          	}).error(function (data, status, headers, config) {
-	          		console.log("unable to add attachment! " + status);	
-	          	});
+	          	$scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/'+ $scope.currentLayerId + '/' + objectId + '/addAttachment';
+
 	          }
 	      }).
 	      error(function (data, status, headers, config) {
@@ -116,6 +112,7 @@ sage.directive('observation', function($http) {
 		    
 		    $scope.observationId = 0; // hide the observation panel
 		  } // end of saveObservation
+
 
 		  $scope.setFile = function (element) {
 		  	 $scope.$apply(function($scope) {
