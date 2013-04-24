@@ -1,84 +1,75 @@
 // feature routes
-module.exports = function(app, models, fs) {
+module.exports = function(app, models, fs, transformers, async, utilities) {
+  var geometryFormat = utilities.geoJsonFormat;
 
-  var Formatter = function(format) {
-    return format == 'geojson' ? new GeoJsonFormatter() : new JsonFormatter();
+  var parseQueryParams = function(req, res, next) {
+    var parameters = {};
+
+    var properties = req.param('properties');
+    if (properties) {
+      parameters.properties = properties.split(",");
+    }
+
+    var bbox = req.param('bbox');
+    if (bbox) {
+      parameters.geometries = geometryFormat.parse('bbox', bbox);
+    }
+
+    var geometry = req.param('geometry');
+    if (geometry) {
+      parameters.geometries = geometryFormat.parse('geometry', geometry);
+    }
+
+    req.parameters = parameters;
+
+    next();
   }
 
-  function  JsonFormatter() {
-    var format = function(data) {
-      return data;
-    }
+  // Queries for ESRI Styled records built for the ESRI format and syntax
+  app.get('/FeatureServer/:layerId/features', parseQueryParams, function (req, res) {
+    console.log("SAGE ESRI Features GET REST Service Requested");
 
-    return {
-      format: format
-    }
-  }
+    // create filters for feature query
+    var filters = null;
 
-  function GeoJsonFormatter() {
-
-    var transformFeature = function(feature) {
-      return {
-        type: 'Feature',
-        geometry: {
-          type: 'Point',
-          coordinates: [feature.geometry.x, feature.geometry.y]
-        },
-        properties: {
-          id: feature._id,
-          eventtype: feature.attributes.TYPE,
-          eventlevel: feature.attributes.EVENTLEVEL,
-          eventclear: feature.attributes.EVENTCLEAR,
-          eventdate: feature.attributes.EVENTDATE,
-          description: feature.attributes.DESCRIPTION,
-          address: feature.attributes.ADDRESS,
-          team: feature.attributes.TEAM,
-          unit: feature.attributes.UNIT,
-          usng: feature.attributes.USNG
-        }
-      }
-    }
-
-    var format = function(data) {
-      var result;
-
-      if (data instanceof Array) {
-        result = {
-          type: 'FeatureCollection',
-          features: []
-        }
-
-        data.forEach(function(feature) {
-          result.features.push(transformFeature(feature));
+    var geometries = req.parameters.geometries;
+    if (geometries) {
+      filters = [];
+      geometries.forEach(function(geometry) {
+        filters.push({
+          geometry: geometry
         });
-      } else {
-        result = transformFeature(data);
-      }
-
-      return result;
+      });
     }
 
-    return {
-      format: format
+    var respond = function(features) {
+      var response = transformers.geojson.transform(features, req.parameters.properties);
+      res.json(response);
     }
-  }
 
-  // Gets all the features with universal JSON formatting   
-  app.get('/featureServer/v1/features', function (req, res){
-    console.log("SAGE Features GET REST Service Requested");
+    if (filters) {
+      allFeatures = [];
+      async.each(
+        filters, 
+        function(filter, done) {
+          models.Feature.getFeatures(req.layer, filter, function (features) {
+            if (features) {
+              allFeatures = allFeatures.concat(features);
+            }
 
-    // get format parameter, default to json if not present
-    var format = req.param('f', 'json');
-
-    models.Feature.getFeatures(function (features) {
-      var response = [];
-      var formatter = Formatter(format);
-      if (features) {
-        response = formatter.format(features);
-      }
-
-      res.send(JSON.stringify(response));
-    });
+            done();
+          });
+        },
+        function(err) {
+          respond(allFeatures);
+        }
+      );
+    } else {
+      var filter = {};
+      models.Feature.getFeatures(req.layer, filter, function (features) {
+        respond(features);
+      });
+    }
   });
 
   // This function gets one feature with universal JSON formatting  
