@@ -123,7 +123,7 @@ module.exports = function(mongoose, counters) {
   }
 
   var removeFeature = function(layer, objectId, callback) {
-    var query = {'attributes.OBJECTID': objectId};
+    var query = {'properties.OBJECTID': objectId};
     featureModel(layer).findOneAndRemove(query, function (err, feature) {
       if (err) {
         console.log('Could not remove feature', err);
@@ -155,7 +155,7 @@ module.exports = function(mongoose, counters) {
       relativePath: file.relativePath
     };
 
-    var condition = {'attributes.OBJECTID': objectId};
+    var condition = {'properties.OBJECTID': objectId};
     var update = {'$push': { attachments: attachment } };
     featureModel(layer).update(condition, update, function(err, feature) {
       if (err) {
