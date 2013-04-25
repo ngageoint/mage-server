@@ -133,6 +133,29 @@ html, body, div.leaflet-container {
 	width: 130px;
 }
 
+.attachment {
+	margin-bottom: 15px;
+}
+
+/* Progress bar stuff */
+.percent {
+    position: absolute; width: 300px; height: 14px; z-index: 1; text-align: center; font-size: 0.8em; color: white;
+}
+.progress-bar {
+    width: 300px; height: 14px;
+    border-radius: 10px;
+    border: 1px solid #CCC;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#6666cc), to(#4b4b95));
+    border-image: initial;
+}
+.uploaded {
+    padding: 0;
+    height: 14px;
+    border-radius: 10px;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#66cc00), to(#4b9500));
+    border-image: initial;
+}
+
 /* Overrides */
 .form-horizontal .control-group {
 	margin-bottom: 10px;
@@ -146,3 +169,4 @@ textarea {
 	background: #648D53;
 	color: #F5F3DA;
 }
+

@@ -41,6 +41,10 @@
 		    </div>
 		  </div>
 		</form>    
+		<span>
+	  	<button cl***REMOVED***="btn btn-inverse" ng-click="cancelObservation()" ngm-tap="cancelObservation()">Cancel</button>
+	  	<button cl***REMOVED***="btn" ng-click="saveObservation()" ngm-tap="saveObservation()">Submit</button>
+	 	</span>
   </div>
   
   <div cl***REMOVED***="tab-content" ng-show="selectedTab == 2">
@@ -48,14 +52,23 @@
     	<div cl***REMOVED***="control-group">
 		    <label cl***REMOVED***="control-label" for="unit">Select File</label>
 		    <div cl***REMOVED***="controls">
-		      <input type="file" id="fileupload" name="files[]" multiple data-url="{{fileUploadUrl}}" onchange="angular.element(this).scope().setFile(this)"> <!-- hax for file upload -->
+		      <input type="file" id="file-upload" ng-model-instant multiple onchange="angular.element(this).scope().setFiles(this)">
 		    </div>
+		    <div ng-show="progressVisible">
+          <div cl***REMOVED***="percent">{{progress}}%</div>
+          <div cl***REMOVED***="progress-bar">
+              <div cl***REMOVED***="uploaded" ng-style="{'width': progress+'%'}"></div>
+          </div>
+        </div>
 		  </div>
     </form>
+    <span>
+	  	<button cl***REMOVED***="btn btn-inverse" ng-click="cancelObservation()" ngm-tap="cancelObservation()">Cancel</button>
+	  	<button cl***REMOVED***="btn" ng-click="saveObservation()" ngm-tap="saveObservation()">Submit</button>
+	 	</span>
+    <hr>
+	  <div cl***REMOVED***="attachment" ng-repeat="attachment in attachments">
+	  	<img src="{{attachmentUrl}}{{attachment.id}}">
+	  </div>
   </div>
-
-  <span>
-  	<button cl***REMOVED***="btn btn-inverse" ng-click="cancelObservation()" ngm-tap="cancelObservation()">Cancel</button>
-  	<button cl***REMOVED***="btn" ng-click="saveObservation()" ngm-tap="saveObservation()">Submit</button>
- 	</span>
 </div>
