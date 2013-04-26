@@ -149,7 +149,6 @@
           var markers_dict = [];
           scope.$watch("multiMarkers", function(newMarkerList, oldMarkerList) {
             console.log('multimarker change');
-            //var markers = new L.MarkerClusterGroup(); // for clusters
             for (var mkey in scope.multiMarkers) {
               (function(mkey) {
                 var mark_dat = scope.multiMarkers[mkey];

@@ -106,13 +106,45 @@ sage.directive('observation', function($http) {
         /* check to see if this is this an update or a new observation */
         if ($scope.observationId > 0) {
           operation = "updateFeatures";
-          ob = [{"geometry":{"x": $scope.observation.geometry.coordinates[0], "y":$scope.observation.geometry.coordinates[1]},"attributes":{"OBJECTID": $scope.observationId, "EVENTDATE":new Date().getTime(),"TYPE":$scope.observationType.title,"EVENTLEVEL":$scope.level.color,"TEAM":$scope.team.name,"DESCRIPTION":$scope.description,"EVENTCLEAR":0,"UNIT":$scope.unit}}]
+          ob = [{
+            "geometry": {
+              "x": $scope.observation.geometry.coordinates[0], 
+              "y":$scope.observation.geometry.coordinates[1]
+            },
+            "attributes": {
+              "OBJECTID": $scope.observationId, 
+              "EVENTDATE":new Date().getTime(),
+              "TYPE":$scope.observationType.title,
+              "EVENTLEVEL":$scope.level.color,
+              "TEAM":$scope.team.name,
+              "DESCRIPTION":$scope.description,
+              "EVENTCLEAR":0,
+              "UNIT":$scope.unit
+            }
+          }];
         } else {
           operation = "addFeatures";
-          ob = [{"geometry":{"x": $scope.marker.lng, "y":$scope.marker.lat},"attributes":{"EVENTDATE":new Date().getTime(),"TYPE":$scope.observationType.title,"EVENTLEVEL":$scope.level.color,"TEAM":$scope.team.name,"DESCRIPTION":$scope.description,"EVENTCLEAR":0,"UNIT":$scope.unit}}]
+          ob = [{
+            "geometry": {
+              "x": $scope.marker.lng, 
+              "y": $scope.marker.lat
+            },
+            "attributes": {
+              "EVENTDATE":new Date().getTime(),
+              "TYPE":$scope.observationType.title,
+              "EVENTLEVEL":$scope.level.color,
+              "TEAM":$scope.team.name,
+              "DESCRIPTION":$scope.description,
+              "EVENTCLEAR":0,
+              "UNIT":$scope.unit
+            }
+          }];
         }
 
-        $http.post('/FeatureServer/'+ $scope.currentLayerId + '/' + operation, "features=" + JSON.stringify(ob), {headers: {'Content-Type': 'application/x-www-form-urlencoded'}}).
+        $http.post('/FeatureServer/'+ $scope.currentLayerId + '/' + operation, "features=" + JSON.stringify(ob), 
+        {
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+        }).
         success(function (data, status, headers, config) {
           if ($scope.files.length > 0) {
             var objectId = data.addResults[0].objectId;
