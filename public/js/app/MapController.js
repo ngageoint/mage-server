@@ -7,7 +7,7 @@ var sage = angular.module("sage", ["ui.bootstrap", "leaflet-directive", "sage.**
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
 function MapController($scope, $log, $http, $injector, appConstants, teams, levels, observationTypes) {
-	/* Some map defaults */
+  /* Some map defaults */
   $scope.center = { lat: 39.8282, lng: -98.5795 };
   $scope.marker = { lat: 39.8282, lng: -98.5795 };
   $scope.message = "Current Position";
@@ -44,23 +44,23 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
     }
 
     $http.get(appConstants.rootUrl + '/FeatureServer/').
-        success(function (data, status, headers, config) {
-            console.log('got layers');
-            $scope.layers = data.layers;
+      success(function (data, status, headers, config) {
+          console.log('got layers');
+          $scope.layers = data.layers;
 
-            _.each(data.layers, function(layer) {
-              $scope.featureLayers.unshift({
-                name: layer.name,
-                url: "/FeatureServer/" + layer.id + "/features?properties=OBJECTID",
-                enabled: false
-              });
+          _.each(data.layers, function(layer) {
+            $scope.featureLayers.unshift({
+              name: layer.name,
+              url: "/FeatureServer/" + layer.id + "/features?properties=OBJECTID",
+              enabled: false
             });
+          });
 
-            $('#layer-select-panel').removeCl***REMOVED***('hide');
-        }).
-        error(function (data, status, headers, config) {
-            $log.log("Error getting layers: " + status);
-        });
+          $('#layer-select-panel').removeCl***REMOVED***('hide');
+      }).
+      error(function (data, status, headers, config) {
+          $log.log("Error getting layers: " + status);
+      });
 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(position) {
@@ -87,11 +87,9 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
         console.log("lat " + position.coords.latitude + " lon " + position.coords.longitude);
         $scope.center = { lat: position.coords.latitude, lng: position.coords.longitude };
         $scope.zoom = 12;
-
       });
     }
   }
-
 
   $scope.$watch("$scope.observationId", function(oldValue, newValue) {
     console.log("Observation ID changed " + $scope.observationId);

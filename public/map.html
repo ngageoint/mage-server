@@ -1,40 +1,40 @@
 <!DOCTYPE html>
 <html ng-app="sage">
 <head>
-	<title>SAGE Map</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="apple-mobile-web-app-capable" content="yes">
-	<link rel="stylesheet" href="css/leaflet.css" />
-	<link rel="stylesheet" href="css/bootstrap.min.css" />
-	<link rel="stylesheet" href="css/bootstrap-responsive.min.css"/>
-	<link rel="stylesheet" href="css/font-awesome.min.css">
-	<link rel="stylesheet" href="css/MarkerCluster.css">
-	<link rel="stylesheet" href="css/MarkerCluster.Default.css">
-	<!--[if IE 7]>
-	<link rel="stylesheet" href="css/font-awesome-ie7.min.css">
-	<![endif]-->
-	<link rel="stylesheet" href="css/style.css"/>
-	<link rel="stylesheet" href="css/map.css"/>
+  <title>SAGE Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="css/leaflet.css" />
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+  <link rel="stylesheet" href="css/bootstrap-responsive.min.css"/>
+  <link rel="stylesheet" href="css/font-awesome.min.css">
+  <link rel="stylesheet" href="css/MarkerCluster.css">
+  <link rel="stylesheet" href="css/MarkerCluster.Default.css">
+  <!--[if IE 7]>
+  <link rel="stylesheet" href="css/font-awesome-ie7.min.css">
+  <![endif]-->
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/map.css"/>
 
-	<!--<script type="text/javascript" src="js/bootstrap.min.js"></script>-->
-	<script type="text/javascript" src="js/lib/jquery/jquery.min.js"></script>
-	<script type="text/javascript" src="js/lib/underscore-min.js"></script>
-	<script src="js/lib/leaflet/leaflet.js"></script>
-	<script src="js/lib/leaflet/leaflet.markercluster-src.js"></script>
-	<script type="text/javascript" src="js/lib/angular/angular.js"></script>
-	<script type="text/javascript" src="js/lib/ui-bootstrap/ui-bootstrap-0.2.0.js"></script>
-	<script type="text/javascript" src="js/lib/angular-leaflet-directive.js"></script>
-	<script type="text/javascript" src="js/app/***REMOVED***s.js"></script>
-	<script type="text/javascript" src="js/app/MapController.js"></script>
-	<script type="text/javascript" src="js/app/directives/observation.js"></script>
+  <!--<script type="text/javascript" src="js/bootstrap.min.js"></script>-->
+  <script type="text/javascript" src="js/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="js/lib/underscore-min.js"></script>
+  <script src="js/lib/leaflet/leaflet.js"></script>
+  <script src="js/lib/leaflet/leaflet.markercluster-src.js"></script>
+  <script type="text/javascript" src="js/lib/angular/angular.js"></script>
+  <script type="text/javascript" src="js/lib/ui-bootstrap/ui-bootstrap-0.2.0.js"></script>
+  <script type="text/javascript" src="js/lib/angular-leaflet-directive.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s.js"></script>
+  <script type="text/javascript" src="js/app/MapController.js"></script>
+  <script type="text/javascript" src="js/app/directives/observation.js"></script>
 
-	<link rel="apple-touch-icon" href="img/touch-icon-iphone.png" />
-	<link rel="apple-touch-icon" sizes="72x72" href="img/touch-icon-ipad.png" />
-	<link rel="apple-touch-icon" sizes="114x114" href="img/touch-icon-iphone-retina.png" />
-	<link rel="apple-touch-icon" sizes="144x144" href="img/touch-icon-ipad-retina.png" />
+  <link rel="apple-touch-icon" href="img/touch-icon-iphone.png" />
+  <link rel="apple-touch-icon" sizes="72x72" href="img/touch-icon-ipad.png" />
+  <link rel="apple-touch-icon" sizes="114x114" href="img/touch-icon-iphone-retina.png" />
+  <link rel="apple-touch-icon" sizes="144x144" href="img/touch-icon-ipad-retina.png" />
 </head>
 <body ng-controller="MapController">
-	<div cl***REMOVED***="navbar hidden-phone">
+  <div cl***REMOVED***="navbar hidden-phone">
     <div cl***REMOVED***="navbar-inner">
       <div cl***REMOVED***="container">
         <a cl***REMOVED***="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
@@ -63,84 +63,84 @@
 
   <!-- Button bar -->
   <div id="button-bar">
-  	<button cl***REMOVED***="btn" id="geo" ng-click="geolocate()" ngm-tap="geolocate()"><i cl***REMOVED***="icon-map-marker icon-large sage-color"></i></button>
-  	<button cl***REMOVED***="btn" id="goto-address" ng-click="openGotoAddress()" ngm-tap="openGotoAddress()"><i cl***REMOVED***="icon-search icon-large sage-color"></i></button>
-  	<button cl***REMOVED***="btn" id="new-observation" ng-click="newObservation()" ngm-tap="newObservation()"><i cl***REMOVED***="icon-plus icon-large sage-color"></i></button>
-  	<button cl***REMOVED***="btn" id="refresh-points" ng-click="refreshPoints()" ngm-tap="refreshPoints()"><i cl***REMOVED***="icon-cloud-download icon-large sage-color"></i></button>
-  	<button cl***REMOVED***="btn" id="fft-btn" ng-click="fft()" ngm-tap="fft()"><i cl***REMOVED***="icon-group icon-large sage-color"></i></button>
-	</div>
-
-	<!-- Panels -->
-	<!-- Show this one on startup and make the user select a layer, there may be a better way to handle the multiple layers, but until we figure it out, make them pick one on load. -->
-	<div id="layer-select-panel" cl***REMOVED***="hide panel panel-medium">
-		<h4>Select an event to begin adding observations</h4>
-		<form cl***REMOVED***="form-horizontal">
-		  <select ng-model="currentLayerId" ng-options="layer.id as layer.name for layer in layers"></select>
-		  <span>
-		  	<button cl***REMOVED***="btn" ng-click="selectLayer()" ngm-tap="saveSettings()">Ok</button>
-		 	</span>
-		</form>
+    <button cl***REMOVED***="btn" id="geo" ng-click="geolocate()" ngm-tap="geolocate()"><i cl***REMOVED***="icon-map-marker icon-large sage-color"></i></button>
+    <button cl***REMOVED***="btn" id="goto-address" ng-click="openGotoAddress()" ngm-tap="openGotoAddress()"><i cl***REMOVED***="icon-search icon-large sage-color"></i></button>
+    <button cl***REMOVED***="btn" id="new-observation" ng-click="newObservation()" ngm-tap="newObservation()"><i cl***REMOVED***="icon-plus icon-large sage-color"></i></button>
+    <button cl***REMOVED***="btn" id="refresh-points" ng-click="refreshPoints()" ngm-tap="refreshPoints()"><i cl***REMOVED***="icon-cloud-download icon-large sage-color"></i></button>
+    <button cl***REMOVED***="btn" id="fft-btn" ng-click="fft()" ngm-tap="fft()"><i cl***REMOVED***="icon-group icon-large sage-color"></i></button>
   </div>
 
-	<div id="settings-panel" cl***REMOVED***="hide panel panel-large">
-		<form cl***REMOVED***="form">
-			<legend>Base Layers</legend>
-			<div cl***REMOVED***="control-group">
-		    <div cl***REMOVED***="controls">
-		      <select ng-model="baseLayer" ng-options="map.name for map in baseLayers"></select>
-		    </div>
-		  </div>
-		  <legend>Feature Layers</legend>
-			<div cl***REMOVED***="control-group">
-              <div cl***REMOVED***="controls">
-			  	<label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
-					<input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)">{{layer.name}}
-				</label>
-              </div>
-            </div>
-
-	  	  <legend>Imagery Layers</legend>
-			<div cl***REMOVED***="control-group">
-              <div cl***REMOVED***="controls">
-			  	<label cl***REMOVED***="checkbox" ng-repeat="layer in imageryLayers">
-					<input type="checkbox" ng-model="layer.checked" ng-click="onImageryLayer(layer)">{{layer.name}}
-				</label>
-              </div>
-            </div>
-		</form>
-		<span>
-	  	<button cl***REMOVED***="btn btn-mobile" ng-click="saveSettings()" ngm-tap="saveSettings()">Ok</button>
-	 	</span>
+  <!-- Panels -->
+  <!-- Show this one on startup and make the user select a layer, there may be a better way to handle the multiple layers, but until we figure it out, make them pick one on load. -->
+  <div id="layer-select-panel" cl***REMOVED***="hide panel panel-medium">
+    <h4>Select an event to begin adding observations</h4>
+    <form cl***REMOVED***="form-horizontal">
+      <select ng-model="currentLayerId" ng-options="layer.id as layer.name for layer in layers"></select>
+      <span>
+        <button cl***REMOVED***="btn" ng-click="selectLayer()" ngm-tap="saveSettings()">Ok</button>
+      </span>
+    </form>
   </div>
 
-	<div id="goto-address-panel" cl***REMOVED***="hide panel panel-medium">
-		<form cl***REMOVED***="form-horizontal">
-		  <div cl***REMOVED***="control-group">
-		    <label cl***REMOVED***="control-label" for="address">Go to Address</label>
-		    <div cl***REMOVED***="controls">
-		      <input ng-model="address"/>
-		    </div>
-		  </div>
-		  <span>
-		  	<button cl***REMOVED***="btn btn-inverse" ng-click="dismissGotoAddress()" ngm-tap="dismissGotoAddress()">Cancel</button>
-		  	<button cl***REMOVED***="btn" ng-click="gotoAddress()" ngm-tap="gotoAddress()">Go</button>
-		 	</span>
-		</form>
+  <div id="settings-panel" cl***REMOVED***="hide panel panel-large">
+    <form cl***REMOVED***="form">
+      <legend>Base Layers</legend>
+      <div cl***REMOVED***="control-group">
+        <div cl***REMOVED***="controls">
+          <select ng-model="baseLayer" ng-options="map.name for map in baseLayers"></select>
+        </div>
+      </div>
+      <legend>Feature Layers</legend>
+      <div cl***REMOVED***="control-group">
+        <div cl***REMOVED***="controls">
+          <label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
+            <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)">{{layer.name}}
+          </label>
+        </div>
+      </div>
+
+      <legend>Imagery Layers</legend>
+      <div cl***REMOVED***="control-group">
+        <div cl***REMOVED***="controls">
+          <label cl***REMOVED***="checkbox" ng-repeat="layer in imageryLayers">
+            <input type="checkbox" ng-model="layer.checked" ng-click="onImageryLayer(layer)">{{layer.name}}
+          </label>
+        </div>
+      </div>
+    </form>
+    <span>
+      <button cl***REMOVED***="btn btn-mobile" ng-click="saveSettings()" ngm-tap="saveSettings()">Ok</button>
+    </span>
+  </div>
+
+  <div id="goto-address-panel" cl***REMOVED***="hide panel panel-medium">
+    <form cl***REMOVED***="form-horizontal">
+      <div cl***REMOVED***="control-group">
+        <label cl***REMOVED***="control-label" for="address">Go to Address</label>
+        <div cl***REMOVED***="controls">
+          <input ng-model="address"/>
+        </div>
+      </div>
+      <span>
+        <button cl***REMOVED***="btn btn-inverse" ng-click="dismissGotoAddress()" ngm-tap="dismissGotoAddress()">Cancel</button>
+        <button cl***REMOVED***="btn" ng-click="gotoAddress()" ngm-tap="gotoAddress()">Go</button>
+      </span>
+    </form>
   </div>
 
   <div id="refresh-panel" cl***REMOVED***="hide panel panel-small">
-		<i cl***REMOVED***="icon-spin icon-spinner icon-large"></i> Synchronizing
-		<span>
-	  	<button cl***REMOVED***="btn" ng-click="dismissRefresh()" ngm-tap="dismissRefresh()">Ok</button>
-	 	</span>
+    <i cl***REMOVED***="icon-spin icon-spinner icon-large"></i> Synchronizing
+    <span>
+      <button cl***REMOVED***="btn" ng-click="dismissRefresh()" ngm-tap="dismissRefresh()">Ok</button>
+    </span>
   </div>
 
   <div id="fft-panel" cl***REMOVED***="hide panel panel-medium">
-  	<h3>Friendly Force Tracking</h3>
-	  <span>
-	  	<button cl***REMOVED***="btn btn-inverse" ng-click="dismissFft()" ngm-tap="dismissFft()">Cancel</button>
-	  	<button cl***REMOVED***="btn" ng-click="dismissFft()" ngm-tap="dismissFft()">Go</button>
-	 	</span>
+    <h3>Friendly Force Tracking</h3>
+    <span>
+      <button cl***REMOVED***="btn btn-inverse" ng-click="dismissFft()" ngm-tap="dismissFft()">Cancel</button>
+      <button cl***REMOVED***="btn" ng-click="dismissFft()" ngm-tap="dismissFft()">Go</button>
+    </span>
   </div>
 </body>
 </html>
