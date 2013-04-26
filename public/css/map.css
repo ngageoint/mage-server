@@ -55,7 +55,7 @@ html, body, div.leaflet-container {
 	width: 50px;
 	bottom: 5px;
 	left: 5px;
-	z-index: 2000;
+	z-index: 1999;
 }
 
 #goto-address {
@@ -64,7 +64,7 @@ html, body, div.leaflet-container {
 	width: 50px;
 	bottom: 5px;
 	left: 68px;
-	z-index: 2000;
+	z-index: 1999;
 }
 
 #new-observation {
@@ -73,7 +73,7 @@ html, body, div.leaflet-container {
 	width: 50px;
 	bottom: 5px;
 	left: 133px;
-	z-index: 2000;
+	z-index: 1999;
 }
 
 #refresh-points {
@@ -82,7 +82,7 @@ html, body, div.leaflet-container {
 	width: 50px;
 	bottom: 5px;
 	left: 198px;
-	z-index: 2000;
+	z-index: 1999;
 }
 
 #fft-btn {
@@ -91,7 +91,7 @@ html, body, div.leaflet-container {
 	width: 50px;
 	bottom: 5px;
 	left: 263px;
-	z-index: 2000;
+	z-index: 1999;
 }
 
 /* Panels and their contents */
@@ -110,7 +110,7 @@ html, body, div.leaflet-container {
 
 @media all and (min-width: 520px) {
 	.panel {
-		margin-top: 45px;
+		margin: 45px;
 	}
 }
 
