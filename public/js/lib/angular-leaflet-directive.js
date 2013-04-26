@@ -13,7 +13,9 @@
         zoom: "=zoom",
         multiMarkers: "=multimarkers",
         layer: "=layer",
-        observationId: "=observationid"
+        currentLayerId: "=currentlayerid",
+        observationId: "=observationid",
+        newFeature: "=newfeature"
       },
       template: '<div cl***REMOVED***="map"></div>',
       link: function (scope, element, attrs, ctrl) {
@@ -240,13 +242,12 @@
                     }
 
                     var marker = new L.marker(latlng, {
-                      icon:  icon,
-                      draggable: !layer.external
+                      icon:  icon
                     });
 
                     marker.on("click", function(e) {
                       scope.$apply(function(s) {
-                        scope.observationId = feature.properties.OBJECTID;
+                        scope.observationId = {layer: layer, feature: feature};
                       });
                     });
 
@@ -255,13 +256,21 @@
                 }).addTo(map).bringToFront(); 
               }
 
-              layers[layer.name] = newLayer;
+              layers[layer.id] = newLayer;
             } else {
               // remove from map
-              map.removeLayer(layers[layer.name]);
-              delete layers[layer.name];
+              map.removeLayer(layers[layer.id]);
+              delete layers[layer.id];
             }
         }, true); // watch layer
+
+        scope.$watch("newFeature", function() {
+          var feature = scope.newFeature;
+          if (!feature) return;
+
+          var lLayer = layers[scope.currentLayerId];
+          lLayer.addData(scope.newFeature);
+        }); // watch newFeature
 
       } // end of link function
     };

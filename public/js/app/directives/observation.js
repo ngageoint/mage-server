@@ -3,9 +3,12 @@ sage.directive('observation', function($http) {
     restrict: "A",
     templateUrl: "/js/app/partials/observation-template.html",
     scope: {
+      layers: "=layers",
       observationId: "=observationid",
       marker: "=marker",
-      currentLayerId: "=currentlayerid"
+      newLayer: "=newlayer",
+      currentLayerId: "=currentlayerid",
+      newFeature: "=newfeature"
     },
     controller: derp = function ($scope, $element, $attrs, $http, teams, levels, observationTypes, appConstants) {
       /* Observation parameters. These are what get sent back to the server when a new observation is created. */
@@ -34,10 +37,15 @@ sage.directive('observation', function($http) {
       */
       $scope.$watch("observationId", function (newValue, oldValue) {
         console.log("id changed!!!!");
-        if ($scope.observationId == 0) {          // hide the observation dialog    
+        var observation = $scope.observationId;
+        if (!observation) return;
+
+        var observationId = $scope.observationId.feature.properties.OBJECTID;
+
+        if (observationId == 0) {          // hide the observation dialog    
           $('#observation-panel').addCl***REMOVED***('hide');
           console.log ('id = 0');
-        } else if($scope.observationId == -1) { // creating a new observation 
+        } else if(observationId == -1) { // creating a new observation 
           $scope.team = teams[0];
           $scope.level = levels[0];
           $scope.observationType = observationTypes[0];
@@ -45,10 +53,12 @@ sage.directive('observation', function($http) {
           $scope.description = "";
           $('#observation-panel').removeCl***REMOVED***('hide');
           console.log('id = -1');
-        } else if ($scope.observationId > 0) {  // look up the observation and show it in the dialog
+        } else if (observationId > 0) {  // look up the observation and show it in the dialog
+          var layerId = $scope.observationId.layer.id;
+
           $('#observation-panel').removeCl***REMOVED***('hide');
           /* get the observation properties */
-          $http.get('/FeatureServer/'+ $scope.currentLayerId + '/' + $scope.observationId + "?query&outFields=*").
+          $http.get('/FeatureServer/'+ layerId + '/' + observationId + "?query&outFields=*").
             success(function (data, status, headers, config) {
               $scope.observation = data;
               $scope.team = _.find($scope.teams, function (t) {
@@ -74,7 +84,7 @@ sage.directive('observation', function($http) {
             });
 
           /* get the observation's attachments */
-          $scope.attachmentUrl = '/FeatureServer/'+ $scope.currentLayerId + '/' + $scope.observationId + '/attachments/';
+          $scope.attachmentUrl = '/FeatureServer/'+ layerId + '/' + observationId + '/attachments/';
           $http.get($scope.attachmentUrl).
             success(function (data, status, headers, config) {
               $scope.attachments = data.attachmentInfos;
@@ -84,14 +94,14 @@ sage.directive('observation', function($http) {
             });
           console.log('id > 0');
         } else {
-          console.log("id is weird...not so sure what to do" + $scope.observationId);
+          console.log("id is weird...not so sure what to do" + observationId);
         }
       }, true); // scope.$watch
 
       /* Hide the observation panel, and reset the fields for next time. */
       $scope.cancelObservation = function () {
         console.log("in new observation");
-        $scope.observationId = 0; // hide the observation panel
+        $scope.observationId = {feature: {properties: {OBJECTID: 0}}}; // hide the observation panel
         $scope.files = [];
       }
 
@@ -146,20 +156,30 @@ sage.directive('observation', function($http) {
           headers: {'Content-Type': 'application/x-www-form-urlencoded'}
         }).
         success(function (data, status, headers, config) {
+          var objectId = data.addResults ? data.addResults[0].objectId : data.updateResults[0].objectId;
+
+          $scope.newFeature = {
+            type: "Feature",
+            geometry: {
+              type: "Point",
+              coordinates: [$scope.marker.lng, $scope.marker.lat]
+            },
+            properties: {
+              OBJECTID: objectId
+            }
+          }          
+
           if ($scope.files.length > 0) {
-            var objectId = data.addResults[0].objectId;
             $scope.fileUploadUrl = '/FeatureServer/' + $scope.currentLayerId + '/' + objectId + '/addAttachment';
             $scope.uploadFile();
           }
+
+          $scope.observationId = 0; // hide the observation panel
         }).
         error(function (data, status, headers, config) {
           $log.log("Error adding feature: " + status);
         }); 
-        
-        $scope.observationId = 0; // hide the observation panel
-        $scope.files = [];;
       } // end of saveObservation
-
 
       $scope.setFiles = function (element) {
         $scope.$apply(function(scope) {
@@ -199,8 +219,7 @@ sage.directive('observation', function($http) {
       }
 
       function uploadComplete(evt) {
-        /* This event is raised when the server send back a response */
-        alert(evt.target.responseText);
+        $scope.files = [];
       }
 
       function uploadFailed(evt) {

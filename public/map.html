@@ -2,8 +2,9 @@
 <html ng-app="sage">
 <head>
   <title>SAGE Map</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta id="view" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="shortcut icon" href="leaf.ico"/>
   <link rel="stylesheet" href="css/leaflet.css" />
   <link rel="stylesheet" href="css/bootstrap.min.css" />
   <link rel="stylesheet" href="css/bootstrap-responsive.min.css"/>
@@ -53,10 +54,10 @@
   </div>
   
   <!-- The map directive -->
-  <leaflet marker="marker" center="center" zoom="zoom" multimarkers="multiMarkers" layer="layer" message="message" draggable="true" observationid="observationId"></leaflet>
+  <leaflet marker="marker" center="center" zoom="zoom" multimarkers="multiMarkers" layer="layer" message="message" draggable="true" observationid="observationId" newfeature="newFeature" currentlayerid="currentLayerId"></leaflet>
 
   <!-- The observation panel dialog, currently only works for looking at/editing points. Need to circle back around and get it tied in to work for creating points -->
-  <div observation observationid="observationId" marker="marker" currentlayerid="currentLayerId"></div>
+  <div observation observationid="observationId" marker="marker" currentlayerid="currentLayerId" newfeature="newFeature" layers="layers"></div>
   
   <!-- Settings / layer picker button -->
   <button cl***REMOVED***="btn" id="settings" ng-click="openSettings()" ngm-tap="openSettings()"><i cl***REMOVED***="icon-cog icon-large sage-color"></i></button>
@@ -71,26 +72,18 @@
   </div>
 
   <!-- Panels -->
-  <!-- Show this one on startup and make the user select a layer, there may be a better way to handle the multiple layers, but until we figure it out, make them pick one on load. -->
-  <div id="layer-select-panel" cl***REMOVED***="hide panel panel-medium">
-    <h4>Select an event to begin adding observations</h4>
-    <form cl***REMOVED***="form-horizontal">
-      <select ng-model="currentLayerId" ng-options="layer.id as layer.name for layer in layers"></select>
-      <span>
-        <button cl***REMOVED***="btn" ng-click="selectLayer()" ngm-tap="saveSettings()">Ok</button>
-      </span>
-    </form>
-  </div>
-
   <div id="settings-panel" cl***REMOVED***="hide panel panel-large">
     <form cl***REMOVED***="form">
-      <legend>Base Layers</legend>
+
+
+      <h4>Base Layers</h4>
       <div cl***REMOVED***="control-group">
         <div cl***REMOVED***="controls">
           <select ng-model="baseLayer" ng-options="map.name for map in baseLayers"></select>
         </div>
       </div>
-      <legend>Feature Layers</legend>
+
+      <h4>Feature Layers</h4>
       <div cl***REMOVED***="control-group">
         <div cl***REMOVED***="controls">
           <label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
@@ -99,7 +92,7 @@
         </div>
       </div>
 
-      <legend>Imagery Layers</legend>
+      <h4>Imagery Layers</h4>
       <div cl***REMOVED***="control-group">
         <div cl***REMOVED***="controls">
           <label cl***REMOVED***="checkbox" ng-repeat="layer in imageryLayers">

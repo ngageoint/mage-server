@@ -16,6 +16,7 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
   $scope.multiMarkers = {};
   $scope.externalLayer = "";
   $scope.observationId = 0;
+  $scope.newFeature = null;
 
   /* Data models for the settings */
   $scope.layers = [];
@@ -43,20 +44,21 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
       $('.leaflet-container').css('height', ($(window).height() - 40));
     }
 
-    $http.get(appConstants.rootUrl + '/FeatureServer/').
+    $http.get('/FeatureServer/').
       success(function (data, status, headers, config) {
           console.log('got layers');
           $scope.layers = data.layers;
 
           _.each(data.layers, function(layer) {
             $scope.featureLayers.unshift({
+              id: layer.id,
               name: layer.name,
               url: "/FeatureServer/" + layer.id + "/features?properties=OBJECTID",
               enabled: false
             });
           });
 
-          $('#layer-select-panel').removeCl***REMOVED***('hide');
+          $('#settings-panel').removeCl***REMOVED***('hide');
       }).
       error(function (data, status, headers, config) {
           $log.log("Error getting layers: " + status);
@@ -151,12 +153,6 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
     $('#settings-panel').removeCl***REMOVED***('hide');
   }
 
-  $scope.selectLayer = function () {
-    console.log("layer selected");
-    $('#layer-select-panel').addCl***REMOVED***('hide');
-    // $scope.refreshPoints();
-  }
-
   $scope.closeSettings = function () {
     console.log("in new observation");
     $('#settings-panel').addCl***REMOVED***('hide');
@@ -170,7 +166,7 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
 
   $scope.newObservation = function () {
     console.log("in new observation");
-    $scope.observationId = -1;
+    $scope.observationId = {feature: { properties: {OBJECTID: -1}}};
   }
   
   $scope.openGotoAddress = function () {
