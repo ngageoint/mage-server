@@ -18,6 +18,8 @@ module.exports = function() {
         }
       }
     }
+
+    ret.type = "Feature";
   }
 
   var transform = function(features, properties) {

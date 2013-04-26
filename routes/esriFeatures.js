@@ -119,6 +119,20 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
     next();
   }
 
+  app.get('/ProxyServer', function(req, res) {
+    console.log("ProxyServer");
+
+    utilities.rest.get('https://cigtdc.esri.com/secrest/***REMOVED***s/Events/USAR_v3/FeatureServer/0/query', {
+      query : {
+        f: 'pjson',
+        geometry: '-180,-90,180,90',
+        returnGeometry: "false"
+      }
+    }).on('success', function(result) {
+      res.send(result);
+    });
+  });
+
   // Queries for ESRI Styled records built for the ESRI format and syntax
   app.get('/FeatureServer/:layerId/query', parseQueryParams, function (req, res) {
     console.log("SAGE ESRI Features GET REST Service Requested");

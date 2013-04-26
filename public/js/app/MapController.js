@@ -18,15 +18,23 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
   $scope.observationId = 0;
 
   /* Data models for the settings */
-  $scope.baseMaps = [{type: "Open Street Map"}];
   $scope.layers = [];
-  $scope.externalLayers = [{
-    name: "Digital Globe Crowd Rank Base Layer", enabled: false, url: "http://sip.tomnod.com/sip/c6754f6173d059ac82729b6243148a08/256", type: "base"
-  },{
-    name: "Digital Globe Crowd Rank Features", enabled: false, url: "http://mapper_dev.tomnod.com/nod/api/stlouistornado/sage/30", type: "chip"
+  $scope.baseLayers = [{name: "Open Street Map"}];
+  $scope.imageryLayers = [{
+    name: "Digital Globe Crowd Rank Base Layer", 
+    enabled: false, 
+    external: true,
+    type: "imagery",
+    url: "http://sip.tomnod.com/sip/c6754f6173d059ac82729b6243148a08/256/{z}/{x}/{y}.png"
   }];
-  $scope.currentLayerId = 0;
+  $scope.featureLayers = [{
+    name: "Digital Globe Crowd Rank Features", 
+    enabled: false, 
+    external: true,
+    url: "http://mapper_dev.tomnod.com/nod/api/stlouistornado/sage/30"
+  }];
 
+  $scope.currentLayerId = 0;
 
   $(document).ready(function() {
     // handle desktop browsers so that they play nice with the bootstrap navbar.
@@ -39,6 +47,15 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
         success(function (data, status, headers, config) {
             console.log('got layers');
             $scope.layers = data.layers;
+
+            _.each(data.layers, function(layer) {
+              $scope.featureLayers.unshift({
+                name: layer.name,
+                url: "/FeatureServer/" + layer.id + "/features?properties=OBJECTID",
+                enabled: false
+              });
+            });
+
             $('#layer-select-panel').removeCl***REMOVED***('hide');
         }).
         error(function (data, status, headers, config) {
@@ -61,7 +78,7 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
     }
   }).resize();
 
-  $scope.baseMap = $scope.baseMaps[0];
+  $scope.baseLayer = $scope.baseLayers[0];
 
   $scope.geolocate = function () {
     console.log("in geolocate");
@@ -78,35 +95,57 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
 
   $scope.$watch("$scope.observationId", function(oldValue, newValue) {
     console.log("Observation ID changed " + $scope.observationId);
-  }, true); 
+  }, true);
 
-  $scope.changeLayerStatus = function(url, type, enabled) {
-    if (type === 'chip') {
-      $http.jsonp(url, {params: {"callback": "JSON_CALLBACK"}, headers: {"Accepts": "application/json", "Content-Type": "application/json"}}). //
-        success(function (data, status, headers, config) {
-            console.log('got points');
-            var crowdrank = data.features;
-            var markers = $scope.multiMarkers;
-            for (var i = 0; i <  crowdrank.length; i++) {
-              //console.log(crowdrank[i].geometry.coordinates[0] + ", " + crowdrank.geometry.coordinates[1]);
-              markers[crowdrank[i].properties.tag_id] = {
-                lat: crowdrank[i].geometry.coordinates[1], 
-                lng: crowdrank[i].geometry.coordinates[0], 
-                draggable: false, 
-                id: crowdrank[i].properties.tag_id, 
-                icon_url: crowdrank[i].properties.icon_url, 
-                chip_url: crowdrank[i].properties.chip_url, 
-                chip_bounds: crowdrank[i].properties.chip_bounds};
-            }
-            $scope.multiMarkers = markers;
-        }).
-        error(function (data, status, headers, config) {
-            console.log("Error getting layers: " + status);
-        });
-      console.log("layer changed " + enabled + " type " + type + " url" + url);
-    } else if (type === 'base') {
-      $scope.externalLayer = url;
+  $scope.onFeatureLayer = function(layer) {
+    if (!layer.checked) {
+      $scope.layer = layer;
+      return;
+    };
+
+    var options = {
+      method: "GET",
+      url: layer.url,
+      headers: {
+        "Accepts": "application/json", 
+        "Content-Type": "application/json"
+      }
     }
+
+    if (layer.external) {
+      options.method = "JSONP",
+      options.params = {
+         "callback": "JSON_CALLBACK"
+      }
+    } 
+
+    $http(options)
+      .success(function(data, status, headers, config) {
+        console.log('got points');
+        layer.featureCollection = data;
+        $scope.layer = layer;
+
+          // var crowdrank = data.features;
+          // var markers = $scope.multiMarkers;
+          // for (var i = 0; i <  crowdrank.length; i++) {
+          //   markers[crowdrank[i].properties.tag_id] = {
+          //     lat: crowdrank[i].geometry.coordinates[1],
+          //     lng: crowdrank[i].geometry.coordinates[0], 
+          //     draggable: false, 
+          //     id: crowdrank[i].properties.tag_id, 
+          //     icon_url: crowdrank[i].properties.icon_url, 
+          //     chip_url: crowdrank[i].properties.chip_url, 
+          //     chip_bounds: crowdrank[i].properties.chip_bounds};
+          // }
+          // $scope.multiMarkers = markers;
+      })
+      .error(function(data, status, headers, config) {
+        console.log("Error getting features for layer 'layer.name' : " + status);
+      });
+  }
+
+  $scope.onImageryLayer = function(layer) {
+    $scope.layer = layer;
   }
 
   $scope.openSettings = function () {
@@ -117,7 +156,7 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
   $scope.selectLayer = function () {
     console.log("layer selected");
     $('#layer-select-panel').addCl***REMOVED***('hide');
-    $scope.refreshPoints();
+    // $scope.refreshPoints();
   }
 
   $scope.closeSettings = function () {
@@ -133,9 +172,7 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
 
   $scope.newObservation = function () {
     console.log("in new observation");
-    //$('#observation-panel').removeCl***REMOVED***('hide');
     $scope.observationId = -1;
-    console.log("in ctl, set observationId to: " +$scope.observationId);
   }
   
   $scope.openGotoAddress = function () {
@@ -154,25 +191,27 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
   }
 
   $scope.refreshPoints = function () {
-    console.log("in refresh points");
-    $('#refresh-panel').removeCl***REMOVED***('hide');
-    $scope.multiMarkers = {};
-    $http.get(appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/query?outFields=OBJECTID').
-        success(function (data, status, headers, config) {
-            console.log('got points');
-            $scope.points = data.features;
-            var markers = {};
-            for (var i = 0; i <  $scope.points.length; i++) {
-              console.log($scope.points[i].geometry.x + ", " + $scope.points[i].geometry.y);
-              markers[$scope.points[i].attributes.OBJECTID] = {lat: $scope.points[i].geometry.y, lng: $scope.points[i].geometry.x,draggable: false, id: $scope.points[i].attributes.OBJECTID};
-            }
-            $scope.multiMarkers = markers;
-        }).
-        error(function (data, status, headers, config) {
-            $log.log("Error getting layers: " + status);
-        });
+    // TODO refresh point for selected layers
+  //   console.log("in refresh points");
+  //   $('#refresh-panel').removeCl***REMOVED***('hide');
+  //   $scope.multiMarkers = {};
 
-    $('#refresh-panel').addCl***REMOVED***('hide');
+  //   $http.get(appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/query?outFields=OBJECTID').
+  //       success(function (data, status, headers, config) {
+  //           console.log('got points');
+  //           $scope.points = data.features;
+  //           var markers = {};
+  //           for (var i = 0; i <  $scope.points.length; i++) {
+  //             console.log($scope.points[i].geometry.x + ", " + $scope.points[i].geometry.y);
+  //             markers[$scope.points[i].attributes.OBJECTID] = {lat: $scope.points[i].geometry.y, lng: $scope.points[i].geometry.x,draggable: false, id: $scope.points[i].attributes.OBJECTID};
+  //           }
+  //           $scope.multiMarkers = markers;
+  //       }).
+  //       error(function (data, status, headers, config) {
+  //           $log.log("Error getting layers: " + status);
+  //       });
+
+  //   $('#refresh-panel').addCl***REMOVED***('hide');
   }
 
   $scope.dismissRefresh = function () {

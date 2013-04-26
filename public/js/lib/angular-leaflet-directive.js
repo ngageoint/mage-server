@@ -13,11 +13,24 @@
 				message: "=message",
 				zoom: "=zoom",
 				multiMarkers: "=multimarkers",
-				externalLayer: "=externallayer",
+				layer: "=layer",
 				observationId: "=observationid"
 			},
 			template: '<div cl***REMOVED***="map"></div>',
 			link: function (scope, element, attrs, ctrl) {
+				var layers = {};
+
+				var greenIcon = L.icon({
+				    iconUrl: appConstants.rootUrl + '/js/lib/leaflet/images/marker-icon-green.png',
+				    shadowUrl: appConstants.rootUrl + '/js/lib/leaflet/images/marker-shadow.png',
+
+				    iconSize:     [25, 41], // size of the icon
+				    shadowSize:   [41, 41], // size of the shadow
+				    iconAnchor:   [12, 41], // point of the icon which will correspond to marker's location
+				    shadowAnchor: [12, 41],  // the same for the shadow
+				    popupAnchor:  [1, -34] // point from which the popup should open relative to the iconAnchor
+				});
+
         var $el = element[0],
 				map = new L.Map($el);
 
@@ -139,16 +152,7 @@
 				});
 
 				if (attrs.multimarkers) {
-					var greenIcon = L.icon({
-				    iconUrl: appConstants.rootUrl + '/js/lib/leaflet/images/marker-icon-green.png',
-				    shadowUrl: appConstants.rootUrl + '/js/lib/leaflet/images/marker-shadow.png',
 
-				    iconSize:     [25, 41], // size of the icon
-				    shadowSize:   [41, 41], // size of the shadow
-				    iconAnchor:   [12, 41], // point of the icon which will correspond to marker's location
-				    shadowAnchor: [12, 41],  // the same for the shadow
-				    popupAnchor:  [1, -34] // point from which the popup should open relative to the iconAnchor
-					});
 					var markers_dict = [];
 					scope.$watch("multiMarkers", function(newMarkerList, oldMarkerList) {
 						console.log('multimarker change');
@@ -222,11 +226,52 @@
 						// map.addLayer(markers); // for clusters
 					}, true); // watch multiMarkers   add , true here to make it work
 				} // if attrs.multiMarkers
-				scope.$watch("externalLayer", function(oldVal, newVal) {
-					if (!scope.externalLayer) return;
-					var url = scope.externalLayer + '/{z}/{x}/{y}.jpg';
-					//L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
-					L.tileLayer(url).addTo(map).bringToFront();
+				scope.$watch("layer", function() {
+				  	var layer = scope.layer;
+				  	if (!layer) return;
+
+				  	if (layer.checked) {
+				  		// add to map
+				  		var newLayer = null;
+				  		if (layer.type === 'imagery') {
+				  			newLayer = L.tileLayer(scope.layer.url).addTo(map).bringToFront();
+				  		} else {
+				  			newLayer = new L.GeoJSON(layer.featureCollection, {
+			  				    pointToLayer: function (feature, latlng) {
+			  				    	var iconUrl = feature.properties.icon_url;
+			  				    	var icon = greenIcon;
+			  				    	if (iconUrl) {
+			  				    		icon = L.icon({iconUrl: feature.properties.icon_url});
+			  				    	} else {
+			  				    		icon = greenIcon;
+			  				    	}
+
+		  				    		var marker = new L.marker(latlng, {
+		  				    			icon:  icon,
+		  				    			draggable: !layer.external
+		  				    		});
+
+									marker.on("click", function(e) {
+										scope.$apply(function(s) {
+											scope.observationId = feature.properties.OBJECTID;
+										});
+									});
+
+		  				    		return marker;
+								},
+								onEachFeature: function(feature, iLayer) {
+
+								}
+				  			});
+				  			newLayer.addTo(map).bringToFront(); 
+				  		}
+
+						layers[layer.name] = newLayer;
+				  	} else {
+				  		// remove from map
+				  		map.removeLayer(layers[layer.name]);
+				  		delete layers[layer.name];
+				  	}
 				}, true);
 			} // end of link function
 		};

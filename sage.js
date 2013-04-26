@@ -54,10 +54,13 @@ var models = {
 var jsol = require('./utilities/jsol');
 var geometryFormat = require('./format/geometryFormat')(jsol);
 var geoJsonFormat = require('./format/geoJsonFormat')(jsol);
+var rest = require('restler');
+
 var utilities = {
   jsol: jsol,
   geometryFormat: geometryFormat,
-  geoJsonFormat: geoJsonFormat
+  geoJsonFormat: geoJsonFormat,
+  rest: rest
 }
 
 var tranformers = {

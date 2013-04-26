@@ -45,7 +45,7 @@ sage.directive('observation', function($http) {
 				  $scope.description = "";
 					$('#observation-panel').removeCl***REMOVED***('hide');
 					console.log('id = -1');
-				} else if ($scope.observationId > 1) {  // look up the observation and show it in the dialog
+				} else if ($scope.observationId > 0) {  // look up the observation and show it in the dialog
 					$('#observation-panel').removeCl***REMOVED***('hide');
 					/* get the observation properties */
 					$http.get('/FeatureServer/'+ $scope.currentLayerId + '/' + $scope.observationId + "?query&outFields=*").
