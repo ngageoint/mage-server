@@ -1,7 +1,7 @@
 sage.directive('observation', function($http) {
   return {
     restrict: "A",
-    templateUrl: "/js/app/partials/observation-template.html",
+    templateUrl: appConstants.rootUrl + "/js/app/partials/observation-template.html",
     scope: {
       layers: "=layers",
       observationId: "=observationid",
@@ -58,7 +58,7 @@ sage.directive('observation', function($http) {
 
           $('#observation-panel').removeCl***REMOVED***('hide');
           /* get the observation properties */
-          $http.get('/FeatureServer/'+ layerId + '/' + observationId + "?query&outFields=*").
+          $http.get(appConstants.rootUrl + '/FeatureServer/'+ layerId + '/' + observationId + "?query&outFields=*").
             success(function (data, status, headers, config) {
               $scope.observation = data;
               $scope.team = _.find($scope.teams, function (t) {
@@ -84,7 +84,7 @@ sage.directive('observation', function($http) {
             });
 
           /* get the observation's attachments */
-          $scope.attachmentUrl = '/FeatureServer/'+ layerId + '/' + observationId + '/attachments/';
+          $scope.attachmentUrl = appConstants.rootUrl + '/FeatureServer/'+ layerId + '/' + observationId + '/attachments/';
           $http.get($scope.attachmentUrl).
             success(function (data, status, headers, config) {
               $scope.attachments = data.attachmentInfos;
@@ -151,7 +151,7 @@ sage.directive('observation', function($http) {
           }];
         }
 
-        $http.post('/FeatureServer/'+ $scope.currentLayerId + '/' + operation, "features=" + JSON.stringify(ob), 
+        $http.post(appConstants.rootUrl + '/FeatureServer/'+ $scope.currentLayerId + '/' + operation, "features=" + JSON.stringify(ob), 
         {
           headers: {'Content-Type': 'application/x-www-form-urlencoded'}
         }).
@@ -170,7 +170,7 @@ sage.directive('observation', function($http) {
           }          
 
           if ($scope.files.length > 0) {
-            $scope.fileUploadUrl = '/FeatureServer/' + $scope.currentLayerId + '/' + objectId + '/addAttachment';
+            $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/' + objectId + '/addAttachment';
             $scope.uploadFile();
           }
 

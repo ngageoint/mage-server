@@ -44,7 +44,7 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
       $('.leaflet-container').css('height', ($(window).height() - 40));
     }
 
-    $http.get('/FeatureServer/').
+    $http.get(appConstants.rootUrl + '/FeatureServer/').
       success(function (data, status, headers, config) {
           console.log('got layers');
           $scope.layers = data.layers;
@@ -53,7 +53,7 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
             $scope.featureLayers.unshift({
               id: layer.id,
               name: layer.name,
-              url: "/FeatureServer/" + layer.id + "/features?properties=OBJECTID",
+              url: appConstants.rootUrl + "/FeatureServer/" + layer.id + "/features?properties=OBJECTID",
               enabled: false
             });
           });
