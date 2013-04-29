@@ -174,7 +174,9 @@ sage.directive('observation', function($http, appConstants) {
             $scope.uploadFile();
           }
 
-          $scope.observationId = 0; // hide the observation panel
+          // hide the observation panel
+          //TODO need a better way to send hide events for this panel
+          $scope.observationId = {feature: { properties: {OBJECTID: 0}}};
         }).
         error(function (data, status, headers, config) {
           $log.log("Error adding feature: " + status);
