@@ -56,11 +56,11 @@ sage.directive('observation', function($http, appConstants) {
         } else if (observationId > 0) {  // look up the observation and show it in the dialog
           var layerId = $scope.observationId.layer.id;
 
-          $('#observation-panel').removeCl***REMOVED***('hide');
           /* get the observation properties */
           $http.get(appConstants.rootUrl + '/FeatureServer/'+ layerId + '/' + observationId + "?query&outFields=*").
             success(function (data, status, headers, config) {
               $scope.observation = data;
+              $scope.currentLayerId = layerId;
               $scope.team = _.find($scope.teams, function (t) {
                 if(t.name == $scope.observation.attributes.TEAM) {
                   return t;
@@ -78,6 +78,8 @@ sage.directive('observation', function($http, appConstants) {
               });
               $scope.description = $scope.observation.attributes.DESCRIPTION;
               $scope.unit = $scope.observation.attributes.UNIT;
+
+              $('#observation-panel').removeCl***REMOVED***('hide');
             }).
             error(function (data, status, headers, config) {
               $log.log("Error adding feature: " + status);
