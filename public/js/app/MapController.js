@@ -26,13 +26,13 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
     enabled: false, 
     external: true,
     type: "imagery",
-    url: "http://sip.tomnod.com/sip/c6754f6173d059ac82729b6243148a08/256/{z}/{x}/{y}.png"
+    url: "https://sip.tomnod.com/sip/c6754f6173d059ac82729b6243148a08/256/{z}/{x}/{y}.png"
   }];
   $scope.featureLayers = [{
     name: "Digital Globe Crowd Rank Features", 
     enabled: false, 
     external: true,
-    url: "http://mapper_dev.tomnod.com/nod/api/stlouistornado/sage/30"
+    url: "https://mapper_dev.tomnod.com/nod/api/stlouistornado/sage/30"
   }];
 
   $scope.currentLayerId = 0;
