@@ -116,7 +116,7 @@ sage.directive('observation', function($http, appConstants) {
         var ob = [];
 
         /* check to see if this is this an update or a new observation */
-        if ($scope.observationId > 0) {
+        if ($scope.observationId.feature.properties.OBJECTID > 0) {
           operation = "updateFeatures";
           ob = [{
             "geometry": {
