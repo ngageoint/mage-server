@@ -124,7 +124,7 @@ sage.directive('observation', function($http, appConstants) {
               "y":$scope.observation.geometry.coordinates[1]
             },
             "attributes": {
-              "OBJECTID": $scope.observationId, 
+              "OBJECTID": $scope.observationId.feature.properties.OBJECTID, 
               "EVENTDATE":new Date().getTime(),
               "TYPE":$scope.observationType.title,
               "EVENTLEVEL":$scope.level.color,
@@ -160,17 +160,19 @@ sage.directive('observation', function($http, appConstants) {
         success(function (data, status, headers, config) {
           var objectId = data.addResults ? data.addResults[0].objectId : data.updateResults[0].objectId;
 
-          $scope.newFeature = {
-            type: "Feature",
-            geometry: {
-              type: "Point",
-              coordinates: [$scope.marker.lng, $scope.marker.lat]
-            },
-            properties: {
-              OBJECTID: objectId
-            }
-          }          
-
+          if (operation == "addFeatures") {
+            $scope.newFeature = {
+              type: "Feature",
+              geometry: {
+                type: "Point",
+                coordinates: [$scope.marker.lng, $scope.marker.lat]
+              },
+              properties: {
+                OBJECTID: objectId
+              }
+            } 
+          }
+         
           if ($scope.files.length > 0) {
             $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/' + objectId + '/addAttachment';
             $scope.uploadFile();
