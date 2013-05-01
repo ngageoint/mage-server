@@ -26,7 +26,7 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
     enabled: false, 
     external: true,
     type: "imagery",
-    url: "https://sip.tomnod.com/sip/c6754f6173d059ac82729b6243148a08/256/{z}/{x}/{y}.png"
+    url: "http://sip.tomnod.com/sip/c6754f6173d059ac82729b6243148a08/256/{z}/{x}/{y}.png"
   }];
   $scope.featureLayers = [{
     name: "Digital Globe Crowd Rank Features", 

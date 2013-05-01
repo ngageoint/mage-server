@@ -11,45 +11,41 @@ module.exports = function(geometryFormat) {
     USNG: { name: 'USNG', alias: 'USNG', type: 'esriFieldTypeString', length: 255 },
     EVENTCLEAR: { name: 'EVENTCLEAR', alias: 'EVENTCLEAR', type: 'esriFieldTypeDate', length: 36 },
     UNIT: { name: 'UNIT', alias: 'UNIT', type: 'esriFieldTypeString', length: 100 }
-  }
+  };
+
+  var fieldNames = function() {
+    var fieldNames = [];
+    for (var field in fields) {
+      fieldNames.push(fields[field].name);
+    }
+
+    return fieldNames;
+  }();
 
   var include = function(property, fields) {
     return fields.indexOf(property) != -1;
   }
 
   var transformFeature = function(feature, ret, options) {
-    if (!options.properties) {
-      // include all properties
-      return {
-        geometry: geometryFormat.format(feature.geometry),
-        attributes: feature.properties
-      }; 
-    } else {
-      var xform = {};
+    var returnGeometry = options.properties ? options.properties.returnGeometry : true;
+    var outFields = options.properties ? options.properties.outFields : fieldNames;
 
-      // handle geometry
-      if (options.properties.returnGeometry) {
-        xform.geometry = geometryFormat.format(feature.geometry);
-      }
+    var xform = {};
 
-      // handle attributes
-      var outFields = options.properties.outFields;
-      var attributes = null;
-      if (outFields) {
-        attributes = {};
-        for (var property in feature.properties) {
-          if (include(property, outFields)) {
-            attributes[property] = feature.properties[property];
-          }
-        }
-
-        xform.attributes = attributes;
-      }
-
-      return xform;
+    // handle geometry
+    if (returnGeometry) {
+      xform.geometry = geometryFormat.format(feature.geometry);
     }
 
-    return options.propertyNames ? propertyNameTransform : defaultTransform;
+    var attributes = {};
+    outFields.forEach(function(outField) {
+      var field = feature.properties[outField];
+      attributes[outField] = field ? field : null;
+    });
+
+    xform.attributes = attributes;
+    
+    return xform;
   }
 
   var transform = function(features, properties) {
