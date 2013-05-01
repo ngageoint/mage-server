@@ -57,8 +57,10 @@ body {
 
 .icon-sage {
     color: #648D52;
-    font-size: 1.2em;
+    font-size: 1.4em;
     background-image: none;
+    margin-left: -4px;
+    margin-bottom: 9px;
 }
 
 .icon-brand {
