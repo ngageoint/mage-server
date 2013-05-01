@@ -169,17 +169,3 @@ html, body, div.leaflet-container {
 	}
 }
 
-/* Overrides */
-.form-horizontal .control-group {
-	margin-bottom: 10px;
-}
-
-textarea {
-	height: 75px;
-}
-
-.nav-pills>.active>a, .nav-pills>.active>a:hover, .nav-pills>.active>a:focus {
-	background: #648D53;
-	color: #F5F3DA;
-}
-
