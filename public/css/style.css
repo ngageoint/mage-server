@@ -54,3 +54,9 @@ body {
 .top-gap {
     margin-top: 15px;
 }
+
+.icon-sage {
+    color: #648D52;
+    font-size: 1.2em;
+    background-image: none;
+}
