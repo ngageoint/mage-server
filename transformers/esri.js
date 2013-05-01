@@ -27,8 +27,12 @@ module.exports = function(geometryFormat) {
   }
 
   var transformFeature = function(feature, ret, options) {
-    var returnGeometry = options.properties.returnGeometry ? options.properties.returnGeometry : true;
-    var outFields = options.properties.outFields ? options.properties.outFields : fieldNames;
+    var returnGeometry = options.properties ? options.properties.returnGeometry : true;
+    var outFields = fieldNames;
+
+    if (options.properties) {
+      outFields = options.properties.outFields ? options.properties.outFields : [];
+    }
 
     var xform = {};
 
