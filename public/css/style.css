@@ -6,21 +6,21 @@
 
 h1, h2, h3, h4, h5 {
 	font-family: SansBetween, Arial, sans-serif;
-	color: #2B2620;
+	color: #324962;
 }
 
 a {
-	color: #009933;
+	color: #456588;
 }
 
 body {
-	background: #CFE4C3;
-	color: #2B2620;
+	background: #D0E7FF;
+	color: #5278A2;
 }
 
 .navbar-inner {
-	background: #648D53;
-	color: #F5F3DA;
+	background: #5278A2;
+	color: #91BDEE;
 }
 
 .navbar .brand {
@@ -48,7 +48,7 @@ body {
 }
 
 .sage-color {
-    color: #648D52;
+    color: #324962;
 }
 
 .top-gap {
@@ -56,7 +56,7 @@ body {
 }
 
 .icon-sage {
-    color: #648D52;
+    color: #5278A2;
     font-size: 1.4em;
     background-image: none;
     margin-left: -4px;
@@ -64,7 +64,7 @@ body {
 }
 
 .icon-brand {
-    color: #F5F3DA;
+    color: #FFF;
     background-image: none;
 }
 
@@ -78,6 +78,15 @@ textarea {
 }
 
 .nav-pills>.active>a, .nav-pills>.active>a:hover, .nav-pills>.active>a:focus {
-    background: #648D53;
+    background: #456588;
     color: #F5F3DA;
+}
+
+.btn {
+    background: #FEFEFE;
+    border: solid 1px #B3C7DB;
+} 
+
+.btn-inverse {
+    background: #324962;
 }

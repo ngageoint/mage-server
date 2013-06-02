@@ -101,11 +101,12 @@ html, body, div.leaflet-container {
 	top: 5px;
 	z-index: 2000;
 	overflow: auto;
-	background: #CFE4C3;
+	background: #D0E7FF;
+	color: #5278A2;
 	position: absolute;
 	height: 90%;
 	width: 85%;
-	border: 2px solid #89a35b;
+	border: 2px solid #5278A2;
 }
 
 @media all and (min-width: 520px) {

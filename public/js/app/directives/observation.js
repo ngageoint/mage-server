@@ -226,6 +226,7 @@ sage.directive('observation', function($http, appConstants) {
 
       function uploadComplete(evt) {
         $scope.files = [];
+        $scope.progressVisible = false
       }
 
       function uploadFailed(evt) {

@@ -27,7 +27,7 @@ Instead of a list of all cl***REMOVED*** selectors,
 you can use the generic selector below, but it's slower:
 [cl***REMOVED****="icon-"] {
 */
-.icon-camera, .icon-layers, .icon-download, .icon-upload, .icon-settings, .icon-zoom-out, .icon-zoom-in, .icon-remove, .icon-ok, .icon-list, .icon-refresh, .icon-location, .icon-plus, .icon-minus, .icon-leaf, .icon-group, .icon-spinner, .icon-map, .icon-globe, .icon-earth, .icon-search {
+.icon-camera, .icon-layers, .icon-download, .icon-upload, .icon-settings, .icon-zoom-out, .icon-zoom-in, .icon-remove, .icon-ok, .icon-list, .icon-refresh, .icon-location, .icon-plus, .icon-minus, .icon-group, .icon-spinner, .icon-map, .icon-globe, .icon-earth, .icon-search, .icon-leaf, .icon-magic {
 	font-family: 'icomoon';
 	speak: none;
 	font-style: normal;
@@ -79,9 +79,6 @@ you can use the generic selector below, but it's slower:
 .icon-minus:before {
 	content: "\f068";
 }
-.icon-leaf:before {
-	content: "\f06c";
-}
 .icon-group:before {
 	content: "\f0c0";
 }
@@ -99,4 +96,10 @@ you can use the generic selector below, but it's slower:
 }
 .icon-search:before {
 	content: "\f002";
+}
+.icon-leaf:before {
+	content: "\f06c";
+}
+.icon-magic:before {
+	content: "\f0d0";
 }
