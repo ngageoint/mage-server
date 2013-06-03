@@ -25,14 +25,16 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
     enabled: false, 
     external: true,
     type: "imagery",
-    url: "http://sip.tomnod.com/sip/c6754f6173d059ac82729b6243148a08/256/{z}/{x}/{y}.png"
+    url: "http://sip.tomnod.com/sip/c6754f6173d059ac82729b6243148a08/256/{z}/{x}/{y}.png",
+    tms: false
   },
   {
     name: "Digital Globe Oklahoma Map", 
     enabled: false, 
     external: true,
     type: "imagery",
-    url: "http://s3.amazonaws.com/explorationlab/oktornado1/256/{z}/{x}/{y}.png"
+    url: "http://s3.amazonaws.com/explorationlab/oktornado1/{z}/{x}/{y}.png",
+    tms: true
   }];
   $scope.featureLayers = [{
     name: "St Louis Crowd Rank", 

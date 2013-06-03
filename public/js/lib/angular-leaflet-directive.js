@@ -229,7 +229,9 @@
               // add to map
               var newLayer = null;
               if (layer.type === 'imagery') {
-                newLayer = L.tileLayer(scope.layer.url).addTo(map).bringToFront();
+                newLayer = L.tileLayer(scope.layer.url, {
+                  tms: scope.layer.tms
+                }).addTo(map).bringToFront();
               } else {
                 newLayer = new L.GeoJSON(layer.featureCollection, {
                   pointToLayer: function (feature, latlng) {
