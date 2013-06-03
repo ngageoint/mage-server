@@ -27,7 +27,7 @@ sage.directive('external', function($http, appConstants) {
 
 
         // check to see if it is a Tomnod observation
-        if (observation.feature.properties.tagger_id) {
+        if (observation.feature.properties.tag_id) {
           console.log("I has a Tomnod point");
           $scope.icon = observation.feature.properties.icon_url;
           $scope.observationName = observation.feature.properties.name;
