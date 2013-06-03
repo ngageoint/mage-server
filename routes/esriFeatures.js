@@ -320,13 +320,13 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
         });
       } else {
         results.push({
-          objectId: feature.attributes.OBJECTID,
+          objectId: feature.properties.OBJECTID,
           globalId: null,
           success: true
         });
 
-        var path = getAttachmentDir(req.layer);
         feature.attachments.forEach(function(attachment) {
+          var path = app.get('attachmentBase') + attachment.relativePath
           fs.remove(path + attachment.name, function(err) {
             if (err) {
               console.error("Could not remove attachment file " + path + attachment.name + ". ", err);
