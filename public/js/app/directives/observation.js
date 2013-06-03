@@ -96,7 +96,7 @@ sage.directive('observation', function($http, appConstants) {
             });
           console.log('id > 0');
         } else {
-          console.log("id is weird...not so sure what to do" + observationId);
+          console.log("id is weird...possible that it is an external point " + observationId);
         }
       }, true); // scope.$watch
 

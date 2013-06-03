@@ -10,7 +10,6 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
   /* Some map defaults */
   $scope.center = { lat: 39.8282, lng: -98.5795 };
   $scope.marker = { lat: 39.8282, lng: -98.5795 };
-  $scope.message = "Current Position";
   $scope.zoom = 4;
   $scope.points = [];
   $scope.multiMarkers = {};
@@ -22,17 +21,30 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
   $scope.layers = [];
   $scope.baseLayers = [{name: "Open Street Map"}];
   $scope.imageryLayers = [{
-    name: "Digital Globe Crowd Rank Base Layer", 
+    name: "Digital Globe St Louis Map", 
     enabled: false, 
     external: true,
     type: "imagery",
     url: "http://sip.tomnod.com/sip/c6754f6173d059ac82729b6243148a08/256/{z}/{x}/{y}.png"
-  }];
-  $scope.featureLayers = [{
-    name: "Digital Globe Crowd Rank Features", 
+  },
+  {
+    name: "Digital Globe Oklahoma Map", 
     enabled: false, 
     external: true,
-    url: "https://mapper_dev.tomnod.com/nod/api/stlouistornado/sage/30"
+    type: "imagery",
+    url: "http://s3.amazonaws.com/explorationlab/oktornado1/256/{z}/{x}/{y}.png"
+  }];
+  $scope.featureLayers = [{
+    name: "St Louis Crowd Rank", 
+    enabled: false, 
+    external: true,
+    url: "http://mapper_dev.tomnod.com/nod/api/stlouistornado/sage/"
+  },
+  {
+    name: "Oklahoma Crowd Rank", 
+    enabled: false, 
+    external: true,
+    url: "http://mapper_dev.tomnod.com/nod/api/oktornado2/sage/"
   }];
 
   $scope.currentLayerId = 0;

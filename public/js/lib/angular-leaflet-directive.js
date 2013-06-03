@@ -62,7 +62,7 @@
             }
 
             scope.$watch("message", function(newValue) {
-              marker.bindPopup("<strong>" + newValue + "</strong>", { closeButton: true });
+              //marker.bindPopup("<strong>" + newValue + "</strong>", { closeButton: true });
             });
           }
 

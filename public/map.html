@@ -28,6 +28,7 @@
   <script type="text/javascript" src="js/app/***REMOVED***s.js"></script>
   <script type="text/javascript" src="js/app/MapController.js"></script>
   <script type="text/javascript" src="js/app/directives/observation.js"></script>
+  <script type="text/javascript" src="js/app/directives/thirdPartyObservation.js"></script>
 
   <link rel="apple-touch-icon" href="img/touch-icon-iphone.png" />
   <link rel="apple-touch-icon" sizes="72x72" href="img/touch-icon-ipad.png" />
@@ -58,6 +59,9 @@
 
   <!-- The observation panel dialog, currently only works for looking at/editing points. Need to circle back around and get it tied in to work for creating points -->
   <div observation observationid="observationId" marker="marker" currentlayerid="currentLayerId" newfeature="newFeature" layers="layers"></div>
+
+  <!-- Third party observation dialog. Might be a good idea to generalize all the things and make them one observation panel at some point in time. -->
+  <div external observationid="observationId" currentlayerid="currentLayerId" layers="layers"></div>
   
   <!-- layer picker button -->
   <button cl***REMOVED***="btn" id="settings" ng-click="openSettings()" ngm-tap="openSettings()"><i cl***REMOVED***="icon-layers icon-sage"></i></button>

@@ -138,6 +138,15 @@ html, body, div.leaflet-container {
 	margin-bottom: 15px;
 }
 
+.observation-icon {
+	float: left;
+}
+
+.observation-title {
+	margin-left: 70px;
+	padding-top: 15px;
+}
+
 /* Progress bar stuff */
 .percent {
     position: absolute; width: 300px; height: 14px; z-index: 1; text-align: center; font-size: 0.8em; color: white;
@@ -157,7 +166,7 @@ html, body, div.leaflet-container {
     border-image: initial;
 }
 
-@media all and (max-width: 520px) {
+@media all and (max-width: 768px) {
 	.btn-mobile {
 		height: 45px;
 		width: 100%;
