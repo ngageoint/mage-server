@@ -40,13 +40,13 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
     name: "St Louis Crowd Rank", 
     enabled: false, 
     external: true,
-    url: "http://mapper_dev.tomnod.com/nod/api/stlouistornado/sage/"
+    url: "https://mapperdev.tomnod.com/nod/api/stlouistornado/sage"
   },
   {
     name: "Oklahoma Crowd Rank", 
     enabled: false, 
     external: true,
-    url: "http://mapper_dev.tomnod.com/nod/api/oktornado2/sage/"
+    url: "https://mapperdev.tomnod.com/nod/api/oktornado2/sage"
   }];
 
   $scope.currentLayerId = 0;
