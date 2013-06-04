@@ -21,14 +21,15 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
   $scope.layers = [];
   $scope.baseLayers = [{name: "Open Street Map"}];
   $scope.imageryLayers = [{
+    id: 1,
     name: "Digital Globe St Louis Map", 
     enabled: false, 
     external: true,
     type: "imagery",
     url: "http://sip.tomnod.com/sip/c6754f6173d059ac82729b6243148a08/256/{z}/{x}/{y}.png",
     tms: false
-  },
-  {
+  },{
+    id: 2,
     name: "Digital Globe Oklahoma Map", 
     enabled: false, 
     external: true,
@@ -37,12 +38,13 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
     tms: true
   }];
   $scope.featureLayers = [{
+    id: 3,
     name: "St Louis Crowd Rank", 
     enabled: false, 
     external: true,
     url: "https://mapperdev.tomnod.com/nod/api/stlouistornado/sage"
-  },
-  {
+  },{
+    id: 4,
     name: "Oklahoma Crowd Rank", 
     enabled: false, 
     external: true,
