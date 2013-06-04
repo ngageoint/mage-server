@@ -105,7 +105,7 @@ html, body, div.leaflet-container {
 	color: #5278A2;
 	position: absolute;
 	height: 90%;
-	width: 85%;
+	width: 83%;
 	border: 2px solid #5278A2;
 }
 
@@ -113,6 +113,10 @@ html, body, div.leaflet-container {
 	.panel {
 		margin: 45px;
 	}
+}
+
+@-ms-viewport {
+	width: device-width;
 }
 
 .panel-large {

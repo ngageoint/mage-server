@@ -34,6 +34,19 @@
   <link rel="apple-touch-icon" sizes="72x72" href="img/touch-icon-ipad.png" />
   <link rel="apple-touch-icon" sizes="114x114" href="img/touch-icon-iphone-retina.png" />
   <link rel="apple-touch-icon" sizes="144x144" href="img/touch-icon-ipad-retina.png" />
+
+  <!-- IE10 fix -->
+  <script>
+    (function() {
+      if ("-ms-user-select" in document.documentElement.style && navigator.userAgent.match(/IEMobile\/10\.0/)) {
+        var msViewportStyle = document.createElement("style");
+        msViewportStyle.appendChild(
+          document.createTextNode("@-ms-viewport{width:auto!important}")
+        );
+        document.getElementsByTagName("head")[0].appendChild(msViewportStyle);
+      }
+    })();
+  </script>
 </head>
 <body ng-controller="MapController">
   <div cl***REMOVED***="navbar hidden-phone">
@@ -47,6 +60,7 @@
         <a cl***REMOVED***="brand" href="/"><i cl***REMOVED***="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE</a>
         <div cl***REMOVED***="nav-collapse collapse">
           <ul cl***REMOVED***="nav">
+            <li style="background: #305680"><a href="map.html" style="color:#fff;">Map</a></li>
             <li><a href="layers.html">Layer Manager</a></li>
           </ul>
         </div><!--/.nav-collapse -->
