@@ -1,43 +1,120 @@
 <!DOCTYPE html>
 <html ng-app="sage">
 <head>
-	<title>SAGE - User Management</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="apple-mobile-web-app-capable" content="yes">
-	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.css" />
-	<link rel="stylesheet" href="css/bootstrap.min.css" />
-	<link rel="stylesheet" href="css/bootstrap-responsive.min.css"/>
-	<link rel="stylesheet" href="css/style.css"/>
-	<link rel="stylesheet" href="css/map.css"/>
+  <title>MAGE</title>
+  <link rel="shortcut icon" href="favicon.ico"/>
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+  <link rel="stylesheet" href="css/bootstrap-responsive.min.css"/>
+  <link rel="stylesheet" href="css/font-awesome.min.css">
+  <!--[if IE 7]>
+  <link rel="stylesheet" href="css/font-awesome-ie7.min.css">
+  <![endif]-->
+  <link rel="stylesheet" href="css/style.css"/>
 
-	<script type="text/javascript" src="js/bootstrap.min.js"></script>
-	<script type="text/javascript" src="js/jquery/jquery.min.js"></script>
-	<script src="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
-	<script type="text/javascript" src="js/angular/angular.js"></script>
-	<script type="text/javascript" src="js/angular-ui/build/angular-ui.js"></script>
-	<script type="text/javascript" src="js/angular-leaflet-directive.js"></script>
-	<script type="text/javascript" src="js/controller.js"></script>
-
-	<link rel="apple-touch-icon" href="img/touch-icon-iphone.png" />
-	<link rel="apple-touch-icon" sizes="72x72" href="img/touch-icon-ipad.png" />
-	<link rel="apple-touch-icon" sizes="114x114" href="img/touch-icon-iphone-retina.png" />
-	<link rel="apple-touch-icon" sizes="144x144" href="img/touch-icon-ipad-retina.png" />
+  <script type="text/javascript" src="js/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="js/lib/underscore-min.js"></script>
+  <script src="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
+  <script type="text/javascript" src="js/lib/angular/angular.js"></script>
+  <script type="text/javascript" src="js/lib/ui-bootstrap/ui-bootstrap-0.2.0.min.js"></script>
+  <script type="text/javascript" src="js/lib/angular-leaflet-directive.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s.js"></script>
+  <script type="text/javascript" src="js/app/UserController.js"></script>
 </head>
-<body ng-controller="MapController">
-	<div cl***REMOVED***="navbar hidden-phone">
+<body>
+  <div cl***REMOVED***="navbar">
     <div cl***REMOVED***="navbar-inner">
-      <div cl***REMOVED***="container">
-        <a cl***REMOVED***="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-          <span cl***REMOVED***="icon-bar"></span>
-          <span cl***REMOVED***="icon-bar"></span>
-          <span cl***REMOVED***="icon-bar"></span>
-        </a>
-        <a cl***REMOVED***="brand" href="#">SAGE</a>
-        <div cl***REMOVED***="nav-collapse collapse">
-          <ul cl***REMOVED***="nav">
-            <li><a href="#">API Documentation</a></li>
+      <a cl***REMOVED***="brand" href="/"><i cl***REMOVED***="icon-white icon-magic" style="margin-right:10px;"></i>MAGE</a>
+      <ul cl***REMOVED***="nav">
+        <li><a href="map.html">Map</a></li>
+        <li><a href="layers.html">Layer Manager</a></li>
+        <li style="background: #305680"><a href="layers.html" style="color:#fff;">User Management</a></li>
+      </ul>
+    </div>
+  </div>
+  <div cl***REMOVED***="container">
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span12"><h2>Teams</h2></div>
+    </div>
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span2">
+        <div cl***REMOVED***="admin-area">
+          <a id="new-layer-btn" ng-click="newLayer()" ngm-tap="newLayer()" cl***REMOVED***="btn"><i cl***REMOVED***="icon-plus sage-color"></i> New Team</a>
+          <ul style="list-style: none;" cl***REMOVED***="top-gap">
+            <li ng-repeat="team in teams"><a ng-click="viewTeam()">{{team.name}}</a></li>
           </ul>
-        </div><!--/.nav-collapse -->
+          <p id="instructions" cl***REMOVED***="hide">
+            There are no teams on this server. Click the new team button to get started.
+          </p>
+        </div>
+      </div>
+      <div cl***REMOVED***="span10">
+        <h3>{{team.name}}</h3>
+        <form ng-submit="saveLayer()" id="new-layer-form" cl***REMOVED***="hide">
+           <fieldset>
+            <legend>New Team</legend>
+            <label>Team name</label>
+            <input type="text" placeholder="i.e. HurricaneSandy" ng-model="layerName">
+            <span cl***REMOVED***="help-block">A name that corresponds to the type of data you will be storing</span>
+            <button type="submit" cl***REMOVED***="btn">Submit</button>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div cl***REMOVED***="container top-gap-l" ng-controller="UserController">
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span12"><h2>Users</h2></div>
+    </div>
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span2">
+        <div cl***REMOVED***="admin-area">
+          <a id="new-user-btn" ng-click="newUser()" ngm-tap="newUser()" cl***REMOVED***="btn"><i cl***REMOVED***="icon-plus Mage-color"></i> New User</a>
+          <ul style="list-style: none;" cl***REMOVED***="top-gap">
+            <li ng-repeat="user in users"><a ng-click="viewUser()">{{user.username}}</a></li>
+          </ul>
+          <p id="instructions" cl***REMOVED***="hide">
+            There are no users on this server. Click the new user button to get started.
+          </p>
+        </div>
+      </div>
+      <div cl***REMOVED***="span10">
+        <h3>{{layer.name}}</h3>
+        <form ng-submit="saveUser()" id="new-user-form" cl***REMOVED***="hide form-horizontal">
+           <fieldset>
+            <legend>New User</legend>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Username</label>
+              <div cl***REMOVED***="controls">
+                <input type="text" placeholder="i.e. jappleseed" ng-model="username">
+              </div>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">First Name</label>
+              <div cl***REMOVED***="controls">
+                <input type="text" placeholder="Johnny" ng-model="firstName">
+              </div>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Last Name</label>
+              <div cl***REMOVED***="controls">
+                <input type="text" placeholder="Appleseed" ng-model="lastName">
+              </div>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Email</label>
+              <div cl***REMOVED***="controls">
+                <input type="text" placeholder="johnny@appleseed.com" ng-model="email">
+              </div>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">P***REMOVED***word</label>
+              <div cl***REMOVED***="controls">
+                <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="p***REMOVED***word">
+              </div>
+            </div>
+            <button type="submit" cl***REMOVED***="btn">Create user</button>
+          </fieldset>
+        </form>
       </div>
     </div>
   </div>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html ng-app="sage">
 <head>
-	<title>SAGE - Sign In</title>
+	<title>MAGE - Sign In</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.css" />
@@ -32,14 +32,31 @@
           <span cl***REMOVED***="icon-bar"></span>
           <span cl***REMOVED***="icon-bar"></span>
         </a>
-        <a cl***REMOVED***="brand" href="#">SAGE</a>
+        <a cl***REMOVED***="brand" href="#">MAGE</a>
         <div cl***REMOVED***="nav-collapse collapse">
-          <ul cl***REMOVED***="nav">
-            <li><a href="#">API Documentation</a></li>
-          </ul>
         </div><!--/.nav-collapse -->
       </div>
     </div>
+  </div>
+  <div id="panel-login">
+    <form cl***REMOVED***="form">
+      <div cl***REMOVED***="control-group">
+        <label cl***REMOVED***="control-label" for="address">Username</label>
+        <div cl***REMOVED***="controls">
+          <input ng-model="username"/>
+        </div>
+      </div>
+      <div cl***REMOVED***="control-group">
+        <label cl***REMOVED***="control-label" for="address">P***REMOVED***word</label>
+        <div cl***REMOVED***="controls">
+          <input ng-model="p***REMOVED***word"/>
+        </div>
+      </div>
+      <span>
+        <button cl***REMOVED***="btn btn-inverse">Cancel</button>
+        <button cl***REMOVED***="btn">Login</button>
+      </span>
+    </form>
   </div>
 </body>
 </html>

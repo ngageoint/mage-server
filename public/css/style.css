@@ -25,7 +25,7 @@ body {
 
 .navbar .brand {
 	font-family: SansBetween, sans-serif;
-    color: #CFE4C3;
+    color: #FFF;
     display: block;
     float: left;
     font-size: 20px;
@@ -53,6 +53,14 @@ body {
 
 .top-gap {
     margin-top: 15px;
+}
+
+.top-gap-l {
+    margin-top: 30px;
+}
+
+.top-gap-xl {
+    margin-top: 50px;
 }
 
 .icon-sage {
@@ -90,3 +98,18 @@ textarea {
 .btn-inverse {
     background: #324962;
 }
+
+#panel-login {
+    margin-top: 20%;
+    margin-left: 45%;
+    padding: 15px 5px;
+    background-color: #94bbe8;
+    width: 250px;
+}
+
+/* User management page styles */
+.admin-area {
+    border-right: 1px solid #5177A4;
+    min-height: 350px;
+}
+

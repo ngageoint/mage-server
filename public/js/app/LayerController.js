@@ -49,7 +49,7 @@ function LayerController($scope, $log, $http, $injector, appConstants) {
   }
 
   $scope.viewLayer = function () {
-    console.log('in ieewLayer');
+    console.log('in viewLayer');
     //$scope.
   }
 
