@@ -68,26 +68,27 @@ var models = {
 
 // pull in any utilities
 var jsol = require('./utilities/jsol');
+var geometryFormat = require('./format/geometryFormat')(jsol);
+var geoJsonFormat = require('./format/geoJsonFormat')(jsol);
+var transformers = {
+  esri: require('./transformers/esri')(geometryFormat),
+  geojson: require('./transformers/geojson')()
+}
 var utilities = {
   auth: auth,
-  async: aysnc,
+  async: async,
   fs: fs,
   jsol: jsol,
   transformers: transformers,
-  geometryFormat: require('./format/geometryFormat')(jsol),
-  geoJsonFormat: require('./format/geoJsonFormat')(jsol)
-}
-
-var tranformers = {
-  esri: require('./transformers/esri')(geometryFormat),
-  geojson: require('./transformers/geojson')()
+  geometryFormat: geometryFormat,
+  geoJsonFormat: geoJsonFormat
 }
 
 // Dynamically import all routes
 fs.readdirSync('routes').forEach(function(file) {
   if (file[0] == '.') return;
   var route = file.substr(0, file.indexOf('.'));
-  require('./routes/' + route)(app, models, fs, tranformers, async, utilities);
+  require('./routes/' + route)(app, models, fs, transformers, async, utilities);
 });
 
 // Launches the Node.js Express Server
