@@ -1,6 +1,6 @@
 'use strict';
 
-var sage = angular.module("sage", ["sage.***REMOVED***s"]);
+var mage = angular.module("mage", ["mage.***REMOVED***s"]);
 
 /*
   Handle communication between the server and the map.

@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module("sage", ["sage.***REMOVED***s", "sage.userService"]);
+angular.module("mage", ["mage.***REMOVED***s", "mage.userService"]);
 
 /*
 

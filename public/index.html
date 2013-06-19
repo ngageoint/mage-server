@@ -1,26 +1,58 @@
  <!DOCTYPE html>
-<html>
+<html ng-app="mage">
 <head>
   <title>MAGE</title>
   <link rel="shortcut icon" href="favicon.ico"/>
+  <meta id="view" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="css/leaflet.css" />
   <link rel="stylesheet" href="css/bootstrap.min.css" />
   <link rel="stylesheet" href="css/bootstrap-responsive.min.css"/>
-  <link rel="stylesheet" href="css/font-awesome.min.css">
+  <link rel="stylesheet" href="css/icomoon.css">
+  <link rel="stylesheet" href="css/MarkerCluster.css">
+  <link rel="stylesheet" href="css/MarkerCluster.Default.css">
   <!--[if IE 7]>
   <link rel="stylesheet" href="css/font-awesome-ie7.min.css">
   <![endif]-->
   <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/map.css"/>
 
   <script type="text/javascript" src="js/lib/jquery/jquery.min.js"></script>
   <script type="text/javascript" src="js/lib/underscore-min.js"></script>
-  <script src="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
+  <script src="js/lib/leaflet/leaflet.js"></script>
+  <script src="js/lib/leaflet/leaflet.markercluster-src.js"></script>
   <script type="text/javascript" src="js/lib/angular/angular.js"></script>
+  <script type="text/javascript" src="js/lib/angular/angular-resource.min.js"></script>
   <script type="text/javascript" src="js/lib/ui-bootstrap/ui-bootstrap-0.2.0.min.js"></script>
   <script type="text/javascript" src="js/lib/angular-leaflet-directive.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s.js"></script>
-  <script type="text/javascript" src="js/app/UserController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/UserController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/MapController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/LayerController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/FormBuilderController.js"></script>
   <script type="text/javascript" src="js/app/controllers/SigninController.js"></script>
+  <script type="text/javascript" src="js/app/directives/observation.js"></script>
+  <script type="text/javascript" src="js/app/directives/thirdPartyObservation.js"></script>
   <script type="text/javascript" src="js/app/app.js"></script>
+
+  <link rel="apple-touch-icon" href="img/touch-icon-iphone.png" />
+  <link rel="apple-touch-icon" sizes="72x72" href="img/touch-icon-ipad.png" />
+  <link rel="apple-touch-icon" sizes="114x114" href="img/touch-icon-iphone-retina.png" />
+  <link rel="apple-touch-icon" sizes="144x144" href="img/touch-icon-ipad-retina.png" />
+
+  <!-- IE10 fix -->
+  <script>
+    (function() {
+      if ("-ms-user-select" in document.documentElement.style && navigator.userAgent.match(/IEMobile\/10\.0/)) {
+        var msViewportStyle = document.createElement("style");
+        msViewportStyle.appendChild(
+          document.createTextNode("@-ms-viewport{width:auto!important}")
+        );
+        document.getElementsByTagName("head")[0].appendChild(msViewportStyle);
+      }
+    })();
+  </script>
 </head>
 <body>
   <div data-ng-view></div>

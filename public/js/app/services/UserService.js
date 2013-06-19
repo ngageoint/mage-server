@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('sage.userService', ['ngResource', 'sage.***REMOVED***s'])
+angular.module('mage.userService', ['ngResource', 'mage.***REMOVED***s'])
   .factory('UserService', ['$resource', 'appConstants',
     function($resource, appConstants) {
       var user =

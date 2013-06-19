@@ -1,5 +1,5 @@
 (function () {
-  var leafletDirective = angular.module("leaflet-directive", ["sage.***REMOVED***s"]);
+  var leafletDirective = angular.module("leaflet-directive", ["mage.***REMOVED***s"]);
 
   leafletDirective.directive("leaflet", function ($http, $log, appConstants) {
     return {

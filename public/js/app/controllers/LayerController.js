@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module("sage", ["ui.bootstrap", "leaflet-directive", "sage.***REMOVED***s"]);
+angular.module("mage", ["ui.bootstrap", "leaflet-directive", "mage.***REMOVED***s"]);
 
 /*
   
