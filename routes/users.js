@@ -61,6 +61,15 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
       });
   });
 
+  // login
+  app.post(
+    '/api/login',
+    p***REMOVED***port.authenticate(strategy),
+    function(req, res) {
+      res.send(200, 'successfully logged in');
+    }
+  );
+
   // get all uses
   app.get(
     '/api/users', 
