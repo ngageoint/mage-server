@@ -66,7 +66,7 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
     '/api/users', 
     p***REMOVED***port.authenticate(strategy), 
       function (req, res) {
-      models.User.getAll(function (users) {
+      models.User.getUsers(function (users) {
         res.json(users);
       });
   });
@@ -81,36 +81,49 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
   );
 
   // Create a new user
-  app.post('/api/users', validateUserParams, function(req, res) {
-    models.User.createUser(req.user, function(err, newUser) {
-      if (err) {
-        return res.send(400, err);
-      }
+  app.post(
+    '/api/users',
+    validateUserParams, 
+    function(req, res) {
+      models.User.createUser(req.user, function(err, newUser) {
+        if (err) {
+          return res.send(400, err);
+        }
 
-      res.json(newUser);
-    });
-  });
+        res.json(newUser);
+      });
+    }
+  );
 
   // Update a user
-  app.post('/api/users/:userId', validateUserParams, function(req, res) {
-    models.User.updateUser(req.user, function(err, updatedUser) {
-      if (err) {
-        return res.send(400, err);
-      }
+  app.post(
+    '/api/users/:userId', 
+    p***REMOVED***port.authenticate(strategy),
+    validateUserParams, 
+    function(req, res) {
+      models.User.updateUser(req.user, function(err, updatedUser) {
+        if (err) {
+          return res.send(400, err);
+        }
 
-      res.json(updatedUser);
-    });
-  });
+        res.json(updatedUser);
+      });
+    }
+  );
 
   // Delete a user
-  app.delete('/api/users/:userId', function(req, res) {
-    models.User.deleteUser(req.user, function(err, updatedUser) {
-      if (err) {
-        return res.send(400, err);
-      }
+  app.delete(
+    '/api/users/:userId', 
+    p***REMOVED***port.authenticate(strategy),
+    function(req, res) {
+      models.User.deleteUser(req.user, function(err, updatedUser) {
+        if (err) {
+          return res.send(400, err);
+        }
 
-      res.json(updatedUser);
-    });
-  });
+        res.json(updatedUser);
+      });
+    }
+  );
 
 }

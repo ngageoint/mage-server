@@ -4,7 +4,7 @@ module.exports = function(mongoose) {
 
   // Collection to hold users
   var UserSchema = new Schema({
-      username: { type: String, required: true },  
+      username: { type: String, required: true },
       p***REMOVED***word: { type: String, required: true },
       firstname: { type: String, required: true },
       lastname: {type: String, required: true },
@@ -16,16 +16,21 @@ module.exports = function(mongoose) {
     }
   );
 
-  // Creates the Model for the User Schema
-  var User = mongoose.model('User', UserSchema);
-
-  UserSchema.method('validateP***REMOVED***word', function(p***REMOVED***word) {
+  UserSchema.method('validP***REMOVED***word', function(p***REMOVED***word) {
     console.log('validating p***REMOVED***word.......');
     return p***REMOVED***word == this.p***REMOVED***word;
   });
 
-  var getUser = function(id, callback) {
+  // Creates the Model for the User Schema
+  var User = mongoose.model('User', UserSchema);
+
+  var getUserById = function(id, callback) {
     User.findById(id, callback);
+  }
+
+  var getUserByUsername = function(username, callback) {
+    var query = {username: username};
+    User.findOne(query, callback);
   }
 
   var getUsers = function(callback) {
@@ -73,7 +78,8 @@ module.exports = function(mongoose) {
   }
 
   return {
-    getUser: getUser,
+    getUserById: getUserById,
+    getUserByUsername: getUserByUsername,
     getUsers: getUsers,
     createUser: createUser,
     updateUser: updateUser,

@@ -5,7 +5,7 @@ module.exports = function(User) {
 
   p***REMOVED***port.use(new LocalStrategy(
     function(username, p***REMOVED***word, done) {
-      User.getUser({ username: username }, function(err, user) {
+      User.getUserByUsername(username, function(err, user) {
         console.log('trying to auth user: ' + username);
         if (err) { return done(err); }
 
@@ -27,7 +27,7 @@ module.exports = function(User) {
   });
 
   p***REMOVED***port.deserializeUser(function(id, done) {
-    User.findById(id, function(err, user) {
+    User.getUserById(id, function(err, user) {
       done(err, user);
     });
   });
