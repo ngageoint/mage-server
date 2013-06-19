@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html ng-app="sage">
+<head>
+  <title>MAGE</title>
+  <link rel="shortcut icon" href="favicon.ico"/>
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+  <link rel="stylesheet" href="css/bootstrap-responsive.min.css"/>
+  <link rel="stylesheet" href="css/font-awesome.min.css">
+  <!--[if IE 7]>
+  <link rel="stylesheet" href="css/font-awesome-ie7.min.css">
+  <![endif]-->
+  <link rel="stylesheet" href="css/style.css"/>
+
+  <script type="text/javascript" src="js/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="js/lib/underscore-min.js"></script>
+  <script src="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
+  <script type="text/javascript" src="js/lib/angular/angular.js"></script>
+  <script type="text/javascript" src="js/lib/ui-bootstrap/ui-bootstrap-0.2.0.min.js"></script>
+  <script type="text/javascript" src="js/lib/angular-leaflet-directive.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s.js"></script>
+  <script type="text/javascript" src="js/app/UserController.js"></script>
+</head>
+<body ng-controller="UserController">
+  <div cl***REMOVED***="navbar">
+    <div cl***REMOVED***="navbar-inner">
+      <a cl***REMOVED***="brand" href="/"><i cl***REMOVED***="icon-white icon-magic" style="margin-right:10px;"></i>MAGE</a>
+      <ul cl***REMOVED***="nav">
+      </ul>
+    </div>
+  </div>
+  <div cl***REMOVED***="container top-gap-l">
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span6">
+        <h3>Mobile Analytic GEOINT Environment</h3>
+        <img src="">
+      </div>
+      <div cl***REMOVED***="span6">
+        <h3>Sign up</h3>
+        <form ng-submit="saveUser()" id="new-user-form" cl***REMOVED***="form-horizontal">
+           <fieldset>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Username</label>
+              <div cl***REMOVED***="controls">
+                <input type="text" placeholder="i.e. jappleseed" ng-model="username">
+              </div>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">First Name</label>
+              <div cl***REMOVED***="controls">
+                <input type="text" placeholder="Johnny" ng-model="firstName">
+              </div>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Last Name</label>
+              <div cl***REMOVED***="controls">
+                <input type="text" placeholder="Appleseed" ng-model="lastName">
+              </div>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Email</label>
+              <div cl***REMOVED***="controls">
+                <input type="text" placeholder="johnny@appleseed.com" ng-model="email">
+              </div>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">P***REMOVED***word</label>
+              <div cl***REMOVED***="controls">
+                <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="p***REMOVED***word">
+              </div>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Confirm P***REMOVED***word</label>
+              <div cl***REMOVED***="controls">
+                <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="p***REMOVED***word">
+              </div>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <div cl***REMOVED***="controls">
+                <label cl***REMOVED***="checkbox">
+                  <input type="checkbox"> GEOINT Online
+                </label>
+              </div>
+              <span cl***REMOVED***="help-block top-gap"><a href="https://geoint-online.nga.mil/_layouts/nga/go/logon/logon.aspx?ReturnUrl=%2f_layouts%2fAuthenticate.aspx%3fSource%3d%252f&Source=%2f">GEOINT Online Details (New Account, P***REMOVED***word Reset, etc.)</a></span>
+            </div>
+            <button type="submit" cl***REMOVED***="btn">Create my account</button>
+            <span cl***REMOVED***="help-block top-gap">Your account will have to be approved by an admin before it becomes active</span>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

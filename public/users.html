@@ -15,19 +15,21 @@
   <script type="text/javascript" src="js/lib/underscore-min.js"></script>
   <script src="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
   <script type="text/javascript" src="js/lib/angular/angular.js"></script>
+  <script type="text/javascript" src="js/lib/angular/angular-resource.min.js"></script>
   <script type="text/javascript" src="js/lib/ui-bootstrap/ui-bootstrap-0.2.0.min.js"></script>
   <script type="text/javascript" src="js/lib/angular-leaflet-directive.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/UserService.js"></script>
   <script type="text/javascript" src="js/app/UserController.js"></script>
 </head>
-<body>
+<body ng-controller="UserController">
   <div cl***REMOVED***="navbar">
     <div cl***REMOVED***="navbar-inner">
       <a cl***REMOVED***="brand" href="/"><i cl***REMOVED***="icon-white icon-magic" style="margin-right:10px;"></i>MAGE</a>
       <ul cl***REMOVED***="nav">
         <li><a href="map.html">Map</a></li>
         <li><a href="layers.html">Layer Manager</a></li>
-        <li style="background: #305680"><a href="layers.html" style="color:#fff;">User Management</a></li>
+        <li style="background: #305680"><a href="users.html" style="color:#fff;">User Management</a></li>
       </ul>
     </div>
   </div>
@@ -38,9 +40,9 @@
     <div cl***REMOVED***="row">
       <div cl***REMOVED***="span2">
         <div cl***REMOVED***="admin-area">
-          <a id="new-layer-btn" ng-click="newLayer()" ngm-tap="newLayer()" cl***REMOVED***="btn"><i cl***REMOVED***="icon-plus sage-color"></i> New Team</a>
+          <a id="new-team-btn" ng-click="newTeam()" ngm-tap="newTeam()" cl***REMOVED***="btn"><i cl***REMOVED***="icon-plus mtage-color"></i> New Team</a>
           <ul style="list-style: none;" cl***REMOVED***="top-gap">
-            <li ng-repeat="team in teams"><a ng-click="viewTeam()">{{team.name}}</a></li>
+            <li ng-repeat="team in teams"><a ng-click="viewTeam(team)">{{team.teamName}}</a></li>
           </ul>
           <p id="instructions" cl***REMOVED***="hide">
             There are no teams on this server. Click the new team button to get started.
@@ -49,19 +51,28 @@
       </div>
       <div cl***REMOVED***="span10">
         <h3>{{team.name}}</h3>
-        <form ng-submit="saveLayer()" id="new-layer-form" cl***REMOVED***="hide">
+        <form ng-submit="saveTeam()" id="new-team-form" cl***REMOVED***="hide form-horizontal">
            <fieldset>
-            <legend>New Team</legend>
-            <label>Team name</label>
-            <input type="text" placeholder="i.e. HurricaneSandy" ng-model="layerName">
-            <span cl***REMOVED***="help-block">A name that corresponds to the type of data you will be storing</span>
-            <button type="submit" cl***REMOVED***="btn">Submit</button>
+            <legend>{{team.teamName}}</legend>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Team Name</label>
+              <div cl***REMOVED***="controls">
+                <input type="text" placeholder="i.e. jappleseed" ng-model="team.teamName">
+              </div>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Description</label>
+              <div cl***REMOVED***="controls">
+                <textarea placeholder="i.e. jappleseed" ng-model="team.description" cols="30" rows="5"></textarea>
+              </div>
+            </div>
+            <button type="submit" cl***REMOVED***="btn">Save Team</button>
           </fieldset>
         </form>
       </div>
     </div>
   </div>
-  <div cl***REMOVED***="container top-gap-l" ng-controller="UserController">
+  <div cl***REMOVED***="container top-gap-l">
     <div cl***REMOVED***="row">
       <div cl***REMOVED***="span12"><h2>Users</h2></div>
     </div>
@@ -70,7 +81,7 @@
         <div cl***REMOVED***="admin-area">
           <a id="new-user-btn" ng-click="newUser()" ngm-tap="newUser()" cl***REMOVED***="btn"><i cl***REMOVED***="icon-plus Mage-color"></i> New User</a>
           <ul style="list-style: none;" cl***REMOVED***="top-gap">
-            <li ng-repeat="user in users"><a ng-click="viewUser()">{{user.username}}</a></li>
+            <li ng-repeat="user in users"><a ng-click="viewUser(user)">{{user.username}}</a></li>
           </ul>
           <p id="instructions" cl***REMOVED***="hide">
             There are no users on this server. Click the new user button to get started.
@@ -78,32 +89,32 @@
         </div>
       </div>
       <div cl***REMOVED***="span10">
-        <h3>{{layer.name}}</h3>
+        <h3>{{user.name}}</h3>
         <form ng-submit="saveUser()" id="new-user-form" cl***REMOVED***="hide form-horizontal">
            <fieldset>
-            <legend>New User</legend>
+            <legend>{{user.firstName}} {{user.lastName}}</legend>
             <div cl***REMOVED***="control-group">
               <label cl***REMOVED***="control-label" for="type">Username</label>
               <div cl***REMOVED***="controls">
-                <input type="text" placeholder="i.e. jappleseed" ng-model="username">
+                <input type="text" placeholder="i.e. jappleseed" ng-model="user.username">
               </div>
             </div>
             <div cl***REMOVED***="control-group">
               <label cl***REMOVED***="control-label" for="type">First Name</label>
               <div cl***REMOVED***="controls">
-                <input type="text" placeholder="Johnny" ng-model="firstName">
+                <input type="text" placeholder="Johnny" ng-model="user.firstName">
               </div>
             </div>
             <div cl***REMOVED***="control-group">
               <label cl***REMOVED***="control-label" for="type">Last Name</label>
               <div cl***REMOVED***="controls">
-                <input type="text" placeholder="Appleseed" ng-model="lastName">
+                <input type="text" placeholder="Appleseed" ng-model="user.lastName">
               </div>
             </div>
             <div cl***REMOVED***="control-group">
               <label cl***REMOVED***="control-label" for="type">Email</label>
               <div cl***REMOVED***="controls">
-                <input type="text" placeholder="johnny@appleseed.com" ng-model="email">
+                <input type="text" placeholder="johnny@appleseed.com" ng-model="user.email">
               </div>
             </div>
             <div cl***REMOVED***="control-group">
@@ -112,7 +123,21 @@
                 <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="p***REMOVED***word">
               </div>
             </div>
-            <button type="submit" cl***REMOVED***="btn">Create user</button>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Confirm P***REMOVED***word</label>
+              <div cl***REMOVED***="controls">
+                <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="p***REMOVED***word">
+              </div>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <div cl***REMOVED***="controls">
+                <label cl***REMOVED***="checkbox">
+                  <input type="checkbox"> GEOINT Online
+                </label>
+                <span cl***REMOVED***="help-block top-gap"><a href="https://geoint-online.nga.mil/_layouts/nga/go/logon/logon.aspx?ReturnUrl=%2f_layouts%2fAuthenticate.aspx%3fSource%3d%252f&Source=%2f">GEOINT Online Details (New Account, P***REMOVED***word Reset, etc.)</a></span>
+              </div>
+            </div>
+            <button type="submit" cl***REMOVED***="btn">Save user</button>
           </fieldset>
         </form>
       </div>
