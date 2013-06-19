@@ -4,13 +4,18 @@ var path = require("path");
 var fs = require('fs-extra');
 var async = require('async');
 var argv = require('optimist')
-  .default('a', '/var/lib/sage/attachments')
+  .default('a', 'local')
+  .default('d', '/var/lib/sage/attachments')
   .argv;
 
 var app = express();
 
-var attachmentBase = argv.a + '/';
+var attachmentBase = argv.d + '/';
 var dbPath = 'mongodb://localhost/sagedb';
+
+// Dynamically pull in auth module
+var User = require('./models/user')(mongoose);
+var auth = require('./auth/' + argv.a)(User);
 
 // Configuration of the SAGE Express server
 app.configure(function () {
@@ -20,6 +25,12 @@ app.configure(function () {
   mongoose.set('debug', true);
 
   app.set('attachmentBase', attachmentBase);
+
+  if (auth.strategy) {
+    console.info('Setting up authentication strategy: ' + auth.strategy);
+    app.use(auth.p***REMOVED***port.initialize());
+    app.use(auth.p***REMOVED***port.session());
+  }
 
   app.use(express.bodyParser());
   app.use(express.methodOverride());
@@ -32,6 +43,8 @@ app.configure(function () {
     res.send(500, 'Internal server error, please contact SAGE administrator.');
   });
 });
+
+app.all('/FeatureServer/*', auth.p***REMOVED***port.authenticate(auth.authenticationStrategy));
 
 // Create directory for storing SAGE media attachments
 fs.mkdirp(attachmentBase, function(err) {
@@ -46,6 +59,7 @@ fs.mkdirp(attachmentBase, function(err) {
 var counters = require('./models/counters')(mongoose);
 var models = {
   Counters: counters,
+  User: User,
   Layer: require('./models/layer')(mongoose, counters),
   Feature: require('./models/feature')(mongoose, counters, async)
 }
@@ -54,13 +68,12 @@ var models = {
 var jsol = require('./utilities/jsol');
 var geometryFormat = require('./format/geometryFormat')(jsol);
 var geoJsonFormat = require('./format/geoJsonFormat')(jsol);
-var rest = require('restler');
 
 var utilities = {
+  auth: auth,
   jsol: jsol,
   geometryFormat: geometryFormat,
-  geoJsonFormat: geoJsonFormat,
-  rest: rest
+  geoJsonFormat: geoJsonFormat
 }
 
 var tranformers = {
