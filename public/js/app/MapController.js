@@ -1,7 +1,5 @@
 'use strict';
 
-var sage = angular.module("sage", ["ui.bootstrap", "leaflet-directive", "sage.***REMOVED***s"]);
-
 /*
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.

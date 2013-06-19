@@ -1,34 +1,28 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html>
 <head>
   <title>MAGE</title>
+  <link rel="shortcut icon" href="favicon.ico"/>
   <link rel="stylesheet" href="css/bootstrap.min.css" />
   <link rel="stylesheet" href="css/bootstrap-responsive.min.css"/>
   <link rel="stylesheet" href="css/font-awesome.min.css">
   <!--[if IE 7]>
   <link rel="stylesheet" href="css/font-awesome-ie7.min.css">
   <![endif]-->
-  <link rel="shortcut icon" href="favicon.ico"/>
   <link rel="stylesheet" href="css/style.css"/>
-  <script type="text/javascript" src="js/bootstrap.min.js"></script>
+
+  <script type="text/javascript" src="js/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="js/lib/underscore-min.js"></script>
+  <script src="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
+  <script type="text/javascript" src="js/lib/angular/angular.js"></script>
+  <script type="text/javascript" src="js/lib/ui-bootstrap/ui-bootstrap-0.2.0.min.js"></script>
+  <script type="text/javascript" src="js/lib/angular-leaflet-directive.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s.js"></script>
+  <script type="text/javascript" src="js/app/UserController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/SigninController.js"></script>
+  <script type="text/javascript" src="js/app/app.js"></script>
 </head>
 <body>
-  <div cl***REMOVED***="navbar">
-    <div cl***REMOVED***="navbar-inner">
-      <a cl***REMOVED***="brand" href="#"><i cl***REMOVED***="icon-white icon-magic" style="margin-right:10px;"></i>MAGE</a>
-      <ul cl***REMOVED***="nav">
-        <li><a href="map.html">Map</a></li>
-        <li><a href="layers.html">Layer Manager</a></li>
-      </ul>
-    </div>
-  </div>
-  <div cl***REMOVED***="container">
-    <div cl***REMOVED***="row">
-      <div cl***REMOVED***="span12">
-        <h2>Mobile Analytic GEOINT Environment</h2>
-        <p>Multi-platform mobile situational awareness for your team</p>
-      </div>
-    </div>
-  </div>
+  <div data-ng-view></div>
 </body>
 </html>
