@@ -23,7 +23,7 @@
 	<link rel="apple-touch-icon" sizes="114x114" href="img/touch-icon-iphone-retina.png" />
 	<link rel="apple-touch-icon" sizes="144x144" href="img/touch-icon-ipad-retina.png" />
 </head>
-<body ng-controller="MapController">
+<body>
 	<div cl***REMOVED***="navbar hidden-phone">
     <div cl***REMOVED***="navbar-inner">
       <div cl***REMOVED***="container">
@@ -41,22 +41,22 @@
   <div cl***REMOVED***="container top-gap">
     <div cl***REMOVED***="row-fluid">
       <div cl***REMOVED***="span3">
-        <form cl***REMOVED***="form">
+        <form cl***REMOVED***="form" action="/api/login" method="post">
           <div cl***REMOVED***="control-group">
             <label cl***REMOVED***="control-label" for="address">Username</label>
             <div cl***REMOVED***="controls">
-              <input ng-model="username"/>
+              <input ng-model="username" name="username"/>
             </div>
           </div>
           <div cl***REMOVED***="control-group">
             <label cl***REMOVED***="control-label" for="address">P***REMOVED***word</label>
             <div cl***REMOVED***="controls">
-              <input ng-model="p***REMOVED***word"/>
+              <input ng-model="p***REMOVED***word" name="p***REMOVED***word" type="p***REMOVED***word"/>
             </div>
           </div>
           <span>
             <button cl***REMOVED***="btn btn-inverse">Cancel</button>
-            <button cl***REMOVED***="btn">Login</button>
+            <button cl***REMOVED***="btn" type="submit">Login</button>
           </span>
         </form>
       </div>

@@ -5,6 +5,7 @@ module.exports = function(User) {
 
   p***REMOVED***port.use(new LocalStrategy(
     function(username, p***REMOVED***word, done) {
+      console.log('login user: ' + username + ' with p***REMOVED***word: ' + p***REMOVED***port);
       User.getUserByUsername(username, function(err, user) {
         if (err) { return done(err); }
 
