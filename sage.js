@@ -26,11 +26,11 @@ app.configure(function () {
 
   app.set('attachmentBase', attachmentBase);
 
-  if (auth.strategy) {
-    console.info('Setting up authentication strategy: ' + auth.strategy);
-    app.use(auth.p***REMOVED***port.initialize());
-    app.use(auth.p***REMOVED***port.session());
-  }
+  console.info('Setting up authentication strategy: ' + auth.strategy);
+  app.use(express.cookieParser("ChangeThis"));
+  app.use(express.cookieSession({***REMOVED***: 'ChangeThis'}));
+  app.use(auth.p***REMOVED***port.initialize());
+  app.use(auth.p***REMOVED***port.session());
 
   app.use(express.bodyParser());
   app.use(express.methodOverride());
@@ -60,20 +60,22 @@ var counters = require('./models/counters')(mongoose);
 var models = {
   Counters: counters,
   User: User,
+  Team: require('./models/team')(mongoose),
+  Role: require('./models/role')(),
   Layer: require('./models/layer')(mongoose, counters),
   Feature: require('./models/feature')(mongoose, counters, async)
 }
 
 // pull in any utilities
 var jsol = require('./utilities/jsol');
-var geometryFormat = require('./format/geometryFormat')(jsol);
-var geoJsonFormat = require('./format/geoJsonFormat')(jsol);
-
 var utilities = {
   auth: auth,
+  async: aysnc,
+  fs: fs,
   jsol: jsol,
-  geometryFormat: geometryFormat,
-  geoJsonFormat: geoJsonFormat
+  transformers: transformers,
+  geometryFormat: require('./format/geometryFormat')(jsol),
+  geoJsonFormat: require('./format/geoJsonFormat')(jsol)
 }
 
 var tranformers = {

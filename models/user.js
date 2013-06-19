@@ -9,7 +9,7 @@ module.exports = function(mongoose) {
       firstname: { type: String, required: true },
       lastname: {type: String, required: true },
       email: {type: String, required: true },
-      roles: [Schema.Types.ObjectId],
+      roles: [Schema.Types.String],
       teams: [Schema.Types.ObjectId],
     },{ 
       versionKey: false 
@@ -17,7 +17,8 @@ module.exports = function(mongoose) {
   );
 
   UserSchema.method('validP***REMOVED***word', function(p***REMOVED***word) {
-    console.log('validating p***REMOVED***word.......');
+    // TODO once salted and hased will need to SALT and hash
+    // incoming p***REMOVED***word before check on match.
     return p***REMOVED***word == this.p***REMOVED***word;
   });
 
@@ -75,6 +76,22 @@ module.exports = function(mongoose) {
   var deleteUser = function(user, callback) {
     var conditions = { _id: user._id };
     User.remove(conditions, callback);
+  }
+
+  var setRolesForUser = function(user, roles, callback) {
+
+  }
+
+  var removeRolesForUser = function(user, roles, callback) {
+
+  }
+
+  var setGroupForUser = function(user, group, callback) {
+
+  }
+
+  var removeGroupForUser = function(user, group, callback) {
+
   }
 
   return {

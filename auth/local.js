@@ -6,7 +6,6 @@ module.exports = function(User) {
   p***REMOVED***port.use(new LocalStrategy(
     function(username, p***REMOVED***word, done) {
       User.getUserByUsername(username, function(err, user) {
-        console.log('trying to auth user: ' + username);
         if (err) { return done(err); }
 
         if (!user) {
