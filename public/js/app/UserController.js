@@ -5,7 +5,7 @@ angular.module("sage", ["sage.***REMOVED***s", "sage.userService"]);
 /*
 
 */
-function UserController($scope, $log, $http, $injector, appConstants) {
+function UserController($scope, $log, $http, $injector, appConstants, UserService) {
   // The variables that get set when clicking a team or user in the list, these get loaded into the editor.
   $scope.team = {};
   $scope.user = {};
@@ -69,21 +69,21 @@ function UserController($scope, $log, $http, $injector, appConstants) {
   }
 
   $scope.newUser = function() {
-    $scope.user = {};
+    $scope.user = new UserService.user();
     $('#new-user-form').removeCl***REMOVED***('hide');
   }
 
   $scope.viewUser = function(user) {
-    $scope.user = user;
+    $scope.user = new UserService.user(user);
     $('#new-user-form').removeCl***REMOVED***('hide');
   }
 
   $scope.saveUser = function() {
     console.log("saving user...");
     if ($scope.user.id) { // update
-
+      $scope.user.$update();
     } else { // new user
-      var newUser = User
+      $scope.user.$save();
     }
   }
 
