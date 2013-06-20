@@ -1,6 +1,9 @@
-module.exports = function(mongoose) {
+module.exports = function(mongoose, hasher) {
+
+  var hasher = require('../utilities/pbkdf2')();
+
   // Creates a new Mongoose Schema object
-  var Schema = mongoose.Schema;  
+  var Schema = mongoose.Schema; 
 
   // Collection to hold users
   var UserSchema = new Schema({
@@ -16,10 +19,21 @@ module.exports = function(mongoose) {
     }
   );
 
-  UserSchema.method('validP***REMOVED***word', function(p***REMOVED***word) {
-    // TODO once salted and hased will need to SALT and hash
-    // incoming p***REMOVED***word before check on match.
-    return p***REMOVED***word == this.p***REMOVED***word;
+  UserSchema.method('validP***REMOVED***word', function(p***REMOVED***word, callback) {
+    var user = this;
+    hasher.validP***REMOVED***word(p***REMOVED***word, user.p***REMOVED***word, callback);
+  });
+
+  UserSchema.pre('save', function(next) {
+    var user = this;
+
+    // only hash the p***REMOVED***word if it has been modified (or is new)
+    //if (!user.isModified('p***REMOVED***word')) return next();
+
+    hasher.encryptP***REMOVED***word(user.p***REMOVED***word, function(err, encryptedP***REMOVED***word) {
+      user.p***REMOVED***word = encryptedP***REMOVED***word;
+      next();
+    });
   });
 
   // Creates the Model for the User Schema
@@ -46,8 +60,6 @@ module.exports = function(mongoose) {
   }
 
   var createUser = function(user, callback) {
-    //TODO need to SALT and HASH the p***REMOVED***word before putting into db
-
     var create = {
       username: user.username,
       firstname: user.firstname,
@@ -60,8 +72,6 @@ module.exports = function(mongoose) {
   }
 
   var updateUser = function(user, callback) {
-    // TODO need to SALT and HASH the p***REMOVED***word before putting into db
-
     var update = {
       username: user.username,
       firstname: user.firstname,

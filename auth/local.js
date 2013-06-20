@@ -5,7 +5,6 @@ module.exports = function(User) {
 
   p***REMOVED***port.use(new LocalStrategy(
     function(username, p***REMOVED***word, done) {
-      console.log('login user: ' + username + ' with p***REMOVED***word: ' + p***REMOVED***port);
       User.getUserByUsername(username, function(err, user) {
         if (err) { return done(err); }
 
@@ -13,11 +12,17 @@ module.exports = function(User) {
           return done(null, false, { message: "User with username '" + username + "' not found" });
         }
 
-        if (!user.validP***REMOVED***word(p***REMOVED***word)) {
-          return done(null, false, { message: 'Incorrect p***REMOVED***word.' });
-        }
+        user.validP***REMOVED***word(p***REMOVED***word, function(err, isValid) {
+          if (err) {
+            return done(err);
+          }
 
-        return done(null, user);
+          if (!isValid) {
+            return ('Incorrect p***REMOVED***word');
+          }
+
+          return done(null, user);
+        });
       });
     }
   ));
