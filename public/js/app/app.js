@@ -1,7 +1,7 @@
 'use strict';
 
-var mage = angular.module("mage", ["ui.bootstrap", "leaflet-directive", "mage.***REMOVED***s"], function ($routeProvider, $locationProvider) {
-  //var access = routingConfig.accessLevels;
+var mage = angular.module("mage", ["ui.bootstrap", "leaflet-directive", "mage.***REMOVED***s", "mage.userService"], function ($routeProvider, $locationProvider, $httpProvider) {
+  $httpProvider.defaults.withCredentials = true;
 
   $routeProvider.when('/signin',
   {
