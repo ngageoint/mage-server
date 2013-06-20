@@ -28,8 +28,9 @@ var mage = angular.module("mage", ["ui.bootstrap", "leaflet-directive", "mage.**
     templateUrl:    "js/app/partials/layers.html",
     controller:      LayerController
   })
-  /*$routeProvider.otherwise(
+  $routeProvider.otherwise(
   {
-    // go somewhere else, maybe login page, check docs.
-  });*/
+    redirectTo:     '/signin',
+    controller:     SigninController, 
+  });
 })
