@@ -27,13 +27,12 @@ app.configure(function () {
   app.set('attachmentBase', attachmentBase);
 
   console.info('Setting up authentication strategy: ' + auth.strategy);
-  app.use(express.cookieParser("ChangeThis"));
-  app.use(express.cookieSession({***REMOVED***: 'ChangeThis'}));
-  app.use(auth.p***REMOVED***port.initialize());
-  app.use(auth.p***REMOVED***port.session());
-
+  app.use(express.cookieParser('***REMOVED***'));
   app.use(express.bodyParser());
   app.use(express.methodOverride());
+  app.use(express.session({cookie: { path: '/', httpOnly: true, maxAge: null }, ***REMOVED***: '***REMOVED***'}));
+  app.use(auth.p***REMOVED***port.initialize());
+  app.use(auth.p***REMOVED***port.session());
   app.use(app.router);
   app.use(express.static(path.join(__dirname, "public")));
   app.use('/extjs', express.static(path.join(__dirname, "extjs")));

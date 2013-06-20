@@ -56,7 +56,7 @@ module.exports = function(app, models) {
   });
 
   // Get all layers
-  app.get('/FeatureServer', function (req, res){
+  app.get('/FeatureServer', function (req, res) {
     console.log("SAGE Layers GET REST Service Requested");
 
     models.Layer.getAll(function (layers) {
