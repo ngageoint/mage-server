@@ -63,17 +63,23 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
 
   // login
   app.post(
-    '/api/login',
+    '/login',
     p***REMOVED***port.authenticate(strategy),
     function(req, res) {
-      res.send(200, 'successfully logged in');
+      models.Token.createTokenForUser(req.user, function(err, token) {
+        if (err) {
+          return res.send("Error generating token", 400);
+        }
+
+        res.json({token: token.token});
+      });
     }
   );
 
   // get all uses
   app.get(
     '/api/users', 
-    p***REMOVED***port.authenticate(strategy), 
+    p***REMOVED***port.authenticate('bearer'), 
       function (req, res) {
       models.User.getUsers(function (users) {
         res.json(users);
@@ -83,7 +89,7 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
   // get user by id
   app.get( 
     '/api/users/:userId',
-    p***REMOVED***port.authenticate(strategy),
+    p***REMOVED***port.authenticate('bearer'),
     function(req, res) {
      res.json(req.user);
     }
@@ -107,7 +113,7 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
   // Update a user
   app.post(
     '/api/users/:userId', 
-    p***REMOVED***port.authenticate(strategy),
+    p***REMOVED***port.authenticate('bearer'),
     validateUserParams, 
     function(req, res) {
       models.User.updateUser(req.user, function(err, updatedUser) {
@@ -123,7 +129,7 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
   // Delete a user
   app.delete(
     '/api/users/:userId', 
-    p***REMOVED***port.authenticate(strategy),
+    p***REMOVED***port.authenticate('bearer'),
     function(req, res) {
       models.User.deleteUser(req.user, function(err, updatedUser) {
         if (err) {

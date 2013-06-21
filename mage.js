@@ -13,11 +13,22 @@ var app = express();
 var attachmentBase = argv.d + '/';
 var dbPath = 'mongodb://localhost/sagedb';
 
-// Dynamically pull in auth module
-var User = require('./models/user')(mongoose);
-var auth = require('./auth/' + argv.a)(User);
+// Import static models
+var counters = require('./models/counters')(mongoose);
+var models = {
+  Counters: counters,
+  User: require('./models/user')(mongoose),
+  Token: require('./models/token')(mongoose),
+  Team: require('./models/team')(mongoose),
+  Role: require('./models/role')(),
+  Layer: require('./models/layer')(mongoose, counters),
+  Feature: require('./models/feature')(mongoose, counters, async)
+}
 
-// Configuration of the SAGE Express server
+// Configure authentication
+var auth = require('./auth/authentication')(argv.a, models);
+
+// Configuration of the MAGE Express server
 app.configure(function () {
   mongoose.connect(dbPath, function(err) {
     if (err) throw err;
@@ -26,24 +37,21 @@ app.configure(function () {
 
   app.set('attachmentBase', attachmentBase);
 
-  console.info('Setting up authentication strategy: ' + auth.strategy);
-  app.use(express.cookieParser('***REMOVED***'));
+  // app.use(express.cookieParser());
   app.use(express.bodyParser());
   app.use(express.methodOverride());
-  app.use(express.session({cookie: { path: '/', httpOnly: true, maxAge: null }, ***REMOVED***: '***REMOVED***'}));
+  // app.use(express.session({cookie: { path: '/', httpOnly: true, maxAge: null }, ***REMOVED***: '***REMOVED***'}));
   app.use(auth.p***REMOVED***port.initialize());
-  app.use(auth.p***REMOVED***port.session());
+  // app.use(auth.p***REMOVED***port.session());
   app.use(app.router);
   app.use(express.static(path.join(__dirname, "public")));
-  app.use('/extjs', express.static(path.join(__dirname, "extjs")));
-  app.use('/geoext', express.static(path.join(__dirname, "geoext")));
   app.use(function(err, req, res, next) {
     console.error(err.stack);
     res.send(500, 'Internal server error, please contact SAGE administrator.');
   });
 });
 
-app.all('/FeatureServer/*', auth.p***REMOVED***port.authenticate(auth.authenticationStrategy));
+//app.all('/FeatureServer/*', auth.p***REMOVED***port.authenticate('local'));
 
 // Create directory for storing SAGE media attachments
 fs.mkdirp(attachmentBase, function(err) {
@@ -53,17 +61,6 @@ fs.mkdirp(attachmentBase, function(err) {
     console.log("Using '" + attachmentBase + "' as base directory for feature attachments.");
   }
 });
-
-// Import static models
-var counters = require('./models/counters')(mongoose);
-var models = {
-  Counters: counters,
-  User: User,
-  Team: require('./models/team')(mongoose),
-  Role: require('./models/role')(),
-  Layer: require('./models/layer')(mongoose, counters),
-  Feature: require('./models/feature')(mongoose, counters, async)
-}
 
 // pull in any utilities
 var jsol = require('./utilities/jsol');
@@ -92,4 +89,4 @@ fs.readdirSync('routes').forEach(function(file) {
 
 // Launches the Node.js Express Server
 app.listen(4242);
-console.log('SAGE Node Server: Started listening on port 4242.');
+console.log('MAGE Node Server: Started listening on port 4242.');

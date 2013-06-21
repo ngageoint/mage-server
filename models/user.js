@@ -1,4 +1,4 @@
-module.exports = function(mongoose, hasher) {
+module.exports = function(mongoose) {
 
   var hasher = require('../utilities/pbkdf2')();
 

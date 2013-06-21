@@ -1,5 +1,7 @@
 // Routes responsible for layer managment
-module.exports = function(app, models) {
+module.exports = function(app, models, fs, transformers, async, utilities) {
+  var p***REMOVED***port = utilities.auth.p***REMOVED***port;
+  var strategy = utilities.auth.strategy;
 
   function LayerResponse() {
     var response = {
@@ -56,7 +58,7 @@ module.exports = function(app, models) {
   });
 
   // Get all layers
-  app.get('/FeatureServer', function (req, res) {
+  app.get('/FeatureServer', p***REMOVED***port.authenticate('bearer', {session: false}), function (req, res) {
     console.log("SAGE Layers GET REST Service Requested");
 
     models.Layer.getAll(function (layers) {
