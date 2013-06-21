@@ -2,6 +2,9 @@
 
 var mage = angular.module("mage", ["ui.bootstrap", "leaflet-directive", "mage.***REMOVED***s", "mage.userService"], function ($routeProvider, $locationProvider, $httpProvider) {
   $httpProvider.defaults.withCredentials = true;
+  $httpProvider.defaults.headers.post  = {'Content-Type': 'application/x-www-form-urlencoded'};
+
+  // $http.defaults.headers.common['Auth-Token'] = 'token'; // going to need to sort out setting the token, see 
 
   $routeProvider.when('/signin',
   {

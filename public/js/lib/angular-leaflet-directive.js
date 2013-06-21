@@ -104,6 +104,12 @@
             });
           });
 
+          map.on("doubleclick", function (e) {
+            scope.$apply(function (s) {
+              s.zoom = s.zoom + 1;
+            });
+          });
+
           if (attrs.marker) {
             var dragging_marker = false;
 

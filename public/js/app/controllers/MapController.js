@@ -50,14 +50,26 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
   }];
 
   $scope.currentLayerId = 0;
+  $scope.baseLayer = $scope.baseLayers[0];
 
-  $(document).ready(function() {
-    // handle desktop browsers so that they play nice with the bootstrap navbar.
-    if($(window).width() > 767) {
-      $('#map').css('height', ($(window).height() - 40));
-      $('.leaflet-container').css('height', ($(window).height() - 40));
+  $scope.geolocate = function () {
+    console.log("in geolocate");
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        console.log("lat " + position.coords.latitude + " lon " + position.coords.longitude);
+        $scope.$apply(function() {
+          $scope.center = { lat: position.coords.latitude, lng: position.coords.longitude };
+          $scope.zoom = 12;
+        });
+      });
     }
+  }
 
+  $scope.$watch("$scope.observationId", function(oldValue, newValue) {
+    console.log("Observation ID changed " + $scope.observationId);
+  }, true);
+
+  $scope.getFeatureLayers = function () {
     $http.get(appConstants.rootUrl + '/FeatureServer/').
       success(function (data, status, headers, config) {
           console.log('got layers');
@@ -77,39 +89,7 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
       error(function (data, status, headers, config) {
           $log.log("Error getting layers: " + status);
       });
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(position) {
-        console.log("lat " + position.coords.latitude + " lon " + position.coords.longitude);
-        $scope.center = { lat: position.coords.latitude, lng: position.coords.longitude };
-        $scope.zoom = 12;
-      });
-    }
-  });
-
-  $(window).resize(function () {
-    if($(window).width() > 767) {
-      $('#map').css('height', ($(window).height() - 40));
-      $('.leaflet-container').css('height', ($(window).height() - 40));
-    }
-  }).resize();
-
-  $scope.baseLayer = $scope.baseLayers[0];
-
-  $scope.geolocate = function () {
-    console.log("in geolocate");
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(position) {
-        console.log("lat " + position.coords.latitude + " lon " + position.coords.longitude);
-        $scope.center = { lat: position.coords.latitude, lng: position.coords.longitude };
-        $scope.zoom = 12;
-      });
-    }
   }
-
-  $scope.$watch("$scope.observationId", function(oldValue, newValue) {
-    console.log("Observation ID changed " + $scope.observationId);
-  }, true);
 
   $scope.onFeatureLayer = function(layer) {
     if (!layer.checked) {
@@ -236,4 +216,8 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
     $('#fft-panel').addCl***REMOVED***('hide'); 
     console.log("inFFT");
   }
+
+  // Calls to make when the page is loaded
+  $scope.getFeatureLayers();
+  //$scope.geolocate(); // this makes angular upset because there are 2 scope.applys running at the same time...
 }

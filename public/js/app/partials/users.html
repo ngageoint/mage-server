@@ -68,7 +68,7 @@
         <h3>{{user.name}}</h3>
         <form ng-submit="saveUser()" id="new-user-form" cl***REMOVED***="hide form-horizontal">
            <fieldset>
-            <legend>{{user.firstName}} {{user.lastName}}</legend>
+            <legend>{{user.firstname}} {{user.lastname}}</legend>
             <div cl***REMOVED***="control-group">
               <label cl***REMOVED***="control-label" for="type">Username</label>
               <div cl***REMOVED***="controls">
@@ -78,13 +78,13 @@
             <div cl***REMOVED***="control-group">
               <label cl***REMOVED***="control-label" for="type">First Name</label>
               <div cl***REMOVED***="controls">
-                <input type="text" placeholder="Johnny" ng-model="user.firstName">
+                <input type="text" placeholder="Johnny" ng-model="user.firstname">
               </div>
             </div>
             <div cl***REMOVED***="control-group">
               <label cl***REMOVED***="control-label" for="type">Last Name</label>
               <div cl***REMOVED***="controls">
-                <input type="text" placeholder="Appleseed" ng-model="user.lastName">
+                <input type="text" placeholder="Appleseed" ng-model="user.lastname">
               </div>
             </div>
             <div cl***REMOVED***="control-group">
@@ -96,13 +96,13 @@
             <div cl***REMOVED***="control-group">
               <label cl***REMOVED***="control-label" for="type">P***REMOVED***word</label>
               <div cl***REMOVED***="controls">
-                <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="p***REMOVED***word">
+                <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***word">
               </div>
             </div>
             <div cl***REMOVED***="control-group">
               <label cl***REMOVED***="control-label" for="type">Confirm P***REMOVED***word</label>
               <div cl***REMOVED***="controls">
-                <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="p***REMOVED***word">
+                <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***wordconfirm">
               </div>
             </div>
             <div cl***REMOVED***="control-group">

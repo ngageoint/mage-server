@@ -18,6 +18,7 @@ function SigninController($scope, $log, $http, $injector, appConstants, UserServ
       }).
         success(function (data, status, headers, config) {
           console.log("sucessful login!");
+          window.location = '/#/map'
         }).
         error(function (data, status, headers, config) {
           console.log("Something bad happend while trying to log in " + status);

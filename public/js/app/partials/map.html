@@ -19,7 +19,9 @@
   </div>
   
   <!-- The map directive -->
-  <leaflet marker="marker" center="center" zoom="zoom" multimarkers="multiMarkers" layer="layer" message="message" draggable="true" observationid="observationId" newfeature="newFeature" currentlayerid="currentLayerId"></leaflet>
+  <div cl***REMOVED***="map-wrap">
+    <leaflet marker="marker" center="center" zoom="zoom" multimarkers="multiMarkers" layer="layer" message="message" draggable="true" observationid="observationId" newfeature="newFeature" currentlayerid="currentLayerId"></leaflet>
+  </div>
 
   <!-- The observation panel dialog, currently only works for looking at/editing points. Need to circle back around and get it tied in to work for creating points -->
   <div observation observationid="observationId" marker="marker" currentlayerid="currentLayerId" newfeature="newFeature" layers="layers"></div>
