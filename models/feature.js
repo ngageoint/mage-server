@@ -1,4 +1,5 @@
-module.exports = function(mongoose, counters) {
+module.exports = function(counter) {
+  var mongoose = require('mongoose');
 
   var Schema = mongoose.Schema;
   // Creates the Schema for the Features object (mimics ESRI)
@@ -77,8 +78,8 @@ module.exports = function(mongoose, counters) {
   }
 
   var createFeature = function(layer, data, callback) {
-    var counter = 'feature' + layer.id;
-    counters.getNext(counter, function(id) {
+    var name = 'feature' + layer.id;
+    counter.getNext(name, function(id) {
       var properties = data.properties ? data.properties : {};
       properties.OBJECTID = id;
 
@@ -208,4 +209,4 @@ module.exports = function(mongoose, counters) {
     updateAttachment: updateAttachment,
     removeAttachments: removeAttachments
   }
-}
+}()

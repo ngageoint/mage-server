@@ -1,4 +1,5 @@
-module.exports = function(mongoose, counters) {
+module.exports = function(counters) {
+  var mongoose = require('mongoose');
 
   // Creates a new Mongoose Schema object
   var Schema = mongoose.Schema;
@@ -130,4 +131,4 @@ module.exports = function(mongoose, counters) {
     remove: remove,
     LayerModel: Layer
   }
-}
+}()

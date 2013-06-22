@@ -1,4 +1,6 @@
-module.exports = function(mongoose) {
+module.exports = function() {
+  var mongoose = require('mongoose');
+
   // Creates a new Mongoose Schema object
   var Schema = mongoose.Schema;  
 
@@ -63,4 +65,4 @@ module.exports = function(mongoose) {
     updateTeam: updateTeam,
     deleteTeam: deleteTeam
   }
-}
+}()

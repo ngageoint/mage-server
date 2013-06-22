@@ -1,7 +1,7 @@
 // Routes responsible for layer managment
-module.exports = function(app, models, fs, transformers, async, utilities) {
-  var p***REMOVED***port = utilities.auth.p***REMOVED***port;
-  var strategy = utilities.auth.strategy;
+module.exports = function(app, models, auth) {
+  var p***REMOVED***port = auth.p***REMOVED***port;
+  var strategy = auth.strategy;
 
   function LayerResponse() {
     var response = {
@@ -57,8 +57,10 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
     });
   });
 
+  //app.all('/FeatureServer/*', p***REMOVED***port.authenticate('bearer', {session: false}));
+
   // Get all layers
-  app.get('/FeatureServer', p***REMOVED***port.authenticate('bearer', {session: false}), function (req, res) {
+  app.get('/FeatureServer', function (req, res) {
     console.log("SAGE Layers GET REST Service Requested");
 
     models.Layer.getAll(function (layers) {
@@ -77,7 +79,7 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
   });
 
   // Create a new layer
-  app.post('/FeatureServer', function(req, res) {
+  app.post('/FeatureServer/', function(req, res) {
     var name = req.param('name');
     if (!name) {
       res.send(400, "Cannot create layer, invalid parameters.  'name' parameter is required");

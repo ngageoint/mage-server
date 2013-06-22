@@ -1,6 +1,6 @@
-module.exports = function(mongoose) {
-
-  var hasher = require('../utilities/pbkdf2')();
+module.exports = function() {
+  var mongoose = require('mongoose')
+    , hasher = require('../utilities/pbkdf2')();
 
   // Creates a new Mongoose Schema object
   var Schema = mongoose.Schema; 
@@ -112,4 +112,4 @@ module.exports = function(mongoose) {
     updateUser: updateUser,
     deleteUser: deleteUser
   }
-}
+}()

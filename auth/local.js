@@ -1,10 +1,9 @@
-module.exports = function(p***REMOVED***port, nodels) {
+module.exports = function(p***REMOVED***port, models) {
 
   var LocalStrategy = require('p***REMOVED***port-local').Strategy;
 
   p***REMOVED***port.use(new LocalStrategy(
     function(username, p***REMOVED***word, done) {
-      console.log('trying to auth user: '+ username + ' with p***REMOVED***word: ' + p***REMOVED***word);
       models.User.getUserByUsername(username, function(err, user) {
         if (err) { return done(err); }
 

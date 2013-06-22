@@ -11,7 +11,7 @@ function SigninController($scope, $log, $http, $injector, appConstants, UserServ
   $scope.signin = function () {
     console.log("signing in...just add code");
     $http({
-        url:appConstants.rootUrl + '/login', 
+        url:appConstants.rootUrl + '/api/login', 
         method: "POST",
         data: 'username=' + $scope.username + '&p***REMOVED***word=' + $scope.p***REMOVED***word,
         headers: {'Content-Type': 'application/x-www-form-urlencoded'}

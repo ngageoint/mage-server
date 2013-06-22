@@ -8,27 +8,19 @@ var argv = require('optimist')
   .default('d', '/var/lib/sage/attachments')
   .argv;
 
-var app = express();
 
 var attachmentBase = argv.d + '/';
 var dbPath = 'mongodb://localhost/sagedb';
 
-// Import static models
-var counters = require('./models/counters')(mongoose);
-var models = {
-  Counters: counters,
-  User: require('./models/user')(mongoose),
-  Token: require('./models/token')(mongoose),
-  Team: require('./models/team')(mongoose),
-  Role: require('./models/role')(),
-  Layer: require('./models/layer')(mongoose, counters),
-  Feature: require('./models/feature')(mongoose, counters, async)
-}
+// Pull in database models
+var models = require('./models');
 
 // Configure authentication
 var auth = require('./auth/authentication')(argv.a, models);
+console.log('auth is: ' + auth.toString());
 
 // Configuration of the MAGE Express server
+var app = express();
 app.configure(function () {
   mongoose.connect(dbPath, function(err) {
     if (err) throw err;
@@ -51,8 +43,6 @@ app.configure(function () {
   });
 });
 
-//app.all('/FeatureServer/*', auth.p***REMOVED***port.authenticate('local'));
-
 // Create directory for storing SAGE media attachments
 fs.mkdirp(attachmentBase, function(err) {
   if (err) {
@@ -62,29 +52,17 @@ fs.mkdirp(attachmentBase, function(err) {
   }
 });
 
-// pull in any utilities
-var jsol = require('./utilities/jsol');
-var geometryFormat = require('./format/geometryFormat')(jsol);
-var geoJsonFormat = require('./format/geoJsonFormat')(jsol);
-var transformers = {
-  esri: require('./transformers/esri')(geometryFormat),
-  geojson: require('./transformers/geojson')()
-}
-var utilities = {
-  auth: auth,
-  async: async,
-  fs: fs,
-  jsol: jsol,
-  transformers: transformers,
-  geometryFormat: geometryFormat,
-  geoJsonFormat: geoJsonFormat
-}
+
+// pull in all routes
+// Protect all FeatureServer routes with token authentication
+app.all('/FeatureServer*', auth.p***REMOVED***port.authenticate('bearer', {session: false}));
 
 // Dynamically import all routes
-fs.readdirSync('routes').forEach(function(file) {
+fs.readdirSync('./routes').forEach(function(file) {
   if (file[0] == '.') return;
   var route = file.substr(0, file.indexOf('.'));
-  require('./routes/' + route)(app, models, fs, transformers, async, utilities);
+  console.log('route is: ' + route);
+  require('./routes/' + route)(app, models, auth);
 });
 
 // Launches the Node.js Express Server

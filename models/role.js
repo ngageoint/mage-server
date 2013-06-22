@@ -54,4 +54,4 @@ module.exports = function() {
     getRoleRoles: getRoleRoles,
     getRoles: getRoles
   };
-}
+}()

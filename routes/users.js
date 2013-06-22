@@ -1,6 +1,6 @@
-module.exports = function(app, models, fs, transformers, async, utilities) {
-  var p***REMOVED***port = utilities.auth.p***REMOVED***port;
-  var strategy = utilities.auth.strategy;
+module.exports = function(app, models, auth) {
+  var p***REMOVED***port = auth.p***REMOVED***port;
+  var strategy = auth.strategy;
 
   var validateUserParams = function(req, res, next) {
     var invalidResponse = function(param) {
@@ -63,7 +63,7 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
 
   // login
   app.post(
-    '/login',
+    '/api/login',
     p***REMOVED***port.authenticate(strategy),
     function(req, res) {
       models.Token.createTokenForUser(req.user, function(err, token) {
@@ -79,11 +79,7 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
   // get all uses
   app.get(
     '/api/users', 
-<<<<<<< .mine
-    //p***REMOVED***port.authenticate(strategy), 
-=======
     p***REMOVED***port.authenticate('bearer'), 
->>>>>>> .r123
       function (req, res) {
       models.User.getUsers(function (users) {
         res.json(users);
@@ -93,11 +89,7 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
   // get user by id
   app.get( 
     '/api/users/:userId',
-<<<<<<< .mine
-    //p***REMOVED***port.authenticate(strategy),
-=======
     p***REMOVED***port.authenticate('bearer'),
->>>>>>> .r123
     function(req, res) {
      res.json(req.user);
     }
@@ -121,11 +113,7 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
   // Update a user
   app.post(
     '/api/users/:userId', 
-<<<<<<< .mine
-    //p***REMOVED***port.authenticate(strategy),
-=======
     p***REMOVED***port.authenticate('bearer'),
->>>>>>> .r123
     validateUserParams, 
     function(req, res) {
       models.User.updateUser(req.user, function(err, updatedUser) {
@@ -141,11 +129,7 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
   // Delete a user
   app.delete(
     '/api/users/:userId', 
-<<<<<<< .mine
-    //p***REMOVED***port.authenticate(strategy),
-=======
     p***REMOVED***port.authenticate('bearer'),
->>>>>>> .r123
     function(req, res) {
       models.User.deleteUser(req.user, function(err, updatedUser) {
         if (err) {

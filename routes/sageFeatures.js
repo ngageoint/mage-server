@@ -1,6 +1,6 @@
 // feature routes
-module.exports = function(app, models, fs, transformers, async, utilities) {
-  var geometryFormat = utilities.geoJsonFormat;
+module.exports = function(app, models, auth) {
+  var geometryFormat = require('../format/geoJsonFormat');
 
   var parseQueryParams = function(req, res, next) {
     var parameters = {};

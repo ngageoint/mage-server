@@ -131,4 +131,4 @@ module.exports = function(jsol) {
     parse: parseGeometry,
     format: formatGeometry
   }
-}
+}()

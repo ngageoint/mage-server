@@ -1,4 +1,5 @@
-module.exports = function(jsol) {
+module.exports = function() {
+  var jsol = require('./jsol');
 
   var parseEnvelope = function(text) {
     bbox = jsol.parseJSOL(text);

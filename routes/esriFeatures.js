@@ -1,6 +1,10 @@
 // ESRI feature routes
-module.exports = function(app, models, fs, transformers, async, utilities) {
-  var geometryFormat = utilities.geometryFormat;
+module.exports = function(app, models, auth) {
+  var async = require('async')
+    , fs = require('fs-extra');
+
+  var geometryFormat = require('../format/geometryFormat');
+  var esri = require('../transformers/esri')(geometryFormat);
 
   function EsriAttachments() {
     var content = {
@@ -137,7 +141,7 @@ module.exports = function(app, models, fs, transformers, async, utilities) {
     }
 
     var respond = function(features) {
-      var response = transformers.esri.transform(features, req.parameters.fields);
+      var response = esri.transform(features, req.parameters.fields);
       res.json(response);
     }
 

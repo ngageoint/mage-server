@@ -1,9 +1,10 @@
-module.exports = function(mongoose) {
+module.exports = function() {
 
-  var crypto = require('crypto');
+  var crypto = require('crypto')
+    , mongoose = require('mongoose');
 
   // Token expiration in msecs
-  var tokenExpiration = 0; //8 * 60 * 60 * 1000;
+  var tokenExpiration = 8 * 60 * 60 * 1000;
 
   // Creates a new Mongoose Schema object
   var Schema = mongoose.Schema; 
@@ -28,7 +29,7 @@ module.exports = function(mongoose) {
   var Token = mongoose.model('Token', TokenSchema);
 
   var deleteExpiredTokens = function(callback) {
-    var expired = new Date(Date.now -  tokenExpiration);
+    var expired = new Date(Date.now() -  tokenExpiration);
     var query = {timestamp: {$lt: expired}};
     Token.remove(query, callback); 
   }
@@ -36,7 +37,6 @@ module.exports = function(mongoose) {
   var getUserForToken = function(token, callback) {
     deleteExpiredTokens(function(err, stuff) {
       var query = {token: token};
-      Token.findOne(query, callback);
       Token.findOne(query).populate('user').exec(function(err, token) {
         var user = null;
         if (token && token.user) {
@@ -52,7 +52,7 @@ module.exports = function(mongoose) {
     var seed = crypto.randomBytes(20);
     var token = crypto.createHash('sha1').update(seed).digest('hex');
 
-    var query = {userId: user._id};
+    var query = {user: user._id};
     var update = {token: token, timestamp: new Date()};
     var options = {upsert: true};
     Token.findOneAndUpdate(query, update, options, callback);
@@ -62,4 +62,4 @@ module.exports = function(mongoose) {
     getUserForToken: getUserForToken,
     createTokenForUser: createTokenForUser
   }
-}
+}()
