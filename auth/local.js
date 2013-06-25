@@ -1,10 +1,11 @@
-module.exports = function(p***REMOVED***port, models) {
+module.exports = function(p***REMOVED***port) {
 
-  var LocalStrategy = require('p***REMOVED***port-local').Strategy;
+  var LocalStrategy = require('p***REMOVED***port-local').Strategy
+    , User = require('../models/user');
 
   p***REMOVED***port.use(new LocalStrategy(
     function(username, p***REMOVED***word, done) {
-      models.User.getUserByUsername(username, function(err, user) {
+      User.getUserByUsername(username, function(err, user) {
         if (err) { return done(err); }
 
         if (!user) {

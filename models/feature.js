@@ -1,111 +1,89 @@
-module.exports = function(counter) {
-  var mongoose = require('mongoose');
+var mongoose = require('mongoose')
+  , Counter = require('./counter');
 
-  var Schema = mongoose.Schema;
-  // Creates the Schema for the Features object (mimics ESRI)
-  var AttachmentSchema = new Schema({
-    id: { type: Number, required: true, unique: true },
-    contentType: { type: String, required: false },  
-    size: { type: String, required: false },  
-    name: { type: String, required: false },
-    relativePath: { type: String, required: true }
-  });
+var Schema = mongoose.Schema;
+// Creates the Schema for the Features object (mimics ESRI)
+var AttachmentSchema = new Schema({
+  id: { type: Number, required: true, unique: true },
+  contentType: { type: String, required: false },  
+  size: { type: String, required: false },  
+  name: { type: String, required: false },
+  relativePath: { type: String, required: true }
+});
 
-  // Creates the Schema for the Attachments object
-  var FeatureSchema = new Schema({
-    geometry: {
-      type: { type: String, required: true },
-      coordinates: { type: Array, required: true}
-    },
-    properties: Schema.Types.Mixed,
-    attachments: [AttachmentSchema]
-  });
+// Creates the Schema for the Attachments object
+var FeatureSchema = new Schema({
+  geometry: {
+    type: { type: String, required: true },
+    coordinates: { type: Array, required: true}
+  },
+  properties: Schema.Types.Mixed,
+  attachments: [AttachmentSchema]
+});
 
-  var models = {};
+var models = {};
 
-  var featureModel = function(layer) {
-    var name = layer.collectionName;
-    var model = models[name];
-    if (!model) {
-      // Creates the Model for the Features Schema
-      var model = mongoose.model(name, FeatureSchema, name);
-      models[name] = model;
+var featureModel = function(layer) {
+  var name = layer.collectionName;
+  var model = models[name];
+  if (!model) {
+    // Creates the Model for the Features Schema
+    var model = mongoose.model(name, FeatureSchema, name);
+    models[name] = model;
+  }
+
+  return model;
+}
+
+exports.getFeatures = function(layer, filter, callback) {
+  var conditions = {};
+  var fields = {'attachments': 0};
+
+  var query = featureModel(layer).find(conditions, fields);
+
+  // Filter by geometry
+  if (filter.geometry) {
+    query.where('geometry').intersects.geometry(filter.geometry);
+  }
+
+  query.exec(function (err, features) {
+    if (err) {
+      console.log("Error finding features in mongo: " + err);
     }
 
-    return model;
-  }
+    callback(features);
+  });
+}
 
-  var getFeatures = function(layer, filter, callback) {
-    var conditions = {};
-    var fields = {'attachments': 0};
-
-    var query = featureModel(layer).find(conditions, fields);
-
-    // Filter by geometry
-    if (filter.geometry) {
-      query.where('geometry').intersects.geometry(filter.geometry);
+exports.getFeatureByObjectId = function(layer, objectId, callback) {
+  var query = {'properties.OBJECTID': objectId};
+  featureModel(layer).findOne(query, function (err, feature) {
+    if (err) {
+      console.log("Error finding feature in mongo: " + err);
     }
 
-    query.exec(function (err, features) {
-      if (err) {
-        console.log("Error finding features in mongo: " + err);
-      }
+    callback(feature);
+  });
+}
 
-      callback(features);
-    });
-  }
+exports.getFeatureById = function(layer, id, callback) {
+  var fields = {'attachments': 0}; 
+  featureModel(layer).findOne(id, fields, function (err, feature) {
+    if (err) {
+      console.log("Error finding feature in mongo: " + err);
+    }
 
-  var getFeatureByObjectId = function(layer, objectId, callback) {
-    var query = {'properties.OBJECTID': objectId};
-    featureModel(layer).findOne(query, function (err, feature) {
-      if (err) {
-        console.log("Error finding feature in mongo: " + err);
-      }
+    callback(feature);
+  });
+}
 
-      callback(feature);
-    });
-  }
-
-  var getFeatureById = function(layer, id, callback) {
-    var fields = {'attachments': 0}; 
-    featureModel(layer).findOne(id, fields, function (err, feature) {
-      if (err) {
-        console.log("Error finding feature in mongo: " + err);
-      }
-
-      callback(feature);
-    });
-  }
-
-  var createFeature = function(layer, data, callback) {
-    var name = 'feature' + layer.id;
-    counter.getNext(name, function(id) {
-      var properties = data.properties ? data.properties : {};
-      properties.OBJECTID = id;
-
-      var feature = {
-        geometry: {
-          type: 'Point',
-          coordinates: [data.geometry.x, data.geometry.y]
-        },
-        properties: properties
-      };
-
-      featureModel(layer).create(feature, function(err, newFeature) {
-        if (err) {
-          console.log(JSON.stringify(err));
-        }
-
-        callback(newFeature);
-      });
-    });
-  }
-
-  var updateFeature = function(layer, data, callback) {
-    var query = {'properties.OBJECTID': data.properties.OBJECTID};
-
+exports.createFeature = function(layer, data, callback) {
+  var name = 'feature' + layer.id;
+  Counter.getNext(name, function(id) {
     var properties = data.properties ? data.properties : {};
-    var update = {
+    properties.OBJECTID = id;
+
+    var feature = {
       geometry: {
         type: 'Point',
         coordinates: [data.geometry.x, data.geometry.y]
@@ -113,100 +91,107 @@ module.exports = function(counter) {
       properties: properties
     };
 
-    var options = {new: true};
-    featureModel(layer).findOneAndUpdate(query, update, options, function (err, feature) {
+    featureModel(layer).create(feature, function(err, newFeature) {
       if (err) {
-        console.log('Could not update feature', err);
+        console.log(JSON.stringify(err));
       }
 
-      callback(err, feature);
+      callback(newFeature);
     });
-  }
+  });
+}
 
-  var removeFeature = function(layer, objectId, callback) {
-    var query = {'properties.OBJECTID': objectId};
-    featureModel(layer).findOneAndRemove(query, function (err, feature) {
-      if (err) {
-        console.log('Could not remove feature', err);
-      }
+exports.updateFeature = function(layer, data, callback) {
+  var query = {'properties.OBJECTID': data.properties.OBJECTID};
 
-      callback(err, objectId, feature);
-    });
-  }
+  var properties = data.properties ? data.properties : {};
+  var update = {
+    geometry: {
+      type: 'Point',
+      coordinates: [data.geometry.x, data.geometry.y]
+    },
+    properties: properties
+  };
 
-  var getAttachments = function(feature, callback) {
-    callback(feature.get('attachments'));
-  }
+  var options = {new: true};
+  featureModel(layer).findOneAndUpdate(query, update, options, function (err, feature) {
+    if (err) {
+      console.log('Could not update feature', err);
+    }
 
-  var getAttachment = function(feature, attachmentId, callback) {
-    var attachments = feature.get('attachments').filter(function(attachment) {
-      return (attachment.id == attachmentId);
-    });
+    callback(err, feature);
+  });
+}
 
-    var attachment = attachments.length ? attachments[0] : null;
-    callback(attachment);
-  }
+exports.removeFeature = function(layer, objectId, callback) {
+  var query = {'properties.OBJECTID': objectId};
+  featureModel(layer).findOneAndRemove(query, function (err, feature) {
+    if (err) {
+      console.log('Could not remove feature', err);
+    }
 
-  var addAttachment = function(layer, objectId, file, callback) {
-    var attachment = {
-      id: file.id,
-      contentType: file.type,  
-      size: file.size,  
-      name: file.name,
-      relativePath: file.relativePath
-    };
+    callback(err, objectId, feature);
+  });
+}
 
-    var condition = {'properties.OBJECTID': objectId};
-    var update = {'$push': { attachments: attachment } };
-    featureModel(layer).update(condition, update, function(err, feature) {
-      if (err) {
-        console.log('Error updating attachments from DB', err);
-      }
+exports.getAttachments = function(feature, callback) {
+  callback(feature.get('attachments'));
+}
 
-      callback(err, attachment);
-    });
-  }
+exports.getAttachment = function(feature, attachmentId, callback) {
+  var attachments = feature.get('attachments').filter(function(attachment) {
+    return (attachment.id == attachmentId);
+  });
 
-  var updateAttachment = function(layer, attachmentId, file, callback) {
-    var condition = {'attachments.id': attachmentId};
-    var update = {
-      '$set': {
-        'attachments.$.name': filesname,
-        'attachments.$.type': file.type,
-        'attachments.$.size': file.size
-      }
-    };
+  var attachment = attachments.length ? attachments[0] : null;
+  callback(attachment);
+}
 
-    featureModel(layer).update(condition, update, function(err, feature) {
-      if (err) {
-        console.log('Error updating attachments from DB', err);
-      }
+exports.addAttachment = function(layer, objectId, file, callback) {
+  var attachment = {
+    id: file.id,
+    contentType: file.type,  
+    size: file.size,  
+    name: file.name,
+    relativePath: file.relativePath
+  };
 
-      callback(err);
-    });
-  }
+  var condition = {'properties.OBJECTID': objectId};
+  var update = {'$push': { attachments: attachment } };
+  featureModel(layer).update(condition, update, function(err, feature) {
+    if (err) {
+      console.log('Error updating attachments from DB', err);
+    }
 
-  var removeAttachments = function(feature, attachmentIds, callback) {
-    feature.update({'$pull': {attachments: {id: {'$in': attachmentIds}}}}, function(err, number, raw) {
-      if (err) {
-        console.log('Error pulling attachments from DB', err);
-      }
+    callback(err, attachment);
+  });
+}
 
-      callback(err);
-    });
-  }
+exports.updateAttachment = function(layer, attachmentId, file, callback) {
+  var condition = {'attachments.id': attachmentId};
+  var update = {
+    '$set': {
+      'attachments.$.name': filesname,
+      'attachments.$.type': file.type,
+      'attachments.$.size': file.size
+    }
+  };
 
-  return {
-    getFeatures: getFeatures,
-    getFeatureById: getFeatureById,
-    getFeatureByObjectId: getFeatureByObjectId,
-    createFeature: createFeature,
-    updateFeature: updateFeature,
-    removeFeature: removeFeature,
-    getAttachments: getAttachments,
-    getAttachment: getAttachment,
-    addAttachment: addAttachment,
-    updateAttachment: updateAttachment,
-    removeAttachments: removeAttachments
-  }
-}()
+  featureModel(layer).update(condition, update, function(err, feature) {
+    if (err) {
+      console.log('Error updating attachments from DB', err);
+    }
+
+    callback(err);
+  });
+}
+
+exports.removeAttachments = function(feature, attachmentIds, callback) {
+  feature.update({'$pull': {attachments: {id: {'$in': attachmentIds}}}}, function(err, number, raw) {
+    if (err) {
+      console.log('Error pulling attachments from DB', err);
+    }
+
+    callback(err);
+  });
+}

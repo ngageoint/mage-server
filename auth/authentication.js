@@ -1,21 +1,23 @@
-module.exports = function(strategy, models) {
+module.exports = function(strategy) {
 
   var p***REMOVED***port = require('p***REMOVED***port'), 
-      BearerStrategy = require('p***REMOVED***port-http-bearer').Strategy;
+      BearerStrategy = require('p***REMOVED***port-http-bearer').Strategy
+    , User = require('../models/user')
+    , Token = require('../models/token');
 
   p***REMOVED***port.serializeUser(function(user, done) {
     done(null, user._id);
   });
 
   p***REMOVED***port.deserializeUser(function(id, done) {
-    models.User.getUserById(id, function(err, user) {
+    User.getUserById(id, function(err, user) {
       done(err, user);
     });
   });
 
   p***REMOVED***port.use(new BearerStrategy(
     function(token, done) {
-      models.Token.getUserForToken(token, function(err, user) {
+      Token.getUserForToken(token, function(err, user) {
         console.log('trying to get token: ' + token);
         if (err) { return done(err); }
 
@@ -27,7 +29,7 @@ module.exports = function(strategy, models) {
     }
   ));
 
-  var authentication = require('./' + strategy)(p***REMOVED***port, models);
+  var authentication = require('./' + strategy)(p***REMOVED***port);
 
   return authentication;
 }

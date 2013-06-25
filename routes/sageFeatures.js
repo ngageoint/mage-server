@@ -1,6 +1,7 @@
 // feature routes
-module.exports = function(app, models, auth) {
-  var geometryFormat = require('../format/geoJsonFormat');
+module.exports = function(app, auth) {
+  var Feature = require('../models/feature')
+    , geometryFormat = require('../format/geoJsonFormat');
 
   var parseQueryParams = function(req, res, next) {
     var parameters = {};
@@ -52,7 +53,7 @@ module.exports = function(app, models, auth) {
       async.each(
         filters, 
         function(filter, done) {
-          models.Feature.getFeatures(req.layer, filter, function (features) {
+          Feature.getFeatures(req.layer, filter, function (features) {
             if (features) {
               allFeatures = allFeatures.concat(features);
             }
@@ -66,7 +67,7 @@ module.exports = function(app, models, auth) {
       );
     } else {
       var filter = {};
-      models.Feature.getFeatures(req.layer, filter, function (features) {
+      Feature.getFeatures(req.layer, filter, function (features) {
         respond(features);
       });
     }
@@ -79,7 +80,7 @@ module.exports = function(app, models, auth) {
     // get format parameter, default to json if not present
     var format = req.param('f', 'json');
 
-    models.Feature.getFeatureById(req.params.id, function(feature) {
+    Feature.getFeatureById(req.params.id, function(feature) {
       var response = {};
       var formatter = Formatter(format);
       if (feature) {
@@ -95,7 +96,7 @@ module.exports = function(app, models, auth) {
     console.log("SAGE Features POST REST Service Requested");
 
     var data = JSON.parse(req.query.features);
-    models.Feature.createFeature(data[0], function(err, feature) {
+    Feature.createFeature(data[0], function(err, feature) {
       var response = {};
       if (feature) {
         response = feature;
@@ -111,7 +112,7 @@ module.exports = function(app, models, auth) {
     console.log("SAGE Features (ID) UPDATE REST Service Requested");
     
     var features = JSON.parse(req.query.features);
-    models.Feature.updateFeature(features[0].attributes, function(err, feature) {
+    Feature.updateFeature(features[0].attributes, function(err, feature) {
       var response = {};
       if (feature) {
         response = feature;
@@ -175,7 +176,7 @@ module.exports = function(app, models, auth) {
   app.put('/api/v1/features/', function (req, res){
     console.log("SAGPut Random");
     
-    return models.FeatureModel.find({}, {'_id': 1, 'geometry': 1, 'attributes': 1}, function (err, features) {
+    return FeatureModel.find({}, {'_id': 1, 'geometry': 1, 'attributes': 1}, function (err, features) {
       
       features.forEach( function(allMapPoints) {
       

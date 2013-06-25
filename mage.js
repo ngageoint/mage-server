@@ -8,21 +8,24 @@ var argv = require('optimist')
   .default('d', '/var/lib/sage/attachments')
   .argv;
 
-
+// Create directory for storing SAGE media attachments
 var attachmentBase = argv.d + '/';
-var dbPath = 'mongodb://localhost/sagedb';
-
-// Pull in database models
-var models = require('./models');
+fs.mkdirp(attachmentBase, function(err) {
+  if (err) {
+    console.error("Could not create directory to store SAGE media attachments. "  + err);
+  } else {
+    console.log("Using '" + attachmentBase + "' as base directory for feature attachments.");
+  }
+});
 
 // Configure authentication
-var auth = require('./auth/authentication')(argv.a, models);
+var auth = require('./auth/authentication')(argv.a);
 console.log('auth is: ' + auth.toString());
 
 // Configuration of the MAGE Express server
 var app = express();
 app.configure(function () {
-  mongoose.connect(dbPath, function(err) {
+  mongoose.connect('mongodb://localhost/sagedb', function(err) {
     if (err) throw err;
   });
   mongoose.set('debug', true);
@@ -43,27 +46,8 @@ app.configure(function () {
   });
 });
 
-// Create directory for storing SAGE media attachments
-fs.mkdirp(attachmentBase, function(err) {
-  if (err) {
-    console.error("Could not create directory to store SAGE media attachments. "  + err);
-  } else {
-    console.log("Using '" + attachmentBase + "' as base directory for feature attachments.");
-  }
-});
-
-
-// pull in all routes
-// Protect all FeatureServer routes with token authentication
-app.all('/FeatureServer*', auth.p***REMOVED***port.authenticate('bearer', {session: false}));
-
-// Dynamically import all routes
-fs.readdirSync('./routes').forEach(function(file) {
-  if (file[0] == '.') return;
-  var route = file.substr(0, file.indexOf('.'));
-  console.log('route is: ' + route);
-  require('./routes/' + route)(app, models, auth);
-});
+// Configure routes
+require('./routes')(app, auth);
 
 // Launches the Node.js Express Server
 app.listen(4242);

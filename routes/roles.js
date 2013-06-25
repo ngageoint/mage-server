@@ -1,4 +1,4 @@
-module.exports = function(app, models, auth) {
+module.exports = function(app, auth) {
   var p***REMOVED***port = auth.p***REMOVED***port;
 
   // get all roles

@@ -1,4 +1,9 @@
-module.exports = function(app, models, auth) {
+module.exports = function(app, auth) {
+  var User = require('../models/user')
+    , Token = require('../models/token')
+    , Role = require('../models/role')
+    , Team = require('../models/team');
+
   var p***REMOVED***port = auth.p***REMOVED***port;
   var strategy = auth.strategy;
 
@@ -52,21 +57,60 @@ module.exports = function(app, models, auth) {
     next();
   }
 
-  // Grab the user for any endpoint that uses userId
-  app.param('userId', function(req, res, next, userId) {
-      models.User.getUserById(userId, function(user) {
-        if (!user) return res.send('User not found', 404);
-        req.user = user;
-        next();
+  var validateRoleParams = function(req, res, next) {
+      var roles = req.param('roles');
+      if (!roles) {
+        return res.send(400, "Cannot set roles, 'roles' param not specified");
+      }
+
+      var roles = roles.split(",");
+      var validatedRoles = [];
+      var validRoles = Role.getRoles();
+      roles.forEach(function(role) {
+        if (validRoles.indexOf(role) == -1) {
+          return res.send(400, "Role '" + role + "' is not a valid role");
+        }
+
+        validatedRoles.push(role);
       });
-  });
+
+      req.roles = validatedRoles;
+      next();
+  }
+
+  var validateTeamParams = function(req, res, next) {
+    var teamIds = req.param('teamIds');
+    if (!teamIds) {
+      return res.send(400, "Cannot set teams, 'teamIds' param not specified");
+    }
+
+    var teamIds = teamIds.split(",");
+    var validatedTeams = [];
+    Team.getTeams(function (err, validTeams) {
+      teamIds.forEach(function(teamId) {
+        var found = validTeams.some(function(validTeam) {
+          return (teamId === validTeam._id.toString());
+        });
+
+
+        if (!found) {
+          return res.send(400, "Team '" + teamId + "' is not a valid team id");
+        }
+
+        validatedTeams.push(teamId);
+      });
+
+      req.teamIds = validatedTeams;
+      next();
+    });
+  }
 
   // login
   app.post(
     '/api/login',
     p***REMOVED***port.authenticate(strategy),
     function(req, res) {
-      models.Token.createTokenForUser(req.user, function(err, token) {
+      Token.createTokenForUser(req.user, function(err, token) {
         if (err) {
           return res.send("Error generating token", 400);
         }
@@ -81,7 +125,7 @@ module.exports = function(app, models, auth) {
     '/api/users', 
     p***REMOVED***port.authenticate('bearer'), 
       function (req, res) {
-      models.User.getUsers(function (users) {
+      User.getUsers(function (users) {
         res.json(users);
       });
   });
@@ -100,7 +144,7 @@ module.exports = function(app, models, auth) {
     '/api/users',
     validateUserParams, 
     function(req, res) {
-      models.User.createUser(req.user, function(err, newUser) {
+      User.createUser(req.user, function(err, newUser) {
         if (err) {
           return res.send(400, err);
         }
@@ -111,12 +155,12 @@ module.exports = function(app, models, auth) {
   );
 
   // Update a user
-  app.post(
+  app.put(
     '/api/users/:userId', 
     p***REMOVED***port.authenticate('bearer'),
     validateUserParams, 
     function(req, res) {
-      models.User.updateUser(req.user, function(err, updatedUser) {
+      User.updateUser(req.user, function(err, updatedUser) {
         if (err) {
           return res.send(400, err);
         }
@@ -131,7 +175,7 @@ module.exports = function(app, models, auth) {
     '/api/users/:userId', 
     p***REMOVED***port.authenticate('bearer'),
     function(req, res) {
-      models.User.deleteUser(req.user, function(err, updatedUser) {
+      User.deleteUser(req.user, function(err, updatedUser) {
         if (err) {
           return res.send(400, err);
         }
@@ -141,4 +185,49 @@ module.exports = function(app, models, auth) {
     }
   );
 
+  // set roles for user
+  app.post(
+    '/api/users/:userId/roles',
+    p***REMOVED***port.authenticate('bearer'),
+    validateRoleParams,
+    function(req, res) {
+      User.setRolesForUser(req.user, req.roles, function(err, user) {
+        res.json(user);
+      });
+    }
+  );
+
+  // remove all roles from user
+  app.delete(
+    '/api/users/:userId/roles',
+    p***REMOVED***port.authenticate('bearer'),
+    function(req, res) {
+      User.removeRolesForUser(req.user, function(err, user) {
+        res.json(user);
+      })
+    }
+  );
+
+  // set teams for users
+  app.post(
+    '/api/users/:userId/teams',
+    p***REMOVED***port.authenticate('bearer'),
+    validateTeamParams,
+    function(req, res) {
+      User.setTeamsForUser(req.user, req.teamIds, function(err, user) {
+        res.json(user);
+      });
+    }
+  );
+
+  // remove all teams from user
+  app.delete(
+    '/api/users/:userId/teams',
+    p***REMOVED***port.authenticate('bearer'),
+    function(req, res) {
+      User.removeTeamsForUser(req.user, function(err, user) {
+        res.json(user);
+      })
+    }
+  );
 }

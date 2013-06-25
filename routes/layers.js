@@ -1,5 +1,7 @@
 // Routes responsible for layer managment
-module.exports = function(app, models, auth) {
+module.exports = function(app, auth) {
+  var Layer = require('../models/layer');
+
   var p***REMOVED***port = auth.p***REMOVED***port;
   var strategy = auth.strategy;
 
@@ -39,31 +41,11 @@ module.exports = function(app, models, auth) {
     }
   }
 
-  // Grab the layer for any endpoint that uses layerId
-  app.param('layerId', function(req, res, next, layerId) {
-    models.Layer.getById(layerId, function(layer) {
-      if (!layer) {
-        res.json({
-          error: {
-            code: 400, 
-            message: "Layer / Table not found: " + layerId
-          }
-        });
-        return;
-      }
-
-      req.layer = layer;
-      next();
-    });
-  });
-
-  //app.all('/FeatureServer/*', p***REMOVED***port.authenticate('bearer', {session: false}));
-
   // Get all layers
   app.get('/FeatureServer', function (req, res) {
     console.log("SAGE Layers GET REST Service Requested");
 
-    models.Layer.getAll(function (layers) {
+    Layer.getAll(function (layers) {
       var response = new LayerResponse();
       response.add(layers);
       res.json(response.toObject());
@@ -88,7 +70,7 @@ module.exports = function(app, models, auth) {
     var fields = req.param('fields');
 
     var layer = {name: name, fields: fields};
-    models.Layer.create(layer, function(err, layer) {
+    Layer.create(layer, function(err, layer) {
       if (err) {
         res.send(400, err);
         return;
@@ -105,7 +87,7 @@ module.exports = function(app, models, auth) {
 
     var layer = req.layer;
 
-    models.Layer.remove(layer, function(err, layer) {
+    Layer.remove(layer, function(err, layer) {
       response = {};
       if (err) {
         response.success = false;

@@ -1,68 +1,81 @@
-module.exports = function() {
-  var mongoose = require('mongoose');
+var mongoose = require('mongoose');
 
-  // Creates a new Mongoose Schema object
-  var Schema = mongoose.Schema;  
+var User = require('./user');
 
-  // Collection to hold users
-  var TeamSchema = new Schema({
-      name: { type: String, required: true, unique: true},
-      description: { type: String, required: true },
-    },{ 
-      versionKey: false 
-    }
-  );
+// Creates a new Mongoose Schema object
+var Schema = mongoose.Schema;  
 
-  // Creates the Model for the User Schema
-  var Team = mongoose.model('Team', TeamSchema);
-
-  var getTeamById = function(id, callback) {
-    Team.findById(id, callback);
+// Collection to hold users
+var TeamSchema = new Schema({
+    name: { type: String, required: true, unique: true},
+    description: { type: String },
+  },{ 
+    versionKey: false 
   }
+);
 
-  var getTeams = function(callback) {
-    var query = {};
-    Team.find(query, function (err, teams) {
-      if (err) {
-        console.log("Error finding users in mongo: " + err);
-      }
+TeamSchema.pre('remove', function(next) {
+    var team = this;
 
-      callback(teams);
+    User.removeTeamFromUsers(team, function(err, number) {
+      next();
     });
-  }
+});
 
-  var createTeam = function(team, callback) {
-    //TODO need to ensure not a dup team name
+// Creates the Model for the User Schema
+var Team = mongoose.model('Team', TeamSchema);
 
-    var create = {
-      name: team.name,
-      description: team.description
+exports.getTeamById = function(id, callback) {
+  Team.findById(id, callback);
+}
+
+exports.getTeams = function(callback) {
+  var query = {};
+  Team.find(query, function (err, teams) {
+    if (err) {
+      console.log("Error finding teams in mongo: " + err);
     }
 
-    Team.create(create, callback);
+    callback(err, teams);
+  });
+}
+
+exports.createTeam = function(team, callback) {
+  var create = {
+    name: team.name,
+    description: team.description
   }
 
-  var updateTeam = function(team, callback) {
-    // TODO need to ensure not a dup team name
-
-    var update = {
-      name: team.username,
-      description: team.firstname
+  Team.create(create, function(err, team) {
+    if (err) {
+      console.log('error creating new team: ' + err);
     }
 
-    Team.findByIdAndUpdate(team._id, update, callback);
+    callback(err, team);
+  });
+}
+
+exports.updateTeam = function(id, team, callback) {
+  var update = {
+    name: team.name,
+    description: team.description
   }
 
-  var deleteTeam = function(team, callback) {
-    var conditions = { _id: team._id };
-    Team.remove(conditions, callback);
-  }
+  Team.findByIdAndUpdate(id, update, function(err, team) {
+    if (err) {
+      console.log('error updating team: ' + id + 'err: ' + err);
+    }
 
-  return {
-    getTeamById: getTeamById,
-    getTeams: getTeams,
-    createTeam: createTeam,
-    updateTeam: updateTeam,
-    deleteTeam: deleteTeam
-  }
-}()
+    callback(err, team);
+  });
+}
+
+exports.deleteTeam = function(team, callback) {
+  team.remove(function(err) {
+    if (err) {
+      console.log('could not delete team: ' + team.name);
+    }
+
+    callback(err, team);
+  });
+}

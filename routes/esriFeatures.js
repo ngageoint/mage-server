@@ -1,7 +1,9 @@
 // ESRI feature routes
-module.exports = function(app, models, auth) {
+module.exports = function(app, auth) {
   var async = require('async')
-    , fs = require('fs-extra');
+    , fs = require('fs-extra')
+    , Counter = require('../models/counter')
+    , Feature = require('../models/feature');
 
   var geometryFormat = require('../format/geometryFormat');
   var esri = require('../transformers/esri')(geometryFormat);
@@ -42,49 +44,6 @@ module.exports = function(app, models, auth) {
 
     return path;
   }
-
-  app.param(function(name, fn) {
-    if (fn instanceof RegExp) {
-      return function(req, res, next, val) {
-        var captures;
-        if (captures = fn.exec(String(val))) {
-          req.params[name] = captures;
-          next();
-        } else {
-          next('route');
-        }
-      }
-    }
-  });
-
-  app.param('objectId', /^\d+$/);  //ensure objectId is a number
-  app.param('objectId', function(req, res, next, objectId) {
-    var id = parseInt(objectId, 10);
-    req.objectId = id;
-    next();
-  });
-
-  app.param('featureObjectId', /^\d+$/); //ensure featureObjectId is a number
-
-  // Grab the feature for any endpoint that uses featureObjectId
-  app.param('featureObjectId', function(req, res, next, objectId) {
-    var id = parseInt(objectId, 10);
-    models.Feature.getFeatureByObjectId(req.layer, id, function(feature) {
-      if (!feature) {
-        res.json({
-          error: {
-            code: 404,
-            message: 'Feature (ID: ' + id + ') not found',
-            details: []
-          }
-        });
-        return;
-      }
-
-      req.feature = feature;
-      next();
-    });
-  });
 
   var parseQueryParams = function(req, res, next) {
     var parameters = {};
@@ -150,7 +109,7 @@ module.exports = function(app, models, auth) {
       async.each(
         filters, 
         function(filter, done) {
-          models.Feature.getFeatures(req.layer, filter, function (features) {
+          Feature.getFeatures(req.layer, filter, function (features) {
             if (features) {
               allFeatures = allFeatures.concat(features);
             }
@@ -164,7 +123,7 @@ module.exports = function(app, models, auth) {
       );
     } else {
       var filter = {};
-      models.Feature.getFeatures(req.layer, filter, function (features) {
+      Feature.getFeatures(req.layer, filter, function (features) {
         respond(features);
       });
     }
@@ -207,7 +166,7 @@ module.exports = function(app, models, auth) {
     async.each(
       features,
       function(feature, done) {
-        models.Feature.createFeature(req.layer, {geometry: feature.geometry, properties: feature.attributes}, function(newFeature) {
+        Feature.createFeature(req.layer, {geometry: feature.geometry, properties: feature.attributes}, function(newFeature) {
           addResults.push({
             globalId: null,
             objectId: newFeature ? newFeature.properties.OBJECTID : -1,
@@ -244,7 +203,7 @@ module.exports = function(app, models, auth) {
     features = JSON.parse(features);
     var updateResults = [];
     var updateFeature = function(feature, done) {
-      models.Feature.updateFeature(req.layer, {geometry: feature.geometry, properties: feature.attributes}, function(err, newFeature) {
+      Feature.updateFeature(req.layer, {geometry: feature.geometry, properties: feature.attributes}, function(err, newFeature) {
         if (err || !newFeature) {
           updateResults.push({
             objectId: feature.attributes.OBJECTID,
@@ -329,11 +288,11 @@ module.exports = function(app, models, auth) {
         return res.json({deleteResults: results});
       }
 
-      models.Feature.removeFeature(req.layer, objectIds.pop(), onUpdate);
+      Feature.removeFeature(req.layer, objectIds.pop(), onUpdate);
     }
 
 
-    models.Feature.removeFeature(req.layer, objectIds.pop(), onDelete);
+    Feature.removeFeature(req.layer, objectIds.pop(), onDelete);
   });
 
   // This function gets all the attachments for a particular ESRI record  
@@ -341,7 +300,7 @@ module.exports = function(app, models, auth) {
     console.log("SAGE ESRI Features (ID) Attachments GET REST Service Requested");
 
     var esriAttachments = new EsriAttachments();
-    models.Feature.getAttachments(req.feature, function(attachments) {
+    Feature.getAttachments(req.feature, function(attachments) {
       if (attachments) {
         attachments.forEach(function(attachment) {
           esriAttachments.add(attachment);
@@ -357,7 +316,7 @@ module.exports = function(app, models, auth) {
     console.log("SAGE ESRI Features (ID) Attachments (ID) GET REST Service Requested");
 
     var attachmentId = req.params.attachmentId;
-    models.Feature.getAttachment(req.feature, attachmentId, function(attachment) {
+    Feature.getAttachment(req.feature, attachmentId, function(attachment) {
       if (!attachment) {
         var errorResponse = {
           error: {
@@ -388,7 +347,7 @@ module.exports = function(app, models, auth) {
     console.log("SAGE ESRI Features (ID) Attachments POST REST Service Requested");
 
     var counter = 'attachment' + req.layer.id;
-    models.Counters.getNext(counter, function(id) {
+    Counter.getNext(counter, function(id) {
 
       var relativePath = createAttachmentPath(req.layer, req.files.attachment)
       // move file upload to its new home
@@ -400,7 +359,7 @@ module.exports = function(app, models, auth) {
         fs.rename(req.files.attachment.path, app.get('attachmentBase') + req.files.attachment.relativePath, function(err) {
           if (err) return next(err);
 
-          models.Feature.addAttachment(req.layer, req.objectId, req.files.attachment, function(err, attachment) {
+          Feature.addAttachment(req.layer, req.objectId, req.files.attachment, function(err, attachment) {
             if (err) return next(err);
 
             var response = {
@@ -446,7 +405,7 @@ module.exports = function(app, models, auth) {
       fs.rename(req.files.attachment.path, app.get('attachmentBase') + req.files.attachment.relativePath, function(err) {
         if (err) return next(err);
 
-        models.Feature.updateAttachment(req.layer, attachmentId, req.files.attachment, function(err) {
+        Feature.updateAttachment(req.layer, attachmentId, req.files.attachment, function(err) {
           if (err) return next(err);
 
           res.json({
@@ -486,7 +445,7 @@ module.exports = function(app, models, auth) {
 
     var attachments = req.feature.attachments.toObject();
 
-    models.Feature.removeAttachments(req.feature, attachmentIds, function(err) {
+    Feature.removeAttachments(req.feature, attachmentIds, function(err) {
       var deleteResults = [];
       attachmentIds.forEach(function(attachmentId) {
         deleteResults.push({
