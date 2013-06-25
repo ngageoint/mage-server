@@ -1,4 +1,7 @@
-module.exports = function(mongoose) {
+module.exports = function() {
+
+  var mongoose = require('mongoose')
+    , hasher = require('../utilities/pbkdf2')();
   
   // Creates a new Mongoose Schema object
   var Schema = mongoose.Schema;  
@@ -16,9 +19,12 @@ module.exports = function(mongoose) {
   // Creates the Model for the User Schema
   var Location = mongoose.model('Location', LocationSchema);
 
-  var createLocation = function(layer, data, callback) {
+   
+  //create location
+  var createLocation = function(user,callback) {
 
     var location = {
+      user: user._id,
       geometry: {
         type: 'Point',
         coordinates: [data.geometry.x, data.geometry.y]
@@ -28,18 +34,24 @@ module.exports = function(mongoose) {
     Location.create(location, callback);
   }
 
+  //get locations
   var getLocations = function(callback) {
     var query = {};
-    Location.find(query, function (err, teams) {
+    Location.find(query, function (err, locations) {
       if (err) {
         console.log("Error finding locations in mongo: " + err);
       }
 
-      callback(teams);
+      callback(locations);
     });
   }
 
+  //return functions
   return {
-    getTeams: getTeams
+    getLocations: getLocations,
+    createLocation: createLocation
   }
-}
+
+
+
+}()

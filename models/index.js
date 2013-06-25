@@ -19,6 +19,7 @@ module.exports = function() {
     Team: require('./team'),
     Role:  require('./role'),
     Layer: require('./layer'),
-    Feature: require('./feature')
+    Feature: require('./feature'),
+    Location: require('./location')
   }
 }()
