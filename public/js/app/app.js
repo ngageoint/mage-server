@@ -1,10 +1,8 @@
 'use strict';
 
-var mage = angular.module("mage", ["ui.bootstrap", "leaflet-directive", "mage.***REMOVED***s", "mage.userService"], function ($routeProvider, $locationProvider, $httpProvider) {
+var mage = angular.module("mage", ["ui.bootstrap", "leaflet-directive", "mage.***REMOVED***s", "mage.userService", "mage.lib"], function ($routeProvider, $locationProvider, $httpProvider) {
   $httpProvider.defaults.withCredentials = true;
   $httpProvider.defaults.headers.post  = {'Content-Type': 'application/x-www-form-urlencoded'};
-
-  // $http.defaults.headers.common['Auth-Token'] = 'token'; // going to need to sort out setting the token, see 
 
   $routeProvider.when('/signin',
   {
@@ -14,12 +12,12 @@ var mage = angular.module("mage", ["ui.bootstrap", "leaflet-directive", "mage.**
   $routeProvider.when('/signup',
   {
     templateUrl:    'js/app/partials/signup.html',
-    controller:     UserController
+    controller:     AdminController
   });
-  $routeProvider.when('/users',
+  $routeProvider.when('/admin',
   {
-    templateUrl:    'js/app/partials/users.html',
-    controller:     UserController
+    templateUrl:    'js/app/partials/admin.html',
+    controller:     AdminController
   });
   $routeProvider.when('/map',
   {

@@ -1,0 +1,65 @@
+<div>
+  <div cl***REMOVED***="navbar">
+    <div cl***REMOVED***="navbar-inner">
+      <a cl***REMOVED***="brand" href="/"><i cl***REMOVED***="icon-white icon-magic" style="margin-right:10px;"></i>MAGE</a>
+      <ul cl***REMOVED***="nav">
+        <li><a href="map.html">Map</a></li>
+        <li><a href="layers.html">Layer Manager</a></li>
+        <li style="background: #305680"><a href="users.html" style="color:#fff;">Admin Panel</a></li>
+      </ul>
+    </div>
+  </div>
+  <div cl***REMOVED***="container">
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span12"><h2>Admin Panel</h2></div>
+    </div>
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span2">
+        <ul id="addmin-functions" style="list-style: none">
+          <li><a href="" ng-click="changeCurrentActivity('team')" ngm-tap="changeCurrentActivity('team')">Teams</a></li>
+          <li><a href="" ng-click="changeCurrentActivity('user')" ngm-tap="changeCurrentActivity('user')">Users</a></li>
+          <li><a href="" ng-click="changeCurrentActivity('device')" ngm-tap="changeCurrentActivity('device')">Devices</a></li>
+        </ul>
+      </div>
+      <div cl***REMOVED***="span10" id="admin-area">
+        <!--<div useradmin currentadminactivity="currentAdminActivity"></div> -->
+        <teampanel>
+        <devicepanel>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Team form, get it back in if there is time
+    <div cl***REMOVED***="admin-area">
+        <a id="new-team-btn" ng-click="newTeam()" ngm-tap="newTeam()" cl***REMOVED***="btn"><i cl***REMOVED***="icon-plus mtage-color"></i> New Team</a>
+        <ul style="list-style: none;" cl***REMOVED***="top-gap">
+          <li ng-repeat="team in teams"><a ng-click="viewTeam(team)">{{team.teamName}}</a></li>
+        </ul>
+        <p id="instructions" cl***REMOVED***="hide">
+          There are no teams on this server. Click the new team button to get started.
+        </p>
+      </div>
+    </div>
+    <div cl***REMOVED***="span10">
+        <h3>{{team.name}}</h3>
+        <form ng-submit="saveTeam()" id="new-team-form" cl***REMOVED***="hide form-horizontal">
+           <fieldset>
+            <legend>{{team.teamName}}</legend>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Team Name</label>
+              <div cl***REMOVED***="controls">
+                <input type="text" placeholder="i.e. jappleseed" ng-model="team.teamName">
+              </div>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Description</label>
+              <div cl***REMOVED***="controls">
+                <textarea placeholder="i.e. jappleseed" ng-model="team.description" cols="30" rows="5"></textarea>
+              </div>
+            </div>
+            <button type="submit" cl***REMOVED***="btn">Save Team</button>
+          </fieldset>
+        </form>
+      </div>
+  -->
+</div>

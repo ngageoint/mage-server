@@ -65,7 +65,7 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
     }
   }
 
-  $scope.$watch("$scope.observationId", function(oldValue, newValue) {
+  $scope.$watch("$scope.observationId", function (oldValue, newValue) {
     console.log("Observation ID changed " + $scope.observationId);
   }, true);
 

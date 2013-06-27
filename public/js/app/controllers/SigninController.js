@@ -1,11 +1,11 @@
 'use strict';
 
-angular.module("sage", ["mage.***REMOVED***s", "mage.userService"]);
+angular.module("mage", ["mage.***REMOVED***s", "mage.userService"]);
 
 /*
 
 */
-function SigninController($scope, $log, $http, $injector, appConstants, UserService) {
+function SigninController($rootScope, $scope, $log, $http, $injector, appConstants, UserService, mageLib) {
   // The variables that get set when clicking a team or user in the list, these get loaded into the editor.
   console.log('up in the signin controller');
   $scope.signin = function () {
@@ -18,6 +18,9 @@ function SigninController($scope, $log, $http, $injector, appConstants, UserServ
       }).
         success(function (data, status, headers, config) {
           console.log("sucessful login!");
+          mageLib.setLocalItem('token', data.token);
+          //$http.defaults.headers.common['Auth-Token'] = data.token;
+          mageLib.setToken(data.token);
           window.location = '/#/map'
         }).
         error(function (data, status, headers, config) {
