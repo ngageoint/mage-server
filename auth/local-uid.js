@@ -24,7 +24,7 @@ module.exports = function(p***REMOVED***port) {
             return ('Incorrect p***REMOVED***word');
           }
 
-          Device.getDeviceById(uid, function(err, device) {
+          Device.getDeviceByUid(uid, function(err, device) {
             if (err) {
               return done(err);
             }

@@ -41,11 +41,17 @@ UserSchema.pre('save', function(next) {
   });
 });
 
-// specify the transform schema option
-// UserSchema.options.toObject.transform = function (user, ret, options) {
-//   // remove the _id of every document before returning the result
-//   delete ret.p***REMOVED***word;
-// }
+UserSchema.set("toObject", {
+  transform: function(user, ret, options) {
+    delete ret.p***REMOVED***word;
+  }
+});
+
+UserSchema.set("toJSON", {
+  transform: function(user, ret, options) {
+    delete ret.p***REMOVED***word;
+  }
+});
 
 // Creates the Model for the User Schema
 var User = mongoose.model('User', UserSchema);
