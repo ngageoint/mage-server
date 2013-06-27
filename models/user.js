@@ -42,10 +42,10 @@ UserSchema.pre('save', function(next) {
 });
 
 // specify the transform schema option
-UserSchema.options.toObject.transform = function (user, ret, options) {
-  // remove the _id of every document before returning the result
-  delete ret.p***REMOVED***word;
-}
+// UserSchema.options.toObject.transform = function (user, ret, options) {
+//   // remove the _id of every document before returning the result
+//   delete ret.p***REMOVED***word;
+// }
 
 // Creates the Model for the User Schema
 var User = mongoose.model('User', UserSchema);
