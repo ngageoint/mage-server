@@ -78,9 +78,6 @@ var encryptP***REMOVED***word = function (p***REMOVED***word, callback) {
   crypto.pbkdf2(p***REMOVED***word, encryptedP***REMOVED***word.salt, encryptedP***REMOVED***word.iterations, encryptedP***REMOVED***word.derivedKeyLength, function (err, derivedKey) {
     if (err) { return callback(err); }
 
-    console.log('user: ' + derivedKey.toString('base64'));
-    console.log('db: ' + encryptedP***REMOVED***word.derivedKey);
-
     callback(null, derivedKey.toString('base64') === encryptedP***REMOVED***word.derivedKey)
   });
  };

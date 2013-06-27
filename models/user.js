@@ -4,6 +4,11 @@ var mongoose = require('mongoose')
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema; 
 
+var PhoneSchema = new Schema({
+  type: { type: String, required: true, unique: true },
+  number: { type: String, required: true }
+});
+
 // Collection to hold users
 var UserSchema = new Schema({
     username: { type: String, required: true, unique: true },
@@ -11,6 +16,7 @@ var UserSchema = new Schema({
     firstname: { type: String, required: true },
     lastname: {type: String, required: true },
     email: {type: String, required: true },
+    phones: [PhoneSchema],
     roles: [Schema.Types.String],
     teams: [Schema.Types.ObjectId],
   },{ 
@@ -35,11 +41,16 @@ UserSchema.pre('save', function(next) {
   });
 });
 
+// specify the transform schema option
+UserSchema.options.toObject.transform = function (user, ret, options) {
+  // remove the _id of every document before returning the result
+  delete ret.p***REMOVED***word;
+}
+
 // Creates the Model for the User Schema
 var User = mongoose.model('User', UserSchema);
 
 exports.getUserById = function(id, callback) {
-  console.log('find by id: ' + id);
   User.findById(id, callback);
 }
 
@@ -141,4 +152,3 @@ exports.removeTeamFromUsers = function(team, callback) {
     callback(err, number);
   });
 }
-

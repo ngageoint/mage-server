@@ -4,7 +4,7 @@ var path = require("path");
 var fs = require('fs-extra');
 var async = require('async');
 var argv = require('optimist')
-  .default('a', 'local')
+  .default('a', 'local-uid')
   .default('d', '/var/lib/sage/attachments')
   .argv;
 

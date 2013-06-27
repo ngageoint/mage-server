@@ -1,10 +1,12 @@
 module.exports = function(p***REMOVED***port) {
 
-  var LocalStrategy = require('p***REMOVED***port-local').Strategy
-    , User = require('../models/user');
+  var LocalUIDStrategy = require('../p***REMOVED***port-local-uid').Strategy
+    , User = require('../models/user')
+    , Device = require('../models/device');
 
-  p***REMOVED***port.use(new LocalStrategy(
-    function(username, p***REMOVED***word, done) {
+  p***REMOVED***port.use(new LocalUIDStrategy(
+    function(username, p***REMOVED***word, uid, done) {
+      console.log('Authenticating device: ' + uid);
       User.getUserByUsername(username, function(err, user) {
         console.log('Authenticating user: ' + username);
         if (err) { return done(err); }
@@ -22,14 +24,25 @@ module.exports = function(p***REMOVED***port) {
             return ('Incorrect p***REMOVED***word');
           }
 
-          return done(null, user);
+          Device.getDeviceById(uid, function(err, device) {
+            if (err) {
+              return done(err);
+            }
+
+            if (!device) {
+              return done(null, false, { message: "Device with id '" + uid + "' not found" });
+            }
+
+            return done(null, user);
+
+          });
         });
       });
     }
   ));
 
   return {
-    strategy: 'local',
+    strategy: 'local-uid',
     p***REMOVED***port: p***REMOVED***port
   };
 }

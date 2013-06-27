@@ -1,126 +1,130 @@
 // feature routes
 module.exports = function(app, auth) {
-  var Feature = require('../models/feature')
-    , geometryFormat = require('../format/geoJsonFormat');
+  // TODO at one point thought ist was a good idea to provide non ESRI
+  // endpoints to MAGE.  Probably still a good idea just got caught up
+  // in tight schedule and did not get the opportunity to get this stuff in.
 
-  var parseQueryParams = function(req, res, next) {
-    var parameters = {};
+  // var Feature = require('../models/feature')
+  //   , geometryFormat = require('../format/geoJsonFormat');
 
-    var properties = req.param('properties');
-    if (properties) {
-      parameters.properties = properties.split(",");
-    }
+  // var parseQueryParams = function(req, res, next) {
+  //   var parameters = {};
 
-    var bbox = req.param('bbox');
-    if (bbox) {
-      parameters.geometries = geometryFormat.parse('bbox', bbox);
-    }
+  //   var properties = req.param('properties');
+  //   if (properties) {
+  //     parameters.properties = properties.split(",");
+  //   }
 
-    var geometry = req.param('geometry');
-    if (geometry) {
-      parameters.geometries = geometryFormat.parse('geometry', geometry);
-    }
+  //   var bbox = req.param('bbox');
+  //   if (bbox) {
+  //     parameters.geometries = geometryFormat.parse('bbox', bbox);
+  //   }
 
-    req.parameters = parameters;
+  //   var geometry = req.param('geometry');
+  //   if (geometry) {
+  //     parameters.geometries = geometryFormat.parse('geometry', geometry);
+  //   }
 
-    next();
-  }
+  //   req.parameters = parameters;
 
-  // Queries for ESRI Styled records built for the ESRI format and syntax
-  app.get('/FeatureServer/:layerId/features', parseQueryParams, function (req, res) {
-    console.log("SAGE ESRI Features GET REST Service Requested");
+  //   next();
+  // }
 
-    // create filters for feature query
-    var filters = null;
+  // // Queries for ESRI Styled records built for the ESRI format and syntax
+  // app.get('/FeatureServer/:layerId/features', parseQueryParams, function (req, res) {
+  //   console.log("SAGE ESRI Features GET REST Service Requested");
 
-    var geometries = req.parameters.geometries;
-    if (geometries) {
-      filters = [];
-      geometries.forEach(function(geometry) {
-        filters.push({
-          geometry: geometry
-        });
-      });
-    }
+  //   // create filters for feature query
+  //   var filters = null;
 
-    var respond = function(features) {
-      var response = transformers.geojson.transform(features, req.parameters.properties);
-      res.json(response);
-    }
+  //   var geometries = req.parameters.geometries;
+  //   if (geometries) {
+  //     filters = [];
+  //     geometries.forEach(function(geometry) {
+  //       filters.push({
+  //         geometry: geometry
+  //       });
+  //     });
+  //   }
 
-    if (filters) {
-      allFeatures = [];
-      async.each(
-        filters, 
-        function(filter, done) {
-          Feature.getFeatures(req.layer, filter, function (features) {
-            if (features) {
-              allFeatures = allFeatures.concat(features);
-            }
+  //   var respond = function(features) {
+  //     var response = transformers.geojson.transform(features, req.parameters.properties);
+  //     res.json(response);
+  //   }
 
-            done();
-          });
-        },
-        function(err) {
-          respond(allFeatures);
-        }
-      );
-    } else {
-      var filter = {};
-      Feature.getFeatures(req.layer, filter, function (features) {
-        respond(features);
-      });
-    }
-  });
+  //   if (filters) {
+  //     allFeatures = [];
+  //     async.each(
+  //       filters, 
+  //       function(filter, done) {
+  //         Feature.getFeatures(req.layer, filter, function (features) {
+  //           if (features) {
+  //             allFeatures = allFeatures.concat(features);
+  //           }
 
-  // This function gets one feature with universal JSON formatting  
-  app.get('/featureServer/v1/features/:id', function (req, res) {
-    console.log("SAGE Features (ID) GET REST Service Requested");
+  //           done();
+  //         });
+  //       },
+  //       function(err) {
+  //         respond(allFeatures);
+  //       }
+  //     );
+  //   } else {
+  //     var filter = {};
+  //     Feature.getFeatures(req.layer, filter, function (features) {
+  //       respond(features);
+  //     });
+  //   }
+  // });
+
+  // // This function gets one feature with universal JSON formatting  
+  // app.get('/featureServer/v1/features/:id', function (req, res) {
+  //   console.log("SAGE Features (ID) GET REST Service Requested");
     
-    // get format parameter, default to json if not present
-    var format = req.param('f', 'json');
+  //   // get format parameter, default to json if not present
+  //   var format = req.param('f', 'json');
 
-    Feature.getFeatureById(req.params.id, function(feature) {
-      var response = {};
-      var formatter = Formatter(format);
-      if (feature) {
-        response = formatter.format(feature);
-      }
+  //   Feature.getFeatureById(req.params.id, function(feature) {
+  //     var response = {};
+  //     var formatter = Formatter(format);
+  //     if (feature) {
+  //       response = formatter.format(feature);
+  //     }
 
-      res.send(JSON.stringify(response));
-    });
-  }); 
+  //     res.send(JSON.stringify(response));
+  //   });
+  // }); 
 
-  // This function creates a new Feature  
-  app.post('/featureServer/v1/features', function (req, res) {
-    console.log("SAGE Features POST REST Service Requested");
+  // // This function creates a new Feature  
+  // app.post('/featureServer/v1/features', function (req, res) {
+  //   console.log("SAGE Features POST REST Service Requested");
 
-    var data = JSON.parse(req.query.features);
-    Feature.createFeature(data[0], function(err, feature) {
-      var response = {};
-      if (feature) {
-        response = feature;
-      } 
+  //   var data = JSON.parse(req.query.features);
+  //   Feature.createFeature(data[0], function(err, feature) {
+  //     var response = {};
+  //     if (feature) {
+  //       response = feature;
+  //     } 
 
-      res.send(JSON.stringify(feature));
-    });
-  }); 
+  //     res.send(JSON.stringify(feature));
+  //   });
+  // }); 
 
 
-  // This function will update a feature by the ID
-  app.put('/featureServer/v1/features/:id', function (req, res) {
-    console.log("SAGE Features (ID) UPDATE REST Service Requested");
+  // // This function will update a feature by the ID
+  // app.put('/featureServer/v1/features/:id', function (req, res) {
+  //   console.log("SAGE Features (ID) UPDATE REST Service Requested");
     
-    var features = JSON.parse(req.query.features);
-    Feature.updateFeature(features[0].attributes, function(err, feature) {
-      var response = {};
-      if (feature) {
-        response = feature;
-      }
+  //   var features = JSON.parse(req.query.features);
+  //   Feature.updateFeature(features[0].attributes, function(err, feature) {
+  //     var response = {};
+  //     if (feature) {
+  //       response = feature;
+  //     }
 
-      res.send(JSON.stringify(response));
-    });
-  }); 
+  //     res.send(JSON.stringify(response));
+  //   });
+  // }); 
 
   // TODO implement delete feature
   // This function deletes one feature based on ID
@@ -172,32 +176,32 @@ module.exports = function(app, auth) {
 
   // });
 
-  // This function will update a feature by the ID
-  app.put('/api/v1/features/', function (req, res){
-    console.log("SAGPut Random");
+  // // This function will update a feature by the ID
+  // app.put('/api/v1/features/', function (req, res){
+  //   console.log("SAGPut Random");
     
-    return FeatureModel.find({}, {'_id': 1, 'geometry': 1, 'attributes': 1}, function (err, features) {
+  //   return FeatureModel.find({}, {'_id': 1, 'geometry': 1, 'attributes': 1}, function (err, features) {
       
-      features.forEach( function(allMapPoints) {
+  //     features.forEach( function(allMapPoints) {
       
-        var x=Math.floor((Math.random()*42) + 81);
-        var y=Math.floor((Math.random()*14) + 30);
+  //       var x=Math.floor((Math.random()*42) + 81);
+  //       var y=Math.floor((Math.random()*14) + 30);
 
-        feature.geometry.x = x;
-        feature.geometry.y = y;
+  //       feature.geometry.x = x;
+  //       feature.geometry.y = y;
       
-      })
+  //     })
       
-      return feature.save(function (err) {
-        if (!err) {
-          console.log("updated");
-        } else {
-          console.log(err);
-        }
-      return res.send(feature);
-      });
-    });
-  });
+  //     return feature.save(function (err) {
+  //       if (!err) {
+  //         console.log("updated");
+  //       } else {
+  //         console.log(err);
+  //       }
+  //     return res.send(feature);
+  //     });
+  //   });
+  // });
 
   // TODO this should just be a param on GET features
   // // Gets all the features with universal JSON formatting   

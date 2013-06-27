@@ -15,6 +15,7 @@ module.exports = function() {
   return {
     Counter: Counter,
     User: require('./user'),
+    Device: require('./device'),
     Token: require('./token'),
     Team: require('./team'),
     Role:  require('./role'),
