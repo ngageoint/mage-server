@@ -76,7 +76,7 @@ module.exports = function(app, auth) {
   app.get(
     '/api/users', 
     p***REMOVED***port.authenticate('bearer'),
-    //access.hasRoles(['READ_USER']),
+    access.hasRoles(['READ_USER']),
       function (req, res) {
       User.getUsers(function (users) {
         res.json(users);

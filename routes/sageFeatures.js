@@ -7,6 +7,8 @@ module.exports = function(app, auth) {
   var Feature = require('../models/feature')
     , geometryFormat = require('../format/geoJsonFormat');
 
+  var geojson = require('../transformers/geojson')(geometryFormat);
+
   var parseQueryParams = function(req, res, next) {
     var parameters = {};
 
@@ -48,7 +50,7 @@ module.exports = function(app, auth) {
     }
 
     var respond = function(features) {
-      var response = transformers.geojson.transform(features, req.parameters.properties);
+      var response = geojson.transform(features, req.parameters.properties);
       res.json(response);
     }
 
