@@ -12,6 +12,11 @@ function AdminController($scope, $log, $http, $injector, appConstants, UserServi
     $scope.users = data;
   });
 
+  $scope.roles = [];
+  UserService.getRoles().success(function (data) {
+    $scope.roles = data;
+  });
+
   $scope.devices = [];
   DeviceService.getAllDevices().success(function (data) {
     $scope.devices = data;
@@ -34,9 +39,19 @@ function AdminController($scope, $log, $http, $injector, appConstants, UserServi
   ];
 
   $scope.showUserForm = false;
+  $scope.showDeviceForm = false;
+  $scope.showTeamForm = false;
 
   $scope.setShowUserForm = function (visibility) {
     $scope.showUserForm = visibility;
+  }
+
+  $scope.setShowDeviceForm = function (visibility) {
+    $scope.showDeviceForm = visibility;
+  }
+
+  $scope.setShowUserForm = function (visibility) {
+    $scope.showTeamForm = visibility;
   }
 
   /* Set the current activity, this will tell the directives which one of them should be visible at the moment. */
@@ -121,7 +136,12 @@ function AdminController($scope, $log, $http, $injector, appConstants, UserServi
   }
 
   $scope.saveDevice = function () {
+    console.log('making call to save the devcie');
+    if ($scope.device.id) {
 
+    } else {
+      DeviceService.createDevice($scope.device);
+    }
   }
 
   $scope.deleteDevice = function () {

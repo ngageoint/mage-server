@@ -72,6 +72,12 @@
                   <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***wordconfirm">
                 </div>
               </div>
+              <div cl***REMOVED***="control-group">
+                <label cl***REMOVED***="control-label" for="type">Role</label>
+                <div cl***REMOVED***="controls">
+                  <select ng-model="roles" ng-options="role.id as role.Title for item in items"></select>
+                </div>
+              </div>
               <!-- Not needed for Piccadilly
               <div cl***REMOVED***="control-group">
                 <div cl***REMOVED***="controls">
@@ -106,8 +112,40 @@
     </div>
 
     <div cl***REMOVED***="span12 top-gap" id="device-admin-area" ng-show="currentAdminPanel == 'device'">
+      <button cl***REMOVED***="btn" ng-click="setShowDeviceForm(true)" ngmtap="setShowDeviceForm(true)">New Device</button>
+      <div id="new-user-form" cl***REMOVED***="top-gap" ng-show="showDeviceForm">
+        <form ng-submit="saveDevice()" id="new-device-form" cl***REMOVED***="form-horizontal">
+          <fieldset>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Device Name</label>
+              <div cl***REMOVED***="controls">
+                <input type="text" placeholder="i.e. Jacks Android" ng-model="device.name">
+              </div>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Description</label>
+              <div cl***REMOVED***="controls">
+                <textarea type="text" placeholder="A bit about the device" ng-model="device.description"></textarea>
+              </div>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Device Identifier</label>
+              <div cl***REMOVED***="controls">
+                <input type="text" placeholder="for example 01:02:03:04:05:06:08" ng-model="device.uid">
+                <span cl***REMOVED***="help-block top-gap">MAC address, or some sort of unique identifier for your device.</span>
+              </div>
+            </div>
+            <span>
+              <button type="reset" cl***REMOVED***="btn btn-inverse" ng-click="setShowDeviceForm(false)" ngmtap="setShowDeviceForm(false)">Cancel</button>
+              <button type="submit" cl***REMOVED***="btn">Save device</button>
+            </span>
+          </fieldset>
+        </form>
+      </div>
+      <div cl***REMOVED***="top-gap">
+        <h3>Registerd Devices</h3>
         <div ng-repeat="device in devices">
-          <p>{{device.uid}} {{device.name}}</p>
+          <p>{{device.uid}} {{device.name}} {{device.description}}</p>
         </div>
       </div>
     </div>

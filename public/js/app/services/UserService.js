@@ -6,7 +6,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       var userServiceFunctions = {};
 
       userServiceFunctions.getAllUsers = function () {
-        return $http.get(appConstants.rootUrl + '/api/users/', {params: mageLib.getTokenParams()});
+        return $http.get(appConstants.rootUrl + '/api/users', {params: mageLib.getTokenParams()});
       };
 
       userServiceFunctions.newUser = function (user) {
@@ -32,6 +32,10 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
             console.log("Something bad happend while trying to save the user " + status);
           });
       }
+
+      userServiceFunctions.getRoles = function () {
+        return $http.get(appConstants.rootUrl + '/api/roles', {params: mageLib.getTokenParams()});
+      };
 
       /*var user =
         $resource(appConstants.rootUrl + '\::port/api/users/:id', { // may need to alter this to have :port after the url, would then need to add port below the same way that :id is handled.
