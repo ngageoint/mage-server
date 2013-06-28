@@ -113,3 +113,11 @@ textarea {
     min-height: 350px;
 }
 
+.admin-active {
+    background: #2E5582;
+}
+
+.admin-active > h3 a {
+    color: #eee;
+    margin-left: 15px;
+}

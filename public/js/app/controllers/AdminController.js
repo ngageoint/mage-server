@@ -91,7 +91,7 @@ function AdminController($scope, $log, $http, $injector, appConstants, UserServi
 
   $scope.saveUser = function () {
     if ($scope.user.id) {
-
+      UserService.updateUser($scope.user);
     } else {
       UserService.createUser($scope.user);
     }

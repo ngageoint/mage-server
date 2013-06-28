@@ -14,7 +14,17 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       };
 
       userServiceFunctions.createUser = function(user) {
-        $http.post(appConstants.rootUrl + '/api/users', $.param(user), {headers: {"Content-Type": "x-www-form-urlencoded"}}).
+        $http.post(appConstants.rootUrl + '/api/users', $.param(user), {headers: {"Content-Type": "application/x-www-form-urlencoded"}}).
+          success(function (data, status, headers, config) {
+            console.log("sucessful user save!");
+          }).
+          error(function (data, status, headers, config) {
+            console.log("Something bad happend while trying to save the user " + status);
+          });
+      }
+
+      userServiceFunctions.updateUser = function(user) {
+        $http.put(appConstants.rootUrl + '/api/users', $.param(user), {headers: {"Content-Type": "application/x-www-form-urlencoded"}}).
           success(function (data, status, headers, config) {
             console.log("sucessful user save!");
           }).

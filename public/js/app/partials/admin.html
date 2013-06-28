@@ -13,23 +13,25 @@
     <div cl***REMOVED***="row">
       <div cl***REMOVED***="span12"><h2>Admin Panel</h2></div>
     </div>
-    <div cl***REMOVED***="row">
-      <div cl***REMOVED***="span2">
-        <ul id="addmin-functions" style="list-style: none">
-          <li><a href="" ng-click="changeCurrentPanel('team')" ngm-tap="changeCurrentPanel('team')">Teams</a></li>
-          <li><a href="" ng-click="changeCurrentPanel('user')" ngm-tap="changeCurrentPanel('user')">Users</a></li>
-          <li><a href="" ng-click="changeCurrentPanel('device')" ngm-tap="changeCurrentPanel('device')">Devices</a></li>
-        </ul>
+    <div cl***REMOVED***="row" style="border-bottom: 1px solid #2E5582">
+      <div cl***REMOVED***="span4" ng-cl***REMOVED***="{'admin-active': currentAdminPanel == 'team'}">
+        <h3><a href="" ng-click="changeCurrentPanel('team')" ngm-tap="changeCurrentPanel('team')">Teams</a></h3>
       </div>
-      <div cl***REMOVED***="span10" id="team-admin-area" ng-show="currentAdminPanel == 'team'">
-        <h3>Teams</h3>
+      <div cl***REMOVED***="span4" ng-cl***REMOVED***="{'admin-active': currentAdminPanel == 'user'}">
+        <h3><a href="" ng-click="changeCurrentPanel('user')" ngm-tap="changeCurrentPanel('user')">Users</a></h3>
+      </div>
+      <div cl***REMOVED***="span4" ng-cl***REMOVED***="{'admin-active': currentAdminPanel == 'device'}">
+        <h3><a href="" ng-click="changeCurrentPanel('device')" ngm-tap="changeCurrentPanel('device')">Devices</a></h3>
+      </div>
+    </div>
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span12 top-gap" id="team-admin-area" ng-show="currentAdminPanel == 'team'">
         <div ng-repeat="team in teams">
           <p>{{team.teamName}} {{team.description}}</p>
         </div>
       </div>
 
-      <div cl***REMOVED***="span10" id="user-admin-area" ng-show="currentAdminPanel == 'user'">
-        <h3>User Admin</h3>
+      <div cl***REMOVED***="span12 top-gap" id="user-admin-area" ng-show="currentAdminPanel == 'user'">
         <button cl***REMOVED***="btn" ng-click="setShowUserForm(true)" ngmtap="setShowUserForm(true)">New User</button>
         <div id="new-user-form" cl***REMOVED***="top-gap" ng-show="showUserForm">
           <form ng-submit="saveUser()" id="new-user-form" cl***REMOVED***="form-horizontal">
@@ -87,8 +89,8 @@
             </fieldset>
           </form>
         </div>
+        <h3>Current Users</h3>
         <div cl***REMOVED***="top-gap" ng-repeat="user in users">
-          <h3>Current Users</h3>
           <div cl***REMOVED***="row-fluid">
             <div cl***REMOVED***="span2">
               {{user.username}}
@@ -103,8 +105,7 @@
       </div>
     </div>
 
-    <div cl***REMOVED***="span10" id="device-admin-area" ng-show="currentAdminPanel == 'device'">
-        <h3>Devices</h3>
+    <div cl***REMOVED***="span12 top-gap" id="device-admin-area" ng-show="currentAdminPanel == 'device'">
         <div ng-repeat="device in devices">
           <p>{{device.uid}} {{device.name}}</p>
         </div>
