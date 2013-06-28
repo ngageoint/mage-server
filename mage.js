@@ -20,7 +20,7 @@ fs.mkdirp(attachmentBase, function(err) {
 
 // Configure authentication
 var auth = require('./auth/authentication')(argv.a);
-console.log('auth is: ' + auth.toString());
+console.log('Authentication: ' + auth.strategy);
 
 // Configuration of the MAGE Express server
 var app = express();
@@ -32,12 +32,9 @@ app.configure(function () {
 
   app.set('attachmentBase', attachmentBase);
 
-  // app.use(express.cookieParser());
   app.use(express.bodyParser());
   app.use(express.methodOverride());
-  // app.use(express.session({cookie: { path: '/', httpOnly: true, maxAge: null }, ***REMOVED***: '***REMOVED***'}));
   app.use(auth.p***REMOVED***port.initialize());
-  // app.use(auth.p***REMOVED***port.session());
   app.use(app.router);
   app.use(express.static(path.join(__dirname, "public")));
   app.use(function(err, req, res, next) {
@@ -51,4 +48,4 @@ require('./routes')(app, auth);
 
 // Launches the Node.js Express Server
 app.listen(4242);
-console.log('MAGE Node Server: Started listening on port 4242.');
+console.log('MAGE Server: Started listening on port 4242.');

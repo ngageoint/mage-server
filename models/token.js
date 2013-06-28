@@ -29,11 +29,17 @@ var Token = mongoose.model('Token', TokenSchema);
 var deleteExpiredTokens = function(callback) {
   var expired = new Date(Date.now() -  tokenExpiration);
   var query = {timestamp: {$lt: expired}};
-  Token.remove(query, callback); 
+  Token.remove(query, function(err, number) {
+    if (err) {
+      console.log('could not remove expired tokens: ' + err);
+    }
+
+    callback(err, number);
+  }); 
 }
 
 exports.getUserForToken = function(token, callback) {
-  deleteExpiredTokens(function(err, stuff) {
+  deleteExpiredTokens(function(err) {
     var query = {token: token};
     Token.findOne(query).populate('user').exec(function(err, token) {
       var user = null;
@@ -53,5 +59,11 @@ exports.createTokenForUser = function(user, callback) {
   var query = {user: user._id};
   var update = {token: token, timestamp: new Date()};
   var options = {upsert: true};
-  Token.findOneAndUpdate(query, update, options, callback);
+  Token.findOneAndUpdate(query, update, options, function(err, newToken) {
+    if (err) {
+      console.log('Could not create token for user: ' + user.username);
+    }
+
+    callback(err, newToken);
+  });
 }

@@ -5,7 +5,7 @@ var mongoose = require('mongoose')
 var Schema = mongoose.Schema; 
 
 var PhoneSchema = new Schema({
-  type: { type: String, required: true, unique: true },
+  type: { type: String, required: true },
   number: { type: String, required: true }
 });
 
@@ -15,7 +15,7 @@ var UserSchema = new Schema({
     p***REMOVED***word: { type: String, required: true },
     firstname: { type: String, required: true },
     lastname: {type: String, required: true },
-    email: {type: String, required: true },
+    email: {type: String, required: false },
     phones: [PhoneSchema],
     roles: [Schema.Types.String],
     teams: [Schema.Types.ObjectId],
@@ -33,7 +33,10 @@ UserSchema.pre('save', function(next) {
   var user = this;
 
   // only hash the p***REMOVED***word if it has been modified (or is new)
-  if (!user.isModified('p***REMOVED***word')) return next();
+  if (!user.isModified('p***REMOVED***word')) {
+    console.log('p***REMOVED***word was not modified');
+    return next();
+  }
 
   hasher.encryptP***REMOVED***word(user.p***REMOVED***word, function(err, encryptedP***REMOVED***word) {
     user.p***REMOVED***word = encryptedP***REMOVED***word;
@@ -85,19 +88,25 @@ exports.createUser = function(user, callback) {
     p***REMOVED***word: user.p***REMOVED***word
   }
 
-  User.create(create, callback);
+  User.create(create, function(err, user) {
+    if (err) {
+      console.log('Could not create user: ' + JSON.stringify(create));
+    }
+
+    callback(err, user);
+  });
 }
 
-exports.updateUser = function(user, callback) {
-  var update = {
-    username: user.username,
-    firstname: user.firstname,
-    lastname: user.lastname,
-    email: user.email,
-    p***REMOVED***word: user.p***REMOVED***word
-  }
+exports.updateUser = function(id, update, callback) {
+  console.log('in model trying to update user: ' + JSON.stringify(update));
 
-  User.findByIdAndUpdate(user._id, update, callback);
+  User.findByIdAndUpdate(id, update, function(err, user) {
+    if (err) {
+      console.log('Could not update user ' + id + '. error: ' + err);
+    }
+
+    callback(err, user);
+  });
 }
 
 exports.deleteUser = function(user, callback) {

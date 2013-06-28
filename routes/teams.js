@@ -11,7 +11,7 @@ module.exports = function(app, auth) {
 
     var description = req.param('description');
 
-    req.team = {name: name, description: description};
+    req.teamParam = {name: name, description: description};
     next();
   }
 
@@ -40,7 +40,7 @@ module.exports = function(app, auth) {
     validateTeamParams,
     p***REMOVED***port.authenticate('bearer'),
     function(req, res) {
-      Team.createTeam(req.team, function(err, team) {
+      Team.createTeam(req.teamParam, function(err, team) {
         if (err) {
           return res.send(400, err);
         }
@@ -56,7 +56,11 @@ module.exports = function(app, auth) {
     p***REMOVED***port.authenticate('bearer'),
     validateTeamParams, 
     function(req, res) {
-      Team.updateTeam(req.params.teamId, req.team, function(err, team) {
+      var update = {};
+      if (req.teamParam.name) update.name = req.teamParam.name;
+      if (req.teamParam.description) update.description = req.teamParam.description;
+
+      Team.updateTeam(req.team._id, update, function(err, team) {
         if (err) {
           return res.send(400, err);
         }

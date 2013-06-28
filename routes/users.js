@@ -2,60 +2,11 @@ module.exports = function(app, auth) {
   var User = require('../models/user')
     , Token = require('../models/token')
     , Role = require('../models/role')
-    , Team = require('../models/team');
+    , Team = require('../models/team')
+    , access = require('../access');
 
   var p***REMOVED***port = auth.p***REMOVED***port;
   var strategy = auth.strategy;
-
-  var validateUserParams = function(req, res, next) {
-    var invalidResponse = function(param) {
-      return "Cannot create user, invalid parameters.  '" + param + "' parameter is required";
-    }
-
-    var username = req.param('username');
-    if (!username) {
-      res.send(400, invalidResponse('username'));
-    }
-
-    var firstname = req.param('firstname');
-    if (!firstname) {
-      res.send(400, invalidResponse('firstname'));
-    }
-
-    var lastname = req.param('lastname');
-    if (!lastname) {
-      res.send(400, invalidResponse('lastname'));
-    }
-
-    var email = req.param('email');
-    if (!email) {
-      res.send(400, invalidResponse('email'));
-    }
-
-    var p***REMOVED***word = req.param('p***REMOVED***word');
-    if (!p***REMOVED***word) {
-      res.send(400, invalidResponse('p***REMOVED***word'));
-    }
-
-    var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
-    if (!p***REMOVED***wordconfirm) {
-      res.send(400, invalidResponse('p***REMOVED***wordconfirm'));
-    }
-
-    if (p***REMOVED***word != p***REMOVED***wordconfirm) {
-      res.send(400, 'p***REMOVED***words do not match');
-    }
-
-    req.user = {
-      username: username,
-      firstname: firstname,
-      lastname: lastname,
-      email: email,
-      p***REMOVED***word: p***REMOVED***word
-    }
-
-    next();
-  }
 
   var validateRoleParams = function(req, res, next) {
       var roles = req.param('roles');
@@ -110,6 +61,7 @@ module.exports = function(app, auth) {
     '/api/login',
     p***REMOVED***port.authenticate(strategy),
     function(req, res) {
+      console.log('trying to create token for user: ' + JSON.stringify(req.user));
       Token.createTokenForUser(req.user, function(err, token) {
         if (err) {
           return res.send("Error generating token", 400);
@@ -123,7 +75,8 @@ module.exports = function(app, auth) {
   // get all uses
   app.get(
     '/api/users', 
-    p***REMOVED***port.authenticate('bearer'), 
+    p***REMOVED***port.authenticate('bearer'),
+    //access.hasRoles(['READ_USER']),
       function (req, res) {
       User.getUsers(function (users) {
         res.json(users);
@@ -142,9 +95,54 @@ module.exports = function(app, auth) {
   // Create a new user
   app.post(
     '/api/users',
-    validateUserParams, 
     function(req, res) {
-      User.createUser(req.user, function(err, newUser) {
+      var invalidResponse = function(param) {
+        return "Cannot create user, invalid parameters.  '" + param + "' parameter is required";
+      }
+
+      var username = req.param('username');
+      if (!username) {
+        return res.send(400, invalidResponse('username'));
+      }
+
+      var firstname = req.param('firstname');
+      if (!firstname) {
+        return res.send(400, invalidResponse('firstname'));
+      }
+
+      var lastname = req.param('lastname');
+      if (!lastname) {
+        return res.send(400, invalidResponse('lastname'));
+      }
+
+      var email = req.param('email');
+      if (!email) {
+        return res.send(400, invalidResponse('email'));
+      }
+
+      var p***REMOVED***word = req.param('p***REMOVED***word');
+      if (!p***REMOVED***word) {
+        res.send(400, invalidResponse('p***REMOVED***word'));
+      }
+
+      var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
+      if (!p***REMOVED***wordconfirm) {
+        res.send(400, invalidResponse('p***REMOVED***wordconfirm'));
+      }
+
+      if (p***REMOVED***word != p***REMOVED***wordconfirm) {
+        res.send(400, 'p***REMOVED***words do not match');
+      }
+
+      var user = {
+        username: username,
+        firstname: firstname,
+        lastname: lastname,
+        email: email,
+        p***REMOVED***word: p***REMOVED***word
+      };
+
+      User.createUser(user, function(err, newUser) {
         if (err) {
           return res.send(400, err);
         }
@@ -158,9 +156,27 @@ module.exports = function(app, auth) {
   app.put(
     '/api/users/:userId', 
     p***REMOVED***port.authenticate('bearer'),
-    validateUserParams, 
+    //access.hasRoles(['UPDATE_USER']),
     function(req, res) {
-      User.updateUser(req.user, function(err, updatedUser) {
+
+      var update = {};
+      if (req.param('username')) update.username = req.param('username');
+      if (req.param('firstname')) update.firstname = req.param('firstname');
+      if (req.param('lastname')) update.lastname = req.param('lastname');
+      if (req.param('email')) update.email = req.param('email');
+
+      var p***REMOVED***word = req.param('p***REMOVED***word');
+      var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
+      if (p***REMOVED***word && p***REMOVED***wordconfirm) {
+        if (p***REMOVED***word != p***REMOVED***wordconfirm) {
+          return res.send(400, 'p***REMOVED***words do not match');
+        }
+
+        update.p***REMOVED***word = p***REMOVED***word;
+      }
+
+      console.log('trying to update user' + JSON.stringify(update));
+      User.updateUser(req.user._id, update, function(err, updatedUser) {
         if (err) {
           return res.send(400, err);
         }

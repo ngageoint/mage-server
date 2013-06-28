@@ -19,11 +19,18 @@ var featureRoles = [
   'DELETE_FEATURE',
 ];
 
+var fftRoles = [
+  'CREATE_FFT',
+  'READ_FFT',
+  'MODIFY_FFT',
+  'DELETE_FEATURE'
+];
+
 var roleRoles = [
   'READ_ROLE'
 ];
 
-var roles = [].concat(teamRoles).concat(userRoles).concat(featureRoles).concat(roleRoles);
+var roles = [].concat(teamRoles).concat(userRoles).concat(featureRoles).concat(fftRoles).concat(roleRoles);
 
 exports.getTeamRoles = function() {
   return teamRoles;

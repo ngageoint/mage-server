@@ -18,12 +18,10 @@ module.exports = function(strategy) {
   p***REMOVED***port.use(new BearerStrategy(
     function(token, done) {
       Token.getUserForToken(token, function(err, user) {
-        console.log('trying to get token: ' + token);
         if (err) { return done(err); }
 
         if (!user) { return done(null, false); }
 
-        console.log("found user for token: " + token.user)
         return done(null, user, { scope: 'all' });
       });
     }

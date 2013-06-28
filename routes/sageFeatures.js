@@ -4,78 +4,78 @@ module.exports = function(app, auth) {
   // endpoints to MAGE.  Probably still a good idea just got caught up
   // in tight schedule and did not get the opportunity to get this stuff in.
 
-  // var Feature = require('../models/feature')
-  //   , geometryFormat = require('../format/geoJsonFormat');
+  var Feature = require('../models/feature')
+    , geometryFormat = require('../format/geoJsonFormat');
 
-  // var parseQueryParams = function(req, res, next) {
-  //   var parameters = {};
+  var parseQueryParams = function(req, res, next) {
+    var parameters = {};
 
-  //   var properties = req.param('properties');
-  //   if (properties) {
-  //     parameters.properties = properties.split(",");
-  //   }
+    var properties = req.param('properties');
+    if (properties) {
+      parameters.properties = properties.split(",");
+    }
 
-  //   var bbox = req.param('bbox');
-  //   if (bbox) {
-  //     parameters.geometries = geometryFormat.parse('bbox', bbox);
-  //   }
+    var bbox = req.param('bbox');
+    if (bbox) {
+      parameters.geometries = geometryFormat.parse('bbox', bbox);
+    }
 
-  //   var geometry = req.param('geometry');
-  //   if (geometry) {
-  //     parameters.geometries = geometryFormat.parse('geometry', geometry);
-  //   }
+    var geometry = req.param('geometry');
+    if (geometry) {
+      parameters.geometries = geometryFormat.parse('geometry', geometry);
+    }
 
-  //   req.parameters = parameters;
+    req.parameters = parameters;
 
-  //   next();
-  // }
+    next();
+  }
 
-  // // Queries for ESRI Styled records built for the ESRI format and syntax
-  // app.get('/FeatureServer/:layerId/features', parseQueryParams, function (req, res) {
-  //   console.log("SAGE ESRI Features GET REST Service Requested");
+  // Queries for ESRI Styled records built for the ESRI format and syntax
+  app.get('/FeatureServer/:layerId/features', parseQueryParams, function (req, res) {
+    console.log("SAGE ESRI Features GET REST Service Requested");
 
-  //   // create filters for feature query
-  //   var filters = null;
+    // create filters for feature query
+    var filters = null;
 
-  //   var geometries = req.parameters.geometries;
-  //   if (geometries) {
-  //     filters = [];
-  //     geometries.forEach(function(geometry) {
-  //       filters.push({
-  //         geometry: geometry
-  //       });
-  //     });
-  //   }
+    var geometries = req.parameters.geometries;
+    if (geometries) {
+      filters = [];
+      geometries.forEach(function(geometry) {
+        filters.push({
+          geometry: geometry
+        });
+      });
+    }
 
-  //   var respond = function(features) {
-  //     var response = transformers.geojson.transform(features, req.parameters.properties);
-  //     res.json(response);
-  //   }
+    var respond = function(features) {
+      var response = transformers.geojson.transform(features, req.parameters.properties);
+      res.json(response);
+    }
 
-  //   if (filters) {
-  //     allFeatures = [];
-  //     async.each(
-  //       filters, 
-  //       function(filter, done) {
-  //         Feature.getFeatures(req.layer, filter, function (features) {
-  //           if (features) {
-  //             allFeatures = allFeatures.concat(features);
-  //           }
+    if (filters) {
+      allFeatures = [];
+      async.each(
+        filters, 
+        function(filter, done) {
+          Feature.getFeatures(req.layer, filter, function (features) {
+            if (features) {
+              allFeatures = allFeatures.concat(features);
+            }
 
-  //           done();
-  //         });
-  //       },
-  //       function(err) {
-  //         respond(allFeatures);
-  //       }
-  //     );
-  //   } else {
-  //     var filter = {};
-  //     Feature.getFeatures(req.layer, filter, function (features) {
-  //       respond(features);
-  //     });
-  //   }
-  // });
+            done();
+          });
+        },
+        function(err) {
+          respond(allFeatures);
+        }
+      );
+    } else {
+      var filter = {};
+      Feature.getFeatures(req.layer, filter, function (features) {
+        respond(features);
+      });
+    }
+  });
 
   // // This function gets one feature with universal JSON formatting  
   // app.get('/featureServer/v1/features/:id', function (req, res) {

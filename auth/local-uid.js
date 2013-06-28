@@ -6,9 +6,8 @@ module.exports = function(p***REMOVED***port) {
 
   p***REMOVED***port.use(new LocalUIDStrategy(
     function(username, p***REMOVED***word, uid, done) {
-      console.log('Authenticating device: ' + uid);
+      console.log('Authenticating user: ' + username + ' for device: ' + uid);
       User.getUserByUsername(username, function(err, user) {
-        console.log('Authenticating user: ' + username);
         if (err) { return done(err); }
 
         if (!user) {

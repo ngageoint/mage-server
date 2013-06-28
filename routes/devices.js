@@ -17,9 +17,9 @@ module.exports = function(app, auth) {
 
     var description = req.param('description');
 
-    var pocId = req.param('pocId');
+    var poc = req.param('pocId');
 
-    req.deviceParam = {uid: uid, name: name, description: description, poc: pocId};
+    req.deviceParam = {uid: uid, name: name, description: description, poc: poc};
     next();
   }
 
@@ -64,8 +64,13 @@ module.exports = function(app, auth) {
     p***REMOVED***port.authenticate('bearer'),
     validateDeviceParams, 
     function(req, res) {
-      console.log('got device: ' + JSON.stringify(req.device) + ' with _id ' + req.device._id);
-      Device.updateDevice(req.device._id, req.deviceParam, function(err, device) {
+      var update = {};
+      if (req.deviceParam.uid) update.uid = req.deviceParam.uid;
+      if (req.deviceParam.name) update.name = req.deviceParam.name;
+      if (req.deviceParam.description) update.description = req.deviceParam.description;
+      if (req.deviceParam.poc) update.poc = req.deviceParam.poc;
+
+      Device.updateDevice(req.device._id, update, function(err, device) {
         if (err) {
           return res.send(400, err);
         }

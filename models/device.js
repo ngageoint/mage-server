@@ -78,16 +78,7 @@ exports.createDevice = function(device, callback) {
   });
 }
 
-exports.updateDevice = function(id, device, callback) {
-  var update = {
-    uid: device.uid,
-    name: device.name,
-    description: device.description
-    // poc: device.poc
-  }
-
-  console.log('id to update: ' + id);
-  console.log('device data: ' + JSON.stringify(update));
+exports.updateDevice = function(id, update, callback) {
   Device.findByIdAndUpdate(id, update, function(err, updatedDevice) {
     if (err) {
       console.log('Could not update device ' + id + ' err: ' + err);

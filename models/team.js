@@ -55,12 +55,7 @@ exports.createTeam = function(team, callback) {
   });
 }
 
-exports.updateTeam = function(id, team, callback) {
-  var update = {
-    name: team.name,
-    description: team.description
-  }
-
+exports.updateTeam = function(id, update, callback) {
   Team.findByIdAndUpdate(id, update, function(err, team) {
     if (err) {
       console.log('error updating team: ' + id + 'err: ' + err);
