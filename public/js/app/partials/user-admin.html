@@ -1,0 +1,70 @@
+<div cl***REMOVED***="container top-gap-l">
+  <div cl***REMOVED***="row">
+    <div cl***REMOVED***="span12"><h2>Users</h2></div>
+  </div>
+  <div cl***REMOVED***="row">
+    <div cl***REMOVED***="span2">
+      <div cl***REMOVED***="admin-area">
+        <a id="new-user-btn" ng-click="newUser()" ngm-tap="newUser()" cl***REMOVED***="btn"><i cl***REMOVED***="icon-plus Mage-color"></i> New User</a>
+        <ul style="list-style: none;" cl***REMOVED***="top-gap">
+          <li ng-repeat="user in users"><a ng-click="viewUser(user)">{{user.username}}</a></li>
+        </ul>
+      </div>
+    </div>
+    <div cl***REMOVED***="span10">
+      <h3>{{user.name}}</h3>
+      <form ng-submit="saveUser()" id="new-user-form" cl***REMOVED***="form-horizontal">
+         <fieldset>
+          <legend>{{user.firstname}} {{user.lastname}}</legend>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">Username</label>
+            <div cl***REMOVED***="controls">
+              <input type="text" placeholder="i.e. jappleseed" ng-model="user.username">
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">First Name</label>
+            <div cl***REMOVED***="controls">
+              <input type="text" placeholder="Johnny" ng-model="user.firstname">
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">Last Name</label>
+            <div cl***REMOVED***="controls">
+              <input type="text" placeholder="Appleseed" ng-model="user.lastname">
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">Email</label>
+            <div cl***REMOVED***="controls">
+              <input type="text" placeholder="johnny@appleseed.com" ng-model="user.email">
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">P***REMOVED***word</label>
+            <div cl***REMOVED***="controls">
+              <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***word">
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">Confirm P***REMOVED***word</label>
+            <div cl***REMOVED***="controls">
+              <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***wordconfirm">
+            </div>
+          </div>
+          <!-- Not needed for Piccadilly
+          <div cl***REMOVED***="control-group">
+            <div cl***REMOVED***="controls">
+              <label cl***REMOVED***="checkbox">
+                <input type="checkbox"> GEOINT Online
+              </label>
+              <span cl***REMOVED***="help-block top-gap"><a href="https://geoint-online.nga.mil/_layouts/nga/go/logon/logon.aspx?ReturnUrl=%2f_layouts%2fAuthenticate.aspx%3fSource%3d%252f&Source=%2f">GEOINT Online Details (New Account, P***REMOVED***word Reset, etc.)</a></span>
+            </div>
+          </div> 
+          -->
+          <button type="submit" cl***REMOVED***="btn">Save user</button>
+        </fieldset>
+      </form>
+    </div>
+  </div>
+</div>

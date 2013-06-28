@@ -3,14 +3,22 @@
 /*
 
 */
-function AdminController($scope, $log, $http, $injector, appConstants, UserService) {
+function AdminController($scope, $log, $http, $injector, appConstants, UserService, DeviceService) {
   // The variables that get set when clicking a team or user in the list, these get loaded into the editor.
-  $scope.currentAdminActivity = ""; // possible values user, team, and device
+  $scope.currentAdminPanel = "user"; // possible values user, team, and device
+  
+  $scope.users = [];
+  UserService.getAllUsers().success(function (data) {
+    $scope.users = data;
+  });
 
+  $scope.devices = [];
+  DeviceService.getAllDevices().success(function (data) {
+    $scope.devices = data;
+  })
+  
   $scope.team = {};
   $scope.user = {};
-
-  $scope.users = [];
 
   $scope.teams = [
     {
@@ -25,10 +33,16 @@ function AdminController($scope, $log, $http, $injector, appConstants, UserServi
     }
   ];
 
+  $scope.showUserForm = false;
+
+  $scope.setShowUserForm = function (visibility) {
+    $scope.showUserForm = visibility;
+  }
+
   /* Set the current activity, this will tell the directives which one of them should be visible at the moment. */
-  $scope.changeCurrentActivity = function (activity) {
-    console.log("change current activity " + activity);
-    $scope.currentAdminActivity = activity;
+  $scope.changeCurrentPanel = function (panel) {
+    console.log("change current panel " + panel);
+    $scope.currentAdminPanel = panel;
   }
 
   $scope.getTeams = function() {
@@ -49,7 +63,7 @@ function AdminController($scope, $log, $http, $injector, appConstants, UserServi
   }
 
 
-  $scope.getUsers = function() {
+  /*$scope.getUsers = function() {
     $scope.users = [];
     //var user = new UserService.user();
     //var result = user.$query();
@@ -73,6 +87,14 @@ function AdminController($scope, $log, $http, $injector, appConstants, UserServi
         error(function (data, status, headers, config) {
           console.log("Something bad happend while trying to get the users " + status);
         });
+  }*/
+
+  $scope.saveUser = function () {
+    if ($scope.user.id) {
+
+    } else {
+      UserService.createUser($scope.user);
+    }
   }
 
   $scope.newUser = function() {
@@ -83,38 +105,6 @@ function AdminController($scope, $log, $http, $injector, appConstants, UserServi
   $scope.viewUser = function(user) {
     $scope.user = new UserService.user(user);
     $('#new-user-form').removeCl***REMOVED***('hide');
-  }
-
-  $scope.saveUser = function() {
-    console.log("saving user...");
-    if ($scope.user.id) { // update
-      $scope.user.$update();
-    } else { // new user
-      /*$scope.user.$newUser('username=' + $scope.user.username + 
-        '&p***REMOVED***word=' + $scope.user.p***REMOVED***word + 
-        '&p***REMOVED***wordconfirm=' + $scope.user.p***REMOVED***wordconfirm + 
-        '&firstnane=' + $scope.user.firstnane + 
-        '&lastname=' + $scope.user.lastname +
-        '&email=' + $scope.user.email);*/
-      $http({
-        url:appConstants.rootUrl + '/api/users', 
-        method: "POST",
-        data: 'username=' + $scope.user.username + 
-              '&p***REMOVED***word=' + $scope.user.p***REMOVED***word + 
-              '&p***REMOVED***wordconfirm=' + $scope.user.p***REMOVED***wordconfirm + 
-              '&firstnane=' + $scope.user.firstname + 
-              '&lastname=' + $scope.user.lastname +
-              '&email=' + $scope.user.email,
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
-      }).
-        success(function (data, status, headers, config) {
-          console.log("sucessful user save!");
-          window.location = '/#/map'
-        }).
-        error(function (data, status, headers, config) {
-          console.log("Something bad happend while trying to create a user " + status);
-        });
-    }
   }
 
   $scope.deleteUser = function () {
@@ -137,6 +127,4 @@ function AdminController($scope, $log, $http, $injector, appConstants, UserServi
   $scope.deleteDevice = function () {
 
   }
-
-  $scope.getUsers();
 }

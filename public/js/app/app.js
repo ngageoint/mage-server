@@ -1,6 +1,6 @@
 'use strict';
 
-var mage = angular.module("mage", ["ui.bootstrap", "leaflet-directive", "mage.***REMOVED***s", "mage.userService", "mage.lib"], function ($routeProvider, $locationProvider, $httpProvider) {
+var mage = angular.module("mage", ["ui.bootstrap", "leaflet-directive", "mage.***REMOVED***s", "mage.userService", "mage.deviceService", "mage.lib"], function ($routeProvider, $locationProvider, $httpProvider) {
   $httpProvider.defaults.withCredentials = true;
   $httpProvider.defaults.headers.post  = {'Content-Type': 'application/x-www-form-urlencoded'};
 

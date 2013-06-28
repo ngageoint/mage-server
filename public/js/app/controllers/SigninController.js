@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module("mage", ["mage.***REMOVED***s", "mage.userService"]);
+angular.module("mage", ["mage.***REMOVED***s", "mage.userService", "mage.lib"]);
 
 /*
 
@@ -13,14 +13,12 @@ function SigninController($rootScope, $scope, $log, $http, $injector, appConstan
     $http({
         url:appConstants.rootUrl + '/api/login', 
         method: "POST",
-        data: 'username=' + $scope.username + '&p***REMOVED***word=' + $scope.p***REMOVED***word,
+        data: 'username=' + $scope.username + '&p***REMOVED***word=' + $scope.p***REMOVED***word + '&uid=' + $scope.uid,
         headers: {'Content-Type': 'application/x-www-form-urlencoded'}
       }).
         success(function (data, status, headers, config) {
           console.log("sucessful login!");
           mageLib.setLocalItem('token', data.token);
-          //$http.defaults.headers.common['Auth-Token'] = data.token;
-          mageLib.setToken(data.token);
           window.location = '/#/map'
         }).
         error(function (data, status, headers, config) {
@@ -29,5 +27,4 @@ function SigninController($rootScope, $scope, $log, $http, $injector, appConstan
     // need to hand off username and p***REMOVED***word to the server.
     // do some stuff here to handle the response that we get from the server
   }
-
 }

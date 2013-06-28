@@ -4,7 +4,7 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($scope, $log, $http, $injector, appConstants, teams, levels, observationTypes) {
+function MapController($scope, $log, $http, $injector, appConstants, teams, levels, observationTypes, mageLib) {
   /* Some map defaults */
   $scope.center = { lat: 39.8282, lng: -98.5795 };
   $scope.marker = { lat: 39.8282, lng: -98.5795 };
@@ -70,7 +70,7 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
   }, true);
 
   $scope.getFeatureLayers = function () {
-    $http.get(appConstants.rootUrl + '/FeatureServer/').
+    $http.get(appConstants.rootUrl + '/FeatureServer/', {params: mageLib.getTokenParams()}).
       success(function (data, status, headers, config) {
           console.log('got layers');
           $scope.layers = data.layers;
@@ -79,7 +79,7 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
             $scope.featureLayers.unshift({
               id: layer.id,
               name: layer.name,
-              url: appConstants.rootUrl + "/FeatureServer/" + layer.id + "/features?properties=OBJECTID",
+              url: appConstants.rootUrl + "/FeatureServer/" + layer.id + "/features/?properties=OBJECTID&access_token=" + mageLib.getLocalItem('token'),
               enabled: false
             });
           });

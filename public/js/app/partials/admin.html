@@ -3,8 +3,8 @@
     <div cl***REMOVED***="navbar-inner">
       <a cl***REMOVED***="brand" href="/"><i cl***REMOVED***="icon-white icon-magic" style="margin-right:10px;"></i>MAGE</a>
       <ul cl***REMOVED***="nav">
-        <li><a href="map.html">Map</a></li>
-        <li><a href="layers.html">Layer Manager</a></li>
+        <li><a href="/#/map">Map</a></li>
+        <li><a href="/#/layers">Layer Manager</a></li>
         <li style="background: #305680"><a href="users.html" style="color:#fff;">Admin Panel</a></li>
       </ul>
     </div>
@@ -16,18 +16,100 @@
     <div cl***REMOVED***="row">
       <div cl***REMOVED***="span2">
         <ul id="addmin-functions" style="list-style: none">
-          <li><a href="" ng-click="changeCurrentActivity('team')" ngm-tap="changeCurrentActivity('team')">Teams</a></li>
-          <li><a href="" ng-click="changeCurrentActivity('user')" ngm-tap="changeCurrentActivity('user')">Users</a></li>
-          <li><a href="" ng-click="changeCurrentActivity('device')" ngm-tap="changeCurrentActivity('device')">Devices</a></li>
+          <li><a href="" ng-click="changeCurrentPanel('team')" ngm-tap="changeCurrentPanel('team')">Teams</a></li>
+          <li><a href="" ng-click="changeCurrentPanel('user')" ngm-tap="changeCurrentPanel('user')">Users</a></li>
+          <li><a href="" ng-click="changeCurrentPanel('device')" ngm-tap="changeCurrentPanel('device')">Devices</a></li>
         </ul>
       </div>
-      <div cl***REMOVED***="span10" id="admin-area">
-        <!--<div useradmin currentadminactivity="currentAdminActivity"></div> -->
-        <teampanel>
-        <devicepanel>
+      <div cl***REMOVED***="span10" id="team-admin-area" ng-show="currentAdminPanel == 'team'">
+        <h3>Teams</h3>
+        <div ng-repeat="team in teams">
+          <p>{{team.teamName}} {{team.description}}</p>
+        </div>
+      </div>
+
+      <div cl***REMOVED***="span10" id="user-admin-area" ng-show="currentAdminPanel == 'user'">
+        <h3>User Admin</h3>
+        <button cl***REMOVED***="btn" ng-click="setShowUserForm(true)" ngmtap="setShowUserForm(true)">New User</button>
+        <div id="new-user-form" cl***REMOVED***="top-gap" ng-show="showUserForm">
+          <form ng-submit="saveUser()" id="new-user-form" cl***REMOVED***="form-horizontal">
+            <fieldset>
+              <div cl***REMOVED***="control-group">
+                <label cl***REMOVED***="control-label" for="type">Username</label>
+                <div cl***REMOVED***="controls">
+                  <input type="text" placeholder="i.e. jappleseed" ng-model="user.username">
+                </div>
+              </div>
+              <div cl***REMOVED***="control-group">
+                <label cl***REMOVED***="control-label" for="type">First Name</label>
+                <div cl***REMOVED***="controls">
+                  <input type="text" placeholder="Johnny" ng-model="user.firstname">
+                </div>
+              </div>
+              <div cl***REMOVED***="control-group">
+                <label cl***REMOVED***="control-label" for="type">Last Name</label>
+                <div cl***REMOVED***="controls">
+                  <input type="text" placeholder="Appleseed" ng-model="user.lastname">
+                </div>
+              </div>
+              <div cl***REMOVED***="control-group">
+                <label cl***REMOVED***="control-label" for="type">Email</label>
+                <div cl***REMOVED***="controls">
+                  <input type="text" placeholder="johnny@appleseed.com" ng-model="user.email">
+                </div>
+              </div>
+              <div cl***REMOVED***="control-group">
+                <label cl***REMOVED***="control-label" for="type">P***REMOVED***word</label>
+                <div cl***REMOVED***="controls">
+                  <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***word">
+                </div>
+              </div>
+              <div cl***REMOVED***="control-group">
+                <label cl***REMOVED***="control-label" for="type">Confirm P***REMOVED***word</label>
+                <div cl***REMOVED***="controls">
+                  <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***wordconfirm">
+                </div>
+              </div>
+              <!-- Not needed for Piccadilly
+              <div cl***REMOVED***="control-group">
+                <div cl***REMOVED***="controls">
+                  <label cl***REMOVED***="checkbox">
+                    <input type="checkbox"> GEOINT Online
+                  </label>
+                  <span cl***REMOVED***="help-block top-gap"><a href="https://geoint-online.nga.mil/_layouts/nga/go/logon/logon.aspx?ReturnUrl=%2f_layouts%2fAuthenticate.aspx%3fSource%3d%252f&Source=%2f">GEOINT Online Details (New Account, P***REMOVED***word Reset, etc.)</a></span>
+                </div>
+              </div> 
+              -->
+              <span>
+                <button type="reset" cl***REMOVED***="btn btn-inverse" ng-click="setShowUserForm(false)" ngmtap="setShowUserForm(false)">Cancel</button>
+                <button type="submit" cl***REMOVED***="btn">Save user</button>
+              </span>
+            </fieldset>
+          </form>
+        </div>
+        <div cl***REMOVED***="top-gap" ng-repeat="user in users">
+          <h3>Current Users</h3>
+          <div cl***REMOVED***="row-fluid">
+            <div cl***REMOVED***="span2">
+              {{user.username}}
+            </div>
+            <div cl***REMOVED***="span2">
+              {{user.firstname}} {{user.lastname}}
+            </div>
+            <div cl***REMOVED***="span2">
+              {{user.email}}
+            </div>
+        </div>
       </div>
     </div>
-  </div>
+
+    <div cl***REMOVED***="span10" id="device-admin-area" ng-show="currentAdminPanel == 'device'">
+        <h3>Devices</h3>
+        <div ng-repeat="device in devices">
+          <p>{{device.uid}} {{device.name}}</p>
+        </div>
+      </div>
+    </div>
   
   <!-- Team form, get it back in if there is time
     <div cl***REMOVED***="admin-area">
