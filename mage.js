@@ -18,6 +18,12 @@ fs.mkdirp(attachmentBase, function(err) {
   }
 });
 
+// Handle shutdown/exit
+process.on('exit', function() {
+  console.log('MAGE server is exiting/closing, waiting for remaining collections to complete');
+  app.close();
+});
+
 // Configure authentication
 var auth = require('./auth/authentication')(argv.a);
 console.log('Authentication: ' + auth.strategy);
