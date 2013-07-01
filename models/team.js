@@ -15,11 +15,11 @@ var TeamSchema = new Schema({
 );
 
 TeamSchema.pre('remove', function(next) {
-    var team = this;
+  var team = this;
 
-    User.removeTeamFromUsers(team, function(err, number) {
-      next();
-    });
+  User.removeTeamFromUsers(team, function(err, number) {
+    next();
+  });
 });
 
 // Creates the Model for the User Schema

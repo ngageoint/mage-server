@@ -1,53 +1,103 @@
-var teamRoles = [
-  'CREATE_TEAM',
-  'READ_TEAM',
-  'UPDATE_TEAM',
-  'DELETE_TEAM'
-];
+var mongoose = require('mongoose')
+  , User = require('../models/user')
+  , Permission = require('../models/permission');
 
-var userRoles = [
-  'CREATE_USER',
-  'READ_USER',
-  'MODIFY_USER',
-  'DELETE_USER',
-]; 
+// Creates a new Mongoose Schema object
+var Schema = mongoose.Schema; 
 
-var featureRoles = [
-  'CREATE_FEATURE',
-  'READ_FEATURE',
-  'MODIFY_FEATURE',
-  'DELETE_FEATURE',
-];
+// Collection to hold roles
+var RoleSchema = new Schema({
+    name: { type: String, required: true, unique: true },
+    description: { type: String, required: false },
+    permissions: [Schema.Types.String]
+  },{ 
+    versionKey: false
+  }
+);
 
-var fftRoles = [
-  'CREATE_FFT',
-  'READ_FFT',
-  'MODIFY_FFT',
-  'DELETE_FEATURE'
-];
+RoleSchema.pre('remove', function(next) {
+  var role = this;
 
-var roleRoles = [
-  'READ_ROLE'
-];
+  User.removeRoleFromUsers(role, function(err, number) {
+    next();
+  });
+});
 
-var roles = [].concat(teamRoles).concat(userRoles).concat(featureRoles).concat(fftRoles).concat(roleRoles);
+RoleSchema.pre('save', function(next) {
+  var role = this;
 
-exports.getTeamRoles = function() {
-  return teamRoles;
+  // only check for valid permission if the permissions have been modified (or is new)
+  if (!role.isModified('permissions')) {
+    return next();
+  }
+
+  var validPermissions = Permission.getPermissions();
+  role.permissions.forEach(function(permission) {
+    if (validPermissions.indexOf(permission) == -1) {
+      return next(new Error("Permission '" + permission + "' is not a valid permission"));
+    }
+  });
+
+  next();
+});
+
+// Creates the Model for the Role Schema
+var Role = mongoose.model('Role', RoleSchema);
+
+exports.getRole = function(name, callback) {
+  query = {name: name};
+  Role.findOne(query, function(err, role) {
+    if (err) {
+      console.log('error getting role ' + id + '. error: ' + err);
+    }
+
+    callback(err, role);
+  });
 }
 
-exports.getUserRoles = function() {
-  return userRoles;
+exports.getRoles = function(callback) {
+  var query = {};
+  Role.find(query, function (err, roles) {
+    if (err) {
+      console.log("Error finding roles in mongo: " + err);
+    }
+
+    callback(err, roles);
+  });
 }
 
-exports.getFeatureRoles = function() {
-  return featureRoles;
+exports.createRole = function(role, callback) {
+  var create = {
+    name: role.name,
+    description: role.description,
+    permissions: role.permissions
+  }
+
+  Role.create(create, function(err, role) {
+    if (err) {
+      console.log('error creating new role: ' + err);
+    }
+
+    callback(err, role);
+  });
 }
 
-exports.getRoleRoles = function() {
-  return roleRoles;
+exports.updateRole = function(id, update, callback) {
+  Role.findByIdAndUpdate(id, update, function(err, role) {
+    if (err) {
+      console.log('error updating role: ' + id + ' err: ' + err);
+    }
+
+    callback(err, role);
+  });
 }
 
-exports.getRoles = function() {
-  return roles;
+exports.deleteRole = function(role, callback) {
+  role.remove(function(err) {
+    if (err) {
+      console.log('could not delete role: ' + role.name);
+    }
+
+    callback(err, role);
+  });
 }

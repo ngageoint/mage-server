@@ -17,7 +17,7 @@ var UserSchema = new Schema({
     lastname: {type: String, required: true },
     email: {type: String, required: false },
     phones: [PhoneSchema],
-    roles: [Schema.Types.String],
+    role: Schema.Types.ObjectId,
     teams: [Schema.Types.ObjectId],
   },{ 
     versionKey: false
@@ -34,7 +34,6 @@ UserSchema.pre('save', function(next) {
 
   // only hash the p***REMOVED***word if it has been modified (or is new)
   if (!user.isModified('p***REMOVED***word')) {
-    console.log('p***REMOVED***word was not modified');
     return next();
   }
 
@@ -60,7 +59,13 @@ UserSchema.set("toJSON", {
 var User = mongoose.model('User', UserSchema);
 
 exports.getUserById = function(id, callback) {
-  User.findById(id, callback);
+  User.findById(id).populate('role').exec(function(err, user) {
+    if (err) {
+      console.log("Error finding user: " + id + ', error: ' + err);
+    }
+
+    callback(err, user);
+  });
 }
 
 exports.getUserByUsername = function(username, callback) {
@@ -72,7 +77,7 @@ exports.getUsers = function(callback) {
   var query = {};
   User.find(query, function (err, users) {
     if (err) {
-      console.log("Error finding users in mongo: " + err);
+      console.log("Error finding users: " + err);
     }
 
     callback(users);
@@ -155,6 +160,16 @@ exports.removeTeamsForUser = function(user, callback) {
     }
 
     callback(err, user);
+  });
+}
+
+exports.removeRoleFromUsers = function(role, callback) {
+  User.update({role: role._id}, {roles: undefined}, function(err, number, raw) {
+    if (err) {
+      console.log('Error pulling role: ' + role.name + ' from all users', err);
+    }
+
+    callback(err, number);
   });
 }
 
