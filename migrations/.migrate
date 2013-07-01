@@ -1,1 +1,0 @@
-{"migrations":[{"title":"migrations/001-create-device.js"},{"title":"migrations/002-create-user-role.js"},{"title":"migrations/003-create-admin-role.js"},{"title":"migrations/004-create-admin-user.js"}],"path":"migrations/.migrate","pos":4,"_events":{}}
