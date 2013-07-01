@@ -2,8 +2,27 @@ module.exports = function(app, auth) {
   var fs = require('fs-extra')
     , Team = require('../models/team')
     , User = require('../models/user')
+    , Role = require('../models/role')
     , Device = require('../models/device')
     , Layer = require('../models/layer');
+
+  // TODO tmp error calls to test error handling
+  app.get('/api/error/null', function(req, res, next) {
+    var test = null;
+    test.doesNotExist;
+  });
+
+  app.get('/api/error/error', function(req, res, next) {
+    var error = new Error('Some general error message here');
+    throw(error);
+  });
+
+  app.get('/api/error/callback', function(req, res, next) {
+    fs.readdir(__dirname, function() {
+      var error = new Error('In callback: some general error message here');
+      throw(error);
+    });
+  });
 
   // Protect all FeatureServer routes with token authentication
   app.all('/FeatureServer*', auth.p***REMOVED***port.authenticate('bearer', {session: false}));
@@ -53,6 +72,15 @@ module.exports = function(app, auth) {
       User.getUserById(userId, function(err, user) {
         if (!user) return res.send('User not found', 404);
         req.user = user;
+        next();
+      });
+  });
+
+  // Grab the role for any endpoint that uses roleId
+  app.param('roleId', function(req, res, next, roleId) {
+      Role.getRoleById(roleId, function(err, role) {
+        if (!role) return res.send('Role ' + roleId + ' not found', 404);
+        req.role = role;
         next();
       });
   });

@@ -1,7 +1,10 @@
 module.exports = function(app, auth) {
-  var Team = require('../models/team');
+  var Team = require('../models/team')
+    , access = require('../access');
 
   var p***REMOVED***port = auth.p***REMOVED***port;
+
+  app.all('/api/teams*', p***REMOVED***port.authenticate('bearer'));
 
   var validateTeamParams = function(req, res, next) {
     var name = req.param('name');
@@ -18,7 +21,7 @@ module.exports = function(app, auth) {
   // get all teams
   app.get(
     '/api/teams', 
-    p***REMOVED***port.authenticate('bearer'), 
+    access.hasPermission('READ_TEAM'),
       function (req, res) {
       Team.getTeams(function (err, teams) {
         res.json(teams);
@@ -28,7 +31,7 @@ module.exports = function(app, auth) {
   // get team
   app.get(
     '/api/teams/:teamId', 
-    p***REMOVED***port.authenticate('bearer'), 
+    access.hasPermission('READ_TEAM'), 
     function (req, res) {
       res.json(req.team);
     }
@@ -37,8 +40,8 @@ module.exports = function(app, auth) {
   // Create a new team
   app.post(
     '/api/teams',
+    access.hasPermission('CREATE_TEAM'),
     validateTeamParams,
-    p***REMOVED***port.authenticate('bearer'),
     function(req, res) {
       Team.createTeam(req.teamParam, function(err, team) {
         if (err) {
@@ -53,8 +56,7 @@ module.exports = function(app, auth) {
   // Update a team
   app.put(
     '/api/teams/:teamId',
-    p***REMOVED***port.authenticate('bearer'),
-    validateTeamParams, 
+    access.hasPermission('UPDATE_TEAM'), 
     function(req, res) {
       var update = {};
       if (req.teamParam.name) update.name = req.teamParam.name;
@@ -73,7 +75,7 @@ module.exports = function(app, auth) {
   // Delete a team
   app.delete(
     '/api/teams/:teamId', 
-    p***REMOVED***port.authenticate('bearer'),
+    access.hasPermission('DELETE_TEAM'),
     function(req, res) {
       Team.deleteTeam(req.team, function(err, team) {
         if (err) {

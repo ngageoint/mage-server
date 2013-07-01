@@ -76,7 +76,7 @@ module.exports = function(app, auth) {
   app.get(
     '/api/users', 
     p***REMOVED***port.authenticate('bearer'),
-    access.hasRoles(['READ_USER']),
+    access.hasPermission('READ_USER'),
       function (req, res) {
       User.getUsers(function (users) {
         res.json(users);
@@ -87,6 +87,7 @@ module.exports = function(app, auth) {
   app.get( 
     '/api/users/:userId',
     p***REMOVED***port.authenticate('bearer'),
+    access.hasPermission('READ_USER'),
     function(req, res) {
      res.json(req.user);
     }
@@ -156,9 +157,8 @@ module.exports = function(app, auth) {
   app.put(
     '/api/users/:userId', 
     p***REMOVED***port.authenticate('bearer'),
-    //access.hasRoles(['UPDATE_USER']),
+    access.hasPermission('UPDATE_USER'),
     function(req, res) {
-
       var update = {};
       if (req.param('username')) update.username = req.param('username');
       if (req.param('firstname')) update.firstname = req.param('firstname');
@@ -190,6 +190,7 @@ module.exports = function(app, auth) {
   app.delete(
     '/api/users/:userId', 
     p***REMOVED***port.authenticate('bearer'),
+    access.hasPermission('DELETE_USER'),
     function(req, res) {
       User.deleteUser(req.user, function(err, updatedUser) {
         if (err) {
@@ -205,6 +206,7 @@ module.exports = function(app, auth) {
   app.post(
     '/api/users/:userId/roles',
     p***REMOVED***port.authenticate('bearer'),
+    access.hasPermission('UPDATE_USER'),
     validateRoleParams,
     function(req, res) {
       User.setRolesForUser(req.user, req.roles, function(err, user) {
@@ -217,6 +219,7 @@ module.exports = function(app, auth) {
   app.delete(
     '/api/users/:userId/roles',
     p***REMOVED***port.authenticate('bearer'),
+    access.hasPermission('UPDATE_USER'),
     function(req, res) {
       User.removeRolesForUser(req.user, function(err, user) {
         res.json(user);
@@ -228,6 +231,7 @@ module.exports = function(app, auth) {
   app.post(
     '/api/users/:userId/teams',
     p***REMOVED***port.authenticate('bearer'),
+    access.hasPermission('UPDATE_USER'),
     validateTeamParams,
     function(req, res) {
       User.setTeamsForUser(req.user, req.teamIds, function(err, user) {
@@ -240,6 +244,7 @@ module.exports = function(app, auth) {
   app.delete(
     '/api/users/:userId/teams',
     p***REMOVED***port.authenticate('bearer'),
+    access.hasPermission('UPDATE_USER'),
     function(req, res) {
       User.removeTeamsForUser(req.user, function(err, user) {
         res.json(user);

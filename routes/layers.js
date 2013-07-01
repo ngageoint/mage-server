@@ -1,6 +1,7 @@
 // Routes responsible for layer managment
 module.exports = function(app, auth) {
-  var Layer = require('../models/layer');
+  var Layer = require('../models/layer')
+    , access = require('../access');
 
   var p***REMOVED***port = auth.p***REMOVED***port;
   var strategy = auth.strategy;
@@ -42,62 +43,78 @@ module.exports = function(app, auth) {
   }
 
   // Get all layers
-  app.get('/FeatureServer', function (req, res) {
-    console.log("SAGE Layers GET REST Service Requested");
+  app.get(
+    '/FeatureServer',
+    access.hasPermission('READ_LAYER'),
+    function (req, res) {
+      console.log("SAGE Layers GET REST Service Requested");
 
-    Layer.getAll(function (layers) {
-      var response = new LayerResponse();
-      response.add(layers);
-      res.json(response.toObject());
-    });
-  });
+      Layer.getAll(function (layers) {
+        var response = new LayerResponse();
+        response.add(layers);
+        res.json(response.toObject());
+      });
+    }
+  );
 
   // Get layer by id
-  app.get('/FeatureServer/:layerId', function(req, res) {
-    console.log("SAGE Layers (ID) GET REST Service Requested");
+  app.get(
+    '/FeatureServer/:layerId',
+    access.hasPermission('READ_LAYER'),
+    function(req, res) {
+      console.log("SAGE Layers (ID) GET REST Service Requested");
 
-    var layer = req.layer;
-    return res.send(layer);
-  });
+      var layer = req.layer;
+      return res.send(layer);
+    }
+  );
 
   // Create a new layer
-  app.post('/FeatureServer/', function(req, res) {
-    var name = req.param('name');
-    if (!name) {
-      res.send(400, "Cannot create layer, invalid parameters.  'name' parameter is required");
-    }
-
-    var fields = req.param('fields');
-
-    var layer = {name: name, fields: fields};
-    Layer.create(layer, function(err, layer) {
-      if (err) {
-        res.send(400, err);
-        return;
+  app.post(
+    '/FeatureServer/',
+    access.hasPermission('CREATE_LAYER'),
+    function(req, res) {
+      var name = req.param('name');
+      if (!name) {
+        res.send(400, "Cannot create layer, invalid parameters.  'name' parameter is required");
       }
 
-      var response = layer ? layer : {};
-      res.json(response);
-    });
-  });
+      var fields = req.param('fields');
+
+      var layer = {name: name, fields: fields};
+      Layer.create(layer, function(err, layer) {
+        if (err) {
+          res.send(400, err);
+          return;
+        }
+
+        var response = layer ? layer : {};
+        res.json(response);
+      });
+    }
+  );
 
   // Archive a layer
-  app.delete('/FeatureServer/:layerId', function(req, res) {
-    console.log("SAGE Layers (ID) DELETE REST Service Requested");
+  app.delete(
+    '/FeatureServer/:layerId',
+    access.hasPermission('DELETE_LAYER'),
+    function(req, res) {
+      console.log("SAGE Layers (ID) DELETE REST Service Requested");
 
-    var layer = req.layer;
+      var layer = req.layer;
 
-    Layer.remove(layer, function(err, layer) {
-      response = {};
-      if (err) {
-        response.success = false;
-        response.message = err;
-      } else {
-        response.succes = true;
-        response.message = 'Layer ' + layer.name + ' has been removed.'
-      }
+      Layer.remove(layer, function(err, layer) {
+        response = {};
+        if (err) {
+          response.success = false;
+          response.message = err;
+        } else {
+          response.succes = true;
+          response.message = 'Layer ' + layer.name + ' has been removed.'
+        }
 
-      res.json(response);
-    });
-  });
+        res.json(response);
+      });
+    }
+  );
 }

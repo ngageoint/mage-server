@@ -1,8 +1,11 @@
 module.exports = function(app, auth) {
   var Device = require('../models/device')
-    , User = require('../models/user');
+    , User = require('../models/user')
+    , access = require('../access');
 
   var p***REMOVED***port = auth.p***REMOVED***port;
+
+  app.all('/api/devices*', p***REMOVED***port.authenticate('bearer'));
 
   var validateDeviceParams = function(req, res, next) {
     var uid = req.param('uid');
@@ -25,8 +28,8 @@ module.exports = function(app, auth) {
 
   // get all devices
   app.get(
-    '/api/devices', 
-    p***REMOVED***port.authenticate('bearer'), 
+    '/api/devices',
+    access.hasPermission('READ_DEVICE'),
       function (req, res) {
       Device.getDevices(function (err, devices) {
         res.json(devices);
@@ -36,7 +39,7 @@ module.exports = function(app, auth) {
   // get device
   app.get(
     '/api/devices/:deviceUid', 
-    p***REMOVED***port.authenticate('bearer'), 
+    access.hasPermission('READ_DEVICE'),
     function (req, res) {
       res.json(req.device);
     }
@@ -46,7 +49,7 @@ module.exports = function(app, auth) {
   app.post(
     '/api/devices',
     validateDeviceParams,
-    p***REMOVED***port.authenticate('bearer'),
+    access.hasPermission('CREATE_DEVICE'),
     function(req, res) {
       Device.createDevice(req.deviceParam, function(err, device) {
         if (err) {
@@ -61,7 +64,7 @@ module.exports = function(app, auth) {
   // Update a device
   app.put(
     '/api/devices/:deviceUid',
-    p***REMOVED***port.authenticate('bearer'),
+    access.hasPermission('UPDATE_DEVICE'),
     validateDeviceParams, 
     function(req, res) {
       var update = {};
@@ -83,7 +86,7 @@ module.exports = function(app, auth) {
   // Delete a device
   app.delete(
     '/api/devices/:deviceUid', 
-    p***REMOVED***port.authenticate('bearer'),
+    access.hasPermission('DELETE_DEVICE'),
     function(req, res) {
       Device.deleteDevice(req.device, function(err, device) {
         if (err) {

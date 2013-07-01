@@ -5,6 +5,7 @@ module.exports = function(app, auth) {
   // in tight schedule and did not get the opportunity to get this stuff in.
 
   var Feature = require('../models/feature')
+    , access = require('../access')
     , geometryFormat = require('../format/geoJsonFormat');
 
   var geojson = require('../transformers/geojson')(geometryFormat);
@@ -33,51 +34,56 @@ module.exports = function(app, auth) {
   }
 
   // Queries for ESRI Styled records built for the ESRI format and syntax
-  app.get('/FeatureServer/:layerId/features', parseQueryParams, function (req, res) {
-    console.log("SAGE ESRI Features GET REST Service Requested");
+  app.get(
+    '/FeatureServer/:layerId/features',
+    access.hasPermission('READ_FEATURE'),
+    parseQueryParams, 
+    function (req, res) {
+      console.log("SAGE ESRI Features GET REST Service Requested");
 
-    // create filters for feature query
-    var filters = null;
+      // create filters for feature query
+      var filters = null;
 
-    var geometries = req.parameters.geometries;
-    if (geometries) {
-      filters = [];
-      geometries.forEach(function(geometry) {
-        filters.push({
-          geometry: geometry
-        });
-      });
-    }
-
-    var respond = function(features) {
-      var response = geojson.transform(features, req.parameters.properties);
-      res.json(response);
-    }
-
-    if (filters) {
-      allFeatures = [];
-      async.each(
-        filters, 
-        function(filter, done) {
-          Feature.getFeatures(req.layer, filter, function (features) {
-            if (features) {
-              allFeatures = allFeatures.concat(features);
-            }
-
-            done();
+      var geometries = req.parameters.geometries;
+      if (geometries) {
+        filters = [];
+        geometries.forEach(function(geometry) {
+          filters.push({
+            geometry: geometry
           });
-        },
-        function(err) {
-          respond(allFeatures);
-        }
-      );
-    } else {
-      var filter = {};
-      Feature.getFeatures(req.layer, filter, function (features) {
-        respond(features);
-      });
+        });
+      }
+
+      var respond = function(features) {
+        var response = geojson.transform(features, req.parameters.properties);
+        res.json(response);
+      }
+
+      if (filters) {
+        allFeatures = [];
+        async.each(
+          filters, 
+          function(filter, done) {
+            Feature.getFeatures(req.layer, filter, function (features) {
+              if (features) {
+                allFeatures = allFeatures.concat(features);
+              }
+
+              done();
+            });
+          },
+          function(err) {
+            respond(allFeatures);
+          }
+        );
+      } else {
+        var filter = {};
+        Feature.getFeatures(req.layer, filter, function (features) {
+          respond(features);
+        });
+      }
     }
-  });
+  );
 
   // // This function gets one feature with universal JSON formatting  
   // app.get('/featureServer/v1/features/:id', function (req, res) {

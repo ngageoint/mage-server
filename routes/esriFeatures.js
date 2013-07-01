@@ -3,8 +3,10 @@ module.exports = function(app, auth) {
   var async = require('async')
     , fs = require('fs-extra')
     , Counter = require('../models/counter')
-    , Feature = require('../models/feature');
+    , Feature = require('../models/feature')
+    , access = require('../access');
 
+  var p***REMOVED***port = auth.p***REMOVED***port;
   var geometryFormat = require('../format/geometryFormat');
   var esri = require('../transformers/esri')(geometryFormat);
 
@@ -83,393 +85,431 @@ module.exports = function(app, auth) {
   }
 
   // Queries for ESRI Styled records built for the ESRI format and syntax
-  app.get('/FeatureServer/:layerId/query', parseQueryParams, function (req, res) {
-    console.log("SAGE ESRI Features GET REST Service Requested");
+  app.get(
+    '/FeatureServer/:layerId/query',
+    access.hasPermission('READ_FEATURE'), 
+    parseQueryParams, 
+    function (req, res) {
+      console.log("SAGE ESRI Features GET REST Service Requested");
 
-    // create filters for feature query
-    var filters = null;
+      // create filters for feature query
+      var filters = null;
 
-    var geometries = req.parameters.geometries;
-    if (geometries) {
-      filters = [];
-      geometries.forEach(function(geometry) {
-        filters.push({
-          geometry: geometry
+      var geometries = req.parameters.geometries;
+      if (geometries) {
+        filters = [];
+        geometries.forEach(function(geometry) {
+          filters.push({
+            geometry: geometry
+          });
         });
+      }
+
+      var respond = function(features) {
+        var response = esri.transform(features, req.parameters.fields);
+        res.json(response);
+      }
+
+      if (filters) {
+        allFeatures = [];
+        async.each(
+          filters, 
+          function(filter, done) {
+            Feature.getFeatures(req.layer, filter, function (features) {
+              if (features) {
+                allFeatures = allFeatures.concat(features);
+              }
+
+              done();
+            });
+          },
+          function(err) {
+            respond(allFeatures);
+          }
+        );
+      } else {
+        var filter = {};
+        Feature.getFeatures(req.layer, filter, function (features) {
+          respond(features);
+        });
+      }
+    }
+  ); 
+
+  // Gets one ESRI Styled record built for the ESRI format and syntax
+  app.get(
+    '/FeatureServer/:layerId/:featureObjectId',
+    access.hasPermission('READ_FEATURE'),
+    function (req, res) {
+      console.log("SAGE ESRI Features (ID) GET REST Service Requested");
+
+      res.json({
+        geometry: req.feature.geometry,
+        attributes: req.feature.properties
       });
+      
     }
+  ); 
 
-    var respond = function(features) {
-      var response = esri.transform(features, req.parameters.fields);
-      res.json(response);
-    }
+  // This function creates a new ESRI Style Feature 
+  app.post(
+    '/FeatureServer/:layerId/addFeatures',
+    access.hasPermission('CREATE_FEATURE'),
+    function(req, res) {
+      console.log("SAGE ESRI Features POST REST Service Requested");
 
-    if (filters) {
-      allFeatures = [];
+      var features = req.param('features');
+      if (!features) {
+        //TODO need common cl***REMOVED*** to house error object
+        res.json({
+          error: {
+            code: 400,
+            message: "Cannot add features. Invalid parameters.",
+            details: ["'features' param not specified"]
+          }
+        });
+        return;
+      }
+
+      features = JSON.parse(features);
+
+      var addResults = [];
       async.each(
-        filters, 
-        function(filter, done) {
-          Feature.getFeatures(req.layer, filter, function (features) {
-            if (features) {
-              allFeatures = allFeatures.concat(features);
-            }
+        features,
+        function(feature, done) {
+          Feature.createFeature(req.layer, {geometry: feature.geometry, properties: feature.attributes}, function(newFeature) {
+            addResults.push({
+              globalId: null,
+              objectId: newFeature ? newFeature.properties.OBJECTID : -1,
+              success: newFeature ? true : false
+            });
 
             done();
           });
         },
         function(err) {
-          respond(allFeatures);
+          res.json({
+            addResults: addResults
+          });
         }
       );
-    } else {
-      var filter = {};
-      Feature.getFeatures(req.layer, filter, function (features) {
-        respond(features);
-      });
     }
-  }); 
+  );
 
-  // Gets one ESRI Styled record built for the ESRI format and syntax
-  app.get('/FeatureServer/:layerId/:featureObjectId', function (req, res) {
-    console.log("SAGE ESRI Features (ID) GET REST Service Requested");
+  // This function will update a feature by the ID
+  app.post(
+    '/FeatureServer/:layerId/updateFeatures',
+    access.hasPermission('UPDATE_FEATURE'),
+    function (req, res) {
+      console.log("SAGE Features (ID) UPDATE REST Service Requested");
 
-    res.json({
-      geometry: req.feature.geometry,
-      attributes: req.feature.properties
-    });
-    
-  }); 
+      var features = req.param('features');
+      if (!features) {
+        //TODO need common cl***REMOVED*** to house error object
+        return res.json({
+          error: {
+            code:400,
+            message: "Cannot add features. Invalid parameters.",
+            details: ["'features' param not specified"]
+          }
+        });
+      }
 
-  // This function creates a new ESRI Style Feature 
-  app.post('/FeatureServer/:layerId/addFeatures', function(req, res) {
-    console.log("SAGE ESRI Features POST REST Service Requested");
-
-    var features = req.param('features');
-    if (!features) {
-      //TODO need common cl***REMOVED*** to house error object
-      res.json({
-        error: {
-          code: 400,
-          message: "Cannot add features. Invalid parameters.",
-          details: ["'features' param not specified"]
-        }
-      });
-      return;
-    }
-
-    //tmp
-    console.log('features: ' + features);
-
-    features = JSON.parse(features);
-
-    var addResults = [];
-    async.each(
-      features,
-      function(feature, done) {
-        Feature.createFeature(req.layer, {geometry: feature.geometry, properties: feature.attributes}, function(newFeature) {
-          addResults.push({
-            globalId: null,
-            objectId: newFeature ? newFeature.properties.OBJECTID : -1,
-            success: newFeature ? true : false
-          });
+      features = JSON.parse(features);
+      var updateResults = [];
+      var updateFeature = function(feature, done) {
+        Feature.updateFeature(req.layer, {geometry: feature.geometry, properties: feature.attributes}, function(err, newFeature) {
+          if (err || !newFeature) {
+            updateResults.push({
+              objectId: feature.attributes.OBJECTID,
+              globalId: null,
+              success: false,
+              error: {
+                code: -1,
+                description: 'Update for the object was not attempted. Object may not exist.'
+              }
+            });
+          } else {
+            updateResults.push({
+              objectId: newFeature.properties.OBJECTID,
+              globalId: null,
+              success: true
+            });
+          }
 
           done();
         });
-      },
-      function(err) {
-        res.json({
-          addResults: addResults
-        });
       }
-    );
-  });
 
-  // This function will update a feature by the ID
-  app.post('/FeatureServer/:layerId/updateFeatures', function (req, res) {
-    console.log("SAGE Features (ID) UPDATE REST Service Requested");
-
-    var features = req.param('features');
-    if (!features) {
-      //TODO need common cl***REMOVED*** to house error object
-      return res.json({
-        error: {
-          code:400,
-          message: "Cannot add features. Invalid parameters.",
-          details: ["'features' param not specified"]
-        }
+      async.each(features, updateFeature, function(err) {
+        res.json({
+          updateResults: updateResults
+        });
       });
     }
+  );
 
-    features = JSON.parse(features);
-    var updateResults = [];
-    var updateFeature = function(feature, done) {
-      Feature.updateFeature(req.layer, {geometry: feature.geometry, properties: feature.attributes}, function(err, newFeature) {
-        if (err || !newFeature) {
-          updateResults.push({
-            objectId: feature.attributes.OBJECTID,
+  app.post(
+    '/FeatureServer/:layerId/deleteFeatures',
+    access.hasPermission('DELETE_FEATURE'),
+    function(req, res) {
+      console.log("SAGE ESRI Features (ID) Attachments DELETE REST Service Requested");
+
+      var objectIds = req.param('objectIds');
+      if (!objectIds) {
+        //TODO need common cl***REMOVED*** to house error object
+        res.json({
+          error: {
+            code:400,
+            message: "Cannot delete features. Invalid parameters.",
+            details: ["'objectIds' param not specified"]
+          }
+        });
+        return;
+      }
+
+      // Convert to JS object
+      objectIds = objectIds.split(",");
+      for (element in objectIds) {
+        objectIds[element] = parseInt(objectIds[element], 10);
+      }
+
+      var results = [];
+      var onDelete = function(err, objectId, feature) {
+        if (err || !feature) {
+          results.push({
+            objectId: objectId,
             globalId: null,
             success: false,
             error: {
               code: -1,
-              description: 'Update for the object was not attempted. Object may not exist.'
+              description: 'Delete for the object was not attempted. Object may not exist.'
             }
           });
         } else {
-          updateResults.push({
-            objectId: newFeature.properties.OBJECTID,
+          results.push({
+            objectId: feature.properties.OBJECTID,
             globalId: null,
             success: true
           });
-        }
 
-        done();
-      });
-    }
-
-    async.each(features, updateFeature, function(err) {
-      res.json({
-        updateResults: updateResults
-      });
-    });
-  });
-
-  app.post('/FeatureServer/:layerId/deleteFeatures', function(req, res) {
-    console.log("SAGE ESRI Features (ID) Attachments DELETE REST Service Requested");
-
-    var objectIds = req.param('objectIds');
-    if (!objectIds) {
-      //TODO need common cl***REMOVED*** to house error object
-      res.json({
-        error: {
-          code:400,
-          message: "Cannot delete features. Invalid parameters.",
-          details: ["'objectIds' param not specified"]
-        }
-      });
-      return;
-    }
-
-    // Convert to JS object
-    objectIds = objectIds.split(",");
-    for (element in objectIds) {
-      objectIds[element] = parseInt(objectIds[element], 10);
-    }
-
-    var results = [];
-    var onDelete = function(err, objectId, feature) {
-      if (err || !feature) {
-        results.push({
-          objectId: objectId,
-          globalId: null,
-          success: false,
-          error: {
-            code: -1,
-            description: 'Delete for the object was not attempted. Object may not exist.'
-          }
-        });
-      } else {
-        results.push({
-          objectId: feature.properties.OBJECTID,
-          globalId: null,
-          success: true
-        });
-
-        feature.attachments.forEach(function(attachment) {
-          var path = app.get('attachmentBase') + attachment.relativePath
-          fs.remove(path + attachment.name, function(err) {
-            if (err) {
-              console.error("Could not remove attachment file " + path + attachment.name + ". ", err);
-            }
+          feature.attachments.forEach(function(attachment) {
+            var path = app.get('attachmentBase') + attachment.relativePath
+            fs.remove(path + attachment.name, function(err) {
+              if (err) {
+                console.error("Could not remove attachment file " + path + attachment.name + ". ", err);
+              }
+            });
           });
-        });
+        }
+
+        if (!objectIds.length) {
+          return res.json({deleteResults: results});
+        }
+
+        Feature.removeFeature(req.layer, objectIds.pop(), onUpdate);
       }
 
-      if (!objectIds.length) {
-        return res.json({deleteResults: results});
-      }
 
-      Feature.removeFeature(req.layer, objectIds.pop(), onUpdate);
+      Feature.removeFeature(req.layer, objectIds.pop(), onDelete);
     }
-
-
-    Feature.removeFeature(req.layer, objectIds.pop(), onDelete);
-  });
+  );
 
   // This function gets all the attachments for a particular ESRI record  
-  app.get('/FeatureServer/:layerId/:featureObjectId/attachments', function(req, res){
-    console.log("SAGE ESRI Features (ID) Attachments GET REST Service Requested");
+  app.get(
+    '/FeatureServer/:layerId/:featureObjectId/attachments',
+    access.hasPermission('READ_FEATURE'),
+    function(req, res){
+      console.log("SAGE ESRI Features (ID) Attachments GET REST Service Requested");
 
-    var esriAttachments = new EsriAttachments();
-    Feature.getAttachments(req.feature, function(attachments) {
-      if (attachments) {
-        attachments.forEach(function(attachment) {
-          esriAttachments.add(attachment);
+      var esriAttachments = new EsriAttachments();
+      Feature.getAttachments(req.feature, function(attachments) {
+        if (attachments) {
+          attachments.forEach(function(attachment) {
+            esriAttachments.add(attachment);
+          });
+        }
+
+        res.json(esriAttachments.attachments());
+      });
+    }
+  );
+
+  // This function gets a specific attachment for an ESRI feature 
+  app.get(
+    '/FeatureServer/:layerId/:featureObjectId/attachments/:attachmentId',
+    access.hasPermission('READ_FEATURE'),
+    function(req, res, next) {
+      console.log("SAGE ESRI Features (ID) Attachments (ID) GET REST Service Requested");
+
+      var attachmentId = req.params.attachmentId;
+      Feature.getAttachment(req.feature, attachmentId, function(attachment) {
+        if (!attachment) {
+          var errorResponse = {
+            error: {
+              code: 404,
+              message: 'Attachment (ID: ' + attachmentId + ') not found',
+              details: []
+            }
+          };
+          return res.json(errorResponse);
+        }
+
+        var path = app.get('attachmentBase') + attachment.relativePath;
+        fs.readFile(path, function(err, data) {
+          if (err) next(err);
+
+          res.writeHead(200, {
+            "Content-Type": attachment.contentType,
+            "Content-Length": attachment.size,
+            'Content-disposition': 'attachment; filename=' + attachment.name
+           });
+          res.end(data, 'binary');
+        });
+      });
+    }
+  );
+
+  // This function will add an attachment for a particular ESRI record 
+  app.post(
+    '/FeatureServer/:layerId/:objectId/addAttachment',
+    access.hasPermission('CREATE_FEATURE'),
+    function(req, res, next) {
+      console.log("SAGE ESRI Features (ID) Attachments POST REST Service Requested");
+
+      var counter = 'attachment' + req.layer.id;
+      Counter.getNext(counter, function(id) {
+
+        var relativePath = createAttachmentPath(req.layer, req.files.attachment)
+        // move file upload to its new home
+        fs.mkdirp(app.get('attachmentBase') + relativePath, function(err) {
+          if (err) return next(err);
+
+          req.files.attachment.id = id;
+          req.files.attachment.relativePath = relativePath + "/" + id + "_" + req.files.attachment.filename;
+          fs.rename(req.files.attachment.path, app.get('attachmentBase') + req.files.attachment.relativePath, function(err) {
+            if (err) return next(err);
+
+            Feature.addAttachment(req.layer, req.objectId, req.files.attachment, function(err, attachment) {
+              if (err) return next(err);
+
+              var response = {
+                addAttachmentResult: {
+                  objectId: attachment ? attachment.id : -1,
+                  globalId: null,
+                  success: attachment ? true : false
+                }
+              };
+
+              res.json(response);
+            });  
+          });
+        });
+      });
+    }
+  );
+
+  // This function will update the specified attachment for the given list of attachment ids
+  // TODO test
+  app.post(
+    '/FeatureServer/:layerId/:featureObjectId/updateAttachment',
+    access.hasPermission('UPDATE_FEATURE'),
+    function(req, res, next) {
+      console.log("SAGE ESRI Features (ID) Attachments UPDATE REST Service Requested");
+
+      var attachmentId = req.param('attachmentId');
+      if (!attachmentId) {
+        return res.json({
+          error: {
+            code:400,
+            message: "Cannot update attachment. Invalid parameters.",
+            details: ["'attachmentId' param not specified"]
+          }
         });
       }
 
-      res.json(esriAttachments.attachments());
-    });
-  });
-
-  // This function gets a specific attachment for an ESRI feature 
-  app.get('/FeatureServer/:layerId/:featureObjectId/attachments/:attachmentId', function(req, res, next) {
-    console.log("SAGE ESRI Features (ID) Attachments (ID) GET REST Service Requested");
-
-    var attachmentId = req.params.attachmentId;
-    Feature.getAttachment(req.feature, attachmentId, function(attachment) {
-      if (!attachment) {
-        var errorResponse = {
-          error: {
-            code: 404,
-            message: 'Attachment (ID: ' + attachmentId + ') not found',
-            details: []
-          }
-        };
-        return res.json(errorResponse);
-      }
-
-      var path = app.get('attachmentBase') + attachment.relativePath;
-      fs.readFile(path, function(err, data) {
-        if (err) next(err);
-
-        res.writeHead(200, {
-          "Content-Type": attachment.contentType,
-          "Content-Length": attachment.size,
-          'Content-disposition': 'attachment; filename=' + attachment.name
-         });
-        res.end(data, 'binary');
-      });
-    });
-  });
-
-  // This function will add an attachment for a particular ESRI record 
-  app.post('/FeatureServer/:layerId/:objectId/addAttachment', function(req, res, next) {
-    console.log("SAGE ESRI Features (ID) Attachments POST REST Service Requested");
-
-    var counter = 'attachment' + req.layer.id;
-    Counter.getNext(counter, function(id) {
+      var attachmentId = parseInt(attachmentId, 10);
 
       var relativePath = createAttachmentPath(req.layer, req.files.attachment)
       // move file upload to its new home
       fs.mkdirp(app.get('attachmentBase') + relativePath, function(err) {
         if (err) return next(err);
 
-        req.files.attachment.id = id;
-        req.files.attachment.relativePath = relativePath + "/" + id + "_" + req.files.attachment.filename;
+        req.files.attachment.id = attachmentId;
+        req.files.attachment.relativePath = relativePath + "/" + attachmentId + "_" + req.files.attachment.filename;
         fs.rename(req.files.attachment.path, app.get('attachmentBase') + req.files.attachment.relativePath, function(err) {
           if (err) return next(err);
 
-          Feature.addAttachment(req.layer, req.objectId, req.files.attachment, function(err, attachment) {
+          Feature.updateAttachment(req.layer, attachmentId, req.files.attachment, function(err) {
             if (err) return next(err);
 
-            var response = {
-              addAttachmentResult: {
-                objectId: attachment ? attachment.id : -1,
+            res.json({
+              updateAttachmentResult: {
+                objectId: attachmentId,
                 globalId: null,
-                success: attachment ? true : false
+                success: true
               }
-            };
+            });
 
-            res.json(response);
           });  
         });
       });
-    });
-  });
-
-  // This function will update the specified attachment for the given list of attachment ids
-  // TODO test
-  app.post('/FeatureServer/:layerId/:featureObjectId/updateAttachment', function(req, res, next) {
-    console.log("SAGE ESRI Features (ID) Attachments UPDATE REST Service Requested");
-
-    var attachmentId = req.param('attachmentId');
-    if (!attachmentId) {
-      return res.json({
-        error: {
-          code:400,
-          message: "Cannot update attachment. Invalid parameters.",
-          details: ["'attachmentId' param not specified"]
-        }
-      });
     }
-
-    var attachmentId = parseInt(attachmentId, 10);
-
-    var relativePath = createAttachmentPath(req.layer, req.files.attachment)
-    // move file upload to its new home
-    fs.mkdirp(app.get('attachmentBase') + relativePath, function(err) {
-      if (err) return next(err);
-
-      req.files.attachment.id = attachmentId;
-      req.files.attachment.relativePath = relativePath + "/" + attachmentId + "_" + req.files.attachment.filename;
-      fs.rename(req.files.attachment.path, app.get('attachmentBase') + req.files.attachment.relativePath, function(err) {
-        if (err) return next(err);
-
-        Feature.updateAttachment(req.layer, attachmentId, req.files.attachment, function(err) {
-          if (err) return next(err);
-
-          res.json({
-            updateAttachmentResult: {
-              objectId: attachmentId,
-              globalId: null,
-              success: true
-            }
-          });
-
-        });  
-      });
-    });
-  });
+  );
 
   // This function will delete all attachments for the given list of attachment ids
-  app.post('/FeatureServer/:layerId/:featureObjectId/deleteAttachments', function(req, res) {
-    console.log("SAGE ESRI Features (ID) Attachments DELETE REST Service Requested");
+  app.post(
+    '/FeatureServer/:layerId/:featureObjectId/deleteAttachments',
+    access.hasPermission('DELETE_FEATURE'),
+    function(req, res) {
+      console.log("SAGE ESRI Features (ID) Attachments DELETE REST Service Requested");
 
-    var feature = req.feature;
-    var attachments = req.param('attachmentIds');
-    if (!attachments) {
-      return res.json({
-        error: {
-          code:400,
-          message: "Cannot delete attachments. Invalid parameters.",
-          details: ["'attachmentIds' param not specified"]
-        }
-      });
-    }
-
-    // Convert to JS object
-    var attachmentIds = attachments.split(",");
-    for (element in attachmentIds) {
-      attachmentIds[element] = parseInt(attachmentIds[element], 10);
-    }
-
-    var attachments = req.feature.attachments.toObject();
-
-    Feature.removeAttachments(req.feature, attachmentIds, function(err) {
-      var deleteResults = [];
-      attachmentIds.forEach(function(attachmentId) {
-        deleteResults.push({
-          objectId: attachmentId,
-          globalId: null,
-          success: true
-        });
-      });
-
-      res.json({deleteAttachmentResults: deleteResults});
-
-      if (!err) {
-        var path = getAttachmentDir(req.layer);
-        attachments.forEach(function(attachment) {
-          var index = attachmentIds.indexOf(attachment.id);
-          if (index != -1) {
-            fs.remove(path + attachment.name, function(err) {
-              if (err) {
-                console.error("Could not remove attachment file " + path + attachment.name + ". ", err);
-              }
-            });
+      var feature = req.feature;
+      var attachments = req.param('attachmentIds');
+      if (!attachments) {
+        return res.json({
+          error: {
+            code:400,
+            message: "Cannot delete attachments. Invalid parameters.",
+            details: ["'attachmentIds' param not specified"]
           }
         });
       }
-    });
-  });
+
+      // Convert to JS object
+      var attachmentIds = attachments.split(",");
+      for (element in attachmentIds) {
+        attachmentIds[element] = parseInt(attachmentIds[element], 10);
+      }
+
+      var attachments = req.feature.attachments.toObject();
+
+      Feature.removeAttachments(req.feature, attachmentIds, function(err) {
+        var deleteResults = [];
+        attachmentIds.forEach(function(attachmentId) {
+          deleteResults.push({
+            objectId: attachmentId,
+            globalId: null,
+            success: true
+          });
+        });
+
+        res.json({deleteAttachmentResults: deleteResults});
+
+        if (!err) {
+          var path = getAttachmentDir(req.layer);
+          attachments.forEach(function(attachment) {
+            var index = attachmentIds.indexOf(attachment.id);
+            if (index != -1) {
+              fs.remove(path + attachment.name, function(err) {
+                if (err) {
+                  console.error("Could not remove attachment file " + path + attachment.name + ". ", err);
+                }
+              });
+            }
+          });
+        }
+      });
+    }
+  );
 }
