@@ -48,7 +48,6 @@ exports.getUserForToken = function(token, callback) {
       }
 
       user.populate('role', function(err, user) {
-        console.log('Got a user for the token: ' + JSON.stringify(token.user));
         callback(err, user);
       });
     });
