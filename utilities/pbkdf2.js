@@ -42,13 +42,11 @@ var deserializeP***REMOVED***word = function (p***REMOVED***word) {
  */
 var encryptP***REMOVED***word = function (p***REMOVED***word, callback) {
   var salt = crypto.randomBytes(saltLength).toString('base64').slice(0, saltLength);
-  console.log('created salt: ' + salt);
 
   crypto.pbkdf2(p***REMOVED***word, salt, iterations, derivedKeyLength, function (err, derivedKey) {
     if (err) { return callback(err); }
 
     var str = derivedKey.toString('base64');
-    console.log(str + ": " + str.length + " characters, " + Buffer.byteLength(str, 'base64') + " bytes");
     var encryptedP***REMOVED***word = serializeP***REMOVED***word({
       salt: salt,
       iterations: iterations,
