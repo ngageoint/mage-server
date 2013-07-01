@@ -1,5 +1,6 @@
 module.exports = function(app, auth) {
-  var access = require('../access');
+  var access = require('../access')
+    , Role = require('../models/role');
 
   app.all('/api/roles*', auth.p***REMOVED***port.authenticate('bearer'));
 
@@ -24,8 +25,9 @@ module.exports = function(app, auth) {
     '/api/roles', 
     access.hasPermission('READ_ROLE'),
     function (req, res) {
-      var roles = models.Role.getRoles();
-      return res.json(roles);
+      Role.getRoles(function(err, roles) {
+        return res.json(roles);
+      });
     }
   );
 

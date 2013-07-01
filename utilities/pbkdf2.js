@@ -46,7 +46,6 @@ var encryptP***REMOVED***word = function (p***REMOVED***word, callback) {
   crypto.pbkdf2(p***REMOVED***word, salt, iterations, derivedKeyLength, function (err, derivedKey) {
     if (err) { return callback(err); }
 
-    var str = derivedKey.toString('base64');
     var encryptedP***REMOVED***word = serializeP***REMOVED***word({
       salt: salt,
       iterations: iterations,
@@ -75,6 +74,7 @@ var encryptP***REMOVED***word = function (p***REMOVED***word, callback) {
   // Use the encrypted p***REMOVED***word's parameter to hash the candidate p***REMOVED***word
   crypto.pbkdf2(p***REMOVED***word, encryptedP***REMOVED***word.salt, encryptedP***REMOVED***word.iterations, encryptedP***REMOVED***word.derivedKeyLength, function (err, derivedKey) {
     if (err) { return callback(err); }
+
 
     callback(null, derivedKey.toString('base64') === encryptedP***REMOVED***word.derivedKey)
   });

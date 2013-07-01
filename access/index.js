@@ -13,7 +13,11 @@ function Access() {
 
 Access.prototype.hasPermission = function(permission) {
   return function(req, res, next) {
-    console.log('verifying access for permission: ' + permission);
+    var role = req.user.role;
+    if (!role) {
+      return res.send(401);
+    }
+
     var userPermissions = req.user.role.permissions;
 
     var ok = userPermissions.indexOf(permission) != -1;
@@ -26,7 +30,12 @@ Access.prototype.hasPermission = function(permission) {
 
 Access.prototype.hasPermissions = function(permissions) {
   return function(req, res, next) {
-    console.log('verifying access for permissions: ' + JSON.stringify(permissions));
+
+    var role = req.user.role;
+    if (!role) {
+      return res.send(401);
+    }
+
     var userPermissions = req.user.role.permissions;
 
     var ok = permissions.every(function(permission) {

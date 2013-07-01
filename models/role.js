@@ -44,6 +44,16 @@ RoleSchema.pre('save', function(next) {
 // Creates the Model for the Role Schema
 var Role = mongoose.model('Role', RoleSchema);
 
+exports.getRoleById = function(id, callback) {
+  Role.findById(id, function(err, role) {
+    if (err) {
+      console.log('error getting role ' + id + '. error: ' + err);
+    }
+
+    callback(err, role);
+  });
+}
+
 exports.getRole = function(name, callback) {
   query = {name: name};
   Role.findOne(query, function(err, role) {

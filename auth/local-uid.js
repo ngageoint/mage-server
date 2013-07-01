@@ -15,12 +15,13 @@ module.exports = function(p***REMOVED***port) {
         }
 
         user.validP***REMOVED***word(p***REMOVED***word, function(err, isValid) {
+          console.log('valid p***REMOVED***word is: ' + isValid);
           if (err) {
             return done(err);
           }
 
           if (!isValid) {
-            return ('Incorrect p***REMOVED***word');
+            return done(null, false, { message: "Invalid p***REMOVED***word"});
           }
 
           Device.getDeviceByUid(uid, function(err, device) {
