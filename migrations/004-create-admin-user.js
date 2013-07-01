@@ -8,22 +8,29 @@ exports.up = function(next) {
   mongoose.connect('mongodb://localhost/sagedb');
 
   var p***REMOVED***word = 'admin';
-  hasher.encryptP***REMOVED***word(p***REMOVED***word, function(err, encryptedP***REMOVED***word) {
-    Role.getRole('ADMIN_ROLE', function(err, role) {
-      if (err) return next(err);
+  Role.getRole('ADMIN_ROLE', function(err, role) {
+    if (err) return next(err);
 
-      if (!role) return next(new Error('No ADMIN_ROLE found to attach to ADMIN_USER'));
+    if (!role) return next(new Error('No ADMIN_ROLE found to attach to ADMIN_USER'));
 
-      var adminUser = {
-        username: 'admin',
-        p***REMOVED***word: encryptedP***REMOVED***word,
-        firstname: 'admin',
-        lastname: 'admin',
-        role: role._id
-      };
+    var adminUser = {
+      username: 'admin',
+      p***REMOVED***word: 'admin',
+      firstname: 'admin',
+      lastname: 'admin'
+    };
 
-      User.createUser(adminUser, function(err, user) {
-        if (err) return next(err);
+    User.createUser(adminUser, function(err, user) {
+      if (err) {
+        mongoose.disconnect();
+        return next(err);
+      }
+
+      User.setRoleForUser(user, role._id, function(err, user) {
+        if (err) {
+          mongoose.disconnect();
+          return next(err);
+        }
 
         mongoose.disconnect(next);
       });

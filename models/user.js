@@ -17,7 +17,7 @@ var UserSchema = new Schema({
     lastname: {type: String, required: true },
     email: {type: String, required: false },
     phones: [PhoneSchema],
-    role: Schema.Types.ObjectId,
+    role: { type: Schema.Types.ObjectId, ref: 'Role' },
     teams: [Schema.Types.ObjectId],
   },{ 
     versionKey: false
@@ -38,6 +38,8 @@ UserSchema.pre('save', function(next) {
   }
 
   hasher.encryptP***REMOVED***word(user.p***REMOVED***word, function(err, encryptedP***REMOVED***word) {
+    if (err) return next(err);
+
     user.p***REMOVED***word = encryptedP***REMOVED***word;
     next();
   });
@@ -119,11 +121,11 @@ exports.deleteUser = function(user, callback) {
   User.remove(conditions, callback);
 }
 
-exports.setRolesForUser = function(user, roles, callback) {
-  var update = { roles: roles };
+exports.setRoleForUser = function(user, role, callback) {
+  var update = { role: role };
   User.findByIdAndUpdate(user._id, update, function (err, user) {
     if (err) {
-      console.log('could not set roles ' + roles.toString() + ' for user: ' + user.username);
+      console.log('could not set role ' + role + ' for user: ' + user.username);
     }
 
     callback(err, user);

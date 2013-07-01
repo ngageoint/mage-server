@@ -9,24 +9,19 @@ module.exports = function(app, auth) {
   var strategy = auth.strategy;
 
   var validateRoleParams = function(req, res, next) {
-      var roles = req.param('roles');
-      if (!roles) {
-        return res.send(400, "Cannot set roles, 'roles' param not specified");
-      }
+    var roleId = req.param('roleId');
+    if (!roleId) {
+      return res.send(400, "Cannot set role, 'roleId' param not specified");
+    }
 
-      var roles = roles.split(",");
-      var validatedRoles = [];
-      var validRoles = Role.getRoles();
-      roles.forEach(function(role) {
-        if (validRoles.indexOf(role) == -1) {
-          return res.send(400, "Role '" + role + "' is not a valid role");
-        }
+    Role.getRoleById(roleId, function(err, role) {
+      if (err) return next(err);
 
-        validatedRoles.push(role);
-      });
+      if (!role) return next(new Error('Role ***REMOVED***ociated with roleId ' + roleId + ' does not exist'));
 
-      req.roles = validatedRoles;
+      req.role = role._id;
       next();
+    });
   }
 
   var validateTeamParams = function(req, res, next) {
@@ -61,8 +56,7 @@ module.exports = function(app, auth) {
     '/api/login',
     p***REMOVED***port.authenticate(strategy),
     function(req, res) {
-      console.log('trying to create token for user: ' + JSON.stringify(req.user));
-      Token.createTokenForUser(req.user, function(err, token) {
+       Token.createTokenForUser(req.user, function(err, token) {
         if (err) {
           return res.send("Error generating token", 400);
         }
@@ -101,24 +95,29 @@ module.exports = function(app, auth) {
         return "Cannot create user, invalid parameters.  '" + param + "' parameter is required";
       }
 
+      var user = {};
+
       var username = req.param('username');
       if (!username) {
         return res.send(400, invalidResponse('username'));
       }
+      user.username = username;
 
       var firstname = req.param('firstname');
       if (!firstname) {
         return res.send(400, invalidResponse('firstname'));
       }
+      user.firstname = firstname;
 
       var lastname = req.param('lastname');
       if (!lastname) {
         return res.send(400, invalidResponse('lastname'));
       }
+      user.lastname = lastname;
 
       var email = req.param('email');
-      if (!email) {
-        return res.send(400, invalidResponse('email'));
+      if (email) {
+        user.email = email;
       }
 
       var p***REMOVED***word = req.param('p***REMOVED***word');
@@ -135,13 +134,7 @@ module.exports = function(app, auth) {
         res.send(400, 'p***REMOVED***words do not match');
       }
 
-      var user = {
-        username: username,
-        firstname: firstname,
-        lastname: lastname,
-        email: email,
-        p***REMOVED***word: p***REMOVED***word
-      };
+      user.p***REMOVED***word = p***REMOVED***word;
 
       User.createUser(user, function(err, newUser) {
         if (err) {
@@ -202,20 +195,20 @@ module.exports = function(app, auth) {
     }
   );
 
-  // set roles for user
+  // set role for user
   app.post(
     '/api/users/:userId/roles',
     p***REMOVED***port.authenticate('bearer'),
     access.hasPermission('UPDATE_USER'),
     validateRoleParams,
     function(req, res) {
-      User.setRolesForUser(req.user, req.roles, function(err, user) {
+      User.setRoleForUser(req.user, req.role, function(err, user) {
         res.json(user);
       });
     }
   );
 
-  // remove all roles from user
+  // remove role from user
   app.delete(
     '/api/users/:userId/roles',
     p***REMOVED***port.authenticate('bearer'),
