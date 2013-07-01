@@ -1,7 +1,7 @@
 /**
  * Module dependencies.
  */
-//var util = require('util');
+var Role = require('../models/role');
 
 /**
  * `Access` constructor.
@@ -11,16 +11,29 @@
 function Access() {
 }
 
-Access.prototype.hasRoles = function(roles) {
+Access.prototype.hasPermission = function(permission) {
   return function(req, res, next) {
-    console.log('verifying access for roles: ' + JSON.stringify(roles));
-    var userRoles = req.user.roles;
+    console.log('verifying access for permission: ' + permission);
+    var userPermissions = req.user.role.permissions;
 
-    roles.forEach(function(role) {
-      if (userRoles.indexOf(role) == -1) {
-        res.send(401);
-      }
+    var ok = userPermissions.indexOf(permission) != -1;
+
+    if (!ok) return res.send(401);
+
+    next();
+  }
+}
+
+Access.prototype.hasPermissions = function(permissions) {
+  return function(req, res, next) {
+    console.log('verifying access for permissions: ' + JSON.stringify(permissions));
+    var userPermissions = req.user.role.permissions;
+
+    var ok = permissions.every(function(permission) {
+      return userPermissions.indexOf(permission) != -1;
     });
+
+    if (!ok) return res.send(401);
 
     next();
   }
