@@ -33,11 +33,11 @@ var featurePermissions = [
   'DELETE_FEATURE',
 ];
 
-var fftPermissions = [
-  'CREATE_FFT',
-  'READ_FFT',
-  'UPDATE_FFT',
-  'DELETE_FFT'
+var locationPermissions = [
+  'CREATE_LOCATION',
+  'READ_LOCATION',
+  'UPDATE_LOCATION',
+  'DELETE_LOCATION'
 ];
 
 var teamPermissions = [
@@ -53,7 +53,7 @@ var allPermissions = []
   .concat(rolePermissions)
   .concat(layerPermissions)
   .concat(featurePermissions)
-  .concat(fftPermissions)
+  .concat(locationPermissions)
   .concat(teamPermissions);
 
 exports.getPermissions = function() {
