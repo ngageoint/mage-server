@@ -43,13 +43,15 @@ exports.getUserForToken = function(token, callback) {
     var query = {token: token};
     Token.findOne(query).populate('user').exec(function(err, token) {
       var user = null;
-      if (token && token.user) {
-        user = token.user;
 
-        user.populate('role', function(err, user) {
-          callback(err, user);
-        });
+      if (!token || !token.user) {
+        return callback(new Error('No valid token: ' + token));
       }
+
+      token.user.populate('role', function(err, user) {
+        return callback(err, user);
+      });
+
     });
   });
 }

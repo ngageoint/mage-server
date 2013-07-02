@@ -19,7 +19,7 @@ var mage = angular.module("mage", ["ui.bootstrap", "leaflet-directive", "mage.**
     templateUrl:    'js/app/partials/admin.html',
     controller:     AdminController
   });
-  $routeProvider.when('/map',
+  $routeProvider.when('map',
   {
     templateUrl:    'js/app/partials/map.html', 
     controller:     MapController, 
