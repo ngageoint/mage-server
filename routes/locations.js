@@ -5,16 +5,13 @@ module.exports = function(app, auth) {
     , Team = require('../models/team')
     , access = require('../access');
 
-  var access == require('../access')
-    , Location = require('../models/location');
-
   var p***REMOVED***port = auth.p***REMOVED***port;
   var strategy = auth.strategy;
 
   // get all locations
   app.get(
     '/api/locations',
-    access.hasPermissoin('READ_LOCATION'),
+    access.hasPermission('READ_LOCATION'),
     function (req, res) {
       Location.getLocations(req.user, function (err, locations) {
         res.json(locations);
