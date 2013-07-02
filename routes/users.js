@@ -197,7 +197,7 @@ module.exports = function(app, auth) {
 
   // set role for user
   app.post(
-    '/api/users/:userId/roles',
+    '/api/users/:userId/role',
     p***REMOVED***port.authenticate('bearer'),
     access.hasPermission('UPDATE_USER'),
     validateRoleParams,
@@ -210,7 +210,7 @@ module.exports = function(app, auth) {
 
   // remove role from user
   app.delete(
-    '/api/users/:userId/roles',
+    '/api/users/:userId/role',
     p***REMOVED***port.authenticate('bearer'),
     access.hasPermission('UPDATE_USER'),
     function(req, res) {
