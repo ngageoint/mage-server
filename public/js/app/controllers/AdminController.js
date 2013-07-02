@@ -107,7 +107,13 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     if ($scope.user._id) {
       UserService.updateUser($scope.user);
     } else {
-      UserService.createUser($scope.user);
+      UserService.createUser($scope.user).success(function (data) {
+        console.log('created user ' + data);
+        $scope.users.push(data);
+      }).
+      error(function (data, status, headers, config) {
+        console.log('Something bad happened while creating a user...' + status);
+      });
     }
   }
 

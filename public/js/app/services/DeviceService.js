@@ -1,8 +1,8 @@
 'use strict';
 
 angular.module('mage.deviceService', ['mage.***REMOVED***s', 'mage.lib'])
-  .factory('DeviceService', ['appConstants', 'mageLib', '$http',
-    function (appConstants, mageLib, $http) {
+  .factory('DeviceService', ['$http', 'appConstants', 'mageLib',
+    function ($http, appConstants, mageLib) {
       var deviceServiceFunctions = {};
 
       deviceServiceFunctions.getAllDevices = function () {
