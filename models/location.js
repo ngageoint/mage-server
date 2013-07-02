@@ -1,37 +1,47 @@
 
-var mongoose = require('mongoose');
+var mongoose = require('mongoose')
+  , geoJSON = require('../transformers/geojson');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;  
 
 // Creates the Schema for FFT Locations
 var LocationSchema = new Schema({
-  user: { type: Schema.Types.ObjectId, required: true },
-  createdOn: { type: Date, required: true, index: true },
-  updatedOn: { type: Date, required: true, index: true },
+  //user: { type: Schema.Types.ObjectId, required: true },
+  //createdOn: { type: Date, required: true, index: true },
+  //updatedOn: { type: Date, required: true, index: true },
   geometry: {
     type: { type: String, required: true },
     coordinates: { type: Array, required: true}
   },
   properties: Schema.Types.Mixed
+},{ 
+    versionKey: false 
 });
+
+LocationSchema.set("toObject", {
+  transform: geoJSON.transformFeature
+});
+
+LocationSchema.set("toJSON", {
+  transform: geoJSON.transformFeature
+});
+
+LocationSchema.index({'properties.createdOn': 1});
+LocationSchema.index({'properties.updatedOn': 1});
+LocationSchema.index({'properties.user': 1, 'properties.createdOn': 1});
+LocationSchema.index({'properties.user': 1, 'properties.updatedOn': 1});
 
 // Creates the Model for the User Schema
 var Location = mongoose.model('Location', LocationSchema);
+
+// TODO index user, createdOn and updatedOn
  
 // create location
-exports.createLocation = function(user, data, callback) {
-  var properties = data.properties ? data.properties : {};
-  var now = new Date();
+exports.createLocation = function(user, feature, callback) {
   var doc = {
-    user: user._id,
-    createdOn: now,
-    updatedOn: now,
-    geometry: {
-      type: 'Point',
-      coordinates: [data.geometry.x, data.geometry.y]
-    },
-    properties: properties
+    geometry: feature.geometry,
+    properties: feature.properties
   };
 
   Location.create(doc, function(err, location) {
@@ -43,26 +53,27 @@ exports.createLocation = function(user, data, callback) {
   });
 }
 
-// get all locations
-exports.getLocations = function(callback) {
-  var query = {};
-  var options = {sort: {updatedOn: -1}};
-  Location.find(query, options, function (err, locations) {
-    if (err) {
-      console.log("Error finding locations: " + err);
-    }
+// // get all locations
+// exports.getLocations = function(callback) {
+//   var query = {};
+//   var options = {sort: {updatedOn: -1}};
+//   Location.find(query, function (err, locations) {
+//     if (err) {
+//       console.log("Error finding locations: " + err);
+//     }
 
-    callback(err, locations);
-  });
-}
+//     callback(err, locations);
+//   });
+// }
 
 // get locations for users team
-exports.getLocationsForTeam = function(user, callback) {
-  // for PDC we will only have one team, so just grab locations for all users
-  Location.aggregate(
-    { $group: { _id: $user }},
-    { $sort: { updatedOn: -1}},
-    { $limit: 1 }, 
+exports.getLocations = function(user, limit, callback) {
+  var group = { $group: { _id: "$properties.user", locations: { $push: {location: {geometry: "$geometry", properties: "$properties"} } }}};
+  var sort = { $sort: { "properties.updatedOn": 1 }};
+  var project = {};
+  //var group = { $group: { _id: "$properties.user", locations: { $push: "$geometry"}}};
+  Location.aggregate(group, sort,
+    //{ $limit: limit }, 
     function(err, aggregate) {
       console.log("Got aggregate: " + JSON.stringify(aggregate));
       callback(err, aggregate);

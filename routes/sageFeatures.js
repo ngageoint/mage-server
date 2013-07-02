@@ -8,7 +8,7 @@ module.exports = function(app, auth) {
     , access = require('../access')
     , geometryFormat = require('../format/geoJsonFormat');
 
-  var geojson = require('../transformers/geojson')(geometryFormat);
+  var geojson = require('../transformers/geojson');
 
   var parseQueryParams = function(req, res, next) {
     var parameters = {};

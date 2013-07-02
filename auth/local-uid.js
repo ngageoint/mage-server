@@ -15,7 +15,6 @@ module.exports = function(p***REMOVED***port) {
         }
 
         user.validP***REMOVED***word(p***REMOVED***word, function(err, isValid) {
-          console.log('valid p***REMOVED***word is: ' + isValid);
           if (err) {
             return done(err);
           }
