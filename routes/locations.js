@@ -1,5 +1,10 @@
-module.exports = function(app, models, auth) {
- 
+module.exports = function(app, auth) {
+  var Location = require('../models/location')
+    , Token = require('../models/token')
+    , Role = require('../models/role')
+    , Team = require('../models/team')
+    , access = require('../access');
+
   var p***REMOVED***port = auth.p***REMOVED***port;
   var strategy = auth.strategy;
 

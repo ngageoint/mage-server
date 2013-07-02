@@ -3,7 +3,7 @@
 /*
 
 */
-function AdminController($scope, $log, $http, $injector, appConstants, UserService, DeviceService) {
+function AdminController($scope, $log, $http, $location, $anchorScroll, $injector, appConstants, UserService, DeviceService) {
   // The variables that get set when clicking a team or user in the list, these get loaded into the editor.
   $scope.currentAdminPanel = "user"; // possible values user, team, and device
   
@@ -50,7 +50,7 @@ function AdminController($scope, $log, $http, $injector, appConstants, UserServi
     $scope.showDeviceForm = visibility;
   }
 
-  $scope.setShowUserForm = function (visibility) {
+  $scope.setShowTeamForm = function (visibility) {
     $scope.showTeamForm = visibility;
   }
 
@@ -70,7 +70,6 @@ function AdminController($scope, $log, $http, $injector, appConstants, UserServi
 
   $scope.viewTeam = function(team) {
     $scope.team = team;
-    $('#new-team-form').removeCl***REMOVED***('hide'); 
   }
 
   $scope.saveTeam = function() {
@@ -105,21 +104,31 @@ function AdminController($scope, $log, $http, $injector, appConstants, UserServi
   }*/
 
   $scope.saveUser = function () {
-    if ($scope.user.id) {
+    if ($scope.user._id) {
       UserService.updateUser($scope.user);
     } else {
       UserService.createUser($scope.user);
     }
   }
 
+  $scope.scrollTo = function (id) {
+    $location.hash(id);
+    $anchorScroll();
+  }
+
+  $scope.editUser = function (user) {
+    $scope.user = user;
+    $scope.setShowUserForm(true);
+    $scope.scrollTo('user-form');
+  }
+
   $scope.newUser = function() {
-    $scope.user = new UserService.user();
-    $('#new-user-form').removeCl***REMOVED***('hide');
+    $scope.user = {};
+    $scope.setShowUserForm(true);
   }
 
   $scope.viewUser = function(user) {
     $scope.user = new UserService.user(user);
-    $('#new-user-form').removeCl***REMOVED***('hide');
   }
 
   $scope.deleteUser = function () {
@@ -135,10 +144,16 @@ function AdminController($scope, $log, $http, $injector, appConstants, UserServi
 
   }
 
+  $scope.editDevice = function (device) {
+    $scope.device = device;
+    $scope.setShowDeviceForm(true);
+    $scope.scrollTo('device-form');
+  }
+
   $scope.saveDevice = function () {
     console.log('making call to save the devcie');
-    if ($scope.device.id) {
-
+    if ($scope.device._id) {
+      DeviceService.updateDevice($scope.device);
     } else {
       DeviceService.createDevice($scope.device);
     }
