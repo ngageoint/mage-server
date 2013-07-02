@@ -32,8 +32,8 @@
       </div>
 
       <div cl***REMOVED***="span12 top-gap" id="user-admin-area" ng-show="currentAdminPanel == 'user'">
-        <button cl***REMOVED***="btn" ng-click="setShowUserForm(true)" ngmtap="setShowUserForm(true)">New User</button>
-        <div id="new-user-form" cl***REMOVED***="top-gap" ng-show="showUserForm">
+        <button cl***REMOVED***="btn" ng-click="newUser()" ngm-tap="newUser()">New User</button>
+        <div id="user-form" name="edit-form" cl***REMOVED***="top-gap" ng-show="showUserForm">
           <form ng-submit="saveUser()" id="new-user-form" cl***REMOVED***="form-horizontal">
             <fieldset>
               <div cl***REMOVED***="control-group">
@@ -75,7 +75,7 @@
               <div cl***REMOVED***="control-group">
                 <label cl***REMOVED***="control-label" for="type">Role</label>
                 <div cl***REMOVED***="controls">
-                  <select ng-model="roles" ng-options="role.id as role.Title for item in items"></select>
+                  <select ng-model="user.role" ng-options="role._id as role.name for role in roles"></select>
                 </div>
               </div>
               <!-- Not needed for Piccadilly
@@ -99,6 +99,7 @@
         <div cl***REMOVED***="top-gap" ng-repeat="user in users">
           <div cl***REMOVED***="row-fluid">
             <div cl***REMOVED***="span2">
+              <a ng-click="editUser(user)" ngm-tap="editUser(user)"><i cl***REMOVED***="icon-edit"></i><a/>
               {{user.username}}
             </div>
             <div cl***REMOVED***="span2">
@@ -113,8 +114,8 @@
 
     <div cl***REMOVED***="span12 top-gap" id="device-admin-area" ng-show="currentAdminPanel == 'device'">
       <button cl***REMOVED***="btn" ng-click="setShowDeviceForm(true)" ngmtap="setShowDeviceForm(true)">New Device</button>
-      <div id="new-user-form" cl***REMOVED***="top-gap" ng-show="showDeviceForm">
-        <form ng-submit="saveDevice()" id="new-device-form" cl***REMOVED***="form-horizontal">
+      <div cl***REMOVED***="top-gap" ng-show="showDeviceForm">
+        <form ng-submit="saveDevice()" id="device-form" cl***REMOVED***="form-horizontal">
           <fieldset>
             <div cl***REMOVED***="control-group">
               <label cl***REMOVED***="control-label" for="type">Device Name</label>
@@ -145,7 +146,7 @@
       <div cl***REMOVED***="top-gap">
         <h3>Registerd Devices</h3>
         <div ng-repeat="device in devices">
-          <p>{{device.uid}} {{device.name}} {{device.description}}</p>
+          <p><a ng-click="editDevice(device)" ngm-tap="editDevice(device)"><i cl***REMOVED***="icon-edit"></i><a/>{{device.uid}} {{device.name}} {{device.description}}</p>
         </div>
       </div>
     </div>

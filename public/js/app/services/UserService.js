@@ -10,7 +10,14 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       };
 
       userServiceFunctions.newUser = function (user) {
+        var user = {
+          username: '',
+          firstname: '',
+          lastname: '',
+          email: ''
+        };
 
+        return user;
       };
 
       userServiceFunctions.createUser = function(user) {
@@ -24,7 +31,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       }
 
       userServiceFunctions.updateUser = function(user) {
-        $http.put(appConstants.rootUrl + '/api/users', $.param(user), {headers: {"Content-Type": "application/x-www-form-urlencoded"}}).
+        $http.put(appConstants.rootUrl + '/api/users/' + user._id + '?access_token=' + mageLib.getLocalItem('token'), $.param(user), {headers: {"Content-Type": "application/x-www-form-urlencoded"}}).
           success(function (data, status, headers, config) {
             console.log("sucessful user save!");
           }).

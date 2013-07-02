@@ -18,6 +18,10 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
   /* Data models for the settings */
   $scope.layers = [];
   $scope.baseLayers = [{name: "Open Street Map"}];
+  $scope.featureLayers = [];
+  $scope.imageryLayers = [];
+
+  /* Commented out for PDC
   $scope.imageryLayers = [{
     id: 1,
     name: "Digital Globe St Louis Map", 
@@ -47,7 +51,7 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
     enabled: false, 
     external: true,
     url: "https://mapperdev.tomnod.com/nod/api/oktornado2/sage"
-  }];
+  }];*/
 
   $scope.currentLayerId = 0;
   $scope.baseLayer = $scope.baseLayers[0];
