@@ -3,7 +3,8 @@ module.exports = function(app, auth) {
     , Token = require('../models/token')
     , Role = require('../models/role')
     , Team = require('../models/team')
-    , access = require('../access');
+    , access = require('../access')
+    , generate_kml = require('../utilities/generate_kml');
 
   var p***REMOVED***port = auth.p***REMOVED***port;
 
@@ -56,6 +57,21 @@ module.exports = function(app, auth) {
       Location.getLocations(req.user, limit, function(err, locations) {
         res.json(locations);
       });
+    }
+  );
+
+
+  app.get(
+    '/api/locations/export',
+    //p***REMOVED***port.authenticate('bearer'),
+    //access.hasPermission('READ_LOCATION'),
+    function(req, res) {
+      res.writeHead(200,{"Content-Type": "application/vnd.google-earth.kml+xml"});
+      res.write(generate_kml.generateKMLHeader());
+      res.write(generate_kml.generateKMLDocument());
+      res.write(generate_kml.generatePlacemark('point1', 'localhost', 39.83636818,-105.646844,3332.199951));
+      res.write(generate_kml.generateKMLDocumentClose());
+      res.end(generate_kml.generateKMLClose()); 
     }
   );
 
