@@ -2,8 +2,8 @@
 
 /* A library of common functions for doing geolocation, Local Storage, etc */
 angular.module('mage.lib', [])
-  .factory('mageLib', ['$http',
-    function ($http) {
+  .factory('mageLib', ['$http', '$location',
+    function ($scope, $http, $location) {
       var libFunctions = {};
 
       libFunctions.geolocate = function () {
@@ -36,6 +36,18 @@ angular.module('mage.lib', [])
       /* URL Param token convenience method */
       libFunctions.getTokenParams = function () {
         return {"access_token" : libFunctions.getLocalItem('token')};
+      };
+
+      /* From Year of Moo */
+      libFunctions.changeLocation = function(url, force) {
+        //this will mark the URL change
+        $location.path(url).replace(); //use $location.path(url).replace() if you want to replace the location instead
+
+        /*$scope = $scope || angular.element(document).scope();
+        if(force || !$scope.$$phase) {
+          //this will kickstart angular if to notice the change
+          $scope.$apply();
+        }*/
       };
 
       return libFunctions;

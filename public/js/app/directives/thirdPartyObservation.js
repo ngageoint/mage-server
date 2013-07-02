@@ -1,4 +1,4 @@
-mage.directive('external', function($http, appConstants) {
+mage.directive('external', function($http, $scope, appConstants) {
   return {
     restrict: "A",
     templateUrl: appConstants.rootUrl + "/js/app/partials/third-party-observation-template.html",
