@@ -1,57 +1,85 @@
-module.exports = function() {
 
-  var mongoose = require('mongoose')
-    , hasher = require('../utilities/pbkdf2')();
-  
-  // Creates a new Mongoose Schema object
-  var Schema = mongoose.Schema;  
+var mongoose = require('mongoose');
 
-  // Creates the Schema for FFT Locations
-  var LocationSchema = new Schema({
-    username: { type: String, required: true },
+// Creates a new Mongoose Schema object
+var Schema = mongoose.Schema;  
+
+// Creates the Schema for FFT Locations
+var LocationSchema = new Schema({
+  user: { type: Schema.Types.ObjectId, required: true },
+  createdOn: { type: Date, required: true, index: true },
+  updatedOn: { type: Date, required: true, index: true },
+  geometry: {
+    type: { type: String, required: true },
+    coordinates: { type: Array, required: true}
+  },
+  properties: Schema.Types.Mixed
+});
+
+// Creates the Model for the User Schema
+var Location = mongoose.model('Location', LocationSchema);
+ 
+// create location
+exports.createLocation = function(user, data, callback) {
+  var properties = data.properties ? data.properties : {};
+  var now = new Date();
+  var doc = {
+    user: user._id,
+    createdOn: now,
+    updatedOn: now,
     geometry: {
-      type: { type: String, required: true },
-      coordinates: { type: Array, required: true}
+      type: 'Point',
+      coordinates: [data.geometry.x, data.geometry.y]
     },
-    properties: Schema.Types.Mixed,    
+    properties: properties
+  };
+
+  Location.create(doc, function(err, location) {
+    if (err) {
+      console.log('Error creating new location for user: ' + user.username + '.  Err:' + err);
+    }
+
+    callback(err, location);
   });
+}
 
-  // Creates the Model for the User Schema
-  var Location = mongoose.model('Location', LocationSchema);
+// get all locations
+exports.getLocations = function(callback) {
+  var query = {};
+  var options = {sort: {updatedOn: -1}};
+  Location.find(query, options, function (err, locations) {
+    if (err) {
+      console.log("Error finding locations: " + err);
+    }
 
-   
-  //create location
-  var createLocation = function(user,callback) {
+    callback(err, locations);
+  });
+}
 
-    var location = {
-      user: user._id,
-      geometry: {
-        type: 'Point',
-        coordinates: [data.geometry.x, data.geometry.y]
-      },
-      properties: properties
-    };
-    Location.create(location, callback);
-  }
+// get locations for users team
+exports.getLocationsForTeam = function(user, callback) {
+  // for PDC we will only have one team, so just grab locations for all users
+  Location.aggregate(
+    { $group: { _id: $user }},
+    { $sort: { updatedOn: -1}},
+    { $limit: 1 }, 
+    function(err, aggregate) {
+      console.log("Got aggregate: " + JSON.stringify(aggregate));
+      callback(err, aggregate);
+    }
+  );
+}
 
-  //get locations
-  var getLocations = function(callback) {
-    var query = {};
-    Location.find(query, function (err, locations) {
-      if (err) {
-        console.log("Error finding locations in mongo: " + err);
-      }
+// update a location
+exports.updateDateForLatestLocation = function(user, date, callback) {
+  var query = {user: user._id};
+  var update = {updatedOn: new Date()};
+  var options = {sort: {updatedOn: -1}};
+  Location.findOneAndUpdate(query, update).limit(1).exec(function(err, location) {
+    if (err) {
+      console.log("Error updating date on latesest location for user : " + user.username + ". Error: " + err);
+    }
 
-      callback(locations);
-    });
-  }
-
-  //return functions
-  return {
-    getLocations: getLocations,
-    createLocation: createLocation
-  }
-
-
-
-}()
+    callback(err, location);
+  });
+}

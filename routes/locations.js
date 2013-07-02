@@ -5,14 +5,28 @@ module.exports = function(app, auth) {
     , Team = require('../models/team')
     , access = require('../access');
 
+  var access == require('../access')
+    , Location = require('../models/location');
+
   var p***REMOVED***port = auth.p***REMOVED***port;
   var strategy = auth.strategy;
 
- // Create a new location
+  // get all locations
+  app.get(
+    '/api/locations',
+    access.hasPermissoin('READ_LOCATION'),
+    function (req, res) {
+      Location.getLocations(req.user, function (err, locations) {
+        res.json(locations);
+      });
+  });
+
+ // create a new location
   app.post(
     '/api/locations',
+    access.hasPermission('CREATE_LOCATION'),
     function(req, res) {
-      models.Location.createLocation(req.user, function(err, newLocation) {
+      Location.createLocation(req.user, function(err, newLocation) {
         if (err) {
           return res.send(400, err);
         }
@@ -21,17 +35,6 @@ module.exports = function(app, auth) {
       });
     }
   );
-  
-  // get all locations
-  app.get(
-    '/api/locations', 
-    function (req, res) {
-      models.Location.getLocations(req.user, function (locations) {
-        res.json(locations);
-      });
-  });
 
-
-
-
+  // update time on a location
 }

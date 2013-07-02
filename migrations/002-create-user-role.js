@@ -4,7 +4,7 @@ var mongoose = require('mongoose')
 
 var userPermissions = [
   'CREATE_FEATURE', 'READ_FEATURE', 'UPDATE_FEATURE', 'DELETE_FEATURE', 
-  'CREATE_FFT', 'READ_FFT', 'UPDATE_FFT', 'DELETE_FFT'];
+  'CREATE_LOCATION', 'READ_LOCATION', 'UPDATE_LOCATION', 'DELETE_LOCATION'];
 
 exports.up = function(next) {
   mongoose.connect('mongodb://localhost/sagedb');
