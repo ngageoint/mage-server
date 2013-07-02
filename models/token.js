@@ -45,11 +45,11 @@ exports.getUserForToken = function(token, callback) {
       var user = null;
       if (token && token.user) {
         user = token.user;
-      }
 
-      user.populate('role', function(err, user) {
-        callback(err, user);
-      });
+        user.populate('role', function(err, user) {
+          callback(err, user);
+        });
+      }
     });
   });
 }
