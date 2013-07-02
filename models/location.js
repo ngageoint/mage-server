@@ -53,43 +53,29 @@ exports.createLocation = function(user, feature, callback) {
   });
 }
 
-// // get all locations
-// exports.getLocations = function(callback) {
-//   var query = {};
-//   var options = {sort: {updatedOn: -1}};
-//   Location.find(query, function (err, locations) {
-//     if (err) {
-//       console.log("Error finding locations: " + err);
-//     }
-
-//     callback(err, locations);
-//   });
-// }
-
 // get locations for users team
 exports.getLocations = function(user, limit, callback) {
+  var sort = { $sort: { "properties.updatedOn": -1 }};
+  var limit = { $limit: limit };
   var group = { $group: { _id: "$properties.user", locations: { $push: {location: {geometry: "$geometry", properties: "$properties"} } }}};
-  var sort = { $sort: { "properties.updatedOn": 1 }};
-  var project = {};
-  //var group = { $group: { _id: "$properties.user", locations: { $push: "$geometry"}}};
-  Location.aggregate(group, sort,
-    //{ $limit: limit }, 
-    function(err, aggregate) {
-      console.log("Got aggregate: " + JSON.stringify(aggregate));
-      callback(err, aggregate);
-    }
-  );
+  var project = { $project: { _id: 0, locations: "$locations"} };
+  Location.aggregate(sort, limit, group, project, function(err, aggregate) {
+    console.log("Got aggregate: " + JSON.stringify(aggregate));
+    callback(err, aggregate);
+  });
 }
 
-// update a location
-exports.updateDateForLatestLocation = function(user, date, callback) {
-  var query = {user: user._id};
-  var update = {updatedOn: new Date()};
-  var options = {sort: {updatedOn: -1}};
-  Location.findOneAndUpdate(query, update).limit(1).exec(function(err, location) {
+// update latest location
+exports.updateLocation = function(user, timestamp, callback) {
+  var conditions = {"properties.user": user._id};
+  var update = {"properties.updatedOn": timestamp};
+  var options = {sort: {"properties.updatedOn": -1}};
+  Location.findOneAndUpdate(conditions, update, options, function(err, location) {
     if (err) {
       console.log("Error updating date on latesest location for user : " + user.username + ". Error: " + err);
     }
+
+    console.log("updated location: " + JSON.stringify(location));
 
     callback(err, location);
   });

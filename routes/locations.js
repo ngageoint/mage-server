@@ -32,17 +32,6 @@ module.exports = function(app, auth) {
     next();
   }
 
-  // get all locations
-  // app.get(
-  //   '/api/locations',
-  //   p***REMOVED***port.authenticate('bearer'),
-  //   access.hasPermission('READ_LOCATION'),
-  //   function (req, res) {
-  //     Location.getLocations(function (err, locations) {
-  //       res.json(locations);
-  //     });
-  // });
-
   // get locations
   // Will only return locations for the teams that the user is a part of
   // TODO only one team for PDC, need to implement multiple teams later
@@ -93,4 +82,17 @@ module.exports = function(app, auth) {
   );
 
   // update time on a location
+  app.put(
+    '/api/locations',
+    p***REMOVED***port.authenticate('bearer'),
+    access.hasPermission('UPDATE_LOCATION'),
+    function(req, res) {
+      var timestamp = req.param('timestamp');
+      if (!timestamp) timestamp = new Date();
+
+      Location.updateLocation(req.user, timestamp, function(err, location) {
+        res.json(location);
+      });
+    }
+  );
 }
