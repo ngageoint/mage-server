@@ -198,7 +198,7 @@ module.exports = function(app, auth) {
   // set user status
   app.put(
     '/api/users/status',
-    p***REMOVED***word.authenticate('bearer'),
+    p***REMOVED***port.authenticate('bearer'),
     function(req, res) {
       var status = req.params('status');
       if (!status) {

@@ -136,7 +136,7 @@ exports.updateUser = function(id, update, callback) {
 }
 
 exports.deleteUser = function(id, callback) {
-  User.findById(id, callback(err, user) {
+  User.findById(id, function(err, user) {
     if (!user) {
       var msg = "User with id '" + id + "' not found and could not be deleted.";
       console.log(msg + " Error: " + err);
