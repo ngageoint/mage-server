@@ -3,9 +3,9 @@
     <div cl***REMOVED***="navbar-inner">
       <a cl***REMOVED***="brand" href="/"><i cl***REMOVED***="icon-white icon-magic" style="margin-right:10px;"></i>MAGE</a>
       <ul cl***REMOVED***="nav">
-        <li><a href="/#/map">Map</a></li>
-        <li><a href="/#/layers">Layer Manager</a></li>
-        <li style="background: #305680"><a href="users.html" style="color:#fff;">Admin Panel</a></li>
+        <li><a href="/#/map"><i cl***REMOVED***="icon-map"></i> Map</a></li>
+        <li><a href="/#/layers"><i cl***REMOVED***="icon-layers"></i> Layer Manager</a></li>
+        <li style="background: #305680"><a href="users.html" style="color:#fff;"><i cl***REMOVED***="icon-cog"></i> Admin Panel</a></li>
       </ul>
     </div>
   </div>
@@ -34,42 +34,42 @@
       <div cl***REMOVED***="span12 top-gap" id="user-admin-area" ng-show="currentAdminPanel == 'user'">
         <button cl***REMOVED***="btn" ng-click="newUser()" ngm-tap="newUser()">New User</button>
         <div id="user-form" name="edit-form" cl***REMOVED***="top-gap" ng-show="showUserForm">
-          <form ng-submit="saveUser()" id="new-user-form" cl***REMOVED***="form-horizontal">
+          <form ng-submit="saveUser()" id="userform" name="user-form" cl***REMOVED***="form-horizontal">
             <fieldset>
               <div cl***REMOVED***="control-group">
                 <label cl***REMOVED***="control-label" for="type">Username</label>
                 <div cl***REMOVED***="controls">
-                  <input type="text" placeholder="i.e. jappleseed" ng-model="user.username">
+                  <input type="text" placeholder="i.e. jappleseed" ng-model="user.username" name="username">
                 </div>
               </div>
               <div cl***REMOVED***="control-group">
                 <label cl***REMOVED***="control-label" for="type">First Name</label>
                 <div cl***REMOVED***="controls">
-                  <input type="text" placeholder="Johnny" ng-model="user.firstname">
+                  <input type="text" placeholder="Johnny" ng-model="user.firstname" name="firstname">
                 </div>
               </div>
               <div cl***REMOVED***="control-group">
                 <label cl***REMOVED***="control-label" for="type">Last Name</label>
                 <div cl***REMOVED***="controls">
-                  <input type="text" placeholder="Appleseed" ng-model="user.lastname">
+                  <input type="text" placeholder="Appleseed" ng-model="user.lastname" name="lastname">
                 </div>
               </div>
               <div cl***REMOVED***="control-group">
                 <label cl***REMOVED***="control-label" for="type">Email</label>
                 <div cl***REMOVED***="controls">
-                  <input type="text" placeholder="johnny@appleseed.com" ng-model="user.email">
+                  <input type="text" placeholder="johnny@appleseed.com" ng-model="user.email" name="email">
                 </div>
               </div>
               <div cl***REMOVED***="control-group">
                 <label cl***REMOVED***="control-label" for="type">P***REMOVED***word</label>
                 <div cl***REMOVED***="controls">
-                  <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***word">
+                  <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***word" name="p***REMOVED***word">
                 </div>
               </div>
               <div cl***REMOVED***="control-group">
                 <label cl***REMOVED***="control-label" for="type">Confirm P***REMOVED***word</label>
                 <div cl***REMOVED***="controls">
-                  <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***wordconfirm">
+                  <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***wordconfirm" name="p***REMOVED***wordconfirm">
                 </div>
               </div>
               <div cl***REMOVED***="control-group">
@@ -88,6 +88,7 @@
                 </div>
               </div> 
               -->
+              <p>{{user._id}}</p>
               <span>
                 <button type="reset" cl***REMOVED***="btn btn-inverse" ng-click="setShowUserForm(false)" ngmtap="setShowUserForm(false)">Cancel</button>
                 <button type="submit" cl***REMOVED***="btn">Save user</button>
@@ -96,17 +97,20 @@
           </form>
         </div>
         <h3>Current Users</h3>
-        <div cl***REMOVED***="top-gap" ng-repeat="user in users">
+        <div cl***REMOVED***="top-gap" ng-repeat="u in users">
           <div cl***REMOVED***="row-fluid">
             <div cl***REMOVED***="span2">
-              <a ng-click="editUser(user)" ngm-tap="editUser(user)"><i cl***REMOVED***="icon-edit"></i><a/>
-              {{user.username}}
+              <a ng-click="editUser(u)" ngm-tap="editUser(u)"><i cl***REMOVED***="icon-edit"></i><a/>
+              {{u.username}}
             </div>
             <div cl***REMOVED***="span2">
-              {{user.firstname}} {{user.lastname}}
+              {{u.firstname}} {{user.lastname}}
             </div>
             <div cl***REMOVED***="span2">
-              {{user.email}}
+              {{u.email}}
+            </div>
+            <div cl***REMOVED***="span2">
+              {{u._id}}
             </div>
         </div>
       </div>

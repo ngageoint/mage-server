@@ -36,11 +36,11 @@ body {
 }
 
 .navbar .nav > li > a {
-    color: #F5F3DA;
+    color: #FFF;
     float: none;
     padding: 10px 15px;
     text-decoration: none;
-    text-shadow: 0 1px 0 #2B2620;
+    text-shadow: 0 1px 0 #222;
 }
 
 .well {

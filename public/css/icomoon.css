@@ -27,7 +27,7 @@ Instead of a list of all cl***REMOVED*** selectors,
 you can use the generic selector below, but it's slower:
 [cl***REMOVED****="icon-"] {
 */
-.icon-camera, .icon-layers, .icon-download, .icon-upload, .icon-settings, .icon-zoom-out, .icon-zoom-in, .icon-remove, .icon-ok, .icon-list, .icon-refresh, .icon-location, .icon-plus, .icon-minus, .icon-group, .icon-spinner, .icon-map, .icon-globe, .icon-earth, .icon-search, .icon-leaf, .icon-magic {
+.icon-ok, .icon-remove, .icon-zoom-in, .icon-zoom-out, .icon-camera, .icon-thumbs-up, .icon-globe, .icon-calendar, .icon-cloud-download, .icon-check, .icon-home, .icon-plus, .icon-map, .icon-location, .icon-location-2, .icon-mobile, .icon-filter, .icon-layers, .icon-loop, .icon-user-add, .icon-magic, .icon-stack, .icon-megaphone, .icon-cog, .icon-search, .icon-pencil, .icon-users, .icon-user {
 	font-family: 'icomoon';
 	speak: none;
 	font-style: normal;
@@ -37,69 +37,87 @@ you can use the generic selector below, but it's slower:
 	line-height: 1;
 	-webkit-font-smoothing: antialiased;
 }
-.icon-camera:before {
-	content: "\ca";
-}
-.icon-layers:before {
-	content: "\e001";
-}
-.icon-download:before {
-	content: "\f0ed";
-}
-.icon-upload:before {
-	content: "\f0ee";
-}
-.icon-settings:before {
-	content: "\f013";
-}
-.icon-zoom-out:before {
-	content: "\f010";
-}
-.icon-zoom-in:before {
-	content: "\f00e";
+.icon-ok:before {
+	content: "\f00c";
 }
 .icon-remove:before {
 	content: "\f00d";
 }
-.icon-ok:before {
-	content: "\f00c";
+.icon-zoom-in:before {
+	content: "\f00e";
 }
-.icon-list:before {
-	content: "\f00b";
+.icon-zoom-out:before {
+	content: "\f010";
 }
-.icon-refresh:before {
-	content: "\f021";
+.icon-camera:before {
+	content: "\f030";
 }
-.icon-location:before {
-	content: "\f041";
+.icon-thumbs-up:before {
+	content: "\f087";
+}
+.icon-globe:before {
+	content: "\f0ac";
+}
+.icon-calendar:before {
+	content: "\f073";
+}
+.icon-cloud-download:before {
+	content: "\f0ed";
+}
+.icon-check:before {
+	content: "\f046";
+}
+.icon-home:before {
+	content: "\e000";
 }
 .icon-plus:before {
 	content: "\f067";
 }
-.icon-minus:before {
-	content: "\f068";
-}
-.icon-group:before {
-	content: "\f0c0";
-}
-.icon-spinner:before {
-	content: "\f110";
-}
 .icon-map:before {
+	content: "\e001";
+}
+.icon-location:before {
 	content: "\e002";
 }
-.icon-globe:before {
+.icon-location-2:before {
 	content: "\e003";
 }
-.icon-earth:before {
-	content: "\e004";
+.icon-mobile:before {
+	content: "\e005";
+}
+.icon-filter:before {
+	content: "\e007";
+}
+.icon-layers:before {
+	content: "\e008";
+}
+.icon-loop:before {
+	content: "\e009";
+}
+.icon-user-add:before {
+	content: "\e00a";
+}
+.icon-magic:before {
+	content: "\f0d0";
+}
+.icon-stack:before {
+	content: "\e00b";
+}
+.icon-megaphone:before {
+	content: "\e00c";
+}
+.icon-cog:before {
+	content: "\f013";
 }
 .icon-search:before {
 	content: "\f002";
 }
-.icon-leaf:before {
-	content: "\f06c";
+.icon-pencil:before {
+	content: "\e00d";
 }
-.icon-magic:before {
-	content: "\f0d0";
+.icon-users:before {
+	content: "\e006";
+}
+.icon-user:before {
+	content: "\e00e";
 }

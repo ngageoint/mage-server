@@ -105,6 +105,16 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
 
   $scope.saveUser = function () {
     if ($scope.user._id) {
+
+      /* 
+        This is dirty, no ng-dirty puns intended...
+        If the username is not modofied, dont send it, so mongo will be happy. Send along the rest
+        of the user object, it wont hurt it if the updated information is the same.
+      */
+      if (userform.username.cl***REMOVED***List.contains('ng-pristine')) {
+        delete $scope.user['username'];
+      }
+
       UserService.updateUser($scope.user);
     } else {
       UserService.createUser($scope.user).success(function (data) {
