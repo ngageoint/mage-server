@@ -126,11 +126,13 @@ exports.createUser = function(user, callback) {
 }
 
 exports.updateUser = function(id, update, callback) {
+  console.log('updating user');
   User.findByIdAndUpdate(id, update, function(err, user) {
     if (err) {
       console.log('Could not update user ' + id + '. error: ' + err);
     }
 
+    console.log('just updated user: ' + JSON.stringify(user));
     callback(err, user);
   });
 }

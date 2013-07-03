@@ -146,11 +146,10 @@ module.exports = function(app, auth) {
     }
   );
 
-  // Update a user
+  // update myself
   app.put(
-    '/api/users/:userId', 
+    '/api/users/myself',
     p***REMOVED***port.authenticate('bearer'),
-    access.hasPermission('UPDATE_USER'),
     function(req, res) {
       var update = {};
       if (req.param('username')) update.username = req.param('username');
@@ -168,8 +167,7 @@ module.exports = function(app, auth) {
         update.p***REMOVED***word = p***REMOVED***word;
       }
 
-      console.log('trying to update user' + JSON.stringify(update));
-      User.updateUser(req.params.userId, update, function(err, updatedUser) {
+      User.updateUser(req.user._id, update, function(err, updatedUser) {
         if (err) {
           return res.send(400, err);
         }
@@ -179,7 +177,70 @@ module.exports = function(app, auth) {
     }
   );
 
-  // Delete a user
+  // update status for myself
+  app.put(
+    '/api/users/myself/status',
+    p***REMOVED***port.authenticate('bearer'),
+    function(req, res) {
+      var status = req.param('status');
+      if (!status) return res.send(400, "Missing required parameter 'status'");
+
+      var update = {status: status};
+      User.updateUser(req.user._id, update, function(err, updatedUser) {
+        res.json(updatedUser);
+      });
+    }
+  );
+
+  // remove status for myself
+  app.delete(
+    '/api/users/myself/status',
+    p***REMOVED***port.authenticate('bearer'),
+    function(req, res) {
+      var status = req.param.status;
+
+      var update = {$unset: {status: 1}};
+      User.updateUser(req.user._id, update, function(err, updatedUser) {
+        res.json(updatedUser);
+      });
+    }
+  );
+
+  // Update a specific user
+  app.put(
+    '/api/users/:userId', 
+    p***REMOVED***port.authenticate('bearer'),
+    access.hasPermission('UPDATE_USER'),
+    function(req, res) {
+      var update = {};
+      if (req.param('username')) update.username = req.param('username');
+      if (req.param('firstname')) update.firstname = req.param('firstname');
+      if (req.param('lastname')) update.lastname = req.param('lastname');
+      if (req.param('email')) update.email = req.param('email');
+      if (req.param('role')) update.role = req.param('role');
+
+      var p***REMOVED***word = req.param('p***REMOVED***word');
+      var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
+      if (p***REMOVED***word && p***REMOVED***wordconfirm) {
+        if (p***REMOVED***word != p***REMOVED***wordconfirm) {
+          return res.send(400, 'p***REMOVED***words do not match');
+        }
+
+        update.p***REMOVED***word = p***REMOVED***word;
+      }
+
+      User.updateUser(req.params.userId, update, function(err, updatedUser) {
+        if (err) {
+          return res.send(400, err);
+        }
+
+        console.log('got user: ' + JSON.stringify());
+        res.json(updatedUser);
+      });
+    }
+  );
+
+  // Delete a specific user
   app.delete(
     '/api/users/:userId', 
     p***REMOVED***port.authenticate('bearer'),
@@ -190,22 +251,6 @@ module.exports = function(app, auth) {
           return res.send(400, err);
         }
 
-        res.json(user);
-      });
-    }
-  );
-
-  // set user status
-  app.put(
-    '/api/users/status',
-    p***REMOVED***port.authenticate('bearer'),
-    function(req, res) {
-      var status = req.params('status');
-      if (!status) {
-        return res.send(400, "Missing required 'status' parameter");
-      }
-
-      User.setStatusForUser(req.user, status, function(err, user) {
         res.json(user);
       });
     }
