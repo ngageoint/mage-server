@@ -71,3 +71,10 @@ exports.createTokenForUser = function(user, callback) {
     callback(err, newToken);
   });
 }
+
+exports.removeTokenForUser = function(user, callback) {
+  var conditions = {user: user._id};
+  Token.remove(conditions, function(err, numberRemoved) {
+    callback(err, numberRemoved);
+  });
+}

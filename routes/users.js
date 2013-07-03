@@ -169,7 +169,7 @@ module.exports = function(app, auth) {
       }
 
       console.log('trying to update user' + JSON.stringify(update));
-      User.updateUser(req.user._id, update, function(err, updatedUser) {
+      User.updateUser(req.params.userId, update, function(err, updatedUser) {
         if (err) {
           return res.send(400, err);
         }
@@ -185,12 +185,28 @@ module.exports = function(app, auth) {
     p***REMOVED***port.authenticate('bearer'),
     access.hasPermission('DELETE_USER'),
     function(req, res) {
-      User.deleteUser(req.user, function(err, updatedUser) {
+      User.deleteUser(req.params.userId, function(err, user) {
         if (err) {
           return res.send(400, err);
         }
 
-        res.json(updatedUser);
+        res.json(user);
+      });
+    }
+  );
+
+  // set user status
+  app.put(
+    '/api/users/status',
+    p***REMOVED***word.authenticate('bearer'),
+    function(req, res) {
+      var status = req.params('status');
+      if (!status) {
+        return res.send(400, "Missing required 'status' parameter");
+      }
+
+      User.setStatusForUser(req.user, status, function(err, user) {
+        res.json(user);
       });
     }
   );

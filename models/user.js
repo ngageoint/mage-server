@@ -1,5 +1,8 @@
 var mongoose = require('mongoose')
-  , hasher = require('../utilities/pbkdf2')();
+  , async = require("async")
+  , hasher = require('../utilities/pbkdf2')()
+  , Token = require('../models/token')
+  , Location = require('../models/location');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema; 
@@ -19,6 +22,7 @@ var UserSchema = new Schema({
     phones: [PhoneSchema],
     role: { type: Schema.Types.ObjectId, ref: 'Role' },
     teams: [Schema.Types.ObjectId],
+    status: { type: String, required: false, index: 'sparse' }
   },{ 
     versionKey: false
   }
@@ -42,6 +46,23 @@ UserSchema.pre('save', function(next) {
 
     user.p***REMOVED***word = encryptedP***REMOVED***word;
     next();
+  });
+});
+
+UserSchema.pre('remove', function(next) {
+  var user = this;
+
+  async.parrallel({
+    location: function(done) {
+      Location.removeLocationsForUser(user, function(err) {
+        done(err);
+      });
+    },
+    token: function(done) {
+      Token.removeTokenForUser(user, function(err) {
+        done(err);
+      })
+    }
   });
 });
 
@@ -105,8 +126,6 @@ exports.createUser = function(user, callback) {
 }
 
 exports.updateUser = function(id, update, callback) {
-  console.log('in model trying to update user: ' + JSON.stringify(update));
-
   User.findByIdAndUpdate(id, update, function(err, user) {
     if (err) {
       console.log('Could not update user ' + id + '. error: ' + err);
@@ -116,9 +135,33 @@ exports.updateUser = function(id, update, callback) {
   });
 }
 
-exports.deleteUser = function(user, callback) {
-  var conditions = { _id: user._id };
-  User.remove(conditions, callback);
+exports.deleteUser = function(id, callback) {
+  User.findById(id, callback(err, user) {
+    if (!user) {
+      var msg = "User with id '" + id + "' not found and could not be deleted.";
+      console.log(msg + " Error: " + err);
+      return callback(new Error(msg));
+    }
+
+    user.remove(function(err, removedUser) {
+      if (err) {
+        console.log("Error removing user: " + err);
+      }
+
+      callback(err, removedUser);
+    });
+  });
+}
+
+exports.setStatusForUser = function(user, status, callback) {
+  var update = { status: status };
+  User.findByIdAndUpdate(user._id, update, function(err, user) {
+    if (err) {
+      console.log('could not set status for user: ' + user.username);
+    }
+
+    callback(err, user);
+  });
 }
 
 exports.setRoleForUser = function(user, role, callback) {

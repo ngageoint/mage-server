@@ -19,7 +19,7 @@ RoleSchema.pre('remove', function(next) {
   var role = this;
 
   User.removeRoleFromUsers(role, function(err, number) {
-    next();
+    next(err);
   });
 });
 
