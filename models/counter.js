@@ -24,13 +24,13 @@ var range = function(start, end) {
   return values;
 }
 
-exports.getNext = function(collection, callback) {
+var getNext = function(collection, callback) {
   getGroup(collection, 1, function(ids) {
     callback(ids[0]);
   });
 }
 
-exports.getGroup = function(collection, amount, callback) {
+var getGroup = function(collection, amount, callback) {
   var query = {_id: collection};
   var update = {$inc: {sequence: amount}};
   var options = {upsert: true};
@@ -43,3 +43,6 @@ exports.getGroup = function(collection, amount, callback) {
     callback(ids);
   });
 }
+
+exports.getNext = getNext;
+exports.getGroup = getGroup;

@@ -71,7 +71,7 @@ module.exports = function(app, auth) {
 
   // Create a new layer
   app.post(
-    '/FeatureServer/',
+    '/FeatureServer',
     access.hasPermission('CREATE_LAYER'),
     function(req, res) {
       var name = req.param('name');
