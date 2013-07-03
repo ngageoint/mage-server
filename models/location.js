@@ -7,9 +7,6 @@ var Schema = mongoose.Schema;
 
 // Creates the Schema for FFT Locations
 var LocationSchema = new Schema({
-  //user: { type: Schema.Types.ObjectId, required: true },
-  //createdOn: { type: Date, required: true, index: true },
-  //updatedOn: { type: Date, required: true, index: true },
   geometry: {
     type: { type: String, required: true },
     coordinates: { type: Array, required: true}
@@ -18,6 +15,8 @@ var LocationSchema = new Schema({
 },{ 
     versionKey: false 
 });
+
+// TODO when user is removed need to remove thier locations.
 
 LocationSchema.set("toObject", {
   transform: geoJSON.transformFeature
@@ -34,8 +33,6 @@ LocationSchema.index({'properties.user': 1, 'properties.updatedOn': 1});
 
 // Creates the Model for the User Schema
 var Location = mongoose.model('Location', LocationSchema);
-
-// TODO index user, createdOn and updatedOn
  
 // create location
 exports.createLocation = function(user, feature, callback) {
@@ -58,7 +55,7 @@ exports.getLocations = function(user, limit, callback) {
   var sort = { $sort: { "properties.updatedOn": -1 }};
   var limit = { $limit: limit };
   var group = { $group: { _id: "$properties.user", locations: { $push: {location: {geometry: "$geometry", properties: "$properties"} } }}};
-  var project = { $project: { _id: 0, locations: "$locations"} };
+  var project = { $project: { _id: 0, user: "$_id", locations: "$locations"} };
   Location.aggregate(sort, limit, group, project, function(err, aggregate) {
     console.log("Got aggregate: " + JSON.stringify(aggregate));
     callback(err, aggregate);
@@ -78,5 +75,16 @@ exports.updateLocation = function(user, timestamp, callback) {
     console.log("updated location: " + JSON.stringify(location));
 
     callback(err, location);
+  });
+}
+
+exports.removeLocationsForUser = function(user, callback) {
+  var conditions = {"properties.user": user._id};
+  Location.remove(conditions, function(err, numberRemoved) {
+    if (err) {
+      console.log("Error removing locaitons for user: " + user.username);
+    }
+
+    callback(err);
   });
 }
