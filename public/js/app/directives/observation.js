@@ -1,3 +1,5 @@
+'use strict';
+
 mage.directive('observation', function($http, $scope, appConstants) {
   return {
     restrict: "A",
@@ -11,6 +13,7 @@ mage.directive('observation', function($http, $scope, appConstants) {
       newFeature: "=newfeature"
     },
     controller: derp = function ($scope, $element, $attrs, $http, teams, levels, observationTypes, appConstants) {
+      console.log('up in the obeservation directive controller...');
       /* Observation parameters. These are what get sent back to the server when a new observation is created. */
       $scope.teams = teams;
       $scope.levels = levels;
@@ -105,7 +108,7 @@ mage.directive('observation', function($http, $scope, appConstants) {
         console.log("in new observation");
         $scope.observationId = {feature: {properties: {OBJECTID: 0}}}; // hide the observation panel
         $scope.files = [];
-      }
+      },
 
       /* Send the observation to the server */
       $scope.saveObservation = function () {
@@ -185,7 +188,7 @@ mage.directive('observation', function($http, $scope, appConstants) {
         error(function (data, status, headers, config) {
           $log.log("Error adding feature: " + status);
         }); 
-      } // end of saveObservation
+      }, // end of saveObservation
 
       $scope.setFiles = function (element) {
         $scope.$apply(function(scope) {
@@ -197,7 +200,7 @@ mage.directive('observation', function($http, $scope, appConstants) {
           }
           $scope.progressVisible = false
         });
-      }
+      },
 
       $scope.uploadFile = function() {
         var fd = new FormData()
@@ -212,7 +215,7 @@ mage.directive('observation', function($http, $scope, appConstants) {
         xhr.open("POST", $scope.fileUploadUrl)
         $scope.progressVisible = true
         xhr.send(fd)
-      }
+      },
 
       function uploadProgress(evt) {
         $scope.$apply(function(){
@@ -222,16 +225,16 @@ mage.directive('observation', function($http, $scope, appConstants) {
             $scope.progress = 'unable to compute'
           }
         });
-      }
+      },
 
       function uploadComplete(evt) {
         $scope.files = [];
         $scope.progressVisible = false
-      }
+      },
 
       function uploadFailed(evt) {
         alert("There was an error attempting to upload the file.")
-      }
+      },
 
       function uploadCanceled(evt) {
         $scope.$apply(function(){
