@@ -10,9 +10,9 @@
         <a cl***REMOVED***="brand" href="/"><i cl***REMOVED***="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE</a>
         <div cl***REMOVED***="nav-collapse collapse">
           <ul cl***REMOVED***="nav">
-            <li style="background: #305680"><a href="map.html" style="color:#fff;"><i cl***REMOVED***="icon-map"></i> Map</a></li>
-            <li><a href="/#/layers"><i cl***REMOVED***="icon-layers"></i> Layer Manager</a></li>
-            <li><a href="/#/admin"><i cl***REMOVED***="icon-cog"></i>  Admin Panel</a></li>
+            <li style="background: #305680"><a href="map.html" style="color:#fff;"><i cl***REMOVED***="icon-map icon-spacer"></i> Map</a></li>
+            <li><a href="/#/layers"><i cl***REMOVED***="icon-layers icon-spacer"></i> Layer Manager</a></li>
+            <li><a href="/#/admin"><i cl***REMOVED***="icon-cog icon-spacer"></i>  Admin Panel</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -44,10 +44,9 @@
   </div>
 
   <!-- Panels -->
-  <div id="settings-panel" cl***REMOVED***="hide panel panel-large">
+  <!-- Settings panel -->
+  <div id="settings-panel" ng-show="showSettings" cl***REMOVED***="panel panel-large">
     <form cl***REMOVED***="form">
-
-
       <h4>Base Layers</h4>
       <div cl***REMOVED***="control-group">
         <div cl***REMOVED***="controls">
@@ -80,7 +79,28 @@
     </span>
   </div>
 
-  <div id="goto-address-panel" cl***REMOVED***="hide panel panel-medium">
+  <!-- Export panel -->
+  <div id="export-panel" ng-show="showExport" cl***REMOVED***="panel panel-large">
+    <h3>Export to KML</h3>
+    <form cl***REMOVED***="form">
+      <h4>Select Layers</h4>
+      <div cl***REMOVED***="control-group">
+        <div cl***REMOVED***="controls">
+          <label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
+            <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)">{{layer.name}}
+          </label>
+        </div>
+      </div>
+      <div cl***REMOVED***="top-gap">
+
+        <i cl***REMOVED***="icon-filter icon-sage pull-left icon-spacer"></i><h4>Filter output</h4>
+      </div>
+    </form>
+    <button cl***REMOVED***="btn btn-inverse" ng-click="closeExport()" ngm-tap="export()">Cancel</button>
+    <button cl***REMOVED***="btn" ng-click="export()" ngm-tap="export()">Export</button>
+  </div>
+
+  <div id="goto-address-panel" ng-show="showGoToAddress" cl***REMOVED***="panel panel-medium">
     <form cl***REMOVED***="form-horizontal">
       <div cl***REMOVED***="control-group">
         <label cl***REMOVED***="control-label" for="address">Go to Address</label>
@@ -95,14 +115,14 @@
     </form>
   </div>
 
-  <div id="refresh-panel" cl***REMOVED***="hide panel panel-small">
+  <div id="refresh-panel" ng-show="showRefresh" cl***REMOVED***="panel panel-small">
     <i cl***REMOVED***="icon-spin icon-spinner icon-large"></i> Synchronizing
     <span>
       <button cl***REMOVED***="btn" ng-click="dismissRefresh()" ngm-tap="dismissRefresh()">Ok</button>
     </span>
   </div>
 
-  <div id="fft-panel" cl***REMOVED***="hide panel panel-medium">
+  <div id="fft-panel" ng-show="showFFT" cl***REMOVED***="panel panel-medium">
     <h3>Friendly Force Tracking</h3>
     <span>
       <button cl***REMOVED***="btn btn-inverse" ng-click="dismissFft()" ngm-tap="dismissFft()">Cancel</button>

@@ -21,6 +21,13 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
   $scope.featureLayers = [];
   $scope.imageryLayers = [];
 
+  /* Booleans for the ng-show attribues on the panels, toggling these will show and hide the map panels. */
+  $scope.showSettings = false;
+  $scope.showGoToAddress = false;
+  $scope.showRefresh = false;
+  $scope.showFFT = false;
+  $scope.showExport = false;
+
   /* Commented out for PDC
   $scope.imageryLayers = [{
     id: 1,
@@ -69,7 +76,7 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
     }
   }
 
-  $scope.$watch("$scope.observationId", function (oldValue, newValue) {
+  $scope.$watch("observationId", function (oldValue, newValue) {
     console.log("Observation ID changed " + $scope.observationId);
   }, true);
 
@@ -148,18 +155,17 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
 
   $scope.openSettings = function () {
     console.log("in open settings");
-    $('#settings-panel').removeCl***REMOVED***('hide');
+    $scope.showSettings = true;
   }
 
   $scope.closeSettings = function () {
-    console.log("in new observation");
-    $('#settings-panel').addCl***REMOVED***('hide');
+    console.log("closing settings");
+    $scope.showSettings = false;
   }
 
   $scope.saveSettings = function () {
-    console.log("in new observation");
-    // add code to send the observation to the server here
-    $('#settings-panel').addCl***REMOVED***('hide');
+    console.log("saving settings");
+    $scope.showSettings = false;
   }
 
   $scope.newObservation = function () {
@@ -169,17 +175,12 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
   
   $scope.openGotoAddress = function () {
     console.log("in goto address");
-    $('#goto-address-panel').removeCl***REMOVED***('hide');
+    $scope.showGoToAddress = true;
   }
 
   $scope.dismissGotoAddress = function () {
     console.log("in goto address");
-    $('#goto-address-panel').addCl***REMOVED***('hide');
-  }
-
-  $scope.gotoAddress = function () {
-    console.log("in goto address");
-    $('#goto-address-panel').addCl***REMOVED***('hide');
+    $scope.showGoToAddress = false;
   }
 
   $scope.refreshPoints = function () {
@@ -208,17 +209,32 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
 
   $scope.dismissRefresh = function () {
     console.log("in refresh points");
-    $('#refresh-panel').addCl***REMOVED***('hide');
+    $scope.showRefresh = false;
   }
 
   $scope.fft = function() {
-    $('#fft-panel').removeCl***REMOVED***('hide'); 
     console.log("inFFT");
+    $scope.showFFT = true;
   }
 
   $scope.dismissFft = function() {
-    $('#fft-panel').addCl***REMOVED***('hide'); 
     console.log("inFFT");
+    $scope.showFFT = false;
+  }
+
+  $scope.openExport = function () {
+    console.log("opening export");
+    $scope.showExport = true;
+  }
+
+  $scope.closeExport = function () {
+    console.log("closing export panel");
+    $scope.showExport = false;
+  }
+
+  $scope.export = function () {
+    console.log("exporting features to KML");
+    $scope.closeExport();
   }
 
   // Calls to make when the page is loaded

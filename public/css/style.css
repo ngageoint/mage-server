@@ -71,6 +71,10 @@ body {
     margin-bottom: 9px;
 }
 
+.icon-spacer {
+    margin-right: 10px;
+}
+
 .icon-brand {
     color: #FFF;
     background-image: none;
