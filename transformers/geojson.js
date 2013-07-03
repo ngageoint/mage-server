@@ -2,7 +2,7 @@ var include = function(property, fields) {
   return fields.indexOf(property) != -1;
 }
 
-exports.transformFeature = function(feature, ret, options) {
+var transformFeature = function(feature, ret, options) {
   delete ret._id;
   delete ret.__v;
 
@@ -19,6 +19,8 @@ exports.transformFeature = function(feature, ret, options) {
 
   ret.type = "Feature";
 }
+
+exports.transformFeature = transformFeature;
 
 exports.transform = function(features, properties) {
   var response = { type: "FeatureCollection",
