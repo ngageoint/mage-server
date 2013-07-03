@@ -26,6 +26,7 @@ LocationSchema.set("toJSON", {
   transform: geoJSON.transformFeature
 });
 
+LocationSchema.index({geometry: "2dsphere"});
 LocationSchema.index({'properties.createdOn': 1});
 LocationSchema.index({'properties.updatedOn': 1});
 LocationSchema.index({'properties.user': 1, 'properties.createdOn': 1});

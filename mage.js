@@ -39,7 +39,7 @@ app.configure(function () {
   app.use(express.static(path.join(__dirname, "public")));
   app.use(function(err, req, res, next) {
     console.error(err.stack);
-    res.send(500, 'Internal server error, please contact SAGE administrator.');
+    res.send(500, 'Internal server error, please contact MAGE administrator.');
   });
 });
 
