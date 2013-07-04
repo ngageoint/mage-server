@@ -229,6 +229,19 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     FeatureService.saveFeature($scope.currentLayerId, obs, operation)
       .success(function (data) {
         console.log('observation created');
+        $scope.showObservation = false;
+        if (operation == "addFeatures") {
+            $scope.newFeature = {
+              type: "Feature",
+              geometry: {
+                type: "Point",
+                coordinates: [$scope.marker.lng, $scope.marker.lat]
+              },
+              properties: {
+                OBJECTID: objectId
+              }
+            } 
+          }
       });
   }
   
