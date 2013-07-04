@@ -8,6 +8,8 @@ module.exports = function(app, auth) {
   var p***REMOVED***port = auth.p***REMOVED***port;
   var strategy = auth.strategy;
 
+  var emailRegex = /^[^\s@]+@[^\s@]+\./;
+
   var validateRoleParams = function(req, res, next) {
     var roleId = req.param('roleId');
     if (!roleId) {
@@ -117,6 +119,11 @@ module.exports = function(app, auth) {
 
       var email = req.param('email');
       if (email) {
+        // validate they at least tried to enter a valid email
+        if (!email.match(emailRegex)) {
+          return res.send(400, 'Please enter a valid email address');
+        }
+
         user.email = email;
       }
 

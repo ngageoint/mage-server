@@ -1,25 +1,21 @@
-var express = require("express");
-var mongoose = require('mongoose');
-var path = require("path");
-var fs = require('fs-extra');
-var async = require('async');
-var argv = require('optimist')
-  .default('a', 'local-uid')
-  .default('d', '/var/lib/sage/attachments')
-  .argv;
+var express = require("express")
+  , mongoose = require('mongoose')
+  , path = require("path")
+  , fs = require('fs-extra')
+  , config = require('config.json');
 
 // Create directory for storing SAGE media attachments
-var attachmentBase = argv.d + '/';
+var attachmentBase = config.server.attachmentBaseDirectory;
 fs.mkdirp(attachmentBase, function(err) {
   if (err) {
-    console.error("Could not create directory to store SAGE media attachments. "  + err);
+    console.error("Could not create directory to store MAGE media attachments. "  + err);
   } else {
     console.log("Using '" + attachmentBase + "' as base directory for feature attachments.");
   }
 });
 
 // Configure authentication
-var auth = require('./auth/authentication')(argv.a);
+var auth = require('./auth/authentication')(config.api.authentication.strategy);
 console.log('Authentication: ' + auth.strategy);
 
 // Configuration of the MAGE Express server
@@ -30,7 +26,7 @@ app.configure(function () {
   });
   mongoose.set('debug', true);
 
-  app.set('attachmentBase', attachmentBase);
+  app.set('config', config);
 
   app.use(express.bodyParser());
   app.use(express.methodOverride());
