@@ -50,6 +50,17 @@ exports.getDeviceById = function(id, callback) {
   });
 }
 
+exports.getDeviceByUid = function(uid, callback) {
+  var conditions = {uid: uid};
+  Device.findOne(uid, function(err, device) {
+    if (err) {
+      console.log('Error finding device for id: ' + id + ' err: ' + err);
+    }
+
+    callback(err, device);
+  });
+}
+
 exports.getDevices = function(callback) {
   var query = {};
   Device.find(query, function (err, devices) {

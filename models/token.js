@@ -1,8 +1,9 @@
 var crypto = require('crypto')
-  , mongoose = require('mongoose');
+  , mongoose = require('mongoose')
+  , config = require('../config.json');
 
 // Token expiration in msecs
-var tokenExpiration = 8 * 60 * 60 * 1000;
+var tokenExpiration = config.server.token.expiration * 1000;
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema; 

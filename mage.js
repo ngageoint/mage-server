@@ -2,7 +2,7 @@ var express = require("express")
   , mongoose = require('mongoose')
   , path = require("path")
   , fs = require('fs-extra')
-  , config = require('config.json');
+  , config = require('./config.json');
 
 // Create directory for storing SAGE media attachments
 var attachmentBase = config.server.attachmentBaseDirectory;
