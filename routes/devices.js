@@ -38,7 +38,7 @@ module.exports = function(app, auth) {
 
   // get device
   app.get(
-    '/api/devices/:deviceUid', 
+    '/api/devices/:deviceId', 
     access.hasPermission('READ_DEVICE'),
     function (req, res) {
       res.json(req.device);
@@ -63,7 +63,7 @@ module.exports = function(app, auth) {
 
   // Update a device
   app.put(
-    '/api/devices/:deviceUid',
+    '/api/devices/:deviceId',
     access.hasPermission('UPDATE_DEVICE'),
     validateDeviceParams, 
     function(req, res) {
@@ -85,7 +85,7 @@ module.exports = function(app, auth) {
 
   // Delete a device
   app.delete(
-    '/api/devices/:deviceUid', 
+    '/api/devices/:deviceId', 
     access.hasPermission('DELETE_DEVICE'),
     function(req, res) {
       Device.deleteDevice(req.device, function(err, device) {

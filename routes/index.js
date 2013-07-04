@@ -4,7 +4,8 @@ module.exports = function(app, auth) {
     , User = require('../models/user')
     , Role = require('../models/role')
     , Device = require('../models/device')
-    , Layer = require('../models/layer');
+    , Layer = require('../models/layer')
+    , Feature = require('../models/feature');
 
   // TODO tmp error calls to test error handling
   app.get('/api/error/null', function(req, res, next) {
@@ -59,8 +60,8 @@ module.exports = function(app, auth) {
   });
 
   // Grab the device for any endpoint that uses deviceId
-  app.param('deviceUid', function(req, res, next, deviceUid) {
-      Device.getDeviceByUid(deviceUid, function(err, device) {
+  app.param('deviceId', function(req, res, next, deviceId) {
+      Device.getDeviceById(deviceId, function(err, device) {
         if (!device) return res.send('Device not found', 404);
         req.device = device;
         next();
@@ -110,9 +111,9 @@ module.exports = function(app, auth) {
     next();
   });
 
-  app.param('featureObjectId', /^\d+$/); //ensure featureObjectId is a number
 
   // Grab the feature for any endpoint that uses featureObjectId
+  app.param('featureObjectId', /^\d+$/); //ensure featureObjectId is a number
   app.param('featureObjectId', function(req, res, next, objectId) {
     var id = parseInt(objectId, 10);
     Feature.getFeatureByObjectId(req.layer, id, function(feature) {

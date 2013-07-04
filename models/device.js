@@ -39,11 +39,10 @@ DeviceSchema.pre('save', function(next) {
 // Creates the Model for the User Schema
 var Device = mongoose.model('Device', DeviceSchema);
 
-exports.getDeviceByUid = function(uid, callback) {
-  var query = {uid: uid};
-  Device.findOne(query, function(err, device) {
+exports.getDeviceById = function(id, callback) {
+  Device.findById(id, function(err, device) {
     if (err) {
-      console.log('Error finding device for uid: ' + uid + ' err: ' + err);
+      console.log('Error finding device for id: ' + id + ' err: ' + err);
     }
 
     callback(err, device);
