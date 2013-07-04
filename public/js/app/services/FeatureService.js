@@ -8,7 +8,7 @@
   In most cases, for MAGE, that is going to be the map controller.
 */
 angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
-  .factory('featureService', ['$http', 'appConstants', 'mageLib',
+  .factory('FeatureService', ['$http', 'appConstants', 'mageLib',
     function ($http, appConstants, mageLib) {
       var featureServiceFunctions = {};
 
@@ -23,7 +23,7 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
           success or failure.
       */
       featureServiceFunctions.saveObservation = function (layerId, observation, operation) {
-        return $http.post(appConstants.rootUrl + '/FeatureServer/' + layerId + '/addFeatures',
+        return $http.post(appConstants.rootUrl + '/FeatureServer/' + layerId + '/addFeatures?access_token=' + mageLib.getLocalItem('token'),
           "features=" + JSON.stringify(observation), 
           {headers: {"Content-Type": "application/x-www-form-urlencoded"}});
 
