@@ -1,6 +1,6 @@
 'use strict';
 
-mage.directive('observation', function($http, $scope, appConstants) {
+mage.directive('observation', function ($http, $scope, $element, $attrs, appConstants) {
   return {
     restrict: "A",
     templateUrl: appConstants.rootUrl + "/js/app/partials/observation-template.html",

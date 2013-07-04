@@ -4,7 +4,7 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($scope, $log, $http, $injector, appConstants, teams, levels, observationTypes, mageLib) {
+function MapController($scope, $log, $http, $location, $injector, appConstants, teams, levels, observationTypes, mageLib, featureService) {
   /* Some map defaults */
   $scope.center = { lat: 39.8282, lng: -98.5795 };
   $scope.marker = { lat: 39.8282, lng: -98.5795 };
@@ -21,15 +21,32 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
   $scope.featureLayers = [];
   $scope.imageryLayers = [];
 
-  /* Booleans for the ng-show attribues on the panels, toggling these will show and hide the map panels. */
+  /* Booleans for the ng-show attribues on the panels, toggling these will show and hide the map panels (i.e. layers, observation, export). */
   $scope.showSettings = false;
   $scope.showGoToAddress = false;
   $scope.showRefresh = false;
-  $scope.showFFT = false;
+  $scope.showLocations = false;
   $scope.showExport = false;
+  $scope.showObservation = false;
 
-  /* Commented out for PDC
-  $scope.imageryLayers = [{
+  /* Observation related variables and enums */
+  $scope.observationTab = 1;
+  $scope.teams = teams; //the next few fill in the selects on the observation form
+  $scope.levels = levels;
+  $scope.observationTypes = observationTypes;
+  $scope.team = teams[0]; // form items
+  $scope.level = levels[0];
+  $scope.observationType = observationTypes[0];
+  $scope.unit = "";
+  $scope.description = "";
+  $scope.files = []; // pre upload
+  $scope.attachments = []; // images loaded from the server
+  $scope.progressVisible = false; // progress bar stuff
+  $scope.progressVisible = 0;
+
+
+  /* Uncomment the following block to enable the Tomnod layers */
+  /*$scope.imageryLayers = [{
     id: 1,
     name: "Digital Globe St Louis Map", 
     enabled: false, 
@@ -69,8 +86,8 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
       navigator.geolocation.getCurrentPosition(function(position) {
         console.log("lat " + position.coords.latitude + " lon " + position.coords.longitude);
         $scope.$apply(function() {
-          $scope.center = { lat: position.coords.latitude, lng: position.coords.longitude };
           $scope.zoom = 12;
+          $scope.center = { lat: position.coords.latitude, lng: position.coords.longitude };
         });
       });
     }
@@ -95,7 +112,7 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
             });
           });
 
-          $('#settings-panel').removeCl***REMOVED***('hide');
+          $scope.showSettings = true;
       }).
       error(function (data, status, headers, config) {
           $log.log("Error getting layers: " + status);
@@ -129,20 +146,6 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
         console.log('got points');
         layer.featureCollection = data;
         $scope.layer = layer;
-
-          // var crowdrank = data.features;
-          // var markers = $scope.multiMarkers;
-          // for (var i = 0; i <  crowdrank.length; i++) {
-          //   markers[crowdrank[i].properties.tag_id] = {
-          //     lat: crowdrank[i].geometry.coordinates[1],
-          //     lng: crowdrank[i].geometry.coordinates[0], 
-          //     draggable: false, 
-          //     id: crowdrank[i].properties.tag_id, 
-          //     icon_url: crowdrank[i].properties.icon_url, 
-          //     chip_url: crowdrank[i].properties.chip_url, 
-          //     chip_bounds: crowdrank[i].properties.chip_bounds};
-          // }
-          // $scope.multiMarkers = markers;
       })
       .error(function(data, status, headers, config) {
         console.log("Error getting features for layer 'layer.name' : " + status);
@@ -153,6 +156,8 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
     $scope.layer = layer;
   }
 
+
+  /* Settings aka layer panel funcitons */
   $scope.openSettings = function () {
     console.log("in open settings");
     $scope.showSettings = true;
@@ -168,11 +173,30 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
     $scope.showSettings = false;
   }
 
+
+  /* 
+    The observation functions are a mix of copy pasta from the observation directive, hopefully cleaned up a bit
+    and using the FeatureService. May need to be cleaned up after PDC.
+  */
   $scope.newObservation = function () {
     console.log("in new observation");
+    $scope.showObservation = true;
     $scope.observationId = {feature: { properties: {OBJECTID: -1}}};
   }
+
+  $scope.cancelObservation = function () {
+    $scope.showObservation = false;
+    $scope.observationId = {feature: { properties: {OBJECTID: -1}}}; 
+  }
+
+  $scope.saveObservation = function () {
+    // m***REMOVED***age the data
+    // decide whether this is a new observation or an update
+    // make a call to the FeatureService
+  }
   
+
+  /* Goto address, need to implement some geocoding like the android app does, otherwise pull it out for PDC. */
   $scope.openGotoAddress = function () {
     console.log("in goto address");
     $scope.showGoToAddress = true;
@@ -183,6 +207,8 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
     $scope.showGoToAddress = false;
   }
 
+
+  /* Need to sort out how this works with the GeoJSON layers... */
   $scope.refreshPoints = function () {
     // TODO refresh point for selected layers
   //   console.log("in refresh points");
@@ -212,16 +238,20 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
     $scope.showRefresh = false;
   }
 
-  $scope.fft = function() {
-    console.log("inFFT");
-    $scope.showFFT = true;
+
+  /* Locations == FFT */
+  $scope.openLocations = function() {
+    console.log("in showLocations");
+    $scope.showLocations = true;
   }
 
-  $scope.dismissFft = function() {
-    console.log("inFFT");
-    $scope.showFFT = false;
+  $scope.dismissLocations = function() {
+    console.log("in dismissLocations");
+    $scope.showLocations = false;
   }
 
+
+  /* Open and close the export dialog, and handle making the call to get the KML file. */
   $scope.openExport = function () {
     console.log("opening export");
     $scope.showExport = true;
@@ -236,6 +266,7 @@ function MapController($scope, $log, $http, $injector, appConstants, teams, leve
     console.log("exporting features to KML");
     $scope.closeExport();
   }
+
 
   // Calls to make when the page is loaded
   $scope.getFeatureLayers();

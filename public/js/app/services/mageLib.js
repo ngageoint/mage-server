@@ -39,8 +39,9 @@ angular.module('mage.lib', [])
       };
 
       /* From Year of Moo */
-      libFunctions.changeLocation = function(url, force) {
+      libFunctions.changeLocation = function(url) {
         //this will mark the URL change
+        console.log('changing location to: ' + url);
         $location.path(url).replace(); //use $location.path(url).replace() if you want to replace the location instead
 
         /*$scope = $scope || angular.element(document).scope();

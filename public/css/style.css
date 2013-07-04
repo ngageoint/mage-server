@@ -103,6 +103,14 @@ textarea {
     background: #324962;
 }
 
+.btn-success {
+    background: #7a7;
+}
+
+.btn-danger {
+    background: #933;
+}
+
 #panel-login {
     margin-top: 20%;
     margin-left: 45%;

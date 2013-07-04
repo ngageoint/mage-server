@@ -8,6 +8,7 @@ mage.directive('external', function($http, $scope, appConstants) {
       currentLayerId: "=currentlayerid",
     },
     controller: thirdPartyCtrl = function ($scope, $element, $attrs, $http, teams, levels, observationTypes, appConstants) {
+      console.log('thirsd party controller');
       $scope.observation = {}; // need to clean all of this up and figure out how to make it generic
       $scope.icon = "";
       $scope.observationName = "";

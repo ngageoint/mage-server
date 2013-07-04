@@ -27,7 +27,7 @@ Instead of a list of all cl***REMOVED*** selectors,
 you can use the generic selector below, but it's slower:
 [cl***REMOVED****="icon-"] {
 */
-.icon-ok, .icon-remove, .icon-zoom-in, .icon-zoom-out, .icon-camera, .icon-thumbs-up, .icon-globe, .icon-calendar, .icon-cloud-download, .icon-check, .icon-home, .icon-plus, .icon-map, .icon-location, .icon-location-2, .icon-mobile, .icon-filter, .icon-layers, .icon-loop, .icon-user-add, .icon-magic, .icon-stack, .icon-megaphone, .icon-cog, .icon-search, .icon-pencil, .icon-users, .icon-user {
+.icon-ok, .icon-remove, .icon-zoom-in, .icon-zoom-out, .icon-camera, .icon-globe, .icon-calendar, .icon-cloud-download, .icon-check, .icon-home, .icon-plus, .icon-map, .icon-location, .icon-location-2, .icon-mobile, .icon-filter, .icon-layers, .icon-loop, .icon-user-add, .icon-magic, .icon-stack, .icon-megaphone, .icon-cog, .icon-search, .icon-pencil, .icon-users, .icon-user, .icon-list, .icon-thumbs-up, .icon-thumbs-up-2, .icon-save, .icon-floppy {
 	font-family: 'icomoon';
 	speak: none;
 	font-style: normal;
@@ -51,9 +51,6 @@ you can use the generic selector below, but it's slower:
 }
 .icon-camera:before {
 	content: "\f030";
-}
-.icon-thumbs-up:before {
-	content: "\f087";
 }
 .icon-globe:before {
 	content: "\f0ac";
@@ -120,4 +117,19 @@ you can use the generic selector below, but it's slower:
 }
 .icon-user:before {
 	content: "\e00e";
+}
+.icon-list:before {
+	content: "\f03a";
+}
+.icon-thumbs-up:before {
+	content: "\f087";
+}
+.icon-thumbs-up-2:before {
+	content: "\e004";
+}
+.icon-save:before {
+	content: "\f0c7";
+}
+.icon-floppy:before {
+	content: "\e00f";
 }
