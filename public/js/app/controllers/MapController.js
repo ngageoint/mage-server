@@ -4,7 +4,7 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($scope, $log, $http, $location, $injector, appConstants, teams, levels, observationTypes, mageLib, featureService) {
+function MapController($scope, $log, $http, $location, $injector, appConstants, teams, levels, observationTypes, mageLib, FeatureService) {
   /* Some map defaults */
   $scope.center = { lat: 39.8282, lng: -98.5795 };
   $scope.marker = { lat: 39.8282, lng: -98.5795 };
@@ -190,9 +190,39 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   }
 
   $scope.saveObservation = function () {
-    // m***REMOVED***age the data
-    // decide whether this is a new observation or an update
+    // Build the observation object
+    var operation = "";
+    var obs = [{
+      "geometry": {
+        "x": $scope.marker.lng, 
+        "y": $scope.marker.lat
+      },
+      "attributes": {
+        "EVENTDATE":new Date().getTime(),
+        "TYPE":$scope.observationType.title,
+        "EVENTLEVEL":$scope.level.color,
+        "TEAM":$scope.team.name,
+        "DESCRIPTION":$scope.description,
+        "EVENTCLEAR":0,
+        "UNIT":$scope.unit
+      }
+    }];
+
+    /* check to see if this is this an update or a new observation, if its an update, set the location and ID */
+    if ($scope.observationId.feature.properties.OBJECTID > 0) {
+      operation = "updateFeatures";
+      obs.attributes.OBJECTID = $scope.observationId.feature.properties.OBJECTID;
+      obs.geometry.x = $scope.observation.geometry.coordinates[0];
+      obs.geometry.x = $scope.observation.geometry.coordinates[1];
+    } else {
+      operation = "addFeatures";
+    }
+
     // make a call to the FeatureService
+    FeatureService.saveObservation($scope.currentLayerId, obs, operation)
+      .success(function (data) {
+        console.log('observation created');
+      });
   }
   
 

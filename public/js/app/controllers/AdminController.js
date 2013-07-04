@@ -115,6 +115,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
         console.log('Something bad happened while creating a user...' + status);
       });
     }
+    $scope.showUserForm = false;
   }
 
   $scope.scrollTo = function (id) {
