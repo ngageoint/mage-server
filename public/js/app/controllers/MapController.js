@@ -12,7 +12,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.points = [];
   $scope.multiMarkers = {};
   $scope.externalLayer = "";
-  $scope.observationId = 0;
+  $scope.observation = {};
   $scope.newFeature = null;
 
   /* Data models for the settings */
@@ -80,6 +80,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.currentLayerId = 0;
   $scope.baseLayer = $scope.baseLayers[0];
 
+  // Should move the call to navigator out to mageLib, hand back the location then $scope.apply the results
   $scope.geolocate = function () {
     console.log("in geolocate");
     if (navigator.geolocation) {
@@ -93,8 +94,14 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     }
   }
 
-  $scope.$watch("observationId", function (oldValue, newValue) {
-    console.log("Observation ID changed " + $scope.observationId);
+  $scope.$watch("observation", function (oldValue, newValue) {
+    console.log("Observation changed " + JSON.stringify($scope.observation));
+    if ($scope.observation.feature && $scope.observation.feature.properties.OBJECTID > 0) { //open existing observation
+      $scope.showObservation = true;
+      FeatureService.getFeature
+    } else {
+
+    }
   }, true);
 
   $scope.getFeatureLayers = function () {
@@ -181,12 +188,12 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.newObservation = function () {
     console.log("in new observation");
     $scope.showObservation = true;
-    $scope.observationId = {feature: { properties: {OBJECTID: -1}}};
+    $scope.observation = {feature: { properties: {OBJECTID: -1}}};
   }
 
   $scope.cancelObservation = function () {
     $scope.showObservation = false;
-    $scope.observationId = {feature: { properties: {OBJECTID: -1}}}; 
+    $scope.observation = {feature: { properties: {OBJECTID: -1}}}; 
   }
 
   $scope.saveObservation = function () {
@@ -209,9 +216,9 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     }];
 
     /* check to see if this is this an update or a new observation, if its an update, set the location and ID */
-    if ($scope.observationId.feature.properties.OBJECTID > 0) {
+    if ($scope.observation.feature.properties.OBJECTID > 0) {
       operation = "updateFeatures";
-      obs.attributes.OBJECTID = $scope.observationId.feature.properties.OBJECTID;
+      obs.attributes.OBJECTID = $scope.observation.feature.properties.OBJECTID;
       obs.geometry.x = $scope.observation.geometry.coordinates[0];
       obs.geometry.x = $scope.observation.geometry.coordinates[1];
     } else {
@@ -219,7 +226,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     }
 
     // make a call to the FeatureService
-    FeatureService.saveObservation($scope.currentLayerId, obs, operation)
+    FeatureService.saveFeature($scope.currentLayerId, obs, operation)
       .success(function (data) {
         console.log('observation created');
       });

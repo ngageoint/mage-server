@@ -11,7 +11,7 @@
         <div cl***REMOVED***="nav-collapse collapse">
           <ul cl***REMOVED***="nav">
             <li style="background: #305680"><a href="map.html" style="color:#fff;"><i cl***REMOVED***="icon-map icon-spacer"></i> Map</a></li>
-            <li><a href="{{appConstants.rootUrl}}/#/layers"><i cl***REMOVED***="icon-layers icon-spacer"></i> Layer Manager</a></li>
+            <li><a href="{{appConstants.rootUrl + '/#/layers'}}"><i cl***REMOVED***="icon-layers icon-spacer"></i> Layer Manager</a></li>
             <li><a href="{{appConstants.rootUrl}}/#/admin"><i cl***REMOVED***="icon-cog icon-spacer"></i>  Admin Panel</a></li>
           </ul>
         </div><!--/.nav-collapse -->
@@ -21,14 +21,14 @@
   
   <!-- The map directive -->
   <div cl***REMOVED***="map-wrap">
-    <leaflet marker="marker" center="center" zoom="zoom" multimarkers="multiMarkers" layer="layer" message="message" draggable="true" observationid="observationId" newfeature="newFeature" currentlayerid="currentLayerId"></leaflet>
+    <leaflet marker="marker" center="center" zoom="zoom" multimarkers="multiMarkers" layer="layer" message="message" draggable="true" observationid="observation" newfeature="newFeature" currentlayerid="currentLayerId"></leaflet>
   </div>
 
   <!-- The observation directive, was not wanting to play nice, will sort out after PDC.. -->
-  <!--<div observation observationid="observationId" marker="marker" currentlayerid="currentLayerId" newfeature="newFeature" layers="layers"></div>-->
+  <!--<div observation observationid="observation" marker="marker" currentlayerid="currentLayerId" newfeature="newFeature" layers="layers"></div>-->
 
   <!-- Third party observation dialog. Might be a good idea to generalize all the things and make them one observation panel at some point in time. -->
-  <div external observationid="observationId" currentlayerid="currentLayerId" layers="layers"></div>
+  <div external observationid="observation" currentlayerid="currentLayerId" layers="layers"></div>
   
   <!-- layer picker button -->
   <button cl***REMOVED***="btn" id="settings" ng-click="openSettings()" ngm-tap="openSettings()"><i cl***REMOVED***="icon-layers icon-sage"></i></button>

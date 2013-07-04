@@ -22,7 +22,7 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
         @return A promise of the REST call that the caller can use to determine what to do with the 
           success or failure.
       */
-      featureServiceFunctions.saveObservation = function (layerId, observation, operation) {
+      featureServiceFunctions.saveFeature = function (layerId, observation, operation) {
         return $http.post(appConstants.rootUrl + '/FeatureServer/' + layerId + '/addFeatures?access_token=' + mageLib.getLocalItem('token'),
           "features=" + JSON.stringify(observation), 
           {headers: {"Content-Type": "application/x-www-form-urlencoded"}});
@@ -37,7 +37,7 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
         @param {File} file: The file that you would like to create as an attachment.
         @return A promise of the REST call that the caller can use to determine success or failuer and act accordingly.
       */
-      featureServiceFunctions.uploadFile = function (layerId, observationId, file) {
+      featureServiceFunctions.uploadAttachment = function (layerId, observationId, file) {
 
       }
 
@@ -46,7 +46,7 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
         @param {Number} The layer that you would like to retrieve all of the features from.
         @return A promise of the REST call to get all of the features, so the caller can handle the success for failuer accordingly.
       */
-      featureServiceFunctions.getObservations = function (layerId) {
+      featureServiceFunctions.getFeatures = function (layerId) {
 
       };
 
@@ -56,7 +56,7 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
         @param {Number} observationId: The observation that you would like to retrieve.
         @return A promise of the REST call.
       */
-      featureServiceFunctions.getObservation = function (layerId, observationId) {
+      featureServiceFunctions.getFeature = function (layerId, observationId) {
 
       };
 
