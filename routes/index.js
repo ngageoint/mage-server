@@ -7,26 +7,13 @@ module.exports = function(app, auth) {
     , Layer = require('../models/layer')
     , Feature = require('../models/feature');
 
-  // TODO tmp error calls to test error handling
-  app.get('/api/error/null', function(req, res, next) {
-    var test = null;
-    test.doesNotExist;
-  });
-
-  app.get('/api/error/error', function(req, res, next) {
-    var error = new Error('Some general error message here');
-    throw(error);
-  });
-
-  app.get('/api/error/callback', function(req, res, next) {
-    fs.readdir(__dirname, function() {
-      var error = new Error('In callback: some general error message here');
-      throw(error);
-    });
-  });
-
   // Protect all FeatureServer routes with token authentication
   app.all('/FeatureServer*', auth.p***REMOVED***port.authenticate('bearer', {session: false}));
+
+  app.get('/api', function(req, res) {
+    var config = app.get('config');
+    res.json(config.api);
+  });
 
   // Dynamically import all routes
   fs.readdirSync(__dirname).forEach(function(file) {

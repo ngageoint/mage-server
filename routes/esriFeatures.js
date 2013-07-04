@@ -9,6 +9,7 @@ module.exports = function(app, auth) {
   var p***REMOVED***port = auth.p***REMOVED***port;
   var geometryFormat = require('../format/geometryFormat');
   var esri = require('../transformers/esri')(geometryFormat);
+  var attachmentBase = app.get('config').server.attachmentBaseDirectory;
 
   function EsriAttachments() {
     var content = {
@@ -294,7 +295,7 @@ module.exports = function(app, auth) {
           });
 
           feature.attachments.forEach(function(attachment) {
-            var path = app.get('attachmentBase') + attachment.relativePath
+            var path = attachmentBase + attachment.relativePath
             fs.remove(path + attachment.name, function(err) {
               if (err) {
                 console.error("Could not remove attachment file " + path + attachment.name + ". ", err);
@@ -355,7 +356,7 @@ module.exports = function(app, auth) {
           return res.json(errorResponse);
         }
 
-        var path = app.get('attachmentBase') + attachment.relativePath;
+        var path = attachmentBase + attachment.relativePath;
         fs.readFile(path, function(err, data) {
           if (err) next(err);
 
@@ -382,12 +383,13 @@ module.exports = function(app, auth) {
 
         var relativePath = createAttachmentPath(req.layer, req.files.attachment)
         // move file upload to its new home
-        fs.mkdirp(app.get('attachmentBase') + relativePath, function(err) {
+        fs.mkdirp(attachmentBase + relativePath, function(err) {
           if (err) return next(err);
 
           req.files.attachment.id = id;
+          // TODO need new file name
           req.files.attachment.relativePath = relativePath + "/" + id + "_" + req.files.attachment.filename;
-          fs.rename(req.files.attachment.path, app.get('attachmentBase') + req.files.attachment.relativePath, function(err) {
+          fs.rename(req.files.attachment.path, app.get(attachmentBase + req.files.attachment.relativePath, function(err) {
             if (err) return next(err);
 
             Feature.addAttachment(req.layer, req.objectId, req.files.attachment, function(err, attachment) {
@@ -432,12 +434,12 @@ module.exports = function(app, auth) {
 
       var relativePath = createAttachmentPath(req.layer, req.files.attachment)
       // move file upload to its new home
-      fs.mkdirp(app.get('attachmentBase') + relativePath, function(err) {
+      fs.mkdirp(attachmentBase + relativePath, function(err) {
         if (err) return next(err);
 
         req.files.attachment.id = attachmentId;
         req.files.attachment.relativePath = relativePath + "/" + attachmentId + "_" + req.files.attachment.filename;
-        fs.rename(req.files.attachment.path, app.get('attachmentBase') + req.files.attachment.relativePath, function(err) {
+        fs.rename(req.files.attachment.path, attachmentBase + req.files.attachment.relativePath, function(err) {
           if (err) return next(err);
 
           Feature.updateAttachment(req.layer, attachmentId, req.files.attachment, function(err) {

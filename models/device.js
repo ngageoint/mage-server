@@ -11,6 +11,7 @@ var DeviceSchema = new Schema({
     uid: { type: String, required: true, unique: true },
     name: { type: String, required: true, unique: true },
     description: { type: String, required: false },
+    registered: { type: Boolean, required: true },
     poc: Schema.Types.ObjectId,
   },{ 
     versionKey: false
