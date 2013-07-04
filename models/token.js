@@ -45,7 +45,7 @@ exports.getUserForToken = function(token, callback) {
       var user = null;
 
       if (!token || !token.user) {
-        return callback(new Error('No valid token: ' + token));
+        return callback(null, null);
       }
 
       token.user.populate('role', function(err, user) {
