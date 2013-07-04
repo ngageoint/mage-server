@@ -11,8 +11,8 @@
         <div cl***REMOVED***="nav-collapse collapse">
           <ul cl***REMOVED***="nav">
             <li style="background: #305680"><a href="map.html" style="color:#fff;"><i cl***REMOVED***="icon-map icon-spacer"></i> Map</a></li>
-            <li><a href="/#/layers"><i cl***REMOVED***="icon-layers icon-spacer"></i> Layer Manager</a></li>
-            <li><a href="/#/admin"><i cl***REMOVED***="icon-cog icon-spacer"></i>  Admin Panel</a></li>
+            <li><a href="{{appConstants.rootUrl}}/#/layers"><i cl***REMOVED***="icon-layers icon-spacer"></i> Layer Manager</a></li>
+            <li><a href="#/admin"><i cl***REMOVED***="icon-cog icon-spacer"></i>  Admin Panel</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -24,8 +24,8 @@
     <leaflet marker="marker" center="center" zoom="zoom" multimarkers="multiMarkers" layer="layer" message="message" draggable="true" observationid="observationId" newfeature="newFeature" currentlayerid="currentLayerId"></leaflet>
   </div>
 
-  <!-- The observation panel dialog, currently only works for looking at/editing points. Need to circle back around and get it tied in to work for creating points -->
-  <div observation observationid="observationId" marker="marker" currentlayerid="currentLayerId" newfeature="newFeature" layers="layers"></div>
+  <!-- The observation directive, was not wanting to play nice, will sort out after PDC.. -->
+  <!--<div observation observationid="observationId" marker="marker" currentlayerid="currentLayerId" newfeature="newFeature" layers="layers"></div>-->
 
   <!-- Third party observation dialog. Might be a good idea to generalize all the things and make them one observation panel at some point in time. -->
   <div external observationid="observationId" currentlayerid="currentLayerId" layers="layers"></div>
@@ -40,7 +40,7 @@
     <button cl***REMOVED***="btn" id="goto-address" ng-click="openGotoAddress()" ngm-tap="openGotoAddress()"><i cl***REMOVED***="icon-search icon-sage"></i></button>
     <button cl***REMOVED***="btn" id="new-observation" ng-click="newObservation()" ngm-tap="newObservation()"><i cl***REMOVED***="icon-plus icon-sage"></i></button>
     <button cl***REMOVED***="btn" id="refresh-points" ng-click="refreshPoints()" ngm-tap="refreshPoints()"><i cl***REMOVED***="icon-loop icon-sage"></i></button>
-    <button cl***REMOVED***="btn" id="fft-btn" ng-click="fft()" ngm-tap="fft()"><i cl***REMOVED***="icon-users icon-sage"></i></button>
+    <button cl***REMOVED***="btn" id="locations-btn" ng-click="openLocations()" ngm-tap="openLocations()"><i cl***REMOVED***="icon-users icon-sage"></i></button>
   </div>
 
   <!-- Panels -->
@@ -122,11 +122,98 @@
     </span>
   </div>
 
-  <div id="fft-panel" ng-show="showFFT" cl***REMOVED***="panel panel-medium">
-    <h3>Friendly Force Tracking</h3>
+  <div id="location-panel" ng-show="showLocations" cl***REMOVED***="panel panel-medium">
+    <h3>Team Locations</h3>
     <span>
-      <button cl***REMOVED***="btn btn-inverse" ng-click="dismissFft()" ngm-tap="dismissFft()">Cancel</button>
-      <button cl***REMOVED***="btn" ng-click="dismissFft()" ngm-tap="dismissFft()">Go</button>
+      <button cl***REMOVED***="btn btn-inverse" ng-click="dismissLocations()" ngm-tap="dismissLocations()">Cancel</button>
+      <button cl***REMOVED***="btn" ng-click="dismissLocations()" ngm-tap="dismissLocations()">Go</button>
     </span>
   </div>
+
+  <!-- This is bad copy pasta. Was having some trouble with directives and loading templates... -->
+  <div id="observation-panel" ng-show="showObservation" cl***REMOVED***="tabbable tabs-below panel panel-large">
+    <ul cl***REMOVED***="nav nav-pills">
+      <li ng-cl***REMOVED***="{active: observationTab == 1}">
+        <a href="" ng-click="observationTab = 1;">
+          <i cl***REMOVED***="icon-list" style="background-image: none;"></i> 
+          Details
+        </a>
+      </li>
+      <li ng-cl***REMOVED***="{active: observationTab == 2}">
+        <a href="" ng-click="observationTab = 2;">
+          <i cl***REMOVED***="icon-camera" style="background-image: none;"></i> 
+          Media
+        </a>
+      </li>
+    </ul>
+    <div cl***REMOVED***="tab-content" ng-show="observationTab == 1">
+      <form cl***REMOVED***="form-horizontal">
+        <div cl***REMOVED***="control-group">
+          <label cl***REMOVED***="control-label" for="type">Layer</label>
+          <div cl***REMOVED***="controls">
+            <select ng-model="currentLayerId" ng-selected="currentLayerId" ng-options="layer.id as layer.name for layer in layers"></select>
+          </div>
+        </div>
+        <div cl***REMOVED***="control-group">
+          <label cl***REMOVED***="control-label" for="type">Type</label>
+          <div cl***REMOVED***="controls">
+            <select ng-model="observationType" ng-selected="observationType" ng-options="type.title for type in observationTypes"></select>
+          </div>
+        </div>
+        <div cl***REMOVED***="control-group">
+          <label cl***REMOVED***="control-label" for="level">Level</label>
+          <div cl***REMOVED***="controls">
+            <select ng-model="level" ng-selected="level" ng-options="level.color for level in levels"></select>
+          </div>
+        </div>
+        <div cl***REMOVED***="control-group">
+          <label cl***REMOVED***="control-label" for="team">Team</label>
+          <div cl***REMOVED***="controls">
+            <select ng-model="team" ng-selected="team" ng-options="team.name for team in teams"></select>
+          </div>
+        </div>
+        <div cl***REMOVED***="control-group">
+          <label cl***REMOVED***="control-label" for="unit">Unit</label>
+          <div cl***REMOVED***="controls">
+            <input ng-model="unit"/>
+          </div>
+        </div>
+        <div cl***REMOVED***="control-group">
+          <label cl***REMOVED***="control-label" for="unit">Description</label>
+          <div cl***REMOVED***="controls">
+            <textarea ng-model="description"></textarea>
+          </div>
+        </div>
+      </form>    
+      <span>
+        <button cl***REMOVED***="btn btn-inverse" ng-click="cancelObservation()" ngm-tap="cancelObservation()">Cancel</button>
+        <button cl***REMOVED***="btn" ng-click="saveObservation()" ngm-tap="saveObservation()"><i cl***REMOVED***="icon-save"></i> Save</button>
+      </span>
+    </div>
+    <!-- Start of tab2 -->
+    <div cl***REMOVED***="tab-content" ng-show="observationTab == 2" style="height: 900px;">
+      <form>
+        <div cl***REMOVED***="control-group">
+          <label cl***REMOVED***="control-label" for="unit">Select File</label>
+          <div cl***REMOVED***="controls">
+            <input type="file" id="file-upload" accept="image/*" capture="camera" ng-model-instant multiple onchange="angular.element(this).scope().setFiles(this)">
+          </div>
+          <div ng-show="progressVisible">
+            <div cl***REMOVED***="percent">{{progress}}%</div>
+            <div cl***REMOVED***="progress-bar">
+                <div cl***REMOVED***="uploaded" ng-style="{'width': progress+'%'}"></div>
+            </div>
+          </div>
+        </div>
+      </form>
+      <span>
+        <button cl***REMOVED***="btn btn-inverse" ng-click="cancelObservation()" ngm-tap="cancelObservation()">Cancel</button>
+        <button cl***REMOVED***="btn" ng-click="saveObservation()" ngm-tap="saveObservation()"><i cl***REMOVED***="icon-save"></i> Save</button>
+      </span>
+      <hr>
+      <div cl***REMOVED***="attachment" ng-repeat="attachment in attachments">
+        <img src="{{attachmentUrl}}{{attachment.id}}">
+      </div>
+    </div>
+  </div> <!-- end of observation panel -->
 </div>

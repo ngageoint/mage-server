@@ -116,7 +116,7 @@ html, body, div.leaflet-container {
 	z-index: 1999;
 }
 
-#fft-btn {
+#locations-btn {
 	position: absolute;
 	height: 50px;
 	width: 50px;
