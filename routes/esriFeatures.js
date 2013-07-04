@@ -4,12 +4,13 @@ module.exports = function(app, auth) {
     , fs = require('fs-extra')
     , Counter = require('../models/counter')
     , Feature = require('../models/feature')
-    , access = require('../access');
+    , access = require('../access')
+    , config = require('../config.json');
 
   var p***REMOVED***port = auth.p***REMOVED***port;
   var geometryFormat = require('../format/geometryFormat');
   var esri = require('../transformers/esri')(geometryFormat);
-  var attachmentBase = app.get('config').server.attachmentBaseDirectory;
+  var attachmentBase = config.server.attachmentBaseDirectory;
 
   function EsriAttachments() {
     var content = {
@@ -389,7 +390,7 @@ module.exports = function(app, auth) {
           req.files.attachment.id = id;
           // TODO need new file name
           req.files.attachment.relativePath = relativePath + "/" + id + "_" + req.files.attachment.filename;
-          fs.rename(req.files.attachment.path, app.get(attachmentBase + req.files.attachment.relativePath, function(err) {
+          fs.rename(req.files.attachment.path, attachmentBase + req.files.attachment.relativePath, function(err) {
             if (err) return next(err);
 
             Feature.addAttachment(req.layer, req.objectId, req.files.attachment, function(err, attachment) {

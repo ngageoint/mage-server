@@ -3,11 +3,13 @@ module.exports = function(app, auth) {
     , Token = require('../models/token')
     , Role = require('../models/role')
     , Team = require('../models/team')
-    , access = require('../access');
+    , access = require('../access')
+    , config = require('../config.json');
 
   var p***REMOVED***port = auth.p***REMOVED***port;
   var strategy = auth.strategy;
 
+  var p***REMOVED***wordLength = config.api.authentication.p***REMOVED***wordMinLength;
   var emailRegex = /^[^\s@]+@[^\s@]+\./;
 
   var validateRoleParams = function(req, res, next) {
@@ -129,16 +131,20 @@ module.exports = function(app, auth) {
 
       var p***REMOVED***word = req.param('p***REMOVED***word');
       if (!p***REMOVED***word) {
-        res.send(400, invalidResponse('p***REMOVED***word'));
+        return res.send(400, invalidResponse('p***REMOVED***word'));
       }
 
       var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
       if (!p***REMOVED***wordconfirm) {
-        res.send(400, invalidResponse('p***REMOVED***wordconfirm'));
+        return res.send(400, invalidResponse('p***REMOVED***wordconfirm'));
       }
 
       if (p***REMOVED***word != p***REMOVED***wordconfirm) {
-        res.send(400, 'p***REMOVED***words do not match');
+        return res.send(400, 'p***REMOVED***words do not match');
+      }
+
+      if (p***REMOVED***word.length < p***REMOVED***wordLength) {
+        return res.send(400, 'p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
       }
 
       user.p***REMOVED***word = p***REMOVED***word;
