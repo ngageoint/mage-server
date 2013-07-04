@@ -214,8 +214,8 @@
                 marker.on("click", function(e) {
                   scope.$apply(function(s) {
                     scope.observationId = mark_dat.id;
-                    console.log("up in the angular directive marker id [" + mark_dat.id + "] observationid [" + scope.observationId + "]");
                   });
+                  console.log("up in the angular directive marker id [" + mark_dat.id + "] observationid [" + scope.observationId + "]");
                 });
 
                 map.addLayer(marker);
