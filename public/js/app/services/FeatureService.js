@@ -24,7 +24,7 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
       */
       featureServiceFunctions.saveFeature = function (layerId, observation, operation) {
         return $http.post(appConstants.rootUrl + '/FeatureServer/' + layerId + '/addFeatures?access_token=' + mageLib.getLocalItem('token'),
-          "features=" + JSON.stringify(observation), 
+          "features=[" + JSON.stringify(observation) + ']', 
           {headers: {"Content-Type": "application/x-www-form-urlencoded"}});
 
       };
@@ -57,7 +57,7 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
         @return A promise of the REST call.
       */
       featureServiceFunctions.getFeature = function (layerId, observationId) {
-
+        return $http.get(appConstants.rootUrl + '/FeatureServer/'+ layerId + '/' + observationId + "?query&outFields=*&access_token=" + mageLib.getLocalItem('token'));
       };
 
       return featureServiceFunctions;

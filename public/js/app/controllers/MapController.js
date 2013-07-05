@@ -44,6 +44,13 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.progressVisible = false; // progress bar stuff
   $scope.progressVisible = 0;
 
+  $scope.observation.attributes = {};
+  $scope.observation.attributes.TEAM = teams[0];
+  $scope.observation.attributes.LEVEL = levels[0];
+  $scope.observation.attributes.TYPE = observationTypes[0];
+  $scope.observation.attributes.UNIT = "";
+  $scope.observation.attributes.DESCRIPTION = "";
+
 
   /* Uncomment the following block to enable the Tomnod layers */
   /*$scope.imageryLayers = [{
@@ -86,10 +93,10 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(position) {
         console.log("lat " + position.coords.latitude + " lon " + position.coords.longitude);
-        //$scope.$apply(function() {
+        $scope.$apply(function() {
           $scope.zoom = 12;
           $scope.center = { lat: position.coords.latitude, lng: position.coords.longitude };
-        //});
+        });
       });
     }
   }
@@ -97,8 +104,11 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.$watch("observation", function (oldValue, newValue) {
     console.log("Observation changed " + JSON.stringify($scope.observation));
     if ($scope.observation.feature && $scope.observation.feature.properties.OBJECTID > 0) { //open existing observation
-      $scope.showObservation = true;
-      FeatureService.getFeature
+      FeatureService.getFeature($scope.observation.layer.id, $scope.observation.feature.properties.OBJECTID)
+        .success(function (data) {
+          $scope.observation = data;
+          $scope.showObservation = true;
+        });
     } else {
 
     }
@@ -199,7 +209,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.saveObservation = function () {
     // Build the observation object
     var operation = "";
-    var obs = [{
+    /*var obs = [{
       "geometry": {
         "x": $scope.marker.lng, 
         "y": $scope.marker.lat
@@ -213,12 +223,19 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
         "EVENTCLEAR":0,
         "UNIT":$scope.unit
       }
-    }];
+    }];*/
+
+    $scope.observation.attributes.EVENTDATE = new Date().getTime();
+    $scope.observation.geometry = {
+        "x": $scope.marker.lng, 
+        "y": $scope.marker.lat
+      };
 
     /* check to see if this is this an update or a new observation, if its an update, set the location and ID */
     if ($scope.observation.feature.properties.OBJECTID > 0) {
       operation = "updateFeatures";
       obs.attributes.OBJECTID = $scope.observation.feature.properties.OBJECTID;
+      // may not need to do this
       obs.geometry.x = $scope.observation.geometry.coordinates[0];
       obs.geometry.x = $scope.observation.geometry.coordinates[1];
     } else {
@@ -226,12 +243,12 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     }
 
     // make a call to the FeatureService
-    FeatureService.saveFeature($scope.currentLayerId, obs, operation)
+    FeatureService.saveFeature($scope.currentLayerId, $scope.observation, operation)
       .success(function (data) {
         console.log('observation created');
         var objectId = data.addResults ? data.addResults[0].objectId : data.updateResults[0].objectId;
         $scope.showObservation = false;
-        
+
         if (operation == "addFeatures") {
             $scope.newFeature = {
               type: "Feature",
