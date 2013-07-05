@@ -46,7 +46,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
 
   $scope.observation.attributes = {};
   $scope.observation.attributes.TEAM = teams[0];
-  $scope.observation.attributes.LEVEL = levels[0];
+  $scope.observation.attributes.EVENTLEVEL = levels[0];
   $scope.observation.attributes.TYPE = observationTypes[0];
   $scope.observation.attributes.UNIT = "";
   $scope.observation.attributes.DESCRIPTION = "";
@@ -110,17 +110,17 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
           /* Since the angular select directive works off of reference, set the TEAM, LEVEL, and TYPE attributes to theie
               corresponsing values from their respective arrays */
           $scope.observation.attributes.TEAM = _.find($scope.teams, function (t) {
-                if(t.name == $scope.observation.attributes.TEAM) {
+                if(t.name == $scope.observation.attributes.TEAM || t.name == $scope.observation.attributes.TEAM.name) {
                   return t;
                 }
               });
           $scope.observation.attributes.LEVEL = _.find($scope.levels, function (l) {
-                if (l.color == $scope.observation.attributes.LEVEL){
+                if (l.color == $scope.observation.attributes.EVENTLEVEL || l.color == $scope.observation.attributes.EVENTLEVEL.color){
                   return l;
                 }
               });
           $scope.observation.attributes.TYPE = _.find($scope.observationTypes, function (o) {
-                if (o.title == $scope.observation.attributes.TYPE){
+                if (o.title == $scope.observation.attributes.TYPE || o.title == $scope.observation.attributes.TYPE.title){
                   return o;
                 }
               });
