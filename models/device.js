@@ -21,6 +21,10 @@ var DeviceSchema = new Schema({
 DeviceSchema.pre('save', function(next) {
   var device = this;
 
+  // TODO this need to be moved somewhere else if we get 
+  // requests to save/register a new device
+  device.registered = true;
+
   // only validate poc if it has been modified (or is new)
   if (!device.poc || !device.isModified('poc')) return next();
 
