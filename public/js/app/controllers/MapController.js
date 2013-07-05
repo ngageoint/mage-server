@@ -245,7 +245,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     // convert back
     $scope.observation.attributes.TEAM = $scope.observation.attributes.TEAM.name;
     $scope.observation.attributes.TYPE = $scope.observation.attributes.TYPE.title;
-    $scope.observation.attributes.LEVEL = $scope.observation.attributes.LEVEL.color;
+    $scope.observation.attributes.EVENTLEVEL = $scope.observation.attributes.EVENTLEVEL.color;
 
     $scope.observation.attributes.EVENTDATE = new Date().getTime();
     $scope.observation.geometry = {
