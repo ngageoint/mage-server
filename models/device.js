@@ -52,7 +52,7 @@ exports.getDeviceById = function(id, callback) {
 
 exports.getDeviceByUid = function(uid, callback) {
   var conditions = {uid: uid};
-  Device.findOne(uid, function(err, device) {
+  Device.findOne(conditions, function(err, device) {
     if (err) {
       console.log('Error finding device for id: ' + id + ' err: ' + err);
     }
