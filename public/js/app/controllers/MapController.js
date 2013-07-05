@@ -107,6 +107,23 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
       FeatureService.getFeature($scope.observation.layer.id, $scope.observation.feature.properties.OBJECTID)
         .success(function (data) {
           $scope.observation = data;
+          /* Since the angular select directive works off of reference, set the TEAM, LEVEL, and TYPE attributes to theie
+              corresponsing values from their respective arrays */
+          $scope.observation.attributes.TEAM = _.find($scope.teams, function (t) {
+                if(t.name == $scope.observation.attributes.TEAM) {
+                  return t;
+                }
+              });
+          $scope.observation.attributes.LEVEL = _.find($scope.levels, function (l) {
+                if (l.color == $scope.observation.attributes.EVENTLEVEL){
+                  return l;
+                }
+              });
+          $scope.observation.attributes.TYPE = _.find($scope.observationTypes, function (o) {
+                if (o.title == $scope.observation.attributes.TYPE){
+                  return o;
+                }
+              });
           $scope.showObservation = true;
         });
     } else {
