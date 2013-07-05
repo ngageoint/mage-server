@@ -1,18 +1,18 @@
 'use strict';
 
-angular.module("mage", ["ui.bootstrap", "leaflet-directive", "mage.***REMOVED***s"]);
+angular.module("mage", ["ui.bootstrap", "leaflet-directive", "mage.***REMOVED***s", "mage.lib"]);
 
 /*
   
 */
-function LayerController($scope, $log, $http, $injector, appConstants) {
+function LayerController($scope, $log, $http, $injector, appConstants, mageLib) {
   $scope.layers = [];
   $scope.layerName = "";
 
   $scope.getLayers = function() {
     console.log('getting layers...');
     //http://ec2-23-21-10-48.compute-1.amazonaws.com/sage
-    $http.get(appConstants.rootUrl + '/FeatureServer/').
+    $http.get(appConstants.rootUrl + '/FeatureServer?access_token=' + mageLib.getLocalItem('token')).
         success(function (data, status, headers, config) {
             $scope.layers = data.layers;
             if(data.layers.length == 0) {
@@ -33,7 +33,7 @@ function LayerController($scope, $log, $http, $injector, appConstants) {
   $scope.saveLayer = function () {
     console.log('in newLayer');
     
-    $http.post(appConstants.rootUrl + '/FeatureServer/', "name=" + $scope.layerName, {headers: {'Content-Type': 'application/x-www-form-urlencoded'}}).
+    $http.post(appConstants.rootUrl + '/FeatureServer/', "name=" + $scope.layerName + '&access_token=' + mageLib.getLocalItem('token'), {headers: {'Content-Type': 'application/x-www-form-urlencoded'}}).
       success(function (data, status, headers, config) {
           $scope.points = data;
           for(var i = 0; i < data.length; i++){
