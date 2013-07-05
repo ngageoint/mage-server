@@ -114,7 +114,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
                   return t;
                 }
               });
-          $scope.observation.attributes.LEVEL = _.find($scope.levels, function (l) {
+          $scope.observation.attributes.EVENTLEVEL = _.find($scope.levels, function (l) {
                 if (l.color == $scope.observation.attributes.EVENTLEVEL || l.color == $scope.observation.attributes.EVENTLEVEL.color){
                   return l;
                 }
