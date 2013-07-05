@@ -115,7 +115,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
                 }
               });
           $scope.observation.attributes.LEVEL = _.find($scope.levels, function (l) {
-                if (l.color == $scope.observation.attributes.EVENTLEVEL){
+                if (l.color == $scope.observation.attributes.LEVEL){
                   return l;
                 }
               });
@@ -241,6 +241,11 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
         "UNIT":$scope.unit
       }
     }];*/
+
+    // convert back
+    $scope.observation.attributes.TEAM = $scope.observation.attributes.TEAM.name;
+    $scope.observation.attributes.TYPE = $scope.observation.attributes.TYPE.title;
+    $scope.observation.attributes.LEVEL = $scope.observation.attributes.LEVEL.color;
 
     $scope.observation.attributes.EVENTDATE = new Date().getTime();
     $scope.observation.geometry = {
