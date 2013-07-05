@@ -86,10 +86,10 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(position) {
         console.log("lat " + position.coords.latitude + " lon " + position.coords.longitude);
-        $scope.$apply(function() {
+        //$scope.$apply(function() {
           $scope.zoom = 12;
           $scope.center = { lat: position.coords.latitude, lng: position.coords.longitude };
-        });
+        //});
       });
     }
   }
@@ -229,7 +229,9 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     FeatureService.saveFeature($scope.currentLayerId, obs, operation)
       .success(function (data) {
         console.log('observation created');
+        var objectId = data.addResults ? data.addResults[0].objectId : data.updateResults[0].objectId;
         $scope.showObservation = false;
+        
         if (operation == "addFeatures") {
             $scope.newFeature = {
               type: "Feature",
