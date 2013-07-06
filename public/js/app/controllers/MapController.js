@@ -50,6 +50,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.observation.attributes.TYPE = observationTypes[0];
   $scope.observation.attributes.UNIT = "";
   $scope.observation.attributes.DESCRIPTION = "";
+  $scope.files = [];
 
 
   /* Uncomment the following block to enable the Tomnod layers */
@@ -107,7 +108,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
       FeatureService.getFeature($scope.observation.layer.id, $scope.observation.feature.properties.OBJECTID)
         .success(function (data) {
           $scope.observation = data;
-          /* Since the angular select directive works off of reference, set the TEAM, LEVEL, and TYPE attributes to theie
+          /* Since the angular select directive works off of reference, convert the TEAM, EVENTLEVEL, and TYPE attributes to their
               corresponsing values from their respective arrays */
           $scope.observation.attributes.TEAM = _.find($scope.teams, function (t) {
                 if(t.name == $scope.observation.attributes.TEAM || t.name == $scope.observation.attributes.TEAM.name) {
@@ -226,23 +227,8 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.saveObservation = function () {
     // Build the observation object
     var operation = "";
-    /*var obs = [{
-      "geometry": {
-        "x": $scope.marker.lng, 
-        "y": $scope.marker.lat
-      },
-      "attributes": {
-        "EVENTDATE":new Date().getTime(),
-        "TYPE":$scope.observationType.title,
-        "EVENTLEVEL":$scope.level.color,
-        "TEAM":$scope.team.name,
-        "DESCRIPTION":$scope.description,
-        "EVENTCLEAR":0,
-        "UNIT":$scope.unit
-      }
-    }];*/
 
-    // convert back
+    // convert back into the values that the server is going to want
     $scope.observation.attributes.TEAM = $scope.observation.attributes.TEAM.name;
     $scope.observation.attributes.TYPE = $scope.observation.attributes.TYPE.title;
     $scope.observation.attributes.EVENTLEVEL = $scope.observation.attributes.EVENTLEVEL.color;
@@ -272,20 +258,81 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
         $scope.showObservation = false;
 
         if (operation == "addFeatures") {
-            $scope.newFeature = {
-              type: "Feature",
-              geometry: {
-                type: "Point",
-                coordinates: [$scope.marker.lng, $scope.marker.lat]
-              },
-              properties: {
-                OBJECTID: objectId
-              }
-            } 
-          }
+          $scope.newFeature = {
+            type: "Feature",
+            geometry: {
+              type: "Point",
+              coordinates: [$scope.marker.lng, $scope.marker.lat]
+            },
+            properties: {
+              OBJECTID: objectId
+            }
+          } 
+        }
+
+        if ($scope.files.length > 0) {
+          $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/' + 
+            objectId + '/addAttachment?access_token=' + mageLib.getLocalItem('token');
+          $scope.uploadFile();
+        }
+
       });
   }
   
+
+  /* Attachment upload functions, some of these make more sense in the FeatureService... */
+  $scope.setFiles = function (element) {
+    $scope.$apply(function(scope) {
+      console.log('files:', element.files);
+      // Turn the FileList object into an Array
+      $scope.files = []
+      for (var i = 0; i < element.files.length; i++) {
+        $scope.files.push(element.files[i])
+      }
+      $scope.progressVisible = false
+    });
+  },
+
+  $scope.uploadFile = function() {
+    var fd = new FormData()
+    for (var i in $scope.files) {
+      fd.append("attachment", $scope.files[i])
+    }
+    var xhr = new XMLHttpRequest()
+    xhr.upload.addEventListener("progress", uploadProgress, false)
+    xhr.addEventListener("load", uploadComplete, false)
+    xhr.addEventListener("error", uploadFailed, false)
+    xhr.addEventListener("abort", uploadCanceled, false)
+    xhr.open("POST", $scope.fileUploadUrl)
+    $scope.progressVisible = true
+    xhr.send(fd)
+  }
+
+  function uploadProgress(evt) {
+    $scope.$apply(function(){
+      if (evt.lengthComputable) {
+        $scope.progress = Math.round(evt.loaded * 100 / evt.total)
+      } else {
+        $scope.progress = 'unable to compute'
+      }
+    });
+  }
+
+  function uploadComplete(evt) {
+    $scope.files = [];
+    $scope.progressVisible = false
+  }
+
+  function uploadFailed(evt) {
+    alert("There was an error attempting to upload the file.")
+  }
+
+  function uploadCanceled(evt) {
+    $scope.$apply(function(){
+        $scope.progressVisible = false
+    })
+    alert("The upload has been canceled by the user or the browser dropped the connection.")
+  }
 
   /* Goto address, need to implement some geocoding like the android app does, otherwise pull it out for PDC. */
   $scope.openGotoAddress = function () {
