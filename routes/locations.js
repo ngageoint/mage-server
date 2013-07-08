@@ -1,5 +1,6 @@
 module.exports = function(app, auth) {
-  var Location = require('../models/location')
+  var moment = require('moment')
+    , Location = require('../models/location')
     , Token = require('../models/token')
     , Role = require('../models/role')
     , Team = require('../models/team')
@@ -14,7 +15,11 @@ module.exports = function(app, auth) {
     // See if the client provieded a timestamp,
     // if not, set it to now.
     var timestamp = location.timestamp;
-    if (!timestamp) timestamp = new Date();
+    if (!timestamp) {
+      timestamp = new Date();
+    } else {
+
+    }
 
     var point = location.point;
     if (!point) return res.send(400, "Missing required parameter 'point'.");
@@ -72,12 +77,14 @@ module.exports = function(app, auth) {
     validateLocation,
     function(req, res) {
       Location.createLocation(req.user, req.locationFeature, function(err, location) {
-        if (err) {
-          return res.send(400, err);
-        }
+        // if (err) {
+        //   return res.send(400, err);
+        // }
 
-        res.json(location);
+        //res.json(location);
       });
+
+      res.send(200);
     }
   );
 

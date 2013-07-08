@@ -15,14 +15,18 @@ fs.mkdirp(attachmentBase, function(err) {
 });
 
 // Configure authentication
-var auth = require('./auth/authentication')(config.api.authentication.strategy);
+var auth = require('./auth/authentication')(config.server.authentication.strategy);
 console.log('Authentication: ' + auth.strategy);
 
 // Configuration of the MAGE Express server
 var app = express();
+var mongodbConfig = config.server.mongodb;
 app.configure(function () {
-  mongoose.connect('mongodb://localhost/sagedb', function(err) {
-    if (err) throw err;
+  mongoose.connect(mongodbConfig.url, {server: {poolSize: mongodbConfig.poolSize}}, function(err) {
+    if (err) {
+      console.log('Error connecting to mongo database, please make sure mongodbConfig is running...');
+      throw err;
+    }
   });
   mongoose.set('debug', true);
 

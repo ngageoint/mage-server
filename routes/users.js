@@ -9,7 +9,7 @@ module.exports = function(app, auth) {
   var p***REMOVED***port = auth.p***REMOVED***port;
   var strategy = auth.strategy;
 
-  var p***REMOVED***wordLength = config.api.authentication.p***REMOVED***wordMinLength;
+  var p***REMOVED***wordLength = config.server.authentication.p***REMOVED***wordMinLength;
   var emailRegex = /^[^\s@]+@[^\s@]+\./;
 
   var validateRoleParams = function(req, res, next) {

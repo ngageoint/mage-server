@@ -42,13 +42,16 @@ exports.createLocation = function(user, feature, callback) {
     properties: feature.properties
   };
 
-  Location.create(doc, function(err, location) {
-    if (err) {
-      console.log('Error creating new location for user: ' + user.username + '.  Err:' + err);
-    }
+  // Location.create(doc, function(err, location) {
+  //   if (err) {
+  //     console.log('Error creating new location for user: ' + user.username + '.  Err:' + err);
+  //   }
 
-    callback(err, location);
-  });
+  //   callback(err, location);
+  // });
+Location.collection.insert(doc, {w: 0});
+callback(null);
+  
 }
 
 // get locations for users team
