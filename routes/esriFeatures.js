@@ -2,6 +2,7 @@
 module.exports = function(app, auth) {
   var async = require('async')
     , fs = require('fs-extra')
+    , path = require('path')
     , Counter = require('../models/counter')
     , Feature = require('../models/feature')
     , access = require('../access')
@@ -40,13 +41,7 @@ module.exports = function(app, auth) {
 
   var createAttachmentPath = function(layer, attachment) {
     var now = new Date();
-    var path = [
-      layer.collectionName, 
-      now.getFullYear(), 
-      now.getMonth() + 1, 
-      now.getDate()].join("/");
-
-    return path;
+    return path.join(layer.collectionName, now.getFullYear().toString(), (now.getMonth() + 1).toString(), now.getDate().toString());
   }
 
   var parseQueryParams = function(req, res, next) {
@@ -388,8 +383,8 @@ module.exports = function(app, auth) {
           if (err) return next(err);
 
           req.files.attachment.id = id;
-          // TODO need new file name
-          req.files.attachment.relativePath = relativePath + "/" + id + "_" + req.files.attachment.filename;
+          var fileName = path.basename(req.files.attachment.path);
+          req.files.attachment.relativePath = path.join(relativePath, fileName);
           fs.rename(req.files.attachment.path, attachmentBase + req.files.attachment.relativePath, function(err) {
             if (err) return next(err);
 
@@ -439,7 +434,8 @@ module.exports = function(app, auth) {
         if (err) return next(err);
 
         req.files.attachment.id = attachmentId;
-        req.files.attachment.relativePath = relativePath + "/" + attachmentId + "_" + req.files.attachment.filename;
+        var fileName = path.basename(req.files.attachment.path);
+        req.files.attachment.relativePath = path.join(relativePath, fileName);
         fs.rename(req.files.attachment.path, attachmentBase + req.files.attachment.relativePath, function(err) {
           if (err) return next(err);
 
