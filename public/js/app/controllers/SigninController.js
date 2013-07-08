@@ -8,6 +8,9 @@ angular.module("mage", ["mage.***REMOVED***s", "mage.userService", "mage.lib"]);
 function SigninController($rootScope, $scope, $log, $http, $injector, $location, appConstants, UserService, mageLib) {
   // The variables that get set when clicking a team or user in the list, these get loaded into the editor.
   console.log('up in the signin controller');
+
+  $scope.status = 0;
+
   $scope.signin = function () {
     console.log("signing in...");
     $http({
@@ -23,6 +26,7 @@ function SigninController($rootScope, $scope, $log, $http, $injector, $location,
         }).
         error(function (data, status, headers, config) {
           console.log("Something bad happend while trying to log in " + status);
+          $scope.status = status;
         });
   }
 }

@@ -1,21 +1,8 @@
 <div>
-	<div cl***REMOVED***="navbar hidden-phone">
-    <div cl***REMOVED***="navbar-inner">
-      <div cl***REMOVED***="container">
-        <a cl***REMOVED***="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-          <span cl***REMOVED***="icon-bar"></span>
-          <span cl***REMOVED***="icon-bar"></span>
-          <span cl***REMOVED***="icon-bar"></span>
-        </a>
-        <a cl***REMOVED***="brand" href="/"><i cl***REMOVED***="icon-white icon-magic" style="margin-right:10px;"></i>MAGE</a>
-        <div cl***REMOVED***="nav-collapse collapse">
-        </div><!--/.nav-collapse -->
-      </div>
-    </div>
-  </div>
-  <div cl***REMOVED***="container top-gap">
+  <div cl***REMOVED***="container top-gap-l">
     <div cl***REMOVED***="row-fluid">
       <div cl***REMOVED***="span3">
+        <h3 cl***REMOVED***="top-gap-l">Mobile Analytic GEOINT Environment</h3>
         <form cl***REMOVED***="form">
           <div cl***REMOVED***="control-group">
             <label cl***REMOVED***="control-label" for="username">Username</label>
@@ -39,10 +26,13 @@
             <button cl***REMOVED***="btn" ng-click="signin()" ngm-tap="signin()">Login</button>
           </span>
         </form>
+        <div cl***REMOVED***="alert alert-block" ng-show="status > 399">
+          <h4>Failed login</h4>
+          Please check your username, UID, and p***REMOVED***word and try again.
+        </div>
       </div>
       <div cl***REMOVED***="span9">
-        <h3>Mobile Analytic GEOINT Environment</h3>
-        *insert splash pic here*
+        <img src="../../img/mage-flat.png">
       </div>
     </div>
   </div>

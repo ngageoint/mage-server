@@ -38,20 +38,48 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     }
   ];
 
+  // Edit form toggles
   $scope.showUserForm = false;
   $scope.showDeviceForm = false;
   $scope.showTeamForm = false;
 
+  // Status message values
+  $scope.showStatus = false;
+  $scope.statusTitle = '';
+  $scope.statusMessage = '';
+  $scope.statusLevel = ''; // use the bootstrap alert cl***REMOVED***es for this value, alert-error, alert-success, alert-info. Leave it as '' for yellow
+
+
+  /* Status message functions */
+  /**
+    @param {String} statusLevel - bootstrap alert cl***REMOVED***es: alert-error, alert-success, alert-info, or roll your own and add it to the css
+  */
+  $scope.showStatusMessage = function (title, message, statusLevel) {
+    $scope.statusTitle = title;
+    $scope.statusMessage = message;
+    $scope.statusLevel = statusLevel;
+    $scope.showStatus = true;
+    $scope.apply();
+  }
+
+  $scope.setShowStatus = function (visibility) {
+    $scope.showStatus = visibility;
+    $scope.apply();
+  }
+
   $scope.setShowUserForm = function (visibility) {
     $scope.showUserForm = visibility;
+    $scope.apply();
   }
 
   $scope.setShowDeviceForm = function (visibility) {
     $scope.showDeviceForm = visibility;
+    $scope.apply();
   }
 
   $scope.setShowTeamForm = function (visibility) {
     $scope.showTeamForm = visibility;
+    $scope.apply();
   }
 
   /* Set the current activity, this will tell the directives which one of them should be visible at the moment. */
@@ -60,6 +88,8 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     $scope.currentAdminPanel = panel;
   }
 
+
+  /* Team admin functions */
   $scope.getTeams = function() {
 
   }
@@ -77,45 +107,23 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   }
 
 
-  /*$scope.getUsers = function() {
-    $scope.users = [];
-    //var user = new UserService.user();
-    //var result = user.$query();
-    //$scope.users = result;
-    $http({
-        url:appConstants.rootUrl + '/api/users', 
-        method: 'GET',
-        isArray: true,
-        data: 'username=' + $scope.user.username + 
-              '&p***REMOVED***word=' + $scope.user.p***REMOVED***word + 
-              '&p***REMOVED***wordconfirm=' + $scope.user.p***REMOVED***wordconfirm + 
-              '&firstnane=' + $scope.user.firstname + 
-              '&lastname=' + $scope.user.lastname +
-              '&email=' + $scope.user.email,
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
-      }).
-        success(function (data, status, headers, config) {
-          console.log("sucessful user get!");
-          $scope.users = data;
-        }).
-        error(function (data, status, headers, config) {
-          console.log("Something bad happend while trying to get the users " + status);
-        });
-  }*/
-
+  /* User admin functions */
   $scope.saveUser = function () {
     if ($scope.user._id) {
       UserService.updateUser($scope.user);
     } else {
-      UserService.createUser($scope.user).success(function (data) {
+      UserService.createUser($scope.user).
+      success(function (data, status, headers, config) {
+        $scope.setShowUserForm(false);
         console.log('created user ' + data);
+        $scope.showStatusMessage("User created", "Nice work!", "alert-success");
         $scope.users.push(data);
       }).
       error(function (data, status, headers, config) {
+        $scope.showStatusMessage("Unable to create user", data, "alert-error");
         console.log('Something bad happened while creating a user...' + status);
       });
     }
-    $scope.showUserForm = false;
   }
 
   $scope.scrollTo = function (id) {
@@ -147,7 +155,8 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
 
   }
 
-  /* Device API calls */
+
+  /* Device admin functions */
   $scope.getDevices = function () {
 
   }
@@ -167,8 +176,12 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     if ($scope.device._id) {
       DeviceService.updateDevice($scope.device);
     } else {
-      DeviceService.createDevice($scope.device);
+      DeviceService.createDevice($scope.device).
+      success(function (data, status, headers, config) {}).
+      error(function (data, status, headers, config) {});
+
     }
+
   }
 
   $scope.deleteDevice = function () {
