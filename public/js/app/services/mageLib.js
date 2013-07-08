@@ -6,8 +6,20 @@ angular.module('mage.lib', [])
     function ($scope, $http, $location) {
       var libFunctions = {};
 
-      libFunctions.geolocate = function () {
-        // add geolocation code here
+      // options for the options { enableHighAccuracy: true, timeout: timeoutVal, maximumAge: 0 }
+      libFunctions.geolocate = function (success, error, options) {
+        if (window.navigator.geolocation) {
+          window.navigator.geolocation.getCurrentPosition(success, error, options);
+        }
+      };
+
+      libFunctions.geoError = function (error) {
+        var errors = {
+          1: 'Permission denied',
+          2: 'Position unavailable',
+          3: 'Request timeout'
+        };
+        console.log("Geolocation error: " + [errors[error.code]]);
       };
 
       /* Wrappers for Local Storage */

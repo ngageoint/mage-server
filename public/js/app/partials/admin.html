@@ -24,6 +24,16 @@
         <h3><a href="" ng-click="changeCurrentPanel('device')" ngm-tap="changeCurrentPanel('device')">Devices</a></h3>
       </div>
     </div>
+
+    <!-- Status message area -->
+    <div cl***REMOVED***="row top-gap" ng-show="showStatus">
+      <div cl***REMOVED***="span11 alert alert-block" ng-cl***REMOVED***="statusLevel">
+        <button type="button" cl***REMOVED***="close" ng-click="setShowStatus(false)">&times;</button>
+        <h4>{{statusTitle}}</h4>
+        {{statusMessage}}
+      </div>
+    </div>
+
     <div cl***REMOVED***="row">
       <div cl***REMOVED***="span12 top-gap" id="team-admin-area" ng-show="currentAdminPanel == 'team'">
         <div ng-repeat="team in teams">

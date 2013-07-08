@@ -1,6 +1,6 @@
 'use strict';
 
-amgular module('mage.userService', ['mage.***REMOVED***s'])
+angular.module('mage.userService', ['mage.***REMOVED***s'])
   .factory('LayerService', ['$http', '$scope', 'appConstants',
     function ($http, $scope, appConstants) {
       var layerServiceFunctions = [];

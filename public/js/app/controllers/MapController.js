@@ -90,8 +90,8 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   // Should move the call to navigator out to mageLib, hand back the location then $scope.apply the results
   $scope.geolocate = function () {
     console.log("in geolocate");
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(position) {
+    if ($window.navigator.geolocation) {
+      $window.navigator.geolocation.getCurrentPosition(function(position) {
         console.log("lat " + position.coords.latitude + " lon " + position.coords.longitude);
         $scope.$apply(function() {
           $scope.zoom = 12;
@@ -101,11 +101,23 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     }
   }
 
+  // call back for the geolocation ***REMOVED***
+  $scope.setCurrentLocation = function (position) {
+    $scope.$apply(function() {
+      $scope.zoom = 12;
+      $scope.center = { lat: position.coords.latitude, lng: position.coords.longitude };
+    });
+  }
+
+  $scope.getGeolocation = function () {
+    mageLib.geolocate($scope.setCurrentLocation, mageLib.geoError, {});
+  }
+
   $scope.$watch("observation", function (oldValue, newValue) {
     console.log("Observation changed " + JSON.stringify($scope.observation));
     if ($scope.observation.feature && $scope.observation.feature.properties.OBJECTID > 0) { //open existing observation
-      FeatureService.getFeature($scope.observation.layer.id, $scope.observation.feature.properties.OBJECTID)
-        .success(function (data) {
+      FeatureService.getFeature($scope.observation.layer.id, $scope.observation.feature.properties.OBJECTID).
+        success(function (data) {
           $scope.observation = data;
           /* Since the angular select directive works off of reference, set the TEAM, LEVEL, and TYPE attributes to theie
               corresponsing values from their respective arrays */
@@ -125,6 +137,12 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
                 }
               });
           $scope.showObservation = true;
+        }).
+        error(function (data, status, headers, config) {
+          // if the user does not have permissions to get layers, re-route them to the signin page
+          if (status > 399 && status < 500) {
+            $location.path('/');
+          }
         });
     } else {
 
@@ -150,6 +168,9 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
       }).
       error(function (data, status, headers, config) {
           $log.log("Error getting layers: " + status);
+          if (status > 399) {
+            $location.path('/');
+          }
       });
   }
 
@@ -281,6 +302,60 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
       });
   }
   
+
+  /* Attachment upload functions, some of these make more sense in the FeatureService...more copy pasta */
+  $scope.setFiles = function (element) {
+    $scope.$apply(function(scope) {
+      console.log('files:', element.files);
+      // Turn the FileList object into an Array
+      $scope.files = []
+      for (var i = 0; i < element.files.length; i++) {
+        $scope.files.push(element.files[i])
+      }
+      $scope.progressVisible = false
+    });
+  },
+
+  $scope.uploadFile = function() {
+    var fd = new FormData()
+    for (var i in $scope.files) {
+      fd.append("attachment", $scope.files[i])
+    }
+    var xhr = new XMLHttpRequest()
+    xhr.upload.addEventListener("progress", uploadProgress, false)
+    xhr.addEventListener("load", uploadComplete, false)
+    xhr.addEventListener("error", uploadFailed, false)
+    xhr.addEventListener("abort", uploadCanceled, false)
+    xhr.open("POST", $scope.fileUploadUrl)
+    $scope.progressVisible = true
+    xhr.send(fd)
+  }
+
+  function uploadProgress(evt) {
+    $scope.$apply(function(){
+      if (evt.lengthComputable) {
+        $scope.progress = Math.round(evt.loaded * 100 / evt.total)
+      } else {
+        $scope.progress = 'unable to compute'
+      }
+    });
+  }
+
+  function uploadComplete(evt) {
+    $scope.files = [];
+    $scope.progressVisible = false
+  }
+
+  function uploadFailed(evt) {
+    alert("There was an error attempting to upload the file.")
+  }
+
+  function uploadCanceled(evt) {
+    $scope.$apply(function(){
+        $scope.progressVisible = false
+    })
+    alert("The upload has been canceled by the user or the browser dropped the connection.")
+  }
 
   /* Goto address, need to implement some geocoding like the android app does, otherwise pull it out for PDC. */
   $scope.openGotoAddress = function () {
