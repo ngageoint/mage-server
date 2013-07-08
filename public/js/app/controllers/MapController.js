@@ -126,7 +126,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
                   return t;
                 }
               });
-          $scope.observation.attributes.LEVEL = _.find($scope.levels, function (l) {
+          $scope.observation.attributes.EVENTLEVEL = _.find($scope.levels, function (l) {
                 if (l.color == $scope.observation.attributes.EVENTLEVEL){
                   return l;
                 }
@@ -249,6 +249,12 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     var operation = "";
 
     $scope.observation.attributes.EVENTDATE = new Date().getTime();
+
+    // Convert the models for the angular selects back to strings so that the server and the app are happy
+    $scope.observation.attributes.TYPE = $scope.observation.attributes.TYPE.title;
+    $scope.observation.attributes.EVENTLEVEL = $scope.observation.attributes.EVENTLEVEL.color;
+    $scope.observation.attributes.TEAM = $scope.observation.attributes.TEAM.name;
+    
     $scope.observation.geometry = {
         "x": $scope.marker.lng, 
         "y": $scope.marker.lat
