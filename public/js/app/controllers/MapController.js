@@ -247,21 +247,6 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.saveObservation = function () {
     // Build the observation object
     var operation = "";
-    /*var obs = [{
-      "geometry": {
-        "x": $scope.marker.lng, 
-        "y": $scope.marker.lat
-      },
-      "attributes": {
-        "EVENTDATE":new Date().getTime(),
-        "TYPE":$scope.observationType.title,
-        "EVENTLEVEL":$scope.level.color,
-        "TEAM":$scope.team.name,
-        "DESCRIPTION":$scope.description,
-        "EVENTCLEAR":0,
-        "UNIT":$scope.unit
-      }
-    }];*/
 
     $scope.observation.attributes.EVENTDATE = new Date().getTime();
     $scope.observation.geometry = {
@@ -288,16 +273,21 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
         $scope.showObservation = false;
 
         if (operation == "addFeatures") {
-            $scope.newFeature = {
-              type: "Feature",
-              geometry: {
-                type: "Point",
-                coordinates: [$scope.marker.lng, $scope.marker.lat]
-              },
-              properties: {
-                OBJECTID: objectId
-              }
-            } 
+          $scope.newFeature = {
+            type: "Feature",
+            geometry: {
+              type: "Point",
+              coordinates: [$scope.marker.lng, $scope.marker.lat]
+            },
+            properties: {
+              OBJECTID: objectId
+            }
+          } 
+        }
+
+        if ($scope.files.length > 0) {
+            $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/' + objectId + '/addAttachment&access_token=' + mageLib.getLocalItem('token');
+            $scope.uploadFile();
           }
       });
   }
