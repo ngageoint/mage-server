@@ -115,6 +115,8 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
       FeatureService.getFeature($scope.observation.layer.id, $scope.observation.feature.properties.OBJECTID).
         success(function (data) {
           $scope.observation = data;
+          $scope.attachments = [];
+          $scope.files = [];
           /* Since the angular select directive works off of reference, set the TEAM, LEVEL, and TYPE attributes to theie
               corresponsing values from their respective arrays */
           $scope.observation.attributes.TEAM = _.find($scope.teams, function (t) {
@@ -248,6 +250,8 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     console.log("in new observation");
     $scope.showObservation = true;
     $scope.observation = {feature: { properties: {OBJECTID: -1}}};
+    $scope.attachments = [];
+    $scope.files = [];
   }
 
   $scope.cancelObservation = function () {
