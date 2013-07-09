@@ -12,20 +12,11 @@ module.exports = function(app, auth) {
   var validateLocation = function(req, res, next) {
     var data = req.body;
 
-    // See if the client provieded a timestamp,
-    // if not, set it to now.
-    var timestamp = data.timestamp;
-    if (!timestamp) {
-      timestamp = new Date();
-    } else {
-      timestamp = moment.utc(timestamp).toDate();
-    }
-
     var location = data.location;
     if (!location) return res.send(400, "Missing required parameter 'location'.");
 
     location.properties = location.properties || {};
-    location.properties.createdOn = location.properties.updatedOn = timestamp;
+    location.properties.createdOn = location.properties.updatedOn = moment.utc(data.timestamp).toDate();
     location.properties.user = req.user._id;
 
     console.log(JSON.stringify(location));
@@ -89,8 +80,16 @@ module.exports = function(app, auth) {
     p***REMOVED***port.authenticate('bearer'),
     access.hasPermission('UPDATE_LOCATION'),
     function(req, res) {
-      var timestamp = req.param('timestamp');
-      if (!timestamp) timestamp = new Date();
+      var data = req.body;
+
+      // See if the client provieded a timestamp,
+      // if not, set it to now.
+      var timestamp = data.timestamp;
+      if (!timestamp) {
+        timestamp = new Date();
+      } else {
+        timestamp = moment.utc(timestamp).toDate();
+      }
 
       Location.updateLocation(req.user, timestamp, function(err, location) {
         res.json(location);
