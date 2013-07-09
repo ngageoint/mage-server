@@ -436,10 +436,13 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     $scope.showExport = false;
   }
 
+  /* Export existing points to  */
   $scope.export = function () {
-    console.log("exporting features to KML 1");
-    window.location.href = appConstants.rootUrl + "/api/locations/export?&access_token=" + mageLib.getLocalItem('token');
-    console.log("exporting features to KML 2");
+    console.log("exporting features to KML");
+    alert('time_filter = ' + $scope.time_filter);
+    window.location.href = appConstants.rootUrl + "/api/locations/export" + 
+      "?access_token=" + mageLib.getLocalItem('token') +
+      "&time_filter=" + $scope.time_filter;
     $scope.closeExport();
   }
 
