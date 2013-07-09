@@ -59,27 +59,27 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     $scope.statusMessage = message;
     $scope.statusLevel = statusLevel;
     $scope.showStatus = true;
-    $scope.apply();
+    $scope.$apply();
   }
 
   $scope.setShowStatus = function (visibility) {
     $scope.showStatus = visibility;
-    $scope.apply();
+    $scope.$apply();
   }
 
   $scope.setShowUserForm = function (visibility) {
     $scope.showUserForm = visibility;
-    $scope.apply();
+    $scope.$apply();
   }
 
   $scope.setShowDeviceForm = function (visibility) {
     $scope.showDeviceForm = visibility;
-    $scope.apply();
+    $scope.$apply();
   }
 
   $scope.setShowTeamForm = function (visibility) {
     $scope.showTeamForm = visibility;
-    $scope.apply();
+    $scope.$apply();
   }
 
   /* Set the current activity, this will tell the directives which one of them should be visible at the moment. */
