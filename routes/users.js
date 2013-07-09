@@ -156,10 +156,23 @@ module.exports = function(app, auth) {
     function(req, res) {
        Token.createTokenForUser(req.user, function(err, token) {
         if (err) {
-          return res.send("Error generating token", 400);
+          return res.send(500, "Error generating token");
         }
 
         res.json({token: token.token});
+      });
+    }
+  );
+
+  // logout
+  app.post(
+    '/api/logout',
+    p***REMOVED***port.authenticate('bearer'),
+    function(req, res, next) {
+      Token.removeTokenForUser(req.user, function(err, token){
+        if (err) return next(err);
+
+        res.send(200, 'successfully logged out');
       });
     }
   );
@@ -169,7 +182,7 @@ module.exports = function(app, auth) {
     '/api/users', 
     p***REMOVED***port.authenticate('bearer'),
     access.authorize('READ_USER'),
-      function (req, res) {
+    function(req, res) {
       User.getUsers(function (users) {
         res.json(users);
       });
