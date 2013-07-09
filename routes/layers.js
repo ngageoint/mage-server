@@ -1,106 +1,96 @@
-// Routes responsible for layer managment
 module.exports = function(app, auth) {
   var Layer = require('../models/layer')
     , access = require('../access');
 
   var p***REMOVED***port = auth.p***REMOVED***port;
-  var strategy = auth.strategy;
 
-  function LayerResponse() {
-    var response = {
-      ***REMOVED***Description: 'Situational Analysis GEOINT Environment',
-      layers: [],
-      tables : []
-    };
+  app.all('/api/layers*', p***REMOVED***port.authenticate('bearer'));
 
-    var addLayer = function(layer) {
-      response.layers.push({
-        id: layer.id,
-        name: layer.name
-      });
+  var validateLayerParams = function(req, res, next) {
+    var layer = {};
+
+    var type = req.param('type');
+    if (!type) {
+      return res.send(400, "cannot create layer 'type' param not specified");
     }
+    layer.type = type;
 
-    var add = function(layers) {
-      if (!layers) return;
-
-      if (Array.isArray(layers)) {
-        layers.forEach(function(layer) {
-          addLayer(layer);
-        });
-      } else {
-        addLayer(layers);
-      }
+    var name = req.param('name');
+    if (!name) {
+      return res.send(400, "cannot create layer 'name' param not specified");
     }
+    layer.name = name;
 
-    var toObject = function() {
-      return response;
-    }
+    var format = req.param('format');
+    if (format) layer.format = format;
 
-    return {
-      add : add,
-      toObject : toObject
-    }
+    var url = req.param('url');
+    if (url) layer.url = url;
+
+    var description = req.param('description');
+    if (description) layer.description = description;
+
+    req.newLayer = layer;
+    next();
   }
 
-  // Get all layers
+  // get all layers
   app.get(
-    '/FeatureServer',
+    '/api/layers', 
     access.authorize('READ_LAYER'),
     function (req, res) {
-      console.log("SAGE Layers GET REST Service Requested");
-
-      Layer.getAll(function (layers) {
-        var response = new LayerResponse();
-        response.add(layers);
-        res.json(response.toObject());
+      Layer.getLayers(function (err, layers) {
+        res.json(layers);
       });
     }
   );
 
-  // Get layer by id
+  // get layer
   app.get(
-    '/FeatureServer/:layerId',
-    access.authorize('READ_LAYER'),
-    function(req, res) {
-      console.log("SAGE Layers (ID) GET REST Service Requested");
-
-      var layer = req.layer;
-      return res.send(layer);
+    '/api/layers/:layerId', 
+    access.authorize('READ_LAYER'), 
+    function (req, res) {
+      res.json(req.team);
     }
   );
 
   // Create a new layer
   app.post(
-    '/FeatureServer',
+    '/api/layers',
     access.authorize('CREATE_LAYER'),
+    validateLayerParams,
     function(req, res) {
-      var name = req.param('name');
-      if (!name) {
-        res.send(400, "Cannot create layer, invalid parameters.  'name' parameter is required");
-      }
-
-      var fields = req.param('fields');
-
-      var layer = {name: name, fields: fields};
-      Layer.create(layer, function(err, layer) {
+      Layer.create(req.newLayer, function(err, layer) {
         if (err) {
-          res.send(400, err);
-          return;
+          return res.send(400, err);
         }
 
-        var response = layer ? layer : {};
-        res.json(response);
+        res.json(layer);
+      });
+    }
+  );
+
+  // Update a layer
+  app.put(
+    '/api/layers/:layerId',
+    access.authorize('UPDATE_LAYER'),
+    validateLayerParams,
+    function(req, res) {
+      Layer.update(req.newLayer, update, function(err, layer) {
+        if (err) {
+          return res.send(400, err);
+        }
+
+        res.json(layer);
       });
     }
   );
 
   // Archive a layer
   app.delete(
-    '/FeatureServer/:layerId',
+    '/api/layers/:layerId',
     access.authorize('DELETE_LAYER'),
     function(req, res) {
-      console.log("SAGE Layers (ID) DELETE REST Service Requested");
-
       var layer = req.layer;
 
       Layer.remove(layer, function(err, layer) {

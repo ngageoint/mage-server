@@ -5,23 +5,42 @@ var mongoose = require('mongoose')
 var Schema = mongoose.Schema;
 
 // Creates the Schema for the Attachments object
-var LayerSchema = new Schema({  
+var LayerSchema = new Schema({
   id: { type: Number, required: true, unique: true },
+  type: { type: String, required: true },
   name: { type: String, required: true, unique: true },
+  format: { type: String, required: false },
+  url: { type: String, required: false },
+  description: { type: String, required: false },
   collectionName: { type: String, required: true }
+},{ 
+    versionKey: false
+});
+
+var transform = function(layer, ret, options) {
+  delete ret._id;
+  delete ret.collectionName;
+}
+
+LayerSchema.set("toObject", {
+  transform: transform
+});
+
+LayerSchema.set("toJSON", {
+  transform: transform
 });
 
 // Creates the Model for the Layer Schema
 var Layer = mongoose.model('Layer', LayerSchema);
 
-exports.getAll = function(callback) {
+exports.getLayers = function(callback) {
   var query = {};
   Layer.find(query, function (err, layers) {
     if (err) {
       console.log("Error finding layers in mongo: " + err);
     }
 
-    callback(layers);
+    callback(err, layers);
   });
 }
 
