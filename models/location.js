@@ -7,6 +7,7 @@ var Schema = mongoose.Schema;
 
 // Creates the Schema for FFT Locations
 var LocationSchema = new Schema({
+  type: { type: String, required: true },
   geometry: {
     type: { type: String, required: true },
     coordinates: { type: Array, required: true}
@@ -36,22 +37,14 @@ LocationSchema.index({'properties.user': 1, 'properties.updatedOn': 1});
 var Location = mongoose.model('Location', LocationSchema);
  
 // create location
-exports.createLocation = function(user, feature, callback) {
-  var doc = {
-    geometry: feature.geometry,
-    properties: feature.properties
-  };
+exports.createLocation = function(user, location, callback) {
+  Location.create(location, function(err, location) {
+    if (err) {
+      console.log('Error creating new location for user: ' + user.username + '.  Err:' + err);
+    }
 
-  // Location.create(doc, function(err, location) {
-  //   if (err) {
-  //     console.log('Error creating new location for user: ' + user.username + '.  Err:' + err);
-  //   }
-
-  //   callback(err, location);
-  // });
-Location.collection.insert(doc, {w: 0});
-callback(null);
-  
+    callback(err, location);
+  });  
 }
 
 // get locations for users team
