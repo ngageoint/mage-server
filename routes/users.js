@@ -211,7 +211,7 @@ module.exports = function(app, auth) {
       if (!req.user) return next();
 
       var role = req.param('role');
-      if (hasPermission) {
+      if (role) {
         req.newUser.role = role
       }
 
