@@ -73,6 +73,24 @@ module.exports = function(app, auth) {
       });
   });
 
+  // Grab the ESRI feature layer for any endpoint that uses layerId
+  app.param('layerId', function(req, res, next, layerId) {
+    Layer.getById(layerId, function(layer) {
+      if (!layer) {
+        res.json({
+          error: {
+            code: 400, 
+            message: "Layer / Table not found: " + layerId
+          }
+        });
+        return;
+      }
+
+      req.layer = layer;
+      next();
+    });
+  });
+
   // Grab the layer for any endpoint that uses layerId
   app.param('layerId', function(req, res, next, layerId) {
     Layer.getById(layerId, function(layer) {
