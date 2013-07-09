@@ -10,29 +10,26 @@ module.exports = function(app, auth) {
   var p***REMOVED***port = auth.p***REMOVED***port;
 
   var validateLocation = function(req, res, next) {
-    var location = req.body;
+    var data = req.body;
 
     // See if the client provieded a timestamp,
     // if not, set it to now.
-    var timestamp = location.timestamp;
+    var timestamp = data.timestamp;
     if (!timestamp) {
       timestamp = new Date();
     } else {
-
+      timestamp = moment.utc(timestamp).toDate();
     }
 
-    var point = location.point;
-    if (!point) return res.send(400, "Missing required parameter 'point'.");
+    var location = data.location;
+    if (!location) return res.send(400, "Missing required parameter 'location'.");
 
-    var properties = point.properties ? point.properties : {};
-    properties.createdOn = properties.updatedOn = timestamp;
-    properties.user = req.user._id;
+    location.properties = location.properties || {};
+    location.properties.createdOn = location.properties.updatedOn = timestamp;
+    location.properties.user = req.user._id;
 
-    req.locationFeature = {
-      type: 'Feature',
-      geometry: point,
-      properties: properties
-    };
+    console.log(JSON.stringify(location));
+    req.location = location;
 
     next();
   }
@@ -76,15 +73,13 @@ module.exports = function(app, auth) {
     access.hasPermission('CREATE_LOCATION'),
     validateLocation,
     function(req, res) {
-      Location.createLocation(req.user, req.locationFeature, function(err, location) {
-        // if (err) {
-        //   return res.send(400, err);
-        // }
+      Location.createLocation(req.user, req.location, function(err, location) {
+        if (err) {
+          return res.send(400, err);
+        }
 
-        //res.json(location);
+        res.json(location);
       });
-
-      res.send(200);
     }
   );
 

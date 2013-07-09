@@ -41,8 +41,8 @@ var deleteExpiredTokens = function(callback) {
 
 exports.getUserForToken = function(token, callback) {
   deleteExpiredTokens(function(err) {
-    var query = {token: token};
-    Token.findOne(query).populate('user').exec(function(err, token) {
+    var conditions = {token: token};
+    Token.findOne(conditions).populate('user').exec(function(err, token) {
       var user = null;
 
       if (!token || !token.user) {
