@@ -60,5 +60,9 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
         return $http.get(appConstants.rootUrl + '/FeatureServer/'+ layerId + '/' + observationId + "?query&outFields=*&access_token=" + mageLib.getLocalItem('token'));
       };
 
+      featureServiceFunctions.getAttachments = function (layerId, observationId) {
+        return $http.get(appConstants.rootUrl + '/FeatureServer/'+ layerId + '/' + observationId + '/attachments?access_token=' + mageLib.getLocalItem('token'));
+      }
+
       return featureServiceFunctions;
     }])

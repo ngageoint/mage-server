@@ -34,20 +34,15 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.teams = teams; //the next few fill in the selects on the observation form
   $scope.levels = levels;
   $scope.observationTypes = observationTypes;
-  $scope.team = teams[0]; // form items
-  $scope.level = levels[0];
-  $scope.observationType = observationTypes[0];
-  $scope.unit = "";
-  $scope.description = "";
   $scope.files = []; // pre upload
   $scope.attachments = []; // images loaded from the server
   $scope.progressVisible = false; // progress bar stuff
   $scope.progressVisible = 0;
 
   $scope.observation.attributes = {};
-  $scope.observation.attributes.TEAM = teams[0];
-  $scope.observation.attributes.LEVEL = levels[0];
-  $scope.observation.attributes.TYPE = observationTypes[0];
+  $scope.observation.attributes.TEAM = $scope.teams[0];
+  $scope.observation.attributes.EVENTLEVEL = $scope.levels[0];
+  $scope.observation.attributes.TYPE = $scope.observationTypes[0];
   $scope.observation.attributes.UNIT = "";
   $scope.observation.attributes.DESCRIPTION = "";
 
@@ -113,6 +108,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     mageLib.geolocate($scope.setCurrentLocation, mageLib.geoError, {});
   }
 
+  /* this watch handles opening observations when a placemark on the map has been clicked. */
   $scope.$watch("observation", function (oldValue, newValue) {
     console.log("Observation changed " + JSON.stringify($scope.observation));
     if ($scope.observation.feature && $scope.observation.feature.properties.OBJECTID > 0) { //open existing observation
@@ -136,11 +132,26 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
                   return o;
                 }
               });
+          /*$scope.currentLayerId = _.find($scope.featureLayers, function (l) {
+              if (l.id == $scope.observation.attributes.LAYER) {
+                return l;
+              }
+            }); */
           $scope.showObservation = true;
+
+          FeatureService.getAttachments($scope.observation.attributes.LAYER, $scope.observation.attributes.OBJECTID).
+            success(function (data, status, headers, config) {
+              $scope.attachments = data.attachmentInfos;
+              $scope.attachmentUrl = appConstants.rootUrl + '/FeatureServer/'+ $scope.observation.attributes.LAYER
+                + '/' + $scope.observation.attributes.OBJECTID + '/attachments?access_token=' + mageLib.getLocalItem('token');
+            }).
+            error(function (data, status, headers, config) {
+
+            });
         }).
         error(function (data, status, headers, config) {
           // if the user does not have permissions to get layers, re-route them to the signin page
-          if (status > 399 && status < 500) {
+          if (status == 401) {
             $location.path('/');
           }
         });
@@ -168,7 +179,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
       }).
       error(function (data, status, headers, config) {
           $log.log("Error getting layers: " + status);
-          if (status > 399) {
+          if (status == 401) {
             $location.path('/');
           }
       });
@@ -254,7 +265,8 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     $scope.observation.attributes.TYPE = $scope.observation.attributes.TYPE.title;
     $scope.observation.attributes.EVENTLEVEL = $scope.observation.attributes.EVENTLEVEL.color;
     $scope.observation.attributes.TEAM = $scope.observation.attributes.TEAM.name;
-    
+    $scope.observation.attributes.LAYER = $scope.currentLayerId;
+
     $scope.observation.geometry = {
         "x": $scope.marker.lng, 
         "y": $scope.marker.lat
@@ -269,6 +281,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
       obs.geometry.x = $scope.observation.geometry.coordinates[1];
     } else {
       operation = "addFeatures";
+      delete $scope.observation.attributes.OBJECTID;
     }
 
     // make a call to the FeatureService
@@ -292,7 +305,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
         }
 
         if ($scope.files.length > 0) {
-            $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/' + objectId + '/addAttachment?access_token=' + mageLib.getLocalItem('token');
+            $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.observation.attributes.LAYER + '/' + objectId + '/addAttachment?access_token=' + mageLib.getLocalItem('token');
             $scope.uploadFile();
           }
       });
