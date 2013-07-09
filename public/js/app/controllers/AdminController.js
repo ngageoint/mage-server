@@ -106,6 +106,18 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     console.log("saving team...");
   }
 
+  $scope.signup = function () {
+    UserService.signup($scope.user).
+      success(function (data, status, headers, config) {
+        console.log('created user ' + data);
+        $scope.showStatusMessage("Account created", "Contact an administrator to activate your account.", "alert-success");
+        $scope.user = {};
+      }).
+      error(function (data, status, headers, config) {
+        console.log('created user ' + data);
+        $scope.showStatusMessage("There was a problem creating your account", data, "alert-error");
+      });
+  }
 
   /* User admin functions */
   $scope.saveUser = function () {

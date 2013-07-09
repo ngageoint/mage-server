@@ -20,7 +20,13 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
         return user;
       };
 
+      /* the admin function, allows you to add roles */
       userServiceFunctions.createUser = function(user) {
+        return $http.post(appConstants.rootUrl + '/api/users?access_token=' + mageLib.getLocalItem('token'), $.param(user), {headers: {"Content-Type": "application/x-www-form-urlencoded"}});
+      }
+
+      /* For the sign up page, no token necessary */
+      userServiceFunctions.signup = function (user) {
         return $http.post(appConstants.rootUrl + '/api/users', $.param(user), {headers: {"Content-Type": "application/x-www-form-urlencoded"}});
       }
 
