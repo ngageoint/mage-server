@@ -42,18 +42,37 @@ module.exports = function(app, auth) {
     }
   );
 
-
+  // export locations into KML
   app.get(
     '/api/locations/export',
-    //p***REMOVED***port.authenticate('bearer'),
-    //access.hasPermission('READ_LOCATION'),
+    p***REMOVED***port.authenticate('bearer'),
+    access.hasPermission('READ_LOCATION'),
     function(req, res) {
-      res.writeHead(200,{"Content-Type": "application/vnd.google-earth.kml+xml"});
-      res.write(generate_kml.generateKMLHeader());
-      res.write(generate_kml.generateKMLDocument());
-      res.write(generate_kml.generatePlacemark('point1', 'localhost', 39.83636818,-105.646844,3332.199951));
-      res.write(generate_kml.generateKMLDocumentClose());
-      res.end(generate_kml.generateKMLClose()); 
+
+      Location.getLocations(req.user, 100, function(err, users) {
+
+        if(err) {
+          console.log(err);
+          return res.send(400, err);
+        }
+
+        res.writeHead(200,{"Content-Type": "application/vnd.google-earth.kml+xml"});
+        res.write(generate_kml.generateKMLHeader());
+        res.write(generate_kml.generateKMLDocument());
+
+        users.forEach(function(user){          
+          user.locations.forEach(function(location) {           
+            var x = location.location.geometry.coordinates[0];
+            var y = location.location.geometry.coordinates[1];
+            res.write(generate_kml.generatePlacemark('point1', 'localhost', x,y,0));
+          });
+        }); 
+        
+        res.write(generate_kml.generateKMLDocumentClose());
+        res.end(generate_kml.generateKMLClose()); 
+
+      });
+
     }
   );
 
