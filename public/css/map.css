@@ -89,12 +89,15 @@ html, body, div.leaflet-container {
 	z-index: 1999;
 }
 
-#goto-address {
+/* I switched the position for goto-address and new observation buttons for a better layout while 
+	 we are waiting to get the rest of the buttons wired up so the UI doesnt look weird.
+*/
+#goto-address { 
 	position: absolute;
 	height: 50px;
 	width: 50px;
 	bottom: 5px;
-	left: 68px;
+	left: 133px; /*68px*/
 	z-index: 1999;
 }
 
@@ -103,7 +106,7 @@ html, body, div.leaflet-container {
 	height: 50px;
 	width: 50px;
 	bottom: 5px;
-	left: 133px;
+	left: 68px; /*133px*/
 	z-index: 1999;
 }
 

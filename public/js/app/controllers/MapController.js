@@ -99,10 +99,9 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
 
   // call back for the geolocation ***REMOVED***
   $scope.setCurrentLocation = function (position) {
-    $scope.$apply(function() {
-      $scope.zoom = 12;
-      $scope.center = { lat: position.coords.latitude, lng: position.coords.longitude };
-    });
+    $scope.zoom = 12;
+    $scope.center = { lat: position.coords.latitude, lng: position.coords.longitude };
+    $scope.$apply();
   }
 
   $scope.getGeolocation = function () {
