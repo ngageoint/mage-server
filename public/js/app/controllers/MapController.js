@@ -14,6 +14,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.externalLayer = "";
   $scope.observation = {};
   $scope.newFeature = null;
+  $scope.token = mageLib.getLocalItem('token');
 
   /* Data models for the settings */
   $scope.layers = [];
@@ -143,7 +144,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
             success(function (data, status, headers, config) {
               $scope.attachments = data.attachmentInfos;
               $scope.attachmentUrl = appConstants.rootUrl + '/FeatureServer/'+ $scope.observation.attributes.LAYER
-                + '/' + $scope.observation.attributes.OBJECTID + '/attachments?access_token=' + mageLib.getLocalItem('token');
+                + '/' + $scope.observation.attributes.OBJECTID + '/attachments/';
             }).
             error(function (data, status, headers, config) {
 
