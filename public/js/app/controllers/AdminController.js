@@ -132,6 +132,11 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   }
 
   $scope.editUser = function (user) {
+    // TODO temp code to convert array of phones to one phone
+    if (user.phones && user.phones.length > 0) {
+      user.phone = user.phones[0].number;
+    }
+
     $scope.user = user;
     $scope.setShowUserForm(true);
     $scope.scrollTo('user-form');

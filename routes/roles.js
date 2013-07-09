@@ -23,7 +23,7 @@ module.exports = function(app, auth) {
   // get all roles
   app.get(
     '/api/roles', 
-    access.hasPermission('READ_ROLE'),
+    access.authorize('READ_ROLE'),
     function (req, res) {
       Role.getRoles(function(err, roles) {
         return res.json(roles);
@@ -34,7 +34,7 @@ module.exports = function(app, auth) {
   // get role
   app.get(
     '/api/roles/:roleId', 
-    access.hasPermission('READ_ROLE'), 
+    access.authorize('READ_ROLE'), 
     function (req, res) {
       res.json(req.role);
     }
@@ -43,7 +43,7 @@ module.exports = function(app, auth) {
   // Create a new role
   app.post(
     '/api/roles',
-    access.hasPermission('CREATE_ROLE'),
+    access.authorize('CREATE_ROLE'),
     validateRoleParams,
     function(req, res) {
       Role.createRole(req.roleParam, function(err, role) {
@@ -59,7 +59,7 @@ module.exports = function(app, auth) {
   // Update a role
   app.put(
     '/api/roles/:roleId',
-    access.hasPermission('UPDATE_ROLE'), 
+    access.authorize('UPDATE_ROLE'), 
     function(req, res) {
       var update = {};
       if (req.roleParam.name) update.name = req.roleParam.name;
@@ -81,7 +81,7 @@ module.exports = function(app, auth) {
   // Delete a role
   app.delete(
     '/api/roles/:roleId', 
-    access.hasPermission('DELETE_ROLE'),
+    access.authorize('DELETE_ROLE'),
     function(req, res) {
       Role.deleteRole(req.role, function(err, role) {
         if (err) {

@@ -84,7 +84,7 @@ module.exports = function(app, auth) {
   // Queries for ESRI Styled records built for the ESRI format and syntax
   app.get(
     '/FeatureServer/:layerId/query',
-    access.hasPermission('READ_FEATURE'), 
+    access.authorize('READ_FEATURE'), 
     parseQueryParams, 
     function (req, res) {
       console.log("SAGE ESRI Features GET REST Service Requested");
@@ -136,7 +136,7 @@ module.exports = function(app, auth) {
   // Gets one ESRI Styled record built for the ESRI format and syntax
   app.get(
     '/FeatureServer/:layerId/:featureObjectId',
-    access.hasPermission('READ_FEATURE'),
+    access.authorize('READ_FEATURE'),
     function (req, res) {
       console.log("SAGE ESRI Features (ID) GET REST Service Requested");
 
@@ -151,7 +151,7 @@ module.exports = function(app, auth) {
   // This function creates a new ESRI Style Feature 
   app.post(
     '/FeatureServer/:layerId/addFeatures',
-    access.hasPermission('CREATE_FEATURE'),
+    access.authorize('CREATE_FEATURE'),
     function(req, res) {
       console.log("SAGE ESRI Features POST REST Service Requested");
 
@@ -196,7 +196,7 @@ module.exports = function(app, auth) {
   // This function will update a feature by the ID
   app.post(
     '/FeatureServer/:layerId/updateFeatures',
-    access.hasPermission('UPDATE_FEATURE'),
+    access.authorize('UPDATE_FEATURE'),
     function (req, res) {
       console.log("SAGE Features (ID) UPDATE REST Service Requested");
 
@@ -248,7 +248,7 @@ module.exports = function(app, auth) {
 
   app.post(
     '/FeatureServer/:layerId/deleteFeatures',
-    access.hasPermission('DELETE_FEATURE'),
+    access.authorize('DELETE_FEATURE'),
     function(req, res) {
       console.log("SAGE ESRI Features (ID) Attachments DELETE REST Service Requested");
 
@@ -315,7 +315,7 @@ module.exports = function(app, auth) {
   // This function gets all the attachments for a particular ESRI record  
   app.get(
     '/FeatureServer/:layerId/:featureObjectId/attachments',
-    access.hasPermission('READ_FEATURE'),
+    access.authorize('READ_FEATURE'),
     function(req, res){
       console.log("SAGE ESRI Features (ID) Attachments GET REST Service Requested");
 
@@ -335,7 +335,7 @@ module.exports = function(app, auth) {
   // This function gets a specific attachment for an ESRI feature 
   app.get(
     '/FeatureServer/:layerId/:featureObjectId/attachments/:attachmentId',
-    access.hasPermission('READ_FEATURE'),
+    access.authorize('READ_FEATURE'),
     function(req, res, next) {
       console.log("SAGE ESRI Features (ID) Attachments (ID) GET REST Service Requested");
 
@@ -370,7 +370,7 @@ module.exports = function(app, auth) {
   // This function will add an attachment for a particular ESRI record 
   app.post(
     '/FeatureServer/:layerId/:objectId/addAttachment',
-    access.hasPermission('CREATE_FEATURE'),
+    access.authorize('CREATE_FEATURE'),
     function(req, res, next) {
       console.log("SAGE ESRI Features (ID) Attachments POST REST Service Requested");
 
@@ -411,7 +411,7 @@ module.exports = function(app, auth) {
   // TODO test
   app.post(
     '/FeatureServer/:layerId/:featureObjectId/updateAttachment',
-    access.hasPermission('UPDATE_FEATURE'),
+    access.authorize('UPDATE_FEATURE'),
     function(req, res, next) {
       console.log("SAGE ESRI Features (ID) Attachments UPDATE REST Service Requested");
 
@@ -459,7 +459,7 @@ module.exports = function(app, auth) {
   // This function will delete all attachments for the given list of attachment ids
   app.post(
     '/FeatureServer/:layerId/:featureObjectId/deleteAttachments',
-    access.hasPermission('DELETE_FEATURE'),
+    access.authorize('DELETE_FEATURE'),
     function(req, res) {
       console.log("SAGE ESRI Features (ID) Attachments DELETE REST Service Requested");
 
