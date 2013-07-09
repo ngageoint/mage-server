@@ -29,7 +29,7 @@ module.exports = function(app, auth) {
   // get all devices
   app.get(
     '/api/devices',
-    access.hasPermission('READ_DEVICE'),
+    access.authorize('READ_DEVICE'),
       function (req, res) {
       Device.getDevices(function (err, devices) {
         res.json(devices);
@@ -39,7 +39,7 @@ module.exports = function(app, auth) {
   // get device
   app.get(
     '/api/devices/:deviceId', 
-    access.hasPermission('READ_DEVICE'),
+    access.authorize('READ_DEVICE'),
     function (req, res) {
       res.json(req.device);
     }
@@ -49,7 +49,7 @@ module.exports = function(app, auth) {
   app.post(
     '/api/devices',
     validateDeviceParams,
-    access.hasPermission('CREATE_DEVICE'),
+    access.authorize('CREATE_DEVICE'),
     function(req, res) {
       Device.createDevice(req.deviceParam, function(err, device) {
         if (err) {
@@ -64,7 +64,7 @@ module.exports = function(app, auth) {
   // Update a device
   app.put(
     '/api/devices/:deviceId',
-    access.hasPermission('UPDATE_DEVICE'),
+    access.authorize('UPDATE_DEVICE'),
     validateDeviceParams, 
     function(req, res) {
       var update = {};
@@ -86,7 +86,7 @@ module.exports = function(app, auth) {
   // Delete a device
   app.delete(
     '/api/devices/:deviceId', 
-    access.hasPermission('DELETE_DEVICE'),
+    access.authorize('DELETE_DEVICE'),
     function(req, res) {
       Device.deleteDevice(req.device, function(err, device) {
         if (err) {

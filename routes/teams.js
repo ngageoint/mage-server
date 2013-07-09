@@ -21,7 +21,7 @@ module.exports = function(app, auth) {
   // get all teams
   app.get(
     '/api/teams', 
-    access.hasPermission('READ_TEAM'),
+    access.authorize('READ_TEAM'),
       function (req, res) {
       Team.getTeams(function (err, teams) {
         res.json(teams);
@@ -31,7 +31,7 @@ module.exports = function(app, auth) {
   // get team
   app.get(
     '/api/teams/:teamId', 
-    access.hasPermission('READ_TEAM'), 
+    access.authorize('READ_TEAM'), 
     function (req, res) {
       res.json(req.team);
     }
@@ -40,7 +40,7 @@ module.exports = function(app, auth) {
   // Create a new team
   app.post(
     '/api/teams',
-    access.hasPermission('CREATE_TEAM'),
+    access.authorize('CREATE_TEAM'),
     validateTeamParams,
     function(req, res) {
       Team.createTeam(req.teamParam, function(err, team) {
@@ -56,7 +56,7 @@ module.exports = function(app, auth) {
   // Update a team
   app.put(
     '/api/teams/:teamId',
-    access.hasPermission('UPDATE_TEAM'), 
+    access.authorize('UPDATE_TEAM'), 
     function(req, res) {
       var update = {};
       if (req.teamParam.name) update.name = req.teamParam.name;
@@ -75,7 +75,7 @@ module.exports = function(app, auth) {
   // Delete a team
   app.delete(
     '/api/teams/:teamId', 
-    access.hasPermission('DELETE_TEAM'),
+    access.authorize('DELETE_TEAM'),
     function(req, res) {
       Team.deleteTeam(req.team, function(err, team) {
         if (err) {

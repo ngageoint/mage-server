@@ -11,8 +11,10 @@ var Role = require('../models/role');
 function Access() {
 }
 
-Access.prototype.hasPermission = function(permission) {
+Access.prototype.authorize = function(permission) {
   return function(req, res, next) {
+    if (!req.user) return res.send(401);
+
     var role = req.user.role;
     if (!role) {
       return res.send(401);
@@ -28,24 +30,17 @@ Access.prototype.hasPermission = function(permission) {
   }
 }
 
-Access.prototype.hasPermissions = function(permissions) {
-  return function(req, res, next) {
+Access.prototype.hasPermission = function(user, permission, done) {
+  if (!user) return done(null, false);
 
-    var role = req.user.role;
-    if (!role) {
-      return res.send(401);
-    }
+  var role = user.role;
+  if (!role) return done(null, false);
 
-    var userPermissions = req.user.role.permissions;
+  var userPermissions = user.role.permissions;
 
-    var ok = permissions.every(function(permission) {
-      return userPermissions.indexOf(permission) != -1;
-    });
+  var hasPermission = userPermissions.indexOf(permission) != -1;
 
-    if (!ok) return res.send(401);
-
-    next();
-  }
+  done(null, hasPermission);
 }
 
 /**

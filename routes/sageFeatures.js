@@ -36,7 +36,7 @@ module.exports = function(app, auth) {
   // Queries for ESRI Styled records built for the ESRI format and syntax
   app.get(
     '/FeatureServer/:layerId/features',
-    access.hasPermission('READ_FEATURE'),
+    access.authorize('READ_FEATURE'),
     parseQueryParams, 
     function (req, res) {
       console.log("SAGE ESRI Features GET REST Service Requested");

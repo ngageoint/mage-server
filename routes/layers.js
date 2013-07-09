@@ -45,7 +45,7 @@ module.exports = function(app, auth) {
   // Get all layers
   app.get(
     '/FeatureServer',
-    access.hasPermission('READ_LAYER'),
+    access.authorize('READ_LAYER'),
     function (req, res) {
       console.log("SAGE Layers GET REST Service Requested");
 
@@ -60,7 +60,7 @@ module.exports = function(app, auth) {
   // Get layer by id
   app.get(
     '/FeatureServer/:layerId',
-    access.hasPermission('READ_LAYER'),
+    access.authorize('READ_LAYER'),
     function(req, res) {
       console.log("SAGE Layers (ID) GET REST Service Requested");
 
@@ -72,7 +72,7 @@ module.exports = function(app, auth) {
   // Create a new layer
   app.post(
     '/FeatureServer',
-    access.hasPermission('CREATE_LAYER'),
+    access.authorize('CREATE_LAYER'),
     function(req, res) {
       var name = req.param('name');
       if (!name) {
@@ -97,7 +97,7 @@ module.exports = function(app, auth) {
   // Archive a layer
   app.delete(
     '/FeatureServer/:layerId',
-    access.hasPermission('DELETE_LAYER'),
+    access.authorize('DELETE_LAYER'),
     function(req, res) {
       console.log("SAGE Layers (ID) DELETE REST Service Requested");
 

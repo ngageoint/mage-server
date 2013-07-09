@@ -18,12 +18,6 @@ var TokenSchema = new Schema({
   }
 );
 
-TokenSchema.pre('save', function(next) {
-  var token = this;
-  token.timestamp = new Date();
-  next();
-});
-
 // Creates the Model for the User Schema
 var Token = mongoose.model('Token', TokenSchema);
 

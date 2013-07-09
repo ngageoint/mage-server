@@ -33,22 +33,6 @@ UserSchema.method('validP***REMOVED***word', function(p***REMOVED***word, callba
   hasher.validP***REMOVED***word(p***REMOVED***word, user.p***REMOVED***word, callback);
 });
 
-UserSchema.pre('save', function(next) {
-  var user = this;
-
-  // only hash the p***REMOVED***word if it has been modified (or is new)
-  if (!user.isModified('p***REMOVED***word')) {
-    return next();
-  }
-
-  hasher.encryptP***REMOVED***word(user.p***REMOVED***word, function(err, encryptedP***REMOVED***word) {
-    if (err) return next(err);
-
-    user.p***REMOVED***word = encryptedP***REMOVED***word;
-    next();
-  });
-});
-
 UserSchema.pre('remove', function(next) {
   var user = this;
 
@@ -81,6 +65,16 @@ UserSchema.set("toJSON", {
 // Creates the Model for the User Schema
 var User = mongoose.model('User', UserSchema);
 
+var encryptP***REMOVED***word = function(p***REMOVED***word, done) {
+  if (!p***REMOVED***word) return done(null, null);
+
+  hasher.encryptP***REMOVED***word(p***REMOVED***word, function(err, encryptedP***REMOVED***word) {
+    if (err) return done(err);
+
+    done(null, encryptedP***REMOVED***word);
+  });
+}
+
 exports.getUserById = function(id, callback) {
   User.findById(id).populate('role').exec(function(err, user) {
     if (err) {
@@ -108,32 +102,39 @@ exports.getUsers = function(callback) {
 }
 
 exports.createUser = function(user, callback) {
-  var create = {
-    username: user.username,
-    firstname: user.firstname,
-    lastname: user.lastname,
-    email: user.email,
-    p***REMOVED***word: user.p***REMOVED***word
-  }
+  encryptP***REMOVED***word(user.p***REMOVED***word, function(err, encryptedP***REMOVED***word) {
+    if (err) return next(err);
 
-  User.create(create, function(err, user) {
-    if (err) {
-      console.log('Could not create user: ' + JSON.stringify(create));
+    var create = {
+      username: user.username,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+      phones: user.phones,
+      p***REMOVED***word: encryptedP***REMOVED***word
     }
 
-    callback(err, user);
+    User.create(create, function(err, user) {
+      if (err) {
+        console.log('Could not create user: ' + JSON.stringify(create));
+      }
+
+      callback(err, user);
+    });
   });
 }
 
 exports.updateUser = function(id, update, callback) {
-  console.log('updating user');
-  User.findByIdAndUpdate(id, update, function(err, user) {
-    if (err) {
-      console.log('Could not update user ' + id + '. error: ' + err);
-    }
+  encryptP***REMOVED***word(update.p***REMOVED***word, function(err, encryptedP***REMOVED***word) {
+    if (update.p***REMOVED***word) update.p***REMOVED***word = encryptedP***REMOVED***word;
+    User.findByIdAndUpdate(id, update, function(err, user) {
+      if (err) {
+        console.log('Could not update user ' + id + '. error: ' + err);
+      }
 
-    console.log('just updated user: ' + JSON.stringify(user));
-    callback(err, user);
+      console.log('just updated user: ' + JSON.stringify(user));
+      callback(err, user);
+    });
   });
 }
 
