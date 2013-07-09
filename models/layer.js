@@ -10,6 +10,7 @@ var LayerSchema = new Schema({
   type: { type: String, required: true },
   name: { type: String, required: true, unique: true },
   format: { type: String, required: false },
+  tms: { type: Boolean, required: false },
   url: { type: String, required: false },
   description: { type: String, required: false },
   collectionName: { type: String, required: true }
