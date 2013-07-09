@@ -212,7 +212,7 @@
       </span>
       <hr>
       <div cl***REMOVED***="attachment" ng-repeat="attachment in attachments">
-        <img src="{{attachmentUrl}}{{attachment.id}}">
+        <img src="{{attachmentUrl + attachment.id + '?access_token=' + token}}">
       </div>
     </div>
   </div> <!-- end of observation panel -->
