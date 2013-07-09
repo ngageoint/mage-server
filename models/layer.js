@@ -8,6 +8,7 @@ var Schema = mongoose.Schema;
 var LayerSchema = new Schema({
   id: { type: Number, required: true, unique: true },
   type: { type: String, required: true },
+  base: { type: Boolean, required: false },
   name: { type: String, required: true, unique: true },
   format: { type: String, required: false },
   tms: { type: Boolean, required: false },
