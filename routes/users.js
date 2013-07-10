@@ -188,6 +188,44 @@ module.exports = function(app, auth) {
       });
   });
 
+  // get info for the user bearing a token, i.e get info for myself
+  app.get(
+    '/api/users/myself',
+    p***REMOVED***port.authenticate('bearer'),
+    function(req, res) {
+      res.json(req.user);
+    }
+  );
+
+  // update myself
+  app.put(
+    '/api/users/myself',
+    p***REMOVED***port.authenticate('bearer'),
+    function(req, res) {
+      var update = {};
+      if (req.param('username')) update.username = req.param('username');
+      if (req.param('firstname')) update.firstname = req.param('firstname');
+      if (req.param('lastname')) update.lastname = req.param('lastname');
+      if (req.param('email')) update.email = req.param('email');
+
+      var p***REMOVED***word = req.param('p***REMOVED***word');
+      var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
+      if (p***REMOVED***word && p***REMOVED***wordconfirm) {
+        if (p***REMOVED***word != p***REMOVED***wordconfirm) {
+          return res.send(400, 'p***REMOVED***words do not match');
+        }
+
+        update.p***REMOVED***word = p***REMOVED***word;
+      }
+
+      User.updateUser(req.user._id, update, function(err, updatedUser) {
+        if (err) return res.send(400, err.message);
+
+        res.json(updatedUser);
+      });
+    }
+  );
+
   // get user by id
   app.get( 
     '/api/users/:userId',
@@ -230,35 +268,6 @@ module.exports = function(app, auth) {
         if (err) return res.send(400, err.message);
 
         res.json(newUser);
-      });
-    }
-  );
-
-  // update myself
-  app.put(
-    '/api/users/myself',
-    p***REMOVED***port.authenticate('bearer'),
-    function(req, res) {
-      var update = {};
-      if (req.param('username')) update.username = req.param('username');
-      if (req.param('firstname')) update.firstname = req.param('firstname');
-      if (req.param('lastname')) update.lastname = req.param('lastname');
-      if (req.param('email')) update.email = req.param('email');
-
-      var p***REMOVED***word = req.param('p***REMOVED***word');
-      var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
-      if (p***REMOVED***word && p***REMOVED***wordconfirm) {
-        if (p***REMOVED***word != p***REMOVED***wordconfirm) {
-          return res.send(400, 'p***REMOVED***words do not match');
-        }
-
-        update.p***REMOVED***word = p***REMOVED***word;
-      }
-
-      User.updateUser(req.user._id, update, function(err, updatedUser) {
-        if (err) return res.send(400, err.message);
-
-        res.json(updatedUser);
       });
     }
   );
