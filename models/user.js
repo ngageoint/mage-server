@@ -65,6 +65,26 @@ UserSchema.set("toJSON", {
 // Creates the Model for the User Schema
 var User = mongoose.model('User', UserSchema);
 
+User.schema.path('username').validate(function(value, done) {
+  User.findOne({username: value}, function(err, user) {
+    if (err) return done(false);
+    if (user) return done(false);
+
+    done(true);
+  });
+}, "exists");
+
+var userGenerationError = function(err) {
+  var msg = "";
+
+  var errors = err.errors;
+  for (error in errors) {
+    msg += "Error creating/updating user, " + errors[error].path + " " + errors[error].type;
+  }
+
+  return new Error(msg);
+}
+
 var encryptP***REMOVED***word = function(p***REMOVED***word, done) {
   if (!p***REMOVED***word) return done(null, null);
 
@@ -115,11 +135,9 @@ exports.createUser = function(user, callback) {
     }
 
     User.create(create, function(err, user) {
-      if (err) {
-        console.log('Could not create user: ' + JSON.stringify(create));
-      }
+      if (err) return callback(userGenerationError(err), null);
 
-      callback(err, user);
+      callback(null, user);
     });
   });
 }

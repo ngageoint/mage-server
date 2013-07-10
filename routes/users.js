@@ -216,9 +216,7 @@ module.exports = function(app, auth) {
       }
 
       User.createUser(req.newUser, function(err, newUser) {
-        if (err) {
-          return res.send(400, err);
-        }
+        if (err) return res.send(400, err.message);
 
         res.json(newUser);
       });
@@ -229,9 +227,7 @@ module.exports = function(app, auth) {
     '/api/users', 
     function(req, res) {
       User.createUser(req.newUser, function(err, newUser) {
-        if (err) {
-          return res.send(400, err);
-        }
+        if (err) return res.send(400, err.message);
 
         res.json(newUser);
       });
@@ -260,9 +256,7 @@ module.exports = function(app, auth) {
       }
 
       User.updateUser(req.user._id, update, function(err, updatedUser) {
-        if (err) {
-          return res.send(400, err);
-        }
+        if (err) return res.send(400, err.message);
 
         res.json(updatedUser);
       });
@@ -322,9 +316,8 @@ module.exports = function(app, auth) {
       }
 
       User.updateUser(req.params.userId, update, function(err, updatedUser) {
-        if (err) {
-          return res.send(400, err);
-        }
+        if (err) return res.send(400, err.message);
+
 
         res.json(updatedUser);
       });
