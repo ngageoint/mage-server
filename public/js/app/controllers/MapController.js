@@ -134,11 +134,6 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
                   return o;
                 }
               });
-          /*$scope.currentLayerId = _.find($scope.featureLayers, function (l) {
-              if (l.id == $scope.observation.attributes.LAYER) {
-                return l;
-              }
-            }); */
           $scope.showObservation = true;
 
           FeatureService.getAttachments($scope.observation.attributes.LAYER, $scope.observation.attributes.OBJECTID).
