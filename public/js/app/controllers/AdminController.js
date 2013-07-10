@@ -8,19 +8,40 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   $scope.currentAdminPanel = "user"; // possible values user, team, and device
   
   $scope.users = [];
-  UserService.getAllUsers().success(function (data) {
-    $scope.users = data;
-  });
+  UserService.getAllUsers().
+    success(function (data) {
+      $scope.users = data;
+    }).
+    error(function (data, status, headers, config) {
+      // if the user does not have admin permissions, re-route them to the signin page
+      if (status == 401) {
+        $location.path('/');
+      }
+    });
 
   $scope.roles = [];
-  UserService.getRoles().success(function (data) {
-    $scope.roles = data;
-  });
+  UserService.getRoles().
+    success(function (data) {
+      $scope.roles = data;
+    }).
+    error(function (data, status, headers, config) {
+      // if the user does not have admin permissions, re-route them to the signin page
+      if (status == 401) {
+        $location.path('/');
+      }
+    });
 
   $scope.devices = [];
-  DeviceService.getAllDevices().success(function (data) {
-    $scope.devices = data;
-  })
+  DeviceService.getAllDevices().
+    success(function (data) {
+      $scope.devices = data;
+    }).
+    error(function (data, status, headers, config) {
+      // if the user does not have admin permissions, re-route them to the signin page
+      if (status == 401) {
+        $location.path('/');
+      }
+    });
   
   $scope.team = {};
   $scope.user = {};
@@ -134,6 +155,10 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
       error(function (data, status, headers, config) {
         $scope.showStatusMessage("Unable to create user", data, "alert-error");
         console.log('Something bad happened while creating a user...' + status);
+        // if the user does not have admin permissions, re-route them to the signin page
+        if (status == 401) {
+          $location.path('/');
+        }
       });
     }
   }

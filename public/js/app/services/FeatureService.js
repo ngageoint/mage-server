@@ -38,8 +38,8 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
         @return A promise of the REST call that the caller can use to determine success or failuer and act accordingly.
       */
       featureServiceFunctions.uploadAttachment = function (layerId, observationId, file) {
-
-      }
+        // just add code here
+      };
 
       /*
         Return all of the observations from a layer.
