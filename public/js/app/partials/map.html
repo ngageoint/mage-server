@@ -94,14 +94,14 @@
         <i cl***REMOVED***="icon-filter icon-sage pull-left icon-spacer"></i>
         <h4>Filter Output</h4>
       </div>
-        <div>Time Range:</div>
-        <select ng-model="time_filter">
-            <option value="300">Last 5 Minutes</option>
-            <option value="3600">Last Hour</option>
-            <option value="43200">Last 12 Hours</option>
-            <option value="86400">Last 24 Hours</option>
-            <option value="-1">All (Use With Caution)</option>
-        </select>
+      <div>Time Range:</div>
+      <select ng-model="time_filter">
+        <option value="300">Last 5 Minutes</option>
+        <option value="3600">Last Hour</option>
+        <option value="43200">Last 12 Hours</option>
+        <option value="86400">Last 24 Hours</option>
+        <option value="-1">All (Use With Caution)</option>
+      </select>
     </form>
     <button cl***REMOVED***="btn btn-inverse" ng-click="closeExport()" ngm-tap="export()">Cancel</button>
     <button cl***REMOVED***="btn" ng-click="export()" ngm-tap="export()">Export</button>
