@@ -49,7 +49,10 @@ module.exports = function(app, auth) {
     access.authorize('READ_LOCATION'),
     function(req, res) {
 
-      Location.getLocations(req.user, 100, function(err, users) {
+      var timeFilter = req.query.time_filter;
+
+      //1 million point limit for now...
+      Location.getLocationsWithFilters(req.user, timeFilter, 1000000, function(err, users) {
 
         if(err) {
           console.log(err);

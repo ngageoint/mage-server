@@ -59,6 +59,29 @@ exports.getLocations = function(user, limit, callback) {
   });
 }
 
+// get locations for users (filters for)
+exports.getLocationsWithFilters = function(user, time_filter, limit, callback) {
+  
+  var date = new Date();
+  if(time_filter > 0) {
+    var range = new Date().getTime() - time_filter*1000;
+    date = new Date(range);
+  }
+  else {
+    date = new Date(0);
+  }
+
+  var sort = { $sort: { "properties.updatedOn": -1 }};
+  var match  = {$match: {"properties.updatedOn" : {$gte: date}}};
+  var group = { $group: { _id: "$properties.user", locations: { $push: {location: {geometry: "$geometry", properties: "$properties"} } }}};
+  var project = { $project: { _id: 0, user: "$_id", locations: "$locations"} };
+  
+  Location.aggregate(sort, match, group, project, function(err, aggregate) {
+    console.log("Got aggregate: " + JSON.stringify(aggregate));
+    callback(err, aggregate);
+  });
+}
+
 // update latest location
 exports.updateLocation = function(user, timestamp, callback) {
   var conditions = {"properties.user": user._id};

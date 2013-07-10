@@ -439,7 +439,6 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   /* Export existing points to  */
   $scope.export = function () {
     console.log("exporting features to KML");
-    alert('time_filter = ' + $scope.time_filter);
     window.location.href = appConstants.rootUrl + "/api/locations/export" + 
       "?access_token=" + mageLib.getLocalItem('token') +
       "&time_filter=" + $scope.time_filter;
