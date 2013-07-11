@@ -1,4 +1,6 @@
-module.exports = function(jsol) {
+module.exports = function() {
+
+  var jsol = require('./jsol');
 
   var parsePoint = function(text) {
     point = jsol.parseJSOL(text);
