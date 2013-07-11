@@ -7,7 +7,7 @@ For example:
 {foo:"bar"} is equivalent to {"foo":"bar"} in JavaScript. Both are valid JSOL.
 */
 
-module.exports = function(jsol) {
+module.exports = function() {
   // Used for trimming whitespace
   var trim = /^(\s|\u00A0)+|(\s|\u00A0)+$/g;
 
