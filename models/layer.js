@@ -103,6 +103,7 @@ exports.create = function(data, callback) {
     var layer = new Layer({
       id: id,
       name: data.name,
+      type: data.type,
       collectionName: 'features' + id
     });
 
