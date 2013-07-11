@@ -3,6 +3,7 @@ var mongoose = require('mongoose')
   , Role = require('../models/role');
 
 var userPermissions = [
+  'READ_LAYER',
   'CREATE_FEATURE', 'READ_FEATURE', 'UPDATE_FEATURE', 'DELETE_FEATURE', 
   'CREATE_LOCATION', 'READ_LOCATION', 'UPDATE_LOCATION', 'DELETE_LOCATION'];
 
