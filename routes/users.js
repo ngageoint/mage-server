@@ -202,11 +202,11 @@ module.exports = function(app, auth) {
     '/api/users/myself',
     p***REMOVED***port.authenticate('bearer'),
     function(req, res) {
-      var update = {};
-      if (req.param('username')) update.username = req.param('username');
-      if (req.param('firstname')) update.firstname = req.param('firstname');
-      if (req.param('lastname')) update.lastname = req.param('lastname');
-      if (req.param('email')) update.email = req.param('email');
+      var user = req.user;
+      if (req.param('username')) user.username = req.param('username');
+      if (req.param('firstname')) user.firstname = req.param('firstname');
+      if (req.param('lastname')) user.lastname = req.param('lastname');
+      if (req.param('email')) user.email = req.param('email');
 
       var p***REMOVED***word = req.param('p***REMOVED***word');
       var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
@@ -215,10 +215,10 @@ module.exports = function(app, auth) {
           return res.send(400, 'p***REMOVED***words do not match');
         }
 
-        update.p***REMOVED***word = p***REMOVED***word;
+        user.p***REMOVED***word = p***REMOVED***word;
       }
 
-      User.updateUser(req.user._id, update, function(err, updatedUser) {
+      User.updateUser(user, function(err, updatedUser) {
         if (err) return res.send(400, err.message);
 
         res.json(updatedUser);
@@ -307,28 +307,31 @@ module.exports = function(app, auth) {
     p***REMOVED***port.authenticate('bearer'),
     access.authorize('UPDATE_USER'),
     function(req, res) {
-      var update = {};
-      if (req.param('username')) update.username = req.param('username');
-      if (req.param('firstname')) update.firstname = req.param('firstname');
-      if (req.param('lastname')) update.lastname = req.param('lastname');
-      if (req.param('email')) update.email = req.param('email');
-      if (req.param('role')) update.role = req.param('role');
+      User.getUserById(req.params.userId, function(err, user) {
+        console.log('found user: ' + JSON.stringify(user));
+        if (err) return res.send(400, 'User not found');
 
-      var p***REMOVED***word = req.param('p***REMOVED***word');
-      var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
-      if (p***REMOVED***word && p***REMOVED***wordconfirm) {
-        if (p***REMOVED***word != p***REMOVED***wordconfirm) {
-          return res.send(400, 'p***REMOVED***words do not match');
+        if (req.param('username')) user.username = req.param('username');
+        if (req.param('firstname')) user.firstname = req.param('firstname');
+        if (req.param('lastname')) user.lastname = req.param('lastname');
+        if (req.param('email')) user.email = req.param('email');
+        if (req.param('role')) user.role = req.param('role');
+
+        var p***REMOVED***word = req.param('p***REMOVED***word');
+        var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
+        if (p***REMOVED***word && p***REMOVED***wordconfirm) {
+          if (p***REMOVED***word != p***REMOVED***wordconfirm) {
+            return res.send(400, 'p***REMOVED***words do not match');
+          }
+
+          user.p***REMOVED***word = p***REMOVED***word;
         }
 
-        update.p***REMOVED***word = p***REMOVED***word;
-      }
+        User.updateUser(user, function(err, updatedUser) {
+          if (err) return res.send(400, "Error updating user, " + err.message);
 
-      User.updateUser(req.params.userId, update, function(err, updatedUser) {
-        if (err) return res.send(400, err.message);
-
-
-        res.json(updatedUser);
+          res.json(updatedUser);
+        });
       });
     }
   );

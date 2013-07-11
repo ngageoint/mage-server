@@ -33,6 +33,54 @@ UserSchema.method('validP***REMOVED***word', function(p***REMOVED***word, callba
   hasher.validP***REMOVED***word(p***REMOVED***word, user.p***REMOVED***word, callback);
 });
 
+// Validate that username does not already exist
+UserSchema.pre('save', function(next) {
+  var user = this;
+
+  User.findOne({username: user.username}, function(err, possibleDuplicate) {
+    if (err) return next(err);
+
+    if (possibleDuplicate && !possibleDuplicate._id.equals(user._id)) {
+      return next(new Error('username already exsits'));
+    }
+
+    next();
+  });
+});
+
+// Encrypt p***REMOVED***word before save
+UserSchema.pre('save', function(next) {
+  var user = this;
+
+  // only hash the p***REMOVED***word if it has been modified (or is new)
+  if (!user.isModified('p***REMOVED***word')) {
+    return next();
+  }
+
+  hasher.encryptP***REMOVED***word(user.p***REMOVED***word, function(err, encryptedP***REMOVED***word) {
+    if (err) return next(err);
+
+    user.p***REMOVED***word = encryptedP***REMOVED***word;
+    next();
+  });
+});
+
+// Remove Token if p***REMOVED***word changed
+UserSchema.pre('save', function(next) {
+  var user = this;
+
+  // only hash the p***REMOVED***word if it has been modified (or is new)
+  if (!user.isModified('p***REMOVED***word')) {
+    return next();
+  }
+
+  Token.removeTokenForUser(user, function(err) {
+    if (err) return next(err);
+
+    next();
+  });
+});
+
 UserSchema.pre('remove', function(next) {
   var user = this;
 
@@ -64,26 +112,6 @@ UserSchema.set("toJSON", {
 
 // Creates the Model for the User Schema
 var User = mongoose.model('User', UserSchema);
-
-User.schema.path('username').validate(function(value, done) {
-  User.findOne({username: value}, function(err, user) {
-    if (err) return done(false);
-    if (user) return done(false);
-
-    done(true);
-  });
-}, "exists");
-
-var userGenerationError = function(err) {
-  var msg = "";
-
-  var errors = err.errors;
-  for (error in errors) {
-    msg += "Error creating/updating user, " + errors[error].path + " " + errors[error].type;
-  }
-
-  return new Error(msg);
-}
 
 var encryptP***REMOVED***word = function(p***REMOVED***word, done) {
   if (!p***REMOVED***word) return done(null, null);
@@ -122,37 +150,29 @@ exports.getUsers = function(callback) {
 }
 
 exports.createUser = function(user, callback) {
-  encryptP***REMOVED***word(user.p***REMOVED***word, function(err, encryptedP***REMOVED***word) {
-    if (err) return next(err);
+  var create = {
+    username: user.username,
+    firstname: user.firstname,
+    lastname: user.lastname,
+    email: user.email,
+    phones: user.phones,
+    p***REMOVED***word: user.p***REMOVED***word
+  }
 
-    var create = {
-      username: user.username,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      email: user.email,
-      phones: user.phones,
-      p***REMOVED***word: encryptedP***REMOVED***word
-    }
+  User.create(create, function(err, user) {
+    if (err) return callback(err);
 
-    User.create(create, function(err, user) {
-      if (err) return callback(userGenerationError(err), null);
-
-      callback(null, user);
-    });
+    callback(null, user);
   });
 }
 
-exports.updateUser = function(id, update, callback) {
-  encryptP***REMOVED***word(update.p***REMOVED***word, function(err, encryptedP***REMOVED***word) {
-    if (update.p***REMOVED***word) update.p***REMOVED***word = encryptedP***REMOVED***word;
-    User.findByIdAndUpdate(id, update, function(err, user) {
-      if (err) {
-        console.log('Could not update user ' + id + '. error: ' + err);
-      }
+exports.updateUser = function(user, callback) {
+  user.save(function(err) {
+    if (err) {
+      console.log('Could not update user ' + user.username + ' error ' + err);
+    }
 
-      console.log('just updated user: ' + JSON.stringify(user));
-      callback(err, user);
-    });
+    callback(err, user)
   });
 }
 
