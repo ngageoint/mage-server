@@ -136,7 +136,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
               });
           $scope.showObservation = true;
 
-          FeatureService.getAttachments($scope.observation.attributes.LAYER, $scope.observation.attributes.OBJECTID).
+          FeatureService.getAttachments($scope.observation.layer.id, $scope.observation.attributes.OBJECTID).
             success(function (data, status, headers, config) {
               $scope.attachments = data.attachmentInfos;
               $scope.attachmentUrl = appConstants.rootUrl + '/FeatureServer/'+ $scope.observation.attributes.LAYER
