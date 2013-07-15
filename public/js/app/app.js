@@ -12,7 +12,7 @@ var mage = angular.module("mage", ["ui.bootstrap", "leaflet-directive", "mage.**
   $routeProvider.when('/signup',
   {
     templateUrl:    'js/app/partials/signup.html',
-    controller:     AdminController
+    controller:     SignupController
   });
   $routeProvider.when('/admin',
   {
