@@ -140,8 +140,8 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
         FeatureService.getAttachments(value.layerId, value.featureId).
           success(function (data, status, headers, config) {
             $scope.attachments = data.attachmentInfos;
-            $scope.attachmentUrl = appConstants.rootUrl + '/FeatureServer/'+ $scope.observation.attributes.LAYER
-              + '/' + $scope.observation.attributes.OBJECTID + '/attachments/';
+            $scope.attachmentUrl = appConstants.rootUrl + '/FeatureServer/'+ value.layerId
+              + '/' + value.featureId + '/attachments/';
           }).
           error(function (data, status, headers, config) {
 
