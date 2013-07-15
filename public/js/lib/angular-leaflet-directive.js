@@ -14,7 +14,7 @@
         multiMarkers: "=multimarkers",
         layer: "=layer",
         currentLayerId: "=currentlayerid",
-        observationId: "=observationid",
+        activeFeature: "=activefeature",
         newFeature: "=newfeature"
       },
       template: '<div cl***REMOVED***="map"></div>',
@@ -266,7 +266,7 @@
 
                     marker.on("click", function(e) {
                       scope.$apply(function(s) {
-                        scope.observationId = {layer: layer, feature: feature};
+                        scope.activeFeature = {layerId: layer.id, featureId: feature.properties.OBJECTID};
                       });
                     });
 
@@ -303,6 +303,7 @@
         }, true); // watch layer
 
         scope.$watch("newFeature", function() {
+          console.log("ADDING A new feature")
           var feature = scope.newFeature;
           if (!feature) return;
 
