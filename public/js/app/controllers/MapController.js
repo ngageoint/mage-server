@@ -114,26 +114,27 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
 
     FeatureService.getFeature(value.layerId, value.featureId).
       success(function (data) {
+        $scope.currentLayerId = value.layerId;
         $scope.observation = data;
         $scope.attachments = [];
         $scope.files = [];
         /* Since the angular select directive works off of reference, set the TEAM, LEVEL, and TYPE attributes to theie
             corresponsing values from their respective arrays */
         $scope.observation.attributes.TEAM = _.find($scope.teams, function (t) {
-              if(t.name == $scope.observation.attributes.TEAM) {
-                return t;
-              }
-            });
+          if(t.name == $scope.observation.attributes.TEAM) {
+            return t;
+          }
+        });
         $scope.observation.attributes.EVENTLEVEL = _.find($scope.levels, function (l) {
-              if (l.color == $scope.observation.attributes.EVENTLEVEL){
-                return l;
-              }
-            });
+          if (l.color == $scope.observation.attributes.EVENTLEVEL){
+            return l;
+          }
+        });
         $scope.observation.attributes.TYPE = _.find($scope.observationTypes, function (o) {
-              if (o.title == $scope.observation.attributes.TYPE){
-                return o;
-              }
-            });
+          if (o.title == $scope.observation.attributes.TYPE){
+            return o;
+          }
+        });
         $scope.showObservation = true;
 
         FeatureService.getAttachments(value.layerId, value.featureId).
@@ -287,40 +288,57 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     $scope.observation.attributes.EVENTLEVEL = $scope.observation.attributes.EVENTLEVEL.color;
     $scope.observation.attributes.TEAM = $scope.observation.attributes.TEAM.name;
 
-    $scope.observation.geometry = {
-      "x": $scope.marker.lng, 
-      "y": $scope.marker.lat
-    };
-
     /* check to see if this is this an update or a new observation, if its an update, set the location and ID */
-    operation = $scope.observation.attributes.OBJECTID > 0 ? "PUT" : "POST";
+    if ($scope.observation.attributes.OBJECTID > 0) {
+      $scope.observation.geometry = {
+        "x": $scope.observation.geometry.coordinates[0], 
+        "y": $scope.observation.geometry.coordinates[1]
+      };
 
-    // make a call to the FeatureService
-    FeatureService.saveFeature($scope.currentLayerId, $scope.observation, operation)
-      .success(function (data) {
-        console.log('observation created');
-        var objectId = data.addResults ? data.addResults[0].objectId : data.updateResults[0].objectId;
-        $scope.showObservation = false;
-        $scope.activeFeature = null;
+      // make a call to the FeatureService
+      FeatureService.updateFeature($scope.currentLayerId, $scope.observation)
+        .success(function (data) {
+          console.log('observation updated');
+          var objectId = data.addResults ? data.addResults[0].objectId : data.updateResults[0].objectId;
+          $scope.showObservation = false;
+          $scope.activeFeature = null;
 
-        if (operation == "addFeatures") {
+          if ($scope.files.length > 0) {
+              $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.observation.attributes.LAYER + '/' + objectId + '/addAttachment?access_token=' + mageLib.getLocalItem('token');
+              $scope.uploadFile();
+            }
+        });
+    } else {
+      $scope.observation.geometry = {
+        "x": $scope.marker.lng, 
+        "y": $scope.marker.lat
+      };
+
+      // make a call to the FeatureService
+      FeatureService.createFeature($scope.currentLayerId, $scope.observation)
+        .success(function (data) {
+          console.log('observation created');
+          var objectId = data.addResults ? data.addResults[0].objectId : data.updateResults[0].objectId;
+          $scope.showObservation = false;
+          $scope.activeFeature = null;
+
           $scope.newFeature = {
             type: "Feature",
             geometry: {
               type: "Point",
-              coordinates: [$scope.marker.lng, $scope.marker.lat]
+              coordinates: [$scope.observation.geometry.x, $scope.observation.geometry.y]
             },
             properties: {
               OBJECTID: objectId
             }
           } 
-        }
 
-        if ($scope.files.length > 0) {
-            $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.observation.attributes.LAYER + '/' + objectId + '/addAttachment?access_token=' + mageLib.getLocalItem('token');
-            $scope.uploadFile();
-          }
-      });
+          if ($scope.files.length > 0) {
+              $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.observation.attributes.LAYER + '/' + objectId + '/addAttachment?access_token=' + mageLib.getLocalItem('token');
+              $scope.uploadFile();
+            }
+        });
+    }
   }
   
 
