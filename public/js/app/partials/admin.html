@@ -105,8 +105,14 @@
         <div cl***REMOVED***="top-gap" ng-repeat="u in users">
           <div cl***REMOVED***="row-fluid">
             <div cl***REMOVED***="span2">
-              <button cl***REMOVED***="btn" ng-click="editUser(u)" ngm-tap="editUser(u)"><i cl***REMOVED***="icon-edit"></i></button>
-              <button cl***REMOVED***="btn btn-success" ng-hide='u.role' ng-click="approveUser(u)" ngm-tap="approveUser(u)"><i cl***REMOVED***="icon-thumbs-up"></i> Make Active</button>
+              <button cl***REMOVED***="btn" ng-click="editUser(u)" ngm-tap="editUser(u)">
+                <i cl***REMOVED***="icon-edit"></i>
+                Edit User
+              </button>
+              <button cl***REMOVED***="btn btn-success" ng-hide='u.role' ng-click="approveUser(u)" ngm-tap="approveUser(u)">
+                <i cl***REMOVED***="icon-thumbs-up"></i> 
+                Make Active
+              </button>
             </div>
             <div cl***REMOVED***="span2">
               {{u.username}}
@@ -118,7 +124,10 @@
               {{u.email}}
             </div>
             <div cl***REMOVED***="span2">
-              <button cl***REMOVED***="btn btn-danger" ng-click="deleteUser(u)" ngm-tap="deleteUser(u)"><i cl***REMOVED***="icon-remove"></i> Delete user</button>
+              <button cl***REMOVED***="btn btn-danger" ng-click="deleteUser(u)" ngm-tap="deleteUser(u)">
+                <i cl***REMOVED***="icon-remove"></i> 
+                Delete user
+              </button>
             </div>
         </div>
       </div>
@@ -156,9 +165,54 @@
         </form>
       </div>
       <div cl***REMOVED***="top-gap">
-        <h3>Registerd Devices</h3>
-        <div ng-repeat="device in devices">
-          <p><a ng-click="editDevice(device)" ngm-tap="editDevice(device)"><i cl***REMOVED***="icon-edit"></i><a/>{{device.uid}} {{device.name}} {{device.description}}</p>
+        <h3>Unregistered Devices</h3>
+        <div ng-repeat="device in devices | filter:{registered: false}" cl***REMOVED***="top-gap">
+            <div cl***REMOVED***="row-fluid">
+            <div cl***REMOVED***="span1">
+              <i cl***REMOVED***="icon-edit pointer" ng-click="editDevice(device)" ngm-tap="editDevice(device)"></i>
+            </div>
+            <div cl***REMOVED***="span2">
+              {{device.uid}}
+            </div>
+            <div cl***REMOVED***="span2">
+              {{device.name}}
+            </div>
+            <div cl***REMOVED***="span2">
+              {{device.description}}
+            </div>
+            <div cl***REMOVED***="span2">
+              <button cl***REMOVED***="btn btn-success" ng-click="registerDevice(device)" ngm-tap="registerDevice(device)">
+                <i cl***REMOVED***="icon-thumbs-up"></i> Register
+              </button>
+            </div>
+            <div cl***REMOVED***="span2">
+              <button cl***REMOVED***="btn btn-danger" ng-click="deleteDevice(device)" ngm-tap="deleteDevice(device)"><i cl***REMOVED***="icon-remove"></i> Delete device</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div cl***REMOVED***="top-gap">
+        <h3>Registered Devices</h3>
+        <div ng-repeat="device in devices | filter:{registered: true}" cl***REMOVED***="top-gap">
+            <div cl***REMOVED***="row-fluid">
+            <div cl***REMOVED***="span1">
+              <i cl***REMOVED***="icon-edit pointer" ng-click="editDevice(device)" ngm-tap="editDevice(device)"></i>
+            </div>
+            <div cl***REMOVED***="span2">
+              {{device.uid}}
+            </div>
+            <div cl***REMOVED***="span2">
+              {{device.name}}
+            </div>
+            <div cl***REMOVED***="span2">
+              {{device.description}}
+            </div>
+            <div cl***REMOVED***="span2">
+              <button cl***REMOVED***="btn btn-danger" ng-click="deleteDevice(device)" ngm-tap="deleteDevice(device)">
+                <i cl***REMOVED***="icon-remove"></i> Delete device
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -9,7 +9,7 @@ var Schema = mongoose.Schema;
 // TODO cascade delete from poc when user is deleted.
 var DeviceSchema = new Schema({
     uid: { type: String, required: true, unique: true },
-    name: { type: String, required: true, unique: true },
+    name: { type: String, required: true },
     description: { type: String, required: false },
     registered: { type: Boolean, required: true },
     poc: Schema.Types.ObjectId,
@@ -18,6 +18,23 @@ var DeviceSchema = new Schema({
   }
 );
 
+//Validate that uid is unique
+DeviceSchema.pre('save', function(next) {
+  var device = this;
+
+  // only validate uid if it has been modified (or is new)
+  if (!device.isModified('uid')) return next();
+
+  Device.findOne({uid: device.uid}, function(err, device) {
+    if (err) return next(err);
+
+    if (device) return next(new Error("uid already exists"));
+
+    next();
+  });
+});
+
+// Validate that poc is unique
 DeviceSchema.pre('save', function(next) {
   var device = this;
 
@@ -30,7 +47,7 @@ DeviceSchema.pre('save', function(next) {
     }
 
     if (!user) {
-      return next(new Error('user for id ' + device.poc + ' does not exist'));
+      return next(new Error('invlaid POC user, user does not exist'));
     }
 
     next();
@@ -73,17 +90,15 @@ exports.getDevices = function(callback) {
 }
 
 exports.createDevice = function(device, callback) {
-  // TODO this need to be moved somewhere else if we get 
-  // requests to save/register a new device
-  var registered = true;
-
   var create = {
     uid: device.uid,
     name: device.name,
     description: device.description,
-    registered: registered,
+    registered: device.registered,
     poc: device.poc
   }
+
+  if (device.registered) create.registered = device.registered;
 
   Device.create(create, function(err, newDevice) {
     if (err) {
@@ -95,12 +110,12 @@ exports.createDevice = function(device, callback) {
 }
 
 exports.updateDevice = function(id, update, callback) {
+  console.log('update device: ' + JSON.stringify(update));
   Device.findByIdAndUpdate(id, update, function(err, updatedDevice) {
     if (err) {
       console.log('Could not update device ' + id + ' err: ' + err);
     }
 
-    console.log('updated device');
     callback(err, updatedDevice);
   });
 }

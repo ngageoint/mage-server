@@ -22,11 +22,17 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
         @return A promise of the REST call that the caller can use to determine what to do with the 
           success or failure.
       */
-      featureServiceFunctions.saveFeature = function (layerId, observation, operation) {
-        return $http.post(appConstants.rootUrl + '/FeatureServer/' + layerId + '/addFeatures?access_token=' + mageLib.getLocalItem('token'),
-          "features=[" + JSON.stringify(observation) + ']', 
-          {headers: {"Content-Type": "application/x-www-form-urlencoded"}});
-
+      featureServiceFunctions.saveFeature = function (layerId, observation, method) {
+        var url = appConstants.rootUrl + '/FeatureServer/' + layerId + '/addFeatures?access_token=' + mageLib.getLocalItem('token');
+        
+        $http({
+          url: url,
+          method: method,
+          data: "features=[" + JSON.stringify(observation) + "]",
+          headers: {
+              "Content-Type": "application/x-www-form-urlencoded"
+          }
+        });
       };
 
       /*
