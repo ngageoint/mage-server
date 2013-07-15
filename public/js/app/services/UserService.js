@@ -56,6 +56,9 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
             }
           });*/
       
+      userServiceFunctions.getMyself = function () {
+        return $http.get(appConstants.rootUrl + '/api/users/myself', {params: mageLib.getTokenParams()});
+      };
 
       return userServiceFunctions;
     }])
