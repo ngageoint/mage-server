@@ -8,6 +8,7 @@ exports.up = function(next) {
   var device = {
     name: "Initial Device",
     uid: "12345",
+    registered: true,
     description: "This is the initial device for the web console.  Please create a new device with a more secure unique id and delete this device."
   };
 

@@ -5,53 +5,70 @@ module.exports = function(app, auth) {
 
   var p***REMOVED***port = auth.p***REMOVED***port;
 
-  app.all('/api/devices*', p***REMOVED***port.authenticate('bearer'));
+  var isAuthenticated = function(strategy) {
+    return function(req, res, next) {
+      p***REMOVED***port.authenticate(strategy, function(err, user, info) {
+        if (err) return next(err);
 
-  var validateDeviceParams = function(req, res, next) {
-    var uid = req.param('uid');
-    if (!uid) {
-      return res.send(400, "cannot create device 'uid' param not specified");
+        if (user) req.user = user;
+
+        next();
+
+      })(req, res, next);
     }
+  }
 
-    var name = req.param('name');
-    if (!name) {
-      return res.send(400, "cannot create device 'name' param not specified");
+  var isAuthorized = function(permission) {
+    return function(req, res, next) {
+      access.hasPermission(req.user, permission, function(err, hasPermission) {
+        if (err) return next(err);
+
+        if (!hasPermission) req.user = null;
+
+        next();
+
+      });
     }
+  }
 
-    var description = req.param('description');
+  var parseDeviceParams = function(req, res, next) {
+    req.newDevice = {
+      uid: req.param('uid'), 
+      name: req.param('name'),
+      registered: req.param('registered'),
+      description: req.param('description'), 
+      poc: req.param('pocId')
+    };
 
-    var poc = req.param('pocId');
-
-    req.deviceParam = {uid: uid, name: name, description: description, poc: poc};
     next();
   }
 
-  // get all devices
-  app.get(
-    '/api/devices',
-    access.authorize('READ_DEVICE'),
-      function (req, res) {
-      Device.getDevices(function (err, devices) {
-        res.json(devices);
-      });
-  });
-
-  // get device
-  app.get(
-    '/api/devices/:deviceId', 
-    access.authorize('READ_DEVICE'),
-    function (req, res) {
-      res.json(req.device);
+  var validateDeviceParams = function(req, res, next) {
+    if (!req.newDevice.uid) {
+      return res.send(401, "missing required param 'uid'");
     }
-  );
 
-  // Create a new device
+    next();
+  }
+
+  // Create a new device (ADMIN)
   app.post(
     '/api/devices',
+    isAuthenticated('bearer'),
+    isAuthorized('CREATE_DEVICE'),
+    parseDeviceParams,
     validateDeviceParams,
-    access.authorize('CREATE_DEVICE'),
-    function(req, res) {
-      Device.createDevice(req.deviceParam, function(err, device) {
+    function(req, res, next) {
+
+      // If I did not authenticate a user go to the next route
+      // '/api/devices' route which does not require authentication
+      if (!req.user) return next();
+
+
+      // Automatically register any device created by an ADMIN
+      req.newDevice.registered = true;
+
+      Device.createDevice(req.newDevice, function(err, device) {
         if (err) {
           return res.send(400, err);
         }
@@ -61,17 +78,67 @@ module.exports = function(app, auth) {
     }
   );
 
+  // Create a new device (Non-ADMIN)
+  // Any authenticated user can create a new device, the registered field 
+  // will be set to false.
+  app.post(
+    '/api/devices',
+    p***REMOVED***port.authenticate('bearer'),
+    parseDeviceParams,
+    validateDeviceParams,
+    function(req, res) {
+      if (!req.deviceParam.uid) return res.send(401, "missing required param 'uid'");
+
+      // set poc to the user that is trying to create the device
+      req.newDevice.poc = req.user._id;
+
+      // Devices not created by ADMIN are not registered by default
+      req.newDevice.registered = false;
+
+      Device.createDevice(req.newDevice, function(err, device) {
+        if (err) {
+          return res.send(400, err);
+        }
+
+        res.json(device);
+      });
+    }
+  );
+
+  // get all devices
+  app.get(
+    '/api/devices',
+    p***REMOVED***port.authenticate('bearer'),
+    access.authorize('READ_DEVICE'),
+      function (req, res) {
+      Device.getDevices(function (err, devices) {
+        res.json(devices);
+      });
+  });
+
+  // get device
+  app.get(
+    '/api/devices/:deviceId',
+    p***REMOVED***port.authenticate('bearer'),
+    access.authorize('READ_DEVICE'),
+    function (req, res) {
+      res.json(req.device);
+    }
+  );
+
   // Update a device
   app.put(
     '/api/devices/:deviceId',
+    p***REMOVED***port.authenticate('bearer'),
     access.authorize('UPDATE_DEVICE'),
-    validateDeviceParams, 
+    parseDeviceParams, 
     function(req, res) {
       var update = {};
-      if (req.deviceParam.uid) update.uid = req.deviceParam.uid;
-      if (req.deviceParam.name) update.name = req.deviceParam.name;
-      if (req.deviceParam.description) update.description = req.deviceParam.description;
-      if (req.deviceParam.poc) update.poc = req.deviceParam.poc;
+      if (req.newDevice.uid) update.uid = req.newDevice.uid;
+      if (req.newDevice.name) update.name = req.newDevice.name;
+      if (req.newDevice.description) update.description = req.newDevice.description;
+      if (req.newDevice.registered) update.registered = req.newDevice.registered;
+      if (req.newDevice.poc) update.poc = req.newDevice.poc;
 
       Device.updateDevice(req.device._id, update, function(err, device) {
         if (err) {
@@ -85,7 +152,8 @@ module.exports = function(app, auth) {
 
   // Delete a device
   app.delete(
-    '/api/devices/:deviceId', 
+    '/api/devices/:deviceId',
+    p***REMOVED***port.authenticate('bearer'),
     access.authorize('DELETE_DEVICE'),
     function(req, res) {
       Device.deleteDevice(req.device, function(err, device) {

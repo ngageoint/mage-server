@@ -214,19 +214,47 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   }
 
   $scope.saveDevice = function () {
-    console.log('making call to save the devcie');
-    if ($scope.device._id) {
-      DeviceService.updateDevice($scope.device);
+    var device = $scope.device;
+
+    if (device._id) {
+      DeviceService.updateDevice(device)
+        .success(function(data) {
+          $scope.showStatusMessage("Success", "Device '" + device.uid + "' has been updated.","alert-info");
+        })
+        .error(function(data) {
+          $scope.showStatusMessage("Unable to update device", data, "alert-error");
+        });
     } else {
-      DeviceService.createDevice($scope.device).
-      success(function (data, status, headers, config) {}).
-      error(function (data, status, headers, config) {});
-
+      DeviceService.createDevice(device)
+        .success(function (data) {
+          $scope.showStatusMessage("Success", "Device '" + device.uid + "' has been created.","alert-info");
+          $scope.devices.push(data);
+        })
+        .error(function (data) {
+          $scope.showStatusMessage("Unable to create device", data, "alert-error");
+        });
     }
-
   }
 
-  $scope.deleteDevice = function () {
+  $scope.registerDevice = function(device) {
+    DeviceService.registerDevice(device)
+      .success(function(data, status) {
+        $scope.showStatusMessage("Successfully registered device", "Device '" + device.uid + "' is now registered.","alert-info");
+        device.registered = true;
+      })
+      .error(function(data, status) {
+        $scope.showStatusMessage("Unable to register device", data, "alert-error");
+      });
+  }
 
+  $scope.deleteDevice = function (device) {
+    DeviceService.deleteDevice(device)
+      .success(function() {
+        $scope.showStatusMessage("Success", "Device '" + device.uid + "' has been removed.","alert-info");
+        $scope.devices = _.reject($scope.devices, function(d) { return d.uid === device.uid });
+      })
+      .error(function() {
+        $scope.showStatusMessage("Unable to delete device", data, "alert-error");
+      });
   }
 }

@@ -55,6 +55,10 @@ body {
     margin-top: 15px;
 }
 
+.top-gap-s {
+    margin-top: 5px;
+}
+
 .top-gap-l {
     margin-top: 30px;
 }
@@ -132,4 +136,8 @@ textarea {
 .admin-active > h3 a {
     color: #eee;
     margin-left: 15px;
+}
+
+.pointer {
+    cursor: pointer; cursor: hand;
 }

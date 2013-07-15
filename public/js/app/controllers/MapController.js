@@ -109,52 +109,49 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   }
 
   /* this watch handles opening observations when a placemark on the map has been clicked. */
-  $scope.$watch("observation", function (oldValue, newValue) {
-    console.log("Observation changed " + JSON.stringify($scope.observation));
-    if ($scope.observation.feature && $scope.observation.feature.properties.OBJECTID > 0) { //open existing observation
-      FeatureService.getFeature($scope.observation.layer.id, $scope.observation.feature.properties.OBJECTID).
-        success(function (data) {
-          $scope.observation = data;
-          $scope.attachments = [];
-          $scope.files = [];
-          /* Since the angular select directive works off of reference, set the TEAM, LEVEL, and TYPE attributes to theie
-              corresponsing values from their respective arrays */
-          $scope.observation.attributes.TEAM = _.find($scope.teams, function (t) {
-                if(t.name == $scope.observation.attributes.TEAM) {
-                  return t;
-                }
-              });
-          $scope.observation.attributes.EVENTLEVEL = _.find($scope.levels, function (l) {
-                if (l.color == $scope.observation.attributes.EVENTLEVEL){
-                  return l;
-                }
-              });
-          $scope.observation.attributes.TYPE = _.find($scope.observationTypes, function (o) {
-                if (o.title == $scope.observation.attributes.TYPE){
-                  return o;
-                }
-              });
-          $scope.showObservation = true;
+  $scope.$watch("activeFeature", function (value) {
+    if (!value) return;
 
-          FeatureService.getAttachments($scope.observation.layer.id, $scope.observation.attributes.OBJECTID).
-            success(function (data, status, headers, config) {
-              $scope.attachments = data.attachmentInfos;
-              $scope.attachmentUrl = appConstants.rootUrl + '/FeatureServer/'+ $scope.observation.attributes.LAYER
-                + '/' + $scope.observation.attributes.OBJECTID + '/attachments/';
-            }).
-            error(function (data, status, headers, config) {
-
+    FeatureService.getFeature(value.layerId, value.featureId).
+      success(function (data) {
+        $scope.observation = data;
+        $scope.attachments = [];
+        $scope.files = [];
+        /* Since the angular select directive works off of reference, set the TEAM, LEVEL, and TYPE attributes to theie
+            corresponsing values from their respective arrays */
+        $scope.observation.attributes.TEAM = _.find($scope.teams, function (t) {
+              if(t.name == $scope.observation.attributes.TEAM) {
+                return t;
+              }
             });
-        }).
-        error(function (data, status, headers, config) {
-          // if the user does not have permissions to get layers, re-route them to the signin page
-          if (status == 401) {
-            $location.path('/');
-          }
-        });
-    } else {
+        $scope.observation.attributes.EVENTLEVEL = _.find($scope.levels, function (l) {
+              if (l.color == $scope.observation.attributes.EVENTLEVEL){
+                return l;
+              }
+            });
+        $scope.observation.attributes.TYPE = _.find($scope.observationTypes, function (o) {
+              if (o.title == $scope.observation.attributes.TYPE){
+                return o;
+              }
+            });
+        $scope.showObservation = true;
 
-    }
+        FeatureService.getAttachments(value.layerId, value.featureId).
+          success(function (data, status, headers, config) {
+            $scope.attachments = data.attachmentInfos;
+            $scope.attachmentUrl = appConstants.rootUrl + '/FeatureServer/'+ $scope.observation.attributes.LAYER
+              + '/' + $scope.observation.attributes.OBJECTID + '/attachments/';
+          }).
+          error(function (data, status, headers, config) {
+
+          });
+      }).
+      error(function (data, status, headers, config) {
+        // if the user does not have permissions to get layers, re-route them to the signin page
+        if (status == 401) {
+          $location.path('/');
+        }
+      });
   }, true);
 
   $scope.getFeatureLayers = function () {
@@ -251,7 +248,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
 
   $scope.cancelObservation = function () {
     $scope.showObservation = false;
-    $scope.observation = {feature: { properties: {OBJECTID: -1}}}; 
+    $scope.activeFeature = null;
   }
 
   $scope.saveObservation = function () {
@@ -264,24 +261,14 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     $scope.observation.attributes.TYPE = $scope.observation.attributes.TYPE.title;
     $scope.observation.attributes.EVENTLEVEL = $scope.observation.attributes.EVENTLEVEL.color;
     $scope.observation.attributes.TEAM = $scope.observation.attributes.TEAM.name;
-    $scope.observation.attributes.LAYER = $scope.currentLayerId;
 
     $scope.observation.geometry = {
-        "x": $scope.marker.lng, 
-        "y": $scope.marker.lat
-      };
+      "x": $scope.marker.lng, 
+      "y": $scope.marker.lat
+    };
 
     /* check to see if this is this an update or a new observation, if its an update, set the location and ID */
-    if ($scope.observation.feature.properties.OBJECTID > 0) {
-      operation = "updateFeatures";
-      obs.attributes.OBJECTID = $scope.observation.feature.properties.OBJECTID;
-      // may not need to do this
-      obs.geometry.x = $scope.observation.geometry.coordinates[0];
-      obs.geometry.x = $scope.observation.geometry.coordinates[1];
-    } else {
-      operation = "addFeatures";
-      delete $scope.observation.attributes.OBJECTID;
-    }
+    operation = $scope.observation.attributes.OBJECTID > 0 ? "PUT" : "POST";
 
     // make a call to the FeatureService
     FeatureService.saveFeature($scope.currentLayerId, $scope.observation, operation)
@@ -289,6 +276,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
         console.log('observation created');
         var objectId = data.addResults ? data.addResults[0].objectId : data.updateResults[0].objectId;
         $scope.showObservation = false;
+        $scope.activeFeature = null;
 
         if (operation == "addFeatures") {
           $scope.newFeature = {

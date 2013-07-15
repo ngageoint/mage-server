@@ -11,7 +11,7 @@ module.exports = function(p***REMOVED***port) {
         if (err) { return done(err); }
 
         if (!user) {
-          return done(null, false, { message: "User with username '" + username + "' not found" });
+          return done(null, false);
         }
 
         user.validP***REMOVED***word(p***REMOVED***word, function(err, isValid) {
@@ -20,7 +20,7 @@ module.exports = function(p***REMOVED***port) {
           }
 
           if (!isValid) {
-            return done(null, false, { message: "Invalid p***REMOVED***word"});
+            return done(null, false);
           }
 
           Device.getDeviceByUid(uid, function(err, device) {
@@ -29,7 +29,11 @@ module.exports = function(p***REMOVED***port) {
             }
 
             if (!device) {
-              return done(null, false, { message: "Device with id '" + uid + "' not found" });
+              return done(null, false);
+            }
+
+            if (!device.registered) {
+              return done(null, false);
             }
 
             return done(null, user);

@@ -236,7 +236,9 @@ module.exports = function(app, auth) {
     }
   );
 
-  // Create a new user
+  // Create a new user (ADMIN)
+  // If authentication for admin fails go to next route and
+  // create user as non-admin, roles will be empty
   app.post(
     '/api/users',
     isAuthenticated('bearer'),
@@ -261,6 +263,8 @@ module.exports = function(app, auth) {
     }
   );
 
+  // Create a new user (Unauthenticated)
+  // Anyone can create a new user, no roles will be ***REMOVED***igned
   app.post(
     '/api/users', 
     function(req, res) {
