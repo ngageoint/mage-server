@@ -36,6 +36,7 @@
   <script type="text/javascript" src="js/app/***REMOVED***s/mageLib.js"></script>
   <script type="text/javascript" src="js/app/controllers/AdminController.js"></script>
   <script type="text/javascript" src="js/app/controllers/MapController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/NavController.js"></script>
   <script type="text/javascript" src="js/app/controllers/LayerController.js"></script>
   <script type="text/javascript" src="js/app/controllers/FormBuilderController.js"></script>
   <script type="text/javascript" src="js/app/controllers/SigninController.js"></script>
@@ -63,13 +64,14 @@
   </script>
 </head>
 <body>
-  <!--<div cl***REMOVED***="navbar">
+  <!-- Smarter nav bar, has a $scope.$apply / digest issue, the links dont show up on the first page load...
+  <div cl***REMOVED***="navbar" ng-controller="NavController">
     <div cl***REMOVED***="navbar-inner">
       <a cl***REMOVED***="brand" href="/"><i cl***REMOVED***="icon-white icon-magic" style="margin-right:10px;"></i>MAGE</a>
       <ul cl***REMOVED***="nav">
-        <li><a href="/#/map"><i cl***REMOVED***="icon-map icon-spacer"></i> Map</a></li>
-        <li><a href="/#/layers"><i cl***REMOVED***="icon-layers icon-spacer"></i> Layer Manager</a></li>
-        <li><a href="/#/admin"><i cl***REMOVED***="icon-cog icon-spacer"></i> Admin Panel</a></li>
+        <li ng-show="user.role.name == 'USER_ROLE' || user.role.name == 'ADMIN_ROLE'"><a href="/#/map"><i cl***REMOVED***="icon-map icon-spacer"></i> Map</a></li>
+        <li ng-show="user.role.name == 'ADMIN_ROLE'"><a href="/#/layers"><i cl***REMOVED***="icon-layers icon-spacer"></i> Layer Manager</a></li>
+        <li ng-show="user.role.name == 'ADMIN_ROLE'"><a href="/#/admin"><i cl***REMOVED***="icon-cog icon-spacer"></i> Admin Panel</a></li>
       </ul>
     </div>
   </div>-->

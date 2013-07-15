@@ -234,6 +234,31 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   }
 
 
+  /* Locations, think Find My Friends */
+  $scope.broadcastLocation = function () {
+    // get geolocation, take that location and post it with the location ***REMOVED***
+    var newLocation = {};
+    newLocation.location = {};
+    newLocation.location.type = "Feature";
+    newLocation.location.geometry = {};
+    newLocation.location.geometry.type = "Point";
+    newLocation.location.geometry.coordinates = [0,0];
+    newLocation.location.properties = {};
+    newLocation.timestamp1 = new Date();
+    
+    mageLib.geolocate(function (position) {
+        newLocation.location.geometry.coordinates = [position.coords.longitude, position.coords.latitude];
+        LocationService.createLocation(newLocation).
+        success(function (data, status, headers, config) {
+
+        }).
+        error(function (data, status, headers, config) {
+
+        });
+      }, mageLib.geoError, {});
+  }
+
+
   /* 
     The observation functions are a mix of copy pasta from the observation directive, hopefully cleaned up a bit
     and using the FeatureService. May need to be cleaned up after PDC.
@@ -399,7 +424,14 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   /* Locations == FFT */
   $scope.openLocations = function() {
     console.log("in showLocations");
-    $scope.showLocations = true;
+    //$scope.showLocations = true;
+    LocationService.getLocations().
+      success(function (data, status, headers, config) {
+        $scope.layer = data[0];
+      }).
+      error(function () {
+
+      });
   }
 
   $scope.dismissLocations = function() {

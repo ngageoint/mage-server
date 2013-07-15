@@ -97,7 +97,7 @@ html, body, div.leaflet-container {
 	height: 50px;
 	width: 50px;
 	bottom: 5px;
-	left: 133px; /*68px*/
+	left: 263px; /*68px*/
 	z-index: 1999;
 }
 
@@ -110,12 +110,12 @@ html, body, div.leaflet-container {
 	z-index: 1999;
 }
 
-#refresh-points {
+#broadcast-location-btn {
 	position: absolute;
 	height: 50px;
 	width: 50px;
 	bottom: 5px;
-	left: 198px;
+	left: 133px;px;
 	z-index: 1999;
 }
 
@@ -124,9 +124,10 @@ html, body, div.leaflet-container {
 	height: 50px;
 	width: 50px;
 	bottom: 5px;
-	left: 263px;
+	left: 198px;
 	z-index: 1999;
 }
+
 
 /* Panels and their contents */
 .panel {

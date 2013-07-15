@@ -32,6 +32,17 @@
           popupAnchor:  [1, -34] // point from which the popup should open relative to the iconAnchor
         });
 
+        var yellowIcon = L.icon({
+          iconUrl: appConstants.rootUrl + '/js/lib/leaflet/images/marker-icon-yellow.png',
+          shadowUrl: appConstants.rootUrl + '/js/lib/leaflet/images/marker-shadow.png',
+
+          iconSize:     [25, 41], // size of the icon
+          shadowSize:   [41, 41], // size of the shadow
+          iconAnchor:   [12, 41], // point of the icon which will correspond to marker's location
+          shadowAnchor: [12, 41],  // the same for the shadow
+          popupAnchor:  [1, -34] // point from which the popup should open relative to the iconAnchor
+        });
+
         var $el = element[0],
         map = new L.Map($el);
 
@@ -265,6 +276,25 @@
               }
 
               layers[layer.id] = newLayer;
+            } else if (layer.locations) {
+              newLayer = new L.GeoJSON(layer.locations, {
+                pointToLayer: function (feature, latlng) {
+                  var icon = yellowIcon;
+
+                  var marker = new L.marker(latlng, {
+                    icon:  icon
+                  });
+
+                  /* Need to figure out what to do when you tap on a user location
+                  marker.on("click", function(e) {
+                    scope.$apply(function(s) {
+                      scope.observationId = {layer: layer, feature: feature};
+                    });
+                  });*/
+
+                  return marker;
+                }
+              }).addTo(map).bringToFront();
             } else {
               // remove from map
               map.removeLayer(layers[layer.id]);

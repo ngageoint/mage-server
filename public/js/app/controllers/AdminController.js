@@ -14,7 +14,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     }).
     error(function (data, status, headers, config) {
       // if the user does not have admin permissions, re-route them to the signin page
-      if (status == 401) {
+      if (status == 401 && $location.path() != '/signup') {
         $location.path('/');
       }
     });
@@ -26,7 +26,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     }).
     error(function (data, status, headers, config) {
       // if the user does not have admin permissions, re-route them to the signin page
-      if (status == 401) {
+      if (status == 401 && $location.path() != '/signup') {
         $location.path('/');
       }
     });
@@ -38,7 +38,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     }).
     error(function (data, status, headers, config) {
       // if the user does not have admin permissions, re-route them to the signin page
-      if (status == 401) {
+      if (status == 401 && $location.path() != '/signup') {
         $location.path('/');
       }
     });
