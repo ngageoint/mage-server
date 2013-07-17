@@ -5,8 +5,8 @@ module.exports = function(p***REMOVED***port) {
 
   p***REMOVED***port.use(new LocalStrategy(
     function(username, p***REMOVED***word, done) {
+      console.log('Authenticating user: ' + username);
       User.getUserByUsername(username, function(err, user) {
-        console.log('Authenticating user: ' + username);
         if (err) { return done(err); }
 
         if (!user) {
@@ -27,9 +27,4 @@ module.exports = function(p***REMOVED***port) {
       });
     }
   ));
-
-  return {
-    strategy: 'local',
-    p***REMOVED***port: p***REMOVED***port
-  };
 }

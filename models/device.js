@@ -9,7 +9,7 @@ var Schema = mongoose.Schema;
 // TODO cascade delete from poc when user is deleted.
 var DeviceSchema = new Schema({
     uid: { type: String, required: true, unique: true },
-    name: { type: String, required: true },
+    name: { type: String, required: false },
     description: { type: String, required: false },
     registered: { type: Boolean, required: true },
     poc: Schema.Types.ObjectId,

@@ -6,8 +6,10 @@ module.exports = function(app, auth) {
     , access = require('../access')
     , config = require('../config.json');
 
-  var p***REMOVED***port = auth.p***REMOVED***port;
-  var strategy = auth.strategy;
+  var p***REMOVED***port = auth.p***REMOVED***port
+    , authenticationStrategy = auth.authenticationStrategy
+    , provision = auth.provision
+    , provisionStrategy = auth.provisionStrategy;
 
   var p***REMOVED***wordLength = config.server.authentication.p***REMOVED***wordMinLength;
   var emailRegex = /^[^\s@]+@[^\s@]+\./;
@@ -152,7 +154,8 @@ module.exports = function(app, auth) {
   // login
   app.post(
     '/api/login',
-    p***REMOVED***port.authenticate(strategy),
+    p***REMOVED***port.authenticate(authenticationStrategy),
+    provision.check(provisionStrategy),
     function(req, res) {
        Token.createTokenForUser(req.user, function(err, token) {
         if (err) {

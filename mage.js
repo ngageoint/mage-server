@@ -15,8 +15,12 @@ fs.mkdirp(attachmentBase, function(err) {
 });
 
 // Configure authentication
-var auth = require('./auth/authentication')(config.server.authentication.strategy);
-console.log('Authentication: ' + auth.strategy);
+var auth = require('./auth/authentication')({
+  authenticationStrategy: config.server.authentication.strategy,
+  provisionStrategy: config.server.provision.strategy
+});
+console.log('Authentication: ' + auth.authenticationStrategy);
+console.log('Provision: ' + auth.provisionStrategy);
 
 // Configuration of the MAGE Express server
 var app = express();
