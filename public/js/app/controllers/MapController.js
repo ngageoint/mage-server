@@ -304,7 +304,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
           $scope.activeFeature = null;
 
           if ($scope.files.length > 0) {
-              $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.observation.attributes.LAYER + '/' + objectId + '/addAttachment?access_token=' + mageLib.getLocalItem('token');
+              $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/' + objectId + '/addAttachment?access_token=' + mageLib.getLocalItem('token');
               $scope.uploadFile();
             }
         });
@@ -334,7 +334,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
           } 
 
           if ($scope.files.length > 0) {
-              $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.observation.attributes.LAYER + '/' + objectId + '/addAttachment?access_token=' + mageLib.getLocalItem('token');
+              $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/' + objectId + '/addAttachment?access_token=' + mageLib.getLocalItem('token');
               $scope.uploadFile();
             }
         });
