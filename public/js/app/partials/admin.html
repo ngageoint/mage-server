@@ -122,7 +122,7 @@
         </div>
         <h3>Current Users</h3>
         <div cl***REMOVED***="top-gap" ng-repeat="u in users">
-          <div cl***REMOVED***="row-fluid">
+          <div cl***REMOVED***="row">
             <div cl***REMOVED***="span2">
               <button cl***REMOVED***="btn" ng-click="editUser(u)" ngm-tap="editUser(u)">
                 <i cl***REMOVED***="icon-edit"></i>
@@ -153,10 +153,17 @@
     </div>
 
     <div cl***REMOVED***="span12 top-gap" id="device-admin-area" ng-show="currentAdminPanel == 'device'">
-      <button cl***REMOVED***="btn" ng-click="setShowDeviceForm(true)" ngmtap="setShowDeviceForm(true)">New Device</button>
+      <button cl***REMOVED***="btn" ng-click="setShowDeviceForm(true)" ngmtap="setShowDeviceForm(true)" ng-show="showNewDeviceButton">New Device</button>
       <div cl***REMOVED***="top-gap" ng-show="showDeviceForm">
         <form ng-submit="saveDevice()" id="device-form" cl***REMOVED***="form-horizontal">
           <fieldset>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Device Identifier</label>
+              <div cl***REMOVED***="controls">
+                <input type="text" placeholder="for example 01:02:03:04:05:06:08" ng-model="device.uid">
+                <span cl***REMOVED***="help-block top-gap">MAC address, or some sort of unique identifier for your device.</span>
+              </div>
+            </div>
             <div cl***REMOVED***="control-group">
               <label cl***REMOVED***="control-label" for="type">Device Name</label>
               <div cl***REMOVED***="controls">
@@ -170,10 +177,10 @@
               </div>
             </div>
             <div cl***REMOVED***="control-group">
-              <label cl***REMOVED***="control-label" for="type">Device Identifier</label>
+              <label cl***REMOVED***="control-label" for="type">Point of Contact</label>
               <div cl***REMOVED***="controls">
-                <input type="text" placeholder="for example 01:02:03:04:05:06:08" ng-model="device.uid">
-                <span cl***REMOVED***="help-block top-gap">MAC address, or some sort of unique identifier for your device.</span>
+                <select ng-model="device.poc" ng-options="user._id as user.firstname + ' ' + user.lastname for user in users">
+                </select>
               </div>
             </div>
             <span>
@@ -186,7 +193,7 @@
       <div cl***REMOVED***="top-gap">
         <h3>Unregistered Devices</h3>
         <div ng-repeat="device in devices | filter:{registered: false}" cl***REMOVED***="top-gap">
-            <div cl***REMOVED***="row-fluid">
+            <div cl***REMOVED***="row">
             <div cl***REMOVED***="span1">
               <i cl***REMOVED***="icon-edit pointer" ng-click="editDevice(device)" ngm-tap="editDevice(device)"></i>
             </div>
@@ -200,12 +207,13 @@
               {{device.description}}
             </div>
             <div cl***REMOVED***="span2">
+              {{getUserDisplayName(device.poc)}}
+            </div>
+            <div cl***REMOVED***="span3">
+              <button cl***REMOVED***="btn btn-danger" ng-click="deleteDevice(device)" ngm-tap="deleteDevice(device)"><i cl***REMOVED***="icon-remove"></i> Delete device</button>
               <button cl***REMOVED***="btn btn-success" ng-click="registerDevice(device)" ngm-tap="registerDevice(device)">
                 <i cl***REMOVED***="icon-thumbs-up"></i> Register
               </button>
-            </div>
-            <div cl***REMOVED***="span2">
-              <button cl***REMOVED***="btn btn-danger" ng-click="deleteDevice(device)" ngm-tap="deleteDevice(device)"><i cl***REMOVED***="icon-remove"></i> Delete device</button>
             </div>
           </div>
         </div>
@@ -213,7 +221,7 @@
       <div cl***REMOVED***="top-gap">
         <h3>Registered Devices</h3>
         <div ng-repeat="device in devices | filter:{registered: true}" cl***REMOVED***="top-gap">
-            <div cl***REMOVED***="row-fluid">
+            <div cl***REMOVED***="row">
             <div cl***REMOVED***="span1">
               <i cl***REMOVED***="icon-edit pointer" ng-click="editDevice(device)" ngm-tap="editDevice(device)"></i>
             </div>
@@ -227,6 +235,9 @@
               {{device.description}}
             </div>
             <div cl***REMOVED***="span2">
+              {{getUserDisplayName(device.poc)}}
+            </div>
+            <div cl***REMOVED***="span3">
               <button cl***REMOVED***="btn btn-danger" ng-click="deleteDevice(device)" ngm-tap="deleteDevice(device)">
                 <i cl***REMOVED***="icon-remove"></i> Delete device
               </button>

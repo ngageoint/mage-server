@@ -62,6 +62,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   // Edit form toggles
   $scope.showUserForm = false;
   $scope.showDeviceForm = false;
+  $scope.showNewDeviceButton = true;
   $scope.showTeamForm = false;
 
   // Status message values
@@ -80,27 +81,23 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     $scope.statusMessage = message;
     $scope.statusLevel = statusLevel;
     $scope.showStatus = true;
-    $scope.$apply();
   }
 
   $scope.setShowStatus = function (visibility) {
     $scope.showStatus = visibility;
-    $scope.$apply();
   }
 
   $scope.setShowUserForm = function (visibility) {
     $scope.showUserForm = visibility;
-    $scope.$apply();
   }
 
   $scope.setShowDeviceForm = function (visibility) {
     $scope.showDeviceForm = visibility;
-    $scope.$apply();
+    $scope.showNewDeviceButton = !visibility;
   }
 
   $scope.setShowTeamForm = function (visibility) {
     $scope.showTeamForm = visibility;
-    $scope.$apply();
   }
 
   /* Set the current activity, this will tell the directives which one of them should be visible at the moment. */
@@ -184,6 +181,13 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
 
   }
 
+  $scope.getUserDisplayName = function(id) {
+    var user = _.find($scope.users, function(user) {
+      return user._id == id;
+    });
+
+    return user ? user.firstname + " " + user.lastname : "";
+  }
 
   /* Device admin functions */
   $scope.getDevices = function () {
@@ -207,6 +211,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
       DeviceService.updateDevice(device)
         .success(function(data) {
           $scope.showStatusMessage("Success", "Device '" + device.uid + "' has been updated.","alert-info");
+          $scope.setShowDeviceForm(false);
         })
         .error(function(data) {
           $scope.showStatusMessage("Unable to update device", data, "alert-error");
@@ -216,6 +221,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
         .success(function (data) {
           $scope.showStatusMessage("Success", "Device '" + device.uid + "' has been created.","alert-info");
           $scope.devices.push(data);
+          $scope.setShowDeviceForm(false);
         })
         .error(function (data) {
           $scope.showStatusMessage("Unable to create device", data, "alert-error");

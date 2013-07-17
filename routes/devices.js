@@ -3,7 +3,9 @@ module.exports = function(app, auth) {
     , User = require('../models/user')
     , access = require('../access');
 
-  var p***REMOVED***port = auth.p***REMOVED***port;
+  var p***REMOVED***port = auth.p***REMOVED***port
+    , provision = auth.provision
+    , authenticationStrategy = auth.authenticationStrategy;
 
   var isAuthenticated = function(strategy) {
     return function(req, res, next) {
@@ -37,7 +39,7 @@ module.exports = function(app, auth) {
       name: req.param('name'),
       registered: req.param('registered'),
       description: req.param('description'), 
-      poc: req.param('pocId')
+      poc: req.param('poc')
     };
 
     next();
@@ -70,7 +72,7 @@ module.exports = function(app, auth) {
 
       Device.createDevice(req.newDevice, function(err, device) {
         if (err) {
-          return res.send(400, err);
+          return res.send(400, err.message);
         }
 
         res.json(device);
@@ -83,11 +85,11 @@ module.exports = function(app, auth) {
   // will be set to false.
   app.post(
     '/api/devices',
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     parseDeviceParams,
     validateDeviceParams,
     function(req, res) {
-      if (!req.deviceParam.uid) return res.send(401, "missing required param 'uid'");
+      if (!req.newDevice.uid) return res.send(401, "missing required param 'uid'");
 
       // set poc to the user that is trying to create the device
       req.newDevice.poc = req.user._id;
