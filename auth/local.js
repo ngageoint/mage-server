@@ -19,7 +19,7 @@ module.exports = function(p***REMOVED***port) {
           }
 
           if (!isValid) {
-            return ('Incorrect p***REMOVED***word');
+            return done(null, false);
           }
 
           return done(null, user);
