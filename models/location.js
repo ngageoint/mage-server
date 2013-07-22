@@ -77,7 +77,7 @@ exports.getLocationsWithFilters = function(user, time_filter, limit, callback) {
   var project = { $project: { _id: 0, user: "$_id", locations: "$locations"} };
   
   Location.aggregate(sort, match, group, project, function(err, aggregate) {
-    console.log("Got aggregate: " + JSON.stringify(aggregate));
+    //console.log("Got aggregate: " + JSON.stringify(aggregate));
     callback(err, aggregate);
   });
 }

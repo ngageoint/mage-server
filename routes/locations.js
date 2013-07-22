@@ -42,43 +42,6 @@ module.exports = function(app, auth) {
     }
   );
 
-  // export locations into KML
-  app.get(
-    '/api/locations/export',
-    p***REMOVED***port.authenticate('bearer'),
-    access.authorize('READ_LOCATION'),
-    function(req, res) {
-
-      var timeFilter = req.query.time_filter;
-
-      //1 million point limit for now...
-      Location.getLocationsWithFilters(req.user, timeFilter, 1000000, function(err, users) {
-
-        if(err) {
-          console.log(err);
-          return res.send(400, err);
-        }
-
-        res.writeHead(200,{"Content-Type": "application/vnd.google-earth.kml+xml"});
-        res.write(generate_kml.generateKMLHeader());
-        res.write(generate_kml.generateKMLDocument());
-
-        users.forEach(function(user){          
-          user.locations.forEach(function(location) {           
-            var x = location.location.geometry.coordinates[0];
-            var y = location.location.geometry.coordinates[1];
-            res.write(generate_kml.generatePlacemark('point1', 'localhost', x,y,0));
-          });
-        }); 
-        
-        res.write(generate_kml.generateKMLDocumentClose());
-        res.end(generate_kml.generateKMLClose()); 
-
-      });
-
-    }
-  );
-
   // create a new location for a specific user
   app.post(
     '/api/locations',

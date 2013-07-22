@@ -20,6 +20,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.layers = [];
   $scope.baseLayers = [{name: "Open Street Map"}];
   $scope.featureLayers = [];
+  $scope.exportLayers = [];
   $scope.imageryLayers = [];
 
   /* Booleans for the ng-show attribues on the panels, toggling these will show and hide the map panels (i.e. layers, observation, export). */
@@ -472,10 +473,23 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   /* Export existing points to  */
   $scope.export = function () {
     console.log("exporting features to KML");
-    window.location.href = appConstants.rootUrl + "/api/locations/export" + 
+     
+    var url = appConstants.rootUrl + "/api/export" + 
       "?access_token=" + mageLib.getLocalItem('token') +
-      "&time_filter=" + $scope.time_filter;
+      "&time_filter=" + $scope.time_filter +
+      "&fft_layer=" + $scope.fft_layer;
+
+      if($scope.exportLayers.length > 0) {
+        var layer_ids = _.map($scope.exportLayers,function(layer){return layer.id}).join();
+        url = url + "&export_layers=" + layer_ids;
+      }
+
+    window.location.href = url;    
     $scope.closeExport();
+  }
+
+  $scope.addExportLayer = function (layer) {
+    $scope.exportLayers.push(layer);
   }
 
   // Calls to make when the page is loaded
