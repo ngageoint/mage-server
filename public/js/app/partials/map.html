@@ -94,11 +94,18 @@
   <!-- Export panel -->
   <div id="export-panel" ng-show="showExport" cl***REMOVED***="panel panel-large">
     <h3>Export to KML</h3>
-    <form cl***REMOVED***="form">      
+    <form cl***REMOVED***="form">  
+      <div cl***REMOVED***="top-gap">
+        <i cl***REMOVED***="icon-layers icon-sage pull-left icon-spacer"></i>    
+        <h4>Select Layers</h4>
+      </div>
       <div cl***REMOVED***="control-group">
         <div cl***REMOVED***="controls">
           <label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
-            <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)">{{layer.name}}
+            <input type="checkbox" ng-click="addExportLayer(layer)">{{layer.name}}
+          </label>
+          <label cl***REMOVED***="checkbox">
+            <input type="checkbox" ng-model="fft_layer">Friendly Forces
           </label>
         </div>
       </div>
@@ -107,13 +114,15 @@
         <h4>Filter Output</h4>
       </div>
       <div>Time Range:</div>
-      <select ng-model="time_filter">
-        <option value="300">Last 5 Minutes</option>
-        <option value="3600">Last Hour</option>
-        <option value="43200">Last 12 Hours</option>
-        <option value="86400">Last 24 Hours</option>
-        <option value="-1">All (Use With Caution)</option>
-      </select>
+      <div style="margin: 0px, 0px, 0px, 20px">
+        <select ng-model="time_filter">
+          <option value="300">Last 5 Minutes</option>
+          <option value="3600">Last Hour</option>
+          <option value="43200">Last 12 Hours</option>
+          <option value="86400">Last 24 Hours</option>
+          <option value="-1">All (Use With Caution)</option>
+        </select>
+    </div>
     </form>
     <button cl***REMOVED***="btn btn-inverse" ng-click="closeExport()" ngm-tap="export()">Cancel</button>
     <button cl***REMOVED***="btn" ng-click="export()" ngm-tap="export()">Export</button>
