@@ -54,7 +54,6 @@ exports.getLocations = function(user, limit, callback) {
   var group = { $group: { _id: "$properties.user", locations: { $push: {location: {geometry: "$geometry", properties: "$properties"} } }}};
   var project = { $project: { _id: 0, user: "$_id", locations: "$locations"} };
   Location.aggregate(sort, limit, group, project, function(err, aggregate) {
-    console.log("Got aggregate: " + JSON.stringify(aggregate));
     callback(err, aggregate);
   });
 }

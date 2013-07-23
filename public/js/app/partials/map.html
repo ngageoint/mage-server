@@ -21,7 +21,7 @@
   
   <!-- The map directive -->
   <div cl***REMOVED***="map-wrap">
-    <leaflet marker="marker" center="center" zoom="zoom" multimarkers="multiMarkers" layer="layer" message="message" draggable="true" activefeature="activeFeature" newfeature="newFeature" currentlayerid="currentLayerId"></leaflet>
+    <div leaflet marker="marker" center="center" zoom="zoom" multimarkers="multiMarkers" baselayer="baseLayer" layer="layer" message="message" draggable="true" activefeature="activeFeature" newfeature="newFeature" currentlayerid="currentLayerId"></div>
   </div>
 
   <!-- The observation directive, was not wanting to play nice, will sort out after PDC.. -->
@@ -62,7 +62,7 @@
       <h4>Base Layers</h4>
       <div cl***REMOVED***="control-group">
         <div cl***REMOVED***="controls">
-          <select ng-model="baseLayer" ng-options="map.name for map in baseLayers"></select>
+          <select ng-model="baseLayer" ng-options="baseLayer.name for baseLayer in baseLayers"></select>
         </div>
       </div>
 
@@ -75,7 +75,6 @@
         </div>
       </div>
 
-      <!-- Removed for PDC
       <h4>Imagery Layers</h4>
       <div cl***REMOVED***="control-group">
         <div cl***REMOVED***="controls">
@@ -84,8 +83,8 @@
           </label>
         </div>
       </div>
-      -->
     </form>
+    
     <span>
       <button cl***REMOVED***="btn btn-mobile" ng-click="saveSettings()" ngm-tap="saveSettings()">Ok</button>
     </span>

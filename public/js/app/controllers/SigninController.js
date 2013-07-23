@@ -1,10 +1,5 @@
 'use strict';
 
-angular.module("mage", ["mage.***REMOVED***s", "mage.userService", "mage.lib"]);
-
-/*
-  
-*/
 function SigninController($rootScope, $scope, $log, $http, $injector, $location, appConstants, UserService, mageLib) {
   // The variables that get set when clicking a team or user in the list, these get loaded into the editor.
   console.log('up in the signin controller');

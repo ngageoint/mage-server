@@ -1,57 +1,72 @@
 'use strict';
 
-angular.module("mage", ["ui.bootstrap", "leaflet-directive", "mage.***REMOVED***s", "mage.lib"]);
+function LayerController($scope, $log, $http, $injector, appConstants, mageLib, LayerService) {
 
-/*
-  
-*/
-function LayerController($scope, $log, $http, $injector, appConstants, mageLib) {
-  $scope.layers = [];
+
+  $scope.layers = 
   $scope.layerName = "";
+  $scope.showLayerForm = false;
+  $scope.wmsFormats = ['image/jpeg', 'image/png'];
+  $scope.wmsVersions = ['1.1.1', '1.3.0'];
 
-  $scope.getLayers = function() {
-    console.log('getting layers...');
-    //http://ec2-23-21-10-48.compute-1.amazonaws.com/sage
-    $http.get(appConstants.rootUrl + '/FeatureServer?access_token=' + mageLib.getLocalItem('token')).
-        success(function (data, status, headers, config) {
-            $scope.layers = data.layers;
-            if(data.layers.length == 0) {
-              $('#instructions').removeCl***REMOVED***('hide');
-            }
-        }).
-        error(function (data, status, headers, config) {
-            $log.log("Error getting layers: " + status);
-        });
-  }
+  LayerService.getAllLayers().
+    success(function (layers, status, headers, config) {
+      $scope.layers = layers;
+    }).
+    error(function (data, status, headers, config) {
+      $log.log("Error getting layers: " + status);
+    });
 
   $scope.newLayer = function () {
-    console.log('in newLayer');
-    $('#instructions').addCl***REMOVED***('hide');
-    $('#new-layer-form').removeCl***REMOVED***('hide');
+    $scope.layer = {
+      type: 'Feature',
+      format: 'XYZ',
+      wms: {
+        format: 'image/png',
+        version: '1.1.1',
+        transparent: false
+      }
+    };
+
+    $scope.showLayerForm = true;
   }
 
   $scope.saveLayer = function () {
-    console.log('in newLayer');
-    
-    $http.post(appConstants.rootUrl + '/FeatureServer/', "name=" + $scope.layerName + '&access_token=' + mageLib.getLocalItem('token'), {headers: {'Content-Type': 'application/x-www-form-urlencoded'}}).
-      success(function (data, status, headers, config) {
-          $scope.points = data;
-          for(var i = 0; i < data.length; i++){
-              console.log("Data: "+i+"= "+angular.toJson(data[i]));
-          }
-      }).
-      error(function (data, status, headers, config) {
-          $log.log("Error adding feature: " + status);
-      });
+    var layer = $scope.layer;
 
-    $('#new-layer-form').addCl***REMOVED***('hide');
-    $scope.getLayers();
+    if (layer.type == 'Feature') {
+      delete layer.base;
+      delete layer.format;
+      delete layer.wms;
+    } else if (layer.type == 'Imagery') {
+      if (layer.format != 'WMS') {
+        delete layer.wms;
+      }
+    }
+
+    if (layer.id) {
+      LayerService.updateLayer(layer).
+        success(function (layer, status, headers, config) {
+          console.log("success updating layer")
+        }).
+        error(function (data, status, headers, config) {
+            $log.log("Error adding layer: " + status);
+        });
+    } else {
+      LayerService.createLayer(layer).
+        success(function (layer, status, headers, config) {
+          $scope.layers.push(layer);
+          $scope.layer.id = layer.id;
+          console.log("success creating layer")
+        }).
+        error(function (data, status, headers, config) {
+            $log.log("Error adding layer: " + status);
+        });
+    }
   }
 
-  $scope.viewLayer = function () {
-    console.log('in viewLayer');
-    //$scope.
+  $scope.viewLayer = function (layer) {
+    $scope.layer = layer;
+    $scope.showLayerForm = true;
   }
-
-  $scope.getLayers();
 }
