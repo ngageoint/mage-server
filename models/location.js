@@ -72,7 +72,7 @@ exports.getLocationsWithFilters = function(user, time_filter, limit, callback) {
 
   var sort = { $sort: { "properties.updatedOn": -1 }};
   var match  = {$match: {"properties.updatedOn" : {$gte: date}}};
-  var group = { $group: { _id: "$properties.user", locations: { $push: {location: {geometry: "$geometry", properties: "$properties"} } }}};
+  var group = { $group: { _id: "$properties.user", locations: { $push: {geometry: "$geometry", properties: "$properties"} }}};
   var project = { $project: { _id: 0, user: "$_id", locations: "$locations"} };
   
   Location.aggregate(sort, match, group, project, function(err, aggregate) {
