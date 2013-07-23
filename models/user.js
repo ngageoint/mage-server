@@ -301,6 +301,8 @@ exports.getLocations = function(options, callback) {
       console.log('Error getting locations.', err);
     }
     users = users.map(function(user) {
+      user.user = user._id;
+      delete user._id;
       user.locations = user.locations.reverse();
 
       return user;
