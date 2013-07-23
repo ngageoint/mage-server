@@ -517,6 +517,19 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     $scope.exportLayers.push(layer);
   }
 
+  $scope.getPosition = function() {
+    LocationService.getPosition().
+      then(function(position) {
+        console.log("Got location in controller");
+        //$scope.center = {lat: position.coords.latitude, lng: position.coords.longitude};
+        $scope.position = position;
+      }, function(reason) {
+        console.log("Could not get location for user");
+    });
+  }
+
+  $scope.getPosition();
+
   // Calls to make when the page is loaded
   //$scope.getFeatureLayers();
   //$scope.geolocate(); // this makes angular upset because there are 2 scope.applys running at the same time...

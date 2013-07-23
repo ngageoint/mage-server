@@ -20,8 +20,8 @@
   </div>
   
   <!-- The map directive -->
-  <div cl***REMOVED***="map-wrap">
-    <div leaflet marker="marker" center="center" zoom="zoom" multimarkers="multiMarkers" baselayer="baseLayer" layer="layer" message="message" draggable="true" activefeature="activeFeature" newfeature="newFeature" currentlayerid="currentLayerId"></div>
+  <div id="map" cl***REMOVED***="map-wrap">
+    <div leaflet marker="marker" center="center" zoom="zoom" multimarkers="multiMarkers" baselayer="baseLayer" layer="layer" message="message" draggable="true" activefeature="activeFeature" newfeature="newFeature" currentlayerid="currentLayerId" position="position"></div>
   </div>
 
   <!-- The observation directive, was not wanting to play nice, will sort out after PDC.. -->
@@ -36,7 +36,7 @@
   
   <!-- Button bar -->
   <div id="button-bar">
-    <button cl***REMOVED***="btn" id="geo" ng-click="geolocate()" ngm-tap="geolocate()">
+    <button cl***REMOVED***="btn" id="geo" ng-click="getPosition()" ngm-tap="geolocate()">
       <i cl***REMOVED***="icon-location-2 icon-sage"></i>
     </button>
     <button cl***REMOVED***="btn hide" id="goto-address" ng-click="openGotoAddress()" ngm-tap="openGotoAddress()">

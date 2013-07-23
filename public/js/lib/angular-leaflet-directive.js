@@ -15,6 +15,7 @@
         baseLayer: "=baselayer",
         layer: "=layer",
         currentLayerId: "=currentlayerid",
+        position: "=position",
         activeFeature: "=activefeature",
         newFeature: "=newfeature"
       },
@@ -46,7 +47,22 @@
         });
 
         var $el = element[0],
-        map = new L.Map($el, {crs: L.CRS.EPSG4326});
+        map = new L.Map("map", {crs: L.CRS.EPSG4326});
+        var marker = new L.marker(scope.center, {
+          draggable: attrs.markcenter ? false:true
+        });
+        map.addLayer(marker);
+
+        scope.$watch("position", function(position) {
+          if (!position) return;
+
+          center = new L.LatLng(position.coords.latitude, position.coords.longitude);
+
+          scope.marker.lat = position.coords.latitude;
+          scope.marker.lng = position.coords.longitude;
+          var zoom = 16;
+          map.setView(center, zoom);
+        });
 
         scope.$watch("baseLayer", function(layer) {
           if (!layer) return;
@@ -59,8 +75,7 @@
               layers: layer.wms.layers,
               version: layer.wms.version,
               format: layer.wms.format,
-              transparent: layer.wms.transparent
-            };
+              transparent: layer.wms.transparent            };
             if (layer.wms.styles) options.styles = layer.wms.styles;
             baseLayer = new L.TileLayer.WMS(layer.url, options);
           }
@@ -79,9 +94,6 @@
           var zoom = scope.zoom || 8;
           map.setView(center, zoom);
 
-          var marker = new L.marker(scope.center, {
-            draggable: attrs.markcenter ? false:true
-          });
 
           if (attrs.markcenter || attrs.marker) {
             map.addLayer(marker);
@@ -164,6 +176,7 @@
               map.on("click", function(e) {
                 marker.setLatLng(e.latlng);
                 marker.openPopup();
+                console.log("click on: " + JSON.stringify(e.latlng));
                 scope.$apply(function (s) {
                   s.marker.lat = marker.getLatLng().lat;
                   s.marker.lng = marker.getLatLng().lng;
