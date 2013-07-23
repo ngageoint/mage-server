@@ -7,28 +7,17 @@ module.exports = function(app, auth) {
   app.all('/api/layers*', p***REMOVED***port.authenticate('bearer'));
 
   var validateLayerParams = function(req, res, next) {
-    var layer = {};
+    var layer = req.body;
 
-    var type = req.param('type');
-    if (!type) {
+    if (!layer.type) {
       return res.send(400, "cannot create layer 'type' param not specified");
     }
-    layer.type = type;
 
-    var name = req.param('name');
-    if (!name) {
+    if (!layer.name) {
       return res.send(400, "cannot create layer 'name' param not specified");
     }
-    layer.name = name;
 
-    var format = req.param('format');
-    if (format) layer.format = format;
-
-    var url = req.param('url');
-    if (url) layer.url = url;
-
-    var description = req.param('description');
-    if (description) layer.description = description;
+    // TODO error check / validate that if WMS proper things are provided
 
     req.newLayer = layer;
     next();
@@ -76,7 +65,7 @@ module.exports = function(app, auth) {
     access.authorize('UPDATE_LAYER'),
     validateLayerParams,
     function(req, res) {
-      Layer.update(req.newLayer, update, function(err, layer) {
+      Layer.update(req.layer.id, req.newLayer, function(err, layer) {
         if (err) {
           return res.send(400, err);
         }

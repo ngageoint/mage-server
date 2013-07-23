@@ -1,7 +1,5 @@
 'use strict';
 
-angular.module("mage", ["mage.***REMOVED***s", "mage.userService", "mage.lib"]);
-
 function NavController($rootScope, $scope, $log, $http, $injector, $location, appConstants, UserService, mageLib) {
   $scope.user = {};
   $scope.showMapLink = false;

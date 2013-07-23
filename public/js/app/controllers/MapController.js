@@ -4,7 +4,7 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($scope, $log, $http, $location, $injector, appConstants, teams, levels, observationTypes, mageLib, FeatureService, LocationService) {
+function MapController($scope, $log, $http, $location, $injector, appConstants, teams, levels, observationTypes, mageLib, LayerService, FeatureService, LocationService) {
   /* Some map defaults */
   $scope.center = { lat: 39.8282, lng: -98.5795 };
   $scope.marker = { lat: 39.8282, lng: -98.5795 };
@@ -16,15 +16,8 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.newFeature = null;
   $scope.token = mageLib.getLocalItem('token');
 
-  /* Data models for the settings */
-  $scope.layers = [];
-  $scope.baseLayers = [{name: "Open Street Map"}];
-  $scope.featureLayers = [];
-  $scope.exportLayers = [];
-  $scope.imageryLayers = [];
-
   /* Booleans for the ng-show attribues on the panels, toggling these will show and hide the map panels (i.e. layers, observation, export). */
-  $scope.showSettings = false;
+  $scope.showSettings = true;
   $scope.showGoToAddress = false;
   $scope.showRefresh = false;
   $scope.showLocations = false;
@@ -47,7 +40,6 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.observation.attributes.TYPE = $scope.observationTypes[0];
   $scope.observation.attributes.UNIT = "";
   $scope.observation.attributes.DESCRIPTION = "";
-
 
   /* Uncomment the following block to enable the Tomnod layers */
   /*$scope.imageryLayers = [{
@@ -82,7 +74,32 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   }];*/
 
   $scope.currentLayerId = 0;
-  $scope.baseLayer = $scope.baseLayers[0];
+
+  $scope.layers = [];
+  $scope.exportLayers = [];
+  $scope.baseLayers = [];
+  $scope.featureLayers = [];
+  $scope.imageryLayers = [];  
+  LayerService.getAllLayers().
+    success(function (layers, status, headers, config) {
+      // Pull out all non-base map imagery layers
+      $scope.imageryLayers = _.filter(layers, function(layer) {
+        return layer.type == 'Imagery' && !layer.base;
+      });
+      // Pull out all feature layers
+      $scope.featureLayers = _.filter(layers, function(layer) {
+        return layer.type == 'Feature';
+      });
+      // Pull out all imagery layers
+      $scope.baseLayers = _.filter(layers, function(layer) {
+        return layer.type == 'Imagery' && layer.base;
+      });
+      // Default the base layer to first one in the list
+      $scope.baseLayer = $scope.baseLayers[0];
+    }).
+    error(function (data, status, headers, config) {
+      $log.log("Error getting layers: " + status);
+    });
 
   // Should move the call to navigator out to mageLib, hand back the location then $scope.apply the results
   $scope.geolocate = function () {
@@ -156,30 +173,30 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
       });
   }, true);
 
-  $scope.getFeatureLayers = function () {
-    $http.get(appConstants.rootUrl + '/FeatureServer/', {params: mageLib.getTokenParams()}).
-      success(function (data, status, headers, config) {
-          console.log('got layers');
-          $scope.layers = data.layers;
+  // $scope.getFeatureLayers = function () {
+  //   $http.get(appConstants.rootUrl + '/FeatureServer/', {params: mageLib.getTokenParams()}).
+  //     success(function (data, status, headers, config) {
+  //         console.log('got layers');
+  //         $scope.layers = data.layers;
 
-          _.each(data.layers, function(layer) {
-            $scope.featureLayers.unshift({
-              id: layer.id,
-              name: layer.name,
-              url: appConstants.rootUrl + "/FeatureServer/" + layer.id + "/features/?properties=OBJECTID&access_token=" + mageLib.getLocalItem('token'),
-              enabled: false
-            });
-          });
+  //         _.each(data.layers, function(layer) {
+  //           $scope.featureLayers.unshift({
+  //             id: layer.id,
+  //             name: layer.name,
+  //             url: appConstants.rootUrl + "/FeatureServer/" + layer.id + "/features/?properties=OBJECTID&access_token=" + mageLib.getLocalItem('token'),
+  //             enabled: false
+  //           });
+  //         });
 
-          $scope.showSettings = true;
-      }).
-      error(function (data, status, headers, config) {
-          $log.log("Error getting layers: " + status);
-          if (status == 401) {
-            $location.path('/');
-          }
-      });
-  }
+  //         $scope.showSettings = true;
+  //     }).
+  //     error(function (data, status, headers, config) {
+  //         $log.log("Error getting layers: " + status);
+  //         if (status == 401) {
+  //           $location.path('/');
+  //         }
+  //     });
+  // }
 
   $scope.onFeatureLayer = function(layer) {
     if (!layer.checked) {
@@ -189,7 +206,8 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
 
     var options = {
       method: "GET",
-      url: layer.url,
+      url: appConstants.rootUrl + '/FeatureServer/' + layer.id + "/features",
+      params: mageLib.getTokenParams(),
       headers: {
         "Accepts": "application/json", 
         "Content-Type": "application/json"
@@ -493,7 +511,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   }
 
   // Calls to make when the page is loaded
-  $scope.getFeatureLayers();
+  //$scope.getFeatureLayers();
   //$scope.geolocate(); // this makes angular upset because there are 2 scope.applys running at the same time...
 
 }

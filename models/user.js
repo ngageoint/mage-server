@@ -1,8 +1,11 @@
 var mongoose = require('mongoose')
   , async = require("async")
   , hasher = require('../utilities/pbkdf2')()
+  , config = require('../config')
   , Token = require('../models/token')
   , Location = require('../models/location');
+
+var locationLimit = config.server.locationServices.userCollectionLocationLimit;
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema; 
@@ -11,6 +14,23 @@ var PhoneSchema = new Schema({
   type: { type: String, required: true },
   number: { type: String, required: true }
 });
+
+// Creates the Schema for FFT Locations
+var LocationSchema = new Schema({
+  type: { type: String, required: true },
+  geometry: {
+    type: { type: String, required: true },
+    coordinates: { type: Array, required: true}
+  },
+  properties: Schema.Types.Mixed
+},{
+    _id: false,
+    versionKey: false
+});
+
+LocationSchema.index({geometry: "2dsphere"});
+LocationSchema.index({'properties.createdOn': 1});
+LocationSchema.index({'properties.updatedOn': 1});
 
 // Collection to hold users
 var UserSchema = new Schema({
@@ -22,7 +42,8 @@ var UserSchema = new Schema({
     phones: [PhoneSchema],
     role: { type: Schema.Types.ObjectId, ref: 'Role' },
     teams: [Schema.Types.ObjectId],
-    status: { type: String, required: false, index: 'sparse' }
+    status: { type: String, required: false, index: 'sparse' },
+    locations: [LocationSchema]
   },{ 
     versionKey: false
   }
@@ -41,7 +62,7 @@ UserSchema.pre('save', function(next) {
     if (err) return next(err);
 
     if (possibleDuplicate && !possibleDuplicate._id.equals(user._id)) {
-      return next(new Error('username already exsits'));
+      return next(new Error('username already exists'));
     }
 
     next();
@@ -98,16 +119,19 @@ UserSchema.pre('remove', function(next) {
   });
 });
 
-UserSchema.set("toObject", {
-  transform: function(user, ret, options) {
+var transformUser = function(user, ret, options) {
+  if ('function' != typeof user.ownerDocument) {
     delete ret.p***REMOVED***word;
+    delete ret.locations;
   }
+}
+
+UserSchema.set("toObject", {
+  transform: transformUser
 });
 
 UserSchema.set("toJSON", {
-  transform: function(user, ret, options) {
-    delete ret.p***REMOVED***word;
-  }
+  transform: transformUser
 });
 
 // Creates the Model for the User Schema
@@ -266,5 +290,33 @@ exports.removeTeamFromUsers = function(team, callback) {
     }
 
     callback(err, number);
+  });
+}
+
+exports.getLocations = function(options, callback) {
+  var limit = options.limit;
+  limit = limit <= locationLimit ? limit : locationLimit;
+  User.find({}, {_id: 1, locations: {$slice: -1 * limit}}, {lean: true}, function(err, users) {
+    if (err) {
+      console.log('Error getting locations.', err);
+    }
+    users = users.map(function(user) {
+      user.locations = user.locations.reverse();
+
+      return user;
+    });
+
+    callback(err, users);
+  });
+}
+
+exports.addLocationForUser = function(user, location, callback) {
+  var update = {$push: {locations: {$each: [location], $sort: {"properties.updatedOn": 1}, $slice: -1 * locationLimit}}};
+  User.findByIdAndUpdate(user._id, update, function(err, user) {
+    if (err) {
+      console.log('Error add location for user.', err);
+    }
+
+    callback(err, user);
   });
 }

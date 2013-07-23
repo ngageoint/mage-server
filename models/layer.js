@@ -11,10 +11,16 @@ var LayerSchema = new Schema({
   base: { type: Boolean, required: false },
   name: { type: String, required: true, unique: true },
   format: { type: String, required: false },
-  tms: { type: Boolean, required: false },
   url: { type: String, required: false },
   description: { type: String, required: false },
-  collectionName: { type: String, required: true }
+  wms: {
+    layers: { type: String },
+    styles: { type: String },
+    format: { type: String },
+    transparent: { type: Boolean },
+    version: { type: String }
+  },
+  collectionName: { type: String, required: false }
 },{ 
     versionKey: false
 });
@@ -30,6 +36,13 @@ LayerSchema.set("toObject", {
 
 LayerSchema.set("toJSON", {
   transform: transform
+});
+
+// Validate the layer before save
+LayerSchema.pre('save', function(next) {
+  var layer = this;
+  //TODO validate layer before save
+  next();
 });
 
 // Creates the Model for the Layer Schema
@@ -98,37 +111,37 @@ var dropFeatureCollection = function(layer) {
   });
 }
 
-exports.create = function(data, callback) {
+exports.create = function(layer, callback) {
   Counter.getNext('layer', function(id) {
-    var layer = new Layer({
-      id: id,
-      name: data.name,
-      type: data.type,
-      collectionName: 'features' + id
-    });
+    layer.id = id;
 
-    layer.save(function(err, layer) {
+    if (layer.type == 'Feature') {
+      layer.collectionName = 'features' + id;
+    }
+
+    Layer.create(layer, function(err, newLayer) {
       if (err) {
         console.log("Problem creating layer. " + err);
       } else {
-        createFeatureCollection(layer);
+        if (layer.type == 'Feature') {
+          createFeatureCollection(newLayer);
+        }
       }
 
-      callback(err, layer);
+      callback(err, newLayer);
     });
   });
 }
 
-exports.update = function(layer, data, callback) {
-  var query = {_id: layer._id};
-  var update = {$set: {name: data.name}};
-  var options = {new: true};
-  Layer.findOneAndUpdate(query, update, options, function(err, layer) {
-    if (layer) {
+exports.update = function(id, layer, callback) {
+  var query = {id: id};
+
+  Layer.collection.findAndModify(query, [], layer, function(err, updatedLayer) {
+    if (err) {
       console.log("Could not update layer: " + err);
     }
 
-    callback(layer);
+    callback(err, updatedLayer);
   });
 }
 

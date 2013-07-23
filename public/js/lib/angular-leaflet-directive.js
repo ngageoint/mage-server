@@ -3,7 +3,7 @@
 
   leafletDirective.directive("leaflet", function ($http, $log, appConstants) {
     return {
-      restrict: "E",
+      restrict: "A",
       replace: true,
       transclude: true,
       scope: {
@@ -12,6 +12,7 @@
         message: "=message",
         zoom: "=zoom",
         multiMarkers: "=multimarkers",
+        baseLayer: "=baselayer",
         layer: "=layer",
         currentLayerId: "=currentlayerid",
         activeFeature: "=activefeature",
@@ -19,6 +20,7 @@
       },
       template: '<div cl***REMOVED***="map"></div>',
       link: function (scope, element, attrs, ctrl) {
+        var baseLayer = {};
         var layers = {};
 
         var greenIcon = L.icon({
@@ -44,9 +46,26 @@
         });
 
         var $el = element[0],
-        map = new L.Map($el);
+        map = new L.Map($el, {crs: L.CRS.EPSG4326});
 
-        L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+        scope.$watch("baseLayer", function(layer) {
+          if (!layer) return;
+
+          map.removeLayer(baseLayer);
+          if (layer.format == 'XYZ' || layer.format == 'TMS') {
+            baseLayer = new L.TileLayer(layer.url, { tms: layer.format == 'TMS', maxZoom: 18});
+          } else if (layer.format == 'WMS') {
+            var options = {
+              layers: layer.wms.layers,
+              version: layer.wms.version,
+              format: layer.wms.format,
+              transparent: layer.wms.transparent
+            };
+            if (layer.wms.styles) options.styles = layer.wms.styles;
+            baseLayer = new L.TileLayer.WMS(layer.url, options);
+          }
+          baseLayer.addTo(map).bringToBack();
+        });
 
         // Default center of the map
         var point = new L.LatLng(40.094882122321145, -3.8232421874999996);
@@ -245,10 +264,20 @@
             if (layer.checked) {
               // add to map
               var newLayer = null;
-              if (layer.type === 'imagery') {
-                newLayer = L.tileLayer(scope.layer.url, {
-                  tms: scope.layer.tms
-                }).addTo(map).bringToFront();
+              if (layer.type === 'Imagery') {
+                if (layer.format == 'XYZ' || layer.format == 'TMS') {
+                  newLayer = new L.TileLayer(layer.url, { tms: layer.format == 'TMS', maxZoom: 18});
+                } else if (layer.format == 'WMS') {
+                  var options = {
+                    layers: layer.wms.layers,
+                    version: layer.wms.version,
+                    format: layer.wms.format,
+                    transparent: layer.wms.transparent
+                  };
+                  if (layer.wms.styles) options.styles = layer.wms.styles;
+                  newLayer = new L.TileLayer.WMS(layer.url, options);
+                }
+                newLayer.addTo(map).bringToFront();
               } else {
                 newLayer = new L.GeoJSON(layer.featureCollection, {
                   pointToLayer: function (feature, latlng) {

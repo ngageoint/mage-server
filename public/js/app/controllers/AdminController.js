@@ -45,6 +45,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   
   $scope.team = {};
   $scope.user = {};
+  $scope.device = {};
 
   $scope.teams = [
     {
@@ -148,8 +149,10 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   }
 
   $scope.scrollTo = function (id) {
+    var old = $location.hash();
     $location.hash(id);
     $anchorScroll();
+    $location.hash(old);
   }
 
   $scope.editUser = function (user) {

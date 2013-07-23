@@ -1,15 +1,30 @@
 'use strict';
 
-angular.module('mage.userService', ['mage.***REMOVED***s'])
-  .factory('LayerService', ['$http', '$scope', 'appConstants',
-    function ($http, $scope, appConstants) {
-      var layerServiceFunctions = [];
+angular.module('mage.layerService', ['mage.***REMOVED***s', 'mage.lib'])
+  .factory('LayerService', ['$http', 'appConstants', 'mageLib',
+    function ($http, appConstants, mageLib) {
+      var ***REMOVED*** = {};
 
-      /* 
-        The layer getting and setting functions should be added here in a simimlar fashion to the 
-        user ***REMOVED***s
-      */
-      
+      ***REMOVED***.getAllLayers = function () {
+        return $http.get(appConstants.rootUrl + '/api/layers/', {params: mageLib.getTokenParams()});
+      };
 
-      return layerServiceFunctions;
-    }])
+      ***REMOVED***.createLayer = function(layer) {
+        return $http.post(
+          appConstants.rootUrl + '/api/layers?access_token=' + mageLib.getLocalItem('token'), 
+          layer, 
+          {headers: {"Content-Type": "application/json"}}
+        );
+      };
+
+      ***REMOVED***.updateLayer = function(layer) {
+        return $http.put(
+          appConstants.rootUrl + '/api/layers/' + layer.id + '/?access_token=' + mageLib.getLocalItem('token'), 
+          layer, 
+          {headers: {"Content-Type": "application/json"}}
+        );
+      };
+
+      return ***REMOVED***;
+
+    }]);
