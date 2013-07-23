@@ -118,7 +118,6 @@ module.exports = function(app, auth) {
           }
 
         }
-
         //writing requested FFT locations
 
         res.write(generate_kml.generateKMLDocumentClose());
