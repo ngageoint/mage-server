@@ -1,23 +1,45 @@
 'use strict';
 
 angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
-  .factory('LocationService', ['$http', 'appConstants', 'mageLib', 
-    function ($http, appConstants, mageLib) {
-      var locationServiceFunctions = {};
+  .factory('LocationService', ['$http', '$q', '$rootScope', 'appConstants', 'mageLib', 
+    function ($http, $q, $rootScope, appConstants, mageLib) {
+      var ***REMOVED*** = {};
 
-      locationServiceFunctions.export = function () {
+      ***REMOVED***.export = function () {
         return $http.get(appConstants.rootUrl + "/api/locations/export?&access_token=" + mageLib.getLocalItem('token'));
       };
 
-      locationServiceFunctions.createLocation = function (location) {
+      ***REMOVED***.createLocation = function (location) {
         return $http.post(appConstants.rootUrl + '/api/locations?&access_token=' + mageLib.getLocalItem('token'), 
           JSON.stringify(location),
           {headers: {"Content-Type": "application/json"}});
       };
 
-      locationServiceFunctions.getLocations = function () {
+      ***REMOVED***.getLocations = function () {
         return $http.get(appConstants.rootUrl + '/api/locations?&access_token=' + mageLib.getLocalItem('token'));
       }
 
-      return locationServiceFunctions;
+      ***REMOVED***.getPosition = function() {
+        var deferred = $q.defer();
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            function (position) {
+              console.log("about to resolve promise");
+              $rootScope.$apply(function() {
+                deferred.resolve(position);
+              });
+            },
+            function (error) {
+              deferred.reject(error);
+            }
+          );
+        }
+        else {
+          deferred.reject('location ***REMOVED***s not allowed');
+        }
+
+        return deferred.promise;
+      }
+
+      return ***REMOVED***;
     }])
