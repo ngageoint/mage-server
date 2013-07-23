@@ -103,12 +103,12 @@ module.exports = function(app, auth) {
           return res.json(device);
         }
 
-        Device.createDevice(req.newDevice, function(err, device) {
+        Device.createDevice(req.newDevice, function(err, newDevice) {
           if (err) {
             return res.send(400, err);
           }
 
-          res.json(device);
+          res.json(newDevice);
         });
       });
     }
