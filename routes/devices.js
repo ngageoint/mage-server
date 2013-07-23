@@ -97,12 +97,19 @@ module.exports = function(app, auth) {
       // Devices not created by ADMIN are not registered by default
       req.newDevice.registered = false;
 
-      Device.createDevice(req.newDevice, function(err, device) {
-        if (err) {
-          return res.send(400, err);
+      Device.getDeviceByUid(req.newDevice.uid, function(err, device) {
+        if (device) {
+          // already exists, do not register
+          return res.json(device);
         }
 
-        res.json(device);
+        Device.createDevice(req.newDevice, function(err, device) {
+          if (err) {
+            return res.send(400, err);
+          }
+
+          res.json(device);
+        });
       });
     }
   );
