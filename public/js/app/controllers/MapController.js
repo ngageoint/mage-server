@@ -79,7 +79,8 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.exportLayers = [];
   $scope.baseLayers = [];
   $scope.featureLayers = [];
-  $scope.imageryLayers = [];  
+  $scope.imageryLayers = []; 
+
   LayerService.getAllLayers().
     success(function (layers, status, headers, config) {
       // Pull out all non-base map imagery layers
@@ -492,6 +493,14 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.export = function () {
     console.log("exporting features to KML");
      
+    //error checking...
+    $("#export-error-message").hide();
+    if(!$scope.fft_layer && $scope.exportLayers.length == 0) {
+      $("#export-error-message").html('Error: Please Select a Layer.');
+      $("#export-error-message").show();
+      return;
+    }
+
     var url = appConstants.rootUrl + "/api/export" + 
       "?access_token=" + mageLib.getLocalItem('token') +
       "&time_filter=" + $scope.time_filter +
@@ -501,9 +510,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
         var layer_ids = _.map($scope.exportLayers,function(layer){return layer.id}).join();
         url = url + "&export_layers=" + layer_ids;
       }
-
-    window.location.href = url;    
-    $scope.closeExport();
+    window.location.href = url;
   }
 
   $scope.addExportLayer = function (layer) {
