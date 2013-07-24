@@ -21,6 +21,7 @@ function LayerController($scope, $log, $http, $injector, appConstants, mageLib, 
     $scope.layer = {
       type: 'Feature',
       format: 'XYZ',
+      base: false,
       wms: {
         format: 'image/png',
         version: '1.1.1',
