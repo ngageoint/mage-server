@@ -14,7 +14,7 @@ module.exports = function(app, auth) {
     '/api/export',
     function(req, res) {
 
-      var locations;
+      var userLocations;
       var layerLookup = {};
       var featuresLookup = {};
 
@@ -75,7 +75,7 @@ module.exports = function(app, auth) {
               console.log(err);
               return done(err);
             }
-            locations = locationResponse;
+            userLocations = locationResponse;
             done();
           });
           //FFT
@@ -88,10 +88,11 @@ module.exports = function(app, auth) {
         if(err) {
           console.log(err);
           return done(err);
-        }
+        }       
 
         res.writeHead(200,{"Content-Type": "application/vnd.google-earth.kml+xml" , 
                            "Content-Disposition": "attachment; filename=MAGE-export.kml"});
+        
 
         res.write(generate_kml.generateKMLHeader());
         res.write(generate_kml.generateKMLDocument());
@@ -118,8 +119,22 @@ module.exports = function(app, auth) {
           }
 
         }
-        //writing requested FFT locations
 
+        //writing requested FFT locations
+        for(var i in userLocations) {          
+          var user = userLocations[i];
+          res.write(generate_kml.generateKMLFolderStart('user: ' + user.user));
+          for(var j in user.locations) {
+            var location = user.locations[j];
+            if(location) {
+              lon = location.geometry.coordinates[0];
+              lat = location.geometry.coordinates[1];
+              desc = location.properties.createdOn;
+              res.write(generate_kml.generatePlacemark('point' + j, 'FFT' , lon ,lat ,0, desc)); 
+            } 
+          }
+          res.write(generate_kml.generateKMLFolderClose());  
+        }
         res.write(generate_kml.generateKMLDocumentClose());
         res.end(generate_kml.generateKMLClose()); 
       });
