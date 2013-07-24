@@ -503,13 +503,17 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
 
     var url = appConstants.rootUrl + "/api/export" + 
       "?access_token=" + mageLib.getLocalItem('token') +
-      "&time_filter=" + $scope.time_filter +
-      "&fft_layer=" + $scope.fft_layer;
+      "&time_filter=" + $scope.time_filter;
+      
+    if($scope.fft_layer) {
+        url = url + "&fft_layer=" + $scope.fft_layer;
+    }
 
-      if($scope.exportLayers.length > 0) {
-        var layer_ids = _.map($scope.exportLayers,function(layer){return layer.id}).join();
-        url = url + "&export_layers=" + layer_ids;
-      }
+    if($scope.exportLayers.length > 0) {
+      var layer_ids = _.map($scope.exportLayers,function(layer){return layer.id}).join();
+      url = url + "&export_layers=" + layer_ids;
+    }
+
     window.location.href = url;
   }
 
