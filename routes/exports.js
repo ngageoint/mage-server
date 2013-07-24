@@ -20,8 +20,9 @@ module.exports = function(app, auth) {
 
       var filterTime = req.query.time_filter;
       var filterExportLayers = req.query.export_layers;
+      var filterFft = req.query.fft_layer;
 
-      if(!filterExportLayers) {        
+      if(!filterExportLayers && !filterFft) {        
         return res.send(400, "Error.  Please Select Layer for Export.");
       }
 
@@ -48,6 +49,11 @@ module.exports = function(app, auth) {
 
         //FUNCTION 2
         function(done) {   
+          
+          if(!filterExportLayers) {
+            return done();
+          }
+
           //get features for lookup
           var exportLayerIds = filterExportLayers.split(',');
 
@@ -92,48 +98,50 @@ module.exports = function(app, auth) {
 
         res.writeHead(200,{"Content-Type": "application/vnd.google-earth.kml+xml" , 
                            "Content-Disposition": "attachment; filename=MAGE-export.kml"});
-        
 
         res.write(generate_kml.generateKMLHeader());
         res.write(generate_kml.generateKMLDocument());
 
         //writing requested feature layers
-        var exportLayerIds = filterExportLayers.split(',');
-        for(var i in exportLayerIds) {
-          
-          var layerId = exportLayerIds[i];
-          var layer = layerLookup[layerId];
-          var features = featuresLookup[layerId];
-          
-          if(layer) {
-            res.write(generate_kml.generateKMLFolderStart(layer.name));              
-            for(var j in features) {
-              feature = features[j];
-              lon = feature.geometry.coordinates[0];
-              lat = feature.geometry.coordinates[1];
-              desc = feature.properties.TYPE;
-              res.write(generate_kml.generatePlacemark(feature._id, feature.properties.TYPE, lon ,lat ,0, desc));
-            }
+        if(filterExportLayers) {
 
-            res.write(generate_kml.generateKMLFolderClose());  
+          var exportLayerIds = filterExportLayers.split(',');
+          for(var i in exportLayerIds) {
+            
+            var layerId = exportLayerIds[i];
+            var layer = layerLookup[layerId];
+            var features = featuresLookup[layerId];
+            
+            if(layer) {
+              res.write(generate_kml.generateKMLFolderStart(layer.name));              
+              for(var j in features) {
+                feature = features[j];
+                lon = feature.geometry.coordinates[0];
+                lat = feature.geometry.coordinates[1];
+                desc = feature.properties.TYPE;
+                res.write(generate_kml.generatePlacemark(feature._id, feature.properties.TYPE, lon ,lat ,0, desc));
+              }  
+              res.write(generate_kml.generateKMLFolderClose());  
+            }  
           }
-
         }
 
         //writing requested FFT locations
-        for(var i in userLocations) {          
-          var user = userLocations[i];
-          res.write(generate_kml.generateKMLFolderStart('user: ' + user.user));
-          for(var j in user.locations) {
-            var location = user.locations[j];
-            if(location) {
-              lon = location.geometry.coordinates[0];
-              lat = location.geometry.coordinates[1];
-              desc = location.properties.createdOn;
-              res.write(generate_kml.generatePlacemark('point' + j, 'FFT' , lon ,lat ,0, desc)); 
-            } 
+        if(filterFft) {
+          for(var i in userLocations) {          
+            var user = userLocations[i];
+            res.write(generate_kml.generateKMLFolderStart('user: ' + user.user));
+            for(var j in user.locations) {
+              var location = user.locations[j];
+              if(location) {
+                lon = location.geometry.coordinates[0];
+                lat = location.geometry.coordinates[1];
+                desc = location.properties.createdOn;
+                res.write(generate_kml.generatePlacemark('point' + j, 'FFT' , lon ,lat ,0, desc)); 
+              } 
+            }
+            res.write(generate_kml.generateKMLFolderClose());  
           }
-          res.write(generate_kml.generateKMLFolderClose());  
         }
         res.write(generate_kml.generateKMLDocumentClose());
         res.end(generate_kml.generateKMLClose()); 
@@ -141,7 +149,6 @@ module.exports = function(app, auth) {
      //END SERIES FUNCTION...EVERYTHING ELSE IS DONE
 
     }
-
   );
           
 }
