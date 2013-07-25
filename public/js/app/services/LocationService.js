@@ -24,7 +24,6 @@ angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             function (position) {
-              console.log("about to resolve promise");
               $rootScope.$apply(function() {
                 deferred.resolve(position);
               });

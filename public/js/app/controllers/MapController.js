@@ -4,11 +4,9 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($scope, $log, $http, $location, $injector, appConstants, teams, levels, observationTypes, mageLib, LayerService, FeatureService, LocationService) {
+function MapController($scope, $log, $http, $location, $injector, appConstants, teams, levels, observationTypes, mageLib, LayerService, FeatureService, LocationService, TimerService) {
   /* Some map defaults */
-  $scope.center = { lat: 39.8282, lng: -98.5795 };
-  $scope.marker = { lat: 39.8282, lng: -98.5795 };
-  $scope.zoom = 4;
+  $scope.markerLocation = {};
   $scope.points = [];
   $scope.multiMarkers = {};
   $scope.externalLayer = "";
@@ -40,6 +38,9 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.observation.attributes.TYPE = $scope.observationTypes[0];
   $scope.observation.attributes.UNIT = "";
   $scope.observation.attributes.DESCRIPTION = "";
+
+  $scope.locationServicesEnabled = false;
+  $scope.locations = [];
 
   /* Uncomment the following block to enable the Tomnod layers */
   /*$scope.imageryLayers = [{
@@ -99,33 +100,10 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
       $scope.baseLayer = $scope.baseLayers[0];
     }).
     error(function (data, status, headers, config) {
-      $log.log("Error getting layers: " + status);
+      if (status == 401) {
+        $location.path('/');
+      }
     });
-
-  // Should move the call to navigator out to mageLib, hand back the location then $scope.apply the results
-  $scope.geolocate = function () {
-    console.log("in geolocate");
-    if ($window.navigator.geolocation) {
-      $window.navigator.geolocation.getCurrentPosition(function(position) {
-        console.log("lat " + position.coords.latitude + " lon " + position.coords.longitude);
-        $scope.$apply(function() {
-          $scope.zoom = 12;
-          $scope.center = { lat: position.coords.latitude, lng: position.coords.longitude };
-        });
-      });
-    }
-  }
-
-  // call back for the geolocation ***REMOVED***
-  $scope.setCurrentLocation = function (position) {
-    $scope.zoom = 12;
-    $scope.center = { lat: position.coords.latitude, lng: position.coords.longitude };
-    $scope.$apply();
-  }
-
-  $scope.getGeolocation = function () {
-    mageLib.geolocate($scope.setCurrentLocation, mageLib.geoError, {});
-  }
 
   /* this watch handles opening observations when a placemark on the map has been clicked. */
   $scope.$watch("activeFeature", function (value) {
@@ -258,27 +236,28 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   /* Locations, think Find My Friends */
   $scope.broadcastLocation = function () {
     // get geolocation, take that location and post it with the location ***REMOVED***
-    var newLocation = {};
-    newLocation.location = {};
-    newLocation.location.type = "Feature";
-    newLocation.location.geometry = {};
-    newLocation.location.geometry.type = "Point";
-    newLocation.location.geometry.coordinates = [0,0];
-    newLocation.location.properties = {};
-    newLocation.timestamp1 = new Date();
-    
-    mageLib.geolocate(function (position) {
-        newLocation.location.geometry.coordinates = [position.coords.longitude, position.coords.latitude];
-        LocationService.createLocation(newLocation).
-        success(function (data, status, headers, config) {
+    LocationService.getPosition().
+      then(function(position) {
+        var location = {
+          location: {
+            type: "Feature",
+            geometry: {
+              type: 'Point',
+              coordinates: [position.coords.longitude, position.coords.latitude]
+            }
+          },
+          timestamp: new Date()
+        };
 
-        }).
-        error(function (data, status, headers, config) {
+        LocationService.createLocation(location)
+          .success(function (data, status, headers, config) {
+            $scope.positionBroadcast = position;
+          })
+          .error(function (data, status, headers, config) {
 
-        });
-      }, mageLib.geoError, {});
+          });
+      });
   }
-
 
   /* 
     The observation functions are a mix of copy pasta from the observation directive, hopefully cleaned up a bit
@@ -329,9 +308,11 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
             }
         });
     } else {
+      console.log('MARKER: ' + JSON.stringify($scope.markerLocation));
+
       $scope.observation.geometry = {
-        "x": $scope.marker.lng, 
-        "y": $scope.marker.lat
+        "x": $scope.markerLocation.lng, 
+        "y": $scope.markerLocation.lat
       };
 
       // make a call to the FeatureService
@@ -459,17 +440,24 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   }
 
 
-  /* Locations == FFT */
-  $scope.openLocations = function() {
-    console.log("in showLocations");
-    //$scope.showLocations = true;
-    LocationService.getLocations().
-      success(function (data, status, headers, config) {
-        $scope.layer = data[0];
-      }).
-      error(function () {
+  /* location ***REMOVED***s is FFT */
+  $scope.locationServices = function() {
+    var timerName = 'pollLocations';
 
+    if ($scope.locationServicesEnabled) {
+      TimerService.start(timerName, 5000, function() {
+      LocationService.getLocations().
+        success(function (data, status, headers, config) {
+          $scope.locations = data;
+        }).
+        error(function () {
+          console.log('error getting locations');
+        });
       });
+    } else {
+      $scope.locations = [];
+      TimerService.stop(timerName);
+    }
   }
 
   $scope.dismissLocations = function() {
@@ -524,18 +512,10 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.getPosition = function() {
     LocationService.getPosition().
       then(function(position) {
-        console.log("Got location in controller");
-        //$scope.center = {lat: position.coords.latitude, lng: position.coords.longitude};
         $scope.position = position;
-      }, function(reason) {
-        console.log("Could not get location for user");
-    });
+      });
   }
 
+  // Calls to make when the controller/page is loaded
   $scope.getPosition();
-
-  // Calls to make when the page is loaded
-  //$scope.getFeatureLayers();
-  //$scope.geolocate(); // this makes angular upset because there are 2 scope.applys running at the same time...
-
 }

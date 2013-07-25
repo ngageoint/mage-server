@@ -67,14 +67,6 @@ body {
     margin-top: 50px;
 }
 
-.icon-sage {
-    color: #5278A2;
-    font-size: 1.4em;
-    background-image: none;
-    margin-left: -4px;
-    margin-bottom: 9px;
-}
-
 .icon-spacer {
     margin-right: 10px;
 }
@@ -99,12 +91,25 @@ textarea {
 }
 
 .btn {
-    background: #FEFEFE;
     border: solid 1px #B3C7DB;
 } 
 
 .btn-inverse {
-    background: #324962;
+    background: #5278A2;
+}
+
+.btn-inverse:hover,
+.btn-inverse:focus,
+.btn-inverse:active,
+.btn-inverse.active,
+.btn-inverse.disabled,
+.btn-inverse[disabled] {
+  background-color: #5278A2;
+}
+
+.btn-inverse:active,
+.btn-inverse.active {
+  background-color: #5278A2;
 }
 
 .btn-success {
@@ -113,6 +118,22 @@ textarea {
 
 .btn-danger {
     background: #933;
+}
+
+.icon-sage {
+    color: #5278A2;
+    font-size: 1.4em;
+    background-image: none;
+    margin-left: -4px;
+    margin-bottom: 9px;
+}
+
+.icon-sage-inverse {
+    color: #FEFEFE;
+    font-size: 1.4em;
+    background-image: none;
+    margin-left: -4px;
+    margin-bottom: 9px;
 }
 
 #panel-login {

@@ -3,13 +3,20 @@
 angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
   .factory('UserService', ['$http', 'appConstants', 'mageLib',
     function ($http, appConstants, mageLib) {
-      var userServiceFunctions = {};
+      var ***REMOVED*** = {};
 
-      userServiceFunctions.getAllUsers = function () {
+      ***REMOVED***.getUser = function(id) {
+        return $http.get(
+          appConstants.rootUrl + '/api/users/' + id, 
+          {params: mageLib.getTokenParams()}
+        );
+      }
+
+      ***REMOVED***.getAllUsers = function () {
         return $http.get(appConstants.rootUrl + '/api/users', {params: mageLib.getTokenParams()});
       };
 
-      userServiceFunctions.newUser = function (user) {
+      ***REMOVED***.newUser = function (user) {
         var user = {
           username: '',
           firstname: '',
@@ -21,16 +28,16 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       };
 
       /* the admin function, allows you to add roles */
-      userServiceFunctions.createUser = function(user) {
+      ***REMOVED***.createUser = function(user) {
         return $http.post(appConstants.rootUrl + '/api/users?access_token=' + mageLib.getLocalItem('token'), $.param(user), {headers: {"Content-Type": "application/x-www-form-urlencoded"}});
       }
 
       /* For the sign up page, no token necessary */
-      userServiceFunctions.signup = function (user) {
+      ***REMOVED***.signup = function (user) {
         return $http.post(appConstants.rootUrl + '/api/users', $.param(user), {headers: {"Content-Type": "application/x-www-form-urlencoded"}});
       }
 
-      userServiceFunctions.updateUser = function(user) {
+      ***REMOVED***.updateUser = function(user) {
         $http.put(appConstants.rootUrl + '/api/users/' + user._id + '?access_token=' + mageLib.getLocalItem('token'), $.param(user), {headers: {"Content-Type": "application/x-www-form-urlencoded"}}).
           success(function (data, status, headers, config) {
             console.log("sucessful user save!");
@@ -40,7 +47,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
           });
       }
 
-      userServiceFunctions.getRoles = function () {
+      ***REMOVED***.getRoles = function () {
         return $http.get(appConstants.rootUrl + '/api/roles', {params: mageLib.getTokenParams()});
       };
 
@@ -56,9 +63,9 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
             }
           });*/
       
-      userServiceFunctions.getMyself = function () {
+      ***REMOVED***.getMyself = function () {
         return $http.get(appConstants.rootUrl + '/api/users/myself', {params: mageLib.getTokenParams()});
       };
 
-      return userServiceFunctions;
+      return ***REMOVED***;
     }])

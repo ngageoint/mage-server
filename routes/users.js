@@ -323,6 +323,13 @@ module.exports = function(app, auth) {
         if (req.param('lastname')) user.lastname = req.param('lastname');
         if (req.param('email')) user.email = req.param('email');
         if (req.param('role')) user.role = req.param('role');
+        var phone = req.param('phone');
+        if (phone) {
+          user.phones = [{
+            type: "Main",
+            number: phone
+          }];
+        }
 
         var p***REMOVED***word = req.param('p***REMOVED***word');
         var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');

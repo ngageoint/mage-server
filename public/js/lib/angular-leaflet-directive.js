@@ -1,26 +1,41 @@
 (function () {
   var leafletDirective = angular.module("leaflet-directive", ["mage.***REMOVED***s"]);
 
-  leafletDirective.directive("leaflet", function ($http, $log, appConstants) {
+  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, appConstants) {
     return {
       restrict: "A",
       replace: true,
       transclude: true,
       scope: {
-        center: "=center",
-        marker: "=marker",
+        markerLocation: "=markerLocation",
         message: "=message",
-        zoom: "=zoom",
-        multiMarkers: "=multimarkers",
         baseLayer: "=baselayer",
         layer: "=layer",
         currentLayerId: "=currentlayerid",
         position: "=position",
+        positionBroadcast: "=positionBroadcast",
+        locations: "=locations",
         activeFeature: "=activefeature",
         newFeature: "=newfeature"
       },
       template: '<div cl***REMOVED***="map"></div>',
       link: function (scope, element, attrs, ctrl) {
+        // Create the map
+        var $el = element[0];
+        var map = new L.Map("map");
+        map.setView([0, 0], 3);
+
+        var marker = new L.marker([0,0], {
+          draggable: attrs.markcenter ? false:true
+        });
+        map.addLayer(marker);
+        scope.markerLocation = marker.toGeoJSON();
+
+        map.on("click", function(e) {
+          marker.setLatLng(e.latlng);
+          scope.markerLocation = e.latlng;
+        });
+
         var baseLayer = {};
         var layers = {};
 
@@ -46,22 +61,38 @@
           popupAnchor:  [1, -34] // point from which the popup should open relative to the iconAnchor
         });
 
-        var $el = element[0],
-        map = new L.Map("map", {crs: L.CRS.EPSG4326});
-        var marker = new L.marker(scope.center, {
-          draggable: attrs.markcenter ? false:true
+        var myLocationIcon = L.AwesomeMarkers.icon({
+          icon: 'male',
+          color: 'blue'
         });
-        map.addLayer(marker);
+        var myLocationMarker = new L.marker([0,0], {icon: myLocationIcon});
 
-        scope.$watch("position", function(position) {
-          if (!position) return;
+        var locationIcon = L.AwesomeMarkers.icon({
+          icon: 'male',
+          color: 'cadetblue'
+        });
 
-          center = new L.LatLng(position.coords.latitude, position.coords.longitude);
+        scope.$watch("position", function(p) {
+          if (!p) return;
 
-          scope.marker.lat = position.coords.latitude;
-          scope.marker.lng = position.coords.longitude;
-          var zoom = 16;
-          map.setView(center, zoom);
+          var coords = [p.coords.latitude, p.coords.longitude];
+          marker.setLatLng(coords);
+          map.setView(coords, 16);
+          scope.markerLocation = {lat: p.coords.latitude, lng: p.coords.longitude};
+        });
+
+        scope.$watch("positionBroadcast", function(p) {
+          if (!p) return;
+
+          myLocationMarker.setLatLng([p.coords.latitude, p.coords.longitude]);
+          map.addLayer(myLocationMarker);
+          myLocationMarker
+            .bindPopup("<div><h4>You were here</h4> This location was successfully broadcasted to the server.</div>")
+            .openPopup();
+
+          $timeout(function() {
+            myLocationMarker.closePopup();
+          },5000);
         });
 
         scope.$watch("baseLayer", function(layer) {
@@ -82,193 +113,160 @@
           baseLayer.addTo(map).bringToBack();
         });
 
-        // Default center of the map
-        var point = new L.LatLng(40.094882122321145, -3.8232421874999996);
-        map.setView(point, 5);
+        var currentLocationMarkers = {};
+        var locationLayerGroup = new L.LayerGroup().addTo(map);
+        scope.$watch("locations", function(users) {
+          if (users.length == 0) {
+            locationLayerGroup.clearLayers();
+            currentLocationMarkers = {};
+            return;
+          }
+
+          var locationMarkers = {};
+          _.each(users, function(user) {
+            if (user.locations.length > 0) {
+              var l = user.locations[0];
+              var marker = currentLocationMarkers[user.user];
+              if (marker) {
+                delete currentLocationMarkers[user.user];
+                locationMarkers[user.user] = marker;
+                // Just update the location
+                marker.setLatLng([l.geometry.coordinates[1], l.geometry.coordinates[0]]);
+                return;
+              }
+
+              var layer = new L.GeoJSON(user.locations[0], {
+                pointToLayer: function (feature, latlng) {
+                  var marker = new L.marker(latlng, {
+                    icon:  locationIcon
+                  });
+
+                  var e = angular.element("<div user-location user-id='userId'></div>");
+                  var newScope = scope.$new();
+                  newScope.userId = user.user;
+                  console.log('just clicked user location element');
+                  var x = $compile(e)(newScope, function(clonedElement, scope) {
+                    // TODO this sucks but for now set a min width
+                    marker.bindPopup(clonedElement[0]);
+                  });
+
+                  locationMarkers[user.user] = marker;
+                  return marker;
+                }
+              });
+
+              locationLayerGroup.addLayer(layer);
+            }
+          });
+
+          _.each(currentLocationMarkers, function(marker, user) {
+            locationLayerGroup.removeLayer(marker);
+          });
+
+          currentLocationMarkers = locationMarkers;
+        });
+
+
 
         scope.$watch("center", function(center) {
           if (center === undefined) return;
 
-          // Center of the map
-          center = new L.LatLng(scope.center.lat, scope.center.lng);
-          var zoom = scope.zoom || 8;
-          map.setView(center, zoom);
+          // // Center of the map
+          // center = new L.LatLng(scope.center.lat, scope.center.lng);
+          // var zoom = scope.zoom || 8;
+          // map.setView(center, zoom);
 
 
-          if (attrs.markcenter || attrs.marker) {
-            map.addLayer(marker);
+          // if (attrs.markcenter || attrs.marker) {
+          //   map.addLayer(marker);
 
-            if (attrs.marker) {
-              scope.marker.lat = marker.getLatLng().lat;
-              scope.marker.lng = marker.getLatLng().lng;
-            }
+          //   if (attrs.marker) {
+          //     scope.marker.lat = marker.getLatLng().lat;
+          //     scope.marker.lng = marker.getLatLng().lng;
+          //   }
 
-            scope.$watch("message", function(newValue) {
-              //marker.bindPopup("<strong>" + newValue + "</strong>", { closeButton: true });
-            });
-          }
+          //   scope.$watch("message", function(newValue) {
+          //     //marker.bindPopup("<strong>" + newValue + "</strong>", { closeButton: true });
+          //   });
+          // }
 
           // Listen for map drags
-          var dragging_map = false;
-          map.on("dragstart", function(e) {
-            dragging_map = true;
-          });
+          // var dragging_map = false;
+          // map.on("dragstart", function(e) {
+          //   dragging_map = true;
+          // });
 
-          map.on("drag", function (e) {
-            scope.$apply(function (s) {
-              s.center.lat = map.getCenter().lat;
-              s.center.lng = map.getCenter().lng;
-            });
-          });
+          // map.on("drag", function (e) {
+          //   scope.$apply(function (s) {
+          //     s.center.lat = map.getCenter().lat;
+          //     s.center.lng = map.getCenter().lng;
+          //   });
+          // });
 
-          map.on("dragend", function(e) {
-            dragging_map= false;
-          });
+          // map.on("dragend", function(e) {
+          //   dragging_map= false;
+          // });
 
-          scope.$watch("center.lng", function (newValue, oldValue) {
-            if (dragging_map) return;
-            map.setView(new L.LatLng(map.getCenter().lat, newValue), map.getZoom());
-          });
+          // scope.$watch("center.lng", function (newValue, oldValue) {
+          //   if (dragging_map) return;
+          //   map.setView(new L.LatLng(map.getCenter().lat, newValue), map.getZoom());
+          // });
 
-          scope.$watch("center.lat", function (newValue, oldValue) {
-            if (dragging_map) return;
-            map.setView(new L.LatLng(newValue, map.getCenter().lng), map.getZoom());
-          });
+          // scope.$watch("center.lat", function (newValue, oldValue) {
+          //   if (dragging_map) return;
+          //   map.setView(new L.LatLng(newValue, map.getCenter().lng), map.getZoom());
+          // });
 
-          // Listen for zoom
-          scope.$watch("zoom", function (newValue, oldValue) {
-            map.setZoom(newValue);
-          });
+          // // Listen for zoom
+          // scope.$watch("zoom", function (newValue, oldValue) {
+          //   map.setZoom(newValue);
+          // });
 
-          map.on("zoomend", function (e) {
-            scope.$apply(function (s) {
-              s.zoom = map.getZoom();
-            });
-          });
+          // map.on("zoomend", function (e) {
+          //   scope.$apply(function (s) {
+          //     s.zoom = map.getZoom();
+          //   });
+          // });
 
-          map.on("doubleclick", function (e) {
-            scope.$apply(function (s) {
-              s.zoom = s.zoom + 1;
-            });
-          });
+          // map.on("doubleclick", function (e) {
+          //   scope.$apply(function (s) {
+          //     s.zoom = s.zoom + 1;
+          //   });
+          // });
 
-          if (attrs.marker) {
-            var dragging_marker = false;
+          // if (attrs.marker) {
+          //   var dragging_marker = false;
 
-            // Listen for marker drags
-            (function () {
-              marker.on("dragstart", function(e) {
-                dragging_marker = true;
-              });
+          //   // Listen for marker drags
+          //   (function () {
+          //     marker.on("dragstart", function(e) {
+          //       dragging_marker = true;
+          //     });
 
-              marker.on("drag", function (e) {
-                scope.$apply(function (s) {
-                  s.marker.lat = marker.getLatLng().lat;
-                  s.marker.lng = marker.getLatLng().lng;
-                });
-              });
+          //     marker.on("drag", function (e) {
+          //       scope.$apply(function (s) {
+          //         s.marker.lat = marker.getLatLng().lat;
+          //         s.marker.lng = marker.getLatLng().lng;
+          //       });
+          //     });
 
-              marker.on("dragend", function(e) {
-                marker.openPopup();
-                dragging_marker = false;
-              });
+          //     marker.on("dragend", function(e) {
+          //       marker.openPopup();
+          //       dragging_marker = false;
+          //     });
 
-              map.on("click", function(e) {
-                marker.setLatLng(e.latlng);
-                marker.openPopup();
-                console.log("click on: " + JSON.stringify(e.latlng));
-                scope.$apply(function (s) {
-                  s.marker.lat = marker.getLatLng().lat;
-                  s.marker.lng = marker.getLatLng().lng;
-                });
-              });
+          //     scope.$watch("marker.lng", function (newValue, oldValue) {
+          //       if (dragging_marker) return;
+          //       marker.setLatLng(new L.LatLng(marker.getLatLng().lat, newValue));
+          //     });
 
-              scope.$watch("marker.lng", function (newValue, oldValue) {
-                if (dragging_marker) return;
-                marker.setLatLng(new L.LatLng(marker.getLatLng().lat, newValue));
-              });
-
-              scope.$watch("marker.lat", function (newValue, oldValue) {
-                if (dragging_marker) return;
-                marker.setLatLng(new L.LatLng(newValue, marker.getLatLng().lng));
-              });
-            }());
-          }
+          //     scope.$watch("marker.lat", function (newValue, oldValue) {
+          //       if (dragging_marker) return;
+          //       marker.setLatLng(new L.LatLng(newValue, marker.getLatLng().lng));
+          //     });
+          //   }());
+          // }
         });
-
-        if (attrs.multimarkers) {
-          var markers_dict = [];
-          scope.$watch("multiMarkers", function(newMarkerList, oldMarkerList) {
-            console.log('multimarker change');
-            for (var mkey in scope.multiMarkers) {
-              (function(mkey) {
-                var mark_dat = scope.multiMarkers[mkey];
-
-                var marker = {};
-
-                if (mark_dat.icon_url) {
-                  var iconTmp = L.icon({iconUrl: mark_dat.icon_url});
-
-                  marker = new L.marker(
-                    scope.multiMarkers[mkey],
-                    {
-                      draggable: mark_dat.draggable ? true:false,
-                      icon: iconTmp
-                    }
-                  );
-                } else {
-                  marker = new L.marker(
-                    scope.multiMarkers[mkey],
-                    {
-                      draggable: mark_dat.draggable ? true:false,
-                      icon: greenIcon
-                    }
-                  );
-                }
-
-                if (mark_dat.chip_url && mark_dat.chip_bounds) {
-                  var imageUrl = mark_dat.chip_url;
-                  var coordinates = mark_dat.chip_bounds.coordinates;
-                  var southWest = new L.LatLng(coordinates[0][3][1], coordinates[0][3][0]),
-                      northEast = new L.LatLng(coordinates[0][1][1],coordinates[0][1][0]),
-                      bounds = new L.LatLngBounds(southWest, northEast); 
-                  L.imageOverlay(imageUrl, bounds).addTo(map).bringToFront();
-                }
-
-                marker.on("dragstart", function(e) {
-                  dragging_marker = true;
-                });
-
-                marker.on("drag", function (e) {
-                  scope.$apply(function (s) {
-                    mark_dat.y = marker.getLatLng().lat;
-                    mark_dat.x = marker.getLatLng().lng;
-                  });
-                });
-
-                marker.on("dragend", function(e) {
-                  dragging_marker = false;
-                });
-
-                scope.$watch('multiMarkers['+mkey+']', function() {
-                  marker.setLatLng(scope.multiMarkers[mkey]);
-                }, true);
-
-                marker.on("click", function(e) {
-                  scope.$apply(function(s) {
-                    scope.observationId = mark_dat.id;
-                  });
-                  console.log("up in the angular directive marker id [" + mark_dat.id + "] observationid [" + scope.observationId + "]");
-                });
-
-                map.addLayer(marker);
-                //markers.addLayer(marker); // for clusters
-                markers_dict[mkey] = marker;
-              })(mkey);
-            } // for mkey in multiMarkers
-            // map.addLayer(markers); // for clusters
-          }, true); // watch multiMarkers   add , true here to make it work
-        } // if attrs.multiMarkers
 
         scope.$watch("layer", function() {
             var layer = scope.layer;
@@ -344,13 +342,13 @@
             }
         }, true); // watch layer
 
-        scope.$watch("newFeature", function() {
-          console.log("ADDING A new feature")
-          var feature = scope.newFeature;
+        scope.$watch("newFeature", function(feature) {
           if (!feature) return;
 
-          var lLayer = layers[scope.currentLayerId];
-          lLayer.addData(scope.newFeature);
+          var layer = layers[scope.currentLayerId];
+          if (layer) {
+            layer.addData(scope.newFeature);
+          }
         }); // watch newFeature
 
       } // end of link function
