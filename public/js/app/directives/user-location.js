@@ -13,18 +13,20 @@ mage.directive('userLocation', function(UserService, appConstants) {
                   "{{user.phones[0].number}}" +
                 "</div>" +
               "<div>",
+    // TODO cannot use templateUrl, does not play well with leaflet popup
     // templateUrl:  "js/app/partials/user-location.html",
     scope: {
-      userId: "="
     },
     controller: function ($scope, UserService) {
-      UserService.getUser($scope.userId)
-        .success(function(user) {
-          $scope.user = user;
-        })
-        .error(function() {
-          console.log('error trying to get user');
-        })
+      $scope.getUser = function(userId) {
+        UserService.getUser(userId)
+          .success(function(user) {
+            $scope.user = user;
+          })
+          .error(function() {
+            console.log('error trying to get user');
+          });
+      }
     }
   };
 });

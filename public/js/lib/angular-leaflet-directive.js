@@ -124,33 +124,34 @@
 
           var locationMarkers = {};
           _.each(users, function(user) {
+            var u = user;
             if (user.locations.length > 0) {
-              var l = user.locations[0];
-              var marker = currentLocationMarkers[user.user];
+              var l = u.locations[0];
+              var marker = currentLocationMarkers[u.user];
               if (marker) {
-                delete currentLocationMarkers[user.user];
-                locationMarkers[user.user] = marker;
+                delete currentLocationMarkers[u.user];
+                locationMarkers[u.user] = marker;
                 // Just update the location
                 marker.setLatLng([l.geometry.coordinates[1], l.geometry.coordinates[0]]);
                 return;
               }
 
-              var layer = new L.GeoJSON(user.locations[0], {
+              var layer = new L.GeoJSON(u.locations[0], {
                 pointToLayer: function (feature, latlng) {
-                  var marker = new L.marker(latlng, {
-                    icon:  locationIcon
-                  });
+                  var marker = new L.CircleMarker(latlng, {color: '#f00'}).setRadius(5);
 
-                  var e = angular.element("<div user-location user-id='userId'></div>");
+                  var e = angular.element("<div user-location></div>");
                   var newScope = scope.$new();
-                  newScope.userId = user.user;
-                  console.log('just clicked user location element');
-                  var x = $compile(e)(newScope, function(clonedElement, scope) {
+                  $compile(e)(newScope, function(clonedElement, scope) {
                     // TODO this sucks but for now set a min width
-                    marker.bindPopup(clonedElement[0]);
+                    marker.bindPopup(clonedElement[0], {minWidth: 150});
+
+                    marker.on('click', function() {
+                      angular.element(clonedElement).scope().getUser(u.user);
+                    });
                   });
 
-                  locationMarkers[user.user] = marker;
+                  locationMarkers[u.user] = marker;
                   return marker;
                 }
               });

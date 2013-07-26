@@ -196,7 +196,21 @@ module.exports = function(app, auth) {
     '/api/users/myself',
     p***REMOVED***port.authenticate('bearer'),
     function(req, res) {
+      console.log('just called route to get myself');
       res.json(req.user);
+    }
+  );
+
+  // get user by id
+  app.get( 
+    '/api/users/:userId',
+    p***REMOVED***port.authenticate('bearer'),
+    access.authorize('READ_USER'),
+    function(req, res) {
+      console.log('just called route to get user by id');
+      User.getUserById(req.params.userId, function(err, user) {
+        res.json(user);
+      })
     }
   );
 
@@ -226,16 +240,6 @@ module.exports = function(app, auth) {
 
         res.json(updatedUser);
       });
-    }
-  );
-
-  // get user by id
-  app.get( 
-    '/api/users/:userId',
-    p***REMOVED***port.authenticate('bearer'),
-    access.authorize('READ_USER'),
-    function(req, res) {
-     res.json(req.user);
     }
   );
 
