@@ -11,21 +11,28 @@ module.exports = function(app, auth) {
 
   var p***REMOVED***port = auth.p***REMOVED***port;
 
-  var validateLocation = function(req, res, next) {
-    var data = req.body;
+  var validateLocations = function(req, res, next) {
+    var objects = req.body;
 
-    var location = data.location;
-    if (!location) return res.send(400, "Missing required parameter 'location'.");
+    if (!Array.isArray(objects)) {
+      objects = [objects];
+    }
 
-    var timestamp = data.timestamp;
-    if (!timestamp) return res.send(400, "Missing required parameter 'timestamp");
+    var locations = [];
+    objects.forEach(function(o) {
+      if (!o.location) return res.send(400, "Missing required parameter 'location'.");
+      if (!o.timestamp) return res.send(400, "Missing required parameter 'timestamp");
 
-    location.properties = location.properties || {};
-    location.properties.createdOn = location.properties.updatedOn = moment.utc(data.timestamp).toDate();
-    location.properties.user = req.user._id;
+      o.location.properties = o.location.properties || {};
+      o.location.properties.timestamp = moment.utc(o.timestamp).toDate();
+      o.location.properties.user = req.user._id;
 
-    req.location = location;
+      locations.push(o.location);
+    });
 
+    req.locations = locations;
+
+    console.log('trying to insert: ' + JSON.stringify(locations));
     next();
   }
 
@@ -46,25 +53,25 @@ module.exports = function(app, auth) {
     }
   );
 
-  // create a new location for a specific user
+  // create new location(s) for a specific user
   app.post(
     '/api/locations',
     p***REMOVED***port.authenticate('bearer'),
     access.authorize('CREATE_LOCATION'),
-    validateLocation,
+    validateLocations,
     function(req, res) {
-      Location.createLocation(req.user, req.location, function(err, location) {
+      Location.createLocations(req.user, req.locations, function(err, locations) {
         if (err) {
           return res.send(400, err);
         }
       });
 
-      User.addLocationForUser(req.user, req.location, function(err, location) {
+      User.addLocationsForUser(req.user, req.locations, function(err, location) {
         if (err) {
           return res.send(400, err);
         }
 
-        res.json(req.location);
+        res.json(req.locations);
       })
     }
   );
