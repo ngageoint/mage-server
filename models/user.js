@@ -105,7 +105,7 @@ UserSchema.pre('save', function(next) {
 UserSchema.pre('remove', function(next) {
   var user = this;
 
-  async.parrallel({
+  async.parallel({
     location: function(done) {
       Location.removeLocationsForUser(user, function(err) {
         done(err);
@@ -114,6 +114,7 @@ UserSchema.pre('remove', function(next) {
     token: function(done) {
       Token.removeTokenForUser(user, function(err) {
         done(err);
+        next(err);
       })
     }
   });
