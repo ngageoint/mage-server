@@ -76,7 +76,7 @@ module.exports = function(app, auth) {
         //FUNCTION 3
         function(done) {
           //FFT
-          Location.getLocationsWithFilters(req.user, filterTime, 10, function(err, locationResponse) { 
+          Location.getLocationsWithFilters(req.user, filterTime, 100000, function(err, locationResponse) { 
             if(err) {
               console.log(err);
               return done(err);
