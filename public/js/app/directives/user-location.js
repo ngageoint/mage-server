@@ -1,7 +1,7 @@
 mage.directive('userLocation', function(UserService, appConstants) {
   return {
     restrict: "A",
-    template: "<div>" +
+    template: "<div ng-show='user'>" +
                 "<span>" +
                   "<strong>{{user.firstname}} {{user.lastname}} </strong>" +
                   "<span cl***REMOVED***='muted'>({{user.username}})</span>" +

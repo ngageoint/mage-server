@@ -28,28 +28,26 @@ LocationSchema.set("toJSON", {
 });
 
 LocationSchema.index({geometry: "2dsphere"});
-LocationSchema.index({'properties.createdOn': 1});
-LocationSchema.index({'properties.updatedOn': 1});
-LocationSchema.index({'properties.user': 1, 'properties.createdOn': 1});
-LocationSchema.index({'properties.user': 1, 'properties.updatedOn': 1});
+LocationSchema.index({'properties.timestamp': 1});
+LocationSchema.index({'properties.user': 1, 'properties.timestamp': 1});
 
 // Creates the Model for the User Schema
 var Location = mongoose.model('Location', LocationSchema);
  
 // create location
-exports.createLocation = function(user, location, callback) {
-  Location.create(location, function(err, location) {
+exports.createLocations = function(user, locations, callback) {
+  Location.create(locations, function(err) {
     if (err) {
       console.log('Error creating new location for user: ' + user.username + '.  Err:' + err);
     }
 
-    callback(err, location);
+    callback(err, Array.prototype.slice.call(arguments, 1));
   });  
 }
 
 // get locations for users team
 exports.getLocations = function(user, limit, callback) {
-  var sort = { $sort: { "properties.updatedOn": -1 }};
+  var sort = { $sort: { "properties.timestamp": -1 }};
   var limit = { $limit: limit };
   var group = { $group: { _id: "$properties.user", locations: { $push: {location: {geometry: "$geometry", properties: "$properties"} } }}};
   var project = { $project: { _id: 0, user: "$_id", locations: "$locations"} };
@@ -70,8 +68,8 @@ exports.getLocationsWithFilters = function(user, time_filter, limit, callback) {
     date = new Date(0);
   }
 
-  var sort = { $sort: { "properties.updatedOn": -1 }};
-  var match  = {$match: {"properties.updatedOn" : {$gte: date}}};
+  var sort = { $sort: { "properties.timestamp": -1 }};
+  var match  = {$match: {"properties.timestamp" : {$gte: date}}};
   var limit = { $limit: limit };
   var group = { $group: { _id: "$properties.user", locations: { $push: {geometry: "$geometry", properties: "$properties"} }}};
   var project = { $project: { _id: 0, user: "$_id", locations: "$locations"} };
@@ -85,8 +83,8 @@ exports.getLocationsWithFilters = function(user, time_filter, limit, callback) {
 // update latest location
 exports.updateLocation = function(user, timestamp, callback) {
   var conditions = {"properties.user": user._id};
-  var update = {"properties.updatedOn": timestamp};
-  var options = {sort: {"properties.updatedOn": -1}};
+  var update = {"properties.timestamp": timestamp};
+  var options = {sort: {"properties.timestamp": -1}};
   Location.findOneAndUpdate(conditions, update, options, function(err, location) {
     if (err) {
       console.log("Error updating date on latesest location for user : " + user.username + ". Error: " + err);

@@ -13,6 +13,9 @@ var Schema = mongoose.Schema;
 var PhoneSchema = new Schema({
   type: { type: String, required: true },
   number: { type: String, required: true }
+},{
+  versionKey: false,
+  _id: false
 });
 
 // Creates the Schema for FFT Locations
@@ -24,13 +27,11 @@ var LocationSchema = new Schema({
   },
   properties: Schema.Types.Mixed
 },{
-    _id: false,
     versionKey: false
 });
 
 LocationSchema.index({geometry: "2dsphere"});
-LocationSchema.index({'properties.createdOn': 1});
-LocationSchema.index({'properties.updatedOn': 1});
+LocationSchema.index({'properties.timestamp': 1});
 
 // Collection to hold users
 var UserSchema = new Schema({
@@ -313,8 +314,8 @@ exports.getLocations = function(options, callback) {
   });
 }
 
-exports.addLocationForUser = function(user, location, callback) {
-  var update = {$push: {locations: {$each: [location], $sort: {"properties.updatedOn": 1}, $slice: -1 * locationLimit}}};
+exports.addLocationsForUser = function(user, locations, callback) {
+  var update = {$push: {locations: {$each: locations, $sort: {"properties.timestamp": 1}, $slice: -1 * locationLimit}}};
   User.findByIdAndUpdate(user._id, update, function(err, user) {
     if (err) {
       console.log('Error add location for user.', err);
