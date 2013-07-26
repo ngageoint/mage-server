@@ -445,7 +445,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     var timerName = 'pollLocations';
 
     if ($scope.locationServicesEnabled) {
-      TimerService.start(timerName, 500000, function() {
+      TimerService.start(timerName, 5000, function() {
       LocationService.getLocations().
         success(function (data, status, headers, config) {
           $scope.locations = data;
