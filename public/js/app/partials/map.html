@@ -56,77 +56,87 @@
   <!-- Panels -->
   <!-- Settings panel -->
   <div id="settings-panel" ng-show="showSettings" cl***REMOVED***="panel panel-large">
-    <form cl***REMOVED***="form">
-      <h4>Base Layers</h4>
-      <div cl***REMOVED***="control-group">
-        <div cl***REMOVED***="controls">
-          <select ng-model="baseLayer" ng-options="baseLayer.name for baseLayer in baseLayers"></select>
+    <div cl***REMOVED***="pull-right panel-close">
+      <i ng-click="showSettings = false" ngm-tap="showSettings = false" cl***REMOVED***="close">&times;</i>
+    </div>
+    <div cl***REMOVED***="panel-content">
+      <form cl***REMOVED***="form">
+        <h4>Base Layers</h4>
+        <div cl***REMOVED***="control-group">
+          <div cl***REMOVED***="controls">
+            <select ng-model="baseLayer" ng-options="baseLayer.name for baseLayer in baseLayers"></select>
+          </div>
         </div>
-      </div>
 
-      <h4>Feature Layers</h4>
-      <div cl***REMOVED***="control-group">
-        <div cl***REMOVED***="controls">
-          <label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
-            <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)">{{layer.name}}
-          </label>
+        <h4>Feature Layers</h4>
+        <div cl***REMOVED***="control-group">
+          <div cl***REMOVED***="controls">
+            <label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
+              <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)">{{layer.name}}
+            </label>
+          </div>
         </div>
-      </div>
 
-      <h4>Imagery Layers</h4>
-      <div cl***REMOVED***="control-group">
-        <div cl***REMOVED***="controls">
-          <label cl***REMOVED***="checkbox" ng-repeat="layer in imageryLayers">
-            <input type="checkbox" ng-model="layer.checked" ng-click="onImageryLayer(layer)">{{layer.name}}
-          </label>
+        <h4>Imagery Layers</h4>
+        <div cl***REMOVED***="control-group">
+          <div cl***REMOVED***="controls">
+            <label cl***REMOVED***="checkbox" ng-repeat="layer in imageryLayers">
+              <input type="checkbox" ng-model="layer.checked" ng-click="onImageryLayer(layer)">{{layer.name}}
+            </label>
+          </div>
         </div>
-      </div>
-    </form>
-    
-    <span>
-      <button cl***REMOVED***="btn btn-mobile" ng-click="saveSettings()" ngm-tap="saveSettings()">Ok</button>
-    </span>
+      </form>
+      
+      <span>
+        <button cl***REMOVED***="btn btn-mobile" ng-click="saveSettings()" ngm-tap="saveSettings()">Close</button>
+      </span>
+    </div>
   </div>
 
   <!-- Export panel -->
   <div id="export-panel" ng-show="showExport" cl***REMOVED***="panel panel-large">
-    <h3>Export to KML</h3>
-    <form cl***REMOVED***="form">  
-      <div cl***REMOVED***="top-gap">
-        <i cl***REMOVED***="icon-layers icon-sage pull-left icon-spacer"></i>    
-        <h4>Select Layers</h4>
-      </div>
-      <div cl***REMOVED***="control-group">
-        <div cl***REMOVED***="controls">
-          <label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
-            <input type="checkbox" ng-click="addExportLayer(layer)">{{layer.name}}
-          </label>
-          <label cl***REMOVED***="checkbox">
-            <input type="checkbox" ng-model="fft_layer">Friendly Forces
-          </label>
+    <div cl***REMOVED***="pull-right panel-close">
+      <i ng-click="closeExport()" ngm-tap="closeExport()" cl***REMOVED***="close">&times;</i>
+    </div>
+    <div cl***REMOVED***="panel-content">
+      <h3>Export to KML</h3>
+      <form cl***REMOVED***="form">  
+        <div cl***REMOVED***="top-gap">
+          <i cl***REMOVED***="icon-layers icon-sage pull-left icon-spacer"></i>    
+          <h4>Select Layers</h4>
         </div>
+        <div cl***REMOVED***="control-group">
+          <div cl***REMOVED***="controls">
+            <label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
+              <input type="checkbox" ng-click="addExportLayer(layer)">{{layer.name}}
+            </label>
+            <label cl***REMOVED***="checkbox">
+              <input type="checkbox" ng-model="fft_layer">Friendly Forces
+            </label>
+          </div>
+        </div>
+        <div cl***REMOVED***="top-gap">
+          <i cl***REMOVED***="icon-filter icon-sage pull-left icon-spacer"></i>
+          <h4>Filter Output</h4>
+        </div>
+        <div>Time Range:</div>
+        <div style="margin: 0px, 0px, 0px, 20px">
+          <select ng-model="time_filter">
+            <option value="300">Last 5 Minutes</option>
+            <option value="3600">Last Hour</option>
+            <option value="43200">Last 12 Hours</option>
+            <option value="86400">Last 24 Hours</option>
+            <option value="-1">All (Use With Caution)</option>
+          </select>
       </div>
-      <div cl***REMOVED***="top-gap">
-        <i cl***REMOVED***="icon-filter icon-sage pull-left icon-spacer"></i>
-        <h4>Filter Output</h4>
+      </form>
+      <button cl***REMOVED***="btn btn-inverse" ng-click="closeExport()" ngm-tap="closeExport()">Cancel</button>
+      <button cl***REMOVED***="btn" ng-click="export()" ngm-tap="export()">Export</button>
+      <div style="font-size: .8em;">
+        <a href="img/kml-icons/icons.zip" alt="Install icons folder into same directory as exported kml file.">(Download KML Icons)</a>
       </div>
-      <div>Time Range:</div>
-      <div style="margin: 0px, 0px, 0px, 20px">
-        <select ng-model="time_filter">
-          <option value="300">Last 5 Minutes</option>
-          <option value="3600">Last Hour</option>
-          <option value="43200">Last 12 Hours</option>
-          <option value="86400">Last 24 Hours</option>
-          <option value="-1">All (Use With Caution)</option>
-        </select>
+      <div id="export-error-message" cl***REMOVED***="top-gap alert alert-error" style="display: none;"></div>
     </div>
-    </form>
-    <button cl***REMOVED***="btn btn-inverse" ng-click="closeExport()" ngm-tap="export()">Cancel</button>
-    <button cl***REMOVED***="btn" ng-click="export()" ngm-tap="export()">Export</button>
-    <div style="font-size: .8em;">
-      <a href="img/kml-icons/icons.zip" alt="Install icons folder into same directory as exported kml file.">(Download KML Icons)</a>
-    </div>
-    <div id="export-error-message" cl***REMOVED***="top-gap alert alert-error" style="display: none;"></div>
   </div>
 
   <div id="goto-address-panel" ng-show="showGoToAddress" cl***REMOVED***="panel panel-medium">
@@ -161,87 +171,92 @@
 
   <!-- This is bad copy pasta. Was having some trouble with directives and loading templates... -->
   <div id="observation-panel" ng-show="showObservation" cl***REMOVED***="tabbable tabs-below panel panel-large">
-    <ul cl***REMOVED***="nav nav-pills">
-      <li ng-cl***REMOVED***="{active: observationTab == 1}">
-        <a href="" ng-click="observationTab = 1;">
-          <i cl***REMOVED***="icon-list" style="background-image: none;"></i> 
-          Details
-        </a>
-      </li>
-      <li ng-cl***REMOVED***="{active: observationTab == 2}">
-        <a href="" ng-click="observationTab = 2;">
-          <i cl***REMOVED***="icon-camera" style="background-image: none;"></i> 
-          Media
-        </a>
-      </li>
-    </ul>
-    <div cl***REMOVED***="tab-content" ng-show="observationTab == 1">
-      <form cl***REMOVED***="form-horizontal">
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="type">Layer</label>
-          <div cl***REMOVED***="controls">
-            <select ng-model="currentLayerId" ng-selected="currentLayerId" ng-options="layer.id as layer.name for layer in featureLayers"></select>
-          </div>
-        </div>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="type">Type</label>
-          <div cl***REMOVED***="controls">
-            <select ng-model="observation.attributes.TYPE" ng-selected="observationType" ng-options="type.title for type in observationTypes"></select>
-          </div>
-        </div>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="level">Level</label>
-          <div cl***REMOVED***="controls">
-            <select ng-model="observation.attributes.EVENTLEVEL" ng-selected="level" ng-options="level.color for level in levels"></select>
-          </div>
-        </div>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="team">Team</label>
-          <div cl***REMOVED***="controls">
-            <select ng-model="observation.attributes.TEAM" ng-selected="team" ng-options="team.name for team in teams"></select>
-          </div>
-        </div>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="unit">Unit</label>
-          <div cl***REMOVED***="controls">
-            <input ng-model="observation.attributes.UNIT"/>
-          </div>
-        </div>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="unit">Description</label>
-          <div cl***REMOVED***="controls">
-            <textarea ng-model="observation.attributes.DESCRIPTION"></textarea>
-          </div>
-        </div>
-      </form>    
-      <span>
-        <button cl***REMOVED***="btn btn-inverse" ng-click="cancelObservation()" ngm-tap="cancelObservation()">Cancel</button>
-        <button cl***REMOVED***="btn" ng-click="saveObservation()" ngm-tap="saveObservation()"><i cl***REMOVED***="icon-save"></i> Save</button>
-      </span>
+    <div cl***REMOVED***="pull-right panel-close">
+      <i ng-click="cancelObservation()" ngm-tap="cancelObservation()" cl***REMOVED***="close">&times;</i>
     </div>
-    <!-- Start of tab2 -->
-    <div cl***REMOVED***="tab-content" ng-show="observationTab == 2" style="height: 900px;">
-      <form>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="unit">Select File</label>
-          <div cl***REMOVED***="controls">
-            <input type="file" id="file-upload" accept="image/*" capture="camera" ng-model-instant multiple onchange="angular.element(this).scope().setFiles(this)">
-          </div>
-          <div ng-show="progressVisible">
-            <div cl***REMOVED***="percent">{{progress}}%</div>
-            <div cl***REMOVED***="progress-bar">
-                <div cl***REMOVED***="uploaded" ng-style="{'width': progress+'%'}"></div>
+    <div cl***REMOVED***="panel-content">
+      <ul cl***REMOVED***="nav nav-pills">
+        <li ng-cl***REMOVED***="{active: observationTab == 1}">
+          <a href="" ng-click="observationTab = 1;">
+            <i cl***REMOVED***="icon-list" style="background-image: none;"></i> 
+            Details
+          </a>
+        </li>
+        <li ng-cl***REMOVED***="{active: observationTab == 2}">
+          <a href="" ng-click="observationTab = 2;">
+            <i cl***REMOVED***="icon-camera" style="background-image: none;"></i> 
+            Media
+          </a>
+        </li>
+      </ul>
+      <div cl***REMOVED***="tab-content" ng-show="observationTab == 1">
+        <form cl***REMOVED***="form-horizontal">
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">Layer</label>
+            <div cl***REMOVED***="controls">
+              <select ng-model="currentLayerId" ng-selected="currentLayerId" ng-options="layer.id as layer.name for layer in featureLayers"></select>
             </div>
           </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">Type</label>
+            <div cl***REMOVED***="controls">
+              <select ng-model="observation.attributes.TYPE" ng-selected="observationType" ng-options="type.title for type in observationTypes"></select>
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="level">Level</label>
+            <div cl***REMOVED***="controls">
+              <select ng-model="observation.attributes.EVENTLEVEL" ng-selected="level" ng-options="level.color for level in levels"></select>
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="team">Team</label>
+            <div cl***REMOVED***="controls">
+              <select ng-model="observation.attributes.TEAM" ng-selected="team" ng-options="team.name for team in teams"></select>
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="unit">Unit</label>
+            <div cl***REMOVED***="controls">
+              <input ng-model="observation.attributes.UNIT"/>
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="unit">Description</label>
+            <div cl***REMOVED***="controls">
+              <textarea ng-model="observation.attributes.DESCRIPTION"></textarea>
+            </div>
+          </div>
+        </form>    
+        <span>
+          <button cl***REMOVED***="btn btn-inverse" ng-click="cancelObservation()" ngm-tap="cancelObservation()">{{observationCloseText}}</button>
+          <button cl***REMOVED***="btn" ng-click="saveObservation()" ngm-tap="saveObservation()"><i cl***REMOVED***="icon-save"></i> Save</button>
+        </span>
+      </div>
+      <!-- Start of tab2 -->
+      <div cl***REMOVED***="tab-content" ng-show="observationTab == 2" style="height: 900px;">
+        <form>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="unit">Select File</label>
+            <div cl***REMOVED***="controls">
+              <input type="file" id="file-upload" accept="image/*" capture="camera" ng-model-instant multiple onchange="angular.element(this).scope().setFiles(this)">
+            </div>
+            <div ng-show="progressVisible">
+              <div cl***REMOVED***="percent">{{progress}}%</div>
+              <div cl***REMOVED***="progress-bar">
+                  <div cl***REMOVED***="uploaded" ng-style="{'width': progress+'%'}"></div>
+              </div>
+            </div>
+          </div>
+        </form>
+        <span>
+          <button cl***REMOVED***="btn btn-inverse" ng-click="cancelObservation()" ngm-tap="cancelObservation()">Cancel</button>
+          <button cl***REMOVED***="btn" ng-click="saveObservation()" ngm-tap="saveObservation()"><i cl***REMOVED***="icon-save"></i> Save</button>
+        </span>
+        <hr>
+        <div cl***REMOVED***="attachment" ng-repeat="attachment in attachments">
+          <img src="{{attachmentUrl + attachment.id + '?access_token=' + token}}">
         </div>
-      </form>
-      <span>
-        <button cl***REMOVED***="btn btn-inverse" ng-click="cancelObservation()" ngm-tap="cancelObservation()">Cancel</button>
-        <button cl***REMOVED***="btn" ng-click="saveObservation()" ngm-tap="saveObservation()"><i cl***REMOVED***="icon-save"></i> Save</button>
-      </span>
-      <hr>
-      <div cl***REMOVED***="attachment" ng-repeat="attachment in attachments">
-        <img src="{{attachmentUrl + attachment.id + '?access_token=' + token}}">
       </div>
     </div>
   </div> <!-- end of observation panel -->

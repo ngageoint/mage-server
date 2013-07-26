@@ -131,7 +131,6 @@ html, body, div.leaflet-container {
 
 /* Panels and their contents */
 .panel {
-	padding: 20px;
 	left: 5px;
 	top: 5px;
 	z-index: 2000;
@@ -142,6 +141,19 @@ html, body, div.leaflet-container {
 	height: 90%;
 	width: 83%;
 	border: 2px solid #5278A2;
+}
+
+.panel-content {
+	padding: 20px;
+}
+
+
+.panel-close {
+	line-height: 0;
+	margin: 0px 5px 0 0;
+}
+.panel-close > i {
+	font-size: 24px;
 }
 
 @media all and (min-width: 520px) {
@@ -155,8 +167,8 @@ html, body, div.leaflet-container {
 }
 
 .panel-large {
-	max-height: 400px;
-	max-width: 430px;
+	max-height: 445px;
+	max-width: 445px;
 }
 
 .panel-medium {

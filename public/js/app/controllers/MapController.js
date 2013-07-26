@@ -39,6 +39,8 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.observation.attributes.UNIT = "";
   $scope.observation.attributes.DESCRIPTION = "";
 
+  $scope.observationCloseText = "";
+
   $scope.locationServicesEnabled = false;
   $scope.locations = [];
 
@@ -108,6 +110,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   /* this watch handles opening observations when a placemark on the map has been clicked. */
   $scope.$watch("activeFeature", function (value) {
     if (!value) return;
+    $scope.observationCloseText = "Close";
 
     FeatureService.getFeature(value.layerId, value.featureId).
       success(function (data) {
@@ -264,7 +267,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     and using the FeatureService. May need to be cleaned up after PDC.
   */
   $scope.newObservation = function () {
-    console.log("in new observation");
+    $scope.observationCloseText = "Cancel";
     $scope.showObservation = true;
     $scope.observation = {feature: { properties: {OBJECTID: -1}}};
     $scope.attachments = [];
