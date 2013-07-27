@@ -78,7 +78,6 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
 
   $scope.currentLayerId = 0;
 
-  $scope.layers = [];
   $scope.exportLayers = [];
   $scope.baseLayers = [];
   $scope.featureLayers = [];
@@ -182,7 +181,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
 
   $scope.onFeatureLayer = function(layer) {
     if (!layer.checked) {
-      $scope.layer = layer;
+      $scope.layer = {id: layer.id, checked: false};
       return;
     };
 
@@ -205,9 +204,7 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
 
     $http(options)
       .success(function(data, status, headers, config) {
-        console.log('got points');
-        layer.featureCollection = data;
-        $scope.layer = layer;
+        $scope.layer = {id: layer.id, checked: true, features: data};
       })
       .error(function(data, status, headers, config) {
         console.log("Error getting features for layer 'layer.name' : " + status);
@@ -215,7 +212,11 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   }
 
   $scope.onImageryLayer = function(layer) {
-    $scope.layer = layer;
+    if (layer.checked) {
+      $scope.layer = layer;
+    } else {
+      $scope.layer = {id: layer.id, checked: false};
+    }
   }
 
 

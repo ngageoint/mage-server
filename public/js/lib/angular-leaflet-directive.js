@@ -167,7 +167,7 @@
           currentLocationMarkers = locationMarkers;
         });
 
-        scope.$watch("layer", function() {
+        scope.$watch("layer", function(one, two, three, four, five) {
             var layer = scope.layer;
             if (!layer) return;
 
@@ -189,7 +189,7 @@
                 }
                 newLayer.addTo(map).bringToFront();
               } else {
-                newLayer = new L.GeoJSON(layer.featureCollection, {
+                newLayer = new L.GeoJSON(layer.features, {
                   pointToLayer: function (feature, latlng) {
                     var iconUrl = feature.properties.icon_url;
                     var icon = greenIcon;
@@ -215,31 +215,12 @@
               }
 
               layers[layer.id] = newLayer;
-            } else if (layer.locations) {
-              newLayer = new L.GeoJSON(layer.locations, {
-                pointToLayer: function (feature, latlng) {
-                  var icon = yellowIcon;
-
-                  var marker = new L.marker(latlng, {
-                    icon:  icon
-                  });
-
-                  /* Need to figure out what to do when you tap on a user location
-                  marker.on("click", function(e) {
-                    scope.$apply(function(s) {
-                      scope.observationId = {layer: layer, feature: feature};
-                    });
-                  });*/
-
-                  return marker;
-                }
-              }).addTo(map).bringToFront();
             } else {
               // remove from map
               map.removeLayer(layers[layer.id]);
               delete layers[layer.id];
             }
-        }, true); // watch layer
+        }); // watch layer
 
         scope.$watch("newFeature", function(feature) {
           if (!feature) return;
