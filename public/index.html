@@ -70,17 +70,40 @@
   </script>
 </head>
 <body>
-  <!-- Smarter nav bar, has a $scope.$apply / digest issue, the links dont show up on the first page load...
   <div cl***REMOVED***="navbar" ng-controller="NavController">
     <div cl***REMOVED***="navbar-inner">
-      <a cl***REMOVED***="brand" href="/"><i cl***REMOVED***="icon-white icon-magic" style="margin-right:10px;"></i>MAGE</a>
-      <ul cl***REMOVED***="nav">
-        <li ng-show="user.role.name == 'USER_ROLE' || user.role.name == 'ADMIN_ROLE'"><a href="/#/map"><i cl***REMOVED***="icon-map icon-spacer"></i> Map</a></li>
-        <li ng-show="user.role.name == 'ADMIN_ROLE'"><a href="/#/layers"><i cl***REMOVED***="icon-layers icon-spacer"></i> Layer Manager</a></li>
-        <li ng-show="user.role.name == 'ADMIN_ROLE'"><a href="/#/admin"><i cl***REMOVED***="icon-cog icon-spacer"></i> Admin Panel</a></li>
-      </ul>
+      <div cl***REMOVED***="container">
+        <a cl***REMOVED***="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          <span cl***REMOVED***="icon-bar"></span>
+          <span cl***REMOVED***="icon-bar"></span>
+          <span cl***REMOVED***="icon-bar"></span>
+        </a>
+        <a cl***REMOVED***="brand" href="#/">
+          <i cl***REMOVED***="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
+        </a>
+        <div cl***REMOVED***="nav-collapse collapse">
+          <ul cl***REMOVED***="nav navbar-nav" ng-show="showMapNav">
+            <li ng-cl***REMOVED***="navCl***REMOVED***('map')">
+              <a href="#/map">
+                <i cl***REMOVED***="icon-map icon-spacer"></i> Map
+              </a>
+            </li>
+            <li ng-cl***REMOVED***="navCl***REMOVED***('layers')" ng-show="showLayerNav">
+              <a href="#/layers">
+                <i cl***REMOVED***="icon-layers icon-spacer"></i> Layer Manager
+              </a>
+            </li>
+            <li ng-cl***REMOVED***="navCl***REMOVED***('admin')" ng-show="showAdminNav">
+              <a href="#/admin">
+                <i cl***REMOVED***="icon-cog icon-spacer"></i>  Admin Panel
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
-  </div>-->
+  </div>
+
   <div data-ng-view></div>
 </body>
 </html>

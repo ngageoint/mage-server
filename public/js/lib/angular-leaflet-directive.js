@@ -140,15 +140,13 @@
                 pointToLayer: function (feature, latlng) {
                   var marker = new L.CircleMarker(latlng, {color: '#f00'}).setRadius(5);
 
-                  var e = angular.element("<div user-location></div>");
-                  var newScope = scope.$new();
-                  $compile(e)(newScope, function(clonedElement, scope) {
-                    // TODO this sucks but for now set a min width
-                    marker.bindPopup(clonedElement[0], {minWidth: 150});
+                  // var newScope = scope.$new();
+                  var e = $compile("<div user-location></div>")(scope);
+                  // TODO this sucks but for now set a min width
+                  marker.bindPopup(e[0], {minWidth: 200});
 
-                    marker.on('click', function() {
-                      angular.element(clonedElement).scope().getUser(u.user);
-                    });
+                  marker.on('click', function() {
+                    angular.element(e).scope().getUser(u.user);
                   });
 
                   locationMarkers[u.user] = marker;

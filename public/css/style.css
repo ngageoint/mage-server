@@ -43,6 +43,13 @@ body {
     text-shadow: 0 1px 0 #222;
 }
 
+.navbar .nav > .active > a,
+.navbar .nav > .active > a:hover,
+.navbar .nav > .active > a:focus {
+  color: #FFF;
+  background-color: #305680;
+}
+
 .well {
 	background: #efefef;
 }
