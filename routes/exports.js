@@ -188,7 +188,6 @@ module.exports = function(app, auth) {
             done();
           });
         }
-
       ],
 
       //SERIES FUNCTION...EVERYTHING ELSE IS DONE
@@ -198,41 +197,28 @@ module.exports = function(app, auth) {
 
         fs.exists(filename, function(exists) {  
         if(!exists) {  
-            //res.writeHead(404, {"Content-Type": "text/plain"});  
-            //res.write("404 Not Found\n");  
-            //res.close();  
-            return;  
+          res.writeHead(404, {"Content-Type": "text/plain"});  
+          res.write("404 Not Found\n");  
+          res.close();  
+          return;  
         }  
 
         fs.readFile(filename, "binary", function(err, file) {  
-            if(err) {  
-                //res.writeHead(500, {"Content-Type": "text/plain"});  
-                //res.write(err + "\n");  
-                //res.close();  
-                return;  
-            }  
+          if(err) {  
+            res.writeHead(500, {"Content-Type": "text/plain"});  
+            res.write(err + "\n");  
+            res.close();  
+            return;  
+          }  
 
-            res.writeHead(200,{"Content-Type": "application/vnd.google-earth.kml+xml" , 
-                               "Content-Disposition": "attachment; filename=mage-export-" + currentDate.getTime() + ".kmz"}); 
-
-            res.write(file,"binary");  
-            res.end();  
-        });  
-    });
-
-
+          res.writeHead(200,{"Content-Type": "application/vnd.google-earth.kml+xml" , 
+                             "Content-Disposition": "attachment; filename=mage-export-" + currentDate.getTime() + ".kmz"}); 
+          res.write(file,"binary");  
+          res.end();  
+        });
       });
-      //END SERIES FUNCTIONS
-
-      //res.end('123');
-    }
+    });}
+    //END ASYNCH
   );
-       
-  //var makeDirectories = 
-
-  //var copyIcons
-
-
-
 
 }
