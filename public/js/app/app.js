@@ -31,7 +31,11 @@ var mage = angular.module(
     {
       templateUrl:    "js/app/partials/layers.html",
       controller:      LayerController
-    })
+    });
+    $routeProvider.when('/about', {
+      templateUrl:    "/js/app/partials/about.html",
+      controller:     AboutController  
+    });
     $routeProvider.otherwise(
     {
       redirectTo:     '/signin',

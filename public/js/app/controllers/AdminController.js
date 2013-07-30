@@ -129,6 +129,8 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   $scope.saveUser = function () {
     if ($scope.user._id) {
       UserService.updateUser($scope.user);
+      $scope.setShowUserForm(false);
+      $scope.showStatusMessage("User updated", $scope.user.username + " saved", "alert-success");
     } else {
       UserService.createUser($scope.user).
       success(function (data, status, headers, config) {
@@ -177,7 +179,12 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
 
   /* shortcut for giving a user the USER_ROLE */
   $scope.approveUser = function (user) {
-    //UserService.set
+    var userRole = _.find($scope.roles, function (role) { return role.name == 'USER_ROLE' });
+    user.role = userRole._id;
+    UserService.updateUser(user)
+      .success(function (data, status, headers, config) {
+
+      });
   }
 
   $scope.deleteUser = function () {
@@ -190,6 +197,26 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     });
 
     return user ? user.firstname + " " + user.lastname : "";
+  }
+
+  $scope.getUnregisteredUsers = function (users) {
+    var result = [];
+    angular.forEach(users, function (user) {
+      if (!user.role) {
+        result.push(user);
+      }
+    });
+    return result;
+  }
+
+  $scope.getRegisteredUsers = function (users) {
+    var result = [];
+    angular.forEach(users, function (user) {
+      if (user.role) {
+        result.push(user);
+      }
+    });
+    return result;
   }
 
   /* Device admin functions */
