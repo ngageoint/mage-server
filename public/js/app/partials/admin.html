@@ -32,7 +32,7 @@
       </div>
 
       <div cl***REMOVED***="span12 top-gap" id="user-admin-area" ng-show="currentAdminPanel == 'user'">
-        <button cl***REMOVED***="btn" ng-click="newUser()" ngm-tap="newUser()">New User</button>
+        <button cl***REMOVED***="btn" ng-click="newUser()" ngm-tap="newUser()"><i cl***REMOVED***="icon-user-add"></i> New User</button>
         <div id="user-form" name="edit-form" cl***REMOVED***="top-gap" ng-show="showUserForm">
           <form ng-submit="saveUser()" id="userform" name="user-form" cl***REMOVED***="form-horizontal">
             <fieldset>
@@ -101,16 +101,16 @@
             </fieldset>
           </form>
         </div>
-        <h3>Current Users</h3>
-        <div cl***REMOVED***="top-gap" ng-repeat="u in users">
+        <h3>Users awaiting approval</h3>
+        <div cl***REMOVED***="top-gap" ng-repeat="u in getUnregisteredUsers(users)">
           <div cl***REMOVED***="row">
-            <div cl***REMOVED***="span2">
+            <div cl***REMOVED***="span3">
               <button cl***REMOVED***="btn" ng-click="editUser(u)" ngm-tap="editUser(u)">
                 <i cl***REMOVED***="icon-edit"></i>
                 Edit User
               </button>
               <button cl***REMOVED***="btn btn-success" ng-hide='u.role' ng-click="approveUser(u)" ngm-tap="approveUser(u)">
-                <i cl***REMOVED***="icon-thumbs-up"></i> 
+                <i cl***REMOVED***="icon-thumbup"></i> 
                 Make Active
               </button>
             </div>
@@ -120,7 +120,37 @@
             <div cl***REMOVED***="span2">
               {{u.firstname}} {{u.lastname}}
             </div>
+            <div cl***REMOVED***="span3">
+              {{u.email}}
+            </div>
             <div cl***REMOVED***="span2">
+              <button cl***REMOVED***="btn btn-danger" ng-click="deleteUser(u)" ngm-tap="deleteUser(u)">
+                <i cl***REMOVED***="icon-remove"></i> 
+                Delete user
+              </button>
+            </div>
+          </div>
+        </div>
+        <h3>Registered Users</h3>
+        <div cl***REMOVED***="top-gap" ng-repeat="u in getRegisteredUsers(users)">
+          <div cl***REMOVED***="row">
+            <div cl***REMOVED***="span3">
+              <button cl***REMOVED***="btn" ng-click="editUser(u)" ngm-tap="editUser(u)">
+                <i cl***REMOVED***="icon-edit"></i>
+                Edit
+              </button>
+              <button cl***REMOVED***="btn btn-success" ng-hide='u.role' ng-click="approveUser(u)" ngm-tap="approveUser(u)">
+                <i cl***REMOVED***="icon-thumbup"></i> 
+                Approve Account
+              </button>
+            </div>
+            <div cl***REMOVED***="span2">
+              {{u.username}}
+            </div>
+            <div cl***REMOVED***="span2">
+              {{u.firstname}} {{u.lastname}}
+            </div>
+            <div cl***REMOVED***="span3">
               {{u.email}}
             </div>
             <div cl***REMOVED***="span2">
