@@ -232,6 +232,10 @@ module.exports = function(app, auth) {
           return res.send(400, 'p***REMOVED***words do not match');
         }
 
+        if (p***REMOVED***word.length < p***REMOVED***wordLength) {
+          return res.send(400, 'p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
+        }
+
         user.p***REMOVED***word = p***REMOVED***word;
       }
 

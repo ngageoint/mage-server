@@ -34,7 +34,7 @@ html, body, div.leaflet-container {
 		width: 50px;
 		top: 16px;
 		right: 5px;
-		z-index: 2000;
+		z-index: 999;
 	}	
 	#export {
 		position: absolute;
@@ -42,7 +42,7 @@ html, body, div.leaflet-container {
 		width: 50px;
 		top: 16px;
 		right: 65px;
-		z-index: 2000;
+		z-index: 999;
 	}
 	.map-wrap {
 		width: 100%;
@@ -59,7 +59,7 @@ html, body, div.leaflet-container {
 		width: 50px;
 		top: 50px;
 		right: 5px;
-		z-index: 2000;
+		z-index: 999;
 	}
 	#export {
 		position: absolute;
@@ -67,7 +67,7 @@ html, body, div.leaflet-container {
 		width: 50px;
 		top: 50px;
 		right: 65px;
-		z-index: 2000;
+		z-index: 999;
 	}
 	.map-wrap {
 		width: 100%;
@@ -86,7 +86,7 @@ html, body, div.leaflet-container {
 	width: 50px;
 	bottom: 5px;
 	left: 5px;
-	z-index: 1999;
+	z-index: 999;
 }
 
 /* I switched the position for goto-address and new observation buttons for a better layout while 
@@ -98,7 +98,7 @@ html, body, div.leaflet-container {
 	width: 50px;
 	bottom: 5px;
 	left: 263px; /*68px*/
-	z-index: 1999;
+	z-index: 999;
 }
 
 #new-observation {
@@ -107,7 +107,7 @@ html, body, div.leaflet-container {
 	width: 50px;
 	bottom: 5px;
 	left: 68px; /*133px*/
-	z-index: 1999;
+	z-index: 999;
 }
 
 #broadcast-location-btn {
@@ -116,7 +116,7 @@ html, body, div.leaflet-container {
 	width: 50px;
 	bottom: 5px;
 	left: 133px;px;
-	z-index: 1999;
+	z-index: 999;
 }
 
 #locations-btn {
@@ -125,7 +125,7 @@ html, body, div.leaflet-container {
 	width: 50px;
 	bottom: 5px;
 	left: 198px;
-	z-index: 1999;
+	z-index: 999;
 }
 
 
