@@ -27,7 +27,7 @@ Instead of a list of all cl***REMOVED*** selectors,
 you can use the generic selector below, but it's slower:
 [cl***REMOVED****="icon-"] {
 */
-.icon-ok, .icon-remove, .icon-zoom-in, .icon-zoom-out, .icon-camera, .icon-globe, .icon-calendar, .icon-cloud-download, .icon-check, .icon-home, .icon-plus, .icon-map, .icon-location, .icon-location-2, .icon-mobile, .icon-filter, .icon-layers, .icon-loop, .icon-user-add, .icon-magic, .icon-stack, .icon-megaphone, .icon-cog, .icon-search, .icon-pencil, .icon-users, .icon-user, .icon-list, .icon-thumbs-up, .icon-save, .icon-floppy, .icon-info, .icon-group, .icon-gps, .icon-man, .icon-android, .icon-power, .icon-thumbup, .icon-info-sign, .icon-logout {
+.icon-ok, .icon-remove, .icon-zoom-in, .icon-zoom-out, .icon-camera, .icon-globe, .icon-calendar, .icon-cloud-download, .icon-check, .icon-home, .icon-plus, .icon-map, .icon-location, .icon-location-2, .icon-mobile, .icon-filter, .icon-layers, .icon-loop, .icon-user-add, .icon-magic, .icon-stack, .icon-megaphone, .icon-cog, .icon-search, .icon-pencil, .icon-users, .icon-user, .icon-list, .icon-thumbs-up, .icon-thumbs-up-2, .icon-save, .icon-floppy, .icon-info-sign, .icon-group, .icon-gps, .icon-man, .icon-download, .icon-android {
 	font-family: 'icomoon';
 	speak: none;
 	font-style: normal;
@@ -124,13 +124,16 @@ you can use the generic selector below, but it's slower:
 .icon-thumbs-up:before {
 	content: "\f087";
 }
+.icon-thumbs-up-2:before {
+	content: "\e004";
+}
 .icon-save:before {
 	content: "\f0c7";
 }
 .icon-floppy:before {
 	content: "\e00f";
 }
-.icon-info:before {
+.icon-info-sign:before {
 	content: "\e010";
 }
 .icon-group:before {
@@ -142,18 +145,9 @@ you can use the generic selector below, but it's slower:
 .icon-man:before {
 	content: "\f183";
 }
+.icon-download:before {
+	content: "\f019";
+}
 .icon-android:before {
 	content: "\f17b";
-}
-.icon-power:before {
-	content: "\f011";
-}
-.icon-thumbup:before {
-	content: "\e004";
-}
-.icon-info-sign:before {
-	content: "\f05a";
-}
-.icon-logout:before {
-	content: "\e011";
 }

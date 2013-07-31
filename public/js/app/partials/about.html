@@ -1,7 +1,7 @@
 <div cl***REMOVED***="container top-gap-l">
   <div cl***REMOVED***="row-fluid">
     <div cl***REMOVED***="span12">
-      <h2>About MAGE</h2>
+      <h2>About {{name}}</h2>
     </div>
   </div>
   <div cl***REMOVED***="row-fluid">
@@ -16,8 +16,8 @@
     <div cl***REMOVED***="span6">
       <table cl***REMOVED***="table">
         <p><strong>Version:</strong> {{serverVersion}}</p>
-        <p ng-show="deviceProvisioningEnabled">Device Provisioning <strong>enabled</strong></p>
-        <p ng-show="locationServicesEnabled">LocationServices <strong>enabled</strong></p>
+        <p>Device Provisioning <strong>{{deviceProvisioning}}</strong></p>
+        <p>LocationServices <strong>{{locationServices}}</strong></p>
       </table>
     </div>
   </div>
@@ -25,18 +25,30 @@
     <div cl***REMOVED***="span12">
       <h2>App downloads</h2>
     </div>
+  </div>
+  <div cl***REMOVED***="row-fluid">
     <div cl***REMOVED***="span1">
       <a href="apps/mage.apk"><i cl***REMOVED***="icon-android icon-android-color icon-large"></i></a>
     </div>
     <div cl***REMOVED***="span5">
       <p><strong>Features:</strong> Creating and viewing observations with photos, voice, and video. Friendly Force Tracking. Cached map tiles, and observation storage and synching for offline useage. </p>
+      <p>
+        <em>
+          Due to a bug in the stock Android browser you will need to use a third party browser such as Mozilla Firefox to download the mobile storefront for Android.
+        </em>
+      </p>
     </div>
     <div cl***REMOVED***="span3">
-      <p><strong>Supported OS versions:</strong> 2.3, 4.1</p>
-      <p></p>
+      <p><strong>Version</strong> {{apk.version}}</p>
+      <p><strong>Supported OS versions:</strong> {{apk.supportedVersions[0]}}, {{apk.supportedVersions[1]}}</p>
     </div>
-    <div cl***REMOVED***="span1">
-      <a href="apps/mage.apk" cl***REMOVED***="btn">Download</a>
+  </div>
+  <div cl***REMOVED***="row-fluid">
+    <div cl***REMOVED***="offset1 span2">
+      <a href="apps/mage.apk" cl***REMOVED***="btn">
+        <i cl***REMOVED***="icon-download"></i>
+        Download
+      </a>
     </div>
   </div>
 </div>

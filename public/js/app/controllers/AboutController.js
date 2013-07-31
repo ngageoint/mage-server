@@ -1,8 +1,13 @@
 'use strict';
 
-function AboutController ($scope) {
-  $scope.deviceProvisioningEnabled = true;
-  $scope.locationServicesEnabled = true;
-  $scope.serverVersion = "1.0.0";
+function AboutController ($scope, AboutService) {
+  AboutService.about()
+  	.success(function(data) {
+  		$scope.name = data.name;
+  		$scope.serverVersion = data.version;
+  		$scope.locationServices= data.locationServices ? 'enabled' : 'disabled';
+  		$scope.deviceProvisioning = data.deviceProvisioning ? 'enabled' : 'disabled';
+  		$scope.apk = data.apk
+  	});
 
 }

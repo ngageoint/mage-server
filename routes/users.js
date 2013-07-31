@@ -196,7 +196,6 @@ module.exports = function(app, auth) {
     '/api/users/myself',
     p***REMOVED***port.authenticate('bearer'),
     function(req, res) {
-      console.log('just called route to get myself');
       res.json(req.user);
     }
   );
