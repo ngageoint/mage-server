@@ -18,6 +18,10 @@ body {
 	color: #5278A2;
 }
 
+[cl***REMOVED***^="icon-"], [cl***REMOVED****=" icon-"]{
+    background:none;
+}
+
 .navbar-inner {
 	background: #5278A2;
 	color: #91BDEE;
