@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="js/lib/leaflet/leaflet.css" />
   <link rel="stylesheet" href="css/bootstrap.min.css" />
   <link rel="stylesheet" href="css/bootstrap-responsive.min.css"/>
+  <link rel="stylesheet" href="css/font-awesome.min.css"/>
   <link rel="stylesheet" href="css/icomoon.css">
   <link rel="stylesheet" href="css/leaflet.awesome-markers.css"/>
   <!--[if IE 7]>
@@ -20,36 +21,6 @@
   <![endif]-->
   <link rel="stylesheet" href="css/style.css"/>
   <link rel="stylesheet" href="css/map.css"/>
-
-  <script type="text/javascript" src="js/lib/jquery/jquery.min.js"></script>
-  <script type="text/javascript" src="js/lib/underscore-min.js"></script>
-  <script src="js/lib/leaflet/leaflet-src.js"></script>
-  <script src="js/lib/leaflet.awesome-markers.min.js"></script>
-  <script src="js/lib/leaflet/leaflet.markercluster-src.js"></script>
-  <script type="text/javascript" src="js/lib/angular/angular.js"></script>
-  <script type="text/javascript" src="js/lib/angular/angular-resource.min.js"></script>
-  <script type="text/javascript" src="js/lib/ui-bootstrap/ui-bootstrap-0.2.0.min.js"></script>
-  <script type="text/javascript" src="js/lib/angular-leaflet-directive.js"></script>
-  <script type="text/javascript" src="js/app/app.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/UserService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/DeviceService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/LayerService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/FeatureService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/LocationService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/TimerService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/mageLib.js"></script>
-  <script type="text/javascript" src="js/app/controllers/AboutController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/AdminController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/MapController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/NavController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/LayerController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/FormBuilderController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/SigninController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/SignupController.js"></script>
-  <script type="text/javascript" src="js/app/directives/user-location.js"></script>
-  <script type="text/javascript" src="js/app/directives/observation.js"></script>
-  <script type="text/javascript" src="js/app/directives/thirdPartyObservation.js"></script>
 
   <link rel="apple-touch-icon" href="img/touch-icon-iphone.png" />
   <link rel="apple-touch-icon" sizes="72x72" href="img/touch-icon-ipad.png" />
@@ -68,6 +39,7 @@
       }
     })();
   </script>
+
 </head>
 <body>
   <div cl***REMOVED***="navbar" ng-controller="NavController">
@@ -81,19 +53,42 @@
         <a cl***REMOVED***="brand" href="#/">
           <i cl***REMOVED***="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
         </a>
+        <ul cl***REMOVED***="nav pull-right" ng-show="getUser()">
+          <li cl***REMOVED***="dropdown">
+            <button data-toggle="dropdown" cl***REMOVED***="btn dropdown-toggle" href="#">
+              <i cl***REMOVED***="icon-user"></i>
+              {{getUser().username}} 
+              <b cl***REMOVED***="caret"></b>
+            </button>
+            <ul cl***REMOVED***="dropdown-menu">
+              <li>
+                <a href="/user">
+                  <i cl***REMOVED***="icon-wrench"></i>
+                  My Profile
+                </a>
+              </li>
+              <li>
+                <a ng-click="logout()">
+                  <i cl***REMOVED***="icon-off"></i>
+                  Sign Out
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
         <div cl***REMOVED***="nav-collapse collapse">
-          <ul cl***REMOVED***="nav navbar-nav" ng-show="showMapNav">
+          <ul cl***REMOVED***="nav navbar-nav" ng-show="showMapNav()">
             <li ng-cl***REMOVED***="navCl***REMOVED***('map')">
               <a href="#/map">
                 <i cl***REMOVED***="icon-map icon-spacer"></i> Map
               </a>
             </li>
-            <li ng-cl***REMOVED***="navCl***REMOVED***('layers')" ng-show="showLayerNav">
+            <li ng-cl***REMOVED***="navCl***REMOVED***('layers')" ng-show="showLayerNav()">
               <a href="#/layers">
                 <i cl***REMOVED***="icon-layers icon-spacer"></i> Layer Manager
               </a>
             </li>
-            <li ng-cl***REMOVED***="navCl***REMOVED***('admin')" ng-show="showAdminNav">
+            <li ng-cl***REMOVED***="navCl***REMOVED***('admin')" ng-show="showAdminNav()">
               <a href="#/admin">
                 <i cl***REMOVED***="icon-cog icon-spacer"></i>  Admin Panel
               </a>
@@ -105,5 +100,38 @@
   </div>
 
   <div data-ng-view></div>
+
+  <script type="text/javascript" src="js/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="js/lib/underscore-min.js"></script>
+  <script src="js/lib/leaflet/leaflet-src.js"></script>
+  <script src="js/lib/leaflet.awesome-markers.min.js"></script>
+  <script src="js/lib/leaflet/leaflet.markercluster-src.js"></script>
+  <script type="text/javascript" src="js/lib/angular/angular.js"></script>
+  <script type="text/javascript" src="js/lib/angular/angular-resource.min.js"></script>
+  <script type="text/javascript" src="js/lib/ui-bootstrap/ui-bootstrap-0.2.0.min.js"></script>
+  <script type="text/javascript" src="js/lib/bootstrap.min.js"></script>
+  <script type="text/javascript" src="js/lib/angular-leaflet-directive.js"></script>
+  <script type="text/javascript" src="js/app/app.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/UserService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/DeviceService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/LayerService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/FeatureService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/LocationService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/TimerService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/mageLib.js"></script>
+  <script type="text/javascript" src="js/app/controllers/AdminController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/MapController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/NavController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/LayerController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/FormBuilderController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/SigninController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/SignupController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/UserController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/LoginController.js"></script>
+  <script type="text/javascript" src="js/app/directives/user-location.js"></script>
+  <script type="text/javascript" src="js/app/directives/observation.js"></script>
+  <script type="text/javascript" src="js/app/directives/thirdPartyObservation.js"></script>
 </body>
+
 </html>
