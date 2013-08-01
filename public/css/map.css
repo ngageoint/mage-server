@@ -26,58 +26,21 @@ html, body, div.leaflet-container {
 	padding-right: 0;
 }
 
-/* Buttons */
-@media all and (max-width: 699px) {
-	#settings {
-		position: absolute;
-		height: 50px;
-		width: 50px;
-		top: 16px;
-		right: 5px;
-		z-index: 999;
-	}	
-	#export {
-		position: absolute;
-		height: 50px;
-		width: 50px;
-		top: 16px;
-		right: 65px;
-		z-index: 999;
-	}
-	.map-wrap {
-		width: 100%;
-		height: 100%;
-		display: block;
-	  position: absolute;
-	}
+/* Leaflet stuff */
+.map-wrap {
+  left: 0;
+  top: 0;
+  position: absolute;
 }
 
-@media all and (min-width: 700px) {
-	#settings {
+.leaflet-top {
+	top: 50px;
+}
+
+@media (max-width: 979px) {
+	.navbar-fixed-top, .navbar-fixed-bottom {
 		position: absolute;
-		height: 50px;
-		width: 50px;
-		top: 50px;
-		right: 5px;
-		z-index: 999;
-	}
-	#export {
-		position: absolute;
-		height: 50px;
-		width: 50px;
-		top: 50px;
-		right: 65px;
-		z-index: 999;
-	}
-	.map-wrap {
-		width: 100%;
-		top: 40px;
-		display: block;
-	  top: 40px;
-	  left: 0;
-	  bottom: 0;
-	  position: absolute;
-	}
+	}	
 }
 
 #geo {
@@ -88,6 +51,24 @@ html, body, div.leaflet-container {
 	left: 5px;
 	z-index: 999;
 }
+
+#settings {
+	position: absolute;
+	height: 50px;
+	width: 50px;
+	top: 50px;
+	right: 5px;
+	z-index: 999;
+}	
+#export {
+	position: absolute;
+	height: 50px;
+	width: 50px;
+	top: 50px;
+	right: 65px;
+	z-index: 999;
+}
+
 
 /* I switched the position for goto-address and new observation buttons for a better layout while 
 	 we are waiting to get the rest of the buttons wired up so the UI doesnt look weird.
@@ -234,4 +215,3 @@ html, body, div.leaflet-container {
 		padding-right: 15px;
 	}
 }
-

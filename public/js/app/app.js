@@ -25,7 +25,7 @@ var mage = angular.module(
     {
       templateUrl:    'js/app/partials/signup.html',
       controller:     "SignupController",
-      resolve: resolveLogin()
+      //resolve: resolveLogin()
     }); 
     $routeProvider.when('/admin',
     {
@@ -56,6 +56,10 @@ var mage = angular.module(
       templateUrl:    "/js/app/partials/about.html",
       controller:     "AboutController",
       resolve: resolveLogin(["USER_ROLE", "ADMIN_ROLE"])
+    });
+    $routeProvider.when('/aboot', {
+      templateUrl:    "/js/app/partials/about.html",
+      controller:     AboutController  
     });
     $routeProvider.otherwise(
     {

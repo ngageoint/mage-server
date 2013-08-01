@@ -27,6 +27,7 @@ body {
 .navbar-inner {
 	background: #5278A2;
 	color: #91BDEE;
+    opacity: 0.8;
 }
 
 .navbar .brand {
@@ -176,12 +177,12 @@ textarea {
 
 /* User management page styles */
 .admin-area {
-    border-right: 1px solid #5177A4;
+    border-right: 1px solid #4F719B;
     min-height: 350px;
 }
 
 .admin-active {
-    background: #2E5582;
+    background: #4F719B;
 }
 
 .admin-active > h3 a {

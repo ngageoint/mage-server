@@ -3,14 +3,19 @@
 /*
 
 */
-function AdminController($scope, $log, $http, $location, $anchorScroll, $injector, appConstants, UserService, DeviceService) {
+function AdminController($scope, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService) {
   // The variables that get set when clicking a team or user in the list, these get loaded into the editor.
   $scope.currentAdminPanel = "user"; // possible values user, team, and device
+  $scope.currentUserFilter = "all"; // possible values all, active, unregistered
+  $scope.currentDeviceFilter = "all"; // possible values all, registered, unregistered
   
   $scope.users = [];
+  $scope.filteredUsers = [];
   UserService.getAllUsers().
     success(function (data) {
       $scope.users = data;
+      $scope.filteredUsers = $scope.users;
+      $scope.userSearch();
     }).
     error(function (data, status, headers, config) {
       // if the user does not have admin permissions, re-route them to the signin page
@@ -32,9 +37,12 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     });
 
   $scope.devices = [];
+  $scope.filteredDevices = [];
   DeviceService.getAllDevices().
     success(function (data) {
       $scope.devices = data;
+      $scope.filteredDevices = $scope.devices;
+      $scope.deviceSearch();
     }).
     error(function (data, status, headers, config) {
       // if the user does not have admin permissions, re-route them to the signin page
@@ -107,6 +115,37 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     $scope.currentAdminPanel = panel;
   }
 
+  $scope.changeCurrentUserFilter = function (filter) {
+    $scope.userQuery = '';
+    $scope.currentUserFilter = filter;
+    if (filter == 'all') {
+      $scope.filteredUsers = $scope.users;
+    } else if ( filter == "active") {
+      $scope.filteredUsers = $scope.getRegisteredUsers($scope.users);
+    } else {
+      $scope.filteredUsers = $scope.getUnregisteredUsers($scope.users);
+    }
+  }
+
+  $scope.changeCurrentDeviceFilter = function (filter) {
+    $scope.deviceQuery = '';
+    $scope.currentDeviceFilter = filter;
+    if (filter == 'all') {
+      $scope.filteredDevices = $scope.devices;
+    } else if ( filter == "registered") {
+      $scope.filteredDevices = $scope.getRegisteredDevices($scope.devices);
+    } else {
+      $scope.filteredDevices = $scope.getUnregisteredDevices($scope.devices);
+    }
+  }
+
+  $scope.userFilterCl***REMOVED*** = function (filter) {
+    return filter === $scope.currentUserFilter ? 'active' : '';
+  }
+
+  $scope.deviceFilterCl***REMOVED*** = function (filter) {
+    return filter === $scope.currentDeviceFilter ? 'active' : '';
+  }
 
   /* Team admin functions */
   $scope.getTeams = function() {
@@ -219,6 +258,33 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     return result;
   }
 
+  var searchMatch = function (haystack, needle) {
+    if (!needle) {
+      return true;
+    } else if (!haystack) {
+      return false;
+    }
+
+    return haystack.toLowerCase().indexOf(needle.toLowerCase()) !== -1;
+  };
+
+  $scope.userSearch = function () {
+    $scope.filteredUsers = $filter('filter')($scope.users, function (user) {
+      if (searchMatch(user['username'], $scope.userQuery) || searchMatch(user['firstname'], $scope.userQuery) || 
+        searchMatch(user['lastname'], $scope.userQuery) || searchMatch(user['email'], $scope.userQuery)) {
+        return true;
+      }
+      return false;
+    });
+
+    if ($scope.currentUserFilter == 'active') {
+      $scope.filteredUsers = $scope.getRegisteredUsers($scope.filteredUsers);
+    } else if ($scope.currentUserFilter == 'unregistered') {
+      $scope.filteredUsers = $scope.getUnregisteredUsers($scope.filteredUsers);
+    }
+  }
+
+
   /* Device admin functions */
   $scope.getDevices = function () {
 
@@ -279,5 +345,41 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
       .error(function() {
         $scope.showStatusMessage("Unable to delete device", data, "alert-error");
       });
+  }
+
+  $scope.getUnregisteredDevices = function (devices) {
+    var result = [];
+    angular.forEach(devices, function (device) {
+      if (device.registered == false) {
+        result.push(device);
+      }
+    });
+    return result;
+  }
+
+  $scope.getRegisteredDevices = function (devices) {
+    var result = [];
+    angular.forEach(devices, function (device) {
+      if (device.registered == true) {
+        result.push(device);
+      }
+    });
+    return result;
+  }
+
+  $scope.deviceSearch = function () {
+    $scope.filteredDevices = $filter('filter')($scope.devices, function (device) {
+      if (searchMatch(device['name'], $scope.deviceQuery) || searchMatch(device['uid'], $scope.deviceQuery) || 
+        searchMatch(device['description'], $scope.deviceQuery)) {
+        return true;
+      }
+      return false;
+    });
+
+    if ($scope.currentDeviceFilter == 'registered') {
+      $scope.filteredDevices = $scope.getRegisteredDevices($scope.filteredDevices);
+    } else if ($scope.currentDeviceFilter == 'unregistered') {
+      $scope.filteredDevices = $scope.getUnregisteredDevices($scope.filteredDevices);
+    }
   }
 }
