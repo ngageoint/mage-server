@@ -43,14 +43,23 @@ var generateKMLFolderStart = function(name) {
   return folder;
 };
 
-var generatePlacemark = function(name, styleUrl, lon, lat, alt, desc) {
+var generatePlacemark = function(name, styleUrl, lon, lat, alt, desc, attachments) {
+  
+  var images;
+  if(attachments) {
+    for(var i = 0; i < attachments.length; i++) {
+      var attachment = attachments[i];
+      images = images + '<img src="files/' + attachment.relativePath + '/' + attachment.name + '"/>';
+    }
+  }
+
   var placemark = "<Placemark>" + 
                   "  <name>" + name + "</name>" + 
                   "  <styleUrl>#" + styleUrl + "</styleUrl>" +
                   "  <Point>" +
                   "    <coordinates>" + lon + "," + lat + "," + alt + "</coordinates>" +
                   "  </Point>" +
-                  "  <description>" + desc + "</description>" + 
+                  "  <description>" + desc + '<br/>' + images +"</description>" + 
                   "</Placemark>";
   return placemark;
 };
