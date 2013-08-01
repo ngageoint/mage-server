@@ -29,6 +29,7 @@ angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
               });
             },
             function (error) {
+              console.log('could not get location: ' + JSON.stringify(error));
               deferred.reject(error);
             }
           );

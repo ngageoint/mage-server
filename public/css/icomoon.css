@@ -27,7 +27,7 @@ Instead of a list of all cl***REMOVED*** selectors,
 you can use the generic selector below, but it's slower:
 [cl***REMOVED****="icon-"] {
 */
-.icon-ok, .icon-remove, .icon-zoom-in, .icon-zoom-out, .icon-camera, .icon-globe, .icon-calendar, .icon-cloud-download, .icon-check, .icon-home, .icon-plus, .icon-map, .icon-location, .icon-location-2, .icon-mobile, .icon-filter, .icon-layers, .icon-loop, .icon-user-add, .icon-magic, .icon-stack, .icon-megaphone, .icon-cog, .icon-search, .icon-pencil, .icon-users, .icon-user, .icon-list, .icon-thumbs-up, .icon-thumbs-up-2, .icon-save, .icon-floppy, .icon-info-sign, .icon-group, .icon-gps, .icon-man, .icon-download, .icon-android {
+.icon-ok, .icon-remove, .icon-zoom-in, .icon-zoom-out, .icon-camera, .icon-globe, .icon-calendar, .icon-cloud-download, .icon-check, .icon-home, .icon-plus, .icon-map, .icon-location, .icon-location-2, .icon-mobile, .icon-filter, .icon-layers, .icon-loop, .icon-user-add, .icon-magic, .icon-stack, .icon-megaphone, .icon-cog, .icon-search, .icon-pencil, .icon-users, .icon-user, .icon-list, .icon-thumbs-up, .icon-thumbs-up-2, .icon-save, .icon-floppy, .icon-gps, .icon-man, .icon-download, .icon-android, .icon-off, .icon-info, .icon-cogs, .icon-edit {
 	font-family: 'icomoon';
 	speak: none;
 	font-style: normal;
@@ -133,12 +133,6 @@ you can use the generic selector below, but it's slower:
 .icon-floppy:before {
 	content: "\e00f";
 }
-.icon-info-sign:before {
-	content: "\e010";
-}
-.icon-group:before {
-	content: "\f0c0";
-}
 .icon-gps:before {
 	content: "\f05b";
 }
@@ -150,4 +144,16 @@ you can use the generic selector below, but it's slower:
 }
 .icon-android:before {
 	content: "\f17b";
+}
+.icon-off:before {
+	content: "\f011";
+}
+.icon-info:before {
+	content: "\e011";
+}
+.icon-cogs:before {
+	content: "\f085";
+}
+.icon-edit:before {
+	content: "\f044";
 }

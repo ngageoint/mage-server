@@ -21,6 +21,8 @@ body {
 [cl***REMOVED***^="icon-"], [cl***REMOVED****=" icon-"]{
     background:none;
 }
+.icon-white,.nav-pills>.active>a>[cl***REMOVED***^="icon-"],.nav-pills>.active>a>[cl***REMOVED****=" icon-"],.nav-list>.active>a>[cl***REMOVED***^="icon-"],.nav-list>.active>a>[cl***REMOVED****=" icon-"],.navbar-inverse .nav>.active>a>[cl***REMOVED***^="icon-"],.navbar-inverse .nav>.active>a>[cl***REMOVED****=" icon-"],.dropdown-menu>li>a:hover>[cl***REMOVED***^="icon-"],.dropdown-menu>li>a:hover>[cl***REMOVED****=" icon-"],.dropdown-menu>.active>a>[cl***REMOVED***^="icon-"],.dropdown-menu>.active>a>[cl***REMOVED****=" icon-"],.dropdown-submenu:hover>a>[cl***REMOVED***^="icon-"],.dropdown-submenu:hover>a>[cl***REMOVED****=" icon-"]{background:none;}
+
 
 .navbar-inner {
 	background: #5278A2;
@@ -79,7 +81,7 @@ body {
 }
 
 .icon-spacer {
-    margin-right: 10px;
+    margin-right: 5px;
 }
 
 .icon-brand {
@@ -146,7 +148,13 @@ textarea {
     font-size: 5em;
 }
 
-.icon-android-color {
+.icon-android {
+    height: 75px;
+    width: 75px;
+    font-size: 64px;
+}
+
+.andriod-color {
     color: #83C400;
 }
 

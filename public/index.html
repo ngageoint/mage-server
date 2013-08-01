@@ -15,9 +15,6 @@
   <link rel="stylesheet" href="css/bootstrap-responsive.min.css"/>
   <link rel="stylesheet" href="css/icomoon.css">
   <link rel="stylesheet" href="css/leaflet.awesome-markers.css"/>
-  <!--[if IE 7]>
-  <link rel="stylesheet" href="css/font-awesome-ie7.min.css">
-  <![endif]-->
   <link rel="stylesheet" href="css/style.css"/>
   <link rel="stylesheet" href="css/map.css"/>
 
@@ -44,11 +41,7 @@
   <div cl***REMOVED***="navbar" ng-controller="NavController">
     <div cl***REMOVED***="navbar-inner">
       <div cl***REMOVED***="container">
-        <a cl***REMOVED***="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-          <span cl***REMOVED***="icon-bar"></span>
-          <span cl***REMOVED***="icon-bar"></span>
-          <span cl***REMOVED***="icon-bar"></span>
-        </a>
+
         <a cl***REMOVED***="brand" href="#/">
           <i cl***REMOVED***="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
         </a>
@@ -61,8 +54,8 @@
             </button>
             <ul cl***REMOVED***="dropdown-menu">
               <li>
-                <a href="/user">
-                  <i cl***REMOVED***="icon-wrench"></i>
+                <a href="#/user">
+                  <i cl***REMOVED***="icon-cog"></i>
                   My Profile
                 </a>
               </li>
@@ -74,12 +67,14 @@
               </li>
             </ul>
           </li>
-          <li>
-            <a href="#/about">
-              <i cl***REMOVED***="icon-info-sign"></i> About
-            </a>
-          </li>
         </ul>
+
+        <a cl***REMOVED***="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse" ng-show="getUser()">
+          <span cl***REMOVED***="icon-bar"></span>
+          <span cl***REMOVED***="icon-bar"></span>
+          <span cl***REMOVED***="icon-bar"></span>
+        </a>
+
         <div cl***REMOVED***="nav-collapse collapse">
           <ul cl***REMOVED***="nav navbar-nav" ng-show="showMapNav()">
             <li ng-cl***REMOVED***="navCl***REMOVED***('map')">
@@ -94,7 +89,12 @@
             </li>
             <li ng-cl***REMOVED***="navCl***REMOVED***('admin')" ng-show="showAdminNav()">
               <a href="#/admin">
-                <i cl***REMOVED***="icon-cog icon-spacer"></i>  Admin Panel
+                <i cl***REMOVED***="icon-cogs icon-spacer"></i>  Admin Panel
+              </a>
+            </li>
+            <li>
+              <a href="#/about">
+                <i cl***REMOVED***="icon-info icon-spacer"></i> About
               </a>
             </li>
           </ul>
@@ -117,7 +117,7 @@
   <script type="text/javascript" src="js/lib/angular-leaflet-directive.js"></script>
   <script type="text/javascript" src="js/app/app.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/AboutService.js"></script>\
+  <script type="text/javascript" src="js/app/***REMOVED***s/AboutService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/UserService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/DeviceService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/LayerService.js"></script>
