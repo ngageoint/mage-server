@@ -6,7 +6,7 @@ module.exports = function(app, auth) {
     , access = require('../access')
     , generate_kml = require('../utilities/generate_kml')
     , async = require('async')
-    , fs = require('fs')
+    , fs = require('fs-extra')
     , sys = require('sys')
     , exec = require('child_process').exec;
 ;
@@ -61,7 +61,7 @@ module.exports = function(app, auth) {
         async.each(exportLayerIds, function(id, done){
           layer = layerLookup[id];
           Feature.getFeatures(layer, {}, function(featureResponse) {
-            if(featureResponse) {
+            if(featureResponse) {              
               featuresLookup[id] = featureResponse;
               done();
             }
@@ -105,6 +105,47 @@ module.exports = function(app, auth) {
         });
       }
 
+      var copyFeatureMediaAttachmentsToStagingDirectory = function(done) {
+        
+        console.log('Features Lookup: \n');
+        
+        Object.keys(featuresLookup).forEach(function(key) {
+          
+          var features = featuresLookup[key];
+
+          for(var i = 0; i < features.length; i++) {
+            var feature = features[i];
+            var attachments = feature.attachments;
+            if(attachments) {
+              for(var j = 0; j < attachments.length; j++) {
+                var attachment = attachments[j];
+                console.log('Hello Attachment: ' + JSON.stringify(attachment));
+
+                //create the directories if needed
+                child = exec('mkdir -p ' + currentTmpDir + '/files/' + attachment.relativePath, function (error, stdout, stderr) {
+                  sys.print('stdout: ' + stdout);
+                  sys.print('stderr: ' + stderr);
+                  if (error !== null) {
+                    console.log('exec error: ' + error);
+                  }
+
+                  //copy the file!
+                  var srcFile = '/var/lib/mage/attachments' + attachment.relativePath;
+                  var destFile = currentTmpDir + '/files/' + attachment.relativePath + '/' + attachment.name;
+                  fs.copy(srcFile, destFile, function(err){
+                    if(err) {
+                      console.log('Unable to copy attachment. ' + err);
+                    }
+                  });
+
+                });         
+              }
+            }
+          }
+        });
+        done();
+      }
+
       var writeKmlFile = function(done) {
         var filename = "mage-export-" + currentDate.getTime() + ".kml"
         var stream = fs.createWriteStream(currentTmpDir + "/" + filename);
@@ -130,7 +171,8 @@ module.exports = function(app, auth) {
                   lon = feature.geometry.coordinates[0];
                   lat = feature.geometry.coordinates[1];
                   desc = feature.properties.TYPE;
-                  stream.write(generate_kml.generatePlacemark(feature._id, feature.properties.TYPE, lon ,lat ,0, desc));
+                  attachments = feature.attachments;              
+                  stream.write(generate_kml.generatePlacemark(feature._id, feature.properties.TYPE, lon ,lat ,0, desc, attachments));
                 }  
                 stream.write(generate_kml.generateKMLFolderClose());  
               }  
@@ -213,10 +255,13 @@ module.exports = function(app, auth) {
                              getLocations, 
                              createStagingDirectory,
                              copyKmlIconsToStagingDirectory,
+                             copyFeatureMediaAttachmentsToStagingDirectory,
                              writeKmlFile,
                              createKmz];
             
-      async.series(seriesFunctions,streamKmzFileToClient);}
+      async.series(seriesFunctions,streamKmzFileToClient);
+
+    }
  
   );
 

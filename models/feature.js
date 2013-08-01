@@ -37,9 +37,8 @@ var featureModel = function(layer) {
 
 exports.getFeatures = function(layer, filter, callback) {
   var conditions = {};
-  var fields = {'attachments': 0};
-
-  var query = featureModel(layer).find(conditions, fields);
+  
+  var query = featureModel(layer).find(conditions);
 
   // Filter by geometry
   if (filter.geometry) {
