@@ -172,7 +172,7 @@ module.exports = function(app, auth) {
                   lat = feature.geometry.coordinates[1];
                   desc = feature.properties.TYPE;
                   attachments = feature.attachments;              
-                  stream.write(generate_kml.generatePlacemark(feature._id, feature.properties.TYPE, lon ,lat ,0, desc, attachments));
+                  stream.write(generate_kml.generatePlacemark(feature._id, feature.properties.TYPE, lon ,lat ,0, feature.properties, attachments));
                 }  
                 stream.write(generate_kml.generateKMLFolderClose());  
               }  
@@ -188,9 +188,8 @@ module.exports = function(app, auth) {
                 var location = user.locations[j];
                 if(location) {
                   lon = location.geometry.coordinates[0];
-                  lat = location.geometry.coordinates[1];
-                  desc = location.properties.createdOn;
-                  stream.write(generate_kml.generatePlacemark('point' + j, 'FFT' , lon ,lat ,0, desc)); 
+                  lat = location.geometry.coordinates[1];                  
+                  stream.write(generate_kml.generatePlacemark('point' + j, 'FFT' , lon ,lat ,0, location.properties)); 
                 } 
               }
               stream.write(generate_kml.generateKMLFolderClose());  
@@ -206,9 +205,11 @@ module.exports = function(app, auth) {
         });
       }
 
+      //Known bug in Google Earth makes embedded images from a kmz file not render properly.  Treating
+      //it as a zip file for now.
       var createKmz = function(done) {
         child = exec("zip -r " + 
-                     currentTmpDir + "/mage-export-" + currentDate.getTime() + ".kmz " + 
+                     currentTmpDir + "/mage-export-" + currentDate.getTime() + ".zip " + 
                      currentTmpDir + "/*", function (error, stdout, stderr) {
           sys.print('stdout: ' + stdout);
           sys.print('stderr: ' + stderr);
@@ -221,7 +222,7 @@ module.exports = function(app, auth) {
 
       var streamKmzFileToClient = function(err) {
         
-        var filename = currentTmpDir + "/mage-export-" + currentDate.getTime() + ".kmz";
+        var filename = currentTmpDir + "/mage-export-" + currentDate.getTime() + ".zip";
 
         fs.exists(filename, function(exists) {  
           if(!exists) {  
@@ -239,8 +240,8 @@ module.exports = function(app, auth) {
               return;  
             }  
 
-            res.writeHead(200,{"Content-Type": "application/vnd.google-earth.kml+xml" , 
-                               "Content-Disposition": "attachment; filename=mage-export-" + currentDate.getTime() + ".kmz"}); 
+            res.writeHead(200,{"Content-Type": "application/octet-stream" , 
+                               "Content-Disposition": "attachment; filename=mage-export-" + currentDate.getTime() + ".zip"}); 
             res.write(file,"binary");  
             res.end();  
           });
