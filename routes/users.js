@@ -155,7 +155,7 @@ module.exports = function(app, auth) {
   app.post(
     '/api/login',
     p***REMOVED***port.authenticate(authenticationStrategy),
-    provision.check(provisionStr ategy),
+    provision.check(provisionStrategy),
     function(req, res) {
        Token.createTokenForUser(req.user, function(err, token) {
         if (err) {
