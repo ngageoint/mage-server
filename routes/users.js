@@ -155,7 +155,7 @@ module.exports = function(app, auth) {
   app.post(
     '/api/login',
     p***REMOVED***port.authenticate(authenticationStrategy),
-    provision.check(provisionStrategy),
+    provision.check(provisionStr ategy),
     function(req, res) {
        Token.createTokenForUser(req.user, function(err, token) {
         if (err) {
@@ -206,7 +206,6 @@ module.exports = function(app, auth) {
     p***REMOVED***port.authenticate('bearer'),
     access.authorize('READ_USER'),
     function(req, res) {
-      console.log('just called route to get user by id');
       User.getUserById(req.params.userId, function(err, user) {
         res.json(user);
       })
@@ -322,7 +321,6 @@ module.exports = function(app, auth) {
     access.authorize('UPDATE_USER'),
     function(req, res) {
       User.getUserById(req.params.userId, function(err, user) {
-        console.log('found user: ' + JSON.stringify(user));
         if (err) return res.send(400, 'User not found');
 
         if (req.param('username')) user.username = req.param('username');
