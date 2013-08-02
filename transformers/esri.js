@@ -27,6 +27,11 @@ module.exports = function(geometryFormat) {
   }
 
   var transformFeature = function(feature, ret, options) {
+    // don't transform sub docs
+    if ('function' == typeof feature.ownerDocument) {
+      return;
+    }
+
     var returnGeometry = options.properties ? options.properties.returnGeometry : true;
     
     var outFields = fieldNames;

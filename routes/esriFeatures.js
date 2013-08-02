@@ -102,8 +102,6 @@ module.exports = function(app, auth) {
         });
       }
 
-
-
       var respond = function(features) {
         var response = esri.transform(features, req.parameters.fields);
         res.json(response);
@@ -114,7 +112,7 @@ module.exports = function(app, auth) {
         async.each(
           filters, 
           function(filter, done) {
-            Feature.getFeatures(req.layer, {filter: filter, fields: {attachments:0}}, function (features) {
+            Feature.getFeatures(req.layer, filter, function (features) {
               if (features) {
                 allFeatures = allFeatures.concat(features);
               }
