@@ -43,13 +43,18 @@ var generateKMLFolderStart = function(name) {
   return folder;
 };
 
-var generatePlacemark = function(name, styleUrl, lon, lat, alt, desc, attachments) {
+var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachments) {
   
-  var images;
+  var desc = "";
+  Object.keys(feature).forEach(function(key) {
+    desc += key + ':  ' + feature[key] + '<br/>';
+  });
+
+  var images = "";
   if(attachments) {
     for(var i = 0; i < attachments.length; i++) {
       var attachment = attachments[i];
-      images = images + '<img src="files/' + attachment.relativePath + '/' + attachment.name + '"/>';
+      images += '<img src="files/' + attachment.relativePath + '/' + attachment.name + '" width="300"/><br/>';
     }
   }
 
