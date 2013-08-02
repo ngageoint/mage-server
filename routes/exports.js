@@ -2,6 +2,7 @@ module.exports = function(app, auth) {
   var moment = require('moment')
     , Location = require('../models/location')
     , Layer = require('../models/layer')
+    , User = require('../models/user')
     , Feature = require('../models/feature')
     , access = require('../access')
     , generate_kml = require('../utilities/generate_kml')
@@ -21,6 +22,7 @@ module.exports = function(app, auth) {
       var userLocations;
       var layerLookup = {};
       var featuresLookup = {};
+      var usersLookup = {};
 
       var filterTime = req.query.time_filter;
       var filterExportLayers = req.query.export_layers;
@@ -50,6 +52,17 @@ module.exports = function(app, auth) {
           }
           done();
         });
+      }
+
+      var getUsers = function(done) {
+        //get users for lookup
+        User.getUsers(function (users){          
+          for (var i in users) {            
+            var user = users[i];
+            usersLookup[user._id] = user;
+          }
+          done();
+        });        
       }
 
       var getFeatures = function(done) {             
@@ -119,8 +132,7 @@ module.exports = function(app, auth) {
             if(attachments) {
               for(var j = 0; j < attachments.length; j++) {
                 var attachment = attachments[j];
-                console.log('Hello Attachment: ' + JSON.stringify(attachment));
-
+                
                 //create the directories if needed
                 child = exec('mkdir -p ' + currentTmpDir + '/files/' + attachment.relativePath, function (error, stdout, stderr) {
                   sys.print('stdout: ' + stdout);
@@ -182,10 +194,11 @@ module.exports = function(app, auth) {
           //writing requested FFT locations
           if(filterFft) {
             for(var i in userLocations) {          
-              var user = userLocations[i];
-              stream.write(generate_kml.generateKMLFolderStart('user: ' + user.user));
-              for(var j in user.locations) {
-                var location = user.locations[j];
+              var userLocation = userLocations[i];
+              var user = usersLookup[userLocation.user];
+              stream.write(generate_kml.generateKMLFolderStart('user: ' + user.username));
+              for(var j in userLocation.locations) {
+                var location = userLocation.locations[j];
                 if(location) {
                   lon = location.geometry.coordinates[0];
                   lat = location.geometry.coordinates[1];                  
@@ -252,6 +265,7 @@ module.exports = function(app, auth) {
       ////////////////////////////////////////////////////////////////////
 
       var seriesFunctions = [getLayers, 
+                             getUsers,
                              getFeatures, 
                              getLocations, 
                              createStagingDirectory,
