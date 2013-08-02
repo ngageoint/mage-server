@@ -45,16 +45,24 @@ var generateKMLFolderStart = function(name) {
 
 var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachments) {
   
-  var desc = "";
+  var desc = "<h4>Properties</h4>";
   Object.keys(feature).forEach(function(key) {
     desc += key + ':  ' + feature[key] + '<br/>';
   });
 
-  var images = "";
+  var media = "<h4>Media Attachments</h4>";
   if(attachments) {
     for(var i = 0; i < attachments.length; i++) {
       var attachment = attachments[i];
-      images += '<img src="files/' + attachment.relativePath + '/' + attachment.name + '" width="300"/><br/>';
+
+
+      if((/^image/).test(attachment.contentType)) {
+        media += '<img src="files/' + attachment.relativePath + '/' + attachment.name + '" width="300"/><br/>';
+      }
+      else {
+        media += '<a href="files/' + attachment.relativePath + '/' + attachment.name + '>' + attachment.name + '</a><br/>';
+      }
+    
     }
   }
 
@@ -64,7 +72,7 @@ var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachm
                   "  <Point>" +
                   "    <coordinates>" + lon + "," + lat + "," + alt + "</coordinates>" +
                   "  </Point>" +
-                  "  <description>" + desc + '<br/>' + images +"</description>" + 
+                  "  <description>" + desc + '<br/>' + media +"</description>" + 
                   "</Placemark>";
   return placemark;
 };
