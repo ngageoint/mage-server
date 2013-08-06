@@ -18,9 +18,13 @@ var DeviceSchema = new Schema({
   }
 );
 
-//Validate that uid is unique
+//Validate that uid is non-null and unique
 DeviceSchema.pre('save', function(next) {
   var device = this;
+
+  if (!device.uid) {
+    return next(new Error("uid cannot be null");
+  }
 
   // only validate uid if it has been modified (or is new)
   if (!device.isModified('uid')) return next();
