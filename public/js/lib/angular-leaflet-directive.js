@@ -1,23 +1,11 @@
 (function () {
   var leafletDirective = angular.module("leaflet-directive", ["mage.***REMOVED***s"]);
 
-  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, appConstants) {
+  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, IconService, appConstants) {
     return {
       restrict: "A",
       replace: true,
       transclude: true,
-      scope: {
-        markerLocation: "=markerLocation",
-        message: "=message",
-        baseLayer: "=baselayer",
-        layer: "=layer",
-        currentLayerId: "=currentlayerid",
-        position: "=position",
-        positionBroadcast: "=positionBroadcast",
-        locations: "=locations",
-        activeFeature: "=activefeature",
-        newFeature: "=newfeature"
-      },
       template: '<div cl***REMOVED***="map"></div>',
       link: function (scope, element, attrs, ctrl) {
         // Create the map
@@ -165,8 +153,7 @@
           currentLocationMarkers = locationMarkers;
         });
 
-        scope.$watch("layer", function(one, two, three, four, five) {
-            var layer = scope.layer;
+        scope.$watch("layer", function(layer) {
             if (!layer) return;
 
             if (layer.checked) {
@@ -189,17 +176,8 @@
               } else {
                 newLayer = new L.GeoJSON(layer.features, {
                   pointToLayer: function (feature, latlng) {
-                    var iconUrl = feature.properties.icon_url;
-                    var icon = greenIcon;
-                    if (iconUrl) {
-                      icon = L.icon({iconUrl: feature.properties.icon_url});
-                    } else {
-                      icon = greenIcon;
-                    }
-
-                    var marker = new L.marker(latlng, {
-                      icon:  icon
-                    });
+                    var icon = IconService.icon(feature, {types: scope.types, levels: scope.levels});
+                    var marker = L.marker(latlng, { icon: icon });
 
                     marker.on("click", function(e) {
                       scope.$apply(function(s) {

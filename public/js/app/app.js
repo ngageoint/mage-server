@@ -2,7 +2,19 @@
 
 var mage = angular.module(
   "mage", 
-  ["ui.bootstrap", "leaflet-directive", "mage.***REMOVED***s", "mage.userService", "mage.deviceService", "mage.layerService", "mage.featureService", "mage.timerService", "mage.locationService", "mage.aboutService", "mage.lib"]) 
+  [
+    "ui.bootstrap",
+    "leaflet-directive",
+    "mage.***REMOVED***s",
+    "mage.userService",
+    "mage.deviceService",
+    "mage.layerService",
+    "mage.featureService",
+    "mage.timerService",
+    "mage.locationService",
+    "mage.iconService",
+    "mage.aboutService",
+    "mage.lib"])
   .config(function ($routeProvider, $locationProvider, $httpProvider) {
     $httpProvider.defaults.withCredentials = true;
     $httpProvider.defaults.headers.post  = {'Content-Type': 'application/x-www-form-urlencoded'};
@@ -24,7 +36,7 @@ var mage = angular.module(
     $routeProvider.when('/signup',
     {
       templateUrl:    'js/app/partials/signup.html',
-      controller:     "SignupController",
+      controller:     "SignupController"
       //resolve: resolveLogin()
     }); 
     $routeProvider.when('/admin',
@@ -67,4 +79,4 @@ var mage = angular.module(
       controller:     SigninController, 
     }
   );
-})
+});

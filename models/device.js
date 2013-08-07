@@ -23,7 +23,7 @@ DeviceSchema.pre('save', function(next) {
   var device = this;
 
   if (!device.uid) {
-    return next(new Error("uid cannot be null");
+    return next(new Error("uid cannot be null"));
   }
 
   // only validate uid if it has been modified (or is new)
