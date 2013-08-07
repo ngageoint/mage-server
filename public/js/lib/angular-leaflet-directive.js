@@ -13,7 +13,16 @@
         var map = new L.Map("map");
         map.setView([0, 0], 3);
 
-        var marker = new L.marker([0,0], {
+        // var markerGlowIcon = L.icon({
+        //   iconUrl: '/css/images/marker-yellow-glow.png',
+        //   iconSize: [55, 65],
+        //   iconAnchor: [27, 51]
+        // });
+        // var markerGlow = L.marker([0,0], {
+        //   icon: markerGlowIcon
+        // });
+
+        var marker = L.marker([0,0], {
           draggable: true,
           icon: IconService.defaultIcon()
         });
@@ -176,7 +185,7 @@
                 }
                 newLayer.addTo(map).bringToFront();
               } else {
-                newLayer = new L.GeoJSON(layer.features, {
+                newLayer =  L.geoJson(layer.features, {
                   pointToLayer: function (feature, latlng) {
                     var icon = IconService.icon(feature, {types: scope.types, levels: scope.levels});
                     return L.marker(latlng, { icon: icon });
@@ -187,9 +196,16 @@
                       scope.$apply(function(s) {
                         scope.activeFeature = {layerId: layer.id, featureId: feature.properties.OBJECTID};
                       });
+
+                      // markerGlow.setLatLng([feature.geometry.coordinates[1], feature.geometry.coordinates[0]]).addTo(map);
                     });
                   }
-                }).addTo(map).bringToFront(); 
+                });
+
+                var cluster = L.markerClusterGroup({
+                  disableClusteringAtZoom: 13
+                });
+                cluster.addLayer(newLayer).addTo(map).bringToFront();
               }
 
               layers[layer.id] = newLayer;
@@ -199,6 +215,12 @@
               delete layers[layer.id];
             }
         }); // watch layer
+
+        // scope.$watch("showObservation", function(show) {
+        //   if (!show) {
+        //     map.removeLayer(markerGlow);
+        //   }
+        // });
 
         scope.$watch("newFeature", function(feature) {
           if (!feature) return;
@@ -211,7 +233,7 @@
 
         scope.$watch("updatedFeature", function(feature) {
           if (!feature) return;
-          
+
           activeMarker.setIcon(IconService.icon(feature, {types: scope.types, levels: scope.levels}));
         })
 
