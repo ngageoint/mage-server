@@ -14,7 +14,8 @@
         map.setView([0, 0], 3);
 
         var marker = new L.marker([0,0], {
-          draggable: attrs.markcenter ? false:true
+          draggable: true,
+          icon: IconService.defaultIcon()
         });
         map.addLayer(marker);
         scope.markerLocation = marker.toGeoJSON();
@@ -126,19 +127,19 @@
 
               var layer = new L.GeoJSON(u.locations[0], {
                 pointToLayer: function (feature, latlng) {
-                  var marker = new L.CircleMarker(latlng, {color: '#f00'}).setRadius(5);
-
+                  return new L.CircleMarker(latlng, {color: '#f00'}).setRadius(5);
+                },
+                onEachFeature: function(feature, layer) {
                   // var newScope = scope.$new();
                   var e = $compile("<div user-location></div>")(scope);
                   // TODO this sucks but for now set a min width
-                  marker.bindPopup(e[0], {minWidth: 200});
+                  layer.bindPopup(e[0], {minWidth: 200});
 
-                  marker.on('click', function() {
+                  layer.on('click', function() {
                     angular.element(e).scope().getUser(u.user);
                   });
 
-                  locationMarkers[u.user] = marker;
-                  return marker;
+                  locationMarkers[u.user] = layer;
                 }
               });
 
@@ -153,6 +154,7 @@
           currentLocationMarkers = locationMarkers;
         });
 
+        var activeMarker;
         scope.$watch("layer", function(layer) {
             if (!layer) return;
 
@@ -177,15 +179,15 @@
                 newLayer = new L.GeoJSON(layer.features, {
                   pointToLayer: function (feature, latlng) {
                     var icon = IconService.icon(feature, {types: scope.types, levels: scope.levels});
-                    var marker = L.marker(latlng, { icon: icon });
-
+                    return L.marker(latlng, { icon: icon });
+                  },
+                  onEachFeature: function(feature, marker) {
                     marker.on("click", function(e) {
+                      activeMarker = marker;
                       scope.$apply(function(s) {
                         scope.activeFeature = {layerId: layer.id, featureId: feature.properties.OBJECTID};
                       });
                     });
-
-                    return marker;
                   }
                 }).addTo(map).bringToFront(); 
               }
@@ -206,6 +208,12 @@
             layer.addData(scope.newFeature);
           }
         }); // watch newFeature
+
+        scope.$watch("updatedFeature", function(feature) {
+          if (!feature) return;
+          
+          activeMarker.setIcon(IconService.icon(feature, {types: scope.types, levels: scope.levels}));
+        })
 
       } // end of link function
     };

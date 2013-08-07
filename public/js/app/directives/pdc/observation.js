@@ -59,8 +59,6 @@ mage.directive('pdcObservation', function () {
           }
         };
       }
-
-      scope.featureProperties = ["OBJECTID", "type", "level"];
     }
   };
 });

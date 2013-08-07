@@ -4,12 +4,9 @@
     <div leaflet marker-location="markerLocation" baselayer="baseLayer" layer="layer" message="message" draggable="true" active-feature="activeFeature" newfeature="newFeature" currentlayerid="currentLayerId" position="position" position-broadcast="positionBroadcast" locations="locations"></div>
   </div>
 
-  <!-- The observation directive, was not wanting to play nice, will sort out after PDC.. -->
-  <div pdc-observation active-feature="activeFeature"></div>
-
-  <div ng-switch on="customer">
+  <div ng-switch on="customer">  
+    <div pdc-observation active-feature="activeFeature" new-feature="newFeature"></div>
     <div ng-switch-when="USAR" ***REMOVED***-observation active-feature="activeFeature"></div>
-    <div ng-switch-when="PDC" pdc-observation active-feature="activeFeature"></div>
   </div>
 
   <!-- Third party observation dialog. Might be a good idea to generalize all the things and make them one observation panel at some point in time. -->
