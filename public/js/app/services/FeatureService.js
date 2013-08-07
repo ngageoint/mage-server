@@ -68,7 +68,17 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
         @return A promise of the REST call to get all of the features, so the caller can handle the success for failuer accordingly.
       */
       featureServiceFunctions.getFeatures = function (layerId) {
+        var options = {
+          method: "GET",
+          url: appConstants.rootUrl + '/FeatureServer/' + layerId + "/features?properties=OBJECTID,TYPE,LEVEL",
+          params: mageLib.getTokenParams(),
+          headers: {
+            "Accepts": "application/json", 
+            "Content-Type": "application/json"
+          }
+        }
 
+        return $http(options);
       };
 
       /*

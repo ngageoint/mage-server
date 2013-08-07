@@ -1,8 +1,8 @@
 // feature routes
 module.exports = function(app, auth) {
-  // TODO at one point thought ist was a good idea to provide non ESRI
+  // TODO at one point thought is was a good idea to provide non ESRI
   // endpoints to MAGE.  Probably still a good idea just got caught up
-  // in tight schedule and did not get the opportunity to get this stuff in.
+  // in tight schedule and did not get the opportunity to all the routes in.
 
   var Feature = require('../models/feature')
     , access = require('../access')
