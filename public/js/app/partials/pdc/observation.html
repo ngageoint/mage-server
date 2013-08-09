@@ -80,7 +80,11 @@
       </span>
       <hr>
       <div cl***REMOVED***="attachment" ng-repeat="attachment in attachments">
-        <img src="{{attachmentUrl + attachment.id + '?access_token=' + token}}">
+        <div ng-switch on="attachment.contentType">
+          <img ng-switch-when="image/jpg" src="{{attachmentUrl + attachment.id + '?access_token=' + token}}">
+          <!-- Due to drastically varying browser behavior, videos will be a download link for the time being -->
+          <a ng-switch-when="video/mp4" href="{{attachmentUrl + attachment.id + '?access_token=' + token}}">Download video</a>
+        </div>
       </div>
     </div>
   </div>
