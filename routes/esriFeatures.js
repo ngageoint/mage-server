@@ -291,8 +291,8 @@ module.exports = function(app, auth) {
           });
 
           feature.attachments.forEach(function(attachment) {
-            var path = attachmentBase + attachment.relativePath
-            fs.remove(path + attachment.name, function(err) {
+            var path = path.join(attachmentBase, attachment.relativePath);
+            fs.remove(path, function(err) {
               if (err) {
                 console.error("Could not remove attachment file " + path + attachment.name + ". ", err);
               }
@@ -352,7 +352,7 @@ module.exports = function(app, auth) {
           return res.json(errorResponse);
         }
 
-        var path = attachmentBase + attachment.relativePath;
+        var path = path.join(attachmentBase, attachment.relativePath);
         fs.readFile(path, function(err, data) {
           if (err) next(err);
 
@@ -379,13 +379,15 @@ module.exports = function(app, auth) {
 
         var relativePath = createAttachmentPath(req.layer, req.files.attachment)
         // move file upload to its new home
-        fs.mkdirp(attachmentBase + relativePath, function(err) {
+        var dir = path.join(attachmentBase, relativePath);
+        fs.mkdirp(path, function(err) {
           if (err) return next(err);
 
           req.files.attachment.id = id;
           var fileName = path.basename(req.files.attachment.path);
           req.files.attachment.relativePath = path.join(relativePath, fileName);
-          fs.rename(req.files.attachment.path, attachmentBase + req.files.attachment.relativePath, function(err) {
+          var path = path.join(attachmentBase, req.files.attachment.relativePath);
+          fs.rename(req.files.attachment.path, path, function(err) {
             if (err) return next(err);
 
             Feature.addAttachment(req.layer, req.objectId, req.files.attachment, function(err, attachment) {
@@ -428,15 +430,17 @@ module.exports = function(app, auth) {
 
       var attachmentId = parseInt(attachmentId, 10);
 
-      var relativePath = createAttachmentPath(req.layer, req.files.attachment)
+      var relativePath = createAttachmentPath(req.layer, req.files.attachment);
+      var dir = path.join(attachmentBase, relativePath);
       // move file upload to its new home
-      fs.mkdirp(attachmentBase + relativePath, function(err) {
+      fs.mkdirp(dir, function(err) {
         if (err) return next(err);
 
         req.files.attachment.id = attachmentId;
         var fileName = path.basename(req.files.attachment.path);
         req.files.attachment.relativePath = path.join(relativePath, fileName);
-        fs.rename(req.files.attachment.path, attachmentBase + req.files.attachment.relativePath, function(err) {
+        var path = path.join(attachmentBase, req.files.attachment.relativePath);
+        fs.rename(req.files.attachment.path, path, function(err) {
           if (err) return next(err);
 
           Feature.updateAttachment(req.layer, attachmentId, req.files.attachment, function(err) {

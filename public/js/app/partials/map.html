@@ -18,21 +18,41 @@
 
   <!-- Button bar -->
   <div id="button-bar">
-    <button cl***REMOVED***="btn" id="geo" ng-click="getPosition()" ngm-tap="geolocate()">
-      <i cl***REMOVED***="icon-gps icon-sage"></i>
+    <button 
+      id="geo" 
+      cl***REMOVED***="btn" 
+      ng-cl***REMOVED***="{true: 'btn-inverse'}[locate]"
+      ng-click="locate = !locate" 
+      ngm-tap="locate = !locate">
+      <i cl***REMOVED***="icon-target" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[locate]"></i>
     </button>
+
     <button cl***REMOVED***="btn hide" id="goto-address" ng-click="openGotoAddress()" ngm-tap="openGotoAddress()">
       <i cl***REMOVED***="icon-search icon-sage"></i>
     </button>
+
     <button cl***REMOVED***="btn" id="new-observation" ng-click="newObservation()" ngm-tap="newObservation()">
       <i cl***REMOVED***="icon-plus icon-sage"></i>
     </button>
-    <button cl***REMOVED***="btn" id="broadcast-location-btn" ng-click="broadcastLocation()" ngm-tap="broadcastLocation()">
-      <i cl***REMOVED***="icon-megaphone icon-sage"></i>
+
+    <button 
+      id="broadcast-location-btn" 
+      cl***REMOVED***="btn"
+      ng-cl***REMOVED***="{true: 'btn-inverse'}[broadcast]"
+      ng-click="broadcastLocation()" 
+      ngm-tap="broadcastLocation()">
+      <i cl***REMOVED***="icon-megaphone" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[broadcast]"></i>
     </button>
-    <button cl***REMOVED***="btn" ng-cl***REMOVED***="{true: 'btn-inverse'}[locationServicesEnabled]"id="locations-btn" ng-click="locationServicesEnabled = !locationServicesEnabled;locationServices()" ngm-tap="locationServicesEnabled = !locationServicesEnabled;locationServices()">
+
+    <button
+      id="locations-btn"
+      cl***REMOVED***="btn" 
+      ng-cl***REMOVED***="{true: 'btn-inverse'}[locationServicesEnabled]" 
+      ng-click="locationServicesEnabled = !locationServicesEnabled;locationServices()" 
+      ngm-tap="locationServicesEnabled = !locationServicesEnabled;locationServices()">
       <i cl***REMOVED***="icon-users" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[locationServicesEnabled]"></i>
     </button>
+
   </div>
 
   <!-- Panels -->

@@ -7,6 +7,9 @@
 function MapController($scope, $log, $http, $location, $injector, appConstants, mageLib, LayerService, FeatureService, LocationService, TimerService) {
   $scope.customer = appConstants.customer;
 
+  $scope.locate = false;
+  $scope.broadcast = false;
+
   /* Some map defaults */
   $scope.markerLocation = {};
   $scope.points = [];
@@ -89,28 +92,40 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
 
   /* Locations, think Find My Friends */
   $scope.broadcastLocation = function () {
-    // get geolocation, take that location and post it with the location ***REMOVED***
-    LocationService.getPosition().
-      then(function(position) {
+    var timerName = 'broadcastLocation';
+    $scope.broadcast = !$scope.broadcast;
+
+    if ($scope.broadcast) {
+      $scope.locate = true;
+
+      TimerService.start(timerName, 5000, function() {
+        var properties = {};
+        if ($scope.location.accuracy) properties.accuracy = $scope.location.accuracy;
+        if ($scope.location.altitude) properties.altitude = $scope.location.altitude;
+        if ($scope.location.altitudeAccuracy) properties.altitudeAccuracy = $scope.location.altitudeAccuracy;
+        if ($scope.location.heading) properties.heading = $scope.location.heading;
+        if ($scope.location.speed) properties.speed = $scope.location.speed;
+
         var location = {
           location: {
             type: "Feature",
             geometry: {
               type: 'Point',
-              coordinates: [position.coords.longitude, position.coords.latitude]
-            }
+              coordinates: [$scope.location.longitude, $scope.location.latitude]
+            },
+            properties: properties
           },
           timestamp: new Date()
         };
 
         LocationService.createLocation(location)
           .success(function (data, status, headers, config) {
-            $scope.positionBroadcast = position;
-          })
-          .error(function (data, status, headers, config) {
-
+            $scope.positionBroadcast = location;
           });
       });
+    } else {
+      TimerService.stop(timerName);
+    }
   }
 
   /* Goto address, need to implement some geocoding like the android app does, otherwise pull it out for PDC. */
@@ -155,10 +170,9 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     $scope.showRefresh = false;
   }
 
-
   /* location ***REMOVED***s is FFT */
   $scope.locationServices = function() {
-    var timerName = 'pollLocations';
+    var timerName = 'pollLocation';
 
     if ($scope.locationServicesEnabled) {
       TimerService.start(timerName, 5000, function() {
