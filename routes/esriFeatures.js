@@ -291,10 +291,10 @@ module.exports = function(app, auth) {
           });
 
           feature.attachments.forEach(function(attachment) {
-            var path = path.join(attachmentBase, attachment.relativePath);
-            fs.remove(path, function(err) {
+            var file = path.join(attachmentBase, attachment.relativePath);
+            fs.remove(file, function(err) {
               if (err) {
-                console.error("Could not remove attachment file " + path + attachment.name + ". ", err);
+                console.error("Could not remove attachment file " + file + ". ", err);
               }
             });
           });
@@ -352,8 +352,8 @@ module.exports = function(app, auth) {
           return res.json(errorResponse);
         }
 
-        var path = path.join(attachmentBase, attachment.relativePath);
-        fs.readFile(path, function(err, data) {
+        var file = path.join(attachmentBase, attachment.relativePath);
+        fs.readFile(file, function(err, data) {
           if (err) next(err);
 
           res.writeHead(200, {
@@ -380,14 +380,14 @@ module.exports = function(app, auth) {
         var relativePath = createAttachmentPath(req.layer, req.files.attachment)
         // move file upload to its new home
         var dir = path.join(attachmentBase, relativePath);
-        fs.mkdirp(path, function(err) {
+        fs.mkdirp(dir, function(err) {
           if (err) return next(err);
 
           req.files.attachment.id = id;
           var fileName = path.basename(req.files.attachment.path);
           req.files.attachment.relativePath = path.join(relativePath, fileName);
-          var path = path.join(attachmentBase, req.files.attachment.relativePath);
-          fs.rename(req.files.attachment.path, path, function(err) {
+          var file = path.join(attachmentBase, req.files.attachment.relativePath);
+          fs.rename(req.files.attachment.path, file, function(err) {
             if (err) return next(err);
 
             Feature.addAttachment(req.layer, req.objectId, req.files.attachment, function(err, attachment) {
@@ -439,8 +439,8 @@ module.exports = function(app, auth) {
         req.files.attachment.id = attachmentId;
         var fileName = path.basename(req.files.attachment.path);
         req.files.attachment.relativePath = path.join(relativePath, fileName);
-        var path = path.join(attachmentBase, req.files.attachment.relativePath);
-        fs.rename(req.files.attachment.path, path, function(err) {
+        var file = path.join(attachmentBase, req.files.attachment.relativePath);
+        fs.rename(req.files.attachment.path, file, function(err) {
           if (err) return next(err);
 
           Feature.updateAttachment(req.layer, attachmentId, req.files.attachment, function(err) {
@@ -500,13 +500,13 @@ module.exports = function(app, auth) {
         res.json({deleteAttachmentResults: deleteResults});
 
         if (!err) {
-          var path = getAttachmentDir(req.layer);
           attachments.forEach(function(attachment) {
             var index = attachmentIds.indexOf(attachment.id);
             if (index != -1) {
-              fs.remove(path + attachment.name, function(err) {
+              var file = path.join(attachmentBase, attachment.relativePath);
+              fs.remove(file, function(err) {
                 if (err) {
-                  console.error("Could not remove attachment file " + path + attachment.name + ". ", err);
+                  console.error("Could not remove attachment file " + file + ". ", err);
                 }
               });
             }
