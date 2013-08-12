@@ -12,12 +12,12 @@ Version: 1.0
   position:absolute;
   left:0;
   top:0;
-  display: block;
+  display: inline-block;
   text-align: center;
 }
 
 .awesome-marker-shadow {
-  background: url('images/markers-shadow.png') no-repeat 0 0;
+  background: url('images/marker-shadow.png') no-repeat 0 0;
   width: 36px;
   height: 16px;
 }
@@ -30,7 +30,7 @@ Version: 1.0
   background-size: 360px 46px;
  }
  .awesome-marker-shadow {
-  background-image: url('images/markers-shadow@2x.png');
+  background-image: url('images/marker-shadow.png');
   background-size: 35px 16px;
  }
 }
