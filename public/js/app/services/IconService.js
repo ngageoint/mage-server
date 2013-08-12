@@ -19,7 +19,7 @@ angular.module('mage.iconService', ['mage.***REMOVED***s', 'mage.lib'])
         var icon = type ? type.icon : 'circle';
 
         var level = _.find(o.levels, function(level) {
-          return level.name === feature.properties.LEVEL;
+          return level.name === feature.properties.EVENTLEVEL;
         });
         var color = level ? level.color : 'blue';
 

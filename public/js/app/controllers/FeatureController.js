@@ -47,7 +47,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, mageLib,
             properties: {
               OBJECTID: objectId,
               TYPE: $scope.observation.attributes.TYPE,
-              LEVEL: $scope.observation.attributes.LEVEL
+              EVENTLEVEL: $scope.observation.attributes.EVENTLEVEL
             }
           } 
 
@@ -79,7 +79,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, mageLib,
             properties: {
               OBJECTID: objectId,
               TYPE: $scope.observation.attributes.TYPE,
-              LEVEL: $scope.observation.attributes.LEVEL
+              EVENTLEVEL: $scope.observation.attributes.EVENTLEVEL
             }
           } 
 
