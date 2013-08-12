@@ -353,8 +353,9 @@ module.exports = function(app, auth) {
         }
 
         var file = path.join(attachmentBase, attachment.relativePath);
+        console.log('trying to read file: ', file);
         fs.readFile(file, function(err, data) {
-          if (err) next(err);
+          if (err) return next(err);
 
           res.writeHead(200, {
             "Content-Type": attachment.contentType,
