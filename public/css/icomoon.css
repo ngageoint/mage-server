@@ -27,7 +27,7 @@ Instead of a list of all cl***REMOVED*** selectors,
 you can use the generic selector below, but it's slower:
 [cl***REMOVED****="icon-"] {
 */
-.icon-ok, .icon-remove, .icon-zoom-in, .icon-zoom-out, .icon-camera, .icon-globe, .icon-calendar, .icon-cloud-download, .icon-check, .icon-home, .icon-plus, .icon-map, .icon-location, .icon-location-2, .icon-mobile, .icon-filter, .icon-layers, .icon-loop, .icon-user-add, .icon-magic, .icon-stack, .icon-megaphone, .icon-cog, .icon-search, .icon-pencil, .icon-users, .icon-user, .icon-list, .icon-thumbs-up, .icon-thumbs-up-2, .icon-save, .icon-floppy, .icon-gps, .icon-man, .icon-download, .icon-android, .icon-off, .icon-info, .icon-cogs, .icon-edit, .icon-house, .icon-building, .icon-crowd, .icon-angry, .icon-login, .icon-logout, .icon-arrow, .icon-circle, .icon-bomb {
+.icon-mobile, .icon-user, .icon-users, .icon-user-add, .icon-megaphone, .icon-target, .icon-logout, .icon-login, .icon-arrow, .icon-new, .icon-info, .icon-question, .icon-search, .icon-star, .icon-ok, .icon-remove, .icon-zoom-in, .icon-zoom-out, .icon-cog, .icon-camera, .icon-list, .icon-facetime-video, .icon-check, .icon-ban-circle, .icon-calendar, .icon-save, .icon-cloud-download, .icon-male, .icon-anchor, .icon-thumbs-up, .icon-magic, .icon-building, .icon-ambulance, .icon-thumbs-up-2, .icon-globe, .icon-group, .icon-asterisk, .icon-android, .icon-stack, .icon-map, .icon-filter, .icon-fire, .icon-airplane, .icon-gift, .icon-moon-fill, .icon-layers, .icon-people, .icon-hostage, .icon-kidnap, .icon-running, .icon-car, .icon-radio-active, .icon-fist, .icon-hit, .icon-ballon, .icon-activity, .icon-plus, .icon-gun {
 	font-family: 'icomoon';
 	speak: none;
 	font-style: normal;
@@ -36,6 +36,48 @@ you can use the generic selector below, but it's slower:
 	text-transform: none;
 	line-height: 1;
 	-webkit-font-smoothing: antialiased;
+}
+.icon-mobile:before {
+	content: "\e000";
+}
+.icon-user:before {
+	content: "\e001";
+}
+.icon-users:before {
+	content: "\e002";
+}
+.icon-user-add:before {
+	content: "\e003";
+}
+.icon-megaphone:before {
+	content: "\e004";
+}
+.icon-target:before {
+	content: "\e005";
+}
+.icon-logout:before {
+	content: "\e006";
+}
+.icon-login:before {
+	content: "\e007";
+}
+.icon-arrow:before {
+	content: "\e008";
+}
+.icon-new:before {
+	content: "\e009";
+}
+.icon-info:before {
+	content: "\e00a";
+}
+.icon-question:before {
+	content: "\e00b";
+}
+.icon-search:before {
+	content: "\f002";
+}
+.icon-star:before {
+	content: "\f005";
 }
 .icon-ok:before {
 	content: "\f00c";
@@ -49,138 +91,123 @@ you can use the generic selector below, but it's slower:
 .icon-zoom-out:before {
 	content: "\f010";
 }
-.icon-camera:before {
-	content: "\f030";
-}
-.icon-globe:before {
-	content: "\f0ac";
-}
-.icon-calendar:before {
-	content: "\f073";
-}
-.icon-cloud-download:before {
-	content: "\f0ed";
-}
-.icon-check:before {
-	content: "\f046";
-}
-.icon-home:before {
-	content: "\e000";
-}
-.icon-plus:before {
-	content: "\f067";
-}
-.icon-map:before {
-	content: "\e001";
-}
-.icon-location:before {
-	content: "\e002";
-}
-.icon-location-2:before {
-	content: "\e003";
-}
-.icon-mobile:before {
-	content: "\e005";
-}
-.icon-filter:before {
-	content: "\e007";
-}
-.icon-layers:before {
-	content: "\e008";
-}
-.icon-loop:before {
-	content: "\e009";
-}
-.icon-user-add:before {
-	content: "\e00a";
-}
-.icon-magic:before {
-	content: "\f0d0";
-}
-.icon-stack:before {
-	content: "\e00b";
-}
-.icon-megaphone:before {
-	content: "\e00c";
-}
 .icon-cog:before {
 	content: "\f013";
 }
-.icon-search:before {
-	content: "\f002";
-}
-.icon-pencil:before {
-	content: "\e00d";
-}
-.icon-users:before {
-	content: "\e006";
-}
-.icon-user:before {
-	content: "\e00e";
+.icon-camera:before {
+	content: "\f030";
 }
 .icon-list:before {
 	content: "\f03a";
 }
-.icon-thumbs-up:before {
-	content: "\f087";
+.icon-facetime-video:before {
+	content: "\f03d";
 }
-.icon-thumbs-up-2:before {
-	content: "\e004";
+.icon-check:before {
+	content: "\f046";
+}
+.icon-ban-circle:before {
+	content: "\f05e";
+}
+.icon-calendar:before {
+	content: "\f073";
 }
 .icon-save:before {
 	content: "\f0c7";
 }
-.icon-floppy:before {
-	content: "\e00f";
+.icon-cloud-download:before {
+	content: "\f0ed";
 }
-.icon-gps:before {
-	content: "\f05b";
-}
-.icon-man:before {
+.icon-male:before {
 	content: "\f183";
 }
-.icon-download:before {
-	content: "\f019";
+.icon-anchor:before {
+	content: "\f13d";
 }
-.icon-android:before {
-	content: "\f17b";
+.icon-thumbs-up:before {
+	content: "\f164";
 }
-.icon-off:before {
-	content: "\f011";
-}
-.icon-info:before {
-	content: "\e011";
-}
-.icon-cogs:before {
-	content: "\f085";
-}
-.icon-edit:before {
-	content: "\f044";
-}
-.icon-house:before {
-	content: "\f015";
+.icon-magic:before {
+	content: "\f0d0";
 }
 .icon-building:before {
 	content: "\f0f7";
 }
-.icon-crowd:before {
+.icon-ambulance:before {
+	content: "\f0f9";
+}
+.icon-thumbs-up-2:before {
+	content: "\f087";
+}
+.icon-globe:before {
+	content: "\f0ac";
+}
+.icon-group:before {
+	content: "\f0c0";
+}
+.icon-asterisk:before {
+	content: "\f069";
+}
+.icon-android:before {
+	content: "\f17b";
+}
+.icon-stack:before {
+	content: "\e00c";
+}
+.icon-map:before {
+	content: "\e00d";
+}
+.icon-filter:before {
+	content: "\e00e";
+}
+.icon-fire:before {
+	content: "\e00f";
+}
+.icon-airplane:before {
 	content: "\e010";
 }
-.icon-angry:before {
+.icon-gift:before {
+	content: "\e011";
+}
+.icon-moon-fill:before {
 	content: "\e012";
 }
-.icon-login:before {
+.icon-layers:before {
 	content: "\e013";
 }
-.icon-logout:before {
-	content: "\e014";
-}
-.icon-arrow:before {
+.icon-people:before {
 	content: "\e015";
 }
-.icon-circle:before {
+.icon-hostage:before {
 	content: "\e016";
 }
-.icon-bomb:before {
+.icon-kidnap:before {
 	content: "\e017";
+}
+.icon-running:before {
+	content: "\e018";
+}
+.icon-car:before {
+	content: "\e01a";
+}
+.icon-radio-active:before {
+	content: "\e01b";
+}
+.icon-fist:before {
+	content: "\e01c";
+}
+.icon-hit:before {
+	content: "\e01d";
+}
+.icon-ballon:before {
+	content: "\e014";
+}
+.icon-activity:before {
+	content: "\e01e";
+}
+.icon-plus:before {
+	content: "\e01f";
+}
+.icon-gun:before {
+	content: "\e020";
 }
