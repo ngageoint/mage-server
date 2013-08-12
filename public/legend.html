@@ -1,0 +1,465 @@
+ <!DOCTYPE html>
+<html ng-app="legend">
+<head>
+  <title>MAGE</title>
+
+  <!-- Comment out the following line when running local -->
+  <!--<base href="/mage/" />-->
+
+  <link rel="shortcut icon" href="favicon.ico"/>
+  <meta id="view" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+  <link rel="stylesheet" href="css/bootstrap-responsive.min.css"/>
+  <link rel="stylesheet" href="css/icomoon.css">
+  <link rel="stylesheet" href="css/leaflet.awesome-markers.css"/>
+  <link rel="stylesheet" href="css/style1.css"/>
+
+</head>
+<body>
+  <div cl***REMOVED***="container">
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span12 well">
+        <h3>Possible PDC Icons</h3>
+        <p>
+          All icons can be colored white or black.  Also marker colors were choosen at random.  Possible colors are red, darkred, orange, green, darkgreen, blue, darkblue, purple, darkpurple, cadetblue.
+        </p>
+        <div tabindex="0" style="width: 360px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"></div>
+      </div>
+    </div>
+
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">At Venue</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-building icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-building icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-building icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-building icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Protest</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-fist icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-fist icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-fist icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-fist icon-white"></i></div>
+      </div>
+    </div>
+
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Other Event</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-calendar icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-calendar icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-calendar icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-calendar icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Parade</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-ballon icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-ballon icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-ballon icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-ballon icon-white"></i></div>
+      </div>
+    </div>
+
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">CBRN Hazard</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-radio-active icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-radio-active icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-radio-active icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-radio-active icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Crowd</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-people icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-people icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-people icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-people icon-white"></i></div>
+      </div>  
+    </div>
+
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+        <strong cl***REMOVED***="muted">Explosion</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-new icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-new icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-new icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-new icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Fire</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-fire icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-fire icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-fire icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-fire icon-white"></i></div>
+      </div>  
+    </div>
+
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Medical Incident</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-ambulance icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-ambulance icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-ambulance icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-ambulance icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Transportation Incident</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-car icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-car icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-car icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-car icon-white"></i></div>
+      </div> 
+    </div>
+
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Other Activity</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-activity icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-activity icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-activity icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-activity icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Shots Fired</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-gun icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-gun icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-gun icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-gun icon-white"></i></div>
+      </div>
+    </div>
+
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Signifigant Incident</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-asterisk icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-asterisk icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-asterisk icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-asterisk icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Suspiscious Individual</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-running icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-running icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-running icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-running icon-white"></i></div>
+      </div>  
+    </div>
+
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Suspiscious Vehicle</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-car icon-black"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-car icon-black"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-car icon-black"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-car icon-black"></i></div>
+      </div>
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Unattented Package</strong>
+      </div>
+       <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-gift icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-gift icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-gift icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-gift icon-white"></i></div>
+      </div>
+    </div>
+
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Viloent Activity</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-hit icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-hit icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-hit icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-hit icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Remain Overnight</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-moon-fill icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-moon-fill icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-moon-fill icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-moon-fill icon-white"></i></div>
+      </div>
+    </div>
+
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Arrival</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-login icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-login icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-login icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-login icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Departure</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-logout icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-logout icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-logout icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-logout icon-white"></i></div>
+      </div>
+    </div>
+
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Aeronatical Incident</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-airplane icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-airplane icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-airplane icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-airplane icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Maritime Incident</strong>
+      </div> 
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-anchor icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-anchor icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-anchor icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-anchor icon-white"></i></div>
+      </div>
+    </div>
+
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Evacuation</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-ban-circle icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-ban-circle icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-ban-circle icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-ban-circle icon-white"></i></div>
+      </div>
+
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Hostage</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-hostage icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-hostage icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-hostage icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-hostage icon-white"></i></div>
+      </div>
+    </div>
+
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">Kidnapping</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-kidnap icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-kidnap icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-kidnap icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-kidnap icon-white"></i></div>
+      </div>
+
+      <div cl***REMOVED***="span2" style="margin-top:10px">
+       <strong cl***REMOVED***="muted">VIP</strong>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-blue awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-star icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-green awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-star icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-orange awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-star icon-white"></i></div>
+      </div>
+      <div cl***REMOVED***="span1">
+        <div tabindex="0" style="width: 35px; height: 45px;" cl***REMOVED***="awesome-marker-icon-red awesome-marker leaflet-zoom-animated leaflet-clickable"><i cl***REMOVED***="icon-star icon-white"></i></div>
+      </div>
+    </div>
+
+  </div>
+</body>
+
+</html>

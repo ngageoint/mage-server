@@ -14,10 +14,13 @@ mage.directive('pdcObservation', function () {
       ];
 
       scope.levels = [{
-        name: 'Normal',
+        name: 'None',
         color: 'blue'
       },{
-        name: 'Elevated',
+        name: 'Low',
+        color: 'green'
+      },{
+        name: 'Medium',
         color: 'orange'
       },{
         name: 'High',
@@ -25,29 +28,83 @@ mage.directive('pdcObservation', function () {
       }];
 
       scope.types = [{
-        name: 'Residence Overnight',
-        icon: 'house'
-      },{
-        name: 'Arrived',
-        icon: 'login'
-      },{
-        name: 'Departed',
-        icon: 'logout'
-      },{
-        name: 'En Route',
-        icon: 'arrow'
-      },{
-        name: 'Unattended Package',
-        icon: 'bomb'
-      },{
-        name: 'Crowd',
-        icon: 'crowd'
-      },{
-        name: 'Protest',
-        icon: 'angry'
-      },{
         name: 'At Venue',
         icon: 'building'
+      },{
+        name: 'Protest',
+        icon: 'fist'
+      },{
+        name: 'Other Event',
+        icon: 'calendar'
+      },{
+        name: 'Parade Event',
+        icon: 'ballon'
+      },{
+        name: 'CBRN Hazard',
+        icon: 'radio-active'
+      },{
+        name: 'Crowd',
+        icon: 'people'
+      },{
+        name: 'Explosion',
+        icon: 'new'
+      },{
+        name: 'Fire',
+        icon: 'fire'
+      },{
+        name: 'Medical Incident',
+        icon: 'ambulance'
+      },{
+        name: 'Transportation Incident',
+        icon: 'car'
+      },{
+        name: 'Other Activity',
+       icon: 'activity'
+      },{
+        name: 'Shots Fired',
+        icon: 'gun'
+      },{
+        name: 'Significant Incident',
+        icon: 'asterisk'
+      },{
+        name: 'Suspicious Individual',
+        icon: 'running'
+      },{
+        name: 'Suspicious Vehicle',
+        icon: 'car'
+      },{
+        name: 'Suspicious Package',
+        icon: 'gift'
+      },{
+        name: 'Violent Activity',
+        icon: 'hit'
+      },{
+        name: 'Remain Over Night',
+        icon: 'moon-fill'
+      },{
+        name: 'Arrival',
+        icon: 'login'
+      },{
+        name: 'Departure',
+        icon: 'logout'
+      },{
+        name: 'Aeronautical Incident',
+        icon: 'airplane'
+      },{
+        name: 'Maritime Incident',
+        icon: 'anchor'
+      },{
+        name: 'Evacuation',
+        icon: 'ban-circle'
+      },{
+        name: 'Hostage',
+        icon: 'hostage'
+      },{
+        name: 'Kidnapping',
+        icon: 'kidnap'
+      },{
+        name: 'VIP',
+        icon: 'star'
       }];
 
       scope.createNewObservation = function() {
