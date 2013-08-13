@@ -53,16 +53,16 @@
           </div>
 
           <div cl***REMOVED***="control-group">
-            <label cl***REMOVED***="control-label">Layer URL</label>
-            <div cl***REMOVED***="controls">
-              <input type="text" cl***REMOVED***="input-xxlarge" placeholder="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" ng-model="layer.url"/>
-            </div>
-          </div>
-
-          <div cl***REMOVED***="control-group">
             <label cl***REMOVED***="control-label">Layer name</label>
             <div cl***REMOVED***="controls">
               <input type="text" placeholder="i.e. HurricaneSandy" ng-model="layer.name"/>
+            </div>
+          </div>
+
+          <div cl***REMOVED***="control-group" ng-show="layer.type == 'Imagery'">
+            <label cl***REMOVED***="control-label">Layer URL</label>
+            <div cl***REMOVED***="controls">
+              <input type="text" cl***REMOVED***="input-xxlarge" placeholder="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" ng-model="layer.url"/>
             </div>
           </div>
 
