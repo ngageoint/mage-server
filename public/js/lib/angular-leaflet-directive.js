@@ -208,7 +208,7 @@
 
           var layer = layers[scope.currentLayerId];
           if (layer) {
-            layer.addData(scope.newFeature);
+            layer.addData(feature);
           }
         }); // watch newFeature
 
