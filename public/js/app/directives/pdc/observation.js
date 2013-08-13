@@ -21,7 +21,7 @@ mage.directive('pdcObservation', function () {
         color: 'green'
       },{
         name: 'Medium',
-        color: 'orange'
+        color: 'yellow'
       },{
         name: 'High',
         color: 'red'
@@ -56,7 +56,7 @@ mage.directive('pdcObservation', function () {
         icon: 'ambulance'
       },{
         name: 'Transportation Incident',
-        icon: 'car'
+        icon: 'warning-sign'
       },{
         name: 'Other Activity',
        icon: 'activity'

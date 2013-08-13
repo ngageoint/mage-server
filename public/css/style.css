@@ -209,3 +209,8 @@ textarea {
 .pointer {
     cursor: pointer; cursor: hand;
 }
+
+.awesome-marker i {
+  font-size: 18px;
+  margin: 10px 0;
+}
