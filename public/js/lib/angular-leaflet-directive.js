@@ -185,9 +185,7 @@
                   }
                 });
 
-                newLayer = L.markerClusterGroup({
-                  disableClusteringAtZoom: 15
-                });
+                newLayer = L.markerClusterGroup();
                 newLayer.addLayer(geoJson).addTo(map).bringToFront();
               }
 
