@@ -65,12 +65,12 @@ body {
     color: #324962;
 }
 
-.top-gap {
-    margin-top: 15px;
-}
-
 .top-gap-s {
     margin-top: 5px;
+}
+
+.top-gap {
+    margin-top: 15px;
 }
 
 .top-gap-l {
@@ -79,6 +79,22 @@ body {
 
 .top-gap-xl {
     margin-top: 50px;
+}
+
+.bottom-gap-s {
+    margin-bottom: 5px;
+}
+
+.bottom-gap {
+    margin-bottom: 15px;
+}
+
+.bottom-gap-l {
+    margin-bottom: 30px;
+}
+
+.bottom-gap-xl {
+    margin-bottom: 50px;
 }
 
 .icon-spacer {

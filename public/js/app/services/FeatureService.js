@@ -95,5 +95,9 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
         return $http.get(appConstants.rootUrl + '/FeatureServer/'+ layerId + '/' + observationId + '/attachments?access_token=' + mageLib.getLocalItem('token'));
       }
 
+      featureServiceFunctions.deleteObservation = function (layerId, observationId) {
+        return $http.post(appConstants.rootUrl + '/FeatureServer/' + layerId + '/deleteFeatures' + '?objectIds=' +  observationId + '&access_token=' + mageLib.getLocalItem('token'));
+      }
+
       return featureServiceFunctions;
     }])
