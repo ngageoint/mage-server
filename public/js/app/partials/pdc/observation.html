@@ -47,16 +47,28 @@
           </div>
         </div>
         <div cl***REMOVED***="control-group">
+          <label cl***REMOVED***="control-label">Lat/Lng</label>
+          <div cl***REMOVED***="controls">
+            <div cl***REMOVED***="top-gap-s">
+              <span cl***REMOVED***="muted">
+                {{observation.geometry.coordinates[1].toPrecision(7)}}, {{observation.geometry.coordinates[0].toPrecision(7)}}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div cl***REMOVED***="control-group">
           <label cl***REMOVED***="control-label" for="unit">Description</label>
           <div cl***REMOVED***="controls">
             <textarea ng-model="observation.attributes.description"></textarea>
           </div>
         </div>
-      </form>    
-      <span>
+      </form>
+      <span cl***REMOVED***="pull-right">
         <button cl***REMOVED***="btn btn-inverse" ng-click="cancelObservation()" ngm-tap="cancelObservation()">{{observationCloseText}}</button>
         <button cl***REMOVED***="btn" ng-click="saveObservation()" ngm-tap="saveObservation()"><i cl***REMOVED***="icon-save"></i> Save</button>
-        <button cl***REMOVED***="btn btn-danger pull-right" ng-show="amAdmin" ng-click="deleteObservation()" ngm-tap="deleteObservation()"><i cl***REMOVED***="icon-trash"></i> Delete</button>
+      </span>
+      <span>
+        <button cl***REMOVED***="btn btn-danger pull-left" ng-show="amAdmin" ng-click="deleteObservation()" ngm-tap="deleteObservation()"><i cl***REMOVED***="icon-trash"></i> Delete</button>
       </span>
     </div>
     <!-- Start of tab2 -->
@@ -78,12 +90,12 @@
       <span>
         <button cl***REMOVED***="btn btn-inverse" ng-click="cancelObservation()" ngm-tap="cancelObservation()">{{observationCloseText}}</button>
         <button cl***REMOVED***="btn" ng-click="saveObservation()" ngm-tap="saveObservation()"><i cl***REMOVED***="icon-save"></i> Save</button>
-        <button cl***REMOVED***="btn btn-danger pull-right" ng-show="amAdmin" ng-click="deleteObservation()" ngm-tap="deleteObservation()"><i cl***REMOVED***="icon-trash"></i> Delete</button>
       </span>
       <hr>
       <div cl***REMOVED***="attachment" ng-repeat="attachment in attachments">
         <div ng-switch on="attachment.contentType">
           <img ng-switch-when="image/jpg" src="{{attachmentUrl + attachment.id + '?access_token=' + token}}">
+          <img ng-switch-when="image/png" src="{{attachmentUrl + attachment.id + '?access_token=' + token}}">
           <!-- Due to drastically varying browser behavior, videos will be a download link for the time being -->
           <a ng-switch-when="video/mp4" href="{{attachmentUrl + attachment.id + '?access_token=' + token}}">Download video</a>
         </div>
