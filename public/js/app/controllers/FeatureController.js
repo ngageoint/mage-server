@@ -1,6 +1,8 @@
 'use strict';
 
-function FeatureController($scope, $location, $timeout, FeatureService, mageLib, appConstants) {
+function FeatureController($scope, $location, $timeout, FeatureService, UserService, mageLib, appConstants) {
+  $scope.amAdmin = UserService.amAdmin();
+
   /* 
     The observation functions are a mix of copy pasta from the observation directive, hopefully cleaned up a bit
     and using the FeatureService. May need to be cleaned up after PDC.
@@ -89,6 +91,17 @@ function FeatureController($scope, $location, $timeout, FeatureService, mageLib,
             }
         });
     }
+  }
+
+  $scope.deleteObservation = function () {
+    console.log('making call to delete observation');
+    FeatureService.deleteObservation($scope.activeFeature.layerId, $scope.activeFeature.featureId)
+      .success(function (data) {
+        console.log('observation deleted, attempting to remove marker from map');
+        $scope.showObservation = false;
+        $scope.deletedFeature = $scope.activeFeature;
+      });
+    
   }
 
   /* Attachment upload functions, some of these make more sense in the FeatureService...more copy pasta */

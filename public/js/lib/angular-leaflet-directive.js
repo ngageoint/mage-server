@@ -220,6 +220,15 @@
           activeMarker.setIcon(IconService.icon(feature, {types: scope.types, levels: scope.levels}));
         })
 
+        scope.$watch("deletedFeature", function(feature) {
+          if (!feature) return;
+
+          var layer = layers[feature.layerId];
+          if (layer) {
+            layer.removeLayer(activeMarker);
+          }
+        })
+
       } // end of link function
     };
   });
