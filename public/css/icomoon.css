@@ -70,7 +70,7 @@ Instead of a list of all cl***REMOVED*** selectors,
 you can use the generic selector below, but it's slower:
 [cl***REMOVED****="icon-"] {
 */
-.icon-mobile, .icon-user, .icon-users, .icon-user-add, .icon-megaphone, .icon-target, .icon-logout, .icon-login, .icon-arrow, .icon-new, .icon-info, .icon-question, .icon-search, .icon-star, .icon-ok, .icon-remove, .icon-zoom-in, .icon-zoom-out, .icon-cog, .icon-camera, .icon-list, .icon-facetime-video, .icon-check, .icon-ban-circle, .icon-calendar, .icon-save, .icon-cloud-download, .icon-male, .icon-anchor, .icon-thumbs-up, .icon-magic, .icon-building, .icon-ambulance, .icon-thumbs-up-2, .icon-globe, .icon-group, .icon-asterisk, .icon-android, .icon-stack, .icon-map, .icon-filter, .icon-fire, .icon-airplane, .icon-gift, .icon-moon-fill, .icon-layers, .icon-people, .icon-hostage, .icon-running, .icon-radio-active, .icon-fist, .icon-hit, .icon-ballon, .icon-activity, .icon-plus, .icon-gun, .icon-car, .icon-warning-sign, .icon-trash, .icon-kidnap, .icon-download, .icon-off, .icon-cogs {
+.icon-mobile, .icon-user, .icon-users, .icon-user-add, .icon-megaphone, .icon-target, .icon-logout, .icon-login, .icon-arrow, .icon-new, .icon-info, .icon-question, .icon-search, .icon-star, .icon-ok, .icon-remove, .icon-zoom-in, .icon-zoom-out, .icon-cog, .icon-camera, .icon-list, .icon-facetime-video, .icon-check, .icon-ban-circle, .icon-calendar, .icon-save, .icon-cloud-download, .icon-male, .icon-anchor, .icon-thumbs-up, .icon-magic, .icon-building, .icon-ambulance, .icon-thumbs-up-2, .icon-globe, .icon-group, .icon-asterisk, .icon-android, .icon-stack, .icon-map, .icon-filter, .icon-fire, .icon-airplane, .icon-gift, .icon-moon-fill, .icon-layers, .icon-people, .icon-hostage, .icon-running, .icon-radio-active, .icon-fist, .icon-hit, .icon-ballon, .icon-activity, .icon-plus, .icon-gun, .icon-car, .icon-warning-sign, .icon-trash, .icon-kidnap, .icon-download, .icon-off, .icon-cogs, .icon-edit {
 	font-family: 'icomoon';
 	speak: none;
 	font-style: normal;
@@ -268,4 +268,7 @@ you can use the generic selector below, but it's slower:
 }
 .icon-cogs:before {
 	content: "\f085";
+}
+.icon-edit:before {
+	content: "\f044";
 }
