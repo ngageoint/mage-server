@@ -1,6 +1,7 @@
 'use strict';
 
 function FeatureController($scope, $location, $timeout, FeatureService, UserService, mageLib, appConstants) {
+  var isEditing = false;
   $scope.amAdmin = UserService.amAdmin();
 
   /* 
@@ -18,6 +19,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
   $scope.cancelObservation = function () {
     $scope.showObservation = false;
     $scope.activeFeature = null;
+    isEditing = false;
   }
 
   $scope.saveObservation = function () {
@@ -40,6 +42,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
           var objectId = data.addResults ? data.addResults[0].objectId : data.updateResults[0].objectId;
           $scope.showObservation = false;
           $scope.activeFeature = null;
+          isEditing = false;
           $scope.updatedFeature = {
             type: "Feature",
             geometry: {
@@ -70,7 +73,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
           var objectId = data.addResults ? data.addResults[0].objectId : data.updateResults[0].objectId;
           $scope.showObservation = false;
           $scope.activeFeature = null;
-
+          isEditing = false;
 
           $scope.newFeature = {
             type: "Feature",
@@ -100,6 +103,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
         console.log('observation deleted, attempting to remove marker from map');
         $scope.showObservation = false;
         $scope.deletedFeature = $scope.activeFeature;
+        isEditing = false;
       });
     
   }
@@ -168,9 +172,11 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
       success(function (data) {
         $scope.currentLayerId = value.layerId;
         $scope.observation = data;
+        $scope.featureLocation = {lat: data.geometry.coordinates[0], lng: data.geometry.coordinates[1]};
         $scope.attachments = [];
         $scope.files = [];
         $scope.showObservation = true;
+        isEditing = true;
 
         FeatureService.getAttachments(value.layerId, value.featureId).
           success(function (data, status, headers, config) {
@@ -179,5 +185,11 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
               + '/' + value.featureId + '/attachments/';
           });
       });
+  }, true);
+
+  $scope.$watch("markerLocation", function(location) {
+    if (!isEditing) {
+      $scope.featureLocation = location;
+    }
   }, true);
 }

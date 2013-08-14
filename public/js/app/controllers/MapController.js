@@ -4,20 +4,14 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($scope, $log, $http, $location, $injector, appConstants, mageLib, LayerService, FeatureService, LocationService, TimerService) {
+function MapController($scope, $log, $http, appConstants, mageLib, LayerService, FeatureService, LocationService, TimerService) {
   $scope.customer = appConstants.customer;
 
   $scope.locate = false;
   $scope.broadcast = false;
 
   /* Some map defaults */
-  $scope.markerLocation = {};
-  $scope.points = [];
-  $scope.multiMarkers = {};
-  $scope.externalLayer = "";
   $scope.observation = {};
-  $scope.newFeature = null;
-  $scope.token = mageLib.getLocalItem('token');
 
   /* Booleans for the ng-show attribues on the panels, toggling these will show and hide the map panels (i.e. layers, observation, export). */
   $scope.showSettings = true;
@@ -195,7 +189,6 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
     $scope.showLocations = false;
   }
 
-
   /* Open and close the export dialog, and handle making the call to get the KML file. */
   $scope.openExport = function () {
     console.log("opening export");
@@ -238,14 +231,4 @@ function MapController($scope, $log, $http, $location, $injector, appConstants, 
   $scope.addExportLayer = function (layer) {
     $scope.exportLayers.push(layer);
   }
-
-  $scope.getPosition = function() {
-    LocationService.getPosition().
-      then(function(position) {
-        $scope.position = position;
-      });
-  }
-
-  // Calls to make when the controller/page is loaded
-  $scope.getPosition();
 }
