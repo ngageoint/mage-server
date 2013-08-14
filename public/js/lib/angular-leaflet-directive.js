@@ -16,10 +16,12 @@
           draggable: true,
           icon: IconService.defaultIcon()
         });
-        map.addLayer(addMarker);
-        scope.markerLocation = addMarker.toGeoJSON();
 
         map.on("click", function(e) {
+          if (!map.hasLayer(addMarker)) {
+            map.addLayer(addMarker);
+          }
+
           addMarker.setLatLng(e.latlng);
           scope.markerLocation = e.latlng;
         });
@@ -147,6 +149,23 @@
         });
 
         var activeMarker;
+
+        var featureConfig = function(layerId) {
+          return {
+            pointToLayer: function (feature, latlng) {
+              var icon = IconService.icon(feature, {types: scope.types, levels: scope.levels});
+              return L.marker(latlng, { icon: icon });
+            },
+            onEachFeature: function(feature, marker) {
+              marker.on("click", function(e) {
+                activeMarker = marker;
+                scope.$apply(function(s) {
+                  scope.activeFeature = {layerId: layerId, featureId: feature.properties.OBJECTID};
+                });
+              });
+            }
+          }
+        };
         scope.$watch("layer", function(layer) {
             if (!layer) return;
 
@@ -168,25 +187,10 @@
                 }
                 newLayer.addTo(map).bringToFront();
               } else {
-                var geoJson =  L.geoJson(layer.features, {
-                  pointToLayer: function (feature, latlng) {
-                    var icon = IconService.icon(feature, {types: scope.types, levels: scope.levels});
-                    return L.marker(latlng, { icon: icon });
-                  },
-                  onEachFeature: function(feature, marker) {
-                    marker.on("click", function(e) {
-                      activeMarker = marker;
-                      scope.$apply(function(s) {
-                        scope.activeFeature = {layerId: layer.id, featureId: feature.properties.OBJECTID};
-                      });
-
-                      // markerGlow.setLatLng([feature.geometry.coordinates[1], feature.geometry.coordinates[0]]).addTo(map);
-                    });
-                  }
-                });
-
-                newLayer = L.markerClusterGroup();
-                newLayer.addLayer(geoJson).addTo(map).bringToFront();
+                newLayer = L.markerClusterGroup()
+                  .addLayer(L.geoJson(layer.features, featureConfig(layer.id)))
+                  .addTo(map)
+                  .bringToFront();
               }
 
               layers[layer.id] = newLayer;
@@ -206,9 +210,10 @@
         scope.$watch("newFeature", function(feature) {
           if (!feature) return;
 
+          map.removeLayer(addMarker);
           var layer = layers[scope.currentLayerId];
           if (layer) {
-            layer.addData(feature);
+            layer.addLayer(L.geoJson(feature, featureConfig(scope.currentLayerId)));
           }
         }); // watch newFeature
 
