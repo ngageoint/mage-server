@@ -107,11 +107,11 @@ mage.directive('pdcObservation', function () {
         icon: 'star'
       }];
 
-      scope.createNewObservation = function() {
+      scope.createNewObservation = function(location) {
         return {
           attributes: {
             TYPE: scope.types[0].name,
-            LEVEL: scope.levels[0].name,
+            EVENTLEVEL: scope.levels[0].name,
             TEAM: scope.teams[0] 
           }
         };
