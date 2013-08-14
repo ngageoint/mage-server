@@ -51,7 +51,7 @@ var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachm
         media += '<img src="files/' + attachment.relativePath + '/' + attachment.name + '" width="300"/><br/>';
       }
       else {
-        media += '<a href="files/' + attachment.relativePath + '/' + attachment.name + '>' + attachment.name + '</a><br/>';
+        media += '<a href="files/' + attachment.relativePath + '/' + attachment.name + '>' + attachment.name + '"</a><br/>';
       }
     
     }
