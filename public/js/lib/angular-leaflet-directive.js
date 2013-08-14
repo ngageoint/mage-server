@@ -23,7 +23,9 @@
           }
 
           addMarker.setLatLng(e.latlng);
-          scope.markerLocation = e.latlng;
+          scope.$apply(function(s) {
+            scope.markerLocation = e.latlng;
+          });
         });
 
         var baseLayer = {};
