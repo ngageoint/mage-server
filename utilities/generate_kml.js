@@ -41,40 +41,43 @@ var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachm
     desc += key + ':  ' + feature[key] + '<br/>';
   });
 
+  //does this feature have media
   var media = "<h4>Media Attachments</h4>";
   if(attachments) {
     for(var i = 0; i < attachments.length; i++) {
       var attachment = attachments[i];
 
-
+      //determine media type (image or other)
       if((/^image/).test(attachment.contentType)) {
         media += '<img src="files/' + attachment.relativePath + '/' + attachment.name + '" width="300"/><br/>';
       }
       else {
         media += '<a href="files/' + attachment.relativePath + '/' + attachment.name + '">' + attachment.name + '</a><br/>';
-      }
-    
+      }    
     }
   }
 
+  //determine event level ***REMOVED***ign icon color
+  console.log("/n#######################################################" + feature.EVENTLEVEL);
   switch (feature.EVENTLEVEL) 
   {
-    case 'Normal':
+    case 'None':
       styleColor = "blue";
       break;
-    case 'Yellow':
+    case 'Low':
       styleColor = "yellow";
       break;
-    case 'Green':
+    case 'Medium':
       styleColor = "green";
       break;
-    case 'Red':
+    case 'High':
       styleColor = "red";
       break;
     default:
       styleColor = "blue";
   }
 
+  //build the actual placemark
   var placemark = "<Placemark>" + 
                   "  <name>" + name + "</name>" + 
                   "  <styleUrl>#" + styleUrl + "-" + styleColor + "</styleUrl>" +
