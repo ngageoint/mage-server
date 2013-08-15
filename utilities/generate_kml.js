@@ -1,6 +1,6 @@
 module.exports = function(options) {
 
-feature_types = require('../utilities/feature_types')
+feature_types = require('../models/featureType')
 
 var generateKMLHeader = function() {
   var header = "<?xml version='1.0' encoding='UTF-8'?>" + 
