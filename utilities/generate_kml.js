@@ -1,6 +1,6 @@
 module.exports = function(options) {
 
-feature_types = require('../models/featureType')
+featureTypes = require('../models/featureType')
 
 var generateKMLHeader = function() {
   var header = "<?xml version='1.0' encoding='UTF-8'?>" + 
@@ -13,7 +13,7 @@ var generateKMLHeader = function() {
 
 var generateKMLDocument = function() {
 	
-  var types = feature_types.getTypes();
+  var types = featureTypes.getFeatureTypes();
 
   var doc = "<Document>" + 
 	          "  <name>MAGE-Export.kml</name>" +
