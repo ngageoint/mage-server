@@ -58,7 +58,6 @@ var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachm
   }
 
   //determine event level ***REMOVED***ign icon color
-  console.log("/n#######################################################" + feature.EVENTLEVEL);
   switch (feature.EVENTLEVEL) 
   {
     case 'None':
