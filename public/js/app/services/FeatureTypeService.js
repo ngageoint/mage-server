@@ -1,13 +1,12 @@
 'use strict';
 
-angular.module('mage.featureTypeService', ['mage.***REMOVED***s', 'mage.lib'])
-  .factory('FeatureTypeService', ['$http', 'appConstants', 'mageLib',
+mage.factory('FeatureTypeService', ['$http', 'appConstants', 'mageLib',
     function ($http, appConstants, mageLib) {
-      var featureTypes = {};
+      var ***REMOVED*** = {};
 
-      deviceService.getAllFeatureTypes = function () {
+      ***REMOVED***.getAllFeatureTypes = function () {
         return $http.get(appConstants.rootUrl + '/api/feature/types/', {params: mageLib.getTokenParams()});
       };
 
-      return featureTypes;
+      return ***REMOVED***;
     }]);
