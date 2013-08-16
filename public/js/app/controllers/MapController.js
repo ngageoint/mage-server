@@ -84,8 +84,19 @@ function MapController($scope, $log, $http, appConstants, mageLib, LayerService,
     $scope.showSettings = false;
   }
 
+  $scope.toggleLocate = function() {
+    $scope.locate = !$scope.locate;
+
+    // if I am turning off locate and broadcast is
+    // on, then turn off broadcast too.
+    if (!$scope.locate && $scope.broadcast) {
+      $scope.toggleBroadcast();
+    }
+  }
+
   /* Locations, think Find My Friends */
-  $scope.broadcastLocation = function () {
+  // $scope.broadcastLocation = function () {
+  $scope.toggleBroadcast = function() {
     var timerName = 'broadcastLocation';
     $scope.broadcast = !$scope.broadcast;
 
@@ -93,6 +104,8 @@ function MapController($scope, $log, $http, appConstants, mageLib, LayerService,
       $scope.locate = true;
 
       TimerService.start(timerName, 5000, function() {
+        if (!$scope.location) return;
+
         var properties = {};
         if ($scope.location.accuracy) properties.accuracy = $scope.location.accuracy;
         if ($scope.location.altitude) properties.altitude = $scope.location.altitude;

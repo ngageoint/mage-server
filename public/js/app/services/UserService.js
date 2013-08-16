@@ -44,7 +44,6 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       }
 
       ***REMOVED***.login = function(roles) {
-        console.log('trying to login with roles: ' + roles);
         $http.get(
           appConstants.rootUrl + '/api/users/myself',
           {params: mageLib.getTokenParams()},

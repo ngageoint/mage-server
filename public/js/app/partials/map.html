@@ -20,8 +20,8 @@
       id="geo" 
       cl***REMOVED***="btn" 
       ng-cl***REMOVED***="{true: 'btn-inverse'}[locate]"
-      ng-click="locate = !locate" 
-      ngm-tap="locate = !locate">
+      ng-click="toggleLocate()" 
+      ngm-tap="toggleLocate()">
       <i cl***REMOVED***="icon-target" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[locate]"></i>
     </button>
 
@@ -37,8 +37,8 @@
       id="broadcast-location-btn" 
       cl***REMOVED***="btn"
       ng-cl***REMOVED***="{true: 'btn-inverse'}[broadcast]"
-      ng-click="broadcastLocation()" 
-      ngm-tap="broadcastLocation()">
+      ng-click="toggleBroadcast()" 
+      ngm-tap="toggleBroadcast()">
       <i cl***REMOVED***="icon-megaphone" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[broadcast]"></i>
     </button>
 
