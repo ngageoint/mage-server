@@ -12,6 +12,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
     $scope.observationCloseText = "Cancel";
     $scope.showObservation = true;
     $scope.observation = $scope.createNewObservation();
+    $scope.featureLocation = $scope.markerLocation;
     $scope.attachments = [];
     $scope.files = [];
   }
@@ -172,7 +173,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
       success(function (data) {
         $scope.currentLayerId = value.layerId;
         $scope.observation = data;
-        $scope.featureLocation = {lat: data.geometry.coordinates[0], lng: data.geometry.coordinates[1]};
+        $scope.featureLocation = {lat: data.geometry.coordinates[1], lng: data.geometry.coordinates[0]};
         $scope.attachments = [];
         $scope.files = [];
         $scope.showObservation = true;

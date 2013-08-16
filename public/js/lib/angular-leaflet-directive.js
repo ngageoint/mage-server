@@ -17,14 +17,30 @@
           icon: IconService.defaultIcon()
         });
 
+        var selectedMarker = L.circleMarker([0,0], {
+          radius: 10,
+          weight: 5,
+          color: '#5278A2',
+          stroke: true,
+          opacity: 1,
+          fill: false,
+          clickable: false
+        });
+
         map.on("click", function(e) {
+          addMarker.setLatLng(e.latlng);
           if (!map.hasLayer(addMarker)) {
             map.addLayer(addMarker);
           }
 
-          addMarker.setLatLng(e.latlng);
           scope.$apply(function(s) {
             scope.markerLocation = e.latlng;
+          });
+        });
+
+        addMarker.on('dragend', function(e) {
+          scope.$apply(function(s) {
+            scope.markerLocation = addMarker.getLatLng();
           });
         });
 
@@ -151,23 +167,6 @@
         });
 
         var activeMarker;
-
-        var featureConfig = function(layerId) {
-          return {
-            pointToLayer: function (feature, latlng) {
-              var icon = IconService.icon(feature, {types: scope.types, levels: scope.levels});
-              return L.marker(latlng, { icon: icon });
-            },
-            onEachFeature: function(feature, marker) {
-              marker.on("click", function(e) {
-                activeMarker = marker;
-                scope.$apply(function(s) {
-                  scope.activeFeature = {layerId: layerId, featureId: feature.properties.OBJECTID};
-                });
-              });
-            }
-          }
-        };
         scope.$watch("layer", function(layer) {
             if (!layer) return;
 
@@ -203,11 +202,11 @@
             }
         }); // watch layer
 
-        // scope.$watch("showObservation", function(show) {
-        //   if (!show) {
-        //     map.removeLayer(markerGlow);
-        //   }
-        // });
+        scope.$watch("showObservation", function(show) {
+          if (!show) {
+            map.removeLayer(selectedMarker);
+          }
+        });
 
         scope.$watch("newFeature", function(feature) {
           if (!feature) return;
