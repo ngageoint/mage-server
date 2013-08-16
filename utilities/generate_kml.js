@@ -20,10 +20,10 @@ var generateKMLDocument = function() {
 	          "  <open>1</open>";
   for(i in types) {
     var type = types[i];
-    doc += "<Style id='" + type.name + "-blue'><IconStyle><Icon><href>icons/" + type.icon + "-blue.png</href></Icon></IconStyle></Style>";
-    doc += "<Style id='" + type.name + "-green'><IconStyle><Icon><href>icons/" + type.icon + "-green.png</href></Icon></IconStyle></Style>";
-    doc += "<Style id='" + type.name + "-yellow'><IconStyle><Icon><href>icons/" + type.icon + "-yellow.png</href></Icon></IconStyle></Style>";
-    doc += "<Style id='" + type.name + "-red'><IconStyle><Icon><href>icons/" + type.icon + "-red.png</href></Icon></IconStyle></Style>";
+    doc += "<Style id='" + type.name + "-blue'><IconStyle><Icon><href>icons/" + type.kmlIcon + "-blue.png</href></Icon></IconStyle></Style>";
+    doc += "<Style id='" + type.name + "-green'><IconStyle><Icon><href>icons/" + type.kmlIcon + "-green.png</href></Icon></IconStyle></Style>";
+    doc += "<Style id='" + type.name + "-yellow'><IconStyle><Icon><href>icons/" + type.kmlIcon + "-yellow.png</href></Icon></IconStyle></Style>";
+    doc += "<Style id='" + type.name + "-red'><IconStyle><Icon><href>icons/" + type.kmlIcon + "-red.png</href></Icon></IconStyle></Style>";
   }
 	 return doc;
 };

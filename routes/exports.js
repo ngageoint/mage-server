@@ -202,7 +202,7 @@ module.exports = function(app, auth) {
                 if(location) {
                   lon = location.geometry.coordinates[0];
                   lat = location.geometry.coordinates[1];                  
-                  stream.write(generate_kml.generatePlacemark('point' + j, 'FFT' , lon ,lat ,0, location.properties)); 
+                  stream.write(generate_kml.generatePlacemark(user.username + "-p" + j, 'FFT' , lon ,lat ,0, location.properties)); 
                 } 
               }
               stream.write(generate_kml.generateKMLFolderClose());  
