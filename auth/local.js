@@ -10,6 +10,7 @@ module.exports = function(p***REMOVED***port) {
         if (err) { return done(err); }
 
         if (!user) {
+          console.log('Failed login attempt: User with username ' + username + ' not found');
           return done(null, false, { message: "User with username '" + username + "' not found" });
         }
 
@@ -19,6 +20,7 @@ module.exports = function(p***REMOVED***port) {
           }
 
           if (!isValid) {
+            console.log('Failed login attempt: User with username ' + username + ' provided an invalid p***REMOVED***word');
             return done(null, false);
           }
 

@@ -12,10 +12,12 @@ module.exports = function(provision) {
         }
 
         if (!device) {
+          console.log('Failed device provision attempt: Device uid ' + uid + ' does not exist');
           return done(null, false);
         }
 
         if (!device.registered) {
+          console.log('Failed device provision attempt: Device uid ' + uid + ' is not registered');
           return done(null, false);
         }
 
