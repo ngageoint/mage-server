@@ -177,7 +177,6 @@
               marker.on("click", function(e) {
                 activeMarker = marker;
                 selectedMarker.setLatLng(marker.getLatLng()).addTo(map);
-                activeMarker.bounce({height: 35});
                 scope.$apply(function(s) {
                   scope.activeFeature = {layerId: layerId, featureId: feature.properties.OBJECTID};
                 });
