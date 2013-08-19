@@ -19,7 +19,7 @@ var types = [
   { name: 'Remain Over Night'      , icon: 'moon-fill'   , kmlIcon: ''},
   { name: 'Arrival'                , icon: 'login'       , kmlIcon: ''},
   { name: 'Departure'              , icon: 'logout'      , kmlIcon: ''},
-  { name: 'Aeronautical Incident'  , icon: 'airplane'    , kmlIcon: ''},
+  { name: 'Aeronautical Incident'  , icon: 'plane'       , kmlIcon: ''},
   { name: 'Maritime Incident'      , icon: 'anchor'      , kmlIcon: ''},
   { name: 'Evacuation'             , icon: 'ban-circle'  , kmlIcon: ''},
   { name: 'Hostage'                , icon: 'hostage'     , kmlIcon: ''},
