@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html ng-app="sage">
+<head>
+  <title>MAGE - Form Builder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+  <link rel="stylesheet" href="css/bootstrap-responsive.min.css"/>
+  <link rel="stylesheet" href="css/icomoon.css">
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/formbuilder.css"/>
+
+  <script type="text/javascript" src="js/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="js/lib/bootstrap.min.js"></script>
+  <script type="text/javascript" src="js/lib/underscore-min.js"></script>
+  <script type="text/javascript" src="js/lib/angular/angular.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s.js"></script>
+  <script type="text/javascript" src="js/app/FormBuilderController.js"></script>
+
+  <link rel="apple-touch-icon" href="img/touch-icon-iphone.png" />
+  <link rel="apple-touch-icon" sizes="72x72" href="img/touch-icon-ipad.png" />
+  <link rel="apple-touch-icon" sizes="114x114" href="img/touch-icon-iphone-retina.png" />
+  <link rel="apple-touch-icon" sizes="144x144" href="img/touch-icon-ipad-retina.png" />
+</head>
+<body ng-controller="FormBuilderController">
+  <div cl***REMOVED***="navbar hidden-phone">
+    <div cl***REMOVED***="navbar-inner">
+      <div cl***REMOVED***="container">
+        <a cl***REMOVED***="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          <span cl***REMOVED***="icon-bar"></span>
+          <span cl***REMOVED***="icon-bar"></span>
+          <span cl***REMOVED***="icon-bar"></span>
+        </a>
+        <a cl***REMOVED***="brand" href="#">MAGE</a>
+        <div cl***REMOVED***="nav-collapse collapse">
+          <ul cl***REMOVED***="nav">
+            <li><a href="#">API Documentation</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+  </div>
+  <div cl***REMOVED***="container">
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span3">
+        <div>
+          <h3>Select Layer</h3>
+          <div cl***REMOVED***="control-group">
+            <div cl***REMOVED***="controls">
+              <select ng-model="currentLayer" ng-selected="currentLayer" ng-options="layer.id as layer.name for layer in layers"></select>
+            </div>
+          </div>
+        </div>
+
+        <div cl***REMOVED***="top-gap">
+          <h3>Form elements</h3>
+          <weak>Click to add an item to the form</weak>
+          <form cl***REMOVED***="form top-gap">
+            <a ng-click="addTextInput">
+              <div cl***REMOVED***="control-group form-element">
+                <label cl***REMOVED***="control-label" for="type">Text Input</label>
+                <div cl***REMOVED***="controls">
+                  <input>
+                </div>
+              </div>
+            </a>
+            <a ng-click="addSelect" cl***REMOVED***="top-gap">
+              <div cl***REMOVED***="control-group form-element">
+                <label cl***REMOVED***="control-label" for="type">Combo Box</label>
+                <div cl***REMOVED***="controls">
+                  <select></select>
+                </div>
+              </div>
+            </a>
+            <a ng-click="addTextArea" cl***REMOVED***="top-gap">
+              <div cl***REMOVED***="control-group form-element">
+                <label cl***REMOVED***="control-label" for="type">Text Area</label>
+                <div cl***REMOVED***="controls">
+                  <textarea></textarea>
+                </div>
+              </div>
+            </a>
+            <a ng-click="addCheckbox" cl***REMOVED***="top-gap">
+              <div cl***REMOVED***="control-group form-element">
+                <div cl***REMOVED***="controls">
+                  <label cl***REMOVED***="checkbox">
+                    <input type="checkbox">Checkbox
+                  </label>
+                </div>
+              </div>
+            </a>
+          </form>
+        </div>
+      </div>
+      <div cl***REMOVED***="span6">
+        <h3>Preview</h3>
+        <div id="phone">
+          <div id="phone-screen">
+            <div id="form-preview" cl***REMOVED***="panel-large tabbable tabs-below panel">
+              <ul cl***REMOVED***="nav nav-pills">
+                <li ng-cl***REMOVED***="{active: selectedTab == 1}">
+                  <a href="#" ng-click="selectedTab = 1;">
+                    <i cl***REMOVED***="icon-list" style="background-image: none;"></i> 
+                    Details
+                  </a>
+                </li>
+                <li ng-cl***REMOVED***="{active: selectedTab == 2}">
+                  <a href="#" ng-click="selectedTab = 2;">
+                    <i cl***REMOVED***="icon-camera" style="background-image: none;"></i> 
+                    Media
+                  </a>
+                </li>
+              </ul>
+
+              <div cl***REMOVED***="tab-content" ng-show="selectedTab == 1">
+                <form cl***REMOVED***="form-horizontal">
+
+                  <div cl***REMOVED***="control-group">
+                    <label cl***REMOVED***="control-label" for="type">Layer</label>
+                    <div cl***REMOVED***="controls">
+                      <select ng-model="currentLayerId" ng-selected="currentLayerId" ng-options="layer.id as layer.name for layer in layers"></select>
+                    </div>
+                  </div>
+
+                  <div cl***REMOVED***="control-group">
+                    <label cl***REMOVED***="control-label" for="type">Type</label>
+                    <div cl***REMOVED***="controls">
+                      <select ng-model="observationType" ng-selected="observationType" ng-options="type.title for type in observationTypes"></select>
+                    </div>
+                  </div>
+                  <div cl***REMOVED***="control-group">
+                    <label cl***REMOVED***="control-label" for="level">Level</label>
+                    <div cl***REMOVED***="controls">
+                      <select ng-model="level" ng-selected="level" ng-options="level.color for level in levels"></select>
+                    </div>
+                  </div>
+                  <div cl***REMOVED***="control-group">
+                    <label cl***REMOVED***="control-label" for="team">Team</label>
+                    <div cl***REMOVED***="controls">
+                      <select ng-model="team" ng-selected="team" ng-options="team.name for team in teams"></select>
+                    </div>
+                  </div>
+                  <div cl***REMOVED***="control-group">
+                    <label cl***REMOVED***="control-label" for="unit">Unit</label>
+                    <div cl***REMOVED***="controls">
+                      <input ng-model="unit"/>
+                    </div>
+                  </div>
+                  <div cl***REMOVED***="control-group">
+                    <label cl***REMOVED***="control-label" for="unit">Description</label>
+                    <div cl***REMOVED***="controls">
+                      <textarea ng-model="description"></textarea>
+                    </div>
+                  </div>
+                </form>    
+                <span>
+                  <button cl***REMOVED***="btn btn-inverse" ng-click="cancelObservation()" ngm-tap="cancelObservation()">Cancel</button>
+                  <button cl***REMOVED***="btn" ng-click="saveObservation()" ngm-tap="saveObservation()">Submit</button>
+                </span>
+              </div>
+              
+              <div cl***REMOVED***="tab-content" ng-show="selectedTab == 2">
+                <form>
+                  <div cl***REMOVED***="control-group">
+                    <label cl***REMOVED***="control-label" for="unit">Select File</label>
+                    <div cl***REMOVED***="controls">
+                      <input type="file" id="file-upload" ng-model-instant multiple onchange="angular.element(this).scope().setFiles(this)">
+                    </div>
+                    <div ng-show="progressVisible">
+                      <div cl***REMOVED***="percent">{{progress}}%</div>
+                      <div cl***REMOVED***="progress-bar">
+                          <div cl***REMOVED***="uploaded" ng-style="{'width': progress+'%'}"></div>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+                <span>
+                  <button cl***REMOVED***="btn btn-inverse" ng-click="cancelObservation()" ngm-tap="cancelObservation()">Cancel</button>
+                  <button cl***REMOVED***="btn" ng-click="saveObservation()" ngm-tap="saveObservation()">Submit</button>
+                </span>
+                <hr>
+                <div cl***REMOVED***="attachment" ng-repeat="attachment in attachments">
+                </div>
+              </div>
+            </div>
+
+            </div>
+          <div id="phone-button">
+          </div>
+        </div> <!-- end iPhone -->
+      </div> <!-- end span6 -->
+      <div cl***REMOVED***="span3">
+        <h3>Configuration</h3>
+      </div> <!-- end of configuration -->
+    </div>
+  </div>
+</body>
+</html>

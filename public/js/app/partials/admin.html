@@ -1,0 +1,267 @@
+<div cl***REMOVED***="top-gap-xl">
+  <div cl***REMOVED***="container">
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span12"><h2>Admin Panel</h2></div>
+    </div>
+    <div cl***REMOVED***="row" style="border-bottom: 1px solid #2E5582">
+      <div cl***REMOVED***="span4" ng-cl***REMOVED***="{'admin-active': currentAdminPanel == 'team'}">
+        <h3><a href="" ng-click="changeCurrentPanel('team')" ngm-tap="changeCurrentPanel('team')">Teams</a></h3>
+      </div>
+      <div cl***REMOVED***="span4" ng-cl***REMOVED***="{'admin-active': currentAdminPanel == 'user'}">
+        <h3><a href="" ng-click="changeCurrentPanel('user')" ngm-tap="changeCurrentPanel('user')">Users</a></h3>
+      </div>
+      <div cl***REMOVED***="span4" ng-cl***REMOVED***="{'admin-active': currentAdminPanel == 'device'}">
+        <h3><a href="" ng-click="changeCurrentPanel('device')" ngm-tap="changeCurrentPanel('device')">Devices</a></h3>
+      </div>
+    </div>
+
+    <!-- Status message area -->
+    <div cl***REMOVED***="row top-gap" ng-show="showStatus">
+      <div cl***REMOVED***="span11 alert alert-block" ng-cl***REMOVED***="statusLevel">
+        <button type="button" cl***REMOVED***="close" ng-click="setShowStatus(false)">&times;</button>
+        <h4>{{statusTitle}}</h4>
+        {{statusMessage}}
+      </div>
+    </div>
+
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="span12 top-gap" id="team-admin-area" ng-show="currentAdminPanel == 'team'">
+        <div ng-repeat="team in teams">
+          <p>{{team.teamName}} {{team.description}}</p>
+        </div>
+      </div>
+
+      <div cl***REMOVED***="span12 top-gap" id="user-admin-area" ng-show="currentAdminPanel == 'user'">
+        <button cl***REMOVED***="btn" ng-click="newUser()" ngm-tap="newUser()"><i cl***REMOVED***="icon-user-add"></i> New User</button>
+        <div id="user-form" name="edit-form" cl***REMOVED***="top-gap" ng-show="showUserForm">
+          <form ng-submit="saveUser()" id="userform" name="user-form" cl***REMOVED***="form-horizontal">
+            <fieldset>
+              <div cl***REMOVED***="control-group">
+                <label cl***REMOVED***="control-label" for="type">Username</label>
+                <div cl***REMOVED***="controls">
+                  <input type="text" placeholder="i.e. jappleseed" ng-model="user.username" name="username">
+                </div>
+              </div>
+              <div cl***REMOVED***="control-group">
+                <label cl***REMOVED***="control-label" for="type">First Name</label>
+                <div cl***REMOVED***="controls">
+                  <input type="text" placeholder="Johnny" ng-model="user.firstname" name="firstname">
+                </div>
+              </div>
+              <div cl***REMOVED***="control-group">
+                <label cl***REMOVED***="control-label" for="type">Last Name</label>
+                <div cl***REMOVED***="controls">
+                  <input type="text" placeholder="Appleseed" ng-model="user.lastname" name="lastname">
+                </div>
+              </div>
+              <div cl***REMOVED***="control-group">
+                <label cl***REMOVED***="control-label" for="type">Email</label>
+                <div cl***REMOVED***="controls">
+                  <input type="text" placeholder="johnny@appleseed.com" ng-model="user.email" name="email">
+                </div>
+              </div>
+              <div cl***REMOVED***="control-group">
+                <label cl***REMOVED***="control-label" for="type">Phone</label>
+                <div cl***REMOVED***="controls">
+                  <input type="text" placeholder="(xxx) xxx-xxxx" ng-model="user.phone" name="phone">
+                </div>
+              </div>
+              <div cl***REMOVED***="control-group">
+                <label cl***REMOVED***="control-label" for="type">P***REMOVED***word</label>
+                <div cl***REMOVED***="controls">
+                  <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***word" name="p***REMOVED***word">
+                </div>
+              </div>
+              <div cl***REMOVED***="control-group">
+                <label cl***REMOVED***="control-label" for="type">Confirm P***REMOVED***word</label>
+                <div cl***REMOVED***="controls">
+                  <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***wordconfirm" name="p***REMOVED***wordconfirm">
+                </div>
+              </div>
+              <div cl***REMOVED***="control-group">
+                <label cl***REMOVED***="control-label" for="type">Role</label>
+                <div cl***REMOVED***="controls">
+                  <select ng-model="user.role" ng-options="role._id as role.name for role in roles"></select>
+                </div>
+              </div>
+              <!-- Not needed for Piccadilly
+              <div cl***REMOVED***="control-group">
+                <div cl***REMOVED***="controls">
+                  <label cl***REMOVED***="checkbox">
+                    <input type="checkbox"> GEOINT Online
+                  </label>
+                  <span cl***REMOVED***="help-block top-gap"><a href="https://geoint-online.nga.mil/_layouts/nga/go/logon/logon.aspx?ReturnUrl=%2f_layouts%2fAuthenticate.aspx%3fSource%3d%252f&Source=%2f">GEOINT Online Details (New Account, P***REMOVED***word Reset, etc.)</a></span>
+                </div>
+              </div> 
+              -->
+              <span>
+                <button type="reset" cl***REMOVED***="btn btn-inverse" ng-click="setShowUserForm(false)" ngmtap="setShowUserForm(false)">Cancel</button>
+                <button type="submit" cl***REMOVED***="btn">Save user</button>
+              </span>
+            </fieldset>
+          </form>
+        </div>
+        <div cl***REMOVED***="navbar top-gap">
+          <div cl***REMOVED***="navbar-inner">
+            <div cl***REMOVED***="container">
+              <ul cl***REMOVED***="nav navbar-nav">
+                <li ng-cl***REMOVED***="userFilterCl***REMOVED***('all')"><a href="" ng-click="changeCurrentUserFilter('all')">All Users</a></li>
+                <li ng-cl***REMOVED***="userFilterCl***REMOVED***('active')"><a href="" ng-click="changeCurrentUserFilter('active')">Active Users</a></li>
+                <li ng-cl***REMOVED***="userFilterCl***REMOVED***('unregistered')"><a href="" ng-click="changeCurrentUserFilter('unregistered')">Users Awaiting Approval</a></li>
+              </ul>
+              <form cl***REMOVED***="navbar-search pull-right">
+                <input type="text" cl***REMOVED***="form-search search-query" ng-model="userQuery" placeholder="Search" ng-change="userSearch()">
+              </form>
+            </div>
+          </div>
+        </div>
+        <div cl***REMOVED***="top-gap" ng-repeat="u in filteredUsers">
+          <div cl***REMOVED***="row">
+            <div cl***REMOVED***="span3">
+              <button cl***REMOVED***="btn" ng-click="editUser(u)" ngm-tap="editUser(u)">
+                <i cl***REMOVED***="icon-edit"></i>
+                Edit
+              </button>
+              <button cl***REMOVED***="btn btn-success" ng-hide='u.role' ng-click="approveUser(u)" ngm-tap="approveUser(u)">
+                <i cl***REMOVED***="icon-thumbs-up"></i> 
+                Approve Account
+              </button>
+            </div>
+            <div cl***REMOVED***="span2">
+              {{u.username}}
+            </div>
+            <div cl***REMOVED***="span2">
+              {{u.firstname}} {{u.lastname}}
+            </div>
+            <div cl***REMOVED***="span3">
+              {{u.email}}
+            </div>
+            <div cl***REMOVED***="span2">
+              <button cl***REMOVED***="btn btn-danger" ng-click="deleteUser(u)" ngm-tap="deleteUser(u)">
+                <i cl***REMOVED***="icon-remove"></i> 
+                Delete user
+              </button>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <div cl***REMOVED***="span12 top-gap" id="device-admin-area" ng-show="currentAdminPanel == 'device'">
+      <button cl***REMOVED***="btn" ng-click="setShowDeviceForm(true)" ngmtap="setShowDeviceForm(true)" ng-show="showNewDeviceButton">New Device</button>
+      <div cl***REMOVED***="top-gap" ng-show="showDeviceForm">
+        <form ng-submit="saveDevice()" id="device-form" cl***REMOVED***="form-horizontal">
+          <fieldset>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Device Identifier</label>
+              <div cl***REMOVED***="controls">
+                <input type="text" placeholder="for example 01:02:03:04:05:06:08" ng-model="device.uid">
+                <span cl***REMOVED***="help-block top-gap">MAC address, or some sort of unique identifier for your device.</span>
+              </div>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Device Name</label>
+              <div cl***REMOVED***="controls">
+                <input type="text" placeholder="i.e. Jacks Android" ng-model="device.name">
+              </div>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Description</label>
+              <div cl***REMOVED***="controls">
+                <textarea type="text" placeholder="A bit about the device" ng-model="device.description"></textarea>
+              </div>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Point of Contact</label>
+              <div cl***REMOVED***="controls">
+                <select ng-model="device.poc" ng-options="user._id as user.firstname + ' ' + user.lastname for user in users">
+                </select>
+              </div>
+            </div>
+            <span>
+              <button type="reset" cl***REMOVED***="btn btn-inverse" ng-click="setShowDeviceForm(false)" ngmtap="setShowDeviceForm(false)">Cancel</button>
+              <button type="submit" cl***REMOVED***="btn">Save device</button>
+            </span>
+          </fieldset>
+        </form>
+      </div>
+      <div cl***REMOVED***="navbar top-gap">
+        <div cl***REMOVED***="navbar-inner">
+          <div cl***REMOVED***="container">
+            <ul cl***REMOVED***="nav navbar-nav">
+              <li ng-cl***REMOVED***="deviceFilterCl***REMOVED***('all')"><a href="" ng-click="changeCurrentDeviceFilter('all')">All Devices</a></li>
+              <li ng-cl***REMOVED***="deviceFilterCl***REMOVED***('registered')"><a href="" ng-click="changeCurrentDeviceFilter('registered')">Registered Devices</a></li>
+              <li ng-cl***REMOVED***="deviceFilterCl***REMOVED***('unregistered')"><a href="" ng-click="changeCurrentDeviceFilter('unregistered')">Unregistered Devices</a></li>
+            </ul>
+            <form cl***REMOVED***="navbar-search pull-right">
+              <input type="text" cl***REMOVED***="form-search search-query" ng-model="deviceQuery" placeholder="Search" ng-change="deviceSearch()">
+            </form>
+          </div>
+        </div>
+      </div>
+      <div cl***REMOVED***="top-gap">
+        <div ng-repeat="device in filteredDevices" cl***REMOVED***="top-gap">
+            <div cl***REMOVED***="row">
+            <div cl***REMOVED***="span2">
+              <button cl***REMOVED***="btn" ng-click="editDevice(device)" ngm-tap="editDevice(device)">
+                <i cl***REMOVED***="icon-edit pointer"></i> Edit
+              </button>
+              <button cl***REMOVED***="btn btn-success" ng-hide="device.registered" ng-click="registerDevice(device)" ngm-tap="registerDevice(device)">
+                <i cl***REMOVED***="icon-thumbs-up"></i> Register
+              </button>
+            </div>
+            <div cl***REMOVED***="span2">
+              {{device.uid}}
+            </div>
+            <div cl***REMOVED***="span2">
+              {{device.name}}
+            </div>
+            <div cl***REMOVED***="span2">
+              {{device.description}}
+            </div>
+            <div cl***REMOVED***="span2">
+              {{getUserDisplayName(device.poc)}}
+            </div>
+            <div cl***REMOVED***="span2">
+            <button cl***REMOVED***="btn btn-danger" ng-click="deleteDevice(device)" ngm-tap="deleteDevice(device)">
+              <i cl***REMOVED***="icon-remove"></i> Delete device
+            </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+  <!-- Team form, get it back in if there is time
+    <div cl***REMOVED***="admin-area">
+        <a id="new-team-btn" ng-click="newTeam()" ngm-tap="newTeam()" cl***REMOVED***="btn"><i cl***REMOVED***="icon-plus mtage-color"></i> New Team</a>
+        <ul style="list-style: none;" cl***REMOVED***="top-gap">
+          <li ng-repeat="team in teams"><a ng-click="viewTeam(team)">{{team.teamName}}</a></li>
+        </ul>
+        <p id="instructions" cl***REMOVED***="hide">
+          There are no teams on this server. Click the new team button to get started.
+        </p>
+      </div>
+    </div>
+    <div cl***REMOVED***="span10">
+        <h3>{{team.name}}</h3>
+        <form ng-submit="saveTeam()" id="new-team-form" cl***REMOVED***="hide form-horizontal">
+           <fieldset>
+            <legend>{{team.teamName}}</legend>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Team Name</label>
+              <div cl***REMOVED***="controls">
+                <input type="text" placeholder="i.e. jappleseed" ng-model="team.teamName">
+              </div>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <label cl***REMOVED***="control-label" for="type">Description</label>
+              <div cl***REMOVED***="controls">
+                <textarea placeholder="i.e. jappleseed" ng-model="team.description" cols="30" rows="5"></textarea>
+              </div>
+            </div>
+            <button type="submit" cl***REMOVED***="btn">Save Team</button>
+          </fieldset>
+        </form>
+      </div>
+  -->
+</div>

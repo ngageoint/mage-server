@@ -1,0 +1,217 @@
+html, body, div.leaflet-container {
+	height: 100%;
+	width: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+/* CLEAR FIX*/
+.clearfix:after {content: ".";
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;}
+.clearfix {display: inline-block;}
+/* Hides from IE-mac \*/
+* html .clearfix { height: 1%;}
+.clearfix {display: block;}
+/* End hide from IE-mac */
+
+.navbar {
+	margin-bottom: 0;
+}
+
+.container-fluid {
+	padding-left: 0;
+	padding-right: 0;
+}
+
+/* Leaflet stuff */
+.map-wrap {
+  left: 0;
+  top: 0;
+  position: absolute;
+}
+
+.leaflet-top {
+	top: 50px;
+}
+
+@media (max-width: 979px) {
+	.navbar-fixed-top, .navbar-fixed-bottom {
+		position: absolute;
+	}	
+}
+
+#geo {
+	position: absolute;
+	height: 50px;
+	width: 50px;
+	bottom: 5px;
+	left: 5px;
+	z-index: 999;
+}
+
+#settings {
+	position: absolute;
+	height: 50px;
+	width: 50px;
+	top: 50px;
+	right: 5px;
+	z-index: 999;
+}	
+#export {
+	position: absolute;
+	height: 50px;
+	width: 50px;
+	top: 50px;
+	right: 65px;
+	z-index: 999;
+}
+
+
+/* I switched the position for goto-address and new observation buttons for a better layout while 
+	 we are waiting to get the rest of the buttons wired up so the UI doesnt look weird.
+*/
+#goto-address { 
+	position: absolute;
+	height: 50px;
+	width: 50px;
+	bottom: 5px;
+	left: 263px; /*68px*/
+	z-index: 999;
+}
+
+#new-observation {
+	position: absolute;
+	height: 50px;
+	width: 50px;
+	bottom: 5px;
+	left: 68px; /*133px*/
+	z-index: 999;
+}
+
+#broadcast-location-btn {
+	position: absolute;
+	height: 50px;
+	width: 50px;
+	bottom: 5px;
+	left: 133px;px;
+	z-index: 999;
+}
+
+#locations-btn {
+	position: absolute;
+	height: 50px;
+	width: 50px;
+	bottom: 5px;
+	left: 198px;
+	z-index: 999;
+}
+
+
+/* Panels and their contents */
+.panel {
+	left: 5px;
+	top: 5px;
+	z-index: 2000;
+	overflow: auto;
+	background: #D0E7FF;
+	color: #5278A2;
+	position: absolute;
+	height: 90%;
+	width: 83%;
+	border: 2px solid #5278A2;
+}
+
+.panel-content {
+	padding: 20px;
+}
+
+
+.panel-close {
+	line-height: 0;
+	margin: 0px 5px 0 0;
+}
+.panel-close > i {
+	font-size: 24px;
+}
+
+@media all and (min-width: 520px) {
+	.panel {
+		margin: 45px;
+	}
+}
+
+@-ms-viewport {
+	width: device-width;
+}
+
+.panel-large {
+	max-height: 445px;
+	max-width: 445px;
+}
+
+.panel-medium {
+	height: 130px;
+	max-width: 430px;
+}
+
+.panel-small {
+	height: 35px;
+	max-width: 430px;
+}
+
+#observation-panel > form > span > button {
+	width: 130px;
+}
+
+.attachment {
+	margin-bottom: 15px;
+}
+
+.observation-icon {
+	float: left;
+}
+
+.observation-title {
+	margin-left: 70px;
+	padding-top: 15px;
+}
+
+.current-page {
+	background: #305680;
+	color: #fff;
+}
+
+/* Progress bar stuff */
+.percent {
+    position: absolute; width: 300px; height: 14px; z-index: 1; text-align: center; font-size: 0.8em; color: white;
+}
+.progress-bar {
+    width: 300px; height: 14px;
+    border-radius: 10px;
+    border: 1px solid #CCC;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#6666cc), to(#4b4b95));
+    border-image: initial;
+}
+.uploaded {
+    padding: 0;
+    height: 14px;
+    border-radius: 10px;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#66cc00), to(#4b9500));
+    border-image: initial;
+}
+
+@media all and (max-width: 768px) {
+	.btn-mobile {
+		height: 45px;
+		width: 100%;
+	}
+
+	.btn-mobile-half {
+		height: 45px;
+		width: 45%;
+		padding-right: 15px;
+	}
+}

@@ -1,0 +1,89 @@
+<div cl***REMOVED***="container">
+  <div cl***REMOVED***="row">
+    <div cl***REMOVED***="span12">
+      <h2>Account Information</h2>
+    </div>
+  </div>
+
+  <div cl***REMOVED***="row">
+    <div cl***REMOVED***="span6">
+      <form ng-submit="saveUser()" cl***REMOVED***="form-horizontal">
+        <fieldset>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">Username</label>
+            <div cl***REMOVED***="controls">
+              <input type="text" placeholder="i.e. jappleseed" ng-model="user.username" name="username">
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">First Name</label>
+            <div cl***REMOVED***="controls">
+              <input type="text" placeholder="Johnny" ng-model="user.firstname" name="firstname">
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">Last Name</label>
+            <div cl***REMOVED***="controls">
+              <input type="text" placeholder="Appleseed" ng-model="user.lastname" name="lastname">
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">Email</label>
+            <div cl***REMOVED***="controls">
+              <input type="text" placeholder="johnny@appleseed.com" ng-model="user.email" name="email">
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">Phone</label>
+            <div cl***REMOVED***="controls">
+              <input type="text" placeholder="(xxx) xxx-xxxx" ng-model="user.phone" name="phone">
+            </div>
+          </div>
+          <span>
+            <button type="reset" cl***REMOVED***="btn btn-inverse" ng-click="cancel()" ngmtap="cancel()">Cancel</button>
+            <button type="submit" cl***REMOVED***="btn">Save</button>
+          </span>
+        </fieldset>
+      </form>
+    </div>
+    <div cl***REMOVED***="span6" ng-show="showUserStatus">
+      <div cl***REMOVED***="alert alert-block" ng-cl***REMOVED***="statusLevel">
+        <button type="button" cl***REMOVED***="close" ng-click="showUserStatus = false">&times;</button>
+        <h4>{{statusTitle}}</h4>
+        {{statusMessage}}
+      </div>
+    </div>
+  </div>
+
+  <div cl***REMOVED***="row">
+    <div cl***REMOVED***="span12">
+      <h2>Update P***REMOVED***word</h2>
+    </div>
+  </div>
+
+  <div cl***REMOVED***="row">
+    <div cl***REMOVED***="span12">
+      <form ng-submit="updateP***REMOVED***word()" cl***REMOVED***="form-horizontal">
+        <fieldset>
+          <div cl***REMOVED***="control-group" ng-cl***REMOVED***="{error: 'error', success: 'success'}[p***REMOVED***wordStatus.status]">
+            <label cl***REMOVED***="control-label" for="type">P***REMOVED***word</label>
+            <div cl***REMOVED***="controls">
+              <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***word" name="p***REMOVED***word">
+              <span cl***REMOVED***="help-inline" ng-show="p***REMOVED***wordStatus.status">{{p***REMOVED***wordStatus.msg}}</span>
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group" ng-cl***REMOVED***="{error: 'error', success: 'success'}[p***REMOVED***wordStatus.status]">
+            <label cl***REMOVED***="control-label" for="type">Confirm P***REMOVED***word</label>
+            <div cl***REMOVED***="controls">
+              <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***wordconfirm" name="p***REMOVED***wordconfirm">
+            </div>
+          </div>
+          <span>
+            <button type="submit" cl***REMOVED***="btn">Change p***REMOVED***word</button>
+          </span>
+        </fieldset>
+      </form>
+    </div>
+  </div>
+
+</div>

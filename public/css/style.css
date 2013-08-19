@@ -1,0 +1,215 @@
+@font-face {
+	font-family: SansBetween;
+	font-weight: regular;
+	src: url('../fonts/SANSB___.TTF');
+}
+
+h1, h2, h3, h4, h5 {
+	font-family: SansBetween, Arial, sans-serif;
+	color: #324962;
+}
+
+a {
+	color: #345477;
+}
+
+body {
+	background: #D0E7FF;
+	color: #6389b3;
+}
+
+[cl***REMOVED***^="icon-"], [cl***REMOVED****=" icon-"]{
+    background:none;
+}
+.icon-white,.nav-pills>.active>a>[cl***REMOVED***^="icon-"],.nav-pills>.active>a>[cl***REMOVED****=" icon-"],.nav-list>.active>a>[cl***REMOVED***^="icon-"],.nav-list>.active>a>[cl***REMOVED****=" icon-"],.navbar-inverse .nav>.active>a>[cl***REMOVED***^="icon-"],.navbar-inverse .nav>.active>a>[cl***REMOVED****=" icon-"],.dropdown-menu>li>a:hover>[cl***REMOVED***^="icon-"],.dropdown-menu>li>a:hover>[cl***REMOVED****=" icon-"],.dropdown-menu>.active>a>[cl***REMOVED***^="icon-"],.dropdown-menu>.active>a>[cl***REMOVED****=" icon-"],.dropdown-submenu:hover>a>[cl***REMOVED***^="icon-"],.dropdown-submenu:hover>a>[cl***REMOVED****=" icon-"]{background:none;}
+
+
+.navbar-inner {
+	background: #5278A2;
+	color: #91BDEE;
+    opacity: 0.8;
+}
+
+.navbar .brand {
+	font-family: SansBetween, sans-serif;
+    color: #FFF;
+    display: block;
+    float: left;
+    font-size: 20px;
+    font-weight: 200;
+    margin-left: -20px;
+    padding: 10px 20px;
+    text-shadow: 0 1px 0 #2B2620;
+}
+
+.navbar .nav > li > a {
+    color: #FFF;
+    float: none;
+    padding: 10px 15px;
+    text-decoration: none;
+    text-shadow: 0 1px 0 #222;
+}
+
+.navbar .nav > .active > a,
+.navbar .nav > .active > a:hover,
+.navbar .nav > .active > a:focus {
+  color: #FFF;
+  background-color: #305680;
+}
+
+.well {
+	background: #efefef;
+}
+
+.sage-color {
+    color: #324962;
+}
+
+.top-gap-s {
+    margin-top: 5px;
+}
+
+.top-gap {
+    margin-top: 15px;
+}
+
+.top-gap-l {
+    margin-top: 30px;
+}
+
+.top-gap-xl {
+    margin-top: 50px;
+}
+
+.bottom-gap-s {
+    margin-bottom: 5px;
+}
+
+.bottom-gap {
+    margin-bottom: 15px;
+}
+
+.bottom-gap-l {
+    margin-bottom: 30px;
+}
+
+.bottom-gap-xl {
+    margin-bottom: 50px;
+}
+
+.icon-spacer {
+    margin-right: 5px;
+}
+
+.icon-brand {
+    color: #FFF;
+    background-image: none;
+}
+
+/* Overrides */
+.form-horizontal .control-group {
+    margin-bottom: 10px;
+}
+
+textarea {
+    height: 75px;
+}
+
+.nav-pills>.active>a, .nav-pills>.active>a:hover, .nav-pills>.active>a:focus {
+    background: #456588;
+    color: #F5F3DA;
+}
+
+.btn {
+    border: solid 1px #c8c8c8;
+    background: #FAFAFA;
+} 
+
+.btn-inverse {
+    background: #5278A2;
+}
+
+.btn-inverse:hover,
+.btn-inverse:focus,
+.btn-inverse:active,
+.btn-inverse.active,
+.btn-inverse.disabled,
+.btn-inverse[disabled] {
+  background-color: #5278A2;
+}
+
+.btn-inverse:active,
+.btn-inverse.active {
+  background-color: #5278A2;
+}
+
+.btn-success {
+    border: solid 1px #585;
+    background: #7a7;
+}
+
+.btn-danger {
+    border: solid 1px #822;
+    background: #a44;
+}
+
+.icon-sage {
+    color: #5278A2;
+    font-size: 1.4em;
+    background-image: none;
+    margin-bottom: 9px;
+}
+
+.icon-large {
+    font-size: 5em;
+}
+
+.icon-android {
+    height: 75px;
+    width: 75px;
+    font-size: 64px;
+}
+
+.andriod-color {
+    color: #83C400;
+}
+
+.icon-sage-inverse {
+    color: #FEFEFE;
+    font-size: 1.4em;
+    background-image: none;
+    margin-left: -4px;
+    margin-bottom: 9px;
+}
+
+#panel-login {
+    margin-top: 20%;
+    margin-left: 45%;
+    padding: 15px 5px;
+    background-color: #94bbe8;
+    width: 250px;
+}
+
+/* User management page styles */
+.admin-area {
+    border-right: 1px solid #4F719B;
+    min-height: 350px;
+}
+
+.admin-active {
+    background: #4F719B;
+}
+
+.admin-active > h3 a {
+    color: #eee;
+    margin-left: 15px;
+}
+
+.pointer {
+    cursor: pointer; cursor: hand;
+}
+
+.awesome-marker i {
+  font-size: 17px;
+  margin: 10px 0;
+}

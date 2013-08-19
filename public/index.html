@@ -1,235 +1,151 @@
-<link href="extjs/resources/css/ext-all.css" type="text/css" rel="stylesheet">
-<script src="extjs/ext-all-debug.js" type="text/javascript"></script>
-
-
-<script>
-
-Ext.onReady(function() {
-
-    //we want to setup a model and store instead of using dataUrl
-    Ext.define('Services', {
-        extend: 'Ext.data.Model',
-        fields: [
-            {name: 'task',     type: 'string'},
-            {name: 'user',     type: 'string'}
-        ]
-    });
-	
-    var ***REMOVED***sStore = Ext.create('Ext.data.TreeStore', {
-        root: {
-            expanded: true
-        },
-        proxy: {
-            type: 'ajax',
-            url: '***REMOVED***s.json'
-        }
-    });
-
-    // Go ahead and create the TreePanel now so that we can use it below
-     var treePanel = Ext.create('Ext.tree.Panel', {
-        id: 'tree-panel',
-        title: 'SAGE REST Services',
-        region:'north',
-        split: true,
-        height: 360,
-        minSize: 150,
-        rootVisible: false,
-        autoScroll: true,
-        store: ***REMOVED***sStore
-    });
-
-	    // Assign the changeLayout function to be called on tree node click.
-    treePanel.getSelectionModel().on('select', function(selModel, record) {
-		console.log(record);
-        if (record.get('leaf')) {
-		
-			var URLSetter = record.getId() + '.html';
-				
-			Ext.getCmp('content-panel').layout.setActiveItem(record.getId());
-					
-            //Ext.getCmp('content-panel').layout.setActiveItem(record.getId() + '-panel');
-            // if (!detailEl) {
-            //    var bd = Ext.getCmp('details-panel').body;
-            //    bd.update('').setStyle('background','#fff');
-            //   detailEl = bd.createChild(); //create default empty div
-            //}
-            //detailEl.hide().update(Ext.getDom(record.getId() + '-details').innerHTML).slideIn('l', {stopAnimation:true,duration: 200});
-        }
-    });
-	
-    var detailsPanel = {
-        id: 'details-panel',
-        title: 'Details',
-        region: 'center',
-        bodyStyle: 'padding-bottom:15px;background:#eee;',
-        autoScroll: true,
-        html:'Click on a particular ***REMOVED*** to see its properties and data.'
-    };
-
-	var contentPanel = {
-		id: 'content-panel',
-		region: 'center', // this is what makes this panel into a region within the containing layout
-		layout: 'card',
-		margins: '2 5 5 0',
-		activeItem: 0,
-		border: false,
-		autoScroll: true,
-		preventBodyReset: true, // important
-		items: [{
-			id: 'card-0',			
-			autoLoad: 'api/',
-			scripts:true,
-			preventBodyReset: true, // important
-	    },{
-			id: 'get_all_esri_features',
-			autoLoad:{
-				url: 'api/v1/esriFeatures/',
-				scripts:true
-			}
-	    },{
-			id: 'get_single_esri_feature',
-			autoLoad:{
-				url: 'api/v1/esriFeatures/1/',
-				scripts:true
-			}
-			
-	    }]
-    };
-
-
-	
-    var viewport = Ext.create('Ext.Viewport', {
-        layout: {
-            type: 'border',
-            padding: 5
-        },
-        defaults: {
-            split: true
-        },
-        items: [{
-            xtype: 'box',
-            id: 'header',
-            region: 'north',
-            html: '<h1>SAGE REST Services API Interactive Documentation</h1>',
-            height: 30
-        },{
-		
-            layout: 'border',
-            id: 'layout-browser',
-            region:'west',
-            border: false,
-            split:true,
-            margins: '2 0 5 5',
-            width: 275,
-            minSize: 100,
-            maxSize: 500,
-            items: [treePanel, detailsPanel]
-        },
-			contentPanel
-		]
-    });
-	
-	
-});
-
-
-
-/*
-Ext.require([
-	'*',
-    'Ext.data.*',
-    'Ext.grid.*',
-    'Ext.tree.*'
-]);
-
-Ext.onReady(function() {
-
-    var viewport = Ext.create('Ext.Viewport', {
-        layout: {
-            type: 'border',
-            padding: 5
-        },
-        defaults: {
-            split: true
-        },
-        items: [{
-            region: 'north',
-            collapsible: true,
-            title: 'North',
-            split: true,
-            height: 100,
-            minHeight: 60,
-            html: 'north'
-        },{
-            region: 'west',
-            collapsible: false,
-            title: 'Starts at width 30%',
-            split: true,
-            width: '20%',
-			layout: 'fit',
-            minWidth: 100,
-            minHeight: 140,
-            items:[tree]
-        },{
-            region: 'center',
-            html: 'center center',
-            title: 'Center',
-            minHeight: 80
-        },{
-            region: 'east',
-            collapsible: true,
-            floatable: true,
-            split: true,
-            width: 200,
-            minWidth: 120,
-            minHeight: 140,
-            title: 'East',
-            layout: {
-                type: 'vbox',
-                padding: 5,
-                align: 'stretch'
-            }
-        },{
-            region: 'south',
-            height: 100,
-            split: true,
-            collapsible: true,
-            title: 'Splitter above me',
-            minHeight: 60,
-            html: 'center south',
-            weight: -100
-        }]
-    });
-});
-*/
-</script>
-
-
-
-<!--
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+ <!DOCTYPE html>
+<html ng-app="mage">
 <head>
-<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>SAGE RESTful API Services Index</title>
+  <title>MAGE</title>
 
-<style type="text/css">
-	body {
-		text-align:center;
-	}
-</style>
+  <!-- Comment out the following line when running local -->
+  <!--<base href="/mage/" />-->
+
+  <link rel="shortcut icon" href="favicon.ico"/>
+  <meta id="view" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="stylesheet" href="vendor/bootstrap/bootstrap.css" />
+  <link rel="stylesheet" href="vendor/bootstrap/bootstrap-responsive.min.css"/>
+  <link rel="stylesheet" href="css/icomoon.css">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
+  <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.awesomemarkers/leaflet.awesome-markers.css"/>
+  <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.markercluster/MarkerCluster.css"/>
+  <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.markercluster/MarkerCluster.Default.css"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/map.css"/>
+
+  <link rel="apple-touch-icon" href="img/touch-icon-iphone.png" />
+  <link rel="apple-touch-icon" sizes="72x72" href="img/touch-icon-ipad.png" />
+  <link rel="apple-touch-icon" sizes="114x114" href="img/touch-icon-iphone-retina.png" />
+  <link rel="apple-touch-icon" sizes="144x144" href="img/touch-icon-ipad-retina.png" />
+
+  <!-- IE10 fix -->
+  <script>
+    (function() {
+      if ("-ms-user-select" in document.documentElement.style && navigator.userAgent.match(/IEMobile\/10\.0/)) {
+        var msViewportStyle = document.createElement("style");
+        msViewportStyle.appendChild(
+          document.createTextNode("@-ms-viewport{width:auto!important}")
+        );
+        document.getElementsByTagName("head")[0].appendChild(msViewportStyle);
+      }
+    })();
+  </script>
+
 </head>
-
 <body>
-<img src="images/sage_leaf.jpg" width="200" height="200" alt="Sage Leaf"><br />
+  <div cl***REMOVED***="navbar navbar-fixed-top" ng-controller="NavController">
+    <div cl***REMOVED***="navbar-inner">
+      <div cl***REMOVED***="container">
 
-    <h1>
-        Situational Analysis GEOINT Environment
-        <br />
-        (SAGE)
-    </h1>
-    <p><a href="api">API</a></p>
+        <a cl***REMOVED***="brand" href="#/">
+          <i cl***REMOVED***="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
+        </a>
+        <ul cl***REMOVED***="nav pull-right" ng-show="getUser()">
+          <li cl***REMOVED***="dropdown">
+            <button data-toggle="dropdown" cl***REMOVED***="btn dropdown-toggle" href="#">
+              <i cl***REMOVED***="icon-user"></i>
+              {{getUser().username}} 
+              <b cl***REMOVED***="caret"></b>
+            </button>
+            <ul cl***REMOVED***="dropdown-menu">
+              <li>
+                <a href="#/user">
+                  <i cl***REMOVED***="icon-cog"></i>
+                  My Profile
+                </a>
+              </li>
+              <li>
+                <a ng-click="logout()">
+                  <i cl***REMOVED***="icon-off"></i>
+                  Sign Out
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+
+        <a cl***REMOVED***="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse" ng-show="getUser()">
+          <span cl***REMOVED***="icon-bar" style="color: #fff"></span>
+          <span cl***REMOVED***="icon-bar" style="color: #000"></span>
+          <span cl***REMOVED***="icon-bar"></span>
+        </a>
+
+        <div cl***REMOVED***="nav-collapse collapse">
+          <ul cl***REMOVED***="nav navbar-nav" ng-show="showMapNav()">
+            <li ng-cl***REMOVED***="navCl***REMOVED***('map')">
+              <a href="#/map">
+                <i cl***REMOVED***="icon-map icon-spacer"></i> Map
+              </a>
+            </li>
+            <li ng-cl***REMOVED***="navCl***REMOVED***('layers')" ng-show="showLayerNav()">
+              <a href="#/layers">
+                <i cl***REMOVED***="icon-layers icon-spacer"></i> Layer Manager
+              </a>
+            </li>
+            <li ng-cl***REMOVED***="navCl***REMOVED***('admin')" ng-show="showAdminNav()">
+              <a href="#/admin">
+                <i cl***REMOVED***="icon-cogs icon-spacer"></i>  Admin Panel
+              </a>
+            </li>
+            <li ng-cl***REMOVED***="navCl***REMOVED***('about')">
+              <a href="#/about">
+                <i cl***REMOVED***="icon-info icon-spacer"></i> About
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div data-ng-view></div>
+
+  <script type="text/javascript" src="vendor/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="vendor/underscore/underscore-min.js"></script>
+  <script type="text/javascript" src="vendor/leaflet/leaflet.js"></script>
+  <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.awesomemarkers/leaflet.awesome-markers.min.js"></script>
+  <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.markercluster/leaflet.markercluster.js"></script>
+  <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.bouncemarker/bouncemarker.js"></script>
+  <script type="text/javascript" src="vendor/angular/angular.js"></script>
+  <script type="text/javascript" src="vendor/angular/angular-resource.min.js"></script>
+  <script type="text/javascript" src="vendor/ui-bootstrap/ui-bootstrap-0.2.0.min.js"></script>
+  <script type="text/javascript" src="vendor/bootstrap/bootstrap.min.js"></script>
+  <script type="text/javascript" src="js/app/leaflet/LocationMarker.js"></script>
+  <script type="text/javascript" src="js/app/leaflet/LocationMarker.Popup.js"></script>
+  <script type="text/javascript" src="js/app/app.js"></script>
+  <script type="text/javascript" src="js/app/directives/leaflet-directive.js"></script>
+  <script type="text/javascript" src="js/app/directives/***REMOVED***/observation.js"></script>
+  <script type="text/javascript" src="js/app/directives/pdc/observation.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/AboutService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/UserService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/DeviceService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/LayerService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/FeatureService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/FeatureTypeService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/LocationService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/IconService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/TimerService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/mageLib.js"></script>
+  <script type="text/javascript" src="js/app/controllers/AboutController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/AdminController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/MapController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/NavController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/LayerController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/FeatureController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/FormBuilderController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/SigninController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/SignupController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/UserController.js"></script>
+  <script type="text/javascript" src="js/app/directives/user-location.js"></script>
+  <script type="text/javascript" src="js/app/directives/thirdPartyObservation.js"></script>
 </body>
+
 </html>
--->
