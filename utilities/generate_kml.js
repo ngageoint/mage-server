@@ -64,10 +64,10 @@ var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachm
       styleColor = "blue";
       break;
     case 'Low':
-      styleColor = "yellow";
+      styleColor = "green";
       break;
     case 'Medium':
-      styleColor = "green";
+      styleColor = "yellow";
       break;
     case 'High':
       styleColor = "red";
