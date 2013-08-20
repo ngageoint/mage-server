@@ -20,10 +20,10 @@ var generateKMLDocument = function() {
 	          "  <open>1</open>";
   for(i in types) {
     var type = types[i];
-    doc += "<Style id='" + type.name + "-blue'><IconStyle><Icon><href>icons/" + type.kmlIcon + "-blue.png</href></Icon></IconStyle></Style>";
-    doc += "<Style id='" + type.name + "-green'><IconStyle><Icon><href>icons/" + type.kmlIcon + "-green.png</href></Icon></IconStyle></Style>";
-    doc += "<Style id='" + type.name + "-yellow'><IconStyle><Icon><href>icons/" + type.kmlIcon + "-yellow.png</href></Icon></IconStyle></Style>";
-    doc += "<Style id='" + type.name + "-red'><IconStyle><Icon><href>icons/" + type.kmlIcon + "-red.png</href></Icon></IconStyle></Style>";
+    doc += "<Style id='" + type.name + "-blue'><IconStyle><Icon><href>icons/blue/" + type.kmlIcon +     ".png</href></Icon></IconStyle></Style>";
+    doc += "<Style id='" + type.name + "-green'><IconStyle><Icon><href>icons/green/" + type.kmlIcon +   ".png</href></Icon></IconStyle></Style>";
+    doc += "<Style id='" + type.name + "-yellow'><IconStyle><Icon><href>icons/yellow/" + type.kmlIcon + ".png</href></Icon></IconStyle></Style>";
+    doc += "<Style id='" + type.name + "-red'><IconStyle><Icon><href>icons/red/" + type.kmlIcon +       ".png</href></Icon></IconStyle></Style>";
   }
 	 return doc;
 };
@@ -64,10 +64,10 @@ var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachm
       styleColor = "blue";
       break;
     case 'Low':
-      styleColor = "yellow";
+      styleColor = "green";
       break;
     case 'Medium':
-      styleColor = "green";
+      styleColor = "yellow";
       break;
     case 'High':
       styleColor = "red";

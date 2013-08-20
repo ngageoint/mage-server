@@ -108,7 +108,7 @@ module.exports = function(app, auth) {
       }
 
       var copyKmlIconsToStagingDirectory = function(done) {
-        child = exec("cp public/img/kml-icons/*.png  " + currentTmpDir + "/icons", function (error, stdout, stderr) {
+        child = exec("cp -r public/img/kml-icons/*  " + currentTmpDir + "/icons", function (error, stdout, stderr) {
           sys.print('stdout: ' + stdout);
           sys.print('stderr: ' + stderr);
           if (error !== null) {

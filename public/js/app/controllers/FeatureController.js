@@ -3,6 +3,7 @@
 function FeatureController($scope, $location, $timeout, FeatureService, UserService, mageLib, appConstants) {
   var isEditing = false;
   $scope.amAdmin = UserService.amAdmin();
+  $scope.token = mageLib.getLocalItem('token');
 
   /* 
     The observation functions are a mix of copy pasta from the observation directive, hopefully cleaned up a bit
@@ -187,6 +188,14 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
           });
       });
   }, true);
+
+  $scope.deleteAttachment = function (attachmentId) {
+    FeatureService.deleteAttachment($scope.activeFeature.layerId, $scope.activeFeature.featureId, attachmentId)
+      .success(function(data) {
+        console.log("attachment deleted");
+      });
+
+  }
 
   $scope.$watch("markerLocation", function(location) {
     if (!isEditing) {

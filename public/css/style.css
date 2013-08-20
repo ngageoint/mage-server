@@ -213,3 +213,19 @@ textarea {
   font-size: 17px;
   margin: 10px 0;
 }
+
+div.image-button {
+    position: relative;
+    float: left;
+}
+
+div.image-button:hover input {
+    display: block;
+}
+
+div.image-button input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: none;
+}
