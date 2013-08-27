@@ -11,10 +11,7 @@ module.exports = function(app, auth) {
     , sys = require('sys')
     , exec = require('child_process').exec
     , toGeoJson = require('../utilities/togeojson')
-    // , toGeoJson = require('togeojson')
-    , DOMParser = require('xmldom').DOMParser
-    , jsdom = require('jsdom').jsdom;
-
+    , DOMParser = require('xmldom').DOMParser;
   var p***REMOVED***port = auth.p***REMOVED***port;
 
 // export locations into KML
@@ -289,10 +286,6 @@ module.exports = function(app, auth) {
       fs.readFile('/Users/newmanw/Downloads/sochi/doc_large.kml', 'utf8', function(err, data) {
         if (err) return next(err);
 
-        // console.log("data is: ", data);
-
-        // var kml = new DOMParser().parseFromString(data);
-
         var featureCollections = toGeoJson.kml(data);
         // TODO use async here to get rid of nested callbacks
         featureCollections.forEach(function(featureCollection) {
@@ -319,11 +312,6 @@ module.exports = function(app, auth) {
         // console.log("done wrinting");
         res.send(200);
       });
-
-      // var data = fs.readFileSync('/Users/newmanw/Downloads/sochi/doc.kml', 'utf8');
-      // var json = toGeoJson.kml(data);
-      // fs.writeFileSync('/tmp/sochi.json', JSON.stringify(json, null, 4));
-      // console.log("done wrinting");
     }
   );
 
