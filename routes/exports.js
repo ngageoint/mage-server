@@ -9,8 +9,11 @@ module.exports = function(app, auth) {
     , async = require('async')
     , fs = require('fs-extra')
     , sys = require('sys')
-    , exec = require('child_process').exec;
-;
+    , exec = require('child_process').exec
+    , toGeoJson = require('../utilities/togeojson')
+    // , toGeoJson = require('togeojson')
+    , DOMParser = require('xmldom').DOMParser
+    , jsdom = require('jsdom').jsdom;
 
   var p***REMOVED***port = auth.p***REMOVED***port;
 
@@ -278,6 +281,50 @@ module.exports = function(app, auth) {
 
     }
  
+  );
+
+  app.get(
+    '/api/import',
+    function(req, res, next) {
+      fs.readFile('/Users/newmanw/Downloads/sochi/doc_large.kml', 'utf8', function(err, data) {
+        if (err) return next(err);
+
+        // console.log("data is: ", data);
+
+        // var kml = new DOMParser().parseFromString(data);
+
+        var featureCollections = toGeoJson.kml(data);
+        // TODO use async here to get rid of nested callbacks
+        featureCollections.forEach(function(featureCollection) {
+          var layer = {
+            name: featureCollection.name,
+            type: 'External'
+          };
+          Layer.create(layer, function(err, newLayer) {
+            if (err) {
+              console.log('error creating layer', err);
+              return;
+            }
+
+            featureCollection.featureCollection.features.forEach(function(feature) {
+              Feature.createGeoJsonFeature(newLayer, feature, function(err, newFeature) {
+                if (err) next(err);
+              });
+            });
+          });
+        });
+
+
+        fs.writeFileSync('/tmp/sochi.json', JSON.stringify(featureCollections, null, 4));
+        // console.log("done wrinting");
+        res.send(200);
+      });
+
+      // var data = fs.readFileSync('/Users/newmanw/Downloads/sochi/doc.kml', 'utf8');
+      // var json = toGeoJson.kml(data);
+      // fs.writeFileSync('/tmp/sochi.json', JSON.stringify(json, null, 4));
+      // console.log("done wrinting");
+    }
   );
 
 }
