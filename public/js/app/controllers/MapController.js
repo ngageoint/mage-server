@@ -51,6 +51,11 @@ function MapController($scope, $log, $http, appConstants, mageLib, LayerService,
       $scope.baseLayers = _.filter(layers, function(layer) {
         return layer.type == 'Imagery' && layer.base;
       });
+      // Pull out all the external layers
+      $scope.externalLayers = _.filter(layers, function(layer) {
+        return layer.type == 'External';
+      });
+
       // Default the base layer to first one in the list
       $scope.baseLayer = $scope.baseLayers[0];
     });

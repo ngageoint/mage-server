@@ -13,10 +13,7 @@ var AttachmentSchema = new Schema({
 
 // Creates the Schema for the Attachments object
 var FeatureSchema = new Schema({
-  geometry: {
-    type: { type: String, required: true },
-    coordinates: { type: Array, required: true}
-  },
+  geometry: Schema.Types.Mixed,
   properties: Schema.Types.Mixed,
   attachments: [AttachmentSchema]
 });
@@ -97,6 +94,23 @@ exports.createFeature = function(layer, data, callback) {
 
       callback(newFeature);
     });
+  });
+}
+
+exports.createGeoJsonFeature = function(layer, feature, callback) {
+  var name = 'feature' + layer.id;
+  Counter.getNext(name, function(id) {
+    var properties = feature.properties ? feature.properties : {};
+    properties.OBJECTID = id;
+
+    featureModel(layer).create(feature, function(err, newFeature) {
+      if (err) {
+        console.log('Error creating feature', err);
+        console.log('feature is: ', feature);
+      }
+
+      callback(err, newFeature);
+    }); 
   });
 }
 
