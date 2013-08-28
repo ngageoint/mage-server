@@ -35,7 +35,7 @@ var featureModel = function(layer) {
 exports.getFeatures = function(layer, filter, callback) {
   var conditions = {};
   
-  var query = featureModel(layer).find(conditions);
+  var query = featureModel(layer).find(conditions).lean(false);
 
   // Filter by geometry
   if (filter.geometry) {

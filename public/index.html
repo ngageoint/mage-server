@@ -28,6 +28,8 @@
   <!-- IE10 fix -->
   <script>
     (function() {
+      L_PREFER_CANVAS = true;
+
       if ("-ms-user-select" in document.documentElement.style && navigator.userAgent.match(/IEMobile\/10\.0/)) {
         var msViewportStyle = document.createElement("style");
         msViewportStyle.appendChild(
@@ -109,11 +111,10 @@
 
   <script type="text/javascript" src="vendor/jquery/jquery.min.js"></script>
   <script type="text/javascript" src="vendor/underscore/underscore-min.js"></script>
-  <script type="text/javascript" src="vendor/leaflet/leaflet.js"></script>
+  <script type="text/javascript" src="vendor/leaflet/leaflet-src.js"></script>
   <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.awesomemarkers/leaflet.awesome-markers.min.js"></script>
-  <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.markercluster/leaflet.markercluster.js"></script>
+  <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.markercluster/leaflet.markercluster-src.js"></script>
   <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.bouncemarker/bouncemarker.js"></script>
-  <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.plugins/layer/vector/KML.js"></script>
   <script type="text/javascript" src="vendor/angular/angular.js"></script>
   <script type="text/javascript" src="vendor/angular/angular-resource.min.js"></script>
   <script type="text/javascript" src="vendor/ui-bootstrap/ui-bootstrap-0.2.0.min.js"></script>
