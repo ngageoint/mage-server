@@ -142,7 +142,7 @@ module.exports = function(app, auth) {
                   }
 
                   //copy the file!
-                  var srcFile = '/var/lib/mage/attachments' + attachment.relativePath;
+                  var srcFile = '/var/lib/mage/attachments/' + attachment.relativePath;
                   var destFile = currentTmpDir + '/files/' + attachment.relativePath + '/' + attachment.name;
                   fs.copy(srcFile, destFile, function(err){
                     if(err) {
