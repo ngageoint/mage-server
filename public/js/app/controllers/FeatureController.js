@@ -189,6 +189,15 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
       });
   }, true);
 
+  $scope.$watch("externalFeatureClick", function (value) {
+    if (!value) return;
+
+    FeatureService.getFeature(value.layerId, value.featureId).
+      success(function (data) {
+        $scope.externalFeature = data;
+      });
+  }, true);
+
   $scope.deleteAttachment = function (attachmentId) {
     FeatureService.deleteAttachment($scope.activeFeature.layerId, $scope.activeFeature.featureId, attachmentId)
       .success(function(data) {

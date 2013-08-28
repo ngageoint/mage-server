@@ -68,21 +68,39 @@
           </div>
         </div>
 
-        <h4>Feature Layers</h4>
-        <div cl***REMOVED***="control-group">
-          <div cl***REMOVED***="controls">
-            <label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
-              <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)"/>{{layer.name}}
-            </label>
+        <div ng-show="featureLayers.length > 0">
+          <div style="display: inline-block;">
+            <h4 style="float: left;">Feature Layers</h4>
+            <i cl***REMOVED***="icon-globe icon-spin" ng-show="loading" style="margin: 11px 0 0 7px;"></i>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <div cl***REMOVED***="controls">
+              <label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
+                <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)"/>{{layer.name}}
+              </label>
+            </div>
           </div>
         </div>
 
-        <h4>Imagery Layers</h4>
-        <div cl***REMOVED***="control-group">
-          <div cl***REMOVED***="controls">
-            <label cl***REMOVED***="checkbox" ng-repeat="layer in imageryLayers">
-              <input type="checkbox" ng-model="layer.checked" ng-click="onImageryLayer(layer)"/>{{layer.name}}
-            </label>
+        <div ng-show="externalLayers.length > 0">
+          <h4>External Layers</h4>
+          <div cl***REMOVED***="control-group">
+            <div cl***REMOVED***="controls">
+              <label cl***REMOVED***="checkbox" ng-repeat="layer in externalLayers">
+                <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)"/>{{layer.name}}
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div ng-show="imageryLayers.length > 0">
+          <h4>Imagery Layers</h4>
+          <div cl***REMOVED***="control-group">
+            <div cl***REMOVED***="controls">
+              <label cl***REMOVED***="checkbox" ng-repeat="layer in imageryLayers">
+                <input type="checkbox" ng-model="layer.checked" ng-click="onImageryLayer(layer)"/>{{layer.name}}
+              </label>
+            </div>
           </div>
         </div>
       </form>

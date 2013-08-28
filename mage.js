@@ -32,7 +32,7 @@ app.configure(function () {
       throw err;
     }
   });
-  mongoose.set('debug', true);
+  mongoose.set('debug', false);
 
   app.set('config', config);
 
