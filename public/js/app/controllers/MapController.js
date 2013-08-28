@@ -9,7 +9,7 @@ function MapController($scope, $log, $http, appConstants, mageLib, LayerService,
 
   $scope.locate = false;
   $scope.broadcast = false;
-  $scope.loading = false;
+  $scope.loadingLayers = {};
 
   /* Some map defaults */
   $scope.observation = {};
@@ -67,12 +67,12 @@ function MapController($scope, $log, $http, appConstants, mageLib, LayerService,
       return;
     };
 
-    $scope.loading = true;
+    $scope.loadingLayers[layer.id] = true;
 
     FeatureService.getFeatures(layer.id)
       .success(function(features) {
         $scope.layer = {id: layer.id, checked: true, features: features};
-        $scope.loading = false;
+        $scope.loadingLayers[layer.id] = false;
       });
   }
 
