@@ -115,7 +115,7 @@ exports.create = function(layer, callback) {
   Counter.getNext('layer', function(id) {
     layer.id = id;
 
-    if (layer.type == 'Feature') {
+    if (layer.type == 'Feature' || layer.type == 'External') {
       layer.collectionName = 'features' + id;
     }
 

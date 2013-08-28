@@ -170,16 +170,55 @@
         var featureConfig = function(layerId) {
           return {
             pointToLayer: function (feature, latlng) {
-              var icon = IconService.icon(feature, {types: scope.types, levels: scope.levels});
-              return L.marker(latlng, { icon: icon });
+              var icon;
+              if (feature.properties.style) {
+                var style = feature.properties.style;
+                if (style.iconStyle) {
+                  var icon = L.icon({
+                    iconUrl: style.iconStyle.icon.href,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14],
+                  });
+                  return L.marker(latlng, { icon: icon });
+                }
+              } else {
+                var icon = IconService.icon(feature, {types: scope.types, levels: scope.levels});
+                return L.marker(latlng, { icon: icon });
+              }
+            },
+            style: function(feature) {
+              if (feature.properties.style) {
+                var style = {};
+                if (feature.properties.style.lineStyle) {
+                  style.color = '#' + feature.properties.style.lineStyle.color.slice(2, 8);
+                }
+                if (feature.properties.style.polyStyle) {
+                  var fill = feature.properties.style.polyStyle.color.slice(0,2);
+                  if (fill == '00') {
+                    style.fillOpacity = 0;
+                  }
+                }
+
+                return style;
+              }
             },
             onEachFeature: function(feature, marker) {
               marker.on("click", function(e) {
+                // TODO, tmp for PDC, only have layerId so I cannot check if external layer
+                // using style property to indicate an external layer
                 activeMarker = marker;
-                selectedMarker.setLatLng(marker.getLatLng()).addTo(map);
-                scope.$apply(function(s) {
-                  scope.activeFeature = {layerId: layerId, featureId: feature.properties.OBJECTID};
-                });
+                if (feature.properties.style) {
+                  scope.$apply(function(s) {
+                    scope.externalFeatureClick = {layerId: layerId, featureId: feature.properties.OBJECTID};
+                  });
+                  // marker.bindPopup(L.popup());
+                } else {
+                  selectedMarker.setLatLng(marker.getLatLng()).addTo(map);
+                  scope.$apply(function(s) {
+                    scope.activeFeature = {layerId: layerId, featureId: feature.properties.OBJECTID};
+                  });
+                }
+
               });
             }
           }
@@ -239,7 +278,14 @@
           if (!feature) return;
 
           activeMarker.setIcon(IconService.icon(feature, {types: scope.types, levels: scope.levels}));
-        })
+        });
+
+        scope.$watch("externalFeature", function(value) {
+          if (!value) return;
+
+
+          activeMarker.bindPopup(L.popup().setContent(value.attributes.description)).openPopup();
+        });
 
         scope.$watch("deletedFeature", function(feature) {
           if (!feature) return;
