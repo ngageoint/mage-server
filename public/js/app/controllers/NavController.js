@@ -2,6 +2,8 @@
 
 function NavController($scope, $location, UserService) {
 
+  $scope.user = UserService;
+
   $scope.navCl***REMOVED*** = function (page) {
     var currentRoute = $location.path().substring(1) || 'map';
     return page === currentRoute ? 'active' : '';
@@ -12,19 +14,19 @@ function NavController($scope, $location, UserService) {
   }
 
   $scope.showMapNav = function() {
-    return UserService.amUser();
+    return $scope.user.amUser;
   }
 
   $scope.showLayerNav = function() {
-    return UserService.amAdmin();
+    return $scope.user.amAdmin;
   }
 
   $scope.showAdminNav = function() {
-    return UserService.amAdmin();
+    return $scope.user.amAdmin;
   }
 
   $scope.getUser = function() {
-    return UserService.getMyself();
+    return $scope.user.myself;
   }
 
   $scope.logout = function() {

@@ -44,16 +44,16 @@
 <body>
   <div cl***REMOVED***="navbar navbar-fixed-top" ng-controller="NavController">
     <div cl***REMOVED***="navbar-inner">
-      <div cl***REMOVED***="container">
+      <div cl***REMOVED***="container" style="display:none;" ng-show="user">
 
         <a cl***REMOVED***="brand" href="#/">
           <i cl***REMOVED***="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
         </a>
-        <ul cl***REMOVED***="nav pull-right" ng-show="getUser()">
+        <ul cl***REMOVED***="nav pull-right" ng-show="user.myself">
           <li cl***REMOVED***="dropdown">
             <button data-toggle="dropdown" cl***REMOVED***="btn dropdown-toggle" href="#">
               <i cl***REMOVED***="icon-user"></i>
-              {{getUser().username}} 
+              {{user.myself.username}} 
               <b cl***REMOVED***="caret"></b>
             </button>
             <ul cl***REMOVED***="dropdown-menu">
@@ -73,7 +73,7 @@
           </li>
         </ul>
 
-        <a cl***REMOVED***="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse" ng-show="getUser()">
+        <a cl***REMOVED***="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse" ng-show="user.myself">
           <span cl***REMOVED***="icon-bar" style="color: #fff"></span>
           <span cl***REMOVED***="icon-bar" style="color: #000"></span>
           <span cl***REMOVED***="icon-bar"></span>
@@ -135,6 +135,7 @@
   <script type="text/javascript" src="js/app/***REMOVED***s/LocationService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/IconService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/TimerService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/HttpAuthService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/mageLib.js"></script>
   <script type="text/javascript" src="js/app/controllers/AboutController.js"></script>
   <script type="text/javascript" src="js/app/controllers/AdminController.js"></script>
