@@ -14,10 +14,13 @@ var mage = angular.module(
     "mage.locationService",
     "mage.iconService",
     "mage.aboutService",
+    "mage.httpAuthService",
     "mage.lib"])
   .config(function ($routeProvider, $locationProvider, $httpProvider) {
     $httpProvider.defaults.withCredentials = true;
     $httpProvider.defaults.headers.post  = {'Content-Type': 'application/x-www-form-urlencoded'};
+
+    $httpProvider.responseInterceptors.push('HttpAuthService');
 
     var resolveLogin = function(roles) {
       return {

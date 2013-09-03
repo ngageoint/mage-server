@@ -2,7 +2,7 @@
 
 function FeatureController($scope, $location, $timeout, FeatureService, UserService, mageLib, appConstants) {
   var isEditing = false;
-  $scope.amAdmin = UserService.amAdmin();
+  $scope.amAdmin = UserService.amAdmin;
   $scope.token = mageLib.getLocalItem('token');
 
   /* 
