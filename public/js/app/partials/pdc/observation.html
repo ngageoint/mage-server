@@ -95,14 +95,14 @@
       <div cl***REMOVED***="attachment" ng-repeat="attachment in attachments">
         <div cl***REMOVED***="image-button">
           <div ng-switch on="attachment.contentType">
-            <img ng-switch-when="image/jpg" src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">
-            <img ng-switch-when="image/jpeg" src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">
-            <img ng-switch-when="image/png" src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">
-            <img ng-switch-when="image/gif" src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">
+            <img ng-switch-when="image/jpg" ng-src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">
+            <img ng-switch-when="image/jpeg" ng-src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">
+            <img ng-switch-when="image/png" ng-src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">
+            <img ng-switch-when="image/gif" ng-src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">
             <!-- Fix for octet stream images in an older version of the app -->
-            <a ng-switch-when="application/octet-stream" href="{{attachmentUrl + attachment.id + '?access_token=' + token}}" target="_blank">Click to view image</a>
+            <a ng-switch-when="application/octet-stream" ng-href="{{attachmentUrl + attachment.id + '?access_token=' + token}}" target="_blank">Click to view image</a>
             <!-- Due to drastically varying browser behavior, videos will be a download link for the time being -->
-            <a ng-switch-when="video/mp4" href="{{attachmentUrl + attachment.id + '?access_token=' + token}}">Download video</a>
+            <a ng-switch-when="video/mp4" ng-href="{{attachmentUrl + attachment.id + '?access_token=' + token}}">Download video</a>
             <input type="button" value="Delete" cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(attachment.id)">
           </div>
         </div>
