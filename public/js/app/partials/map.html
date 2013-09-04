@@ -70,13 +70,13 @@
 
         <div ng-show="featureLayers.length > 0">
           <div style="display: inline-block;">
-            <h4 style="float: left;">Feature Layers</h4>
-            <i cl***REMOVED***="icon-globe icon-spin" ng-show="loading" style="margin: 11px 0 0 7px;"></i>
+            <h4>Feature Layers</h4>
           </div>
           <div cl***REMOVED***="control-group">
             <div cl***REMOVED***="controls">
               <label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
                 <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)"/>{{layer.name}}
+                <i cl***REMOVED***="icon-globe icon-spin" ng-show="loadingLayers[layer.id]" style="margin-left: 7px;"></i>
               </label>
             </div>
           </div>
@@ -88,6 +88,7 @@
             <div cl***REMOVED***="controls">
               <label cl***REMOVED***="checkbox" ng-repeat="layer in externalLayers">
                 <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)"/>{{layer.name}}
+                <i cl***REMOVED***="icon-globe icon-spin" ng-show="loadingLayers[layer.id]" style="margin-left: 7px;"></i>
               </label>
             </div>
           </div>

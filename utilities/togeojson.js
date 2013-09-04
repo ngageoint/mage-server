@@ -51,6 +51,18 @@ function fc() {
 var serializer = new XMLSerializer();
 function xml2str(node) { return serializer.serializeToString(node); }
 
+var parseColor = function(color) {
+  var r = color.slice(6,8);
+  var g = color.slice(4,6);
+  var b = color.slice(2,4);
+  var a = color.slice(0,2);
+
+  return {
+    rgb: "#" + r + g + b,
+    opacity: parseInt(a, 16)
+  }
+}
+
 var kml = function(data, o) {
     o = o || {};
 
@@ -89,7 +101,7 @@ var kml = function(data, o) {
         style.lineStyle = {};
         var color = get(lineStyle[0], 'color');
         if (color) {
-          style.lineStyle.color = nodeVal(color[0]);
+          style.lineStyle.color = parseColor(nodeVal(color[0]));
         }
 
         var width = get(lineStyle[0], 'width');
@@ -103,7 +115,7 @@ var kml = function(data, o) {
         style.labelStyle = {};
         var color = get(labelStyle[0], 'color');
         if (color) {
-          style.labelStyle.color = nodeVal(color[0]);
+          style.labelStyle.color = parseColor(nodeVal(color[0]));
         }
 
         var scale = get(labelStyle[0], 'scale');
@@ -117,15 +129,16 @@ var kml = function(data, o) {
         style.polyStyle = {};
         var color = get(polyStyle[0], 'color');
         if (color) {
-          style.polyStyle.color = nodeVal(color[0]);
+          style.polyStyle.color = parseColor(nodeVal(color[0]));
         }
       }
        
       styleIndex[styleId] = style;
     }
 
+
     // just get top level documents for now
-    var documents = xpath.select("kml/Folder/Document", doc);
+    var documents = xpath.select("/kml/Document/Folder", doc);
     for (var d = 0; d < documents.length; d++) {
       var featureCollection = fc();
 
@@ -146,15 +159,17 @@ var kml = function(data, o) {
     }
 
     // just get top level folders for now
-    var folders = xpath.select("kml/Folder/Folder", doc);
+    var folders = xpath.select("kml/Folder/Document", doc);
+    console.log('got documents: ' + folders.length);
     for (var j = 0; j < folders.length; j++) {
       if (xpath.select('ScreenOverlay', folders[j]).length > 0) continue;
 
       var featureCollection = fc();
       var placemarks = get(folders[j], 'Placemark');
+      console.log('got placemarks: ' + placemarks.length);
       for (var p = 0; p < placemarks.length; p++) {
         var placemark = getPlacemark(placemarks[p]);
-        featureCollection.features = featureCollection.features.concat();
+        featureCollection.features = featureCollection.features.concat(placemark);
       }
 
       var lineStrings = get(folders[j], 'LineString');

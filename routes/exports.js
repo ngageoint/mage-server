@@ -142,7 +142,7 @@ module.exports = function(app, auth) {
                   }
 
                   //copy the file!
-                  var srcFile = '/var/lib/mage/attachments' + attachment.relativePath;
+                  var srcFile = '/var/lib/mage/attachments/' + attachment.relativePath;
                   var destFile = currentTmpDir + '/files/' + attachment.relativePath + '/' + attachment.name;
                   fs.copy(srcFile, destFile, function(err){
                     if(err) {
@@ -283,7 +283,7 @@ module.exports = function(app, auth) {
   app.get(
     '/api/import',
     function(req, res, next) {
-      fs.readFile('/Users/newmanw/Downloads/sochi/doc.kml', 'utf8', function(err, data) {
+      fs.readFile('/tmp/sochi/Point/point/doc.kml', 'utf8', function(err, data) {
         if (err) return next(err);
 
         var featureCollections = toGeoJson.kml(data);

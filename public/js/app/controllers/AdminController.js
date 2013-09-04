@@ -16,24 +16,12 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
       $scope.users = data;
       $scope.filteredUsers = $scope.users;
       $scope.userSearch();
-    }).
-    error(function (data, status, headers, config) {
-      // if the user does not have admin permissions, re-route them to the signin page
-      if (status == 401 && $location.path() != '/signup') {
-        $location.path('/');
-      }
     });
 
   $scope.roles = [];
   UserService.getRoles().
     success(function (data) {
       $scope.roles = data;
-    }).
-    error(function (data, status, headers, config) {
-      // if the user does not have admin permissions, re-route them to the signin page
-      if (status == 401 && $location.path() != '/signup') {
-        $location.path('/');
-      }
     });
 
   $scope.devices = [];
@@ -43,12 +31,6 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
       $scope.devices = data;
       $scope.filteredDevices = $scope.devices;
       $scope.deviceSearch();
-    }).
-    error(function (data, status, headers, config) {
-      // if the user does not have admin permissions, re-route them to the signin page
-      if (status == 401 && $location.path() != '/signup') {
-        $location.path('/');
-      }
     });
   
   $scope.team = {};
@@ -181,10 +163,6 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
       error(function (data, status, headers, config) {
         $scope.showStatusMessage("Unable to create user", data, "alert-error");
         console.log('Something bad happened while creating a user...' + status);
-        // if the user does not have admin permissions, re-route them to the signin page
-        if (status == 401) {
-          $location.path('/');
-        }
       });
     }
   }

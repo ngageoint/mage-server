@@ -3,9 +3,16 @@
 angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
   .factory('UserService', ['$q', '$http', '$location', '$timeout', 'appConstants', 'mageLib',
     function ($q, $http, $location, $timeout, appConstants, mageLib) {
-      var ***REMOVED*** = {};
+      var ***REMOVED*** = {
+        myself: null
+      };
       var userDeferred = $q.defer();
-      var myself;
+
+      var setUser = function(user) {
+        ***REMOVED***.myself = user;
+        ***REMOVED***.amUser = ***REMOVED***.myself && ***REMOVED***.myself.role && (***REMOVED***.myself.role.name == "USER_ROLE" || ***REMOVED***.myself.role.name == "ADMIN_ROLE");
+        ***REMOVED***.amAdmin = ***REMOVED***.myself && ***REMOVED***.myself.role && (***REMOVED***.myself.role.name == "ADMIN_ROLE");
+      };
 
       /* For the sign up page, no token necessary */
       ***REMOVED***.signup = function (data) {
@@ -32,7 +39,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
             {params: mageLib.getTokenParams()},
             {headers: {"Content-Type": "application/x-www-form-urlencoded"}})
           .success(function(user) {
-            myself = user;
+            setUser(user);
             userDeferred.resolve(user);
           })
           .error(function(data) {
@@ -49,7 +56,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
           {params: mageLib.getTokenParams()},
           {headers: {"Content-Type": "application/x-www-form-urlencoded"}})
         .success(function(user) {
-          myself = user;
+          setUser(user);
 
           if (roles && !_.contains(roles, user.role.name)) {
             // TODO probably want to redirect to a unauthorized page.
@@ -59,9 +66,6 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
           userDeferred.resolve(user);
         })
         .error(function(data, status) {
-          if (status == 401) {
-            $location.path('/signin');
-          }
           userDeferred.resolve({});
         });
 
@@ -75,8 +79,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
         );
 
         promise.success(function() {
-          myself = null;
-          // userDeferred = $q.when({});
+          ***REMOVED***.clearUser();
           $location.path("/signin");
         });
 
@@ -99,22 +102,10 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
         );
           
         promise.success(function(user) {
-          myself = null;
+          ***REMOVED***.clearUser();
         });
 
         return promise;
-      }
-
-      ***REMOVED***.getMyself = function () {
-        return myself;
-      };
-
-      ***REMOVED***.amUser = function() {
-        return myself && myself.role && (myself.role.name == "USER_ROLE" || myself.role.name == "ADMIN_ROLE");
-      }
-
-      ***REMOVED***.amAdmin = function() {
-        return myself && myself.role && (myself.role.name == "ADMIN_ROLE");
       }
 
       ***REMOVED***.getUser = function(id) {
@@ -138,7 +129,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
            $.param(user), 
            {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
          );
-      }
+      };
 
       ***REMOVED***.updateUser = function(user) {
         return $http.put(
@@ -150,6 +141,12 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
 
       ***REMOVED***.getRoles = function () {
         return $http.get(appConstants.rootUrl + '/api/roles', {params: mageLib.getTokenParams()});
+      };
+
+      ***REMOVED***.clearUser = function() {
+        ***REMOVED***.myself = null;
+        ***REMOVED***.amUser = null;
+        ***REMOVED***.amAdmin = null;
       };
 
       return ***REMOVED***;
