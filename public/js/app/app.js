@@ -1,5 +1,8 @@
 'use strict';
 
+/* Fix for IE */
+if (!Date.now) { Date.now = function() { return +(new Date); }; }
+
 var mage = angular.module(
   "mage", 
   [
