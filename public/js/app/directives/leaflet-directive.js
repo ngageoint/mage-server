@@ -200,13 +200,11 @@
               if (feature.properties.style) {
                 var style = {};
                 if (feature.properties.style.lineStyle) {
-                  style.color = '#' + feature.properties.style.lineStyle.color.slice(2, 8);
+                  style.color = feature.properties.style.lineStyle.color.rgb
                 }
                 if (feature.properties.style.polyStyle) {
-                  var fill = feature.properties.style.polyStyle.color.slice(0,2);
-                  if (fill == '00') {
-                    style.fillOpacity = 0;
-                  }
+                  style.fillColor = feature.properties.style.polyStyle.color.rgb;
+                  style.fillOpacity = feature.properties.style.polyStyle.color.opacity;
                 }
 
                 return style;
