@@ -134,13 +134,23 @@
                 delete currentLocationMarkers[u.user];
                 locationMarkers[u.user] = marker;
                 // Just update the location
-                marker.setLatLng([l.geometry.coordinates[1], l.geometry.coordinates[0]]).setAccuracy(l.properties.accuracy);
+                var timeago = Date.now() - Date.parse(l.properties.timestamp);
+                var colorConfig = _.find(appConstants.markerAgeToColor, function(a) {
+                  return a.maxAge > timeago && a.minAge < timeago;
+                });
+                var color = colorConfig && colorConfig.color || appConstants.markerColorDefault;
+                marker.setLatLng([l.geometry.coordinates[1], l.geometry.coordinates[0]]).setAccuracy(l.properties.accuracy).setColor(color);
                 return;
               }
 
               var layer = new L.GeoJSON(u.locations[0], {
                 pointToLayer: function (feature, latlng) {
-                  return L.locationMarker(latlng, {color: '#f00'}).setAccuracy(feature.properties.accuracy);
+                  var timeago = Date.now() - Date.parse(feature.properties.timestamp);
+                  var colorConfig = _.find(appConstants.markerAgeToColor, function(a) {
+                    return a.maxAge > timeago && a.minAge < timeago;
+                  });
+                  var color = colorConfig && colorConfig.color || appConstants.markerColorDefault;
+                  return L.locationMarker(latlng, {color: color}).setAccuracy(feature.properties.accuracy);
                 },
                 onEachFeature: function(feature, layer) {
                   var e = $compile("<div user-location></div>")(scope);
