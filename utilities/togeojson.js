@@ -158,29 +158,31 @@ var kml = function(data, o) {
       });
     }
 
-    // // just get top level folders for now
-    // var folders = xpath.select("kml/Document/Folder", doc);
-    // for (var j = 0; j < folders.length; j++) {
-    //   if (xpath.select('ScreenOverlay', folders[j]).length > 0) continue;
+    // just get top level folders for now
+    var folders = xpath.select("kml/Folder/Document", doc);
+    console.log('got documents: ' + folders.length);
+    for (var j = 0; j < folders.length; j++) {
+      if (xpath.select('ScreenOverlay', folders[j]).length > 0) continue;
 
-    //   var featureCollection = fc();
-    //   var placemarks = get(folders[j], 'Placemark');
-    //   for (var p = 0; p < placemarks.length; p++) {
-    //     var placemark = getPlacemark(placemarks[p]);
-    //     featureCollection.features = featureCollection.features.concat();
-    //   }
+      var featureCollection = fc();
+      var placemarks = get(folders[j], 'Placemark');
+      console.log('got placemarks: ' + placemarks.length);
+      for (var p = 0; p < placemarks.length; p++) {
+        var placemark = getPlacemark(placemarks[p]);
+        featureCollection.features = featureCollection.features.concat(placemark);
+      }
 
-    //   var lineStrings = get(folders[j], 'LineString');
-    //   for (var p = 0; p < lineStrings.length; p++) {
-    //     var placemark = getPlacemark(lineStrings[p].parentNode);
-    //     featureCollection.features = featureCollection.features.concat(placemark);
-    //   }
+      var lineStrings = get(folders[j], 'LineString');
+      for (var p = 0; p < lineStrings.length; p++) {
+        var placemark = getPlacemark(lineStrings[p].parentNode);
+        featureCollection.features = featureCollection.features.concat(placemark);
+      }
 
-    //   featureCollections.push({
-    //     name: xpath.select('name/text()', folders[j]).toString(),
-    //     featureCollection: featureCollection
-    //   });
-    // }
+      featureCollections.push({
+        name: xpath.select('name/text()', folders[j]).toString(),
+        featureCollection: featureCollection
+      });
+    }
 
     function getGeometry(root) {
         var geomNode, geomNodes, i, j, k, geoms = [];
