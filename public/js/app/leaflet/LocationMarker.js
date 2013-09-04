@@ -54,6 +54,14 @@ L.LocationMarker = L.Marker.extend({
     return this;
   },
 
+  setColor: function(color) {
+    this._accuracyCircle.options.color = color;
+    this._accuracyCircle.options.fillColor = color;
+    this._locationMarker.options.color = color;
+    this._locationMarker.options.fillColor = color;
+    return this;
+  },
+
   _onMouseClick: function (e) {
     var wasDragged = this.dragging && this.dragging.moved();
 
