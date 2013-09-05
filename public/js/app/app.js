@@ -5,7 +5,7 @@ if (!Date.now) { Date.now = function() { return +(new Date); }; }
 
 /* collapse main nav when a nav item is clicked. Matters when screen size is small */
 $('#main-nav a').on('click', function(){
-    $("#main-nav-collapse.btn-navbar").click();
+    $("#main-nav-collapse.btn-navbar:visible").click();
 });
 
 var mage = angular.module(
