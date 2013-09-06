@@ -137,7 +137,13 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
           $.param(user), 
           {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
         );
-      }
+      };
+
+      ***REMOVED***.deleteUser = function(user) {
+        return $http.delete(
+          appConstants.rootUrl + '/api/users/' + user._id + '?access_token=' + mageLib.getLocalItem('token')
+        );
+      };
 
       ***REMOVED***.getRoles = function () {
         return $http.get(appConstants.rootUrl + '/api/roles', {params: mageLib.getTokenParams()});
