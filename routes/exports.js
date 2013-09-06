@@ -279,7 +279,7 @@ module.exports = function(app, auth) {
     }
  
   );
-
+/*
   app.get(
     '/api/import',
     function(req, res, next) {
@@ -314,5 +314,5 @@ module.exports = function(app, auth) {
       });
     }
   );
-
+*/
 }
