@@ -159,6 +159,8 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
         console.log('created user ' + data);
         $scope.showStatusMessage("User created", "Nice work!", "alert-success");
         $scope.users.push(data);
+        // TODO this is somewhat of a hack for now, call filter fucntion so users appear
+        $scope.userSearch();
       }).
       error(function (data, status, headers, config) {
         $scope.showStatusMessage("Unable to create user", data, "alert-error");
@@ -204,8 +206,16 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
       });
   }
 
-  $scope.deleteUser = function () {
-
+  $scope.deleteUser = function (user) {
+    UserService.deleteUser(user)
+      .success(function(data, status) {
+        $scope.users = _.filter($scope.users, function(u) {
+          return u._id !== user._id;
+        });
+        // TODO this is somewhat of a hack for now, call filter fucntion so users gets removed
+        $scope.userSearch();
+        $scope.showStatusMessage("User deleted", user.username + " has been successfully deleted", "alert-success");
+      });
   }
 
   $scope.getUserDisplayName = function(id) {
