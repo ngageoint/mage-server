@@ -103,7 +103,7 @@
             <a ng-switch-when="application/octet-stream" ng-href="{{attachmentUrl + attachment.id + '?access_token=' + token}}" target="_blank">Click to view image</a>
             <!-- Due to drastically varying browser behavior, videos will be a download link for the time being -->
             <a ng-switch-when="video/mp4" ng-href="{{attachmentUrl + attachment.id + '?access_token=' + token}}">Download video</a>
-            <input type="button" value="Delete" cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(attachment.id)">
+            <input type="button" value="Delete" ng-show="amAdmin" cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(attachment.id)">
           </div>
         </div>
       </div>
