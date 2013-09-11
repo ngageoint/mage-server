@@ -9,10 +9,12 @@ mage.directive('pdcObservation', ['FeatureTypeService' , function (FeatureTypeSe
     link: function(scope) {
 
       scope.teams = [
-        'NW',
-        'NE',
-        'SE',
-        'SW'
+        'Coastal Cluster',
+        'Coastal Olympic Village',
+        'Mountain Cluster',
+        'Mountain Olympic Village',
+        'Mountain Endurance',
+        'ISEG JOC'
       ];
 
       scope.levels = [{
