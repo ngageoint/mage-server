@@ -229,3 +229,13 @@ div.image-button input {
     left: 0;
     display: none;
 }
+
+.awesome-marker-display {
+  position:static;
+}
+
+.feature-title {
+    border-bottom: 1px solid #F6F6F6;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+}

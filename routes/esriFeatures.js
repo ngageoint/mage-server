@@ -174,7 +174,9 @@ module.exports = function(app, auth) {
       async.each(
         features,
         function(feature, done) {
-          Feature.createFeature(req.layer, {geometry: feature.geometry, properties: feature.attributes}, function(newFeature) {
+          var properties = feature.attributes || {};
+          properties.user = req.user._id;
+          Feature.createFeature(req.layer, {geometry: feature.geometry, properties: properties}, function(newFeature) {
             addResults.push({
               globalId: null,
               objectId: newFeature ? newFeature.properties.OBJECTID : -1,
@@ -215,7 +217,9 @@ module.exports = function(app, auth) {
       features = JSON.parse(features);
       var updateResults = [];
       var updateFeature = function(feature, done) {
-        Feature.updateFeature(req.layer, {geometry: feature.geometry, properties: feature.attributes}, function(err, newFeature) {
+        var properties = feature.attributes || {};
+        properties.user = req.user._id;
+        Feature.updateFeature(req.layer, {geometry: feature.geometry, properties: properties}, function(err, newFeature) {
           if (err || !newFeature) {
             updateResults.push({
               objectId: feature.attributes.OBJECTID,
