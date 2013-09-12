@@ -23,7 +23,8 @@ var mage = angular.module(
     "mage.iconService",
     "mage.aboutService",
     "mage.httpAuthService",
-    "mage.lib"])
+    "mage.lib",
+    "ngSanitize"])
   .config(function ($routeProvider, $locationProvider, $httpProvider) {
     $httpProvider.defaults.withCredentials = true;
     $httpProvider.defaults.headers.post  = {'Content-Type': 'application/x-www-form-urlencoded'};

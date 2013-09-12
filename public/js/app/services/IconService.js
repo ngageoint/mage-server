@@ -31,6 +31,20 @@ angular.module('mage.iconService', ['mage.***REMOVED***s', 'mage.lib'])
         return icon;
       };
 
+      ***REMOVED***.iconHtml = function(feature, o) {
+        var type = _.find(o.types, function(type) { 
+          return type.name == feature.properties.TYPE; 
+        });
+        var icon = type ? type.icon : 'circle';
+
+        var level = _.find(o.levels, function(level) {
+          return level.name === feature.properties.EVENTLEVEL;
+        });
+        var color = level ? level.color : 'blue';
+
+        return '<i cl***REMOVED***="icon-'+icon+'" style="color:'+color+'"></i>';
+      };
+
       return ***REMOVED***;
     }
   ]

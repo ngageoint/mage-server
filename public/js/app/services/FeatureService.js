@@ -70,7 +70,7 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
       featureServiceFunctions.getFeatures = function (layerId) {
         var options = {
           method: "GET",
-          url: appConstants.rootUrl + '/FeatureServer/' + layerId + "/features?properties=OBJECTID,TYPE,EVENTLEVEL,style",
+          url: appConstants.rootUrl + '/FeatureServer/' + layerId + "/features?properties=OBJECTID,TYPE,EVENTLEVEL,EVENTDATE,style",
           params: mageLib.getTokenParams(),
           headers: {
             "Accepts": "application/json", 

@@ -96,7 +96,7 @@ html, body, div.leaflet-container {
 	height: 50px;
 	width: 50px;
 	bottom: 5px;
-	left: 133px;px;
+	left: 133px;
 	z-index: 999;
 }
 
@@ -109,6 +109,27 @@ html, body, div.leaflet-container {
 	z-index: 999;
 }
 
+#list-tool-btn {
+	position: absolute;
+	height: 50px;
+	width: 50px;
+	bottom: 5px;
+	left: 263px;
+	z-index: 999;
+}
+
+.right-panel {
+	right: 5px;
+	top: 110px;
+	z-index: 2000;
+	overflow: auto;
+	background: #D0E7FF;
+	color: #5278A2;
+	position: absolute;
+	height: 90%;
+	width: 83%;
+	border: 2px solid #5278A2;
+}
 
 /* Panels and their contents */
 .panel {
