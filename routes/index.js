@@ -12,6 +12,7 @@ module.exports = function(app, auth) {
 
   app.get('/api', function(req, res) {
     var config = app.get('config');
+    console.log('hit api url');
     res.json(config.api);
   });
 

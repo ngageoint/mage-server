@@ -12,23 +12,28 @@ angular.module('mage.iconService', ['mage.***REMOVED***s', 'mage.lib'])
         });
       }
 
+      ***REMOVED***.cl***REMOVED*** = function(type, o) {
+        var type = _.find(o.types, function(t) { 
+          return t.name == type; 
+        });
+
+        return type ? type.icon : 'circle';  
+      }
+
+      ***REMOVED***.color = function(level, o) {
+        var level = _.find(o.levels, function(l) {
+          return l.name === level;
+        });
+        return level ? level.color : 'blue';
+      }
+ 
       ***REMOVED***.icon = function (feature, o) {
-        var type = _.find(o.types, function(type) { 
-          return type.name == feature.properties.TYPE; 
-        });
-        var icon = type ? type.icon : 'circle';
+        var properties = feature.properties || feature.attributes;
 
-        var level = _.find(o.levels, function(level) {
-          return level.name === feature.properties.EVENTLEVEL;
+        return L.AwesomeMarkers.icon({
+          icon: ***REMOVED***.cl***REMOVED***(properties.TYPE, o),
+          color: ***REMOVED***.color(properties.EVENTLEVEL, o)
         });
-        var color = level ? level.color : 'blue';
-
-        var icon = L.AwesomeMarkers.icon({
-          icon: icon,
-          color: color
-        });
-
-        return icon;
       };
 
       ***REMOVED***.iconHtml = function(feature, o) {

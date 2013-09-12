@@ -1,6 +1,6 @@
 'use strict';
 
-function FeatureController($scope, $location, $timeout, FeatureService, UserService, mageLib, appConstants) {
+function FeatureController($scope, $location, $timeout, FeatureService, UserService, IconService, mageLib, appConstants) {
   var isEditing = false;
   $scope.amAdmin = UserService.amAdmin;
   $scope.token = mageLib.getLocalItem('token');
@@ -164,6 +164,20 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
     alert("The upload has been canceled by the user or the browser dropped the connection.")
   }
 
+  $scope.formatUser = function(userId) {
+    if (!userId) return;
+
+    UserService.getUser(userId)
+      .then(function(user) {
+        return $q.then(user);
+      });
+    return user.firstname + " " + user.lastname;
+  }
+
+  $scope.formatFeatureDate = function(value) {
+    return moment(value).utc().format("YYYY-MM-DD HH:mm:ss");
+  }
+
   /* this watch handles opening observations when a placemark on the map has been clicked. */
   $scope.$watch("activeFeature", function (value) {
     if (!value) return;
@@ -189,6 +203,16 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
       });
   }, true);
 
+  $scope.$watch("observation.attributes.TYPE", function(type) {
+    if (!type) return;
+    $scope.markerCl***REMOVED*** = "icon-" + IconService.cl***REMOVED***(type, {types: $scope.types});
+  });
+
+  $scope.$watch("observation.attributes.EVENTLEVEL", function(level) {
+    if (!level) return;
+    $scope.markerColor = "awesome-marker-icon-" + IconService.color(level, {levels: $scope.levels});
+  });
+
   $scope.$watch("externalFeatureClick", function (value) {
     if (!value) return;
 
@@ -203,7 +227,6 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
       .success(function(data) {
         console.log("attachment deleted");
       });
-
   }
 
   $scope.$watch("markerLocation", function(location) {
