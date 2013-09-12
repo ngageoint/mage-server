@@ -46,9 +46,18 @@
       id="locations-btn"
       cl***REMOVED***="btn" 
       ng-cl***REMOVED***="{true: 'btn-inverse'}[locationServicesEnabled]" 
-      ng-click="locationServicesEnabled = !locationServicesEnabled;locationServices()" 
-      ngm-tap="locationServicesEnabled = !locationServicesEnabled;locationServices()">
+      ng-click="locationServicesEnabled = !locationServicesEnabled;locationServices(); showLocations = !showLocations" 
+      ngm-tap="locationServicesEnabled = !locationServicesEnabled;locationServices(); showLocations = !showLocations">
       <i cl***REMOVED***="icon-users" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[locationServicesEnabled]"></i>
+    </button>
+
+    <button
+      id="list-tool-btn"
+      cl***REMOVED***="btn" 
+      ng-cl***REMOVED***="{true: 'btn-inverse'}[showListTool]" 
+      ng-click="showListTool = !showListTool" 
+      ngm-tap="showListTool = !showListTool">
+      <i cl***REMOVED***="icon-list" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[showListTool]"></i>
     </button>
 
   </div>
@@ -176,17 +185,14 @@
       <button cl***REMOVED***="btn" ng-click="dismissRefresh()" ngm-tap="dismissRefresh()">Ok</button>
     </span>
   </div>
-
-  <div id="location-panel" ng-show="showLocations" cl***REMOVED***="panel panel-medium">
-    <h3>Team Locations</h3>
-    <span>
-      <button cl***REMOVED***="btn btn-inverse" ng-click="dismissLocations()" ngm-tap="dismissLocations()">Cancel</button>
-      <button cl***REMOVED***="btn" ng-click="dismissLocations()" ngm-tap="dismissLocations()">Go</button>
-    </span>
+<!--
+   <div id="location-panel" ng-show="showLocations" cl***REMOVED***="right-panel panel-large">
+    <div data-ng-repeat="location in locations | orderBy: 'locations[0].properties.timestamp':true">
+      <h6><span user-id="location.user">{{user.firstname}} {{user.lastname}}</span> @ {{location.locations[0].properties.timestamp | date : 'medium'}}</h6>
+    </div>
   </div>
-
-  <!--
-  <div id="list-tool-panel">
+  -->
+  <div id="list-tool-panel" ng-show="showListTool">
     <div cl***REMOVED***="navbar">
       <div cl***REMOVED***="navbar-inner">
         <div cl***REMOVED***="container">
@@ -205,99 +211,15 @@
       </div>
     </div>
     <div id="list-tool-list" cl***REMOVED***="top-gap-s">
-      <div cl***REMOVED***="row">
-        <a href="">
-          <div cl***REMOVED***="span1"><i cl***REMOVED***="icon-fist" style="margin-left: 20px"></i></div>
-          <div cl***REMOVED***="span2">Protest</div>
-          <div cl***REMOVED***="span2">Herp Derpity</div>
-          <div cl***REMOVED***="span2">17:45 Z</div>
+      <div cl***REMOVED***="row" ng-cl***REMOVED***="activeFeature.featureId == feature.properties.OBJECTID && 'feature-row-selected'" ng-repeat="feature in layer.features.features | orderBy: 'properties.EVENTDATE' : true">
+        <a ng-click="setActiveFeature(feature, layer)">
+          <div cl***REMOVED***="span1"><span style="margin-left: 20px" ng-bind-html-u***REMOVED***fe="iconTag(feature)"></span></div>
+          <div cl***REMOVED***="span2">{{feature.properties.TYPE}}</div>
+          <div cl***REMOVED***="span2">{{feature.properties.EVENTLEVEL}}</div>
+          <div cl***REMOVED***="span2">{{feature.properties.EVENTDATE | date: 'medium'}}</div>
+          <div ng-show="feature.attachments.length == 0"><i cl***REMOVED***="icon-paper-clip"></i></div>
         </a>
       </div>
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="span1"><i cl***REMOVED***="icon-fist" style="margin-left: 20px"></i></div>
-        <div cl***REMOVED***="span2">Protest</div>
-        <div cl***REMOVED***="span2">Herp Derpity</div>
-        <div cl***REMOVED***="span2">17:45 Z</div>
-      </div>
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="span1"><i cl***REMOVED***="icon-fist" style="margin-left: 20px"></i></div>
-        <div cl***REMOVED***="span2">Protest</div>
-        <div cl***REMOVED***="span2">Herp Derpity</div>
-        <div cl***REMOVED***="span2">17:45 Z</div>
-      </div>
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="span1"><i cl***REMOVED***="icon-fist" style="margin-left: 20px"></i></div>
-        <div cl***REMOVED***="span2">Protest</div>
-        <div cl***REMOVED***="span2">Herp Derpity</div>
-        <div cl***REMOVED***="span2">17:45 Z</div>
-      </div>
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="span1"><i cl***REMOVED***="icon-fist" style="margin-left: 20px"></i></div>
-        <div cl***REMOVED***="span2">Protest</div>
-        <div cl***REMOVED***="span2">Herp Derpity</div>
-        <div cl***REMOVED***="span2">17:45 Z</div>
-      </div>
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="span1"><i cl***REMOVED***="icon-fist" style="margin-left: 20px"></i></div>
-        <div cl***REMOVED***="span2">Protest</div>
-        <div cl***REMOVED***="span2">Herp Derpity</div>
-        <div cl***REMOVED***="span2">17:45 Z</div>
-      </div>
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="span1"><i cl***REMOVED***="icon-fist" style="margin-left: 20px"></i></div>
-        <div cl***REMOVED***="span2">Protest</div>
-        <div cl***REMOVED***="span2">Herp Derpity</div>
-        <div cl***REMOVED***="span2">17:45 Z</div>
-      </div>
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="span1"><i cl***REMOVED***="icon-fist" style="margin-left: 20px"></i></div>
-        <div cl***REMOVED***="span2">Protest</div>
-        <div cl***REMOVED***="span2">Herp Derpity</div>
-        <div cl***REMOVED***="span2">17:45 Z</div>
-      </div>
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="span1"><i cl***REMOVED***="icon-fist" style="margin-left: 20px"></i></div>
-        <div cl***REMOVED***="span2">Protest</div>
-        <div cl***REMOVED***="span2">Herp Derpity</div>
-        <div cl***REMOVED***="span2">17:45 Z</div>
-      </div>
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="span1"><i cl***REMOVED***="icon-fist" style="margin-left: 20px"></i></div>
-        <div cl***REMOVED***="span2">Protest</div>
-        <div cl***REMOVED***="span2">Herp Derpity</div>
-        <div cl***REMOVED***="span2">17:45 Z</div>
-      </div>
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="span1"><i cl***REMOVED***="icon-fist" style="margin-left: 20px"></i></div>
-        <div cl***REMOVED***="span2">Protest</div>
-        <div cl***REMOVED***="span2">Herp Derpity</div>
-        <div cl***REMOVED***="span2">17:45 Z</div>
-      </div>
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="span1"><i cl***REMOVED***="icon-fist" style="margin-left: 20px"></i></div>
-        <div cl***REMOVED***="span2">Protest</div>
-        <div cl***REMOVED***="span2">Herp Derpity</div>
-        <div cl***REMOVED***="span2">17:45 Z</div>
-      </div>
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="span1"><i cl***REMOVED***="icon-fist" style="margin-left: 20px"></i></div>
-        <div cl***REMOVED***="span2">Protest</div>
-        <div cl***REMOVED***="span2">Herp Derpity</div>
-        <div cl***REMOVED***="span2">17:45 Z</div>
-      </div>
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="span1"><i cl***REMOVED***="icon-fist" style="margin-left: 20px"></i></div>
-        <div cl***REMOVED***="span2">Protest</div>
-        <div cl***REMOVED***="span2">Herp Derpity</div>
-        <div cl***REMOVED***="span2">17:45 Z</div>
-      </div>
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="span1"><i cl***REMOVED***="icon-fist" style="margin-left: 20px"></i></div>
-        <div cl***REMOVED***="span2">Protest</div>
-        <div cl***REMOVED***="span2">Herp Derpity</div>
-        <div cl***REMOVED***="span2">17:45 Z</div>
-      </div>
-    </div>
-  </div>-->
+  </div>
 
 </div>

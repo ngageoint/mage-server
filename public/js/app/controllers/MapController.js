@@ -4,7 +4,7 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($scope, $log, $http, appConstants, mageLib, LayerService, FeatureService, LocationService, TimerService) {
+function MapController($scope, $log, $http, appConstants, mageLib, IconService, LayerService, FeatureService, LocationService, TimerService) {
   $scope.customer = appConstants.customer;
 
   $scope.locate = false;
@@ -31,7 +31,16 @@ function MapController($scope, $log, $http, appConstants, mageLib, LayerService,
   $scope.locationServicesEnabled = false;
   $scope.locations = [];
 
+  $scope.showListTool = false;
+  $scope.iconTag = function(feature) {
+    return IconService.iconHtml(feature, $scope);
+  }
+
   $scope.currentLayerId = 0;
+
+  $scope.setActiveFeature = function(feature, layer) {
+    $scope.activeFeature = {feature: feature, layerId: layer.id, featureId: feature.properties.OBJECTID};
+  }
 
   $scope.exportLayers = [];
   $scope.baseLayers = [];
