@@ -57,7 +57,7 @@ angular.module('mage.iconService', ['mage.***REMOVED***s', 'mage.lib'])
         var level = _.find(o.levels, function(level) {
           return level.name === feature.properties.EVENTLEVEL;
         });
-        var color = level ? level.color : 'blue';
+        var color = ***REMOVED***.color(feature.properties.EVENTDATE);
 
         return '<i cl***REMOVED***="icon-'+icon+'" style="color:'+color+'"></i>';
       };
