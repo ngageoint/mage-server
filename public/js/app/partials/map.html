@@ -198,11 +198,9 @@
     <div cl***REMOVED***="navbar">
       <div cl***REMOVED***="navbar-inner">
         <div cl***REMOVED***="container">
-          <!--
           <form cl***REMOVED***="navbar-search pull-right">
             <input type="text" cl***REMOVED***="form-search search-query" ng-model="userQuery" placeholder="Search" ng-change="userSearch()">
           </form>
-        -->
         </div>
       </div>
     </div>
@@ -241,8 +239,9 @@
       <div cl***REMOVED***="row" ng-cl***REMOVED***="activeFeature.featureId == feature.properties.OBJECTID && 'feature-row-selected'" ng-repeat="feature in layer.features.features | orderBy: 'properties.EVENTDATE' : true">
         <a ng-click="setActiveFeature(feature, layer)">
           <div cl***REMOVED***="span1"><span style="margin-left: 20px" ng-bind-html-u***REMOVED***fe="iconTag(feature)"></span></div>
+          <div cl***REMOVED***="span2" user-id="feature.properties.user">{{user.firstname}} {{user.lastname}}</div>
           <div cl***REMOVED***="span2">{{feature.properties.TYPE}}</div>
-          <div cl***REMOVED***="span2">{{feature.properties.EVENTLEVEL}}</div>
+          <div cl***REMOVED***="span1">{{feature.properties.EVENTLEVEL}}</div>
           <div cl***REMOVED***="span2">{{feature.properties.EVENTDATE | date: 'medium'}}</div>
           <div ng-show="feature.attachments.length == 0"><i cl***REMOVED***="icon-paper-clip"></i></div>
         </a>
