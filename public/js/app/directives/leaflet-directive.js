@@ -16,6 +16,7 @@
           draggable: true,
           icon: IconService.defaultIcon()
         });
+        scope.markerLocation = addMarker.getLatLng();
 
         var selectedMarker = L.circleMarker([0,0], {
           radius: 10,
@@ -192,7 +193,7 @@
                   return L.marker(latlng, { icon: icon });
                 }
               } else {
-                var icon = IconService.icon(feature, {types: scope.types, levels: scope.levels});
+                var icon = IconService.icon(feature, {types: scope.types});
                 return L.marker(latlng, { icon: icon });
               }
             },
@@ -221,20 +222,20 @@
                   });
                   // marker.bindPopup(L.popup());
                 } else {
-                  //selectedMarker.setLatLng(marker.getLatLng()).addTo(map);
                   scope.$apply(function(s) {
                     scope.activeFeature = {layerId: layerId, featureId: feature.properties.OBJECTID, feature: feature};
                   });
                 }
-
               });
             }
           }
         };
+
         scope.$watch('activeFeature', function(feature) {
           if (!feature) return
           selectedMarker.setLatLng([feature.feature.geometry.coordinates[1],feature.feature.geometry.coordinates[0]]).addTo(map);
         });
+
         scope.$watch("layer", function(layer) {
             if (!layer) return;
 

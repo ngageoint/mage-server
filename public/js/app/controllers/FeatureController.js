@@ -169,9 +169,8 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
 
     UserService.getUser(userId)
       .then(function(user) {
-        return $q.then(user);
+        return $q.when(user);
       });
-    return user.firstname + " " + user.lastname;
   }
 
   $scope.formatFeatureDate = function(value) {
@@ -208,9 +207,9 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
     $scope.markerCl***REMOVED*** = "icon-" + IconService.cl***REMOVED***(type, {types: $scope.types});
   });
 
-  $scope.$watch("observation.attributes.EVENTLEVEL", function(level) {
-    if (!level) return;
-    $scope.markerColor = "awesome-marker-icon-" + IconService.color(level, {levels: $scope.levels});
+  $scope.$watch("observation.attributes.EVENTDATE", function(timestamp) {
+    if (!timestamp) return;
+    $scope.markerColor = "awesome-marker-icon-" + IconService.color(timestamp);
   });
 
   $scope.$watch("externalFeatureClick", function (value) {
@@ -232,6 +231,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
   $scope.$watch("markerLocation", function(location) {
     if (!isEditing) {
       $scope.featureLocation = location;
+      $scope.observation.attributes.EVENTDATE = new Date().getTime();
     }
   }, true);
 }
