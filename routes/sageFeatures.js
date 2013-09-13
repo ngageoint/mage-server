@@ -5,13 +5,14 @@ module.exports = function(app, auth) {
   // in tight schedule and did not get the opportunity to all the routes in.
 
   var Feature = require('../models/feature')
+    , async = require('async')
     , access = require('../access')
     , geometryFormat = require('../format/geoJsonFormat');
 
   var geojson = require('../transformers/geojson');
 
   var parseQueryParams = function(req, res, next) {
-    var parameters = {};
+    var parameters = {filters: []};
 
     var properties = req.param('properties');
     if (properties) {
@@ -28,6 +29,14 @@ module.exports = function(app, auth) {
       parameters.geometries = geometryFormat.parse('geometry', geometry);
     }
 
+    if (parameters.geometries) {
+      parameters.geometries.forEach(function(geometry) {
+        parameters.filters.push({
+          geometry: geometry
+        });
+      });
+    }
+
     req.parameters = parameters;
 
     next();
@@ -41,28 +50,17 @@ module.exports = function(app, auth) {
     function (req, res) {
       console.log("SAGE ESRI Features GET REST Service Requested");
 
-      // create filters for feature query
-      var filters = null;
-
-      var geometries = req.parameters.geometries;
-      if (geometries) {
-        filters = [];
-        geometries.forEach(function(geometry) {
-          filters.push({
-            geometry: geometry
-          });
-        });
-      }
-
       var respond = function(features) {
         var response = geojson.transform(features, req.parameters.properties);
         res.json(response);
       }
 
-      if (filters) {
+      console.log('filters', req.parameters.filters);
+
+      if (req.parameters.filters.length) {
         allFeatures = [];
         async.each(
-          filters, 
+          req.parameters.filters, 
           function(filter, done) {
             Feature.getFeatures(req.layer, filter, function (features) {
               if (features) {
