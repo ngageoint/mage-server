@@ -79,23 +79,6 @@ var createFeatureCollection = function(layer) {
     } 
       
     console.log("Successfully created feature collection for layer " + layer.name);
-
-    var callback = function(err, index) {
-      if (err) {
-        console.error(err);
-      }
-
-      console.log('Created index ' + index);
-    }
-
-    // Create an index on the id field (not same as _id, which automatically gets an index)
-    collection.ensureIndex({'properties.OBJECTID': 1}, {unique: true, background: true}, callback);
-
-    // Create an index on the goemetry field
-    collection.ensureIndex({'geometry': '2dsphere'}, callback);
-
-    // Create an index on the attachment.id field
-    collection.ensureIndex({'attachments.id': 1}, {unique: true, background: true, sparse: true}, callback);
   });
 }
 

@@ -229,7 +229,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
   }
 
   $scope.$watch("markerLocation", function(location) {
-    if (!isEditing) {
+    if (!isEditing && $scope.showObservation) {
       $scope.featureLocation = location;
       $scope.observation.attributes.EVENTDATE = new Date().getTime();
     }
