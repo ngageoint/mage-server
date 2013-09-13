@@ -138,6 +138,7 @@ html, body, div.leaflet-container {
 	z-index: 2000;
 	overflow: auto;
 	background: #D0E7FF;
+	background: rgba(208, 231, 255, 0.8);
 	color: #5278A2;
 	position: absolute;
 	height: 90%;
@@ -206,11 +207,12 @@ html, body, div.leaflet-container {
 }
 
 #list-tool-panel {
-	bottom: 15px;
-	right: 15px;
+	bottom: 0px;
+	right: 0px;
 	height: 250px;
-	width: 960px;
+	width: 750px;
 	z-index: 2000;
+	background: #D0E7FF;
 	background: rgba(208, 231, 255, 0.8);
 	color: #5278A2;
 	position: absolute;
@@ -224,6 +226,7 @@ html, body, div.leaflet-container {
 
 #list-tool-list .row:nth-child(odd)  {
 	background: #def;
+	background: rgba(221, 238, 255, 0.6);
 }
 
 #list-tool-list .row:hover {
@@ -233,10 +236,11 @@ html, body, div.leaflet-container {
 
 #user-location-panel {
 	top: 110px;
-	right: 15px;
-	height: 500px;
+	right: 0px;
+	height: 400px;
 	width: 270px;
 	z-index: 2000;
+	background: #D0E7FF;
 	background: rgba(208, 231, 255, 0.8);
 	color: #5278A2;
 	position: absolute;
@@ -244,13 +248,14 @@ html, body, div.leaflet-container {
 }
 
 #user-location-panel-list {
-	height: 445px;
+	height: 345px;
 	overflow: auto;
 	padding: 5px;
 }
 
 #user-location-panel-list .location:nth-child(even)  {
 	background: #def;
+	background: rgba(221, 238, 255, 0.6);
 }
 
 #user-location-panel-list .location:hover {

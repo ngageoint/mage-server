@@ -239,3 +239,7 @@ div.image-button input {
     margin-bottom: 10px;
     padding-bottom: 5px;
 }
+
+.small-text {
+    font-size: 0.8em;
+}
