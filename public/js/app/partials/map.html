@@ -186,7 +186,7 @@
       <button cl***REMOVED***="btn" ng-click="dismissRefresh()" ngm-tap="dismissRefresh()">Ok</button>
     </span>
   </div>
-<!--
+  <!--
    <div id="location-panel" ng-show="showLocations" cl***REMOVED***="right-panel panel-large">
     <div data-ng-repeat="location in locations | orderBy: 'locations[0].properties.timestamp':true">
       <h6><span user-id="location.user">{{user.firstname}} {{user.lastname}}</span> @ {{location.locations[0].properties.timestamp | date : 'medium'}}</h6>
@@ -211,8 +211,8 @@
       <h4>Recent User Locations</h4>
       <div cl***REMOVED***="location" data-ng-repeat="location in locations | filter: userQuery | orderBy: 'locations[0].properties.timestamp':true">
         <strong user-id="location.user" cl***REMOVED***="top-gap-s">{{user.firstname}} {{user.lastname}}</strong>
-        <div style="display: inline; float:right;">{{location.locations[0].properties.timestamp | date : 'medium'}}</div>
-        <div>{{location.locations[0].geometry.coordinates[1] | number: 3}}, {{location.locations[0].geometry.coordinates[0] | number: 3}}</div>
+        <div cl***REMOVED***="small-text">{{location.locations[0].properties.timestamp | date : 'medium'}}</div>
+        <div cl***REMOVED***="small-text">{{location.locations[0].geometry.coordinates[1] | number: 3}}, {{location.locations[0].geometry.coordinates[0] | number: 3}}</div>
       </div>
   </div>
 </div>
