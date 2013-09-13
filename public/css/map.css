@@ -231,6 +231,37 @@ html, body, div.leaflet-container {
 	color: #eee;
 }
 
+#user-location-panel {
+	top: 110px;
+	right: 15px;
+	height: 500px;
+	width: 270px;
+	z-index: 2000;
+	background: rgba(208, 231, 255, 0.8);
+	color: #5278A2;
+	position: absolute;
+	border: 2px solid #5278A2;
+}
+
+#user-location-panel-list {
+	height: 445px;
+	overflow: auto;
+	padding: 5px;
+}
+
+#user-location-panel-list .location:nth-child(even)  {
+	background: #def;
+}
+
+#user-location-panel-list .location:hover {
+	background: #9ac;
+	color: #eee;
+}
+
+.location {
+	padding: 5px;
+}
+
 /* Progress bar stuff */
 .percent {
     position: absolute; width: 300px; height: 14px; z-index: 1; text-align: center; font-size: 0.8em; color: white;
