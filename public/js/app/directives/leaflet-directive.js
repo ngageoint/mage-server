@@ -18,16 +18,6 @@
         });
         scope.markerLocation = addMarker.getLatLng();
 
-        var selectedMarker = L.circleMarker([0,0], {
-          radius: 10,
-          weight: 5,
-          color: '#5278A2',
-          stroke: true,
-          opacity: 1,
-          fill: false,
-          clickable: false
-        });
-
         map.on("click", function(e) {
           addMarker.setLatLng(e.latlng);
           if (!map.hasLayer(addMarker)) {
@@ -47,6 +37,7 @@
 
         var baseLayer = {};
         var layers = {};
+        var markers = {};
 
         var locationLayer = L.locationMarker([0,0], {color: '#136AEC'});
 
@@ -178,7 +169,7 @@
         });
 
         var activeMarker;
-        var featureConfig = function(layerId) {
+        var featureConfig = function(layer) {
           return {
             pointToLayer: function (feature, latlng) {
               var icon;
@@ -194,7 +185,10 @@
                 }
               } else {
                 var icon = IconService.icon(feature, {types: scope.types});
-                return L.marker(latlng, { icon: icon });
+                var marker =  L.marker(latlng, { icon: icon });
+
+                markers[layer.id][feature.properties.OBJECTID] = marker;
+                return marker;
               }
             },
             style: function(feature) {
@@ -218,12 +212,12 @@
                 activeMarker = marker;
                 if (feature.properties.style) {
                   scope.$apply(function(s) {
-                    scope.externalFeatureClick = {layerId: layerId, featureId: feature.properties.OBJECTID};
+                    scope.externalFeatureClick = {layerId: layer.id, featureId: feature.properties.OBJECTID};
                   });
                   // marker.bindPopup(L.popup());
                 } else {
                   scope.$apply(function(s) {
-                    scope.activeFeature = {layerId: layerId, featureId: feature.properties.OBJECTID, feature: feature};
+                    scope.activeFeature = {layerId: layer.id, featureId: feature.properties.OBJECTID, feature: feature};
                   });
                 }
               });
@@ -231,9 +225,22 @@
           }
         };
 
-        scope.$watch('activeFeature', function(feature) {
-          if (!feature) return
-          selectedMarker.setLatLng([feature.feature.geometry.coordinates[1],feature.feature.geometry.coordinates[0]]).addTo(map);
+        scope.$watch('activeFeature', function(newFeature, oldFeature) {
+          console.log('active feature changed');
+          if (!newFeature && oldFeature) {
+            var marker = markers[oldFeature.layerId][oldFeature.featureId];
+            marker.unselect();
+          } else if (newFeature) {
+            var marker = markers[newFeature.layerId][newFeature.featureId];
+            marker.select();
+          }
+        });
+
+        scope.$watch('featureTableClick', function(o) {
+          if (!o) return;
+
+          var marker = markers[o.layerId][o.featureId];
+          layers[o.layerId].leafletLayer.zoomToShowLayer(marker);
         });
 
         scope.$watch("layer", function(layer) {
@@ -257,25 +264,23 @@
                 }
                 newLayer.addTo(map).bringToFront();
               } else {
+                markers[layer.id] = {};
                 newLayer = L.markerClusterGroup()
-                  .addLayer(L.geoJson(layer.features, featureConfig(layer.id)))
+                  .addLayer(L.geoJson(layer.features, featureConfig(layer)))
                   .addTo(map)
                   .bringToFront();
               }
 
-              layers[layer.id] = newLayer;
+              layers[layer.id] = {
+                leafletLayer: newLayer,
+                layer: layer
+              };
             } else {
               // remove from map
-              map.removeLayer(layers[layer.id]);
+              map.removeLayer(layers[layer.id].leafletLayer);
               delete layers[layer.id];
             }
         }); // watch layer
-
-        scope.$watch("showObservation", function(show) {
-          if (!show) {
-            map.removeLayer(selectedMarker);
-          }
-        });
 
         scope.$watch("newFeature", function(feature) {
           if (!feature) return;
@@ -283,7 +288,7 @@
           map.removeLayer(addMarker);
           var layer = layers[scope.currentLayerId];
           if (layer) {
-            layer.addLayer(L.geoJson(feature, featureConfig(scope.currentLayerId)));
+            layer.leafletLayer.addLayer(L.geoJson(feature, featureConfig(layer.layer)));
           }
         }); // watch newFeature
 
@@ -296,14 +301,13 @@
         scope.$watch("externalFeature", function(value) {
           if (!value) return;
 
-
           activeMarker.bindPopup(L.popup().setContent(value.attributes.description)).openPopup();
         });
 
         scope.$watch("deletedFeature", function(feature) {
           if (!feature) return;
 
-          var layer = layers[feature.layerId];
+          var layer = layers[feature.layerId].leafletLayer;
           if (layer) {
             layer.removeLayer(activeMarker);
           }

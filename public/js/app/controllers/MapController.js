@@ -38,8 +38,9 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
 
   $scope.currentLayerId = 0;
 
-  $scope.setActiveFeature = function(feature, layer) {
+  $scope.setActiveFeature = function(feature, layer) {    
     $scope.activeFeature = {feature: feature, layerId: layer.id, featureId: feature.properties.OBJECTID};
+    $scope.featureTableClick = {feature: feature, layerId: layer.id, featureId: feature.properties.OBJECTID};
   }
 
   $scope.exportLayers = [];
