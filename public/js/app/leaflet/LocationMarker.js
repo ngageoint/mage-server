@@ -77,7 +77,7 @@ L.LocationMarker = L.Marker.extend({
       originalEvent: e,
       latlng: this._latlng
     });
-  },
+  }
 });
 
 L.locationMarker = function (latlng, options) {
