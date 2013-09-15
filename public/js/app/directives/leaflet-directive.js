@@ -240,7 +240,9 @@
           if (!o) return;
 
           var marker = markers[o.layerId][o.featureId];
-          layers[o.layerId].leafletLayer.zoomToShowLayer(marker);
+          layers[o.layerId].leafletLayer.zoomToShowLayer(marker, function() {
+            // No-op, leaflet errors if no callback function
+          });
         });
 
         scope.$watch("layer", function(layer) {
