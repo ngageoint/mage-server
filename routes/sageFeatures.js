@@ -6,35 +6,38 @@ module.exports = function(app, auth) {
 
   var Feature = require('../models/feature')
     , async = require('async')
+    , moment = require('moment')
     , access = require('../access')
     , geometryFormat = require('../format/geoJsonFormat');
 
   var geojson = require('../transformers/geojson');
 
   var parseQueryParams = function(req, res, next) {
-    var parameters = {filters: []};
+    var parameters = {filters: {}};
 
     var properties = req.param('properties');
     if (properties) {
       parameters.properties = properties.split(",");
     }
 
+    var startTime = req.param('startTime');
+    if (startTime) {
+      parameters.filters.startTime = moment.utc(startTime).toDate();
+    }
+
+    var endTime = req.param('endTime');
+    if (endTime) {
+      parameters.filters.endTime = moment.utc(endTime).toDate();
+    }
+
     var bbox = req.param('bbox');
     if (bbox) {
-      parameters.geometries = geometryFormat.parse('bbox', bbox);
+      parameters.filters.geometries = geometryFormat.parse('bbox', bbox);
     }
 
     var geometry = req.param('geometry');
     if (geometry) {
-      parameters.geometries = geometryFormat.parse('geometry', geometry);
-    }
-
-    if (parameters.geometries) {
-      parameters.geometries.forEach(function(geometry) {
-        parameters.filters.push({
-          geometry: geometry
-        });
-      });
+      parameters.filters.geometries = geometryFormat.parse('geometry', geometry);
     }
 
     req.parameters = parameters;
@@ -55,14 +58,16 @@ module.exports = function(app, auth) {
         res.json(response);
       }
 
-      console.log('filters', req.parameters.filters);
+      console.log('filters: ', JSON.stringify(req.parameters.filters));
 
-      if (req.parameters.filters.length) {
+      var filters = req.parameters.filters;
+      if (filters.geometries) {
         allFeatures = [];
         async.each(
-          req.parameters.filters, 
-          function(filter, done) {
-            Feature.getFeatures(req.layer, filter, function (features) {
+          filters.geometries, 
+          function(geometry, done) {
+            filters.geometry = geometry
+            Feature.getFeatures(req.layer, filters, function (features) {
               if (features) {
                 allFeatures = allFeatures.concat(features);
               }
@@ -75,8 +80,7 @@ module.exports = function(app, auth) {
           }
         );
       } else {
-        var filter = {};
-        Feature.getFeatures(req.layer, filter, function (features) {
+        Feature.getFeatures(req.layer, filters, function (features) {
           respond(features);
         });
       }

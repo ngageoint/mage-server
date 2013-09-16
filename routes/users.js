@@ -157,7 +157,12 @@ module.exports = function(app, auth) {
     p***REMOVED***port.authenticate(authenticationStrategy),
     provision.check(provisionStrategy),
     function(req, res) {
-       Token.createTokenForUser(req.user, function(err, token) {
+      var options = {user: req.user};
+      if (req.provisionedDevice) {
+        options.device = req.provisionedDevice;
+      }
+
+      Token.createToken(options, function(err, token) {
         if (err) {
           return res.send(500, "Error generating token");
         }

@@ -1,4 +1,5 @@
 var mongoose = require('mongoose')
+  , moment = require('moment')
   , Counter = require('./counter');
 
 var Schema = mongoose.Schema;
@@ -37,14 +38,23 @@ var featureModel = function(layer) {
   return model;
 }
 
-exports.getFeatures = function(layer, filter, callback) {
+exports.getFeatures = function(layer, filters, callback) {
   var conditions = {};
   
-  var query = featureModel(layer).find(conditions).lean(false);
+  var query = featureModel(layer).find(conditions);
 
   // Filter by geometry
-  if (filter.geometry) {
-    query.where('geometry').intersects.geometry(filter.geometry);
+  if (filters.geometry) {
+    query.where('geometry').intersects.geometry(filters.geometry);
+  }
+
+  var timestampFilter = {};
+  if (filters.startTime) {
+    query.where('properties.timestamp').gte(filters.startTime);
+  }
+
+  if (filters.endTime) {
+    query.where('properties.timestamp').lt(filters.endTime);
   }
 
   query.exec(function (err, features) {
@@ -83,7 +93,7 @@ exports.createFeature = function(layer, data, callback) {
   Counter.getNext(name, function(id) {
     var properties = data.properties ? data.properties : {};
     properties.OBJECTID = id;
-    properties.timestamp = new Date();
+    properties.timestamp = moment.utc().toDate();
 
     var feature = {
       geometry: {
