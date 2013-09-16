@@ -234,6 +234,12 @@ html, body, div.leaflet-container {
 	color: #eee;
 }
 
+.feature-row-selected {
+	background: #5077A4;
+	background: rgba(80, 119, 164, 0.7);
+	color: #eee;
+}
+
 #user-location-panel {
 	top: 110px;
 	right: 0px;

@@ -1,6 +1,6 @@
 'use strict';
 
-function FeatureController($scope, $location, $timeout, FeatureService, UserService, IconService, mageLib, appConstants) {
+function FeatureController($scope, $location, $timeout, FeatureService, MapService, UserService, IconService, mageLib, appConstants) {
   var isEditing = false;
   $scope.amAdmin = UserService.amAdmin;
   $scope.token = mageLib.getLocalItem('token');
@@ -9,9 +9,13 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
     The observation functions are a mix of copy pasta from the observation directive, hopefully cleaned up a bit
     and using the FeatureService. May need to be cleaned up after PDC.
   */
+  $scope.checkCurrentMapPanel = function (mapPanel) {
+    return MapService.getCurrentMapPanel() == mapPanel;
+  }
+
   $scope.newObservation = function () {
     $scope.observationCloseText = "Cancel";
-    $scope.showObservation = true;
+    MapService.setCurrentMapPanel('observation');
     $scope.observation = $scope.createNewObservation();
     $scope.featureLocation = $scope.markerLocation;
     $scope.attachments = [];
@@ -19,7 +23,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
   }
 
   $scope.cancelObservation = function () {
-    $scope.showObservation = false;
+    MapService.setCurrentMapPanel('none');
     $scope.activeFeature = null;
     isEditing = false;
   }
@@ -42,7 +46,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
       FeatureService.updateFeature($scope.currentLayerId, $scope.observation)
         .success(function (data) {
           var objectId = data.addResults ? data.addResults[0].objectId : data.updateResults[0].objectId;
-          $scope.showObservation = false;
+          MapService.setCurrentMapPanel('none');
           $scope.activeFeature = null;
           isEditing = false;
           $scope.updatedFeature = {
@@ -73,7 +77,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
       FeatureService.createFeature($scope.currentLayerId, $scope.observation)
         .success(function (data) {
           var objectId = data.addResults ? data.addResults[0].objectId : data.updateResults[0].objectId;
-          $scope.showObservation = false;
+          MapService.setCurrentMapPanel('none');
           $scope.activeFeature = null;
           isEditing = false;
 
@@ -103,7 +107,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
     FeatureService.deleteObservation($scope.activeFeature.layerId, $scope.activeFeature.featureId)
       .success(function (data) {
         console.log('observation deleted, attempting to remove marker from map');
-        $scope.showObservation = false;
+        MapService.setCurrentMapPanel('none');
         $scope.deletedFeature = $scope.activeFeature;
         isEditing = false;
       });
@@ -190,7 +194,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
         $scope.featureLocation = {lat: data.geometry.coordinates[1], lng: data.geometry.coordinates[0]};
         $scope.attachments = [];
         $scope.files = [];
-        $scope.showObservation = true;
+        MapService.setCurrentMapPanel('observation');
         isEditing = true;
 
         FeatureService.getAttachments(value.layerId, value.featureId).
@@ -229,7 +233,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
   }
 
   $scope.$watch("markerLocation", function(location) {
-    if (!isEditing && $scope.showObservation) {
+    if (!isEditing && MapService.getCurrentMapPanel() =='observation') {
       $scope.featureLocation = location;
       $scope.observation.attributes.EVENTDATE = new Date().getTime();
     }

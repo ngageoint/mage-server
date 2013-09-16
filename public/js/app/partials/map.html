@@ -12,8 +12,8 @@
   <!-- <div external active-feature="activeFeature" currentlayerid="currentLayerId" layers="layers"></div> -->
   
   <!-- layer picker button -->
-  <button cl***REMOVED***="btn" id="settings" ng-click="openSettings()" ngm-tap="openSettings()"><i cl***REMOVED***="icon-layers icon-sage"></i></button>
-  <button cl***REMOVED***="btn" id="export" ng-click="openExport()" ngm-tap="openExport()"><i cl***REMOVED***="icon-cloud-download icon-sage"></i></button>
+  <button cl***REMOVED***="btn" id="settings" ng-click="setCurrentMapPanel('layers')" ngm-tap="setCurrentMapPanel('layers')"><i cl***REMOVED***="icon-layers icon-sage"></i></button>
+  <button cl***REMOVED***="btn" id="export" ng-click="setCurrentMapPanel('export')" ngm-tap="setCurrentMapPanel('export')"><i cl***REMOVED***="icon-cloud-download icon-sage"></i></button>
 
   <!-- Button bar -->
   <div id="button-bar">
@@ -65,9 +65,9 @@
 
   <!-- Panels -->
   <!-- Settings panel -->
-  <div id="settings-panel" ng-show="showSettings" cl***REMOVED***="panel panel-large">
+  <div id="settings-panel" ng-show="checkCurrentMapPanel('layers')" cl***REMOVED***="panel panel-large">
     <div cl***REMOVED***="pull-right panel-close">
-      <i ng-click="showSettings = false" ngm-tap="showSettings = false" cl***REMOVED***="close">&times;</i>
+      <i ng-click="setCurrentMapPanel('none')" ngm-tap="setCurrentMapPanel('none')" cl***REMOVED***="close">&times;</i>
     </div>
     <div cl***REMOVED***="panel-content">
       <form cl***REMOVED***="form">
@@ -117,15 +117,15 @@
       </form>
       
       <span>
-        <button cl***REMOVED***="btn btn-mobile" ng-click="closeSettings()" ngm-tap="closeSettings()">Close</button>
+        <button cl***REMOVED***="btn btn-mobile" ng-click="setCurrentMapPanel('none')" ngm-tap="setCurrentMapPanel('none')">Close</button>
       </span>
     </div>
   </div>
 
   <!-- Export panel -->
-  <div id="export-panel" ng-show="showExport" cl***REMOVED***="panel panel-large">
+  <div id="export-panel" ng-show="checkCurrentMapPanel('export')" cl***REMOVED***="panel panel-large">
     <div cl***REMOVED***="pull-right panel-close">
-      <i ng-click="closeExport()" ngm-tap="closeExport()" cl***REMOVED***="close">&times;</i>
+      <i ng-click="setCurrentMapPanel('none')" ngm-tap="setCurrentMapPanel('none')" cl***REMOVED***="close">&times;</i>
     </div>
     <div cl***REMOVED***="panel-content">
       <h3>Export to KML</h3>
@@ -159,7 +159,7 @@
           </select>
       </div>
       </form>
-      <button cl***REMOVED***="btn btn-inverse" ng-click="closeExport()" ngm-tap="closeExport()">Cancel</button>
+      <button cl***REMOVED***="btn btn-inverse" ng-click="setCurrentMapPanel('none')" ngm-tap="setCurrentMapPanel('none')">Cancel</button>
       <button cl***REMOVED***="btn" ng-click="export()" ngm-tap="export()">Export</button>
       <div id="export-error-message" cl***REMOVED***="top-gap alert alert-error" style="display: none;"></div>
     </div>
@@ -199,12 +199,11 @@
       <div cl***REMOVED***="navbar-inner">
         <div cl***REMOVED***="container">
           <form cl***REMOVED***="navbar-search pull-right">
-            <input type="text" cl***REMOVED***="form-search search-query" ng-model="userQuery" placeholder="Search" ng-change="userSearch()">
+            <input type="text" cl***REMOVED***="form-search search-query" ng-model="userQuery" placeholder="Search">
           </form>
         </div>
       </div>
-    </div>
-    
+    </div> 
     <div id="user-location-panel-list">
       <h4>Recent User Locations</h4>
       <div cl***REMOVED***="location pointer" data-ng-repeat="location in locations | filter: userQuery | orderBy: 'locations[0].properties.timestamp':true" ng-click="locationClick(location)">
@@ -212,35 +211,38 @@
         <div cl***REMOVED***="small-text">{{location.locations[0].properties.timestamp | date : 'medium'}}</div>
         <div cl***REMOVED***="small-text">{{location.locations[0].geometry.coordinates[1] | number: 3}}, {{location.locations[0].geometry.coordinates[0] | number: 3}}</div>
       </div>
+    </div>
   </div>
-</div>
 
   <div id="list-tool-panel" ng-show="showListTool">
     <div cl***REMOVED***="navbar">
       <div cl***REMOVED***="navbar-inner">
         <div cl***REMOVED***="container">
-          <ul cl***REMOVED***="nav navbar-nav">
-            <li ng-cl***REMOVED***="featureFilterCl***REMOVED***('all')"><a href="" ng-click="changeCurrentUserFilter('all')">All Observations</a></li>
-            <li ng-cl***REMOVED***="featureFilterCl***REMOVED***('30m')"><a href="" ng-click="changeCurrentUserFilter('active')">Last 30 Minutes</a></li>
-            <li ng-cl***REMOVED***="featureFilterCl***REMOVED***('2h')"><a href="" ng-click="changeCurrentUserFilter('unregistered')">2 Hours</a></li>
-            <li ng-cl***REMOVED***="featureFilterCl***REMOVED***('6h')"><a href="" ng-click="changeCurrentUserFilter('active')">6 Hours</a></li>
-            <li ng-cl***REMOVED***="featureFilterCl***REMOVED***('12h')"><a href="" ng-click="changeCurrentUserFilter('active')">12 Hours</a></li>
-            <li ng-cl***REMOVED***="featureFilterCl***REMOVED***('24')"><a href="" ng-click="changeCurrentUserFilter('active')">24 Hours</a></li>
-          </ul>
           <form cl***REMOVED***="navbar-search pull-right">
-            <input type="text" cl***REMOVED***="form-search search-query" ng-model="userQuery" placeholder="Search" ng-change="userSearch()">
+            <!--<select style="margin-top: 7px;">
+              <option>All Observations</option>
+              <option>Last 30 Minutes</option>
+              <option>Last Hour</option>
+              <option>2 Hours</option>
+              <option>6 Hours</option>
+              <option>12 Hours</option>
+              <option>24 Hours</option>
+            </select>-->
+            <input type="text" cl***REMOVED***="form-search search-query" ng-model="observationQuery" placeholder="Search">
           </form>
         </div>
       </div>
     </div>
     <div id="list-tool-list" cl***REMOVED***="top-gap-s">
-      <div cl***REMOVED***="row pointer" ng-cl***REMOVED***="activeFeature.featureId == feature.properties.OBJECTID && 'feature-row-selected'" ng-repeat="feature in layer.features.features | orderBy: 'properties.EVENTDATE' : true">
+
+      <!--<div cl***REMOVED***="row" ng-cl***REMOVED***="activeFeature.featureId == feature.properties.OBJECTID && 'feature-row-selected'" ng-repeat="feature in layer.features.features | orderBy: 'properties.EVENTDATE' : true | filter: observationQuery">-->
+      <div cl***REMOVED***="row pointer" ng-cl***REMOVED***="activeFeature.featureId == feature.properties.OBJECTID && 'feature-row-selected'" ng-repeat="feature in layer.features.features | orderBy: 'properties.EVENTDATE' : true | filter: observationQuery">
         <a ng-click="setActiveFeature(feature, layer)">
           <div cl***REMOVED***="span1"><span style="margin-left: 20px" ng-bind-html-u***REMOVED***fe="iconTag(feature)"></span></div>
           <div cl***REMOVED***="span2" user-id="feature.properties.userId">{{user.firstname}} {{user.lastname}}</div>
           <div cl***REMOVED***="span2">{{feature.properties.TYPE}}</div>
           <div cl***REMOVED***="span1">{{feature.properties.EVENTLEVEL}}</div>
-          <div cl***REMOVED***="span2">{{feature.properties.EVENTDATE | date: 'medium'}}</div>
+          <div cl***REMOVED***="span3">{{feature.properties.EVENTDATE | date: 'medium'}}</div>
           <div ng-show="feature.attachments.length == 0"><i cl***REMOVED***="icon-paper-clip"></i></div>
         </a>
       </div>

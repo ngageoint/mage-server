@@ -4,7 +4,7 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($scope, $log, $http, appConstants, mageLib, IconService, UserService, LayerService, FeatureService, LocationService, TimerService) {
+function MapController($scope, $log, $http, appConstants, mageLib, IconService, UserService, MapService, LayerService, FeatureService, LocationService, TimerService) {
   $scope.customer = appConstants.customer;
 
   $scope.locate = false;
@@ -156,6 +156,14 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
     } else {
       TimerService.stop(timerName);
     }
+  }
+
+  $scope.checkCurrentMapPanel = function (mapPanel) {
+    return MapService.getCurrentMapPanel() == mapPanel;
+  }
+
+  $scope.setCurrentMapPanel = function (mapPanel) {
+    MapService.setCurrentMapPanel(mapPanel);
   }
 
   /* Goto address, need to implement some geocoding like the android app does, otherwise pull it out for PDC. */
