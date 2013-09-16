@@ -207,7 +207,7 @@
     
     <div id="user-location-panel-list">
       <h4>Recent User Locations</h4>
-      <div cl***REMOVED***="location pointer" data-ng-repeat="location in locations | filter: userQuery | orderBy: 'locations[0].properties.timestamp':true">
+      <div cl***REMOVED***="location pointer" data-ng-repeat="location in locations | filter: userQuery | orderBy: 'locations[0].properties.timestamp':true" ng-click="locationClick(location)">
         <strong user-id="location.user" cl***REMOVED***="top-gap-s">{{user.firstname}} {{user.lastname}}</strong>
         <div cl***REMOVED***="small-text">{{location.locations[0].properties.timestamp | date : 'medium'}}</div>
         <div cl***REMOVED***="small-text">{{location.locations[0].geometry.coordinates[1] | number: 3}}, {{location.locations[0].geometry.coordinates[0] | number: 3}}</div>

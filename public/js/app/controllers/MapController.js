@@ -43,6 +43,10 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
     $scope.featureTableClick = {feature: feature, layerId: layer.id, featureId: feature.properties.OBJECTID};
   }
 
+  $scope.locationClick = function(location) {
+    $scope.locationTableClick = location;
+  }
+
   $scope.exportLayers = [];
   $scope.baseLayers = [];
   $scope.featureLayers = [];
