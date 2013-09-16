@@ -234,9 +234,7 @@
       </div>
     </div>
     <div id="list-tool-list" cl***REMOVED***="top-gap-s">
-
-      <!--<div cl***REMOVED***="row" ng-cl***REMOVED***="activeFeature.featureId == feature.properties.OBJECTID && 'feature-row-selected'" ng-repeat="feature in layer.features.features | orderBy: 'properties.EVENTDATE' : true | filter: observationQuery">-->
-      <div cl***REMOVED***="row pointer" ng-cl***REMOVED***="activeFeature.featureId == feature.properties.OBJECTID && 'feature-row-selected'" ng-repeat="feature in layer.features.features | orderBy: 'properties.EVENTDATE' : true | filter: observationQuery">
+      <div cl***REMOVED***="row pointer" ng-cl***REMOVED***="{'feature-row-selected': activeFeature.featureId == feature.properties.OBJECTID}" ng-repeat="feature in layer.features.features | orderBy: 'properties.EVENTDATE' : true | filter: observationQuery">
         <a ng-click="setActiveFeature(feature, layer)">
           <div cl***REMOVED***="span1"><span style="margin-left: 20px" ng-bind-html-u***REMOVED***fe="iconTag(feature)"></span></div>
           <div cl***REMOVED***="span2" user-id="feature.properties.userId">{{user.firstname}} {{user.lastname}}</div>
