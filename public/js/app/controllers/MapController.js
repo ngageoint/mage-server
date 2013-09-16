@@ -216,14 +216,16 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
       TimerService.start(timerName, 5000, function() {
       LocationService.getLocations().
         success(function (data, status, headers, config) {
-          _.each(data, function(userLocation) {
+          $scope.locations = _.filter(data, function(user) {
+            return user.locations.length;
+          });
+          _.each($scope.locations, function(userLocation) {
               UserService.getUser(userLocation.user)
                 .then(function(user) {
                   userLocation.userModel = user.data || user;
                 });
               
             });
-          $scope.locations = data;
         }).
         error(function () {
           console.log('error getting locations');
