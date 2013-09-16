@@ -250,6 +250,7 @@
 
           var marker = currentLocationMarkers[location.user];
           marker.openPopup();
+          marker.fireEvent('click');
           map.panTo(marker.getLatLng());
         });
 
