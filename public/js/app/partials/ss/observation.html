@@ -16,9 +16,10 @@
       </div>    
       <div cl***REMOVED***="span10">
         <div>
-          <strong cl***REMOVED***="muted" user-id="observation.attributes.userId">
-           {{user.firstname}} {{user.lastname}}
-          </strong>
+          <span cl***REMOVED***="muted">
+            <strong user-id="observation.attributes.userId">{{user.firstname}} {{user.lastname}}</strong>
+            <span ui-if="observation.attributes.deviceId" device-id="observation.attributes.deviceId">({{device.uid}})</span>
+          </span>
         </div>
         <div>
           <span cl***REMOVED***="muted ng-binding">{{formatFeatureDate(observation.attributes.EVENTDATE)}} @ {{featureLocation.lat.toPrecision(7)}}, {{featureLocation.lng.toPrecision(7)}} </span>

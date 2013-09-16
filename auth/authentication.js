@@ -17,13 +17,20 @@ module.exports = function(options) {
   });
 
   p***REMOVED***port.use(new BearerStrategy(
-    function(token, done) {
-      Token.getUserForToken(token, function(err, user) {
+    {p***REMOVED***ReqToCallback: true},
+    function(req, token, done) {
+      // Token.getUserForToken(token, function(err, user) {
+      Token.getToken(token, function(err, retrievedToken) {
         if (err) { return done(err); }
 
-        if (!user) { return done(null, false); }
+        if (!retrievedToken || !retrievedToken.user) { return done(null, false); }
 
-        return done(null, user, { scope: 'all' });
+        // add the provisionedDevice to the request if available
+        if (retrievedToken.deviceId) {
+          req.provisionedDeviceId = retrievedToken.deviceId;
+        }
+
+        return done(null, retrievedToken.user, { scope: 'all' });
       });
     }
   ));

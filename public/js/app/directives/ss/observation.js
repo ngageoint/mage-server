@@ -27,7 +27,7 @@ mage.directive('ssObservation', ['FeatureTypeService', 'UserService' , function 
       scope.createNewObservation = function(location) {
         return {
           attributes: {
-            user: UserService.myself._id,
+            userId: UserService.myself._id,
             TYPE: scope.types[0].name,
             TEAM: scope.teams[0],
             EVENTDATE: new Date()
