@@ -3,13 +3,23 @@
 angular.module('mage.deviceService', ['mage.***REMOVED***s', 'mage.lib'])
   .factory('DeviceService', ['$http', 'appConstants', 'mageLib',
     function ($http, appConstants, mageLib) {
-      var deviceService = {};
+      var ***REMOVED*** = {};
 
-      deviceService.getAllDevices = function () {
+      ***REMOVED***.getAllDevices = function () {
         return $http.get(appConstants.rootUrl + '/api/devices/', {params: mageLib.getTokenParams()});
       };
 
-      deviceService.createDevice = function(device) {
+      var resolvedDevices = {};
+
+      ***REMOVED***.getDevice = function(id) {
+        resolvedDevices[id] = resolvedDevices[id] || $http.get(
+          appConstants.rootUrl + '/api/devices/' + id, 
+          {params: mageLib.getTokenParams()}
+        );
+        return resolvedDevices[id];
+      }
+
+      ***REMOVED***.createDevice = function(device) {
         return $http.post(
           appConstants.rootUrl + '/api/devices?access_token=' + mageLib.getLocalItem('token'), 
           $.param(device), 
@@ -17,7 +27,7 @@ angular.module('mage.deviceService', ['mage.***REMOVED***s', 'mage.lib'])
         );
       };
 
-      deviceService.updateDevice = function(device) {
+      ***REMOVED***.updateDevice = function(device) {
         return $http.put(
           appConstants.rootUrl + '/api/devices/' + device._id + '?access_token=' + mageLib.getLocalItem('token'), 
           $.param(device), 
@@ -25,7 +35,7 @@ angular.module('mage.deviceService', ['mage.***REMOVED***s', 'mage.lib'])
         );
       };
 
-      deviceService.registerDevice = function(device) {
+      ***REMOVED***.registerDevice = function(device) {
         return $http.put(
           appConstants.rootUrl + '/api/devices/' + device._id + '?access_token=' + mageLib.getLocalItem('token'),
           $.param({registered: true}),
@@ -33,11 +43,11 @@ angular.module('mage.deviceService', ['mage.***REMOVED***s', 'mage.lib'])
         );
       };
 
-      deviceService.deleteDevice = function(device) {
+      ***REMOVED***.deleteDevice = function(device) {
         return $http.delete(
           appConstants.rootUrl + '/api/devices/' + device._id + '?access_token=' + mageLib.getLocalItem('token')
         );
       }
 
-      return deviceService;
+      return ***REMOVED***;
     }]);
