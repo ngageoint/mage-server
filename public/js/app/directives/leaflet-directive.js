@@ -241,8 +241,16 @@
 
           var marker = markers[o.layerId][o.featureId];
           layers[o.layerId].leafletLayer.zoomToShowLayer(marker, function() {
-            // No-op, leaflet errors if no callback function
+            map.panTo(marker.getLatLng());
           });
+        });
+
+        scope.$watch('locationTableClick', function(location) {
+          if (!location) return;
+
+          var marker = currentLocationMarkers[location.user];
+          marker.openPopup();
+          map.panTo(marker.getLatLng());
         });
 
         scope.$watch("layer", function(layer) {

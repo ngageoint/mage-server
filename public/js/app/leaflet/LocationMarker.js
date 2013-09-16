@@ -31,6 +31,7 @@ L.LocationMarker = L.Marker.extend({
   onAdd: function (map) {
     this._map = map;
     map.addLayer(this._location);
+    this._locationMarker
 
     L.DomEvent.on(this._locationMarker, 'click', this._onMouseClick, this);
   },
