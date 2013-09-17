@@ -197,10 +197,55 @@
   <div id="user-location-panel" ng-show="locationServicesEnabled">
     <div cl***REMOVED***="navbar">
       <div cl***REMOVED***="navbar-inner">
-        <div cl***REMOVED***="container">
-          <form cl***REMOVED***="navbar-search pull-right">
+        <div cl***REMOVED***="pull-right">
+          <ul cl***REMOVED***="nav">
+            <li>
+          <form cl***REMOVED***="navbar-search">
             <input type="text" cl***REMOVED***="form-search search-query" ng-model="userQuery" placeholder="Search">
           </form>
+        </li>
+      </ul>
+      <ul cl***REMOVED***="nav">
+        <li cl***REMOVED***="dropdown">
+            <button data-toggle="dropdown" cl***REMOVED***="btn dropdown-toggle" href="#">
+              <i cl***REMOVED***="icon-cog"></i>
+              <b cl***REMOVED***="caret"></b>
+            </button>
+            <ul cl***REMOVED***="dropdown-menu pull-right">
+              <li cl***REMOVED***="nav-header">Poll Time</li>
+              <li>
+                <a ng-click="locationPollTime = 5000">
+                  <i ng-cl***REMOVED***="locationPollTime == 5000 && 'icon-check' || 'icon-check-empty'"></i>
+                  5 Seconds
+                </a>
+              </li>
+              <li>
+                <a ng-click="locationPollTime = 30000">
+                  <i ng-cl***REMOVED***="locationPollTime == 30000 && 'icon-check' || 'icon-check-empty'"></i>
+                  30 Seconds
+                </a>
+              </li>
+              <li>
+                <a ng-click="locationPollTime = 120000">
+                  <i ng-cl***REMOVED***="locationPollTime == 120000 && 'icon-check' || 'icon-check-empty'"></i>
+                  2 Minutes
+                </a>
+              </li>
+              <li>
+                <a ng-click="locationPollTime = 300000">
+                  <i ng-cl***REMOVED***="locationPollTime == 300000 && 'icon-check' || 'icon-check-empty'"></i>
+                  5 Minutes
+                </a>
+              </li>
+              <li>
+                <a ng-click="locationPollTime = 0">
+                  <i ng-cl***REMOVED***="locationPollTime == 0 && 'icon-check' || 'icon-check-empty'"></i>
+                  No Polling
+                </a>
+              </li>
+            </ul>
+          </li>
+      </ul>
         </div>
       </div>
     </div> 
@@ -217,8 +262,11 @@
   <div id="list-tool-panel" ng-show="showListTool">
     <div cl***REMOVED***="navbar">
       <div cl***REMOVED***="navbar-inner">
-        <div cl***REMOVED***="container">
-          <form cl***REMOVED***="navbar-search pull-right">
+        <div cl***REMOVED***="pull-right">
+          <ul cl***REMOVED***="nav">
+          
+          <li>
+          <form cl***REMOVED***="navbar-search">
             <!--<select style="margin-top: 7px;">
               <option>All Observations</option>
               <option>Last 30 Minutes</option>
@@ -229,8 +277,52 @@
               <option>24 Hours</option>
             </select>-->
             <input type="text" cl***REMOVED***="form-search search-query" ng-model="observationQuery" placeholder="Search">
+
           </form>
-        </div>
+        </li>
+      </ul>
+      <ul cl***REMOVED***="nav">
+        <li cl***REMOVED***="dropdown">
+            <button data-toggle="dropdown" cl***REMOVED***="btn dropdown-toggle" href="#">
+              <i cl***REMOVED***="icon-cog"></i>
+              <b cl***REMOVED***="caret"></b>
+            </button>
+            <ul cl***REMOVED***="dropdown-menu pull-right">
+              <li cl***REMOVED***="nav-header">Poll Time</li>
+              <li>
+                <a href="#/user">
+                  <i cl***REMOVED***="icon-cog"></i>
+                  1 Minute
+                </a>
+              </li>
+              <li>
+                <a href="#/user">
+                  <i cl***REMOVED***="icon-cog"></i>
+                  2 Minutes
+                </a>
+              </li>
+              <li>
+                <a href="#/user">
+                  <i cl***REMOVED***="icon-cog"></i>
+                  5 Minutes
+                </a>
+              </li>
+              <li>
+                <a href="#/user">
+                  <i cl***REMOVED***="icon-cog"></i>
+                  15 Minutes
+                </a>
+              </li>
+              <li>
+                <a href="#/user">
+                  <i cl***REMOVED***="icon-cog"></i>
+                  No Polling
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
       </div>
     </div>
     <div id="list-tool-list" cl***REMOVED***="top-gap-s">
@@ -241,9 +333,10 @@
           <div cl***REMOVED***="span2">{{feature.properties.TYPE}}</div>
           <div cl***REMOVED***="span1">{{feature.properties.EVENTLEVEL}}</div>
           <div cl***REMOVED***="span3">{{feature.properties.EVENTDATE | date: 'medium'}}</div>
-          <div ng-show="feature.attachments.length == 0"><i cl***REMOVED***="icon-paper-clip"></i></div>
+          <div ng-show="feature.attachments.length != 0"><i cl***REMOVED***="icon-camera"></i></div>
         </a>
       </div>
   </div>
 
 </div>
+
