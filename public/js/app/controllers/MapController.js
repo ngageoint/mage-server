@@ -30,6 +30,7 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
 
   $scope.locationServicesEnabled = false;
   $scope.locations = [];
+  $scope.locationPollTime = 5000;
 
   $scope.showListTool = false;
   $scope.iconTag = function(feature) {
@@ -75,19 +76,54 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
       $scope.baseLayer = $scope.baseLayers[0];
     });
 
+    var loadLayer = function(layerId) {
+      $scope.loadingLayers[layerId] = true;
+
+      FeatureService.getFeatures(layerId)
+      .success(function(features) {
+        $scope.layer = {id: layerId, checked: true, features: features};
+        $scope.loadingLayers[layerId] = false;
+      });
+    }
+
   $scope.onFeatureLayer = function(layer) {
+    var timerName = 'pollLayer'+layer.id;
     if (!layer.checked) {
       $scope.layer = {id: layer.id, checked: false};
+      TimerService.stop(timerName);
       return;
     };
 
-    $scope.loadingLayers[layer.id] = true;
+    
 
-    FeatureService.getFeatures(layer.id)
-      .success(function(features) {
-        $scope.layer = {id: layer.id, checked: true, features: features};
-        $scope.loadingLayers[layer.id] = false;
+
+      
+
+    if ($scope.locationServicesEnabled || $scope.locationPollTime == 0) {
+      TimerService.start(timerName, $scope.locationPollTime || 5000, function() {
+      LocationService.getLocations().
+        success(function (data, status, headers, config) {
+          $scope.locations = _.filter(data, function(user) {
+            return user.locations.length;
+          });
+          _.each($scope.locations, function(userLocation) {
+              UserService.getUser(userLocation.user)
+                .then(function(user) {
+                  userLocation.userModel = user.data || user;
+                });
+              
+            });
+        }).
+        error(function () {
+          console.log('error getting locations');
+        });
       });
+    } else {
+      $scope.locations = [];
+      TimerService.stop(timerName);
+    }
+
+
   }
 
   $scope.onImageryLayer = function(layer) {
@@ -212,8 +248,8 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
   $scope.locationServices = function() {
     var timerName = 'pollLocation';
 
-    if ($scope.locationServicesEnabled) {
-      TimerService.start(timerName, 5000, function() {
+    if ($scope.locationServicesEnabled || $scope.locationPollTime == 0) {
+      TimerService.start(timerName, $scope.locationPollTime || 5000, function() {
       LocationService.getLocations().
         success(function (data, status, headers, config) {
           $scope.locations = _.filter(data, function(user) {
@@ -236,6 +272,12 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
       TimerService.stop(timerName);
     }
   }
+
+  $scope.$watch('locationPollTime', function() {
+    if ($scope.locationPollTime) {
+      $scope.locationServices();
+    }
+  });
 
   $scope.dismissLocations = function() {
     console.log("in dismissLocations");
