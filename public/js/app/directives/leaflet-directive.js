@@ -260,6 +260,7 @@
             if (layer.checked) {
               // add to map
               var newLayer = null;
+              var gj = null;
               if (layer.type === 'Imagery') {
                 if (layer.format == 'XYZ' || layer.format == 'TMS') {
                   newLayer = new L.TileLayer(layer.url, { tms: layer.format == 'TMS', maxZoom: 18});
@@ -275,16 +276,33 @@
                 }
                 newLayer.addTo(map).bringToFront();
               } else {
-                markers[layer.id] = {};
-                newLayer = L.markerClusterGroup()
-                  .addLayer(L.geoJson(layer.features, featureConfig(layer)))
+                if (layers[layer.id]) {
+                  // bust through the layer.features.features array and see if the feature is already in the layer
+                  // if so remove it
+                  layer.features.features = _.filter(layer.features.features, function(feature) {
+                    return markers[layer.id][feature.properties.OBJECTID];
+                  });
+                  newLayer = layers[layer.id].leafletLayer;
+                  gj = layers[layer.id].gjLayer;
+                  gj.addData(layer.features);
+                  // just remove it and then put it back for now.
+                  // map.removeLayer(layers[layer.id].leafletLayer);
+                  // delete layers[layer.id];
+                } else {
+                  markers[layer.id] = {};
+                  gj = L.geoJson(layer.features, featureConfig(layer));
+                  newLayer = L.markerClusterGroup()
+                  .addLayer(gj)
                   .addTo(map)
                   .bringToFront();
+                }
+                
               }
 
               layers[layer.id] = {
                 leafletLayer: newLayer,
-                layer: layer
+                layer: layer,
+                gjLayer: gj
               };
             } else {
               // remove from map

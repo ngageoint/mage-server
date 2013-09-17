@@ -10,6 +10,7 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
   $scope.locate = false;
   $scope.broadcast = false;
   $scope.loadingLayers = {};
+  $scope.layerPollTime = 60000;
 
   /* Some map defaults */
   $scope.observation = {};
@@ -76,23 +77,38 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
       $scope.baseLayer = $scope.baseLayers[0];
     });
 
+    var loadLayer = function(id) {
+      $scope.loadingLayers[id] = true;
+
+    FeatureService.getFeatures(id)
+      .success(function(features) {
+        $scope.layer = {id: id, checked: true, features: features};
+        $scope.loadingLayers[id] = false;
+      });
+    }
+
   $scope.onFeatureLayer = function(layer) {
+    var timerName = 'pollLayer'+layer.id;
     if (!layer.checked) {
       $scope.layer = {id: layer.id, checked: false};
+      TimerService.stop(timerName);
       return;
     };
 
-    $scope.loadingLayers[layer.id] = true;
-
-    FeatureService.getFeatures(layer.id)
-      .success(function(features) {
-        $scope.layer = {id: layer.id, checked: true, features: features};
-        $scope.loadingLayers[layer.id] = false;
-      });
-
-
-      
+    TimerService.start(timerName, $scope.layerPollTime || 300000, function() {
+      loadLayer(layer.id);
+    });
   }
+
+  $scope.$watch('layerPollTime', function() {
+    if ($scope.layerPollTime && $scope.layer) {
+      if ($scope.layerPollTime == 0) {
+        TimerService.stop('pollLayer'+$scope.layer.id);
+        return;
+      }
+      $scope.onFeatureLayer($scope.layer);
+    }
+  });
 
   $scope.onImageryLayer = function(layer) {
     if (layer.checked) {
