@@ -151,9 +151,13 @@
 
                   layer.on('click', function() {
                     // location table click handling here
+                    if(!scope.$$phase) {
                     scope.$apply(function(s) {
                       scope.activeLocation = {locations: [feature], user: feature.properties.user};
                     });
+                    } else {
+                      scope.activeLocation = {locations: [feature], user: feature.properties.user};
+                    }
                     angular.element(e).scope().getUser(u.user);
                   });
 
