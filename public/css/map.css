@@ -234,7 +234,7 @@ html, body, div.leaflet-container {
 	color: #eee;
 }
 
-.feature-row-selected {
+.row-selected {
 	background: #5077A4 !important;
 	background: rgba(80, 119, 164, 0.7) !important;
 	color: #eee;

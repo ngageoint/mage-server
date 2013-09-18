@@ -150,6 +150,10 @@
                   layer.bindPopup(e[0], {minWidth: 200});
 
                   layer.on('click', function() {
+                    // location table click handling here
+                    scope.$apply(function(s) {
+                      scope.activeLocation = {locations: [feature], user: feature.properties.user};
+                    });
                     angular.element(e).scope().getUser(u.user);
                   });
 

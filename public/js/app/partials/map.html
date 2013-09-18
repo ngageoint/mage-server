@@ -1,7 +1,7 @@
 <div>  
   <!-- The map directive -->
   <div id="map" cl***REMOVED***="map-wrap leaflet-container">
-    <div leaflet marker-location="markerLocation" baselayer="baseLayer" layer="layer" message="message" draggable="true" active-feature="activeFeature" newfeature="newFeature" currentlayerid="currentLayerId" position="position" position-broadcast="positionBroadcast" locations="locations"></div>
+    <div leaflet marker-location="markerLocation" baselayer="baseLayer" layer="layer" message="message" draggable="true" active-feature="activeFeature" newfeature="newFeature" active-location="activeLocation" currentlayerid="currentLayerId" position="position" position-broadcast="positionBroadcast" locations="locations"></div>
   </div>
 
   <div ss-observation active-feature="activeFeature" new-feature="newFeature" marker-location="markerLocation"></div>
@@ -251,7 +251,8 @@
     </div> 
     <div id="user-location-panel-list">
       <h4>Recent User Locations</h4>
-      <div cl***REMOVED***="location pointer" data-ng-repeat="location in locations | filter: userQuery | orderBy: 'locations[0].properties.timestamp':true" ng-click="locationClick(location)">
+      <div cl***REMOVED***="location pointer" data-ng-repeat="location in locations | filter: userQuery | orderBy: 'locations[0].properties.timestamp':true" ng-click="locationClick(location)" 
+      ng-cl***REMOVED***="{'row-selected': locationTableClick.user == location.user || activeLocation.user == location.user}">
         <strong user-id="location.user" cl***REMOVED***="top-gap-s">{{user.firstname}} {{user.lastname}}</strong>
         <div cl***REMOVED***="small-text">{{location.locations[0].properties.timestamp | date : 'medium'}}</div>
         <div cl***REMOVED***="small-text">{{location.locations[0].geometry.coordinates[1] | number: 3}}, {{location.locations[0].geometry.coordinates[0] | number: 3}}</div>
@@ -326,7 +327,7 @@
       </div>
     </div>
     <div id="list-tool-list" cl***REMOVED***="top-gap-s">
-      <div ng-click="setActiveFeature(feature, layer)" cl***REMOVED***="row pointer" ng-cl***REMOVED***="{'feature-row-selected': activeFeature.featureId == feature.properties.OBJECTID}" ng-repeat="feature in layer.features.features | orderBy: 'properties.EVENTDATE' : true | filter: observationQuery">
+      <div ng-click="setActiveFeature(feature, layer)" cl***REMOVED***="row pointer" ng-cl***REMOVED***="{'row-selected': activeFeature.featureId == feature.properties.OBJECTID}" ng-repeat="feature in layer.features.features | orderBy: 'properties.EVENTDATE' : true | filter: observationQuery">
         <a href="">
           <div cl***REMOVED***="span1"><span style="margin-left: 20px" ng-bind-html-u***REMOVED***fe="iconTag(feature)"></span></div>
           <div cl***REMOVED***="span2" user-id="feature.properties.userId">{{user.firstname}} {{user.lastname}}</div>
