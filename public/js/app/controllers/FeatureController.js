@@ -14,6 +14,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, MapServi
   }
 
   $scope.newObservation = function () {
+    $scope.observationTab = 1;
     $scope.observationCloseText = "Cancel";
     MapService.setCurrentMapPanel('observation');
     $scope.observation = $scope.createNewObservation();
@@ -73,6 +74,11 @@ function FeatureController($scope, $location, $timeout, FeatureService, MapServi
         "y": $scope.markerLocation.lat
       };
 
+      // var feature = new FeatureService.feature({
+      //   layerId: $scope.currentLayerId,
+      //   features: $scope.observation
+      // });
+      // feature.$createFeature();
       // make a call to the FeatureService
       FeatureService.createFeature($scope.currentLayerId, $scope.observation)
         .success(function (data) {
