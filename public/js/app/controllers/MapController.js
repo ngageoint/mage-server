@@ -47,6 +47,7 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
 
   $scope.locationClick = function(location) {
     $scope.locationTableClick = location;
+    $scope.activeLocation = location;
   }
 
   $scope.exportLayers = [];
