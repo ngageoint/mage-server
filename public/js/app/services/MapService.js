@@ -7,7 +7,6 @@ angular.module('mage.mapService', ['mage.***REMOVED***s', 'mage.lib'])
       var currentMapPanel = "layers"; // options are: layers, observation, export, or none
 
       functions.getCurrentMapPanel = function () {
-        console.log("Sending back the current map panel " + currentMapPanel);
         return currentMapPanel;
       };
 
