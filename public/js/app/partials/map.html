@@ -12,8 +12,8 @@
   <!-- <div external active-feature="activeFeature" currentlayerid="currentLayerId" layers="layers"></div> -->
   
   <!-- layer picker button -->
-  <button cl***REMOVED***="btn" id="settings" ng-click="setCurrentMapPanel('layers')" ngm-tap="setCurrentMapPanel('layers')"><i cl***REMOVED***="icon-layers icon-sage"></i></button>
-  <button cl***REMOVED***="btn" id="export" ng-click="setCurrentMapPanel('export')" ngm-tap="setCurrentMapPanel('export')"><i cl***REMOVED***="icon-cloud-download icon-sage"></i></button>
+  <button cl***REMOVED***="btn" ng-cl***REMOVED***="{true: 'btn-inverse'}[checkCurrentMapPanel('layers')]" id="settings" ng-click="setCurrentMapPanel('layers')" ngm-tap="setCurrentMapPanel('layers')"><i ng-cl***REMOVED***="checkCurrentMapPanel('layers') && 'icon-sage-inverse' || 'icon-sage'" cl***REMOVED***="icon-layers"></i></button>
+  <button cl***REMOVED***="btn" id="export" ng-cl***REMOVED***="{true: 'btn-inverse'}[checkCurrentMapPanel('export')]" ng-click="setCurrentMapPanel('export')" ngm-tap="setCurrentMapPanel('export')"><i ng-cl***REMOVED***="checkCurrentMapPanel('export') && 'icon-sage-inverse' || 'icon-sage'"cl***REMOVED***="icon-cloud-download"></i></button>
 
   <!-- Button bar -->
   <div id="button-bar">
