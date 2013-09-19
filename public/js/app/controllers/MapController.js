@@ -184,7 +184,11 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
   }
 
   $scope.setCurrentMapPanel = function (mapPanel) {
-    MapService.setCurrentMapPanel(mapPanel);
+    if (MapService.getCurrentMapPanel() == mapPanel) {
+      MapService.setCurrentMapPanel('none');
+    } else {
+      MapService.setCurrentMapPanel(mapPanel);
+    }
   }
 
   /* Goto address, need to implement some geocoding like the android app does, otherwise pull it out for PDC. */
