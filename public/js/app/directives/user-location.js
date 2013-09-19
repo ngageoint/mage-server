@@ -6,13 +6,20 @@ mage.directive('userLocation', function(UserService, appConstants) {
     },
     controller: function ($scope, UserService) {
       $scope.getUser = function(userId) {
-        UserService.getUser(userId)
-          .success(function(user) {
+        var u = UserService.getUser(userId);
+        if (u.success) {
+          u.success(function(user) {
             $scope.user = user;
           })
           .error(function() {
             console.log('error trying to get user');
           });
+        } else if (u.then) {
+          u.then(function(user) {
+            $scope.user = user;
+          })
+        }
+        
       }
     }
   };
