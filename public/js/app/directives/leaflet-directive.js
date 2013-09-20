@@ -287,11 +287,15 @@
                 if (layers[layer.id]) {
                   // bust through the layer.features.features array and see if the feature is already in the layer
                   // if so remove it
-                  layer.features.features = _.filter(layer.features.features, function(feature) {
+                  // I hate myself for even doing this but i need to get it out
+                  var newFeatures = _.filter(layer.features.features, function(feature) {
                     return !markers[layer.id]['LAYER'+feature.properties.OBJECTID];
                   });
+                  var addThese = {
+                    features: newFeatures
+                  };
                   newLayer = layers[layer.id].leafletLayer;
-                  newLayer.addLayer(L.geoJson(layer.features, featureConfig(layers[layer.id].layer)));
+                  newLayer.addLayer(L.geoJson(addThese, featureConfig(layers[layer.id].layer)));
                   // gj = layers[layer.id].gjLayer;
                   // gj.addData(layer.features);
                   // just remove it and then put it back for now.
