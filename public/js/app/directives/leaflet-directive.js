@@ -195,7 +195,7 @@
                 var icon = IconService.icon(feature, {types: scope.types});
                 var marker =  L.marker(latlng, { icon: icon });
 
-                markers[layer.id][feature.properties.OBJECTID] = marker;
+                markers[layer.id]['LAYER'+feature.properties.OBJECTID] = marker;
                 return marker;
               }
             },
@@ -288,11 +288,12 @@
                   // bust through the layer.features.features array and see if the feature is already in the layer
                   // if so remove it
                   layer.features.features = _.filter(layer.features.features, function(feature) {
-                    return markers[layer.id][feature.properties.OBJECTID];
+                    return !markers[layer.id]['LAYER'+feature.properties.OBJECTID];
                   });
                   newLayer = layers[layer.id].leafletLayer;
-                  gj = layers[layer.id].gjLayer;
-                  gj.addData(layer.features);
+                  newLayer.addLayer(L.geoJson(layer.features, featureConfig(layers[layer.id].layer)));
+                  // gj = layers[layer.id].gjLayer;
+                  // gj.addData(layer.features);
                   // just remove it and then put it back for now.
                   // map.removeLayer(layers[layer.id].leafletLayer);
                   // delete layers[layer.id];
