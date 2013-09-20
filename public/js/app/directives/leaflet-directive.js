@@ -195,7 +195,7 @@
                 var icon = IconService.icon(feature, {types: scope.types});
                 var marker =  L.marker(latlng, { icon: icon });
 
-                markers[layer.id]['LAYER'+feature.properties.OBJECTID] = marker;
+                markers[layer.id][feature.properties.OBJECTID] = marker;
                 return marker;
               }
             },
@@ -289,7 +289,7 @@
                   // if so remove it
                   // I hate myself for even doing this but i need to get it out
                   var newFeatures = _.filter(layer.features.features, function(feature) {
-                    return !markers[layer.id]['LAYER'+feature.properties.OBJECTID];
+                    return !markers[layer.id][feature.properties.OBJECTID];
                   });
                   var addThese = {
                     features: newFeatures
