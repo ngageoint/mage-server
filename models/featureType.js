@@ -14,7 +14,7 @@ var types = [
   { name: 'Significant Incident'   , icon: 'asterisk'    , kmlIcon: 'significant-incident'},
   { name: 'Suspicious Individual'  , icon: 'running'     , kmlIcon: 'suspicious-individual'},
   { name: 'Suspicious Vehicle'     , icon: 'car'         , kmlIcon: 'suspicious-vehicle'},
-  { name: 'Suspicious Package'     , icon: 'gift'        , kmlIcon: 'suspicious-package'},
+  { name: 'Unattended/Suspicious Package', icon: 'gift'        , kmlIcon: 'suspicious-package'},
   { name: 'Violent Activity'       , icon: 'hit'         , kmlIcon: 'violent-activity'},
   { name: 'Remain Over Night'      , icon: 'moon-fill'   , kmlIcon: 'ron'},
   { name: 'Arrival'                , icon: 'login'       , kmlIcon: 'arrival'},
