@@ -1,0 +1,84 @@
+/* BOOTSTRAP SPECIFIC CLASSES
+ * -------------------------- */
+
+/* Bootstrap 2.0 sprites.less reset */
+[cl***REMOVED***^="icon-"],
+[cl***REMOVED****=" icon-"] {
+  display: inline;
+  width: auto;
+  height: auto;
+  line-height: normal;
+  vertical-align: baseline;
+  background-image: none;
+  background-position: 0% 0%;
+  background-repeat: repeat;
+  margin-top: 0;
+}
+
+/* more sprites.less reset */
+.icon-white,
+.nav-pills > .active > a > [cl***REMOVED***^="icon-"],
+.nav-pills > .active > a > [cl***REMOVED****=" icon-"],
+.nav-list > .active > a > [cl***REMOVED***^="icon-"],
+.nav-list > .active > a > [cl***REMOVED****=" icon-"],
+.navbar-inverse .nav > .active > a > [cl***REMOVED***^="icon-"],
+.navbar-inverse .nav > .active > a > [cl***REMOVED****=" icon-"],
+.dropdown-menu > li > a:hover > [cl***REMOVED***^="icon-"],
+.dropdown-menu > li > a:hover > [cl***REMOVED****=" icon-"],
+.dropdown-menu > .active > a > [cl***REMOVED***^="icon-"],
+.dropdown-menu > .active > a > [cl***REMOVED****=" icon-"],
+.dropdown-submenu:hover > a > [cl***REMOVED***^="icon-"],
+.dropdown-submenu:hover > a > [cl***REMOVED****=" icon-"] {
+  background-image: none;
+}
+
+
+/* keeps Bootstrap styles with and without icons the same */
+.btn, .nav {
+  [cl***REMOVED***^="icon-"],
+  [cl***REMOVED****=" icon-"] {
+    //    display: inline;
+    &.icon-large { line-height: .9em; }
+    &.icon-spin { display: inline-block; }
+  }
+}
+.nav-tabs, .nav-pills {
+  [cl***REMOVED***^="icon-"],
+  [cl***REMOVED****=" icon-"] {
+    &, &.icon-large { line-height: .9em; }
+  }
+}
+.btn {
+  [cl***REMOVED***^="icon-"],
+  [cl***REMOVED****=" icon-"] {
+    &.pull-left, &.pull-right {
+      &.icon-2x { margin-top: .18em; }
+    }
+    &.icon-spin.icon-large { line-height: .8em; }
+  }
+}
+.btn.btn-small {
+  [cl***REMOVED***^="icon-"],
+  [cl***REMOVED****=" icon-"] {
+    &.pull-left, &.pull-right {
+      &.icon-2x { margin-top: .25em; }
+    }
+  }
+}
+.btn.btn-large {
+  [cl***REMOVED***^="icon-"],
+  [cl***REMOVED****=" icon-"] {
+    margin-top: 0; // overrides bootstrap default
+    &.pull-left, &.pull-right {
+      &.icon-2x { margin-top: .05em; }
+    }
+    &.pull-left.icon-2x { margin-right: .2em; }
+    &.pull-right.icon-2x { margin-left: .2em; }
+  }
+}
+
+/* Fixes alignment in nav lists */
+.nav-list [cl***REMOVED***^="icon-"],
+.nav-list [cl***REMOVED****=" icon-"] {
+  line-height: inherit;
+}
