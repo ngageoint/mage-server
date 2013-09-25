@@ -1,4 +1,4 @@
-module.exports = function(app, auth) {
+module.exports = function(app, security) {
   var moment = require('moment')
     , Location = require('../models/location')
     , User = require('../models/user')
@@ -9,7 +9,8 @@ module.exports = function(app, auth) {
     , config = require('../config')
     , generate_kml = require('../utilities/generate_kml');
 
-  var p***REMOVED***port = auth.p***REMOVED***port;
+  var p***REMOVED***port = security.authentication.p***REMOVED***port
+    , authenticationStrategy = security.authentication.authenticationStrategy;
 
   var validateLocations = function(req, res, next) {
     var objects = req.body;
@@ -41,7 +42,7 @@ module.exports = function(app, auth) {
   // TODO only one team for PDC, need to implement multiple teams later
   app.get(
     '/api/locations',
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_LOCATION'),
     function(req, res) {
       var limit = req.param('limit');
@@ -56,7 +57,7 @@ module.exports = function(app, auth) {
   // create new location(s) for a specific user
   app.post(
     '/api/locations',
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('CREATE_LOCATION'),
     validateLocations,
     function(req, res) {
@@ -79,7 +80,7 @@ module.exports = function(app, auth) {
   // update time on a location
   app.put(
     '/api/locations',
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('UPDATE_LOCATION'),
     function(req, res) {
       var data = req.body;

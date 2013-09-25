@@ -1,4 +1,4 @@
-module.exports = function(app, auth) {
+module.exports = function(app, security) {
   var fs = require('fs-extra')
     , Team = require('../models/team')
     , User = require('../models/user')
@@ -8,11 +8,12 @@ module.exports = function(app, auth) {
     , Feature = require('../models/feature');
 
   // Protect all FeatureServer routes with token authentication
-  app.all('/FeatureServer*', auth.p***REMOVED***port.authenticate('bearer', {session: false}));
+  var p***REMOVED***port = security.authentication.p***REMOVED***port
+    , authenticationStrategy = security.authentication.authenticationStrategy;
+  app.all('/FeatureServer*', p***REMOVED***port.authenticate(authenticationStrategy, {session: false}));
 
   app.get('/api', function(req, res) {
     var config = app.get('config');
-    console.log('hit api url');
     res.json(config.api);
   });
 
@@ -20,7 +21,7 @@ module.exports = function(app, auth) {
   fs.readdirSync(__dirname).forEach(function(file) {
     if (file[0] == '.' || file === 'index.js') return;
     var route = file.substr(0, file.indexOf('.'));
-    require('./' + route)(app, auth);
+    require('./' + route)(app, security);
   });
 
   // add regex function to parse params

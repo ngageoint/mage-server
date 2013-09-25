@@ -1,10 +1,7 @@
 // Routes responsible for layer managment
-module.exports = function(app, auth) {
+module.exports = function(app, security) {
   var Layer = require('../models/layer')
     , access = require('../access');
-
-  var p***REMOVED***port = auth.p***REMOVED***port;
-  var strategy = auth.strategy;
 
   function LayerResponse() {
     var response = {

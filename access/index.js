@@ -8,12 +8,12 @@ var Role = require('../models/role');
  *
  * @api public
  */
-function Access() {
+function Access(authentication) {
 }
 
 Access.prototype.authorize = function(permission) {
   return function(req, res, next) {
-    if (!req.user) return res.send(401);
+    if (!req.user) return next();
 
     var role = req.user.role;
     if (!role) {

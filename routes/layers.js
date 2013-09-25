@@ -1,10 +1,11 @@
-module.exports = function(app, auth) {
+module.exports = function(app, security) {
   var Layer = require('../models/layer')
     , access = require('../access');
 
-  var p***REMOVED***port = auth.p***REMOVED***port;
+  var p***REMOVED***port = security.authentication.p***REMOVED***port
+    , authenticationStrategy = security.authentication.authenticationStrategy;
 
-  app.all('/api/layers*', p***REMOVED***port.authenticate('bearer'));
+  app.all('/api/layers*', p***REMOVED***port.authenticate(authenticationStrategy));
 
   var validateLayerParams = function(req, res, next) {
     var layer = req.body;

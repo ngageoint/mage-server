@@ -1,5 +1,5 @@
 // ESRI feature routes
-module.exports = function(app, auth) {
+module.exports = function(app, security) {
   var async = require('async')
     , fs = require('fs-extra')
     , path = require('path')
@@ -8,7 +8,7 @@ module.exports = function(app, auth) {
     , access = require('../access')
     , config = require('../config.json');
 
-  var p***REMOVED***port = auth.p***REMOVED***port;
+  var p***REMOVED***port = security.authentication.p***REMOVED***port;
   var geometryFormat = require('../format/geometryFormat');
   var esri = require('../transformers/esri')(geometryFormat);
   var attachmentBase = config.server.attachmentBaseDirectory;
