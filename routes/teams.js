@@ -1,10 +1,10 @@
-module.exports = function(app, auth) {
+module.exports = function(app, security) {
   var Team = require('../models/team')
-    , access = require('../access');
+    , access = require('../access')
+    , p***REMOVED***port = security.authentication.p***REMOVED***port
+    , authenticationStrategy = security.authentication.authenticationStrategy;
 
-  var p***REMOVED***port = auth.p***REMOVED***port;
-
-  app.all('/api/teams*', p***REMOVED***port.authenticate('bearer'));
+  app.all('/api/teams*', p***REMOVED***port.authenticate(authenticationStrategy));
 
   var validateTeamParams = function(req, res, next) {
     var name = req.param('name');

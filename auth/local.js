@@ -1,7 +1,27 @@
 module.exports = function(p***REMOVED***port) {
 
   var LocalStrategy = require('p***REMOVED***port-local').Strategy
+    , BearerStrategy = require('p***REMOVED***port-http-bearer').Strategy
+    , Token = require('../models/token')
     , User = require('../models/user');
+
+  p***REMOVED***port.use(new BearerStrategy(
+    {p***REMOVED***ReqToCallback: true},
+    function(req, token, done) {
+      Token.getToken(token, function(err, retrievedToken) {
+        if (err) { return done(err); }
+
+        if (!retrievedToken || !retrievedToken.user) { return done(null, false); }
+
+        // add the provisionedDevice to the request if available
+        if (retrievedToken.deviceId) {
+          req.provisionedDeviceId = retrievedToken.deviceId;
+        }
+
+        return done(null, retrievedToken.user, { scope: 'all' });
+      });
+    }
+  ));
 
   p***REMOVED***port.use(new LocalStrategy(
     function(username, p***REMOVED***word, done) {
@@ -29,4 +49,10 @@ module.exports = function(p***REMOVED***port) {
       });
     }
   ));
+
+  return {
+    p***REMOVED***port: p***REMOVED***port,
+    loginStrategy: 'local',
+    authenticationStrategy: 'bearer'
+  }
 }

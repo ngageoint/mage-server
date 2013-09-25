@@ -57,9 +57,7 @@ module.exports = function(app, auth) {
         var response = geojson.transform(features, req.parameters.properties);
         res.json(response);
       }
-
-      console.log('filters: ', JSON.stringify(req.parameters.filters));
-
+      
       var filters = req.parameters.filters;
       if (filters.geometries) {
         allFeatures = [];

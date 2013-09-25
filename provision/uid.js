@@ -3,6 +3,8 @@ module.exports = function(provision) {
   var UidStrategy = require('./strategies/uid').Strategy
     , Device = require('../models/device');
 
+    console.log('setting up provision uid');
+
   provision.use(new UidStrategy(
     function(uid, done) {
       console.log('Authenticating device: ' + uid);
@@ -25,4 +27,9 @@ module.exports = function(provision) {
       });
     }
   ));
+
+  return {
+    provision: provision,
+    strategy: 'uid'
+  }
 }
