@@ -202,35 +202,13 @@ function FeatureController($scope, $location, $timeout, FeatureService, MapServi
         $scope.files = [];
         MapService.setCurrentMapPanel('observation');
         isEditing = true;
-
-        $scope.attachments = 
-          [
-            {
-              "id": 48,
-              "name": "Image_1379980771304.jpg",
-              "contentType": "image/jpg",
-              "size": "56272"
-            },
-            {
-              "id": 49,
-              "name": "Image_1379980791971.jpg",
-              "contentType": "application/octet-stream",
-              "size": "54098"
-            },
-            {
-              "id": 50,
-              "name": "Voice_1379980836057.mp4",
-              "contentType": "application/octet-stream",
-              "size": "41424"
-            }
-          ];
-
-        // FeatureService.getAttachments(value.layerId, value.featureId).
-        //   success(function (data, status, headers, config) {
-        //     $scope.attachments = data.attachmentInfos;
-        //     $scope.attachmentUrl = appConstants.rootUrl + '/FeatureServer/'+ value.layerId
-        //       + '/' + value.featureId + '/attachments/';
-        //   });
+        
+      FeatureService.getAttachments(value.layerId, value.featureId).
+        success(function (data, status, headers, config) {
+          $scope.attachments = data.attachmentInfos;
+          $scope.attachmentUrl = appConstants.rootUrl + '/FeatureServer/'+ value.layerId
+            + '/' + value.featureId + '/attachments/';
+        });
       });
   }, true);
 
