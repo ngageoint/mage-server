@@ -1,4 +1,4 @@
-module.exports = function(app, auth) {
+module.exports = function(app, security) {
   var moment = require('moment')
     , Location = require('../models/location')
     , Layer = require('../models/layer')
@@ -12,8 +12,7 @@ module.exports = function(app, auth) {
     , exec = require('child_process').exec
     , toGeoJson = require('../utilities/togeojson')
     , DOMParser = require('xmldom').DOMParser;
-  var p***REMOVED***port = auth.p***REMOVED***port;
-
+    
 // export locations into KML
   app.get(
     '/api/export',

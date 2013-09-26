@@ -1,6 +1,6 @@
 <div 
   id="observation-panel" 
-  ng-show="showObservation" 
+  ng-show="checkCurrentMapPanel('observation')" 
   cl***REMOVED***="tabbable tabs-below panel panel-large">
   <div cl***REMOVED***="pull-right panel-close">
     <i ng-click="cancelObservation()" ngm-tap="cancelObservation()" cl***REMOVED***="close">&times;</i>
@@ -99,11 +99,14 @@
             <img ng-switch-when="image/jpeg" ng-src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">
             <img ng-switch-when="image/png" ng-src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">
             <img ng-switch-when="image/gif" ng-src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">
+            <input type="button" value="Delete" ng-show="amAdmin && (attachment.contentType != 'application/octet-stream')" cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(attachment.id)">
             <!-- Fix for octet stream images in an older version of the app -->
-            <a ng-switch-when="application/octet-stream" ng-href="{{attachmentUrl + attachment.id + '?access_token=' + token}}" target="_blank">Click to view image</a>
             <!-- Due to drastically varying browser behavior, videos will be a download link for the time being -->
             <a ng-switch-when="video/mp4" ng-href="{{attachmentUrl + attachment.id + '?access_token=' + token}}">Download video</a>
-            <input type="button" value="Delete" ng-show="amAdmin" cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(attachment.id)">
+            <div ng-switch-when="application/octet-stream" cl***REMOVED***="top-gap-l" style="width: 100%">
+              <a ng-href="{{attachmentUrl + attachment.id + '?access_token=' + token}}" target="_blank">Download {{attachment.name}}</a>
+              <div><a ng-show="amAdmin" cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(attachment.id)">Delete</a></div>
+            </div>
           </div>
         </div>
       </div>

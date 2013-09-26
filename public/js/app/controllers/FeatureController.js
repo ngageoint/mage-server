@@ -1,6 +1,6 @@
 'use strict';
 
-function FeatureController($scope, $location, $timeout, FeatureService, UserService, mageLib, appConstants) {
+function FeatureController($scope, $location, $timeout, FeatureService, MapService, UserService, IconService, mageLib, appConstants) {
   var isEditing = false;
   $scope.amAdmin = UserService.amAdmin;
   $scope.token = mageLib.getLocalItem('token');
@@ -9,9 +9,14 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
     The observation functions are a mix of copy pasta from the observation directive, hopefully cleaned up a bit
     and using the FeatureService. May need to be cleaned up after PDC.
   */
+  $scope.checkCurrentMapPanel = function (mapPanel) {
+    return MapService.getCurrentMapPanel() == mapPanel;
+  }
+
   $scope.newObservation = function () {
+    $scope.observationTab = 1;
     $scope.observationCloseText = "Cancel";
-    $scope.showObservation = true;
+    MapService.setCurrentMapPanel('observation');
     $scope.observation = $scope.createNewObservation();
     $scope.featureLocation = $scope.markerLocation;
     $scope.attachments = [];
@@ -19,7 +24,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
   }
 
   $scope.cancelObservation = function () {
-    $scope.showObservation = false;
+    MapService.setCurrentMapPanel('none');
     $scope.activeFeature = null;
     isEditing = false;
   }
@@ -42,7 +47,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
       FeatureService.updateFeature($scope.currentLayerId, $scope.observation)
         .success(function (data) {
           var objectId = data.addResults ? data.addResults[0].objectId : data.updateResults[0].objectId;
-          $scope.showObservation = false;
+          MapService.setCurrentMapPanel('none');
           $scope.activeFeature = null;
           isEditing = false;
           $scope.updatedFeature = {
@@ -69,11 +74,16 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
         "y": $scope.markerLocation.lat
       };
 
+      // var feature = new FeatureService.feature({
+      //   layerId: $scope.currentLayerId,
+      //   features: $scope.observation
+      // });
+      // feature.$createFeature();
       // make a call to the FeatureService
       FeatureService.createFeature($scope.currentLayerId, $scope.observation)
         .success(function (data) {
           var objectId = data.addResults ? data.addResults[0].objectId : data.updateResults[0].objectId;
-          $scope.showObservation = false;
+          MapService.setCurrentMapPanel('none');
           $scope.activeFeature = null;
           isEditing = false;
 
@@ -103,7 +113,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
     FeatureService.deleteObservation($scope.activeFeature.layerId, $scope.activeFeature.featureId)
       .success(function (data) {
         console.log('observation deleted, attempting to remove marker from map');
-        $scope.showObservation = false;
+        MapService.setCurrentMapPanel('none');
         $scope.deletedFeature = $scope.activeFeature;
         isEditing = false;
       });
@@ -164,6 +174,19 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
     alert("The upload has been canceled by the user or the browser dropped the connection.")
   }
 
+  $scope.formatUser = function(userId) {
+    if (!userId) return;
+
+    UserService.getUser(userId)
+      .then(function(user) {
+        return $q.when(user);
+      });
+  }
+
+  $scope.formatFeatureDate = function(value) {
+    return moment(value).utc().format("YYYY-MM-DD HH:mm:ss");
+  }
+
   /* this watch handles opening observations when a placemark on the map has been clicked. */
   $scope.$watch("activeFeature", function (value) {
     if (!value) return;
@@ -177,15 +200,15 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
         $scope.featureLocation = {lat: data.geometry.coordinates[1], lng: data.geometry.coordinates[0]};
         $scope.attachments = [];
         $scope.files = [];
-        $scope.showObservation = true;
+        MapService.setCurrentMapPanel('observation');
         isEditing = true;
 
-        FeatureService.getAttachments(value.layerId, value.featureId).
-          success(function (data, status, headers, config) {
-            $scope.attachments = data.attachmentInfos;
-            $scope.attachmentUrl = appConstants.rootUrl + '/FeatureServer/'+ value.layerId
-              + '/' + value.featureId + '/attachments/';
-          });
+      FeatureService.getAttachments(value.layerId, value.featureId).
+        success(function (data, status, headers, config) {
+          $scope.attachments = data.attachmentInfos;
+          $scope.attachmentUrl = appConstants.rootUrl + '/FeatureServer/'+ value.layerId
+            + '/' + value.featureId + '/attachments/';
+        });
       });
   }, true);
 
@@ -202,13 +225,22 @@ function FeatureController($scope, $location, $timeout, FeatureService, UserServ
     FeatureService.deleteAttachment($scope.activeFeature.layerId, $scope.activeFeature.featureId, attachmentId)
       .success(function(data) {
         console.log("attachment deleted");
+        var removedItem = data.deleteAttachmentResults[0].objectId;
+        if (removedItem > -1) {
+          for (var i = 0; i < $scope.attachments.length; i++) {
+            if ($scope.attachments[i].id == removedItem) {
+              $scope.attachments.splice(i, 1);
+            }
+          }
+        }
       });
-
   }
 
   $scope.$watch("markerLocation", function(location) {
-    if (!isEditing) {
+    if (!isEditing && MapService.getCurrentMapPanel() =='observation') {
       $scope.featureLocation = location;
+      $scope.$apply
+      $scope.observation.attributes.EVENTDATE = new Date().getTime();
     }
   }, true);
 }

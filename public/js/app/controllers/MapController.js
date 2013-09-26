@@ -4,12 +4,13 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($scope, $log, $http, appConstants, mageLib, LayerService, FeatureService, LocationService, TimerService) {
+function MapController($scope, $log, $http, appConstants, mageLib, IconService, UserService, MapService, LayerService, FeatureService, LocationService, TimerService) {
   $scope.customer = appConstants.customer;
 
   $scope.locate = false;
   $scope.broadcast = false;
   $scope.loadingLayers = {};
+  $scope.layerPollTime = 60000;
 
   /* Some map defaults */
   $scope.observation = {};
@@ -30,8 +31,24 @@ function MapController($scope, $log, $http, appConstants, mageLib, LayerService,
 
   $scope.locationServicesEnabled = false;
   $scope.locations = [];
+  $scope.locationPollTime = 5000;
+
+  $scope.showListTool = false;
+  $scope.iconTag = function(feature) {
+    return IconService.iconHtml(feature, $scope);
+  }
 
   $scope.currentLayerId = 0;
+
+  $scope.setActiveFeature = function(feature, layer) {    
+    $scope.activeFeature = {feature: feature, layerId: layer.id, featureId: feature.properties.OBJECTID};
+    $scope.featureTableClick = {feature: feature, layerId: layer.id, featureId: feature.properties.OBJECTID};
+  }
+
+  $scope.locationClick = function(location) {
+    $scope.locationTableClick = location;
+    $scope.activeLocation = location;
+  }
 
   $scope.exportLayers = [];
   $scope.baseLayers = [];
@@ -61,20 +78,38 @@ function MapController($scope, $log, $http, appConstants, mageLib, LayerService,
       $scope.baseLayer = $scope.baseLayers[0];
     });
 
+    var loadLayer = function(id) {
+      $scope.loadingLayers[id] = true;
+
+    FeatureService.getFeatures(id)
+      .success(function(features) {
+        $scope.layer = {id: id, checked: true, features: features};
+        $scope.loadingLayers[id] = false;
+      });
+    }
+
   $scope.onFeatureLayer = function(layer) {
+    var timerName = 'pollLayer'+layer.id;
     if (!layer.checked) {
       $scope.layer = {id: layer.id, checked: false};
+      TimerService.stop(timerName);
       return;
     };
 
-    $scope.loadingLayers[layer.id] = true;
-
-    FeatureService.getFeatures(layer.id)
-      .success(function(features) {
-        $scope.layer = {id: layer.id, checked: true, features: features};
-        $scope.loadingLayers[layer.id] = false;
-      });
+    TimerService.start(timerName, $scope.layerPollTime || 300000, function() {
+      loadLayer(layer.id);
+    });
   }
+
+  $scope.$watch('layerPollTime', function() {
+    if ($scope.layerPollTime && $scope.layer) {
+      if ($scope.layerPollTime == 0) {
+        TimerService.stop('pollLayer'+$scope.layer.id);
+        return;
+      }
+      $scope.onFeatureLayer($scope.layer);
+    }
+  });
 
   $scope.onImageryLayer = function(layer) {
     if (layer.checked) {
@@ -144,6 +179,18 @@ function MapController($scope, $log, $http, appConstants, mageLib, LayerService,
     }
   }
 
+  $scope.checkCurrentMapPanel = function (mapPanel) {
+    return MapService.getCurrentMapPanel() == mapPanel;
+  }
+
+  $scope.setCurrentMapPanel = function (mapPanel) {
+    if (MapService.getCurrentMapPanel() == mapPanel) {
+      MapService.setCurrentMapPanel('none');
+    } else {
+      MapService.setCurrentMapPanel(mapPanel);
+    }
+  }
+
   /* Goto address, need to implement some geocoding like the android app does, otherwise pull it out for PDC. */
   $scope.openGotoAddress = function () {
     console.log("in goto address");
@@ -190,11 +237,20 @@ function MapController($scope, $log, $http, appConstants, mageLib, LayerService,
   $scope.locationServices = function() {
     var timerName = 'pollLocation';
 
-    if ($scope.locationServicesEnabled) {
-      TimerService.start(timerName, 5000, function() {
+    if ($scope.locationServicesEnabled || $scope.locationPollTime == 0) {
+      TimerService.start(timerName, $scope.locationPollTime || 5000, function() {
       LocationService.getLocations().
         success(function (data, status, headers, config) {
-          $scope.locations = data;
+          $scope.locations = _.filter(data, function(user) {
+            return user.locations.length;
+          });
+          _.each($scope.locations, function(userLocation) {
+              UserService.getUser(userLocation.user)
+                .then(function(user) {
+                  userLocation.userModel = user.data || user;
+                });
+              
+            });
         }).
         error(function () {
           console.log('error getting locations');
@@ -205,6 +261,12 @@ function MapController($scope, $log, $http, appConstants, mageLib, LayerService,
       TimerService.stop(timerName);
     }
   }
+
+  $scope.$watch('locationPollTime', function() {
+    if ($scope.locationPollTime) {
+      $scope.locationServices();
+    }
+  });
 
   $scope.dismissLocations = function() {
     console.log("in dismissLocations");

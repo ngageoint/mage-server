@@ -1,8 +1,11 @@
-module.exports = function(app, auth) {
+module.exports = function(app, security) {
   var access = require('../access')
-    , Role = require('../models/role');
+    , Role = require('../models/role')
+    , p***REMOVED***port = security.authentication.p***REMOVED***port
+    , authenticationStrategy = security.authentication.authenticationStrategy;
 
-  app.all('/api/roles*', auth.p***REMOVED***port.authenticate('bearer'));
+
+  app.all('/api/roles*', p***REMOVED***port.authenticate(authenticationStrategy));
 
   var validateRoleParams = function(req, res, next) {
     var name = req.param('name');

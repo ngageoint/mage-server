@@ -108,11 +108,14 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
         return promise;
       }
 
+      var resolvedUsers = {};
+
       ***REMOVED***.getUser = function(id) {
-        return $http.get(
+        resolvedUsers[id] = resolvedUsers[id] || $http.get(
           appConstants.rootUrl + '/api/users/' + id, 
           {params: mageLib.getTokenParams()}
         );
+        return resolvedUsers[id];
       }
 
       ***REMOVED***.newUser = function (user) {
@@ -120,7 +123,13 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       };
 
       ***REMOVED***.getAllUsers = function () {
-        return $http.get(appConstants.rootUrl + '/api/users', {params: mageLib.getTokenParams()});
+        return $http.get(appConstants.rootUrl + '/api/users', {params: mageLib.getTokenParams()}).success(function(users) {
+          for (var i = 0; i < users.length; i++) {
+          resolvedUsers[users[i]._id] = $q.when(users[i]);
+          }
+          console.info('resolved users ');
+          console.info(resolvedUsers);
+        });
       };
 
       ***REMOVED***.createUser = function(user) {

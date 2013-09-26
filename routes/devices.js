@@ -1,11 +1,11 @@
-module.exports = function(app, auth) {
+module.exports = function(app, security) {
   var Device = require('../models/device')
     , User = require('../models/user')
     , access = require('../access');
 
-  var p***REMOVED***port = auth.p***REMOVED***port
-    , provision = auth.provision
-    , authenticationStrategy = auth.authenticationStrategy;
+  var p***REMOVED***port = security.authentication.p***REMOVED***port
+    , provision = security.provisioning.provision
+    , authenticationStrategy = security.authentication.authenticationStrategy;
 
   var isAuthenticated = function(strategy) {
     return function(req, res, next) {
@@ -56,7 +56,7 @@ module.exports = function(app, auth) {
   // Create a new device (ADMIN)
   app.post(
     '/api/devices',
-    isAuthenticated('bearer'),
+    isAuthenticated(authenticationStrategy),
     isAuthorized('CREATE_DEVICE'),
     parseDeviceParams,
     validateDeviceParams,
@@ -117,7 +117,7 @@ module.exports = function(app, auth) {
   // get all devices
   app.get(
     '/api/devices',
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_DEVICE'),
       function (req, res) {
       Device.getDevices(function (err, devices) {
@@ -128,7 +128,7 @@ module.exports = function(app, auth) {
   // get device
   app.get(
     '/api/devices/:deviceId',
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_DEVICE'),
     function (req, res) {
       res.json(req.device);
@@ -138,7 +138,7 @@ module.exports = function(app, auth) {
   // Update a device
   app.put(
     '/api/devices/:deviceId',
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('UPDATE_DEVICE'),
     parseDeviceParams, 
     function(req, res) {
@@ -162,7 +162,7 @@ module.exports = function(app, auth) {
   // Delete a device
   app.delete(
     '/api/devices/:deviceId',
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('DELETE_DEVICE'),
     function(req, res) {
       Device.deleteDevice(req.device, function(err, device) {

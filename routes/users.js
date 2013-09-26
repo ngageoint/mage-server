@@ -1,15 +1,15 @@
-module.exports = function(app, auth) {
+module.exports = function(app, security) {
   var User = require('../models/user')
     , Token = require('../models/token')
     , Role = require('../models/role')
     , Team = require('../models/team')
     , access = require('../access')
-    , config = require('../config.json');
-
-  var p***REMOVED***port = auth.p***REMOVED***port
-    , authenticationStrategy = auth.authenticationStrategy
-    , provision = auth.provision
-    , provisionStrategy = auth.provisionStrategy;
+    , config = require('../config.json')
+    , p***REMOVED***port = security.authentication.p***REMOVED***port
+    , loginStrategy = security.authentication.loginStrategy
+    , authenticationStrategy = security.authentication.authenticationStrategy
+    , provision = security.provisioning.provision
+    , provisionStrategy = security.provisioning.strategy;
 
   var p***REMOVED***wordLength = config.server.authentication.p***REMOVED***wordMinLength;
   var emailRegex = /^[^\s@]+@[^\s@]+\./;
@@ -154,10 +154,15 @@ module.exports = function(app, auth) {
   // login
   app.post(
     '/api/login',
-    p***REMOVED***port.authenticate(authenticationStrategy),
+    p***REMOVED***port.authenticate(loginStrategy),
     provision.check(provisionStrategy),
     function(req, res) {
-       Token.createTokenForUser(req.user, function(err, token) {
+      var options = {user: req.user};
+      if (req.provisionedDevice) {
+        options.device = req.provisionedDevice;
+      }
+
+      Token.createToken(options, function(err, token) {
         if (err) {
           return res.send(500, "Error generating token");
         }
@@ -170,7 +175,7 @@ module.exports = function(app, auth) {
   // logout
   app.post(
     '/api/logout',
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     function(req, res, next) {
       Token.removeTokenForUser(req.user, function(err, token){
         if (err) return next(err);
@@ -183,7 +188,7 @@ module.exports = function(app, auth) {
   // get all uses
   app.get(
     '/api/users', 
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_USER'),
     function(req, res) {
       User.getUsers(function (users) {
@@ -194,7 +199,7 @@ module.exports = function(app, auth) {
   // get info for the user bearing a token, i.e get info for myself
   app.get(
     '/api/users/myself',
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     function(req, res) {
       res.json(req.user);
     }
@@ -203,7 +208,7 @@ module.exports = function(app, auth) {
   // get user by id
   app.get( 
     '/api/users/:userId',
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_USER'),
     function(req, res) {
       User.getUserById(req.params.userId, function(err, user) {
@@ -215,7 +220,7 @@ module.exports = function(app, auth) {
   // update myself
   app.put(
     '/api/users/myself',
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     function(req, res) {
       var user = req.user;
       if (req.param('username')) user.username = req.param('username');
@@ -250,7 +255,7 @@ module.exports = function(app, auth) {
   // create user as non-admin, roles will be empty
   app.post(
     '/api/users',
-    isAuthenticated('bearer'),
+    isAuthenticated(authenticationStrategy),
     isAuthorized('UPDATE_USER'),
     validateUser,
     function(req, res, next) {
@@ -288,7 +293,7 @@ module.exports = function(app, auth) {
   // update status for myself
   app.put(
     '/api/users/myself/status',
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     function(req, res) {
       var status = req.param('status');
       if (!status) return res.send(400, "Missing required parameter 'status'");
@@ -303,7 +308,7 @@ module.exports = function(app, auth) {
   // remove status for myself
   app.delete(
     '/api/users/myself/status',
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     function(req, res) {
       var status = req.param.status;
 
@@ -317,7 +322,7 @@ module.exports = function(app, auth) {
   // Update a specific user
   app.put(
     '/api/users/:userId', 
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('UPDATE_USER'),
     function(req, res) {
       User.getUserById(req.params.userId, function(err, user) {
@@ -358,7 +363,7 @@ module.exports = function(app, auth) {
   // Delete a specific user
   app.delete(
     '/api/users/:userId', 
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('DELETE_USER'),
     function(req, res) {
       User.deleteUser(req.params.userId, function(err, user) {
@@ -374,7 +379,7 @@ module.exports = function(app, auth) {
   // set role for user
   app.post(
     '/api/users/:userId/role',
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('UPDATE_USER'),
     validateRoleParams,
     function(req, res) {
@@ -387,7 +392,7 @@ module.exports = function(app, auth) {
   // remove role from user
   app.delete(
     '/api/users/:userId/role',
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('UPDATE_USER'),
     function(req, res) {
       User.removeRolesForUser(req.user, function(err, user) {
@@ -399,7 +404,7 @@ module.exports = function(app, auth) {
   // set teams for users
   app.post(
     '/api/users/:userId/teams',
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('UPDATE_USER'),
     validateTeamParams,
     function(req, res) {
@@ -412,7 +417,7 @@ module.exports = function(app, auth) {
   // remove all teams from user
   app.delete(
     '/api/users/:userId/teams',
-    p***REMOVED***port.authenticate('bearer'),
+    p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('UPDATE_USER'),
     function(req, res) {
       User.removeTeamsForUser(req.user, function(err, user) {
