@@ -14,7 +14,7 @@
 
         var addMarker = L.marker([0,0], {
           draggable: true,
-          icon: IconService.defaultIcon()
+          icon: IconService.defaultLeafletIcon()
         });
         scope.markerLocation = addMarker.getLatLng();
 
@@ -192,7 +192,7 @@
                   return L.marker(latlng, { icon: icon });
                 }
               } else {
-                var icon = IconService.icon(feature, {types: scope.types});
+                var icon = IconService.leafletIcon(feature, {types: scope.types});
                 var marker =  L.marker(latlng, { icon: icon });
 
                 markers[layer.id][feature.properties.OBJECTID] = marker;
@@ -337,7 +337,7 @@
         scope.$watch("updatedFeature", function(feature) {
           if (!feature) return;
 
-          activeMarker.setIcon(IconService.icon(feature, {types: scope.types, levels: scope.levels}));
+          activeMarker.setIcon(IconService.leafletIcon(feature, {types: scope.types, levels: scope.levels}));
         });
 
         scope.$watch("externalFeature", function(value) {

@@ -21,7 +21,6 @@ var mage = angular.module(
     "mage.featureService",
     "mage.timerService",
     "mage.locationService",
-    "mage.iconService",
     "mage.aboutService",
     "mage.httpAuthService",
     "mage.lib",

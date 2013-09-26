@@ -1,20 +1,14 @@
 'use strict';
 
-angular.module('mage.iconService', ['mage.***REMOVED***s', 'mage.lib'])
-  .factory('IconService', ['$http', 'appConstants',
-    function ($http, appConstants) {
+angular.module('mage')
+  .factory('AwesomeMarkerIconService', ['appConstants', 'FeatureTypeService',
+    function (appConstants, FeatureTypeService) {
       var ***REMOVED*** = {};
+      var featureTypes = FeatureTypeService.getTypes();
 
-      ***REMOVED***.defaultIcon = function() {
-        return L.AwesomeMarkers.icon({
-          icon: 'plus',
-          color: 'cadetblue'
-        });
-      }
-
-      ***REMOVED***.cl***REMOVED*** = function(type, o) {
+      ***REMOVED***.getCl***REMOVED*** = function(typeName, o) {
         var type = _.find(o.types, function(t) { 
-          return t.name == type; 
+          return t.name == typeName; 
         });
 
         return type ? type.icon : 'circle';  
@@ -24,7 +18,7 @@ angular.module('mage.iconService', ['mage.***REMOVED***s', 'mage.lib'])
       // Red = 1-5 hours
       // Yellow = 5-8 hours
       // Green = > 8 hours
-      ***REMOVED***.color = function(timestamp) {
+      ***REMOVED***.getColor = function(timestamp) {
         var now = moment();
         var date = moment(timestamp);
         var diff = now.diff(date, 'hours', true);
@@ -38,13 +32,26 @@ angular.module('mage.iconService', ['mage.***REMOVED***s', 'mage.lib'])
           return 'green';
         }
       }
- 
-      ***REMOVED***.icon = function (feature, o) {
+
+      ***REMOVED***.template = function(element, attributes) {
+        return '<div cl***REMOVED***="awesome-marker awesome-marker-display" ng-cl***REMOVED***="markerColor">' +
+                '<i cl***REMOVED***="icon-white" ng-cl***REMOVED***="markerCl***REMOVED***"></i>' + 
+               '</div>';
+      }
+
+      ***REMOVED***.defaultLeafletIcon = function() {
+        return L.AwesomeMarkers.icon({
+          icon: 'plus',
+          color: 'cadetblue'
+        });
+      }
+
+      ***REMOVED***.leafletIcon = function (feature, o) {
         var properties = feature.properties || feature.attributes;
 
         return L.AwesomeMarkers.icon({
-          icon: ***REMOVED***.cl***REMOVED***(properties.TYPE, o),
-          color: ***REMOVED***.color(properties.EVENTDATE)
+          icon: ***REMOVED***.getCl***REMOVED***(properties.TYPE, o),
+          color: ***REMOVED***.getColor(properties.EVENTDATE)
         });
       };
 
@@ -57,7 +64,7 @@ angular.module('mage.iconService', ['mage.***REMOVED***s', 'mage.lib'])
         var level = _.find(o.levels, function(level) {
           return level.name === feature.properties.EVENTLEVEL;
         });
-        var color = ***REMOVED***.color(feature.properties.EVENTDATE);
+        var color = ***REMOVED***.getColor(feature.properties.EVENTDATE);
 
         return '<i cl***REMOVED***="icon-'+icon+'" style="color:'+color+'"></i>';
       };
