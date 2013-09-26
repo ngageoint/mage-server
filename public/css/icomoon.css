@@ -21,7 +21,7 @@
 	-webkit-font-smoothing: antialiased;
 }
 
-[cl***REMOVED***^="icon-"],[cl***REMOVED****=" icon-"]{font-family:icomoon;font-weight:normal;font-style:normal;text-decoration:inherit;-webkit-font-smoothing:antialiased;*margin-right:.3em;}
+[cl***REMOVED***^="icon-"],[cl***REMOVED****=" icon-"]{font-family:icomoon,FontAwesome;font-weight:normal;font-style:normal;text-decoration:inherit;-webkit-font-smoothing:antialiased;*margin-right:.3em;}
 [cl***REMOVED***^="icon-"]:before,[cl***REMOVED****=" icon-"]:before{text-decoration:inherit;display:inline-block;speak:none;}
 .icon-large:before{vertical-align:-10%;font-size:1.3333333333333333em;}
 a [cl***REMOVED***^="icon-"],a [cl***REMOVED****=" icon-"]{display:inline;}

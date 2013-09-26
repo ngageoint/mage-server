@@ -1,5 +1,5 @@
 // ESRI feature routes
-module.exports = function(app, auth) {
+module.exports = function(app, security) {
   var async = require('async')
     , fs = require('fs-extra')
     , path = require('path')
@@ -8,7 +8,7 @@ module.exports = function(app, auth) {
     , access = require('../access')
     , config = require('../config.json');
 
-  var p***REMOVED***port = auth.p***REMOVED***port;
+  var p***REMOVED***port = security.authentication.p***REMOVED***port;
   var geometryFormat = require('../format/geometryFormat');
   var esri = require('../transformers/esri')(geometryFormat);
   var attachmentBase = config.server.attachmentBaseDirectory;
@@ -174,7 +174,10 @@ module.exports = function(app, auth) {
       async.each(
         features,
         function(feature, done) {
-          Feature.createFeature(req.layer, {geometry: feature.geometry, properties: feature.attributes}, function(newFeature) {
+          var properties = feature.attributes || {};
+          properties.userId = req.user._id;
+          properties.deviceId = req.provisionedDeviceId;
+          Feature.createFeature(req.layer, {geometry: feature.geometry, properties: properties}, function(newFeature) {
             addResults.push({
               globalId: null,
               objectId: newFeature ? newFeature.properties.OBJECTID : -1,
@@ -215,7 +218,10 @@ module.exports = function(app, auth) {
       features = JSON.parse(features);
       var updateResults = [];
       var updateFeature = function(feature, done) {
-        Feature.updateFeature(req.layer, {geometry: feature.geometry, properties: feature.attributes}, function(err, newFeature) {
+        var properties = feature.attributes || {};
+        properties.userId = req.user._id;
+        properties.deviceId = req.provisionedDeviceId;
+        Feature.updateFeature(req.layer, {geometry: feature.geometry, properties: properties}, function(err, newFeature) {
           if (err || !newFeature) {
             updateResults.push({
               objectId: feature.attributes.OBJECTID,

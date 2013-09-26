@@ -1,4 +1,4 @@
-module.exports = function(app, auth) {
+module.exports = function(app, security) {
 
   featureTypes = require('../models/featureType');  
 

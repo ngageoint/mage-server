@@ -1,12 +1,30 @@
 <div 
   id="observation-panel" 
-  ng-show="showObservation" 
+  ng-show="checkCurrentMapPanel('observation')" 
   cl***REMOVED***="tabbable tabs-below panel panel-large"
   >
   <div cl***REMOVED***="pull-right panel-close">
     <i ng-click="cancelObservation()" ngm-tap="cancelObservation()" cl***REMOVED***="close">&times;</i>
   </div>
   <div cl***REMOVED***="panel-content">
+
+    <div cl***REMOVED***="row-fluid feature-title">
+      <div cl***REMOVED***="span2">
+        <div ***REMOVED***-marker-icon="observation" types="types"></div>
+      </div>    
+      <div cl***REMOVED***="span10">
+        <div>
+          <span cl***REMOVED***="muted">
+            <strong user-id="observation.attributes.userId">{{user.firstname}} {{user.lastname}}</strong>
+            <span ui-if="observation" device-id="observation.attributes.deviceId">({{device.uid}})</span>
+          </span>
+        </div>
+        <div>
+          <span cl***REMOVED***="muted ng-binding">{{formatFeatureDate(observation.attributes.EVENTDATE)}} @ {{featureLocation.lat.toPrecision(7)}}, {{featureLocation.lng.toPrecision(7)}} </span>
+        </div>
+      </div>
+    </div>
+
     <ul cl***REMOVED***="nav nav-pills">
       <li ng-cl***REMOVED***="{active: observationTab == 1}">
         <a href="" ng-click="observationTab = 1;">
@@ -32,7 +50,7 @@
         <div cl***REMOVED***="control-group">
           <label cl***REMOVED***="control-label" for="type">Type</label>
           <div cl***REMOVED***="controls">
-            <select ng-model="observation.attributes.TYPE" ng-selected="type" ng-options="type for type in types"></select>
+            <select ng-model="observation.attributes.TYPE" ng-selected="type.name" ng-options="type.name as type.name for type in types"></select>
           </div>
         </div>
         <div cl***REMOVED***="control-group">
@@ -93,9 +111,15 @@
             <img ng-switch-when="image/jpg" ng-src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">
             <img ng-switch-when="image/jpeg" ng-src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">
             <img ng-switch-when="image/png" ng-src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">
+            <img ng-switch-when="image/gif" ng-src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">
+            <input type="button" value="Delete" ng-show="amAdmin && (attachment.contentType != 'application/octet-stream')" cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(attachment.id)">
+            <!-- Fix for octet stream images in an older version of the app -->
             <!-- Due to drastically varying browser behavior, videos will be a download link for the time being -->
             <a ng-switch-when="video/mp4" ng-href="{{attachmentUrl + attachment.id + '?access_token=' + token}}">Download video</a>
-            <input type="button" value="Delete" ng-show="amAdmin" cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(attachment.id)">
+            <div ng-switch-when="application/octet-stream" cl***REMOVED***="top-gap-l" style="width: 100%">
+              <a ng-href="{{attachmentUrl + attachment.id + '?access_token=' + token}}" target="_blank">Download {{attachment.name}}</a>
+              <div><a ng-show="amAdmin" cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(attachment.id)">Delete</a></div>
+            </div>
           </div>
         </div>
       </div>

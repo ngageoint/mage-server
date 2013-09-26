@@ -5,27 +5,39 @@ module.exports = function(app, auth) {
   // in tight schedule and did not get the opportunity to all the routes in.
 
   var Feature = require('../models/feature')
+    , async = require('async')
+    , moment = require('moment')
     , access = require('../access')
     , geometryFormat = require('../format/geoJsonFormat');
 
   var geojson = require('../transformers/geojson');
 
   var parseQueryParams = function(req, res, next) {
-    var parameters = {};
+    var parameters = {filters: {}};
 
     var properties = req.param('properties');
     if (properties) {
       parameters.properties = properties.split(",");
     }
 
+    var startTime = req.param('startTime');
+    if (startTime) {
+      parameters.filters.startTime = moment.utc(startTime).toDate();
+    }
+
+    var endTime = req.param('endTime');
+    if (endTime) {
+      parameters.filters.endTime = moment.utc(endTime).toDate();
+    }
+
     var bbox = req.param('bbox');
     if (bbox) {
-      parameters.geometries = geometryFormat.parse('bbox', bbox);
+      parameters.filters.geometries = geometryFormat.parse('bbox', bbox);
     }
 
     var geometry = req.param('geometry');
     if (geometry) {
-      parameters.geometries = geometryFormat.parse('geometry', geometry);
+      parameters.filters.geometries = geometryFormat.parse('geometry', geometry);
     }
 
     req.parameters = parameters;
@@ -41,30 +53,19 @@ module.exports = function(app, auth) {
     function (req, res) {
       console.log("SAGE ESRI Features GET REST Service Requested");
 
-      // create filters for feature query
-      var filters = null;
-
-      var geometries = req.parameters.geometries;
-      if (geometries) {
-        filters = [];
-        geometries.forEach(function(geometry) {
-          filters.push({
-            geometry: geometry
-          });
-        });
-      }
-
       var respond = function(features) {
         var response = geojson.transform(features, req.parameters.properties);
         res.json(response);
       }
-
-      if (filters) {
+      
+      var filters = req.parameters.filters;
+      if (filters.geometries) {
         allFeatures = [];
         async.each(
-          filters, 
-          function(filter, done) {
-            Feature.getFeatures(req.layer, filter, function (features) {
+          filters.geometries, 
+          function(geometry, done) {
+            filters.geometry = geometry
+            Feature.getFeatures(req.layer, filters, function (features) {
               if (features) {
                 allFeatures = allFeatures.concat(features);
               }
@@ -77,8 +78,7 @@ module.exports = function(app, auth) {
           }
         );
       } else {
-        var filter = {};
-        Feature.getFeatures(req.layer, filter, function (features) {
+        Feature.getFeatures(req.layer, filters, function (features) {
           respond(features);
         });
       }

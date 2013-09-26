@@ -1,8 +1,19 @@
+listen_port = process.argv[2];
+
+var sys = require('sys'),
+  listen_port = process.argv[2];
+
+if (!listen_port){
+    sys.puts('Supply a port number: $ node mage.js 4242');
+    process.exit(1);
+}
+
 var express = require("express")
   , mongoose = require('mongoose')
   , path = require("path")
   , fs = require('fs-extra')
-  , config = require('./config.json');
+  , config = require('./config.json')
+  , provision = require('./provision');
 
 // Create directory for storing SAGE media attachments
 var attachmentBase = config.server.attachmentBaseDirectory;
@@ -15,12 +26,10 @@ fs.mkdirp(attachmentBase, function(err) {
 });
 
 // Configure authentication
-var auth = require('./auth/authentication')({
-  authenticationStrategy: config.server.authentication.strategy,
-  provisionStrategy: config.server.provision.strategy
-});
-console.log('Authentication: ' + auth.authenticationStrategy);
-console.log('Provision: ' + auth.provisionStrategy);
+var authentication = require('./authentication')(config.server.authentication.strategy);
+var provisioning = require('./provision/' + config.server.provision.strategy)(provision);
+console.log('Authentication: ' + authentication.loginStrategy);
+console.log('Provision: ' + provisioning.strategy);
 
 // Configuration of the MAGE Express server
 var app = express();
@@ -32,13 +41,13 @@ app.configure(function () {
       throw err;
     }
   });
-  mongoose.set('debug', false);
+  mongoose.set('debug', true);
 
   app.set('config', config);
 
   app.use(express.bodyParser());
   app.use(express.methodOverride());
-  app.use(auth.p***REMOVED***port.initialize());
+  app.use(authentication.p***REMOVED***port.initialize());
   app.use(app.router);
   app.use(express.static(path.join(__dirname, "public")));
   app.use(function(err, req, res, next) {
@@ -48,8 +57,8 @@ app.configure(function () {
 });
 
 // Configure routes
-require('./routes')(app, auth);
+require('./routes')(app, {authentication: authentication, provisioning: provisioning});
 
 // Launches the Node.js Express Server
-app.listen(4242);
-console.log('MAGE Server: Started listening on port 4242.');
+app.listen(listen_port);
+console.log('MAGE Server: Started listening on port ' + listen_port);

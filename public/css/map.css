@@ -96,7 +96,7 @@ html, body, div.leaflet-container {
 	height: 50px;
 	width: 50px;
 	bottom: 5px;
-	left: 133px;px;
+	left: 133px;
 	z-index: 999;
 }
 
@@ -109,6 +109,27 @@ html, body, div.leaflet-container {
 	z-index: 999;
 }
 
+#list-tool-btn {
+	position: absolute;
+	height: 50px;
+	width: 50px;
+	bottom: 5px;
+	left: 263px;
+	z-index: 999;
+}
+
+.right-panel {
+	right: 5px;
+	top: 110px;
+	z-index: 2000;
+	overflow: auto;
+	background: #D0E7FF;
+	color: #5278A2;
+	position: absolute;
+	height: 90%;
+	width: 83%;
+	border: 2px solid #5278A2;
+}
 
 /* Panels and their contents */
 .panel {
@@ -117,6 +138,7 @@ html, body, div.leaflet-container {
 	z-index: 2000;
 	overflow: auto;
 	background: #D0E7FF;
+	background: rgba(208, 231, 255, 0.8);
 	color: #5278A2;
 	position: absolute;
 	height: 90%;
@@ -182,6 +204,73 @@ html, body, div.leaflet-container {
 .current-page {
 	background: #305680;
 	color: #fff;
+}
+
+#list-tool-panel {
+	bottom: 0px;
+	right: 0px;
+	height: 250px;
+	width: 960px;
+	z-index: 2000;
+	background: #D0E7FF;
+	background: rgba(208, 231, 255, 0.8);
+	color: #5278A2;
+	position: absolute;
+	border: 2px solid #5278A2;
+}
+
+#list-tool-list {
+	height: 200px;
+	overflow: auto;
+}
+
+#list-tool-list .row:nth-child(odd)  {
+	background: #def;
+	background: rgba(221, 238, 255, 0.6);
+}
+
+#list-tool-list .row:hover {
+	background: #9ac;
+	color: #eee;
+}
+
+.row-selected {
+	background: #5077A4 !important;
+	background: rgba(80, 119, 164, 0.7) !important;
+	color: #eee;
+}
+
+#user-location-panel {
+	top: 110px;
+	right: 0px;
+	height: 400px;
+	width: 350px;
+	z-index: 2000;
+	background: #D0E7FF;
+	background: rgba(208, 231, 255, 0.8);
+	color: #5278A2;
+	position: absolute;
+	border: 2px solid #5278A2;
+}
+
+#user-location-panel-list {
+	height: 345px;
+	overflow: auto;
+	padding: 5px;
+}
+
+#user-location-panel-list .location:nth-child(even)  {
+	background: #def;
+	background: rgba(221, 238, 255, 0.6);
+}
+
+#user-location-panel-list .location:hover {
+	background: #9ac;
+	color: #eee;
+}
+
+.location {
+	padding: 5px;
 }
 
 /* Progress bar stuff */
