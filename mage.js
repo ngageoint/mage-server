@@ -1,3 +1,13 @@
+listen_port = process.argv[2];
+
+var sys = require('sys'),
+  listen_port = process.argv[2];
+
+if (!listen_port){
+    sys.puts('Supply a port number: $ node mage.js 4242');
+    process.exit(1);
+}
+
 var express = require("express")
   , mongoose = require('mongoose')
   , path = require("path")
@@ -50,5 +60,5 @@ app.configure(function () {
 require('./routes')(app, {authentication: authentication, provisioning: provisioning});
 
 // Launches the Node.js Express Server
-app.listen(4242);
-console.log('MAGE Server: Started listening on port 4242.');
+app.listen(listen_port);
+console.log('MAGE Server: Started listening on port ' + listen_port);
