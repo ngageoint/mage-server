@@ -16,13 +16,13 @@ mage.directive('ssObservation', ['FeatureTypeService', 'UserService' , function 
       ];
 
       //Get the Feature Types
-      FeatureTypeService.getAllFeatureTypes().
-      success(function (types, status, headers, config) {
-        scope.types = types;
-      }).
-      error(function (data, status, headers, config) {
-        console.log("Error getting types: " + status);
-      });
+      FeatureTypeService.getTypes().
+        success(function (types, status, headers, config) {
+          scope.types = types;
+        }).
+        error(function (data, status, headers, config) {
+          console.log("Error getting types: " + status);
+        });
 
       scope.createNewObservation = function(location) {
         return {

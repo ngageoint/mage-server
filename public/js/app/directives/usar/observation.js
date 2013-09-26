@@ -1,6 +1,6 @@
 'use strict';
 
-mage.directive('***REMOVED***Observation', function () {
+mage.directive('***REMOVED***Observation', ['FeatureTypeService', 'UserService', function (FeatureTypeService, UserService) {
   return {
     restrict: "A",
     templateUrl: "/js/app/partials/***REMOVED***/observation.html",
@@ -42,28 +42,28 @@ mage.directive('***REMOVED***Observation', function () {
         'Yellow', 
         'Red'
       ];
-      scope.types = [
-        'Animal Issue',
-        'Chemical Hazard',
-        'Command Post',
-        'Confirmed Victim',
-        'Confirmed Victim Removed',
-        'Emergency Collection Point',
-        'Fire',
-        'Helicopter Landing Site',
-        'Human Remains',
-        'Possible Criminal Activity',
-        'Shelter in Place',
-        'Special Needs',
-        'Staging Area',
-        'Start Search',
-        'Stop Search',
-        'Structure Damaged but Safe',
-        'Structure Major Damage No Entry',
-        'Structure No Damage',
-        'Victim Detected',
-        'Water Level'  
-      ];
+
+      //Get the Feature Types
+      FeatureTypeService.getTypes().
+        success(function (types, status, headers, config) {
+          scope.types = types;
+        }).
+        error(function (data, status, headers, config) {
+          console.log("Error getting types: " + status);
+        });
+
+
+      scope.createNewObservation = function(location) {
+        return {
+          attributes: {
+            userId: UserService.myself._id,
+            TYPE: scope.types[0].name,
+            EVENTLEVEL: scope.levels[0],
+            TEAM: scope.teams[0],
+            EVENTDATE: new Date()
+          }
+        };
+      }
     }
   };
-});
+}]);

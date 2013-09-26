@@ -234,16 +234,6 @@ function FeatureController($scope, $location, $timeout, FeatureService, MapServi
       });
   }, true);
 
-  $scope.$watch("observation.attributes.TYPE", function(type) {
-    if (!type) return;
-    $scope.markerCl***REMOVED*** = "icon-" + IconService.cl***REMOVED***(type, {types: $scope.types});
-  });
-
-  $scope.$watch("observation.attributes.EVENTDATE", function(timestamp) {
-    if (!timestamp) return;
-    $scope.markerColor = "awesome-marker-icon-" + IconService.color(timestamp);
-  });
-
   $scope.$watch("externalFeatureClick", function (value) {
     if (!value) return;
 

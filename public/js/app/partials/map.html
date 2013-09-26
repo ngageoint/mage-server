@@ -6,7 +6,7 @@
 
   <div ss-observation active-feature="activeFeature" new-feature="newFeature" marker-location="markerLocation"></div>
   <!-- <div pdc-observation active-feature="activeFeature" new-feature="newFeature" marker-location="markerLocation"></div> -->
-  <!-- <div ***REMOVED***-observation active-feature="activeFeature"></div> -->
+  <!-- <div ***REMOVED***-observation active-feature="activeFeature" new-feature="newFeature" marker-location="markerLocation"></div> -->
 
   <!-- Third party observation dialog. Might be a good idea to generalize all the things and make them one observation panel at some point in time. -->
   <!-- <div external active-feature="activeFeature" currentlayerid="currentLayerId" layers="layers"></div> -->
@@ -329,7 +329,7 @@
     <div id="list-tool-list" cl***REMOVED***="top-gap-s">
       <div ng-click="setActiveFeature(feature, layer)" cl***REMOVED***="row pointer" ng-cl***REMOVED***="{'row-selected': activeFeature.featureId == feature.properties.OBJECTID}" ng-repeat="feature in layer.features.features | orderBy: 'properties.EVENTDATE' : true | filter: observationQuery">
         <a href="">
-          <div cl***REMOVED***="span1"><span style="margin-left: 20px" ng-bind-html-u***REMOVED***fe="iconTag(feature)"></span></div>
+          <div cl***REMOVED***="span1"><div ***REMOVED***-marker-icon="feature" types="types" style="margin-left: 20px"></div></div>
           <div cl***REMOVED***="span2" user-id="feature.properties.userId">{{user.firstname}} {{user.lastname}}</div>
           <div cl***REMOVED***="span2">{{feature.properties.TYPE}}</div>
           <div cl***REMOVED***="span1">{{feature.properties.EVENTLEVEL}}</div>

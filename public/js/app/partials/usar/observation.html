@@ -7,6 +7,24 @@
     <i ng-click="cancelObservation()" ngm-tap="cancelObservation()" cl***REMOVED***="close">&times;</i>
   </div>
   <div cl***REMOVED***="panel-content">
+
+    <div cl***REMOVED***="row-fluid feature-title">
+      <div cl***REMOVED***="span2">
+        <div ***REMOVED***-marker-icon="observation" types="types"></div>
+      </div>    
+      <div cl***REMOVED***="span10">
+        <div>
+          <span cl***REMOVED***="muted">
+            <strong user-id="observation.attributes.userId">{{user.firstname}} {{user.lastname}}</strong>
+            <span ui-if="observation" device-id="observation.attributes.deviceId">({{device.uid}})</span>
+          </span>
+        </div>
+        <div>
+          <span cl***REMOVED***="muted ng-binding">{{formatFeatureDate(observation.attributes.EVENTDATE)}} @ {{featureLocation.lat.toPrecision(7)}}, {{featureLocation.lng.toPrecision(7)}} </span>
+        </div>
+      </div>
+    </div>
+
     <ul cl***REMOVED***="nav nav-pills">
       <li ng-cl***REMOVED***="{active: observationTab == 1}">
         <a href="" ng-click="observationTab = 1;">
@@ -32,7 +50,7 @@
         <div cl***REMOVED***="control-group">
           <label cl***REMOVED***="control-label" for="type">Type</label>
           <div cl***REMOVED***="controls">
-            <select ng-model="observation.attributes.TYPE" ng-selected="type" ng-options="type for type in types"></select>
+            <select ng-model="observation.attributes.TYPE" ng-selected="type.name" ng-options="type.name as type.name for type in types"></select>
           </div>
         </div>
         <div cl***REMOVED***="control-group">
