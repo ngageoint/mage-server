@@ -99,8 +99,7 @@
       <div cl***REMOVED***="attachment" ng-repeat="attachment in attachments">
         <div cl***REMOVED***="image-button">
           <div ng-switch on="attachment.contentType">
-            <!--<img ng-switch-when="image/jpg" ng-src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">-->
-            <img ng-switch-when="image/jpg" ng-src="img/mapcache.png" style="width:100%">
+            <img ng-switch-when="image/jpg" ng-src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">
             <img ng-switch-when="image/jpeg" ng-src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">
             <img ng-switch-when="image/png" ng-src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">
             <img ng-switch-when="image/gif" ng-src="{{attachmentUrl + attachment.id + '?access_token=' + token}}" style="width:100%">
