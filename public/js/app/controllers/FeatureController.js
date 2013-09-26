@@ -202,7 +202,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, MapServi
         $scope.files = [];
         MapService.setCurrentMapPanel('observation');
         isEditing = true;
-        
+
       FeatureService.getAttachments(value.layerId, value.featureId).
         success(function (data, status, headers, config) {
           $scope.attachments = data.attachmentInfos;
@@ -225,12 +225,21 @@ function FeatureController($scope, $location, $timeout, FeatureService, MapServi
     FeatureService.deleteAttachment($scope.activeFeature.layerId, $scope.activeFeature.featureId, attachmentId)
       .success(function(data) {
         console.log("attachment deleted");
+        var removedItem = data.deleteAttachmentResults[0].objectId;
+        if (removedItem > -1) {
+          for (var i = 0; i < $scope.attachments.length; i++) {
+            if ($scope.attachments[i].id == removedItem) {
+              $scope.attachments.splice(i, 1);
+            }
+          }
+        }
       });
   }
 
   $scope.$watch("markerLocation", function(location) {
     if (!isEditing && MapService.getCurrentMapPanel() =='observation') {
       $scope.featureLocation = location;
+      $scope.$apply
       $scope.observation.attributes.EVENTDATE = new Date().getTime();
     }
   }, true);
