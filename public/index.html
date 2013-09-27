@@ -45,7 +45,7 @@
 <body>
   <div cl***REMOVED***="navbar navbar-fixed-top" ng-controller="NavController">
     <div cl***REMOVED***="navbar-inner">
-      <div cl***REMOVED***="container" style="display:none;" ng-show="user">
+      <div cl***REMOVED***="container ng-cloak" ng-show="user">
 
         <a cl***REMOVED***="brand" href="#/">
           <i cl***REMOVED***="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
@@ -108,6 +108,7 @@
     </div>
   </div>
 
+
   <div data-ng-view></div>
 
   <script type="text/javascript" src="vendor/jquery/jquery.min.js"></script>
@@ -115,10 +116,13 @@
   <script type="text/javascript" src="vendor/leaflet/leaflet-src.js"></script>
   <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.awesomemarkers/leaflet.awesome-markers.min.js"></script>
   <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.markercluster/leaflet.markercluster-src.js"></script>
-  <script type="text/javascript" src="vendor/angular/angular.js"></script>
-  <script type="text/javascript" src="vendor/angular/angular-resource.min.js"></script>
-  <script type="text/javascript" src="vendor/angular/angular-sanitize.min.js"></script>
-  <script type="text/javascript" src="vendor/ui-bootstrap/ui-bootstrap-0.2.0.min.js"></script>
+  <script type="text/javascript" src="vendor/angular/1.2.0/angular.js"></script>
+  <script type="text/javascript" src="vendor/angular/1.2.0/angular-resource.min.js"></script>
+  <script type="text/javascript" src="vendor/angular/1.2.0/angular-sanitize.min.js"></script>
+  <script type="text/javascript" src="vendor/angular/1.2.0/angular-route.min.js"></script>
+  <script type="text/javascript" src="vendor/ui-bootstrap/ui-bootstrap-0.6.0.js"></script>
+  <script type="text/javascript" src="vendor/ui-bootstrap/ui-bootstrap-tpls-0.6.0.js"></script>
+  <script type="text/javascript" src="vendor/angular-plugins/http-auth-interceptor.js"></script>
   <script type="text/javascript" src="vendor/bootstrap/bootstrap.min.js"></script>
   <script type="text/javascript" src="vendor/moment/moment.min.js"></script>
   <script type="text/javascript" src="js/app/leaflet/LocationMarker.js"></script>
@@ -160,6 +164,38 @@
   <script type="text/javascript" src="js/app/***REMOVED***s/icon/IconService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/icon/AwesomeMarkerIconService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/icon/USARMarkerIconService.js"></script>
+
+    <script type="text/ng-template" id="myModalContent.html">
+        <div cl***REMOVED***="modal-header">
+            <h3>Token Expired, Please log in.</h3>
+        </div>
+        <div cl***REMOVED***="modal-body">
+            <h3 cl***REMOVED***="top-gap-l">Mobile Analytic GEOINT Environment</h3>
+        <form cl***REMOVED***="form">
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="username">Username</label>
+            <div cl***REMOVED***="controls">
+              <input ng-model="username" name="username" type="text" autocapitalize="off"/>
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="uid">UID</label>
+            <div cl***REMOVED***="controls">
+              <input ng-model="uid" name="uid" type="text" autocapitalize="off"/>
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="p***REMOVED***word">P***REMOVED***word</label>
+            <div cl***REMOVED***="controls">
+              <input ng-model="p***REMOVED***word" name="p***REMOVED***word" type="p***REMOVED***word"/>
+            </div>
+          </div>
+          <span>
+            <button cl***REMOVED***="btn" ng-click="signin({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})" ngm-tap="signin({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})">Login</button>
+          </span>
+        </form>
+        </div>
+    </script>
 
 </body>
 
