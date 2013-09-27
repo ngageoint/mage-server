@@ -64,7 +64,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, MapServi
           } 
 
           if ($scope.files.length > 0) {
-            $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/' + objectId + '/addAttachment?access_token=' + mageLib.getLocalItem('token');
+            $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/' + objectId + '/addAttachment';
             $scope.uploadFile();
           }
         });
@@ -101,7 +101,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, MapServi
           } 
 
           if ($scope.files.length > 0) {
-              $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/' + objectId + '/addAttachment?access_token=' + mageLib.getLocalItem('token');
+              $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/' + objectId + '/addAttachment';
               $scope.uploadFile();
             }
         });

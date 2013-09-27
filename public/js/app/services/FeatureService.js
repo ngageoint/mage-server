@@ -23,7 +23,7 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
           success or failure.
       */
       featureServiceFunctions.createFeature = function (layerId, observation) {
-        var url = appConstants.rootUrl + '/FeatureServer/' + layerId + '/addFeatures?access_token=' + mageLib.getLocalItem('token');
+        var url = appConstants.rootUrl + '/FeatureServer/' + layerId + '/addFeatures';
         
         return $http.post(
           url,
@@ -37,7 +37,7 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
       };
 
       featureServiceFunctions.updateFeature = function (layerId, observation, method) {
-        var url = appConstants.rootUrl + '/FeatureServer/' + layerId + '/updateFeatures?access_token=' + mageLib.getLocalItem('token');
+        var url = appConstants.rootUrl + '/FeatureServer/' + layerId + '/updateFeatures';
         
         return $http.post(
           url,
