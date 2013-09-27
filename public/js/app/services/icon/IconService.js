@@ -4,7 +4,7 @@ angular.module('mage')
   .factory('IconService', ['$injector', 'appConstants',
     function($injector, appConstants) {
       var ***REMOVED*** = {};
-      var iconService = $injector.get(appConstants.iconService);
+      var iconService = appConstants.getIconService();
 
       ***REMOVED***.defaultLeafletIcon = function() {
         return iconService.defaultLeafletIcon();

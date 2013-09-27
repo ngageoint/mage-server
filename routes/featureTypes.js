@@ -6,7 +6,12 @@ module.exports = function(app, security) {
   app.get(
     '/api/feature/types', 
     function (req, res) {
-      return res.send(200,featureTypes.getFeatureTypes());
+    	var type = req.query.type;
+      if (!type) {
+        return res.send(400, 'type parameter is required');
+      }
+
+      return res.json(featureTypes.getFeatureTypes(type));
     }
   );
 
