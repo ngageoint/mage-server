@@ -1,0 +1,27 @@
+<a href="http://github.com/angular/angular.js/edit/master/docs/content/error/compile/non***REMOVED***ign.ngdoc" cl***REMOVED***="improve-docs btn btn-primary"><i cl***REMOVED***="icon-edit"> </i> Improve this doc</a><h1><code ng:non-bindable="">Non-Assignable Expression</code>
+<div><span cl***REMOVED***="hint">error in component <code ng:non-bindable="">$compile</code>
+</span>
+</div>
+</h1>
+<div><pre cl***REMOVED***="minerr-errmsg" error-display="Expression '{0}' used with directive '{1}' is non-***REMOVED***ignable!">Expression '{0}' used with directive '{1}' is non-***REMOVED***ignable!</pre>
+<h2 id="Description">Description</h2>
+<div cl***REMOVED***="description"><div cl***REMOVED***="-compile-page -compile-non***REMOVED***ign-page"><p>This error occurs when a directive defines an isolate scope property that support two-way data-binding (using the <code>=</code> mode in the <a href="guide/directive#directivedefinitionobject">directive definition</a>) but the directive is used with an expression that is not-***REMOVED***ignable.</p>
+<p>In order for the two-way data-binding to work, it must be possible to write new values back into the path defined with the expression.</p>
+<p>For example, given a directive:</p>
+<pre><code>myModule.directive(&#39;myDirective&#39;, function factory() {
+  return {
+    ...
+    scope: {
+      &#39;bind&#39;: &#39;=localValue&#39;
+    }
+    ...
+  }
+});</code></pre>
+<p>Following are invalid uses of this directive:</p>
+<pre><code>&lt;my-directive bind=&quot;1+2&quot;&gt;    &lt;!-- ERROR because `1+2=localValue` is an invalid statement --&gt;
+&lt;my-directive bind=&quot;myFn()&quot;&gt; &lt;!-- ERROR because `myFn()=localValue` is an invalid statement --&gt;</code></pre>
+<p>To resolve this error, always use path expressions with scope properties that are two-way data-bound:</p>
+<pre><code>&lt;my-directive bind=&quot;some.property&quot;&gt;
+&lt;my-directive bind=&quot;some[3][&#39;property&#39;]&quot;&gt;</code></pre>
+</div></div>
+</div>

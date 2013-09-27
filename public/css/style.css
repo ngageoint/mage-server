@@ -23,6 +23,21 @@ body {
 }
 .icon-white,.nav-pills>.active>a>[cl***REMOVED***^="icon-"],.nav-pills>.active>a>[cl***REMOVED****=" icon-"],.nav-list>.active>a>[cl***REMOVED***^="icon-"],.nav-list>.active>a>[cl***REMOVED****=" icon-"],.navbar-inverse .nav>.active>a>[cl***REMOVED***^="icon-"],.navbar-inverse .nav>.active>a>[cl***REMOVED****=" icon-"],.dropdown-menu>li>a:hover>[cl***REMOVED***^="icon-"],.dropdown-menu>li>a:hover>[cl***REMOVED****=" icon-"],.dropdown-menu>.active>a>[cl***REMOVED***^="icon-"],.dropdown-menu>.active>a>[cl***REMOVED****=" icon-"],.dropdown-submenu:hover>a>[cl***REMOVED***^="icon-"],.dropdown-submenu:hover>a>[cl***REMOVED****=" icon-"]{background:none;}
 
+.modal-header {
+    background: #5278A2;
+    color: #91BDEE;
+    opacity: 0.8;
+}
+
+.modal-header h3 {
+    font-family: SansBetween, sans-serif;
+    color: #FFF;
+}
+
+.modal-body {
+    background: #D0E7FF;
+    color: #6389b3;
+}
 
 .navbar-inner {
 	background: #5278A2;

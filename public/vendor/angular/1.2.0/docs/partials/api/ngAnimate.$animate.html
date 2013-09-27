@@ -1,0 +1,307 @@
+<a href="http://github.com/angular/angular.js/tree/v1.2.0rc1/src/ngAnimate/animate.js#L233" cl***REMOVED***="view-source btn btn-action"><i cl***REMOVED***="icon-zoom-in"> </i> View source</a><a href="http://github.com/angular/angular.js/edit/master/src/ngAnimate/animate.js" cl***REMOVED***="improve-docs btn btn-primary"><i cl***REMOVED***="icon-edit"> </i> Improve this doc</a><h1><code ng:non-bindable="">$animate</code>
+<div><span cl***REMOVED***="hint">***REMOVED*** in module <code ng:non-bindable="">ngAnimate</code>
+</span>
+</div>
+</h1>
+<div><h2 id="Description">Description</h2>
+<div cl***REMOVED***="description"><div cl***REMOVED***="nganimate-animate-page"><p>The <code>$animate</code> ***REMOVED*** provides animation detection support while performing DOM operations (enter, leave and move)
+as well as during addCl***REMOVED*** and removeCl***REMOVED*** operations. When any of these operations are run, the $animate ***REMOVED***
+will examine any JavaScript-defined animations (which are defined by using the $animateProvider provider object)
+as well as any CSS-defined animations against the CSS cl***REMOVED***es present on the element once the DOM operation is run.</p>
+<p>The <code>$animate</code> ***REMOVED*** is used behind the scenes with pre-existing directives and animation with these directives
+will work out of the box without any extra configuration.</p>
+<p>Requires the <a href="api/ngAnimate"><code>ngAnimate</code></a> module to be installed.</p>
+<p>Please visit the <a href="api/ngAnimate"><code>ngAnimate</code></a> module overview page learn more about how to use animations in your application.</p>
+</div></div>
+<h2 id="Dependencies">Dependencies</h2>
+<ul cl***REMOVED***="dependencies"><li><code ng:non-bindable=""><a href="api/ng.$timeout,">$timeout,</a></code>
+<div cl***REMOVED***="nganimate-animate-page"><p>$sniffer, $rootElement</p>
+</div></li>
+</ul>
+<div cl***REMOVED***="member method"><h2 id="Methods">Methods</h2>
+<ul cl***REMOVED***="methods"><li><h3 id="addCl***REMOVED***">addCl***REMOVED***(element, cl***REMOVED***Name, done)</h3>
+<div cl***REMOVED***="addcl***REMOVED***"><div cl***REMOVED***="nganimate-animate-addcl***REMOVED***-page"><p>Triggers a custom animation event based off the cl***REMOVED***Name variable and then attaches the cl***REMOVED***Name value to the element as a CSS cl***REMOVED***.
+Unlike the other animation methods, the animate ***REMOVED*** will suffix the cl***REMOVED***Name value with <a href="#" cl***REMOVED***="label type-hint type-hint--add">-add</a> in order to provide
+the animate ***REMOVED*** the setup and active CSS cl***REMOVED***es in order to trigger the animation (this will be skipped if no CSS transitions
+or keyframes are defined on the -add CSS cl***REMOVED***).</p>
+<p>Below is a breakdown of each step that occurs during addCl***REMOVED*** animation:</p>
+<table>
+<thead>
+<tr>
+<th>Animation Step</th>
+<th>What the element cl***REMOVED*** attribute looks like</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. $animate.addCl***REMOVED***(element, &#39;super&#39;) is called</td>
+<td>cl***REMOVED***=&quot;&quot;</td>
+</tr>
+<tr>
+<td>2. $animate runs any JavaScript-defined animations on the element</td>
+<td>cl***REMOVED***=&quot;&quot;</td>
+</tr>
+<tr>
+<td>3. the .super-add cl***REMOVED*** is added to the element</td>
+<td>cl***REMOVED***=&quot;super-add&quot;</td>
+</tr>
+<tr>
+<td>4. $animate scans the element styles to get the CSS transition/animation duration and delay</td>
+<td>cl***REMOVED***=&quot;super-add&quot;</td>
+</tr>
+<tr>
+<td>5. the .super-add-active cl***REMOVED*** is added (this triggers the CSS transition/animation)</td>
+<td>cl***REMOVED***=&quot;super-add super-add-active&quot;</td>
+</tr>
+<tr>
+<td>6. $animate waits for X milliseconds for the animation to complete</td>
+<td>cl***REMOVED***=&quot;super-add super-add-active&quot;</td>
+</tr>
+<tr>
+<td>7. The animation ends and both CSS cl***REMOVED***es are removed from the element</td>
+<td>cl***REMOVED***=&quot;&quot;</td>
+</tr>
+<tr>
+<td>8. The super cl***REMOVED*** is added to the element</td>
+<td>cl***REMOVED***=&quot;super&quot;</td>
+</tr>
+<tr>
+<td>9. The done() callback is fired (if provided)</td>
+<td>cl***REMOVED***=&quot;super&quot;</td>
+</tr>
+</tbody>
+</table>
+</div><h5 id="parameters">Parameters</h5><table cl***REMOVED***="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>element</td><td><a href="" cl***REMOVED***="label type-hint type-hint-jquery">jQuery/jqLite element</a></td><td><div cl***REMOVED***="nganimate-animate-addcl***REMOVED***-page"><p>the element that will be animated</p>
+</div></td></tr><tr><td>cl***REMOVED***Name</td><td><a href="" cl***REMOVED***="label type-hint type-hint-string">string</a></td><td><div cl***REMOVED***="nganimate-animate-addcl***REMOVED***-page"><p>the CSS cl***REMOVED*** that will be animated and then attached to the element</p>
+</div></td></tr><tr><td>done <div><em>(optional)</em></div></td><td><a href="" cl***REMOVED***="label type-hint type-hint-function">function()</a></td><td><div cl***REMOVED***="nganimate-animate-addcl***REMOVED***-page"><p>callback function that will be called once the animation is complete</p>
+</div></td></tr></tbody></table></div>
+</li>
+<li><h3 id="enabled">enabled(value)</h3>
+<div cl***REMOVED***="enabled"><div cl***REMOVED***="nganimate-animate-enabled-page"><p>Globally enables/disables animations.</p>
+</div><h5 id="parameters">Parameters</h5><table cl***REMOVED***="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>value <div><em>(optional)</em></div></td><td><a href="" cl***REMOVED***="label type-hint type-hint-boolean">boolean</a></td><td><div cl***REMOVED***="nganimate-animate-enabled-page"><p>If provided then set the animation on or off.</p>
+</div></td></tr></tbody></table><h5 id="returns">Returns</h5><table cl***REMOVED***="variables-matrix"><tr><td><a href="" cl***REMOVED***="label type-hint type-hint-boolean">boolean</a></td><td><div cl***REMOVED***="nganimate-animate-enabled-page"><p>Current animation state.</p>
+</div></td></tr></table></div>
+</li>
+<li><h3 id="enter">enter(element, parent, after, done)</h3>
+<div cl***REMOVED***="enter"><div cl***REMOVED***="nganimate-animate-enter-page"><p>Appends the element to the parent element that resides in the document and then runs the enter animation. Once
+the animation is started, the following CSS cl***REMOVED***es will be present on the element for the duration of the animation:</p>
+<p>Below is a breakdown of each step that occurs during enter animation:</p>
+<table>
+<thead>
+<tr>
+<th>Animation Step</th>
+<th>What the element cl***REMOVED*** attribute looks like</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. $animate.enter(...) is called</td>
+<td>cl***REMOVED***=&quot;my-animation&quot;</td>
+</tr>
+<tr>
+<td>2. element is inserted into the parent element or beside the after element</td>
+<td>cl***REMOVED***=&quot;my-animation&quot;</td>
+</tr>
+<tr>
+<td>3. $animate runs any JavaScript-defined animations on the element</td>
+<td>cl***REMOVED***=&quot;my-animation&quot;</td>
+</tr>
+<tr>
+<td>4. the .ng-enter cl***REMOVED*** is added to the element</td>
+<td>cl***REMOVED***=&quot;my-animation ng-enter&quot;</td>
+</tr>
+<tr>
+<td>5. $animate scans the element styles to get the CSS transition/animation duration and delay</td>
+<td>cl***REMOVED***=&quot;my-animation ng-enter&quot;</td>
+</tr>
+<tr>
+<td>6. the .ng-enter-active cl***REMOVED*** is added (this triggers the CSS transition/animation)</td>
+<td>cl***REMOVED***=&quot;my-animation ng-enter ng-enter-active&quot;</td>
+</tr>
+<tr>
+<td>7. $animate waits for X milliseconds for the animation to complete</td>
+<td>cl***REMOVED***=&quot;my-animation ng-enter ng-enter-active&quot;</td>
+</tr>
+<tr>
+<td>8. The animation ends and both CSS cl***REMOVED***es are removed from the element</td>
+<td>cl***REMOVED***=&quot;my-animation&quot;</td>
+</tr>
+<tr>
+<td>9. The done() callback is fired (if provided)</td>
+<td>cl***REMOVED***=&quot;my-animation&quot;</td>
+</tr>
+</tbody>
+</table>
+</div><h5 id="parameters">Parameters</h5><table cl***REMOVED***="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>element</td><td><a href="" cl***REMOVED***="label type-hint type-hint-jquery">jQuery/jqLite element</a></td><td><div cl***REMOVED***="nganimate-animate-enter-page"><p>the element that will be the focus of the enter animation</p>
+</div></td></tr><tr><td>parent</td><td><a href="" cl***REMOVED***="label type-hint type-hint-jquery">jQuery/jqLite element</a></td><td><div cl***REMOVED***="nganimate-animate-enter-page"><p>the parent element of the element that will be the focus of the enter animation</p>
+</div></td></tr><tr><td>after</td><td><a href="" cl***REMOVED***="label type-hint type-hint-jquery">jQuery/jqLite element</a></td><td><div cl***REMOVED***="nganimate-animate-enter-page"><p>the sibling element (which is the previous element) of the element that will be the focus of the enter animation</p>
+</div></td></tr><tr><td>done <div><em>(optional)</em></div></td><td><a href="" cl***REMOVED***="label type-hint type-hint-function">function()</a></td><td><div cl***REMOVED***="nganimate-animate-enter-page"><p>callback function that will be called once the animation is complete</p>
+</div></td></tr></tbody></table></div>
+</li>
+<li><h3 id="leave">leave(element, done)</h3>
+<div cl***REMOVED***="leave"><div cl***REMOVED***="nganimate-animate-leave-page"><p>Runs the leave animation operation and, upon completion, removes the element from the DOM. Once
+the animation is started, the following CSS cl***REMOVED***es will be added for the duration of the animation:</p>
+<p>Below is a breakdown of each step that occurs during enter animation:</p>
+<table>
+<thead>
+<tr>
+<th>Animation Step</th>
+<th>What the element cl***REMOVED*** attribute looks like</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. $animate.leave(...) is called</td>
+<td>cl***REMOVED***=&quot;my-animation&quot;</td>
+</tr>
+<tr>
+<td>2. $animate runs any JavaScript-defined animations on the element</td>
+<td>cl***REMOVED***=&quot;my-animation&quot;</td>
+</tr>
+<tr>
+<td>3. the .ng-leave cl***REMOVED*** is added to the element</td>
+<td>cl***REMOVED***=&quot;my-animation ng-leave&quot;</td>
+</tr>
+<tr>
+<td>4. $animate scans the element styles to get the CSS transition/animation duration and delay</td>
+<td>cl***REMOVED***=&quot;my-animation ng-leave&quot;</td>
+</tr>
+<tr>
+<td>5. the .ng-leave-active cl***REMOVED*** is added (this triggers the CSS transition/animation)</td>
+<td>cl***REMOVED***=&quot;my-animation ng-leave ng-leave-active</td>
+</tr>
+<tr>
+<td>6. $animate waits for X milliseconds for the animation to complete</td>
+<td>cl***REMOVED***=&quot;my-animation ng-leave ng-leave-active</td>
+</tr>
+<tr>
+<td>7. The animation ends and both CSS cl***REMOVED***es are removed from the element</td>
+<td>cl***REMOVED***=&quot;my-animation&quot;</td>
+</tr>
+<tr>
+<td>8. The element is removed from the DOM</td>
+<td>...</td>
+</tr>
+<tr>
+<td>9. The done() callback is fired (if provided)</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+</div><h5 id="parameters">Parameters</h5><table cl***REMOVED***="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>element</td><td><a href="" cl***REMOVED***="label type-hint type-hint-jquery">jQuery/jqLite element</a></td><td><div cl***REMOVED***="nganimate-animate-leave-page"><p>the element that will be the focus of the leave animation</p>
+</div></td></tr><tr><td>done <div><em>(optional)</em></div></td><td><a href="" cl***REMOVED***="label type-hint type-hint-function">function()</a></td><td><div cl***REMOVED***="nganimate-animate-leave-page"><p>callback function that will be called once the animation is complete</p>
+</div></td></tr></tbody></table></div>
+</li>
+<li><h3 id="move">move(element, parent, after, done)</h3>
+<div cl***REMOVED***="move"><div cl***REMOVED***="nganimate-animate-move-page"><p>Fires the move DOM operation. Just before the animation starts, the animate ***REMOVED*** will either append it into the parent container or
+add the element directly after the after element if present. Then the move animation will be run. Once
+the animation is started, the following CSS cl***REMOVED***es will be added for the duration of the animation:</p>
+<p>Below is a breakdown of each step that occurs during move animation:</p>
+<table>
+<thead>
+<tr>
+<th>Animation Step</th>
+<th>What the element cl***REMOVED*** attribute looks like</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. $animate.move(...) is called</td>
+<td>cl***REMOVED***=&quot;my-animation&quot;</td>
+</tr>
+<tr>
+<td>2. element is moved into the parent element or beside the after element</td>
+<td>cl***REMOVED***=&quot;my-animation&quot;</td>
+</tr>
+<tr>
+<td>3. $animate runs any JavaScript-defined animations on the element</td>
+<td>cl***REMOVED***=&quot;my-animation&quot;</td>
+</tr>
+<tr>
+<td>4. the .ng-move cl***REMOVED*** is added to the element</td>
+<td>cl***REMOVED***=&quot;my-animation ng-move&quot;</td>
+</tr>
+<tr>
+<td>5. $animate scans the element styles to get the CSS transition/animation duration and delay</td>
+<td>cl***REMOVED***=&quot;my-animation ng-move&quot;</td>
+</tr>
+<tr>
+<td>6. the .ng-move-active cl***REMOVED*** is added (this triggers the CSS transition/animation)</td>
+<td>cl***REMOVED***=&quot;my-animation ng-move ng-move-active&quot;</td>
+</tr>
+<tr>
+<td>7. $animate waits for X milliseconds for the animation to complete</td>
+<td>cl***REMOVED***=&quot;my-animation ng-move ng-move-active&quot;</td>
+</tr>
+<tr>
+<td>8. The animation ends and both CSS cl***REMOVED***es are removed from the element</td>
+<td>cl***REMOVED***=&quot;my-animation&quot;</td>
+</tr>
+<tr>
+<td>9. The done() callback is fired (if provided)</td>
+<td>cl***REMOVED***=&quot;my-animation&quot;</td>
+</tr>
+</tbody>
+</table>
+</div><h5 id="parameters">Parameters</h5><table cl***REMOVED***="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>element</td><td><a href="" cl***REMOVED***="label type-hint type-hint-jquery">jQuery/jqLite element</a></td><td><div cl***REMOVED***="nganimate-animate-move-page"><p>the element that will be the focus of the move animation</p>
+</div></td></tr><tr><td>parent</td><td><a href="" cl***REMOVED***="label type-hint type-hint-jquery">jQuery/jqLite element</a></td><td><div cl***REMOVED***="nganimate-animate-move-page"><p>the parent element of the element that will be the focus of the move animation</p>
+</div></td></tr><tr><td>after</td><td><a href="" cl***REMOVED***="label type-hint type-hint-jquery">jQuery/jqLite element</a></td><td><div cl***REMOVED***="nganimate-animate-move-page"><p>the sibling element (which is the previous element) of the element that will be the focus of the move animation</p>
+</div></td></tr><tr><td>done <div><em>(optional)</em></div></td><td><a href="" cl***REMOVED***="label type-hint type-hint-function">function()</a></td><td><div cl***REMOVED***="nganimate-animate-move-page"><p>callback function that will be called once the animation is complete</p>
+</div></td></tr></tbody></table></div>
+</li>
+<li><h3 id="removeCl***REMOVED***">removeCl***REMOVED***(element, cl***REMOVED***Name, done)</h3>
+<div cl***REMOVED***="removecl***REMOVED***"><div cl***REMOVED***="nganimate-animate-removecl***REMOVED***-page"><p>Triggers a custom animation event based off the cl***REMOVED***Name variable and then removes the CSS cl***REMOVED*** provided by the cl***REMOVED***Name value
+from the element. Unlike the other animation methods, the animate ***REMOVED*** will suffix the cl***REMOVED***Name value with <a href="#" cl***REMOVED***="label type-hint type-hint--remove">-remove</a> in
+order to provide the animate ***REMOVED*** the setup and active CSS cl***REMOVED***es in order to trigger the animation (this will be skipped if
+no CSS transitions or keyframes are defined on the -remove CSS cl***REMOVED***).</p>
+<p>Below is a breakdown of each step that occurs during removeCl***REMOVED*** animation:</p>
+<table>
+<thead>
+<tr>
+<th>Animation Step</th>
+<th>What the element cl***REMOVED*** attribute looks like</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. $animate.removeCl***REMOVED***(element, &#39;super&#39;) is called</td>
+<td>cl***REMOVED***=&quot;super&quot;</td>
+</tr>
+<tr>
+<td>2. $animate runs any JavaScript-defined animations on the element</td>
+<td>cl***REMOVED***=&quot;super&quot;</td>
+</tr>
+<tr>
+<td>3. the .super-remove cl***REMOVED*** is added to the element</td>
+<td>cl***REMOVED***=&quot;super super-remove&quot;</td>
+</tr>
+<tr>
+<td>4. $animate scans the element styles to get the CSS transition/animation duration and delay</td>
+<td>cl***REMOVED***=&quot;super super-remove&quot;</td>
+</tr>
+<tr>
+<td>5. the .super-remove-active cl***REMOVED*** is added (this triggers the CSS transition/animation)</td>
+<td>cl***REMOVED***=&quot;super super-remove super-remove-active&quot;</td>
+</tr>
+<tr>
+<td>6. $animate waits for X milliseconds for the animation to complete</td>
+<td>cl***REMOVED***=&quot;super super-remove super-remove-active&quot;</td>
+</tr>
+<tr>
+<td>7. The animation ends and both CSS all three cl***REMOVED***es are removed from the element</td>
+<td>cl***REMOVED***=&quot;&quot;</td>
+</tr>
+<tr>
+<td>8. The done() callback is fired (if provided)</td>
+<td>cl***REMOVED***=&quot;&quot;</td>
+</tr>
+</tbody>
+</table>
+</div><h5 id="parameters">Parameters</h5><table cl***REMOVED***="variables-matrix table table-bordered table-striped"><thead><tr><th>Param</th><th>Type</th><th>Details</th></tr></thead><tbody><tr><td>element</td><td><a href="" cl***REMOVED***="label type-hint type-hint-jquery">jQuery/jqLite element</a></td><td><div cl***REMOVED***="nganimate-animate-removecl***REMOVED***-page"><p>the element that will be animated</p>
+</div></td></tr><tr><td>cl***REMOVED***Name</td><td><a href="" cl***REMOVED***="label type-hint type-hint-string">string</a></td><td><div cl***REMOVED***="nganimate-animate-removecl***REMOVED***-page"><p>the CSS cl***REMOVED*** that will be animated and then removed from the element</p>
+</div></td></tr><tr><td>done <div><em>(optional)</em></div></td><td><a href="" cl***REMOVED***="label type-hint type-hint-function">function()</a></td><td><div cl***REMOVED***="nganimate-animate-removecl***REMOVED***-page"><p>callback function that will be called once the animation is complete</p>
+</div></td></tr></tbody></table></div>
+</li>
+</ul>
+</div>
+</div>

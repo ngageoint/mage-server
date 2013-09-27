@@ -6,12 +6,12 @@ angular.module('mage.layerService', ['mage.***REMOVED***s', 'mage.lib'])
       var ***REMOVED*** = {};
 
       ***REMOVED***.getAllLayers = function () {
-        return $http.get(appConstants.rootUrl + '/api/layers/', {params: mageLib.getTokenParams()});
+        return $http.get(appConstants.rootUrl + '/api/layers/');
       };
 
       ***REMOVED***.createLayer = function(layer) {
         return $http.post(
-          appConstants.rootUrl + '/api/layers?access_token=' + mageLib.getLocalItem('token'), 
+          appConstants.rootUrl + '/api/layers', 
           layer, 
           {headers: {"Content-Type": "application/json"}}
         );
@@ -19,7 +19,7 @@ angular.module('mage.layerService', ['mage.***REMOVED***s', 'mage.lib'])
 
       ***REMOVED***.updateLayer = function(layer) {
         return $http.put(
-          appConstants.rootUrl + '/api/layers/' + layer.id + '/?access_token=' + mageLib.getLocalItem('token'), 
+          appConstants.rootUrl + '/api/layers/' + layer.id, 
           layer, 
           {headers: {"Content-Type": "application/json"}}
         );

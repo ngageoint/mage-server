@@ -71,7 +71,6 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
         var options = {
           method: "GET",
           url: appConstants.rootUrl + '/FeatureServer/' + layerId + "/features?properties=OBJECTID,TYPE,EVENTLEVEL,EVENTDATE,userId,style",
-          params: mageLib.getTokenParams(),
           headers: {
             "Accepts": "application/json", 
             "Content-Type": "application/json"
@@ -88,19 +87,19 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
         @return A promise of the REST call.
       */
       featureServiceFunctions.getFeature = function (layerId, observationId) {
-        return $http.get(appConstants.rootUrl + '/FeatureServer/'+ layerId + '/' + observationId + "?query&outFields=*&access_token=" + mageLib.getLocalItem('token'));
+        return $http.get(appConstants.rootUrl + '/FeatureServer/'+ layerId + '/' + observationId + "?query&outFields=*");
       };
 
       featureServiceFunctions.getAttachments = function (layerId, observationId) {
-        return $http.get(appConstants.rootUrl + '/FeatureServer/'+ layerId + '/' + observationId + '/attachments?access_token=' + mageLib.getLocalItem('token'));
+        return $http.get(appConstants.rootUrl + '/FeatureServer/'+ layerId + '/' + observationId + '/attachments');
       }
 
       featureServiceFunctions.deleteObservation = function (layerId, observationId) {
-        return $http.post(appConstants.rootUrl + '/FeatureServer/' + layerId + '/deleteFeatures' + '?objectIds=' +  observationId + '&access_token=' + mageLib.getLocalItem('token'));
+        return $http.post(appConstants.rootUrl + '/FeatureServer/' + layerId + '/deleteFeatures' + '?objectIds=' +  observationId);
       }
 
       featureServiceFunctions.deleteAttachment = function (layerId, observationId, attachmentId) {
-        return $http.post(appConstants.rootUrl + '/FeatureServer/' + layerId + '/' + observationId + '/deleteAttachments' + '?attachmentIds=' +  attachmentId + '&access_token=' + mageLib.getLocalItem('token'));
+        return $http.post(appConstants.rootUrl + '/FeatureServer/' + layerId + '/' + observationId + '/deleteAttachments' + '?attachmentIds=' +  attachmentId);
       }
 
       return featureServiceFunctions;

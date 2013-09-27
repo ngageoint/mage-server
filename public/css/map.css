@@ -121,7 +121,7 @@ html, body, div.leaflet-container {
 .right-panel {
 	right: 5px;
 	top: 110px;
-	z-index: 2000;
+	z-index: 1039;
 	overflow: auto;
 	background: #D0E7FF;
 	color: #5278A2;
@@ -135,7 +135,7 @@ html, body, div.leaflet-container {
 .panel {
 	left: 5px;
 	top: 5px;
-	z-index: 2000;
+	z-index: 1039;
 	overflow: auto;
 	background: #D0E7FF;
 	background: rgba(208, 231, 255, 0.8);
