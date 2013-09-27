@@ -7,12 +7,13 @@
   L.Marker.include({
 
     _selectMarker: L.circleMarker([0,0], {
-      radius: 10,
+      radius: 20,
       weight: 5,
-      color: '#5278A2',
-      stroke: true,
+      color: '#7C22C7',
+      fillColor: '#7C22C7',
       opacity: 1,
-      fill: false,
+      fillOpacity: .4,
+      fill: true,
       clickable: false
     }),
 
