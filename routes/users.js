@@ -173,10 +173,14 @@ module.exports = function(app, security) {
   );
 
   // logout
-  app.post(
+  app.get(
     '/api/logout',
-    p***REMOVED***port.authenticate(authenticationStrategy),
+    isAuthenticated(authenticationStrategy),
     function(req, res, next) {
+      if (!req.user) { 
+        res.send(200, 'not logged in');
+      }
+
       Token.removeTokenForUser(req.user, function(err, token){
         if (err) return next(err);
 
