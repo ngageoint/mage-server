@@ -5,7 +5,7 @@ var mongoose = require('mongoose')
 var Schema = mongoose.Schema;
 // Creates the Schema for the Features object (mimics ESRI)
 var AttachmentSchema = new Schema({
-  id: { type: Number, required: true, unique: true },
+  id: { type: Number, required: true },
   contentType: { type: String, required: false },  
   size: { type: String, required: false },  
   name: { type: String, required: false },

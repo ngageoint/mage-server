@@ -175,8 +175,8 @@ module.exports = function(app, security) {
         features,
         function(feature, done) {
           var properties = feature.attributes || {};
-          properties.userId = req.user._id;
-          properties.deviceId = req.provisionedDeviceId;
+          if (req.user) properties.userId = req.user._id;
+          if (req.provisionedDeviceId) properties.deviceId = req.provisionedDeviceId;
           Feature.createFeature(req.layer, {geometry: feature.geometry, properties: properties}, function(newFeature) {
             addResults.push({
               globalId: null,
@@ -219,8 +219,8 @@ module.exports = function(app, security) {
       var updateResults = [];
       var updateFeature = function(feature, done) {
         var properties = feature.attributes || {};
-        properties.userId = req.user._id;
-        properties.deviceId = req.provisionedDeviceId;
+        if (req.user) properties.userId = req.user._id;
+        if (req.provisionedDeviceId) properties.deviceId = req.provisionedDeviceId;
         Feature.updateFeature(req.layer, {geometry: feature.geometry, properties: properties}, function(err, newFeature) {
           if (err || !newFeature) {
             updateResults.push({
