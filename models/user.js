@@ -161,7 +161,7 @@ exports.getUserById = function(id, callback) {
 
 exports.getUserByUsername = function(username, callback) {
   var query = {username: username};
-  User.findOne(query, callback);
+  User.findOne(query).populate('role').exec(callback);
 }
 
 exports.getUsers = function(callback) {
