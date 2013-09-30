@@ -110,9 +110,13 @@ var mage = angular.module(
         backdrop: 'static',
         templateUrl: 'myModalContent.html',
         controller: function ($scope, $modalInstance, authService) {
+          var oldUsername = UserService.myself && UserService.myself.username || undefined;
           $scope.signin = function (data) {
             UserService.signin(data).success(function(){
-              authService.loginConfirmed();
+              if (data.username != oldUsername) {
+                data.newUser = true;
+              }
+              authService.loginConfirmed(data);
               $rootScope.loginDialogPresented = false;
               $modalInstance.close($scope);
             })
@@ -128,7 +132,6 @@ var mage = angular.module(
       }, function () {
       });
     }
-
 
   });
   $rootScope.$on('event:auth-loginConfirmed', function() {

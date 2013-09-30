@@ -31,26 +31,11 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
           {headers: {"Content-Type": "application/x-www-form-urlencoded"},ignoreAuthModule:true});
         
         promise.success(function(data) {
-          console.info('set the mage token to ' + data.token);
           mageLib.setLocalItem('token', data.token);
-          console.info('mage lib token is ' + mageLib.getToken());
-          console.info('path is ' + $location.path());
+          setUser(data.user);
           if ($location.path() == '/signin') {
             $location.path('/map');
           }
-          // $location.path('/map');
-
-          // $http.get(
-          //   appConstants.rootUrl + '/api/users/myself', 
-          //   {params: mageLib.getTokenParams()},
-          //   {headers: {"Content-Type": "application/x-www-form-urlencoded"}})
-          // .success(function(user) {
-          //   setUser(user);
-          //   userDeferred.resolve(user);
-          // })
-          // .error(function(data) {
-          //   userDeferred.reject(data);
-          // });
         });
 
         return promise;
@@ -62,7 +47,6 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
           appConstants.rootUrl + '/api/users/myself',
           {headers: {"Content-Type": "application/x-www-form-urlencoded"}})
         .success(function(user) {
-          console.info('set the user', user);
           setUser(user);
 
           if (roles && !_.contains(roles, user.role.name)) {
@@ -73,7 +57,6 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
           theDeferred.resolve(user);
         })
         .error(function(data, status) {
-          console.info('BAD user');
           theDeferred.resolve({});
         });
 
@@ -87,12 +70,10 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
           {
             ignoreAuthModule: true})
         .success(function(user) {
-          console.info('set the user', user);
           setUser(user);
           userDeferred.resolve(user);
         })
         .error(function(data, status) {
-          console.info('BAD user');
           userDeferred.resolve({});
         });
 
@@ -152,8 +133,6 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
           for (var i = 0; i < users.length; i++) {
           resolvedUsers[users[i]._id] = $q.when(users[i]);
           }
-          console.info('resolved users ');
-          console.info(resolvedUsers);
         });
       };
 
