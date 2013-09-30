@@ -21,7 +21,11 @@
       loginConfirmed: function(data, configUpdater) {
         var updater = configUpdater || function(config) {return config;};
         $rootScope.$broadcast('event:auth-loginConfirmed', data);
-        httpBuffer.retryAll(updater);
+        if (!data.newUser) {
+          httpBuffer.retryAll(updater);
+        } else {
+          httpBuffer.retryAllGets(updater);
+        }
       }
     };
   }])
@@ -102,6 +106,21 @@
       retryAll: function(updater) {
         for (var i = 0; i < buffer.length; ++i) {
           retryHttpRequest(updater(buffer[i].config), buffer[i].deferred);
+        }
+        buffer = [];
+      },
+
+      /**
+       * Retries only GET requests.  Useful for when a new user has logged in
+       * and you do not want to retry POSTing or PUTing or DELTEing data from another user
+       */
+       retryAllGets: function(updater) {
+        for (var i = 0; i < buffer.length; ++i) {
+          if (buffer[i].config.method == 'GET') {
+            retryHttpRequest(updater(buffer[i].config), buffer[i].deferred);
+          } else {
+            buffer[i].deferred.reject({});
+          }
         }
         buffer = [];
       }
