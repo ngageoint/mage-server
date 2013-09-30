@@ -167,7 +167,10 @@ module.exports = function(app, security) {
           return res.send(500, "Error generating token");
         }
 
-        res.json({token: token.token});
+        res.json({
+          token: token.token,
+          user: req.user
+        });
       });
     }
   );
