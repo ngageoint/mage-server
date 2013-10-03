@@ -87,9 +87,7 @@ exports.getFeatures = function(layer, o, callback) {
     if (err) {
       console.log("Error finding features in mongo: " + err);
     }
-
-    console.log('got back features: ', features);
-
+    
     callback(features);
   });
 }
