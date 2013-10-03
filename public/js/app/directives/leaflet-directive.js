@@ -12,6 +12,14 @@
         var map = L.map("map");
         map.setView([0, 0], 3);
 
+
+        /*
+        toolbar config
+        */
+        map.addControl(new L.Control.MageFeature());
+        map.addControl(new L.Control.MageUserLocation());
+        map.addControl(new L.Control.MageListTools());
+
         var addMarker = L.marker([0,0], {
           draggable: true,
           icon: IconService.defaultLeafletIcon()
@@ -19,14 +27,22 @@
         scope.markerLocation = addMarker.getLatLng();
 
         map.on("click", function(e) {
-          addMarker.setLatLng(e.latlng);
-          if (!map.hasLayer(addMarker)) {
-            map.addLayer(addMarker);
-          }
+          if (scope.newObservationEnabled) {
+            _.delay(function() { addMarker.setLatLng(e.latlng); }, 250);
+            if (!map.hasLayer(addMarker)) {
+              _.delay(function() { map.addLayer(addMarker); }, 250);
+            }
 
-          scope.$apply(function(s) {
-            scope.markerLocation = e.latlng;
-          });
+            scope.$apply(function(s) {
+              scope.markerLocation = e.latlng;
+            });
+          }
+        });
+
+        scope.$watch('newObservationEnabled', function() {
+          if (!scope.newObservationEnabled && map.hasLayer(addMarker)) {
+            map.removeLayer(addMarker);
+          }
         });
 
         addMarker.on('dragend', function(e) {

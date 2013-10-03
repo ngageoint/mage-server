@@ -14,6 +14,12 @@ function FeatureController($scope, $location, $timeout, FeatureService, MapServi
   }
 
   $scope.newObservation = function () {
+    if ($scope.newObservationEnabled) {
+      $scope.newObservationEnabled = false;
+      MapService.setCurrentMapPanel('none');
+      return;
+    }
+    $scope.newObservationEnabled = true;
     $scope.observationTab = 1;
     $scope.observationCloseText = "Cancel";
     MapService.setCurrentMapPanel('observation');
@@ -25,6 +31,7 @@ function FeatureController($scope, $location, $timeout, FeatureService, MapServi
 
   $scope.cancelObservation = function () {
     MapService.setCurrentMapPanel('none');
+    $scope.newObservationEnabled = false;
     $scope.activeFeature = null;
     isEditing = false;
   }

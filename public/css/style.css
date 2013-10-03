@@ -140,7 +140,7 @@ textarea {
     background: #FAFAFA;
 } 
 
-.btn-inverse {
+.btn-inverse, .leaflet-bar a.btn-inverse {
     background: #5278A2;
 }
 
@@ -170,7 +170,7 @@ textarea {
 
 .icon-sage {
     color: #5278A2;
-    font-size: 1.4em;
+    font-size: 1.2em;
     background-image: none;
     margin-bottom: 9px;
 }
@@ -193,7 +193,6 @@ textarea {
     color: #FEFEFE;
     font-size: 1.4em;
     background-image: none;
-    margin-left: -4px;
     margin-bottom: 9px;
 }
 

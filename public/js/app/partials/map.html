@@ -13,54 +13,50 @@
   
   <!-- layer picker button -->
   <button cl***REMOVED***="btn" ng-cl***REMOVED***="{true: 'btn-inverse'}[checkCurrentMapPanel('layers')]" id="settings" ng-click="setCurrentMapPanel('layers')" ngm-tap="setCurrentMapPanel('layers')"><i ng-cl***REMOVED***="checkCurrentMapPanel('layers') && 'icon-sage-inverse' || 'icon-sage'" cl***REMOVED***="icon-layers"></i></button>
-  <button cl***REMOVED***="btn" id="export" ng-cl***REMOVED***="{true: 'btn-inverse'}[checkCurrentMapPanel('export')]" ng-click="setCurrentMapPanel('export')" ngm-tap="setCurrentMapPanel('export')"><i ng-cl***REMOVED***="checkCurrentMapPanel('export') && 'icon-sage-inverse' || 'icon-sage'"cl***REMOVED***="icon-cloud-download"></i></button>
 
-  <!-- Button bar -->
-  <div id="button-bar">
-    <button 
-      id="geo" 
-      cl***REMOVED***="btn" 
+  <div id="new-feature-toolbar" cl***REMOVED***="leaflet-bar">
+    <a
+       ng-cl***REMOVED***="newObservationEnabled && 'btn-inverse'"
+       ng-click="newObservation()" ngm-tap="newObservation()">
+      <i cl***REMOVED***="icon-map-marker" ng-cl***REMOVED***="newObservationEnabled && 'icon-sage-inverse' || 'icon-sage'"></i>
+    </a>
+  </div>
+
+  <div id="user-location-toolbar" cl***REMOVED***="leaflet-bar">
+    <a 
       ng-cl***REMOVED***="{true: 'btn-inverse'}[locate]"
       ng-click="toggleLocate()" 
       ngm-tap="toggleLocate()">
       <i cl***REMOVED***="icon-target" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[locate]"></i>
-    </button>
+    </a>
 
-    <button cl***REMOVED***="btn hide" id="goto-address" ng-click="openGotoAddress()" ngm-tap="openGotoAddress()">
-      <i cl***REMOVED***="icon-search icon-sage"></i>
-    </button>
-
-    <button cl***REMOVED***="btn" id="new-observation" ng-click="newObservation()" ngm-tap="newObservation()">
-      <i cl***REMOVED***="icon-plus icon-sage"></i>
-    </button>
-
-    <button 
-      id="broadcast-location-btn" 
-      cl***REMOVED***="btn"
+    <a 
       ng-cl***REMOVED***="{true: 'btn-inverse'}[broadcast]"
       ng-click="toggleBroadcast()" 
       ngm-tap="toggleBroadcast()">
       <i cl***REMOVED***="icon-megaphone" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[broadcast]"></i>
-    </button>
+    </a>
+  </div>
+  <div id="list-tool-toolbars" cl***REMOVED***="leaflet-bar">
 
-    <button
-      id="locations-btn"
-      cl***REMOVED***="btn" 
+    <a
       ng-cl***REMOVED***="{true: 'btn-inverse'}[locationServicesEnabled]" 
       ng-click="locationServicesEnabled = !locationServicesEnabled;locationServices(); showLocations = !showLocations" 
       ngm-tap="locationServicesEnabled = !locationServicesEnabled;locationServices(); showLocations = !showLocations">
       <i cl***REMOVED***="icon-users" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[locationServicesEnabled]"></i>
-    </button>
-
-    <button
-      id="list-tool-btn"
-      cl***REMOVED***="btn" 
+    </a>
+    <a
       ng-cl***REMOVED***="{true: 'btn-inverse'}[showListTool]" 
       ng-click="showListTool = !showListTool" 
       ngm-tap="showListTool = !showListTool">
       <i cl***REMOVED***="icon-list" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[showListTool]"></i>
-    </button>
-
+    </a>
+    <a 
+      ng-cl***REMOVED***="{true: 'btn-inverse'}[checkCurrentMapPanel('export')]" 
+      ng-click="setCurrentMapPanel('export')" 
+      ngm-tap="setCurrentMapPanel('export')">
+      <i ng-cl***REMOVED***="checkCurrentMapPanel('export') && 'icon-sage-inverse' || 'icon-sage'"cl***REMOVED***="icon-cloud-download"></i>
+    </a>
   </div>
 
   <!-- Panels -->

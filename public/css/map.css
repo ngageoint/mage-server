@@ -43,15 +43,6 @@ html, body, div.leaflet-container {
 	}	
 }
 
-#geo {
-	position: absolute;
-	height: 50px;
-	width: 50px;
-	bottom: 5px;
-	left: 5px;
-	z-index: 999;
-}
-
 #settings {
 	position: absolute;
 	height: 50px;
@@ -59,16 +50,7 @@ html, body, div.leaflet-container {
 	top: 50px;
 	right: 5px;
 	z-index: 999;
-}	
-#export {
-	position: absolute;
-	height: 50px;
-	width: 50px;
-	top: 50px;
-	right: 65px;
-	z-index: 999;
 }
-
 
 /* I switched the position for goto-address and new observation buttons for a better layout while 
 	 we are waiting to get the rest of the buttons wired up so the UI doesnt look weird.
@@ -79,42 +61,6 @@ html, body, div.leaflet-container {
 	width: 50px;
 	bottom: 5px;
 	left: 263px; /*68px*/
-	z-index: 999;
-}
-
-#new-observation {
-	position: absolute;
-	height: 50px;
-	width: 50px;
-	bottom: 5px;
-	left: 68px; /*133px*/
-	z-index: 999;
-}
-
-#broadcast-location-btn {
-	position: absolute;
-	height: 50px;
-	width: 50px;
-	bottom: 5px;
-	left: 133px;
-	z-index: 999;
-}
-
-#locations-btn {
-	position: absolute;
-	height: 50px;
-	width: 50px;
-	bottom: 5px;
-	left: 198px;
-	z-index: 999;
-}
-
-#list-tool-btn {
-	position: absolute;
-	height: 50px;
-	width: 50px;
-	bottom: 5px;
-	left: 263px;
 	z-index: 999;
 }
 
