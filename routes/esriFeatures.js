@@ -3,6 +3,7 @@ module.exports = function(app, security) {
   var async = require('async')
     , fs = require('fs-extra')
     , path = require('path')
+    , arcgis = require('terraformer-arcgis-parser')
     , Counter = require('../models/counter')
     , Feature = require('../models/feature')
     , access = require('../access')
@@ -10,7 +11,7 @@ module.exports = function(app, security) {
 
   var p***REMOVED***port = security.authentication.p***REMOVED***port;
   var geometryFormat = require('../format/geometryFormat');
-  var esri = require('../transformers/esri')(geometryFormat);
+  var geojson = require('../transformers/geojson');
   var attachmentBase = config.server.attachmentBaseDirectory;
 
   function EsriAttachments() {
@@ -56,9 +57,15 @@ module.exports = function(app, security) {
 
     var outFields = req.param('outFields');
     if ((!outFields && returnGeometry) || (outFields && outFields !== '*')) {
-      parameters.fields = {returnGeometry: returnGeometry};
+      parameters.fields = {
+        type: true,
+        geometry: returnGeometry
+      };
       if (outFields) {
-        parameters.fields.outFields = outFields.split(",");
+        parameters.fields.properties = {};
+        outFields.split(",").forEach(function(field) {
+          parameters.fields.properties[field] = true;
+        });
       }
     }
 
@@ -103,7 +110,12 @@ module.exports = function(app, security) {
       }
 
       var respond = function(features) {
-        var response = esri.transform(features, req.parameters.fields);
+        // var response = esri.transform(features, req.parameters.fields);
+        // var featureCollection = new Terraformer.FeatureCollection(features);
+        var response = arcgis.convert({
+          type: 'FeatureCollection',
+          features: features
+        });
         res.json(response);
       }
 
@@ -112,7 +124,7 @@ module.exports = function(app, security) {
         async.each(
           filters, 
           function(filter, done) {
-            Feature.getFeatures(req.layer, filter, function (features) {
+            Feature.getFeatures(req.layer, {filter: filter, fields: req.parameters.fields}, function (features) {
               if (features) {
                 allFeatures = allFeatures.concat(features);
               }
@@ -126,7 +138,7 @@ module.exports = function(app, security) {
         );
       } else {
         var filter = {};
-        Feature.getFeatures(req.layer, filter, function (features) {
+        Feature.getFeatures(req.layer, {filter: filter, fields: req.parameters.fields}, function (features) {
           respond(features);
         });
       }
@@ -175,6 +187,7 @@ module.exports = function(app, security) {
         features,
         function(feature, done) {
           var properties = feature.attributes || {};
+          feature.type = 'Feature';
           if (req.user) properties.userId = req.user._id;
           if (req.provisionedDeviceId) properties.deviceId = req.provisionedDeviceId;
           Feature.createFeature(req.layer, {geometry: feature.geometry, properties: properties}, function(newFeature) {
