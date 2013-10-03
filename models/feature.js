@@ -38,29 +38,57 @@ var featureModel = function(layer) {
   return model;
 }
 
-exports.getFeatures = function(layer, filters, callback) {
-  var conditions = {};
-  
-  var query = featureModel(layer).find(conditions);
+// return a string for each property
+var convertFieldForQuery = function(field, keys, fields) {
+  keys = keys || [];
+  fields = fields || {};
 
+  for (var childField in field) {
+    keys.push(childField);
+    if (Object(field[childField]) === field[childField]) {
+      convertFieldForQuery(field[childField], keys, fields);
+    } else {
+      var key = keys.join(".");
+      if (field[childField]) fields[key] = field[childField];
+      keys.pop();
+    }
+  }
+
+  return fields;
+}
+
+exports.getFeatures = function(layer, o, callback) {
+  var conditions = {};
+  var fields = {};
+
+  if (o.fields) {
+    fields = convertFieldForQuery(o.fields);
+    if (fields.id === undefined) fields.id = true; // default is to return id if not specified
+  }
+
+  var query = featureModel(layer).find(conditions, fields).lean();
+
+  var filter = o.filter || {};
   // Filter by geometry
-  if (filters.geometry) {
-    query.where('geometry').intersects.geometry(filters.geometry);
+  if (filter.geometry) {
+    query.where('geometry').intersects.geometry(filter.geometry);
   }
 
   var timestampFilter = {};
-  if (filters.startTime) {
-    query.where('properties.timestamp').gte(filters.startTime);
+  if (filter.startTime) {
+    query.where('properties.timestamp').gte(filter.startTime);
   }
 
-  if (filters.endTime) {
-    query.where('properties.timestamp').lt(filters.endTime);
+  if (filter.endTime) {
+    query.where('properties.timestamp').lt(filter.endTime);
   }
 
   query.exec(function (err, features) {
     if (err) {
       console.log("Error finding features in mongo: " + err);
     }
+
+    console.log('got back features: ', features);
 
     callback(features);
   });

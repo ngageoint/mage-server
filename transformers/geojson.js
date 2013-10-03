@@ -1,5 +1,5 @@
-var include = function(property, fields) {
-  return fields.indexOf(property) != -1;
+var include = function(property, properties) {
+  return properties[property];
 }
 
 var transformFeature = function(feature, ret, options) {
@@ -8,7 +8,6 @@ var transformFeature = function(feature, ret, options) {
 
   // handle attributes
   var properties = options.properties;
-  var attributes = null;
   if (properties) {
     for (var property in feature.properties) {
       if (!include(property, properties)) {
@@ -16,14 +15,13 @@ var transformFeature = function(feature, ret, options) {
       }
     }
   }
-
-  ret.type = "Feature";
 }
 
 exports.transformFeature = transformFeature;
 
 exports.transform = function(features, properties) {
-  var response = { type: "FeatureCollection",
+  var response = { 
+    type: "FeatureCollection",
     bbox: [-180, -90, 180, 90.0],
     features: []
   };
