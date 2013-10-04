@@ -76,24 +76,7 @@ module.exports = function(app, security) {
   });
 
   // Grab the ESRI feature layer for any endpoint that uses layerId
-  app.param('layerId', function(req, res, next, layerId) {
-    Layer.getById(layerId, function(layer) {
-      if (!layer) {
-        res.json({
-          error: {
-            code: 400, 
-            message: "Layer / Table not found: " + layerId
-          }
-        });
-        return;
-      }
-
-      req.layer = layer;
-      next();
-    });
-  });
-
-  // Grab the layer for any endpoint that uses layerId
+  app.param('layerId', /^\d+$/);  //ensure objectId is a number
   app.param('layerId', function(req, res, next, layerId) {
     Layer.getById(layerId, function(layer) {
       if (!layer) {
@@ -118,25 +101,31 @@ module.exports = function(app, security) {
     next();
   });
 
-
   // Grab the feature for any endpoint that uses featureObjectId
+  app.param('featureId', /^\d+$/); //ensure featureObjectId is a number
+  app.param('featureId', function(req, res, next, featureId) {
+    var id = parseInt(featureId, 10);
+    req.featureId = id;
+    next();
+  });  
+  
   app.param('featureObjectId', /^\d+$/); //ensure featureObjectId is a number
-  app.param('featureObjectId', function(req, res, next, objectId) {
-    var id = parseInt(objectId, 10);
-    Feature.getFeatureByObjectId(req.layer, id, function(feature) {
-      if (!feature) {
-        res.json({
-          error: {
-            code: 404,
-            message: 'Feature (ID: ' + id + ') not found',
-            details: []
-          }
-        });
-        return;
-      }
+  // app.param('featureObjectId', function(req, res, next, objectId) {
+  //   var id = parseInt(objectId, 10);
+  //   Feature.getFeatureByObjectId(req.layer, id, function(feature) {
+  //     if (!feature) {
+  //       res.json({
+  //         error: {
+  //           code: 404,
+  //           message: 'Feature (ID: ' + id + ') not found',
+  //           details: []
+  //         }
+  //       });
+  //       return;
+  //     }
 
-      req.feature = feature;
-      next();
-    });
-  });
+  //     req.feature = feature;
+  //     next();
+  //   });
+  // });
 }

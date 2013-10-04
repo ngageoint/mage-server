@@ -14,6 +14,7 @@ var AttachmentSchema = new Schema({
 
 // Creates the Schema for the Attachments object
 var FeatureSchema = new Schema({
+  type: {type: String, required: true},
   geometry: Schema.Types.Mixed,
   properties: Schema.Types.Mixed,
   attachments: [AttachmentSchema]
@@ -92,20 +93,11 @@ exports.getFeatures = function(layer, o, callback) {
   });
 }
 
-exports.getFeatureByObjectId = function(layer, objectId, callback) {
-  var query = {'properties.OBJECTID': objectId};
-  featureModel(layer).findOne(query, function (err, feature) {
-    if (err) {
-      console.log("Error finding feature in mongo: " + err);
-    }
-
-    callback(feature);
-  });
-}
-
 exports.getFeatureById = function(layer, id, callback) {
+  var query = {};
+  query[id.field] = id.id;
   var fields = {'attachments': 0}; 
-  featureModel(layer).findOne(id, fields, function (err, feature) {
+  featureModel(layer).findOne(query, fields).lean().exec(function (err, feature) {
     if (err) {
       console.log("Error finding feature in mongo: " + err);
     }
@@ -114,20 +106,11 @@ exports.getFeatureById = function(layer, id, callback) {
   });
 }
 
-exports.createFeature = function(layer, data, callback) {
+exports.createFeature = function(layer, feature, callback) {
   var name = 'feature' + layer.id;
   Counter.getNext(name, function(id) {
-    var properties = data.properties ? data.properties : {};
-    properties.OBJECTID = id;
-    properties.timestamp = moment.utc().toDate();
-
-    var feature = {
-      geometry: {
-        type: 'Point',
-        coordinates: [data.geometry.x, data.geometry.y]
-      },
-      properties: properties
-    };
+    feature.properties.OBJECTID = id;
+    feature.properties.timestamp = moment.utc().toDate();
 
     featureModel(layer).create(feature, function(err, newFeature) {
       if (err) {
