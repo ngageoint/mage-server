@@ -1,6 +1,7 @@
 // ESRI feature routes
 module.exports = function(app, security) {
-  var async = require('async')
+  var api = require('../api')
+    , async = require('async')
     , fs = require('fs-extra')
     , path = require('path')
     , arcgis = require('terraformer-arcgis-parser')
@@ -77,7 +78,7 @@ module.exports = function(app, security) {
       }
 
       try {
-        parameters.geometries = geometryFormat.parse(parameters.geometryType, geometry);
+        parameters.filter.geometries = geometryFormat.parse(parameters.geometryType, geometry);
       } catch (e) {
         return res.send(400, e);
       }
@@ -96,67 +97,31 @@ module.exports = function(app, security) {
     function (req, res) {
       console.log("SAGE ESRI Features GET REST Service Requested");
 
-      // create filters for feature query
-      var filters = null;
-
-      var geometries = req.parameters.geometries;
-      if (geometries) {
-        filters = [];
-        geometries.forEach(function(geometry) {
-          filters.push({
-            geometry: geometry
-          });
-        });
+      var options = {
+        filter: req.parameters.filter,
+        fields: req.parameters.fields
       }
-
-      var respond = function(features) {
-        // var response = esri.transform(features, req.parameters.fields);
-        // var featureCollection = new Terraformer.FeatureCollection(features);
+      new api.Feature(req.layer).getAll(options, function(features) {
         var response = arcgis.convert({
           type: 'FeatureCollection',
           features: features
         });
         res.json(response);
-      }
-
-      if (filters) {
-        allFeatures = [];
-        async.each(
-          filters, 
-          function(filter, done) {
-            Feature.getFeatures(req.layer, {filter: filter, fields: req.parameters.fields}, function (features) {
-              if (features) {
-                allFeatures = allFeatures.concat(features);
-              }
-
-              done();
-            });
-          },
-          function(err) {
-            respond(allFeatures);
-          }
-        );
-      } else {
-        var filter = {};
-        Feature.getFeatures(req.layer, {filter: filter, fields: req.parameters.fields}, function (features) {
-          respond(features);
-        });
-      }
+      });
     }
   ); 
 
   // Gets one ESRI Styled record built for the ESRI format and syntax
   app.get(
-    '/FeatureServer/:layerId/:featureObjectId',
+    '/FeatureServer/:layerId/:featureId',
     access.authorize('READ_FEATURE'),
     function (req, res) {
       console.log("SAGE ESRI Features (ID) GET REST Service Requested");
 
-      res.json({
-        geometry: req.feature.geometry,
-        attributes: req.feature.properties
+      new api.Feature(req.layer).getById({id: req.featureId, field: 'properties.OBJECTID'}, function(feature) {
+        var esriFeature = arcgis.convert(feature);
+        res.json({feature: esriFeature});
       });
-      
     }
   ); 
 
@@ -167,8 +132,8 @@ module.exports = function(app, security) {
     function(req, res) {
       console.log("SAGE ESRI Features POST REST Service Requested");
 
-      var features = req.param('features');
-      if (!features) {
+      var esriFeatures = req.param('features');
+      if (!esriFeatures) {
         //TODO need common cl***REMOVED*** to house error object
         res.json({
           error: {
@@ -180,32 +145,28 @@ module.exports = function(app, security) {
         return;
       }
 
-      features = JSON.parse(features);
+      esriFeatures = JSON.parse(esriFeatures);
+      var features = [];
+      esriFeatures.forEach(function(esriFeature) {
+        var feature = arcgis.parse(esriFeature);
+        feature.properties = feature.properties || {};
+        if (req.user) feature.properties.userId = req.user._id;
+        if (req.provisionedDeviceId) feature.properties.deviceId = req.provisionedDeviceId;
+        features.push(feature);
+      });
 
-      var addResults = [];
-      async.each(
-        features,
-        function(feature, done) {
-          var properties = feature.attributes || {};
-          feature.type = 'Feature';
-          if (req.user) properties.userId = req.user._id;
-          if (req.provisionedDeviceId) properties.deviceId = req.provisionedDeviceId;
-          Feature.createFeature(req.layer, {geometry: feature.geometry, properties: properties}, function(newFeature) {
-            addResults.push({
-              globalId: null,
-              objectId: newFeature ? newFeature.properties.OBJECTID : -1,
-              success: newFeature ? true : false
-            });
+      new api.Feature(req.layer).create(features, function(newFeatures) {
+        var results = [];
+        newFeatures.forEach(function(newFeature) {
+          results.push({
+            globalId: null,
+            objectId: newFeature ? newFeature.properties.OBJECTID : -1,
+            success: newFeature ? true : false
+          });
+        });
 
-            done();
-          });
-        },
-        function(err) {
-          res.json({
-            addResults: addResults
-          });
-        }
-      );
+        res.json({addResults: results});
+      });
     }
   );
 

@@ -1,6 +1,4 @@
-
-var mongoose = require('mongoose')
-  , geoJSON = require('../transformers/geojson');
+var mongoose = require('mongoose');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;  
@@ -18,14 +16,6 @@ var LocationSchema = new Schema({
 });
 
 // TODO when user is removed need to remove thier locations.
-
-LocationSchema.set("toObject", {
-  transform: geoJSON.transformFeature
-});
-
-LocationSchema.set("toJSON", {
-  transform: geoJSON.transformFeature
-});
 
 LocationSchema.index({geometry: "2dsphere"});
 LocationSchema.index({'properties.timestamp': 1});

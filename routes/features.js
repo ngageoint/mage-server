@@ -4,8 +4,8 @@ module.exports = function(app, auth) {
   // endpoints to MAGE.  Probably still a good idea just got caught up
   // in tight schedule and did not get the opportunity to all the routes in.
 
-  var Feature = require('../models/feature')
-    , async = require('async')
+  var api = require('../api')
+    , util = require('util')
     , moment = require('moment')
     , access = require('../access')
     , geometryFormat = require('../format/geoJsonFormat');
@@ -13,31 +13,31 @@ module.exports = function(app, auth) {
   var geojson = require('../transformers/geojson');
 
   var parseQueryParams = function(req, res, next) {
-    var parameters = {filters: {}};
+    var parameters = {filter: {}};
 
-    var properties = req.param('properties');
-    if (properties) {
-      parameters.properties = properties.split(",");
+    var fields = req.param('fields');
+    if (fields) {
+      parameters.fields = JSON.parse(fields);
     }
 
     var startTime = req.param('startTime');
     if (startTime) {
-      parameters.filters.startTime = moment.utc(startTime).toDate();
+      parameters.filter.startTime = moment.utc(startTime).toDate();
     }
 
     var endTime = req.param('endTime');
     if (endTime) {
-      parameters.filters.endTime = moment.utc(endTime).toDate();
+      parameters.filter.endTime = moment.utc(endTime).toDate();
     }
 
     var bbox = req.param('bbox');
     if (bbox) {
-      parameters.filters.geometries = geometryFormat.parse('bbox', bbox);
+      parameters.filter.geometries = geometryFormat.parse('bbox', bbox);
     }
 
     var geometry = req.param('geometry');
     if (geometry) {
-      parameters.filters.geometries = geometryFormat.parse('geometry', geometry);
+      parameters.filter.geometries = geometryFormat.parse('geometry', geometry);
     }
 
     req.parameters = parameters;
@@ -53,70 +53,40 @@ module.exports = function(app, auth) {
     function (req, res) {
       console.log("SAGE ESRI Features GET REST Service Requested");
 
-      var respond = function(features) {
-        var response = geojson.transform(features, req.parameters.properties);
+      var options = {
+        filter: req.parameters.filter,
+        fields: req.parameters.fields
+      }
+      new api.Feature(req.layer).getAll(options, function(features) {
+        var response = geojson.transform(features);
         res.json(response);
-      }
-      
-      var filters = req.parameters.filters;
-      if (filters.geometries) {
-        allFeatures = [];
-        async.each(
-          filters.geometries, 
-          function(geometry, done) {
-            filters.geometry = geometry
-            Feature.getFeatures(req.layer, filters, function (features) {
-              if (features) {
-                allFeatures = allFeatures.concat(features);
-              }
-
-              done();
-            });
-          },
-          function(err) {
-            respond(allFeatures);
-          }
-        );
-      } else {
-        Feature.getFeatures(req.layer, filters, function (features) {
-          respond(features);
-        });
-      }
+      });
     }
   );
 
-  // // This function gets one feature with universal JSON formatting  
-  // app.get('/featureServer/v1/features/:id', function (req, res) {
-  //   console.log("SAGE Features (ID) GET REST Service Requested");
+  // This function gets one feature with universal JSON formatting  
+  app.get('/FeatureServer/:layerId/features/:id', function (req, res) {
+    console.log("SAGE Features (ID) GET REST Service Requested");
     
-  //   // get format parameter, default to json if not present
-  //   var format = req.param('f', 'json');
+    // get format parameter, default to json if not present
+    var format = req.param('f', 'json');
 
-  //   Feature.getFeatureById(req.params.id, function(feature) {
-  //     var response = {};
-  //     var formatter = Formatter(format);
-  //     if (feature) {
-  //       response = formatter.format(feature);
-  //     }
+    new api.Feature(req.layer).getById(req.params.id, function(feature) {
+      res.json(feature);
+    });
+  }); 
 
-  //     res.send(JSON.stringify(response));
-  //   });
-  // }); 
+  // This function creates a new Feature  
+  app.post('/FeatureServer/:layerId/features', function (req, res) {
+    console.log("SAGE Features POST REST Service Requested");
 
-  // // This function creates a new Feature  
-  // app.post('/featureServer/v1/features', function (req, res) {
-  //   console.log("SAGE Features POST REST Service Requested");
+    var features = req.body;
 
-  //   var data = JSON.parse(req.query.features);
-  //   Feature.createFeature(data[0], function(err, feature) {
-  //     var response = {};
-  //     if (feature) {
-  //       response = feature;
-  //     } 
-
-  //     res.send(JSON.stringify(feature));
-  //   });
-  // }); 
+    new api.Feature(req.layer).create(features, function(features) {
+      var response = util.isArray(features) ? features : features[0];
+      res.json(response);
+    });
+  }); 
 
 
   // // This function will update a feature by the ID
