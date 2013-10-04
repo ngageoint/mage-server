@@ -68,9 +68,6 @@ module.exports = function(app, auth) {
   app.get('/FeatureServer/:layerId/features/:id', function (req, res) {
     console.log("SAGE Features (ID) GET REST Service Requested");
     
-    // get format parameter, default to json if not present
-    var format = req.param('f', 'json');
-
     new api.Feature(req.layer).getById(req.params.id, function(feature) {
       res.json(feature);
     });
