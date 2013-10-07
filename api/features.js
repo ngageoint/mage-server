@@ -1,9 +1,14 @@
 var FeatureModel = require('../models/feature')
+  , path = require('path')
   , util = require('util')
+  , fs = require('fs-extra')
   , async = require('async')
   , moment = require('moment')
   , access = require('../access')
+  , config = require('../config.json')
   , geometryFormat = require('../format/geoJsonFormat');
+
+var attachmentBase = config.server.attachmentBaseDirectory;
 
 function Feature(layer) {
   this._layer = layer;
@@ -42,23 +47,33 @@ Feature.prototype.getById = function(id, callback) {
   });
 }
 
-Feature.prototype.create = function(features, callback) {
-  features = util.isArray(features) ? features : [features];
+Feature.prototype.create = function(feature, callback) {
+  FeatureModel.createFeature(this._layer, feature, function(newFeature) {
+    callback(newFeature);
+  });
+}
 
-  var layer = this._layer;
-  var newFeatures = [];
-  async.each(
-    features,
-    function(feature, done) {
-      FeatureModel.createFeature(layer, feature, function(newFeature) {
-        newFeatures.push(newFeature);
-        done();
+Feature.prototype.update = function(id, feature, callback) {
+  FeatureModel.updateFeature(this._layer, id, feature, function(err, updatedFeature) {
+    callback(err, updatedFeature);
+  });
+}
+
+Feature.prototype.delete = function(id, callback) {
+  FeatureModel.removeFeature(this._layer, id, function(err, feature) {
+    if (feature) {
+      feature.attachments.forEach(function(attachment) {
+        var file = path.join(attachmentBase, attachment.relativePath);
+        fs.remove(file, function(err) {
+          if (err) {
+            console.error("Could not remove attachment file " + file + ". ", err);
+          }
+        });
       });
-    },
-    function(err) {
-      callback(newFeatures);
     }
-  );
+
+    callback(err, feature);
+  });
 }
 
 module.exports = Feature;

@@ -107,7 +107,7 @@
             <!-- Fix for octet stream images in an older version of the app -->
             <!-- Due to drastically varying browser behavior, videos will be a download link for the time being -->
             <a ng-switch-when="video/mp4" ng-href="{{attachmentUrl + attachment.id + '?access_token=' + token}}">Download video</a>
-            <div ng-switch-when="application/octet-stream" cl***REMOVED***="top-gap-l" style="width: 100%">
+            <div ng-switch-default cl***REMOVED***="top-gap-l" style="width: 100%">
               <a ng-href="{{attachmentUrl + attachment.id + '?access_token=' + token}}" target="_blank">Download {{attachment.name}}</a>
               <div><a ng-show="amAdmin" cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(attachment.id)">Delete</a></div>
             </div>

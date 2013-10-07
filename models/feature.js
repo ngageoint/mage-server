@@ -96,8 +96,7 @@ exports.getFeatures = function(layer, o, callback) {
 exports.getFeatureById = function(layer, id, callback) {
   var query = {};
   query[id.field] = id.id;
-  var fields = {'attachments': 0}; 
-  featureModel(layer).findOne(query, fields).lean().exec(function (err, feature) {
+  featureModel(layer).findOne(query).exec(function (err, feature) {
     if (err) {
       console.log("Error finding feature in mongo: " + err);
     }
@@ -139,50 +138,53 @@ exports.createGeoJsonFeature = function(layer, feature, callback) {
   });
 }
 
-exports.updateFeature = function(layer, data, callback) {
-  var query = {'properties.OBJECTID': data.properties.OBJECTID};
-
-  var properties = data.properties ? data.properties : {};
-  var update = {
-    geometry: {
-      type: 'Point',
-      coordinates: [data.geometry.x, data.geometry.y]
-    },
-    properties: properties
-  };
-
-  var options = {new: true};
-  featureModel(layer).findOneAndUpdate(query, update, options, function (err, feature) {
+exports.updateFeature = function(layer, id, feature, callback) {
+  var query = {};
+  query[id.field] = id.id;
+  feature.properties = feature.properties || {};
+  feature.properties.OBJECTID = id.id;
+  featureModel(layer).findOneAndUpdate(query, feature, {new: true}, function (err, updatedFeature) {
     if (err) {
       console.log('Could not update feature', err);
+    }
+
+    callback(err, updatedFeature);
+  });
+}
+
+exports.removeFeature = function(layer, id, callback) {
+  var query = {};
+  query[id.field] = id.id;
+  featureModel(layer).findOneAndRemove(query, function (err, feature) {
+    if (err) {
+      console.log('Could not remove feature', err);
     }
 
     callback(err, feature);
   });
 }
 
-exports.removeFeature = function(layer, objectId, callback) {
-  var query = {'properties.OBJECTID': objectId};
-  featureModel(layer).findOneAndRemove(query, function (err, feature) {
-    if (err) {
-      console.log('Could not remove feature', err);
-    }
-
-    callback(err, objectId, feature);
+exports.getAttachments = function(layer, id, callback) {
+  var query = {};
+  query[id.field] = id.id;
+  var fields = {attachments: 1};
+  featureModel(layer).findOne(query, fields, function(err, feature) {
+    callback(feature.attachments);
   });
 }
 
-exports.getAttachments = function(feature, callback) {
-  callback(feature.get('attachments'));
-}
+exports.getAttachment = function(layer, id, attachmentId, callback) {
+  var query = {};
+  query[id.field] = id.id;
+  var fields = {attachments: 1};
+  featureModel(layer).findOne(query, fields, function(err, feature) {
+    var attachments = feature.attachments.filter(function(attachment) {
+      return (attachment.id == attachmentId);
+    });
 
-exports.getAttachment = function(feature, attachmentId, callback) {
-  var attachments = feature.get('attachments').filter(function(attachment) {
-    return (attachment.id == attachmentId);
+    var attachment = attachments.length ? attachments[0] : null;
+    callback(attachment);
   });
-
-  var attachment = attachments.length ? attachments[0] : null;
-  callback(attachment);
 }
 
 exports.addAttachment = function(layer, objectId, file, callback) {
