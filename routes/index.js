@@ -1,5 +1,6 @@
 module.exports = function(app, security) {
   var fs = require('fs-extra')
+    , api = require('../api')
     , Team = require('../models/team')
     , User = require('../models/user')
     , Role = require('../models/role')
@@ -108,24 +109,24 @@ module.exports = function(app, security) {
     req.featureId = id;
     next();
   });  
-  
-  app.param('featureObjectId', /^\d+$/); //ensure featureObjectId is a number
-  // app.param('featureObjectId', function(req, res, next, objectId) {
-  //   var id = parseInt(objectId, 10);
-  //   Feature.getFeatureByObjectId(req.layer, id, function(feature) {
-  //     if (!feature) {
-  //       res.json({
-  //         error: {
-  //           code: 404,
-  //           message: 'Feature (ID: ' + id + ') not found',
-  //           details: []
-  //         }
-  //       });
-  //       return;
-  //     }
 
-  //     req.feature = feature;
-  //     next();
-  //   });
-  // });
+  app.param('featureObjectId', /^\d+$/); //ensure featureObjectId is a number
+  app.param('featureObjectId', function(req, res, next, objectId) {
+    var id = parseInt(objectId, 10);
+    new api.Feature(req.layer).getById({id: id, field: 'properties.OBJECTID'}, function(feature) {
+      if (!feature) {
+        res.json({
+          error: {
+            code: 404,
+            message: 'Feature (ID: ' + id + ') not found',
+            details: []
+          }
+        });
+        return;
+      }
+
+      req.feature = feature;
+      next();
+    });
+  });
 }

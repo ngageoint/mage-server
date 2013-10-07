@@ -51,7 +51,7 @@ module.exports = function(app, auth) {
     access.authorize('READ_FEATURE'),
     parseQueryParams, 
     function (req, res) {
-      console.log("SAGE ESRI Features GET REST Service Requested");
+      console.log("MAGE ESRI Features GET REST Service Requested");
 
       var options = {
         filter: req.parameters.filter,
@@ -66,46 +66,45 @@ module.exports = function(app, auth) {
 
   // This function gets one feature with universal JSON formatting  
   app.get('/FeatureServer/:layerId/features/:id', function (req, res) {
-    console.log("SAGE Features (ID) GET REST Service Requested");
+    console.log("MAGE Features (ID) GET REST Service Requested");
     
     new api.Feature(req.layer).getById(req.params.id, function(feature) {
       res.json(feature);
     });
   }); 
 
-  // This function creates a new Feature  
+  // This function creates a new Feature
+  // TODO test
   app.post('/FeatureServer/:layerId/features', function (req, res) {
-    console.log("SAGE Features POST REST Service Requested");
+    console.log("MAGE Features POST REST Service Requested");
 
-    var features = req.body;
-
-    new api.Feature(req.layer).create(features, function(features) {
-      var response = util.isArray(features) ? features : features[0];
-      res.json(response);
+    var feature = req.body;
+    new api.Feature(req.layer).create(feature, function(newFeature) {
+      res.json(newFeature);
     });
   }); 
 
 
-  // // This function will update a feature by the ID
-  // app.put('/featureServer/v1/features/:id', function (req, res) {
-  //   console.log("SAGE Features (ID) UPDATE REST Service Requested");
-    
-  //   var features = JSON.parse(req.query.features);
-  //   Feature.updateFeature(features[0].attributes, function(err, feature) {
-  //     var response = {};
-  //     if (feature) {
-  //       response = feature;
-  //     }
+  // This function will update a feature by the ID
+  // TODO test
+  app.put('/FeatureServer/:layerId/features/:id', function (req, res) {
+    console.log("MAGE Features (ID) UPDATE REST Service Requested");
 
-  //     res.send(JSON.stringify(response));
-  //   });
-  // }); 
+    var feature = req.body;
+    new api.Feature(req.layer).update({id: req.param('id'), field: 'id'}, req.body, function(updatedFeature) {
+      res.json(updatedFeature);
+    });
+  }); 
 
-  // TODO implement delete feature
   // This function deletes one feature based on ID
-  // app.delete('/featureServer/v1/features/:id', function (req, res) {
-  //   console.log("SAGE Features (ID) DELETE REST Service Requested");
-  // }); 
+  // TODO test
+  app.delete('/FeatureServer/:layerId/features/:id', function (req, res) {
+    console.log("MAGE Features (ID) DELETE REST Service Requested");
+
+    new api.Feature(req.layer).delete({id: req.param('id'), field: 'id'}, function(err, deletedFeature) {
+      res.json(deletedFeature);
+    });
+  }); 
 
   // TODO this should just be a param on GET features
   // Get Map Points in JSON format

@@ -46,8 +46,8 @@ function FeatureController($scope, $location, $timeout, FeatureService, MapServi
     /* check to see if this is this an update or a new observation, if its an update, set the location and ID */
     if ($scope.observation.attributes.OBJECTID > 0) {
       $scope.observation.geometry = {
-        "x": $scope.observation.geometry.coordinates[0], 
-        "y": $scope.observation.geometry.coordinates[1]
+        "x": $scope.observation.geometry.x, 
+        "y": $scope.observation.geometry.y
       };
 
       // make a call to the FeatureService
@@ -145,13 +145,14 @@ function FeatureController($scope, $location, $timeout, FeatureService, MapServi
     for (var i in $scope.files) {
       fd.append("attachment", $scope.files[i])
     }
-    var xhr = new XMLHttpRequest()
-    xhr.upload.addEventListener("progress", uploadProgress, false)
-    xhr.addEventListener("load", uploadComplete, false)
-    xhr.addEventListener("error", uploadFailed, false)
-    xhr.addEventListener("abort", uploadCanceled, false)
-    xhr.open("POST", $scope.fileUploadUrl)
-    $scope.progressVisible = true
+    var xhr = new XMLHttpRequest();
+    xhr.upload.addEventListener("progress", uploadProgress, false);
+    xhr.addEventListener("load", uploadComplete, false);
+    xhr.addEventListener("error", uploadFailed, false);
+    xhr.addEventListener("abort", uploadCanceled, false);
+    xhr.open("POST", $scope.fileUploadUrl + "?access_token=" + mageLib.getToken());
+    // xhr.setRequestHeader('Authorization', 'Bearer ' + mageLib.getToken());
+    $scope.progressVisible = true;
     xhr.send(fd)
   }
 
@@ -202,9 +203,10 @@ function FeatureController($scope, $location, $timeout, FeatureService, MapServi
 
     FeatureService.getFeature(value.layerId, value.featureId).
       success(function (data) {
+        var feature = data.feature;
         $scope.currentLayerId = value.layerId;
-        $scope.observation = data;
-        $scope.featureLocation = {lat: data.geometry.coordinates[1], lng: data.geometry.coordinates[0]};
+        $scope.observation = feature;
+        $scope.featureLocation = {lat: feature.geometry.y, lng: feature.geometry.x};
         $scope.attachments = [];
         $scope.files = [];
         MapService.setCurrentMapPanel('observation');

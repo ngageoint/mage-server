@@ -4,7 +4,7 @@ module.exports = function(app, security) {
     , async = require('async')
     , fs = require('fs-extra')
     , path = require('path')
-    , arcgis = require('terraformer-arcgis-parser')
+    , ArcGIS = require('terraformer-arcgis-parser')
     , Counter = require('../models/counter')
     , Feature = require('../models/feature')
     , access = require('../access')
@@ -89,6 +89,19 @@ module.exports = function(app, security) {
     next();
   }
 
+  var toGeoJSON = function(arcgis, userId, deviceId) {
+    var features = [];
+    arcgis.forEach(function(esriFeature) {
+      var feature = ArcGIS.parse(esriFeature);
+      feature.properties = feature.properties || {};
+      if (userId) feature.properties.userId = userId;
+      if (deviceId) feature.properties.deviceId = deviceId;
+      features.push(feature);
+    });
+
+    return features;
+  }
+
   // Queries for ESRI Syled records built for the ESRI format and syntax
   app.get(
     '/FeatureServer/:layerId/query',
@@ -102,7 +115,7 @@ module.exports = function(app, security) {
         fields: req.parameters.fields
       }
       new api.Feature(req.layer).getAll(options, function(features) {
-        var response = arcgis.convert({
+        var response = ArcGIS.convert({
           type: 'FeatureCollection',
           features: features
         });
@@ -119,21 +132,21 @@ module.exports = function(app, security) {
       console.log("SAGE ESRI Features (ID) GET REST Service Requested");
 
       new api.Feature(req.layer).getById({id: req.featureId, field: 'properties.OBJECTID'}, function(feature) {
-        var esriFeature = arcgis.convert(feature);
+        var esriFeature = ArcGIS.convert(feature);
         res.json({feature: esriFeature});
       });
     }
   ); 
 
-  // This function creates a new ESRI Style Feature 
+  // This function creates a new ESRI Style Feature
   app.post(
     '/FeatureServer/:layerId/addFeatures',
     access.authorize('CREATE_FEATURE'),
     function(req, res) {
       console.log("SAGE ESRI Features POST REST Service Requested");
 
-      var esriFeatures = req.param('features');
-      if (!esriFeatures) {
+      var arcgis = req.param('features');
+      if (!arcgis) {
         //TODO need common cl***REMOVED*** to house error object
         res.json({
           error: {
@@ -145,28 +158,30 @@ module.exports = function(app, security) {
         return;
       }
 
-      esriFeatures = JSON.parse(esriFeatures);
-      var features = [];
-      esriFeatures.forEach(function(esriFeature) {
-        var feature = arcgis.parse(esriFeature);
-        feature.properties = feature.properties || {};
-        if (req.user) feature.properties.userId = req.user._id;
-        if (req.provisionedDeviceId) feature.properties.deviceId = req.provisionedDeviceId;
-        features.push(feature);
-      });
+      // convert the p***REMOVED***ed in ESRI features to GeoJSON
+      var userId = req.user ? req.user._id : null;
+      var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
+      var features = toGeoJSON(JSON.parse(arcgis), userId, deviceId);
 
-      new api.Feature(req.layer).create(features, function(newFeatures) {
-        var results = [];
-        newFeatures.forEach(function(newFeature) {
-          results.push({
-            globalId: null,
-            objectId: newFeature ? newFeature.properties.OBJECTID : -1,
-            success: newFeature ? true : false
+      var results = [];
+      var Feature = new api.Feature(req.layer);
+      async.each(
+        features,
+        function(feature, done) {
+          Feature.create(feature, function(newFeature) {
+            results.push({
+              globalId: null,
+              objectId: newFeature ? newFeature.properties.OBJECTID : -1,
+              success: newFeature ? true : false
+            });
+
+            done();        
           });
-        });
-
-        res.json({addResults: results});
-      });
+        },
+        function(err) {
+          res.json({addResults: results});
+        }
+      );
     }
   );
 
@@ -177,8 +192,8 @@ module.exports = function(app, security) {
     function (req, res) {
       console.log("SAGE Features (ID) UPDATE REST Service Requested");
 
-      var features = req.param('features');
-      if (!features) {
+      var arcgis = req.param('features');
+      if (!arcgis) {
         //TODO need common cl***REMOVED*** to house error object
         return res.json({
           error: {
@@ -189,43 +204,34 @@ module.exports = function(app, security) {
         });
       }
 
-      features = JSON.parse(features);
-      var updateResults = [];
-      var updateFeature = function(feature, done) {
-        var properties = feature.attributes || {};
-        if (req.user) properties.userId = req.user._id;
-        if (req.provisionedDeviceId) properties.deviceId = req.provisionedDeviceId;
-        Feature.updateFeature(req.layer, {geometry: feature.geometry, properties: properties}, function(err, newFeature) {
-          if (err || !newFeature) {
-            updateResults.push({
-              objectId: feature.attributes.OBJECTID,
-              globalId: null,
-              success: false,
-              error: {
-                code: -1,
-                description: 'Update for the object was not attempted. Object may not exist.'
-              }
-            });
-          } else {
-            updateResults.push({
-              objectId: newFeature.properties.OBJECTID,
-              globalId: null,
-              success: true
-            });
-          }
+      var userId = req.user ? req.user._id : null;
+      var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
+      var features = toGeoJSON(JSON.parse(arcgis), userId, deviceId);
 
-          done();
-        });
-      }
+      var results = [];
+      var Feature = new api.Feature(req.layer);
+      async.each(
+        features,
+        function(feature, done) {
+          Feature.update({id: feature.properties.OBJECTID, field: 'properties.OBJECTID'}, feature, function(err, updatedFeature) {
+            results.push({
+              globalId: null,
+              objectId: updatedFeature ? updatedFeature.properties.OBJECTID : -1,
+              success: updatedFeature ? true : false
+            });
 
-      async.each(features, updateFeature, function(err) {
-        res.json({
-          updateResults: updateResults
-        });
-      });
+            done();          
+          });
+        },
+        function(err) {
+          res.json({updateResults: results});
+        }
+      );
     }
   );
 
+  // This function will delete all features based on p***REMOVED***ed in ids
+  // TODO test, make sure attachments are deleted.
   app.post(
     '/FeatureServer/:layerId/deleteFeatures',
     access.authorize('DELETE_FEATURE'),
@@ -245,50 +251,38 @@ module.exports = function(app, security) {
         return;
       }
 
-      // Convert to JS object
-      objectIds = objectIds.split(",");
-      for (element in objectIds) {
-        objectIds[element] = parseInt(objectIds[element], 10);
-      }
-
       var results = [];
-      var onDelete = function(err, objectId, feature) {
-        if (err || !feature) {
-          results.push({
-            objectId: objectId,
-            globalId: null,
-            success: false,
-            error: {
-              code: -1,
-              description: 'Delete for the object was not attempted. Object may not exist.'
+      var Feature = new api.Feature(req.layer);
+      async.each(
+        objectIds.split(","),
+        function(id, done) {
+          id = parseInt(id, 10); // Convert to int
+          Feature.delete({id: id, field: 'properties.OBJECTID'}, function(err, feature) {
+            if (err || !feature) {
+              results.push({
+                objectId: objectId,
+                globalId: null,
+                success: false,
+                error: {
+                  code: -1,
+                  description: 'Delete for the object was not attempted. Object may not exist.'
+                }
+              });
+            } else {
+              results.push({
+                objectId: feature.properties.OBJECTID,
+                globalId: null,
+                success: true
+              });
             }
-          });
-        } else {
-          results.push({
-            objectId: feature.properties.OBJECTID,
-            globalId: null,
-            success: true
-          });
 
-          feature.attachments.forEach(function(attachment) {
-            var file = path.join(attachmentBase, attachment.relativePath);
-            fs.remove(file, function(err) {
-              if (err) {
-                console.error("Could not remove attachment file " + file + ". ", err);
-              }
-            });
+            done();
           });
-        }
-
-        if (!objectIds.length) {
+        },
+        function(err) {
           return res.json({deleteResults: results});
         }
-
-        Feature.removeFeature(req.layer, objectIds.pop(), onUpdate);
-      }
-
-
-      Feature.removeFeature(req.layer, objectIds.pop(), onDelete);
+      );
     }
   );
 
@@ -300,7 +294,7 @@ module.exports = function(app, security) {
       console.log("SAGE ESRI Features (ID) Attachments GET REST Service Requested");
 
       var esriAttachments = new EsriAttachments();
-      Feature.getAttachments(req.feature, function(attachments) {
+      Feature.getAttachments(req.layer, {id: req.feature.properties.OBJECTID, field: 'properties.OBJECTID'}, function(attachments) {
         if (attachments) {
           attachments.forEach(function(attachment) {
             esriAttachments.add(attachment);
@@ -320,7 +314,7 @@ module.exports = function(app, security) {
       console.log("SAGE ESRI Features (ID) Attachments (ID) GET REST Service Requested");
 
       var attachmentId = req.params.attachmentId;
-      Feature.getAttachment(req.feature, attachmentId, function(attachment) {
+      Feature.getAttachment(req.layer, {id: req.feature.properties.OBJECTID, field: 'properties.OBJECTID'}, attachmentId, function(attachment) {
         if (!attachment) {
           var errorResponse = {
             error: {
@@ -391,7 +385,6 @@ module.exports = function(app, security) {
   );
 
   // This function will update the specified attachment for the given list of attachment ids
-  // TODO test
   app.post(
     '/FeatureServer/:layerId/:featureObjectId/updateAttachment',
     access.authorize('UPDATE_FEATURE'),
