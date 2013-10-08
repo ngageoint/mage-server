@@ -65,6 +65,7 @@ exports.getFeatures = function(layer, o, callback) {
   if (o.fields) {
     fields = convertFieldForQuery(o.fields);
     if (fields.id === undefined) fields.id = true; // default is to return id if not specified
+    if (fields.type === undefined) fields.type = true; // default is to return type if not specified
   }
 
   var query = featureModel(layer).find(conditions, fields).lean();
