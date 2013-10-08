@@ -190,8 +190,8 @@ exports.getAttachment = function(layer, id, attachmentId, callback) {
 exports.addAttachment = function(layer, objectId, file, callback) {
   var attachment = {
     id: file.id,
-    contentType: file.type,  
-    size: file.size,  
+    contentType: file.headers['content-type'],  
+    size: file.size,
     name: file.name,
     relativePath: file.relativePath
   };
