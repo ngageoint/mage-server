@@ -48,8 +48,16 @@ LayerSchema.pre('save', function(next) {
 // Creates the Model for the Layer Schema
 var Layer = mongoose.model('Layer', LayerSchema);
 
-exports.getLayers = function(callback) {
+exports.getLayers = function(filter, callback) {
+  if (typeof filter == 'function') {
+    callback = filter;
+    filter = {};
+  }
+
   var query = {};
+  var type = filter.type;
+  if (type) query.type = type;
+
   Layer.find(query, function (err, layers) {
     if (err) {
       console.log("Error finding layers in mongo: " + err);
