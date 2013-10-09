@@ -93,7 +93,7 @@ module.exports = function(app, auth) {
     console.log("MAGE Features (ID) UPDATE REST Service Requested");
 
     var feature = req.body;
-    new api.Feature(req.layer).update(req.param('id'), req.body, function(updatedFeature) {
+    new api.Feature(req.layer).update(req.param('id'), req.body, function(err, updatedFeature) {
       var response = geojson.transform(updatedFeature);
       res.json(response);
     });
