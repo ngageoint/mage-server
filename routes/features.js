@@ -68,7 +68,7 @@ module.exports = function(app, auth) {
   app.get('/FeatureServer/:layerId/features/:id', function (req, res) {
     console.log("MAGE Features (ID) GET REST Service Requested");
     
-    new api.Feature(req.layer).getById({id: req.param('id'), field: '_id'}, function(feature) {
+    new api.Feature(req.layer).getById(req.param('id'), function(feature) {
       res.json(feature);
     });
   }); 
@@ -91,7 +91,7 @@ module.exports = function(app, auth) {
     console.log("MAGE Features (ID) UPDATE REST Service Requested");
 
     var feature = req.body;
-    new api.Feature(req.layer).update({id: req.param('id'), field: '_id'}, req.body, function(updatedFeature) {
+    new api.Feature(req.layer).update(req.param('id'), req.body, function(updatedFeature) {
       res.json(updatedFeature);
     });
   }); 
@@ -101,7 +101,7 @@ module.exports = function(app, auth) {
   app.delete('/FeatureServer/:layerId/features/:id', function (req, res) {
     console.log("MAGE Features (ID) DELETE REST Service Requested");
 
-    new api.Feature(req.layer).delete({id: req.param('id'), field: '_id'}, function(err, deletedFeature) {
+    new api.Feature(req.layer).delete(req.param('id'), function(err, deletedFeature) {
       res.json(deletedFeature);
     });
   }); 
