@@ -101,7 +101,7 @@ exports.getFeatureById = function(layer, id, callback) {
 
   var query = {};
   query[id.field] = id.id;
-  featureModel(layer).findOne(query).exec(function (err, feature) {
+  featureModel(layer).findOne(query).lean().exec(function (err, feature) {
     if (err) {
       console.log("Error finding feature in mongo: " + err);
     }
@@ -165,7 +165,7 @@ exports.removeFeature = function(layer, id, callback) {
   if (id !== Object(id)) {
     id = {id: id, field: '_id'};
   }
-  
+
   var query = {};
   query[id.field] = id.id;
   featureModel(layer).findOneAndRemove(query, function (err, feature) {
