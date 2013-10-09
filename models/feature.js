@@ -95,6 +95,10 @@ exports.getFeatures = function(layer, o, callback) {
 }
 
 exports.getFeatureById = function(layer, id, callback) {
+  if (id !== Object(id)) {
+    id = {id: id, field: '_id'};
+  }
+
   var query = {};
   query[id.field] = id.id;
   featureModel(layer).findOne(query).exec(function (err, feature) {
@@ -140,6 +144,10 @@ exports.createGeoJsonFeature = function(layer, feature, callback) {
 }
 
 exports.updateFeature = function(layer, id, feature, callback) {
+  if (id !== Object(id)) {
+    id = {id: id, field: '_id'};
+  }
+
   var query = {};
   query[id.field] = id.id;
   feature.properties = feature.properties || {};
@@ -154,6 +162,10 @@ exports.updateFeature = function(layer, id, feature, callback) {
 }
 
 exports.removeFeature = function(layer, id, callback) {
+  if (id !== Object(id)) {
+    id = {id: id, field: '_id'};
+  }
+  
   var query = {};
   query[id.field] = id.id;
   featureModel(layer).findOneAndRemove(query, function (err, feature) {
