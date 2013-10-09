@@ -69,7 +69,8 @@ module.exports = function(app, auth) {
     console.log("MAGE Features (ID) GET REST Service Requested");
     
     new api.Feature(req.layer).getById(req.param('id'), function(feature) {
-      res.json(feature);
+      var response = geojson.transform(feature);
+      res.json(response);
     });
   }); 
 
@@ -80,7 +81,8 @@ module.exports = function(app, auth) {
 
     var feature = req.body;
     new api.Feature(req.layer).create(feature, function(newFeature) {
-      res.json(newFeature);
+      var response = geojson.transform(newFeature);
+      res.json(response);
     });
   }); 
 
@@ -92,7 +94,8 @@ module.exports = function(app, auth) {
 
     var feature = req.body;
     new api.Feature(req.layer).update(req.param('id'), req.body, function(updatedFeature) {
-      res.json(updatedFeature);
+      var response = geojson.transform(updatedFeature);
+      res.json(response);
     });
   }); 
 
@@ -102,7 +105,8 @@ module.exports = function(app, auth) {
     console.log("MAGE Features (ID) DELETE REST Service Requested");
 
     new api.Feature(req.layer).delete(req.param('id'), function(err, deletedFeature) {
-      res.json(deletedFeature);
+      var response = geojson.transform(deletedFeature);
+      res.json(response);
     });
   }); 
 
