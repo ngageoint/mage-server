@@ -41,8 +41,13 @@ Feature.prototype.getAll = function(options, callback) {
   }
 }
 
-Feature.prototype.getById = function(id, callback) {
-  FeatureModel.getFeatureById(this._layer, id, function(feature) {
+Feature.prototype.getById = function(id, options, callback) {
+  if (typeof options == 'function') {
+    callback = options;
+    options = {};
+  }
+
+  FeatureModel.getFeatureById(this._layer, id, options, function(feature) {
     callback(feature);
   });
 }

@@ -68,7 +68,7 @@ exports.getFeatures = function(layer, o, callback) {
     if (fields.type === undefined) fields.type = true; // default is to return type if not specified
   }
 
-  var query = featureModel(layer).find(conditions, fields).lean();
+  var query = featureModel(layer).find(conditions, fields);
 
   var filter = o.filter || {};
   // Filter by geometry
@@ -94,14 +94,22 @@ exports.getFeatures = function(layer, o, callback) {
   });
 }
 
-exports.getFeatureById = function(layer, id, callback) {
+exports.getFeatureById = function(layer, id, options, callback) {
   if (id !== Object(id)) {
     id = {id: id, field: '_id'};
   }
 
-  var query = {};
-  query[id.field] = id.id;
-  featureModel(layer).findOne(query).lean().exec(function (err, feature) {
+  var conditions = {};
+  conditions[id.field] = id.id;
+
+  var fields = {};
+  if (options.fields) {
+    fields = convertFieldForQuery(options.fields);
+    if (fields.id === undefined) fields.id = true; // default is to return id if not specified
+    if (fields.type === undefined) fields.type = true; // default is to return type if not specified
+  }
+
+  featureModel(layer).findOne(conditions, fields).exec(function (err, feature) {
     if (err) {
       console.log("Error finding feature in mongo: " + err);
     }
@@ -200,23 +208,31 @@ exports.getAttachment = function(layer, id, attachmentId, callback) {
   });
 }
 
-exports.addAttachment = function(layer, objectId, file, callback) {
-  var attachment = {
-    id: file.id,
-    contentType: file.headers['content-type'],  
-    size: file.size,
-    name: file.name,
-    relativePath: file.relativePath
-  };
-
-  var condition = {'properties.OBJECTID': objectId};
-  var update = {'$push': { attachments: attachment } };
-  featureModel(layer).update(condition, update, function(err, feature) {
-    if (err) {
-      console.log('Error updating attachments from DB', err);
+exports.addAttachment = function(layer, id, file, callback) {  
+  var counter = 'attachment' + layer.id;
+  Counter.getNext(counter, function(attachmentId) {
+    if (id !== Object(id)) {
+      id = {id: id, field: '_id'};
     }
 
-    callback(err, attachment);
+    var condition = {};
+    condition[id.field] = id.id;
+    var attachment = {
+      id: attachmentId,
+      contentType: file.headers['content-type'],  
+      size: file.size,
+      name: file.name,
+      relativePath: file.relativePath
+    };
+
+    var update = {'$push': { attachments: attachment } };
+    featureModel(layer).update(condition, update, function(err, feature) {
+      if (err) {
+        console.log('Error updating attachments from DB', err);
+      }
+
+      callback(err, attachment);
+    });
   });
 }
 
@@ -239,8 +255,10 @@ exports.updateAttachment = function(layer, attachmentId, file, callback) {
   });
 }
 
-exports.removeAttachments = function(feature, attachmentIds, callback) {
-  feature.update({'$pull': {attachments: {id: {'$in': attachmentIds}}}}, function(err, number, raw) {
+exports.removeAttachment = function(feature, id, callback) {
+  var attachments = {};
+  attachments[id.field] = id.id;
+  feature.update({'$pull': {attachments: attachments}}, function(err, number, raw) {
     if (err) {
       console.log('Error pulling attachments from DB', err);
     }

@@ -40,11 +40,6 @@ module.exports = function(app, security) {
     }
   }
 
-  var createAttachmentPath = function(layer, attachment) {
-    var now = new Date();
-    return path.join(layer.collectionName, now.getFullYear().toString(), (now.getMonth() + 1).toString(), now.getDate().toString());
-  }
-
   var parseQueryParams = function(req, res, next) {
     var parameters = {};
 
@@ -89,13 +84,14 @@ module.exports = function(app, security) {
   }
 
   var toGeoJSON = function(arcgis, userId, deviceId) {
-    var features = [];
-    arcgis.forEach(function(esriFeature) {
+    var features = argis.map(function(esriFeature) {
       var feature = ArcGIS.parse(esriFeature);
+      if (feature.geometry) delete feature.geometry.bbox;  // ESRI terraformer transforms geometries w/ bbox property, no need to store this
       feature.properties = feature.properties || {};
       if (userId) feature.properties.userId = userId;
       if (deviceId) feature.properties.deviceId = deviceId;
-      features.push(feature);
+
+      return feature;
     });
 
     return features;
@@ -125,7 +121,7 @@ module.exports = function(app, security) {
 
   // Gets one ESRI Styled record built for the ESRI format and syntax
   app.get(
-    '/FeatureServer/:layerId/:featureId',
+    '/FeatureServer/:layerId/:featureObjectId',
     access.authorize('READ_FEATURE'),
     function (req, res) {
       console.log("SAGE ESRI Features (ID) GET REST Service Requested");
@@ -223,7 +219,7 @@ module.exports = function(app, security) {
           });
         },
         function(err) {
-          res.json({updateResults: results});
+          return res.json({updateResults: results});
         }
       );
     }
@@ -285,7 +281,7 @@ module.exports = function(app, security) {
     }
   );
 
-  // This function gets all the attachments for a particular ESRI record  
+  // This function gets an array of the attachments for a particular ESRI record  
   app.get(
     '/FeatureServer/:layerId/:featureObjectId/attachments',
     access.authorize('READ_FEATURE'),
@@ -293,15 +289,11 @@ module.exports = function(app, security) {
       console.log("SAGE ESRI Features (ID) Attachments GET REST Service Requested");
 
       var esriAttachments = new EsriAttachments();
-      Feature.getAttachments(req.layer, {id: req.feature.properties.OBJECTID, field: 'properties.OBJECTID'}, function(attachments) {
-        if (attachments) {
-          attachments.forEach(function(attachment) {
-            esriAttachments.add(attachment);
-          });
-        }
-
-        res.json(esriAttachments.attachments());
+      req.feature.attachments.forEach(function(attachment) {
+        esriAttachments.add(attachment);
       });
+
+      res.json(esriAttachments.attachments());
     }
   );
 
@@ -313,7 +305,9 @@ module.exports = function(app, security) {
       console.log("SAGE ESRI Features (ID) Attachments (ID) GET REST Service Requested");
 
       var attachmentId = req.params.attachmentId;
-      Feature.getAttachment(req.layer, {id: req.feature.properties.OBJECTID, field: 'properties.OBJECTID'}, attachmentId, function(attachment) {
+      new api.Attachment(req.layer, req.feature).getById({id: attachmentId, field: 'id'}, function(err, attachment) {
+        if (err) return next(err);
+
         if (!attachment) {
           var errorResponse = {
             error: {
@@ -325,18 +319,12 @@ module.exports = function(app, security) {
           return res.json(errorResponse);
         }
 
-        var file = path.join(attachmentBase, attachment.relativePath);
-        console.log('trying to read file: ', file);
-        fs.readFile(file, function(err, data) {
-          if (err) return next(err);
-
-          res.writeHead(200, {
-            "Content-Type": attachment.contentType,
-            "Content-Length": attachment.size,
-            'Content-disposition': 'attachment; filename=' + attachment.name
-           });
-          res.end(data, 'binary');
-        });
+        res.writeHead(200, {
+          "Content-Type": attachment.attachment.contentType,
+          "Content-Length": attachment.attachment.size,
+          'Content-disposition': 'attachment; filename=' + attachment.attachment.name
+         });
+        res.end(attachment.data, 'binary');
       });
     }
   );
@@ -348,37 +336,18 @@ module.exports = function(app, security) {
     function(req, res, next) {
       console.log("SAGE ESRI Features (ID) Attachments POST REST Service Requested");
 
-      var counter = 'attachment' + req.layer.id;
-      Counter.getNext(counter, function(id) {
+      new api.Attachment(req.layer, req.feature).create({id: req.param.objectId, field: 'id'}, req.files.attachment, function(err, attachment) {
+        if (err) return next(err);
 
-        var relativePath = createAttachmentPath(req.layer, req.files.attachment)
-        // move file upload to its new home
-        var dir = path.join(attachmentBase, relativePath);
-        fs.mkdirp(dir, function(err) {
-          if (err) return next(err);
+        var response = {
+          addAttachmentResult: {
+            objectId: attachment ? attachment.id : -1,
+            globalId: null,
+            success: attachment ? true : false
+          }
+        };
 
-          req.files.attachment.id = id;
-          var fileName = path.basename(req.files.attachment.path);
-          req.files.attachment.relativePath = path.join(relativePath, fileName);
-          var file = path.join(attachmentBase, req.files.attachment.relativePath);
-          fs.rename(req.files.attachment.path, file, function(err) {
-            if (err) return next(err);
-
-            Feature.addAttachment(req.layer, req.objectId, req.files.attachment, function(err, attachment) {
-              if (err) return next(err);
-
-              var response = {
-                addAttachmentResult: {
-                  objectId: attachment ? attachment.id : -1,
-                  globalId: null,
-                  success: attachment ? true : false
-                }
-              };
-
-              res.json(response);
-            });  
-          });
-        });
+        return res.json(response);
       });
     }
   );
@@ -402,32 +371,15 @@ module.exports = function(app, security) {
       }
 
       var attachmentId = parseInt(attachmentId, 10);
-
-      var relativePath = createAttachmentPath(req.layer, req.files.attachment);
-      var dir = path.join(attachmentBase, relativePath);
-      // move file upload to its new home
-      fs.mkdirp(dir, function(err) {
+      new api.Attachment(req.layer, req.feature).update({id: attachmentId, field: 'id'}, req.files.attachment, function(err, attachment) {
         if (err) return next(err);
 
-        req.files.attachment.id = attachmentId;
-        var fileName = path.basename(req.files.attachment.path);
-        req.files.attachment.relativePath = path.join(relativePath, fileName);
-        var file = path.join(attachmentBase, req.files.attachment.relativePath);
-        fs.rename(req.files.attachment.path, file, function(err) {
-          if (err) return next(err);
-
-          Feature.updateAttachment(req.layer, attachmentId, req.files.attachment, function(err) {
-            if (err) return next(err);
-
-            res.json({
-              updateAttachmentResult: {
-                objectId: attachmentId,
-                globalId: null,
-                success: true
-              }
-            });
-
-          });  
+        return  res.json({
+          updateAttachmentResult: {
+            objectId: attachmentId,
+            globalId: null,
+            success: true
+          }
         });
       });
     }
@@ -459,33 +411,25 @@ module.exports = function(app, security) {
       }
 
       var attachments = req.feature.attachments.toObject();
+      var Attachment = new api.Attachment(req.layer, req.feature);
+      var deleteResults = [];
+      async.each(
+        attachmentIds,
+        function(attachmentId, done) {
+          Attachment.delete({id: attachmentId, field: 'id'}, function(err) {
+            deleteResults.push({
+              objectId: attachmentId,
+              globalId: null,
+              success: err ? false : true
+            });
 
-      Feature.removeAttachments(req.feature, attachmentIds, function(err) {
-        var deleteResults = [];
-        attachmentIds.forEach(function(attachmentId) {
-          deleteResults.push({
-            objectId: attachmentId,
-            globalId: null,
-            success: true
+            done();
           });
-        });
-
-        res.json({deleteAttachmentResults: deleteResults});
-
-        if (!err) {
-          attachments.forEach(function(attachment) {
-            var index = attachmentIds.indexOf(attachment.id);
-            if (index != -1) {
-              var file = path.join(attachmentBase, attachment.relativePath);
-              fs.remove(file, function(err) {
-                if (err) {
-                  console.error("Could not remove attachment file " + file + ". ", err);
-                }
-              });
-            }
-          });
+        },
+        function(err) {
+          return res.json({deleteAttachmentResults: deleteResults});
         }
-      });
+      );
     }
   );
 }
