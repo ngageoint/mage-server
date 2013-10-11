@@ -84,7 +84,7 @@ module.exports = function(app, security) {
   }
 
   var toGeoJSON = function(arcgis, userId, deviceId) {
-    var features = argis.map(function(esriFeature) {
+    var features = arcgis.map(function(esriFeature) {
       var feature = ArcGIS.parse(esriFeature);
       if (feature.geometry) delete feature.geometry.bbox;  // ESRI terraformer transforms geometries w/ bbox property, no need to store this
       feature.properties = feature.properties || {};
