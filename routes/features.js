@@ -1,8 +1,5 @@
 // feature routes
 module.exports = function(app, auth) {
-  // TODO at one point thought is was a good idea to provide non ESRI
-  // endpoints to MAGE.  Probably still a good idea just got caught up
-  // in tight schedule and did not get the opportunity to all the routes in.
 
   var api = require('../api')
     , util = require('util')
@@ -65,17 +62,22 @@ module.exports = function(app, auth) {
   );
 
   // This function gets one feature with universal JSON formatting  
-  app.get('/FeatureServer/:layerId/features/:id', function (req, res) {
-    console.log("MAGE Features (ID) GET REST Service Requested");
-    
-    new api.Feature(req.layer).getById(req.param('id'), function(feature) {
-      var response = geojson.transform(feature);
-      res.json(response);
-    });
-  }); 
+  app.get(
+    '/FeatureServer/:layerId/features/:id', 
+    access.authorize('READ_FEATURE'),
+    parseQueryParams,
+    function (req, res) {
+      console.log("MAGE Features (ID) GET REST Service Requested");
+      
+      var options = {fields: req.parameters.fields};
+      new api.Feature(req.layer).getById(req.param('id'), options, function(feature) {
+        var response = geojson.transform(feature);
+        res.json(response);
+      });
+    }
+  ); 
 
   // This function creates a new Feature
-  // TODO test
   app.post('/FeatureServer/:layerId/features', function (req, res) {
     console.log("MAGE Features POST REST Service Requested");
 
@@ -88,7 +90,6 @@ module.exports = function(app, auth) {
 
 
   // This function will update a feature by the ID
-  // TODO test
   app.put('/FeatureServer/:layerId/features/:id', function (req, res) {
     console.log("MAGE Features (ID) UPDATE REST Service Requested");
 
@@ -100,7 +101,6 @@ module.exports = function(app, auth) {
   }); 
 
   // This function deletes one feature based on ID
-  // TODO test
   app.delete('/FeatureServer/:layerId/features/:id', function (req, res) {
     console.log("MAGE Features (ID) DELETE REST Service Requested");
 
@@ -110,113 +110,57 @@ module.exports = function(app, auth) {
     });
   }); 
 
-  // TODO this should just be a param on GET features
-  // Get Map Points in JSON format
-  // app.get('/api/v1/featureMapPointsJSON', function (req, res){
-  //   console.log("SAGE Get Feature Map Points REST Service Requested");
-    
-  //   models.Feature.getFeatures(function (features) {
-      
-  //     console.log(JSON.stringify(features));
+  app.get('/FeatureServer/:layerId/features/:featureId/attachments/:attachmentId', function(req, res) {
+    new api.Attachment(req.layer, req.feature).getById(req.param('attachmentId'), function(err, attachment) {
+      res.writeHead(200, {
+        "Content-Type": attachment.attachment.contentType,
+        "Content-Length": attachment.attachment.size,
+        'Content-disposition': 'attachment; filename=' + attachment.attachment.name
+       });
+      res.end(attachment.data, 'binary');
+    });
+  });
 
-  //     var mapStringBegin = "{\"features\": [";
-  //     var mapStringEnd = "]}";
-  //     var fullString = "";
-  //     var indGeometry = "";
-  //     var indAttributes = "";
-      
-  //     fullString = mapStringBegin;
-      
-  //     var count = 0;
+  // This function will add an attachment for a particular ESRI record 
+  app.post(
+    '/FeatureServer/:layerId/features/:featureId/attachments',
+    access.authorize('CREATE_FEATURE'),
+    function(req, res, next) {
+      console.log("SAGE ESRI Features (ID) Attachments POST REST Service Requested");
 
-  //     if(!features.length) {
-  //       console.log("No records were found.");
-  //       return res.send("{\"objectIdFieldName\": \"OBJECTID\",\"globalIdFieldName\": \"\",\"features\": []}");  
-        
-  //     }
-  //     else {
-  //       features.forEach( function(allMapPoints) {
-          
-  //         count = count + 1;
-          
-  //         mapPoint = "\"geometry\": {" +  allMapPoints.geometry.x + ", " + allMapPoints.geometry.y + "}";
-          
-  //         if (count < features.length) {
-  //           fullString = fullString + ", ";
-  //         }
-  //       })
-          
-  //       fullString = fullString + mapStringEnd;
-      
-  //       return res.send(fullString);
-  //     };
-  //   });
+      new api.Attachment(req.layer, req.feature).create(req.param.featureId, req.files.attachment, function(err, attachment) {
+        if (err) return next(err);
 
-  // });
+        return res.json(attachment);
+      });
+    }
+  );
 
-  // // This function will update a feature by the ID
-  // app.put('/api/v1/features/', function (req, res){
-  //   console.log("SAGPut Random");
-    
-  //   return FeatureModel.find({}, {'_id': 1, 'geometry': 1, 'attributes': 1}, function (err, features) {
-      
-  //     features.forEach( function(allMapPoints) {
-      
-  //       var x=Math.floor((Math.random()*42) + 81);
-  //       var y=Math.floor((Math.random()*14) + 30);
+  // This function will update the specified attachment for the given list of attachment ids
+  app.post(
+    '/FeatureServer/:layerId/features/:featureId/attachments/:attachmentId',
+    access.authorize('UPDATE_FEATURE'),
+    function(req, res, next) {
+      console.log("SAGE ESRI Features (ID) Attachments UPDATE REST Service Requested");
 
-  //       feature.geometry.x = x;
-  //       feature.geometry.y = y;
-      
-  //     })
-      
-  //     return feature.save(function (err) {
-  //       if (!err) {
-  //         console.log("updated");
-  //       } else {
-  //         console.log(err);
-  //       }
-  //     return res.send(feature);
-  //     });
-  //   });
-  // });
+      new api.Attachment(req.layer, req.feature).update(req.featureId, req.files.attachment, function(err, attachment) {
+        if (err) return next(err);
 
-  // TODO this should just be a param on GET features
-  // // Gets all the features with universal JSON formatting   
-  // app.get('/api/v1/getIDs', function (req, res){
-  //   console.log("SAGE Get IDs GET REST Service Requested");
+        return res.json(attachment);
+      });
+    }
+  );
 
-  //   return models.FeatureModel.find({}, {'_id': 0, 'attributes.OBJECTID': 1}, function (err, features) {
-      
+  // This function will delete all attachments for the given list of attachment ids
+  app.post(
+    '/FeatureServer/:layerId/features/:featureId/attachments/:attachmentId',
+    access.authorize('DELETE_FEATURE'),
+    function(req, res) {
+      console.log("SAGE ESRI Features (ID) Attachments DELETE REST Service Requested");
 
-  //     var fullString = "{\"object_ids\": [";
-  //     var object_ids = "";
-      
-  //     var count = 0;
-
-  //     if( err || !features.length) {
-  //       console.log("No records were found.");  
-  //       return res.send("No records were found.");
-  //     }
-  //     else {
-        
-  //       features.forEach( function(allESRIRecords) {
-          
-  //         count = count + 1;
-                  
-  //         object_ids = "{ \"OBJECTID\": " + allESRIRecords.attributes.OBJECTID + "}";
-          
-  //         fullString = fullString + object_ids;
-          
-  //         if (count < features.length) {
-  //           fullString = fullString + ", ";
-  //         }     
-  //       })
-          
-  //       fullString = fullString + "]}";
-      
-  //       return res.send(fullString);
-  //     };
-  //   });
-  // });
+      new api.Attachment(req.layer, req.feature).delete(req.param('attachmentId'), function(err) {
+        res.send(200);
+      });
+    }
+  );
 }
