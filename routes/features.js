@@ -78,47 +78,63 @@ module.exports = function(app, auth) {
   ); 
 
   // This function creates a new Feature
-  app.post('/FeatureServer/:layerId/features', function (req, res) {
-    console.log("MAGE Features POST REST Service Requested");
+  app.post(
+    '/FeatureServer/:layerId/features', 
+    access.authorize('CREATE_FEATURE'),
+    function (req, res) {
+      console.log("MAGE Features POST REST Service Requested");
 
-    var feature = req.body;
-    new api.Feature(req.layer).create(feature, function(newFeature) {
-      var response = geojson.transform(newFeature);
-      res.json(response);
-    });
+      var feature = req.body;
+      new api.Feature(req.layer).create(feature, function(newFeature) {
+        var response = geojson.transform(newFeature);
+        res.json(response);
+      }
+    );
   }); 
 
 
   // This function will update a feature by the ID
-  app.put('/FeatureServer/:layerId/features/:id', function (req, res) {
-    console.log("MAGE Features (ID) UPDATE REST Service Requested");
+  app.put(
+    '/FeatureServer/:layerId/features/:id',
+    access.authorize('UPDATE_FEATURE'),
+    function (req, res) {
+      console.log("MAGE Features (ID) UPDATE REST Service Requested");
 
-    var feature = req.body;
-    new api.Feature(req.layer).update(req.param('id'), req.body, function(err, updatedFeature) {
-      var response = geojson.transform(updatedFeature);
-      res.json(response);
-    });
+      var feature = req.body;
+      new api.Feature(req.layer).update(req.param('id'), req.body, function(err, updatedFeature) {
+        var response = geojson.transform(updatedFeature);
+        res.json(response);
+      }
+    );
   }); 
 
   // This function deletes one feature based on ID
-  app.delete('/FeatureServer/:layerId/features/:id', function (req, res) {
-    console.log("MAGE Features (ID) DELETE REST Service Requested");
+  app.delete(
+    '/FeatureServer/:layerId/features/:id',
+    access.authorize('DELETE_FEATURE'),
+    function (req, res) {
+      console.log("MAGE Features (ID) DELETE REST Service Requested");
 
-    new api.Feature(req.layer).delete(req.param('id'), function(err, deletedFeature) {
-      var response = geojson.transform(deletedFeature);
-      res.json(response);
-    });
+      new api.Feature(req.layer).delete(req.param('id'), function(err, deletedFeature) {
+        var response = geojson.transform(deletedFeature);
+        res.json(response);
+      }
+    );
   }); 
 
-  app.get('/FeatureServer/:layerId/features/:featureId/attachments/:attachmentId', function(req, res) {
-    new api.Attachment(req.layer, req.feature).getById(req.param('attachmentId'), function(err, attachment) {
-      res.writeHead(200, {
-        "Content-Type": attachment.attachment.contentType,
-        "Content-Length": attachment.attachment.size,
-        'Content-disposition': 'attachment; filename=' + attachment.attachment.name
-       });
-      res.end(attachment.data, 'binary');
-    });
+  app.get(
+    '/FeatureServer/:layerId/features/:featureId/attachments/:attachmentId',
+    access.authorize('READ_FEATURE'),
+    function(req, res) {
+      new api.Attachment(req.layer, req.feature).getById(req.param('attachmentId'), function(err, attachment) {
+        res.writeHead(200, {
+          "Content-Type": attachment.attachment.contentType,
+          "Content-Length": attachment.attachment.size,
+          'Content-disposition': 'attachment; filename=' + attachment.attachment.name
+         });
+        res.end(attachment.data, 'binary');
+      }
+    );
   });
 
   // This function will add an attachment for a particular ESRI record 
@@ -136,8 +152,8 @@ module.exports = function(app, auth) {
     }
   );
 
-  // This function will update the specified attachment for the given list of attachment ids
-  app.post(
+  // This function will update the specified attachment
+  app.put(
     '/FeatureServer/:layerId/features/:featureId/attachments/:attachmentId',
     access.authorize('UPDATE_FEATURE'),
     function(req, res, next) {
@@ -152,7 +168,7 @@ module.exports = function(app, auth) {
   );
 
   // This function will delete all attachments for the given list of attachment ids
-  app.post(
+  app.delete(
     '/FeatureServer/:layerId/features/:featureId/attachments/:attachmentId',
     access.authorize('DELETE_FEATURE'),
     function(req, res) {
