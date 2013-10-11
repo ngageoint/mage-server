@@ -144,7 +144,7 @@ module.exports = function(app, auth) {
     function(req, res, next) {
       console.log("SAGE ESRI Features (ID) Attachments POST REST Service Requested");
 
-      new api.Attachment(req.layer, req.feature).create(req.param.featureId, req.files.attachment, function(err, attachment) {
+      new api.Attachment(req.layer, req.feature).create(req.featureId, req.files.attachment, function(err, attachment) {
         if (err) return next(err);
 
         return res.json(attachment);
