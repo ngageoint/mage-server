@@ -12,8 +12,8 @@ var mage = angular.module(
   "mage", 
   [
     "ui.bootstrap",
-    "ui.date",
-    "ui.slider",
+    /*"ui.date",
+    "ui.slider",*/
     "leaflet-directive",
     "mage.***REMOVED***s",
     "mage.userService",
