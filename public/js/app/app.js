@@ -12,6 +12,8 @@ var mage = angular.module(
   "mage", 
   [
     "ui.bootstrap",
+    "ui.date",
+    "ui.slider",
     "leaflet-directive",
     "mage.***REMOVED***s",
     "mage.userService",
@@ -26,6 +28,7 @@ var mage = angular.module(
     "mage.lib",
     "ngSanitize",
     "ngRoute",
+    'ngResource',
     "http-auth-interceptor"])
   .config(function ($routeProvider, $locationProvider, $httpProvider) {
     $httpProvider.defaults.withCredentials = true;

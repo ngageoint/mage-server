@@ -15,7 +15,14 @@ angular.module('mage.mapService', ['mage.***REMOVED***s', 'mage.lib'])
       };
 
       return functions;
-    }]); // end of MapService
+    }])
+.factory('DataService', [function() {
+  var container = {
+    locations: {},
+    locationsLoaded: false
+  };
+  return container;
+}]); // end of MapService
 
   /* Barela idea */
   /*

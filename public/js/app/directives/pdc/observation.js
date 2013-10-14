@@ -1,6 +1,6 @@
 'use strict';
 
-mage.directive('pdcObservation', ['FeatureTypeService' , function (FeatureTypeService) {
+mage.directive('pdcObservation', ['FeatureTypeService' , 'Feature', function (FeatureTypeService, Feature) {
 
   return {
     restrict: "A",
@@ -41,13 +41,13 @@ mage.directive('pdcObservation', ['FeatureTypeService' , function (FeatureTypeSe
       });
 
       scope.createNewObservation = function(location) {
-        return {
-          attributes: {
+        return new Feature({
+          properties: {
             TYPE: scope.types[0].name,
             EVENTLEVEL: scope.levels[0].name,
             TEAM: scope.teams[0] 
           }
-        };
+        });
       }
     }
   };

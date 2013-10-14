@@ -1,7 +1,7 @@
 (function () {
   var leafletDirective = angular.module("leaflet-directive", ["mage.***REMOVED***s"]);
 
-  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, IconService, appConstants) {
+  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, IconService, appConstants, DataService) {
     return {
       restrict: "A",
       replace: true,
@@ -12,13 +12,16 @@
         var map = L.map("map");
         map.setView([0, 0], 3);
 
+        scope.ds = DataService;
 
+        console.info('ds is ', scope.ds);
         /*
         toolbar config
         */
         map.addControl(new L.Control.MageFeature());
         map.addControl(new L.Control.MageUserLocation());
         map.addControl(new L.Control.MageListTools());
+        //map.addControl(new L.Control.TimeScale());
 
         var addMarker = L.marker([0,0], {
           draggable: true,
@@ -123,8 +126,14 @@
 
         var currentLocationMarkers = {};
         var locationLayerGroup = new L.LayerGroup().addTo(map);
-        scope.$watch("locations", function(users) {
-          if (!users) return;
+        scope.$watch("ds.locations.$resolved", function(derp) {
+          console.info('ds', scope.ds.locations);
+          if (!scope.ds.locations || !scope.ds.locations.$resolved) {
+            console.info('not resolved');
+            return;
+          }
+
+          var users = scope.ds.locations;
 
           if (users.length == 0) {
             locationLayerGroup.clearLayers();
@@ -190,7 +199,7 @@
           });
 
           currentLocationMarkers = locationMarkers;
-        });
+        }, true);
 
         var activeMarker;
         var featureConfig = function(layer) {
@@ -211,7 +220,7 @@
                 var icon = IconService.leafletIcon(feature, {types: scope.types});
                 var marker =  L.marker(latlng, { icon: icon });
 
-                markers[layer.id][feature.properties.OBJECTID] = marker;
+                markers[layer.id][feature.id] = marker;
                 return marker;
               }
             },
@@ -236,12 +245,12 @@
                 activeMarker = marker;
                 if (feature.properties.style) {
                   scope.$apply(function(s) {
-                    scope.externalFeatureClick = {layerId: layer.id, featureId: feature.properties.OBJECTID};
+                    scope.externalFeatureClick = {layerId: layer.id, featureId: feature.id};
                   });
                   // marker.bindPopup(L.popup());
                 } else {
                   scope.$apply(function(s) {
-                    scope.activeFeature = {layerId: layer.id, featureId: feature.properties.OBJECTID, feature: feature};
+                    scope.activeFeature = {layerId: layer.id, featureId: feature.id, feature: feature};
                   });
                 }
               });
@@ -251,6 +260,8 @@
 
         scope.$watch('activeFeature', function(newFeature, oldFeature) {
           console.log('active feature changed');
+          console.info('new feature', newFeature);
+          console.info('old feature', oldFeature);
           if (!newFeature && oldFeature) {
             var marker = markers[oldFeature.layerId][oldFeature.featureId];
             marker.unselect();
@@ -279,9 +290,13 @@
         });
 
         scope.$watch("layer", function(layer) {
+          console.info('layer watch fired', layer);
             if (!layer) return;
 
             if (layer.checked) {
+              if (!layer.features) {
+                return;
+              }
               // add to map
               var newLayer = null;
               var gj = null;
@@ -300,31 +315,7 @@
                 }
                 newLayer.addTo(map).bringToFront();
               } else {
-                if (layers[layer.id]) {
-                  // bust through the layer.features.features array and see if the feature is already in the layer
-                  // if so remove it
-                  // I hate myself for even doing this but i need to get it out
-                  var newFeatures = _.filter(layer.features.features, function(feature) {
-                    return !markers[layer.id][feature.properties.OBJECTID];
-                  });
-                  var addThese = {
-                    features: newFeatures
-                  };
-                  newLayer = layers[layer.id].leafletLayer;
-                  newLayer.addLayer(L.geoJson(addThese, featureConfig(layers[layer.id].layer)));
-                  // gj = layers[layer.id].gjLayer;
-                  // gj.addData(layer.features);
-                  // just remove it and then put it back for now.
-                  // map.removeLayer(layers[layer.id].leafletLayer);
-                  // delete layers[layer.id];
-                } else {
-                  markers[layer.id] = {};
-                  gj = L.geoJson(layer.features, featureConfig(layer));
-                  newLayer = L.markerClusterGroup()
-                  .addLayer(gj)
-                  .addTo(map)
-                  .bringToFront();
-                }
+                
                 
               }
 
@@ -333,12 +324,46 @@
                 layer: layer,
                 gjLayer: gj
               };
-            } else {
+            } else if (layers[layer.id]) {
               // remove from map
               map.removeLayer(layers[layer.id].leafletLayer);
               delete layers[layer.id];
             }
         }); // watch layer
+
+        scope.$watch('layer.features', function(features) {
+          if (!features) return;
+          if (layers[scope.layer.id]) {
+            // bust through the layer.features.features array and see if the feature is already in the layer
+            // if so remove it
+            // I hate myself for even doing this but i need to get it out
+            var newFeatures = _.filter(features.features, function(feature) {
+              return !markers[scope.layer.id][feature.id];
+            });
+            var addThese = {
+              features: newFeatures
+            };
+            newLayer = layers[scope.layer.id].leafletLayer;
+            newLayer.addLayer(L.geoJson(addThese, featureConfig(layers[scope.layer.id].layer)));
+            // gj = layers[layer.id].gjLayer;
+            // gj.addData(layer.features);
+            // just remove it and then put it back for now.
+            // map.removeLayer(layers[layer.id].leafletLayer);
+            // delete layers[layer.id];
+          } else {
+            markers[scope.layer.id] = {};
+            var gj = L.geoJson(features, featureConfig(scope.layer));
+            newLayer = L.markerClusterGroup()
+            .addLayer(gj)
+            .addTo(map)
+            .bringToFront();
+            layers[scope.layer.id] = {
+                leafletLayer: newLayer,
+                layer: scope.layer,
+                gjLayer: gj
+              };
+          }
+        });
 
         scope.$watch("newFeature", function(feature) {
           if (!feature) return;

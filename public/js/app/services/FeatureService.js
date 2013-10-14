@@ -8,8 +8,8 @@
   In most cases, for MAGE, that is going to be the map controller.
 */
 angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
-  .factory('FeatureService', ['$http', 'appConstants', 'mageLib',
-    function ($http, appConstants, mageLib) {
+  .factory('FeatureService', ['$http', 'appConstants', 'mageLib', 'Feature',
+    function ($http, appConstants, mageLib, Feature) {
       var featureServiceFunctions = {};
 
       /*
@@ -23,31 +23,15 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
           success or failure.
       */
       featureServiceFunctions.createFeature = function (layerId, observation) {
-        var url = appConstants.rootUrl + '/FeatureServer/' + layerId + '/addFeatures';
-        
-        return $http.post(
-          url,
-          "features=[" + JSON.stringify(observation) + "]",
-          {
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded"
-            }
-          }
-        );
+        var theFeature = new Feature(observation);
+        theFeature.layerId = layerId;
+        return observation.$save();
       };
 
       featureServiceFunctions.updateFeature = function (layerId, observation, method) {
-        var url = appConstants.rootUrl + '/FeatureServer/' + layerId + '/updateFeatures';
-        
-        return $http.post(
-          url,
-          "features=[" + JSON.stringify(observation) + "]",
-          {
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded"
-            }
-          }
-        );
+        var theFeature = new Feature(observation);
+        theFeature.layerId = layerId;
+        return observation.$save();
       };
 
       /*
@@ -68,16 +52,7 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
         @return A promise of the REST call to get all of the features, so the caller can handle the success for failuer accordingly.
       */
       featureServiceFunctions.getFeatures = function (layerId) {
-        var options = {
-          method: "GET",
-          url: appConstants.rootUrl + '/FeatureServer/' + layerId + "/features?properties=OBJECTID,TYPE,EVENTLEVEL,EVENTDATE,userId,style",
-          headers: {
-            "Accepts": "application/json", 
-            "Content-Type": "application/json"
-          }
-        }
-
-        return $http(options);
+        return Feature.get({layerId: layerId});
       };
 
       /*
