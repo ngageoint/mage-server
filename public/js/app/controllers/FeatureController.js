@@ -42,6 +42,7 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
 
     // TODO this should be UTC time
     observation.properties.EVENTDATE = new Date().getTime();
+    observation.geometry.coordinates = $scope.markerLocation;
     observation.$save({layerId: $scope.currentLayerId}, function(value, responseHeaders) {
       MapService.setCurrentMapPanel('none');
       $scope.activeFeature = null;
@@ -183,7 +184,7 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
   $scope.$watch("markerLocation", function(location) {
     if (!isEditing && MapService.getCurrentMapPanel() =='observation') {
       $scope.featureLocation = location;
-      $scope.$apply
+      $scope.observation.geometry.coordinates = [$scope.featureLocation.lat, $scope.featureLocation.lng];
       $scope.observation.properties.EVENTDATE = new Date().getTime();
     }
   }, true);
