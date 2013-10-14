@@ -9,17 +9,17 @@ mage.directive('awesomeMarkerIcon', function (AwesomeMarkerIconService) {
       types:'='
     },
     controller: function($scope) {
-    	$scope.$watch('feature.attributes.TYPE', function(type) {
+    	$scope.$watch('feature.properties.TYPE', function(type) {
         if (!type) return;
 
-        var properties = $scope.feature.properties || $scope.feature.attributes;
+        var properties = $scope.feature.properties;
         $scope.markerCl***REMOVED*** = "icon-" + AwesomeMarkerIconService.getCl***REMOVED***(properties.TYPE, {types: $scope.types});
     	});
 
-      $scope.$watch('feature.attributes.EVENTDATE', function(timestamp) {
+      $scope.$watch('feature.properties.EVENTDATE', function(timestamp) {
         if (!timestamp) return;
 
-        var properties = $scope.feature.properties || $scope.feature.attributes;
+        var properties = $scope.feature.properties;
         $scope.markerColor = "awesome-marker-icon-" + AwesomeMarkerIconService.getColor(properties.EVENTDATE);
       });
     }
