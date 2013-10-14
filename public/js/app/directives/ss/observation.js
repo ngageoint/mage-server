@@ -1,6 +1,6 @@
 'use strict';
 
-mage.directive('ssObservation', ['FeatureTypeService', 'UserService' , function (FeatureTypeService, UserService) {
+mage.directive('ssObservation', ['FeatureTypeService', 'UserService' , 'Feature', function (FeatureTypeService, UserService, Feature) {
 
   return {
     restrict: "A",
@@ -25,14 +25,15 @@ mage.directive('ssObservation', ['FeatureTypeService', 'UserService' , function 
         });
 
       scope.createNewObservation = function(location) {
-        return {
-          attributes: {
+        return new Feature({
+          type: 'Feature',
+          properties: {
             userId: UserService.myself._id,
             TYPE: scope.types[0].name,
             TEAM: scope.teams[0],
             EVENTDATE: new Date()
           }
-        };
+        });
       }
     }
   };

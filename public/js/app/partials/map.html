@@ -38,7 +38,14 @@
     </a>
   </div>
   <div id="list-tool-toolbars" cl***REMOVED***="leaflet-bar">
-
+    <!--
+    <a
+      ng-cl***REMOVED***="{true: 'btn-inverse'}[newsFeedEnabled]" 
+      ng-click="newsFeedEnabled = !newsFeedEnabled; newsFeed();" 
+      ngm-tap="newsFeedEnabled = !newsFeedEnabled; newsFeed();">
+      <i cl***REMOVED***="icon-rss" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[newsFeedEnabled]"></i>
+    </a>
+  -->
     <a
       ng-cl***REMOVED***="{true: 'btn-inverse'}[locationServicesEnabled]" 
       ng-click="locationServicesEnabled = !locationServicesEnabled;locationServices(); showLocations = !showLocations" 
@@ -58,6 +65,13 @@
       <i ng-cl***REMOVED***="checkCurrentMapPanel('export') && 'icon-sage-inverse' || 'icon-sage'"cl***REMOVED***="icon-cloud-download"></i>
     </a>
   </div>
+
+<!--
+  <div id="time-scale">
+    <h6>Start Time {{slider[0] | date}}<input type="hidden" ui-date="dateOptions" ng-model="slider[0]"/> End Time {{slider[1] | date}} <input type="hidden" ui-date="dateOptions" ng-model="slider[1]"/></h6>
+    <div ui-slider="{range: true}" min="{{layerMinDate}}" max="{{layerMaxDate}}" step="1" ng-model="slider"></div>
+  </div>
+-->
 
   <!-- Panels -->
   <!-- Settings panel -->
@@ -115,6 +129,76 @@
       <span>
         <button cl***REMOVED***="btn btn-mobile" ng-click="setCurrentMapPanel('none')" ngm-tap="setCurrentMapPanel('none')">Close</button>
       </span>
+    </div>
+  </div>
+
+<!-- News Feed panel -->
+  <div id="news-feed-panel" ng-show="checkCurrentMapPanel('newsFeed')" cl***REMOVED***="panel panel-large">
+    <div cl***REMOVED***="pull-right panel-close">
+      <i ng-click="setCurrentMapPanel('none')" ngm-tap="setCurrentMapPanel('none')" cl***REMOVED***="close">&times;</i>
+    </div>
+    <div cl***REMOVED***="navbar">
+      <div cl***REMOVED***="navbar-inner">
+        <div cl***REMOVED***="pull-right">
+          <ul cl***REMOVED***="nav">
+            <li>
+          <form cl***REMOVED***="navbar-search">
+            <input type="text" cl***REMOVED***="form-search search-query" ng-model="userQuery" placeholder="Search">
+          </form>
+        </li>
+      </ul>
+      <ul cl***REMOVED***="nav">
+        <li cl***REMOVED***="dropdown">
+            <button data-toggle="dropdown" cl***REMOVED***="btn dropdown-toggle" href="#">
+              <i cl***REMOVED***="icon-cog"></i>
+              <b cl***REMOVED***="caret"></b>
+            </button>
+            <ul cl***REMOVED***="dropdown-menu pull-right">
+              <li cl***REMOVED***="nav-header">Poll Time</li>
+              <li>
+                <a ng-click="locationPollTime = 5000" cl***REMOVED***="pointer">
+                  <i ng-cl***REMOVED***="locationPollTime == 5000 && 'icon-check' || 'icon-check-empty'"></i>
+                  5 Seconds
+                </a>
+              </li>
+              <li>
+                <a ng-click="locationPollTime = 30000" cl***REMOVED***="pointer">
+                  <i ng-cl***REMOVED***="locationPollTime == 30000 && 'icon-check' || 'icon-check-empty'"></i>
+                  30 Seconds
+                </a>
+              </li>
+              <li>
+                <a ng-click="locationPollTime = 120000" cl***REMOVED***="pointer">
+                  <i ng-cl***REMOVED***="locationPollTime == 120000 && 'icon-check' || 'icon-check-empty'"></i>
+                  2 Minutes
+                </a>
+              </li>
+              <li>
+                <a ng-click="locationPollTime = 300000" cl***REMOVED***="pointer">
+                  <i ng-cl***REMOVED***="locationPollTime == 300000 && 'icon-check' || 'icon-check-empty'"></i>
+                  5 Minutes
+                </a>
+              </li>
+              <li>
+                <a ng-click="locationPollTime = 0" cl***REMOVED***="pointer">
+                  <i ng-cl***REMOVED***="locationPollTime == 0 && 'icon-check' || 'icon-check-empty'"></i>
+                  No Polling
+                </a>
+              </li>
+            </ul>
+          </li>
+      </ul>
+        </div>
+      </div>
+    </div> 
+    <div cl***REMOVED***="panel-content">
+      <h4>Recent Activity</h4>
+      <div cl***REMOVED***="location pointer" data-ng-repeat="location in locations | filter: userQuery | orderBy: 'locations[0].properties.timestamp':true" ng-click="locationClick(location)" 
+      ng-cl***REMOVED***="{'row-selected': activeLocation.user == location.user}">
+        <strong user-id="location.user" cl***REMOVED***="top-gap-s">{{user.firstname}} {{user.lastname}}</strong>
+        <div cl***REMOVED***="small-text">{{location.locations[0].properties.timestamp | date : 'medium'}}</div>
+        <div cl***REMOVED***="small-text">{{location.locations[0].geometry.coordinates[1] | number: 3}}, {{location.locations[0].geometry.coordinates[0] | number: 3}}</div>
+      </div>
     </div>
   </div>
 
@@ -323,13 +407,13 @@
       </div>
     </div>
     <div id="list-tool-list" cl***REMOVED***="top-gap-s">
-      <div ng-click="setActiveFeature(feature, layer)" cl***REMOVED***="row pointer" ng-cl***REMOVED***="{'row-selected': activeFeature.featureId == feature.properties.OBJECTID}" ng-repeat="feature in layer.features.features | orderBy: 'properties.EVENTDATE' : true | filter: observationQuery">
+      <div ng-click="setActiveFeature(feature, layer)" cl***REMOVED***="row pointer" ng-cl***REMOVED***="{'row-selected': activeFeature.feature.id == feature.id}" ng-repeat="feature in layer.features.features | orderBy: 'properties.EVENTDATE' : true | filter: observationQuery">
         <a href="">
           <!-- <div cl***REMOVED***="span1"><div ***REMOVED***-marker-icon="feature" types="types" style="margin-left: 20px"></div></div> -->
           <div cl***REMOVED***="span1"><span style="margin-left: 20px" ng-bind-html-u***REMOVED***fe="iconTag(feature)"></span></div>
           <div cl***REMOVED***="span2" user-id="feature.properties.userId">{{user.firstname}} {{user.lastname}}</div>
           <div cl***REMOVED***="span2">{{feature.properties.TYPE}}</div>
-          <div cl***REMOVED***="span1">{{feature.properties.EVENTLEVEL}}</div>
+          <div cl***REMOVED***="span1">{{feature.properties.EVENTLEVEL}} {{feature.id}}</div>
           <div cl***REMOVED***="span3">{{feature.properties.EVENTDATE | date: 'medium'}}</div>
           <div ng-show="feature.attachments.length != 0"><i cl***REMOVED***="icon-paper-clip"></i></div>
         </a>

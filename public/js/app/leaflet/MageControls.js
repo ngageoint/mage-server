@@ -64,3 +64,25 @@ L.Control.MageListTools = L.Control.extend({
         return container;
     }
 });
+
+L.Control.TimeScale = L.Control.extend({
+
+	options: {
+		position: 'bottomleft'
+	},
+
+	initialize: function(options) {
+		L.Control.prototype.initialize.call(this, options);
+	},
+
+	onAdd: function(map) {
+		var container = L.DomUtil.get('time-scale');
+        var stop = L.DomEvent.stopPropagation;
+		$(container).find('a').on('click', stop);
+		$(container).find('a').on('mousedown', stop);
+		$(container).find('a').on('mouseup', stop);
+        // ... initialize other DOM elements, add listeners, etc.
+
+        return container;
+	}
+});

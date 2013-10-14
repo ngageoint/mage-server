@@ -43,3 +43,33 @@ angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
 
       return ***REMOVED***;
     }])
+.factory('Location', ['$resource', '$http', function($resource, $http) {
+  var Location = $resource('/api/locations', {
+
+  }, {
+    create: {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    },
+    get: {
+      method: 'GET',
+      isArray: true,
+      transformResponse: _.flatten([$http.defaults.transformResponse, function(data) {
+        if (data == 'Unauthorized') return data;
+        return _.filter(data, function(user) {
+          return user.locations.length;
+        });
+      }])
+    }
+  });
+  Location.prototype.$save = function(params, success, error) {
+    if(this.id) {
+      this.$update(params, success, error);
+    } else {
+      this.$create(params, success, error);
+    }
+  }
+  return Location;
+}]);

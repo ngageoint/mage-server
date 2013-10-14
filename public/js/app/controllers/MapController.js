@@ -4,8 +4,9 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($scope, $log, $http, appConstants, mageLib, IconService, UserService, MapService, LayerService, FeatureService, LocationService, TimerService) {
+function MapController($scope, $log, $http, appConstants, mageLib, IconService, UserService, DataService, MapService, LayerService, LocationService, Location, TimerService, Feature) {
   $scope.customer = appConstants.customer;
+  var ds = DataService;
 
   $scope.locate = false;
   $scope.broadcast = false;
@@ -33,6 +34,8 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
   $scope.locations = [];
   $scope.locationPollTime = 5000;
 
+  $scope.newsFeedEnabled = false;
+
   $scope.showListTool = false;
   $scope.iconTag = function(feature) {
     return IconService.iconHtml(feature, $scope);
@@ -54,6 +57,8 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
   $scope.baseLayers = [];
   $scope.featureLayers = [];
   $scope.imageryLayers = []; 
+  $scope.startTime = new Date();
+  $scope.endTime = new Date();
 
   LayerService.getAllLayers().
     success(function (layers, status, headers, config) {
@@ -78,15 +83,31 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
       $scope.baseLayer = $scope.baseLayers[0];
     });
 
+    $scope.layerMinDate = 0;
+    $scope.layerMaxDate = Date.now();
+    $scope.slider = [$scope.layerMinDate, $scope.layerMaxDate];
+    $scope.dateOptions = {
+      showOn: "button",
+      buttonImage: "img/***REMOVED***-icons/animal_issue.png",
+      buttonImageOnly: true,
+      dateFormat: '@'
+    };
+
     var loadLayer = function(id) {
       $scope.loadingLayers[id] = true;
 
-    FeatureService.getFeatures(id)
-      .success(function(features) {
-        $scope.layer = {id: id, checked: true, features: features};
+      if ($scope.layerMaxDate == $scope.slider[1]) {
+        $scope.layerMaxDate = $scope.slider[1] = Date.now();
+      }
+
+      var features = Feature.get({layerId: id/*, startTime: moment($scope.slider[0]).utc().format("YYYY-MM-DD HH:mm:ss"), endTime: moment($scope.slider[1]).utc().format("YYYY-MM-DD HH:mm:ss")*/}, function() {
         $scope.loadingLayers[id] = false;
+        console.info('loaded the features', features);
+        $scope.layer.features = features;
       });
-    }
+
+      $scope.layer = {id: id, checked: true};
+    };
 
   $scope.onFeatureLayer = function(layer) {
     var timerName = 'pollLayer'+layer.id;
@@ -157,7 +178,7 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
         if ($scope.location.heading) properties.heading = $scope.location.heading;
         if ($scope.location.speed) properties.speed = $scope.location.speed;
 
-        var location = {
+        var location = new Location({
           location: {
             type: "Feature",
             geometry: {
@@ -167,12 +188,14 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
             properties: properties
           },
           timestamp: new Date()
-        };
+        });
 
-        LocationService.createLocation(location)
-          .success(function (data, status, headers, config) {
-            $scope.positionBroadcast = location;
-          });
+        $scope.positionBroadcast = location.$save();
+
+        // LocationService.createLocation(location)
+        //   .success(function (data, status, headers, config) {
+        //     $scope.positionBroadcast = location;
+        //   });
       });
     } else {
       TimerService.stop(timerName);
@@ -233,17 +256,23 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
     $scope.showRefresh = false;
   }
 
+  $scope.newsFeed = function() {
+    if ($scope.newsFeedEnabled) {
+      $scope.setCurrentMapPanel('newsFeed');
+    }
+  }
+
   /* location ***REMOVED***s is FFT */
   $scope.locationServices = function() {
     var timerName = 'pollLocation';
 
     if ($scope.locationServicesEnabled || $scope.locationPollTime == 0) {
       TimerService.start(timerName, $scope.locationPollTime || 5000, function() {
-      LocationService.getLocations().
-        success(function (data, status, headers, config) {
-          $scope.locations = _.filter(data, function(user) {
-            return user.locations.length;
-          });
+        ds.locationsLoaded = false;
+        ds.locations = Location.get({/*startTime: $scope.startTime, endTime: $scope.endTime*/}, function(success) {
+          ds.locationsLoaded = true;
+          $scope.locations = ds.locations;
+          console.info('ds', ds);
           _.each($scope.locations, function(userLocation) {
               UserService.getUser(userLocation.user)
                 .then(function(user) {
@@ -251,10 +280,24 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
                 });
               
             });
-        }).
-        error(function () {
-          console.log('error getting locations');
         });
+
+      // LocationService.getLocations().
+      //   success(function (data, status, headers, config) {
+      //     $scope.locations = _.filter(data, function(user) {
+      //       return user.locations.length;
+      //     });
+      //     _.each($scope.locations, function(userLocation) {
+      //         UserService.getUser(userLocation.user)
+      //           .then(function(user) {
+      //             userLocation.userModel = user.data || user;
+      //           });
+              
+      //       });
+      //   }).
+      //   error(function () {
+      //     console.log('error getting locations');
+      //   });
       });
     } else {
       $scope.locations = [];
