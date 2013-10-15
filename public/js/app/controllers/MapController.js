@@ -4,7 +4,7 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($scope, $log, $http, appConstants, mageLib, IconService, UserService, DataService, MapService, LayerService, LocationService, Location, TimerService, Feature) {
+function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, IconService, UserService, DataService, MapService, LayerService, LocationService, Location, TimerService, Feature) {
   $scope.customer = appConstants.customer;
   var ds = DataService;
 
@@ -79,35 +79,51 @@ function MapController($scope, $log, $http, appConstants, mageLib, IconService, 
         return layer.type == 'External';
       });
 
+      $scope.privateBaseLayers = _.filter($scope.baseLayers, function(layer) {
+        if (layer.url.indexOf('private') == 0) {
+          layer.url = layer.url + "?access_token=" + mageLib.getToken();
+          return true;
+        } else {
+          return false;
+        }
+      });
+
       // Default the base layer to first one in the list
       $scope.baseLayer = $scope.baseLayers[0];
     });
 
-    $scope.layerMinDate = 0;
-    $scope.layerMaxDate = Date.now();
-    $scope.slider = [$scope.layerMinDate, $scope.layerMaxDate];
-    $scope.dateOptions = {
-      showOn: "button",
-      buttonImage: "img/***REMOVED***-icons/animal_issue.png",
-      buttonImageOnly: true,
-      dateFormat: '@'
-    };
+  $scope.layerMinDate = 0;
+  $scope.layerMaxDate = Date.now();
+  $scope.slider = [$scope.layerMinDate, $scope.layerMaxDate];
+  $scope.dateOptions = {
+    showOn: "button",
+    buttonImage: "img/***REMOVED***-icons/animal_issue.png",
+    buttonImageOnly: true,
+    dateFormat: '@'
+  };
 
-    var loadLayer = function(id) {
-      $scope.loadingLayers[id] = true;
+  var loadLayer = function(id) {
+    $scope.loadingLayers[id] = true;
 
-      if ($scope.layerMaxDate == $scope.slider[1]) {
-        $scope.layerMaxDate = $scope.slider[1] = Date.now();
-      }
+    if ($scope.layerMaxDate == $scope.slider[1]) {
+      $scope.layerMaxDate = $scope.slider[1] = Date.now();
+    }
 
-      var features = Feature.get({layerId: id/*, startTime: moment($scope.slider[0]).utc().format("YYYY-MM-DD HH:mm:ss"), endTime: moment($scope.slider[1]).utc().format("YYYY-MM-DD HH:mm:ss")*/}, function() {
-        $scope.loadingLayers[id] = false;
-        console.info('loaded the features', features);
-        $scope.layer.features = features;
-      });
+    var features = Feature.getAll({layerId: id/*, startTime: moment($scope.slider[0]).utc().format("YYYY-MM-DD HH:mm:ss"), endTime: moment($scope.slider[1]).utc().format("YYYY-MM-DD HH:mm:ss")*/}, function() {
+      $scope.loadingLayers[id] = false;
+      console.info('loaded the features', features);
+      $scope.layer.features = features;
+    });
 
-      $scope.layer = {id: id, checked: true};
-    };
+    $scope.layer = {id: id, checked: true};
+  };
+
+  $rootScope.$on('event:auth-loginConfirmed', function() {
+    _.each($scope.privateBaseLayers, function(layer) {
+      layer.url = layer.url.replace(/\?access_token=\w+/,"?access_token=" + mageLib.getToken());
+    });
+  });
+
 
   $scope.onFeatureLayer = function(layer) {
     var timerName = 'pollLayer'+layer.id;

@@ -86,8 +86,10 @@ module.exports = function(app, auth) {
 
       var feature = req.body;
       new api.Feature(req.layer).create(feature, function(newFeature) {
+        if (!newFeature) return res.send(400);
+
         var response = geojson.transform(newFeature);
-        res.json(response);
+        res.location(newFeature._id.toString()).json(response);
       }
     );
   }); 

@@ -6,6 +6,24 @@
     <i ng-click="cancelObservation(observation)" ngm-tap="cancelObservation(observation)" cl***REMOVED***="close">&times;</i>
   </div>
   <div cl***REMOVED***="panel-content">
+
+    <div cl***REMOVED***="row-fluid feature-title">
+      <div cl***REMOVED***="span2">
+        <div awesome-marker-icon="observation" types="types"></div>
+      </div>    
+      <div cl***REMOVED***="span10">
+        <div>
+          <span cl***REMOVED***="muted">
+            <strong user-id="observation.properties.userId">{{user.firstname}} {{user.lastname}}</strong>
+            <span ui-if="observation.properties.deviceId" device-id="observation.properties.deviceId">({{device.uid}})</span>
+          </span>
+        </div>
+        <div>
+          <span cl***REMOVED***="muted ng-binding">{{formatFeatureDate(observation.properties.EVENTDATE)}} @ {{observation.geometry.coordinates[1].toPrecision(7)}}, {{observation.geometry.coordinates[0].toPrecision(7)}} </span>
+        </div>
+      </div>
+    </div>
+
     <ul cl***REMOVED***="nav nav-pills">
       <li ng-cl***REMOVED***="{active: observationTab == 1}">
         <a href="" ng-click="observationTab = 1;">
@@ -44,16 +62,6 @@
           <label cl***REMOVED***="control-label" for="team">Team</label>
           <div cl***REMOVED***="controls">
             <select ng-model="observation.properties.TEAM" ng-selected="team" ng-options="team for team in teams"></select>
-          </div>
-        </div>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label">Lat/Lng</label>
-          <div cl***REMOVED***="controls">
-            <div cl***REMOVED***="top-gap-s">
-              <span cl***REMOVED***="muted">
-                {{featureLocation.lat.toPrecision(7)}}, {{featureLocation.lng.toPrecision(7)}}
-              </span>
-            </div>
           </div>
         </div>
         <div cl***REMOVED***="control-group">

@@ -46,6 +46,7 @@ app.configure(function () {
   app.use(express.methodOverride());
   app.use(authentication.p***REMOVED***port.initialize());
   app.use(app.router);
+  app.use('/private', express.static(path.join(__dirname, "private")));
   app.use(express.static(path.join(__dirname, "public")));
   app.use(function(err, req, res, next) {
     console.error(err.stack);

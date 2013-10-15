@@ -8,9 +8,15 @@ module.exports = function(app, security) {
     , Layer = require('../models/layer')
     , Feature = require('../models/feature');
 
-  // Protect all FeatureServer routes with token authentication
   var p***REMOVED***port = security.authentication.p***REMOVED***port
     , authenticationStrategy = security.authentication.authenticationStrategy;
+
+  // Protect everthing in the private directory
+  app.all('/private/*', p***REMOVED***port.authenticate(authenticationStrategy), function(req, res, next) {
+    return next();
+  });
+
+  // Protect all FeatureServer routes with token authentication
   app.all('/FeatureServer*', p***REMOVED***port.authenticate(authenticationStrategy, {session: false}));
 
   app.get('/api', function(req, res) {
