@@ -9,6 +9,8 @@ var transformAttachment = function(attachment) {
 
 // TODO switch to use Terraformer to create a geojson FeatureCollection
 var transformFeature = function(feature) {
+  if (!feature) return null;
+
   feature = feature.toObject();
   feature.id = feature._id;
   delete feature._id;

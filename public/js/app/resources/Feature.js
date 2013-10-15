@@ -17,6 +17,10 @@ angular.module('mage.featureService')
 			}
 		},
 		get: {
+			method: 'GET'
+		},
+		getAll: {
+			url: '/FeatureServer/:layerId/features',
 			method: 'GET',
 			params: {
 				fields: {

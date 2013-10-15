@@ -27,7 +27,9 @@ mage.directive('ssObservation', ['FeatureTypeService', 'UserService' , 'Feature'
       scope.createNewObservation = function(location) {
         return new Feature({
           type: 'Feature',
-          geometry: {},
+          geometry: {
+            type: 'Point'
+          },
           properties: {
             userId: UserService.myself._id,
             TYPE: scope.types[0].name,

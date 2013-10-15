@@ -7,20 +7,20 @@
     <i ng-click="cancelObservation(observation)" ngm-tap="cancelObservation(observation)" cl***REMOVED***="close">&times;</i>
   </div>
   <div cl***REMOVED***="panel-content">
-
+   
     <div cl***REMOVED***="row-fluid feature-title">
       <div cl***REMOVED***="span2">
-        <div ***REMOVED***-marker-icon="observation" types="types"></div>
+        <div awesome-marker-icon="observation" types="types"></div>
       </div>    
       <div cl***REMOVED***="span10">
         <div>
           <span cl***REMOVED***="muted">
             <strong user-id="observation.properties.userId">{{user.firstname}} {{user.lastname}}</strong>
-            <span ui-if="observation" device-id="observation.properties.deviceId">({{device.uid}})</span>
+            <span ui-if="observation.properties.deviceId" device-id="observation.properties.deviceId">({{device.uid}})</span>
           </span>
         </div>
         <div>
-          <span cl***REMOVED***="muted ng-binding">{{formatFeatureDate(observation.properties.EVENTDATE)}} @ {{featureLocation.lat.toPrecision(7)}}, {{featureLocation.lng.toPrecision(7)}} </span>
+          <span cl***REMOVED***="muted ng-binding">{{formatFeatureDate(observation.properties.EVENTDATE)}} @ {{observation.geometry.coordinates[1].toPrecision(7)}}, {{observation.geometry.coordinates[0].toPrecision(7)}} </span>
         </div>
       </div>
     </div>

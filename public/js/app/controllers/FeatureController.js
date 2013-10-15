@@ -22,9 +22,7 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
     $scope.newObservationEnabled = true;
     $scope.observationTab = 1;
     $scope.observationCloseText = "Cancel";
-    MapService.setCurrentMapPanel('observation');
     $scope.observation = $scope.createNewObservation();
-    $scope.featureLocation = $scope.markerLocation;
     $scope.attachments = [];
     $scope.files = [];
   }
@@ -42,9 +40,11 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
 
     // TODO this should be UTC time
     observation.properties.EVENTDATE = new Date().getTime();
-    observation.geometry.coordinates = $scope.markerLocation;
+    var create = observation.id == null;
     observation.$save({layerId: $scope.currentLayerId}, function(value, responseHeaders) {
+      create ? $scope.newFeature = value : $scope.updatedFeature = value;
       MapService.setCurrentMapPanel('none');
+      $scope.newObservationEnabled = false;
       $scope.activeFeature = null;
       isEditing = false;
       if ($scope.files.length > 0) {
@@ -139,7 +139,6 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
 
     $scope.observation = Feature.get({layerId: value.layerId, id: value.feature.id}, function(success) {
         $scope.currentLayerId = value.layerId;
-        $scope.featureLocation = $scope.observation.geometry.coordinates;
         $scope.attachments = [];
         $scope.files = [];
         MapService.setCurrentMapPanel('observation');
@@ -182,9 +181,13 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
   }
 
   $scope.$watch("markerLocation", function(location) {
-    if (!isEditing && MapService.getCurrentMapPanel() =='observation') {
-      $scope.featureLocation = location;
-      $scope.observation.geometry.coordinates = [$scope.featureLocation.lat, $scope.featureLocation.lng];
+    if (!location) return;
+
+    // show the observation panel
+    MapService.setCurrentMapPanel('observation');
+
+    if (!isEditing && MapService.getCurrentMapPanel() == 'observation') {
+      $scope.observation.geometry.coordinates = [location.lng, location.lat];
       $scope.observation.properties.EVENTDATE = new Date().getTime();
     }
   }, true);

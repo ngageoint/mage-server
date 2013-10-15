@@ -27,7 +27,6 @@
           draggable: true,
           icon: IconService.defaultLeafletIcon()
         });
-        scope.markerLocation = addMarker.getLatLng();
 
         map.on("click", function(e) {
           if (scope.newObservationEnabled) {
