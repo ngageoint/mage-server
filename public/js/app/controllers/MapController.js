@@ -88,6 +88,15 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
         }
       });
 
+      $scope.privateImageryLayers = _.filter($scope.imageryLayers, function(layer) {
+        if (layer.url.indexOf('private') == 0) {
+          layer.url = layer.url + "?access_token=" + mageLib.getToken();
+          return true;
+        } else {
+          return false;
+        }
+      });
+
       // Default the base layer to first one in the list
       $scope.baseLayer = $scope.baseLayers[0];
     });
@@ -120,6 +129,9 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
 
   $rootScope.$on('event:auth-loginConfirmed', function() {
     _.each($scope.privateBaseLayers, function(layer) {
+      layer.url = layer.url.replace(/\?access_token=\w+/,"?access_token=" + mageLib.getToken());
+    });
+    _.each($scope.privateImageryLayers, function(layer) {
       layer.url = layer.url.replace(/\?access_token=\w+/,"?access_token=" + mageLib.getToken());
     });
   });

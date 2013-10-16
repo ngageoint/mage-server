@@ -293,9 +293,7 @@
             if (!layer) return;
 
             if (layer.checked) {
-              if (!layer.features) {
-                return;
-              }
+
               // add to map
               var newLayer = null;
               var gj = null;
@@ -314,7 +312,9 @@
                 }
                 newLayer.addTo(map).bringToFront();
               } else {
-                
+                if (!layer.features) {
+                  return;
+                }
                 
               }
 
