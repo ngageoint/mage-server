@@ -85,6 +85,14 @@ module.exports = function(app, auth) {
       console.log("MAGE Features POST REST Service Requested");
 
       var feature = req.body;
+      feature.properties = feature.properties || {};
+
+      var userId = req.user ? req.user._id : null;
+      if (userId) feature.properties.userId = userId;
+
+      var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
+      if (deviceId) feature.properties.deviceId = deviceId;
+
       new api.Feature(req.layer).create(feature, function(newFeature) {
         if (!newFeature) return res.send(400);
 
@@ -103,6 +111,14 @@ module.exports = function(app, auth) {
       console.log("MAGE Features (ID) UPDATE REST Service Requested");
 
       var feature = req.body;
+      feature.properties = feature.properties || {};
+
+      var userId = req.user ? req.user._id : null;
+      if (userId) feature.properties.userId = userId;
+
+      var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
+      if (deviceId) feature.properties.deviceId = deviceId;
+
       new api.Feature(req.layer).update(req.param('id'), req.body, function(err, updatedFeature) {
         var response = geojson.transform(updatedFeature);
         res.json(response);
