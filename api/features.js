@@ -15,6 +15,7 @@ function Feature(layer) {
 };
 
 Feature.prototype.getAll = function(options, callback) {
+  var layer = this._layer;
   var filter = options.filter;
   if (filter && filter.geometries) {
     allFeatures = [];
@@ -22,7 +23,7 @@ Feature.prototype.getAll = function(options, callback) {
       filter.geometries, 
       function(geometry, done) {
         options.filter.geometry = geometry;
-        FeatureModel.getFeatures(this._layer, options, function (features) {
+        FeatureModel.getFeatures(layer, options, function (features) {
           if (features) {
             allFeatures = allFeatures.concat(features);
           }
@@ -35,7 +36,7 @@ Feature.prototype.getAll = function(options, callback) {
       }
     );
   } else {
-    FeatureModel.getFeatures(this._layer, options, function (features) {
+    FeatureModel.getFeatures(layer, options, function (features) {
       callback(features);
     });
   }
