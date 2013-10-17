@@ -72,7 +72,8 @@ module.exports = function(app, security) {
       }
 
       try {
-        parameters.filter.geometries = geometryFormat.parse(parameters.geometryType, geometry);
+        var geometries = geometryFormat.parse(parameters.geometryType, geometry);
+        if (geometries) parameters.filter = {geometries: geometries};
       } catch (e) {
         return res.send(400, e);
       }
