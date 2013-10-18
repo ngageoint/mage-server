@@ -1,0 +1,45 @@
+<div cl***REMOVED***="observation-news-item" ng-click="setActiveObservation(observation)" ng-tap="setActiveObservation(observation)">
+	<div cl***REMOVED***="row-fluid">
+		<div cl***REMOVED***="span2"><span marker-icon="observation"></span></div>
+		<div cl***REMOVED***="span10">
+			<div cl***REMOVED***="row-fluid">
+				<strong>{{observation.properties.TYPE}}</strong> <span cl***REMOVED***="pull-right news-feed-item-support small-text">{{observation.properties.EVENTDATE | moment: 'fromNow'}}</span>
+			</div>
+			<div cl***REMOVED***="row-fluid">
+				<div cl***REMOVED***="news-feed-item-support small-text pull-left" user-id="observation.properties.userId">{{user.firstname}} {{user.lastname}}</div>
+				<a cl***REMOVED***="pull-right small-text">{{observation.geometry.coordinates[0] | number: 3}}, {{observation.geometry.coordinates[1] | number: 3}}</a>
+			</div>
+		</div>
+	</div>
+	<div cl***REMOVED***="row-fluid top-gap-s">
+		{{observation.properties.DESCRIPTION}}
+	</div>
+	<div cl***REMOVED***="row-fluid top-gap-s bottom-gap-s">
+	  <div cl***REMOVED***="attachment" ng-repeat="attachment in observation.attachments">
+      <div cl***REMOVED***="image-button">
+        <div ng-switch on="attachment.contentType">
+          <img ng-switch-when="image/jpg" ng-src="{{'/FeatureServer/'+observation.properties.layerId+'/features/'+ observation.id + '/attachments/' + attachment.id + '?access_token=' + token}}" style="width:150px">
+          <img ng-switch-when="image/jpeg" ng-src="{{'/FeatureServer/'+observation.properties.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" style="width:150px">
+          <img ng-switch-when="image/png" ng-src="{{'/FeatureServer/'+observation.properties.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" style="width:150px">
+          <img ng-switch-when="image/gif" ng-src="{{'/FeatureServer/'+observation.properties.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" style="width:150px">
+          <input type="button" value="Delete" ng-show="amAdmin && (attachment.contentType != 'application/octet-stream')" cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(attachment.id)">
+          <!-- Fix for octet stream images in an older version of the app -->
+          <!-- Due to drastically varying browser behavior, videos will be a download link for the time being -->
+          <a ng-switch-when="video/mp4" ng-href="{{'/FeatureServer/'+observation.properties.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}">Download video</a>
+          <div ng-switch-default cl***REMOVED***="top-gap-l" style="width: 150px">
+            <a ng-href="{{'/FeatureServer/'+observation.properties.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" target="_blank">Download {{attachment.name}}</a>
+            <div><a ng-show="amAdmin" cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(attachment.id)">Delete</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+	</div>
+<!--
+	<div cl***REMOVED***="span1"><span style="margin-left: 20px" ng-bind-html-u***REMOVED***fe="iconTag(feature)"></span></div>
+  <div cl***REMOVED***="span2" user-id="feature.properties.userId">{{user.firstname}} {{user.lastname}}</div>
+  <div cl***REMOVED***="span2">{{feature.properties.TYPE}}</div>
+  <div cl***REMOVED***="span1">{{feature.properties.EVENTLEVEL}}</div>
+  <div cl***REMOVED***="span3">{{feature.properties.EVENTDATE | date: 'medium'}}</div>
+  <div ng-show="feature.attachments.length != 0"><i cl***REMOVED***="icon-paper-clip"></i></div>
+-->
+</div>

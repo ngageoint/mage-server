@@ -1,0 +1,9 @@
+<div cl***REMOVED***="user-location-news-item" ng-click="locationClick(location)" ng-tap="locationClick(location)">
+	<div cl***REMOVED***="row-fluid">
+		<strong user-id="location.user">{{user.firstname}} {{user.lastname}}</strong><span cl***REMOVED***="pull-right news-feed-item-support small-text">{{location.locations[0].properties.timestamp | moment: 'fromNow'}}</span>
+	</div>
+	<div cl***REMOVED***="row-fluid top-gap-s bottom-gap-s">
+		<button cl***REMOVED***="btn btn-mini btn-primary">Follow</button>
+		<a cl***REMOVED***="pull-right small-text">{{location.locations[0].geometry.coordinates[1] | number: 3}}, {{location.locations[0].geometry.coordinates[0] | number: 3}}</a>
+	</div>
+</div>
