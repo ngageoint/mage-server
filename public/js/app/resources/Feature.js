@@ -1,40 +1,37 @@
 angular.module('mage.featureService')
 .factory('Feature', ['$resource', '$http', function($resource, $http) {
 
+	var removeTransients = function(data) {
+		if (data.layerId) {
+			delete data.layerId;
+		}
+		return data;
+	};
+
 	var Feature = $resource('/FeatureServer/:layerId/features/:id', {
-		id: '@id'
+		id: '@id',
+		layerId: '@layerId'
 	}, {
 		create: {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
-			}
+			},
+			transformRequest: _.flatten([removeTransients, $http.defaults.transformRequest])
 		},
 		update: {
 			method: 'PUT',
 			headers: {
 				'Content-Type': 'application/json'
-			}
+			},
+			transformRequest: _.flatten([removeTransients, $http.defaults.transformRequest])
 		},
 		get: {
 			method: 'GET'
 		},
 		getAll: {
 			url: '/FeatureServer/:layerId/features',
-			method: 'GET',
-			params: {
-				fields: {
-					geometry: 1,
-					attachments: 1,
-					properties: {
-						TYPE: 1,
-						EVENTLEVEL: 1,
-						EVENTDATE: 1,
-						userId: 1,
-						style: 1
-					}
-				}
-			}
+			method: 'GET'
 		}
 	});
 
@@ -53,11 +50,7 @@ angular.module('mage.featureService')
 		
 	}, {
 		get: {
-			method: 'GET',
-			transformResponse: _.flatten[$http.defaults.transformResponse, function(data, getHeaders) {
-				console.info('data is', data);
-				return data;
-			}]
+			method: 'GET'
 		}
 	});
 	return FeatureAttachment;

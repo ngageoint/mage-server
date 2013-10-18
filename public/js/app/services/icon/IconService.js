@@ -22,6 +22,12 @@ angular.module('mage')
         return iconService.iconHtml(feature, o);
       };
 
+      ***REMOVED***.setTemplateVariables = function(feature, scope) {
+        return iconService.setTemplateVariables(feature, scope);
+      }
+
+      ***REMOVED***.template = iconService.template;
+
       return ***REMOVED***;
     }
   ]);

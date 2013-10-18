@@ -1,3 +1,4 @@
+
 html, body, div.leaflet-container {
 	height: 100%;
 	width: 100%;
@@ -35,6 +36,33 @@ html, body, div.leaflet-container {
 
 .leaflet-top {
 	top: 50px;
+}
+
+.leaflet-left {
+	left: 375px;
+}
+
+.leaflet-side {
+	margin-top: 58px;
+	bottom: 0px;
+}
+
+.leaflet-leftbar {
+	margin-left: 10px;
+}
+
+.side-bar-holder {
+	position: absolute;
+	z-index: 1039;
+	overflow: auto;
+	top: 58px;
+	left: 10px;
+	width: 360px;
+	bottom: 0px;
+}
+
+.side-panel {
+	overflow: auto;
 }
 
 @media (max-width: 979px) {
@@ -79,8 +107,8 @@ html, body, div.leaflet-container {
 
 /* Panels and their contents */
 .panel {
-	left: 5px;
-	top: 5px;
+	left: 385px;
+	top: 10px;
 	z-index: 1039;
 	overflow: auto;
 	background: #D0E7FF;
@@ -96,6 +124,34 @@ html, body, div.leaflet-container {
 	padding: 20px;
 }
 
+.news-feed-panel-content {
+	padding: 7px;
+	color: #222;
+	background: #305680;
+	background: rgba(48, 86, 128, 0.50);
+}
+
+.news-feed-item {
+	padding: 5px;
+	border: 1px solid #EEE;
+	margin-bottom: 10px;
+	background: #D0E7FF;
+	background: rgba(208, 231, 255, 0.8);
+	border-radius: 3px;
+}
+
+.filter-panel {
+	padding: 5px;
+	border: 1px solid #EEE;
+	margin-bottom: 10px;
+	background: #D0E7FF;
+	background: rgba(208, 231, 255, 0.8);
+	border-radius: 3px;
+}
+
+.news-feed-item-support {
+	color: #036;
+}
 
 .panel-close {
 	line-height: 0;
@@ -213,6 +269,11 @@ html, body, div.leaflet-container {
 #user-location-panel-list .location:hover {
 	background: #9ac;
 	color: #eee;
+}
+
+#news-feed-list .location:nth-child(even)  {
+	background: #def;
+	background: rgba(221, 238, 255, 0.6);
 }
 
 .location {

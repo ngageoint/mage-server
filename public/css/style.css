@@ -42,7 +42,14 @@ body {
 .navbar-inner {
 	background: #5278A2;
 	color: #91BDEE;
-    opacity: 0.8;
+}
+
+.see-through {
+    opacity: .8;
+}
+
+.blank-icon-space {
+    margin-left: 12px;
 }
 
 .navbar .brand {
@@ -138,6 +145,7 @@ textarea {
 .btn {
     border: solid 1px #c8c8c8;
     background: #FAFAFA;
+    box-shadow: none;;
 } 
 
 .btn-inverse, .leaflet-bar a.btn-inverse {
@@ -158,14 +166,38 @@ textarea {
   background-color: #5278A2;
 }
 
+.btn-inverse:hover {
+  background-color: #305680;
+}
+
 .btn-success {
-    border: solid 1px #585;
-    background: #7a7;
+    border: solid 1px #4cae4c;
+    background-color: #5cb85c;
+}
+
+.btn-success:hover, .btn-success:active, .btn-success.active {
+    border: solid 1px #398439;
+    background-color: #47a447;
 }
 
 .btn-danger {
     border: solid 1px #822;
     background: #a44;
+}
+
+.btn-danger:hover {
+    border: solid 1px #600;
+    background: #822;
+}
+
+.btn-primary {
+    border: solid 1px #2A5E90;
+    background: #3477B4;
+}
+
+.btn-primary:hover {
+    border: solid 1px #083C70;
+    background: #125592;
 }
 
 .icon-sage {

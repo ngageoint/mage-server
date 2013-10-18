@@ -69,6 +69,17 @@ angular.module('mage')
         return '<i cl***REMOVED***="icon-'+icon+'" style="color:'+color+'"></i>';
       };
 
+      ***REMOVED***.setTemplateVariables = function(feature, scope) {
+        if (feature.properties && feature.properties.TYPE) {
+          featureTypes.success(function(success) {
+            scope.markerCl***REMOVED*** = "icon-" + ***REMOVED***.getCl***REMOVED***(feature.properties.TYPE, {types: success});
+          })
+        }
+        if (feature.properties && feature.properties.EVENTDATE) {
+          scope.markerColor = "awesome-marker-icon-" + ***REMOVED***.getColor(feature.properties.EVENTDATE);
+        }
+      }
+
       return ***REMOVED***;
     }
   ]
