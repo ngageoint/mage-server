@@ -11,16 +11,17 @@
         // Create the map
         var map = L.map("map");
         map.setView([0, 0], 3);
-
+        var layerControl = L.control.layers();
+        layerControl.addTo(map);
         scope.ds = DataService;
 
-        console.info('ds is ', scope.ds);
         /*
         toolbar config
         */
         map.addControl(new L.Control.MageFeature());
         map.addControl(new L.Control.MageUserLocation());
         map.addControl(new L.Control.MageListTools());
+        //map.addControl(new L.Control.SideBar());
         //map.addControl(new L.Control.TimeScale());
 
         var addMarker = L.marker([0,0], {
@@ -91,44 +92,41 @@
           }
         });
 
-        scope.$watch("positionBroadcast", function(p) {
-          if (!p) return;
-
-          // myLocationMarker.setLatLng([p.coords.latitude, p.coords.longitude]);
-          // map.addLayer(myLocationMarker);
-          // myLocationMarker
-          //   .bindPopup("<div><h4>You were here</h4> This location was successfully broadcasted to the server.</div>")
-          //   .openPopup();
-
-          // $timeout(function() {
-          //   myLocationMarker.closePopup();
-          // },5000);
-        });
-
-        scope.$watch("baseLayer", function(layer) {
-          if (!layer) return;
-
-          map.removeLayer(baseLayer);
-          if (layer.format == 'XYZ' || layer.format == 'TMS') {
-            baseLayer = new L.TileLayer(layer.url, { tms: layer.format == 'TMS', maxZoom: 18});
-          } else if (layer.format == 'WMS') {
-            var options = {
-              layers: layer.wms.layers,
-              version: layer.wms.version,
-              format: layer.wms.format,
-              transparent: layer.wms.transparent            };
-            if (layer.wms.styles) options.styles = layer.wms.styles;
-            baseLayer = new L.TileLayer.WMS(layer.url, options);
+        scope.$watch("baseLayers", function(layers) {
+          if (!layers) return;
+          var baseLayer;
+          var firstLayer = undefined;
+          _.each(layers, function(layer) {
+            if (layer.format == 'XYZ' || layer.format == 'TMS') {
+              
+              baseLayer = new L.TileLayer(layer.url, { tms: layer.format == 'TMS', maxZoom: 18});
+            } else if (layer.format == 'WMS') {
+              var options = {
+                layers: layer.wms.layers,
+                version: layer.wms.version,
+                format: layer.wms.format,
+                transparent: layer.wms.transparent            };
+              if (layer.wms.styles) options.styles = layer.wms.styles;
+              baseLayer = new L.TileLayer.WMS(layer.url, options);
+            }
+            if (!firstLayer) {
+              firstLayer = baseLayer;
+            }
+            layerControl.addBaseLayer(baseLayer, layer.name);
+           });
+          if (firstLayer) {
+            firstLayer.addTo(map);
           }
-          baseLayer.addTo(map).bringToBack();
         });
 
         var currentLocationMarkers = {};
         var locationLayerGroup = new L.LayerGroup().addTo(map);
-        scope.$watch("ds.locations.$resolved", function(derp) {
-          console.info('ds', scope.ds.locations);
+        scope.$watch("ds.locations", function(derp) {
           if (!scope.ds.locations || !scope.ds.locations.$resolved) {
-            console.info('not resolved');
+            if (scope.ds.locations && !scope.ds.locations.$promise) {
+              locationLayerGroup.clearLayers();
+              currentLocationMarkers = {};
+            }
             return;
           }
 
@@ -249,7 +247,7 @@
                   // marker.bindPopup(L.popup());
                 } else {
                   scope.$apply(function(s) {
-                    scope.activeFeature = {layerId: layer.id, featureId: feature.id, feature: feature};
+                    scope.activeFeature = {layerId: feature.layerId, featureId: feature.id, feature: feature};
                   });
                 }
               });
@@ -258,9 +256,6 @@
         };
 
         scope.$watch('activeFeature', function(newFeature, oldFeature) {
-          console.log('active feature changed');
-          console.info('new feature', newFeature);
-          console.info('old feature', oldFeature);
           if (!newFeature && oldFeature) {
             var marker = markers[oldFeature.layerId][oldFeature.featureId];
             marker.unselect();
@@ -289,7 +284,6 @@
         });
 
         scope.$watch("layer", function(layer) {
-          console.info('layer watch fired', layer);
             if (!layer) return;
 
             if (layer.checked) {

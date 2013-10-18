@@ -17,11 +17,13 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
   $scope.observation = {};
 
   /* Booleans for the ng-show attribues on the panels, toggling these will show and hide the map panels (i.e. layers, observation, export). */
-  $scope.showSettings = true;
+  $scope.showSettings = false;
   $scope.showGoToAddress = false;
   $scope.showRefresh = false;
   $scope.showLocations = false;
   $scope.showExport = false;
+  $scope.showFilter = true;
+  $scope.pollTime = 30000;
 
   /* Observation related variables and enums */
   $scope.observationTab = 1;
@@ -44,14 +46,22 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
   $scope.currentLayerId = 0;
 
   $scope.setActiveFeature = function(feature, layer) {    
-    $scope.activeFeature = {feature: feature, layerId: layer.id, featureId: feature.properties.OBJECTID};
-    $scope.featureTableClick = {feature: feature, layerId: layer.id, featureId: feature.properties.OBJECTID};
+    $scope.activeFeature = {feature: feature, layerId: layer.id, featureId: feature.id};
+    $scope.featureTableClick = {feature: feature, layerId: layer.id, featureId: feature.id};
   }
 
   $scope.locationClick = function(location) {
     $scope.locationTableClick = location;
     $scope.activeLocation = location;
   }
+
+  $scope.$on('locationClick', function(event, location) {
+    $scope.locationClick(location);
+  });
+
+  $scope.$on('observationClick', function(event, observation) {
+    $scope.setActiveFeature(observation, {id: observation.layerId});
+  });
 
   $scope.exportLayers = [];
   $scope.baseLayers = [];
@@ -98,30 +108,39 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
       });
 
       // Default the base layer to first one in the list
-      $scope.baseLayer = $scope.baseLayers[0];
+      //$scope.baseLayer = $scope.baseLayers[0];
     });
 
-  $scope.layerMinDate = 0;
-  $scope.layerMaxDate = Date.now();
-  $scope.slider = [$scope.layerMinDate, $scope.layerMaxDate];
-  $scope.dateOptions = {
-    showOn: "button",
-    buttonImage: "img/***REMOVED***-icons/animal_issue.png",
-    buttonImageOnly: true,
-    dateFormat: '@'
-  };
+  var createAllFeaturesArray = function() {
+    var allFeatures = $scope.locations ? $scope.locations : [];
+    _.each($scope.featureLayers, function(layer) {
+      if (layer.checked) {
+        console.info('add the features from ' + layer.name);
+        allFeatures = allFeatures.concat(layer.features);
+      } else {
+        console.info('layer ' + layer.name + ' is not checked');
+      }
+    });
+    $scope.feedItems = allFeatures;
+  }
 
   var loadLayer = function(id) {
     $scope.loadingLayers[id] = true;
 
-    if ($scope.layerMaxDate == $scope.slider[1]) {
-      $scope.layerMaxDate = $scope.slider[1] = Date.now();
-    }
-
     var features = Feature.getAll({layerId: id/*, startTime: moment($scope.slider[0]).utc().format("YYYY-MM-DD HH:mm:ss"), endTime: moment($scope.slider[1]).utc().format("YYYY-MM-DD HH:mm:ss")*/}, function() {
       $scope.loadingLayers[id] = false;
       console.info('loaded the features', features);
+      
+      _.each(features.features, function(feature) {
+        feature.layerId = id;
+      });
+      var featureLayer = _.find($scope.featureLayers, function(layer) {
+        return layer.id == id;
+      });
+      featureLayer.features = features.features;
       $scope.layer.features = features;
+      createAllFeaturesArray();
+      //$scope.feedItems = _.flatten([$scope.locations ? $scope.locations : [], $scope.layer.features.features]);
     });
 
     $scope.layer = {id: id, checked: true};
@@ -137,28 +156,74 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
   });
 
 
+
   $scope.onFeatureLayer = function(layer) {
     var timerName = 'pollLayer'+layer.id;
     if (!layer.checked) {
       $scope.layer = {id: layer.id, checked: false};
-      TimerService.stop(timerName);
-      return;
-    };
-
-    TimerService.start(timerName, $scope.layerPollTime || 300000, function() {
+      var featureLayer = _.find($scope.featureLayers, function(l) {
+        return l.id == layer.id;
+      });
+      featureLayer.features = [];
+      createAllFeaturesArray();
+      // TimerService.stop(timerName);
+      //return;
+    } else {
       loadLayer(layer.id);
+    }
+
+    // TimerService.start(timerName, $scope.layerPollTime || 300000, function() {
+    //   loadLayer(layer.id);
+    // });
+  }
+
+  // $scope.$watch('layerPollTime', function() {
+  //   if ($scope.layerPollTime && $scope.layer) {
+  //     if ($scope.layerPollTime == 0) {
+  //       TimerService.stop('pollLayer'+$scope.layer.id);
+  //       return;
+  //     }
+  //     $scope.onFeatureLayer($scope.layer);
+  //   }
+  // });
+
+  var getUserLocations = function() {
+    ds.locationsLoaded = false;
+    ds.locations = Location.get({/*startTime: $scope.startTime, endTime: $scope.endTime*/}, function(success) {
+      ds.locationsLoaded = true;
+      $scope.locations = ds.locations;
+      createAllFeaturesArray();
+      //$scope.feedItems = _.flatten([$scope.locations, $scope.layer && $scope.layer.features ? $scope.layer.features.features : []]);
+      _.each($scope.locations, function(userLocation) {
+          UserService.getUser(userLocation.user)
+            .then(function(user) {
+              userLocation.userModel = user.data || user;
+            });
+          
+        });
     });
   }
 
-  $scope.$watch('layerPollTime', function() {
-    if ($scope.layerPollTime && $scope.layer) {
-      if ($scope.layerPollTime == 0) {
-        TimerService.stop('pollLayer'+$scope.layer.id);
-        return;
-      }
-      $scope.onFeatureLayer($scope.layer);
+  var pollTheData = function() {
+    if ($scope.pollTime == 0) {
+      TimerService.stop('pollingData');
+    } else {
+      TimerService.start('pollingData', $scope.pollTime, function() {
+        _.each($scope.featureLayers, function(layer) {
+          if (layer.checked) {
+            console.info('poll the feature layer', layer);
+            loadLayer(layer.id);
+          }
+        });
+        console.info('go poll the users layer');
+        if ($scope.locationServicesEnabled) {
+          getUserLocations();
+        }
+      });
     }
-  });
+  }
+
+  $scope.$watch('pollTime', pollTheData);
 
   $scope.onImageryLayer = function(layer) {
     if (layer.checked) {
@@ -242,79 +307,35 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
     }
   }
 
-  /* Goto address, need to implement some geocoding like the android app does, otherwise pull it out for PDC. */
-  $scope.openGotoAddress = function () {
-    console.log("in goto address");
-    $scope.showGoToAddress = true;
+  $scope.checkCurrentSidePanel = function (mapPanel) {
+    return MapService.getCurrentSidePanel() == mapPanel;
   }
 
-  $scope.dismissGotoAddress = function () {
-    console.log("in goto address");
-    $scope.showGoToAddress = false;
-  }
-
-
-  /* Need to sort out how this works with the GeoJSON layers... */
-  $scope.refreshPoints = function () {
-    // TODO refresh point for selected layers
-  //   console.log("in refresh points");
-  //   $('#refresh-panel').removeCl***REMOVED***('hide');
-  //   $scope.multiMarkers = {};
-
-  //   $http.get(appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/query?outFields=OBJECTID').
-  //       success(function (data, status, headers, config) {
-  //           console.log('got points');
-  //           $scope.points = data.features;
-  //           var markers = {};
-  //           for (var i = 0; i <  $scope.points.length; i++) {
-  //             console.log($scope.points[i].geometry.x + ", " + $scope.points[i].geometry.y);
-  //             markers[$scope.points[i].attributes.OBJECTID] = {lat: $scope.points[i].geometry.y, lng: $scope.points[i].geometry.x,draggable: false, id: $scope.points[i].attributes.OBJECTID};
-  //           }
-  //           $scope.multiMarkers = markers;
-  //       }).
-  //       error(function (data, status, headers, config) {
-  //           $log.log("Error getting layers: " + status);
-  //       });
-
-  //   $('#refresh-panel').addCl***REMOVED***('hide');
-  }
-
-  $scope.dismissRefresh = function () {
-    console.log("in refresh points");
-    $scope.showRefresh = false;
+  $scope.setCurrentSidePanel = function (mapPanel) {
+    if (MapService.getCurrentSidePanel() == mapPanel) {
+      MapService.setCurrentSidePanel('none');
+    } else {
+      MapService.setCurrentSidePanel(mapPanel);
+    }
   }
 
   $scope.newsFeed = function() {
-    if ($scope.newsFeedEnabled) {
-      $scope.setCurrentMapPanel('newsFeed');
-    }
+      $scope.setCurrentSidePanel('newsFeed');
   }
 
   /* location ***REMOVED***s is FFT */
   $scope.locationServices = function() {
     var timerName = 'pollLocation';
 
-    if ($scope.locationServicesEnabled || $scope.locationPollTime == 0) {
-      TimerService.start(timerName, $scope.locationPollTime || 5000, function() {
-        ds.locationsLoaded = false;
-        ds.locations = Location.get({/*startTime: $scope.startTime, endTime: $scope.endTime*/}, function(success) {
-          ds.locationsLoaded = true;
-          $scope.locations = ds.locations;
-          console.info('ds', ds);
-          _.each($scope.locations, function(userLocation) {
-              UserService.getUser(userLocation.user)
-                .then(function(user) {
-                  userLocation.userModel = user.data || user;
-                });
-              
-            });
-        });
-
-      // LocationService.getLocations().
-      //   success(function (data, status, headers, config) {
-      //     $scope.locations = _.filter(data, function(user) {
-      //       return user.locations.length;
-      //     });
+    if ($scope.locationServicesEnabled) {
+      getUserLocations();
+      // TimerService.start(timerName, $scope.locationPollTime || 5000, function() {
+      //   ds.locationsLoaded = false;
+      //   ds.locations = Location.get({/*startTime: $scope.startTime, endTime: $scope.endTime*/}, function(success) {
+      //     ds.locationsLoaded = true;
+      //     $scope.locations = ds.locations;
+      //     $scope.feedItems = _.flatten([$scope.locations, $scope.layer && $scope.layer.features ? $scope.layer.features.features : []]);
+      //     console.info('ds', ds);
       //     _.each($scope.locations, function(userLocation) {
       //         UserService.getUser(userLocation.user)
       //           .then(function(user) {
@@ -322,14 +343,13 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
       //           });
               
       //       });
-      //   }).
-      //   error(function () {
-      //     console.log('error getting locations');
       //   });
-      });
+      // });
     } else {
-      $scope.locations = [];
-      TimerService.stop(timerName);
+      $scope.locations = ds.locations = [];
+      createAllFeaturesArray();
+      //$scope.feedItems = $scope.layer && $scope.layer.features ? $scope.layer.features.features : [];
+      //TimerService.stop(timerName);
     }
   }
 
@@ -338,6 +358,14 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
       $scope.locationServices();
     }
   });
+
+  $scope.newsFeedOrder = function(feedItem, a, b, c) {
+    //console.info(feedItem);
+    //console.info('news feed order');
+    var time = feedItem.properties ? feedItem.properties.EVENTDATE : moment(feedItem.locations[0].properties.timestamp);
+    time = time || Date.now();
+    return time.valueOf();
+  }
 
   $scope.dismissLocations = function() {
     console.log("in dismissLocations");

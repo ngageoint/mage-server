@@ -65,6 +65,28 @@ L.Control.MageListTools = L.Control.extend({
     }
 });
 
+// L.Control.SideBar = L.Control.extend({
+
+// 	options: {
+// 		position: 'sideleftbar'
+// 	},
+
+// 	initialize: function(options) {
+// 		L.Control.prototype.initialize.call(this, options);
+// 	},
+
+// 	onAdd: function (map) {
+//         // create the control container with a particular cl***REMOVED*** name
+//         var container = L.DomUtil.get('side-bar');
+//         var stop = L.DomEvent.stopPropagation;
+// 		$(container).find('a').on('dblclick', stop);
+
+//         // ... initialize other DOM elements, add listeners, etc.
+
+//         return container;
+//     }
+// });
+
 L.Control.TimeScale = L.Control.extend({
 
 	options: {

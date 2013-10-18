@@ -4,7 +4,8 @@ angular.module('mage.mapService', ['mage.***REMOVED***s', 'mage.lib'])
   .factory('MapService', ['appConstants', 'mageLib',
     function (appConstants, mageLib) {
       var functions = {};
-      var currentMapPanel = "layers"; // options are: layers, observation, export, or none
+      var currentMapPanel = "none"; // options are: layers, observation, export, or none
+      var currentSidePanel = "none"; // options are: newsFeed or none
 
       functions.getCurrentMapPanel = function () {
         return currentMapPanel;
@@ -12,6 +13,14 @@ angular.module('mage.mapService', ['mage.***REMOVED***s', 'mage.lib'])
 
       functions.setCurrentMapPanel = function (mapPanel) {
         currentMapPanel = mapPanel;
+      };
+
+      functions.getCurrentSidePanel = function () {
+        return currentSidePanel;
+      };
+
+      functions.setCurrentSidePanel = function (sidePanel) {
+        currentSidePanel = sidePanel;
       };
 
       return functions;

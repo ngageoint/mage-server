@@ -1,6 +1,128 @@
 <div>  
+  <!-- News Feed panel -->
+  <div cl***REMOVED***="side-bar-holder">
+    <div id="side-bar-header">
+      <div id="side-bar" cl***REMOVED***="side-panel">
+      </div>
+      
+    </div>
+    <div cl***REMOVED***="news-feed-panel-content">
+      <div id="news-feed-list">
+        <div cl***REMOVED***="navbar">
+          <div cl***REMOVED***="navbar-inner">
+            <div cl***REMOVED***="btn-group">
+              <a cl***REMOVED***="btn dropdown-toggle" data-toggle="dropdown">
+                <i style="margin-right: 3px;" ng-cl***REMOVED***="pollTime != 0 && 'icon-spin icon-spinner' || 'blank-icon-space'" cl***REMOVED***="icon-spin icon-spinner"></i>
+                Live Update
+                <span cl***REMOVED***="caret"></span>
+              </a>
+              <ul cl***REMOVED***="dropdown-menu">
+                <li cl***REMOVED***="nav-header">Poll Time</li>
+                 <li>
+                   <a ng-click="pollTime = 5000" cl***REMOVED***="pointer">
+                     <i ng-cl***REMOVED***="pollTime == 5000 && 'icon-check' || 'icon-check-empty'"></i>
+                     5 Seconds
+                   </a>
+                 </li>
+                 <li>
+                   <a ng-click="pollTime = 30000" cl***REMOVED***="pointer">
+                     <i ng-cl***REMOVED***="pollTime == 30000 && 'icon-check' || 'icon-check-empty'"></i>
+                     30 Seconds
+                   </a>
+                 </li>
+                 <li>
+                   <a ng-click="pollTime = 120000" cl***REMOVED***="pointer">
+                     <i ng-cl***REMOVED***="pollTime == 120000 && 'icon-check' || 'icon-check-empty'"></i>
+                     2 Minutes
+                   </a>
+                 </li>
+                 <li>
+                   <a ng-click="pollTime = 300000" cl***REMOVED***="pointer">
+                     <i ng-cl***REMOVED***="pollTime == 300000 && 'icon-check' || 'icon-check-empty'"></i>
+                     5 Minutes
+                   </a>
+                 </li>
+                 <li>
+                   <a ng-click="pollTime = 0" cl***REMOVED***="pointer">
+                     <i ng-cl***REMOVED***="pollTime == 0 && 'icon-check' || 'icon-check-empty'"></i>
+                     No Polling
+                   </a>
+                 </li>
+              </ul>
+            </div>
+            <a cl***REMOVED***="btn active" ng-tap="showFilter = !showFilter" ng-click="showFilter = !showFilter" data-toggle="button"><i style="margin-right: 3px;" cl***REMOVED***="icon-filter"></i>Filter</a>
+            <!--
+            <form cl***REMOVED***="navbar-search pull-right">
+              <input type="text" cl***REMOVED***="span1 form-search search-query" ng-model="userQuery" placeholder="Search">
+            </form>
+          -->
+          </div>
+        </div>
+        <div cl***REMOVED***="filter-panel" ng-show="showFilter">
+        <h3>Newsfeed Filter</h3>
+          <form cl***REMOVED***="form">
+
+          <div cl***REMOVED***="control-group">
+            <div cl***REMOVED***="controls">
+              <label cl***REMOVED***="checkbox">
+                <input type="checkbox" ng-model="locationServicesEnabled" ng-click="locationServices()" ng-tap="locationServices()"/><i cl***REMOVED***="icon-users" 
+                ng-cl***REMOVED***="{false: 'icon-sage-inverse', true: 'icon-sage'}[locationServicesEnabled]"></i>Show People
+                <!--<i cl***REMOVED***="icon-globe icon-spin" ng-show="loadingLayers[layer.id]" style="margin-left: 7px;"></i>-->
+              </label>
+            </div>
+          </div>
+
+          <div ng-show="featureLayers.length > 0">
+            <div style="display: inline-block;">
+              <h4>Feature Layers</h4>
+            </div>
+            <div cl***REMOVED***="control-group">
+              <div cl***REMOVED***="controls">
+                <label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
+                  <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)"/>{{layer.name}}
+                  <i cl***REMOVED***="icon-globe icon-spin" ng-show="loadingLayers[layer.id]" style="margin-left: 7px;"></i>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div ng-show="externalLayers.length > 0">
+            <h4>External Layers</h4>
+            <div cl***REMOVED***="control-group">
+              <div cl***REMOVED***="controls">
+                <label cl***REMOVED***="checkbox" ng-repeat="layer in externalLayers">
+                  <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)"/>{{layer.name}}
+                  <i cl***REMOVED***="icon-globe icon-spin" ng-show="loadingLayers[layer.id]" style="margin-left: 7px;"></i>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div ng-show="imageryLayers.length > 0">
+            <h4>Imagery Layers</h4>
+            <div cl***REMOVED***="control-group">
+              <div cl***REMOVED***="controls">
+                <label cl***REMOVED***="checkbox" ng-repeat="layer in imageryLayers">
+                  <input type="checkbox" ng-model="layer.checked" ng-click="onImageryLayer(layer)"/>{{layer.name}}
+                </label>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+        <div cl***REMOVED***="news-feed-item pointer" data-ng-repeat="feedItem in feedItems | orderBy: newsFeedOrder : true">
+          <div ng-if="feedItem.locations">
+            <div user-location-news-item="feedItem"/>
+          </div>
+          <div ng-if="feedItem.properties.EVENTDATE">
+            <div observation-news-item="feedItem"/>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <!-- The map directive -->
-  <div id="map" cl***REMOVED***="map-wrap leaflet-container">
+  <div id="map" ng-cl***REMOVED***="checkCurrentSidePanel('none') && 'derp' || 'leaflet-side-panel-container'" cl***REMOVED***="map-wrap leaflet-container">
     <div leaflet marker-location="markerLocation" baselayer="baseLayer" layer="layer" message="message" draggable="true" active-feature="activeFeature" newfeature="newFeature" active-location="activeLocation" currentlayerid="currentLayerId" position="position" position-broadcast="positionBroadcast" locations="locations"></div>
   </div>
 
@@ -11,9 +133,10 @@
   <!-- Third party observation dialog. Might be a good idea to generalize all the things and make them one observation panel at some point in time. -->
   <!-- <div external active-feature="activeFeature" currentlayerid="currentLayerId" layers="layers"></div> -->
   
-  <!-- layer picker button -->
-  <button cl***REMOVED***="btn" ng-cl***REMOVED***="{true: 'btn-inverse'}[checkCurrentMapPanel('layers')]" id="settings" ng-click="setCurrentMapPanel('layers')" ngm-tap="setCurrentMapPanel('layers')"><i ng-cl***REMOVED***="checkCurrentMapPanel('layers') && 'icon-sage-inverse' || 'icon-sage'" cl***REMOVED***="icon-layers"></i></button>
+  <!-- layer picker button 
 
+  <button cl***REMOVED***="btn" ng-cl***REMOVED***="{true: 'btn-inverse'}[checkCurrentMapPanel('layers')]" id="settings" ng-click="setCurrentMapPanel('layers')" ngm-tap="setCurrentMapPanel('layers')"><i ng-cl***REMOVED***="checkCurrentMapPanel('layers') && 'icon-sage-inverse' || 'icon-sage'" cl***REMOVED***="icon-layers"></i></button>
+-->
   <div id="new-feature-toolbar" cl***REMOVED***="leaflet-bar">
     <a
        ng-cl***REMOVED***="newObservationEnabled && 'btn-inverse'"
@@ -38,25 +161,11 @@
     </a>
   </div>
   <div id="list-tool-toolbars" cl***REMOVED***="leaflet-bar">
-    <!--
     <a
       ng-cl***REMOVED***="{true: 'btn-inverse'}[newsFeedEnabled]" 
       ng-click="newsFeedEnabled = !newsFeedEnabled; newsFeed();" 
       ngm-tap="newsFeedEnabled = !newsFeedEnabled; newsFeed();">
       <i cl***REMOVED***="icon-rss" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[newsFeedEnabled]"></i>
-    </a>
-  -->
-    <a
-      ng-cl***REMOVED***="{true: 'btn-inverse'}[locationServicesEnabled]" 
-      ng-click="locationServicesEnabled = !locationServicesEnabled;locationServices(); showLocations = !showLocations" 
-      ngm-tap="locationServicesEnabled = !locationServicesEnabled;locationServices(); showLocations = !showLocations">
-      <i cl***REMOVED***="icon-users" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[locationServicesEnabled]"></i>
-    </a>
-    <a
-      ng-cl***REMOVED***="{true: 'btn-inverse'}[showListTool]" 
-      ng-click="showListTool = !showListTool" 
-      ngm-tap="showListTool = !showListTool">
-      <i cl***REMOVED***="icon-list" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[showListTool]"></i>
     </a>
     <a 
       ng-cl***REMOVED***="{true: 'btn-inverse'}[checkCurrentMapPanel('export')]" 
@@ -72,135 +181,6 @@
     <div ui-slider="{range: true}" min="{{layerMinDate}}" max="{{layerMaxDate}}" step="1" ng-model="slider"></div>
   </div>
 -->
-
-  <!-- Panels -->
-  <!-- Settings panel -->
-  <div id="settings-panel" ng-show="checkCurrentMapPanel('layers')" cl***REMOVED***="panel panel-large">
-    <div cl***REMOVED***="pull-right panel-close">
-      <i ng-click="setCurrentMapPanel('none')" ngm-tap="setCurrentMapPanel('none')" cl***REMOVED***="close">&times;</i>
-    </div>
-    <div cl***REMOVED***="panel-content">
-      <form cl***REMOVED***="form">
-        <h4>Base Layers</h4>
-        <div cl***REMOVED***="control-group">
-          <div cl***REMOVED***="controls">
-            <select ng-model="baseLayer" ng-options="baseLayer.name for baseLayer in baseLayers"></select>
-          </div>
-        </div>
-
-        <div ng-show="featureLayers.length > 0">
-          <div style="display: inline-block;">
-            <h4>Feature Layers</h4>
-          </div>
-          <div cl***REMOVED***="control-group">
-            <div cl***REMOVED***="controls">
-              <label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
-                <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)"/>{{layer.name}}
-                <i cl***REMOVED***="icon-globe icon-spin" ng-show="loadingLayers[layer.id]" style="margin-left: 7px;"></i>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div ng-show="externalLayers.length > 0">
-          <h4>External Layers</h4>
-          <div cl***REMOVED***="control-group">
-            <div cl***REMOVED***="controls">
-              <label cl***REMOVED***="checkbox" ng-repeat="layer in externalLayers">
-                <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)"/>{{layer.name}}
-                <i cl***REMOVED***="icon-globe icon-spin" ng-show="loadingLayers[layer.id]" style="margin-left: 7px;"></i>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div ng-show="imageryLayers.length > 0">
-          <h4>Imagery Layers</h4>
-          <div cl***REMOVED***="control-group">
-            <div cl***REMOVED***="controls">
-              <label cl***REMOVED***="checkbox" ng-repeat="layer in imageryLayers">
-                <input type="checkbox" ng-model="layer.checked" ng-click="onImageryLayer(layer)"/>{{layer.name}}
-              </label>
-            </div>
-          </div>
-        </div>
-      </form>
-      
-      <span>
-        <button cl***REMOVED***="btn btn-mobile" ng-click="setCurrentMapPanel('none')" ngm-tap="setCurrentMapPanel('none')">Close</button>
-      </span>
-    </div>
-  </div>
-
-<!-- News Feed panel -->
-  <div id="news-feed-panel" ng-show="checkCurrentMapPanel('newsFeed')" cl***REMOVED***="panel panel-large">
-    <div cl***REMOVED***="pull-right panel-close">
-      <i ng-click="setCurrentMapPanel('none')" ngm-tap="setCurrentMapPanel('none')" cl***REMOVED***="close">&times;</i>
-    </div>
-    <div cl***REMOVED***="navbar">
-      <div cl***REMOVED***="navbar-inner">
-        <div cl***REMOVED***="pull-right">
-          <ul cl***REMOVED***="nav">
-            <li>
-          <form cl***REMOVED***="navbar-search">
-            <input type="text" cl***REMOVED***="form-search search-query" ng-model="userQuery" placeholder="Search">
-          </form>
-        </li>
-      </ul>
-      <ul cl***REMOVED***="nav">
-        <li cl***REMOVED***="dropdown">
-            <button data-toggle="dropdown" cl***REMOVED***="btn dropdown-toggle" href="#">
-              <i cl***REMOVED***="icon-cog"></i>
-              <b cl***REMOVED***="caret"></b>
-            </button>
-            <ul cl***REMOVED***="dropdown-menu pull-right">
-              <li cl***REMOVED***="nav-header">Poll Time</li>
-              <li>
-                <a ng-click="locationPollTime = 5000" cl***REMOVED***="pointer">
-                  <i ng-cl***REMOVED***="locationPollTime == 5000 && 'icon-check' || 'icon-check-empty'"></i>
-                  5 Seconds
-                </a>
-              </li>
-              <li>
-                <a ng-click="locationPollTime = 30000" cl***REMOVED***="pointer">
-                  <i ng-cl***REMOVED***="locationPollTime == 30000 && 'icon-check' || 'icon-check-empty'"></i>
-                  30 Seconds
-                </a>
-              </li>
-              <li>
-                <a ng-click="locationPollTime = 120000" cl***REMOVED***="pointer">
-                  <i ng-cl***REMOVED***="locationPollTime == 120000 && 'icon-check' || 'icon-check-empty'"></i>
-                  2 Minutes
-                </a>
-              </li>
-              <li>
-                <a ng-click="locationPollTime = 300000" cl***REMOVED***="pointer">
-                  <i ng-cl***REMOVED***="locationPollTime == 300000 && 'icon-check' || 'icon-check-empty'"></i>
-                  5 Minutes
-                </a>
-              </li>
-              <li>
-                <a ng-click="locationPollTime = 0" cl***REMOVED***="pointer">
-                  <i ng-cl***REMOVED***="locationPollTime == 0 && 'icon-check' || 'icon-check-empty'"></i>
-                  No Polling
-                </a>
-              </li>
-            </ul>
-          </li>
-      </ul>
-        </div>
-      </div>
-    </div> 
-    <div cl***REMOVED***="panel-content">
-      <h4>Recent Activity</h4>
-      <div cl***REMOVED***="location pointer" data-ng-repeat="location in locations | filter: userQuery | orderBy: 'locations[0].properties.timestamp':true" ng-click="locationClick(location)" 
-      ng-cl***REMOVED***="{'row-selected': activeLocation.user == location.user}">
-        <strong user-id="location.user" cl***REMOVED***="top-gap-s">{{user.firstname}} {{user.lastname}}</strong>
-        <div cl***REMOVED***="small-text">{{location.locations[0].properties.timestamp | date : 'medium'}}</div>
-        <div cl***REMOVED***="small-text">{{location.locations[0].geometry.coordinates[1] | number: 3}}, {{location.locations[0].geometry.coordinates[0] | number: 3}}</div>
-      </div>
-    </div>
-  </div>
 
   <!-- Export panel -->
   <div id="export-panel" ng-show="checkCurrentMapPanel('export')" cl***REMOVED***="panel panel-large">
@@ -243,181 +223,6 @@
       <button cl***REMOVED***="btn" ng-click="export()" ngm-tap="export()">Export</button>
       <div id="export-error-message" cl***REMOVED***="top-gap alert alert-error" style="display: none;"></div>
     </div>
-  </div>
-
-  <div id="goto-address-panel" ng-show="showGoToAddress" cl***REMOVED***="panel panel-medium">
-    <form cl***REMOVED***="form-horizontal">
-      <div cl***REMOVED***="control-group">
-        <label cl***REMOVED***="control-label" for="address">Go to Address</label>
-        <div cl***REMOVED***="controls">
-          <input ng-model="address"/>
-        </div>
-      </div>
-      <span>
-        <button cl***REMOVED***="btn btn-inverse" ng-click="dismissGotoAddress()" ngm-tap="dismissGotoAddress()">Cancel</button>
-        <button cl***REMOVED***="btn" ng-click="gotoAddress()" ngm-tap="gotoAddress()">Go</button>
-      </span>
-    </form>
-  </div>
-
-  <div id="refresh-panel" ng-show="showRefresh" cl***REMOVED***="panel panel-small">
-    <i cl***REMOVED***="icon-spin icon-spinner icon-large"></i> Synchronizing
-    <span>
-      <button cl***REMOVED***="btn" ng-click="dismissRefresh()" ngm-tap="dismissRefresh()">Ok</button>
-    </span>
-  </div>
-  <!--
-   <div id="location-panel" ng-show="showLocations" cl***REMOVED***="right-panel panel-large">
-    <div data-ng-repeat="location in locations | orderBy: 'locations[0].properties.timestamp':true">
-      <h6><span user-id="location.user">{{user.firstname}} {{user.lastname}}</span> @ {{location.locations[0].properties.timestamp | date : 'medium'}}</h6>
-    </div>
-  </div>
-  -->
-
-  <div id="user-location-panel" ng-show="locationServicesEnabled">
-    <div cl***REMOVED***="navbar">
-      <div cl***REMOVED***="navbar-inner">
-        <div cl***REMOVED***="pull-right">
-          <ul cl***REMOVED***="nav">
-            <li>
-          <form cl***REMOVED***="navbar-search">
-            <input type="text" cl***REMOVED***="form-search search-query" ng-model="userQuery" placeholder="Search">
-          </form>
-        </li>
-      </ul>
-      <ul cl***REMOVED***="nav">
-        <li cl***REMOVED***="dropdown">
-            <button data-toggle="dropdown" cl***REMOVED***="btn dropdown-toggle" href="#">
-              <i cl***REMOVED***="icon-cog"></i>
-              <b cl***REMOVED***="caret"></b>
-            </button>
-            <ul cl***REMOVED***="dropdown-menu pull-right">
-              <li cl***REMOVED***="nav-header">Poll Time</li>
-              <li>
-                <a ng-click="locationPollTime = 5000" cl***REMOVED***="pointer">
-                  <i ng-cl***REMOVED***="locationPollTime == 5000 && 'icon-check' || 'icon-check-empty'"></i>
-                  5 Seconds
-                </a>
-              </li>
-              <li>
-                <a ng-click="locationPollTime = 30000" cl***REMOVED***="pointer">
-                  <i ng-cl***REMOVED***="locationPollTime == 30000 && 'icon-check' || 'icon-check-empty'"></i>
-                  30 Seconds
-                </a>
-              </li>
-              <li>
-                <a ng-click="locationPollTime = 120000" cl***REMOVED***="pointer">
-                  <i ng-cl***REMOVED***="locationPollTime == 120000 && 'icon-check' || 'icon-check-empty'"></i>
-                  2 Minutes
-                </a>
-              </li>
-              <li>
-                <a ng-click="locationPollTime = 300000" cl***REMOVED***="pointer">
-                  <i ng-cl***REMOVED***="locationPollTime == 300000 && 'icon-check' || 'icon-check-empty'"></i>
-                  5 Minutes
-                </a>
-              </li>
-              <li>
-                <a ng-click="locationPollTime = 0" cl***REMOVED***="pointer">
-                  <i ng-cl***REMOVED***="locationPollTime == 0 && 'icon-check' || 'icon-check-empty'"></i>
-                  No Polling
-                </a>
-              </li>
-            </ul>
-          </li>
-      </ul>
-        </div>
-      </div>
-    </div> 
-    <div id="user-location-panel-list">
-      <h4>Recent User Locations</h4>
-      <div cl***REMOVED***="location pointer" data-ng-repeat="location in locations | filter: userQuery | orderBy: 'locations[0].properties.timestamp':true" ng-click="locationClick(location)" 
-      ng-cl***REMOVED***="{'row-selected': activeLocation.user == location.user}">
-        <strong user-id="location.user" cl***REMOVED***="top-gap-s">{{user.firstname}} {{user.lastname}}</strong>
-        <div cl***REMOVED***="small-text">{{location.locations[0].properties.timestamp | date : 'medium'}}</div>
-        <div cl***REMOVED***="small-text">{{location.locations[0].geometry.coordinates[1] | number: 3}}, {{location.locations[0].geometry.coordinates[0] | number: 3}}</div>
-      </div>
-    </div>
-  </div>
-
-  <div id="list-tool-panel" ng-show="showListTool">
-    <div cl***REMOVED***="navbar">
-      <div cl***REMOVED***="navbar-inner">
-        <div cl***REMOVED***="pull-right">
-          <ul cl***REMOVED***="nav">
-          
-          <li>
-          <form cl***REMOVED***="navbar-search">
-            <!--<select style="margin-top: 7px;">
-              <option>All Observations</option>
-              <option>Last 30 Minutes</option>
-              <option>Last Hour</option>
-              <option>2 Hours</option>
-              <option>6 Hours</option>
-              <option>12 Hours</option>
-              <option>24 Hours</option>
-            </select>-->
-            <input type="text" cl***REMOVED***="form-search search-query" ng-model="observationQuery" placeholder="Search">
-
-          </form>
-        </li>
-      </ul>
-      <ul cl***REMOVED***="nav">
-        <li cl***REMOVED***="dropdown">
-            <button data-toggle="dropdown" cl***REMOVED***="btn dropdown-toggle" href="#">
-              <i cl***REMOVED***="icon-cog"></i>
-              <b cl***REMOVED***="caret"></b>
-            </button>
-            <ul cl***REMOVED***="dropdown-menu pull-right">
-              <li cl***REMOVED***="nav-header">Poll Time</li>
-              <li>
-                <a ng-click="layerPollTime = 60000" cl***REMOVED***="pointer">
-                  <i ng-cl***REMOVED***="layerPollTime == 60000 && 'icon-check' || 'icon-check-empty'"></i>
-                  1 Minute
-                </a>
-              </li>
-              <li>
-                <a ng-click="layerPollTime = 120000" cl***REMOVED***="pointer">
-                  <i ng-cl***REMOVED***="layerPollTime == 120000 && 'icon-check' || 'icon-check-empty'"></i>
-                  2 Minutes
-                </a>
-              </li>
-              <li>
-                <a ng-click="layerPollTime = 300000" cl***REMOVED***="pointer">
-                  <i ng-cl***REMOVED***="layerPollTime == 300000 && 'icon-check' || 'icon-check-empty'"></i>
-                  5 Minutes
-                </a>
-              </li>
-              <li>
-                <a ng-click="layerPollTime = 900000" cl***REMOVED***="pointer">
-                  <i ng-cl***REMOVED***="layerPollTime == 900000 && 'icon-check' || 'icon-check-empty'"></i>
-                  15 Minutes
-                </a>
-              </li>
-              <li>
-                <a ng-click="layerPollTime = 0" cl***REMOVED***="pointer">
-                  <i ng-cl***REMOVED***="layerPollTime == 0 && 'icon-check' || 'icon-check-empty'"></i>
-                  No Polling
-                </a>
-              </li>
-            </ul>
-          </li>
-        </ul>
-      </div>
-      </div>
-    </div>
-    <div id="list-tool-list" cl***REMOVED***="top-gap-s">
-      <div ng-click="setActiveFeature(feature, layer)" cl***REMOVED***="row pointer" ng-cl***REMOVED***="{'row-selected': activeFeature.feature.id == feature.id}" ng-repeat="feature in layer.features.features | orderBy: 'properties.EVENTDATE' : true | filter: observationQuery">
-        <a href="">
-          <!-- <div cl***REMOVED***="span1"><div ***REMOVED***-marker-icon="feature" types="types" style="margin-left: 20px"></div></div> -->
-          <div cl***REMOVED***="span1"><span style="margin-left: 20px" ng-bind-html-u***REMOVED***fe="iconTag(feature)"></span></div>
-          <div cl***REMOVED***="span2" user-id="feature.properties.userId">{{user.firstname}} {{user.lastname}}</div>
-          <div cl***REMOVED***="span2">{{feature.properties.TYPE}}</div>
-          <div cl***REMOVED***="span1">{{feature.properties.EVENTLEVEL}}</div>
-          <div cl***REMOVED***="span3">{{feature.properties.EVENTDATE | date: 'medium'}}</div>
-          <div ng-show="feature.attachments.length != 0"><i cl***REMOVED***="icon-paper-clip"></i></div>
-        </a>
-      </div>
   </div>
 
 </div>

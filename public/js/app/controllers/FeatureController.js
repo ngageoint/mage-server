@@ -21,6 +21,7 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
     }
     $scope.newObservationEnabled = true;
     $scope.observationTab = 1;
+    isEditing = false;
     $scope.observationCloseText = "Cancel";
     $scope.observation = $scope.createNewObservation();
     $scope.attachments = [];
@@ -41,11 +42,13 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
     // TODO this should be UTC time
     observation.properties.EVENTDATE = new Date().getTime();
     var create = observation.id == null;
-    observation.$save({layerId: $scope.currentLayerId}, function(value, responseHeaders) {
+    var layerId = observation.layerId;
+    observation.$save({}, function(value, responseHeaders) {
       create ? $scope.newFeature = value : $scope.updatedFeature = value;
       MapService.setCurrentMapPanel('none');
       $scope.newObservationEnabled = false;
       $scope.activeFeature = null;
+      observation.layerId = layerId;
       isEditing = false;
       if ($scope.files.length > 0) {
         $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/features/' + observation.id + '/attachments';
@@ -56,7 +59,7 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
 
   $scope.deleteObservation = function (observation) {
     console.log('making call to delete observation');
-    observation.$delete({layerId: $scope.activeFeature.layerId}, function(success) {
+    observation.$delete({}, function(success) {
       MapService.setCurrentMapPanel('none');
         $scope.deletedFeature = $scope.activeFeature;
         isEditing = false;
@@ -142,7 +145,9 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
         $scope.attachments = [];
         $scope.files = [];
         MapService.setCurrentMapPanel('observation');
+        $scope.newObservationEnabled = false;
         isEditing = true;
+        $scope.observation.layerId = value.layerId;
         $scope.attachmentUrl = '/FeatureServer/'+ value.layerId
             + '/features/' + $scope.observation.id + '/attachments/';
 
