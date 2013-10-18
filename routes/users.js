@@ -176,7 +176,7 @@ module.exports = function(app, security) {
   );
 
   // logout
-  app.get(
+  app.post(
     '/api/logout',
     isAuthenticated(authenticationStrategy),
     function(req, res, next) {

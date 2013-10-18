@@ -81,7 +81,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       }
 
       ***REMOVED***.logout = function() {
-        var promise =  $http.get(
+        var promise =  $http.post(
           appConstants.rootUrl + '/api/logout'
         );
 
