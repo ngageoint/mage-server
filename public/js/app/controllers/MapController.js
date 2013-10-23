@@ -145,7 +145,6 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
       featureLayer.features = features.features;
       $scope.layer.features = features;
       createAllFeaturesArray();
-      //$scope.feedItems = _.flatten([$scope.locations ? $scope.locations : [], $scope.layer.features.features]);
     });
 
     $scope.layer = {id: id, checked: true};
@@ -171,26 +170,10 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
       });
       featureLayer.features = [];
       createAllFeaturesArray();
-      // TimerService.stop(timerName);
-      //return;
     } else {
       loadLayer(layer.id);
     }
-
-    // TimerService.start(timerName, $scope.layerPollTime || 300000, function() {
-    //   loadLayer(layer.id);
-    // });
   }
-
-  // $scope.$watch('layerPollTime', function() {
-  //   if ($scope.layerPollTime && $scope.layer) {
-  //     if ($scope.layerPollTime == 0) {
-  //       TimerService.stop('pollLayer'+$scope.layer.id);
-  //       return;
-  //     }
-  //     $scope.onFeatureLayer($scope.layer);
-  //   }
-  // });
 
   var getUserLocations = function() {
     ds.locationsLoaded = false;
@@ -198,7 +181,6 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
       ds.locationsLoaded = true;
       $scope.locations = ds.locations;
       createAllFeaturesArray();
-      //$scope.feedItems = _.flatten([$scope.locations, $scope.layer && $scope.layer.features ? $scope.layer.features.features : []]);
       _.each($scope.locations, function(userLocation) {
         if ($scope.ms.followedUser == userLocation.user) {
           if(!$scope.ms.lastFollowedLocation || 
@@ -223,11 +205,9 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
       TimerService.start('pollingData', $scope.pollTime, function() {
         _.each($scope.featureLayers, function(layer) {
           if (layer.checked) {
-            console.info('poll the feature layer', layer);
             loadLayer(layer.id);
           }
         });
-        console.info('go poll the users layer');
         if ($scope.locationServicesEnabled) {
           getUserLocations();
         }
@@ -297,10 +277,6 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
 
         $scope.positionBroadcast = location.$save();
 
-        // LocationService.createLocation(location)
-        //   .success(function (data, status, headers, config) {
-        //     $scope.positionBroadcast = location;
-        //   });
       });
     } else {
       TimerService.stop(timerName);
@@ -341,27 +317,9 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
 
     if ($scope.locationServicesEnabled) {
       getUserLocations();
-      // TimerService.start(timerName, $scope.locationPollTime || 5000, function() {
-      //   ds.locationsLoaded = false;
-      //   ds.locations = Location.get({/*startTime: $scope.startTime, endTime: $scope.endTime*/}, function(success) {
-      //     ds.locationsLoaded = true;
-      //     $scope.locations = ds.locations;
-      //     $scope.feedItems = _.flatten([$scope.locations, $scope.layer && $scope.layer.features ? $scope.layer.features.features : []]);
-      //     console.info('ds', ds);
-      //     _.each($scope.locations, function(userLocation) {
-      //         UserService.getUser(userLocation.user)
-      //           .then(function(user) {
-      //             userLocation.userModel = user.data || user;
-      //           });
-              
-      //       });
-      //   });
-      // });
     } else {
       $scope.locations = ds.locations = [];
       createAllFeaturesArray();
-      //$scope.feedItems = $scope.layer && $scope.layer.features ? $scope.layer.features.features : [];
-      //TimerService.stop(timerName);
     }
   }
 
@@ -372,8 +330,6 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
   });
 
   $scope.newsFeedOrder = function(feedItem, a, b, c) {
-    //console.info(feedItem);
-    //console.info('news feed order');
     var time = feedItem.properties ? feedItem.properties.EVENTDATE : moment(feedItem.locations[0].properties.timestamp);
     time = time || Date.now();
     return time.valueOf();
