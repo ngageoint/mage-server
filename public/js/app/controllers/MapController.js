@@ -7,6 +7,7 @@
 function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, IconService, UserService, DataService, MapService, LayerService, LocationService, Location, TimerService, Feature) {
   $scope.customer = appConstants.customer;
   var ds = DataService;
+  $scope.ms = MapService;
 
   $scope.locate = false;
   $scope.broadcast = false;
@@ -54,6 +55,10 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
     $scope.locationTableClick = location;
     $scope.activeLocation = location;
   }
+
+  $scope.$on('followUser', function(event, user) {
+    $scope.ms.followedUser = $scope.ms.followedUser == user ? undefined : user;
+  });
 
   $scope.$on('locationClick', function(event, location) {
     $scope.locationClick(location);
@@ -195,10 +200,17 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
       createAllFeaturesArray();
       //$scope.feedItems = _.flatten([$scope.locations, $scope.layer && $scope.layer.features ? $scope.layer.features.features : []]);
       _.each($scope.locations, function(userLocation) {
-          UserService.getUser(userLocation.user)
-            .then(function(user) {
-              userLocation.userModel = user.data || user;
-            });
+        if ($scope.ms.followedUser == userLocation.user) {
+          if(!$scope.ms.lastFollowedLocation || 
+              $scope.ms.lastFollowedLocation.locations[0].properties.timestamp != userLocation.locations[0].properties.timestamp) {
+            $scope.ms.lastFollowedLocation = userLocation;
+            $scope.locationClick(userLocation);
+          }
+        }
+        UserService.getUser(userLocation.user)
+          .then(function(user) {
+            userLocation.userModel = user.data || user;
+          });
           
         });
     });
