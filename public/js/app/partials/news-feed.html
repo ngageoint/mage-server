@@ -1,0 +1,115 @@
+<div cl***REMOVED***="news-feed-panel-content">
+  <div cl***REMOVED***="header">
+    <div cl***REMOVED***="navbar">
+      <div cl***REMOVED***="navbar-inner">
+        <div cl***REMOVED***="btn-group">
+          <a cl***REMOVED***="btn dropdown-toggle" data-toggle="dropdown">
+            <i style="margin-right: 3px;" ng-cl***REMOVED***="pollTime != 0 && 'icon-spin icon-spinner' || 'blank-icon-space'" cl***REMOVED***="icon-spin icon-spinner"></i>
+            Live Update
+            <span cl***REMOVED***="caret"></span>
+          </a>
+          <ul cl***REMOVED***="dropdown-menu">
+            <li cl***REMOVED***="nav-header">Poll Time</li>
+             <li>
+               <a ng-click="pollTime = 5000" cl***REMOVED***="pointer">
+                 <i ng-cl***REMOVED***="pollTime == 5000 && 'icon-check' || 'icon-check-empty'"></i>
+                 5 Seconds
+               </a>
+             </li>
+             <li>
+               <a ng-click="pollTime = 30000" cl***REMOVED***="pointer">
+                 <i ng-cl***REMOVED***="pollTime == 30000 && 'icon-check' || 'icon-check-empty'"></i>
+                 30 Seconds
+               </a>
+             </li>
+             <li>
+               <a ng-click="pollTime = 120000" cl***REMOVED***="pointer">
+                 <i ng-cl***REMOVED***="pollTime == 120000 && 'icon-check' || 'icon-check-empty'"></i>
+                 2 Minutes
+               </a>
+             </li>
+             <li>
+               <a ng-click="pollTime = 300000" cl***REMOVED***="pointer">
+                 <i ng-cl***REMOVED***="pollTime == 300000 && 'icon-check' || 'icon-check-empty'"></i>
+                 5 Minutes
+               </a>
+             </li>
+             <li>
+               <a ng-click="pollTime = 0" cl***REMOVED***="pointer">
+                 <i ng-cl***REMOVED***="pollTime == 0 && 'icon-check' || 'icon-check-empty'"></i>
+                 No Polling
+               </a>
+             </li>
+          </ul>
+        </div>
+        <a cl***REMOVED***="btn active" ng-tap="showFilter = !showFilter" ng-click="showFilter = !showFilter" data-toggle="button"><i style="margin-right: 3px;" cl***REMOVED***="icon-filter"></i>Filter</a>
+        <!--
+        <form cl***REMOVED***="navbar-search pull-right">
+          <input type="text" cl***REMOVED***="span1 form-search search-query" ng-model="userQuery" placeholder="Search">
+        </form>
+      -->
+      </div>
+    </div>
+    <div cl***REMOVED***="filter-panel" ng-show="showFilter">
+      <h3>Newsfeed Filter</h3>
+      <form cl***REMOVED***="form">
+        <div cl***REMOVED***="control-group">
+          <div cl***REMOVED***="controls">
+            <label cl***REMOVED***="checkbox">
+              <input type="checkbox" ng-model="locationServicesEnabled" ng-click="locationServices()" ng-tap="locationServices()"/><i cl***REMOVED***="icon-users" 
+              ng-cl***REMOVED***="{false: 'icon-sage-inverse', true: 'icon-sage'}[locationServicesEnabled]"></i>Show People
+              <!--<i cl***REMOVED***="icon-globe icon-spin" ng-show="loadingLayers[layer.id]" style="margin-left: 7px;"></i>-->
+            </label>
+          </div>
+        </div>
+
+        <div ng-show="featureLayers.length > 0">
+          <div style="display: inline-block;">
+            <h4>Feature Layers</h4>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <div cl***REMOVED***="controls">
+              <label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
+                <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)"/>{{layer.name}}
+                <i cl***REMOVED***="icon-globe icon-spin" ng-show="loadingLayers[layer.id]" style="margin-left: 7px;"></i>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div ng-show="externalLayers.length > 0">
+          <h4>External Layers</h4>
+          <div cl***REMOVED***="control-group">
+            <div cl***REMOVED***="controls">
+              <label cl***REMOVED***="checkbox" ng-repeat="layer in externalLayers">
+                <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)"/>{{layer.name}}
+                <i cl***REMOVED***="icon-globe icon-spin" ng-show="loadingLayers[layer.id]" style="margin-left: 7px;"></i>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div ng-show="imageryLayers.length > 0">
+          <h4>Imagery Layers</h4>
+          <div cl***REMOVED***="control-group">
+            <div cl***REMOVED***="controls">
+              <label cl***REMOVED***="checkbox" ng-repeat="layer in imageryLayers">
+                <input type="checkbox" ng-model="layer.checked" ng-click="onImageryLayer(layer)"/>{{layer.name}}
+              </label>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div cl***REMOVED***="scroller">
+    <div cl***REMOVED***="news-feed-item pointer" data-ng-repeat="feedItem in feedItems | orderBy: newsFeedOrder : true">
+      <div ng-if="feedItem.locations">
+       <div user-location-news-item="feedItem"/>
+      </div>
+      <div ng-if="feedItem.properties.EVENTDATE">
+        <div observation-news-item="feedItem"/>
+      </div>
+    </div>
+  </div>
+</div>
