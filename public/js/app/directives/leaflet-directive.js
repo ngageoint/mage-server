@@ -1,7 +1,7 @@
 (function () {
   var leafletDirective = angular.module("leaflet-directive", ["mage.***REMOVED***s"]);
 
-  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, IconService, appConstants, DataService) {
+  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, IconService, appConstants, MapService, DataService) {
     return {
       restrict: "A",
       replace: true,
@@ -97,11 +97,12 @@
           var baseLayer;
           var firstLayer = undefined;
           _.each(layers, function(layer) {
+            var options = {};
             if (layer.format == 'XYZ' || layer.format == 'TMS') {
-              
-              baseLayer = new L.TileLayer(layer.url, { tms: layer.format == 'TMS', maxZoom: 18});
+              options = { tms: layer.format == 'TMS', maxZoom: 18}
+              baseLayer = new L.TileLayer(layer.url, options);
             } else if (layer.format == 'WMS') {
-              var options = {
+              options = {
                 layers: layer.wms.layers,
                 version: layer.wms.version,
                 format: layer.wms.format,
@@ -111,6 +112,8 @@
             }
             if (!firstLayer) {
               firstLayer = baseLayer;
+              MapService.leafletBaseLayerUrl = layer.url;
+              MapService.leafletBaseLayerOptions = options;
             }
             layerControl.addBaseLayer(baseLayer, layer.name);
            });

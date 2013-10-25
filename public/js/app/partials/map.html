@@ -51,55 +51,8 @@
     </a>
   </div>
 
-<!--
-  <div id="time-scale">
-    <h6>Start Time {{slider[0] | date}}<input type="hidden" ui-date="dateOptions" ng-model="slider[0]"/> End Time {{slider[1] | date}} <input type="hidden" ui-date="dateOptions" ng-model="slider[1]"/></h6>
-    <div ui-slider="{range: true}" min="{{layerMinDate}}" max="{{layerMaxDate}}" step="1" ng-model="slider"></div>
-  </div>
--->
-
   <!-- Export panel -->
-  <div id="export-panel" ng-show="checkCurrentMapPanel('export')" cl***REMOVED***="panel panel-large">
-    <div cl***REMOVED***="pull-right panel-close">
-      <i ng-click="setCurrentMapPanel('none')" ngm-tap="setCurrentMapPanel('none')" cl***REMOVED***="close">&times;</i>
-    </div>
-    <div cl***REMOVED***="panel-content">
-      <h3>Export to KML</h3>
-      <form cl***REMOVED***="form">  
-        <div cl***REMOVED***="top-gap">
-          <i cl***REMOVED***="icon-layers icon-sage pull-left icon-spacer"></i>    
-          <h4>Select Layers</h4>
-        </div>
-        <div cl***REMOVED***="control-group">
-          <div cl***REMOVED***="controls">
-            <label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
-              <input type="checkbox" ng-click="addExportLayer(layer)">{{layer.name}}
-            </label>
-            <label cl***REMOVED***="checkbox">
-              <input type="checkbox" ng-model="fft_layer">Friendly Forces
-            </label>
-          </div>
-        </div>
-        <div cl***REMOVED***="top-gap">
-          <i cl***REMOVED***="icon-filter icon-sage pull-left icon-spacer"></i>
-          <h4>Filter Output</h4>
-        </div>
-        <div>Time Range:</div>
-        <div style="margin: 0px, 0px, 0px, 20px">
-          <select ng-model="time_filter">
-            <option value="300">Last 5 Minutes</option>
-            <option value="3600">Last Hour</option>
-            <option value="43200">Last 12 Hours</option>
-            <option value="86400">Last 24 Hours</option>
-            <option value="-1">All (Use With Caution)</option>
-          </select>
-      </div>
-      </form>
-      <button cl***REMOVED***="btn btn-inverse" ng-click="setCurrentMapPanel('none')" ngm-tap="setCurrentMapPanel('none')">Cancel</button>
-      <button cl***REMOVED***="btn" ng-click="export()" ngm-tap="export()">Export</button>
-      <div id="export-error-message" cl***REMOVED***="top-gap alert alert-error" style="display: none;"></div>
-    </div>
-  </div>
+  <div export/>
 
 </div>
 
