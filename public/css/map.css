@@ -34,20 +34,20 @@ html, body, div.leaflet-container {
   position: absolute;
 }
 
-.leaflet-top {
+#map .leaflet-top {
 	top: 50px;
 }
 
-.leaflet-left {
+#map .leaflet-left {
 	left: 375px;
 }
 
-.leaflet-side {
+#map .leaflet-side {
 	margin-top: 58px;
 	bottom: 0px;
 }
 
-.leaflet-leftbar {
+#map .leaflet-leftbar {
 	margin-left: 10px;
 }
 

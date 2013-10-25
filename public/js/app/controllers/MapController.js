@@ -263,7 +263,7 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
         if ($scope.location.heading) properties.heading = $scope.location.heading;
         if ($scope.location.speed) properties.speed = $scope.location.speed;
 
-        var location = new Location({
+        $scope.positionBroadcast = Location.create({
           location: {
             type: "Feature",
             geometry: {
@@ -274,8 +274,6 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
           },
           timestamp: new Date()
         });
-
-        $scope.positionBroadcast = location.$save();
 
       });
     } else {

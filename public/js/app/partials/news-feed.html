@@ -103,7 +103,7 @@
     </div>
   </div>
   <div cl***REMOVED***="scroller">
-    <div cl***REMOVED***="news-feed-item pointer" data-ng-repeat="feedItem in feedItems | orderBy: newsFeedOrder : true">
+    <div cl***REMOVED***="news-feed-item pointer" data-ng-repeat="feedItem in feedItems | orderBy: newsFeedOrder : true track by feedItem.id || feedItem.user">
       <div ng-if="feedItem.locations">
        <div user-location-news-item="feedItem"/>
       </div>
