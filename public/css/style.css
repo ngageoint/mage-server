@@ -289,3 +289,8 @@ div.image-button input {
 .small-text {
     font-size: 0.8em;
 }
+
+.edit-well {
+    background: #43719F;
+    color: white;
+}

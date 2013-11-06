@@ -8,6 +8,14 @@ angular.module('mage.featureService')
 		return data;
 	};
 
+	var createResources = function(data) {
+		if (!data.features) return data;
+		for (var i = 0; i < data.features.length; i++) {
+			data.features[i] = new Feature(data.features[i]);
+		}
+		return data;
+	};
+
 	var Feature = $resource('/FeatureServer/:layerId/features/:id', {
 		id: '@id',
 		layerId: '@layerId'
@@ -31,7 +39,8 @@ angular.module('mage.featureService')
 		},
 		getAll: {
 			url: '/FeatureServer/:layerId/features',
-			method: 'GET'
+			method: 'GET',
+			transformResponse: _.flatten([$http.defaults.transformResponse, createResources])
 		}
 	});
 
@@ -41,7 +50,7 @@ angular.module('mage.featureService')
 		} else {
 			this.$create(params, success, error);
 		}
-	}
+	};
 
 	return Feature;
 }])

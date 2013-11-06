@@ -4,10 +4,15 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, IconService, UserService, DataService, MapService, LayerService, LocationService, Location, TimerService, Feature) {
+function MapController($rootScope, $scope, $log, $http, FeatureTypeService, appConstants, mageLib, IconService, UserService, DataService, MapService, LayerService, LocationService, Location, TimerService, Feature) {
   $scope.customer = appConstants.customer;
   var ds = DataService;
   $scope.ms = MapService;
+
+  FeatureTypeService.getTypes().
+    success(function (types, status, headers, config) {
+      $scope.types = types;
+    });
 
   $scope.locate = false;
   $scope.broadcast = false;
@@ -37,7 +42,7 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
   $scope.locations = [];
   $scope.locationPollTime = 5000;
 
-  $scope.newsFeedEnabled = false;
+  $scope.newsFeedEnabled = true;
 
   $scope.showListTool = false;
   $scope.iconTag = function(feature) {
@@ -78,23 +83,23 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
   LayerService.getAllLayers().
     success(function (layers, status, headers, config) {
       // Pull out all non-base map imagery layers
-      $scope.imageryLayers = _.filter(layers, function(layer) {
+      $scope.imageryLayers = MapService.imageryLayers = _.filter(layers, function(layer) {
         return layer.type == 'Imagery' && !layer.base;
       });
       // Pull out all feature layers
-      $scope.featureLayers = _.filter(layers, function(layer) {
+      $scope.featureLayers = MapService.featureLayers = _.filter(layers, function(layer) {
         return layer.type == 'Feature';
       });
       // Pull out all imagery layers
-      $scope.baseLayers = _.filter(layers, function(layer) {
+      $scope.baseLayers = MapService.baseLayers = _.filter(layers, function(layer) {
         return layer.type == 'Imagery' && layer.base;
       });
       // Pull out all the external layers
-      $scope.externalLayers = _.filter(layers, function(layer) {
+      $scope.externalLayers = MapService.externalLayers = _.filter(layers, function(layer) {
         return layer.type == 'External';
       });
 
-      $scope.privateBaseLayers = _.filter($scope.baseLayers, function(layer) {
+      $scope.privateBaseLayers = MapService.privateBaseLayer = _.filter($scope.baseLayers, function(layer) {
         if (layer.url.indexOf('private') == 0) {
           layer.url = layer.url + "?access_token=" + mageLib.getToken();
           return true;
@@ -103,7 +108,7 @@ function MapController($rootScope, $scope, $log, $http, appConstants, mageLib, I
         }
       });
 
-      $scope.privateImageryLayers = _.filter($scope.imageryLayers, function(layer) {
+      $scope.privateImageryLayers = MapService.privateImageryLayers = _.filter($scope.imageryLayers, function(layer) {
         if (layer.url.indexOf('private') == 0) {
           layer.url = layer.url + "?access_token=" + mageLib.getToken();
           return true;

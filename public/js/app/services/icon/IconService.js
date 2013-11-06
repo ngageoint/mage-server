@@ -26,7 +26,8 @@ angular.module('mage')
         return iconService.setTemplateVariables(feature, scope);
       }
 
-      ***REMOVED***.template = iconService.template;
+      ***REMOVED***.markerTemplate = iconService.markerTemplate;
+      ***REMOVED***.iconTemplate = iconService.iconTemplate;
 
       return ***REMOVED***;
     }

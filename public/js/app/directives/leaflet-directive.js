@@ -21,6 +21,15 @@
         map.addControl(new L.Control.MageFeature());
         map.addControl(new L.Control.MageUserLocation());
         map.addControl(new L.Control.MageListTools());
+        var sidebar = L.control.sidebar('side-bar', {closeButton: false});
+        map.addControl(sidebar);
+        scope.$watch('newsFeedEnabled', function() {
+          if (scope.newsFeedEnabled) {
+            sidebar.show();
+          } else {
+            sidebar.hide();
+          }
+        });
         //map.addControl(new L.Control.SideBar());
         //map.addControl(new L.Control.TimeScale());
 
@@ -251,6 +260,9 @@
                 } else {
                   scope.$apply(function(s) {
                     scope.activeFeature = {layerId: feature.layerId, featureId: feature.id, feature: feature};
+                    $('.news-items').animate({scrollTop: $('#'+feature.id).position().top},500);
+                    //console.info('scroll top is ' + $('#'+feature.id).position().top);
+                    //$('.news-items').scrollTop($('#'+feature.id).position().top);
                   });
                 }
               });

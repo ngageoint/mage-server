@@ -33,10 +33,14 @@ angular.module('mage')
         }
       }
 
-      ***REMOVED***.template = function(element, attributes) {
+      ***REMOVED***.markerTemplate = function() {
         return '<div cl***REMOVED***="awesome-marker awesome-marker-display" ng-cl***REMOVED***="markerColor">' +
                 '<i cl***REMOVED***="icon-white" ng-cl***REMOVED***="markerCl***REMOVED***"></i>' + 
                '</div>';
+      }
+
+      ***REMOVED***.iconTemplate = function() {
+        return '<i cl***REMOVED***="icon-white" ng-cl***REMOVED***="markerCl***REMOVED***"></i>';
       }
 
       ***REMOVED***.defaultLeafletIcon = function() {

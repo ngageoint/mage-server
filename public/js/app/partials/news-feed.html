@@ -1,57 +1,8 @@
 <div cl***REMOVED***="news-feed-panel-content">
-  <div cl***REMOVED***="header">
-    <div cl***REMOVED***="navbar">
-      <div cl***REMOVED***="navbar-inner">
-        <div cl***REMOVED***="btn-group">
-          <a cl***REMOVED***="btn dropdown-toggle" data-toggle="dropdown">
-            <i style="margin-right: 3px;" ng-cl***REMOVED***="pollTime != 0 && 'icon-spin icon-spinner' || 'blank-icon-space'" cl***REMOVED***="icon-spin icon-spinner"></i>
-            Live Update
-            <span cl***REMOVED***="caret"></span>
-          </a>
-          <ul cl***REMOVED***="dropdown-menu">
-            <li cl***REMOVED***="nav-header">Poll Time</li>
-             <li>
-               <a ng-click="pollTime = 5000" cl***REMOVED***="pointer">
-                 <i ng-cl***REMOVED***="pollTime == 5000 && 'icon-check' || 'icon-check-empty'"></i>
-                 5 Seconds
-               </a>
-             </li>
-             <li>
-               <a ng-click="pollTime = 30000" cl***REMOVED***="pointer">
-                 <i ng-cl***REMOVED***="pollTime == 30000 && 'icon-check' || 'icon-check-empty'"></i>
-                 30 Seconds
-               </a>
-             </li>
-             <li>
-               <a ng-click="pollTime = 120000" cl***REMOVED***="pointer">
-                 <i ng-cl***REMOVED***="pollTime == 120000 && 'icon-check' || 'icon-check-empty'"></i>
-                 2 Minutes
-               </a>
-             </li>
-             <li>
-               <a ng-click="pollTime = 300000" cl***REMOVED***="pointer">
-                 <i ng-cl***REMOVED***="pollTime == 300000 && 'icon-check' || 'icon-check-empty'"></i>
-                 5 Minutes
-               </a>
-             </li>
-             <li>
-               <a ng-click="pollTime = 0" cl***REMOVED***="pointer">
-                 <i ng-cl***REMOVED***="pollTime == 0 && 'icon-check' || 'icon-check-empty'"></i>
-                 No Polling
-               </a>
-             </li>
-          </ul>
-        </div>
-        <a cl***REMOVED***="btn active" ng-tap="showFilter = !showFilter" ng-click="showFilter = !showFilter" data-toggle="button"><i style="margin-right: 3px;" cl***REMOVED***="icon-filter"></i>Filter</a>
-        <!--
-        <form cl***REMOVED***="navbar-search pull-right">
-          <input type="text" cl***REMOVED***="span1 form-search search-query" ng-model="userQuery" placeholder="Search">
-        </form>
-      -->
-      </div>
-    </div>
+  <div cl***REMOVED***="news-feed-header">
+    <div filter-navbar/>
     <div cl***REMOVED***="filter-panel" ng-show="showFilter">
-      <h3>Newsfeed Filter</h3>
+      <h3>Filter</h3>
       <form cl***REMOVED***="form">
         <div cl***REMOVED***="control-group">
           <div cl***REMOVED***="controls">
@@ -101,14 +52,28 @@
         </div>
       </form>
     </div>
+    <!--
+    <div cl***REMOVED***="feature-panel" ng-show="activeFeature">
+      <div ss-observation active-feature="activeFeature" new-feature="newFeature" marker-location="markerLocation"></div>
+    </div>
+  -->
   </div>
-  <div cl***REMOVED***="scroller">
-    <div cl***REMOVED***="news-feed-item pointer" data-ng-repeat="feedItem in feedItems | orderBy: newsFeedOrder : true track by feedItem.id || feedItem.user">
-      <div ng-if="feedItem.locations">
-       <div user-location-news-item="feedItem"/>
-      </div>
-      <div ng-if="feedItem.properties.EVENTDATE">
-        <div observation-news-item="feedItem"/>
+  <div cl***REMOVED***="overview-map hide-on-desktop" map-clip="activeFeature.feature" style="width: 100%; height: 150px;"/>
+
+  <div cl***REMOVED***="news-items-wrapper">
+    <div cl***REMOVED***="news-items">
+      <div cl***REMOVED***="news-items-list">
+        <div cl***REMOVED***="the-news-items">
+          <div cl***REMOVED***="news-feed-item pointer" id="{{feedItem.id || feedItem.user}}"
+          data-ng-repeat="feedItem in feedItems | orderBy: newsFeedOrder : true track by feedItem.id || feedItem.user">
+            <div ng-if="feedItem.locations">
+             <div user-location-news-item="feedItem"/>
+            </div>
+            <div ng-if="feedItem.properties.EVENTDATE">
+              <div observation-news-item="feedItem" container-element="side-bar"/>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

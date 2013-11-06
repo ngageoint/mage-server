@@ -38,6 +38,10 @@ mage.directive('ssObservation', ['FeatureTypeService', 'UserService' , 'Feature'
           }
         });
       }
+
+      scope.cancelEdit = function() {
+        scope.$emit('cancelEdit');
+      }
     }
   };
 }]);
