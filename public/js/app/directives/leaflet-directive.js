@@ -254,8 +254,9 @@
                 activeMarker = marker;
                 if (feature.properties.style) {
                   scope.$apply(function(s) {
-                    scope.externalFeatureClick = {layerId: layer.id, featureId: feature.id};
+                    scope.externalFeature = {layerId: layer.id, featureId: feature.id, feature: feature};
                   });
+                  marker.bindPopup(L.popup().setContent(feature.properties.description));
                   // marker.bindPopup(L.popup());
                 } else {
                   scope.$apply(function(s) {
@@ -392,7 +393,7 @@
         scope.$watch("externalFeature", function(value) {
           if (!value) return;
 
-          activeMarker.bindPopup(L.popup().setContent(value.attributes.description)).openPopup();
+          //activeMarker.bindPopup(L.popup().setContent(value.feature.properties.description)).openPopup();
         });
 
         scope.$watch("deletedFeature", function(feature) {
