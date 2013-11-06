@@ -3,11 +3,13 @@ mage.directive('observationNewsItem', function(UserService, appConstants) {
     restrict: "A",
     templateUrl:  "js/app/partials/observation-news-item.html",
     scope: {
-    	observation: '=observationNewsItem'
+    	observation: '=observationNewsItem',
+      containerElement: '@'
     },
-    controller: function ($scope, IconService, $sce, mageLib) {
+    controller: function ($scope, IconService, $sce, mageLib, MapService, $element) {
+      $scope.ms = MapService;
     	$scope.iconTag = $sce.trustAsHtml(IconService.iconHtml($scope.observation, $scope));
-      $scope.attachmentUrl = '/FeatureServer/2/features/';
+      $scope.attachmentUrl = '/FeatureServer/'+$scope.observation.layerId+'/features/';
       $scope.token = mageLib.getLocalItem('token');
       $scope.mapClipConfig = {
         coordinates: $scope.observation.geometry.coordinates,
@@ -16,6 +18,11 @@ mage.directive('observationNewsItem', function(UserService, appConstants) {
       $scope.setActiveObservation = function(observation) {
         $scope.$emit('observationClick', observation);
       }
+
+      $scope.$on('cancelEdit', function() {
+        $scope.editMode = false;
+      });
+
     }
   };
 });
@@ -24,43 +31,76 @@ mage.directive('mapClip', function() {
   return {
     restrict: 'A',
     scope: {
-      mapClip: '='
+      mapClip: '=',
+      inView: '='
     },
-    controller: function($scope, MapService, $element) {
+    controller: function($scope, MapService, $element, $window) {
       var zoomControl = new L.Control.Zoom();
-
-      $element.on('click', function() {
-        if ($scope.zoomEnabled) {
-          map.removeControl(zoomControl);
-          map.scrollWheelZoom.disable();
-          $scope.zoomEnabled = false;
-        } else {
-          map.addControl(zoomControl);
-          map.scrollWheelZoom.enable();
-          $scope.zoomEnabled = true;
-        }
-      });
+      $scope.ms = MapService;
 
       // verify options
       var verifyOptions = function() {
-        return $scope.mapClip.coordinates;
+        return $scope.mapClip && ($scope.mapClip.coordinates 
+          || ($scope.mapClip.geometry && $scope.mapClip.geometry.coordinates));
       }
 
-      if (verifyOptions()) {
+      var createMap = function() {
+
+        if (!$scope.map) {
+          $scope.map = new L.Map($element[0], {zoomControl: false});
+          $scope.$watch('ms.leafletBaseLayerUrl', function() {
+            if (!$scope.ms.leafletBaseLayerUrl) return;
+            var layer = new L.TileLayer(MapService.leafletBaseLayerUrl, MapService.leafletBaseLayerOptions);   
+            $scope.map.addLayer(layer);
+          });
+          $scope.map.scrollWheelZoom.disable();
+        }
+
         var latLng = {
-          lat: $scope.mapClip.geoJsonFormat ? $scope.mapClip.coordinates[1] : $scope.mapClip.coordinates[0],
-          lng: $scope.mapClip.geoJsonFormat ? $scope.mapClip.coordinates[0] : $scope.mapClip.coordinates[1]
-        };
+          lat: 0,
+          lng: 0
+        }
+        if (verifyOptions()) {
+          var coords = $scope.mapClip.geometry ? $scope.mapClip.geometry.coordinates : $scope.mapClip.coordinates;
+          latLng = {
+            lat: $scope.mapClip.latLngFormat ? coords[0] : coords[1],
+            lng: $scope.mapClip.latLngFormat ? coords[1] : coords[0]
+          };
+          if (!$scope.marker) {
+          $scope.marker = L.marker([latLng.lat, latLng.lng]);
+            $scope.marker.addTo($scope.map);
+          }
+          $scope.marker.setLatLng(new L.LatLng(latLng.lat, latLng.lng));
+          $scope.map.setView(new L.LatLng(latLng.lat, latLng.lng),15);
+        } else {
+          $scope.map.setView(new L.LatLng(0,0), 1);
+        }
 
-        var map = new L.Map($element[0], {zoomControl: false});
-
-        var layer = new L.TileLayer(MapService.leafletBaseLayerUrl, MapService.leafletBaseLayerOptions);   
-
-        map.setView(new L.LatLng(latLng.lat, latLng.lng),15);
-        map.addLayer(layer);
-        var marker = L.marker([latLng.lat, latLng.lng]).addTo(map);
-        map.scrollWheelZoom.disable();
+        $element.on('click', function() {
+          if ($scope.zoomEnabled) {
+            $scope.map.removeControl(zoomControl);
+            $scope.map.scrollWheelZoom.disable();
+            $scope.zoomEnabled = false;
+          } else {
+            $scope.map.addControl(zoomControl);
+            $scope.map.scrollWheelZoom.enable();
+            $scope.zoomEnabled = true;
+          }
+        });
+        
       }
+
+      $scope.$watch('mapClip', function() {
+        createMap();
+      });
+
+      // $scope.$watch('inView', function() {
+      //   if ($scope.inView && !$scope.mapCreated) {
+      //     console.info("in view changed " + $scope.inView);
+      //     createMap();
+      //   }
+      // });
+
     }
   }
   

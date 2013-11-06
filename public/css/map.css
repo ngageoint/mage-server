@@ -34,10 +34,49 @@ html, body, div.leaflet-container {
   position: absolute;
 }
 
+.news-feed-pane {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+}
+
+@media(max-width:1024px){
+  .map-clip {
+    display: none;
+  }
+}
+
+@media(min-width: 1024px) {
+	.hide-on-desktop {
+		display:none;
+	}
+}
+
 #map .leaflet-top {
 	top: 50px;
 }
 
+.leaflet-sidebar {
+	padding-top: 50px;
+  z-index: 1034;
+}
+
+.leaflet-sidebar > .leaflet-control {
+	overflow: hidden;
+	padding: 0;
+	padding-left:10px;
+	background: transparent;
+}
+
+.leaflet-sidebar .close {
+	background: transparent;
+	top: 10px;
+	right: 10px;
+}
+
+/*
 #map .leaflet-left {
 	left: 375px;
 }
@@ -64,7 +103,7 @@ html, body, div.leaflet-container {
 .side-panel {
 	overflow: auto;
 }
-
+*/
 @media (max-width: 979px) {
 	.navbar-fixed-top, .navbar-fixed-bottom {
 		position: absolute;
@@ -125,10 +164,37 @@ html, body, div.leaflet-container {
 }
 
 .news-feed-panel-content {
+	position: absolute;
+	width: 100%;
+	height: 100%;
 	padding: 7px;
 	color: #222;
 	background: #305680;
 	background: rgba(48, 86, 128, 0.50);
+}
+
+.news-feed-header {
+	position: relative;
+	z-index:7;
+}
+
+.overview-map {
+	position: relative;
+}
+
+.news-items-wrapper {
+	position: absolute;
+	top: 50px;
+	overflow: hidden;
+	bottom: 0;
+	width: 100%;
+	z-index:6;
+}
+
+@media(max-width:768px){
+  .news-items-wrapper {
+    top: 200px !important;
+  }
 }
 
 .news-feed-item {
@@ -140,13 +206,50 @@ html, body, div.leaflet-container {
 	border-radius: 3px;
 }
 
+.news-items {
+	position: absolute;
+	width: 100%;
+	top: 0;
+	bottom: 0;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.news-items-list {
+	width: 100%;
+}
+
+.the-news-items {
+	position: relative;
+}
+
 .filter-panel {
 	padding: 5px;
 	border: 1px solid #EEE;
 	margin-bottom: 10px;
 	background: #D0E7FF;
-	background: rgba(208, 231, 255, 0.8);
+	background: rgba(208, 231, 255, 0.9);
 	border-radius: 3px;
+	box-shadow: 0 7px 7px rgba(0,0,0,0.65);
+	z-index: 10;
+}
+
+.feature-panel {
+	padding: 5px;
+	border: 1px solid #EEE;
+	margin-bottom: 10px;
+	background: #D0E7FF;
+	background: rgba(208, 231, 255, 0.9);
+	border-radius: 3px;
+	box-shadow: 0 7px 7px rgba(0,0,0,0.65);
+	z-index: 10;
+}
+
+.map-filter {
+	position: absolute;
+	top: 58px;
+	left: 47px;
+	z-index: 1038;
 }
 
 .news-feed-item-support {

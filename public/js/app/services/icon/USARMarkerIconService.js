@@ -32,10 +32,14 @@ angular.module('mage')
         return;
       }
 
-      ***REMOVED***.template = function(element, attributes) {
+      ***REMOVED***.markerTemplate = function(element, attributes) {
         return '<div>' +
                  '<img ng-src="{{iconSrc}}"/>' +
                '</div>';
+      }
+
+      ***REMOVED***.iconTemplate = function() {
+        return '<img ng-src="{{iconSrc}}"/>';
       }
 
       ***REMOVED***.defaultLeafletIcon = function() {

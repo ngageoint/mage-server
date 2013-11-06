@@ -50,7 +50,7 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
       $scope.activeFeature = null;
       observation.layerId = layerId;
       isEditing = false;
-      if ($scope.files.length > 0) {
+      if ($scope.files && $scope.files.length > 0) {
         $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/features/' + observation.id + '/attachments';
         $scope.uploadFile();
       }
