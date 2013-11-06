@@ -147,6 +147,11 @@ function MapController($rootScope, $scope, $log, $http, FeatureTypeService, appC
       var featureLayer = _.find($scope.featureLayers, function(layer) {
         return layer.id == id;
       });
+      if (!featureLayer) {
+        featureLayer = _.find($scope.externalLayers, function(layer) {
+          return layer.id == id;
+        });
+      }
       featureLayer.features = features.features;
       $scope.layer.features = features;
       createAllFeaturesArray();
