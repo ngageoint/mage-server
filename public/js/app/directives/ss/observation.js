@@ -1,11 +1,14 @@
 'use strict';
 
-mage.directive('ssObservation', ['FeatureTypeService', 'UserService' , 'Feature', function (FeatureTypeService, UserService, Feature) {
+mage.directive('ssObservation', ['MapService', 'FeatureTypeService', 'UserService' , 'Feature', function (MapService, FeatureTypeService, UserService, Feature) {
 
   return {
     restrict: "A",
     templateUrl: "/js/app/partials/ss/observation.html",
     controller: "FeatureController",
+    scope: {
+      observation: '=ssObservation'
+    },
     link: function(scope) {
 
       scope.teams = [
@@ -14,6 +17,8 @@ mage.directive('ssObservation', ['FeatureTypeService', 'UserService' , 'Feature'
         'PI ZONE C',
         'PI ZONE D'
       ];
+
+      scope.ms = MapService;
 
       //Get the Feature Types
       FeatureTypeService.getTypes().

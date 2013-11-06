@@ -4,7 +4,7 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($rootScope, $scope, $log, $http, FeatureTypeService, appConstants, mageLib, IconService, UserService, DataService, MapService, LayerService, LocationService, Location, TimerService, Feature) {
+function MapController($rootScope, $scope, $log, $http, ObservationService, FeatureTypeService, appConstants, mageLib, IconService, UserService, DataService, MapService, LayerService, LocationService, Location, TimerService, Feature) {
   $scope.customer = appConstants.customer;
   var ds = DataService;
   $scope.ms = MapService;
@@ -121,6 +121,37 @@ function MapController($rootScope, $scope, $log, $http, FeatureTypeService, appC
       //$scope.baseLayer = $scope.baseLayers[0];
     });
 
+  var isEditing;
+  $scope.newObservation = function () {
+    if ($scope.newObservationEnabled) {
+      $scope.newObservationEnabled = false;
+      MapService.setCurrentMapPanel('none');
+      return;
+    }
+    $scope.newObservationEnabled = true;
+    $scope.observationTab = 1;
+    isEditing = false;
+    $scope.observationCloseText = "Cancel";
+    $scope.newFeature = ObservationService.createNewObservation();
+    $scope.attachments = [];
+    $scope.files = [];
+  }
+
+  $scope.$on('newObservationSaved', function(event, observation) {
+    $scope.newObservationEnabled = false;
+    isEditing = false;
+    console.info('observation', observation);
+    var featureLayer = _.find($scope.featureLayers, function(layer) {
+      return layer.id == observation.layerId;
+    });
+    if (featureLayer) {
+      featureLayer.features.push(observation);
+      // this has to change.  This is how the leaflet-directive knows to pick up new features, but it is not good
+      $scope.layer.features = {features: featureLayer.features};
+    }
+    createAllFeaturesArray();
+  });
+
   var createAllFeaturesArray = function() {
     var allFeatures = $scope.locations ? $scope.locations : [];
     _.each($scope.featureLayers, function(layer) {
@@ -133,6 +164,18 @@ function MapController($rootScope, $scope, $log, $http, FeatureTypeService, appC
     });
     $scope.feedItems = allFeatures;
   }
+
+  $scope.$watch("markerLocation", function(location) {
+    if (!location) return;
+
+    // show the observation panel
+    MapService.setCurrentMapPanel('observation');
+
+    if (!isEditing && MapService.getCurrentMapPanel() == 'observation') {
+      $scope.newFeature.geometry.coordinates = [location.lng, location.lat];
+      $scope.newFeature.properties.EVENTDATE = new Date().getTime();
+    }
+  }, true);
 
   var loadLayer = function(id) {
     $scope.loadingLayers[id] = true;
@@ -153,6 +196,7 @@ function MapController($rootScope, $scope, $log, $http, FeatureTypeService, appC
         });
       }
       featureLayer.features = features.features;
+      // this has to change.
       $scope.layer.features = features;
       createAllFeaturesArray();
     });

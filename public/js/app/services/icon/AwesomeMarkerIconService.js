@@ -74,12 +74,12 @@ angular.module('mage')
       };
 
       ***REMOVED***.setTemplateVariables = function(feature, scope) {
-        if (feature.properties && feature.properties.TYPE) {
+        if (feature && feature.properties && feature.properties.TYPE) {
           featureTypes.success(function(success) {
             scope.markerCl***REMOVED*** = "icon-" + ***REMOVED***.getCl***REMOVED***(feature.properties.TYPE, {types: success});
           })
         }
-        if (feature.properties && feature.properties.EVENTDATE) {
+        if (feature && feature.properties && feature.properties.EVENTDATE) {
           scope.markerColor = "awesome-marker-icon-" + ***REMOVED***.getColor(feature.properties.EVENTDATE);
         }
       }

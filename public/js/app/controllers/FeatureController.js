@@ -13,21 +13,6 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
     return MapService.getCurrentMapPanel() == mapPanel;
   }
 
-  $scope.newObservation = function () {
-    if ($scope.newObservationEnabled) {
-      $scope.newObservationEnabled = false;
-      MapService.setCurrentMapPanel('none');
-      return;
-    }
-    $scope.newObservationEnabled = true;
-    $scope.observationTab = 1;
-    isEditing = false;
-    $scope.observationCloseText = "Cancel";
-    $scope.observation = $scope.createNewObservation();
-    $scope.attachments = [];
-    $scope.files = [];
-  }
-
   $scope.cancelObservation = function (observation) {
     MapService.setCurrentMapPanel('none');
     $scope.newObservationEnabled = false;
@@ -54,6 +39,7 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
         $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/features/' + observation.id + '/attachments';
         $scope.uploadFile();
       }
+      $scope.$emit('newObservationSaved', observation);
     });
   }
 
@@ -184,16 +170,4 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
         }
       });
   }
-
-  $scope.$watch("markerLocation", function(location) {
-    if (!location) return;
-
-    // show the observation panel
-    MapService.setCurrentMapPanel('observation');
-
-    if (!isEditing && MapService.getCurrentMapPanel() == 'observation') {
-      $scope.observation.geometry.coordinates = [location.lng, location.lat];
-      $scope.observation.properties.EVENTDATE = new Date().getTime();
-    }
-  }, true);
 }
