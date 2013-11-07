@@ -58,6 +58,9 @@ exports.getLayers = function(filter, callback) {
   var type = filter.type;
   if (type) query.type = type;
 
+  var ids = filter.ids;
+  if (ids) query.id = {$in: ids};
+
   Layer.find(query, function (err, layers) {
     if (err) {
       console.log("Error finding layers in mongo: " + err);

@@ -10,10 +10,11 @@ module.exports = function(app, security) {
     , fs = require('fs-extra')
     , sys = require('sys')
     , path = require('path')
-    , exec = require('child_process').exec
     , toGeoJson = require('../utilities/togeojson')
-    , DOMParser = require('xmldom').DOMParser;
-    
+    , shp = require('shp-write')
+    , zip = require('node-zip')()
+    , DOMParser = require('xmldom').DOMParser
+    , exec = require('child_process').exec;
 
   var parseQueryParams = function(req, res, next) {
     var parameters = {filter: {}};
@@ -49,6 +50,15 @@ module.exports = function(app, security) {
     next();
   }
 
+    var getLayers = function(callback) {
+    //get layers for lookup
+    Layer.getLayers(function (err, layers) {
+      if(err) return callback(err);
+
+      callback(err, layers);
+    });
+  }
+
   app.get(
     '/api/export',
     access.authorize('READ_FEATURE'),
@@ -67,9 +77,33 @@ module.exports = function(app, security) {
     }
   );
 
-  var exportShapefile = function(req, res) {
+  var exportShapefile = function(req, res, next) {
     var layerIds = req.parameters.filter.layerIds;
     var fft = req.parameters.filter.fft;
+
+    var layersToShapefiles = function(done) {
+      Layer.getLayers({ids: layerIds}, function (err, layers) {
+        if (err) return done(err);
+
+        layers.forEach(function(layer) {
+          Feature.getFeatures(layer, {}, function(features) {
+            return shp.download({type: 'FeatureCollection', features: features});
+            // shp.writeGeoJson({type: 'FeatureCollection', features: features}, function(err, content) {
+            //   console.log('got some files', content);
+            // });
+          });
+
+        });
+      });
+    }
+
+    async.parallel({
+      layers: layersToShapefiles,
+    },
+    function(err, results) {
+
+    });
+ 
   }
 
   var exportKML = function(req, res) {
