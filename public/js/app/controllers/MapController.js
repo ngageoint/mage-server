@@ -125,7 +125,6 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
   $scope.newObservation = function () {
     if ($scope.newObservationEnabled) {
       $scope.newObservationEnabled = false;
-      MapService.setCurrentMapPanel('none');
       return;
     }
     $scope.newObservationEnabled = true;
@@ -161,10 +160,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
     var allFeatures = $scope.locations ? $scope.locations : [];
     _.each($scope.featureLayers, function(layer) {
       if (layer.checked) {
-        console.info('add the features from ' + layer.name);
         allFeatures = allFeatures.concat(layer.features);
-      } else {
-        console.info('layer ' + layer.name + ' is not checked');
       }
     });
     $scope.feedItems = allFeatures;
@@ -173,10 +169,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
   $scope.$watch("markerLocation", function(location) {
     if (!location) return;
 
-    // show the observation panel
-    MapService.setCurrentMapPanel('observation');
-
-    if (!isEditing && MapService.getCurrentMapPanel() == 'observation') {
+    if (!isEditing && newObservationEnabled) {
       $scope.newFeature.geometry.coordinates = [location.lng, location.lat];
       $scope.newFeature.properties.EVENTDATE = new Date().getTime();
     }
@@ -186,10 +179,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
     $scope.loadingLayers[id] = true;
 
     var features = Feature.getAll({layerId: id/*, startTime: moment($scope.slider[0]).utc().format("YYYY-MM-DD HH:mm:ss"), endTime: moment($scope.slider[1]).utc().format("YYYY-MM-DD HH:mm:ss")*/}, function(response) {
-      console.info('response.status is ' + response.status);
-      console.info(response);
       $scope.loadingLayers[id] = false;
-      console.info('loaded the features', features);
       
       _.each(features.features, function(feature) {
         feature.layerId = id;
@@ -348,31 +338,6 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       TimerService.stop(timerName);
     }
   }
-
-  $scope.checkCurrentMapPanel = function (mapPanel) {
-    return MapService.getCurrentMapPanel() == mapPanel;
-  }
-
-  $scope.setCurrentMapPanel = function (mapPanel) {
-    if (MapService.getCurrentMapPanel() == mapPanel) {
-      MapService.setCurrentMapPanel('none');
-    } else {
-      MapService.setCurrentMapPanel(mapPanel);
-    }
-  }
-
-  $scope.checkCurrentSidePanel = function (mapPanel) {
-    return MapService.getCurrentSidePanel() == mapPanel;
-  }
-
-  $scope.setCurrentSidePanel = function (mapPanel) {
-    if (MapService.getCurrentSidePanel() == mapPanel) {
-      MapService.setCurrentSidePanel('none');
-    } else {
-      MapService.setCurrentSidePanel(mapPanel);
-    }
-  }
-
   $scope.newsFeed = function() {
       $scope.setCurrentSidePanel('newsFeed');
   }

@@ -5,16 +5,7 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
   $scope.amAdmin = UserService.amAdmin;
   $scope.token = mageLib.getLocalItem('token');
 
-  /* 
-    The observation functions are a mix of copy pasta from the observation directive, hopefully cleaned up a bit
-    and using the FeatureService. May need to be cleaned up after PDC.
-  */
-  $scope.checkCurrentMapPanel = function (mapPanel) {
-    return MapService.getCurrentMapPanel() == mapPanel;
-  }
-
   $scope.cancelObservation = function (observation) {
-    MapService.setCurrentMapPanel('none');
     $scope.newObservationEnabled = false;
     $scope.activeFeature = null;
     isEditing = false;
@@ -30,7 +21,6 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
     var layerId = observation.layerId;
     observation.$save({}, function(value, responseHeaders) {
       create ? $scope.newFeature = value : $scope.updatedFeature = value;
-      MapService.setCurrentMapPanel('none');
       $scope.newObservationEnabled = false;
       $scope.activeFeature = null;
       observation.layerId = layerId;
@@ -46,7 +36,6 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
   $scope.deleteObservation = function (observation) {
     console.log('making call to delete observation');
     observation.$delete({}, function(success) {
-      MapService.setCurrentMapPanel('none');
         $scope.deletedFeature = $scope.activeFeature;
         isEditing = false;
     });
@@ -130,7 +119,6 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
         $scope.currentLayerId = value.layerId;
         $scope.attachments = [];
         $scope.files = [];
-        MapService.setCurrentMapPanel('observation');
         $scope.newObservationEnabled = false;
         isEditing = true;
         $scope.observation.layerId = value.layerId;
