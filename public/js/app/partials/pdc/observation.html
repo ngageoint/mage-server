@@ -1,12 +1,4 @@
-<div 
-  id="observation-panel" 
-  ng-show="checkCurrentMapPanel('observation')" 
-  cl***REMOVED***="tabbable tabs-below panel panel-large">
-  <div cl***REMOVED***="pull-right panel-close">
-    <i ng-click="cancelObservation(observation)" ngm-tap="cancelObservation(observation)" cl***REMOVED***="close">&times;</i>
-  </div>
-  <div cl***REMOVED***="panel-content">
-
+<div>
     <div cl***REMOVED***="row-fluid feature-title">
       <div cl***REMOVED***="span2">
         <div marker-icon="observation" types="types"></div>
@@ -38,30 +30,30 @@
         </a>
       </li>
     </ul>
-    <div cl***REMOVED***="tab-content" ng-show="observationTab == 1">
+    <div cl***REMOVED***="tab-content" ng-init="observationTab = 1" ng-show="observationTab == 1">
       <form cl***REMOVED***="form-horizontal">
         <div cl***REMOVED***="control-group">
           <label cl***REMOVED***="control-label" for="type">Layer</label>
           <div cl***REMOVED***="controls">
-            <select ng-model="observation.layerId" ng-selected="observation.layerId" ng-options="layer.id as layer.name for layer in featureLayers"></select>
+            <select ng-model="observation.layerId" ng-selected="observation.layerId" ng-options="layer.id as layer.name for layer in ms.featureLayers"></select>
           </div>
         </div>
         <div cl***REMOVED***="control-group">
           <label cl***REMOVED***="control-label" for="type">Type</label>
           <div cl***REMOVED***="controls">
-            <select ng-model="observation.properties.TYPE" ng-selected="type.name" ng-options="type.name as type.name for type in types"></select>
+            <select ng-model="observation.properties.TYPE" ng-selected="type.name" ng-options="type.name as type.name for type in os.types"></select>
           </div>
         </div>
         <div cl***REMOVED***="control-group">
           <label cl***REMOVED***="control-label" for="level">Level</label>
           <div cl***REMOVED***="controls">
-            <select ng-model="observation.properties.EVENTLEVEL" ng-selected="level" ng-options="level.name as level.name for level in levels"></select>
+            <select ng-model="observation.properties.EVENTLEVEL" ng-selected="level" ng-options="level.name as level.name for level in os.levels"></select>
           </div>
         </div>
         <div cl***REMOVED***="control-group">
           <label cl***REMOVED***="control-label" for="team">Team</label>
           <div cl***REMOVED***="controls">
-            <select ng-model="observation.properties.TEAM" ng-selected="team" ng-options="team for team in teams"></select>
+            <select ng-model="observation.properties.TEAM" ng-selected="team" ng-options="team for team in os.teams"></select>
           </div>
         </div>
         <div cl***REMOVED***="control-group">
@@ -72,7 +64,7 @@
         </div>
       </form>
       <span cl***REMOVED***="pull-right">
-        <button cl***REMOVED***="btn btn-inverse" ng-click="cancelObservation(observation)" ngm-tap="cancelObservation(observation)">{{observationCloseText}}</button>
+        <button cl***REMOVED***="btn btn-inverse" ng-click="cancelEdit()" ngm-tap="cancelEdit()"><span ng-show="observation.id">Close</span><span ng-hide="observation.id">Cancel</span></button>
         <button cl***REMOVED***="btn" ng-click="saveObservation(observation)" ngm-tap="saveObservation(observation)"><i cl***REMOVED***="icon-save"></i> Save</button>
       </span>
       <span>
@@ -80,7 +72,7 @@
       </span>
     </div>
     <!-- Start of tab2 -->
-    <div cl***REMOVED***="tab-content" ng-show="observationTab == 2" style="height: 900px;">
+    <div cl***REMOVED***="tab-content" ng-show="observationTab == 2">
       <form>
         <div cl***REMOVED***="control-group">
           <label cl***REMOVED***="control-label" for="unit">Select File</label>
@@ -96,7 +88,7 @@
         </div>
       </form>
       <span>
-        <button cl***REMOVED***="btn btn-inverse" ng-click="cancelObservation(observation)" ngm-tap="cancelObservation(observation)">{{observationCloseText}}</button>
+        <button cl***REMOVED***="btn btn-inverse" ng-click="cancelEdit()" ngm-tap="cancelEdit()"><span ng-show="observation.id">Close</span><span ng-hide="observation.id">Cancel</span></button>
         <button cl***REMOVED***="btn" ng-click="saveObservation(observation)" ngm-tap="saveObservation(observation)"><i cl***REMOVED***="icon-save"></i> Save</button>
       </span>
       <hr>
@@ -119,5 +111,4 @@
         </div>
       </div>
     </div>
-  </div>
 </div>
