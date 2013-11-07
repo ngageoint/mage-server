@@ -52,6 +52,10 @@ angular.module('mage')
 
       ***REMOVED***.createNewObservation = function(location) {
         return new Featue({
+          type: 'Feature',
+          geometry: {
+            type: 'Point'
+          },
           properties: {
             userId: UserService.myself._id,
             TYPE: ***REMOVED***.types[0].name,
