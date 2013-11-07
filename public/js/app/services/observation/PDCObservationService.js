@@ -37,10 +37,16 @@ angular.module('mage')
 
       ***REMOVED***.createNewObservation = function(location) {
         return new Feature({
+          type: 'Feature',
+          geometry: {
+            type: 'Point'
+          },
           properties: {
+            userId: UserService.myself._id,
             TYPE: ***REMOVED***.types[0].name,
             EVENTLEVEL: ***REMOVED***.levels[0].name,
-            TEAM: ***REMOVED***.teams[0] 
+            TEAM: ***REMOVED***.teams[0],
+            EVENTDATE: new Date()
           }
         });
       };

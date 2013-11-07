@@ -137,6 +137,11 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
     $scope.files = [];
   }
 
+  $scope.$on('cancelEdit', function(event) {
+    $scope.newObservationEnabled = false;
+    isEditing = false;
+  });
+
   $scope.$on('newObservationSaved', function(event, observation) {
     $scope.newObservationEnabled = false;
     isEditing = false;
