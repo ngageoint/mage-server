@@ -58,6 +58,7 @@
         </div>
       </form>
     </div>
+    <div export/>  <!-- Export panel -->
     <div cl***REMOVED***="feature-panel" ng-show="newObservationEnabled">
       <div observation="newFeature" active-feature="editObservation" new-feature="newFeature" marker-location="markerLocation"></div>
     </div>
@@ -104,21 +105,12 @@
   </div>
   <div id="list-tool-toolbars" cl***REMOVED***="leaflet-bar">
     <a 
-      ng-cl***REMOVED***="{true: 'btn-inverse'}[checkCurrentMapPanel('export')]" 
-      ng-click="setCurrentMapPanel('export')" 
-      ngm-tap="setCurrentMapPanel('export')">
-      <i ng-cl***REMOVED***="checkCurrentMapPanel('export') && 'icon-sage-inverse' || 'icon-sage'"cl***REMOVED***="icon-cloud-download"></i>
-    </a>
-    <a 
       ng-cl***REMOVED***="{true: 'btn-inverse'}[newsFeedEnabled]" 
       ng-click="newsFeedEnabled = !newsFeedEnabled" 
       ngm-tap="newsFeedEnabled = !newsFeedEnabled">
       <i ng-cl***REMOVED***="newsFeedEnabled && 'icon-sage-inverse' || 'icon-sage'"cl***REMOVED***="icon-rss"></i>
     </a>
   </div>
-
-  <!-- Export panel -->
-  <div export/>
 
 </div>
 

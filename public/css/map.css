@@ -146,8 +146,8 @@ html, body, div.leaflet-container {
 
 /* Panels and their contents */
 .panel {
-	left: 385px;
-	top: 10px;
+	left: 465px;
+	top: 7px;
 	z-index: 1039;
 	overflow: auto;
 	background: #D0E7FF;
