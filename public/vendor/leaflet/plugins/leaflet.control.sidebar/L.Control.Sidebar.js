@@ -38,7 +38,7 @@ L.Control.Sidebar = L.Control.extend({
 
         // Create close button and attach it if configured
         if (this.options.closeButton) {
-            var close = L.DomUtil.create('a', 'close', container);
+            var close = L.DomUtil.create('a', 'sidebar-close', container);
             close.innerHTML = '&times;';
         }
 
