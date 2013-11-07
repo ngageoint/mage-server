@@ -139,7 +139,7 @@
     }
 }
 
-.leaflet-sidebar .close {
+.leaflet-sidebar .sidebar-close {
     position: absolute;
     right: 20px;
     top: 20px;
