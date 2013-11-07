@@ -169,7 +169,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
   $scope.$watch("markerLocation", function(location) {
     if (!location) return;
 
-    if (!isEditing && newObservationEnabled) {
+    if (!isEditing && $scope.newObservationEnabled) {
       $scope.newFeature.geometry.coordinates = [location.lng, location.lat];
       $scope.newFeature.properties.EVENTDATE = new Date().getTime();
     }
