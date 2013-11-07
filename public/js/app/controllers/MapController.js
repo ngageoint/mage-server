@@ -396,47 +396,4 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
     console.log("in dismissLocations");
     $scope.showLocations = false;
   }
-
-  /* Open and close the export dialog, and handle making the call to get the KML file. */
-  $scope.openExport = function () {
-    console.log("opening export");
-    $scope.showExport = true;
-  }
-
-  $scope.closeExport = function () {
-    console.log("closing export panel");
-    $scope.showExport = false;
-  }
-
-  /* Export existing points to  */
-  $scope.export = function () {
-    console.log("exporting features to KML");
-     
-    //error checking...
-    $("#export-error-message").hide();
-    if(!$scope.fft_layer && $scope.exportLayers.length == 0) {
-      $("#export-error-message").html('Error: Please Select a Layer.');
-      $("#export-error-message").show();
-      return;
-    }
-
-    var url = appConstants.rootUrl + "/api/export" + 
-      "?access_token=" + mageLib.getLocalItem('token') +
-      "&time_filter=" + $scope.time_filter;
-      
-    if($scope.fft_layer) {
-        url = url + "&fft_layer=" + $scope.fft_layer;
-    }
-
-    if($scope.exportLayers.length > 0) {
-      var layer_ids = _.map($scope.exportLayers,function(layer){return layer.id}).join();
-      url = url + "&export_layers=" + layer_ids;
-    }
-
-    window.location.href = url;
-  }
-
-  $scope.addExportLayer = function (layer) {
-    $scope.exportLayers.push(layer);
-  }
 }

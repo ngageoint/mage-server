@@ -17,14 +17,14 @@ module.exports = function(app, auth) {
       parameters.fields = JSON.parse(fields);
     }
 
-    var startTime = req.param('startTime');
-    if (startTime) {
-      parameters.filter.startTime = moment.utc(startTime).toDate();
+    var startDate = req.param('startDate');
+    if (startDate) {
+      parameters.filter.startDate = moment.utc(startDate).toDate();
     }
 
-    var endTime = req.param('endTime');
-    if (endTime) {
-      parameters.filter.endTime = moment.utc(endTime).toDate();
+    var endDate = req.param('endDate');
+    if (endDate) {
+      parameters.filter.endDate = moment.utc(endDate).toDate();
     }
 
     var bbox = req.param('bbox');
