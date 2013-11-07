@@ -34,9 +34,7 @@ mage.directive('export', function(UserService, appConstants, mageLib) {
 	  }];
 	  $scope.export = $scope.exportOptions[0];
 
-	  $scope.exportKML = function () {
-	    console.log("exporting features to KML");
-
+	  $scope.exportData = function(type) {
 		var layerIds = _.pluck(_.filter($scope.featureLayers, function(layer) { return layer.exportChecked; }), 'id');
 
 	    $scope.showLayerError = !$scope.fft && layerIds.length == 0;
@@ -59,7 +57,7 @@ mage.directive('export', function(UserService, appConstants, mageLib) {
 	    }
 
 	    var url = appConstants.rootUrl + "/api/export" + 
-	      "?access_token=" + mageLib.getLocalItem('token');
+	      "?access_token=" + mageLib.getLocalItem('token') + "?type=" + type;
 
 	    if (start) {
 	      url += "&startDate=" +  start;
