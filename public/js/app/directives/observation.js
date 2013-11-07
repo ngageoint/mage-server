@@ -13,6 +13,10 @@ mage.directive('observation', function (ObservationService, MapService) {
       scope.ms = MapService;
 
       scope.createNewObservation = ObservationService.createNewObservation;
+
+      scope.cancelEdit = function() {
+        scope.$emit('cancelEdit', scope.observation);
+      }
     }
   };
 });

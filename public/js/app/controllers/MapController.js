@@ -180,7 +180,9 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
   var loadLayer = function(id) {
     $scope.loadingLayers[id] = true;
 
-    var features = Feature.getAll({layerId: id/*, startTime: moment($scope.slider[0]).utc().format("YYYY-MM-DD HH:mm:ss"), endTime: moment($scope.slider[1]).utc().format("YYYY-MM-DD HH:mm:ss")*/}, function() {
+    var features = Feature.getAll({layerId: id/*, startTime: moment($scope.slider[0]).utc().format("YYYY-MM-DD HH:mm:ss"), endTime: moment($scope.slider[1]).utc().format("YYYY-MM-DD HH:mm:ss")*/}, function(response) {
+      console.info('response.status is ' + response.status);
+      console.info(response);
       $scope.loadingLayers[id] = false;
       console.info('loaded the features', features);
       
@@ -199,6 +201,8 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       // this has to change.
       $scope.layer.features = features;
       createAllFeaturesArray();
+    }, function(response) {
+      console.info('there was an error, code was ' + response.status);
     });
 
     $scope.layer = {id: id, checked: true};
