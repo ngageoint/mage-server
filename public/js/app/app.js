@@ -11,9 +11,8 @@ $('#main-nav a').on('click', function(){
 var mage = angular.module(
   "mage", 
   [
+    "$strap.directives",
     "ui.bootstrap",
-    /*"ui.date",
-    "ui.slider",*/
     "leaflet-directive",
     "mage.***REMOVED***s",
     "mage.userService",

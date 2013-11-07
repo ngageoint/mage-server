@@ -71,18 +71,19 @@ exports.getFeatures = function(layer, o, callback) {
   var query = featureModel(layer).find(conditions, fields);
 
   var filter = o.filter || {};
+  console.log('filtering data on: ', filter);
   // Filter by geometry
   if (filter.geometry) {
     query.where('geometry').intersects.geometry(filter.geometry);
   }
 
   var timestampFilter = {};
-  if (filter.startTime) {
-    query.where('properties.timestamp').gte(filter.startTime);
+  if (filter.startDate) {
+    query.where('properties.timestamp').gte(filter.startDate);
   }
 
-  if (filter.endTime) {
-    query.where('properties.timestamp').lt(filter.endTime);
+  if (filter.endDate) {
+    query.where('properties.timestamp').lt(filter.endDate);
   }
 
   query.exec(function (err, features) {

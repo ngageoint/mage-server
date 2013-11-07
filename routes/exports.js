@@ -9,13 +9,45 @@ module.exports = function(app, security) {
     , async = require('async')
     , fs = require('fs-extra')
     , sys = require('sys')
+    , path = require('path')
     , exec = require('child_process').exec
     , toGeoJson = require('../utilities/togeojson')
     , DOMParser = require('xmldom').DOMParser;
     
-// export locations into KML
+
+  var parseQueryParams = function(req, res, next) {
+    var parameters = {filter: {}};
+
+    var startDate = req.param('startDate');
+    if (startDate) {
+      parameters.filter.startDate = moment.utc(startDate).toDate();
+    }
+
+    var endDate = req.param('endDate');
+    if (endDate) {
+      parameters.filter.endDate = moment.utc(endDate).toDate();
+    }
+
+    var layerIds = req.param('layerIds');
+    if (layerIds) {
+      parameters.filter.layerIds = layerIds.split(',');
+    }
+
+    var fft = req.param('fft');
+    if (fft) {
+      parameters.filter.fft = fft === 'true';
+    }
+
+    req.parameters = parameters;
+
+    next();
+  }
+
+  // export locations into KML
   app.get(
     '/api/export',
+    access.authorize('READ_FEATURE'),
+    parseQueryParams,
     function(req, res) {
 
       var userLocations;
@@ -23,14 +55,13 @@ module.exports = function(app, security) {
       var featuresLookup = {};
       var usersLookup = {};
 
-      var filterTime = req.query.time_filter;
-      var filterExportLayers = req.query.export_layers;
-      var filterFft = req.query.fft_layer;
+      var layerIds = req.parameters.filter.layerIds;
+      var fft = req.parameters.filter.fft;
 
       var currentDate = new Date();
       var currentTmpDir = "/tmp/mage-export-" + currentDate.getTime();
 
-      if(!filterExportLayers && !filterFft) {        
+      if(!layerIds && !fft) {        
         return res.send(400, "Error.  Please Select Layer for Export.");
       }
       
@@ -45,7 +76,6 @@ module.exports = function(app, security) {
             return done(err);
           }
           for (var i in layers) {
-            //layerLookup[layers[i].id] = layers[i];
             var layer = layers[i];
             layerLookup[layer.id] = layer;
           }
@@ -65,14 +95,13 @@ module.exports = function(app, security) {
       }
 
       var getFeatures = function(done) {             
-        if(!filterExportLayers) {
+        if(!layerIds) {
           return done();
         }
           
-        var exportLayerIds = filterExportLayers.split(',');
-        async.each(exportLayerIds, function(id, done){
+        async.each(layerIds, function(id, done){
           layer = layerLookup[id];
-          Feature.getFeatures(layer, {}, function(featureResponse) {
+          Feature.getFeatures(layer, {filter: req.parameters.filter}, function(featureResponse) {
             if(featureResponse) {              
               featuresLookup[id] = featureResponse;
               done();
@@ -84,12 +113,15 @@ module.exports = function(app, security) {
         });                     
       }
 
-      var getLocations = function(done) {      
-        Location.getLocationsWithFilters(req.user, filterTime, 100000, function(err, locationResponse) { 
+      var getLocations = function(done) {
+        if (!fft) return done();
+
+        Location.getLocationsWithFilters(req.user, req.parameters.filter, 100000, function(err, locationResponse) { 
           if(err) {
             console.log(err);
             return done(err);
           }
+
           userLocations = locationResponse;
           done();
         });
@@ -120,41 +152,51 @@ module.exports = function(app, security) {
       var copyFeatureMediaAttachmentsToStagingDirectory = function(done) {
         
         console.log('Features Lookup: \n');
+
+        if (!featuresLookup.length) return done();
         
         Object.keys(featuresLookup).forEach(function(key) {
           
           var features = featuresLookup[key];
 
-          for(var i = 0; i < features.length; i++) {
-            var feature = features[i];
-            var attachments = feature.attachments;
-            if(attachments) {
-              for(var j = 0; j < attachments.length; j++) {
-                var attachment = attachments[j];
-                
+          async.each(features, 
+            function(feature, featureDone) {
+              async.each(feature.attachments, 
+                function(attachment, attachmentDone) {
+                console.log('copyin attachment: ' + attachment.name);
+
                 //create the directories if needed
-                child = exec('mkdir -p ' + currentTmpDir + '/files/' + attachment.relativePath, function (error, stdout, stderr) {
-                  sys.print('stdout: ' + stdout);
-                  sys.print('stderr: ' + stderr);
-                  if (error !== null) {
-                    console.log('exec error: ' + error);
+                var dir = path.dirname(currentTmpDir + '/files/' + attachment.relativePath);
+                console.log('trying to create dir: ', dir);
+                fs.mkdirp(dir, function(err) {
+                  if (err) {
+                    console.log('Could not create directory for file attachemnt for KML export', err);
+                    return attachmentDone();
                   }
 
-                  //copy the file!
-                  var srcFile = '/var/lib/mage/attachments/' + attachment.relativePath;
-                  var destFile = currentTmpDir + '/files/' + attachment.relativePath + '/' + attachment.name;
-                  fs.copy(srcFile, destFile, function(err){
-                    if(err) {
-                      console.log('Unable to copy attachment. ' + err);
+                  var src = '/var/lib/mage/attachments/' + attachment.relativePath;
+                  var dest = currentTmpDir + '/files/' + attachment.relativePath;
+                  console.log('copying from: ', src);
+                  console.log('copying to: ', dest);
+                  fs.copy(src, dest, function(err) {
+                    if (err) {
+                      console.log('Could not copy file for KML export', err);
                     }
+
+                    return attachmentDone();
                   });
 
-                });         
-              }
+                });     
+              },
+              function(err) {
+                featureDone();
+              });
+            },
+            function(err) {
+              done();
             }
-          }
+          );
         });
-        done();
       }
 
       var writeKmlFile = function(done) {
@@ -166,47 +208,50 @@ module.exports = function(app, security) {
           stream.write(generate_kml.generateKMLDocument());    
 
           //writing requested feature layers
-          if(filterExportLayers) {    
+          if (layerIds) {    
 
-            var exportLayerIds = filterExportLayers.split(',');
-            for(var i in exportLayerIds) {
-                
-              var layerId = exportLayerIds[i];
+            layerIds.forEach(function(layerId) {
               var layer = layerLookup[layerId];
               var features = featuresLookup[layerId];
                 
-              if(layer) {
-                stream.write(generate_kml.generateKMLFolderStart(layer.name));              
-                for(var j in features) {
-                  feature = features[j];
+              if (layer) {
+                stream.write(generate_kml.generateKMLFolderStart(layer.name));
+
+                features.forEach(function(feature) {             
                   lon = feature.geometry.coordinates[0];
                   lat = feature.geometry.coordinates[1];
                   desc = feature.properties.TYPE;
                   attachments = feature.attachments;              
-                  stream.write(generate_kml.generatePlacemark(feature._id, feature.properties.TYPE, lon ,lat ,0, feature.properties, attachments));
-                }  
+                  stream.write(generate_kml.generatePlacemark(feature.properties.TYPE, feature.properties.TYPE, lon ,lat ,0, feature.properties, attachments));
+                });
+
                 stream.write(generate_kml.generateKMLFolderClose());  
               }  
-            }
+            });
           }    
 
           //writing requested FFT locations
-          if(filterFft) {
-            for(var i in userLocations) {          
-              var userLocation = userLocations[i];
+          if (fft) {
+            userLocations.forEach(function(userLocation) {       
               var user = usersLookup[userLocation.user];
-              stream.write(generate_kml.generateKMLFolderStart('user: ' + user.username));
-              for(var j in userLocation.locations) {
-                var location = userLocation.locations[j];
-                if(location) {
-                  lon = location.geometry.coordinates[0];
-                  lat = location.geometry.coordinates[1];                  
-                  stream.write(generate_kml.generatePlacemark(user.username + "-p" + j, 'FFT' , lon ,lat ,0, location.properties)); 
-                } 
+
+              if (user) {
+                stream.write(generate_kml.generateKMLFolderStart('user: ' + user.username));
+
+                userLocation.locations.forEach(function(location) {
+                  if (location) {
+                    lon = location.geometry.coordinates[0];
+                    lat = location.geometry.coordinates[1];                  
+                    stream.write(generate_kml.generatePlacemark(user.username, 'FFT' , lon ,lat ,0, location.properties)); 
+                  } 
+                });
+
+                stream.write(generate_kml.generateKMLFolderClose());  
               }
-              stream.write(generate_kml.generateKMLFolderClose());  
-            }
+
+            });
           }
+
           stream.write(generate_kml.generateKMLDocumentClose());
           stream.end(generate_kml.generateKMLClose(), function(err) {
             if(err) {
@@ -276,7 +321,6 @@ module.exports = function(app, security) {
       async.series(seriesFunctions,streamKmzFileToClient);
 
     }
- 
   );
 /*
   app.get(

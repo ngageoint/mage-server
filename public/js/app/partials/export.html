@@ -3,39 +3,64 @@
 	  <i ng-click="setCurrentMapPanel('none')" ngm-tap="setCurrentMapPanel('none')" cl***REMOVED***="close">&times;</i>
 	</div>
 	<div cl***REMOVED***="panel-content">
-	  <h3>Export to KML</h3>
+	  <h4>Export to KML</h4>
 	  <form cl***REMOVED***="form">  
 	    <div cl***REMOVED***="top-gap">
-	      <i cl***REMOVED***="icon-layers icon-sage pull-left icon-spacer"></i>    
-	      <h4>Select Layers</h4>
+	      <i cl***REMOVED***="icon-layers icon-sage"></i>    
+	      <strong>Select Layers</strong> <span cl***REMOVED***="text-error" ng-show="showLayerError">Please Select a Layer</span>
 	    </div>
+
 	    <div cl***REMOVED***="control-group">
 	      <div cl***REMOVED***="controls">
-	        <label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
-	          <input type="checkbox" ng-click="addExportLayer(layer)">{{layer.name}}
-	        </label>
+			 <label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
+               <input type="checkbox" ng-model="layer.exportChecked"/>{{layer.name}}
+             </label>
+
 	        <label cl***REMOVED***="checkbox">
-	          <input type="checkbox" ng-model="fft_layer">Friendly Forces
+	          <input type="checkbox" ng-model="fft">People
 	        </label>
 	      </div>
 	    </div>
+
 	    <div cl***REMOVED***="top-gap">
-	      <i cl***REMOVED***="icon-filter icon-sage pull-left icon-spacer"></i>
-	      <h4>Filter Output</h4>
+	      <i cl***REMOVED***="icon-filter icon-sage"></i>
+	      <strong>Filter Output</strong>
 	    </div>
-	    <div>Time Range:</div>
-	    <div style="margin: 0px, 0px, 0px, 20px">
-	      <select ng-model="time_filter">
-	        <option value="300">Last 5 Minutes</option>
-	        <option value="3600">Last Hour</option>
-	        <option value="43200">Last 12 Hours</option>
-	        <option value="86400">Last 24 Hours</option>
-	        <option value="-1">All (Use With Caution)</option>
-	      </select>
-	  </div>
+
+	    <div cl***REMOVED***="control-group">
+	      <select cl***REMOVED***="input-xlarge" ng-model="export" ng-options="o.label for o in exportOptions"></select>
+	    </div>
+
+	    <div ng-show="export.custom">
+    		<div>
+		        <div cl***REMOVED***="control-group input-append">
+		    	  <label cl***REMOVED***="control-label">Start Date/Time</label>
+		          <input cl***REMOVED***="input-small" type="text" ng-model="exportStartDate" data-date-format="mm/dd/yyyy" bs-datepicker>
+		          <button type="button" cl***REMOVED***="btn" data-toggle="datepicker"><i cl***REMOVED***="icon-calendar"></i></button>
+		        </div>
+		        <div cl***REMOVED***="control-group input-append">
+		    	  <label cl***REMOVED***="control-label" for="">&nbsp</label>
+		   		  <input cl***REMOVED***="input-small" type="text" ng-model="exportStartTime" bs-timepicker data-template="false" data-show-inputs="false" data-show-seconds="true" data-show-meridian="false">
+		   		  <span cl***REMOVED***="add-on"><i cl***REMOVED***="icon-time" style="color:black"></i></span>
+		        </div>
+	        </div>
+	        <div>
+		        <div cl***REMOVED***="control-group input-append">
+		    	  <label cl***REMOVED***="control-label">End Date/Time</label>
+		          <input cl***REMOVED***="input-small" type="text" ng-model="exportEndDate" data-date-format="mm/dd/yyyy" bs-datepicker>
+		          <button type="button" cl***REMOVED***="btn" data-toggle="datepicker"><i cl***REMOVED***="icon-calendar"></i></button>
+		        </div>
+		        <div cl***REMOVED***="control-group input-append">
+		    	  <label cl***REMOVED***="control-label" for="">&nbsp</label>
+		   		  <input cl***REMOVED***="input-small" type="text" ng-model="exportEndTime" bs-timepicker data-template="false" data-show-inputs="false" data-show-seconds="true" data-show-meridian="false">
+		   		  <span cl***REMOVED***="add-on"><i cl***REMOVED***="icon-time" style="color:black"></i></span>
+		        </div>
+	        </div>
+   		</div>
+
 	  </form>
 	  <button cl***REMOVED***="btn btn-inverse" ng-click="setCurrentMapPanel('none')" ngm-tap="setCurrentMapPanel('none')">Cancel</button>
-	  <button cl***REMOVED***="btn" ng-click="export()" ngm-tap="export()">Export</button>
+	  <button cl***REMOVED***="btn" ng-click="exportKML()" ngm-tap="exportKML()">Export</button>
 	  <div id="export-error-message" cl***REMOVED***="top-gap alert alert-error" style="display: none;"></div>
 	</div>
 </div>

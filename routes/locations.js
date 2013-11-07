@@ -33,7 +33,6 @@ module.exports = function(app, security) {
 
     req.locations = locations;
 
-    console.log('trying to insert: ' + JSON.stringify(locations));
     next();
   }
 
