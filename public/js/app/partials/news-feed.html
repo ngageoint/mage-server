@@ -20,57 +20,7 @@
     <div cl***REMOVED***="news-items">
       <div cl***REMOVED***="news-items-list">
         <div cl***REMOVED***="the-news-items">
-          <div cl***REMOVED***="filter-panel" ng-show="showFilter">
-            <h3>Filter</h3>
-            <form cl***REMOVED***="form">
-              <div cl***REMOVED***="control-group">
-                <div cl***REMOVED***="controls">
-                  <label cl***REMOVED***="checkbox">
-                    <input type="checkbox" ng-model="locationServicesEnabled" ng-click="locationServices()" ng-tap="locationServices()"/><i cl***REMOVED***="icon-users" 
-                    ng-cl***REMOVED***="{false: 'icon-sage-inverse', true: 'icon-sage'}[locationServicesEnabled]"></i>Show People
-                    <!--<i cl***REMOVED***="icon-globe icon-spin" ng-show="loadingLayers[layer.id]" style="margin-left: 7px;"></i>-->
-                  </label>
-                </div>
-              </div>
-
-              <div ng-show="featureLayers.length > 0">
-                <div style="display: inline-block;">
-                  <h4>Feature Layers</h4>
-                </div>
-                <div cl***REMOVED***="control-group">
-                  <div cl***REMOVED***="controls">
-                    <label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
-                      <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)"/>{{layer.name}}
-                      <i cl***REMOVED***="icon-globe icon-spin" ng-show="loadingLayers[layer.id]" style="margin-left: 7px;"></i>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <div ng-show="externalLayers.length > 0">
-                <h4>External Layers</h4>
-                <div cl***REMOVED***="control-group">
-                  <div cl***REMOVED***="controls">
-                    <label cl***REMOVED***="checkbox" ng-repeat="layer in externalLayers">
-                      <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)"/>{{layer.name}}
-                      <i cl***REMOVED***="icon-globe icon-spin" ng-show="loadingLayers[layer.id]" style="margin-left: 7px;"></i>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <div ng-show="imageryLayers.length > 0">
-                <h4>Imagery Layers</h4>
-                <div cl***REMOVED***="control-group">
-                  <div cl***REMOVED***="controls">
-                    <label cl***REMOVED***="checkbox" ng-repeat="layer in imageryLayers">
-                      <input type="checkbox" ng-model="layer.checked" ng-click="onImageryLayer(layer)"/>{{layer.name}}
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </form>
-          </div>
+          <div filter/>
           <div export/>  <!-- Export panel -->
           <div cl***REMOVED***="news-feed-item pointer" id="{{feedItem.id || feedItem.user}}"
           data-ng-repeat="feedItem in feedItems | orderBy: newsFeedOrder : true track by feedItem.id || feedItem.user">
