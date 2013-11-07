@@ -57,7 +57,7 @@ mage.directive('export', function(UserService, appConstants, mageLib) {
 	    }
 
 	    var url = appConstants.rootUrl + "/api/export" + 
-	      "?access_token=" + mageLib.getLocalItem('token') + "?type=" + type;
+	      "?access_token=" + mageLib.getLocalItem('token') + "&type=" + type;
 
 	    if (start) {
 	      url += "&startDate=" +  start;

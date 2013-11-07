@@ -1,9 +1,8 @@
 <div ng-show="showExport" cl***REMOVED***="filter-panel">
-  <h4>Export to KML</h4>
+  <h3>Export</h3>
   <form cl***REMOVED***="form">  
     <div cl***REMOVED***="top-gap">
-      <i cl***REMOVED***="icon-layers icon-sage"></i>    
-      <strong>Select Layers</strong> <span cl***REMOVED***="text-error" ng-show="showLayerError">Please Select a Layer</span>
+      <h4><i cl***REMOVED***="icon-layers icon-sage"></i>  Select Layers</h4>
     </div>
 
     <div cl***REMOVED***="control-group">
@@ -19,8 +18,7 @@
     </div>
 
     <div cl***REMOVED***="top-gap">
-      <i cl***REMOVED***="icon-filter icon-sage"></i>
-      <strong>Filter Output</strong>
+      <h4><i cl***REMOVED***="icon-filter icon-sage"></i> Filter Output</h4>
     </div>
 
     <div cl***REMOVED***="control-group">
@@ -55,6 +53,9 @@
 		</div>
 
   </form>
+  <div ng-show="showLayerError" cl***REMOVED***="alert-error" bs-alert>
+  	<span>Please Select a Layer</span>
+  </div>
   <button cl***REMOVED***="btn btn-inverse pull-right" ng-click="showExport = false" ngm-tap="showExport = false">Close</button>
   <button cl***REMOVED***="btn sage-color" ng-click="exportData('kml')" ngm-tap="exportData('kml')"><i cl***REMOVED***="icon-sage icon-download"></i> KML</button>
 	  <button cl***REMOVED***="btn sage-color" ng-click="exportData('shapefile')" ngm-tap="exportData('shapefile')"><i cl***REMOVED***="icon-sage icon-download"></i> Shapefile</button>
