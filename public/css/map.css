@@ -48,6 +48,12 @@ html, body, div.leaflet-container {
   }
 }
 
+@media(min-width: 768px) {
+	.hide-on-ipad-landscape {
+		display:none;
+	}
+}
+
 @media(min-width: 1024px) {
 	.hide-on-desktop {
 		display:none;
@@ -190,7 +196,7 @@ html, body, div.leaflet-container {
 	z-index:6;
 }
 
-@media(max-width:768px){
+@media(max-width:767px){
   .news-items-wrapper {
     top: 200px !important;
   }
