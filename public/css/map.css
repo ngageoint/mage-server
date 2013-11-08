@@ -60,7 +60,7 @@ html, body, div.leaflet-container {
 
 .leaflet-sidebar {
 	padding-top: 50px;
-  z-index: 1034;
+  z-index: 1029;
 }
 
 .leaflet-sidebar > .leaflet-control {
