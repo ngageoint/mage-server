@@ -12,7 +12,7 @@ module.exports = function(app, security) {
     , path = require('path')
     , toGeoJson = require('../utilities/togeojson')
     , shp = require('shp-write')
-    , zip = require('node-zip')()
+    , Zip = require('node-zip')
     , DOMParser = require('xmldom').DOMParser
     , exec = require('child_process').exec;
 
@@ -82,35 +82,78 @@ module.exports = function(app, security) {
     var fft = req.parameters.filter.fft;
 
     var layersToShapefiles = function(done) {
-      Layer.getLayers({ids: layerIds}, function (err, layers) {
-        if (err) return done(err);
+      Layer.getLayers({ids: layerIds || []}, function(err, layers) {
+        async.map(layers,
+          function(layer, done) {
+            Feature.getFeatures(layer, {filter: req.parameters.filter}, function(features) {
+              shp.writeGeoJson({features: JSON.parse(JSON.stringify(features))}, function(err, files) {
+                done(err, {layer: layer, files: files});
+              });
+            });
+          },
+          function(err, results) {
+            done(err, results);
+          }
+        );
+      });
+    }
 
-        layers.forEach(function(layer) {
-          Feature.getFeatures(layer, {}, function(features) {
-            return shp.download({type: 'FeatureCollection', features: features});
-            // shp.writeGeoJson({type: 'FeatureCollection', features: features}, function(err, content) {
-            //   console.log('got some files', content);
-            // });
-          });
+    var locationsToShapefiles = function(done) {
+      if (!fft) return done(null, []);
 
+      Location.getAllLocations({filter: req.parameters.filter}, function(err, locations) {
+        shp.writeGeoJson({features: JSON.parse(JSON.stringify(locations))}, function(err, files) {
+          done(err, {files: files});
         });
       });
     }
 
+    var generateZip = function(err, result) {
+      if (err) return next(err);
+
+      var zip = new Zip();
+      var folder = zip.folder('layers');
+
+      // Add layer shapefiles to zip
+      result.layers.forEach(function(layer) {
+        for (type in layer.files) {
+          var file = layer.files[type];
+          folder.file(layer.layer.name + "_" + type + '.shp', file.shp.buffer, { binary: true });
+          folder.file(layer.layer.name + "_" + type + '.shx', file.shx.buffer, { binary: true });
+          folder.file(layer.layer.name + "_" + type + '.dbf', file.dbf.buffer, { binary: true });
+          if (file.prj) folder.file(layer.layer.name + "_" + type + '.prj', file.prj);
+        }
+      });
+
+      // Add location shapefiles to zip
+      for (type in result.locations.files) {
+        var file = result.locations.files[type];
+        folder.file("Locations_" + type + '.shp', file.shp.buffer, { binary: true });
+        folder.file("Locations_" + type + '.shx', file.shx.buffer, { binary: true });
+        folder.file("Locations_" + type + '.dbf', file.dbf.buffer, { binary: true });
+        if (file.prj) folder.file("Locations_" + type + '.prj', file.prj);
+      }
+
+      // Generate zip and send response
+      var data = zip.generate({ type: 'string', compression: 'STORE' });
+      fs.writeFileSync('/tmp/poop.zip', data, 'binary');
+
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', "attachment; filename=mage-shapefiles-" + new Date().getTime() + ".zip");
+      res.write(data, "binary");  
+      res.end();
+    }
+
     async.parallel({
       layers: layersToShapefiles,
-    },
-    function(err, results) {
-
-    });
- 
+      locations: locationsToShapefiles
+    }, generateZip);
   }
 
   var exportKML = function(req, res) {
 
     var userLocations;
-    var layerLookup = {};
-    var featuresLookup = {};
+    var layers = [];
     var usersLookup = {};
 
     var layerIds = req.parameters.filter.layerIds;
@@ -128,42 +171,30 @@ module.exports = function(app, security) {
     ////////////////////////////////////////////////////////////////////
     var getLayers = function(done) {
       //get layers for lookup
-      Layer.getLayers(function (err, layers) {
-        if(err) {
-          console.log(err);
-          return done(err);
-        }
-        for (var i in layers) {
-          var layer = layers[i];
-          layerLookup[layer.id] = layer;
-        }
-        done();
+      Layer.getLayers({ids: layerIds || []}, function(err, result) {
+        layers = result;
+        done(err);
       });
     }
 
     var getUsers = function(done) {
       //get users for lookup
-      User.getUsers(function (users){          
-        for (var i in users) {            
-          var user = users[i];
+      User.getUsers(function (users) {      
+        users.forEach(function(user) {
           usersLookup[user._id] = user;
-        }
+        });
+
         done();
       });        
     }
 
     var getFeatures = function(done) {             
-      if(!layerIds) {
-        return done();
-      }
+      if(!layers) return done();
         
-      async.each(layerIds, function(id, done){
-        layer = layerLookup[id];
-        Feature.getFeatures(layer, {filter: req.parameters.filter}, function(featureResponse) {
-          if(featureResponse) {              
-            featuresLookup[id] = featureResponse;
-            done();
-          }
+      async.each(layers, function(layer, done) {
+        Feature.getFeatures(layer, {filter: req.parameters.filter}, function(features) {
+          layer.features = features;
+          done();
         });
       },
       function(){
@@ -209,23 +240,16 @@ module.exports = function(app, security) {
 
     var copyFeatureMediaAttachmentsToStagingDirectory = function(done) {
       
-      console.log('Features Lookup: \n');
-
-      if (!featuresLookup.length) return done();
-      
-      Object.keys(featuresLookup).forEach(function(key) {
-        
-        var features = featuresLookup[key];
+      layers.forEach(function(layer) {
+        var features = layer.features;
 
         async.each(features, 
           function(feature, featureDone) {
             async.each(feature.attachments, 
               function(attachment, attachmentDone) {
-              console.log('copyin attachment: ' + attachment.name);
 
               //create the directories if needed
               var dir = path.dirname(currentTmpDir + '/files/' + attachment.relativePath);
-              console.log('trying to create dir: ', dir);
               fs.mkdirp(dir, function(err) {
                 if (err) {
                   console.log('Could not create directory for file attachemnt for KML export', err);
@@ -234,8 +258,6 @@ module.exports = function(app, security) {
 
                 var src = '/var/lib/mage/attachments/' + attachment.relativePath;
                 var dest = currentTmpDir + '/files/' + attachment.relativePath;
-                console.log('copying from: ', src);
-                console.log('copying to: ', dest);
                 fs.copy(src, dest, function(err) {
                   if (err) {
                     console.log('Could not copy file for KML export', err);
@@ -266,11 +288,9 @@ module.exports = function(app, security) {
         stream.write(generate_kml.generateKMLDocument());    
 
         //writing requested feature layers
-        if (layerIds) {    
-
-          layerIds.forEach(function(layerId) {
-            var layer = layerLookup[layerId];
-            var features = featuresLookup[layerId];
+        if (layers) {    
+          layers.forEach(function(layer) {
+            var features = layer.features;
               
             if (layer) {
               stream.write(generate_kml.generateKMLFolderStart(layer.name));
