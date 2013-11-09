@@ -35,6 +35,28 @@ exports.createLocations = function(user, locations, callback) {
   });  
 }
 
+exports.getAllLocations = function(options, callback) {
+  var query = {};
+
+  var filter = options.filter
+  var timeFilter = {};
+  if (filter && filter.startDate) {
+    timeFilter["$gte"] = filter.startDate;
+  }
+  if (filter && filter.endDate) {
+    timeFilter["$lt"] = filter.endDate;
+  }
+  if (filter.startDate || filter.endDate) query["properties.timestamp"] = timeFilter;
+
+  Location.find(query, function (err, locations) {
+    if (err) {
+      console.log("Error finding locations", err);
+    }
+
+    callback(err, locations);
+  });
+}
+
 // get locations for users team
 exports.getLocations = function(user, limit, callback) {
   var sort = { $sort: { "properties.timestamp": -1 }};
