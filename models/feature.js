@@ -86,7 +86,7 @@ exports.getFeatures = function(layer, o, callback) {
     query.where('properties.timestamp').lt(filter.endDate);
   }
 
-  query.lean().exec(function (err, features) {
+  query.exec(function (err, features) {
     if (err) {
       console.log("Error finding features in mongo: " + err);
     }
