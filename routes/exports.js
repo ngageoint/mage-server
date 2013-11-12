@@ -136,10 +136,8 @@ module.exports = function(app, security) {
 
       // Generate zip and send response
       var data = zip.generate({ type: 'string', compression: 'STORE' });
-      fs.writeFileSync('/tmp/poop.zip', data, 'binary');
-
-      res.setHeader('Content-Type', 'application/zip');
-      res.setHeader('Content-Disposition', "attachment; filename=mage-shapefiles-" + new Date().getTime() + ".zip");
+      res.setHeader('Content-Type', 'text/html');
+      res.setHeader('Content-Disposition', "attachment; filename=mage-shapefile-export-" + new Date().getTime() + ".zip");
       res.write(data, "binary");  
       res.end();
     }
@@ -376,7 +374,7 @@ module.exports = function(app, security) {
           }  
 
           res.writeHead(200,{"Content-Type": "application/octet-stream" , 
-                             "Content-Disposition": "attachment; filename=mage-export-" + currentDate.getTime() + ".zip"}); 
+                             "Content-Disposition": "attachment; filename=mage-kml-export-" + currentDate.getTime() + ".zip"}); 
           res.write(file,"binary");  
           res.end();  
         });
@@ -399,11 +397,11 @@ module.exports = function(app, security) {
     async.series(seriesFunctions,streamZipFileToClient);
 
   }
-/*
+
   app.get(
     '/api/import',
     function(req, res, next) {
-      fs.readFile('/tmp/sochi/Point/point/doc.kml', 'utf8', function(err, data) {
+      fs.readFile('/tmp/sochi/road/1_5/doc.kml', 'utf8', function(err, data) {
         if (err) return next(err);
 
         var featureCollections = toGeoJson.kml(data);
@@ -434,5 +432,5 @@ module.exports = function(app, security) {
       });
     }
   );
-*/
+
 }

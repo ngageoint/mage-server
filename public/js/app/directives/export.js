@@ -2,7 +2,13 @@ mage.directive('export', function(UserService, appConstants, mageLib) {
   return {
     restrict: "A",
     templateUrl:  "js/app/partials/export.html",
-    controller: function ($scope, MapService, mageLib) {
+    controller: function ($scope, $window, MapService, mageLib) {
+
+      var fileExport = angular.element('#file-export');
+      fileExport.load(function() {
+      	alert('file download is complete');
+      });
+
       $scope.ms = MapService;
 
       $scope.exportStartDate = new Date();
@@ -34,11 +40,22 @@ mage.directive('export', function(UserService, appConstants, mageLib) {
 	  }];
 	  $scope.export = $scope.exportOptions[0];
 
-	  $scope.exportData = function(type) {
+	  $scope.verifyExport = function($event) {
 		var layerIds = _.pluck(_.filter($scope.featureLayers, function(layer) { return layer.exportChecked; }), 'id');
+		if (!$scope.fft && layerIds.length == 0) {
+			$event.preventDefault();
+	   		$scope.showLayerError = true;
+		    return false;
+		}
 
-	    $scope.showLayerError = !$scope.fft && layerIds.length == 0;
-	    if ($scope.showLayerError) return;
+   		$scope.showLayerError = false;
+	  }
+
+	  $scope.exporting = {};
+	  $scope.exportData = function(type) {
+	  	$scope.exporting[type] = true;
+
+		var layerIds = _.pluck(_.filter($scope.featureLayers, function(layer) { return layer.exportChecked; }), 'id');
 
 	    if ($scope.export.custom) {
 	      var startDate = moment($scope.exportStartDate).utc();
@@ -74,8 +91,18 @@ mage.directive('export', function(UserService, appConstants, mageLib) {
 	    if (layerIds.length) {
 	      url = url + "&layerIds=" + layerIds;
 	    }
+      
+      	var e = angular.element('#export-' + type);
+      	if (e) e.remove();
 
-	    window.location.href = url;
+      	var e = angular.element("<iframe id=export-" + type + "style='diplay:none' src=" + url + "></iframe>");
+      	var s = $scope;
+      	e.on('load', function() {
+      		$scope.$apply(function() {
+      			$scope.exporting[type] = false;
+      		});
+      	});
+      	angular.element('body').append(e);
 	  }
     }
   };
