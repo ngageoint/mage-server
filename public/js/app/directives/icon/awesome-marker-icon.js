@@ -8,7 +8,7 @@ mage.directive('awesomeMarkerIcon', function (AwesomeMarkerIconService) {
     	feature:'=awesomeMarkerIcon',
       types:'='
     },
-    controller: function($scope) {
+    controller: function($scope, appConstants) {
     	$scope.$watch('feature.properties.TYPE', function(type) {
         if (!type) return;
 
@@ -18,9 +18,7 @@ mage.directive('awesomeMarkerIcon', function (AwesomeMarkerIconService) {
 
       $scope.$watch('feature.properties.EVENTDATE', function(timestamp) {
         if (!timestamp) return;
-
-        var properties = $scope.feature.properties;
-        $scope.markerColor = "awesome-marker-icon-" + AwesomeMarkerIconService.getColor(properties.EVENTDATE);
+        $scope.markerColor = "awesome-marker-icon-" + appConstants.featureToColor($scope.feature);
       });
     }
   };
