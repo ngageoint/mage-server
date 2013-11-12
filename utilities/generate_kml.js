@@ -34,12 +34,12 @@ var generateKMLDocument = function() {
 
 var generateKMLFolderStart = function(name) {
   var folder = "<Folder>" + 
-               "  <name>" + name + "</name>"; 
+               "  <name>" + name + "</name>";
+
   return folder;
 };
 
 var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachments) {
-
   var description = "<description>" +
     '<![CDATA[<html xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:msxsl="urn:schemas-microsoft-com:xslt">' +
       '<head>' +
@@ -115,6 +115,7 @@ var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachm
   var placemark = 
     "<Placemark>" + 
       "<name>" + name + " " + feature.timestamp + "</name>" + 
+      "<visibility>0</visibility>" +
       "<styleUrl>#" + styleUrl + "-" + styleColor + "</styleUrl>" +
       "<Point>" +
       "<coordinates>" + lon + "," + lat + "," + alt + "</coordinates>" +
