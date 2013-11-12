@@ -1,6 +1,8 @@
 <div ng-show="showExport" cl***REMOVED***="filter-panel">
   <h3>Export</h3>
+
   <form cl***REMOVED***="form">  
+
     <div cl***REMOVED***="top-gap">
       <h4><i cl***REMOVED***="icon-layers icon-sage"></i>  Select Layers</h4>
     </div>
@@ -52,12 +54,18 @@
         </div>
 		</div>
 
+    <div ng-show="showLayerError" cl***REMOVED***="alert-error" bs-alert>
+      <span>Please Select a Layer</span>
+    </div>
+
   </form>
-  <div ng-show="showLayerError" cl***REMOVED***="alert-error" bs-alert>
-  	<span>Please Select a Layer</span>
-  </div>
+
   <button cl***REMOVED***="btn btn-inverse pull-right" ng-click="showExport = false" ngm-tap="showExport = false">Close</button>
-  <button cl***REMOVED***="btn sage-color" ng-click="exportData('kml')" ngm-tap="exportData('kml')"><i cl***REMOVED***="icon-sage icon-download"></i> KML</button>
-	  <button cl***REMOVED***="btn sage-color" ng-click="exportData('shapefile')" ngm-tap="exportData('shapefile')"><i cl***REMOVED***="icon-sage icon-download"></i> Shapefile</button>
-  <div id="export-error-message" cl***REMOVED***="top-gap alert alert-error" style="display: none;"></div>
+  <!-- <a cl***REMOVED***="btn sage-color" target="_blank" ng-href="{{exportUrl('kml')}}" ng-click="verifyExport($event)"><i cl***REMOVED***="icon-sage icon-download"></i> KML</a> -->
+  <button cl***REMOVED***="btn sage-color" ng-disabled="exporting.kml" ng-click="exportData('kml')">
+    <i cl***REMOVED***="icon-sage" ng-cl***REMOVED***="exporting.kml && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.kml && "Exporting..." || "KML"}}
+  </button>
+	<button cl***REMOVED***="btn sage-color" ng-disabled="exporting.shapefile" ng-click="exportData('shapefile')">
+    <i cl***REMOVED***="icon-sage" ng-cl***REMOVED***="exporting.shapefile && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.shapefile && "Exporting..." || "Shapefile"}}
+  </button>
 </div>
