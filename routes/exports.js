@@ -136,7 +136,7 @@ module.exports = function(app, security) {
 
       // Generate zip and send response
       var data = zip.generate({ type: 'string', compression: 'STORE' });
-      res.setHeader('Content-Type', 'text/html');
+      res.setHeader('Content-Type', 'application/zip');
       res.setHeader('Content-Disposition', "attachment; filename=mage-shapefile-export-" + new Date().getTime() + ".zip");
       res.write(data, "binary");  
       res.end();
@@ -373,7 +373,7 @@ module.exports = function(app, security) {
             return;  
           }  
 
-          res.writeHead(200,{"Content-Type": "application/octet-stream" , 
+          res.writeHead(200,{"Content-Type": "application/zip" , 
                              "Content-Disposition": "attachment; filename=mage-kml-export-" + currentDate.getTime() + ".zip"}); 
           res.write(file,"binary");  
           res.end();  
