@@ -291,7 +291,7 @@ module.exports = function(app, security) {
             var features = layer.features;
               
             if (layer) {
-              stream.write(generate_kml.generateKMLFolderStart(layer.name));
+              stream.write(generate_kml.generateKMLFolderStart(layer.name, false));
 
               features.forEach(function(feature) {             
                 lon = feature.geometry.coordinates[0];
@@ -312,7 +312,7 @@ module.exports = function(app, security) {
             var user = usersLookup[userLocation.user];
 
             if (user) {
-              stream.write(generate_kml.generateKMLFolderStart('user: ' + user.username));
+              stream.write(generate_kml.generateKMLFolderStart('user: ' + user.username, false));
 
               userLocation.locations.forEach(function(location) {
                 if (location) {
