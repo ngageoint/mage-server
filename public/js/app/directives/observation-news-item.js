@@ -47,7 +47,7 @@ mage.directive('mapClip', function() {
       var createMap = function() {
 
         if (!$scope.map) {
-          $scope.map = new L.Map($element[0], {zoomControl: false});
+          $scope.map = new L.Map($element[0], {zoomControl: false, trackResize: true});
           $scope.$watch('ms.leafletBaseLayerUrl', function() {
             if (!$scope.ms.leafletBaseLayerUrl) return;
             var layer = new L.TileLayer(MapService.leafletBaseLayerUrl, MapService.leafletBaseLayerOptions);   

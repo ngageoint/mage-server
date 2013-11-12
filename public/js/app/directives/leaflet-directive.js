@@ -9,7 +9,7 @@
       template: '<div cl***REMOVED***="map"></div>',
       link: function (scope, element, attrs, ctrl) {
         // Create the map
-        var map = L.map("map");
+        var map = L.map("map", {trackResize: true});
         map.setView([0, 0], 3);
         var layerControl = L.control.layers();
         layerControl.addTo(map);
@@ -172,10 +172,10 @@
               var layer = new L.GeoJSON(u.locations[0], {
                 pointToLayer: function (feature, latlng) {
                   var timeago = Date.now() - Date.parse(feature.properties.timestamp);
-                  var colorConfig = _.find(appConstants.markerAgeToColor, function(a) {
+                  var colorConfig = _.find(appConstants.peopleAgeToColor, function(a) {
                     return a.maxAge > timeago && a.minAge < timeago;
                   });
-                  var color = colorConfig && colorConfig.color || appConstants.markerColorDefault;
+                  var color = colorConfig && colorConfig.color || appConstants.peopleColorDefault;
                   return L.locationMarker(latlng, {color: color}).setAccuracy(feature.properties.accuracy);
                 },
                 onEachFeature: function(feature, layer) {
