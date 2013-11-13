@@ -99,14 +99,6 @@ mage.directive('mapClip', function() {
       $scope.$watch('mapClip', function() {
         createMap();
       });
-
-      // $scope.$watch('inView', function() {
-      //   if ($scope.inView && !$scope.mapCreated) {
-      //     console.info("in view changed " + $scope.inView);
-      //     createMap();
-      //   }
-      // });
-
     }
   }
   
