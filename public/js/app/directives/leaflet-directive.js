@@ -344,23 +344,8 @@
                 marker.setIcon(IconService.leafletIcon(features.features[i], {types: scope.types}));
               }
             }
-
-            // // bust through the layer.features.features array and see if the feature is already in the layer
-            // // if so remove it
-            // // I hate myself for even doing this but i need to get it out
-            // var newFeatures = _.filter(features.features, function(feature) {
-            //   return !markers[scope.layer.id][feature.id];
-            // });
-            // var addThese = {
-            //   features: newFeatures
-            // };
             newLayer = layers[scope.layer.id].leafletLayer;
             newLayer.addLayer(L.geoJson(addThese, featureConfig(layers[scope.layer.id].layer)));
-            // gj = layers[layer.id].gjLayer;
-            // gj.addData(layer.features);
-            // just remove it and then put it back for now.
-            // map.removeLayer(layers[layer.id].leafletLayer);
-            // delete layers[layer.id];
           } else {
             markers[scope.layer.id] = {};
             var gj = L.geoJson(features, featureConfig(scope.layer));
