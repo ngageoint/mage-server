@@ -19,10 +19,16 @@ mage.directive('observationNewsItem', function(UserService, appConstants) {
         $scope.$emit('observationClick', observation);
       }
 
-      $scope.$on('cancelEdit', function() {
+      $scope.$on('cancelEdit', function(event, observation) {
         $scope.editMode = false;
+        angular.copy(observation, $scope.observation);
       });
 
+      $scope.startEdit = function() {
+        $scope.editMode = true;
+        $scope.editObservation = $scope.observation;
+        $scope.$broadcast('beginEdit');
+      }
     }
   };
 });

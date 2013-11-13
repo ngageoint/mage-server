@@ -1,6 +1,6 @@
-<div cl***REMOVED***="observation-news-item" ng-click="setActiveObservation(observation)" 
-  ngm-tap="setActiveObservation(observation)" ng-init="editObservation = observation">
-  <div ng-hide="editMode">
+<div cl***REMOVED***="observation-news-item"  ng-init="editObservation = observation">
+  <div ng-hide="editMode" ng-click="setActiveObservation(observation)" 
+  ngm-tap="setActiveObservation(observation)">
   	<div cl***REMOVED***="row-fluid">
   		<div cl***REMOVED***="span2"><span marker-icon="observation"></span></div>
   		<div cl***REMOVED***="span10">
@@ -43,8 +43,8 @@
         </div>
       </div>
   	</div>
-    <button cl***REMOVED***="btn" ngm-tap="editMode = true; editObservation = observation" 
-            ng-click="editMode = true; editObservation = observation">Edit</button>
+    <button cl***REMOVED***="btn" ngm-tap="startEdit()" 
+            ng-click="startEdit()">Edit</button>
   </div>
   <div ng-show="editMode">
     <div observation="editObservation" active-feature="editObservation" new-feature="newFeature" marker-location="markerLocation"></div>
