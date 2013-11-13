@@ -14,7 +14,13 @@ mage.directive('observation', function (ObservationService, MapService) {
 
       scope.createNewObservation = ObservationService.createNewObservation;
 
+      scope.$on('beginEdit', function() {
+        console.info('begin edit');
+        scope.observationCopy = angular.copy(scope.observation);
+      });
+
       scope.cancelEdit = function() {
+        scope.observation = angular.copy(scope.observationCopy);
         scope.$emit('cancelEdit', scope.observation);
       }
     }

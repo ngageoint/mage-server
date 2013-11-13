@@ -29,6 +29,7 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
         $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/features/' + observation.id + '/attachments';
         $scope.uploadFile();
       }
+      $scope.editMode = false;
       $scope.$emit('newObservationSaved', observation);
     });
   }

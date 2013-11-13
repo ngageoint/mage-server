@@ -149,7 +149,14 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       return layer.id == observation.layerId;
     });
     if (featureLayer) {
-      featureLayer.features.push(observation);
+      var existingFeature = _.find(featureLayer.features, function(feature) {
+        return feature.id == observation.id;
+      });
+      if (existingFeature) {
+        existingFeature = observation;
+      } else {
+        featureLayer.features.push(observation);
+      }
       // this has to change.  This is how the leaflet-directive knows to pick up new features, but it is not good
       $scope.layer.features = {features: featureLayer.features};
     }
