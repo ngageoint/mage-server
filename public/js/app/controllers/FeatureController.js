@@ -39,6 +39,7 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
     observation.$delete({}, function(success) {
         $scope.deletedFeature = $scope.activeFeature;
         isEditing = false;
+        $scope.$emit('observationDeleted', observation);
     });
   }
 

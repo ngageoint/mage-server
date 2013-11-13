@@ -163,6 +163,23 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
     createAllFeaturesArray();
   });
 
+  $scope.$on('observationDeleted', function(event, observation) {
+    console.info('observation deleted', observation);
+    // this triggers the leaflet-directive watch.  I don't like this either
+    $scope.deletedFeature = observation;
+
+    // this is the way it should be done.  update leaflet-directive to work this way
+    var featureLayer = _.find($scope.featureLayers, function(layer) {
+      return layer.id == observation.layerId;
+    });
+    if (featureLayer) {
+      featureLayer.features = _.without(featureLayer.features, observation);
+      // this has to change.  This is how the leaflet-directive knows to pick up new features, but it is not good
+      $scope.layer.features = {features: featureLayer.features};
+    }
+    createAllFeaturesArray();
+  });
+
   var createAllFeaturesArray = function() {
     var allFeatures = $scope.locations ? $scope.locations : [];
     _.each($scope.featureLayers, function(layer) {
