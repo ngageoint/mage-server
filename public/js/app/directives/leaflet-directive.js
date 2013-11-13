@@ -176,9 +176,9 @@
                   layer.on('click', function() {
                     // location table click handling here
                     if(!scope.$$phase) {
-                    scope.$apply(function(s) {
-                      scope.activeLocation = {locations: [feature], user: feature.properties.user};
-                    });
+                      scope.$apply(function(s) {
+                        scope.activeLocation = {locations: [feature], user: feature.properties.user};
+                      });
                     } else {
                       scope.activeLocation = {locations: [feature], user: feature.properties.user};
                     }
@@ -333,15 +333,27 @@
         scope.$watch('layer.features', function(features) {
           if (!features) return;
           if (layers[scope.layer.id]) {
-            // bust through the layer.features.features array and see if the feature is already in the layer
-            // if so remove it
-            // I hate myself for even doing this but i need to get it out
-            var newFeatures = _.filter(features.features, function(feature) {
-              return !markers[scope.layer.id][feature.id];
-            });
             var addThese = {
-              features: newFeatures
+              features: []
             };
+            for (var i = 0; i < features.features.length; i++) {
+              var marker = markers[scope.layer.id][features.features[i].id];
+              if (!marker) {
+                addThese.features.push(features.features[i]);
+              } else {
+                marker.setIcon(IconService.leafletIcon(features.features[i], {types: scope.types}));
+              }
+            }
+
+            // // bust through the layer.features.features array and see if the feature is already in the layer
+            // // if so remove it
+            // // I hate myself for even doing this but i need to get it out
+            // var newFeatures = _.filter(features.features, function(feature) {
+            //   return !markers[scope.layer.id][feature.id];
+            // });
+            // var addThese = {
+            //   features: newFeatures
+            // };
             newLayer = layers[scope.layer.id].leafletLayer;
             newLayer.addLayer(L.geoJson(addThese, featureConfig(layers[scope.layer.id].layer)));
             // gj = layers[layer.id].gjLayer;
