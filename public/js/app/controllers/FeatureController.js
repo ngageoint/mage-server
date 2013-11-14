@@ -26,7 +26,7 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
       observation.layerId = layerId;
       isEditing = false;
       if ($scope.files && $scope.files.length > 0) {
-        $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/features/' + observation.id + '/attachments';
+        $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + observation.layerId + '/features/' + observation.id + '/attachments';
         $scope.uploadFile();
       }
       $scope.editMode = false;
@@ -84,7 +84,8 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
 
   function uploadComplete(evt) {
     $scope.files = [];
-    $scope.progressVisible = false
+    $scope.progressVisible = false;
+    console.info('upload complete');
   }
 
   function uploadFailed(evt) {
