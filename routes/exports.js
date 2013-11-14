@@ -444,7 +444,7 @@ module.exports = function(app, security) {
   app.get(
     '/api/import',
     function(req, res, next) {
-      fs.readFile('/tmp/sochi/road/1_5/doc.kml', 'utf8', function(err, data) {
+      fs.readFile('/tmp/sochi/doc.kml', 'utf8', function(err, data) {
         if (err) return next(err);
 
         var featureCollections = toGeoJson.kml(data);
