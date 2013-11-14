@@ -17,7 +17,6 @@ html, body, div.leaflet-container {
 * html .clearfix { height: 1%;}
 .clearfix {display: block;}
 /* End hide from IE-mac */
-
 .navbar {
 	margin-bottom: 0;
 }
@@ -304,7 +303,6 @@ html, body, div.leaflet-container {
 }
 
 .attachment {
-	margin-bottom: 15px;
 }
 
 .observation-icon {
