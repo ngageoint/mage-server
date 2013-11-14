@@ -14,6 +14,7 @@
           <div filter/>
           <div export/>  <!-- Export panel -->
           <div cl***REMOVED***="news-feed-item pointer" id="{{feedItem.id || feedItem.user}}"
+          ng-cl***REMOVED***="activeFeature.feature.id == feedItem.id && 'active-news-feed-item'"
           data-ng-repeat="feedItem in feedItems | orderBy: newsFeedOrder : true track by feedItem.id || feedItem.user">
             <div ng-if="feedItem.locations">
              <div user-location-news-item="feedItem"/>

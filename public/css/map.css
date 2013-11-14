@@ -211,6 +211,11 @@ html, body, div.leaflet-container {
 	border-radius: 3px;
 }
 
+.active-news-feed-item {
+	border: 3px solid #7C22C7;
+	border-radius: 6px;
+}
+
 .news-items {
 	position: absolute;
 	width: 100%;
