@@ -11,7 +11,7 @@ var transformAttachment = function(attachment) {
 var transformFeature = function(feature) {
   if (!feature) return null;
 
-  feature = feature.toObject();
+  feature = feature.toObject ? feature.toObject() : feature;
   feature.id = feature._id;
   delete feature._id;
 
