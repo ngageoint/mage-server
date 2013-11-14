@@ -95,7 +95,7 @@ mage.directive('export', function(UserService, appConstants, mageLib) {
       	var e = angular.element('#export-' + type);
       	if (e) e.remove();
 
-      	var e = angular.element("<iframe id=export-" + type + "style='diplay:none' src=" + url + "></iframe>");
+      	var e = angular.element("<iframe id=export-" + type + "style='display:none' src=" + url + "></iframe>");
       	var s = $scope;
       	e.on('load', function() {
       		$scope.$apply(function() {

@@ -26,6 +26,7 @@ FeatureSchema.index({'properties.timestamp': 1});
 FeatureSchema.index({'attachments.id': 1});
 
 var models = {};
+var Attachment = mongoose.model('Attachment', AttachmentSchema);
 
 var featureModel = function(layer) {
   var name = layer.collectionName;
@@ -218,13 +219,13 @@ exports.addAttachment = function(layer, id, file, callback) {
 
     var condition = {};
     condition[id.field] = id.id;
-    var attachment = {
+    var attachment = new Attachment({
       id: attachmentId,
       contentType: file.headers['content-type'],  
       size: file.size,
       name: file.name,
       relativePath: file.relativePath
-    };
+    });
 
     var update = {'$push': { attachments: attachment } };
     featureModel(layer).update(condition, update, function(err, feature) {
