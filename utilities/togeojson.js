@@ -140,20 +140,23 @@ var kml = function(data, o) {
     // just get top level documents for now
     var documents = xpath.select("/kml/Document/Folder", doc);
     for (var d = 0; d < documents.length; d++) {
+      var folderName = xpath.select('name/text()', documents[d]).toString();
       var featureCollection = fc();
 
       var placemarks = get(documents[d], 'Placemark');
+      console.log('Found ' + placemarks.length + ' placemarks in folder ' + folderName);
       for (var p = 0; p < placemarks.length; p++) {
         featureCollection.features = featureCollection.features.concat(getPlacemark(placemarks[p]));
       }
 
-      var lineStrings = get(documents[d], 'LineString');
-      for (var p = 0; p < lineStrings.length; p++) {
-        featureCollection.features = featureCollection.features.concat(getPlacemark(lineStrings[p].parentNode));
-      }
+      // var lineStrings = get(documents[d], 'LineString');
+      // console.log('Found ' + lineStrings.length + ' line strings in folder ' + folderName);
+      // for (var p = 0; p < lineStrings.length; p++) {
+      //   featureCollection.features = featureCollection.features.concat(getPlacemark(lineStrings[p].parentNode));
+      // }
 
       featureCollections.push({
-        name: xpath.select('name/text()', documents[d]).toString(),
+        name: folderName,
         featureCollection: featureCollection
       });
     }
@@ -162,24 +165,27 @@ var kml = function(data, o) {
     var folders = xpath.select("kml/Folder/Document", doc);
     console.log('got documents: ' + folders.length);
     for (var j = 0; j < folders.length; j++) {
+      var documentName = xpath.select('name/text()', folders[j]).toString();
+
       if (xpath.select('ScreenOverlay', folders[j]).length > 0) continue;
 
       var featureCollection = fc();
       var placemarks = get(folders[j], 'Placemark');
-      console.log('got placemarks: ' + placemarks.length);
+      console.log('Found ' + placemarks.length + ' placemarks in document ' + documentName);
       for (var p = 0; p < placemarks.length; p++) {
         var placemark = getPlacemark(placemarks[p]);
         featureCollection.features = featureCollection.features.concat(placemark);
       }
 
-      var lineStrings = get(folders[j], 'LineString');
-      for (var p = 0; p < lineStrings.length; p++) {
-        var placemark = getPlacemark(lineStrings[p].parentNode);
-        featureCollection.features = featureCollection.features.concat(placemark);
-      }
+      // var lineStrings = get(folders[j], 'LineString');
+      // console.log('Found ' + lineStrings.length + ' line strings in document ' + documentName);
+      // for (var p = 0; p < lineStrings.length; p++) {
+      //   var placemark = getPlacemark(lineStrings[p].parentNode);
+      //   featureCollection.features = featureCollection.features.concat(placemark);
+      // }
 
       featureCollections.push({
-        name: xpath.select('name/text()', folders[j]).toString(),
+        name: documentName,
         featureCollection: featureCollection
       });
     }
