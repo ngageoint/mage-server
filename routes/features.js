@@ -165,7 +165,8 @@ module.exports = function(app, auth) {
       new api.Attachment(req.layer, req.feature).create(req.featureId, req.files.attachment, function(err, attachment) {
         if (err) return next(err);
 
-        return res.json(attachment);
+        var feature = geojson.transform({attachments: [attachment.toObject()]});
+        return res.json(feature.attachments[0]);
       });
     }
   );
@@ -180,7 +181,8 @@ module.exports = function(app, auth) {
       new api.Attachment(req.layer, req.feature).update(req.featureId, req.files.attachment, function(err, attachment) {
         if (err) return next(err);
 
-        return res.json(attachment);
+        var feature = geojson.transform({attachments: [attachment.toObject()]});
+        return res.json(feature.attachments[0]);
       });
     }
   );
