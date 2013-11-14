@@ -3,6 +3,7 @@ module.exports = function(app, security) {
     , Location = require('../models/location')
     , Layer = require('../models/layer')
     , User = require('../models/user')
+    , Device = require('../models/device')
     , Feature = require('../models/feature')
     , access = require('../access')
     , generate_kml = require('../utilities/generate_kml')
@@ -50,12 +51,38 @@ module.exports = function(app, security) {
     next();
   }
 
-    var getLayers = function(callback) {
+  var getLayers = function(req, res, next) {
     //get layers for lookup
-    Layer.getLayers(function (err, layers) {
-      if(err) return callback(err);
+    Layer.getLayers({ids: req.parameters.filter.layerIds || []}, function(err, layers) {
+      req.layers = layers;
 
-      callback(err, layers);
+      next(err);
+    });
+  }
+
+  var mapUsers = function(req, res, next) {
+    //get users for lookup
+    User.getUsers(function (users) {
+      var map = {};    
+      users.forEach(function(user) {
+        map[user._id] = user;
+      });
+      req.users = map;
+
+      next();
+    });
+  }
+
+  var mapDevices = function(req, res, next) {
+    //get users for lookup
+    Device.getDevices(function (err, devices) {
+      var map = {};    
+      devices.forEach(function(device) {
+        map[device._id] = device;
+      });
+      req.devices = map;
+
+      next(err);
     });
   }
 
@@ -63,6 +90,9 @@ module.exports = function(app, security) {
     '/api/export',
     access.authorize('READ_FEATURE'),
     parseQueryParams,
+    getLayers,
+    mapUsers,
+    mapDevices,
     function(req, res) {
       switch (req.parameters.type) {
         case 'shapefile':
@@ -78,30 +108,43 @@ module.exports = function(app, security) {
   );
 
   var exportShapefile = function(req, res, next) {
-    var layerIds = req.parameters.filter.layerIds;
     var fft = req.parameters.filter.fft;
 
     var layersToShapefiles = function(done) {
-      Layer.getLayers({ids: layerIds || []}, function(err, layers) {
-        async.map(layers,
-          function(layer, done) {
-            Feature.getFeatures(layer, {filter: req.parameters.filter}, function(features) {
-              shp.writeGeoJson({features: JSON.parse(JSON.stringify(features))}, function(err, files) {
-                done(err, {layer: layer, files: files});
-              });
+      console.log('layer to shape');
+      async.map(req.layers,
+        function(layer, done) {
+          Feature.getFeatures(layer, {filter: req.parameters.filter}, function(features) {
+            features.forEach(function(feature) {
+              if (req.users[feature.properties.userId]) feature.properties.user = req.users[feature.properties.userId].username;
+              if (req.devices[feature.properties.deviceId]) feature.properties.device = req.devices[feature.properties.deviceId].uid;
+
+              delete feature.properties.deviceId;
+              delete feature.properties.userId;
             });
-          },
-          function(err, results) {
-            done(err, results);
-          }
-        );
-      });
+
+            shp.writeGeoJson({features: JSON.parse(JSON.stringify(features))}, function(err, files) {
+              done(err, {layer: layer, files: files});
+            });
+          });
+        },
+        function(err, results) {
+          done(err, results);
+        }
+      );
     }
 
     var locationsToShapefiles = function(done) {
       if (!fft) return done(null, []);
 
       Location.getAllLocations({filter: req.parameters.filter}, function(err, locations) {
+        locations.forEach(function(location) {
+          if (req.users[location.properties.user]) location.properties.user = req.users[location.properties.user].username;
+          if (req.users[location.properties.deviceId]) location.properties.device = req.users[location.properties.deviceId].uid;
+
+          delete location.properties.deviceId;
+        });
+
         shp.writeGeoJson({features: JSON.parse(JSON.stringify(locations))}, function(err, files) {
           done(err, {files: files});
         });
