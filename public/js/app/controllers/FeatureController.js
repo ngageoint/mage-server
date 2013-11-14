@@ -1,6 +1,6 @@
 'use strict';
 
-function FeatureController($scope, $location, $timeout, Feature, FeatureAttachment, MapService, UserService, IconService, mageLib, appConstants) {
+function FeatureController($scope, $location, $timeout, Feature, FeatureService, FeatureAttachment, MapService, UserService, IconService, mageLib, appConstants) {
   var isEditing = false;
   $scope.amAdmin = UserService.amAdmin;
   $scope.token = mageLib.getLocalItem('token');
@@ -27,7 +27,7 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
       isEditing = false;
       if ($scope.files && $scope.files.length > 0) {
         $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + observation.layerId + '/features/' + observation.id + '/attachments';
-        $scope.uploadFile();
+        $scope.uploadFile(observation);
       }
       $scope.editMode = false;
       $scope.$emit('newObservationSaved', observation);
@@ -56,14 +56,16 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
     });
   }
 
-  $scope.uploadFile = function() {
+  $scope.uploadFile = function(observation) {
     var fd = new FormData()
     for (var i in $scope.files) {
       fd.append("attachment", $scope.files[i])
     }
     var xhr = new XMLHttpRequest();
     xhr.upload.addEventListener("progress", uploadProgress, false);
-    xhr.addEventListener("load", uploadComplete, false);
+    xhr.addEventListener("load", function(event) {
+      uploadComplete(event, observation);
+    }, false);
     xhr.addEventListener("error", uploadFailed, false);
     xhr.addEventListener("abort", uploadCanceled, false);
     xhr.open("POST", $scope.fileUploadUrl + "?access_token=" + mageLib.getToken());
@@ -82,10 +84,15 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
     });
   }
 
-  function uploadComplete(evt) {
+  function uploadComplete(event, observation) {
     $scope.files = [];
     $scope.progressVisible = false;
-    console.info('upload complete');
+    console.info('event is ', event);
+    var response = angular.fromJson(event.target.responseText);
+    console.info('response is', response);
+    console.info('observation.layerId ' + observation.layerId);
+    console.info('observation', observation);
+    observation.attachments.push(response);
   }
 
   function uploadFailed(evt) {
@@ -127,14 +134,6 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
         $scope.observation.layerId = value.layerId;
         $scope.attachmentUrl = '/FeatureServer/'+ value.layerId
             + '/features/' + $scope.observation.id + '/attachments/';
-
-      //$scope.attachments = FeatureAttachment.get({featureId: $scope.observation.id, layerId: value.layerId});
-
-      // FeatureService.getAttachments(value.layerId, $scope.observation.properties.OBJECTID).
-      //   success(function (data, status, headers, config) {
-      //     $scope.attachments = data.attachmentInfos;
-          
-      //   });
     });
    }, true);
 
@@ -147,18 +146,17 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureAttachme
       });
   }, true);
 
-  $scope.deleteAttachment = function (attachmentId) {
-    FeatureService.deleteAttachment($scope.activeFeature.layerId, $scope.activeFeature.featureId, attachmentId)
-      .success(function(data) {
-        console.log("attachment deleted");
-        var removedItem = data.deleteAttachmentResults[0].objectId;
-        if (removedItem > -1) {
-          for (var i = 0; i < $scope.attachments.length; i++) {
-            if ($scope.attachments[i].id == removedItem) {
-              $scope.attachments.splice(i, 1);
-            }
-          }
+  $scope.deleteAttachment = function (observation, attachmentId) {
+    FeatureAttachment.delete({id: attachmentId, layerId: observation.layerId, featureId: observation.id}, function(success) {
+      console.info('success');
+      console.log("attachment deleted");
+      for (var i = 0; i < observation.attachments.length; i++) {
+        if (observation.attachments[i].id == attachmentId) {
+          observation.attachments.splice(i, 1);
         }
-      });
+      }
+    }, function(failure) {
+      console.info('failure');
+    });
   }
 }
