@@ -8,7 +8,6 @@ mage.directive('deviceId', function(DeviceService) {
       $scope.$watch("deviceId", function(deviceId) {
         if (!deviceId) return;
 
-        console.log('trying to get device with id: ' + deviceId);
         DeviceService.getDevice(deviceId)
           .then(function(device) {
             $scope.device = device.data || device;

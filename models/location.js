@@ -1,6 +1,4 @@
-
-var mongoose = require('mongoose')
-  , geoJSON = require('../transformers/geojson');
+var mongoose = require('mongoose');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;  
@@ -18,14 +16,6 @@ var LocationSchema = new Schema({
 });
 
 // TODO when user is removed need to remove thier locations.
-
-LocationSchema.set("toObject", {
-  transform: geoJSON.transformFeature
-});
-
-LocationSchema.set("toJSON", {
-  transform: geoJSON.transformFeature
-});
 
 LocationSchema.index({geometry: "2dsphere"});
 LocationSchema.index({'properties.timestamp': 1});
@@ -45,6 +35,28 @@ exports.createLocations = function(user, locations, callback) {
   });  
 }
 
+exports.getAllLocations = function(options, callback) {
+  var query = {};
+
+  var filter = options.filter
+  var timeFilter = {};
+  if (filter && filter.startDate) {
+    timeFilter["$gte"] = filter.startDate;
+  }
+  if (filter && filter.endDate) {
+    timeFilter["$lt"] = filter.endDate;
+  }
+  if (filter.startDate || filter.endDate) query["properties.timestamp"] = timeFilter;
+
+  Location.find(query, function (err, locations) {
+    if (err) {
+      console.log("Error finding locations", err);
+    }
+
+    callback(err, locations);
+  });
+}
+
 // get locations for users team
 exports.getLocations = function(user, limit, callback) {
   var sort = { $sort: { "properties.timestamp": -1 }};
@@ -57,25 +69,24 @@ exports.getLocations = function(user, limit, callback) {
 }
 
 // get locations for users (filters for)
-exports.getLocationsWithFilters = function(user, time_filter, limit, callback) {
+exports.getLocationsWithFilters = function(user, filter, limit, callback) {
   
-  var date = new Date();
-  if(time_filter > 0) {
-    var range = new Date().getTime() - time_filter*1000;
-    date = new Date(range);
-  }
-  else {
-    date = new Date(0);
+  var timeFilter = {};
+  if (filter.startDate) {
+    timeFilter["$gte"] = filter.startDate;
   }
 
-  var sort = { $sort: { "properties.timestamp": -1 }};
-  var match  = {$match: {"properties.timestamp" : {$gte: date}}};
+  if (filter.endDate) {
+    timeFilter["$lt"] = filter.endDate;
+  }
+
+  var match = (filter.startDate || filter.endDate) ? { $match: {'properties.timestamp': timeFilter}} : { $match: {}};
+  var sort = { $sort: { "properties.timestamp": -1 } };
   var limit = { $limit: limit };
   var group = { $group: { _id: "$properties.user", locations: { $push: {geometry: "$geometry", properties: "$properties"} }}};
   var project = { $project: { _id: 0, user: "$_id", locations: "$locations"} };
   
   Location.aggregate(match, sort, limit, group, project, function(err, aggregate) {
-    //console.log("Got aggregate: " + JSON.stringify(aggregate));
     callback(err, aggregate);
   });
 }

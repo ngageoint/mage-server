@@ -1,0 +1,71 @@
+<div ng-show="showExport" cl***REMOVED***="filter-panel">
+  <h3>Export</h3>
+
+  <form cl***REMOVED***="form">  
+
+    <div cl***REMOVED***="top-gap">
+      <h4><i cl***REMOVED***="icon-layers icon-sage"></i>  Select Layers</h4>
+    </div>
+
+    <div cl***REMOVED***="control-group">
+      <div cl***REMOVED***="controls">
+		 <label cl***REMOVED***="checkbox" ng-repeat="layer in featureLayers">
+           <input type="checkbox" ng-model="layer.exportChecked"/>{{layer.name}}
+         </label>
+
+        <label cl***REMOVED***="checkbox">
+          <input type="checkbox" ng-model="fft">People
+        </label>
+      </div>
+    </div>
+
+    <div cl***REMOVED***="top-gap">
+      <h4><i cl***REMOVED***="icon-filter icon-sage"></i> Filter Output</h4>
+    </div>
+
+    <div cl***REMOVED***="control-group">
+      <select cl***REMOVED***="input-xlarge" ng-model="export" ng-options="o.label for o in exportOptions"></select>
+    </div>
+
+    <div ng-show="export.custom">
+		<div>
+	        <div cl***REMOVED***="control-group input-append">
+	    	  <label cl***REMOVED***="control-label">Start Date/Time</label>
+	          <input cl***REMOVED***="input-small" type="text" ng-model="exportStartDate" data-date-format="mm/dd/yyyy" bs-datepicker>
+	          <button type="button" cl***REMOVED***="btn" data-toggle="datepicker"><i cl***REMOVED***="icon-sage icon-calendar"></i></button>
+	        </div>
+	        <div cl***REMOVED***="control-group input-append">
+	    	  <label cl***REMOVED***="control-label" for="">&nbsp</label>
+	   		  <input cl***REMOVED***="input-small" type="text" ng-model="exportStartTime" bs-timepicker data-template="false" data-show-inputs="false" data-show-seconds="true" data-show-meridian="false">
+	   		  <span cl***REMOVED***="add-on"><i cl***REMOVED***="icon-sage icon-time"></i></span>
+	        </div>
+        </div>
+        <div>
+	        <div cl***REMOVED***="control-group input-append">
+	    	  <label cl***REMOVED***="control-label">End Date/Time</label>
+	          <input cl***REMOVED***="input-small" type="text" ng-model="exportEndDate" data-date-format="mm/dd/yyyy" bs-datepicker>
+	          <button type="button" cl***REMOVED***="btn" data-toggle="datepicker"><i cl***REMOVED***="icon-sage icon-calendar"></i></button>
+	        </div>
+	        <div cl***REMOVED***="control-group input-append">
+	    	  <label cl***REMOVED***="control-label" for="">&nbsp</label>
+	   		  <input cl***REMOVED***="input-small" type="text" ng-model="exportEndTime" bs-timepicker data-template="false" data-show-inputs="false" data-show-seconds="true" data-show-meridian="false">
+	   		  <span cl***REMOVED***="add-on"><i cl***REMOVED***="icon-sage icon-time"></i></span>
+	        </div>
+        </div>
+		</div>
+
+    <div ng-show="showLayerError" cl***REMOVED***="alert-error" bs-alert>
+      <span>Please Select a Layer</span>
+    </div>
+
+  </form>
+
+  <button cl***REMOVED***="btn btn-inverse pull-right" ng-click="showExport = false" ngm-tap="showExport = false">Close</button>
+  <!-- <a cl***REMOVED***="btn sage-color" target="_blank" ng-href="{{exportUrl('kml')}}" ng-click="verifyExport($event)"><i cl***REMOVED***="icon-sage icon-download"></i> KML</a> -->
+  <button cl***REMOVED***="btn sage-color" ng-disabled="exporting.kml" ng-click="exportData('kml')">
+    <i cl***REMOVED***="icon-sage" ng-cl***REMOVED***="exporting.kml && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.kml && "Exporting..." || "KML"}}
+  </button>
+	<button cl***REMOVED***="btn sage-color" ng-disabled="exporting.shapefile" ng-click="exportData('shapefile')">
+    <i cl***REMOVED***="icon-sage" ng-cl***REMOVED***="exporting.shapefile && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.shapefile && "Exporting..." || "Shapefile"}}
+  </button>
+</div>

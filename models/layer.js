@@ -48,8 +48,19 @@ LayerSchema.pre('save', function(next) {
 // Creates the Model for the Layer Schema
 var Layer = mongoose.model('Layer', LayerSchema);
 
-exports.getLayers = function(callback) {
+exports.getLayers = function(filter, callback) {
+  if (typeof filter == 'function') {
+    callback = filter;
+    filter = {};
+  }
+
   var query = {};
+  var type = filter.type;
+  if (type) query.type = type;
+
+  var ids = filter.ids;
+  if (ids) query.id = {$in: ids};
+
   Layer.find(query, function (err, layers) {
     if (err) {
       console.log("Error finding layers in mongo: " + err);
@@ -117,9 +128,9 @@ exports.create = function(layer, callback) {
 }
 
 exports.update = function(id, layer, callback) {
-  var query = {id: id};
+  var conditions = {id: id};
 
-  Layer.collection.findAndModify(query, [], layer, function(err, updatedLayer) {
+  Layer.findOneAndUpdate(conditions, layer, function(err, updatedLayer) {
     if (err) {
       console.log("Could not update layer: " + err);
     }

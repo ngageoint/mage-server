@@ -27,4 +27,8 @@ pushd mage-v$1-$2
 npm install
 popd
 tar czvf mage-v$VER-$REL.tar.gz mage-v$VER-$REL
+rm -rf mage-v$VER-$REL
+mv mage-v$VER-$REL.tar.gz rpmbuild/SOURCES
+
+echo "Complete!"
 

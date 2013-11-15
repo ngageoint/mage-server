@@ -23,11 +23,33 @@ body {
 }
 .icon-white,.nav-pills>.active>a>[cl***REMOVED***^="icon-"],.nav-pills>.active>a>[cl***REMOVED****=" icon-"],.nav-list>.active>a>[cl***REMOVED***^="icon-"],.nav-list>.active>a>[cl***REMOVED****=" icon-"],.navbar-inverse .nav>.active>a>[cl***REMOVED***^="icon-"],.navbar-inverse .nav>.active>a>[cl***REMOVED****=" icon-"],.dropdown-menu>li>a:hover>[cl***REMOVED***^="icon-"],.dropdown-menu>li>a:hover>[cl***REMOVED****=" icon-"],.dropdown-menu>.active>a>[cl***REMOVED***^="icon-"],.dropdown-menu>.active>a>[cl***REMOVED****=" icon-"],.dropdown-submenu:hover>a>[cl***REMOVED***^="icon-"],.dropdown-submenu:hover>a>[cl***REMOVED****=" icon-"]{background:none;}
 
+.modal-header {
+    background: #5278A2;
+    color: #91BDEE;
+    opacity: 0.8;
+}
+
+.modal-header h3 {
+    font-family: SansBetween, sans-serif;
+    color: #FFF;
+}
+
+.modal-body {
+    background: #D0E7FF;
+    color: #6389b3;
+}
 
 .navbar-inner {
 	background: #5278A2;
 	color: #91BDEE;
-    opacity: 0.8;
+}
+
+.see-through {
+    opacity: .8;
+}
+
+.blank-icon-space {
+    margin-left: 12px;
 }
 
 .navbar .brand {
@@ -123,9 +145,10 @@ textarea {
 .btn {
     border: solid 1px #c8c8c8;
     background: #FAFAFA;
+    box-shadow: none;;
 } 
 
-.btn-inverse {
+.btn-inverse, .leaflet-bar a.btn-inverse {
     background: #5278A2;
 }
 
@@ -143,9 +166,18 @@ textarea {
   background-color: #5278A2;
 }
 
+.btn-inverse:hover {
+  background-color: #305680;
+}
+
 .btn-success {
-    border: solid 1px #585;
-    background: #7a7;
+    border: solid 1px #4cae4c;
+    background-color: #5cb85c;
+}
+
+.btn-success:hover, .btn-success:active, .btn-success.active {
+    border: solid 1px #398439;
+    background-color: #47a447;
 }
 
 .btn-danger {
@@ -153,11 +185,25 @@ textarea {
     background: #a44;
 }
 
+.btn-danger:hover {
+    border: solid 1px #600;
+    background: #822;
+}
+
+.btn-primary {
+    border: solid 1px #2A5E90;
+    background: #3477B4;
+}
+
+.btn-primary:hover {
+    border: solid 1px #083C70;
+    background: #125592;
+}
+
 .icon-sage {
     color: #5278A2;
-    font-size: 1.4em;
+    font-size: 1.2em;
     background-image: none;
-    margin-bottom: 9px;
 }
 
 .icon-large {
@@ -178,7 +224,6 @@ textarea {
     color: #FEFEFE;
     font-size: 1.4em;
     background-image: none;
-    margin-left: -4px;
     margin-bottom: 9px;
 }
 
@@ -242,4 +287,9 @@ div.image-button input {
 
 .small-text {
     font-size: 0.8em;
+}
+
+.edit-well {
+    background: #43719F;
+    color: white;
 }

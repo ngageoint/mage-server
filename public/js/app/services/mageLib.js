@@ -2,8 +2,8 @@
 
 /* A library of common functions for doing geolocation, Local Storage, etc */
 angular.module('mage.lib', [])
-  .factory('mageLib', ['$http', '$location',
-    function ($scope, $http, $location) {
+  .factory('mageLib', ['$location',
+    function ($scope, $location) {
       var libFunctions = {};
 
       // options for the options { enableHighAccuracy: true, timeout: timeoutVal, maximumAge: 0 }
@@ -48,6 +48,10 @@ angular.module('mage.lib', [])
       /* URL Param token convenience method */
       libFunctions.getTokenParams = function () {
         return {"access_token" : libFunctions.getLocalItem('token')};
+      };
+
+      libFunctions.getToken = function() {
+        return libFunctions.getLocalItem('token');
       };
 
       /* From Year of Moo */

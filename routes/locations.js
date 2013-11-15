@@ -27,13 +27,13 @@ module.exports = function(app, security) {
       o.location.properties = o.location.properties || {};
       o.location.properties.timestamp = moment.utc(o.timestamp).toDate();
       o.location.properties.user = req.user._id;
+      o.location.properties.deviceId = req.provisionedDeviceId;
 
       locations.push(o.location);
     });
 
     req.locations = locations;
 
-    console.log('trying to insert: ' + JSON.stringify(locations));
     next();
   }
 

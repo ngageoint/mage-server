@@ -1,7 +1,7 @@
 (function () {
   var leafletDirective = angular.module("leaflet-directive", ["mage.***REMOVED***s"]);
 
-  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, IconService, appConstants) {
+  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, IconService, appConstants, MapService, DataService) {
     return {
       restrict: "A",
       replace: true,
@@ -9,24 +9,52 @@
       template: '<div cl***REMOVED***="map"></div>',
       link: function (scope, element, attrs, ctrl) {
         // Create the map
-        var map = L.map("map");
+        var map = L.map("map", {trackResize: true});
         map.setView([0, 0], 3);
+        var layerControl = L.control.layers();
+        layerControl.addTo(map);
+        scope.ds = DataService;
+
+        /*
+        toolbar config
+        */
+        map.addControl(new L.Control.MageFeature());
+        map.addControl(new L.Control.MageUserLocation());
+        map.addControl(new L.Control.MageListTools());
+        var sidebar = L.control.sidebar('side-bar', {closeButton: false});
+        map.addControl(sidebar);
+        scope.$watch('newsFeedEnabled', function() {
+          if (scope.newsFeedEnabled) {
+            sidebar.show();
+          } else {
+            sidebar.hide();
+          }
+        });
+        //map.addControl(new L.Control.SideBar());
+        //map.addControl(new L.Control.TimeScale());
 
         var addMarker = L.marker([0,0], {
           draggable: true,
           icon: IconService.defaultLeafletIcon()
         });
-        scope.markerLocation = addMarker.getLatLng();
 
         map.on("click", function(e) {
-          addMarker.setLatLng(e.latlng);
-          if (!map.hasLayer(addMarker)) {
-            map.addLayer(addMarker);
-          }
+          if (scope.newObservationEnabled) {
+            _.delay(function() { addMarker.setLatLng(e.latlng); }, 250);
+            if (!map.hasLayer(addMarker)) {
+              _.delay(function() { map.addLayer(addMarker); }, 250);
+            }
 
-          scope.$apply(function(s) {
-            scope.markerLocation = e.latlng;
-          });
+            scope.$apply(function(s) {
+              scope.markerLocation = e.latlng;
+            });
+          }
+        });
+
+        scope.$watch('newObservationEnabled', function() {
+          if (!scope.newObservationEnabled && map.hasLayer(addMarker)) {
+            map.removeLayer(addMarker);
+          }
         });
 
         addMarker.on('dragend', function(e) {
@@ -73,42 +101,48 @@
           }
         });
 
-        scope.$watch("positionBroadcast", function(p) {
-          if (!p) return;
-
-          // myLocationMarker.setLatLng([p.coords.latitude, p.coords.longitude]);
-          // map.addLayer(myLocationMarker);
-          // myLocationMarker
-          //   .bindPopup("<div><h4>You were here</h4> This location was successfully broadcasted to the server.</div>")
-          //   .openPopup();
-
-          // $timeout(function() {
-          //   myLocationMarker.closePopup();
-          // },5000);
-        });
-
-        scope.$watch("baseLayer", function(layer) {
-          if (!layer) return;
-
-          map.removeLayer(baseLayer);
-          if (layer.format == 'XYZ' || layer.format == 'TMS') {
-            baseLayer = new L.TileLayer(layer.url, { tms: layer.format == 'TMS', maxZoom: 18});
-          } else if (layer.format == 'WMS') {
-            var options = {
-              layers: layer.wms.layers,
-              version: layer.wms.version,
-              format: layer.wms.format,
-              transparent: layer.wms.transparent            };
-            if (layer.wms.styles) options.styles = layer.wms.styles;
-            baseLayer = new L.TileLayer.WMS(layer.url, options);
+        scope.$watch("baseLayers", function(layers) {
+          if (!layers) return;
+          var baseLayer;
+          var firstLayer = undefined;
+          _.each(layers, function(layer) {
+            var options = {};
+            if (layer.format == 'XYZ' || layer.format == 'TMS') {
+              options = { tms: layer.format == 'TMS', maxZoom: 18}
+              baseLayer = new L.TileLayer(layer.url, options);
+            } else if (layer.format == 'WMS') {
+              options = {
+                layers: layer.wms.layers,
+                version: layer.wms.version,
+                format: layer.wms.format,
+                transparent: layer.wms.transparent            };
+              if (layer.wms.styles) options.styles = layer.wms.styles;
+              baseLayer = new L.TileLayer.WMS(layer.url, options);
+            }
+            if (!firstLayer) {
+              firstLayer = baseLayer;
+              MapService.leafletBaseLayerUrl = layer.url;
+              MapService.leafletBaseLayerOptions = options;
+            }
+            layerControl.addBaseLayer(baseLayer, layer.name);
+           });
+          if (firstLayer) {
+            firstLayer.addTo(map);
           }
-          baseLayer.addTo(map).bringToBack();
         });
 
         var currentLocationMarkers = {};
         var locationLayerGroup = new L.LayerGroup().addTo(map);
-        scope.$watch("locations", function(users) {
-          if (!users) return;
+        scope.$watch("ds.locations", function(derp) {
+          if (!scope.ds.locations || !scope.ds.locations.$resolved) {
+            if (scope.ds.locations && !scope.ds.locations.$promise) {
+              locationLayerGroup.clearLayers();
+              currentLocationMarkers = {};
+            }
+            return;
+          }
+
+          var users = scope.ds.locations;
 
           if (users.length == 0) {
             locationLayerGroup.clearLayers();
@@ -126,23 +160,13 @@
                 delete currentLocationMarkers[u.user];
                 locationMarkers[u.user] = marker;
                 // Just update the location
-                var timeago = Date.now() - Date.parse(l.properties.timestamp);
-                var colorConfig = _.find(appConstants.markerAgeToColor, function(a) {
-                  return a.maxAge > timeago && a.minAge < timeago;
-                });
-                var color = colorConfig && colorConfig.color || appConstants.markerColorDefault;
-                marker.setLatLng([l.geometry.coordinates[1], l.geometry.coordinates[0]]).setAccuracy(l.properties.accuracy).setColor(color);
+                marker.setLatLng([l.geometry.coordinates[1], l.geometry.coordinates[0]]).setAccuracy(l.properties.accuracy).setColor(appConstants.userLocationToColor(l));
                 return;
               }
 
               var layer = new L.GeoJSON(u.locations[0], {
                 pointToLayer: function (feature, latlng) {
-                  var timeago = Date.now() - Date.parse(feature.properties.timestamp);
-                  var colorConfig = _.find(appConstants.markerAgeToColor, function(a) {
-                    return a.maxAge > timeago && a.minAge < timeago;
-                  });
-                  var color = colorConfig && colorConfig.color || appConstants.markerColorDefault;
-                  return L.locationMarker(latlng, {color: color}).setAccuracy(feature.properties.accuracy);
+                  return L.locationMarker(latlng, {color: appConstants.userLocationToColor(feature)}).setAccuracy(feature.properties.accuracy);
                 },
                 onEachFeature: function(feature, layer) {
                   var e = $compile("<div user-location></div>")(scope);
@@ -152,9 +176,9 @@
                   layer.on('click', function() {
                     // location table click handling here
                     if(!scope.$$phase) {
-                    scope.$apply(function(s) {
-                      scope.activeLocation = {locations: [feature], user: feature.properties.user};
-                    });
+                      scope.$apply(function(s) {
+                        scope.activeLocation = {locations: [feature], user: feature.properties.user};
+                      });
                     } else {
                       scope.activeLocation = {locations: [feature], user: feature.properties.user};
                     }
@@ -174,7 +198,7 @@
           });
 
           currentLocationMarkers = locationMarkers;
-        });
+        }, true);
 
         var activeMarker;
         var featureConfig = function(layer) {
@@ -195,7 +219,7 @@
                 var icon = IconService.leafletIcon(feature, {types: scope.types});
                 var marker =  L.marker(latlng, { icon: icon });
 
-                markers[layer.id][feature.properties.OBJECTID] = marker;
+                markers[layer.id][feature.id] = marker;
                 return marker;
               }
             },
@@ -220,12 +244,16 @@
                 activeMarker = marker;
                 if (feature.properties.style) {
                   scope.$apply(function(s) {
-                    scope.externalFeatureClick = {layerId: layer.id, featureId: feature.properties.OBJECTID};
+                    scope.externalFeature = {layerId: layer.id, featureId: feature.id, feature: feature};
                   });
+                  marker.bindPopup(L.popup().setContent(feature.properties.description));
                   // marker.bindPopup(L.popup());
                 } else {
                   scope.$apply(function(s) {
-                    scope.activeFeature = {layerId: layer.id, featureId: feature.properties.OBJECTID, feature: feature};
+                    scope.activeFeature = {layerId: feature.layerId, featureId: feature.id, feature: feature};
+                    $('.news-items').animate({scrollTop: $('#'+feature.id).position().top},500);
+                    //console.info('scroll top is ' + $('#'+feature.id).position().top);
+                    //$('.news-items').scrollTop($('#'+feature.id).position().top);
                   });
                 }
               });
@@ -234,7 +262,6 @@
         };
 
         scope.$watch('activeFeature', function(newFeature, oldFeature) {
-          console.log('active feature changed');
           if (!newFeature && oldFeature) {
             var marker = markers[oldFeature.layerId][oldFeature.featureId];
             marker.unselect();
@@ -266,6 +293,7 @@
             if (!layer) return;
 
             if (layer.checked) {
+
               // add to map
               var newLayer = null;
               var gj = null;
@@ -284,30 +312,8 @@
                 }
                 newLayer.addTo(map).bringToFront();
               } else {
-                if (layers[layer.id]) {
-                  // bust through the layer.features.features array and see if the feature is already in the layer
-                  // if so remove it
-                  // I hate myself for even doing this but i need to get it out
-                  var newFeatures = _.filter(layer.features.features, function(feature) {
-                    return !markers[layer.id][feature.properties.OBJECTID];
-                  });
-                  var addThese = {
-                    features: newFeatures
-                  };
-                  newLayer = layers[layer.id].leafletLayer;
-                  newLayer.addLayer(L.geoJson(addThese, featureConfig(layers[layer.id].layer)));
-                  // gj = layers[layer.id].gjLayer;
-                  // gj.addData(layer.features);
-                  // just remove it and then put it back for now.
-                  // map.removeLayer(layers[layer.id].leafletLayer);
-                  // delete layers[layer.id];
-                } else {
-                  markers[layer.id] = {};
-                  gj = L.geoJson(layer.features, featureConfig(layer));
-                  newLayer = L.markerClusterGroup()
-                  .addLayer(gj)
-                  .addTo(map)
-                  .bringToFront();
+                if (!layer.features) {
+                  return;
                 }
                 
               }
@@ -317,12 +323,43 @@
                 layer: layer,
                 gjLayer: gj
               };
-            } else {
+            } else if (layers[layer.id]) {
               // remove from map
               map.removeLayer(layers[layer.id].leafletLayer);
               delete layers[layer.id];
             }
         }); // watch layer
+
+        scope.$watch('layer.features', function(features) {
+          if (!features) return;
+          if (layers[scope.layer.id]) {
+            var addThese = {
+              features: []
+            };
+            for (var i = 0; i < features.features.length; i++) {
+              var marker = markers[scope.layer.id][features.features[i].id];
+              if (!marker) {
+                addThese.features.push(features.features[i]);
+              } else {
+                marker.setIcon(IconService.leafletIcon(features.features[i], {types: scope.types}));
+              }
+            }
+            newLayer = layers[scope.layer.id].leafletLayer;
+            newLayer.addLayer(L.geoJson(addThese, featureConfig(layers[scope.layer.id].layer)));
+          } else {
+            markers[scope.layer.id] = {};
+            var gj = L.geoJson(features, featureConfig(scope.layer));
+            newLayer = L.markerClusterGroup()
+            .addLayer(gj)
+            .addTo(map)
+            .bringToFront();
+            layers[scope.layer.id] = {
+                leafletLayer: newLayer,
+                layer: scope.layer,
+                gjLayer: gj
+              };
+          }
+        });
 
         scope.$watch("newFeature", function(feature) {
           if (!feature) return;
@@ -343,7 +380,7 @@
         scope.$watch("externalFeature", function(value) {
           if (!value) return;
 
-          activeMarker.bindPopup(L.popup().setContent(value.attributes.description)).openPopup();
+          //activeMarker.bindPopup(L.popup().setContent(value.feature.properties.description)).openPopup();
         });
 
         scope.$watch("deletedFeature", function(feature) {

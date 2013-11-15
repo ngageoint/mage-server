@@ -1,0 +1,51 @@
+<div cl***REMOVED***="navbar">
+  <div cl***REMOVED***="navbar-inner">
+    <div cl***REMOVED***="btn-group">
+      <button cl***REMOVED***="btn dropdown-toggle" data-toggle="dropdown">
+        <i style="margin-right: 3px;" ng-cl***REMOVED***="pollTime != 0 && 'icon-spin icon-spinner' || 'blank-icon-space'" cl***REMOVED***="icon-spin icon-spinner"></i>
+        Live Update
+        <span cl***REMOVED***="caret"></span>
+      </button>
+      <ul cl***REMOVED***="dropdown-menu">
+        <li cl***REMOVED***="nav-header">Poll Time</li>
+         <li>
+           <a ng-click="pollTime = 5000" cl***REMOVED***="pointer">
+             <i ng-cl***REMOVED***="pollTime == 5000 && 'icon-check' || 'icon-check-empty'"></i>
+             5 Seconds
+           </a>
+         </li>
+         <li>
+           <a ng-click="pollTime = 30000" cl***REMOVED***="pointer">
+             <i ng-cl***REMOVED***="pollTime == 30000 && 'icon-check' || 'icon-check-empty'"></i>
+             30 Seconds
+           </a>
+         </li>
+         <li>
+           <a ng-click="pollTime = 120000" cl***REMOVED***="pointer">
+             <i ng-cl***REMOVED***="pollTime == 120000 && 'icon-check' || 'icon-check-empty'"></i>
+             2 Minutes
+           </a>
+         </li>
+         <li>
+           <a ng-click="pollTime = 300000" cl***REMOVED***="pointer">
+             <i ng-cl***REMOVED***="pollTime == 300000 && 'icon-check' || 'icon-check-empty'"></i>
+             5 Minutes
+           </a>
+         </li>
+         <li>
+           <a ng-click="pollTime = 0" cl***REMOVED***="pointer">
+             <i ng-cl***REMOVED***="pollTime == 0 && 'icon-check' || 'icon-check-empty'"></i>
+             No Polling
+           </a>
+         </li>
+      </ul>
+    </div>
+    <button cl***REMOVED***="btn" ng-cl***REMOVED***="showFilter && 'active'" ngm-tap="showFilter = !showFilter" ng-click="showFilter = !showFilter"><i style="margin-right: 3px;" cl***REMOVED***="icon-filter"></i>Filter</button>
+    <button cl***REMOVED***="btn" ng-cl***REMOVED***="showExport && 'active'" ngm-tap="showExport = !showExport" ng-click="showExport = !showExport"><i style="margin-right: 3px;" cl***REMOVED***="icon-download"></i>Export</button>
+    <!--
+    <form cl***REMOVED***="navbar-search pull-right">
+      <input type="text" cl***REMOVED***="span1 form-search search-query" ng-model="userQuery" placeholder="Search">
+    </form>
+  -->
+  </div>
+</div>

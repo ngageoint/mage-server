@@ -35,6 +35,14 @@
               </li>
             </ul>
           </div>
+          <h3>External Layers</h3>
+          <div>
+            <ul style="list-style: none;" cl***REMOVED***="top-gap pointer">
+              <li ng-repeat="layer in layers | filter:{type: 'External'}">
+                <a ng-click="viewLayer(layer)">{{layer.name}}</a>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
       <div cl***REMOVED***="span9" ng-show="showLayerForm">

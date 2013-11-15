@@ -5,6 +5,7 @@ module.exports = function(app, security) {
 
   var p***REMOVED***port = security.authentication.p***REMOVED***port
     , provision = security.provisioning.provision
+    , loginStrategy = security.authentication.loginStrategy
     , authenticationStrategy = security.authentication.authenticationStrategy;
 
   var isAuthenticated = function(strategy) {
@@ -85,7 +86,7 @@ module.exports = function(app, security) {
   // will be set to false.
   app.post(
     '/api/devices',
-    p***REMOVED***port.authenticate(authenticationStrategy),
+    p***REMOVED***port.authenticate(loginStrategy),
     parseDeviceParams,
     validateDeviceParams,
     function(req, res) {
