@@ -4,7 +4,7 @@ angular.module('mage')
   .factory('IconService', ['$injector', 'appConstants',
     function($injector, appConstants) {
       var ***REMOVED*** = {};
-      var iconService = $injector.get(appConstants.iconService);
+      var iconService = appConstants.getIconService();
 
       ***REMOVED***.defaultLeafletIcon = function() {
         return iconService.defaultLeafletIcon();
@@ -21,6 +21,13 @@ angular.module('mage')
       ***REMOVED***.iconHtml = function(feature, o) {
         return iconService.iconHtml(feature, o);
       };
+
+      ***REMOVED***.setTemplateVariables = function(feature, scope) {
+        return iconService.setTemplateVariables(feature, scope);
+      }
+
+      ***REMOVED***.markerTemplate = iconService.markerTemplate;
+      ***REMOVED***.iconTemplate = iconService.iconTemplate;
 
       return ***REMOVED***;
     }

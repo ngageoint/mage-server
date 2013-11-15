@@ -1,3 +1,4 @@
+
 html, body, div.leaflet-container {
 	height: 100%;
 	width: 100%;
@@ -16,7 +17,6 @@ html, body, div.leaflet-container {
 * html .clearfix { height: 1%;}
 .clearfix {display: block;}
 /* End hide from IE-mac */
-
 .navbar {
 	margin-bottom: 0;
 }
@@ -33,23 +33,86 @@ html, body, div.leaflet-container {
   position: absolute;
 }
 
-.leaflet-top {
+.news-feed-pane {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+}
+
+@media(max-width:1024px){
+  .map-clip {
+    display: none;
+  }
+}
+
+@media(min-width: 768px) {
+	.hide-on-ipad-landscape {
+		display:none;
+	}
+}
+
+@media(min-width: 1024px) {
+	.hide-on-desktop {
+		display:none;
+	}
+}
+
+#map .leaflet-top {
 	top: 50px;
 }
 
+.leaflet-sidebar {
+	padding-top: 50px;
+  z-index: 1029;
+}
+
+.leaflet-sidebar > .leaflet-control {
+	overflow: hidden;
+	padding: 0;
+	padding-left:10px;
+	background: transparent;
+}
+
+.leaflet-sidebar .close {
+	background: transparent;
+	top: 0px;
+	right: 0px;
+}
+
+/*
+#map .leaflet-left {
+	left: 375px;
+}
+
+#map .leaflet-side {
+	margin-top: 58px;
+	bottom: 0px;
+}
+
+#map .leaflet-leftbar {
+	margin-left: 10px;
+}
+
+.side-bar-holder {
+	position: absolute;
+	z-index: 1039;
+	overflow: auto;
+	top: 58px;
+	left: 10px;
+	width: 360px;
+	bottom: 0px;
+}
+
+.side-panel {
+	overflow: auto;
+}
+*/
 @media (max-width: 979px) {
 	.navbar-fixed-top, .navbar-fixed-bottom {
 		position: absolute;
 	}	
-}
-
-#geo {
-	position: absolute;
-	height: 50px;
-	width: 50px;
-	bottom: 5px;
-	left: 5px;
-	z-index: 999;
 }
 
 #settings {
@@ -59,16 +122,7 @@ html, body, div.leaflet-container {
 	top: 50px;
 	right: 5px;
 	z-index: 999;
-}	
-#export {
-	position: absolute;
-	height: 50px;
-	width: 50px;
-	top: 50px;
-	right: 65px;
-	z-index: 999;
 }
-
 
 /* I switched the position for goto-address and new observation buttons for a better layout while 
 	 we are waiting to get the rest of the buttons wired up so the UI doesnt look weird.
@@ -82,46 +136,10 @@ html, body, div.leaflet-container {
 	z-index: 999;
 }
 
-#new-observation {
-	position: absolute;
-	height: 50px;
-	width: 50px;
-	bottom: 5px;
-	left: 68px; /*133px*/
-	z-index: 999;
-}
-
-#broadcast-location-btn {
-	position: absolute;
-	height: 50px;
-	width: 50px;
-	bottom: 5px;
-	left: 133px;
-	z-index: 999;
-}
-
-#locations-btn {
-	position: absolute;
-	height: 50px;
-	width: 50px;
-	bottom: 5px;
-	left: 198px;
-	z-index: 999;
-}
-
-#list-tool-btn {
-	position: absolute;
-	height: 50px;
-	width: 50px;
-	bottom: 5px;
-	left: 263px;
-	z-index: 999;
-}
-
 .right-panel {
 	right: 5px;
 	top: 110px;
-	z-index: 2000;
+	z-index: 1039;
 	overflow: auto;
 	background: #D0E7FF;
 	color: #5278A2;
@@ -133,9 +151,9 @@ html, body, div.leaflet-container {
 
 /* Panels and their contents */
 .panel {
-	left: 5px;
-	top: 5px;
-	z-index: 2000;
+	left: 465px;
+	top: 7px;
+	z-index: 1039;
 	overflow: auto;
 	background: #D0E7FF;
 	background: rgba(208, 231, 255, 0.8);
@@ -150,6 +168,102 @@ html, body, div.leaflet-container {
 	padding: 20px;
 }
 
+.news-feed-panel-content {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	color: #222;
+	background: #305680;
+	background: rgba(48, 86, 128, 0.50);
+}
+
+.news-feed-header {
+	position: relative;
+	z-index:7;
+}
+
+.overview-map {
+	position: relative;
+}
+
+.news-items-wrapper {
+	position: absolute;
+	top: 45px;
+	overflow: hidden;
+	bottom: 0;
+	width: 100%;
+	z-index:6;
+}
+
+@media(max-width:767px){
+  .news-items-wrapper {
+    top: 200px !important;
+  }
+}
+
+.news-feed-item {
+	padding: 5px;
+	border: 1px solid #EEE;
+	margin-bottom: 10px;
+	background: #D0E7FF;
+	background: rgba(208, 231, 255, 0.8);
+	border-radius: 3px;
+}
+
+.active-news-feed-item {
+	border: 3px solid #7C22C7;
+	border-radius: 6px;
+}
+
+.news-items {
+	position: absolute;
+	width: 100%;
+	top: 0;
+	bottom: 0;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.news-items-list {
+	width: 100%;
+}
+
+.the-news-items {
+	position: relative;
+}
+
+.filter-panel {
+	padding: 5px;
+	border: 1px solid #EEE;
+	margin-bottom: 10px;
+	background: #D0E7FF;
+	background: rgba(208, 231, 255, 0.9);
+	border-radius: 3px;
+	box-shadow: 0 7px 7px rgba(0,0,0,0.65);
+	z-index: 10;
+}
+
+.feature-panel {
+	padding: 5px;
+	border: 1px solid #EEE;
+	margin-bottom: 10px;
+	background: #D0E7FF;
+	background: rgba(208, 231, 255, 0.9);
+	border-radius: 3px;
+	box-shadow: 0 7px 7px rgba(0,0,0,0.65);
+	z-index: 10;
+}
+
+.map-filter {
+	position: absolute;
+	top: 58px;
+	left: 47px;
+	z-index: 1038;
+}
+
+.news-feed-item-support {
+	color: #036;
+}
 
 .panel-close {
 	line-height: 0;
@@ -189,7 +303,6 @@ html, body, div.leaflet-container {
 }
 
 .attachment {
-	margin-bottom: 15px;
 }
 
 .observation-icon {
@@ -267,6 +380,11 @@ html, body, div.leaflet-container {
 #user-location-panel-list .location:hover {
 	background: #9ac;
 	color: #eee;
+}
+
+#news-feed-list .location:nth-child(even)  {
+	background: #def;
+	background: rgba(221, 238, 255, 0.6);
 }
 
 .location {

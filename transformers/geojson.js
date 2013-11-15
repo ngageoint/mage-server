@@ -1,40 +1,41 @@
-var include = function(property, fields) {
-  return fields.indexOf(property) != -1;
+var util = require('util');
+
+var transformAttachment = function(attachment) {
+  attachment.id = attachment._id;
+  delete attachment._id;
+
+  return attachment;
 }
 
-var transformFeature = function(feature, ret, options) {
-  delete ret._id;
-  delete ret.__v;
+// TODO switch to use Terraformer to create a geojson FeatureCollection
+var transformFeature = function(feature) {
+  if (!feature) return null;
 
-  // handle attributes
-  var properties = options.properties;
-  var attributes = null;
-  if (properties) {
-    for (var property in feature.properties) {
-      if (!include(property, properties)) {
-        delete ret.properties[property];
-      }
-    }
+  feature = feature.toObject ? feature.toObject() : feature;
+  feature.id = feature._id;
+  delete feature._id;
+
+  if (feature.attachments) {
+    feature.attachments = feature.attachments.map(function(attachment) {
+      return transformAttachment(attachment);
+    });
   }
 
-  ret.type = "Feature";
+  return feature;
 }
 
-exports.transformFeature = transformFeature;
-
-exports.transform = function(features, properties) {
-  var response = { type: "FeatureCollection",
-    bbox: [-180, -90, 180, 90.0],
-    features: []
-  };
-
-  // Generate features portion of response
-  features.forEach(function(feature) {
-    response.features.push(feature.toJSON({
-      transform: transformFeature,
-      properties: properties
-    }));
+var transformFeatures = function(features) {
+  features = features.map(function(feature) {
+    return transformFeature(feature);
   });
 
-  return response;
+  return { 
+    type: "FeatureCollection",
+    bbox: [-180, -90, 180, 90.0],
+    features: features
+  };
+}
+
+exports.transform = function(features) {
+  return util.isArray(features) ? transformFeatures(features) : transformFeature(features);
 }

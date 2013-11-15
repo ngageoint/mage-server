@@ -1,123 +1,46 @@
 'use strict';
 
-function FeatureController($scope, $location, $timeout, FeatureService, MapService, UserService, IconService, mageLib, appConstants) {
+function FeatureController($scope, $location, $timeout, Feature, FeatureService, FeatureAttachment, MapService, UserService, IconService, mageLib, appConstants) {
   var isEditing = false;
   $scope.amAdmin = UserService.amAdmin;
   $scope.token = mageLib.getLocalItem('token');
 
-  /* 
-    The observation functions are a mix of copy pasta from the observation directive, hopefully cleaned up a bit
-    and using the FeatureService. May need to be cleaned up after PDC.
-  */
-  $scope.checkCurrentMapPanel = function (mapPanel) {
-    return MapService.getCurrentMapPanel() == mapPanel;
-  }
-
-  $scope.newObservation = function () {
-    $scope.observationTab = 1;
-    $scope.observationCloseText = "Cancel";
-    MapService.setCurrentMapPanel('observation');
-    $scope.observation = $scope.createNewObservation();
-    $scope.featureLocation = $scope.markerLocation;
-    $scope.attachments = [];
-    $scope.files = [];
-  }
-
-  $scope.cancelObservation = function () {
-    MapService.setCurrentMapPanel('none');
+  $scope.cancelObservation = function (observation) {
+    $scope.newObservationEnabled = false;
     $scope.activeFeature = null;
     isEditing = false;
   }
 
-  $scope.saveObservation = function () {
+  $scope.saveObservation = function (observation) {
     // Build the observation object
     var operation = "";
 
     // TODO this should be UTC time
-    $scope.observation.attributes.EVENTDATE = new Date().getTime();
-
-    /* check to see if this is this an update or a new observation, if its an update, set the location and ID */
-    if ($scope.observation.attributes.OBJECTID > 0) {
-      $scope.observation.geometry = {
-        "x": $scope.observation.geometry.coordinates[0], 
-        "y": $scope.observation.geometry.coordinates[1]
-      };
-
-      // make a call to the FeatureService
-      FeatureService.updateFeature($scope.currentLayerId, $scope.observation)
-        .success(function (data) {
-          var objectId = data.addResults ? data.addResults[0].objectId : data.updateResults[0].objectId;
-          MapService.setCurrentMapPanel('none');
-          $scope.activeFeature = null;
-          isEditing = false;
-          $scope.updatedFeature = {
-            type: "Feature",
-            geometry: {
-              type: "Point",
-              coordinates: [$scope.observation.geometry.x, $scope.observation.geometry.y]
-            },
-            properties: {
-              OBJECTID: objectId,
-              TYPE: $scope.observation.attributes.TYPE,
-              EVENTLEVEL: $scope.observation.attributes.EVENTLEVEL
-            }
-          } 
-
-          if ($scope.files.length > 0) {
-            $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/' + objectId + '/addAttachment?access_token=' + mageLib.getLocalItem('token');
-            $scope.uploadFile();
-          }
-        });
-    } else {
-      $scope.observation.geometry = {
-        "x": $scope.markerLocation.lng, 
-        "y": $scope.markerLocation.lat
-      };
-
-      // var feature = new FeatureService.feature({
-      //   layerId: $scope.currentLayerId,
-      //   features: $scope.observation
-      // });
-      // feature.$createFeature();
-      // make a call to the FeatureService
-      FeatureService.createFeature($scope.currentLayerId, $scope.observation)
-        .success(function (data) {
-          var objectId = data.addResults ? data.addResults[0].objectId : data.updateResults[0].objectId;
-          MapService.setCurrentMapPanel('none');
-          $scope.activeFeature = null;
-          isEditing = false;
-
-          $scope.newFeature = {
-            type: "Feature",
-            geometry: {
-              type: "Point",
-              coordinates: [$scope.observation.geometry.x, $scope.observation.geometry.y]
-            },
-            properties: {
-              OBJECTID: objectId,
-              TYPE: $scope.observation.attributes.TYPE,
-              EVENTLEVEL: $scope.observation.attributes.EVENTLEVEL
-            }
-          } 
-
-          if ($scope.files.length > 0) {
-              $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + $scope.currentLayerId + '/' + objectId + '/addAttachment?access_token=' + mageLib.getLocalItem('token');
-              $scope.uploadFile();
-            }
-        });
-    }
+    observation.properties.EVENTDATE = new Date().getTime();
+    var create = observation.id == null;
+    var layerId = observation.layerId;
+    observation.$save({}, function(value, responseHeaders) {
+      create ? $scope.newFeature = value : $scope.updatedFeature = value;
+      $scope.newObservationEnabled = false;
+      $scope.activeFeature = null;
+      observation.layerId = layerId;
+      isEditing = false;
+      if ($scope.files && $scope.files.length > 0) {
+        $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + observation.layerId + '/features/' + observation.id + '/attachments';
+        $scope.uploadFile(observation);
+      }
+      $scope.editMode = false;
+      $scope.$emit('newObservationSaved', observation);
+    });
   }
 
-  $scope.deleteObservation = function () {
+  $scope.deleteObservation = function (observation) {
     console.log('making call to delete observation');
-    FeatureService.deleteObservation($scope.activeFeature.layerId, $scope.activeFeature.featureId)
-      .success(function (data) {
-        console.log('observation deleted, attempting to remove marker from map');
-        MapService.setCurrentMapPanel('none');
+    observation.$delete({}, function(success) {
         $scope.deletedFeature = $scope.activeFeature;
         isEditing = false;
-      });
-    
+        $scope.$emit('observationDeleted', observation);
+    });
   }
 
   /* Attachment upload functions, some of these make more sense in the FeatureService...more copy pasta */
@@ -133,18 +56,21 @@ function FeatureController($scope, $location, $timeout, FeatureService, MapServi
     });
   }
 
-  $scope.uploadFile = function() {
+  $scope.uploadFile = function(observation) {
     var fd = new FormData()
     for (var i in $scope.files) {
       fd.append("attachment", $scope.files[i])
     }
-    var xhr = new XMLHttpRequest()
-    xhr.upload.addEventListener("progress", uploadProgress, false)
-    xhr.addEventListener("load", uploadComplete, false)
-    xhr.addEventListener("error", uploadFailed, false)
-    xhr.addEventListener("abort", uploadCanceled, false)
-    xhr.open("POST", $scope.fileUploadUrl)
-    $scope.progressVisible = true
+    var xhr = new XMLHttpRequest();
+    xhr.upload.addEventListener("progress", uploadProgress, false);
+    xhr.addEventListener("load", function(event) {
+      uploadComplete(event, observation);
+    }, false);
+    xhr.addEventListener("error", uploadFailed, false);
+    xhr.addEventListener("abort", uploadCanceled, false);
+    xhr.open("POST", $scope.fileUploadUrl + "?access_token=" + mageLib.getToken());
+    // xhr.setRequestHeader('Authorization', 'Bearer ' + mageLib.getToken());
+    $scope.progressVisible = true;
     xhr.send(fd)
   }
 
@@ -158,9 +84,15 @@ function FeatureController($scope, $location, $timeout, FeatureService, MapServi
     });
   }
 
-  function uploadComplete(evt) {
+  function uploadComplete(event, observation) {
     $scope.files = [];
-    $scope.progressVisible = false
+    $scope.progressVisible = false;
+    console.info('event is ', event);
+    var response = angular.fromJson(event.target.responseText);
+    console.info('response is', response);
+    console.info('observation.layerId ' + observation.layerId);
+    console.info('observation', observation);
+    observation.attachments.push(response);
   }
 
   function uploadFailed(evt) {
@@ -193,24 +125,17 @@ function FeatureController($scope, $location, $timeout, FeatureService, MapServi
 
     $scope.observationCloseText = "Close";
 
-    FeatureService.getFeature(value.layerId, value.featureId).
-      success(function (data) {
+    $scope.observation = Feature.get({layerId: value.layerId, id: value.feature.id}, function(success) {
         $scope.currentLayerId = value.layerId;
-        $scope.observation = data;
-        $scope.featureLocation = {lat: data.geometry.coordinates[1], lng: data.geometry.coordinates[0]};
         $scope.attachments = [];
         $scope.files = [];
-        MapService.setCurrentMapPanel('observation');
+        $scope.newObservationEnabled = false;
         isEditing = true;
-
-      FeatureService.getAttachments(value.layerId, value.featureId).
-        success(function (data, status, headers, config) {
-          $scope.attachments = data.attachmentInfos;
-          $scope.attachmentUrl = appConstants.rootUrl + '/FeatureServer/'+ value.layerId
-            + '/' + value.featureId + '/attachments/';
-        });
-      });
-  }, true);
+        $scope.observation.layerId = value.layerId;
+        $scope.attachmentUrl = '/FeatureServer/'+ value.layerId
+            + '/features/' + $scope.observation.id + '/attachments/';
+    });
+   }, true);
 
   $scope.$watch("externalFeatureClick", function (value) {
     if (!value) return;
@@ -221,26 +146,17 @@ function FeatureController($scope, $location, $timeout, FeatureService, MapServi
       });
   }, true);
 
-  $scope.deleteAttachment = function (attachmentId) {
-    FeatureService.deleteAttachment($scope.activeFeature.layerId, $scope.activeFeature.featureId, attachmentId)
-      .success(function(data) {
-        console.log("attachment deleted");
-        var removedItem = data.deleteAttachmentResults[0].objectId;
-        if (removedItem > -1) {
-          for (var i = 0; i < $scope.attachments.length; i++) {
-            if ($scope.attachments[i].id == removedItem) {
-              $scope.attachments.splice(i, 1);
-            }
-          }
+  $scope.deleteAttachment = function (observation, attachmentId) {
+    FeatureAttachment.delete({id: attachmentId, layerId: observation.layerId, featureId: observation.id}, function(success) {
+      console.info('success');
+      console.log("attachment deleted");
+      for (var i = 0; i < observation.attachments.length; i++) {
+        if (observation.attachments[i].id == attachmentId) {
+          observation.attachments.splice(i, 1);
         }
-      });
+      }
+    }, function(failure) {
+      console.info('failure');
+    });
   }
-
-  $scope.$watch("markerLocation", function(location) {
-    if (!isEditing && MapService.getCurrentMapPanel() =='observation') {
-      $scope.featureLocation = location;
-      $scope.$apply
-      $scope.observation.attributes.EVENTDATE = new Date().getTime();
-    }
-  }, true);
 }

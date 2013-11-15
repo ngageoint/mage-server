@@ -9,7 +9,9 @@
   <link rel="shortcut icon" href="favicon.ico"/>
   <meta id="view" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
-
+<!--
+  <link rel="stylesheet" href="vendor/jquery-ui/jquery-ui.css"/>
+-->
   <link rel="stylesheet" href="vendor/bootstrap/bootstrap.css" />
   <link rel="stylesheet" href="vendor/bootstrap/bootstrap-responsive.min.css"/>
   <link rel="stylesheet" href="vendor/font-awesome/css/font-awesome.min.css"/>
@@ -18,6 +20,9 @@
   <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.awesomemarkers/leaflet.awesome-markers.css"/>
   <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.markercluster/MarkerCluster.css"/>
   <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.markercluster/MarkerCluster.Default.css"/>
+  <link rel="stylesheet" href="vendor/bootstrap-datepicker/css/datepicker.css"/>
+  <link rel="stylesheet" href="vendor/bootstrap-timepicker/css/bootstrap-timepicker.min.css"/>
+  <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.control.sidebar/L.Control.Sidebar.css"/>
   <link rel="stylesheet" href="css/style.css"/>
   <link rel="stylesheet" href="css/map.css"/>
 
@@ -45,7 +50,7 @@
 <body>
   <div cl***REMOVED***="navbar navbar-fixed-top" ng-controller="NavController">
     <div cl***REMOVED***="navbar-inner">
-      <div cl***REMOVED***="container" style="display:none;" ng-show="user">
+      <div cl***REMOVED***="container ng-cloak" ng-show="user">
 
         <a cl***REMOVED***="brand" href="#/">
           <i cl***REMOVED***="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
@@ -108,24 +113,45 @@
     </div>
   </div>
 
+
   <div data-ng-view></div>
 
   <script type="text/javascript" src="vendor/jquery/jquery.min.js"></script>
+  <!--
+  <script type="text/javascript" src="vendor/jquery-ui/jquery-ui.min.js"></script>
+-->
   <script type="text/javascript" src="vendor/underscore/underscore-min.js"></script>
   <script type="text/javascript" src="vendor/leaflet/leaflet-src.js"></script>
   <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.awesomemarkers/leaflet.awesome-markers.min.js"></script>
   <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.markercluster/leaflet.markercluster-src.js"></script>
-  <script type="text/javascript" src="vendor/angular/angular.js"></script>
-  <script type="text/javascript" src="vendor/angular/angular-resource.min.js"></script>
-  <script type="text/javascript" src="vendor/angular/angular-sanitize.min.js"></script>
-  <script type="text/javascript" src="vendor/ui-bootstrap/ui-bootstrap-0.2.0.min.js"></script>
+  <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.control.sidebar/L.Control.Sidebar.js"></script>
+  <script type="text/javascript" src="vendor/angular/1.2.0/angular.js"></script>
+  <script type="text/javascript" src="vendor/angular/1.2.0/angular-resource.js"></script>
+  <script type="text/javascript" src="vendor/angular/1.2.0/angular-sanitize.min.js"></script>
+  <script type="text/javascript" src="vendor/angular/1.2.0/angular-route.min.js"></script>
+  <script type="text/javascript" src="vendor/ui-bootstrap/ui-bootstrap-0.6.0.js"></script>
+  <script type="text/javascript" src="vendor/ui-bootstrap/ui-bootstrap-tpls-0.6.0.js"></script>
+  <!--
+  <script type="text/javascript" src="vendor/angular-ui/date.js"></script>
+  <script type="text/javascript" src="vendor/angular-ui/slider.js"></script>
+-->
+
+  <script type="text/javascript" src="vendor/angular-strap/js/angular-strap.js"></script>
+  <script type="text/javascript" src="vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
+  <script type="text/javascript" src="vendor/bootstrap-timepicker/js/bootstrap-timepicker.min.js"></script>
+
+
+  <script type="text/javascript" src="vendor/angular-plugins/http-auth-interceptor.js"></script>
   <script type="text/javascript" src="vendor/bootstrap/bootstrap.min.js"></script>
   <script type="text/javascript" src="vendor/moment/moment.min.js"></script>
   <script type="text/javascript" src="js/app/leaflet/LocationMarker.js"></script>
   <script type="text/javascript" src="js/app/leaflet/LocationMarker.Popup.js"></script>
+  <script type="text/javascript" src="js/app/leaflet/MageControls.js"></script>
   <script type="text/javascript" src="js/app/leaflet/SelectableMarker.js"></script>
   <script type="text/javascript" src="js/app/app.js"></script>
   <script type="text/javascript" src="js/app/directives/leaflet-directive.js"></script>
+  <script type="text/javascript" src="js/app/directives/filter-navbar.js"></script>
+  <script type="text/javascript" src="js/app/directives/observation.js"></script>
   <script type="text/javascript" src="js/app/directives/***REMOVED***/observation.js"></script>
   <script type="text/javascript" src="js/app/directives/pdc/observation.js"></script>
   <script type="text/javascript" src="js/app/directives/ss/observation.js"></script>
@@ -135,7 +161,17 @@
   <script type="text/javascript" src="js/app/directives/device-id.js"></script>
   <script type="text/javascript" src="js/app/directives/icon/awesome-marker-icon.js"></script>
   <script type="text/javascript" src="js/app/directives/icon/***REMOVED***-marker-icon.js"></script>
+  <script type="text/javascript" src="js/app/directives/user-location-news-item.js"></script>
+  <script type="text/javascript" src="js/app/directives/observation-news-item.js"></script>
+  <script type="text/javascript" src="js/app/directives/icon/marker-icon.js"></script>
+  <script type="text/javascript" src="js/app/directives/news-feed.js"></script>
+  <script type="text/javascript" src="js/app/directives/export.js"></script>
+  <script type="text/javascript" src="js/app/directives/filter.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/observation/ObservationService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/observation/PDCObservationService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/observation/SSObservationService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/observation/USARObservationService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/AboutService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/UserService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/DeviceService.js"></script>
@@ -160,6 +196,40 @@
   <script type="text/javascript" src="js/app/***REMOVED***s/icon/IconService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/icon/AwesomeMarkerIconService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/icon/USARMarkerIconService.js"></script>
+  <script type="text/javascript" src="js/app/resources/Feature.js"></script>
+  <script type="text/javascript" src="js/app/filters/moment-filter.js"></script>
+
+    <script type="text/ng-template" id="myModalContent.html">
+        <div cl***REMOVED***="modal-header">
+            <h3>Token Expired, Please log in.</h3>
+        </div>
+        <div cl***REMOVED***="modal-body">
+            <h3 cl***REMOVED***="top-gap-l">Mobile Analytic GEOINT Environment</h3>
+        <form cl***REMOVED***="form">
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="username">Username</label>
+            <div cl***REMOVED***="controls">
+              <input ng-model="username" name="username" type="text" autocapitalize="off"/>
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="uid">UID</label>
+            <div cl***REMOVED***="controls">
+              <input ng-model="uid" name="uid" type="text" autocapitalize="off"/>
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="p***REMOVED***word">P***REMOVED***word</label>
+            <div cl***REMOVED***="controls">
+              <input ng-model="p***REMOVED***word" name="p***REMOVED***word" type="p***REMOVED***word"/>
+            </div>
+          </div>
+          <span>
+            <button cl***REMOVED***="btn" ng-click="signin({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})" ngm-tap="signin({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})">Login</button>
+          </span>
+        </form>
+        </div>
+    </script>
 
 </body>
 

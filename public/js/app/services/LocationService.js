@@ -6,17 +6,17 @@ angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
       var ***REMOVED*** = {};
 
       ***REMOVED***.export = function () {
-        return $http.get(appConstants.rootUrl + "/api/locations/export?&access_token=" + mageLib.getLocalItem('token'));
+        return $http.get(appConstants.rootUrl + "/api/locations/export");
       };
 
       ***REMOVED***.createLocation = function (location) {
-        return $http.post(appConstants.rootUrl + '/api/locations?&access_token=' + mageLib.getLocalItem('token'), 
+        return $http.post(appConstants.rootUrl + '/api/locations', 
           JSON.stringify(location),
           {headers: {"Content-Type": "application/json"}});
       };
 
       ***REMOVED***.getLocations = function () {
-        return $http.get(appConstants.rootUrl + '/api/locations?&access_token=' + mageLib.getLocalItem('token'));
+        return $http.get(appConstants.rootUrl + '/api/locations');
       }
 
       ***REMOVED***.getPosition = function() {
@@ -43,3 +43,34 @@ angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
 
       return ***REMOVED***;
     }])
+.factory('Location', ['$resource', '$http', function($resource, $http) {
+  var Location = $resource('/api/locations', {
+
+  }, {
+    create: {
+      method: 'POST',
+      isArray: true,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    },
+    get: {
+      method: 'GET',
+      isArray: true,
+      transformResponse: _.flatten([$http.defaults.transformResponse, function(data) {
+        if (data == 'Unauthorized') return data;
+        return _.filter(data, function(user) {
+          return user.locations.length;
+        });
+      }])
+    }
+  });
+  Location.prototype.$save = function(params, success, error) {
+    if(this.id) {
+      this.$update(params, success, error);
+    } else {
+      this.$create(params, success, error);
+    }
+  }
+  return Location;
+}]);

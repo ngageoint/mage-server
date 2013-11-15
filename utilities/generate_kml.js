@@ -1,6 +1,9 @@
 module.exports = function(options) {
 
-featureTypes = require('../models/featureType')
+var featureTypes = require('../models/featureType')
+  , config = require('../config.json');
+
+var deploymentType = config.server.type;
 
 var generateKMLHeader = function() {
   var header = "<?xml version='1.0' encoding='UTF-8'?>" + 
@@ -13,53 +16,85 @@ var generateKMLHeader = function() {
 
 var generateKMLDocument = function() {
 	
-  var types = featureTypes.getFeatureTypes();
+  var types = featureTypes.getFeatureTypes(deploymentType);
 
   var doc = "<Document>" + 
 	          "  <name>MAGE-Export.kml</name>" +
 	          "  <open>1</open>";
-  for(i in types) {
-    var type = types[i];
+
+  types.forEach(function(type) {
     doc += "<Style id='" + type.name + "-blue'><IconStyle><Icon><href>icons/blue/" + type.kmlIcon +     ".png</href></Icon></IconStyle></Style>";
     doc += "<Style id='" + type.name + "-green'><IconStyle><Icon><href>icons/green/" + type.kmlIcon +   ".png</href></Icon></IconStyle></Style>";
     doc += "<Style id='" + type.name + "-yellow'><IconStyle><Icon><href>icons/yellow/" + type.kmlIcon + ".png</href></Icon></IconStyle></Style>";
     doc += "<Style id='" + type.name + "-red'><IconStyle><Icon><href>icons/red/" + type.kmlIcon +       ".png</href></Icon></IconStyle></Style>";
-  }
-	 return doc;
+  });
+	
+  return doc;
 };
 
 var generateKMLFolderStart = function(name) {
   var folder = "<Folder>" + 
-               "  <name>" + name + "</name>"; 
+               "  <name>" + name + "</name>";
+
   return folder;
 };
 
 var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachments) {
-  
-  var desc = "<h4>Properties</h4>";
+  var description = "<description>" +
+    '<![CDATA[<html xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:msxsl="urn:schemas-microsoft-com:xslt">' +
+      '<head>' +
+      '<META http-equiv="Content-Type" content="text/html">' +
+      '<meta http-equiv="content-type" content="text/html; charset=UTF-8">' +
+      '</head>';
+
+  description += '<table style="font-family:Arial,Verdana,Times;font-size:12px;text-align:left;width:100%;border-collapse:collapse;padding:3px 3px 3px 3px">';
+
+  description += 
+    '<tr bgcolor="#D4E4F3">' +
+      '<td>Lat</td>' + '<td>' + lat + '</td>' +
+    '<tr>';
+  description += 
+    '<tr>' +
+      '<td>Lon</td>' + '<td>' + lon + '</td>' +
+    '<tr>';
+
+  var odd = true;
   Object.keys(feature).forEach(function(key) {
-    desc += key + ':  ' + feature[key] + '<br/>';
+    var color = "";
+    if (odd) color = "#D4E4F3";
+    odd = !odd;
+
+    description += 
+    '<tr bgcolor="' + color + '">' +
+      '<td>' + key + '</td>' + '<td>' + feature[key] + '</td>' +
+    '</tr>';
   });
 
+  description += '</table>';
+
   //does this feature have media
-  var media = "<h4>Media Attachments</h4>";
-  if(attachments) {
-    for(var i = 0; i < attachments.length; i++) {
-      var attachment = attachments[i];
+  if (attachments && attachments.length) {
+    description += '<div>'
+
+    attachments.forEach(function(attachment) {
+      description += '<div style="padding-top:15px;"><a href="files/' + attachment.relativePath + '">' + attachment.name + '</a></div>';
 
       //determine media type (image or other)
-      if((/^image/).test(attachment.contentType)) {
-        media += '<img src="files/' + attachment.relativePath + '/' + attachment.name + '" width="300"/><br/>';
+      if ((/^image/).test(attachment.contentType)) {
+        description += 
+          '<div>' + 
+            '<img src="files/' + attachment.relativePath + '" width="150"; height="150";/>' +
+          '</div>';
       }
-      else {
-        media += '<a href="files/' + attachment.relativePath + '/' + attachment.name + '">' + attachment.name + '</a><br/>';
-      }    
-    }
+    });
+
+    description += '</div>';
   }
 
+  description += '</html>]]></description>';
+
   //determine event level ***REMOVED***ign icon color
-  switch (feature.EVENTLEVEL) 
-  {
+  switch (feature.EVENTLEVEL) {
     case 'None':
       styleColor = "blue";
       break;
@@ -77,14 +112,16 @@ var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachm
   }
 
   //build the actual placemark
-  var placemark = "<Placemark>" + 
-                  "  <name>" + name + "</name>" + 
-                  "  <styleUrl>#" + styleUrl + "-" + styleColor + "</styleUrl>" +
-                  "  <Point>" +
-                  "    <coordinates>" + lon + "," + lat + "," + alt + "</coordinates>" +
-                  "  </Point>" +
-                  "  <description>" + desc + '<br/>' + media +"</description>" + 
-                  "</Placemark>";
+  var placemark = 
+    "<Placemark>" + 
+      "<name>" + name + " " + feature.timestamp + "</name>" + 
+      "<visibility>0</visibility>" +
+      "<styleUrl>#" + styleUrl + "-" + styleColor + "</styleUrl>" +
+      "<Point>" +
+      "<coordinates>" + lon + "," + lat + "," + alt + "</coordinates>" +
+      "</Point>" +
+      description +
+    "</Placemark>";
 
   return placemark;
 };

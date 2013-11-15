@@ -17,14 +17,14 @@ Access.prototype.authorize = function(permission) {
 
     var role = req.user.role;
     if (!role) {
-      return res.send(401);
+      return res.send(403);
     }
 
     var userPermissions = req.user.role.permissions;
 
     var ok = userPermissions.indexOf(permission) != -1;
 
-    if (!ok) return res.send(401);
+    if (!ok) return res.send(403);
 
     next();
   }

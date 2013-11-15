@@ -1,19 +1,16 @@
-listen_port = process.argv[2];
-
-var sys = require('sys'),
-  listen_port = process.argv[2];
-
-if (!listen_port){
-    sys.puts('Supply a port number: $ node mage.js 4242');
-    process.exit(1);
-}
-
 var express = require("express")
   , mongoose = require('mongoose')
   , path = require("path")
   , fs = require('fs-extra')
   , config = require('./config.json')
   , provision = require('./provision');
+
+var optimist = require("optimist")
+  .usage("Usage: $0 --port [number]")
+  .describe('port', 'Port number that MAGE node server will run on.')
+  .default('port', 4242);
+var argv = optimist.argv;
+if (argv.h || argv.help) return optimist.showHelp();
 
 // Create directory for storing SAGE media attachments
 var attachmentBase = config.server.attachmentBaseDirectory;
@@ -49,6 +46,7 @@ app.configure(function () {
   app.use(express.methodOverride());
   app.use(authentication.p***REMOVED***port.initialize());
   app.use(app.router);
+  app.use('/private', express.static(path.join(__dirname, "private")));
   app.use(express.static(path.join(__dirname, "public")));
   app.use(function(err, req, res, next) {
     console.error(err.stack);
@@ -60,5 +58,6 @@ app.configure(function () {
 require('./routes')(app, {authentication: authentication, provisioning: provisioning});
 
 // Launches the Node.js Express Server
-app.listen(listen_port);
-console.log('MAGE Server: Started listening on port ' + listen_port);
+var port = argv.port;
+app.listen(port);
+console.log('MAGE Server: Started listening on port ' + port);

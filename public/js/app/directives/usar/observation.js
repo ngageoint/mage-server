@@ -1,6 +1,6 @@
 'use strict';
 
-mage.directive('***REMOVED***Observation', ['FeatureTypeService', 'UserService', function (FeatureTypeService, UserService) {
+mage.directive('***REMOVED***Observation', ['FeatureTypeService', 'UserService', 'Feature', function (FeatureTypeService, UserService, Feature) {
   return {
     restrict: "A",
     templateUrl: "/js/app/partials/***REMOVED***/observation.html",
@@ -54,15 +54,15 @@ mage.directive('***REMOVED***Observation', ['FeatureTypeService', 'UserService',
 
 
       scope.createNewObservation = function(location) {
-        return {
-          attributes: {
+        return new Featue({
+          properties: {
             userId: UserService.myself._id,
             TYPE: scope.types[0].name,
             EVENTLEVEL: scope.levels[0],
             TEAM: scope.teams[0],
             EVENTDATE: new Date()
           }
-        };
+        });
       }
     }
   };

@@ -11,6 +11,7 @@ $('#main-nav a').on('click', function(){
 var mage = angular.module(
   "mage", 
   [
+    "$strap.directives",
     "ui.bootstrap",
     "leaflet-directive",
     "mage.***REMOVED***s",
@@ -24,12 +25,15 @@ var mage = angular.module(
     "mage.aboutService",
     "mage.httpAuthService",
     "mage.lib",
-    "ngSanitize"])
+    "ngSanitize",
+    "ngRoute",
+    'ngResource',
+    "http-auth-interceptor"])
   .config(function ($routeProvider, $locationProvider, $httpProvider) {
     $httpProvider.defaults.withCredentials = true;
     $httpProvider.defaults.headers.post  = {'Content-Type': 'application/x-www-form-urlencoded'};
 
-    $httpProvider.responseInterceptors.push('HttpAuthService');
+    //$httpProvider.interceptors.push('HttpAuthService');
 
     var resolveLogin = function(roles) {
       return {
@@ -39,11 +43,19 @@ var mage = angular.module(
       }
     }
 
+    var checkLogin = function(roles) {
+      return {
+        user: function(UserService) {
+          return UserService.checkLoggedInUser(roles);
+        }
+      }
+    }
+
     $routeProvider.when('/signin',
     {
       templateUrl:    'js/app/partials/signin.html',
       controller:     "SigninController",
-      resolve: resolveLogin()
+      resolve: checkLogin()
     });
     $routeProvider.when('/signup',
     {
@@ -91,4 +103,39 @@ var mage = angular.module(
       controller:     SigninController, 
     }
   );
+}).run(function($rootScope, $modal, UserService, $location, authService) {
+  $rootScope.$on('event:auth-loginRequired', function() {
+    
+    if (!$rootScope.loginDialogPresented && $location.path() != '/' && $location.path() != '/signin' && $location.path() != '/signup') {
+      $rootScope.loginDialogPresented = true;
+      var modalInstance = $modal.open({
+        backdrop: 'static',
+        templateUrl: 'myModalContent.html',
+        controller: function ($scope, $modalInstance, authService) {
+          var oldUsername = UserService.myself && UserService.myself.username || undefined;
+          $scope.signin = function (data) {
+            UserService.signin(data).success(function(){
+              if (data.username != oldUsername) {
+                data.newUser = true;
+              }
+              authService.loginConfirmed(data);
+              $rootScope.loginDialogPresented = false;
+              $modalInstance.close($scope);
+            })
+          };
+
+          $scope.cancel = function () {
+            $rootScope.loginDialogPresented = false;
+            $modalInstance.dismiss('cancel');
+          };
+        }
+      }); 
+      modalInstance.result.then(function () {
+      }, function () {
+      });
+    }
+
+  });
+  $rootScope.$on('event:auth-loginConfirmed', function() {
+  });
 });

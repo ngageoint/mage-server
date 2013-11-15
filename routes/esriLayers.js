@@ -39,14 +39,14 @@ module.exports = function(app, security) {
     }
   }
 
-  // Get all layers
+  // Get all feature layers
   app.get(
     '/FeatureServer',
     access.authorize('READ_LAYER'),
     function (req, res) {
       console.log("SAGE Layers GET REST Service Requested");
 
-      Layer.getLayers(function(err, layers) {
+      Layer.getLayers({type: 'Feature'}, function(err, layers) {
         var response = new LayerResponse();
         response.add(layers);
         res.json(response.toObject());

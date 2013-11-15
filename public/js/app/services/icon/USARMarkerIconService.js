@@ -4,6 +4,7 @@ angular.module('mage')
   .factory('USARMarkerIconService', ['appConstants', 'FeatureTypeService',
     function (appConstants, FeatureTypeService) {
       var ***REMOVED*** = {};
+      var featureTypes = FeatureTypeService.getTypes();
 
       ***REMOVED***.getIconUrl = function(typeName, o) {
         var type = _.find(o.types, function(t) { 
@@ -31,10 +32,14 @@ angular.module('mage')
         return;
       }
 
-      ***REMOVED***.template = function(element, attributes) {
+      ***REMOVED***.markerTemplate = function(element, attributes) {
         return '<div>' +
                  '<img ng-src="{{iconSrc}}"/>' +
                '</div>';
+      }
+
+      ***REMOVED***.iconTemplate = function() {
+        return '<img ng-src="{{iconSrc}}"/>';
       }
 
       ***REMOVED***.defaultLeafletIcon = function() {
@@ -56,6 +61,14 @@ angular.module('mage')
 
       ***REMOVED***.iconHtml = function() {
         return ***REMOVED***.template;
+      }
+
+      ***REMOVED***.setTemplateVariables = function(feature, scope) {
+        if (feature.properties && feature.properties.TYPE) {
+          featureTypes.success(function(success) {
+            scope.iconSrc = ***REMOVED***.getIconUrl(properties.TYPE, {types: success});
+          });
+        }
       }
 
       return ***REMOVED***;
