@@ -163,7 +163,7 @@ module.exports = function(app, security) {
           var file = layer.files[type];
           folder.file(layer.layer.name + "_" + type + '.shp', file.shp.buffer, { binary: true });
           folder.file(layer.layer.name + "_" + type + '.shx', file.shx.buffer, { binary: true });
-          folder.file(layer.layer.name + "_" + type + '.dbf', file.dbf.buffer, { binary: true });
+          // folder.file(layer.layer.name + "_" + type + '.dbf', file.dbf.buffer, { binary: true });
           if (file.prj) folder.file(layer.layer.name + "_" + type + '.prj', file.prj);
         }
       });
@@ -173,7 +173,7 @@ module.exports = function(app, security) {
         var file = result.locations.files[type];
         folder.file("Locations_" + type + '.shp', file.shp.buffer, { binary: true });
         folder.file("Locations_" + type + '.shx', file.shx.buffer, { binary: true });
-        folder.file("Locations_" + type + '.dbf', file.dbf.buffer, { binary: true });
+        // folder.file("Locations_" + type + '.dbf', file.dbf.buffer, { binary: true });
         if (file.prj) folder.file("Locations_" + type + '.prj', file.prj);
       }
 
