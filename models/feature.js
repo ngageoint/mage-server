@@ -161,7 +161,6 @@ exports.updateFeature = function(layer, id, feature, callback) {
   var query = {};
   query[id.field] = id.id;
   feature.properties = feature.properties || {};
-  feature.properties.OBJECTID = id.id;
   featureModel(layer).findOneAndUpdate(query, feature, {new: true}, function (err, updatedFeature) {
     if (err) {
       console.log('Could not update feature', err);
