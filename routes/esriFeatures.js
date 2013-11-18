@@ -4,6 +4,7 @@ module.exports = function(app, security) {
     , async = require('async')
     , fs = require('fs-extra')
     , path = require('path')
+    , esri = require('../transformers/esri')
     , ArcGIS = require('terraformer-arcgis-parser')
     , Counter = require('../models/counter')
     , Feature = require('../models/feature')
@@ -111,10 +112,7 @@ module.exports = function(app, security) {
         fields: req.parameters.fields
       }
       new api.Feature(req.layer).getAll(options, function(features) {
-        var response = ArcGIS.convert({
-          type: 'FeatureCollection',
-          features: features
-        });
+        var response = esri.transform(features);
         res.json(response);
       });
     }
