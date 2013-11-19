@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="vendor/bootstrap/bootstrap.css" />
   <link rel="stylesheet" href="vendor/bootstrap/bootstrap-responsive.min.css"/>
   <link rel="stylesheet" href="vendor/font-awesome/css/font-awesome.min.css"/>
-  <link rel="stylesheet" href="css/icomoon.css">
+  <link rel="stylesheet" href="css/icomoon.css"/>
   <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
   <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.awesomemarkers/leaflet.awesome-markers.css"/>
   <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.markercluster/MarkerCluster.css"/>
@@ -176,7 +176,6 @@
   <script type="text/javascript" src="js/app/***REMOVED***s/UserService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/DeviceService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/MapService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/LayerService.js"></script> 
   <script type="text/javascript" src="js/app/***REMOVED***s/FeatureService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/FeatureTypeService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/LocationService.js"></script>
@@ -197,38 +196,53 @@
   <script type="text/javascript" src="js/app/***REMOVED***s/icon/AwesomeMarkerIconService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/icon/USARMarkerIconService.js"></script>
   <script type="text/javascript" src="js/app/resources/Feature.js"></script>
+  <script type="text/javascript" src="js/app/resources/Layer.js"></script>
   <script type="text/javascript" src="js/app/filters/moment-filter.js"></script>
 
     <script type="text/ng-template" id="myModalContent.html">
-        <div cl***REMOVED***="modal-header">
-            <h3>Token Expired, Please log in.</h3>
+      <div cl***REMOVED***="modal-header">
+          <h3>Token Expired, Please log in.</h3>
+      </div>
+      <div cl***REMOVED***="modal-body">
+          <h3 cl***REMOVED***="top-gap-l">Mobile Analytic GEOINT Environment</h3>
+      <form cl***REMOVED***="form">
+        <div cl***REMOVED***="control-group">
+          <label cl***REMOVED***="control-label" for="username">Username</label>
+          <div cl***REMOVED***="controls">
+            <input ng-model="username" name="username" type="text" autocapitalize="off"/>
+          </div>
         </div>
-        <div cl***REMOVED***="modal-body">
-            <h3 cl***REMOVED***="top-gap-l">Mobile Analytic GEOINT Environment</h3>
-        <form cl***REMOVED***="form">
-          <div cl***REMOVED***="control-group">
-            <label cl***REMOVED***="control-label" for="username">Username</label>
-            <div cl***REMOVED***="controls">
-              <input ng-model="username" name="username" type="text" autocapitalize="off"/>
-            </div>
+        <div cl***REMOVED***="control-group">
+          <label cl***REMOVED***="control-label" for="uid">UID</label>
+          <div cl***REMOVED***="controls">
+            <input ng-model="uid" name="uid" type="text" autocapitalize="off"/>
           </div>
-          <div cl***REMOVED***="control-group">
-            <label cl***REMOVED***="control-label" for="uid">UID</label>
-            <div cl***REMOVED***="controls">
-              <input ng-model="uid" name="uid" type="text" autocapitalize="off"/>
-            </div>
-          </div>
-          <div cl***REMOVED***="control-group">
-            <label cl***REMOVED***="control-label" for="p***REMOVED***word">P***REMOVED***word</label>
-            <div cl***REMOVED***="controls">
-              <input ng-model="p***REMOVED***word" name="p***REMOVED***word" type="p***REMOVED***word"/>
-            </div>
-          </div>
-          <span>
-            <button cl***REMOVED***="btn" ng-click="signin({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})" ngm-tap="signin({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})">Login</button>
-          </span>
-        </form>
         </div>
+        <div cl***REMOVED***="control-group">
+          <label cl***REMOVED***="control-label" for="p***REMOVED***word">P***REMOVED***word</label>
+          <div cl***REMOVED***="controls">
+            <input ng-model="p***REMOVED***word" name="p***REMOVED***word" type="p***REMOVED***word"/>
+          </div>
+        </div>
+        <span>
+          <button cl***REMOVED***="btn" ng-click="signin({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})" ngm-tap="signin({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})">Login</button>
+        </span>
+      </form>
+      </div>
+    </script>
+
+    <script type="text/ng-template" id="deleteLayer.html">
+      <div cl***REMOVED***="modal-header">
+        <h3>Please Confirm Delete '{{layer.name}}'</h3>
+      </div>
+      <div cl***REMOVED***="modal-body">
+        <div cl***REMOVED***="row-fluid"><h4>Layer '{{layer.name}}' will be deleted.  <strong>This cannot be undone<strong>.  All data will be unrecoverable.</h4></div>
+        <div cl***REMOVED***="row-fluid"><h4>Do you want to delete the layer '{{layer.name}}'?<h4></div>
+        <span>
+          <button cl***REMOVED***="btn btn-danger" ng-click="deleteLayer(layer, true)" ngm-tap="deleteLayer(layer, true)"><i cl***REMOVED***="icon-trash"> </i>Confirm Delete Layer</button>
+          <button cl***REMOVED***="btn pull-right" ng-click="cancel()" ngm-tap="cancel()">Cancel</button>
+        </span>
+      </div>
     </script>
 
 </body>

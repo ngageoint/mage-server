@@ -4,7 +4,7 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($rootScope, $scope, $log, $http, ObservationService, FeatureTypeService, appConstants, mageLib, IconService, UserService, DataService, MapService, LayerService, LocationService, Location, TimerService, Feature) {
+function MapController($rootScope, $scope, $log, $http, ObservationService, FeatureTypeService, appConstants, mageLib, IconService, UserService, DataService, MapService, Layer, LocationService, Location, TimerService, Feature) {
   $scope.customer = appConstants.customer;
   var ds = DataService;
   $scope.ms = MapService;
@@ -80,8 +80,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
   $scope.startTime = new Date();
   $scope.endTime = new Date();
 
-  LayerService.getAllLayers().
-    success(function (layers, status, headers, config) {
+  Layer.query(function (layers, status, headers, config) {
       // Pull out all non-base map imagery layers
       $scope.imageryLayers = MapService.imageryLayers = _.filter(layers, function(layer) {
         return layer.type == 'Imagery' && !layer.base;

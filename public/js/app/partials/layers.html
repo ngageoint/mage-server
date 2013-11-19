@@ -46,7 +46,7 @@
         </div>
       </div>
       <div cl***REMOVED***="span9" ng-show="showLayerForm">
-        <form ng-submit="saveLayer()" id="new-layer-form" cl***REMOVED***="form-horizontal">
+        <form id="new-layer-form" cl***REMOVED***="form-horizontal">
           <legend>{{layer.type}} Layer</legend>
           <div cl***REMOVED***="control-group" ng-show="layer.id == undefined">
             <label cl***REMOVED***="control-label">Layer type</label>
@@ -160,7 +160,8 @@
             </div>
           </div>
 
-          <button type="submit" cl***REMOVED***="btn">Save layer</button>
+          <button ng-show="layer.id" cl***REMOVED***="btn btn-danger" ng-click="deleteLayer(layer)" ngm-tap="deleteLayer(layer)"><i cl***REMOVED***="icon-trash"> </i>Delete Layer</button>
+          <button ng-click="saveLayer()" ngm-tap="saveLayer()" type="submit" cl***REMOVED***="btn pull-right">Save layer</button>
         </form>
       </div>
     </div>
