@@ -1,24 +1,16 @@
 'use strict';
 
-function LayerController($scope, $log, $http, $injector, appConstants, mageLib, LayerService) {
+function LayerController($scope, $log, $http, $injector, appConstants, mageLib, Layer) {
 
-
-  $scope.layers = 
   $scope.layerName = "";
   $scope.showLayerForm = false;
   $scope.wmsFormats = ['image/jpeg', 'image/png'];
   $scope.wmsVersions = ['1.1.1', '1.3.0'];
 
-  LayerService.getAllLayers().
-    success(function (layers, status, headers, config) {
-      $scope.layers = layers;
-    }).
-    error(function (data, status, headers, config) {
-      $log.log("Error getting layers: " + status);
-    });
+  $scope.layers = Layer.query();
 
   $scope.newLayer = function () {
-    $scope.layer = {
+    $scope.layer = new Layer({
       type: 'Feature',
       format: 'XYZ',
       base: false,
@@ -27,48 +19,54 @@ function LayerController($scope, $log, $http, $injector, appConstants, mageLib, 
         version: '1.1.1',
         transparent: false
       }
-    };
+    });
 
     $scope.showLayerForm = true;
   }
 
   $scope.saveLayer = function () {
     var layer = $scope.layer;
-
-    if (layer.type == 'Feature') {
-      delete layer.base;
-      delete layer.format;
-      delete layer.wms;
-    } else if (layer.type == 'Imagery') {
-      if (layer.format != 'WMS') {
-        delete layer.wms;
-      }
-    }
-
-    if (layer.id) {
-      LayerService.updateLayer(layer).
-        success(function (layer, status, headers, config) {
-          console.log("success updating layer")
-        }).
-        error(function (data, status, headers, config) {
-            $log.log("Error adding layer: " + status);
-        });
-    } else {
-      LayerService.createLayer(layer).
-        success(function (layer, status, headers, config) {
-          $scope.layers.push(layer);
-          $scope.layer.id = layer.id;
-          console.log("success creating layer")
-        }).
-        error(function (data, status, headers, config) {
-            $log.log("Error adding layer: " + status);
-        });
-    }
+    $scope.layer.$save();
+    $scope.layers.push($scope.layer);
   }
 
   $scope.viewLayer = function (layer) {
     $scope.layer = layer;
     $scope.showLayerForm = true;
+  }
+
+  $scope.deleteLayer = function(layer) {
+    var modalInstance = $injector.get('$modal').open({
+      templateUrl: 'deleteLayer.html',
+      resolve: {
+        layer: function () {
+          return $scope.layer;
+        }
+      },
+      controller: function ($scope, $modalInstance, layer) {
+        $scope.layer = layer;
+
+        $scope.deleteLayer = function(layer, force) {
+          console.info('delete layer');
+          layer.$delete(function(success) {
+            console.info('layer delete success');
+            $modalInstance.close(layer);
+          });
+        }
+        $scope.cancel = function () {
+          $modalInstance.dismiss('cancel');
+        };
+      }
+    }); 
+    modalInstance.result.then(function (layer) {
+      console.info('success');
+      $scope.layers = _.without($scope.layers, layer);
+      $scope.layer = undefined;
+      $scope.showLayerForm = false;
+    }, function () {
+      console.info('failure');
+    });
+    return;
   }
 
   /* Attachment upload functions, some of these make more sense in the FeatureService...more copy pasta */
