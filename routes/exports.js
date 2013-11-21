@@ -13,7 +13,6 @@ module.exports = function(app, security) {
     , path = require('path')
     , toGeoJson = require('../utilities/togeojson')
     , shp = require('shp-write')
-    , Zip = require('node-zip')
     , DOMParser = require('xmldom').DOMParser
     , exec = require('child_process').exec;
 
@@ -161,6 +160,8 @@ module.exports = function(app, security) {
           delete location.properties.deviceId;
         });
 
+        console.log('got some locations ', locations.length);
+
         var streams = {
           shp: fs.createWriteStream(req.directory + "/locations.shp"),
           shx: fs.createWriteStream(req.directory + "/locations.shx"),
@@ -187,9 +188,9 @@ module.exports = function(app, security) {
           }
 
           // remove dir
-          fs.remove(req.directory, function(err) {
-            if (err) console.log('could not remove shapfile dir', req.directory);
-          });
+          // fs.remove(req.directory, function(err) {
+          //   if (err) console.log('could not remove shapfile dir', req.directory);
+          // });
 
           // stream zip tp client
           console.log('tyring to stream file to client');
