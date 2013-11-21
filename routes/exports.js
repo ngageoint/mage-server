@@ -86,6 +86,14 @@ module.exports = function(app, security) {
     });
   }
 
+  var createTmpDirectory = function(req, res, next) {
+    var directory = "/tmp/mage-shp-export-" + new Date().getTime();
+    fs.mkdirp(directory, function(err) {
+      req.directory = directory;
+      next();
+    });
+  }
+
   app.get(
     '/api/export',
     access.authorize('READ_FEATURE'),
@@ -93,6 +101,7 @@ module.exports = function(app, security) {
     getLayers,
     mapUsers,
     mapDevices,
+    createTmpDirectory,
     function(req, res) {
       switch (req.parameters.type) {
         case 'shapefile':
@@ -109,6 +118,7 @@ module.exports = function(app, security) {
 
   var exportShapefile = function(req, res, next) {
     var fft = req.parameters.filter.fft;
+    var now = new Date();
 
     var layersToShapefiles = function(done) {
       console.log('layer to shape');
@@ -123,7 +133,13 @@ module.exports = function(app, security) {
               delete feature.properties.userId;
             });
 
-            shp.writeGeoJson({features: JSON.parse(JSON.stringify(features))}, function(err, files) {
+            var streams = {
+              shp: fs.createWriteStream(req.directory + "/" + layer.name + ".shp"),
+              shx: fs.createWriteStream(req.directory + "/" + layer.name + ".shx"),
+              dbf: fs.createWriteStream(req.directory + "/" + layer.name + ".dbf"),
+              prj: fs.createWriteStream(req.directory + "/" + layer.name + ".prj")
+            };
+            shp.writeGeoJson(streams, {features: JSON.parse(JSON.stringify(features))}, function(err, files) {
               done(err, {layer: layer, files: files});
             });
           });
@@ -145,7 +161,13 @@ module.exports = function(app, security) {
           delete location.properties.deviceId;
         });
 
-        shp.writeGeoJson({features: JSON.parse(JSON.stringify(locations))}, function(err, files) {
+        var streams = {
+          shp: fs.createWriteStream(req.directory + "/locations.shp"),
+          shx: fs.createWriteStream(req.directory + "/locations.shx"),
+          dbf: fs.createWriteStream(req.directory + "/locations.dbf"),
+          prj: fs.createWriteStream(req.directory + "/locations.prj")
+        };
+        shp.writeGeoJson(streams, {features: JSON.parse(JSON.stringify(locations))}, function(err, files) {
           done(err, {files: files});
         });
       });
@@ -154,35 +176,62 @@ module.exports = function(app, security) {
     var generateZip = function(err, result) {
       if (err) return next(err);
 
-      var zip = new Zip();
-      var folder = zip.folder('layers');
+      var zipFile = '/tmp/mage-shapefile-export-' + now.getTime() + '.zip';
+      exec("zip -r " + zipFile + " " + req.directory + "/*", 
+        function (err, stdout, stderr) {
+          sys.print('stdout: ' + stdout);
+          sys.print('stderr: ' + stderr);
+          if (err !== null) {
+            next(err);
+            console.log('exec error: ' + error);
+          }
 
-      // Add layer shapefiles to zip
-      result.layers.forEach(function(layer) {
-        for (type in layer.files) {
-          var file = layer.files[type];
-          folder.file(layer.layer.name + "_" + type + '.shp', file.shp.buffer, { binary: true });
-          folder.file(layer.layer.name + "_" + type + '.shx', file.shx.buffer, { binary: true });
-          // folder.file(layer.layer.name + "_" + type + '.dbf', file.dbf.buffer, { binary: true });
-          if (file.prj) folder.file(layer.layer.name + "_" + type + '.prj', file.prj);
+          // remove dir
+          fs.remove(req.directory, function(err) {
+            if (err) console.log('could not remove shapfile dir', req.directory);
+          });
+
+          // stream zip tp client
+          console.log('tyring to stream file to client');
+          var stream = fs.createReadStream(zipFile);
+          res.setHeader('Content-Type', 'application/zip');
+          res.setHeader('Content-Disposition', "attachment; filename=mage-shapefile-export-" + new Date().getTime() + ".zip");
+          stream.pipe(res);
         }
-      });
+      );
 
-      // Add location shapefiles to zip
-      for (type in result.locations.files) {
-        var file = result.locations.files[type];
-        folder.file("Locations_" + type + '.shp', file.shp.buffer, { binary: true });
-        folder.file("Locations_" + type + '.shx', file.shx.buffer, { binary: true });
-        // folder.file("Locations_" + type + '.dbf', file.dbf.buffer, { binary: true });
-        if (file.prj) folder.file("Locations_" + type + '.prj', file.prj);
-      }
+      // var zip = new Zip();
+      // var folder = zip.folder('layers');
 
-      // Generate zip and send response
-      var data = zip.generate({ type: 'string', compression: 'STORE' });
-      res.setHeader('Content-Type', 'application/zip');
-      res.setHeader('Content-Disposition', "attachment; filename=mage-shapefile-export-" + new Date().getTime() + ".zip");
-      res.write(data, "binary");  
-      res.end();
+      // // Add layer shapefiles to zip
+      // result.layers.forEach(function(layer) {
+      //   for (type in layer.files) {
+      //     var file = layer.files[type];
+      //     folder.file(layer.layer.name + "_" + type + '.shp', file.shp.buffer, { binary: true });
+      //     folder.file(layer.layer.name + "_" + type + '.shx', file.shx.buffer, { binary: true });
+      //     folder.file(layer.layer.name + "_" + type + '.dbf', file.dbf.buffer, { binary: true });
+      //     if (file.prj) folder.file(layer.layer.name + "_" + type + '.prj', file.prj);
+      //   }
+      // });
+
+      // // Add location shapefiles to zip
+      // for (type in result.locations.files) {
+      //   var file = result.locations.files[type];
+      //   folder.file("Locations_" + type + '.shp', file.shp.buffer, { binary: true });
+      //   folder.file("Locations_" + type + '.shx', file.shx.buffer, { binary: true });
+      //   folder.file("Locations_" + type + '.dbf', file.dbf.buffer, { binary: true });
+      //   if (file.prj) folder.file("Locations_" + type + '.prj', file.prj);
+      // }
+
+      // // Generate zip and send response
+      // var data = zip.generate({ type: 'string', compression: 'STORE' });
+      // res.setHeader('Content-Type', 'application/zip');
+      // res.setHeader('Content-Disposition', "attachment; filename=mage-shapefile-export-" + new Date().getTime() + ".zip");
+      // res.write(data, "binary");  
+      // res.end();
+
+      // res.send(200);
+
     }
 
     async.parallel({
