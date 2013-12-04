@@ -1,7 +1,7 @@
 (function () {
   var leafletDirective = angular.module("leaflet-directive", ["mage.***REMOVED***s"]);
 
-  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, IconService, appConstants, MapService, DataService) {
+  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, IconService, appConstants, MapService, DataService, TimeBucketService) {
     return {
       restrict: "A",
       replace: true,
@@ -250,8 +250,30 @@
                   // marker.bindPopup(L.popup());
                 } else {
                   scope.$apply(function(s) {
+                    var oldBucket = scope.selectedBucket;
+                    scope.selectedBucket = TimeBucketService.findItemBucketIdx(feature, 'newsfeed', function(item) {
+                      return item.properties ? item.properties.EVENTDATE : item.locations[0].properties.timestamp;
+                    });
+                    if (oldBucket == scope.selectedBucket) {
+                      $('.news-items').animate({scrollTop: $('#'+feature.id).position().top},500);
+                    } else {
+                      // now we have to wait for the news feed to switch buckets then we can scroll
+                      var tries = 0;
+                      var runAnimate = function() {
+                        var feedElement = $('#'+feature.id);
+                        if (feedElement.length != 0) {
+                          $('.news-items').animate({scrollTop: feedElement.position().top},500);
+                          return;
+                        }
+                        tries++;
+                        if (tries < 10) {
+                          $timeout(runAnimate, 500);
+                        }
+                      };
+                      $timeout(runAnimate, 500);
+                    }
                     scope.activeFeature = {layerId: feature.layerId, featureId: feature.id, feature: feature};
-                    $('.news-items').animate({scrollTop: $('#'+feature.id).position().top},500);
+                    
                     //console.info('scroll top is ' + $('#'+feature.id).position().top);
                     //$('.news-items').scrollTop($('#'+feature.id).position().top);
                   });

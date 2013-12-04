@@ -4,7 +4,7 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($rootScope, $scope, $log, $http, ObservationService, FeatureTypeService, appConstants, mageLib, IconService, UserService, DataService, MapService, Layer, LocationService, Location, TimerService, Feature) {
+function MapController($rootScope, $scope, $log, $http, ObservationService, FeatureTypeService, appConstants, mageLib, IconService, UserService, DataService, MapService, Layer, LocationService, Location, TimerService, Feature, TimeBucketService) {
   $scope.customer = appConstants.customer;
   var ds = DataService;
   $scope.ms = MapService;
@@ -179,6 +179,12 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
     createAllFeaturesArray();
   });
 
+  $scope.selectedBucket = 0;
+
+  $scope.setBucket = function(index) {
+    $scope.selectedBucket = index;
+  }
+
   var createAllFeaturesArray = function() {
     var allFeatures = $scope.locations ? $scope.locations : [];
     _.each($scope.featureLayers, function(layer) {
@@ -187,6 +193,9 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       }
     });
     $scope.feedItems = allFeatures;
+    $scope.buckets = TimeBucketService.createBuckets(allFeatures, appConstants.newsFeedItemLimit(), function(item) {
+      return item.properties ? item.properties.EVENTDATE : item.locations[0].properties.timestamp;
+    }, 'newsfeed');
   }
 
   $scope.$watch("markerLocation", function(location) {
@@ -219,6 +228,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       // this has to change.
       $scope.layer.features = features;
       createAllFeaturesArray();
+
     }, function(response) {
       console.info('there was an error, code was ' + response.status);
     });
