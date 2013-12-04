@@ -243,6 +243,17 @@ html, body, div.leaflet-container {
 	z-index: 10;
 }
 
+.bucket-panel {
+	padding: 5px;
+	border: 1px solid #EEE;
+	margin-bottom: 10px;
+	background: #D0E7FF;
+	background: rgba(208, 231, 255, 0.9);
+	border-radius: 3px;
+	box-shadow: 0 7px 7px rgba(0,0,0,0.65);
+	z-index: 10;
+}
+
 .feature-panel {
 	padding: 5px;
 	border: 1px solid #EEE;
@@ -396,7 +407,7 @@ html, body, div.leaflet-container {
     position: absolute; width: 300px; height: 14px; z-index: 1; text-align: center; font-size: 0.8em; color: white;
 }
 .progress-bar {
-    width: 300px; height: 14px;
+    height: 14px;
     border-radius: 10px;
     border: 1px solid #CCC;
     background-image: -webkit-gradient(linear, left top, left bottom, from(#6666cc), to(#4b4b95));
