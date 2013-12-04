@@ -36,8 +36,26 @@
               <a ng-href="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}">Download video</a>
             </div>
             <div ng-switch-default cl***REMOVED***="top-gap-l" style="width: 150px">
-              <a ng-href="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" target="_blank">Download {{attachment.name}}</a>
-              <div><a ng-show="amAdmin" cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(attachment.id)">Delete</a></div>
+              <!-- try to see if we can figure out what type of thing it is by the extension -->
+              <div ng-switch on="attachment.name.substr(attachment.name.lastIndexOf('.') + 1)">
+                <img ng-switch-when="jpg" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + attachment.id + '?access_token=' + token}}" style="width:150px">
+                <img ng-switch-when="jpeg" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" style="width:150px">
+                <img ng-switch-when="png" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" style="width:150px">
+                <img ng-switch-when="gif" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" style="width:150px">
+                <input type="button" value="Delete" ng-show="amAdmin && (attachment.contentType != 'application/octet-stream')" cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(attachment.id)">
+                <!-- Fix for octet stream images in an older version of the app -->
+                <!-- Due to drastically varying browser behavior, videos will be a download link for the time being -->
+                <div ng-switch-when="mp4">
+                  <video width="100%" height="320px" controls="controls">
+                  <source ng-src="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" type="video/mp4">
+                  </video>
+                  <a ng-href="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}">Download video</a>
+                </div>
+                <div ng-switch-default>
+                  <a ng-href="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" target="_blank">Download {{attachment.name}}</a>
+                  <div><a ng-show="amAdmin" cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(attachment.id)">Delete</a></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
