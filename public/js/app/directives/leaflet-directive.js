@@ -133,6 +133,7 @@
 
         var currentLocationMarkers = {};
         var locationLayerGroup = new L.LayerGroup().addTo(map);
+        scope.activeUserPopup = undefined;
         scope.$watch("ds.locations", function(derp) {
           if (!scope.ds.locations || !scope.ds.locations.$resolved) {
             if (scope.ds.locations && !scope.ds.locations.$promise) {
@@ -174,6 +175,9 @@
                   layer.bindPopup(e[0], {minWidth: 200});
 
                   layer.on('click', function() {
+
+                    scope.activeFeature = undefined;
+
                     // location table click handling here
                     if(!scope.$$phase) {
                       scope.$apply(function(s) {
@@ -183,6 +187,7 @@
                       scope.activeLocation = {locations: [feature], user: feature.properties.user};
                     }
                     angular.element(e).scope().getUser(u.user);
+                    scope.activeUserPopup = layer;
                   });
 
                   locationMarkers[u.user] = layer;
@@ -239,6 +244,13 @@
             },
             onEachFeature: function(feature, marker) {
               marker.on("click", function(e) {
+
+                if (scope.activeUserPopup) {
+                  scope.activeUserPopup.closePopup();
+                }
+                scope.activeLocation = undefined;
+                scope.locationTableClick = undefined;
+
                 // TODO, tmp for PDC, only have layerId so I cannot check if external layer
                 // using style property to indicate an external layer
                 activeMarker = marker;
@@ -252,7 +264,7 @@
                   scope.$apply(function(s) {
                     var oldBucket = scope.selectedBucket;
                     scope.selectedBucket = TimeBucketService.findItemBucketIdx(feature, 'newsfeed', function(item) {
-                      return item.properties ? item.properties.EVENTDATE : item.locations[0].properties.timestamp;
+                      return item.properties ? item.properties.EVENTDATE : moment(item.locations[0].properties.timestamp).valueOf();
                     });
                     if (oldBucket == scope.selectedBucket) {
                       $('.news-items').animate({scrollTop: $('#'+feature.id).position().top},500);
@@ -295,16 +307,17 @@
 
         scope.$watch('featureTableClick', function(o) {
           if (!o) return;
-
           var marker = markers[o.layerId][o.featureId];
           layers[o.layerId].leafletLayer.zoomToShowLayer(marker, function() {
             map.panTo(marker.getLatLng());
           });
         });
 
-        scope.$watch('locationTableClick', function(location) {
+        scope.$watch('locationTableClick', function(location, oldLocation) {
+          if (oldLocation) {
+            currentLocationMarkers[oldLocation.user].closePopup();
+          }
           if (!location) return;
-
           var marker = currentLocationMarkers[location.user];
           marker.openPopup();
           marker.fireEvent('click');

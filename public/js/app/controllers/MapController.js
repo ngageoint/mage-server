@@ -51,14 +51,21 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
 
   $scope.currentLayerId = 0;
 
-  $scope.setActiveFeature = function(feature, layer) {    
+  $scope.setActiveFeature = function(feature, layer) {  
     $scope.activeFeature = {feature: feature, layerId: layer.id, featureId: feature.id};
     $scope.featureTableClick = {feature: feature, layerId: layer.id, featureId: feature.id};
+    $scope.activeLocation = undefined;
+    $scope.locationTableClick = undefined;
+    if ($scope.activeUserPopup) {
+      $scope.activeUserPopup.closePopup();
+    }
   }
 
   $scope.locationClick = function(location) {
     $scope.locationTableClick = location;
     $scope.activeLocation = location;
+    $scope.activeFeature = undefined;
+    $scope.featureTableClick = undefined;
   }
 
   $scope.$on('followUser', function(event, user) {
@@ -143,7 +150,6 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
   $scope.$on('newObservationSaved', function(event, observation) {
     $scope.newObservationEnabled = false;
     isEditing = false;
-    console.info('observation', observation);
     var featureLayer = _.find($scope.featureLayers, function(layer) {
       return layer.id == observation.layerId;
     });
@@ -194,7 +200,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
     });
     $scope.feedItems = allFeatures;
     $scope.buckets = TimeBucketService.createBuckets(allFeatures, appConstants.newsFeedItemLimit(), function(item) {
-      return item.properties ? item.properties.EVENTDATE : item.locations[0].properties.timestamp;
+      return item.properties ? item.properties.EVENTDATE : moment(item.locations[0].properties.timestamp).valueOf();
     }, 'newsfeed');
   }
 
