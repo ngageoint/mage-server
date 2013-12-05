@@ -23,6 +23,7 @@ var mage = angular.module(
     "mage.locationService",
     "mage.aboutService",
     "mage.httpAuthService",
+    "blueimp.fileupload",
     "mage.lib",
     "ngSanitize",
     "ngRoute",
