@@ -7,6 +7,10 @@ function LayerController($scope, $log, $http, $injector, appConstants, mageLib, 
   $scope.wmsFormats = ['image/jpeg', 'image/png'];
   $scope.wmsVersions = ['1.1.1', '1.3.0'];
 
+  $scope.fileUploadOptions = {
+    acceptFileTypes: /(\.|\/)(kml)$/i,
+  };
+
   $scope.layers = Layer.query();
 
   $scope.newLayer = function () {
@@ -33,6 +37,12 @@ function LayerController($scope, $log, $http, $injector, appConstants, mageLib, 
   $scope.viewLayer = function (layer) {
     $scope.layer = layer;
     $scope.showLayerForm = true;
+    //$scope.fileUploadOptions.url = '/FeatureServer/'+layer.id+'/import';
+    console.info('changing the file upload options');
+    $scope.fileUploadOptions = {
+      url: '/FeatureServer/'+layer.id+'/import?access_token='+mageLib.getLocalItem('token'),
+      acceptFileTypes: /(\.|\/)(kml)$/i,
+    };
   }
 
   $scope.deleteLayer = function(layer) {
