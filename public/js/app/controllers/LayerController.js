@@ -30,7 +30,12 @@ function LayerController($scope, $log, $http, $injector, appConstants, mageLib, 
 
   $scope.saveLayer = function () {
     var layer = $scope.layer;
-    $scope.layer.$save();
+    $scope.layer.$save({}, function(success) {
+      $scope.fileUploadOptions = {
+        url: '/FeatureServer/'+$scope.layer.id+'/import?access_token='+mageLib.getLocalItem('token'),
+        acceptFileTypes: /(\.|\/)(kml)$/i,
+      };
+    });
     $scope.layers.push($scope.layer);
   }
 
