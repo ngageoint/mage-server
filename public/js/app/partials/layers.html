@@ -203,6 +203,7 @@
                                 </span>
                                 <span data-ng-switch-default>{{file.name}}</span>
                             </p>
+                            <strong data-ng-show="file.features" cl***REMOVED***="success text-success">File successfully imported. {{file.features}} were created.</strong>
                             <strong data-ng-show="file.error" cl***REMOVED***="error text-danger">{{file.error}} <span data-ng-show="file.doNotSend">File will not be uploaded</span></strong>
                         </td>
                         <td>
