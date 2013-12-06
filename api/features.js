@@ -59,6 +59,12 @@ Feature.prototype.create = function(feature, callback) {
   });
 }
 
+Feature.prototype.createFeatures = function(features, callback) {
+  FeatureModel.createFeatures(this._layer, features, function(err, newFeatures) {
+    callback(err, newFeatures);
+  });
+}
+
 Feature.prototype.update = function(id, feature, callback) {
   FeatureModel.updateFeature(this._layer, id, feature, function(err, updatedFeature) {
     callback(err, updatedFeature);

@@ -200,39 +200,6 @@ module.exports = function(app, security) {
           stream.pipe(res);
         }
       );
-
-      // var zip = new Zip();
-      // var folder = zip.folder('layers');
-
-      // // Add layer shapefiles to zip
-      // result.layers.forEach(function(layer) {
-      //   for (type in layer.files) {
-      //     var file = layer.files[type];
-      //     folder.file(layer.layer.name + "_" + type + '.shp', file.shp.buffer, { binary: true });
-      //     folder.file(layer.layer.name + "_" + type + '.shx', file.shx.buffer, { binary: true });
-      //     folder.file(layer.layer.name + "_" + type + '.dbf', file.dbf.buffer, { binary: true });
-      //     if (file.prj) folder.file(layer.layer.name + "_" + type + '.prj', file.prj);
-      //   }
-      // });
-
-      // // Add location shapefiles to zip
-      // for (type in result.locations.files) {
-      //   var file = result.locations.files[type];
-      //   folder.file("Locations_" + type + '.shp', file.shp.buffer, { binary: true });
-      //   folder.file("Locations_" + type + '.shx', file.shx.buffer, { binary: true });
-      //   folder.file("Locations_" + type + '.dbf', file.dbf.buffer, { binary: true });
-      //   if (file.prj) folder.file("Locations_" + type + '.prj', file.prj);
-      // }
-
-      // // Generate zip and send response
-      // var data = zip.generate({ type: 'string', compression: 'STORE' });
-      // res.setHeader('Content-Type', 'application/zip');
-      // res.setHeader('Content-Disposition', "attachment; filename=mage-shapefile-export-" + new Date().getTime() + ".zip");
-      // res.write(data, "binary");  
-      // res.end();
-
-      // res.send(200);
-
     }
 
     async.parallel({
@@ -519,7 +486,7 @@ module.exports = function(app, security) {
         });
 
 
-        fs.writeFileSync('/tmp/sochi.json', JSON.stringify(featureCollections, null, 4));
+        // fs.writeFileSync('/tmp/sochi.json', JSON.stringify(featureCollections, null, 4));
         // console.log("done wrinting");
         res.send(200);
       });
