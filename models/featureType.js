@@ -17,7 +17,7 @@ var ssTypes = pdcTypes = ggTypes = [
   { name: 'Suspicious Vehicle'     , icon: 'car'         , kmlIcon: 'suspicious-vehicle'},
   { name: 'Unattended/Suspicious Package', icon: 'gift'  , kmlIcon: 'suspicious-package'},
   { name: 'Violent Activity'       , icon: 'hit'         , kmlIcon: 'violent-activity'},
-  { name: 'Remain Over Night'      , icon: 'moon-fill'   , kmlIcon: 'ron'},
+  { name: 'Remain Over Night (RON)', icon: 'moon-fill'   , kmlIcon: 'ron'},
   { name: 'Arrival'                , icon: 'login'       , kmlIcon: 'arrival'},
   { name: 'Departure'              , icon: 'logout'      , kmlIcon: 'departure'},
   { name: 'Aeronautical Incident'  , icon: 'plane'       , kmlIcon: 'aeronautical-incident'},
