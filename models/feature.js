@@ -136,6 +136,22 @@ exports.createFeature = function(layer, feature, callback) {
   });
 }
 
+exports.createFeatures = function(layer, features, callback) {
+  var name = 'feature' + layer.id;
+  Counter.getGroup(name, features.length, function(ids) {
+    var i = 0;
+    features.forEach(function(feature) {
+      feature.properties = feature.properties || {};
+      feature.properties.OBJECTID = ids[i];
+      i++;
+    });
+
+    featureModel(layer).create(features, function(err) {
+      callback(err, features);
+    });
+  });
+}
+
 exports.createGeoJsonFeature = function(layer, feature, callback) {
   var name = 'feature' + layer.id;
   Counter.getNext(name, function(id) {
@@ -160,9 +176,11 @@ exports.updateFeature = function(layer, id, feature, callback) {
 
   var query = {};
   query[id.field] = id.id;
-  feature.properties = feature.properties || {};
-  feature.properties.OBJECTID = id.id;
-  featureModel(layer).findOneAndUpdate(query, feature, {new: true}, function (err, updatedFeature) {
+  var update = {
+    geometry: feature.geometry,
+    properties: feature.properties || {}
+  };
+  featureModel(layer).findOneAndUpdate(query, update, {new: true}, function (err, updatedFeature) {
     if (err) {
       console.log('Could not update feature', err);
     }

@@ -4,7 +4,7 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($rootScope, $scope, $log, $http, ObservationService, FeatureTypeService, appConstants, mageLib, IconService, UserService, DataService, MapService, LayerService, LocationService, Location, TimerService, Feature) {
+function MapController($rootScope, $scope, $log, $http, ObservationService, FeatureTypeService, appConstants, mageLib, IconService, UserService, DataService, MapService, Layer, LocationService, Location, TimerService, Feature, TimeBucketService) {
   $scope.customer = appConstants.customer;
   var ds = DataService;
   $scope.ms = MapService;
@@ -51,14 +51,21 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
 
   $scope.currentLayerId = 0;
 
-  $scope.setActiveFeature = function(feature, layer) {    
+  $scope.setActiveFeature = function(feature, layer) {  
     $scope.activeFeature = {feature: feature, layerId: layer.id, featureId: feature.id};
     $scope.featureTableClick = {feature: feature, layerId: layer.id, featureId: feature.id};
+    $scope.activeLocation = undefined;
+    $scope.locationTableClick = undefined;
+    if ($scope.activeUserPopup) {
+      $scope.activeUserPopup.closePopup();
+    }
   }
 
   $scope.locationClick = function(location) {
     $scope.locationTableClick = location;
     $scope.activeLocation = location;
+    $scope.activeFeature = undefined;
+    $scope.featureTableClick = undefined;
   }
 
   $scope.$on('followUser', function(event, user) {
@@ -80,8 +87,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
   $scope.startTime = new Date();
   $scope.endTime = new Date();
 
-  LayerService.getAllLayers().
-    success(function (layers, status, headers, config) {
+  Layer.query(function (layers, status, headers, config) {
       // Pull out all non-base map imagery layers
       $scope.imageryLayers = MapService.imageryLayers = _.filter(layers, function(layer) {
         return layer.type == 'Imagery' && !layer.base;
@@ -144,7 +150,6 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
   $scope.$on('newObservationSaved', function(event, observation) {
     $scope.newObservationEnabled = false;
     isEditing = false;
-    console.info('observation', observation);
     var featureLayer = _.find($scope.featureLayers, function(layer) {
       return layer.id == observation.layerId;
     });
@@ -180,6 +185,12 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
     createAllFeaturesArray();
   });
 
+  $scope.selectedBucket = 0;
+
+  $scope.setBucket = function(index) {
+    $scope.selectedBucket = index;
+  }
+
   var createAllFeaturesArray = function() {
     var allFeatures = $scope.locations ? $scope.locations : [];
     _.each($scope.featureLayers, function(layer) {
@@ -188,6 +199,9 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       }
     });
     $scope.feedItems = allFeatures;
+    $scope.buckets = TimeBucketService.createBuckets(allFeatures, appConstants.newsFeedItemLimit(), function(item) {
+      return item.properties ? item.properties.EVENTDATE : moment(item.locations[0].properties.timestamp).valueOf();
+    }, 'newsfeed');
   }
 
   $scope.$watch("markerLocation", function(location) {
@@ -220,6 +234,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       // this has to change.
       $scope.layer.features = features;
       createAllFeaturesArray();
+
     }, function(response) {
       console.info('there was an error, code was ' + response.status);
     });

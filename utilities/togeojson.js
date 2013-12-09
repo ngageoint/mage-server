@@ -68,7 +68,7 @@ var kml = function(data, o) {
 
     var doc = new DOMParser().parseFromString(data);
 
-    var featureCollections = [],
+    var features = [],
         // styleindex keeps track of hashed styles in order to match features
         styleIndex = {},
         // atomic geospatial types supported by KML - MultiGeometry is
@@ -136,59 +136,66 @@ var kml = function(data, o) {
       styleIndex[styleId] = style;
     }
 
+    // only ever get placemarks.
+    // I.E. pull all placemarks regards of depth level
+    var placemarks = xpath.select("//Placemark", doc);
+    console.log('Found ' + placemarks.length);
+    placemarks.forEach(function(placemark) {
+      features = features.concat(getPlacemark(placemark));
+    });
 
-    // just get top level documents for now
-    var documents = xpath.select("/kml/Document/Folder", doc);
-    for (var d = 0; d < documents.length; d++) {
-      var folderName = xpath.select('name/text()', documents[d]).toString();
-      var featureCollection = fc();
+    // // just get top level documents for now
+    // var documents = xpath.select("/kml/Document/Folder", doc);
+    // for (var d = 0; d < documents.length; d++) {
+    //   var folderName = xpath.select('name/text()', documents[d]).toString();
+    //   var featureCollection = fc();
 
-      var placemarks = get(documents[d], 'Placemark');
-      console.log('Found ' + placemarks.length + ' placemarks in folder ' + folderName);
-      for (var p = 0; p < placemarks.length; p++) {
-        featureCollection.features = featureCollection.features.concat(getPlacemark(placemarks[p]));
-      }
+    //   var placemarks = get(documents[d], 'Placemark');
+    //   console.log('Found ' + placemarks.length + ' placemarks in folder ' + folderName);
+    //   for (var p = 0; p < placemarks.length; p++) {
+    //     featureCollection.features = featureCollection.features.concat(getPlacemark(placemarks[p]));
+    //   }
 
-      // var lineStrings = get(documents[d], 'LineString');
-      // console.log('Found ' + lineStrings.length + ' line strings in folder ' + folderName);
-      // for (var p = 0; p < lineStrings.length; p++) {
-      //   featureCollection.features = featureCollection.features.concat(getPlacemark(lineStrings[p].parentNode));
-      // }
+    //   // var lineStrings = get(documents[d], 'LineString');
+    //   // console.log('Found ' + lineStrings.length + ' line strings in folder ' + folderName);
+    //   // for (var p = 0; p < lineStrings.length; p++) {
+    //   //   featureCollection.features = featureCollection.features.concat(getPlacemark(lineStrings[p].parentNode));
+    //   // }
 
-      featureCollections.push({
-        name: folderName,
-        featureCollection: featureCollection
-      });
-    }
+    //   featureCollections.push({
+    //     name: folderName,
+    //     featureCollection: featureCollection
+    //   });
+    // }
 
     // just get top level folders for now
-    var folders = xpath.select("kml/Folder/Document", doc);
-    console.log('got documents: ' + folders.length);
-    for (var j = 0; j < folders.length; j++) {
-      var documentName = xpath.select('name/text()', folders[j]).toString();
+    // var folders = xpath.select("kml/Folder/Document", doc);
+    // console.log('got documents: ' + folders.length);
+    // for (var j = 0; j < folders.length; j++) {
+    //   var documentName = xpath.select('name/text()', folders[j]).toString();
 
-      if (xpath.select('ScreenOverlay', folders[j]).length > 0) continue;
+    //   if (xpath.select('ScreenOverlay', folders[j]).length > 0) continue;
 
-      var featureCollection = fc();
-      var placemarks = get(folders[j], 'Placemark');
-      console.log('Found ' + placemarks.length + ' placemarks in document ' + documentName);
-      for (var p = 0; p < placemarks.length; p++) {
-        var placemark = getPlacemark(placemarks[p]);
-        featureCollection.features = featureCollection.features.concat(placemark);
-      }
+    //   var featureCollection = fc();
+    //   var placemarks = get(folders[j], 'Placemark');
+    //   console.log('Found ' + placemarks.length + ' placemarks in document ' + documentName);
+    //   for (var p = 0; p < placemarks.length; p++) {
+    //     var placemark = getPlacemark(placemarks[p]);
+    //     featureCollection.features = featureCollection.features.concat(placemark);
+    //   }
 
-      // var lineStrings = get(folders[j], 'LineString');
-      // console.log('Found ' + lineStrings.length + ' line strings in document ' + documentName);
-      // for (var p = 0; p < lineStrings.length; p++) {
-      //   var placemark = getPlacemark(lineStrings[p].parentNode);
-      //   featureCollection.features = featureCollection.features.concat(placemark);
-      // }
+    //   // var lineStrings = get(folders[j], 'LineString');
+    //   // console.log('Found ' + lineStrings.length + ' line strings in document ' + documentName);
+    //   // for (var p = 0; p < lineStrings.length; p++) {
+    //   //   var placemark = getPlacemark(lineStrings[p].parentNode);
+    //   //   featureCollection.features = featureCollection.features.concat(placemark);
+    //   // }
 
-      featureCollections.push({
-        name: documentName,
-        featureCollection: featureCollection
-      });
-    }
+    //   featureCollections.push({
+    //     name: documentName,
+    //     featureCollection: featureCollection
+    //   });
+    // }
 
     function getGeometry(root) {
         var geomNode, geomNodes, i, j, k, geoms = [];
@@ -265,7 +272,7 @@ var kml = function(data, o) {
         }];
     }
 
-    return featureCollections;
+    return features;
 }
 
 exports.kml = kml;
