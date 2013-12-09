@@ -101,15 +101,15 @@ module.exports = function(app, security) {
     mapUsers,
     mapDevices,
     createTmpDirectory,
-    function(req, res) {
+    function(req, res, next) {
       switch (req.parameters.type) {
         case 'shapefile':
           console.log('exporting shapefiles...');
-          exportShapefile(req, res);
+          exportShapefile(req, res, next);
           break;
         case 'kml':
           console.log('exporting KML...');
-          exportKML(req, res);
+          exportKML(req, res, next);
           break;
       }
     }
@@ -192,8 +192,7 @@ module.exports = function(app, security) {
           //   if (err) console.log('could not remove shapfile dir', req.directory);
           // });
 
-          // stream zip tp client
-          console.log('tyring to stream file to client');
+          // stream zip to client
           var stream = fs.createReadStream(zipFile);
           res.setHeader('Content-Type', 'application/zip');
           res.setHeader('Content-Disposition', "attachment; filename=mage-shapefile-export-" + new Date().getTime() + ".zip");
@@ -208,7 +207,7 @@ module.exports = function(app, security) {
     }, generateZip);
   }
 
-  var exportKML = function(req, res) {
+  var exportKML = function(req, res, next) {
 
     var userLocations;
     var layers = [];
@@ -414,48 +413,30 @@ module.exports = function(app, security) {
     }
 
     var streamZipFileToClient = function(err) {
-      
-      var filename = currentTmpDir + "/mage-export-" + currentDate.getTime() + ".zip";
-
-      fs.exists(filename, function(exists) {  
-        if(!exists) {  
-          res.writeHead(404, {"Content-Type": "text/plain"});  
-          res.write("404 Not Found\n");  
-          res.close();  
-          return;  
-        }  
-
-        fs.readFile(filename, "binary", function(err, file) {  
-          if(err) {  
-            res.writeHead(500, {"Content-Type": "text/plain"});  
-            res.write(err + "\n");  
-            res.close();  
-            return;  
-          }  
-
-          res.writeHead(200,{"Content-Type": "application/zip" , 
-                             "Content-Disposition": "attachment; filename=mage-kml-export-" + currentDate.getTime() + ".zip"}); 
-          res.write(file,"binary");  
-          res.end();  
-        });
-      });
+      var zipFile = currentTmpDir + "/mage-export-" + currentDate.getTime() + ".zip";
+      var stream = fs.createReadStream(zipFile);
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', "attachment; filename=mage-kml-export-" + currentDate.getTime() + ".zip");
+      stream.pipe(res);
     }
+
     ////////////////////////////////////////////////////////////////////
     //END DEFINE SERIES FUNCTIONS///////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    var seriesFunctions = [getLayers, 
-                           getUsers,
-                           getFeatures, 
-                           getLocations, 
-                           createStagingDirectory,
-                           copyKmlIconsToStagingDirectory,
-                           copyFeatureMediaAttachmentsToStagingDirectory,
-                           writeKmlFile,
-                           createKmz];
+    var seriesFunctions = [
+      getLayers, 
+      getUsers,
+      getFeatures, 
+      getLocations, 
+      createStagingDirectory,
+      copyKmlIconsToStagingDirectory,
+      copyFeatureMediaAttachmentsToStagingDirectory,
+      writeKmlFile,
+      createKmz
+   ];
           
-    async.series(seriesFunctions,streamZipFileToClient);
-
+    async.series(seriesFunctions, streamZipFileToClient);
   }
 
   app.get(
