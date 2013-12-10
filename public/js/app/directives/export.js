@@ -73,24 +73,20 @@ mage.directive('export', function(UserService, appConstants, mageLib) {
 	      var start = moment().subtract('seconds', $scope.export.value).utc().format("YYYY-MM-DD HH:mm:ss");
 	    }
 
-	    var url = appConstants.rootUrl + "/api/export" + 
-	      "?access_token=" + mageLib.getLocalItem('token') + "&type=" + type;
+	    var params = {
+	    	access_token: mageLib.getLocalItem('token'),
+	    	type: type
+	    };
 
-	    if (start) {
-	      url += "&startDate=" +  start;
-	    }
+	    if (start) params.startDate = start;
 
-	    if (end) {
-	      url += "&endDate=" + end;
-	    }
+	    if (end) params.endDate = end;
 	      
-	    if ($scope.fft) {
-	      url = url + "&fft=" + $scope.fft;
-	    }
+	    if ($scope.fft) params.fft = $scope.fft;
 
-	    if (layerIds.length) {
-	      url = url + "&layerIds=" + layerIds;
-	    }
+	    if (layerIds.length) params.layerIds = layerIds.join(",");
+
+	    var url = appConstants.rootUrl + "/api/export?" + $.param(params);
       
       	var e = angular.element('#export-' + type);
       	if (e) e.remove();
