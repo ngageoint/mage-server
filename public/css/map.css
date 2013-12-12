@@ -270,7 +270,7 @@ html, body, div.leaflet-container {
 	position: absolute;
 	top: 58px;
 	left: 47px;
-	z-index: 1038;
+	z-index: 6;
 }
 
 .news-feed-item-support {
