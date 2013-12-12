@@ -175,6 +175,7 @@ html, body, div.leaflet-container {
 	color: #222;
 	background: #305680;
 	background: rgba(48, 86, 128, 0.50);
+	z-index:1030;
 }
 
 .news-feed-header {
@@ -192,7 +193,7 @@ html, body, div.leaflet-container {
 	overflow: hidden;
 	bottom: 0;
 	width: 100%;
-	z-index:6;
+	/*z-index:6;*/
 }
 
 @media(max-width:767px){
