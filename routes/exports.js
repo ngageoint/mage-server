@@ -297,43 +297,45 @@ module.exports = function(app, security) {
 
     var copyFeatureMediaAttachmentsToStagingDirectory = function(done) {
       
-      layers.forEach(function(layer) {
-        var features = layer.features;
+      async.each(layers,
+        function(layer, layerDone) {
+          async.each(layer.features, 
+            function(feature, featureDone) {
+              async.each(feature.attachments,
+                function(attachment, attachmentDone) {
 
-        async.each(features, 
-          function(feature, featureDone) {
-            async.each(feature.attachments, 
-              function(attachment, attachmentDone) {
-
-              //create the directories if needed
-              var dir = path.dirname(currentTmpDir + '/files/' + attachment.relativePath);
-              fs.mkdirp(dir, function(err) {
-                if (err) {
-                  console.log('Could not create directory for file attachemnt for KML export', err);
-                  return attachmentDone();
-                }
-
-                var src = '/var/lib/mage/attachments/' + attachment.relativePath;
-                var dest = currentTmpDir + '/files/' + attachment.relativePath;
-                fs.copy(src, dest, function(err) {
+                //create the directories if needed
+                var dir = path.dirname(currentTmpDir + '/files/' + attachment.relativePath);
+                fs.mkdirp(dir, function(err) {
                   if (err) {
-                    console.log('Could not copy file for KML export', err);
+                    console.log('Could not create directory for file attachemnt for KML export', err);
+                    return attachmentDone();
                   }
 
-                  return attachmentDone();
-                });
+                  var src = '/var/lib/mage/attachments/' + attachment.relativePath;
+                  var dest = currentTmpDir + '/files/' + attachment.relativePath;
+                  fs.copy(src, dest, function(err) {
+                    if (err) {
+                      console.log('Could not copy file for KML export', err);
+                    }
 
-              });     
+                    return attachmentDone();
+                  });
+                });     
+              },
+              function(err) {
+                featureDone();
+              });
             },
             function(err) {
-              featureDone();
-            });
-          },
-          function(err) {
-            done();
-          }
-        );
-      });
+              layerDone();
+            }
+          );
+        },
+        function(err) {
+          done();
+        }
+      );
     }
 
     var writeKmlFile = function(done) {
