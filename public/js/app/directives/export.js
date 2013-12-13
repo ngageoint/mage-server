@@ -11,6 +11,9 @@ mage.directive('export', function(UserService, appConstants, mageLib) {
 
       $scope.ms = MapService;
 
+      $scope.localOffset = moment().format('Z');
+      $scope.localTime = true;
+
       $scope.exportStartDate = new Date();
       $scope.exportStartTime = '00:00:00';
       $scope.exportEndDate = new Date();
@@ -61,13 +64,14 @@ mage.directive('export', function(UserService, appConstants, mageLib) {
 	      var startDate = moment($scope.exportStartDate).utc();
 	      if (startDate) {
 	        var startTime = $scope.exportStartTime || '00:00:00';
-	        var start = startDate.format("YYYY-MM-DD") + " " + startTime;
+	        var start = $scope.localTime ? moment(startDate.format("YYYY-MM-DD") + " " + startTime).utc().format("YYYY-MM-DD HH:mm:ss") : startDate.format("YYYY-MM-DD") + " " + startTime;
+
 	      }
 
 	      var endDate = moment($scope.exportEndDate).utc();
 	      if (endDate) {
 	        var endTime = $scope.exportEndTime || '23:59:59';
-	        var end = endDate.format("YYYY-MM-DD") + " " + endTime;
+	        var end = $scope.localTime ? moment(endDate.format("YYYY-MM-DD") + " " + endTime).utc().format("YYYY-MM-DD HH:mm:ss") : endDate.format("YYYY-MM-DD") + " " + endTime;
 	      }
 	    } else if ($scope.export.value) {
 	      var start = moment().subtract('seconds', $scope.export.value).utc().format("YYYY-MM-DD HH:mm:ss");
