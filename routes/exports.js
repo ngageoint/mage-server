@@ -14,7 +14,6 @@ module.exports = function(app, security) {
     , toGeoJson = require('../utilities/togeojson')
     , shp = require('shp-write')
     , DOMParser = require('xmldom').DOMParser
-    , archiver = require('archiver')
     , exec = require('child_process').exec;
 
   var parseQueryParams = function(req, res, next) {
