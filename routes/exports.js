@@ -199,8 +199,9 @@ module.exports = function(app, security) {
             });
           });
 
-          res.setHeader('Content-Type', 'application/zip');
-          res.setHeader('Content-Disposition', "attachment; filename=mage-shapefile-export-" + now.getTime() + ".zip");
+          res.type('application/zip');
+          res.attachment(zipFile);
+          res.header('Content-Length', stat.size)
           res.cookie("fileDownload", "true", {path: '/'});
           stream.pipe(res);
         }
@@ -399,8 +400,11 @@ module.exports = function(app, security) {
           });
         });
 
-        res.setHeader('Content-Type', 'application/zip');
-        res.setHeader('Content-Disposition', "attachment; filename=mage-kml-export-" + now.getTime() + ".zip");
+        var stat = fs.statSync(zipFile);
+
+        res.type('application/zip');
+        res.attachment(zipFile);
+        res.header('Content-Length', stat.size)
         res.cookie("fileDownload", "true", {path: '/'});
         stream.pipe(res);
       });
