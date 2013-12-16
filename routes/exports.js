@@ -14,6 +14,7 @@ module.exports = function(app, security) {
     , toGeoJson = require('../utilities/togeojson')
     , shp = require('shp-write')
     , DOMParser = require('xmldom').DOMParser
+    , archiver = require('archiver')
     , exec = require('child_process').exec;
 
   var parseQueryParams = function(req, res, next) {
@@ -196,6 +197,7 @@ module.exports = function(app, security) {
           var stream = fs.createReadStream(zipFile);
           res.setHeader('Content-Type', 'application/zip');
           res.setHeader('Content-Disposition', "attachment; filename=mage-shapefile-export-" + new Date().getTime() + ".zip");
+          res.cookie("fileDownload", "true", {path: '/'});
           stream.pipe(res);
         }
       );
@@ -419,6 +421,7 @@ module.exports = function(app, security) {
       var stream = fs.createReadStream(zipFile);
       res.setHeader('Content-Type', 'application/zip');
       res.setHeader('Content-Disposition', "attachment; filename=mage-kml-export-" + currentDate.getTime() + ".zip");
+      res.cookie("fileDownload", "true", {path: '/'});
       stream.pipe(res);
     }
 
@@ -441,39 +444,17 @@ module.exports = function(app, security) {
     async.series(seriesFunctions, streamZipFileToClient);
   }
 
-  app.get(
-    '/api/import',
-    function(req, res, next) {
-      fs.readFile('/tmp/sochi/doc.kml', 'utf8', function(err, data) {
-        if (err) return next(err);
+  // app.get(
+  //   '/api/test/export',
+  //   function(req, res, next) {
+  //     res.setHeader('Content-Type', 'application/zip');
+  //     res.setHeader('Content-Disposition', "attachment; filename=test-export.zip");
 
-        var featureCollections = toGeoJson.kml(data);
-        // TODO use async here to get rid of nested callbacks
-        featureCollections.forEach(function(featureCollection) {
-          var layer = {
-            name: featureCollection.name,
-            type: 'External'
-          };
-          Layer.create(layer, function(err, newLayer) {
-            if (err) {
-              console.log('error creating layer', err);
-              return;
-            }
+  //     var archive = archiver('zip');
+  //     archive.pipe(res);
 
-            featureCollection.featureCollection.features.forEach(function(feature) {
-              Feature.createGeoJsonFeature(newLayer, feature, function(err, newFeature) {
-                if (err) next(err);
-              });
-            });
-          });
-        });
-
-
-        // fs.writeFileSync('/tmp/sochi.json', JSON.stringify(featureCollections, null, 4));
-        // console.log("done wrinting");
-        res.send(200);
-      });
-    }
-  );
-
+  //     archive.append('hello word, I am zipped', { name: 'hello.txt', date: new Date() });
+  //     archive.finalize();
+  //   }
+  // );
 }

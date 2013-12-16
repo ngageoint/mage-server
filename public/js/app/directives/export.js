@@ -43,7 +43,8 @@ mage.directive('export', function(UserService, appConstants, mageLib) {
 	  }];
 	  $scope.export = $scope.exportOptions[0];
 
-	  $scope.verifyExport = function($event) {
+	  $scope.exporting = {};
+	  $scope.exportData = function($event, type) {
 		var layerIds = _.pluck(_.filter($scope.featureLayers, function(layer) { return layer.exportChecked; }), 'id');
 		if (!$scope.fft && layerIds.length == 0) {
 			$event.preventDefault();
@@ -51,14 +52,8 @@ mage.directive('export', function(UserService, appConstants, mageLib) {
 		    return false;
 		}
 
-   		$scope.showLayerError = false;
-	  }
-
-	  $scope.exporting = {};
-	  $scope.exportData = function(type) {
+		$scope.showLayerError = false;
 	  	$scope.exporting[type] = true;
-
-		var layerIds = _.pluck(_.filter($scope.featureLayers, function(layer) { return layer.exportChecked; }), 'id');
 
 	    if ($scope.export.custom) {
 	      var startDate = moment($scope.exportStartDate).utc();
@@ -90,19 +85,18 @@ mage.directive('export', function(UserService, appConstants, mageLib) {
 
 	    if (layerIds.length) params.layerIds = layerIds.join(",");
 
-	    var url = appConstants.rootUrl + "/api/export?" + $.param(params);
-      
-      	var e = angular.element('#export-' + type);
-      	if (e) e.remove();
-
-      	var e = angular.element("<iframe id=export-" + type + "style='display:none' src=" + url + "></iframe>");
-      	var s = $scope;
-      	e.on('load', function() {
-      		$scope.$apply(function() {
-      			$scope.exporting[type] = false;
-      		});
-      	});
-      	angular.element('body').append(e);
+	    var url = appConstants.rootUrl + "api/export?" + $.param(params);
+	    $.fileDownload(url)
+	    	.done(function() {
+	      		$scope.$apply(function() {
+	      			$scope.exporting[type] = false;
+	      		});
+	    	})
+	    	.fail(function() {
+	      		$scope.$apply(function() {
+	      			$scope.exporting[type] = false;
+	      		});
+	    	});
 	  }
     }
   };
