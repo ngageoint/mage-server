@@ -45,6 +45,10 @@ module.exports = function(app, security) {
       parameters.filter.fft = fft === 'true';
     }
 
+    if(!layerIds && !fft) {        
+      return res.send(400, "Error.  Please Select Layer for Export.");
+    }
+
     req.parameters = parameters;
 
     next();
@@ -120,7 +124,6 @@ module.exports = function(app, security) {
     var now = new Date();
 
     var layersToShapefiles = function(done) {
-      console.log('layer to shape');
       async.map(req.layers,
         function(layer, done) {
           Feature.getFeatures(layer, {filter: req.parameters.filter}, function(features) {
@@ -160,8 +163,6 @@ module.exports = function(app, security) {
           delete location.properties.deviceId;
         });
 
-        console.log('got some locations ', locations.length);
-
         var streams = {
           shp: fs.createWriteStream(req.directory + "/locations.shp"),
           shx: fs.createWriteStream(req.directory + "/locations.shx"),
@@ -199,6 +200,8 @@ module.exports = function(app, security) {
             });
           });
 
+          var stat = fs.statSync(zipFile);
+
           res.type('application/zip');
           res.attachment(zipFile);
           res.header('Content-Length', stat.size)
@@ -217,39 +220,11 @@ module.exports = function(app, security) {
   var exportKML = function(req, res, next) {
 
     var userLocations;
-    var layers = [];
-    var usersLookup = {};
-
+    var layers = req.layers;
     var layerIds = req.parameters.filter.layerIds;
     var fft = req.parameters.filter.fft;
 
     var now = new Date();
-
-    if(!layerIds && !fft) {        
-      return res.send(400, "Error.  Please Select Layer for Export.");
-    }
-    
-    ////////////////////////////////////////////////////////////////////
-    //DEFINE SERIES FUNCTIONS///////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////
-    var getLayers = function(done) {
-      //get layers for lookup
-      Layer.getLayers({ids: layerIds || []}, function(err, result) {
-        layers = result;
-        done(err);
-      });
-    }
-
-    var getUsers = function(done) {
-      //get users for lookup
-      User.getUsers(function (users) {      
-        users.forEach(function(user) {
-          usersLookup[user._id] = user;
-        });
-
-        done();
-      });        
-    }
 
     var getFeatures = function(done) {             
       if(!layers) return done();
@@ -349,8 +324,8 @@ module.exports = function(app, security) {
 
         //writing requested FFT locations
         if (fft) {
-          userLocations.forEach(function(userLocation) {       
-            var user = usersLookup[userLocation.user];
+          userLocations.forEach(function(userLocation) {
+            var user = req.users[userLocation.user];
 
             if (user) {
               stream.write(generate_kml.generateKMLFolderStart('user: ' + user.username, false));
@@ -413,18 +388,14 @@ module.exports = function(app, security) {
     ////////////////////////////////////////////////////////////////////
     //END DEFINE SERIES FUNCTIONS///////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
-
-    var seriesFunctions = [
-      getLayers, 
-      getUsers,
+          
+    async.series([
       getFeatures, 
       getLocations, 
       copyKmlIcons,
       copyFeatureMediaAttachmentsToStagingDirectory,
       writeKmlFile
-   ];
-          
-    async.series(seriesFunctions, streamZipFileToClient);
+   ], streamZipFileToClient);
   }
 
   // app.get(
