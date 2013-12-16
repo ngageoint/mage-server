@@ -60,11 +60,10 @@
   </form>
 
   <button cl***REMOVED***="btn btn-inverse pull-right" ng-click="showExport = false" ngm-tap="showExport = false">Close</button>
-  <!-- <a cl***REMOVED***="btn sage-color" target="_blank" ng-href="{{exportUrl('kml')}}" ng-click="verifyExport($event)"><i cl***REMOVED***="icon-sage icon-download"></i> KML</a> -->
-  <button cl***REMOVED***="btn sage-color" ng-disabled="exporting.kml" ng-click="exportData('kml')">
+  <button cl***REMOVED***="btn sage-color" ng-disabled="exporting.kml" ng-click="exportData($event, 'kml')">
     <i cl***REMOVED***="icon-sage" ng-cl***REMOVED***="exporting.kml && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.kml && "Exporting..." || "KML"}}
   </button>
-	<button cl***REMOVED***="btn sage-color" ng-disabled="exporting.shapefile" ng-click="exportData('shapefile')">
+	<button cl***REMOVED***="btn sage-color" ng-disabled="exporting.shapefile" ng-click="exportData($event, 'shapefile')">
     <i cl***REMOVED***="icon-sage" ng-cl***REMOVED***="exporting.shapefile && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.shapefile && "Exporting..." || "Shapefile"}}
   </button>
 </div>
