@@ -40,9 +40,10 @@ mage.directive('mapClip', function() {
       mapClip: '=',
       inView: '='
     },
-    controller: function($scope, MapService, $element, $window) {
+    controller: function($scope, MapService, $element, $window, $rootScope) {
       var zoomControl = new L.Control.Zoom();
       $scope.ms = MapService;
+      var layer = {};
 
       // verify options
       var verifyOptions = function() {
@@ -50,15 +51,23 @@ mage.directive('mapClip', function() {
           || ($scope.mapClip.geometry && $scope.mapClip.geometry.coordinates));
       }
 
-      var createMap = function() {
+      $rootScope.$on('leafletLayerChanged', function() {
+        if (!MapService.leafletBaseLayerUrl) return;
+        if (layer) {
+          $scope.map.removeLayer(layer);
+        }
+        layer = new L.TileLayer(MapService.leafletBaseLayerUrl, MapService.leafletBaseLayerOptions);   
+        $scope.map.addLayer(layer);
+      });
 
+      var createMap = function() {
+        console.info("create map");
         if (!$scope.map) {
           $scope.map = new L.Map($element[0], {zoomControl: false, trackResize: true});
-          $scope.$watch('ms.leafletBaseLayerUrl', function() {
-            if (!$scope.ms.leafletBaseLayerUrl) return;
-            var layer = new L.TileLayer(MapService.leafletBaseLayerUrl, MapService.leafletBaseLayerOptions);   
+          if (MapService.leafletBaseLayerUrl) {
+            layer = new L.TileLayer(MapService.leafletBaseLayerUrl, MapService.leafletBaseLayerOptions);   
             $scope.map.addLayer(layer);
-          });
+          }
           $scope.map.scrollWheelZoom.disable();
         }
 
