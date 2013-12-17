@@ -1,7 +1,6 @@
 angular.module('mage')
 .factory('Layer', ['$resource', '$http', function($resource, $http) {
 
-	// //'/api/layers/:id' DELETE
 	var Layer = $resource('/api/layers/:id', {
 		id: '@id'
 	}, {

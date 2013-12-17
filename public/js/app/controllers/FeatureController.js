@@ -135,6 +135,9 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureService,
         $scope.attachmentUrl = '/FeatureServer/'+ value.layerId
             + '/features/' + $scope.observation.id + '/attachments/';
     });
+
+    //$('.news-items').animate({scrollTop: $('#'+value.feature.id).position().top},500);
+
    }, true);
 
   $scope.$watch("externalFeatureClick", function (value) {
