@@ -15,6 +15,10 @@
         layerControl.addTo(map);
         scope.ds = DataService;
 
+        map.on('baselayerchange', function(e) {
+          MapService.updateLeafletLayer(e.layer._url, e.layer.options);
+        });
+
         /*
         toolbar config
         */
@@ -121,13 +125,13 @@
             }
             if (!firstLayer) {
               firstLayer = baseLayer;
-              MapService.leafletBaseLayerUrl = layer.url;
-              MapService.leafletBaseLayerOptions = options;
+              MapService.updateLeafletLayer(layer.url, options);
             }
             layerControl.addBaseLayer(baseLayer, layer.name);
            });
           if (firstLayer) {
             firstLayer.addTo(map);
+            //MapService.currentBaseLayer = firstLayer;
           }
         });
 
