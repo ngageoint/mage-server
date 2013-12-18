@@ -18,6 +18,34 @@ body {
 	color: #6389b3;
 }
 
+img.rotate180 {
+    transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -webkit-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+    -khtml-transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+}
+
+img.rotate90 {
+    transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -webkit-transform: rotate(90deg);
+    -o-transform: rotate(90deg);
+    -khtml-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+}
+
+img.rotate270 {
+    transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -webkit-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    -khtml-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+}
+
+
 [cl***REMOVED***^="icon-"], [cl***REMOVED****=" icon-"]{
     background:none;
 }
