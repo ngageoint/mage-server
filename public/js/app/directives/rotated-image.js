@@ -9,7 +9,6 @@ mage.directive('rotatedImg', function() {
           switch(exif.Orientation) {
             case 3:
             element.addCl***REMOVED***('rotate180');
-            console.info('180 fool');
             break;
             case 6:
             element.addCl***REMOVED***('rotate90');
