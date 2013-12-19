@@ -36,6 +36,7 @@ L.Control.MageUserLocation = L.Control.extend({
         var container = L.DomUtil.get('user-location-toolbar');
         var stop = L.DomEvent.stopPropagation;
 		$(container).find('a').on('dblclick', stop);
+		$(container).find('a').on('click', stop);
 
         // ... initialize other DOM elements, add listeners, etc.
 

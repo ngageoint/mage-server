@@ -133,13 +133,17 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       $scope.newObservationEnabled = false;
       return;
     }
+    $scope.newFeature = ObservationService.createNewObservation();
+    isEditing = false;
     $scope.newObservationEnabled = true;
     $scope.observationTab = 1;
-    isEditing = false;
     $scope.observationCloseText = "Cancel";
-    $scope.newFeature = ObservationService.createNewObservation();
     $scope.attachments = [];
     $scope.files = [];
+    if ($scope.markerLocation) {
+      $scope.newFeature.geometry.coordinates = [$scope.markerLocation.lng, $scope.markerLocation.lat];
+    }
+    $scope.newFeature.properties.EVENTDATE = new Date().getTime();
   }
 
   $scope.$on('cancelEdit', function(event) {
