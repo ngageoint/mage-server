@@ -144,6 +144,9 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       $scope.newFeature.geometry.coordinates = [$scope.markerLocation.lng, $scope.markerLocation.lat];
     }
     $scope.newFeature.properties.EVENTDATE = new Date().getTime();
+    if (MapService.featureLayers.length == 1) {
+      $scope.newFeature.layerId = MapService.featureLayers[0].id;
+    }
   }
 
   $scope.$on('cancelEdit', function(event) {
