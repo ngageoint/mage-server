@@ -605,3 +605,4 @@ EXIF.readFromBinaryFile = function(oFile) {
 	return findEXIFinJPEG(oFile);
 }
 
+})();
