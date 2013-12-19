@@ -1,3 +1,21 @@
+L.AwesomeMarkers.DivIcon = L.AwesomeMarkers.Icon.extend({
+  initialize: function (options) {
+    L.AwesomeMarkers.Icon.prototype.initialize.call(this, options);
+  },
+  createIcon: function() {
+    var div = L.AwesomeMarkers.Icon.prototype.createIcon.call(this);
+    var s = document.createElement('div');
+    s.cl***REMOVED***Name = "marker-tooltip";
+    s.innerHTML = '<b>New Observation</b><p>Drag this marker to re-position</p>';
+    div.insertBefore(s, div.firstChild);
+    return div;
+  }
+});
+
+L.AwesomeMarkers.divIcon = function (options) {
+        return new L.AwesomeMarkers.DivIcon(options);
+    };
+
 (function () {
   var leafletDirective = angular.module("leaflet-directive", ["mage.***REMOVED***s"]);
 
@@ -39,7 +57,10 @@
 
         var addMarker = L.marker([0,0], {
           draggable: true,
-          icon: IconService.defaultLeafletIcon()
+          icon: new L.AwesomeMarkers.DivIcon({
+            icon: 'plus',
+            color: 'cadetblue'
+          })
         });
 
         map.on("click", function(e) {
