@@ -196,7 +196,10 @@
                     } else {
                       scope.activeLocation = {locations: [feature], user: feature.properties.user};
                     }
-                    angular.element(e).scope().getUser(u.user);
+                    var gu = angular.element(e).scope().getUser;
+                    if (gu) {
+                      gu(u.user);
+                    }
                     scope.activeUserPopup = layer;
                   });
 
@@ -318,9 +321,8 @@
         scope.$watch('featureTableClick', function(o) {
           if (!o) return;
           var marker = markers[o.layerId][o.featureId];
-          layers[o.layerId].leafletLayer.zoomToShowLayer(marker, function() {
-            map.panTo(marker.getLatLng());
-          });
+          map.setView(marker.getLatLng(), map.getZoom() > 17 ? map.getZoom() : 17);
+          layers[o.layerId].leafletLayer.zoomToShowLayer(marker, function(){});
         });
 
         scope.$watch('locationTableClick', function(location, oldLocation) {
@@ -331,7 +333,7 @@
           var marker = currentLocationMarkers[location.user];
           marker.openPopup();
           marker.fireEvent('click');
-          map.setView(marker.getLatLng(), 17);
+          map.setView(marker.getLatLng(), map.getZoom() > 17 ? map.getZoom() : 17);
         });
 
         scope.$watch("layer", function(layer) {
