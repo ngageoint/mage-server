@@ -331,7 +331,7 @@
           var marker = currentLocationMarkers[location.user];
           marker.openPopup();
           marker.fireEvent('click');
-          map.panTo(marker.getLatLng());
+          map.setView(marker.getLatLng(), 17);
         });
 
         scope.$watch("layer", function(layer) {
