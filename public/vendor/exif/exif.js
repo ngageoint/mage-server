@@ -605,25 +605,3 @@ EXIF.readFromBinaryFile = function(oFile) {
 	return findEXIFinJPEG(oFile);
 }
 
-function loadAllImages() 
-{
-	var aImages = document.getElementsByTagName("img");
-	for (var i=0;i<aImages.length;i++) {
-		if (aImages[i].getAttribute("exif") == "true") {
-			if (!aImages[i].complete) {
-				addEvent(aImages[i], "load", 
-					function() {
-						EXIF.getData(this);
-					}
-				); 
-			} else {
-				EXIF.getData(aImages[i]);
-			}
-		}
-	}
-}
-
-addEvent(window, "load", loadAllImages); 
-
-})();
-
