@@ -13,8 +13,8 @@ L.AwesomeMarkers.DivIcon = L.AwesomeMarkers.Icon.extend({
 });
 
 L.AwesomeMarkers.divIcon = function (options) {
-        return new L.AwesomeMarkers.DivIcon(options);
-    };
+  return new L.AwesomeMarkers.DivIcon(options);
+};
 
 (function () {
   var leafletDirective = angular.module("leaflet-directive", ["mage.***REMOVED***s"]);
