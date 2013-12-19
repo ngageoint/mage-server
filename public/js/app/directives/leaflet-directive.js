@@ -58,6 +58,12 @@
         scope.$watch('newObservationEnabled', function() {
           if (!scope.newObservationEnabled && map.hasLayer(addMarker)) {
             map.removeLayer(addMarker);
+          } else if (scope.newObservationEnabled) {
+            addMarker.setLatLng(map.getCenter());
+            scope.markerLocation = map.getCenter();
+            if (!map.hasLayer(addMarker)) {
+              _.delay(function() { map.addLayer(addMarker); }, 250);
+            }
           }
         });
 
