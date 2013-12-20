@@ -72,7 +72,6 @@ exports.getFeatures = function(layer, o, callback) {
   var query = featureModel(layer).find(conditions, fields);
 
   var filter = o.filter || {};
-  console.log('filtering data on: ', filter);
   // Filter by geometry
   if (filter.geometry) {
     query.where('geometry').intersects.geometry(filter.geometry);

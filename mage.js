@@ -42,7 +42,7 @@ app.configure(function () {
 
   app.set('config', config);
 
-  app.use(express.bodyParser());
+  app.use(express.bodyParser({ keepExtensions: true}));
   app.use(express.methodOverride());
   app.use(authentication.p***REMOVED***port.initialize());
   app.use(app.router);
