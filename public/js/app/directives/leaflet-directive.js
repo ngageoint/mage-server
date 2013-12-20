@@ -342,6 +342,7 @@ L.AwesomeMarkers.divIcon = function (options) {
         scope.$watch('featureTableClick', function(o) {
           if (!o) return;
           var marker = markers[o.layerId][o.featureId];
+          activeMarker = marker;
           map.setView(marker.getLatLng(), map.getZoom() > 17 ? map.getZoom() : 17);
           layers[o.layerId].leafletLayer.zoomToShowLayer(marker, function(){});
         });

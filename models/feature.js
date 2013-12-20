@@ -179,6 +179,8 @@ exports.updateFeature = function(layer, id, feature, callback) {
     geometry: feature.geometry,
     properties: feature.properties || {}
   };
+  update.properties.timestamp = moment.utc().toDate();
+
   featureModel(layer).findOneAndUpdate(query, update, {new: true}, function (err, updatedFeature) {
     if (err) {
       console.log('Could not update feature', err);
