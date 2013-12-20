@@ -23,6 +23,7 @@ mage.directive('observation', function (ObservationService, MapService) {
         scope.observation = angular.copy(scope.observationCopy);
         scope.$emit('cancelEdit', scope.observation);
       }
+
     }
   };
 });

@@ -65,7 +65,7 @@ html, body, div.leaflet-container {
 
 .leaflet-sidebar {
 	padding-top: 50px;
-  z-index: 1029;
+    z-index: 1029;
 }
 
 .leaflet-sidebar > .leaflet-control {
@@ -175,6 +175,7 @@ html, body, div.leaflet-container {
 	color: #222;
 	background: #305680;
 	background: rgba(48, 86, 128, 0.50);
+	z-index:1030;
 }
 
 .news-feed-header {
@@ -192,7 +193,7 @@ html, body, div.leaflet-container {
 	overflow: hidden;
 	bottom: 0;
 	width: 100%;
-	z-index:6;
+	/*z-index:6;*/
 }
 
 @media(max-width:767px){
@@ -269,7 +270,7 @@ html, body, div.leaflet-container {
 	position: absolute;
 	top: 58px;
 	left: 47px;
-	z-index: 1038;
+	z-index: 6;
 }
 
 .news-feed-item-support {

@@ -1,3 +1,21 @@
+L.AwesomeMarkers.DivIcon = L.AwesomeMarkers.Icon.extend({
+  initialize: function (options) {
+    L.AwesomeMarkers.Icon.prototype.initialize.call(this, options);
+  },
+  createIcon: function() {
+    var div = L.AwesomeMarkers.Icon.prototype.createIcon.call(this);
+    var s = document.createElement('div');
+    s.cl***REMOVED***Name = "marker-tooltip";
+    s.innerHTML = '<b>New Observation</b><p>Drag this marker to re-position</p>';
+    div.insertBefore(s, div.firstChild);
+    return div;
+  }
+});
+
+L.AwesomeMarkers.divIcon = function (options) {
+  return new L.AwesomeMarkers.DivIcon(options);
+};
+
 (function () {
   var leafletDirective = angular.module("leaflet-directive", ["mage.***REMOVED***s"]);
 
@@ -14,6 +32,10 @@
         var layerControl = L.control.layers();
         layerControl.addTo(map);
         scope.ds = DataService;
+
+        map.on('baselayerchange', function(e) {
+          MapService.updateLeafletLayer(e.layer._url, e.layer.options);
+        });
 
         /*
         toolbar config
@@ -35,7 +57,10 @@
 
         var addMarker = L.marker([0,0], {
           draggable: true,
-          icon: IconService.defaultLeafletIcon()
+          icon: new L.AwesomeMarkers.DivIcon({
+            icon: 'plus',
+            color: 'cadetblue'
+          })
         });
 
         map.on("click", function(e) {
@@ -54,6 +79,12 @@
         scope.$watch('newObservationEnabled', function() {
           if (!scope.newObservationEnabled && map.hasLayer(addMarker)) {
             map.removeLayer(addMarker);
+          } else if (scope.newObservationEnabled) {
+            addMarker.setLatLng(map.getCenter());
+            scope.markerLocation = map.getCenter();
+            if (!map.hasLayer(addMarker)) {
+              _.delay(function() { map.addLayer(addMarker); }, 250);
+            }
           }
         });
 
@@ -121,13 +152,13 @@
             }
             if (!firstLayer) {
               firstLayer = baseLayer;
-              MapService.leafletBaseLayerUrl = layer.url;
-              MapService.leafletBaseLayerOptions = options;
+              MapService.updateLeafletLayer(layer.url, options);
             }
             layerControl.addBaseLayer(baseLayer, layer.name);
            });
           if (firstLayer) {
             firstLayer.addTo(map);
+            //MapService.currentBaseLayer = firstLayer;
           }
         });
 
@@ -186,7 +217,10 @@
                     } else {
                       scope.activeLocation = {locations: [feature], user: feature.properties.user};
                     }
-                    angular.element(e).scope().getUser(u.user);
+                    var gu = angular.element(e).scope().getUser;
+                    if (gu) {
+                      gu(u.user);
+                    }
                     scope.activeUserPopup = layer;
                   });
 
@@ -308,9 +342,8 @@
         scope.$watch('featureTableClick', function(o) {
           if (!o) return;
           var marker = markers[o.layerId][o.featureId];
-          layers[o.layerId].leafletLayer.zoomToShowLayer(marker, function() {
-            map.panTo(marker.getLatLng());
-          });
+          map.setView(marker.getLatLng(), map.getZoom() > 17 ? map.getZoom() : 17);
+          layers[o.layerId].leafletLayer.zoomToShowLayer(marker, function(){});
         });
 
         scope.$watch('locationTableClick', function(location, oldLocation) {
@@ -321,7 +354,7 @@
           var marker = currentLocationMarkers[location.user];
           marker.openPopup();
           marker.fireEvent('click');
-          map.panTo(marker.getLatLng());
+          map.setView(marker.getLatLng(), map.getZoom() > 17 ? map.getZoom() : 17);
         });
 
         scope.$watch("layer", function(layer) {

@@ -1,6 +1,7 @@
 module.exports = function(options) {
 
 var featureTypes = require('../models/featureType')
+  , moment = require('moment')
   , config = require('../config.json');
 
 var deploymentType = config.server.type;
@@ -40,6 +41,10 @@ var generateKMLFolderStart = function(name) {
 };
 
 var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachments) {
+  var timestamp = "<TimeStamp>" +
+    "<when>" + moment(feature.timestamp).toISOString() + "</when>" +
+    "</TimeStamp>";
+
   var description = "<description>" +
     '<![CDATA[<html xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:msxsl="urn:schemas-microsoft-com:xslt">' +
       '<head>' +
@@ -120,6 +125,7 @@ var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachm
       "<Point>" +
       "<coordinates>" + lon + "," + lat + "," + alt + "</coordinates>" +
       "</Point>" +
+      timestamp +
       description +
     "</Placemark>";
 

@@ -45,6 +45,10 @@ module.exports = function(app, security) {
       parameters.filter.fft = fft === 'true';
     }
 
+    if(!layerIds && !fft) {        
+      return res.send(400, "Error.  Please Select Layer for Export.");
+    }
+
     req.parameters = parameters;
 
     next();
@@ -86,7 +90,7 @@ module.exports = function(app, security) {
   }
 
   var createTmpDirectory = function(req, res, next) {
-    var directory = "/tmp/mage-shp-export-" + new Date().getTime();
+    var directory = "/tmp/mage-export-" + new Date().getTime();
     fs.mkdirp(directory, function(err) {
       req.directory = directory;
       next();
@@ -120,7 +124,6 @@ module.exports = function(app, security) {
     var now = new Date();
 
     var layersToShapefiles = function(done) {
-      console.log('layer to shape');
       async.map(req.layers,
         function(layer, done) {
           Feature.getFeatures(layer, {filter: req.parameters.filter}, function(features) {
@@ -160,8 +163,6 @@ module.exports = function(app, security) {
           delete location.properties.deviceId;
         });
 
-        console.log('got some locations ', locations.length);
-
         var streams = {
           shp: fs.createWriteStream(req.directory + "/locations.shp"),
           shx: fs.createWriteStream(req.directory + "/locations.shx"),
@@ -180,22 +181,31 @@ module.exports = function(app, security) {
       var zipFile = '/tmp/mage-shapefile-export-' + now.getTime() + '.zip';
       exec("zip -r " + zipFile + " " + req.directory + "/*", 
         function (err, stdout, stderr) {
-          sys.print('stdout: ' + stdout);
-          sys.print('stderr: ' + stderr);
-          if (err !== null) {
-            next(err);
-            console.log('exec error: ' + error);
-          }
 
-          // remove dir
-          // fs.remove(req.directory, function(err) {
-          //   if (err) console.log('could not remove shapfile dir', req.directory);
-          // });
+          if (err !== null) {
+            return next(err);
+          }
 
           // stream zip to client
           var stream = fs.createReadStream(zipFile);
-          res.setHeader('Content-Type', 'application/zip');
-          res.setHeader('Content-Disposition', "attachment; filename=mage-shapefile-export-" + new Date().getTime() + ".zip");
+          stream.on('end', function() {
+            // remove dir
+            fs.remove(req.directory, function(err) {
+              if (err) console.log('could not remove shapfile dir', req.directory);
+            });
+
+            // remove zip file
+            fs.remove(zipFile, function(err) {
+              if (err) console.log('could not remove shapfile zip', zipFile);
+            });
+          });
+
+          var stat = fs.statSync(zipFile);
+
+          res.type('application/zip');
+          res.attachment(zipFile);
+          res.header('Content-Length', stat.size)
+          res.cookie("fileDownload", "true", {path: '/'});
           stream.pipe(res);
         }
       );
@@ -210,40 +220,11 @@ module.exports = function(app, security) {
   var exportKML = function(req, res, next) {
 
     var userLocations;
-    var layers = [];
-    var usersLookup = {};
-
+    var layers = req.layers;
     var layerIds = req.parameters.filter.layerIds;
     var fft = req.parameters.filter.fft;
 
-    var currentDate = new Date();
-    var currentTmpDir = "/tmp/mage-export-" + currentDate.getTime();
-
-    if(!layerIds && !fft) {        
-      return res.send(400, "Error.  Please Select Layer for Export.");
-    }
-    
-    ////////////////////////////////////////////////////////////////////
-    //DEFINE SERIES FUNCTIONS///////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////
-    var getLayers = function(done) {
-      //get layers for lookup
-      Layer.getLayers({ids: layerIds || []}, function(err, result) {
-        layers = result;
-        done(err);
-      });
-    }
-
-    var getUsers = function(done) {
-      //get users for lookup
-      User.getUsers(function (users) {      
-        users.forEach(function(user) {
-          usersLookup[user._id] = user;
-        });
-
-        done();
-      });        
-    }
+    var now = new Date();
 
     var getFeatures = function(done) {             
       if(!layers) return done();
@@ -273,72 +254,48 @@ module.exports = function(app, security) {
       });
     }
 
-    var createStagingDirectory = function(done) {
-      child = exec("mkdir -p " + currentTmpDir + "/icons", function (error, stdout, stderr) {
-        sys.print('stdout: ' + stdout);
-        sys.print('stderr: ' + stderr);
-        if (error !== null) {
-          console.log('exec error: ' + error);
-        }
-        done();
-      });
-    }
-
-    var copyKmlIconsToStagingDirectory = function(done) {
-      child = exec("cp -r public/img/kml-icons/*  " + currentTmpDir + "/icons", function (error, stdout, stderr) {
-        sys.print('stdout: ' + stdout);
-        sys.print('stderr: ' + stderr);
-        if (error !== null) {
-          console.log('exec error: ' + error);
-        }
-        done();
+    var copyKmlIcons= function(done) {
+      fs.copy('public/img/kml-icons', req.directory + "/icons", function(err) {
+        done(err);
       });
     }
 
     var copyFeatureMediaAttachmentsToStagingDirectory = function(done) {
-      
-      layers.forEach(function(layer) {
-        var features = layer.features;
+      async.each(layers,
+        function(layer, layerDone) {
+          async.each(layer.features, 
+            function(feature, featureDone) {
+              async.each(feature.attachments,
+                function(attachment, attachmentDone) {
+                  var src = '/var/lib/mage/attachments/' + attachment.relativePath;
+                  var dest = req.directory + '/files/' + attachment.relativePath;
+                  fs.copy(src, dest, function(err) {
+                    if (err) {
+                      console.log('Could not copy file for KML export', err);
+                    }
 
-        async.each(features, 
-          function(feature, featureDone) {
-            async.each(feature.attachments, 
-              function(attachment, attachmentDone) {
-
-              //create the directories if needed
-              var dir = path.dirname(currentTmpDir + '/files/' + attachment.relativePath);
-              fs.mkdirp(dir, function(err) {
-                if (err) {
-                  console.log('Could not create directory for file attachemnt for KML export', err);
-                  return attachmentDone();
+                    return attachmentDone();
+                  });  
+                },
+                function(err) {
+                  featureDone();
                 }
-
-                var src = '/var/lib/mage/attachments/' + attachment.relativePath;
-                var dest = currentTmpDir + '/files/' + attachment.relativePath;
-                fs.copy(src, dest, function(err) {
-                  if (err) {
-                    console.log('Could not copy file for KML export', err);
-                  }
-
-                  return attachmentDone();
-                });
-
-              });     
+              );
             },
             function(err) {
-              featureDone();
-            });
-          },
-          function(err) {
-            done();
-          }
-        );
-      });
+              layerDone();
+            }
+          );
+        },
+        function(err) {
+          done();
+        }
+      );
     }
 
     var writeKmlFile = function(done) {
-      var filename = "mage-export-" + currentDate.getTime() + ".kml"
-      var stream = fs.createWriteStream(currentTmpDir + "/" + filename);
+      var filename = "mage-export.kml"
+      var stream = fs.createWriteStream(req.directory + "/" + filename);
       stream.once('open', function(fd) {
             
         stream.write(generate_kml.generateKMLHeader());
@@ -367,8 +324,8 @@ module.exports = function(app, security) {
 
         //writing requested FFT locations
         if (fft) {
-          userLocations.forEach(function(userLocation) {       
-            var user = usersLookup[userLocation.user];
+          userLocations.forEach(function(userLocation) {
+            var user = req.users[userLocation.user];
 
             if (user) {
               stream.write(generate_kml.generateKMLFolderStart('user: ' + user.username, false));
@@ -399,79 +356,59 @@ module.exports = function(app, security) {
 
     //Known bug in Google Earth makes embedded images from a kmz file not render properly.  Treating
     //it as a zip file for now.
-    var createKmz = function(done) {
-      child = exec("zip -r " + 
-                   currentTmpDir + "/mage-export-" + currentDate.getTime() + ".zip " + 
-                   currentTmpDir + "/*", function (error, stdout, stderr) {
-        sys.print('stdout: ' + stdout);
-        sys.print('stderr: ' + stderr);
-        if (error !== null) {
-          console.log('exec error: ' + error);
-        }
-        done();
-      });
-    }
-
     var streamZipFileToClient = function(err) {
-      var zipFile = currentTmpDir + "/mage-export-" + currentDate.getTime() + ".zip";
-      var stream = fs.createReadStream(zipFile);
-      res.setHeader('Content-Type', 'application/zip');
-      res.setHeader('Content-Disposition', "attachment; filename=mage-kml-export-" + currentDate.getTime() + ".zip");
-      stream.pipe(res);
+      var zipFile = '/tmp/mage-kml-export-' + now.getTime() + '.zip';
+      exec("zip -r " + zipFile + " " + req.directory + "/*", function (err, stdout, stderr) {
+        if (err !== null) {
+          console.log('error generating zip: ' + err);
+        }
+
+        var stream = fs.createReadStream(zipFile);
+        stream.on('end', function() {
+          // remove dir
+          fs.remove(req.directory, function(err) {
+            if (err) console.log('could not remove shapfile dir', req.directory);
+          });
+          //remove zip file
+          fs.remove(zipFile, function(err) {
+            if (err) console.log('could not remove shapfile zip', zipFile);
+          });
+        });
+
+        var stat = fs.statSync(zipFile);
+
+        res.type('application/zip');
+        res.attachment(zipFile);
+        res.header('Content-Length', stat.size)
+        res.cookie("fileDownload", "true", {path: '/'});
+        stream.pipe(res);
+      });
     }
 
     ////////////////////////////////////////////////////////////////////
     //END DEFINE SERIES FUNCTIONS///////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
-
-    var seriesFunctions = [
-      getLayers, 
-      getUsers,
+          
+    async.series([
       getFeatures, 
       getLocations, 
-      createStagingDirectory,
-      copyKmlIconsToStagingDirectory,
+      copyKmlIcons,
       copyFeatureMediaAttachmentsToStagingDirectory,
-      writeKmlFile,
-      createKmz
-   ];
-          
-    async.series(seriesFunctions, streamZipFileToClient);
+      writeKmlFile
+   ], streamZipFileToClient);
   }
 
-  app.get(
-    '/api/import',
-    function(req, res, next) {
-      fs.readFile('/tmp/sochi/doc.kml', 'utf8', function(err, data) {
-        if (err) return next(err);
+  // app.get(
+  //   '/api/test/export',
+  //   function(req, res, next) {
+  //     res.setHeader('Content-Type', 'application/zip');
+  //     res.setHeader('Content-Disposition', "attachment; filename=test-export.zip");
 
-        var featureCollections = toGeoJson.kml(data);
-        // TODO use async here to get rid of nested callbacks
-        featureCollections.forEach(function(featureCollection) {
-          var layer = {
-            name: featureCollection.name,
-            type: 'External'
-          };
-          Layer.create(layer, function(err, newLayer) {
-            if (err) {
-              console.log('error creating layer', err);
-              return;
-            }
+  //     var archive = archiver('zip');
+  //     archive.pipe(res);
 
-            featureCollection.featureCollection.features.forEach(function(feature) {
-              Feature.createGeoJsonFeature(newLayer, feature, function(err, newFeature) {
-                if (err) next(err);
-              });
-            });
-          });
-        });
-
-
-        // fs.writeFileSync('/tmp/sochi.json', JSON.stringify(featureCollections, null, 4));
-        // console.log("done wrinting");
-        res.send(200);
-      });
-    }
-  );
-
+  //     archive.append('hello word, I am zipped', { name: 'hello.txt', date: new Date() });
+  //     archive.finalize();
+  //   }
+  // );
 }

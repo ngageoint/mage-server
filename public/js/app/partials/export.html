@@ -37,7 +37,7 @@
 	        <div cl***REMOVED***="control-group input-append">
 	    	  <label cl***REMOVED***="control-label" for="">&nbsp</label>
 	   		  <input cl***REMOVED***="input-small" type="text" ng-model="exportStartTime" bs-timepicker data-template="false" data-show-inputs="false" data-show-seconds="true" data-show-meridian="false">
-	   		  <span cl***REMOVED***="add-on"><i cl***REMOVED***="icon-sage icon-time"></i></span>
+	   		  <span cl***REMOVED***="add-on"><span ng-click="localTime = !localTime" ngm-tap="localTime = !localTime"><i cl***REMOVED***="icon-sage icon-time"></i><span ng-show="localTime"> Local (GMT {{localOffset}})</span><span ng-show="!localTime"> GMT (GMT +00:00)</span><span></span>
 	        </div>
         </div>
         <div>
@@ -49,7 +49,7 @@
 	        <div cl***REMOVED***="control-group input-append">
 	    	  <label cl***REMOVED***="control-label" for="">&nbsp</label>
 	   		  <input cl***REMOVED***="input-small" type="text" ng-model="exportEndTime" bs-timepicker data-template="false" data-show-inputs="false" data-show-seconds="true" data-show-meridian="false">
-	   		  <span cl***REMOVED***="add-on"><i cl***REMOVED***="icon-sage icon-time"></i></span>
+	   		  <span cl***REMOVED***="add-on"><span ng-click="localTime = !localTime" ngm-tap="localTime = !localTime"><i cl***REMOVED***="icon-sage icon-time"></i><span ng-show="localTime"> Local (GMT {{localOffset}})</span><span ng-show="!localTime"> GMT (GMT +00:00)</span></span></span>
 	        </div>
         </div>
 		</div>
@@ -57,15 +57,13 @@
     <div ng-show="showLayerError" cl***REMOVED***="alert-error" bs-alert>
       <span>Please Select a Layer</span>
     </div>
-
   </form>
 
   <button cl***REMOVED***="btn btn-inverse pull-right" ng-click="showExport = false" ngm-tap="showExport = false">Close</button>
-  <!-- <a cl***REMOVED***="btn sage-color" target="_blank" ng-href="{{exportUrl('kml')}}" ng-click="verifyExport($event)"><i cl***REMOVED***="icon-sage icon-download"></i> KML</a> -->
-  <button cl***REMOVED***="btn sage-color" ng-disabled="exporting.kml" ng-click="exportData('kml')">
+  <button cl***REMOVED***="btn sage-color" ng-disabled="exporting.kml" ng-click="exportData($event, 'kml')">
     <i cl***REMOVED***="icon-sage" ng-cl***REMOVED***="exporting.kml && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.kml && "Exporting..." || "KML"}}
   </button>
-	<button cl***REMOVED***="btn sage-color" ng-disabled="exporting.shapefile" ng-click="exportData('shapefile')">
+	<button cl***REMOVED***="btn sage-color" ng-disabled="exporting.shapefile" ng-click="exportData($event, 'shapefile')">
     <i cl***REMOVED***="icon-sage" ng-cl***REMOVED***="exporting.shapefile && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.shapefile && "Exporting..." || "Shapefile"}}
   </button>
 </div>
