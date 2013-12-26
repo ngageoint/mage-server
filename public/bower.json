@@ -1,0 +1,42 @@
+{
+  "name": "test",
+  "version": "0.0.0",
+  "description": "test",
+  "main": "index.html",
+  "keywords": [
+    "test"
+  ],
+  "authors": [
+    "test"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "apps"
+  ],
+  "dependencies": {
+    "angular": "1.2.0",
+    "angular-strap": "0.7.5",
+    "bootstrap": "2.3.0",
+    "bootstrap-datepicker": "1.2.0",
+    "bootstrap-timepicker": "0.2.6",
+    "font-awesome": "3.2.1",
+    "jquery": "1.8.3",
+    "jquery-file-upload": "9.3.0",
+    "leaflet": "0.6.4",
+    "Leaflet.awesome-markers": "1.0.0",
+    "leaflet.markerclusterer": "0.2",
+    "moment": "2.1.0",
+    "angular-ui-bootstrap": "0.6.0",
+    "underscore": "latest"
+  },
+  "resolutions": {
+    "jquery": "1.8.3",
+    "bootstrap": "2.3.0"
+  }
+}
