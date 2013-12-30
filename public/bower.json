@@ -31,9 +31,11 @@
     "leaflet": "0.6.4",
     "Leaflet.awesome-markers": "1.0.0",
     "leaflet.markerclusterer": "0.2",
+    "leaflet-sidebar": "latest",
     "moment": "2.1.0",
     "angular-ui-bootstrap": "0.6.0",
-    "underscore": "latest"
+    "underscore": "latest",
+    "exif-js": "danielbarela/exif-js"
   },
   "resolutions": {
     "jquery": "1.8.3",
