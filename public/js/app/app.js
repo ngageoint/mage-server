@@ -121,7 +121,9 @@ var mage = angular.module(
               authService.loginConfirmed(data);
               $rootScope.loginDialogPresented = false;
               $modalInstance.close($scope);
-            })
+            }).error(function (data, status, headers, config) {
+              $scope.status = status;
+            });
           };
 
           $scope.cancel = function () {
