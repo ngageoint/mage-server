@@ -253,6 +253,10 @@
         <span>
           <button cl***REMOVED***="btn" ng-click="signin({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})" ngm-tap="signin({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})">Login</button>
         </span>
+        <div cl***REMOVED***="alert alert-block" ng-show="status > 399">
+          <h4>Failed login</h4>
+          Please check your username, UID, and p***REMOVED***word and try again.
+        </div>
       </form>
       </div>
     </script>
