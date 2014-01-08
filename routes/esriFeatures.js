@@ -318,12 +318,10 @@ module.exports = function(app, security) {
           return res.json(errorResponse);
         }
 
-        res.writeHead(200, {
-          "Content-Type": attachment.attachment.contentType,
-          "Content-Length": attachment.attachment.size,
-          'Content-disposition': 'attachment; filename=' + attachment.attachment.name
-         });
-        res.end(attachment.data, 'binary');
+        res.type(attachment.contentType);
+        res.attachment(attachment.name);
+        res.header('Content-Length', attachment.size);
+        fs.createReadStream(attachment.path).pipe(res);
       });
     }
   );
