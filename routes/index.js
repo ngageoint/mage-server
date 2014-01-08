@@ -116,7 +116,7 @@ module.exports = function(app, security) {
         res.json({
           error: {
             code: 404,
-            message: 'Feature (ID: ' + id + ') not found',
+            message: 'Feature (ID: ' + featureId + ') not found',
             details: []
           }
         });
