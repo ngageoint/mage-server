@@ -6,6 +6,8 @@ var featureTypes = require('../models/featureType')
 
 var deploymentType = config.server.type;
 
+var timeFormat = "YYYY-MM-DDTHH:mm:ssZZ";
+
 var generateKMLHeader = function() {
   var header = "<?xml version='1.0' encoding='UTF-8'?>" + 
                "<kml xmlns='http://www.opengis.net/kml/2.2' " + 
@@ -42,7 +44,7 @@ var generateKMLFolderStart = function(name) {
 
 var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachments) {
   var timestamp = "<TimeStamp>" +
-    "<when>" + moment(feature.timestamp).toISOString() + "</when>" +
+    "<when>" + moment(feature.timestamp).format(timeFormat) + "</when>" +
     "</TimeStamp>";
 
   var description = "<description>" +
