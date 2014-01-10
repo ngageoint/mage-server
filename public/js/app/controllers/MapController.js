@@ -39,6 +39,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
   $scope.progressVisible = 0;
 
   $scope.locationServicesEnabled = false;
+  $scope.hideLocationsFromNewsFeed = false;
   $scope.locations = [];
   $scope.locationPollTime = 5000;
 
@@ -198,8 +199,12 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
     $scope.selectedBucket = index;
   }
 
+  $scope.hideLocations = function() {
+    createAllFeaturesArray();
+  }
+
   var createAllFeaturesArray = function() {
-    var allFeatures = $scope.locations ? $scope.locations : [];
+    var allFeatures = $scope.locations && !$scope.hideLocationsFromNewsFeed ? $scope.locations : [];
     _.each($scope.featureLayers, function(layer) {
       if (layer.checked) {
         allFeatures = allFeatures.concat(layer.features);
