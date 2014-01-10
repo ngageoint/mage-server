@@ -6,7 +6,7 @@ var featureTypes = require('../models/featureType')
 
 var deploymentType = config.server.type;
 
-var timeFormat = "YYYY-MM-DDTHH:mm:ssZZ";
+var timeFormat = "YYYY-MM-DDTHH:mm:ss";
 
 var generateKMLHeader = function() {
   var header = "<?xml version='1.0' encoding='UTF-8'?>" + 
@@ -44,7 +44,7 @@ var generateKMLFolderStart = function(name) {
 
 var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachments) {
   var timestamp = "<TimeStamp>" +
-    "<when>" + moment(feature.timestamp).format(timeFormat) + "</when>" +
+    "<when>" + moment(feature.timestamp).utc().format(timeFormat) + "Z</when>" +
     "</TimeStamp>";
 
   var description = "<description>" +
