@@ -104,7 +104,7 @@
                     <img ng-switch-when="image/png" cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token}}"></img>
                     <img ng-switch-when="image/gif" cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token}}"></img>
                     <input type="button" value="Delete" ng-show="amAdmin && (observation.attachments[$index].contentType != 'application/octet-stream') && $index < observation.attachment.length" cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(observation, observation.attachments[$index].id)">
-                    <div ng-switch-when="video/mp41">
+                    <div ng-switch-when="video/mp4">
                       <video cl***REMOVED***="news-feed-video" controls="controls">
                         <source ng-src="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token}}" type="video/mp4">
                       </video>
