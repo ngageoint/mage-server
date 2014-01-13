@@ -51,6 +51,12 @@ img.rotate270 {
 }
 .icon-white,.nav-pills>.active>a>[cl***REMOVED***^="icon-"],.nav-pills>.active>a>[cl***REMOVED****=" icon-"],.nav-list>.active>a>[cl***REMOVED***^="icon-"],.nav-list>.active>a>[cl***REMOVED****=" icon-"],.navbar-inverse .nav>.active>a>[cl***REMOVED***^="icon-"],.navbar-inverse .nav>.active>a>[cl***REMOVED****=" icon-"],.dropdown-menu>li>a:hover>[cl***REMOVED***^="icon-"],.dropdown-menu>li>a:hover>[cl***REMOVED****=" icon-"],.dropdown-menu>.active>a>[cl***REMOVED***^="icon-"],.dropdown-menu>.active>a>[cl***REMOVED****=" icon-"],.dropdown-submenu:hover>a>[cl***REMOVED***^="icon-"],.dropdown-submenu:hover>a>[cl***REMOVED****=" icon-"]{background:none;}
 
+.center-block {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .modal-header {
     background: #5278A2;
     color: #91BDEE;
