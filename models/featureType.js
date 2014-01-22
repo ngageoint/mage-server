@@ -29,10 +29,10 @@ var ssTypes = pdcTypes = ggTypes = [
 ];
 
 var tomnodTypes = [
-  { name: "No damage", icon: "icon-thumbs-up" },
-  { name: "Damaged but usable", icon: "icon-warning-sign"},
-  { name: "Dangerously damaged", icon: "icon-minus-sign"},
-  { name: "Completely destroyed", icon: "icon-ban-circle"},
+  { name: "No damage", icon: "thumbs-up" },
+  { name: "Damaged but usable", icon: "warning-sign"},
+  { name: "Dangerously damaged", icon: "minus-sign"},
+  { name: "Completely destroyed", icon: "ban-circle"},
 ];
 
 var ***REMOVED***Types = [{ 
