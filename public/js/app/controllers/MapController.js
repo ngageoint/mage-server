@@ -102,6 +102,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
         return layer.type == 'Imagery' && layer.base;
       });
       // Pull out all the external layers
+      // TODO Tomnod hack, do right at some point
       if (appConstants.deployment == "TOMNOD") {
         $scope.externalLayers = [{
           "id": "999",
@@ -256,11 +257,12 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       $http(options)
         .success(function(data, status, headers, config) {
           console.log('got points');
-          layer.featureCollection = data;
-          $scope.layer = layer;
+          $scope.layer.features = data;
+          $scope.loadingLayers[id] = false;
         })
         .error(function(data, status, headers, config) {
           console.log("Error getting features for layer 'layer.name' : " + status);
+          $scope.loadingLayers[id] = false;
         });
 
       // gets back the JSON, but doesnt seem to be handling everything right

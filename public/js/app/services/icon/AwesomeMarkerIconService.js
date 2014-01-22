@@ -34,6 +34,14 @@ angular.module('mage')
       ***REMOVED***.leafletIcon = function (feature, o) {
         var properties = feature.properties || feature.attributes;
 
+        if (feature.properties.icon_url) {
+          var myIcon = L.icon({
+            iconUrl: feature.properties.icon_url
+          });
+
+          return myIcon;
+        }
+
         return L.AwesomeMarkers.icon({
           icon: ***REMOVED***.getCl***REMOVED***(properties.TYPE, o),
           color: appConstants.featureToColor(feature)
