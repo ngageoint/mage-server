@@ -102,9 +102,18 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
         return layer.type == 'Imagery' && layer.base;
       });
       // Pull out all the external layers
-      $scope.externalLayers = MapService.externalLayers = _.filter(layers, function(layer) {
-        return layer.type == 'External';
-      });
+      if (appConstants.deployment == "TOMNOD") {
+        $scope.externalLayers = [{
+          "id": "999",
+          "type": "External",
+          "url": "http://www.tomnod.com/nod/api/oktornado2/sage/100",
+          "name": "Digital Globe"
+        }];
+      } else {
+        $scope.externalLayers = MapService.externalLayers = _.filter(layers, function(layer) {
+          return layer.type == 'External';
+        });  
+      }
 
       $scope.privateBaseLayers = MapService.privateBaseLayer = _.filter($scope.baseLayers, function(layer) {
         if (layer.url.indexOf('private') == 0) {
@@ -228,28 +237,60 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
   var loadLayer = function(id) {
     $scope.loadingLayers[id] = true;
 
-    var features = Feature.getAll({layerId: id/*, startTime: moment($scope.slider[0]).utc().format("YYYY-MM-DD HH:mm:ss"), endTime: moment($scope.slider[1]).utc().format("YYYY-MM-DD HH:mm:ss")*/}, function(response) {
-      $scope.loadingLayers[id] = false;
-      
-      _.each(features.features, function(feature) {
-        feature.layerId = id;
-      });
-      var featureLayer = _.find($scope.featureLayers, function(layer) {
-        return layer.id == id;
-      });
-      if (!featureLayer) {
-        featureLayer = _.find($scope.externalLayers, function(layer) {
+    // TODO: clean up Tomnod load, looking for layer 999
+    if (id == "999") {
+      var options = {
+        method: "GET",
+        url: $scope.externalLayers[0].url,
+        headers: {
+          "Accepts": "application/json", 
+          "Content-Type": "application/json"
+        }
+      }
+
+      options.method = "JSONP",
+      options.params = {
+         "callback": "JSON_CALLBACK"
+      }
+
+      $http(options)
+        .success(function(data, status, headers, config) {
+          console.log('got points');
+          layer.featureCollection = data;
+          $scope.layer = layer;
+        })
+        .error(function(data, status, headers, config) {
+          console.log("Error getting features for layer 'layer.name' : " + status);
+        });
+
+      // gets back the JSON, but doesnt seem to be handling everything right
+      //jsonp($scope.externalLayers[0].url).then(function(response) {
+      //    $scope.layer.features = response.features;
+      //});
+    } else {
+      var features = Feature.getAll({layerId: id/*, startTime: moment($scope.slider[0]).utc().format("YYYY-MM-DD HH:mm:ss"), endTime: moment($scope.slider[1]).utc().format("YYYY-MM-DD HH:mm:ss")*/}, function(response) {
+        $scope.loadingLayers[id] = false;
+        
+        _.each(features.features, function(feature) {
+          feature.layerId = id;
+        });
+        var featureLayer = _.find($scope.featureLayers, function(layer) {
           return layer.id == id;
         });
-      }
-      featureLayer.features = features.features;
-      // this has to change.
-      $scope.layer.features = features;
-      createAllFeaturesArray();
+        if (!featureLayer) {
+          featureLayer = _.find($scope.externalLayers, function(layer) {
+            return layer.id == id;
+          });
+        }
+        featureLayer.features = features.features;
+        // this has to change.
+        $scope.layer.features = features;
+        createAllFeaturesArray();
 
-    }, function(response) {
-      console.info('there was an error, code was ' + response.status);
-    });
+      }, function(response) {
+        console.info('there was an error, code was ' + response.status);
+      });
+    }
 
     $scope.layer = {id: id, checked: true};
   };
