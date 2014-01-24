@@ -213,11 +213,28 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
     createAllFeaturesArray();
   }
 
+  $scope.hideClearedFeatures = function(featureLayer) {
+
+    var filteredFeatures = [];
+    if (featureLayer.hideClearedFeatures) {
+      // we are filtering the features.features array
+      filteredFeatures = _.filter(featureLayer.features, function(feature){ return !feature.properties.EVENTCLEAR; });
+      // this has to change.
+      $scope.layer = {id: featureLayer.id, checked: featureLayer.checked};
+      $scope.layer.features = {features: filteredFeatures};
+      $scope.removeFeaturesFromMap = {layerId: featureLayer.id, features: _.difference(featureLayer.features, filteredFeatures)};
+    } else {
+      $scope.layer = {id: featureLayer.id, checked: featureLayer.checked};
+      $scope.layer.features = {features: featureLayer.features};
+    }
+    createAllFeaturesArray();
+  }
+
   var createAllFeaturesArray = function() {
     var allFeatures = $scope.locations && !$scope.hideLocationsFromNewsFeed ? $scope.locations : [];
     _.each($scope.featureLayers, function(layer) {
       if (layer.checked) {
-        allFeatures = allFeatures.concat(layer.features);
+        allFeatures = allFeatures.concat(layer.hideClearedFeatures ? _.filter(layer.features, function(feature){ return !feature.properties.EVENTCLEAR; }) : layer.features);
       }
     });
     $scope.feedItems = allFeatures;
@@ -285,9 +302,19 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
           });
         }
         featureLayer.features = features.features;
-        // this has to change.
-        $scope.layer.features = features;
-        createAllFeaturesArray();
+
+        // check if we want to hide cleared features, if so filter them
+        // this is done so that if we want to show cleared features (or there would be none,
+        // as is the case with external features), we don't waste time filtering
+        if (featureLayer.hideClearedFeatures) {
+          hideClearedFeatures(featureLayer);
+        } else {
+          // this has to change.
+          $scope.layer.features = features;
+          createAllFeaturesArray();
+        }
+        
+        
 
       }, function(response) {
         console.info('there was an error, code was ' + response.status);
