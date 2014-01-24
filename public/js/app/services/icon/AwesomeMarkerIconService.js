@@ -34,9 +34,13 @@ angular.module('mage')
       ***REMOVED***.leafletIcon = function (feature, o) {
         var properties = feature.properties || feature.attributes;
 
+        //Tomnod hack
         if (feature.properties.icon_url) {
           var myIcon = L.icon({
-            iconUrl: feature.properties.icon_url
+            iconUrl: feature.properties.icon_url,
+            iconSize: [60, 60],
+            iconAnchor: [5, 5],
+            popupAnchor: [5, 5],
           });
 
           return myIcon;
