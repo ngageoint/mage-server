@@ -418,16 +418,22 @@ L.AwesomeMarkers.divIcon = function (options) {
           } else {
             markers[scope.layer.id] = {};
             var gj = L.geoJson(features, featureConfig(scope.layer));
-            newLayer = L.markerClusterGroup()
-            .addLayer(gj)
-            .addTo(map)
-            .bringToFront();
-            layers[scope.layer.id] = {
-                leafletLayer: newLayer,
-                layer: scope.layer,
-                gjLayer: gj
+
+            if (scope.layer.id == 999) {
+              newLayer = gj.addTo(map).bringToFront();
+            } else {
+              newLayer = L.markerClusterGroup()
+                .addLayer(gj)
+                .addTo(map)
+                .bringToFront();
               };
-          }
+            }
+
+            layers[scope.layer.id] = {
+              leafletLayer: newLayer,
+              layer: scope.layer,
+              gjLayer: gj
+            }
         });
 
         scope.$watch("newFeature", function(feature) {
