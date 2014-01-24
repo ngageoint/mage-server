@@ -150,8 +150,8 @@
 
 
 
-          <button ng-show="layer.id" cl***REMOVED***="btn btn-danger" ng-click="deleteLayer(layer)" ngm-tap="deleteLayer(layer)"><i cl***REMOVED***="icon-trash"> </i>Delete Layer</button>
-          <button ng-click="saveLayer()" ngm-tap="saveLayer()" type="submit" cl***REMOVED***="btn pull-right">Save layer</button>
+          <button ng-show="layer.id && !(readOnlyMode && layer.type == 'Feature')" cl***REMOVED***="btn btn-danger" ng-click="deleteLayer(layer)" ngm-tap="deleteLayer(layer)"><i cl***REMOVED***="icon-trash"> </i>Delete Layer</button>
+          <button ng-click="saveLayer()" ngm-tap="saveLayer()" ng-hide="readOnlyMode && layer.type == 'Feature'" type="submit" cl***REMOVED***="btn pull-right">Save layer</button>
         </form>
 
         <div ng-show="layer.type == 'External' && layer.id">
