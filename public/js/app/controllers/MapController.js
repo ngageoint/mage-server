@@ -8,6 +8,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
   $scope.customer = appConstants.customer;
   var ds = DataService;
   $scope.ms = MapService;
+  $scope.readOnlyMode = appConstants.readOnly;
 
   FeatureTypeService.getTypes().
     success(function (types, status, headers, config) {

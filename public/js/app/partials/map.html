@@ -20,7 +20,7 @@
   </div>
   <div id="new-feature-toolbar" cl***REMOVED***="leaflet-bar">
     <a
-       ng-cl***REMOVED***="newObservationEnabled && 'btn-inverse'"
+       ng-cl***REMOVED***="newObservationEnabled && 'btn-inverse'" ng-hide="readOnlyMode"
        ng-click="newObservation()" ngm-tap="newObservation()">
       <i cl***REMOVED***="icon-map-marker" ng-cl***REMOVED***="newObservationEnabled && 'icon-sage-inverse' || 'icon-sage'"></i>
     </a>
@@ -36,6 +36,7 @@
 
     <a 
       ng-cl***REMOVED***="{true: 'btn-inverse'}[broadcast]"
+      ng-hide="readOnlyMode"
       ng-click="toggleBroadcast()" 
       ngm-tap="toggleBroadcast()">
       <i cl***REMOVED***="icon-megaphone" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[broadcast]"></i>
