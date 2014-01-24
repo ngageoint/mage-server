@@ -277,8 +277,20 @@ L.AwesomeMarkers.divIcon = function (options) {
               }
             },
             onEachFeature: function(feature, marker) {
-              marker.on("click", function(e) {
+              if (layer.id == 999) {
+                var properties = feature.properties;
+                var popup = L.popup({minWidth: 200}).setContent(
+                '<h4>' + properties.name + '</h4>' +
+                '<div><span><strong>Tag Id: </strong>' + properties.tag_id +  '</span></div>' +
+                '<div><span><strong>Score: </strong>' + properties.score +  '</span></div>' +
+                '<div><span><strong>Agreement: </strong>' + properties.agreement +  '</span></div>' +
+                '<br>' +
+                '<a href="' + properties.chip_url + '" target="_blank"><img src="' + properties.chip_url+ '" alt="Image Chip" height="200" width="200"></a>'
+                );
+                marker.bindPopup(popup);
+              }
 
+              marker.on("click", function(e) {
                 if (scope.activeUserPopup) {
                   scope.activeUserPopup.closePopup();
                 }
