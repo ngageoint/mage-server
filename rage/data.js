@@ -8,7 +8,8 @@ module.exports = function(config) {
     , User = require('../models/user').User
     , Device = require('../models/device').Device
     , Layer = require('../models/layer').Layer
-    , Feature = require('../models/feature');
+    , Feature = require('../models/feature')
+    , Location = require('../models/location').Location;
 
   var timeout = 5000000;
   var baseUrl = config.baseUrl;
@@ -175,7 +176,62 @@ module.exports = function(config) {
         }
       );
     });
-  } 
+  }
+
+  var syncLocations = function(done) {
+    fs.readJson("rage/.locations_sync.json", function(err, lastLocationTime) {
+
+      var url = baseUrl + '/api/locations?limit=100001';
+
+      if (lastLocationTime) {
+        url += '?startDate=' + moment(lastLocationTime).add('ms', 1).toISOString();
+        lastLocationTime = moment(lastLocationTime);
+      }
+      console.log('location url is', url);
+
+      rest.json(url, {}, {headers: headers})
+        .on('success', function(data, response) {
+          console.log('syncing: ' + data.length + ' locations');
+
+          async.each(users,
+            function(user, done) {
+              var locations = user.locations;
+              if (locations && locations.length > 0) {
+                var lastTime = locations[locations.length - 1].properties.timestamp;
+                if (lastLocationTime.isBefore(lastTime)) {
+                  lastLocationTime = moment(lastTime);
+                }
+              }
+
+              syncUserLocations(user, done);
+            },
+            function(err) {
+              if (err) return done(err);
+
+              fs.writeJson("rage/.locations_sync.json", lastLocationTime, done); 
+            }
+          );
+        })
+        .on('fail', function(data, response) {
+          done(new Error('Request failed, could not sync layers'));
+        });
+    });
+  }
+
+  var syncUserLocations = function(user, done) {
+    async.parllel({
+      locationCollection: function(done) {
+        // throw all this users locations in the location collection
+        Location.create(user.locations, done);
+      },
+      userCollection: function(done) {
+        // Also need to update the user location
+      }
+    },
+    function(err, results) {
+      done(err);
+    });
+  }
 
   var sync = function() {
     console.log('pulling data');
@@ -187,7 +243,8 @@ module.exports = function(config) {
       users: syncUsers,
       devices: syncDevices,
       layers: syncLayers,
-      features: syncFeatures
+      features: syncFeatures,
+      locations: syncLocations
     },
     function(err, results) {
       console.log('finished pulling all data, err', err);

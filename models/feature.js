@@ -79,7 +79,6 @@ exports.getFeatures = function(layer, o, callback) {
     query.where('geometry').intersects.geometry(filter.geometry);
   }
 
-  var timestampFilter = {};
   if (filter.startDate) {
     query.where('properties.timestamp').gte(filter.startDate);
   }
