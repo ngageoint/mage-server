@@ -47,6 +47,7 @@ LayerSchema.pre('save', function(next) {
 
 // Creates the Model for the Layer Schema
 var Layer = mongoose.model('Layer', LayerSchema);
+exports.Layer = Layer;
 
 exports.getLayers = function(filter, callback) {
   if (typeof filter == 'function') {

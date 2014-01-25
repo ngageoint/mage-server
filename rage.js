@@ -4,11 +4,10 @@ var mongoose = require('mongoose')
   , config = require('./config.json');
 
 var optimist = require("optimist")
-  .usage("Usage: $0 --type [string] --timeout [number]")
+  .usage("Usage: $0 --type [string] --timeout [number] --key [string]")
   .describe('type', 'Run type, allowed values are [data, attachments]')
-  .describe('timeout', 'Timeout in which to wait to sync data')
   .demand('type')
-  .demand('timeout');
+  .demand('key');
 
 var argv = optimist.argv;
 if (argv.h || argv.help) return optimist.showHelp();
@@ -28,7 +27,9 @@ mongoose.set('debug', true);
 
 // Configure RAGE
 require('./rage/index')({
+  key: argv.key,
   type: argv.type,
-  timeout: argv.timeout,
-  attachmentBase: attachmentBase
+  attachmentBase: attachmentBase,
+  // baseUrl: 'http://localhost:4242'
+  baseUrl: 'https://magedg.geointapps.org'
 });
