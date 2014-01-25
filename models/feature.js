@@ -40,6 +40,8 @@ var featureModel = function(layer) {
   return model;
 }
 
+exports.featureModel = featureModel;
+
 // return a string for each property
 var convertFieldForQuery = function(field, keys, fields) {
   keys = keys || [];

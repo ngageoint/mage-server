@@ -138,6 +138,7 @@ UserSchema.set("toJSON", {
 
 // Creates the Model for the User Schema
 var User = mongoose.model('User', UserSchema);
+exports.User = User;
 
 var encryptP***REMOVED***word = function(p***REMOVED***word, done) {
   if (!p***REMOVED***word) return done(null, null);
