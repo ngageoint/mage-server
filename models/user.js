@@ -300,7 +300,19 @@ exports.removeTeamFromUsers = function(team, callback) {
 exports.getLocations = function(options, callback) {
   var limit = options.limit;
   limit = limit <= locationLimit ? limit : locationLimit;
-  User.find({}, {_id: 1, locations: {$slice: -1 * limit}}, {lean: true}, function(err, users) {
+
+  var query = User.find({}, {_id: 1, locations: {$slice: -1 * limit}});
+
+  var filter = options.filter;
+  if (filter.startDate) {
+    query.where('locations.properties.timestamp').gte(filter.startDate);
+  }
+
+  if (filter.endDate) {
+    query.where('locations.properties.timestamp').lt(filter.endDate);
+  }
+
+  query.lean().exec(function (err, users) {
     if (err) {
       console.log('Error getting locations.', err);
     }
