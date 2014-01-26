@@ -12,7 +12,7 @@ module.exports = function(app, security) {
   var p***REMOVED***port = security.authentication.p***REMOVED***port
     , authenticationStrategy = security.authentication.authenticationStrategy;
 
-  var locationLimit = 1; //config.server.locationServices.userCollectionLocationLimit;
+  var locationLimit = config.server.locationServices.userCollectionLocationLimit;
 
   var parseQueryParams = function(req, res, next) {
     var parameters = {filter: {}};

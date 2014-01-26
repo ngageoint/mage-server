@@ -23,7 +23,7 @@ LocationSchema.index({'properties.user': 1, 'properties.timestamp': 1});
 
 // Creates the Model for the User Schema
 var Location = mongoose.model('Location', LocationSchema);
-exports.Location = Location;
+exports.Model = Location;
  
 // create location
 exports.createLocations = function(user, locations, callback) {
