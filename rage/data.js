@@ -5,13 +5,13 @@ module.exports = function(config) {
     , rest = require('restler')
     , mongoose = require('mongoose')
     , moment = require('moment')
-    , User = require('../models/user').User
-    , Device = require('../models/device').Device
-    , Layer = require('../models/layer').Layer
+    , User = require('../models/user')
+    , Device = require('../models/device')
+    , Layer = require('../models/layer')
     , Feature = require('../models/feature')
-    , Location = require('../models/location').Location;
+    , Location = require('../models/location');
 
-  var timeout = 5000000;
+  var timeout = 2000;
   var baseUrl = config.baseUrl;
 
   var username = 'df00d591feb2c5478db826dfb5199dbb';
@@ -49,9 +49,10 @@ module.exports = function(config) {
           function(user, done) {
             var id = user._id;
             delete user._id;
-            User.findOneAndUpdate({username: user.username}, user, {upsert: true}, done);
+            User.Model.findOneAndUpdate({username: user.username}, user, {upsert: true}, done);
           },
           function(err) {
+            console.log('in done, err', err);
             done(err);
           }
         );
@@ -69,7 +70,7 @@ module.exports = function(config) {
           function(device, done) {
             var id = device._id;
             delete device._id;
-            Device.findOneAndUpdate({uid: device.uid}, device, {upsert: true}, done);
+            Device.Model.findOneAndUpdate({uid: device.uid}, device, {upsert: true}, done);
           },
           function(err) {
             done(err);
@@ -102,7 +103,7 @@ module.exports = function(config) {
         async.each(data.filter(function(l) { return l.type === 'Feature' }),
           function(featureLayer, done) {
             var layer =  {name: featureLayer.name, type: featureLayer.type, collectionName: 'features' + featureLayer.id};
-            Layer.findOneAndUpdate({id: featureLayer.id}, layer, {upsert: true, new: false}, function(err, oldLayer) {
+            Layer.Model.findOneAndUpdate({id: featureLayer.id}, layer, {upsert: true, new: false}, function(err, oldLayer) {
               if (!oldLayer.id) {
                 createFeatureCollection(layer);
               }
@@ -148,9 +149,7 @@ module.exports = function(config) {
                   feature.properties = feature.properties || {};
                   console.log('')
                   if (feature.properties.timestamp) {
-                    console.log('feature date', feature.properties.timestamp);
                     var featureTime = moment(feature.properties.timestamp);
-                    console.log('feature date convert', featureTime);
                     if (!lastTime || featureTime.isAfter(lastTime)) {
                       lastTime = featureTime;
                     }
@@ -179,27 +178,30 @@ module.exports = function(config) {
   }
 
   var syncLocations = function(done) {
-    fs.readJson("rage/.locations_sync.json", function(err, lastLocationTime) {
+    fs.readJson("rage/.locations_sync.json", function(err, lastLocationTimes) {
+      lastLocationTimes = lastLocationTimes || {};
 
       var url = baseUrl + '/api/locations?limit=100001';
 
-      if (lastLocationTime) {
-        url += '?startDate=' + moment(lastLocationTime).add('ms', 1).toISOString();
-        lastLocationTime = moment(lastLocationTime);
+      var lastTime = lastLocationTimes.locations;
+      if (lastTime) {
+        url += '&startDate=' + moment(lastTime).add('ms', 1).toISOString();
+        lastTime = moment(lastTime);
       }
       console.log('location url is', url);
 
       rest.json(url, {}, {headers: headers})
-        .on('success', function(data, response) {
-          console.log('syncing: ' + data.length + ' locations');
+        .on('success', function(users, response) {
+          console.log('syncing locations for: ' + users.length + ' users');
 
           async.each(users,
             function(user, done) {
               var locations = user.locations;
+
               if (locations && locations.length > 0) {
-                var lastTime = locations[locations.length - 1].properties.timestamp;
-                if (lastLocationTime.isBefore(lastTime)) {
-                  lastLocationTime = moment(lastTime);
+                var locationTime = moment(locations[0].properties.timestamp);
+                if (!lastTime || lastTime.isBefore(locationTime)) {
+                  lastTime = locationTime;
                 }
               }
 
@@ -208,7 +210,8 @@ module.exports = function(config) {
             function(err) {
               if (err) return done(err);
 
-              fs.writeJson("rage/.locations_sync.json", lastLocationTime, done); 
+              lastLocationTimes.locations = lastTime;
+              fs.writeJson("rage/.locations_sync.json", lastLocationTimes, done); 
             }
           );
         })
@@ -219,13 +222,18 @@ module.exports = function(config) {
   }
 
   var syncUserLocations = function(user, done) {
-    async.parllel({
+    async.parallel({
       locationCollection: function(done) {
         // throw all this users locations in the location collection
-        Location.create(user.locations, done);
+        if (user.locations.length > 0) Location.Model.create(user.locations, done);
       },
       userCollection: function(done) {
-        // Also need to update the user location
+        // Also need to update the user location, for now the web only needs one location from this list
+        // just update the latest
+        console.log('pushing locations', user);
+        User.addLocationsForUser({_id: user.user}, user.locations, function(err) {
+          done();
+        });
       }
     },
     function(err, results) {
@@ -248,11 +256,6 @@ module.exports = function(config) {
     },
     function(err, results) {
       console.log('finished pulling all data, err', err);
-      // done write times
-
-
-      // results is now equal to: {token: 1, users: 2, etc...}
-
       setTimeout(sync, timeout);
     });
   };

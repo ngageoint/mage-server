@@ -138,7 +138,7 @@ UserSchema.set("toJSON", {
 
 // Creates the Model for the User Schema
 var User = mongoose.model('User', UserSchema);
-exports.User = User;
+exports.Model = User;
 
 var encryptP***REMOVED***word = function(p***REMOVED***word, done) {
   if (!p***REMOVED***word) return done(null, null);
@@ -330,7 +330,7 @@ exports.getLocations = function(options, callback) {
 
 exports.addLocationsForUser = function(user, locations, callback) {
   var update = {$push: {locations: {$each: locations, $sort: {"properties.timestamp": 1}, $slice: -1 * locationLimit}}};
-  User.findByIdAndUpdate(user._id, update, function(err, user) {
+  User.findByIdAndUpdate(user._id, update, {upsert: true}, function(err, user) {
     if (err) {
       console.log('Error add location for user.', err);
     }
