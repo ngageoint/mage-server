@@ -2,7 +2,7 @@ module.exports = function(config) {
   var fs = require('fs-extra')
     , crypto = require('crypto')
     , async = require('async')
-    , rest = require('restler')
+    , request = require('request')
     , mongoose = require('mongoose')
     , moment = require('moment')
     , User = require('../models/user')
@@ -11,7 +11,7 @@ module.exports = function(config) {
     , Feature = require('../models/feature')
     , Location = require('../models/location');
 
-  var timeout = 2000;
+  var timeout = 200000;
   var baseUrl = config.baseUrl;
 
   var username = 'df00d591feb2c5478db826dfb5199dbb';
@@ -30,56 +30,75 @@ module.exports = function(config) {
   var getToken = function(done) {
     console.log('getting token');
 
-    var jsonData = { username: username, uid: uid, p***REMOVED***word: p***REMOVED***word };
-    rest.postJson(baseUrl + '/api/login', jsonData)
-      .on('complete', function(data, response) {
-        headers['Authorization'] = 'Bearer ' + data.token;
-        done(null);
-      })
-      .on('fail', function(data, response) {
-        done(new Error('Response failed, could not get token'));
-      });
+    var options = {
+      url: baseUrl + '/api/login',
+      json: {
+        username: username,
+        uid: uid,
+        p***REMOVED***word: p***REMOVED***word
+      }
+    };
+
+    request.post(options, function(err, res, body) {
+      if (err) return done(err);
+
+      if (res.statusCode != 200) return done(new Error('Error hitting login api, respose code: ' + res.statusCode));
+
+      headers['Authorization'] = 'Bearer ' + body.token;
+      done();
+    });
   }
 
   var syncUsers = function(done) {
-    rest.json(baseUrl + '/api/users', {}, {headers: headers})
-      .on('success', function(users, response) {
-        console.log('syncing: ' + users.length + ' users');
-        async.each(users,
-          function(user, done) {
-            var id = user._id;
-            delete user._id;
-            User.Model.findOneAndUpdate({username: user.username}, user, {upsert: true}, done);
-          },
-          function(err) {
-            console.log('in done, err', err);
-            done(err);
-          }
-        );
-      })
-     .on('fail', function(data, response) {
-        done(new Error('Response failed, could not sync users'));
-      });
+    var options = {
+      url: baseUrl + '/api/users',
+      json: true,
+      headers: headers
+    };
+
+    request.get(options, function(err, res, users) {
+      if (err) return done(err);
+
+      if (res.statusCode != 200) return done(new Error('Error getting users, respose code: ' + res.statusCode));
+
+      console.log('syncing: ' + users.length + ' users');
+      async.each(users,
+        function(user, done) {
+          var id = user._id;
+          delete user._id;
+          User.Model.findOneAndUpdate({username: user.username}, user, {upsert: true}, done);
+        },
+        function(err) {
+          done(err);
+        }
+      );
+    });
   }
 
   var syncDevices = function(done) {
-    rest.json(baseUrl + '/api/devices', {}, {headers: headers})
-      .on('success', function(devices, response) {
-        console.log('syncing: ' + devices.length + ' devices');
-        async.each(devices,
-          function(device, done) {
-            var id = device._id;
-            delete device._id;
-            Device.Model.findOneAndUpdate({uid: device.uid}, device, {upsert: true}, done);
-          },
-          function(err) {
-            done(err);
-          }
-        );
-      })
-     .on('fail', function(data, response) {
-        done(new Error('Request failed, could not sync devices'));
-      });
+    var options = {
+      url: baseUrl + '/api/devices',
+      json: true,
+      headers: headers
+    };
+
+    request.get(options, function(err, res, devices) {
+      if (err) return done(err);
+
+      if (res.statusCode != 200) return done(new Error('Error getting devices, respose code: ' + res.statusCode));
+
+      console.log('syncing: ' + devices.length + ' devices');
+      async.each(devices,
+        function(device, done) {
+          var id = device._id;
+          delete device._id;
+          Device.Model.findOneAndUpdate({uid: device.uid}, device, {upsert: true}, done);
+        },
+        function(err) {
+          done(err);
+        }
+      );
+    });
   }
 
   var createFeatureCollection = function(layer) {
@@ -96,31 +115,37 @@ module.exports = function(config) {
 
   var layers;
   var syncLayers = function(done) {
-    rest.json(baseUrl + '/api/layers', {}, {headers: headers})
-      .on('success', function(data, response) {
-        console.log('syncing: ' + data.length + ' layers');
-        layers = [];
-        async.each(data.filter(function(l) { return l.type === 'Feature' }),
-          function(featureLayer, done) {
-            var layer =  {name: featureLayer.name, type: featureLayer.type, collectionName: 'features' + featureLayer.id};
-            Layer.Model.findOneAndUpdate({id: featureLayer.id}, layer, {upsert: true, new: false}, function(err, oldLayer) {
-              if (!oldLayer.id) {
-                createFeatureCollection(layer);
-              }
+    var options = {
+      url: baseUrl + '/api/layers',
+      json: true,
+      headers: headers
+    };
 
-              layer.id = featureLayer.id;
-              layers.push(layer);
-              done(err);
-            });
-          },
-          function(err) {
+    request.get(options, function(err, res, body) {
+      if (err) return done(err);
+
+      if (res.statusCode != 200) return done(new Error('Error getting layers, respose code: ' + res.statusCode));
+
+      console.log('syncing: ' + body.length + ' layers');
+      layers = [];
+      async.each(body.filter(function(l) { return l.type === 'Feature' }),
+        function(featureLayer, done) {
+          var layer =  {name: featureLayer.name, type: featureLayer.type, collectionName: 'features' + featureLayer.id};
+          Layer.Model.findOneAndUpdate({id: featureLayer.id}, layer, {upsert: true, new: false}, function(err, oldLayer) {
+            if (!oldLayer.id) {
+              createFeatureCollection(layer);
+            }
+
+            layer.id = featureLayer.id;
+            layers.push(layer);
             done(err);
-          }
-        );
-      })
-      .on('fail', function(data, response) {
-        done(new Error('Request failed, could not sync layers'));
-      });
+          });
+        },
+        function(err) {
+          done(err);
+        }
+      );
+    });
   }
 
   var syncFeatures = function(done) {
@@ -140,35 +165,39 @@ module.exports = function(config) {
             lastTime = moment(lastTime);
           }
           console.log('feature url is', url);
+          var options = {
+            url: url,
+            json: true,
+            headers: headers
+          };
 
-          rest.json(url, {}, {headers: headers})
-            .on('success', function(data, response) {
-              console.log('syncing: ' + data.features.length + ' features');
-              async.each(data.features,
-                function(feature, done) {
-                  feature.properties = feature.properties || {};
-                  console.log('')
-                  if (feature.properties.timestamp) {
-                    var featureTime = moment(feature.properties.timestamp);
-                    if (!lastTime || featureTime.isAfter(lastTime)) {
-                      lastTime = featureTime;
-                    }
+          request.get(options, function(err, res, body) {
+            if (err) return done(err);
+
+            if (res.statusCode != 200) return done(new Error('Error getting features, respose code: ' + res.statusCode));
+
+            console.log('syncing: ' + body.features.length + ' features');
+            async.each(body.features,
+              function(feature, done) {
+                feature.properties = feature.properties || {};
+                console.log('')
+                if (feature.properties.timestamp) {
+                  var featureTime = moment(feature.properties.timestamp);
+                  if (!lastTime || featureTime.isAfter(lastTime)) {
+                    lastTime = featureTime;
                   }
-
-                  var id = feature.id;
-                  delete feature.id;
-                  Feature.featureModel(layer).findByIdAndUpdate(id, feature, {upsert: true}, done);
-                },
-                function(err) {
-                  lastFeatureTimes[layer.collectionName] = lastTime;
-                  done(err);
                 }
-              );
-            })
-            .on('fail', function(data, response) {
-              done(new Error('Request failed, could not sync features'));
-            });
 
+                var id = feature.id;
+                delete feature.id;
+                Feature.featureModel(layer).findByIdAndUpdate(id, feature, {upsert: true}, done);
+              },
+              function(err) {
+                lastFeatureTimes[layer.collectionName] = lastTime;
+                done(err);
+              }
+            );
+          });
         },
         function(err) {
           fs.writeJson("rage/.data_sync.json", lastFeatureTimes, done); 
@@ -190,34 +219,40 @@ module.exports = function(config) {
       }
       console.log('location url is', url);
 
-      rest.json(url, {}, {headers: headers})
-        .on('success', function(users, response) {
-          console.log('syncing locations for: ' + users.length + ' users');
+      var options = {
+        url: url,
+        json: true,
+        headers: headers
+      };
 
-          async.each(users,
-            function(user, done) {
-              var locations = user.locations;
+      request.get(options, function(err, res, users) {
+        if (err) return done(err);
 
-              if (locations && locations.length > 0) {
-                var locationTime = moment(locations[0].properties.timestamp);
-                if (!lastTime || lastTime.isBefore(locationTime)) {
-                  lastTime = locationTime;
-                }
+        if (res.statusCode != 200) return done(new Error('Error getting layers, respose code: ' + res.statusCode));
+
+        console.log('syncing locations for: ' + users.length + ' users');
+
+        async.each(users,
+          function(user, done) {
+            var locations = user.locations;
+
+            if (locations && locations.length > 0) {
+              var locationTime = moment(locations[0].properties.timestamp);
+              if (!lastTime || lastTime.isBefore(locationTime)) {
+                lastTime = locationTime;
               }
-
-              syncUserLocations(user, done);
-            },
-            function(err) {
-              if (err) return done(err);
-
-              lastLocationTimes.locations = lastTime;
-              fs.writeJson("rage/.locations_sync.json", lastLocationTimes, done); 
             }
-          );
-        })
-        .on('fail', function(data, response) {
-          done(new Error('Request failed, could not sync layers'));
-        });
+
+            syncUserLocations(user, done);
+          },
+          function(err) {
+            if (err) return done(err);
+
+            lastLocationTimes.locations = lastTime;
+            fs.writeJson("rage/.locations_sync.json", lastLocationTimes, done); 
+          }
+        );
+      });
     });
   }
 
