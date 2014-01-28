@@ -20,7 +20,7 @@
       </div>
       <div cl***REMOVED***="control-group">
         <div cl***REMOVED***="controls">
-          <div  ng-repeat="layer in featureLayers">
+          <div ng-repeat="layer in featureLayers">
             <label cl***REMOVED***="checkbox">
               <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)"/>{{layer.name}}
               <i cl***REMOVED***="icon-globe icon-spin" ng-show="loadingLayers[layer.id]" style="margin-left: 7px;"></i>
@@ -36,8 +36,8 @@
     </div>
 
     <div ng-show="externalLayers.length > 0">
-      <h4>External Layers</h4>
-      <div cl***REMOVED***="control-group">
+      <h4 style="display:inline;">Static Layers </h4><a style="cursor:pointer" ng-click="showStaticLayers = !showStaticLayers">(<span ng-hide="showStaticLayers">show</span><span ng-show="showStaticLayers">hide</span> {{externalLayers.length}})</a>
+      <div cl***REMOVED***="control-group" ng-show="showStaticLayers">
         <div cl***REMOVED***="controls">
           <label cl***REMOVED***="checkbox" ng-repeat="layer in externalLayers">
             <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)"/>{{layer.name}}
