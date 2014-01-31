@@ -103,9 +103,9 @@ module.exports = function(config) {
 	var sortFeaturesByTimestamp = function(features) {
 		return features.sort(function(a, b) {
 			if (moment(a).isBefore(b))
-		     return -1;
-		  if (moment(a).isAfter(b))
 		     return 1;
+		  if (moment(a).isAfter(b))
+		     return -1;
 		  // a must be equal to b
 		  return 0;
 		});
@@ -231,7 +231,7 @@ module.exports = function(config) {
 		  },
 		  function(err, results) {
 		  	console.info('done syncing, setting up timeout');
-		  	writeLastSyncTime();
+			  writeLastSyncTime();
 		    // all done each ran in order, results is now equal to: {token: 1, features: 2, etc...}
 		    setTimeout(doIt, timeout);
 		  }); 
