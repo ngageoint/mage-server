@@ -116,7 +116,7 @@ module.exports = function(config) {
 	}
 
 	var appendErrorFile = function(string) {
-		fs.writeJson("rage/.attachment_sync_errors.json", string, done); 
+		fs.writeJson("rage/.attachment_sync_errors.json", string); 
 	}
 
 	// if this feature time is newer than we currently have
