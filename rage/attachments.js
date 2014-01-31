@@ -172,7 +172,7 @@ module.exports = function(config) {
 					fs.mkdirsSync(path.dirname(config.attachmentBase + '/' + attachment.relativePath));
 				  r.pipe(fs.createWriteStream(config.attachmentBase + '/' + attachment.relativePath));
 				  console.info('write the file for url ' + url + ' to ' + config.attachmentBase + '/' + attachment.relativePath);
-				  attachment.set("synced", true, {strict: false});
+				  attachment.set("synced", "yes", {strict: false});
 				  feature.save(function() {
 				  	// who cares
 				  });
