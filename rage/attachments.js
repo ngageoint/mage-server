@@ -145,7 +145,7 @@ module.exports = function(config) {
 			// sync each attachment
 			pullAttachmentsCallbackWhenComplete(feature, layer, attachments, function(err) {
 				if (!err) {
-					console.info('successfully synced attachments for feature ' + feature.id);
+					console.info('successfully synced attachments for feature ' + feature.id + ' time is: ' + feature.properties.timestamp);
 					updateLastFeatureTime(feature, layer);
 				}
 				localDone(err);
