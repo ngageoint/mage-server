@@ -63,6 +63,7 @@ module.exports = function(config) {
 	var getLastAttachmentSyncTime = function(done) {
 		fs.readJson("rage/.attachment_sync.json", function(err, readInLastAttachmentTime) {
 	    lastAttachmentTime = readInLastAttachmentTime || {};
+	    lastFeatureTime = lastAttachmentTime;
 	    console.log('last', lastAttachmentTime);
 	    done();
 	  });
