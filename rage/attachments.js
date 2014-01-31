@@ -11,7 +11,7 @@ module.exports = function(config) {
     , Feature = require('../models/feature')
     , Location = require('../models/location')
     , api = require('../api')
-    , require('path')
+    , path = require('path')
 	  , fs = require('fs-extra');
 
 	var timeout = 200000;
@@ -88,7 +88,7 @@ module.exports = function(config) {
 			var startTimePlusOne = moment(startTime).add('ms', 1);
 
 			options.filter = {
-				startDate: startTimePlusOne
+				startDate: startTimePlusOne.toDate()
 			};
 		}
 		console.info('Getting features for layer ', layer);
@@ -175,6 +175,10 @@ module.exports = function(config) {
 				} else if (resp.statusCode == 404) {
 					// uhhh no data, hmmm
 					console.info('no data for ' + url);
+					appendErrorFile(JSON.stringify({url:baseUrl + '/FeatureServer/'+ 
+				layer.id + '/features/' + 
+				feature.id + '/attachments/' + 
+				attachment._id, localFile: config.attachmentBase + '/' + attachment.relativePath}));
 					done();
 				} else {
 					console.info('failed to sync with error code ' + resp.statusCode + ' url is ' + url);
