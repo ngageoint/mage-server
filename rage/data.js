@@ -66,7 +66,7 @@ module.exports = function(config) {
         function(user, done) {
           var id = user._id;
           delete user._id;
-          User.Model.findOneAndUpdate({username: user.username}, user, {upsert: true}, done);
+          User.Model.findByIdAndUpdate(id, user, {upsert: true}, done);
         },
         function(err) {
           done(err);
@@ -92,7 +92,7 @@ module.exports = function(config) {
         function(device, done) {
           var id = device._id;
           delete device._id;
-          Device.Model.findOneAndUpdate({uid: device.uid}, device, {upsert: true}, done);
+          Device.Model.findByIdAndUpdate(id, device, {upsert: true}, done);
         },
         function(err) {
           done(err);
@@ -126,13 +126,14 @@ module.exports = function(config) {
 
       if (res.statusCode != 200) return done(new Error('Error getting layers, respose code: ' + res.statusCode));
 
-      console.log('syncing: ' + body.length + ' layers');
       layers = [];
-      async.each(body.filter(function(l) { return l.type === 'Feature' }),
+      var featureLayers = body.filter(function(l) { return l.type === 'Feature' });
+      console.log('syncing: ' + featureLayers.length + ' feature layers');
+      async.each(featureLayers,
         function(featureLayer, done) {
           var layer =  {name: featureLayer.name, type: featureLayer.type, collectionName: 'features' + featureLayer.id};
           Layer.Model.findOneAndUpdate({id: featureLayer.id}, layer, {upsert: true, new: false}, function(err, oldLayer) {
-            if (!oldLayer.id) {
+            if (! oldLayer || !oldLayer.id) {
               createFeatureCollection(layer);
             }
 
@@ -276,18 +277,25 @@ module.exports = function(config) {
     });
   }
 
-  var sync = function() {
-    console.log('pulling data');
+  var syncFeaturesAndLocations = function(done) {
+    async.parallel({
+      features: syncFeatures,
+      locations: syncLocations
+    },
+    function(err, results) {
+      done(err);
+    });
+  }
 
-    // pull times
+  var sync = function() {
+    console.log('pulling all data');
 
     async.series({
       token: getToken,
       users: syncUsers,
       devices: syncDevices,
       layers: syncLayers,
-      features: syncFeatures,
-      locations: syncLocations
+      featuresAndLocations: syncFeaturesAndLocations
     },
     function(err, results) {
       console.log('finished pulling all data, err', err);

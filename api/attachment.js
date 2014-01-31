@@ -38,9 +38,7 @@ Attachment.prototype.getById = function(id, callback) {
     }
   });
 
-  if (!attachment) return callback(new Error('attachment not found'), null);
-
-  attachment.path =  path.join(attachmentBase, attachment.relativePath);
+  if (attachment) attachment.path = path.join(attachmentBase, attachment.relativePath);
 
   return callback(null, attachment);
 }
