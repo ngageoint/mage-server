@@ -64,6 +64,7 @@ var encryptP***REMOVED***word = function (p***REMOVED***word, callback) {
  * @param {Function} callback Signature: err, true/false
  */
  var validP***REMOVED***word = function (p***REMOVED***word, encryptedP***REMOVED***word, callback) {
+  if (!encryptedP***REMOVED***word) return callback(false);
 
   encryptedP***REMOVED***word = deserializeP***REMOVED***word(encryptedP***REMOVED***word);
 

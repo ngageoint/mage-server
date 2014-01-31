@@ -144,13 +144,25 @@ module.exports = function(app, auth) {
   app.get(
     '/FeatureServer/:layerId/features/:featureId/attachments/:attachmentId',
     access.authorize('READ_FEATURE'),
-    function(req, res) {
+    function(req, res, next) {
       new api.Attachment(req.layer, req.feature).getById(req.param('attachmentId'), function(err, attachment) {
+        if (err) return next(err);
+
+        if (!attachment) return res.send(404);
+
         res.type(attachment.contentType);
         res.attachment(attachment.name);
         res.header('Content-Length', attachment.size);
-        fs.createReadStream(attachment.path).pipe(res);
-      }
+
+        var stream = fs.createReadStream(attachment.path);
+        stream.on('open', function() {
+          stream.pipe(res);
+        });
+        stream.on('error', function(err) {
+          console.log('error', err);
+          res.send(404);
+        });
+       }
     );
   });
 
