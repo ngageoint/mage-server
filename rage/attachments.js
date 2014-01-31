@@ -41,8 +41,7 @@ module.exports = function(config) {
     console.log('getting token');
 
     var options = {
-      //url: baseUrl + '/api/login',
-      url: 'https://magedg.geointapps.org/api/login',
+      url: baseUrl + '/api/login',
       json: {
         username: username,
         uid: uid,
