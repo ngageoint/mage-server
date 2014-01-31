@@ -1,43 +1,241 @@
 module.exports = function(config) {
 	var async = require('async')
-	  , restler = require('restler')
-	  , sleep = require('sleep');
+	  , crypto = require('crypto')
+    , async = require('async')
+    , request = require('request')
+    , mongoose = require('mongoose')
+    , moment = require('moment')
+    , User = require('../models/user')
+    , Device = require('../models/device')
+    , Layer = require('../models/layer')
+    , Feature = require('../models/feature')
+    , Location = require('../models/location')
+    , api = require('../api')
+	  , fs = require('fs-extra');
 
-	// TODO need to encrypt these
-	var username = 'admin';
-	var p***REMOVED***word = 'admin';
-	var uid = 12345;
+	var timeout = 200000;
 
-	var getToken = function(done) {
-		done();
-	}
+	var username = 'df00d591feb2c5478db826dfb5199dbb';
+  var p***REMOVED***word = 'df00d591feb2c5478db826dfb5199dbb';
+  var uid = '0e748bc5d2bacdf167731d93e30c21fc';
 
-	var getFeatures = function() {
-	}
+  var cryptoAlgorithm = 'aes256';
+  var decipher = crypto.createDecipher(cryptoAlgorithm, config.key);
+  username = decipher.update(username, 'hex', 'utf8') + decipher.final('utf8');
+  decipher = crypto.createDecipher(cryptoAlgorithm, config.key);
+  p***REMOVED***word = decipher.update(p***REMOVED***word, 'hex', 'utf8') + decipher.final('utf8');
+  decipher = crypto.createDecipher(cryptoAlgorithm, config.key);
+  uid = decipher.update(uid, 'hex', 'utf8') + decipher.final('utf8');
 
-	var syncAttachments = function(feature) {
-	}
-
+	var baseUrl = config.baseUrl;
 	var token;
 
-	while(true) {
-	  console.log('pulling data');
+	var lastAttachmentTime;
+	var lastFeatureTime;
 
-	  async.series({
-	    token: function(done) {
-	    	getToken(function() {
-	    		done(null, 1);
-	    	});
-	    },
-	    features: function(done) {
-	      done(null, 2);
-	    }
-	  },
-	  function(err, results) {
-	    // all done each ran in order, results is now equal to: {token: 1, features: 2, etc...}
+	var featureLayers;
+
+	var headers = {};
+
+	var getToken = function(done) {
+    console.log('getting token');
+
+    var options = {
+      //url: baseUrl + '/api/login',
+      url: 'https://magedg.geointapps.org/api/login',
+      json: {
+        username: username,
+        uid: uid,
+        p***REMOVED***word: p***REMOVED***word
+      }
+    };
+
+    request.post(options, function(err, res, body) {
+      if (err) return done(err);
+
+      if (res.statusCode != 200) return done(new Error('Error hitting login api, respose code: ' + res.statusCode));
+      token = body.token;
+      headers['Authorization'] = 'Bearer ' + body.token;
+      done();
+    });
+  }
+
+	var getLastAttachmentSyncTime = function(done) {
+		fs.readJson("rage/.attachment_sync.json", function(err, readInLastAttachmentTime) {
+	    lastAttachmentTime = readInLastAttachmentTime;
+	    console.log('last', lastAttachmentTime);
+	    done();
 	  });
 
-
-	  sleep.sleep(config.timeout);
 	}
+
+	var getAllFeatureLayers = function(callback) {
+		Layer.getLayers(function (err, layers) {
+			// filter out non feature layers
+			featureLayers = [];
+			featureLayers = layers.filter(function(layer) {
+				return layer.type == "Feature";
+			});
+      console.info('Syncing features for ' + featureLayers.length + ' layers');
+      callback();
+    });
+	}
+
+	var getFeaturesSince = function(startTime, layer, callback) {
+		var options = {	};
+
+		if (startTime) {
+			var startTimePlusOne = moment(startTime).add('ms', 1);
+
+			options.filter = {
+				startDate: startTimePlusOne
+			};
+		}
+		console.info('Getting features for layer ', layer);
+		new api.Feature(layer).getAll(options, callback);
+	}
+
+
+	var getAttachmentsFromFeature = function(feature) {
+		return feature.attachments || [];
+	}
+
+	var sortFeaturesByTimestamp = function(features) {
+		return features.sort(function(a, b) {
+			if (moment(a).isBefore(b))
+		     return -1;
+		  if (moment(a).isAfter(b))
+		     return 1;
+		  // a must be equal to b
+		  return 0;
+		});
+	}
+
+	var writeLastSyncTime = function(done) {
+		fs.writeJson("rage/.attachment_sync.json", lastFeatureTime, done); 
+	}
+
+	var appendErrorFile = function(string) {
+		fs.writeJson("rage/.attachment_sync_errors.json", string, done); 
+	}
+
+	// if this feature time is newer than we currently have
+	// update the last feature time
+	var updateLastFeatureTime = function(feature) {
+		if (feature.properties.timestamp) {
+      var featureTime = moment(feature.properties.timestamp);
+      if (!lastFeatureTime || featureTime.isAfter(lastFeatureTime)) {
+        lastFeatureTime = featureTime;
+      }
+    }
+	}
+
+	var sequentiallySyncAttachments = function(features, layer, done) {
+
+		console.info('syncing layer ' + layer.name);
+		console.info('Sequentially syncing for ' + features.length + ' features');
+
+		async.eachSeries(features, function(feature, done) {
+
+			// get the attachments
+			var attachments = getAttachmentsFromFeature(feature);
+
+			var localDone = done;
+
+			// sync each attachment
+			pullAttachmentsCallbackWhenComplete(feature, layer, attachments, function(err) {
+				if (!err) {
+					console.info('successfully synced attachments for feature ' + feature.id);
+					updateLastFeatureTime(feature);
+				}
+				localDone(err);
+			});
+
+		}, function(err) {
+			done();
+		});
+	}
+
+	var pullAttachmentsCallbackWhenComplete = function(feature, layer, attachments, callback) {
+		console.info("syncing " + attachments.length + " attachments");
+		async.eachSeries(attachments, function(attachment, done) {
+
+			var url = baseUrl + '/FeatureServer/'+ 
+				layer.id + '/features/' + 
+				feature.id + '/attachments/' + 
+				attachment._id + '?access_token=' + token;
+			var r = request(url);
+			r.on('response', function (resp) {
+				console.info('attachment response status code is ' + resp.statusCode);
+				if (resp.statusCode == 200) {
+				  r.pipe(fs.createWriteStream(config.attachmentBase + '/' + attachment.relativePath));
+				  console.info('write the file for url ' + url + ' to ' + config.attachmentBase + '/' + attachment.relativePath);
+				  done();
+				} else if (resp.statusCode == 404) {
+					// uhhh no data, hmmm
+					console.info('no data for ' + url);
+					done();
+				} else {
+					console.info('failed to sync with error code ' + resp.statusCode + ' url is ' + url);
+					done(new Error('something bad happend'));
+				}
+			});
+			r.on('error', function(resp) {
+				done(new Error('more bad stuff happened'));
+			});
+		},
+		function(err) {
+			console.info(' error ', err);
+			callback(err);
+		});
+	}
+
+	var syncAttachments = function(done) {
+
+		// global featureLayers is all the layers
+		// loop the layers, get all the features for each layer then pull the
+		// attachments for each feature
+
+		console.log('syncing attachments since ' + lastAttachmentTime);
+
+		async.eachSeries(featureLayers,
+      function(layer, done) {
+				// use that time to get the features since then
+				var featuresToSync;
+				getFeaturesSince(lastAttachmentTime, layer, function(features) {
+					featuresToSync = features;
+					console.log("features to sync is " + featuresToSync.length);
+					// sort the features by timestamp
+					featuresToSync = sortFeaturesByTimestamp(featuresToSync);
+
+					sequentiallySyncAttachments(featuresToSync, layer, done);
+				});
+			},
+			function(err) {
+				done();
+			}
+		);
+	}
+
+	var doIt = function() {
+
+		var token;
+
+		  console.log('pulling data');
+
+		  async.series({
+		  	lastTime: getLastAttachmentSyncTime,
+		    token: getToken,
+		    layers: getAllFeatureLayers,
+		    attachments: syncAttachments
+		  },
+		  function(err, results) {
+		  	console.info('done syncing, setting up timeout');
+		  	writeLastSyncTime();
+		    // all done each ran in order, results is now equal to: {token: 1, features: 2, etc...}
+		    setTimeout(doIt, timeout);
+		  }); 
+	}
+
+	doIt();
 }
