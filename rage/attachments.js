@@ -124,8 +124,8 @@ module.exports = function(config) {
 	var updateLastFeatureTime = function(feature, layer) {
 		if (feature.properties.timestamp) {
       var featureTime = moment(feature.properties.timestamp);
-      if (!lastFeatureTime[layer.name] || featureTime.isAfter(lastFeatureTime[layer.name])) {
-        lastFeatureTime[layer.name] = featureTime;
+      if (!lastFeatureTime[layer.collectionName] || featureTime.isAfter(lastFeatureTime[layer.collectionName])) {
+        lastFeatureTime[layer.collectionName] = featureTime;
       }
     }
 	}
@@ -198,10 +198,10 @@ module.exports = function(config) {
 
 		async.eachSeries(featureLayers,
       function(layer, done) {
-      	console.log('syncing attachments since ' + lastAttachmentTime[layer.name]);
+      	console.log('syncing attachments since ' + lastAttachmentTime[layer.collectionName]);
 				// use that time to get the features since then
 				var featuresToSync;
-				getFeaturesSince(lastAttachmentTime[layer.name], layer, function(features) {
+				getFeaturesSince(lastAttachmentTime[layer.collectionName], layer, function(features) {
 					featuresToSync = features;
 					console.log("features to sync is " + featuresToSync.length);
 					// sort the features by timestamp
