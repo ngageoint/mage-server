@@ -30,7 +30,7 @@ module.exports = function(config) {
 	var baseUrl = config.baseUrl;
 	var token;
 
-	var lastAttachmentTime;
+	var lastAttachmentTime = {};
 	var lastFeatureTime = {};
 
 	var featureLayers;
