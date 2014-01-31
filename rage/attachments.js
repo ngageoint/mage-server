@@ -102,9 +102,9 @@ module.exports = function(config) {
 
 	var sortFeaturesByTimestamp = function(features) {
 		return features.sort(function(a, b) {
-			if (moment(a).isBefore(b))
+			if (moment(a.properties.timestamp).isBefore(b.properties.timestamp))
 		     return 1;
-		  if (moment(a).isAfter(b))
+		  if (moment(a.properties.timestamp).isAfter(b.properties.timestamp))
 		     return -1;
 		  // a must be equal to b
 		  return 0;
