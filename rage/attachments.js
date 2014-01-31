@@ -157,7 +157,7 @@ module.exports = function(config) {
 
 	var pullAttachmentsCallbackWhenComplete = function(feature, layer, attachments, callback) {
 		console.info("syncing " + attachments.length + " attachments");
-		async.eachSeries(attachments, function(attachment, done) {
+		async.eachSeries(feature.attachments, function(attachment, done) {
 
 			var url = baseUrl + '/FeatureServer/'+ 
 				layer.id + '/features/' + 
