@@ -11,6 +11,7 @@ module.exports = function(config) {
     , Feature = require('../models/feature')
     , Location = require('../models/location')
     , api = require('../api')
+    , require('path')
 	  , fs = require('fs-extra');
 
 	var timeout = 200000;
@@ -167,6 +168,7 @@ module.exports = function(config) {
 			r.on('response', function (resp) {
 				console.info('attachment response status code is ' + resp.statusCode);
 				if (resp.statusCode == 200) {
+					fs.mkdirsSync(path.dirname(config.attachmentBase + '/' + attachment.relativePath));
 				  r.pipe(fs.createWriteStream(config.attachmentBase + '/' + attachment.relativePath));
 				  console.info('write the file for url ' + url + ' to ' + config.attachmentBase + '/' + attachment.relativePath);
 				  done();
