@@ -173,7 +173,9 @@ module.exports = function(config) {
 				  r.pipe(fs.createWriteStream(config.attachmentBase + '/' + attachment.relativePath));
 				  console.info('write the file for url ' + url + ' to ' + config.attachmentBase + '/' + attachment.relativePath);
 				  attachment.synced = true;
-				  feature.save();
+				  feature.save(function() {
+				  	// who cares
+				  });
 				  done();
 				} else if (resp.statusCode == 404) {
 					// uhhh no data, hmmm
