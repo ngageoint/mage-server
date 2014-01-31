@@ -31,7 +31,7 @@ module.exports = function(config) {
 	var token;
 
 	var lastAttachmentTime;
-	var lastFeatureTime;
+	var lastFeatureTime = {};
 
 	var featureLayers;
 
@@ -121,11 +121,11 @@ module.exports = function(config) {
 
 	// if this feature time is newer than we currently have
 	// update the last feature time
-	var updateLastFeatureTime = function(feature) {
+	var updateLastFeatureTime = function(feature, layer) {
 		if (feature.properties.timestamp) {
       var featureTime = moment(feature.properties.timestamp);
-      if (!lastFeatureTime || featureTime.isAfter(lastFeatureTime)) {
-        lastFeatureTime = featureTime;
+      if (!lastFeatureTime[layer.name] || featureTime.isAfter(lastFeatureTime[layer.name])) {
+        lastFeatureTime[layer.name] = featureTime;
       }
     }
 	}
@@ -146,7 +146,7 @@ module.exports = function(config) {
 			pullAttachmentsCallbackWhenComplete(feature, layer, attachments, function(err) {
 				if (!err) {
 					console.info('successfully synced attachments for feature ' + feature.id);
-					updateLastFeatureTime(feature);
+					updateLastFeatureTime(feature, layer);
 				}
 				localDone(err);
 			});
@@ -196,13 +196,12 @@ module.exports = function(config) {
 		// loop the layers, get all the features for each layer then pull the
 		// attachments for each feature
 
-		console.log('syncing attachments since ' + lastAttachmentTime);
-
 		async.eachSeries(featureLayers,
       function(layer, done) {
+      	console.log('syncing attachments since ' + lastAttachmentTime[layer.name]);
 				// use that time to get the features since then
 				var featuresToSync;
-				getFeaturesSince(lastAttachmentTime, layer, function(features) {
+				getFeaturesSince(lastAttachmentTime[layer.name], layer, function(features) {
 					featuresToSync = features;
 					console.log("features to sync is " + featuresToSync.length);
 					// sort the features by timestamp
