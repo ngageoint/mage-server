@@ -28,6 +28,13 @@ var ssTypes = pdcTypes = ggTypes = [
   { name: 'VIP'                    , icon: 'star'        , kmlIcon: 'vip'}
 ];
 
+var tomnodTypes = [
+  { name: "No damage", icon: "thumbs-up" },
+  { name: "Damaged but usable", icon: "warning-sign"},
+  { name: "Dangerously damaged", icon: "minus-sign"},
+  { name: "Completely destroyed", icon: "ban-circle"},
+];
+
 var ***REMOVED***Types = [{ 
   name: 'UNDEFINED', 
   icon: 'img/***REMOVED***-icons/undefined.png', 
@@ -134,7 +141,8 @@ var types = {
   'SS': ssTypes,
   'PDC': pdcTypes,
   'GG': ggTypes,
-  'USAR': ***REMOVED***Types
+  'USAR': ***REMOVED***Types,
+  'TOMNOD': tomnodTypes
 }
 
 exports.getFeatureTypes = function(type) {

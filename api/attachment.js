@@ -38,14 +38,9 @@ Attachment.prototype.getById = function(id, callback) {
     }
   });
 
-  if (!attachment) return callback(new Error('attachment not found'), null);
+  if (attachment) attachment.path = path.join(attachmentBase, attachment.relativePath);
 
-  var file = path.join(attachmentBase, attachment.relativePath);
-  fs.readFile(file, function(err, data) {
-    if (err) return callback(err);
-
-    return callback(null, {attachment: attachment, data: data});
-  });
+  return callback(null, attachment);
 }
 
 Attachment.prototype.create = function(id, attachment, callback) {

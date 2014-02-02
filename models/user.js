@@ -138,6 +138,7 @@ UserSchema.set("toJSON", {
 
 // Creates the Model for the User Schema
 var User = mongoose.model('User', UserSchema);
+exports.Model = User;
 
 var encryptP***REMOVED***word = function(p***REMOVED***word, done) {
   if (!p***REMOVED***word) return done(null, null);
@@ -299,14 +300,28 @@ exports.removeTeamFromUsers = function(team, callback) {
 exports.getLocations = function(options, callback) {
   var limit = options.limit;
   limit = limit <= locationLimit ? limit : locationLimit;
-  User.find({}, {_id: 1, locations: {$slice: -1 * limit}}, {lean: true}, function(err, users) {
+
+  var query = User.find({}, {_id: 1, locations: {$slice: -1 * limit}});
+
+  var filter = options.filter;
+  if (filter.startDate) {
+    query.where('locations.properties.timestamp').gte(filter.startDate);
+  }
+
+  if (filter.endDate) {
+    query.where('locations.properties.timestamp').lt(filter.endDate);
+  }
+
+  query.lean().exec(function (err, users) {
     if (err) {
       console.log('Error getting locations.', err);
     }
     users = users.map(function(user) {
+      console.log('user is: ', user);
+
       user.user = user._id;
       delete user._id;
-      user.locations = user.locations.reverse();
+      user.locations = user.locations ? user.locations.reverse() : [];
 
       return user;
     });
@@ -317,7 +332,7 @@ exports.getLocations = function(options, callback) {
 
 exports.addLocationsForUser = function(user, locations, callback) {
   var update = {$push: {locations: {$each: locations, $sort: {"properties.timestamp": 1}, $slice: -1 * locationLimit}}};
-  User.findByIdAndUpdate(user._id, update, function(err, user) {
+  User.findByIdAndUpdate(user._id, update, {upsert: true}, function(err, user) {
     if (err) {
       console.log('Error add location for user.', err);
     }

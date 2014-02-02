@@ -12,6 +12,29 @@ module.exports = function(app, security) {
   var p***REMOVED***port = security.authentication.p***REMOVED***port
     , authenticationStrategy = security.authentication.authenticationStrategy;
 
+  var locationLimit = config.server.locationServices.userCollectionLocationLimit;
+
+  var parseQueryParams = function(req, res, next) {
+    var parameters = {filter: {}};
+
+    var startDate = req.param('startDate');
+    if (startDate) {
+      parameters.filter.startDate = moment.utc(startDate).toDate();
+    }
+
+    var endDate = req.param('endDate');
+    if (endDate) {
+      parameters.filter.endDate = moment.utc(endDate).toDate();
+    }
+
+    var limit = req.param('limit');
+    parameters.limit = limit ? parseInt(limit) : 1;
+
+    req.parameters = parameters;
+
+    next();
+  }
+
   var validateLocations = function(req, res, next) {
     var objects = req.body;
 
@@ -44,13 +67,17 @@ module.exports = function(app, security) {
     '/api/locations',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_LOCATION'),
+    parseQueryParams,
     function(req, res) {
-      var limit = req.param('limit');
-      limit = limit ? parseInt(limit) : 1;
-
-      User.getLocations({limit: limit}, function(err, users) {
-        res.json(users);
-      });
+      if (req.parameters.limit > locationLimit) {
+        Location.getLocationsWithFilters(req.user, req.parameters.filter, 100000, function(err, users) { 
+          res.json(users);
+        });
+      } else {
+        User.getLocations({filter: req.parameters.filter, limit: req.parameters.limit}, function(err, users) {
+          res.json(users);
+        });
+      }
     }
   );
 

@@ -211,9 +211,23 @@ html, body, div.leaflet-container {
 	border-radius: 3px;
 }
 
+.news-feed-image {
+	margin-bottom: 5px;
+	max-width: none !important;
+}
+
+.news-feed-video {
+	width: 100%;
+	margin: 3px 0;
+}
+
 .active-news-feed-item {
 	border: 3px solid #7C22C7;
 	border-radius: 6px;
+}
+
+.observation-news-item img {
+	max-width: 100% !important;
 }
 
 .news-items {

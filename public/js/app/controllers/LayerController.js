@@ -6,6 +6,7 @@ function LayerController($scope, $log, $http, $injector, appConstants, mageLib, 
   $scope.showLayerForm = false;
   $scope.wmsFormats = ['image/jpeg', 'image/png'];
   $scope.wmsVersions = ['1.1.1', '1.3.0'];
+  $scope.readOnlyMode = appConstants.readOnly;
 
   $scope.fileUploadOptions = {
     acceptFileTypes: /(\.|\/)(kml)$/i,
