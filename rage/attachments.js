@@ -14,7 +14,7 @@ module.exports = function(config) {
     , path = require('path')
 	  , fs = require('fs-extra');
 
-	var timeout = 200000;
+	var timeout = 5000;
 
 	var username = 'df00d591feb2c5478db826dfb5199dbb';
   var p***REMOVED***word = 'df00d591feb2c5478db826dfb5199dbb';
@@ -173,17 +173,20 @@ module.exports = function(config) {
 				  r.pipe(fs.createWriteStream(config.attachmentBase + '/' + attachment.relativePath));
 				  console.info('write the file for url ' + url + ' to ' + config.attachmentBase + '/' + attachment.relativePath);
 				  attachment.set("synced", "yes", {strict: false});
-				  feature.save(function() {
+				  feature.save(function(err) {
 				  	// who cares
+				  	console.log("BOOM, saved some ***REMOVED***", err);
 				  });
 				  done();
 				} else if (resp.statusCode == 404) {
 					// uhhh no data, hmmm
 					console.info('no data for ' + url);
-					appendErrorFile(JSON.stringify({url:baseUrl + '/FeatureServer/'+ 
-				layer.id + '/features/' + 
-				feature.id + '/attachments/' + 
-				attachment._id, localFile: config.attachmentBase + '/' + attachment.relativePath}));
+					appendErrorFile(JSON.stringify({
+            url:baseUrl + '/FeatureServer/'+ 
+    				layer.id + '/features/' + 
+    				feature.id + '/attachments/' + 
+    				attachment._id, localFile: config.attachmentBase + '/' + attachment.relativePath
+          }));
 					done();
 				} else {
 					console.info('failed to sync with error code ' + resp.statusCode + ' url is ' + url);
@@ -226,25 +229,23 @@ module.exports = function(config) {
 		);
 	}
 
-	var doIt = function() {
-
+	var sync = function() {
 		var token;
 
-		  console.log('pulling data');
+    console.log('pulling attachments ' + moment().toISOString());
 
-		  async.series({
-		  	lastTime: getLastAttachmentSyncTime,
-		    token: getToken,
-		    layers: getAllFeatureLayers,
-		    attachments: syncAttachments
-		  },
-		  function(err, results) {
-		  	console.info('done syncing, setting up timeout');
-			  writeLastSyncTime();
-		    // all done each ran in order, results is now equal to: {token: 1, features: 2, etc...}
-		    setTimeout(doIt, timeout);
-		  }); 
+	  async.series({
+	  	lastTime: getLastAttachmentSyncTime,
+	    token: getToken,
+	    layers: getAllFeatureLayers,
+	    attachments: syncAttachments
+	  },
+	  function(err, results) {
+    console.log('finished pulling attachments ' + moment().toISOString());
+		  writeLastSyncTime();
+	    setTimeout(sync, timeout);
+	  }); 
 	}
 
-	doIt();
+	sync();
 }

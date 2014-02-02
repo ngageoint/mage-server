@@ -31,5 +31,5 @@ require('./rage/index')({
   type: argv.type,
   attachmentBase: attachmentBase,
   // baseUrl: 'http://localhost:4242'
-  baseUrl: 'https://magedg.geointapps.org'
+  baseUrl: 'https://magepdc.geointapps.org'
 });
