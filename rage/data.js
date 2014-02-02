@@ -11,7 +11,7 @@ module.exports = function(config) {
     , Feature = require('../models/feature')
     , Location = require('../models/location');
 
-  var timeout = 200000;
+  var timeout = 3000;
   var baseUrl = config.baseUrl;
 
   var username = 'df00d591feb2c5478db826dfb5199dbb';
@@ -101,7 +101,7 @@ module.exports = function(config) {
     });
   }
 
-  var createFeatureCollection = function(layer) {
+  var createFeatureCollection = function(layer, done) {
     console.log("Creating collection: " + layer.collectionName + ' for layer ' + layer.name);
     mongoose.connection.db.createCollection(layer.collectionName, function(err, collection) {
       if (err) {
@@ -110,6 +110,7 @@ module.exports = function(config) {
       } 
         
       console.log("Successfully created feature collection for layer " + layer.name);
+      done();
     });
   }
 
@@ -134,12 +135,16 @@ module.exports = function(config) {
           var layer =  {name: featureLayer.name, type: featureLayer.type, collectionName: 'features' + featureLayer.id};
           Layer.Model.findOneAndUpdate({id: featureLayer.id}, layer, {upsert: true, new: false}, function(err, oldLayer) {
             if (! oldLayer || !oldLayer.id) {
-              createFeatureCollection(layer);
+              createFeatureCollection(layer, function() {
+                layer.id = featureLayer.id;
+                layers.push(layer);
+                done(err);
+              });
+            } else {
+              layer.id = featureLayer.id;
+              layers.push(layer);
+              done();
             }
-
-            layer.id = featureLayer.id;
-            layers.push(layer);
-            done(err);
           });
         },
         function(err) {
@@ -191,6 +196,15 @@ module.exports = function(config) {
 
                 var id = feature.id;
                 delete feature.id;
+                if (feature.properties.timestamp) feature.properties.timestamp = moment(feature.properties.timestamp).toDate();
+                if (feature.attachments) {
+                  feature.attachments.forEach(function(attachment) {
+                    attachment._id = attachment.id;
+                    var id = mongoose.Types.ObjectId(attachment._id);
+                    attachment.id = id.getTimestamp().getTime();
+                  });  
+                }
+
                 Feature.featureModel(layer).findByIdAndUpdate(id, feature, {upsert: true}, done);
               },
               function(err) {
@@ -266,7 +280,6 @@ module.exports = function(config) {
       userCollection: function(done) {
         // Also need to update the user location, for now the web only needs one location from this list
         // just update the latest
-        console.log('pushing locations', user);
         User.addLocationsForUser({_id: user.user}, user.locations, function(err) {
           done();
         });
@@ -288,7 +301,7 @@ module.exports = function(config) {
   }
 
   var sync = function() {
-    console.log('pulling all data');
+    console.log('pulling data ' + moment().toISOString());
 
     async.series({
       token: getToken,
@@ -298,7 +311,8 @@ module.exports = function(config) {
       featuresAndLocations: syncFeaturesAndLocations
     },
     function(err, results) {
-      console.log('finished pulling all data, err', err);
+      console.log('finished pulling all data ' + moment().toISOString());
+      console.log('err: ', err);
       setTimeout(sync, timeout);
     });
   };
