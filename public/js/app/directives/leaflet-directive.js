@@ -277,8 +277,20 @@ L.AwesomeMarkers.divIcon = function (options) {
               }
             },
             onEachFeature: function(feature, marker) {
-              marker.on("click", function(e) {
+              if (layer.id == 999) {
+                var properties = feature.properties;
+                var popup = L.popup({minWidth: 200}).setContent(
+                '<h4>' + properties.name + '</h4>' +
+                '<div><span><strong>Tag Id: </strong>' + properties.tag_id +  '</span></div>' +
+                '<div><span><strong>Score: </strong>' + properties.score +  '</span></div>' +
+                '<div><span><strong>Agreement: </strong>' + properties.agreement +  '</span></div>' +
+                '<br>' +
+                '<a href="' + properties.chip_url + '" target="_blank"><img src="' + properties.chip_url+ '" alt="Image Chip" height="200" width="200"></a>'
+                );
+                marker.bindPopup(popup);
+              }
 
+              marker.on("click", function(e) {
                 if (scope.activeUserPopup) {
                   scope.activeUserPopup.closePopup();
                 }
@@ -358,10 +370,10 @@ L.AwesomeMarkers.divIcon = function (options) {
           map.setView(marker.getLatLng(), map.getZoom() > 17 ? map.getZoom() : 17);
         });
 
-        scope.$watch("layer", function(layer) {
+        scope.$watch("layer", function(layer, oldLayer) {
             if (!layer) return;
 
-            if (layer.checked) {
+            if (layer.checked && (!oldLayer || !oldLayer.checked)) {
 
               // add to map
               var newLayer = null;
@@ -383,6 +395,8 @@ L.AwesomeMarkers.divIcon = function (options) {
               } else {
                 if (!layer.features) {
                   return;
+                } else {
+                  featuresUpdated(layer.features);
                 }
                 
               }
@@ -392,14 +406,14 @@ L.AwesomeMarkers.divIcon = function (options) {
                 layer: layer,
                 gjLayer: gj
               };
-            } else if (layers[layer.id]) {
+            } else if (layers[layer.id] && !layer.checked) {
               // remove from map
               map.removeLayer(layers[layer.id].leafletLayer);
               delete layers[layer.id];
             }
         }); // watch layer
 
-        scope.$watch('layer.features', function(features) {
+        var featuresUpdated = function(features) {
           if (!features) return;
           if (layers[scope.layer.id]) {
             var addThese = {
@@ -418,17 +432,25 @@ L.AwesomeMarkers.divIcon = function (options) {
           } else {
             markers[scope.layer.id] = {};
             var gj = L.geoJson(features, featureConfig(scope.layer));
-            newLayer = L.markerClusterGroup()
-            .addLayer(gj)
-            .addTo(map)
-            .bringToFront();
-            layers[scope.layer.id] = {
-                leafletLayer: newLayer,
-                layer: scope.layer,
-                gjLayer: gj
+
+            if (scope.layer.id == 999) {
+              newLayer = gj.addTo(map).bringToFront();
+            } else {
+              newLayer = L.markerClusterGroup()
+                .addLayer(gj)
+                .addTo(map)
+                .bringToFront();
               };
-          }
-        });
+            }
+
+            layers[scope.layer.id] = {
+              leafletLayer: newLayer,
+              layer: scope.layer,
+              gjLayer: gj
+            }
+        };
+
+        scope.$watch('layer.features', featuresUpdated);
 
         scope.$watch("newFeature", function(feature) {
           if (!feature) return;
@@ -459,7 +481,21 @@ L.AwesomeMarkers.divIcon = function (options) {
           if (layer) {
             layer.removeLayer(activeMarker);
           }
-        })
+          markers[feature.layerId][feature.id] = undefined;
+        });
+
+        // this is a hack to fix the other hacks
+        scope.$watch("removeFeaturesFromMap", function(layerAndFeaturesToRemove) {
+          if (!layerAndFeaturesToRemove) return;
+
+          var layer = layers[layerAndFeaturesToRemove.layerId].leafletLayer;
+          if (layer) {
+            _.each(layerAndFeaturesToRemove.features, function(feature) {
+              layer.removeLayer(markers[layerAndFeaturesToRemove.layerId][feature.id]);
+              markers[layerAndFeaturesToRemove.layerId][feature.id] = undefined;
+            })
+          }
+        });
 
       } // end of link function
     };

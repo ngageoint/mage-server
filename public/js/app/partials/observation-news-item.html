@@ -18,48 +18,75 @@
   	</div>
     <div cl***REMOVED***="map-clip row-fluid" style="width: 100%; height: 150px;" map-clip="mapClipConfig"/>
 
-  	<div cl***REMOVED***="row-fluid top-gap-s bottom-gap-s">
-  	  <div cl***REMOVED***="attachment" ng-repeat="attachment in observation.attachments track by attachment.id">
-        <div cl***REMOVED***="image-button">
-          <div ng-switch on="attachment.contentType">
-            <a ng-switch-when="image/jpg" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + attachment.id + '?access_token=' + token}}" target="_blank"><img ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + attachment.id + '?access_token=' + token}}" style="width:150px"></a>
-            <a ng-switch-when="image/jpeg" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" target="_blank"><img ng-src="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" style="width:150px"></a>
-            <a ng-switch-when="image/png" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" target="_blank"><img ng-src="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" style="width:150px"></a>
-            <a ng-switch-when="image/gif" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" target="_blank"><img ng-src="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" style="width:150px"></a>
-            <!-- Fix for octet stream images in an older version of the app -->
-            <!-- Due to drastically varying browser behavior, videos will be a download link for the time being -->
-            <div ng-switch-when="video/mp4">
-              <video width="100%" height="320px" controls="controls">
-              <source ng-src="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" type="video/mp4">
-              </video>
-              <a ng-href="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}">Download video</a>
-            </div>
-            <div ng-switch-default cl***REMOVED***="top-gap-l" style="width: 150px">
-              <!-- try to see if we can figure out what type of thing it is by the extension -->
-              <div ng-switch on="attachment.name.substr(attachment.name.lastIndexOf('.') + 1)">
-                <a ng-switch-when="jpg" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + attachment.id + '?access_token=' + token}}" target="_blank"><img ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + attachment.id + '?access_token=' + token}}" style="width:150px"></a>
-                <a ng-switch-when="jpeg" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" target="_blank"><img ng-src="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" style="width:150px"></a>
-                <a ng-switch-when="png" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" target="_blank"><img ng-src="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" style="width:150px"></a>
-                <a ng-switch-when="gif" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" target="_blank"><img ng-src="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" style="width:150px"></a>
-                <!-- Fix for octet stream images in an older version of the app -->
-                <!-- Due to drastically varying browser behavior, videos will be a download link for the time being -->
-                <div ng-switch-when="mp4">
-                  <video width="100%" height="320px" controls="controls">
-                  <source ng-src="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" type="video/mp4">
-                  </video>
-                  <a ng-href="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}">Download video</a>
+    <div cl***REMOVED***="top-gap-s bottom-gap-s">
+      <div cl***REMOVED***="attachment" ng-repeat="attachment in observation.attachments track by attachment.id">
+        <span ng-switch on="$index % 2">
+          <span ng-switch-when="0">
+            <div cl***REMOVED***="row-fluid">
+              <div cl***REMOVED***="span6">
+                <div ng-switch on="observation.attachments[$index].contentType">
+                  <a ng-switch-when="image/jpg" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token + '&synced='+observation.attachments[$index].synced}}"></img></a>
+                  <a ng-switch-when="image/jpeg" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token + '&synced='+observation.attachments[$index].synced}}"></img></a>
+                  <a ng-switch-when="image/png" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token + '&synced='+observation.attachments[$index].synced}}"></img></a>
+                  <a ng-switch-when="image/gif" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token + '&synced='+observation.attachments[$index].synced}}"></img></a>
+                  <div ng-switch-when="video/mp4">
+                    <video cl***REMOVED***="news-feed-video" controls="controls">
+                      <source ng-src="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token}}" type="video/mp4">
+                    </video>
+                    <i cl***REMOVED***="icon-sage icon-facetime-video"></i><a ng-href="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token}}"> Download video</a>
+                  </div>
+
+                  <div ng-switch-default>
+                     <div ng-switch on="observation.attachments[$index].name.substr(observation.attachments[$index].name.lastIndexOf('.') + 1)">
+                      <a ng-switch-when="jpg" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token + '&synced='+observation.attachments[$index].synced}}"></img></a>
+                      <a ng-switch-when="jpeg" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token + '&synced='+observation.attachments[$index].synced}}"></img></a>
+                      <a ng-switch-when="png" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token + '&synced='+observation.attachments[$index].synced}}"></img></a>
+                      <a ng-switch-when="gif" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index].id + '?access_token=' + token + '&synced='+observation.attachments[$index].synced}}"></img></a>
+                      <div ng-switch-when="mp4">
+                        <video cl***REMOVED***="news-feed-video" controls="controls">
+                          <source ng-src="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token + '&synced='+observation.attachments[$index].synced}}" type="video/mp4">
+                        </video>
+                        <i cl***REMOVED***="icon-sage icon-facetime-video"></i><a ng-href="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token}}"> Download video</a>
+                      </div>
+                     </div>
+                  </div>
                 </div>
-                <div ng-switch-default>
-                  <a ng-href="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' +attachment.id + '?access_token=' + token}}" target="_blank">Download {{attachment.name}}</a>
-                  <div><a ng-show="amAdmin" cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(attachment.id)">Delete</a></div>
+              </div>
+              <div cl***REMOVED***="span6">
+                <div ng-switch on="observation.attachments[$index+1].contentType">
+                  <a ng-switch-when="image/jpg" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token + '&synced='+observation.attachments[$index+1].synced}}"></img></a>
+                  <a ng-switch-when="image/jpeg" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token + '&synced='+observation.attachments[$index+1].synced}}"></img></a>
+                  <a ng-switch-when="image/png" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token + '&synced='+observation.attachments[$index+1].synced}}"></img></a>
+                  <a ng-switch-when="image/gif" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token + '&synced='+observation.attachments[$index+1].synced}}"></img></a>
+                  <div ng-switch-when="video/mp4">
+                    <video cl***REMOVED***="news-feed-video" controls="controls">
+                      <source ng-src="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token + '&synced='+observation.attachments[$index+1].synced}}" type="video/mp4">
+                    </video>
+                    <i cl***REMOVED***="icon-sage icon-facetime-video"></i><a ng-href="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token}}"> Download video</a>
+                  </div>
+                  <div ng-switch-default>
+                    <div ng-switch on="observation.attachments[$index+1].name.substr(observation.attachments[$index+1].name.lastIndexOf('.') + 1)">
+                      <a ng-switch-when="jpg" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token + '&synced='+observation.attachments[$index+1].synced}}"></img></a>
+                      <a ng-switch-when="jpg" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token + '&synced='+observation.attachments[$index+1].synced}}"></img></a>
+                      <a ng-switch-when="jpg" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token + '&synced='+observation.attachments[$index+1].synced}}"></img></a>
+                      <a ng-switch-when="jpg" ng-href="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/'+observation.layerId+'/features/'+ observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token + '&synced='+observation.attachments[$index+1].synced}}"></img></a>
+                      <div ng-switch-when="mp4">
+                        <video cl***REMOVED***="news-feed-video" controls="controls">
+                          <source ng-src="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token + '&synced='+observation.attachments[$index+1].synced}}" type="video/mp4">
+                        </video>
+                        <i cl***REMOVED***="icon-sage icon-facetime-video"></i><a ng-href="{{'/FeatureServer/'+observation.layerId+'/features/' + observation.id + '/attachments/' + observation.attachments[$index+1].id + '?access_token=' + token}}"> Download video</a>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </span>
+        </span>
       </div>
-  	</div>
-    <button cl***REMOVED***="btn" ngm-tap="startEdit()" 
+    </div>
+
+    <button cl***REMOVED***="btn" ng-hide="readOnlyMode" ngm-tap="startEdit()" 
             ng-click="startEdit()">Edit</button>
   </div>
   <div ng-show="editMode">

@@ -2,6 +2,7 @@
 module.exports = function(app, auth) {
 
   var api = require('../api')
+    , fs = require('fs-extra')
     , util = require('util')
     , moment = require('moment')
     , access = require('../access')
@@ -143,15 +144,25 @@ module.exports = function(app, auth) {
   app.get(
     '/FeatureServer/:layerId/features/:featureId/attachments/:attachmentId',
     access.authorize('READ_FEATURE'),
-    function(req, res) {
+    function(req, res, next) {
       new api.Attachment(req.layer, req.feature).getById(req.param('attachmentId'), function(err, attachment) {
-        res.writeHead(200, {
-          "Content-Type": attachment.attachment.contentType,
-          "Content-Length": attachment.attachment.size,
-          'Content-disposition': 'attachment; filename=' + attachment.attachment.name
-         });
-        res.end(attachment.data, 'binary');
-      }
+        if (err) return next(err);
+
+        if (!attachment) return res.send(404);
+
+        res.type(attachment.contentType);
+        res.attachment(attachment.name);
+        res.header('Content-Length', attachment.size);
+
+        var stream = fs.createReadStream(attachment.path);
+        stream.on('open', function() {
+          stream.pipe(res);
+        });
+        stream.on('error', function(err) {
+          console.log('error', err);
+          res.send(404);
+        });
+       }
     );
   });
 

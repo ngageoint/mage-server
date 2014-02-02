@@ -40,6 +40,8 @@ var featureModel = function(layer) {
   return model;
 }
 
+exports.featureModel = featureModel;
+
 // return a string for each property
 var convertFieldForQuery = function(field, keys, fields) {
   keys = keys || [];
@@ -77,7 +79,6 @@ exports.getFeatures = function(layer, o, callback) {
     query.where('geometry').intersects.geometry(filter.geometry);
   }
 
-  var timestampFilter = {};
   if (filter.startDate) {
     query.where('properties.timestamp').gte(filter.startDate);
   }

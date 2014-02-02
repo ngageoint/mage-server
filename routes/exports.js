@@ -14,6 +14,7 @@ module.exports = function(app, security) {
     , toGeoJson = require('../utilities/togeojson')
     , shp = require('shp-write')
     , DOMParser = require('xmldom').DOMParser
+    , spawn = require('child_process').spawn
     , exec = require('child_process').exec;
 
   var parseQueryParams = function(req, res, next) {
@@ -358,20 +359,25 @@ module.exports = function(app, security) {
     //it as a zip file for now.
     var streamZipFileToClient = function(err) {
       var zipFile = '/tmp/mage-kml-export-' + now.getTime() + '.zip';
-      exec("zip -r " + zipFile + " " + req.directory + "/*", function (err, stdout, stderr) {
-        if (err !== null) {
-          console.log('error generating zip: ' + err);
+
+      var zip = spawn('zip', ['-r', '-q', zipFile, req.directory], {stdio: [ 'ignore', 'ignore', 'ignore' ]});
+
+      zip.on("exit", function (code) {
+        console.log('done generating zip');
+
+        if (code !== 0) {
+          console.log('error generating zip, code: ' + code);
         }
 
         var stream = fs.createReadStream(zipFile);
         stream.on('end', function() {
           // remove dir
           fs.remove(req.directory, function(err) {
-            if (err) console.log('could not remove shapfile dir', req.directory);
+            if (err) console.log('could not remove KML dir', req.directory);
           });
           //remove zip file
           fs.remove(zipFile, function(err) {
-            if (err) console.log('could not remove shapfile zip', zipFile);
+            if (err) console.log('could not remove KML zip', zipFile);
           });
         });
 
@@ -383,6 +389,8 @@ module.exports = function(app, security) {
         res.cookie("fileDownload", "true", {path: '/'});
         stream.pipe(res);
       });
+
+      var t = 32;
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -397,18 +405,4 @@ module.exports = function(app, security) {
       writeKmlFile
    ], streamZipFileToClient);
   }
-
-  // app.get(
-  //   '/api/test/export',
-  //   function(req, res, next) {
-  //     res.setHeader('Content-Type', 'application/zip');
-  //     res.setHeader('Content-Disposition', "attachment; filename=test-export.zip");
-
-  //     var archive = archiver('zip');
-  //     archive.pipe(res);
-
-  //     archive.append('hello word, I am zipped', { name: 'hello.txt', date: new Date() });
-  //     archive.finalize();
-  //   }
-  // );
 }

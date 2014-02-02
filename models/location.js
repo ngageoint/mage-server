@@ -23,6 +23,7 @@ LocationSchema.index({'properties.user': 1, 'properties.timestamp': 1});
 
 // Creates the Model for the User Schema
 var Location = mongoose.model('Location', LocationSchema);
+exports.Model = Location;
  
 // create location
 exports.createLocations = function(user, locations, callback) {
@@ -58,6 +59,8 @@ exports.getAllLocations = function(options, callback) {
 }
 
 // get locations for users team
+// TODO limit here limits based on entire collection so it doesn't really do what I want at this point
+// I really want to limit based on each users locations, i.e. I want every user but only max 10 locations for each
 exports.getLocations = function(user, limit, callback) {
   var sort = { $sort: { "properties.timestamp": -1 }};
   var limit = { $limit: limit };
@@ -83,7 +86,7 @@ exports.getLocationsWithFilters = function(user, filter, limit, callback) {
   var match = (filter.startDate || filter.endDate) ? { $match: {'properties.timestamp': timeFilter}} : { $match: {}};
   var sort = { $sort: { "properties.timestamp": -1 } };
   var limit = { $limit: limit };
-  var group = { $group: { _id: "$properties.user", locations: { $push: {geometry: "$geometry", properties: "$properties"} }}};
+  var group = { $group: { _id: "$properties.user", locations: { $push: {type: "$type", geometry: "$geometry", properties: "$properties"} }}};
   var project = { $project: { _id: 0, user: "$_id", locations: "$locations"} };
   
   Location.aggregate(match, sort, limit, group, project, function(err, aggregate) {

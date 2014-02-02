@@ -60,6 +60,7 @@ DeviceSchema.pre('save', function(next) {
 
 // Creates the Model for the User Schema
 var Device = mongoose.model('Device', DeviceSchema);
+exports.Model = Device;
 
 exports.getDeviceById = function(id, callback) {
   Device.findById(id, function(err, device) {
