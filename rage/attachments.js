@@ -125,7 +125,7 @@ module.exports = function(config) {
 	var updateLastFeatureTime = function(feature, layer) {
 		if (feature.properties.timestamp) {
       var featureTime = moment(feature.properties.timestamp);
-      if (!lastFeatureTime[layer.collectionName] || featureTime.isAfter(lastFeatureTime[layer.collectionName])) {
+      if (!lastFeatureTime[layer.collectionName] || (featureTime.isAfter(lastFeatureTime[layer.collectionName]) && featureTime.isBefore(Date.now()))) {
         lastFeatureTime[layer.collectionName] = featureTime;
       }
     }
@@ -172,10 +172,9 @@ module.exports = function(config) {
 					fs.mkdirsSync(path.dirname(config.attachmentBase + '/' + attachment.relativePath));
 				  r.pipe(fs.createWriteStream(config.attachmentBase + '/' + attachment.relativePath));
 				  console.info('write the file for url ' + url + ' to ' + config.attachmentBase + '/' + attachment.relativePath);
-				  attachment.set("synced", "yes", {strict: false});
+				  attachment.set("synced", Date.now(), {strict: false});
 				  feature.save(function(err) {
 				  	// who cares
-				  	console.log("BOOM, saved some ***REMOVED***", err);
 				  });
 				  done();
 				} else if (resp.statusCode == 404) {
