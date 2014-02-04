@@ -150,12 +150,11 @@ module.exports = function(app, auth) {
 
         if (!attachment) return res.send(404);
 
-        res.type(attachment.contentType);
-        res.attachment(attachment.name);
-        res.header('Content-Length', attachment.size);
-
         var stream = fs.createReadStream(attachment.path);
         stream.on('open', function() {
+          res.type(attachment.contentType);
+          res.attachment(attachment.name);
+          res.header('Content-Length', attachment.size);
           stream.pipe(res);
         });
         stream.on('error', function(err) {
