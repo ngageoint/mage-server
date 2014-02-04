@@ -256,6 +256,11 @@ module.exports = function(config) {
               if (!lastTime || lastTime.isBefore(locationTime)) {
                 lastTime = locationTime;
               }
+
+              locations.forEach(function(location) {
+                var properties = location.properties || {};
+                if (properties.timestamp) properties.timestamp = moment(properties.timestamp).toDate();
+              });
             }
 
             syncUserLocations(user, done);

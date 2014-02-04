@@ -172,10 +172,9 @@ module.exports = function(config) {
 					fs.mkdirsSync(path.dirname(config.attachmentBase + '/' + attachment.relativePath));
 				  r.pipe(fs.createWriteStream(config.attachmentBase + '/' + attachment.relativePath));
 				  console.info('write the file for url ' + url + ' to ' + config.attachmentBase + '/' + attachment.relativePath);
-				  attachment.set("synced", "yes", {strict: false});
+				  attachment.set("synced", Date.now(), {strict: false});
 				  feature.save(function(err) {
 				  	// who cares
-				  	console.log("BOOM, saved some ***REMOVED***", err);
 				  });
 				  done();
 				} else if (resp.statusCode == 404) {
