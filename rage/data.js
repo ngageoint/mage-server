@@ -189,7 +189,7 @@ module.exports = function(config) {
                 console.log('')
                 if (feature.properties.timestamp) {
                   var featureTime = moment(feature.properties.timestamp);
-                  if (!lastTime || (featureTime.isAfter(lastTime) && featureTime.isBefore(Date.now()))) {
+                  if (!lastTime || featureTime.isAfter(lastTime)) {
                     lastTime = featureTime;
                   }
                 }
@@ -280,17 +280,15 @@ module.exports = function(config) {
     async.parallel({
       locationCollection: function(done) {
         // throw all this users locations in the location collection
-        async.each(user.locations, function(location) {
+        async.each(user.locations, function(location, done) {
           var locationId = location._id;
           delete location._id;
-          Location.Model.findByIdAndUpdate(location._id, location, {upsert: true}, function(err, location) {
+          Location.Model.findByIdAndUpdate(locationId, location, {upsert: true}, function(err, location) {
             if (err) console.log('error inserting location into locations collection', err);
+            done();
           });
         },
         function(err) {
-
-        });
-        user.locations.forEach(function(location) {
           done();
         });
       },
