@@ -86,7 +86,7 @@ exports.getLocationsWithFilters = function(user, filter, limit, callback) {
   var match = (filter.startDate || filter.endDate) ? { $match: {'properties.timestamp': timeFilter}} : { $match: {}};
   var sort = { $sort: { "properties.timestamp": -1 } };
   var limit = { $limit: limit };
-  var group = { $group: { _id: "$properties.user", locations: { $push: {type: "$type", geometry: "$geometry", properties: "$properties"} }}};
+  var group = { $group: { _id: "$properties.user", locations: { $push: {_id: "$_id", type: "$type", geometry: "$geometry", properties: "$properties"} }}};
   var project = { $project: { _id: 0, user: "$_id", locations: "$locations"} };
   
   Location.aggregate(match, sort, limit, group, project, function(err, aggregate) {
