@@ -247,7 +247,7 @@ exports.addAttachment = function(layer, id, file, callback) {
       relativePath: file.relativePath
     });
 
-    var update = {'$push': { attachments: attachment }, 'properties.timestamp': Date.now()};
+    var update = {'$push': { attachments: attachment }, 'properties.timestamp': new Date()};
     featureModel(layer).update(condition, update, function(err, feature) {
       if (err) {
         console.log('Error updating attachments from DB', err);
@@ -267,7 +267,7 @@ exports.updateAttachment = function(layer, attachmentId, file, callback) {
       'attachments.$.size': file.size
     },
     properties: {
-      timestamp: Date.now()
+      timestamp: new Date()
     }
   };
 
