@@ -280,7 +280,19 @@ module.exports = function(config) {
     async.parallel({
       locationCollection: function(done) {
         // throw all this users locations in the location collection
-        if (user.locations.length > 0) Location.Model.create(user.locations, done);
+        async.each(user.locations, function(location) {
+          var locationId = location._id;
+          delete location._id;
+          Location.Model.findByIdAndUpdate(location._id, location, {upsert: true}, function(err, location) {
+            if (err) console.log('error inserting location into locations collection', err);
+          });
+        },
+        function(err) {
+
+        });
+        user.locations.forEach(function(location) {
+          done();
+        });
       },
       userCollection: function(done) {
         // Also need to update the user location, for now the web only needs one location from this list
