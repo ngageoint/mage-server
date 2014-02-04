@@ -253,9 +253,14 @@ module.exports = function(config) {
 
             if (locations && locations.length > 0) {
               var locationTime = moment(locations[0].properties.timestamp);
-              if (!lastTime || lastTime.isBefore(locationTime)) {
+              if (!lastTime || (lastTime.isBefore(locationTime) && locationTime.isBefore(Date.now()))) {
                 lastTime = locationTime;
               }
+
+              locations.forEach(function(location) {
+                var properties = location.properties || {};
+                if (properties.timestamp) properties.timestamp = moment(properties.timestamp).toDate();
+              });
             }
 
             syncUserLocations(user, done);
@@ -275,7 +280,17 @@ module.exports = function(config) {
     async.parallel({
       locationCollection: function(done) {
         // throw all this users locations in the location collection
-        if (user.locations.length > 0) Location.Model.create(user.locations, done);
+        async.each(user.locations, function(location, done) {
+          var locationId = location._id;
+          delete location._id;
+          Location.Model.findByIdAndUpdate(locationId, location, {upsert: true}, function(err, location) {
+            if (err) console.log('error inserting location into locations collection', err);
+            done();
+          });
+        },
+        function(err) {
+          done();
+        });
       },
       userCollection: function(done) {
         // Also need to update the user location, for now the web only needs one location from this list
