@@ -189,7 +189,7 @@ module.exports = function(config) {
                 console.log('')
                 if (feature.properties.timestamp) {
                   var featureTime = moment(feature.properties.timestamp);
-                  if (!lastTime || featureTime.isAfter(lastTime)) {
+                  if (!lastTime || (featureTime.isAfter(lastTime) && featureTime.isBefore(Date.now()))) {
                     lastTime = featureTime;
                   }
                 }
@@ -253,7 +253,7 @@ module.exports = function(config) {
 
             if (locations && locations.length > 0) {
               var locationTime = moment(locations[0].properties.timestamp);
-              if (!lastTime || lastTime.isBefore(locationTime)) {
+              if (!lastTime || (lastTime.isBefore(locationTime) && locationTime.isBefore(Date.now()))) {
                 lastTime = locationTime;
               }
 
