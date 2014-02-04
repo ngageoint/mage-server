@@ -125,7 +125,7 @@ module.exports = function(config) {
 	var updateLastFeatureTime = function(feature, layer) {
 		if (feature.properties.timestamp) {
       var featureTime = moment(feature.properties.timestamp);
-      if (!lastFeatureTime[layer.collectionName] || featureTime.isAfter(lastFeatureTime[layer.collectionName])) {
+      if (!lastFeatureTime[layer.collectionName] || (featureTime.isAfter(lastFeatureTime[layer.collectionName]) && featureTime.isBefore(Date.now()))) {
         lastFeatureTime[layer.collectionName] = featureTime;
       }
     }
