@@ -226,7 +226,7 @@ html, body, div.leaflet-container {
 	border-radius: 6px;
 }
 
-.observation-news-item img {
+.observation-news-item .news-feed-image {
 	max-width: 100% !important;
 }
 

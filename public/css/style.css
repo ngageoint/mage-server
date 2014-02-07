@@ -324,7 +324,6 @@ textarea {
 
 div.image-button {
     position: relative;
-    float: left;
 }
 
 div.image-button:hover input {
