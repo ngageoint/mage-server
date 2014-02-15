@@ -36,8 +36,10 @@ angular.module('mage')
 
         //Tomnod hack
         if (feature.properties.icon_url) {
+          var root = 'http://tomnod.com';
+          var iconUrl = iconUrl.startsWith(root) ? iconUrl : root + iconUrl;
           var myIcon = L.icon({
-            iconUrl: feature.properties.icon_url,
+            iconUrl: iconUrl,
             iconSize: [60, 60],
             iconAnchor: [5, 5],
             popupAnchor: [5, 5],
