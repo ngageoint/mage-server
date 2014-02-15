@@ -60,13 +60,13 @@ angular.module('mage')
       };
 
       ***REMOVED***.iconHtml = function() {
-        return ***REMOVED***.template;
+        return ***REMOVED***.iconTemplate();
       }
 
       ***REMOVED***.setTemplateVariables = function(feature, scope) {
-        if (feature.properties && feature.properties.TYPE) {
+        if (feature && feature.properties && feature.properties.TYPE) {
           featureTypes.success(function(success) {
-            scope.iconSrc = ***REMOVED***.getIconUrl(properties.TYPE, {types: success});
+            scope.iconSrc = ***REMOVED***.getIconUrl(feature.properties.TYPE, {types: success});
           });
         }
       }
