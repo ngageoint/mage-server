@@ -55,10 +55,11 @@ UserSchema.method('validP***REMOVED***word', function(p***REMOVED***word, callba
   hasher.validP***REMOVED***word(p***REMOVED***word, user.p***REMOVED***word, callback);
 });
 
+// Lowercase the username we store, this will allow for case insensitive usernames
 // Validate that username does not already exist
 UserSchema.pre('save', function(next) {
   var user = this;
-
+  user.username = user.username.toLowerCase();
   User.findOne({username: user.username}, function(err, possibleDuplicate) {
     if (err) return next(err);
 
@@ -161,7 +162,7 @@ exports.getUserById = function(id, callback) {
 }
 
 exports.getUserByUsername = function(username, callback) {
-  var query = {username: username};
+  var query = {username: username.toLowerCase()};
   User.findOne(query).populate('role').exec(callback);
 }
 
@@ -317,8 +318,6 @@ exports.getLocations = function(options, callback) {
       console.log('Error getting locations.', err);
     }
     users = users.map(function(user) {
-      console.log('user is: ', user);
-
       user.user = user._id;
       delete user._id;
       user.locations = user.locations ? user.locations.reverse() : [];
