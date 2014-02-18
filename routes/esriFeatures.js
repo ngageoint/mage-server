@@ -162,6 +162,11 @@ module.exports = function(app, security) {
       async.each(
         features,
         function(feature, done) {
+
+          var state = {name: 'active'};
+          if (feature.properties.userId) state.userId = feature.properties.userId;
+          feature.states = [state];
+
           Feature.create(feature, function(newFeature) {
             results.push({
               globalId: null,
