@@ -71,6 +71,12 @@ Feature.prototype.update = function(id, feature, callback) {
   });
 }
 
+Feature.prototype.addState = function(id, state, callback) {
+  FeatureModel.addState(this._layer, id, state, function(err, updatedFeature) {
+    callback(err, updatedFeature);
+  });
+}
+
 Feature.prototype.delete = function(id, callback) {
   FeatureModel.removeFeature(this._layer, id, function(err, feature) {
     if (feature) {
