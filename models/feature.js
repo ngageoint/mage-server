@@ -3,7 +3,12 @@ var mongoose = require('mongoose')
   , Counter = require('./counter');
 
 var Schema = mongoose.Schema;
-// Creates the Schema for the Features object (mimics ESRI)
+
+var StateSchema = new Schema({
+  name: { type: String, required: true },
+  userId: { type: Schema.Types.ObjectId, ref: 'User' }
+});
+
 var AttachmentSchema = new Schema({
   id: { type: Number, required: true },
   contentType: { type: String, required: false },  
@@ -17,16 +22,19 @@ var FeatureSchema = new Schema({
   type: {type: String, required: true},
   geometry: Schema.Types.Mixed,
   properties: Schema.Types.Mixed,
-  attachments: [AttachmentSchema]
+  attachments: [AttachmentSchema],
+  states: [StateSchema]
 });
 
 FeatureSchema.index({geometry: "2dsphere"});
 FeatureSchema.index({'properties.OBJECTID': 1});
 FeatureSchema.index({'properties.timestamp': 1});
+FeatureSchema.index({'states.name': 1});
 FeatureSchema.index({'attachments.id': 1});
 
 var models = {};
 var Attachment = mongoose.model('Attachment', AttachmentSchema);
+var State = mongoose.model('State', StateSchema);
 
 var featureModel = function(layer) {
   var name = layer.collectionName;
@@ -204,6 +212,22 @@ exports.removeFeature = function(layer, id, callback) {
     }
 
     callback(err, feature);
+  });
+}
+
+
+// IMPORTANT:
+// This is a complete hack to get the new state to insert into
+// the beginning of the array.  Once mongo 2.6 is released
+// we can use the $push -> $each -> $position operator
+exports.addState = function(layer, id, state, callback) {
+  var condition = {_id: mongoose.Types.ObjectId(id), 'states.0.name': {'$ne': state.name}};
+
+  state._id = mongoose.Types.ObjectId();
+  var update = {'$set': {'states.-1': state}};
+
+  featureModel(layer).collection.update(condition, update, {upsert: true}, function(err) {
+    callback(err, state);
   });
 }
 

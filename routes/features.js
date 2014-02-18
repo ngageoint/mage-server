@@ -94,6 +94,10 @@ module.exports = function(app, auth) {
       var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
       if (deviceId) feature.properties.deviceId = deviceId;
 
+      var state = {name: 'active'};
+      if (userId) state.userId = userId;
+      feature.states = [state];
+
       new api.Feature(req.layer).create(feature, function(newFeature) {
         if (!newFeature) return res.send(400);
 
@@ -139,7 +143,32 @@ module.exports = function(app, auth) {
         res.json(response);
       }
     );
-  }); 
+  });
+
+  app.post(
+    '/FeatureServer/:layerId/features/:id/states',
+    access.authorize('UPDATE_FEATURE'),
+    function(req, res, next) {
+      var state = req.body;
+      if (!state) return res.send(400);
+      if (!state.name) return res.send(400, 'name required');
+      if (state.name != 'active' && state.name != 'complete' && state.name != 'archive') {
+        return res.send(400, "state name must be one of 'active', 'complete', 'archive'");
+      }
+
+      state = { name: state.name };
+      if (req.user) state.userId = req.user._id;
+
+      new api.Feature(req.layer).addState(req.param('id'), state, function(err, feature) {
+        if (err) {
+          return res.send(400, 'state is already ' + "'" + state.name + "'");
+        }
+
+        var response = geojson.transform(feature);
+        res.json(201, response);
+      });
+    }
+  );
 
   app.get(
     '/FeatureServer/:layerId/features/:featureId/attachments/:attachmentId',
