@@ -41,6 +41,10 @@ var UserSchema = new Schema({
     lastname: {type: String, required: true },
     email: {type: String, required: false },
     phones: [PhoneSchema],
+    login: {
+      timestamp: { type: Date },
+      deviceId: { type: Schema.Types.ObjectId }
+    },
     role: { type: Schema.Types.ObjectId, ref: 'Role' },
     teams: [Schema.Types.ObjectId],
     status: { type: String, required: false, index: 'sparse' },
@@ -232,6 +236,13 @@ exports.setStatusForUser = function(user, status, callback) {
 
     callback(err, user);
   });
+}
+
+exports.setLogin = function(user, device, callback) {
+  var login = {timestamp: new Date()};
+  if (device) login.deviceId = device._id;
+
+  User.findByIdAndUpdate(user._id, {login: login}, callback);
 }
 
 exports.setRoleForUser = function(user, role, callback) {
