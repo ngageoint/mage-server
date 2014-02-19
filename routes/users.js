@@ -167,6 +167,10 @@ module.exports = function(app, security) {
           return res.send(500, "Error generating token");
         }
 
+        User.setLogin(req.user, req.provisionedDevice, function(err) {
+          if (err) console.log('Could not update users last login');
+        })
+
         res.json({
           token: token.token,
           user: req.user
