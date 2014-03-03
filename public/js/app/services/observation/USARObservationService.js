@@ -36,11 +36,6 @@ angular.module('mage')
         'WA-TF1',
         'OTHER'
       ];
-      ***REMOVED***.levels = [
-        'Normal', 
-        'Yellow', 
-        'Red'
-      ];
 
       FeatureTypeService.getTypes().
         success(function (types, status, headers, config) {
@@ -51,7 +46,7 @@ angular.module('mage')
         });
 
       ***REMOVED***.createNewObservation = function(location) {
-        return new Featue({
+        return new Feature({
           type: 'Feature',
           geometry: {
             type: 'Point'
@@ -59,7 +54,6 @@ angular.module('mage')
           properties: {
             userId: UserService.myself._id,
             TYPE: ***REMOVED***.types[0].name,
-            EVENTLEVEL: ***REMOVED***.levels[0],
             TEAM: ***REMOVED***.teams[0],
             EVENTDATE: new Date()
           }
