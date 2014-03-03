@@ -37,11 +37,6 @@ mage.directive('***REMOVED***Observation', ['FeatureTypeService', 'UserService',
         'WA-TF1',
         'OTHER'
       ];
-      scope.levels = [
-        'Normal', 
-        'Yellow', 
-        'Red'
-      ];
 
       //Get the Feature Types
       FeatureTypeService.getTypes().
@@ -54,11 +49,10 @@ mage.directive('***REMOVED***Observation', ['FeatureTypeService', 'UserService',
 
 
       scope.createNewObservation = function(location) {
-        return new Featue({
+        return new Feature({
           properties: {
             userId: UserService.myself._id,
             TYPE: scope.types[0].name,
-            EVENTLEVEL: scope.levels[0],
             TEAM: scope.teams[0],
             EVENTDATE: new Date()
           }
