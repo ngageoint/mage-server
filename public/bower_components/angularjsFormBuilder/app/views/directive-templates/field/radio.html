@@ -1,13 +1,13 @@
 <div cl***REMOVED***="field row">
-    <div cl***REMOVED***="span2">{{field.field_title}}:</div>
+    <div cl***REMOVED***="span2">{{field.title}}:</div>
     <div cl***REMOVED***="span4">
-        <div ng-repeat="option in field.field_options" cl***REMOVED***="row-fluid">
+        <div ng-repeat="option in field.options" cl***REMOVED***="row-fluid">
             <label>
-                <input type="radio" value="{{option.option_value}}" ng-model="field.field_value"  ng-required="field.field_required"/>
-                &nbsp;<span ng-bind="option.option_title"></span>
+                <input type="radio" value="{{option.value}}" ng-model="field.value"  ng-required="field.required"/>
+                &nbsp;<span ng-bind="option.title"></span>
             </label>
         </div>
-        <span cl***REMOVED***="required-error" ng-show="field.field_required && !field.field_value">* required</span>
+        <span cl***REMOVED***="required-error" ng-show="field.required && !field.value">* required</span>
     </div>
 </div>
 <br>

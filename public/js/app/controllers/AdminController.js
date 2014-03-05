@@ -3,12 +3,12 @@
 /*
 
 */
-function AdminController($scope, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService) {
+function AdminController($scope, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService, FormService) {
   // The variables that get set when clicking a team or user in the list, these get loaded into the editor.
   $scope.currentAdminPanel = "user"; // possible values user, team, and device
   $scope.currentUserFilter = "all"; // possible values all, active, unregistered
   $scope.currentDeviceFilter = "all"; // possible values all, registered, unregistered
-  
+
   $scope.users = [];
   $scope.filteredUsers = [];
   UserService.getAllUsers().
@@ -49,6 +49,8 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
       'description': "Urban search and rescue group."
     }
   ];
+
+  $scope.forms = FormService.forms();
 
   // Edit form toggles
   $scope.showUserForm = false;
