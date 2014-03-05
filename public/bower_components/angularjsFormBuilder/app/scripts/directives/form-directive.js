@@ -1,6 +1,6 @@
 'use strict';
 
-angularApp.directive('formDirective', function () {
+angular.module('angularjsFormBuilderApp').directive('formDirective', function () {
     return {
         controller: function($scope){
             $scope.submit = function(){
@@ -12,7 +12,7 @@ angularApp.directive('formDirective', function () {
                 alert('Form canceled..');
             }
         },
-        templateUrl: './views/directive-templates/form/form.html',
+        templateUrl: 'bower_components/angularjsFormBuilder/app/views/directive-templates/form/form.html',
         restrict: 'E',
         scope: {
             form:'='

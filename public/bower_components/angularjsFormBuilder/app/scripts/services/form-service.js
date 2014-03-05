@@ -1,8 +1,6 @@
 'use strict';
 
-angularApp.***REMOVED***('FormService', function FormService($http) {
-
-    var formsJsonPath = './static-data/sample_forms.json';
+angular.module('angularjsFormBuilderApp').***REMOVED***('FormService', function FormService($http) {
 
     return {
         fields:[
@@ -45,16 +43,16 @@ angularApp.***REMOVED***('FormService', function FormService($http) {
         ],
         form:function (id) {
             // $http returns a promise, which has a then function, which also returns a promise
-            return $http.get(formsJsonPath).then(function (response) {
+            return $http.get('/api/forms').then(function (response) {
                 var requestedForm = {};
                 angular.forEach(response.data, function (form) {
-                    if (form.form_id == id) requestedForm = form;
+                    if (form.id == id) requestedForm = form;
                 });
                 return requestedForm;
             });
         },
         forms: function() {
-            return $http.get(formsJsonPath).then(function (response) {
+            return $http.get('/api/forms').then(function (response) {
                 return response.data;
             });
         }
