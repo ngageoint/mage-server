@@ -1,0 +1,9 @@
+<div cl***REMOVED***="field row">
+    <div cl***REMOVED***="span2">{{field.field_title}}:</div>
+    <div cl***REMOVED***="span4">
+        <select ng-model="field.field_value"ng-options="option.option_id as option.option_title for option in field.field_options"
+                sng-required="field.field_required"></select>
+        <span cl***REMOVED***="required-error" ng-show="field.field_required && !field.field_value">* required</span>
+    </div>
+</div>
+<br>
