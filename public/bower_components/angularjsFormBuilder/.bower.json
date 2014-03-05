@@ -1,0 +1,28 @@
+{
+  "name": "angularjsFormBuilder",
+  "dependencies": {
+    "angular": "~1.0.7",
+    "json3": "~3.2.4",
+    "jquery": "~1.9.1",
+    "bootstrap-s***REMOVED***": "~2.3.1",
+    "es5-shim": "~2.0.8",
+    "angular-resource": "~1.0.7",
+    "angular-cookies": "~1.0.7",
+    "angular-strap": "~0.7.5",
+    "angular-ui": "~0.4.0"
+  },
+  "devDependencies": {
+    "angular-mocks": "~1.0.7",
+    "angular-scenario": "~1.0.7"
+  },
+  "homepage": "https://github.com/Selmanh/angularjs-form-builder",
+  "_release": "6cbb7bfa22",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "6cbb7bfa22d9b7a13ecc435cc9581b6e2f84edf9"
+  },
+  "_source": "git://github.com/Selmanh/angularjs-form-builder.git",
+  "_target": "*",
+  "_originalSource": "Selmanh/angularjs-form-builder"
+}

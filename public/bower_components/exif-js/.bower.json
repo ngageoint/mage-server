@@ -1,0 +1,13 @@
+{
+  "name": "exif-js",
+  "homepage": "https://github.com/danielbarela/exif-js",
+  "_release": "0f908107b1",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "0f908107b127f6f2cf62ed6892cf42ad367f9601"
+  },
+  "_source": "git://github.com/danielbarela/exif-js.git",
+  "_target": "*",
+  "_originalSource": "danielbarela/exif-js"
+}
