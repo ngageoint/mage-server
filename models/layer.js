@@ -13,6 +13,7 @@ var LayerSchema = new Schema({
   format: { type: String, required: false },
   url: { type: String, required: false },
   description: { type: String, required: false },
+  formId: {type: Schema.Types.ObjectId, required: false },
   wms: {
     layers: { type: String },
     styles: { type: String },
