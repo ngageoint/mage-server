@@ -1,15 +1,23 @@
 'use strict';
 
-angular.module('angularjsFormBuilderApp').controller('CreateCtrl', function ($scope, FormService) {
+angular.module('mage').controller('CreateCtrl', function ($scope, FormService, Layer) {
 
     // preview form mode
     $scope.previewMode = false;
 
-    // new form
-    $scope.form = {};
-    $scope.form.id = 1;
-    $scope.form.name = 'My Form';
-    $scope.form.fields = [];
+    $scope.fs = FormService;
+
+    $scope.form = FormService.editForm;
+
+    $scope.$watch('fs.editForm', function(newForm, oldForm){
+        console.log('form changed');
+        $scope.form = FormService.editForm;
+        if (!$scope.form.id) {
+            $scope.previewOff();
+        } else {
+            $scope.previewOn();
+        }
+    });
 
     // previewForm - for preview purposes, form will be copied into this
     // otherwise, actual form might get manipulated in preview mode
@@ -98,16 +106,14 @@ angular.module('angularjsFormBuilderApp').controller('CreateCtrl', function ($sc
 
         }
         else {
-            $scope.previewMode = !$scope.previewMode;
-            $scope.form.submitted = false;
+            $scope.previewMode = true;
             angular.copy($scope.form, $scope.previewForm);
         }
     }
 
     // hide preview form, go back to create mode
     $scope.previewOff = function(){
-        $scope.previewMode = !$scope.previewMode;
-        $scope.form.submitted = false;
+        $scope.previewMode = false;
     }
 
     // decides whether field options block will be shown (true for dropdown and radio fields)
@@ -122,5 +128,29 @@ angular.module('angularjsFormBuilderApp').controller('CreateCtrl', function ($sc
     $scope.reset = function (){
         $scope.form.fields.splice(0, $scope.form.fields.length);
         $scope.addField.lastAddedID = 0;
+    }
+
+    $scope.createForm = function() {
+        FormService.submitForm($scope.form);
+    }
+
+    $scope.useForm = function(form) {
+        var layers = Layer.query(function(){
+            angular.forEach(layers, function (layer) {
+              if (layer.type == 'Feature') {
+                layer.formId = form.id;
+                layer.$save();
+                form.inUse = true;
+                FormService.forms().then(function(forms) {
+                    angular.forEach(forms, function(theForm) {
+                        if (theForm.id != form.id) {
+                            theForm.inUse = false;
+                        }
+                    });
+                });
+              }
+            });
+        });
+
     }
 });
