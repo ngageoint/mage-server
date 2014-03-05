@@ -1,9 +1,10 @@
 'use strict';
 
-angular.module('angularjsFormBuilderApp').directive('formDirective', function () {
+angular.module('mage').directive('formDirective', function (FormService) {
     return {
         controller: function($scope){
             $scope.submit = function(){
+                FormService.submitForm($scope.form);
                 alert('Form submitted..');
                 $scope.form.submitted = true;
             }
