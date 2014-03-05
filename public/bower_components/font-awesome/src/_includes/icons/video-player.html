@@ -1,0 +1,12 @@
+<section id="video-player">
+  <h2 cl***REMOVED***="page-header">Video Player Icons</h2>
+
+  <div cl***REMOVED***="row the-icons">
+    {% ***REMOVED***ign icons_video_player = icons | expand_aliases | category:"Video Player Icons" | sort_by:'cl***REMOVED***' %}
+
+    {% for icon in icons_video_player %}
+      <div cl***REMOVED***="span3"><a href="{{ page.relative_path }}icon/{{ icon.id }}"><i cl***REMOVED***="icon-{{ icon.cl***REMOVED*** }}"></i> icon-{{ icon.cl***REMOVED*** }}{% if icon.alias_of %} <span cl***REMOVED***="muted">(alias)</span>{% endif %}</a></div>
+    {% endfor %}
+  </div>
+
+</section>
