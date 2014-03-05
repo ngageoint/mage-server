@@ -36,7 +36,7 @@
     "angular-ui-bootstrap": "0.6.0",
     "underscore": "latest",
     "exif-js": "danielbarela/exif-js",
-    "angularjsFormBuilder": "Selmanh/angularjs-form-builder"
+    "angularjsFormBuilder": "danielbarela/angularjs-form-builder"
   },
   "resolutions": {
     "jquery": "1.8.3",

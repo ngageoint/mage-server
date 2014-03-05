@@ -1,38 +1,38 @@
 'use strict';
 
-angularApp.directive('fieldDirective', function ($http, $compile) {
+angular.module('angularjsFormBuilderApp').directive('fieldDirective', function ($http, $compile) {
 
         var getTemplateUrl = function(field) {
-            var type = field.field_type;
+            var type = field.type;
             var templateUrl = '';
 
             switch(type) {
                 case 'textfield':
-                    templateUrl = './views/directive-templates/field/textfield.html';
+                    templateUrl = 'bower_components/angularjsFormBuilder/app/views/directive-templates/field/textfield.html';
                     break;
                 case 'email':
-                    templateUrl = './views/directive-templates/field/email.html';
+                    templateUrl = 'bower_components/angularjsFormBuilder/app/views/directive-templates/field/email.html';
                     break;
                 case 'textarea':
-                    templateUrl = './views/directive-templates/field/textarea.html';
+                    templateUrl = 'bower_components/angularjsFormBuilder/app/views/directive-templates/field/textarea.html';
                     break;
                 case 'checkbox':
-                    templateUrl = './views/directive-templates/field/checkbox.html';
+                    templateUrl = 'bower_components/angularjsFormBuilder/app/views/directive-templates/field/checkbox.html';
                     break;
                 case 'date':
-                    templateUrl = './views/directive-templates/field/date.html';
+                    templateUrl = 'bower_components/angularjsFormBuilder/app/views/directive-templates/field/date.html';
                     break;
                 case 'dropdown':
-                    templateUrl = './views/directive-templates/field/dropdown.html';
+                    templateUrl = 'bower_components/angularjsFormBuilder/app/views/directive-templates/field/dropdown.html';
                     break;
                 case 'hidden':
-                    templateUrl = './views/directive-templates/field/hidden.html';
+                    templateUrl = 'bower_components/angularjsFormBuilder/app/views/directive-templates/field/hidden.html';
                     break;
                 case 'p***REMOVED***word':
-                    templateUrl = './views/directive-templates/field/p***REMOVED***word.html';
+                    templateUrl = 'bower_components/angularjsFormBuilder/app/views/directive-templates/field/p***REMOVED***word.html';
                     break;
                 case 'radio':
-                    templateUrl = './views/directive-templates/field/radio.html';
+                    templateUrl = 'bower_components/angularjsFormBuilder/app/views/directive-templates/field/radio.html';
                     break;
             }
             return templateUrl;

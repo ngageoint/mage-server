@@ -1,12 +1,12 @@
-<h2>{{ form.form_name }}</h2>
+<h2>{{ form.name }}</h2>
 
 <div ng-show="!form.submitted">
     <div cl***REMOVED***="field row">
         <div cl***REMOVED***="span2">Form ID:</div>
-        <div cl***REMOVED***="span4">{{ form.form_id }}</div>
+        <div cl***REMOVED***="span4">{{ form.id }}</div>
     </div>
     <form name="myForm" id="myForm">
-        <div ng-repeat="field in form.form_fields">
+        <div ng-repeat="field in form.fields">
             <field-directive field="field">
 
             </field-directive>
@@ -24,8 +24,8 @@
 
 <div ng-show="form.submitted">
     <h3>Submitted Data</h3>
-    <div ng-repeat="field in form.form_fields">
-        Field Title: {{ field.field_title }} <br>
-        Field Value: {{ field.field_value }} <br><br>
+    <div ng-repeat="field in form.fields">
+        Field Title: {{ field.title }} <br>
+        Field Value: {{ field.value }} <br><br>
     </div>
 </div>
