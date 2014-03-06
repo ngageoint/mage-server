@@ -22,6 +22,15 @@ fs.mkdirp(attachmentBase, function(err) {
   }
 });
 
+var iconBase = config.server.iconBaseDirectory;
+fs.mkdirp(iconBase, function(err) {
+  if (err) {
+    console.error("Could not create directory to store MAGE icons. "  + err);
+  } else {
+    console.log("Using '" + iconBase + "' as base directory for MAGE icons.");
+  }
+});
+
 // Configure authentication
 var authentication = require('./authentication')(config.server.authentication.strategy);
 var provisioning = require('./provision/' + config.server.provision.strategy)(provision);
