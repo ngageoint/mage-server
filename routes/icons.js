@@ -59,33 +59,16 @@ module.exports = function(app, security) {
     }
   );
 
-  // // Update a form
-  //   //TODO this need to be multipart upload
-  // app.put(
-  //   '/api/forms/:formId',
-  //   access.authorize('UPDATE_LAYER'),
-  //   validateFormParams,
-  //   function(req, res) {
-  //     Form.update(req.form.id, req.newForm, function(err, form) {
-  //       if (err) {
-  //         return res.send(400, err);
-  //       }
+  // Delete an icon
+  app.delete(
+    '/api/icons/:iconId',
+    access.authorize('DELETE_LAYER'),
+    function(req, res) {
+      new api.Icon().delete(req.icon, function(err, icon) {
+        if (err) return next(err);
 
-  //       res.json(form);
-  //     });
-  //   }
-  // );
-
-  // // Delete a form
-  // app.delete(
-  //   '/api/icons/:id',
-  //   access.authorize('DELETE_LAYER'),
-  //   function(req, res) {
-  //     Icon.remove(req.param('id'), function(err) {
-  //       if (err) return res.send(400, "Could not delete form");
-
-  //       res.send(204);
-  //     });
-  //   }
-  // );
+        return res.json(icon);
+      });
+    }
+  );
 }

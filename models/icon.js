@@ -60,22 +60,12 @@ exports.create = function(form, callback) {
   });
 }
 
-// exports.update = function(id, form, callback) {
-//   Form.findByIdAndUpdate(id, form, function(err, updatedForm) {
-//     if (err) {
-//       console.log("Could not update form: " + err);
-//     }
+exports.remove = function(id, callback) {
+  Icon.findByIdAndRemove(id, function(err) {
+    if (err) {
+      console.log("Could not remove form: " + err);
+    }
 
-//     callback(err, updatedForm);
-//   });
-// }
-
-// exports.remove = function(id, callback) {
-//   Form.findByIdAndRemove(id, function(err) {
-//     if (err) {
-//       console.log("Could not remove form: " + err);
-//     }
-
-//     callback(err);
-//   });
-// }
+    callback(err);
+  });
+}

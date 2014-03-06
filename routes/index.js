@@ -6,7 +6,9 @@ module.exports = function(app, security) {
     , Role = require('../models/role')
     , Device = require('../models/device')
     , Layer = require('../models/layer')
-    , Feature = require('../models/feature');
+    , Feature = require('../models/feature')
+    , Form = require('../models/form')
+    , Icon = require('../models/icon');
 
   var p***REMOVED***port = security.authentication.p***REMOVED***port
     , authenticationStrategy = security.authentication.authenticationStrategy;
@@ -60,6 +62,15 @@ module.exports = function(app, security) {
       Form.getById(formId, function(err, form) {
         if (!form) return res.send('Form not found', 404);
         req.form = form;
+        next();
+      });
+  });
+
+  // Grab the form for any endpoint that uses formId
+  app.param('iconId', function(req, res, next, iconId) {
+      Icon.getById(iconId, function(err, icon) {
+        if (!icon) return res.send('Form not found', 404);
+        req.icon = icon;
         next();
       });
   });
