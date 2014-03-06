@@ -32,13 +32,12 @@ Icon.prototype.getById = function(id, callback) {
   });
 }
 
-Icon.prototype.create = function(id, icon, callback) {
-  // move file upload to its new home
-  if (err) return callback(err);
-
+Icon.prototype.create = function(icon, callback) {
   var fileName = path.basename(icon.path);
   icon.relativePath = fileName;
   var file = path.join(iconBase, icon.relativePath);
+  console.log('trying to reaname from', icon.path);
+  console.log('trying to reaname to', file);
   fs.rename(icon.path, file, function(err) {
     if (err) return next(err);
 

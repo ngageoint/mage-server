@@ -1,5 +1,5 @@
 module.exports = function(app, security) {
-  var Icon = require('../models/icon')
+  var api = require('../api')
     , access = require('../access');
 
   var p***REMOVED***port = security.authentication.p***REMOVED***port
@@ -51,6 +51,9 @@ module.exports = function(app, security) {
     '/api/icons',
     access.authorize('CREATE_LAYER'),
     function(req, res, next) {
+      // console.log('icon', req.files);
+      // console.log('name', req.files.icon);
+
       new api.Icon().create(req.files.icon, function(err, icon) {
         if (err) return next(err);
 
