@@ -4,11 +4,10 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var IconSchema = new Schema({
-  id: { type: Number, required: true },
-  title: { type: String, required: true },  
-  type: { type: String, required: true },
-  value: { type: Schema.Types.Mixed, required: true },
-  required: { type: Boolean, required: true }
+  contentType: { type: String, required: false },  
+  size: { type: String, required: false },  
+  name: { type: String, required: false },
+  relativePath: { type: String, required: true }
 },{ 
     versionKey: false
 });
