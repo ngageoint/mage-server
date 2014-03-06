@@ -63,7 +63,7 @@ angular.module('mage').***REMOVED***('FormService', function FormService($http, 
         },
         submitForm: function(form) {
             if (form.id) {
-                return $http.put('/api/forms', form, {
+                return $http.put('/api/forms/'+form.id, form, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -80,17 +80,31 @@ angular.module('mage').***REMOVED***('FormService', function FormService($http, 
                 });
             }
         },
-        editForm: {
-            name: 'My Form',
-            fields: []
+        editForm: null,
+        // {"name":"My Form","fields":[{"id":1,"title":"test","type":"textfield","value":"","required":true},
+        //{"id":1,"title":"email","type":"email","value":"","required":true},
+        //{"id":1,"title":"Type","type":"dropdown","value":"None","required":true,"options":
+        //  [{"id":1,"title":"None","value":1},{"id":2,"title":"Animal","value":2},{"id":3,"title":"Protest","value":3}]}]
+        //,"id":"53179e3e0355920b34000006","inUse":true}
+        createNewForm: function() {
+            var form = {
+                name: 'Please Name This Form',
+                fields: [{
+                    id: 1,
+                    title: 'Observation Date',
+                    type: 'date',
+                    required: true
+                }, {
+                    id: 2,
+                    title: 'Type',
+                    type: 'dropdown',
+                    required: true,
+                    options: []
+                }]
+            };
+            this.editForm = form;
         },
         setCurrentEditForm: function(form) {
-            if (!form) {
-                // new form
-                form = {};
-                form.name = 'My Form';
-                form.fields = [];
-            }
             this.editForm = form;
         }
     };

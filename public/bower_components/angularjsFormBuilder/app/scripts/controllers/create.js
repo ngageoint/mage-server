@@ -9,14 +9,27 @@ angular.module('mage').controller('CreateCtrl', function ($scope, FormService, L
 
     $scope.form = FormService.editForm;
 
+    $scope.fileUploadOptions = {
+    };
+
+    if ($scope.form) {
+        angular.forEach($scope.form.fields, function(field) {
+            if (field.title == 'Type') {
+                $scope.typeField = field;
+            }
+        });
+    }
+
     $scope.$watch('fs.editForm', function(newForm, oldForm){
         console.log('form changed');
         $scope.form = FormService.editForm;
-        if (!$scope.form.id) {
-            $scope.previewOff();
-        } else {
-            $scope.previewOn();
-        }
+        if ($scope.form) {
+            angular.forEach($scope.form.fields, function(field) {
+                if (field.title == 'Type') {
+                    $scope.typeField = field;
+                }
+            });
+         }
     });
 
     // previewForm - for preview purposes, form will be copied into this
@@ -36,12 +49,9 @@ angular.module('mage').controller('CreateCtrl', function ($scope, FormService, L
     // create new field button click
     $scope.addNewField = function(){
 
-        // incr id counter
-        $scope.addField.lastAddedID++;
-
         var newField = {
-            "id" : $scope.addField.lastAddedID,
-            "title" : "New field - " + ($scope.addField.lastAddedID),
+            "id" : $scope.form.fields.length+1,
+            "title" : "New field - " + ($scope.form.fields.length+1),
             "type" : $scope.addField.new,
             "value" : "",
             "required" : true
@@ -82,6 +92,10 @@ angular.module('mage').controller('CreateCtrl', function ($scope, FormService, L
 
         // put new option into field_options array
         field.options.push(newOption);
+    }
+
+    $scope.addType = function() {
+        $scope.addOption($scope.typeField);
     }
 
     // delete particular option
@@ -135,6 +149,11 @@ angular.module('mage').controller('CreateCtrl', function ($scope, FormService, L
     }
 
     $scope.useForm = function(form) {
+        FormService.submitForm(form).then(function() {
+            $scope.setFeatureForm(form);
+        });
+    }
+    $scope.setFeatureForm = function(form) {
         var layers = Layer.query(function(){
             angular.forEach(layers, function (layer) {
               if (layer.type == 'Feature') {

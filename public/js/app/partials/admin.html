@@ -229,21 +229,33 @@
         <div cl***REMOVED***="row">
           <div cl***REMOVED***="span3">
             <h3>Forms</h3>
-            <button cl***REMOVED***="btn btn-success" ng-click="editForm()"><i cl***REMOVED***="icon-plus icon-white"></i> Create New Form</button>
+            <button cl***REMOVED***="btn btn-success" ng-click="createNewForm()"><i cl***REMOVED***="icon-plus icon-white"></i> Create New Form</button>
             <div ng-repeat="form in forms" cl***REMOVED***="row-fluid top-gap">
               <div cl***REMOVED***="span12">
                 <a ng-click="editForm(form)"><i cl***REMOVED***="icon-check" ng-show="form.inUse"></i> {{form.name}}</a>
               </div>
             </div>
           </div>
-          <div cl***REMOVED***="span9" ng-controller="CreateCtrl">
-        <h1 ng-hide="form.id">Create a new form</h1> <h1 ng-show="form.id"><span ng-hide="previewMode">Edit </span>{{form.name}}</h1><br>
-<blockquote ng-hide="previewMode">
+          <div cl***REMOVED***="span9" ng-controller="CreateCtrl" ng-show="form">
+        <h1 ng-hide="form.id">Create a new form</h1> <h1 ng-show="form.id">{{form.name}}</h1><br>
+        <div cl***REMOVED***="form-fields-preview well">
+          <h3>Form Preview</h3>
+        <form-directive form="form"></form-directive>
+        <!--
+        <p cl***REMOVED***="text-center">
+            <button cl***REMOVED***="btn btn-success right" type="button" ng-click="useForm(form)"><i cl***REMOVED***="icon-check icon-white"></i>Save And Use This Form</button>
+            <button cl***REMOVED***="btn btn-primary right" type="button" ng-click="createForm()">Save Form</button>
+        </p>
+      -->
+    </div>
+     <hr>
+    <h1 ng-show="form.id">Edit {{form.name}}</h1>
+<blockquote>
     <p>Select field type you want to add to the form below and click on 'Add Field' button. Don't forget to set field properties. After you finish creating the form, you can preview the form by clicking Preview Form button.</p>
 </blockquote>
 
 <div >
-    <div cl***REMOVED***="form-fields" ng-hide="previewMode">
+    <div cl***REMOVED***="form-fields">
         <div cl***REMOVED***="form-properties">
             <h3>Form Properties</h3>
             <div cl***REMOVED***="row">
@@ -261,16 +273,12 @@
         </div>
         <hr>
         <p ng-show="form.fields.length == 0">No fields added yet.</p>
+        <div cl***REMOVED***="well">
         <accordion close-others="accordion.oneAtATime">
             <accordion-group heading="{{field.title}}" ng-repeat="field in form.fields">
 
                 <div cl***REMOVED***="accordion-edit">
                     <button cl***REMOVED***="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i cl***REMOVED***="icon-trash icon-white"></i> Delete</button>
-
-                    <div cl***REMOVED***="row">
-                        <div cl***REMOVED***="span2">Field ID: </div>
-                        <div cl***REMOVED***="span4">{{field.id}}</div>
-                    </div>
                     <div cl***REMOVED***="row">
                         <div cl***REMOVED***="span2">Field Type:</div>
                         <div cl***REMOVED***="span4">{{field.type}}</div>
@@ -292,7 +300,7 @@
                             <div ng-repeat="option in field.options">
                                 <input type="text" ng-model="option.title" value="{{option.title}}">
                                 <a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(field, option)"><i cl***REMOVED***="icon-minus icon-white"></i></a>
-                                <span cl***REMOVED***="label label-inverse">Value: {{ option.value }}</span>
+                                <!--<span cl***REMOVED***="label label-inverse">Value: {{ option.value }}</span>-->
                             </div>
                             <button cl***REMOVED***="btn btn-primary btn-small" type="button" ng-click="addOption(field)"><i cl***REMOVED***="icon-plus icon-white"></i> Add Option</button>
                         </div>
@@ -313,60 +321,55 @@
                 </div>
             </accordion-group>
         </accordion>
+      </div>
+
+      <div cl***REMOVED***="symbology">
+        <!--
+        <div ng-repeat="icon in icons">
+          icon is {{icon}} <img ng-src="{{icon.url + '?access_token=' + token}}"/>
+        </div>
+      -->
+        <h3>Symbology</h3>
+        <table cl***REMOVED***="table table-striped table-bordered">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Icon</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span cl***REMOVED***="strong">Default Icon</span></td>
+              <td>
+                <div file-uploader></div>
+                <hr> 
+              </td>
+            </tr>
+            <tr ng-repeat="option in typeField.options">
+              <td><input type="text" ng-model="option.title" value="{{option.title}}">
+                                <a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(field, option)"><i cl***REMOVED***="icon-minus icon-white"></i></a></td>
+              <td>ICON</td>
+            </tr>
+            <tr>
+              <td><button cl***REMOVED***="btn btn-primary btn-small" type="button" ng-click="addType()">Add Type</button></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
         <p cl***REMOVED***="text-center">
-            <button cl***REMOVED***="btn btn-success right" type="button" ng-click="createForm()">Save Form</button>
-            <button cl***REMOVED***="btn btn-primary right" type="button" ng-click="previewOn()"><i cl***REMOVED***="icon-eye-open icon-white"></i> Preview Form</button>
+            <button cl***REMOVED***="btn btn-success right" type="button" ng-click="useForm(form)"><i cl***REMOVED***="icon-check icon-white"></i>Save And Use This Form</button>
+            <button cl***REMOVED***="btn btn-primary right" type="button" ng-click="createForm()">Save Form</button>
         </p>
 
         <br><hr>
 
     </div>
-
-    <div cl***REMOVED***="form-fields-preview" ng-show="previewMode">
-        <form-directive form="previewForm"></form-directive>
-
-        <p cl***REMOVED***="text-center">
-            <button cl***REMOVED***="btn btn-primary right" type="button" ng-click="previewOff()"><i cl***REMOVED***="icon-edit icon-white"></i> Edit This Form</button>
-            <button cl***REMOVED***="btn btn-success right" type="button" ng-click="useForm(form)"><i cl***REMOVED***="icon-check icon-white"></i> Use This Form</button>
-        </p>
-    </div>
+    
 </div>
     </div>
   </div>
     </div>
-  
-  <!-- Team form, get it back in if there is time
-    <div cl***REMOVED***="admin-area">
-        <a id="new-team-btn" ng-click="newTeam()" ngm-tap="newTeam()" cl***REMOVED***="btn"><i cl***REMOVED***="icon-plus mtage-color"></i> New Team</a>
-        <ul style="list-style: none;" cl***REMOVED***="top-gap">
-          <li ng-repeat="team in teams"><a ng-click="viewTeam(team)">{{team.teamName}}</a></li>
-        </ul>
-        <p id="instructions" cl***REMOVED***="hide">
-          There are no teams on this server. Click the new team button to get started.
-        </p>
-      </div>
-    </div>
-    <div cl***REMOVED***="span10">
-        <h3>{{team.name}}</h3>
-        <form ng-submit="saveTeam()" id="new-team-form" cl***REMOVED***="hide form-horizontal">
-           <fieldset>
-            <legend>{{team.teamName}}</legend>
-            <div cl***REMOVED***="control-group">
-              <label cl***REMOVED***="control-label" for="type">Team Name</label>
-              <div cl***REMOVED***="controls">
-                <input type="text" placeholder="i.e. jappleseed" ng-model="team.teamName">
-              </div>
-            </div>
-            <div cl***REMOVED***="control-group">
-              <label cl***REMOVED***="control-label" for="type">Description</label>
-              <div cl***REMOVED***="controls">
-                <textarea placeholder="i.e. jappleseed" ng-model="team.description" cols="30" rows="5"></textarea>
-              </div>
-            </div>
-            <button type="submit" cl***REMOVED***="btn">Save Team</button>
-          </fieldset>
-        </form>
-      </div>
-  -->
+
 </div>
