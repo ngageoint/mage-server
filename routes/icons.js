@@ -1,6 +1,7 @@
 module.exports = function(app, security) {
   var api = require('../api')
-    , access = require('../access');
+    , access = require('../access')
+    , fs = require('fs-extra');
 
   var p***REMOVED***port = security.authentication.p***REMOVED***port
     , authenticationStrategy = security.authentication.authenticationStrategy;
@@ -37,7 +38,7 @@ module.exports = function(app, security) {
 
         var stream = fs.createReadStream(icon.path);
         stream.on('open', function() {
-          res.type(icon.contentType);
+          if (icon.contentType) res.type(icon.contentType);
           res.attachment(icon.name);
           res.header('Content-Length', icon.size);
           stream.pipe(res);

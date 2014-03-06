@@ -26,7 +26,7 @@ Icon.prototype.getById = function(id, callback) {
   IconModel.getById(id, function(err, icon) {
     if (err) console.log("Error getting icon with id: '" + id + "'.", err);
 
-    if (icon) icon.path = path.join(icon, icon.relativePath);
+    if (icon) icon.path = path.join(iconBase, icon.relativePath);
 
     return callback(err, icon);
   });
