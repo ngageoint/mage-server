@@ -190,9 +190,9 @@ module.exports = function(app, auth) {
           console.log('error', err);
           res.send(404);
         });
-       }
-    );
-  });
+      });
+    }
+  );
 
   // This function will add an attachment for a particular ESRI record 
   app.post(
