@@ -54,7 +54,7 @@ module.exports = function(app, security) {
 
   // Update a form
   app.put(
-    '/api/form/:formId',
+    '/api/forms/:formId',
     access.authorize('UPDATE_LAYER'),
     validateFormParams,
     function(req, res) {
