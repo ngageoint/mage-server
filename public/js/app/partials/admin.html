@@ -229,15 +229,16 @@
         <div cl***REMOVED***="row">
           <div cl***REMOVED***="span3">
             <h3>Forms</h3>
-            <div ng-repeat="form in forms" cl***REMOVED***="row-fluid">
+            <button cl***REMOVED***="btn btn-success" ng-click="editForm()"><i cl***REMOVED***="icon-plus icon-white"></i> Create New Form</button>
+            <div ng-repeat="form in forms" cl***REMOVED***="row-fluid top-gap">
               <div cl***REMOVED***="span12">
-                <a ng-click="editForm(form)">Form name is: {{form.name}}</a>
+                <a ng-click="editForm(form)"><i cl***REMOVED***="icon-check" ng-show="form.inUse"></i> {{form.name}}</a>
               </div>
             </div>
           </div>
           <div cl***REMOVED***="span9" ng-controller="CreateCtrl">
-        <h1>Create a new form</h1> <br>
-<blockquote>
+        <h1 ng-hide="form.id">Create a new form</h1> <h1 ng-show="form.id"><span ng-hide="previewMode">Edit </span>{{form.name}}</h1><br>
+<blockquote ng-hide="previewMode">
     <p>Select field type you want to add to the form below and click on 'Add Field' button. Don't forget to set field properties. After you finish creating the form, you can preview the form by clicking Preview Form button.</p>
 </blockquote>
 
@@ -245,10 +246,6 @@
     <div cl***REMOVED***="form-fields" ng-hide="previewMode">
         <div cl***REMOVED***="form-properties">
             <h3>Form Properties</h3>
-            <div cl***REMOVED***="row">
-                <div cl***REMOVED***="span2">Form ID: </div>
-                <div cl***REMOVED***="span4"><input type="text" name="form-id" ng-disabled="true" ng-model="form.id"></div>
-            </div>
             <div cl***REMOVED***="row">
                 <div cl***REMOVED***="span2">Form Name:</div>
                 <div cl***REMOVED***="span4"><input type="text" name="form-name" ng-disabled="previewMode" ng-model="form.name"></div>
@@ -318,24 +315,20 @@
         </accordion>
 
         <p cl***REMOVED***="text-center">
+            <button cl***REMOVED***="btn btn-success right" type="button" ng-click="createForm()">Save Form</button>
             <button cl***REMOVED***="btn btn-primary right" type="button" ng-click="previewOn()"><i cl***REMOVED***="icon-eye-open icon-white"></i> Preview Form</button>
-            <button cl***REMOVED***="btn btn-danger right" type="button" ng-click="reset()"><i cl***REMOVED***="icon-refresh icon-white"></i> Reset</button>
         </p>
 
         <br><hr>
-        <a ng-show="!showJson" ng-click="showJson = true">Show form json object</a>
-        <a ng-show="showJson" ng-click="showJson = false">Hide form json object</a><br><br>
-        <div ng-show="showJson">
-            <h4>Form object content:</h4>
-            <pre>{{ form | json }}</pre>
-        </div>
+
     </div>
 
     <div cl***REMOVED***="form-fields-preview" ng-show="previewMode">
         <form-directive form="previewForm"></form-directive>
 
         <p cl***REMOVED***="text-center">
-            <button cl***REMOVED***="btn btn-primary btn-large right" type="button" ng-click="previewOff()"><i cl***REMOVED***="icon-arrow-left icon-white"></i> Back to Create Mode</button>
+            <button cl***REMOVED***="btn btn-primary right" type="button" ng-click="previewOff()"><i cl***REMOVED***="icon-edit icon-white"></i> Edit This Form</button>
+            <button cl***REMOVED***="btn btn-success right" type="button" ng-click="useForm(form)"><i cl***REMOVED***="icon-check icon-white"></i> Use This Form</button>
         </p>
     </div>
 </div>

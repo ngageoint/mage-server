@@ -1,6 +1,10 @@
 'use strict';
 
-angular.module('angularjsFormBuilderApp').***REMOVED***('FormService', function FormService($http) {
+angular.module('mage').***REMOVED***('FormService', function FormService($http, $q) {
+
+    var resolvedForms = {};
+
+    var allFormsPromise;
 
     return {
         fields:[
@@ -42,19 +46,52 @@ angular.module('angularjsFormBuilderApp').***REMOVED***('FormService', function 
             }
         ],
         form:function (id) {
-            // $http returns a promise, which has a then function, which also returns a promise
-            return $http.get('/api/forms').then(function (response) {
-                var requestedForm = {};
-                angular.forEach(response.data, function (form) {
-                    if (form.id == id) requestedForm = form;
-                });
-                return requestedForm;
-            });
+            resolvedForms[id] = resolvedForms[id] || $http.get(
+              appConstants.rootUrl + '/api/forms/' + id
+            );
+            return resolvedForms[id];
         },
         forms: function() {
-            return $http.get('/api/forms').then(function (response) {
+            allFormsPromise = allFormsPromise || $http.get('/api/forms').then(function (response) {
+                var allForms = response.data;
+                for (var i = 0; i < allForms.length; i++) {
+                  resolvedForms[allForms[i].id] = $q.when(allForms[i]);
+                }
                 return response.data;
             });
+            return allFormsPromise;
+        },
+        submitForm: function(form) {
+            if (form.id) {
+                return $http.put('/api/forms', form, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+                }).then(function (response) {
+                    return response.data;
+                });
+            } else {
+                return $http.post('/api/forms', form, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(function (response) {
+                    return response.data;
+                });
+            }
+        },
+        editForm: {
+            name: 'My Form',
+            fields: []
+        },
+        setCurrentEditForm: function(form) {
+            if (!form) {
+                // new form
+                form = {};
+                form.name = 'My Form';
+                form.fields = [];
+            }
+            this.editForm = form;
         }
     };
 });
