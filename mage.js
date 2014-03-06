@@ -51,6 +51,12 @@ app.configure(function () {
 
   app.set('config', config);
 
+  app.use(function(req, res, next) {
+    req.getRoot = function() {
+      return req.protocol + '://' + req.get('host');
+    }
+    return next();
+  });
   app.use(express.bodyParser({ keepExtensions: true}));
   app.use(express.methodOverride());
   app.use(authentication.p***REMOVED***port.initialize());
