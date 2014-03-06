@@ -1,6 +1,6 @@
 var express = require("express")
+  , path = require('path')
   , mongoose = require('mongoose')
-  , path = require("path")
   , fs = require('fs-extra')
   , config = require('./config.json')
   , provision = require('./provision');
@@ -53,7 +53,7 @@ app.configure(function () {
 
   app.use(function(req, res, next) {
     req.getRoot = function() {
-      return req.protocol + '://' + req.get('host');
+      return req.protocol + "://" + req.get('host');
     }
     return next();
   });
