@@ -15,8 +15,12 @@ module.exports = function(app, security) {
     '/api/icons', 
     access.authorize('READ_LAYER'),
     function (req, res) {
-      Icon.getAll(function (err, icons) {
-        res.json(icons);
+      new api.Icon().getAll(function(err, icons) {
+        var response = [];
+        icons.forEach(function(icon) {
+          response.push(icon.toObject({transform: true, rootUrl: req.getRoot()}));
+        });
+        res.json(response);
       });
     }
   );

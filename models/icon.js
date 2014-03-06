@@ -1,4 +1,5 @@
-var mongoose = require('mongoose');
+var mongoose = require('mongoose')
+  , path = require('path');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -12,10 +13,15 @@ var IconSchema = new Schema({
     versionKey: false
 });
 
-var transform = function(form, ret, options) {
-  ret.id = form._id;
+var transform = function(icon, ret, options) {
+  console.log('calling xform with options', options);
 
-  delete ret._id;
+  return {
+    url: path.join(options.rootUrl || "", 'api/icons', icon._id.toString()),
+    name: icon.name,
+    size: icon.size,
+    contentType: icon.contentType
+  };
 }
 
 IconSchema.set("toObject", {
