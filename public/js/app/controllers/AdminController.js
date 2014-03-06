@@ -3,7 +3,7 @@
 /*
 
 */
-function AdminController($scope, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService, FormService) {
+function AdminController($scope, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService, FormService, Layer) {
   // The variables that get set when clicking a team or user in the list, these get loaded into the editor.
   $scope.currentAdminPanel = "user"; // possible values user, team, and device
   $scope.currentUserFilter = "all"; // possible values all, active, unregistered
@@ -23,6 +23,8 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     success(function (data) {
       $scope.roles = data;
     });
+
+
 
   $scope.devices = [];
   $scope.filteredDevices = [];
@@ -49,8 +51,24 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
       'description': "Urban search and rescue group."
     }
   ];
+  //$scope.forms = FormService.forms();
 
-  $scope.forms = FormService.forms();
+  FormService.forms().then(function(returnedForms) {
+      $scope.layers = Layer.query(function(layers) {
+        var theFormId;
+        angular.forEach(layers, function (layer) {
+          if (layer.type == 'Feature' && !theFormId) {
+            theFormId = layer.formId;
+          }
+        });
+        angular.forEach(returnedForms, function(form) {
+          if (form.id == theFormId) {
+            form.inUse = true;
+          }
+        });
+      });
+      $scope.forms = returnedForms;
+  });
 
   // Edit form toggles
   $scope.showUserForm = false;
@@ -64,6 +82,10 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   $scope.statusMessage = '';
   $scope.statusLevel = ''; // use the bootstrap alert cl***REMOVED***es for this value, alert-error, alert-success, alert-info. Leave it as '' for yellow
 
+
+  $scope.editForm = function(form) {
+    FormService.setCurrentEditForm(form);
+  }
 
   /* Status message functions */
   /**
