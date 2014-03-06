@@ -50,7 +50,7 @@ exports.getById = function(id, callback) {
   });
 }
 
-exports.create = function(form, callback) {
+exports.create = function(icon, callback) {
   Icon.create(icon, function(err, newIcon) {
     if (err) {
       console.log("Problem creating icon. " + err);
