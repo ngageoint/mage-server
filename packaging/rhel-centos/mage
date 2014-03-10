@@ -19,7 +19,7 @@
 FOREVER_BIN=/usr/bin/forever
 PID_FILE=/var/run/mage.pid
 LOG_FILE=/var/log/mage.log
-APP_DIR=/data/svn/mage/dev/
+APP_DIR=/opt/mage/
 APP=mage.js
 #USER=sage
 USER=root
@@ -86,4 +86,3 @@ case "$1" in
         echo "Usage: mage {start|stop|restart|status}"
     ;;
 esac
-
