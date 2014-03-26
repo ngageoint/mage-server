@@ -11,7 +11,7 @@ module.exports = function(app, security) {
     , provision = security.provisioning.provision
     , provisionStrategy = security.provisioning.strategy;
 
-  var p***REMOVED***wordLength = config.server.authentication.p***REMOVED***wordMinLength;
+  var p***REMOVED***wordLength = config.api.authentication.p***REMOVED***wordMinLength;
   var emailRegex = /^[^\s@]+@[^\s@]+\./;
 
   var isAuthenticated = function(strategy) {
@@ -169,7 +169,9 @@ module.exports = function(app, security) {
 
         res.json({
           token: token.token,
-          user: req.user
+          expirationDate: token.expirationDate,
+          user: req.user,
+          device: options.device
         });
       });
     }
