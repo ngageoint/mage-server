@@ -56,7 +56,7 @@ module.exports = function(app, auth) {
         fields: req.parameters.fields
       }
       new api.Feature(req.layer).getAll(options, function(features) {
-        var response = geojson.transform(features);
+        var response = geojson.transform(features, {path: req.getBaseUrl() + req.path});
         res.json(response);
       });
     }
