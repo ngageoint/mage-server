@@ -23,8 +23,8 @@ fs.mkdirp(attachmentBase, function(err) {
 });
 
 // Configure authentication
-var authentication = require('./authentication')(config.server.authentication.strategy);
-var provisioning = require('./provision/' + config.server.provision.strategy)(provision);
+var authentication = require('./authentication')(config.api.authentication.strategy);
+var provisioning = require('./provision/' + config.api.provision.strategy)(provision);
 console.log('Authentication: ' + authentication.loginStrategy);
 console.log('Provision: ' + provisioning.strategy);
 

@@ -14,8 +14,8 @@ process.argv.forEach(function (val, index, array) {
 
 // Configure authentication
 var auth = require('../auth/authentication')({
-  authenticationStrategy: config.server.authentication.strategy,
-  provisionStrategy: config.server.provision.strategy
+  authenticationStrategy: config.api.authentication.strategy,
+  provisionStrategy: config.api.provision.strategy
 });
 console.log('Authentication: ' + auth.authenticationStrategy);
 console.log('Provision: ' + auth.provisionStrategy);
