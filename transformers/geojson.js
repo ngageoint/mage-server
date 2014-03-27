@@ -1,10 +1,19 @@
 var util = require('util');
 
-var transformAttachment = function(attachment) {
+var transformAttachment = function(feature, attachment) {
   attachment.id = attachment._id;
   delete attachment._id;
 
+  attachment.url = [feature.url, "attachments", attachment.id].join("/");
   return attachment;
+}
+
+var transformState = function(feature, state) {
+  state.id = state._id;
+  delete state._id;
+
+  state.url = [feature.url, "states", state.id].join("/"); 
+  return state;
 }
 
 // TODO switch to use Terraformer to create a geojson FeatureCollection
@@ -19,8 +28,13 @@ var transformFeature = function(feature, options) {
 
   if (feature.attachments) {
     feature.attachments = feature.attachments.map(function(attachment) {
-      return transformAttachment(attachment);
+      return transformAttachment(feature, attachment);
     });
+  }
+
+  if (feature.states) {
+    feature.state = transformState(feature, feature.states[0]);
+    delete feature.states;
   }
 
   return feature;

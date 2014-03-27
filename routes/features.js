@@ -10,6 +10,10 @@ module.exports = function(app, auth) {
 
   var geojson = require('../transformers/geojson');
 
+  var getFeatureResource = function(req, stripId) {
+      return req.getPath().match(/(.*features)/)[0];
+  }
+
   var parseQueryParams = function(req, res, next) {
     var parameters = {filter: {}};
 
@@ -56,7 +60,7 @@ module.exports = function(app, auth) {
         fields: req.parameters.fields
       }
       new api.Feature(req.layer).getAll(options, function(features) {
-        var response = geojson.transform(features, {path: req.getBaseUrl() + req.path});
+        var response = geojson.transform(features, {path: getFeatureResource(req)});
         res.json(response);
       });
     }
@@ -72,7 +76,7 @@ module.exports = function(app, auth) {
       
       var options = {fields: req.parameters.fields};
       new api.Feature(req.layer).getById(req.param('id'), options, function(feature) {
-        var response = geojson.transform(feature);
+        var response = geojson.transform(feature, {path: getFeatureResource(req)});
         res.json(response);
       });
     }
@@ -101,7 +105,7 @@ module.exports = function(app, auth) {
       new api.Feature(req.layer).create(feature, function(newFeature) {
         if (!newFeature) return res.send(400);
 
-        var response = geojson.transform(newFeature);
+        var response = geojson.transform(newFeature, {path: getFeatureResource(req)});
         res.location(newFeature._id.toString()).json(response);
       }
     );
@@ -125,7 +129,7 @@ module.exports = function(app, auth) {
       if (deviceId) feature.properties.deviceId = deviceId;
 
       new api.Feature(req.layer).update(req.param('id'), req.body, function(err, updatedFeature) {
-        var response = geojson.transform(updatedFeature);
+        var response = geojson.transform(updatedFeature, {path: getFeatureResource(req)});
         res.json(response);
       }
     );
@@ -139,7 +143,7 @@ module.exports = function(app, auth) {
       console.log("MAGE Features (ID) DELETE REST Service Requested");
 
       new api.Feature(req.layer).delete(req.param('id'), function(err, deletedFeature) {
-        var response = geojson.transform(deletedFeature);
+        var response = geojson.transform(deletedFeature, {path: getFeatureResource(req)});
         res.json(response);
       }
     );
@@ -164,8 +168,21 @@ module.exports = function(app, auth) {
           return res.send(400, 'state is already ' + "'" + state.name + "'");
         }
 
-        var response = geojson.transform(feature);
+        var response = geojson.transform(feature, {path: getFeatureResource(req)});
         res.json(201, response);
+      });
+    }
+  );
+
+  app.get(
+    '/FeatureServer/:layerId/features/:id/attachments',
+    access.authorize('READ_FEATURE'),
+    function(req, res, next) {
+      var fields = {attachments: true};
+      var options = {fields: fields};
+      new api.Feature(req.layer).getById(req.param('id'), options, function(feature) {
+        var response = geojson.transform(feature, {path: getFeatureResource(req)});
+        res.json(response.attachments);
       });
     }
   );
