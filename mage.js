@@ -40,6 +40,18 @@ app.configure(function () {
   });
   mongoose.set('debug', true);
 
+  app.use(function(req, res, next) {
+    req.getRoot = function() {
+      return req.protocol + "://" + req.get('host');
+    }
+
+    req.getPath = function() {
+      return req.getRoot() + req.path;
+    }
+
+    return next();
+  });
+
   app.set('config', config);
 
   app.use(express.bodyParser({ keepExtensions: true}));

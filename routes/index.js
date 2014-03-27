@@ -11,6 +11,23 @@ module.exports = function(app, security) {
   var p***REMOVED***port = security.authentication.p***REMOVED***port
     , authenticationStrategy = security.authentication.authenticationStrategy;
 
+  var resources = {
+    layerResource: {
+      location: '/FeatureServer',
+      featureResource: {
+        location: '/features',
+        attachmentResource: {
+          location: '/attachments'
+        },
+        stateResource: {
+          location: '/states'
+        }
+      }
+    }
+  }
+
+  app.set('resources', resources);
+
   // Protect everthing in the private directory
   app.all('/private/*', p***REMOVED***port.authenticate(authenticationStrategy), function(req, res, next) {
     return next();
