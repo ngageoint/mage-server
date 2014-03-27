@@ -63,6 +63,8 @@ exports.createToken = function(options, callback) {
   var update = {token: token, timestamp: new Date()};
   var options = {upsert: true};
   Token.findOneAndUpdate(query, update, options, function(err, newToken) {
+    newToken.expirationDate = new Date(newToken.timestamp.getTime() +  tokenExpiration);
+
     if (err) {
       console.log('Could not create token for user: ' + user.username);
     }
