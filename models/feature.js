@@ -36,20 +36,6 @@ var models = {};
 var Attachment = mongoose.model('Attachment', AttachmentSchema);
 var State = mongoose.model('State', StateSchema);
 
-var featureModel = function(layer) {
-  var name = layer.collectionName;
-  var model = models[name];
-  if (!model) {
-    // Creates the Model for the Features Schema
-    var model = mongoose.model(name, FeatureSchema, name);
-    models[name] = model;
-  }
-
-  return model;
-}
-
-exports.featureModel = featureModel;
-
 // return a string for each property
 var convertFieldForQuery = function(field, keys, fields) {
   keys = keys || [];
@@ -69,15 +55,42 @@ var convertFieldForQuery = function(field, keys, fields) {
   return fields;
 }
 
-exports.getFeatures = function(layer, o, callback) {
-  var conditions = {};
-  var fields = {};
+var parseFields = function(fields) {
+  if (fields) {
+    var state = fields.state ? true : false;
+    delete fields.state;
 
-  if (o.fields) {
-    fields = convertFieldForQuery(o.fields);
+    fields = convertFieldForQuery(fields);
     if (fields.id === undefined) fields.id = true; // default is to return id if not specified
     if (fields.type === undefined) fields.type = true; // default is to return type if not specified
+
+    if (state) {
+      fields.states = {$slice: 1};
+    }
+
+    return fields;
+  } else {
+    return {states: {$slice: 1}};
   }
+}
+
+var featureModel = function(layer) {
+  var name = layer.collectionName;
+  var model = models[name];
+  if (!model) {
+    // Creates the Model for the Features Schema
+    var model = mongoose.model(name, FeatureSchema, name);
+    models[name] = model;
+  }
+
+  return model;
+}
+
+exports.featureModel = featureModel;
+
+exports.getFeatures = function(layer, o, callback) {
+  var conditions = {};
+  var fields = parseFields(o.fields);
 
   var query = featureModel(layer).find(conditions, fields);
 
@@ -112,12 +125,7 @@ exports.getFeatureById = function(layer, id, options, callback) {
   var conditions = {};
   conditions[id.field] = id.id;
 
-  var fields = {};
-  if (options.fields) {
-    fields = convertFieldForQuery(options.fields);
-    if (fields.id === undefined) fields.id = true; // default is to return id if not specified
-    if (fields.type === undefined) fields.type = true; // default is to return type if not specified
-  }
+  var fields = parseFields(options.fields);
 
   featureModel(layer).findOne(conditions, fields).exec(function (err, feature) {
     if (err) {
