@@ -27,8 +27,8 @@ var FeatureSchema = new Schema({
 });
 
 FeatureSchema.index({geometry: "2dsphere"});
+FeatureSchema.index({'timestamp': 1});
 FeatureSchema.index({'properties.OBJECTID': 1});
-FeatureSchema.index({'properties.timestamp': 1});
 FeatureSchema.index({'states.name': 1});
 FeatureSchema.index({'attachments.id': 1});
 
@@ -101,11 +101,11 @@ exports.getFeatures = function(layer, o, callback) {
   }
 
   if (filter.startDate) {
-    query.where('properties.timestamp').gte(filter.startDate);
+    query.where('timestamp').gte(filter.startDate);
   }
 
   if (filter.endDate) {
-    query.where('properties.timestamp').lt(filter.endDate);
+    query.where('timestamp').lt(filter.endDate);
   }
 
   query.exec(function (err, features) {
@@ -140,7 +140,7 @@ exports.createFeature = function(layer, feature, callback) {
   var name = 'feature' + layer.id;
   Counter.getNext(name, function(id) {
     feature.properties.OBJECTID = id;
-    feature.properties.timestamp = moment.utc().toDate();
+    feature.timestamp = moment.utc().toDate();
 
     featureModel(layer).create(feature, function(err, newFeature) {
       if (err) {
@@ -196,7 +196,7 @@ exports.updateFeature = function(layer, id, feature, callback) {
     geometry: feature.geometry,
     properties: feature.properties || {}
   };
-  update.properties.timestamp = moment.utc().toDate();
+  update.timestamp = moment.utc().toDate();
 
   featureModel(layer).findOneAndUpdate(query, update, {new: true}, function (err, updatedFeature) {
     if (err) {
@@ -279,7 +279,7 @@ exports.addAttachment = function(layer, id, file, callback) {
       relativePath: file.relativePath
     });
 
-    var update = {'$push': { attachments: attachment }, 'properties.timestamp': new Date()};
+    var update = {'$push': { attachments: attachment }, 'timestamp': new Date()};
     featureModel(layer).update(condition, update, function(err, feature) {
       if (err) {
         console.log('Error updating attachments from DB', err);
@@ -298,9 +298,7 @@ exports.updateAttachment = function(layer, attachmentId, file, callback) {
       'attachments.$.type': file.type,
       'attachments.$.size': file.size
     },
-    properties: {
-      timestamp: new Date()
-    }
+    timestamp: new Date()
   };
 
   featureModel(layer).update(condition, update, function(err, feature) {
