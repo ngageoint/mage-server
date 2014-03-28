@@ -20,6 +20,7 @@ var AttachmentSchema = new Schema({
 // Creates the Schema for the Attachments object
 var FeatureSchema = new Schema({
   type: {type: String, required: true},
+  timestamp: {type: Date, required: true},
   geometry: Schema.Types.Mixed,
   properties: Schema.Types.Mixed,
   attachments: [AttachmentSchema],
