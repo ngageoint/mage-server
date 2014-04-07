@@ -240,7 +240,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
     });
     $scope.feedItems = allFeatures;
     $scope.buckets = TimeBucketService.createBuckets(allFeatures, appConstants.newsFeedItemLimit(), function(item) {
-      return item.properties ? item.properties.EVENTDATE : moment(item.locations[0].properties.timestamp).valueOf();
+      return item.properties ? moment(item.properties.EVENTDATE).valueOf() : moment(item.locations[0].properties.timestamp).valueOf();
     }, 'newsfeed');
   }
 
@@ -483,7 +483,8 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
   });
 
   $scope.newsFeedOrder = function(feedItem, a, b, c) {
-    var time = feedItem.properties ? feedItem.properties.EVENTDATE : moment(feedItem.locations[0].properties.timestamp);
+    var time = feedItem.properties ? moment(feedItem.properties.EVENTDATE) : moment(feedItem.locations[0].properties.timestamp);
+
     time = time || Date.now();
     return time.valueOf();
   }
