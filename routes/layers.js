@@ -24,12 +24,22 @@ module.exports = function(app, security) {
     next();
   }
 
+  var parseQueryParams = function(req, res, next) {
+    var parameters = {};
+    parameters.type = req.param('type');
+
+    req.parameters = parameters;
+
+    next();
+  }
+
   // get all layers
   app.get(
     '/api/layers', 
     access.authorize('READ_LAYER'),
+    parseQueryParams,
     function (req, res) {
-      Layer.getLayers(function (err, layers) {
+      Layer.getLayers({type: req.parameters.type}, function (err, layers) {
         res.json(layers);
       });
     }
