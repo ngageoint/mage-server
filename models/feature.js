@@ -20,7 +20,7 @@ var AttachmentSchema = new Schema({
 // Creates the Schema for the Attachments object
 var FeatureSchema = new Schema({
   type: {type: String, required: true},
-  timestamp: {type: Date, required: true},
+  timestamp: {type: Date, required: false},
   geometry: Schema.Types.Mixed,
   properties: Schema.Types.Mixed,
   attachments: [AttachmentSchema],
@@ -154,18 +154,14 @@ exports.createFeature = function(layer, feature, callback) {
 }
 
 exports.createFeatures = function(layer, features, callback) {
-  var name = 'feature' + layer.id;
-  Counter.getGroup(name, features.length, function(ids) {
-    var i = 0;
-    features.forEach(function(feature) {
-      feature.properties = feature.properties || {};
-      feature.properties.OBJECTID = ids[i];
-      i++;
-    });
+  console.log('about to create ' + features.length + ' features');
 
-    featureModel(layer).create(features, function(err) {
-      callback(err, features);
-    });
+  features.forEach(function(feature) {
+    feature.properties = feature.properties || {};
+  });
+
+  featureModel(layer).create(features, function(err) {
+    callback(err, features);
   });
 }
 
