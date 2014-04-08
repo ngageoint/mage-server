@@ -288,7 +288,13 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       //    $scope.layer.features = response.features;
       //});
     } else {
-      var features = Feature.getAll({layerId: id/*, startTime: moment($scope.slider[0]).utc().format("YYYY-MM-DD HH:mm:ss"), endTime: moment($scope.slider[1]).utc().format("YYYY-MM-DD HH:mm:ss")*/}, function(response) {
+      var features = Feature.getAll({
+          layerId: id,
+          states: 'active'
+          // startTime: moment($scope.slider[0]).utc().format("YYYY-MM-DD HH:mm:ss"), 
+          // endTime: moment($scope.slider[1]).utc().format("YYYY-MM-DD HH:mm:ss")
+        }, 
+        function(response) {
         $scope.loadingLayers[id] = false;
         
         _.each(features.features, function(feature) {
