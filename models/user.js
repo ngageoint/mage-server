@@ -41,7 +41,8 @@ var UserSchema = new Schema({
     lastname: {type: String, required: true },
     email: {type: String, required: false },
     phones: [PhoneSchema],
-    role: { type: Schema.Types.ObjectId, ref: 'Role' },
+    active: { type: Boolean, required: true },
+    role: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
     teams: [Schema.Types.ObjectId],
     status: { type: String, required: false, index: 'sparse' },
     locations: [LocationSchema]
@@ -185,6 +186,7 @@ exports.createUser = function(user, callback) {
     email: user.email,
     phones: user.phones,
     p***REMOVED***word: user.p***REMOVED***word,
+    active: user.active,
     role: user.role
   }
   

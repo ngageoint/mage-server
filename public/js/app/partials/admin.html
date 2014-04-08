@@ -84,16 +84,6 @@
                   <select ng-model="user.role" ng-options="role._id as role.name for role in roles"></select>
                 </div>
               </div>
-              <!-- Not needed for Piccadilly
-              <div cl***REMOVED***="control-group">
-                <div cl***REMOVED***="controls">
-                  <label cl***REMOVED***="checkbox">
-                    <input type="checkbox"> GEOINT Online
-                  </label>
-                  <span cl***REMOVED***="help-block top-gap"><a href="https://geoint-online.nga.mil/_layouts/nga/go/logon/logon.aspx?ReturnUrl=%2f_layouts%2fAuthenticate.aspx%3fSource%3d%252f&Source=%2f">GEOINT Online Details (New Account, P***REMOVED***word Reset, etc.)</a></span>
-                </div>
-              </div> 
-              -->
               <span>
                 <button type="reset" cl***REMOVED***="btn btn-inverse" ng-click="setShowUserForm(false)" ngmtap="setShowUserForm(false)">Cancel</button>
                 <button type="submit" cl***REMOVED***="btn">Save user</button>
@@ -122,7 +112,7 @@
                 <i cl***REMOVED***="icon-edit"></i>
                 Edit
               </button>
-              <button cl***REMOVED***="btn btn-success" ng-hide='u.role' ng-click="approveUser(u)" ngm-tap="approveUser(u)">
+              <button cl***REMOVED***="btn btn-success" ng-hide='u.active' ng-click="approveUser(u)" ngm-tap="approveUser(u)">
                 <i cl***REMOVED***="icon-thumbs-up"></i> 
                 Approve Account
               </button>
@@ -230,38 +220,4 @@
         </div>
       </div>
     </div>
-  
-  <!-- Team form, get it back in if there is time
-    <div cl***REMOVED***="admin-area">
-        <a id="new-team-btn" ng-click="newTeam()" ngm-tap="newTeam()" cl***REMOVED***="btn"><i cl***REMOVED***="icon-plus mtage-color"></i> New Team</a>
-        <ul style="list-style: none;" cl***REMOVED***="top-gap">
-          <li ng-repeat="team in teams"><a ng-click="viewTeam(team)">{{team.teamName}}</a></li>
-        </ul>
-        <p id="instructions" cl***REMOVED***="hide">
-          There are no teams on this server. Click the new team button to get started.
-        </p>
-      </div>
-    </div>
-    <div cl***REMOVED***="span10">
-        <h3>{{team.name}}</h3>
-        <form ng-submit="saveTeam()" id="new-team-form" cl***REMOVED***="hide form-horizontal">
-           <fieldset>
-            <legend>{{team.teamName}}</legend>
-            <div cl***REMOVED***="control-group">
-              <label cl***REMOVED***="control-label" for="type">Team Name</label>
-              <div cl***REMOVED***="controls">
-                <input type="text" placeholder="i.e. jappleseed" ng-model="team.teamName">
-              </div>
-            </div>
-            <div cl***REMOVED***="control-group">
-              <label cl***REMOVED***="control-label" for="type">Description</label>
-              <div cl***REMOVED***="controls">
-                <textarea placeholder="i.e. jappleseed" ng-model="team.description" cols="30" rows="5"></textarea>
-              </div>
-            </div>
-            <button type="submit" cl***REMOVED***="btn">Save Team</button>
-          </fieldset>
-        </form>
-      </div>
-  -->
 </div>
