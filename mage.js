@@ -53,6 +53,7 @@ app.configure(function () {
   });
 
   app.set('config', config);
+  app.enable('trust proxy');
 
   app.use(express.bodyParser({ keepExtensions: true}));
   app.use(express.methodOverride());
