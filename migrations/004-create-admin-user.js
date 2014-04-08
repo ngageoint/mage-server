@@ -15,10 +15,12 @@ exports.up = function(next) {
     if (!role) return next(new Error('No ADMIN_ROLE found to attach to ADMIN_USER'));
 
     var adminUser = {
+      active: 'true',
       username: 'admin',
       p***REMOVED***word: 'admin',
       firstname: 'admin',
-      lastname: 'admin'
+      lastname: 'admin',
+      role: role._id
     };
 
     User.createUser(adminUser, function(err, user) {
@@ -27,14 +29,7 @@ exports.up = function(next) {
         return next(err);
       }
 
-      User.setRoleForUser(user, role._id, function(err, user) {
-        if (err) {
-          mongoose.disconnect();
-          return next(err);
-        }
-
-        mongoose.disconnect(next);
-      });
+      mongoose.disconnect(next);
     });
   });
 };
