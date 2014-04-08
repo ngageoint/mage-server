@@ -7,6 +7,12 @@ module.exports = function(app, security) {
 
   app.all('/api/layers*', p***REMOVED***port.authenticate(authenticationStrategy));
 
+  var getLayerResource = function(req) {
+    // TODO once this is event clean up, should not have a different
+    // route to get layers/events.  It should be the /api/<layers> or /api/<events>
+    return req.getPath() + '/FeatureServer';
+  }
+
   var validateLayerParams = function(req, res, next) {
     var layer = req.body;
 
@@ -40,7 +46,11 @@ module.exports = function(app, security) {
     parseQueryParams,
     function (req, res) {
       Layer.getLayers({type: req.parameters.type}, function (err, layers) {
-        res.json(layers);
+        var path = getLayerResource(req);
+        res.json(layers.map(function(layer) {
+          if (layer.type === 'External' || layer.type === 'Feature') layer.url = [path, layer.id].join("/"); 
+          return layer;
+        }));
       });
     }
   );

@@ -10,7 +10,7 @@ module.exports = function(app, auth) {
 
   var geojson = require('../transformers/geojson');
 
-  var getFeatureResource = function(req, stripId) {
+  var getFeatureResource = function(req) {
       return req.getPath().match(/(.*features)/)[0];
   }
 
