@@ -1,9 +1,10 @@
 // Setup mongoose
 var mongoose = require('mongoose')
-  , Device = require('../models/device');
+  , Device = require('../models/device')
+  , server = require('../config').server;
 
 exports.up = function(next) {
-  mongoose.connect('mongodb://localhost/sagedb');
+  mongoose.connect(server.mongodb.url);
 
   var device = {
     name: "Initial Device",
@@ -25,7 +26,7 @@ exports.up = function(next) {
 };
 
 exports.down = function(next) {
-  mongoose.connect('mongodb://localhost/sagedb');
+  mongoose.connect(server.mongodb.url);
 
   Device.getDeviceByUid("12345", function(err, device) {
     if (err) {

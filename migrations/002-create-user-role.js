@@ -1,6 +1,7 @@
 // Setup mongoose
 var mongoose = require('mongoose')
-  , Role = require('../models/role');
+  , Role = require('../models/role')
+  , server = require('../config').server;
 
 var userPermissions = [
   'READ_DEVICE',
@@ -10,7 +11,7 @@ var userPermissions = [
   'CREATE_LOCATION', 'READ_LOCATION', 'UPDATE_LOCATION', 'DELETE_LOCATION'];
 
 exports.up = function(next) {
-  mongoose.connect('mongodb://localhost/sagedb');
+  mongoose.connect(server.mongodb.url);
 
   var userRole = {
     name: "USER_ROLE",
@@ -29,7 +30,7 @@ exports.up = function(next) {
 };
 
 exports.down = function(next) {
-  mongoose.connect('mongodb://localhost/sagedb');
+  mongoose.connect(server.mongodb.url);
 
   Role.getRole("USER_ROLE", function(err, role) {
     if (err) {

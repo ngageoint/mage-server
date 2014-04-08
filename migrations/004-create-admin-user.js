@@ -2,10 +2,11 @@
 var mongoose = require('mongoose')
   , hasher = require('../utilities/pbkdf2')()
   , Role = require('../models/role')
-  , User = require('../models/user');
+  , User = require('../models/user')
+  , server = require('../config').server;
 
 exports.up = function(next) {
-  mongoose.connect('mongodb://localhost/sagedb');
+  mongoose.connect(server.mongodb.url);
 
   var p***REMOVED***word = 'admin';
   Role.getRole('ADMIN_ROLE', function(err, role) {
@@ -39,7 +40,7 @@ exports.up = function(next) {
 };
 
 exports.down = function(next) {
-  mongoose.connect('mongodb://localhost/sagedb');
+  mongoose.connect(server.mongodb.url);
 
   User.getUserByUsername('admin', function(err, user) {
     if (err) {
