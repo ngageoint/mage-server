@@ -109,6 +109,10 @@ exports.getFeatures = function(layer, o, callback) {
     query.where('timestamp').lt(filter.endDate);
   }
 
+  if (filter.states) {
+    query.where('states.0.name').in(filter.states);
+  }
+
   query.exec(function (err, features) {
     if (err) {
       console.log("Error finding features in mongo: " + err);
@@ -220,7 +224,6 @@ exports.removeFeature = function(layer, id, callback) {
   });
 }
 
-
 // IMPORTANT:
 // This is a complete hack to get the new state to insert into
 // the beginning of the array.  Once mongo 2.6 is released
@@ -229,7 +232,12 @@ exports.addState = function(layer, id, state, callback) {
   var condition = {_id: mongoose.Types.ObjectId(id), 'states.0.name': {'$ne': state.name}};
 
   state._id = mongoose.Types.ObjectId();
-  var update = {'$set': {'states.-1': state}};
+  var update = {
+    '$set': {
+      'states.-1': state, 
+      timestamp: moment.utc().toDate()
+    }
+  };
 
   featureModel(layer).collection.update(condition, update, {upsert: true}, function(err) {
     callback(err, state);
