@@ -18,7 +18,6 @@ module.exports = function(app, auth) {
     // setup defaults
     var parameters = {
       filter: {
-        states: ['active']
       }
     };
 
