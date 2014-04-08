@@ -199,11 +199,8 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   /* shortcut for giving a user the USER_ROLE */
   $scope.approveUser = function (user) {
     var userRole = _.find($scope.roles, function (role) { return role.name == 'USER_ROLE' });
-    user.role = userRole._id;
-    UserService.updateUser(user)
-      .success(function (data, status, headers, config) {
-
-      });
+    user.active = true;
+    UserService.updateUser(user).success(function () {});
   }
 
   $scope.deleteUser = function (user) {

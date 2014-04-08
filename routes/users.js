@@ -40,6 +40,13 @@ module.exports = function(app, security) {
     }
   }
 
+  var getDefaultRole = function(req, res, next) {
+    Role.getRole('USER_ROLE', function(err, role) {
+      req.role = role;
+      next();
+    });
+  }
+
   var validateUser = function(req, res, next) {
     var invalidResponse = function(param) {
       return "Cannot create user, invalid parameters.  '" + param + "' parameter is required";
@@ -274,9 +281,11 @@ module.exports = function(app, security) {
       if (!req.user) return next();
 
       var role = req.param('role');
-      if (role) {
-        req.newUser.role = role
-      }
+      if (!role) return send(400, 'role is a required field');
+      req.newUser.role = role;
+      
+      // Authorized to update users, activate account by default
+      req.newUser.active = true;
 
       User.createUser(req.newUser, function(err, newUser) {
         if (err) return res.send(400, err.message);
@@ -286,11 +295,15 @@ module.exports = function(app, security) {
     }
   );
 
-  // Create a new user (Unauthenticated)
-  // Anyone can create a new user, no roles will be ***REMOVED***igned
+  // Create a new user
+  // Anyone can create a new user, but the new user will not be active
   app.post(
-    '/api/users', 
+    '/api/users',
+    getDefaultRole,
     function(req, res) {
+      req.newUser.active = false;
+      req.newUser.role = req.role._id;
+
       User.createUser(req.newUser, function(err, newUser) {
         if (err) return res.send(400, err.message);
 
@@ -337,6 +350,7 @@ module.exports = function(app, security) {
       User.getUserById(req.params.userId, function(err, user) {
         if (err) return res.send(400, 'User not found');
 
+        if (req.param('active')) user.active = req.param('active');
         if (req.param('username')) user.username = req.param('username');
         if (req.param('firstname')) user.firstname = req.param('firstname');
         if (req.param('lastname')) user.lastname = req.param('lastname');
@@ -395,18 +409,6 @@ module.exports = function(app, security) {
       User.setRoleForUser(req.user, req.role, function(err, user) {
         res.json(user);
       });
-    }
-  );
-
-  // remove role from user
-  app.delete(
-    '/api/users/:userId/role',
-    p***REMOVED***port.authenticate(authenticationStrategy),
-    access.authorize('UPDATE_USER'),
-    function(req, res) {
-      User.removeRolesForUser(req.user, function(err, user) {
-        res.json(user);
-      })
     }
   );
 

@@ -34,6 +34,11 @@ module.exports = function(p***REMOVED***port) {
           return done(null, false, { message: "User with username '" + username + "' not found" });
         }
 
+        if (!user.active) {
+          console.log('Failed user login attempt: User ' + user.username + ' is not active');
+          return done(null, false, { message: "User with username '" + username + "' not active" });
+        }
+
         user.validP***REMOVED***word(p***REMOVED***word, function(err, isValid) {
           if (err) {
             return done(err);
