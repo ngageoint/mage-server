@@ -253,11 +253,11 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
     }
   }, true);
 
-  var loadLayer = function(id) {
-    $scope.loadingLayers[id] = true;
+  var loadLayer = function(layer) {
+    $scope.loadingLayers[layer.id] = true;
 
     // TODO: clean up Tomnod load, looking for layer 999
-    if (id == "999") {
+    if (layer.id == "999") {
       var options = {
         method: "GET",
         url: $scope.externalLayers[0].url,
@@ -288,24 +288,24 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       //    $scope.layer.features = response.features;
       //});
     } else {
-      var features = Feature.getAll({
-          layerId: id,
-          states: 'active'
-          // startTime: moment($scope.slider[0]).utc().format("YYYY-MM-DD HH:mm:ss"), 
-          // endTime: moment($scope.slider[1]).utc().format("YYYY-MM-DD HH:mm:ss")
-        }, 
+      var options = {layerId: layer.id};
+      if (layer.type == 'Feature') {
+        options.states = 'active';
+      }
+
+      var features = Feature.getAll(options, 
         function(response) {
-        $scope.loadingLayers[id] = false;
+        $scope.loadingLayers[layer.id] = false;
         
         _.each(features.features, function(feature) {
-          feature.layerId = id;
+          feature.layerId = layer.id;
         });
-        var featureLayer = _.find($scope.featureLayers, function(layer) {
-          return layer.id == id;
+        var featureLayer = _.find($scope.featureLayers, function(l) {
+          return l.id == layer.id;
         });
         if (!featureLayer) {
-          featureLayer = _.find($scope.externalLayers, function(layer) {
-            return layer.id == id;
+          featureLayer = _.find($scope.externalLayers, function(l) {
+            return l.id == layer.id;
           });
         }
         featureLayer.features = features.features;
@@ -328,7 +328,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       });
     }
 
-    $scope.layer = {id: id, checked: true};
+    $scope.layer = {id: layer.id, checked: true};
   };
 
   $rootScope.$on('event:auth-loginConfirmed', function() {
@@ -357,7 +357,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       featureLayer.features = [];
       createAllFeaturesArray();
     } else {
-      loadLayer(layer.id);
+      loadLayer(layer);
     }
   }
 
@@ -391,7 +391,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       TimerService.start('pollingData', $scope.pollTime, function() {
         _.each($scope.featureLayers, function(layer) {
           if (layer.checked) {
-            loadLayer(layer.id);
+            loadLayer(layer);
           }
         });
         if ($scope.locationServicesEnabled) {
