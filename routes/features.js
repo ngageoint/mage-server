@@ -10,12 +10,16 @@ module.exports = function(app, auth) {
 
   var geojson = require('../transformers/geojson');
 
-  var getFeatureResource = function(req, stripId) {
+  var getFeatureResource = function(req) {
       return req.getPath().match(/(.*features)/)[0];
   }
 
   var parseQueryParams = function(req, res, next) {
-    var parameters = {filter: {}};
+    // setup defaults
+    var parameters = {
+      filter: {
+      }
+    };
 
     var fields = req.param('fields');
     if (fields) {
@@ -40,6 +44,11 @@ module.exports = function(app, auth) {
     var geometry = req.param('geometry');
     if (geometry) {
       parameters.filter.geometries = geometryFormat.parse('geometry', geometry);
+    }
+
+    var states = req.param('states');
+    if (states) {
+      parameters.filter.states = states.split(",");
     }
 
     req.parameters = parameters;
@@ -133,26 +142,14 @@ module.exports = function(app, auth) {
         res.json(response);
       }
     );
-  }); 
-
-  // This function deletes one feature based on ID
-  app.delete(
-    '/FeatureServer/:layerId/features/:id',
-    access.authorize('DELETE_FEATURE'),
-    function (req, res) {
-      console.log("MAGE Features (ID) DELETE REST Service Requested");
-
-      new api.Feature(req.layer).delete(req.param('id'), function(err, deletedFeature) {
-        var response = geojson.transform(deletedFeature, {path: getFeatureResource(req)});
-        res.json(response);
-      }
-    );
   });
 
   app.post(
     '/FeatureServer/:layerId/features/:id/states',
     access.authorize('UPDATE_FEATURE'),
     function(req, res, next) {
+      console.log('got body: ', req.body);
+
       var state = req.body;
       if (!state) return res.send(400);
       if (!state.name) return res.send(400, 'name required');

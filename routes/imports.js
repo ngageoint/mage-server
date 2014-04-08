@@ -32,6 +32,7 @@ module.exports = function(app, security) {
 
       var features = toGeoJson.kml(req.importData);
       new api.Feature(req.layer).createFeatures(features, function(err, newFeatures) {
+        if (err) return next(err);
 
         var response = {
           files: [{ 
