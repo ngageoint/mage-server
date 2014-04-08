@@ -32,7 +32,7 @@ var transformFeature = function(feature, options) {
     });
   }
 
-  if (feature.states) {
+  if (feature.states && feature.states.length > 0) {
     feature.state = transformState(feature, feature.states[0]);
     delete feature.states;
   }

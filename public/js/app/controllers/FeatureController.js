@@ -1,6 +1,6 @@
 'use strict';
 
-function FeatureController($scope, $location, $timeout, Feature, FeatureService, FeatureAttachment, MapService, UserService, IconService, mageLib, appConstants) {
+function FeatureController($scope, $location, $timeout, Feature, FeatureService, FeatureState, FeatureAttachment, MapService, UserService, IconService, mageLib, appConstants) {
   var isEditing = false;
   $scope.amAdmin = UserService.amAdmin;
   $scope.token = mageLib.getLocalItem('token');
@@ -35,8 +35,11 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureService,
   }
 
   $scope.deleteObservation = function (observation) {
-    console.log('making call to delete observation');
-    observation.$delete({}, function(success) {
+    console.log('making call to archive observation');
+    FeatureState.save(
+      {layerId: observation.layerId, featureId: observation.id}, 
+      {name: 'archive'}, 
+      function(success) {
         $scope.deletedFeature = $scope.activeFeature;
         isEditing = false;
         $scope.$emit('observationDeleted', observation);

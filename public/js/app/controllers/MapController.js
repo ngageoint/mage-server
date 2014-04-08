@@ -240,7 +240,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
     });
     $scope.feedItems = allFeatures;
     $scope.buckets = TimeBucketService.createBuckets(allFeatures, appConstants.newsFeedItemLimit(), function(item) {
-      return item.properties ? item.properties.EVENTDATE : moment(item.locations[0].properties.timestamp).valueOf();
+      return item.properties ? moment(item.properties.EVENTDATE).valueOf() : moment(item.locations[0].properties.timestamp).valueOf();
     }, 'newsfeed');
   }
 
@@ -288,7 +288,13 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       //    $scope.layer.features = response.features;
       //});
     } else {
-      var features = Feature.getAll({layerId: id/*, startTime: moment($scope.slider[0]).utc().format("YYYY-MM-DD HH:mm:ss"), endTime: moment($scope.slider[1]).utc().format("YYYY-MM-DD HH:mm:ss")*/}, function(response) {
+      var features = Feature.getAll({
+          layerId: id,
+          states: 'active'
+          // startTime: moment($scope.slider[0]).utc().format("YYYY-MM-DD HH:mm:ss"), 
+          // endTime: moment($scope.slider[1]).utc().format("YYYY-MM-DD HH:mm:ss")
+        }, 
+        function(response) {
         $scope.loadingLayers[id] = false;
         
         _.each(features.features, function(feature) {
@@ -483,7 +489,8 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
   });
 
   $scope.newsFeedOrder = function(feedItem, a, b, c) {
-    var time = feedItem.properties ? feedItem.properties.EVENTDATE : moment(feedItem.locations[0].properties.timestamp);
+    var time = feedItem.properties ? moment(feedItem.properties.EVENTDATE) : moment(feedItem.locations[0].properties.timestamp);
+
     time = time || Date.now();
     return time.valueOf();
   }
