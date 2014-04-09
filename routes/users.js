@@ -105,7 +105,7 @@ module.exports = function(app, security) {
     }
 
     if (p***REMOVED***word.length < p***REMOVED***wordLength) {
-      return res.send(400, 'p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
+      return res.send(400, 'p***REMOVED***word does not meet minimum length requirement of ' + p***REMOVED***wordLength + ' characters');
     }
 
     user.p***REMOVED***word = p***REMOVED***word;
@@ -275,7 +275,6 @@ module.exports = function(app, security) {
     isAuthorized('UPDATE_USER'),
     validateUser,
     function(req, res, next) {
-
       // If I did not authenticate a user go to the next route
       // '/api/users' route which does not require authentication
       if (!req.user) return next();
@@ -300,6 +299,7 @@ module.exports = function(app, security) {
   app.post(
     '/api/users',
     getDefaultRole,
+    validateUser,
     function(req, res) {
       req.newUser.active = false;
       req.newUser.role = req.role._id;
@@ -369,6 +369,10 @@ module.exports = function(app, security) {
         if (p***REMOVED***word && p***REMOVED***wordconfirm) {
           if (p***REMOVED***word != p***REMOVED***wordconfirm) {
             return res.send(400, 'p***REMOVED***words do not match');
+          }
+
+          if (p***REMOVED***word.length < p***REMOVED***wordLength) {
+            return res.send(400, 'p***REMOVED***word does not meet minimum length requirement of ' + p***REMOVED***wordLength + ' characters');
           }
 
           user.p***REMOVED***word = p***REMOVED***word;

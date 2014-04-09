@@ -27,7 +27,7 @@ angular.module('mage')
       ***REMOVED***.defaultLeafletIcon = function() {
         return L.AwesomeMarkers.icon({
           icon: 'plus',
-          color: 'cadetblue'
+          markerColor: 'cadetblue'
         });
       }
 
@@ -49,14 +49,14 @@ angular.module('mage')
         }
 
         return L.AwesomeMarkers.icon({
-          icon: ***REMOVED***.getCl***REMOVED***(properties.TYPE, o),
-          color: appConstants.featureToColor(feature)
+          icon: ***REMOVED***.getCl***REMOVED***(properties.type, o),
+          markerColor: appConstants.featureToColor(feature)
         });
       };
 
       ***REMOVED***.iconHtml = function(feature, o) {
         var type = _.find(o.types, function(type) { 
-          return type.name == feature.properties.TYPE; 
+          return type.name == feature.properties.type; 
         });
         var icon = type ? type.icon : 'circle';
 
@@ -69,12 +69,12 @@ angular.module('mage')
       };
 
       ***REMOVED***.setTemplateVariables = function(feature, scope) {
-        if (feature && feature.properties && feature.properties.TYPE) {
+        if (feature && feature.properties && feature.properties.type) {
           featureTypes.success(function(success) {
-            scope.markerCl***REMOVED*** = "icon-" + ***REMOVED***.getCl***REMOVED***(feature.properties.TYPE, {types: success});
+            scope.markerCl***REMOVED*** = "icon-" + ***REMOVED***.getCl***REMOVED***(feature.properties.type, {types: success});
           })
         }
-        if (feature && feature.properties && feature.properties.EVENTDATE) {
+        if (feature && feature.properties && feature.properties.timestamp) {
           scope.markerColor = "awesome-marker-icon-" + appConstants.featureToColor(feature);
         }
       }

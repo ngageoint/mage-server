@@ -16,7 +16,7 @@
           <div ng-show="timebuckets.newsfeed" cl***REMOVED***="bucket-panel">
             <!-- bucket list -->
             <label>Jump to time</label>
-            <select ng-model="selectedBucket" ng-options="timebuckets.newsfeed.indexOf(bucket) as bucket[0].locations[0].properties.timestamp || bucket[0].properties.EVENTDATE | moment: 'fromNow' for bucket in timebuckets.newsfeed">
+            <select ng-model="selectedBucket" ng-options="timebuckets.newsfeed.indexOf(bucket) as bucket[0].locations[0].properties.timestamp || bucket[0].properties.timestamp | moment: 'fromNow' for bucket in timebuckets.newsfeed">
             </select>
             <!--
             <ul>
@@ -24,7 +24,7 @@
                 <a ngm-tap="setBucket($index)" ng-click="setBucket($index)" data-ng-cl***REMOVED***="{strong: $index == selectedBucket}">
                   <span data-ng-show="$index == 0">Now</span>
                   <span data-ng-show="$index != 0 && bucket[0].locations">{{bucket[0].locations[0].properties.timestamp | moment: 'fromNow'}}</span>
-                  <span data-ng-show="$index != 0 && bucket[0].properties.EVENTDATE">{{bucket[0].properties.EVENTDATE | moment: 'fromNow'}}</span>
+                  <span data-ng-show="$index != 0 && bucket[0].properties.timestamp">{{bucket[0].properties.timestamp | moment: 'fromNow'}}</span>
 
                  </a>
               </li>
@@ -32,7 +32,7 @@
             <!--
                                  <!-- -
                    <span data-ng-show="bucket[bucket.length-1].locations">{{bucket[(bucket.length-1)].locations[0].properties.timestamp | moment: 'fromNow'}}</span>
-                   <span data-ng-show="bucket[bucket.length-1].properties.EVENTDATE">{{bucket[(bucket.length-1)].properties.EVENTDATE | moment: 'fromNow'}}</span>
+                   <span data-ng-show="bucket[bucket.length-1].properties.timestamp">{{bucket[(bucket.length-1)].properties.timestamp | moment: 'fromNow'}}</span>
                     -->
           </div>
           <div cl***REMOVED***="news-feed-item pointer" id="{{feedItem.id || feedItem.user}}"
@@ -41,13 +41,13 @@
             <div ng-if="feedItem.locations">
              <div user-location-news-item="feedItem"/>
             </div>
-            <div ng-if="feedItem.properties.EVENTDATE">
+            <div ng-if="feedItem.properties.timestamp">
               <div observation-news-item="feedItem" container-element="side-bar"/>
             </div>
           </div>
           <div ng-show="timebuckets.newsfeed" cl***REMOVED***="bucket-panel">
           <label>Jump to time</label>
-            <select ng-model="selectedBucket" ng-options="timebuckets.newsfeed.indexOf(bucket) as bucket[0].locations[0].properties.timestamp || bucket[0].properties.EVENTDATE | moment: 'fromNow' for bucket in timebuckets.newsfeed">
+            <select ng-model="selectedBucket" ng-options="timebuckets.newsfeed.indexOf(bucket) as bucket[0].locations[0].properties.timestamp || bucket[0].properties.timestamp | moment: 'fromNow' for bucket in timebuckets.newsfeed">
             </select>
           </div>
         </div>

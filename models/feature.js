@@ -1,6 +1,5 @@
 var mongoose = require('mongoose')
-  , moment = require('moment')
-  , Counter = require('./counter');
+  , moment = require('moment');
 
 var Schema = mongoose.Schema;
 
@@ -10,9 +9,8 @@ var StateSchema = new Schema({
 });
 
 var AttachmentSchema = new Schema({
-  id: { type: Number, required: true },
   contentType: { type: String, required: false },  
-  size: { type: String, required: false },  
+  size: { type: Number, required: false },  
   name: { type: String, required: false },
   relativePath: { type: String, required: true }
 });
@@ -20,7 +18,7 @@ var AttachmentSchema = new Schema({
 // Creates the Schema for the Attachments object
 var FeatureSchema = new Schema({
   type: {type: String, required: true},
-  timestamp: {type: Date, required: false},
+  lastModified: {type: Date, required: false},
   geometry: Schema.Types.Mixed,
   properties: Schema.Types.Mixed,
   attachments: [AttachmentSchema],
@@ -28,8 +26,9 @@ var FeatureSchema = new Schema({
 });
 
 FeatureSchema.index({geometry: "2dsphere"});
-FeatureSchema.index({'timestamp': 1});
-FeatureSchema.index({'properties.OBJECTID': 1});
+FeatureSchema.index({'lastModified': 1});
+FeatureSchema.index({'properties.type': 1});
+FeatureSchema.index({'properties.timestamp': 1});
 FeatureSchema.index({'states.name': 1});
 FeatureSchema.index({'attachments.id': 1});
 
@@ -102,11 +101,11 @@ exports.getFeatures = function(layer, o, callback) {
   }
 
   if (filter.startDate) {
-    query.where('timestamp').gte(filter.startDate);
+    query.where('lastModified').gte(filter.startDate);
   }
 
   if (filter.endDate) {
-    query.where('timestamp').lt(filter.endDate);
+    query.where('lastModified').lt(filter.endDate);
   }
 
   if (filter.states) {
@@ -142,18 +141,14 @@ exports.getFeatureById = function(layer, id, options, callback) {
 }
 
 exports.createFeature = function(layer, feature, callback) {
-  var name = 'feature' + layer.id;
-  Counter.getNext(name, function(id) {
-    feature.properties.OBJECTID = id;
-    feature.timestamp = moment.utc().toDate();
+  feature.lastModified = moment.utc().toDate();
 
-    featureModel(layer).create(feature, function(err, newFeature) {
-      if (err) {
-        console.log(JSON.stringify(err));
-      }
+  featureModel(layer).create(feature, function(err, newFeature) {
+    if (err) {
+      console.log(JSON.stringify(err));
+    }
 
-      callback(newFeature);
-    });
+    callback(newFeature);
   });
 }
 
@@ -170,20 +165,16 @@ exports.createFeatures = function(layer, features, callback) {
 }
 
 exports.createGeoJsonFeature = function(layer, feature, callback) {
-  var name = 'feature' + layer.id;
-  Counter.getNext(name, function(id) {
-    var properties = feature.properties ? feature.properties : {};
-    properties.OBJECTID = id;
+  var properties = feature.properties ? feature.properties : {};
 
-    featureModel(layer).create(feature, function(err, newFeature) {
-      if (err) {
-        console.log('Error creating feature', err);
-        console.log('feature is: ', feature);
-      }
+  featureModel(layer).create(feature, function(err, newFeature) {
+    if (err) {
+      console.log('Error creating feature', err);
+      console.log('feature is: ', feature);
+    }
 
-      callback(err, newFeature);
-    }); 
-  });
+    callback(err, newFeature);
+  }); 
 }
 
 exports.updateFeature = function(layer, id, feature, callback) {
@@ -197,7 +188,7 @@ exports.updateFeature = function(layer, id, feature, callback) {
     geometry: feature.geometry,
     properties: feature.properties || {}
   };
-  update.timestamp = moment.utc().toDate();
+  update.lastModified = moment.utc().toDate();
 
   featureModel(layer).findOneAndUpdate(query, update, {new: true}, function (err, updatedFeature) {
     if (err) {
@@ -235,7 +226,7 @@ exports.addState = function(layer, id, state, callback) {
   var update = {
     '$set': {
       'states.-1': state, 
-      timestamp: moment.utc().toDate()
+      lastModified: moment.utc().toDate()
     }
   };
 
@@ -268,30 +259,26 @@ exports.getAttachment = function(layer, id, attachmentId, callback) {
 }
 
 exports.addAttachment = function(layer, id, file, callback) {  
-  var counter = 'attachment' + layer.id;
-  Counter.getNext(counter, function(attachmentId) {
-    if (id !== Object(id)) {
-      id = {id: id, field: '_id'};
+  if (id !== Object(id)) {
+    id = {id: id, field: '_id'};
+  }
+
+  var condition = {};
+  condition[id.field] = id.id;
+  var attachment = new Attachment({
+    contentType: file.headers['content-type'],  
+    size: file.size,
+    name: file.name,
+    relativePath: file.relativePath
+  });
+
+  var update = {'$push': { attachments: attachment }, 'lastModified': new Date()};
+  featureModel(layer).update(condition, update, function(err, feature) {
+    if (err) {
+      console.log('Error updating attachments from DB', err);
     }
 
-    var condition = {};
-    condition[id.field] = id.id;
-    var attachment = new Attachment({
-      id: attachmentId,
-      contentType: file.headers['content-type'],  
-      size: file.size,
-      name: file.name,
-      relativePath: file.relativePath
-    });
-
-    var update = {'$push': { attachments: attachment }, 'timestamp': new Date()};
-    featureModel(layer).update(condition, update, function(err, feature) {
-      if (err) {
-        console.log('Error updating attachments from DB', err);
-      }
-
-      callback(err, attachment);
-    });
+    callback(err, attachment);
   });
 }
 
@@ -303,7 +290,7 @@ exports.updateAttachment = function(layer, attachmentId, file, callback) {
       'attachments.$.type': file.type,
       'attachments.$.size': file.size
     },
-    timestamp: new Date()
+    lastModified: new Date()
   };
 
   featureModel(layer).update(condition, update, function(err, feature) {

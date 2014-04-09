@@ -53,9 +53,9 @@ angular.module('mage')
           },
           properties: {
             userId: UserService.myself._id,
-            TYPE: ***REMOVED***.types[0].name,
+            type: ***REMOVED***.types[0].name,
             TEAM: ***REMOVED***.teams[0],
-            EVENTDATE: new Date()
+            timestamp: new Date()
           }
         });
       };
