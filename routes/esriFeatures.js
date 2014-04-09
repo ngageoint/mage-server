@@ -6,7 +6,6 @@ module.exports = function(app, security) {
     , path = require('path')
     , esri = require('../transformers/esri')
     , ArcGIS = require('terraformer-arcgis-parser')
-    , Counter = require('../models/counter')
     , Feature = require('../models/feature')
     , access = require('../access')
     , config = require('../config.json');
