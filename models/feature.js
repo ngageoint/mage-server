@@ -10,7 +10,7 @@ var StateSchema = new Schema({
 
 var AttachmentSchema = new Schema({
   contentType: { type: String, required: false },  
-  size: { type: String, required: false },  
+  size: { type: Number, required: false },  
   name: { type: String, required: false },
   relativePath: { type: String, required: true }
 });
