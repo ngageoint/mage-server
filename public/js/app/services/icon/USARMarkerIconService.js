@@ -53,7 +53,7 @@ angular.module('mage')
         var properties = feature.properties || feature.attributes;
 
         return L.icon({
-          iconUrl: ***REMOVED***.getIconUrl(properties.TYPE, o),
+          iconUrl: ***REMOVED***.getIconUrl(properties.type, o),
           iconSize: [22, 22],
           iconAnchor: [11, 11]
         });
@@ -64,9 +64,9 @@ angular.module('mage')
       }
 
       ***REMOVED***.setTemplateVariables = function(feature, scope) {
-        if (feature && feature.properties && feature.properties.TYPE) {
+        if (feature && feature.properties && feature.properties.type) {
           featureTypes.success(function(success) {
-            scope.iconSrc = ***REMOVED***.getIconUrl(feature.properties.TYPE, {types: success});
+            scope.iconSrc = ***REMOVED***.getIconUrl(feature.properties.type, {types: success});
           });
         }
       }

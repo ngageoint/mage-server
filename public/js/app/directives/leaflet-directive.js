@@ -310,7 +310,7 @@ L.AwesomeMarkers.divIcon = function (options) {
                   scope.$apply(function(s) {
                     var oldBucket = scope.selectedBucket;
                     scope.selectedBucket = TimeBucketService.findItemBucketIdx(feature, 'newsfeed', function(item) {
-                      return item.properties ? item.properties.EVENTDATE : moment(item.locations[0].properties.timestamp).valueOf();
+                      return item.properties ? item.properties.timestamp : moment(item.locations[0].properties.timestamp).valueOf();
                     });
                     if (oldBucket == scope.selectedBucket) {
                       $('.news-items').animate({scrollTop: $('#'+feature.id).position().top},500);

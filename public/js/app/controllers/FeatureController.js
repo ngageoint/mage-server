@@ -16,7 +16,7 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureService,
     var operation = "";
 
     // TODO this should be UTC time
-    observation.properties.EVENTDATE = new Date().getTime();
+    observation.properties.timestamp = new Date().getTime();
     var create = observation.id == null;
     var layerId = observation.layerId;
     observation.$save({}, function(value, responseHeaders) {

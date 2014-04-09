@@ -11,7 +11,7 @@
         </span>
       </div>
       <div>
-        <span cl***REMOVED***="muted ng-binding">{{formatFeatureDate(observation.properties.EVENTDATE)}} @ {{observation.geometry.coordinates[1].toPrecision(7)}}, {{observation.geometry.coordinates[0].toPrecision(7)}} </span>
+        <span cl***REMOVED***="muted ng-binding">{{formatFeatureDate(observation.properties.timestamp)}} @ {{observation.geometry.coordinates[1].toPrecision(7)}}, {{observation.geometry.coordinates[0].toPrecision(7)}} </span>
       </div>
     </div>
   </div>
@@ -41,7 +41,7 @@
       <div cl***REMOVED***="control-group">
         <label cl***REMOVED***="control-label" for="type">Type</label>
         <div cl***REMOVED***="controls">
-          <select ng-model="observation.properties.TYPE" ng-selected="type.name" ng-options="type.name as type.name for type in os.types"></select>
+          <select ng-model="observation.properties.type" ng-selected="type.name" ng-options="type.name as type.name for type in os.types"></select>
         </div>
       </div>
       <div cl***REMOVED***="control-group">
