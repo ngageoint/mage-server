@@ -155,7 +155,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
     if ($scope.markerLocation) {
       $scope.newFeature.geometry.coordinates = [$scope.markerLocation.lng, $scope.markerLocation.lat];
     }
-    $scope.newFeature.properties.EVENTDATE = new Date().getTime();
+    $scope.newFeature.properties.timestamp = new Date().getTime();
     if (MapService.featureLayers.length == 1) {
       $scope.newFeature.layerId = MapService.featureLayers[0].id;
     }
@@ -240,7 +240,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
     });
     $scope.feedItems = allFeatures;
     $scope.buckets = TimeBucketService.createBuckets(allFeatures, appConstants.newsFeedItemLimit(), function(item) {
-      return item.properties ? moment(item.properties.EVENTDATE).valueOf() : moment(item.locations[0].properties.timestamp).valueOf();
+      return item.properties ? moment(item.properties.timestamp).valueOf() : moment(item.locations[0].properties.timestamp).valueOf();
     }, 'newsfeed');
   }
 
@@ -249,7 +249,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
 
     if (!isEditing && $scope.newObservationEnabled) {
       $scope.newFeature.geometry.coordinates = [location.lng, location.lat];
-      $scope.newFeature.properties.EVENTDATE = new Date().getTime();
+      $scope.newFeature.properties.timestamp = new Date().getTime();
     }
   }, true);
 
@@ -489,7 +489,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
   });
 
   $scope.newsFeedOrder = function(feedItem, a, b, c) {
-    var time = feedItem.properties ? moment(feedItem.properties.EVENTDATE) : moment(feedItem.locations[0].properties.timestamp);
+    var time = feedItem.properties ? moment(feedItem.properties.timestamp) : moment(feedItem.locations[0].properties.timestamp);
 
     time = time || Date.now();
     return time.valueOf();
