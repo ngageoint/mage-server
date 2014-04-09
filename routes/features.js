@@ -14,6 +14,40 @@ module.exports = function(app, auth) {
       return req.getPath().match(/(.*features)/)[0];
   }
 
+  var validateFeature = function(req, res, next) {
+    var feature = req.body;
+
+    if (!feature.type || feature.type != 'Feature' ) {
+      return res.send(400, "cannot create feature 'type' param not specified, or is not set to 'Feature'");
+    }
+
+    if (!feature.geometry) {
+      return res.send(400, "cannot create feature 'geometry' param not specified");
+    }
+
+    if (!feature.properties) {
+      return res.send(400, "cannot create feature 'properties.type' and 'properties.timestamp' params not specified");
+    }
+
+    if (!feature.properties.type) {
+      return res.send(400, "cannot create feature 'properties.type' param not specified");
+    }
+
+    if (!feature.properties.timestamp) {
+      return res.send(400, "cannot create feature 'properties.timestamp' param not specified");
+    }
+
+    feature.properties.timestamp = moment(feature.properties.timestamp).toDate();
+
+    req.newFeature = {
+      type: feature.type,
+      geometry: feature.geometry,
+      properties: feature.properties
+    };
+
+    next();
+  }
+
   var parseQueryParams = function(req, res, next) {
     // setup defaults
     var parameters = {
@@ -95,11 +129,10 @@ module.exports = function(app, auth) {
   app.post(
     '/FeatureServer/:layerId/features', 
     access.authorize('CREATE_FEATURE'),
+    validateFeature,
     function (req, res) {
       console.log("MAGE Features POST REST Service Requested");
-
-      var feature = req.body;
-      feature.properties = feature.properties || {};
+      var feature = req.newFeature;
 
       var userId = req.user ? req.user._id : null;
       if (userId) feature.properties.userId = userId;
@@ -118,8 +151,7 @@ module.exports = function(app, auth) {
         res.location(newFeature._id.toString()).json(response);
       }
     );
-  }); 
-
+  });
 
   // This function will update a feature by the ID
   app.put(
@@ -128,8 +160,20 @@ module.exports = function(app, auth) {
     function (req, res) {
       console.log("MAGE Features (ID) UPDATE REST Service Requested");
 
-      var feature = req.body;
-      feature.properties = feature.properties || {};
+      var feature = {};
+      if (req.body.geometry) feature.geometry = req.body.geometry;
+      if (req.body.properties) {
+        feature.properties = req.body.properties;
+        if (!feature.properties.type) {
+          return res.send(400, "cannot create feature 'properties.type' param not specified");
+        }
+
+        if (!feature.properties.timestamp) {
+          return res.send(400, "cannot create feature 'properties.timestamp' param not specified");
+        }
+        
+        feature.properties.timestamp = moment(feature.properties.timestamp).toDate();
+      }
 
       var userId = req.user ? req.user._id : null;
       if (userId) feature.properties.userId = userId;

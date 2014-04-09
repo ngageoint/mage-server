@@ -149,9 +149,16 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   /* User admin functions */
   $scope.saveUser = function () {
     if ($scope.user._id) {
-      UserService.updateUser($scope.user);
-      $scope.setShowUserForm(false);
-      $scope.showStatusMessage("User updated", $scope.user.username + " saved", "alert-success");
+      UserService.updateUser($scope.user)
+        .success(function (data, status, headers, config) {
+          $scope.setShowUserForm(false);
+          $scope.showStatusMessage("User updated", $scope.user.username + " saved", "alert-success");
+        })
+        .error(function (data, status, headers, config) {
+          $scope.showStatusMessage("Unable to create user", data, "alert-error");
+          console.log('Something bad happened while creating a user...' + status);
+      });;
+
     } else {
       UserService.createUser($scope.user).
       success(function (data, status, headers, config) {
