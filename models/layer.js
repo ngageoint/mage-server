@@ -24,6 +24,7 @@ var LayerSchema = new Schema({
 });
 
 var transform = function(layer, ret, options) {
+  ret.id = ret._id;
   delete ret._id;
   delete ret.collectionName;
 }
@@ -70,8 +71,7 @@ exports.getLayers = function(filter, callback) {
 }
 
 exports.getById = function(id, callback) {
-  var query = {'id': id};
-  Layer.findOne(query, function (err, layer) {
+  Layer.findById(id, function (err, layer) {
     if (err) {
       console.log("Error finding layer in mongo: " + err);
     }

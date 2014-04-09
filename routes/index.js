@@ -100,7 +100,6 @@ module.exports = function(app, security) {
   });
 
   // Grab the ESRI feature layer for any endpoint that uses layerId
-  app.param('layerId', /^\d+$/);  //ensure objectId is a number
   app.param('layerId', function(req, res, next, layerId) {
     Layer.getById(layerId, function(layer) {
       if (!layer) {
