@@ -81,15 +81,6 @@ module.exports = function(app, security) {
       });
   });
 
-  // Grab the user for any endpoint that uses userId
-  app.param('userId', function(req, res, next, userId) {
-      User.getUserById(userId, function(err, user) {
-        if (!user) return res.send('User not found', 404);
-        req.user = user;
-        next();
-      });
-  });
-
   // Grab the role for any endpoint that uses roleId
   app.param('roleId', function(req, res, next, roleId) {
       Role.getRoleById(roleId, function(err, role) {
