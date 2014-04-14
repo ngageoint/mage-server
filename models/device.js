@@ -1,4 +1,5 @@
-var mongoose = require('mongoose');
+var mongoose = require('mongoose')
+  , Feature = require('./feature');
 
 var User = require('./user');
 
@@ -54,6 +55,21 @@ DeviceSchema.pre('save', function(next) {
       return next(new Error('invlaid POC user, user does not exist'));
     }
 
+    next();
+  });
+});
+
+DeviceSchema.pre('remove', function(next) {
+  var device = this;
+
+  async.parallel({
+    device: function(done) {
+      Feature.removeDevice(device, function(err) {
+        done(err);
+      });
+    }
+  },
+  function(err, results) {
     next();
   });
 });

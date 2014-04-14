@@ -1,5 +1,6 @@
 var mongoose = require('mongoose')
-  , moment = require('moment');
+  , moment = require('moment')
+  , Layer = require('../models/layer');
 
 var Schema = mongoose.Schema;
 
@@ -212,6 +213,38 @@ exports.removeFeature = function(layer, id, callback) {
     }
 
     callback(err, feature);
+  });
+}
+
+exports.removeUser = function(user, callback) {
+  // for each layer where type = 'Feature'
+  // db.collection.update( { "properties.***REMOVED***" : { $exists : true } }, { $unset : { "properties.***REMOVED***" : 1 } }, false, true);
+  var condition = { userId: user._id };
+  var update = { '$unset': { userId: true } };
+  var options = { multi: true };
+
+  Layer.getLayers({type: 'Feature'}, function(layers) {
+    layers.forEach(function(layer) {
+      featureModel(layer).update(condition, update, options, function(err, numberAffected) {
+        console.log('Remove deleted user from ' + numberAffected + ' documents for layer ' + layer.name);
+      });
+    });
+  });
+}
+
+exports.removeDevice = function(device, callback) {
+  // for each layer where type = 'Feature'
+  // db.collection.update( { "properties.***REMOVED***" : { $exists : true } }, { $unset : { "properties.***REMOVED***" : 1 } }, false, true);
+  var condition = { deviceId: device._id };
+  var update = { '$unset': { deviceId: true } };
+  var options = { multi: true };
+
+  Layer.getLayers({type: 'Feature'}, function(layers) {
+    layers.forEach(function(layer) {
+      featureModel(layer).update(condition, update, options, function(err, numberAffected) {
+        console.log('Remove deleted device from ' + numberAffected + ' documents for layer ' + layer.name);
+      });
+    });
   });
 }
 
