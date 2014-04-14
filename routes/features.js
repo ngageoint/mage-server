@@ -39,11 +39,22 @@ module.exports = function(app, auth) {
 
     feature.properties.timestamp = moment(feature.properties.timestamp).toDate();
 
+    var state = {name: 'active'};
+    if (userId) state.userId = userId;
+    feature.states = [state];
+
     req.newFeature = {
       type: feature.type,
       geometry: feature.geometry,
-      properties: feature.properties
+      properties: feature.properties,
+      states: [state]
     };
+
+    var userId = req.user ? req.user._id : null;
+    if (userId) req.newFeature.userId = userId;
+
+    var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
+    if (deviceId) req.newFeature.deviceId = deviceId;
 
     next();
   }
@@ -132,19 +143,8 @@ module.exports = function(app, auth) {
     validateFeature,
     function (req, res) {
       console.log("MAGE Features POST REST Service Requested");
-      var feature = req.newFeature;
 
-      var userId = req.user ? req.user._id : null;
-      if (userId) feature.properties.userId = userId;
-
-      var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
-      if (deviceId) feature.properties.deviceId = deviceId;
-
-      var state = {name: 'active'};
-      if (userId) state.userId = userId;
-      feature.states = [state];
-
-      new api.Feature(req.layer).create(feature, function(newFeature) {
+      new api.Feature(req.layer).create(req.newFeature, function(newFeature) {
         if (!newFeature) return res.send(400);
 
         var response = geojson.transform(newFeature, {path: getFeatureResource(req)});
@@ -176,10 +176,10 @@ module.exports = function(app, auth) {
       }
 
       var userId = req.user ? req.user._id : null;
-      if (userId) feature.properties.userId = userId;
+      if (userId) feature.userId = userId;
 
       var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
-      if (deviceId) feature.properties.deviceId = deviceId;
+      if (deviceId) feature.deviceId = deviceId;
 
       new api.Feature(req.layer).update(req.param('id'), req.body, function(err, updatedFeature) {
         var response = geojson.transform(updatedFeature, {path: getFeatureResource(req)});
