@@ -20,6 +20,8 @@ var AttachmentSchema = new Schema({
 var FeatureSchema = new Schema({
   type: {type: String, required: true},
   lastModified: {type: Date, required: false},
+  userId: {type: Schema.Types.ObjectId, required: false},
+  devivceId: {type: Schema.Types.ObjectId, required: false},
   geometry: Schema.Types.Mixed,
   properties: Schema.Types.Mixed,
   attachments: [AttachmentSchema],
@@ -28,6 +30,8 @@ var FeatureSchema = new Schema({
 
 FeatureSchema.index({geometry: "2dsphere"});
 FeatureSchema.index({'lastModified': 1});
+FeatureSchema.index({'userId': 1});
+FeatureSchema.index({'deviceId': 1});
 FeatureSchema.index({'properties.type': 1});
 FeatureSchema.index({'properties.timestamp': 1});
 FeatureSchema.index({'states.name': 1});
@@ -154,8 +158,6 @@ exports.createFeature = function(layer, feature, callback) {
 }
 
 exports.createFeatures = function(layer, features, callback) {
-  console.log('about to create ' + features.length + ' features');
-
   features.forEach(function(feature) {
     feature.properties = feature.properties || {};
   });
