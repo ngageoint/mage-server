@@ -20,8 +20,8 @@ var AttachmentSchema = new Schema({
 var FeatureSchema = new Schema({
   type: {type: String, required: true},
   lastModified: {type: Date, required: false},
-  userId: {type: Schema.Types.ObjectId, required: false},
-  devivceId: {type: Schema.Types.ObjectId, required: false},
+  userId: {type: Schema.Types.ObjectId, required: false, sparse: true},
+  devivceId: {type: Schema.Types.ObjectId, required: false, sparse: true},
   geometry: Schema.Types.Mixed,
   properties: Schema.Types.Mixed,
   attachments: [AttachmentSchema],
