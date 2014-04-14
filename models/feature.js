@@ -35,7 +35,6 @@ FeatureSchema.index({'deviceId': 1});
 FeatureSchema.index({'properties.type': 1});
 FeatureSchema.index({'properties.timestamp': 1});
 FeatureSchema.index({'states.name': 1});
-FeatureSchema.index({'attachments.id': 1});
 
 var models = {};
 var Attachment = mongoose.model('Attachment', AttachmentSchema);
