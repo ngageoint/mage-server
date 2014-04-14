@@ -230,7 +230,7 @@ module.exports = function(app, security) {
       User.getUserById(req.params.userId, function(err, user) {
         if (err) return next(err);
 
-        if (!user) return send(404);
+        if (!user) return res.send(404);
 
         res.json(user);
       })
