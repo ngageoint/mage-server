@@ -1,10 +1,12 @@
-var mongoose = require('mongoose');
+var mongoose = require('mongoose')
+  , Counter = require('./counter');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
 
 // Creates the Schema for the Attachments object
 var LayerSchema = new Schema({
+  id: { type: Number, required: true, unique: true }, 
   type: { type: String, required: true },
   base: { type: Boolean, required: false },
   name: { type: String, required: true, unique: true },
@@ -105,20 +107,24 @@ var dropFeatureCollection = function(layer) {
 }
 
 exports.create = function(layer, callback) {
-  if (layer.type == 'Feature' || layer.type == 'External') {
-    layer.collectionName = 'features' + id;
-  }
+  Counter.getNext('layer', function(id) {
+    layer.id = id;
 
-  Layer.create(layer, function(err, newLayer) {
-    if (err) {
-      console.log("Problem creating layer. " + err);
-    } else {
-      if (layer.type == 'Feature') {
-        createFeatureCollection(newLayer);
-      }
+    if (layer.type == 'Feature' || layer.type == 'External') {
+      layer.collectionName = 'features' + id;
     }
 
-    callback(err, newLayer);
+    Layer.create(layer, function(err, newLayer) {
+      if (err) {
+        console.log("Problem creating layer. " + err);
+      } else {
+        if (layer.type == 'Feature') {
+          createFeatureCollection(newLayer);
+        }
+      }
+
+      callback(err, newLayer);
+    });
   });
 }
 

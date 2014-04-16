@@ -44,6 +44,8 @@ module.exports = function(app, security) {
 
     var locations = [];
     objects.forEach(function(o) {
+      console.log('location ', o);
+
       if (!o.location) return res.send(400, "Missing required parameter 'location'.");
       if (!o.timestamp) return res.send(400, "Missing required parameter 'timestamp");
 
@@ -51,6 +53,8 @@ module.exports = function(app, security) {
       o.location.properties.timestamp = moment.utc(o.timestamp).toDate();
       o.location.properties.user = req.user._id;
       o.location.properties.deviceId = req.provisionedDeviceId;
+
+      o.location.type = "Feature";
 
       locations.push(o.location);
     });
