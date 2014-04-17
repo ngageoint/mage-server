@@ -34,7 +34,7 @@ var moveImage = function(path, outputFile, callback) {
 var generateThumbnails = function(layer, attachment, file, featureId) {
   var relativePath = createAttachmentPath(layer);
   attachmentProcessing.thumbSizes.forEach(function(thumbSize) {
-    var thumbRelativePath = path.join(relativePath, path.basename(attachment.path, path.extname(attachment.path))) + "_" + thumbSize + path.extname(attachment.path);
+    var thumbRelativePath = path.join(relativePath, path.basename(attachment.name, path.extname(attachment.name))) + "_" + thumbSize + path.extname(attachment.name);
     var outputPath = path.join(attachmentBase, thumbRelativePath);
     gm(file).size(function(err, size) {
       gm(file)
@@ -142,14 +142,12 @@ Attachment.prototype.create = function(id, attachment, callback) {
     var file = path.join(attachmentBase, attachment.relativePath);
 
     var extension = path.extname(fileName).toLowerCase();
-    console.log('textension is ' + extension);
     switch(extension) {
       case '.jpg':
       case '.jpeg':
       case '.png':
       case '.gif':
         // OK it is an image, let's do this
-        console.log('process image');
         processImage(layer, id, attachment, file, callback);
         break;
       default:
