@@ -9,8 +9,9 @@ var FeatureModel = require('../models/feature')
   , geometryFormat = require('../format/geoJsonFormat')
   , gm = require('gm');
 
-var attachmentBase = config.server.attachmentBaseDirectory;
-var thumbnailSizes = config.server.thumbnails.sizes;
+var attachmentConfig = config.server.attachment;
+var attachmentBase = attachment.baseDirectory;
+var attachmentProcessing = attachment.processing;
 
 var createAttachmentPath = function(layer) {
   var now = new Date();
@@ -20,6 +21,10 @@ var createAttachmentPath = function(layer) {
     (now.getMonth() + 1).toString(), 
     now.getDate().toString()
   );
+}
+
+var processImage = function(featureId, attachment) {
+
 }
 
 function Attachment(layer, feature) {
@@ -74,7 +79,9 @@ Attachment.prototype.create = function(id, attachment, callback) {
       FeatureModel.addAttachment(layer, id, attachment, function(err, newAttachment) {
         if (err) return callback(err);
         callback(err, newAttachment);
-        thumbnailSizes.forEach(function(thumbSize) {
+        // generate thumbnails if we need to
+        if (!thumbnailConfig)
+        thumbnailConfig.sizes.forEach(function(thumbSize) {
         var thumbRelativePath = path.join(relativePath, path.basename(attachment.path, path.extname(attachment.path))) + "_" + thumbSize + path.extname(attachment.path);
         var outputPath = path.join(attachmentBase, thumbRelativePath);
         gm(file).size(function(err, size) {

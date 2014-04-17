@@ -8,7 +8,7 @@ var FeatureModel = require('../models/feature')
   , config = require('../config.json')
   , geometryFormat = require('../format/geoJsonFormat');
 
-var attachmentBase = config.server.attachmentBaseDirectory;
+var attachmentBase = config.server.attachment.baseDirectory;
 
 function Feature(layer) {
   this._layer = layer;

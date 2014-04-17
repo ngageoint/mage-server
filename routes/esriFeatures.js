@@ -12,7 +12,7 @@ module.exports = function(app, security) {
 
   var p***REMOVED***port = security.authentication.p***REMOVED***port;
   var geometryFormat = require('../format/geometryFormat');
-  var attachmentBase = config.server.attachmentBaseDirectory;
+  var attachmentBase = config.server.attachment.baseDirectory;
 
   function EsriAttachments() {
     var content = {

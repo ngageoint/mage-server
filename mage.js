@@ -3,7 +3,8 @@ var express = require("express")
   , path = require("path")
   , fs = require('fs-extra')
   , config = require('./config.json')
-  , provision = require('./provision');
+  , provision = require('./provision')
+  , gm = require('gm');
 
 var optimist = require("optimist")
   .usage("Usage: $0 --port [number]")
@@ -13,7 +14,7 @@ var argv = optimist.argv;
 if (argv.h || argv.help) return optimist.showHelp();
 
 // Create directory for storing SAGE media attachments
-var attachmentBase = config.server.attachmentBaseDirectory;
+var attachmentBase = config.server.attachment.baseDirectory;
 fs.mkdirp(attachmentBase, function(err) {
   if (err) {
     console.error("Could not create directory to store MAGE media attachments. "  + err);
@@ -39,6 +40,18 @@ app.configure(function () {
     }
   });
   mongoose.set('debug', true);
+
+  // ensure graphicsmagick exists if thumbnails are set
+  if (config.server.attachment.processing) {
+    gm(1, 1, "#00ffffff")
+      .write('dot.png', function(err){
+        if (err) {
+          console.log("GraphicsMagick is not installed.  Please remove attachment processing from your configuration or install GraphicsMagick.");
+          throw err;
+        }
+      }
+    );
+  }
 
   app.use(function(req, res, next) {
     req.getRoot = function() {
