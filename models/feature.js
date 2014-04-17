@@ -13,7 +13,19 @@ var AttachmentSchema = new Schema({
   contentType: { type: String, required: false },  
   size: { type: Number, required: false },  
   name: { type: String, required: false },
-  relativePath: { type: String, required: true }
+  relativePath: { type: String, required: true },
+  width: { type: Number, required: false },
+  height: { type: Number, required: false},
+  thumbnails: [ThumbnailSchema]
+});
+
+var ThumbnailSchema = new Schema({
+  contentType: { type: String, required: false },  
+  size: { type: Number, required: false },  
+  name: { type: String, required: false },
+  relativePath: { type: String, required: true },
+  width: { type: Number, required: false },
+  height: { type: Number, required: false}
 });
 
 // Creates the Schema for the Attachments object
@@ -38,6 +50,7 @@ FeatureSchema.index({'states.name': 1});
 
 var models = {};
 var Attachment = mongoose.model('Attachment', AttachmentSchema);
+var Thumbnail = mongoose.model('Thumbnail', ThumbnailSchema);
 var State = mongoose.model('State', StateSchema);
 
 // return a string for each property
@@ -346,4 +359,17 @@ exports.removeAttachment = function(feature, id, callback) {
 
     callback(err);
   });
+}
+
+exports.addAttachmentThumbnail = function(layer, featureId, attachmentId, thumbnail, callback) {
+  var thumb = new Thumbnail(thumbnail);
+  var condition = {'attachments._id': attachmentId};
+  var update = {'$push': { 'attachments.$.thumbnails': thumbnail }};
+  featureModel(layer).update(condition, update, function(err, feature) {
+    if (err) {
+      console.log('Error updating thumbnails to DB', err);
+    }
+    callback(err);
+  });
+
 }
