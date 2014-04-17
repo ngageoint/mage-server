@@ -237,6 +237,20 @@ module.exports = function(app, auth) {
 
         if (!attachment) return res.send(404);
 
+        var thumbnails = attachment.thumbnails;
+        if (thumbnails.length && req.param('size')) {
+          var size = Number(req.param('size'));
+          for (var i = 0; i < thumbnails.length; i++) {
+            var thumb = thumbnails[i];
+            if ((thumb.height < attachment.height || !attachment.height)
+              && (thumb.width < attachment.width || !attachment.width)
+              && (thumb.height >= size || thumb.width >= size)) {
+
+              attachment = thumb;
+            }
+          }
+        }
+
         var stream = fs.createReadStream(attachment.path);
         stream.on('open', function() {
           res.type(attachment.contentType);

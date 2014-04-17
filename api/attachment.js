@@ -6,9 +6,11 @@ var FeatureModel = require('../models/feature')
   , moment = require('moment')
   , access = require('../access')
   , config = require('../config.json')
-  , geometryFormat = require('../format/geoJsonFormat');
+  , geometryFormat = require('../format/geoJsonFormat')
+  , gm = require('gm');
 
 var attachmentBase = config.server.attachmentBaseDirectory;
+var thumbnailSizes = config.server.thumbnails.sizes;
 
 var createAttachmentPath = function(layer) {
   var now = new Date();
@@ -39,6 +41,11 @@ Attachment.prototype.getById = function(id, callback) {
   });
 
   if (attachment) attachment.path = path.join(attachmentBase, attachment.relativePath);
+  if (attachment.thumbnails) {
+    for (var i = 0; i < attachment.thumbnails.length; i++) {
+      attachment.thumbnails[i].path = path.join(attachmentBase, attachment.thumbnails[i].relativePath);
+    }
+  }
 
   return callback(null, attachment);
 }
@@ -56,14 +63,50 @@ Attachment.prototype.create = function(id, attachment, callback) {
     var fileName = path.basename(attachment.path);
     attachment.relativePath = path.join(relativePath, fileName);
     var file = path.join(attachmentBase, attachment.relativePath);
-    fs.rename(attachment.path, file, function(err) {
-      if (err) return next(err);
+
+    gm(attachment.path).autoOrient().write(file, function(err) {
+      if (err) {
+        console.log("error auto orienting", err);
+        callback(err);
+        return;
+      }
 
       FeatureModel.addAttachment(layer, id, attachment, function(err, newAttachment) {
         if (err) return callback(err);
+        callback(err, newAttachment);
+        thumbnailSizes.forEach(function(thumbSize) {
+        var thumbRelativePath = path.join(relativePath, path.basename(attachment.path, path.extname(attachment.path))) + "_" + thumbSize + path.extname(attachment.path);
+        var outputPath = path.join(attachmentBase, thumbRelativePath);
+        gm(file).size(function(err, size) {
+          gm(file)
+            .resize(size.width <= size.height ? thumbSize : null, size.height < size.width ? thumbSize : null)
+            .write(outputPath, function(err) {
+              if (err) {
+                console.log('Error thumbnailing file to size: ' + thumbSize, err);
+              } else {
+                // write to mongo
+                gm(outputPath).identify(function(err, identity) {
+                  if (!err) {
+                    var stat = fs.statSync(outputPath);
 
-        callback(null, newAttachment);
-      });  
+                    FeatureModel.addAttachmentThumbnail(layer, id, newAttachment._id, 
+                      { size: stat.size, 
+                        name: path.basename(attachment.name, path.extname(attachment.name)) + "_" + thumbSize + path.extname(attachment.name),
+                        relativePath: thumbRelativePath, 
+                        contentType: attachment.headers['content-type'],
+                        height: identity.size.height,
+                        width: identity.size.width},
+                    function(err) {
+                      if (err) console.log('error writing thumb to db', err);
+                      else console.log('wrote thumb');
+                    });
+                  }
+                })
+              }
+            });
+          });
+        });
+      });
     });
   });
 }
