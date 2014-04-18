@@ -138,7 +138,7 @@ module.exports = function(app, security) {
 
   // Update a device
   app.put(
-    '/api/devices/:deviceId',
+    '/api/devices/:id',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('UPDATE_DEVICE'),
     parseDeviceParams, 
@@ -150,7 +150,7 @@ module.exports = function(app, security) {
       if (req.newDevice.registered) update.registered = req.newDevice.registered;
       if (req.newDevice.poc) update.poc = req.newDevice.poc;
 
-      Device.updateDevice(req.device._id, update, function(err, device) {
+      Device.updateDevice(req.param('id'), update, function(err, device) {
         if (err) {
           return res.send(400, err);
         }
@@ -162,11 +162,11 @@ module.exports = function(app, security) {
 
   // Delete a device
   app.delete(
-    '/api/devices/:deviceId',
+    '/api/devices/:id',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('DELETE_DEVICE'),
     function(req, res) {
-      Device.deleteDevice(req.device, function(err, device) {
+      Device.deleteDevice(req.param('id'), function(err, device) {
         if (err) {
           return res.send(400, err);
         }

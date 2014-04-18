@@ -127,7 +127,7 @@ UserSchema.pre('remove', function(next) {
     }
   },
   function(err, results) {
-    next();
+    next(err);
   });
 });
 

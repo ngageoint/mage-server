@@ -51,7 +51,6 @@ mage.directive('***REMOVED***Observation', ['FeatureTypeService', 'UserService',
       scope.createNewObservation = function(location) {
         return new Feature({
           properties: {
-            userId: UserService.myself._id,
             type: scope.types[0].name,
             TEAM: scope.teams[0],
             timestamp: new Date()
