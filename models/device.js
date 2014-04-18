@@ -61,16 +61,8 @@ DeviceSchema.pre('save', function(next) {
 
 DeviceSchema.pre('remove', function(next) {
   var device = this;
-
-  async.parallel({
-    device: function(done) {
-      Feature.removeDevice(device, function(err) {
-        done(err);
-      });
-    }
-  },
-  function(err, results) {
-    next();
+  Feature.removeDevice(device, function(err) {
+    next(err);
   });
 });
 
@@ -141,13 +133,20 @@ exports.updateDevice = function(id, update, callback) {
   });
 }
 
-exports.deleteDevice = function(device, callback) {
-  var conditions = { _id: device._id };
-  Device.remove(conditions, function(err, deletedDevice) {
-    if (err) {
-      console.log('Error removing device: ' + device._id + ' err: ' + err);
+exports.deleteDevice = function(id, callback) {
+  Device.findById(id, function(err, device) {
+    if (!device) {
+      var msg = "Device with id '" + id + "' not found and could not be deleted.";
+      console.log(msg + " Error: " + err);
+      return callback(new Error(msg));
     }
 
-    callback(err, deletedDevice);
+    device.remove(function(err, removedDevice) {
+      if (err) {
+        console.log("Error removing device", err);
+      }
+
+      callback(err, removedDevice);
+    });
   });
 }

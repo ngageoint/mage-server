@@ -1,4 +1,5 @@
 var mongoose = require('mongoose')
+  , async = require('async')
   , moment = require('moment')
   , Layer = require('../models/layer');
 
@@ -33,7 +34,7 @@ var FeatureSchema = new Schema({
   type: {type: String, required: true},
   lastModified: {type: Date, required: false},
   userId: {type: Schema.Types.ObjectId, required: false, sparse: true},
-  devivceId: {type: Schema.Types.ObjectId, required: false, sparse: true},
+  deviceId: {type: Schema.Types.ObjectId, required: false, sparse: true},
   geometry: Schema.Types.Mixed,
   properties: Schema.Types.Mixed,
   attachments: [AttachmentSchema],
@@ -231,33 +232,37 @@ exports.removeFeature = function(layer, id, callback) {
 }
 
 exports.removeUser = function(user, callback) {
-  // for each layer where type = 'Feature'
-  // db.collection.update( { "properties.***REMOVED***" : { $exists : true } }, { $unset : { "properties.***REMOVED***" : 1 } }, false, true);
   var condition = { userId: user._id };
   var update = { '$unset': { userId: true } };
   var options = { multi: true };
 
-  Layer.getLayers({type: 'Feature'}, function(layers) {
-    layers.forEach(function(layer) {
+  Layer.getLayers({type: 'Feature'}, function(err, layers) {
+    async.each(layers, function(layer, done) {
       featureModel(layer).update(condition, update, options, function(err, numberAffected) {
         console.log('Remove deleted user from ' + numberAffected + ' documents for layer ' + layer.name);
+        done();
       });
+    },
+    function(err){
+      callback();
     });
   });
 }
 
 exports.removeDevice = function(device, callback) {
-  // for each layer where type = 'Feature'
-  // db.collection.update( { "properties.***REMOVED***" : { $exists : true } }, { $unset : { "properties.***REMOVED***" : 1 } }, false, true);
   var condition = { deviceId: device._id };
   var update = { '$unset': { deviceId: true } };
   var options = { multi: true };
 
-  Layer.getLayers({type: 'Feature'}, function(layers) {
-    layers.forEach(function(layer) {
+  Layer.getLayers({type: 'Feature'}, function(err, layers) {
+    async.each(layers, function(layer, done) {
       featureModel(layer).update(condition, update, options, function(err, numberAffected) {
         console.log('Remove deleted device from ' + numberAffected + ' documents for layer ' + layer.name);
+        done();
       });
+    },
+    function(err){
+      callback();
     });
   });
 }
