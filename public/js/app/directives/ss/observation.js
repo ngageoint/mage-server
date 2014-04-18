@@ -36,7 +36,6 @@ mage.directive('ssObservation', ['MapService', 'FeatureTypeService', 'UserServic
             type: 'Point'
           },
           properties: {
-            userId: UserService.myself._id,
             type: scope.types[0].name,
             TEAM: scope.teams[0],
             timestamp: new Date()

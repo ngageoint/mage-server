@@ -1,5 +1,7 @@
 var mongoose = require('mongoose')
-  , moment = require('moment');
+  , async = require('async')
+  , moment = require('moment')
+  , Layer = require('../models/layer');
 
 var Schema = mongoose.Schema;
 
@@ -12,13 +14,27 @@ var AttachmentSchema = new Schema({
   contentType: { type: String, required: false },  
   size: { type: Number, required: false },  
   name: { type: String, required: false },
-  relativePath: { type: String, required: true }
+  relativePath: { type: String, required: true },
+  width: { type: Number, required: false },
+  height: { type: Number, required: false},
+  thumbnails: [ThumbnailSchema]
+});
+
+var ThumbnailSchema = new Schema({
+  contentType: { type: String, required: false },  
+  size: { type: Number, required: false },  
+  name: { type: String, required: false },
+  relativePath: { type: String, required: true },
+  width: { type: Number, required: false },
+  height: { type: Number, required: false}
 });
 
 // Creates the Schema for the Attachments object
 var FeatureSchema = new Schema({
   type: {type: String, required: true},
   lastModified: {type: Date, required: false},
+  userId: {type: Schema.Types.ObjectId, required: false, sparse: true},
+  deviceId: {type: Schema.Types.ObjectId, required: false, sparse: true},
   geometry: Schema.Types.Mixed,
   properties: Schema.Types.Mixed,
   attachments: [AttachmentSchema],
@@ -27,13 +43,15 @@ var FeatureSchema = new Schema({
 
 FeatureSchema.index({geometry: "2dsphere"});
 FeatureSchema.index({'lastModified': 1});
+FeatureSchema.index({'userId': 1});
+FeatureSchema.index({'deviceId': 1});
 FeatureSchema.index({'properties.type': 1});
 FeatureSchema.index({'properties.timestamp': 1});
 FeatureSchema.index({'states.name': 1});
-FeatureSchema.index({'attachments.id': 1});
 
 var models = {};
 var Attachment = mongoose.model('Attachment', AttachmentSchema);
+var Thumbnail = mongoose.model('Thumbnail', ThumbnailSchema);
 var State = mongoose.model('State', StateSchema);
 
 // return a string for each property
@@ -153,8 +171,6 @@ exports.createFeature = function(layer, feature, callback) {
 }
 
 exports.createFeatures = function(layer, features, callback) {
-  console.log('about to create ' + features.length + ' features');
-
   features.forEach(function(feature) {
     feature.properties = feature.properties || {};
   });
@@ -212,6 +228,42 @@ exports.removeFeature = function(layer, id, callback) {
     }
 
     callback(err, feature);
+  });
+}
+
+exports.removeUser = function(user, callback) {
+  var condition = { userId: user._id };
+  var update = { '$unset': { userId: true } };
+  var options = { multi: true };
+
+  Layer.getLayers({type: 'Feature'}, function(err, layers) {
+    async.each(layers, function(layer, done) {
+      featureModel(layer).update(condition, update, options, function(err, numberAffected) {
+        console.log('Remove deleted user from ' + numberAffected + ' documents for layer ' + layer.name);
+        done();
+      });
+    },
+    function(err){
+      callback();
+    });
+  });
+}
+
+exports.removeDevice = function(device, callback) {
+  var condition = { deviceId: device._id };
+  var update = { '$unset': { deviceId: true } };
+  var options = { multi: true };
+
+  Layer.getLayers({type: 'Feature'}, function(err, layers) {
+    async.each(layers, function(layer, done) {
+      featureModel(layer).update(condition, update, options, function(err, numberAffected) {
+        console.log('Remove deleted device from ' + numberAffected + ' documents for layer ' + layer.name);
+        done();
+      });
+    },
+    function(err){
+      callback();
+    });
   });
 }
 
@@ -312,4 +364,17 @@ exports.removeAttachment = function(feature, id, callback) {
 
     callback(err);
   });
+}
+
+exports.addAttachmentThumbnail = function(layer, featureId, attachmentId, thumbnail, callback) {
+  var thumb = new Thumbnail(thumbnail);
+  var condition = {'attachments._id': attachmentId};
+  var update = {'$push': { 'attachments.$.thumbnails': thumbnail }};
+  featureModel(layer).update(condition, update, function(err, feature) {
+    if (err) {
+      console.log('Error updating thumbnails to DB', err);
+    }
+    callback(err);
+  });
+
 }

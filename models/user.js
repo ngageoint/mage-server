@@ -3,6 +3,7 @@ var mongoose = require('mongoose')
   , hasher = require('../utilities/pbkdf2')()
   , config = require('../config')
   , Token = require('../models/token')
+  , Feature = require('../models/feature')
   , Location = require('../models/location');
 
 var locationLimit = config.server.locationServices.userCollectionLocationLimit;
@@ -117,9 +118,16 @@ UserSchema.pre('remove', function(next) {
     token: function(done) {
       Token.removeTokenForUser(user, function(err) {
         done(err);
-        next(err);
-      })
+      });
+    },
+    feature: function(done) {
+      Feature.removeUser(user, function(err) {
+        done(err);
+      });
     }
+  },
+  function(err, results) {
+    next(err);
   });
 });
 

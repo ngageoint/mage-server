@@ -9,16 +9,6 @@ angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
         return $http.get(appConstants.rootUrl + "/api/locations/export");
       };
 
-      ***REMOVED***.createLocation = function (location) {
-        return $http.post(appConstants.rootUrl + '/api/locations', 
-          JSON.stringify(location),
-          {headers: {"Content-Type": "application/json"}});
-      };
-
-      ***REMOVED***.getLocations = function () {
-        return $http.get(appConstants.rootUrl + '/api/locations');
-      }
-
       ***REMOVED***.getPosition = function() {
         var deferred = $q.defer();
         if (navigator.geolocation) {
@@ -44,9 +34,7 @@ angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
       return ***REMOVED***;
     }])
 .factory('Location', ['$resource', '$http', function($resource, $http) {
-  var Location = $resource('/api/locations', {
-
-  }, {
+  var Location = $resource('/api/locations', {}, {
     create: {
       method: 'POST',
       isArray: true,
