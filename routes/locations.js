@@ -36,28 +36,37 @@ module.exports = function(app, security) {
   }
 
   var validateLocations = function(req, res, next) {
-    var objects = req.body;
+    var locations = req.body;
 
-    if (!Array.isArray(objects)) {
-      objects = [objects];
+    if (!Array.isArray(locations)) {
+      locations = [locations];
     }
 
-    var locations = [];
-    objects.forEach(function(o) {
-      console.log('location ', o);
+    var valid = locations.every(function(l) {
+      console.log('location ', l);
+      console.log('geometry ', l.geometry);
+      console.log('properties ', l.properties);
 
-      if (!o.location) return res.send(400, "Missing required parameter 'location'.");
-      if (!o.timestamp) return res.send(400, "Missing required parameter 'timestamp");
+      if (!l.geometry) {
+        msg = "Missing required parameter 'geometry'.";
+        return false;
+      }
 
-      o.location.properties = o.location.properties || {};
-      o.location.properties.timestamp = moment.utc(o.timestamp).toDate();
-      o.location.properties.user = req.user._id;
-      o.location.properties.deviceId = req.provisionedDeviceId;
+      if (!l.properties || !l.properties.timestamp) {
+        msg = "Missing required parameter 'properties.timestamp";
+        return false;
+      }
 
-      o.location.type = "Feature";
+      l.properties.timestamp = moment.utc(l.properties.timestamp).toDate();
+      l.properties.user = req.user._id;
+      l.properties.deviceId = req.provisionedDeviceId;
 
-      locations.push(o.location);
+      l.type = "Feature";
+
+      return true;
     });
+
+    if (!valid) return res.send(400, msg);
 
     req.locations = locations;
 
@@ -92,6 +101,7 @@ module.exports = function(app, security) {
     access.authorize('CREATE_LOCATION'),
     validateLocations,
     function(req, res) {
+      console.log("HTF did IO get here$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
       Location.createLocations(req.user, req.locations, function(err, locations) {
         if (err) {
           return res.send(400, err);
