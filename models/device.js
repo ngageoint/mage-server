@@ -1,7 +1,8 @@
 var mongoose = require('mongoose')
-  , Feature = require('./feature');
-
-var User = require('./user');
+  , async = require('async')
+  , Feature = require('./feature')
+  , User = require('./user')
+  , Token = require('./token');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema; 
@@ -61,7 +62,20 @@ DeviceSchema.pre('save', function(next) {
 
 DeviceSchema.pre('remove', function(next) {
   var device = this;
-  Feature.removeDevice(device, function(err) {
+
+  async.parallel({
+    token: function(done) {
+      Token.removeTokenForDevice(device, function(err) {
+        done(err);
+      });
+    },
+    feature: function(done) {
+      Feature.removeDevice(device, function(err) {
+        done(err);
+      });
+    }
+  },
+  function(err, results) {
     next(err);
   });
 });

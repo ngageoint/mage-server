@@ -74,8 +74,13 @@ exports.createToken = function(options, callback) {
 }
 
 exports.removeTokenForUser = function(user, callback) {
-  var conditions = {user: user._id};
-  Token.remove(conditions, function(err, numberRemoved) {
+  Token.remove({user: user._id}, function(err, numberRemoved) {
+    callback(err, numberRemoved);
+  });
+}
+
+exports.removeTokenForDevice = function(device, callback) {
+  Token.remove({deviceId: device._id}, function(err, numberRemoved) {
     callback(err, numberRemoved);
   });
 }
