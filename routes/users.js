@@ -228,6 +228,10 @@ module.exports = function(app, security) {
     access.authorize('READ_USER'),
     function(req, res) {
       User.getUserById(req.params.userId, function(err, user) {
+        if (err) return next(err);
+
+        if (!user) return res.send(404);
+
         res.json(user);
       })
     }

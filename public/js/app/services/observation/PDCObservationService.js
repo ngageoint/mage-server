@@ -42,7 +42,6 @@ angular.module('mage')
             type: 'Point'
           },
           properties: {
-            userId: UserService.myself._id,
             type: ***REMOVED***.types[0].name,
             EVENTLEVEL: ***REMOVED***.levels[0].name,
             TEAM: ***REMOVED***.teams[0],

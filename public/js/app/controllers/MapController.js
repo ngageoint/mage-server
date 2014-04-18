@@ -442,25 +442,20 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       TimerService.start(timerName, 5000, function() {
         if (!$scope.location) return;
 
-        var properties = {};
-        if ($scope.location.accuracy) properties.accuracy = $scope.location.accuracy;
-        if ($scope.location.altitude) properties.altitude = $scope.location.altitude;
-        if ($scope.location.altitudeAccuracy) properties.altitudeAccuracy = $scope.location.altitudeAccuracy;
-        if ($scope.location.heading) properties.heading = $scope.location.heading;
-        if ($scope.location.speed) properties.speed = $scope.location.speed;
-
         $scope.positionBroadcast = Location.create({
-          location: {
-            type: "Feature",
-            geometry: {
-              type: 'Point',
-              coordinates: [$scope.location.longitude, $scope.location.latitude]
-            },
-            properties: properties
+          geometry: {
+            type: 'Point',
+            coordinates: [$scope.location.longitude, $scope.location.latitude]
           },
-          timestamp: new Date()
+          properties: {
+            timestamp: $scope.location.timestamp ? $scope.location.timestamp : new Date().valueOf(),
+            accuracy: $scope.location.accuracy,
+            altitude: $scope.location.altitude,
+            altitudeAccuracy: $scope.location.altitudeAccuracy,
+            heading: $scope.location.heading,
+            speed: $scope.location.speed
+          }       
         });
-
       });
     } else {
       TimerService.stop(timerName);

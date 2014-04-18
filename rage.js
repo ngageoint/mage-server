@@ -13,7 +13,7 @@ var argv = optimist.argv;
 if (argv.h || argv.help) return optimist.showHelp();
 
 // Use same directory for media attachments as MAGE
-var attachmentBase = config.server.attachmentBaseDirectory;
+var attachmentBase = config.server.attachment.baseDirectory;
 
 // Configuration of the MAGE Express server
 var mongodbConfig = config.server.mongodb;

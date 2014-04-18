@@ -1,6 +1,8 @@
-var mongoose = require('mongoose');
-
-var User = require('./user');
+var mongoose = require('mongoose')
+  , async = require('async')
+  , Feature = require('./feature')
+  , User = require('./user')
+  , Token = require('./token');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema; 
@@ -55,6 +57,26 @@ DeviceSchema.pre('save', function(next) {
     }
 
     next();
+  });
+});
+
+DeviceSchema.pre('remove', function(next) {
+  var device = this;
+
+  async.parallel({
+    token: function(done) {
+      Token.removeTokenForDevice(device, function(err) {
+        done(err);
+      });
+    },
+    feature: function(done) {
+      Feature.removeDevice(device, function(err) {
+        done(err);
+      });
+    }
+  },
+  function(err, results) {
+    next(err);
   });
 });
 
@@ -125,13 +147,20 @@ exports.updateDevice = function(id, update, callback) {
   });
 }
 
-exports.deleteDevice = function(device, callback) {
-  var conditions = { _id: device._id };
-  Device.remove(conditions, function(err, deletedDevice) {
-    if (err) {
-      console.log('Error removing device: ' + device._id + ' err: ' + err);
+exports.deleteDevice = function(id, callback) {
+  Device.findById(id, function(err, device) {
+    if (!device) {
+      var msg = "Device with id '" + id + "' not found and could not be deleted.";
+      console.log(msg + " Error: " + err);
+      return callback(new Error(msg));
     }
 
-    callback(err, deletedDevice);
+    device.remove(function(err, removedDevice) {
+      if (err) {
+        console.log("Error removing device", err);
+      }
+
+      callback(err, removedDevice);
+    });
   });
 }

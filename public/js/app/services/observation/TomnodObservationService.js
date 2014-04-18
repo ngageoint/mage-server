@@ -20,7 +20,6 @@ angular.module('mage')
             type: 'Point'
           },
           properties: {
-            userId: UserService.myself._id,
             type: ***REMOVED***.types[0].name,
             timestamp: new Date()
           }

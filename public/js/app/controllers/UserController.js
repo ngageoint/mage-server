@@ -50,7 +50,7 @@ function UserController($scope, $location, $timeout, UserService, user) {
         }, 5000);
       })
       .error(function(data, status) {
-        $scope.p***REMOVED***wordStatus = {error: true, msg: data};
+        $scope.p***REMOVED***wordStatus = {status: "error", msg: data};
       });
   }
 
