@@ -88,7 +88,7 @@ var parseFields = function(fields) {
 
     return fields;
   } else {
-    return {states: {$slice: 1}};
+    return { states: {$slice: 1}, 'attachments.thumbnails': false };
   }
 }
 
@@ -109,6 +109,7 @@ exports.featureModel = featureModel;
 exports.getFeatures = function(layer, o, callback) {
   var conditions = {};
   var fields = parseFields(o.fields);
+  console.log('fields', fields);
 
   var query = featureModel(layer).find(conditions, fields);
 
