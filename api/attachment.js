@@ -33,19 +33,28 @@ var moveImage = function(path, outputFile, callback) {
 
 var generateThumbnails = function(layer, attachment, file, featureId) {
   var relativePath = createAttachmentPath(layer);
-  attachmentProcessing.thumbSizes.forEach(function(thumbSize) {
+
+  async.eachSeries(attachmentProcessing.thumbSizes, function(thumbSize, callback) {
     var thumbRelativePath = path.join(relativePath, path.basename(attachment.name, path.extname(attachment.name))) + "_" + thumbSize + path.extname(attachment.name);
     var outputPath = path.join(attachmentBase, thumbRelativePath);
     gm(file).size(function(err, size) {
+      if (err) callback(err);
       gm(file)
         .define("jpeg:preserve-settings")
         .resize(size.width <= size.height ? thumbSize : null, size.height < size.width ? thumbSize : null)
         .write(outputPath, function(err) {
           if (err) {
             console.log('Error thumbnailing file to size: ' + thumbSize, err);
+            callback(err);
+            return;
           } else {
             // write to mongo
             gm(outputPath).identify(function(err, identity) {
+              if (err) {
+                console.log('error getting informatin about ' + outputPath);
+                callbacK(err);
+                return;
+              }
               if (!err) {
                 var stat = fs.statSync(outputPath);
 
@@ -58,13 +67,21 @@ var generateThumbnails = function(layer, attachment, file, featureId) {
                     width: identity.size.width},
                 function(err) {
                   if (err) console.log('error writing thumb to db', err);
+                  callback(err);
                 });
               }
             })
           }
         });
       });
-    });
+  }, function(err) {
+    if (err) {
+      console.log('error thumbnailing', err);
+    } else {
+      console.log('Finished thumbnailing ' + attachment.name);
+    }
+  });
+    
 }
 
 var processImage = function(layer, featureId, attachment, outputFile, callback) {
