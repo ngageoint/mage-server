@@ -318,6 +318,7 @@ exports.addAttachment = function(layer, id, file, callback) {
 
   var condition = {};
   condition[id.field] = id.id;
+  
   var attachment = new Attachment({
     contentType: file.headers['content-type'],  
     size: file.size,
