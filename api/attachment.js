@@ -57,7 +57,6 @@ var generateThumbnails = function(layer, attachment, file, featureId) {
                     width: identity.size.width},
                 function(err) {
                   if (err) console.log('error writing thumb to db', err);
-                  else console.log('wrote thumb');
                 });
               }
             })
