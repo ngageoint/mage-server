@@ -25,7 +25,7 @@ var createAttachmentPath = function(layer) {
 
 var moveImage = function(path, outputFile, callback) {
   if (attachmentProcessing && attachmentProcessing.orientImages) {
-    gm(path).autoOrient().write(outputFile, callback);
+    gm(path).define("jpeg:preserve-settings").autoOrient().write(outputFile, callback);
   } else {
     fs.rename(path, outputFile, callback);
   }
@@ -38,6 +38,7 @@ var generateThumbnails = function(layer, attachment, file, featureId) {
     var outputPath = path.join(attachmentBase, thumbRelativePath);
     gm(file).size(function(err, size) {
       gm(file)
+        .define("jpeg:preserve-settings")
         .resize(size.width <= size.height ? thumbSize : null, size.height < size.width ? thumbSize : null)
         .write(outputPath, function(err) {
           if (err) {
@@ -72,6 +73,9 @@ var processImage = function(layer, featureId, attachment, outputFile, callback) 
       callback(err);
       return;
     }
+
+    var stat = fs.statSync(outputFile);
+    attachment.size = stat.size;
 
     FeatureModel.addAttachment(layer, featureId, attachment, function(err, newAttachment) {
       if (err) return callback(err);
