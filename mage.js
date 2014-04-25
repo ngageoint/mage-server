@@ -4,7 +4,7 @@ var express = require("express")
   , fs = require('fs-extra')
   , config = require('./config.json')
   , provision = require('./provision')
-  , gm = require('gm');
+  , gm = require('gm').subCl***REMOVED***({ imageMagick: true });;
 
 var optimist = require("optimist")
   .usage("Usage: $0 --port [number]")

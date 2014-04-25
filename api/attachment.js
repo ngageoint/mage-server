@@ -34,10 +34,11 @@ var orientImage = function(layer, featureId, attachment, callback) {
     fs.rename(outputFile, file, function(err) {
       if (err) return callback(err);
 
-      gm(file).identify(function(err, metadata) {
-        attachment.size = metadata.filesize;
-        attachment.width = metadata.size.width;
-        attachment.height = metadata.size.height;
+      gm(file).size(function(err, size) {
+        var stat = fs.statSync(file);
+        attachment.size = stat.size;
+        attachment.width = size.width;
+        attachment.height = size.height;
         FeatureModel.updateAttachment(layer, featureId, attachment._id, attachment, function(err, feature) {
           imageProcessingQueue.push({type: 'thumbnail', layer: layer, featureId: featureId, attachment: attachment}, function(err) {
             if (err) console.log("Error orienting image", err)
@@ -51,11 +52,9 @@ var orientImage = function(layer, featureId, attachment, callback) {
 
 var generateThumbnails = function(layer, featureId, attachment, done) {
   var file = path.join(attachmentBase, attachment.relativePath);
-  var relativePath = createAttachmentPath(layer);
 
   async.eachSeries(attachmentProcessing.thumbSizes, function(thumbSize, callback) {
-    var thumbRelativePath = path.join(relativePath, path.basename(attachment.name, path.extname(attachment.name))) + "_" + thumbSize + path.extname(attachment.name);
-    var outputPath = path.join(attachmentBase, thumbRelativePath);
+    var thumbPath = path.join(path.dirname(file), path.basename(file, path.extname(file))) + "_" + thumbSize + path.extname(file);    
     console.log('thumbnailing start');
 
     var thumbWidth = attachment.width <= attachment.height ? thumbSize : null;
@@ -66,7 +65,7 @@ var generateThumbnails = function(layer, featureId, attachment, done) {
 
     gm(file)
       .resize(thumbWidth, thumbHeight)
-      .write(outputPath, function(err) {
+      .write(thumbPath, function(err) {
         if (err) {
           console.log('Error thumbnailing file to size: ' + thumbSize, err);
           callback(err);
@@ -75,12 +74,12 @@ var generateThumbnails = function(layer, featureId, attachment, done) {
           // write to mongo
           console.log('Finished thumbnailing ' + thumbSize);
 
-          var stat = fs.statSync(outputPath);
+          var stat = fs.statSync(thumbPath);
 
           FeatureModel.addAttachmentThumbnail(layer, featureId, attachment._id, { 
             size: stat.size, 
             name: path.basename(attachment.name, path.extname(attachment.name)) + "_" + thumbSize + path.extname(attachment.name),
-            relativePath: thumbRelativePath, 
+            relativePath: path.join(path.dirname(attachment.relativePath), path.basename(attachment.relativePath, path.extname(attachment.relativePath))) + "_" + thumbSize + path.extname(attachment.relativePath),
             contentType: attachment.contentType,
             height: thumbHeight,
             width: thumbWidth
