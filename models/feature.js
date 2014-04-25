@@ -338,6 +338,8 @@ exports.updateAttachment = function(layer, featureId, attachmentId, file, callba
   if (file.name) set['attachments.$.name'] = file.name;
   if (file.type) set['attachments.$.type'] = file.type;
   if (file.size) set['attachments.$.size'] = file.size;
+  if (file.width) set['attachments.$.width'] = file.width;
+  if (file.height) set['attachments.$.height'] = file.height;
 
   var update = {
     '$set': set,
