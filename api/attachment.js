@@ -52,10 +52,13 @@ var generateThumbnails = function(layer, featureId, attachment, done) {
   async.eachSeries(attachmentProcessing.thumbSizes, function(thumbSize, callback) {
     var thumbRelativePath = path.join(relativePath, path.basename(attachment.name, path.extname(attachment.name))) + "_" + thumbSize + path.extname(attachment.name);
     var outputPath = path.join(attachmentBase, thumbRelativePath);
+    console.log('thumbnailing start');
+
     gm(file).size(function(err, size) {
+      console.log('thumbnailing got original size');
+
       if (err) callback(err);
       gm(file)
-        .define("jpeg:preserve-settings")
         .resize(size.width <= size.height ? thumbSize : null, size.height < size.width ? thumbSize : null)
         .write(outputPath, function(err) {
           if (err) {
@@ -64,7 +67,10 @@ var generateThumbnails = function(layer, featureId, attachment, done) {
             return;
           } else {
             // write to mongo
+            console.log('Finished thumbnailing ' + thumbSize);
+
             gm(outputPath).identify(function(err, identity) {
+              console.log('thumbnailing get new size ' + identity.size.height + "x" + identity.size.width);
               if (err) {
                 console.log('error getting informatin about ' + outputPath);
                 callbacK(err);
@@ -83,6 +89,9 @@ var generateThumbnails = function(layer, featureId, attachment, done) {
                 },
                 function(err) {
                   if (err) console.log('error writing thumb to db', err);
+
+                  console.log('thumbnailing wrote thumb metadata to db');
+
                   callback(err);
                 });
               }
