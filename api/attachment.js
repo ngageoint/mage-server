@@ -7,7 +7,7 @@ var FeatureModel = require('../models/feature')
   , access = require('../access')
   , config = require('../config.json')
   , geometryFormat = require('../format/geoJsonFormat')
-  , gm = require('gm');
+  , gm = require('gm').subCl***REMOVED***({ imageMagick: true });
 
 var attachmentConfig = config.server.attachment;
 var attachmentBase = attachmentConfig.baseDirectory;
@@ -34,12 +34,16 @@ var orientImage = function(layer, featureId, attachment, callback) {
     fs.rename(outputFile, file, function(err) {
       if (err) return callback(err);
 
-      var stat = fs.statSync(file);
-      FeatureModel.updateAttachment(layer, featureId, attachment._id, {size: stat.size}, function(err, feature) {
-        imageProcessingQueue.push({type: 'thumbnail', layer: layer, featureId: featureId, attachment: attachment}, function(err) {
-          if (err) console.log("Error orienting image", err)
+      gm(file).identify(function(err, metadata) {
+        attachment.size = metadata.filesize;
+        attachment.width = metadata.size.width;
+        attachment.height = metadata.size.height;
+        FeatureModel.updateAttachment(layer, featureId, attachment._id, attachment, function(err, feature) {
+          imageProcessingQueue.push({type: 'thumbnail', layer: layer, featureId: featureId, attachment: attachment}, function(err) {
+            if (err) console.log("Error orienting image", err)
+          });
+          callback();
         });
-        callback();
       });
     });
   });
@@ -54,61 +58,50 @@ var generateThumbnails = function(layer, featureId, attachment, done) {
     var outputPath = path.join(attachmentBase, thumbRelativePath);
     console.log('thumbnailing start');
 
-    gm(file).size(function(err, size) {
-      console.log('thumbnailing got original size');
+    var thumbWidth = attachment.width <= attachment.height ? thumbSize : null;
+    var thumbHeight = attachment.height < attachment.width ? thumbSize : null;
 
-      if (err) callback(err);
-      gm(file)
-        .resize(size.width <= size.height ? thumbSize : null, size.height < size.width ? thumbSize : null)
-        .write(outputPath, function(err) {
-          if (err) {
-            console.log('Error thumbnailing file to size: ' + thumbSize, err);
+    if (!thumbWidth) thumbWidth = (thumbHeight / attachment.height) * attachment.width;
+    if (!thumbHeight) thumbHeight = (thumbWidth / attachment.width) * attachment.height;
+
+    gm(file)
+      .resize(thumbWidth, thumbHeight)
+      .write(outputPath, function(err) {
+        if (err) {
+          console.log('Error thumbnailing file to size: ' + thumbSize, err);
+          callback(err);
+          return;
+        } else {
+          // write to mongo
+          console.log('Finished thumbnailing ' + thumbSize);
+
+          var stat = fs.statSync(outputPath);
+
+          FeatureModel.addAttachmentThumbnail(layer, featureId, attachment._id, { 
+            size: stat.size, 
+            name: path.basename(attachment.name, path.extname(attachment.name)) + "_" + thumbSize + path.extname(attachment.name),
+            relativePath: thumbRelativePath, 
+            contentType: attachment.contentType,
+            height: thumbHeight,
+            width: thumbWidth
+          },
+          function(err) {
+            if (err) console.log('error writing thumb to db', err);
+
+            console.log('thumbnailing wrote thumb metadata to db');
+
             callback(err);
-            return;
-          } else {
-            // write to mongo
-            console.log('Finished thumbnailing ' + thumbSize);
-
-            gm(outputPath).identify(function(err, identity) {
-              console.log('thumbnailing get new size ' + identity.size.height + "x" + identity.size.width);
-              if (err) {
-                console.log('error getting informatin about ' + outputPath);
-                callbacK(err);
-                return;
-              }
-              if (!err) {
-                var stat = fs.statSync(outputPath);
-
-                FeatureModel.addAttachmentThumbnail(layer, featureId, attachment._id, { 
-                  size: stat.size, 
-                  name: path.basename(attachment.name, path.extname(attachment.name)) + "_" + thumbSize + path.extname(attachment.name),
-                  relativePath: thumbRelativePath, 
-                  contentType: attachment.contentType,
-                  height: identity.size.height,
-                  width: identity.size.width
-                },
-                function(err) {
-                  if (err) console.log('error writing thumb to db', err);
-
-                  console.log('thumbnailing wrote thumb metadata to db');
-
-                  callback(err);
-                });
-              }
-            })
-          }
-        });
+          });
+        }
       });
-  }, function(err) {
-    if (err) {
-      console.log('error thumbnailing', err);
-    } else {
-      console.log('Finished thumbnailing ' + attachment.name);
-    }
-
+    }, function(err) {
+      if (err) {
+        console.log('error thumbnailing', err);
+      } else {
+        console.log('Finished thumbnailing ' + attachment.name);
+      }
     done(err);
   });
-    
 }
 
 var createAttachmentPath = function(layer) {
