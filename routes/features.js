@@ -181,7 +181,7 @@ module.exports = function(app, auth) {
       var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
       if (deviceId) feature.deviceId = deviceId;
 
-      new api.Feature(req.layer).update(req.param('id'), req.body, function(err, updatedFeature) {
+      new api.Feature(req.layer).update(req.param('id'), feature, function(err, updatedFeature) {
         var response = geojson.transform(updatedFeature, {path: getFeatureResource(req)});
         res.json(response);
       }
