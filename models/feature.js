@@ -201,13 +201,9 @@ exports.updateFeature = function(layer, id, feature, callback) {
 
   var query = {};
   query[id.field] = id.id;
-  var update = {
-    geometry: feature.geometry,
-    properties: feature.properties || {}
-  };
   update.lastModified = moment.utc().toDate();
 
-  featureModel(layer).findOneAndUpdate(query, update, {new: true}, function (err, updatedFeature) {
+  featureModel(layer).findOneAndUpdate(query, feature, {new: true}, function (err, updatedFeature) {
     if (err) {
       console.log('Could not update feature', err);
     }
@@ -336,14 +332,15 @@ exports.addAttachment = function(layer, id, file, callback) {
   });
 }
 
-exports.updateAttachment = function(layer, attachmentId, file, callback) {
-  var condition = {'attachments.id': attachmentId};
+exports.updateAttachment = function(layer, featureId, attachmentId, file, callback) {
+  var condition = {_id: featureId, 'attachments._id': attachmentId};
+  var set = {};
+  if (file.name) set['attachments.$.name'] = file.name;
+  if (file.type) set['attachments.$.type'] = file.type;
+  if (file.size) set['attachments.$.size'] = file.size;
+
   var update = {
-    '$set': {
-      'attachments.$.name': filesname,
-      'attachments.$.type': file.type,
-      'attachments.$.size': file.size
-    },
+    '$set': set,
     lastModified: new Date()
   };
 
@@ -369,8 +366,7 @@ exports.removeAttachment = function(feature, id, callback) {
 }
 
 exports.addAttachmentThumbnail = function(layer, featureId, attachmentId, thumbnail, callback) {
-  var thumb = new Thumbnail(thumbnail);
-  var condition = {'attachments._id': attachmentId};
+  var condition = {_id: featureId, 'attachments._id': attachmentId};
   var update = {'$push': { 'attachments.$.thumbnails': thumbnail }};
   featureModel(layer).update(condition, update, function(err, feature) {
     if (err) {

@@ -13,25 +13,40 @@ var attachmentConfig = config.server.attachment;
 var attachmentBase = attachmentConfig.baseDirectory;
 var attachmentProcessing = attachmentConfig.processing;
 
-var createAttachmentPath = function(layer) {
-  var now = new Date();
-  return path.join(
-    layer.collectionName, 
-    now.getFullYear().toString(), 
-    (now.getMonth() + 1).toString(), 
-    now.getDate().toString()
-  );
-}
-
-var moveImage = function(path, outputFile, callback) {
-  if (attachmentProcessing && attachmentProcessing.orientImages) {
-    gm(path).define("jpeg:preserve-settings").autoOrient().write(outputFile, callback);
+var imageProcessingQueue = async.queue(function(task, callback) {
+  console.log('trying to process image task ' + task.type);
+  if (task.type == 'orient') {
+    orientImage(task.layer, task.featureId, task.attachment, callback);
+  } else if (task.type == 'thumbnail') {
+    generateThumbnails(task.layer, task.featureId, task.attachment, callback);
   } else {
-    fs.rename(path, outputFile, callback);
+    console.log("Unrecognized task " + task.type + " doing nothing...");
+    callback();
   }
+}, attachmentProcessing.queueSize);
+
+var orientImage = function(layer, featureId, attachment, callback) {
+  var file = path.join(attachmentBase, attachment.relativePath);
+  var outputFile =  file + "_orient";
+  console.log("file", file);
+
+  gm(file).define("jpeg:preserve-settings").autoOrient().write(outputFile, function(err) {
+    fs.rename(outputFile, file, function(err) {
+      if (err) return callback(err);
+
+      var stat = fs.statSync(file);
+      FeatureModel.updateAttachment(layer, featureId, attachment._id, {size: stat.size}, function(err, feature) {
+        imageProcessingQueue.push({type: 'thumbnail', layer: layer, featureId: featureId, attachment: attachment}, function(err) {
+          if (err) console.log("Error orienting image", err)
+        });
+        callback();
+      });
+    });
+  });
 }
 
-var generateThumbnails = function(layer, attachment, file, featureId) {
+var generateThumbnails = function(layer, featureId, attachment, done) {
+  var file = path.join(attachmentBase, attachment.relativePath);
   var relativePath = createAttachmentPath(layer);
 
   async.eachSeries(attachmentProcessing.thumbSizes, function(thumbSize, callback) {
@@ -58,13 +73,14 @@ var generateThumbnails = function(layer, attachment, file, featureId) {
               if (!err) {
                 var stat = fs.statSync(outputPath);
 
-                FeatureModel.addAttachmentThumbnail(layer, featureId, attachment._id, 
-                  { size: stat.size, 
-                    name: path.basename(attachment.name, path.extname(attachment.name)) + "_" + thumbSize + path.extname(attachment.name),
-                    relativePath: thumbRelativePath, 
-                    contentType: attachment.contentType,
-                    height: identity.size.height,
-                    width: identity.size.width},
+                FeatureModel.addAttachmentThumbnail(layer, featureId, attachment._id, { 
+                  size: stat.size, 
+                  name: path.basename(attachment.name, path.extname(attachment.name)) + "_" + thumbSize + path.extname(attachment.name),
+                  relativePath: thumbRelativePath, 
+                  contentType: attachment.contentType,
+                  height: identity.size.height,
+                  width: identity.size.width
+                },
                 function(err) {
                   if (err) console.log('error writing thumb to db', err);
                   callback(err);
@@ -80,43 +96,20 @@ var generateThumbnails = function(layer, attachment, file, featureId) {
     } else {
       console.log('Finished thumbnailing ' + attachment.name);
     }
+
+    done(err);
   });
     
 }
 
-var processImage = function(layer, featureId, attachment, outputFile, callback) {
-  moveImage(attachment.path, outputFile, function(err) {
-    if (err) {
-      callback(err);
-      return;
-    }
-
-    var stat = fs.statSync(outputFile);
-    attachment.size = stat.size;
-
-    FeatureModel.addAttachment(layer, featureId, attachment, function(err, newAttachment) {
-      if (err) return callback(err);
-      callback(err, newAttachment);
-      // generate thumbnails if we need to
-      if (attachmentProcessing.thumbSizes) {
-        generateThumbnails(layer, newAttachment, outputFile, featureId);
-      }
-    });
-  });
-}
-
-var processOtherAttachment = function(layer, featureId, attachment, outputFile, callback) {
-  fs.rename(attachment.path, outputFile, function(err) {
-    if (err) {
-      callback(err);
-      return;
-    }
-
-    FeatureModel.addAttachment(layer, featureId, attachment, function(err, newAttachment) {
-      if (err) return callback(err);
-      callback(err, newAttachment);
-    });
-  });
+var createAttachmentPath = function(layer) {
+  var now = new Date();
+  return path.join(
+    layer.collectionName, 
+    now.getFullYear().toString(), 
+    (now.getMonth() + 1).toString(), 
+    now.getDate().toString()
+  );
 }
 
 function Attachment(layer, feature) {
@@ -147,7 +140,7 @@ Attachment.prototype.getById = function(id, callback) {
   return callback(null, attachment);
 }
 
-Attachment.prototype.create = function(id, attachment, callback) {
+Attachment.prototype.create = function(featureId, attachment, callback) {
   var layer = this._layer;
   var feature = this._feature;
 
@@ -161,20 +154,36 @@ Attachment.prototype.create = function(id, attachment, callback) {
     attachment.relativePath = path.join(relativePath, fileName);
     var file = path.join(attachmentBase, attachment.relativePath);
 
+    var image = false;
     var extension = path.extname(fileName).toLowerCase();
-    switch(extension) {
+    switch(extension) {  // TODO should probably use the mime type here
       case '.jpg':
       case '.jpeg':
       case '.png':
       case '.gif':
         // OK it is an image, let's do this
-        processImage(layer, id, attachment, file, callback);
+        image = true;
         break;
-      default:
-        processOtherAttachment(layer, id, attachment, file, callback);
     }
 
-    
+    fs.rename(attachment.path, file, function(err) {
+      if (err) {
+        callback(err);
+        return;
+      }
+
+      FeatureModel.addAttachment(layer, featureId, attachment, function(err, newAttachment) {
+        if (err) return callback(err);
+        callback(err, newAttachment);
+
+        if (image && attachmentProcessing && attachmentProcessing.orientImages) {
+          // push image orientation to front of queue
+          imageProcessingQueue.unshift({type: 'orient', layer: layer, featureId: featureId, attachment: newAttachment}, function(err) {
+            if (err) console.log("Error orienting image", err)
+          });
+        }
+      });
+    });
   });
 }
 
