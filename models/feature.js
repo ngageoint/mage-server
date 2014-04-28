@@ -201,7 +201,7 @@ exports.updateFeature = function(layer, id, feature, callback) {
 
   var query = {};
   query[id.field] = id.id;
-  update.lastModified = moment.utc().toDate();
+  feature.lastModified = moment.utc().toDate();
 
   featureModel(layer).findOneAndUpdate(query, feature, {new: true}, function (err, updatedFeature) {
     if (err) {
