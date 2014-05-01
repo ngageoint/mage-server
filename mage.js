@@ -3,9 +3,8 @@ var express = require("express")
   , path = require("path")
   , fs = require('fs-extra')
   , config = require('./config.json')
-  , provision = require('./provision')
-  , gm = require('gm').subCl***REMOVED***({ imageMagick: true });;
-
+  , provision = require('./provision');
+  
 var optimist = require("optimist")
   .usage("Usage: $0 --port [number]")
   .describe('port', 'Port number that MAGE node server will run on.')
@@ -41,18 +40,6 @@ app.configure(function () {
   });
   mongoose.set('debug', true);
 
-  // ensure graphicsmagick exists if thumbnails are set
-  if (config.server.attachment.processing) {
-    gm(1, 1, "#00ffffff")
-      .write('dot.png', function(err){
-        if (err) {
-          console.log("GraphicsMagick is not installed.  Please remove attachment processing from your configuration or install GraphicsMagick.");
-          throw err;
-        }
-      }
-    );
-  }
-
   app.use(function(req, res, next) {
     req.getRoot = function() {
       return req.protocol + "://" + req.get('host');
@@ -87,3 +74,6 @@ require('./routes')(app, {authentication: authentication, provisioning: provisio
 var port = argv.port;
 app.listen(port);
 console.log('MAGE Server: Started listening on port ' + port);
+
+// install all plugins
+require('./plugins');
