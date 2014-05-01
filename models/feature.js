@@ -16,7 +16,8 @@ var AttachmentSchema = new Schema({
   name: { type: String, required: false },
   relativePath: { type: String, required: true },
   width: { type: Number, required: false },
-  height: { type: Number, required: false},
+  height: { type: Number, required: false },
+  oriented: {type: Boolean, required: true, default: false },
   thumbnails: [ThumbnailSchema]
 });
 
@@ -25,9 +26,10 @@ var ThumbnailSchema = new Schema({
   size: { type: Number, required: false },  
   name: { type: String, required: false },
   relativePath: { type: String, required: true },
+  minDimension: { type: Number, required: true },
   width: { type: Number, required: false },
   height: { type: Number, required: false}
-});
+}); 
 
 // Creates the Schema for the Attachments object
 var FeatureSchema = new Schema({
@@ -48,6 +50,9 @@ FeatureSchema.index({'deviceId': 1});
 FeatureSchema.index({'properties.type': 1});
 FeatureSchema.index({'properties.timestamp': 1});
 FeatureSchema.index({'states.name': 1});
+FeatureSchema.index({'attachments.oriented': 1});
+FeatureSchema.index({'attachments.contentType': 1});
+FeatureSchema.index({'attachments.thumbnails.minDimension': 1});
 
 var models = {};
 var Attachment = mongoose.model('Attachment', AttachmentSchema);
@@ -88,7 +93,7 @@ var parseFields = function(fields) {
 
     return fields;
   } else {
-    return { states: {$slice: 1}, 'attachments.thumbnails': false };
+    return { states: {$slice: 1}};
   }
 }
 
@@ -293,16 +298,12 @@ exports.getAttachments = function(layer, id, callback) {
   });
 }
 
-exports.getAttachment = function(layer, id, attachmentId, callback) {
-  var query = {};
-  query[id.field] = id.id;
-  var fields = {attachments: 1};
-  featureModel(layer).findOne(query, fields, function(err, feature) {
-    var attachments = feature.attachments.filter(function(attachment) {
-      return (attachment.id == attachmentId);
-    });
-
-    var attachment = attachments.length ? attachments[0] : null;
+exports.getAttachment = function(layer, featureId, attachmentId, callback) {
+  var id = {_id: featureId};
+  var attachment = {"attachments": {"$elemMatch": {_id: attachmentId}}};
+  var fields = {attachments: true};
+  featureModel(layer).findOne(id, attachment, fields, function(err, feature) {
+    var attachment = feature.attachments.length ? feature.attachments[0] : null;
     callback(attachment);
   });
 }
@@ -340,6 +341,7 @@ exports.updateAttachment = function(layer, featureId, attachmentId, file, callba
   if (file.size) set['attachments.$.size'] = file.size;
   if (file.width) set['attachments.$.width'] = file.width;
   if (file.height) set['attachments.$.height'] = file.height;
+  if (file.oriented) set['attachments.$.oriented'] = file.oriented;
 
   var update = {
     '$set': set,
