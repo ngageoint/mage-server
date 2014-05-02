@@ -28,9 +28,7 @@ DeviceSchema.pre('save', function(next) {
     return next(new Error("uid cannot be null"));
   }
 
-  // only validate uid if it has been modified (or is new)
-  if (!device.isModified('uid')) return next();
-
+  device.uid = device.uid.toLowerCase();
   Device.findOne({uid: device.uid}, function(err, device) {
     if (err) return next(err);
 
@@ -95,7 +93,7 @@ exports.getDeviceById = function(id, callback) {
 }
 
 exports.getDeviceByUid = function(uid, callback) {
-  var conditions = {uid: uid};
+  var conditions = {uid: uid.toLowerCase()};
   Device.findOne(conditions, function(err, device) {
     if (err) {
       console.log('Error finding device for id: ' + id + ' err: ' + err);
