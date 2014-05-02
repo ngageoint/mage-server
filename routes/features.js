@@ -181,7 +181,7 @@ module.exports = function(app, auth) {
       var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
       if (deviceId) feature.deviceId = deviceId;
 
-      new api.Feature(req.layer).update(req.param('id'), req.body, function(err, updatedFeature) {
+      new api.Feature(req.layer).update(req.param('id'), feature, function(err, updatedFeature) {
         var response = geojson.transform(updatedFeature, {path: getFeatureResource(req)});
         res.json(response);
       }
@@ -232,24 +232,12 @@ module.exports = function(app, auth) {
     '/FeatureServer/:layerId/features/:featureId/attachments/:attachmentId',
     access.authorize('READ_FEATURE'),
     function(req, res, next) {
-      new api.Attachment(req.layer, req.feature).getById(req.param('attachmentId'), function(err, attachment) {
+      console.log("MAGE Features (ID) Attachment GET REST Service Requested");
+
+      new api.Attachment(req.layer, req.feature).getById(req.param('attachmentId'), {size: req.param('size')}, function(err, attachment) {
         if (err) return next(err);
 
         if (!attachment) return res.send(404);
-
-        var thumbnails = attachment.thumbnails;
-        if (thumbnails.length && req.param('size')) {
-          var size = Number(req.param('size'));
-          for (var i = 0; i < thumbnails.length; i++) {
-            var thumb = thumbnails[i];
-            if ((thumb.height < attachment.height || !attachment.height)
-              && (thumb.width < attachment.width || !attachment.width)
-              && (thumb.height >= size || thumb.width >= size)) {
-
-              attachment = thumb;
-            }
-          }
-        }
 
         var stream = fs.createReadStream(attachment.path);
         stream.on('open', function() {

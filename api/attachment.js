@@ -6,12 +6,10 @@ var FeatureModel = require('../models/feature')
   , moment = require('moment')
   , access = require('../access')
   , config = require('../config.json')
-  , geometryFormat = require('../format/geoJsonFormat')
-  , gm = require('gm');
+  , geometryFormat = require('../format/geoJsonFormat');
 
 var attachmentConfig = config.server.attachment;
 var attachmentBase = attachmentConfig.baseDirectory;
-var attachmentProcessing = attachmentConfig.processing;
 
 var createAttachmentPath = function(layer) {
   var now = new Date();
@@ -23,111 +21,32 @@ var createAttachmentPath = function(layer) {
   );
 }
 
-var moveImage = function(path, outputFile, callback) {
-  if (attachmentProcessing && attachmentProcessing.orientImages) {
-    gm(path).autoOrient().write(outputFile, callback);
-  } else {
-    fs.rename(path, outputFile, callback);
-  }
-}
-
-var generateThumbnails = function(layer, attachment, file, featureId) {
-  var relativePath = createAttachmentPath(layer);
-  attachmentProcessing.thumbSizes.forEach(function(thumbSize) {
-    var thumbRelativePath = path.join(relativePath, path.basename(attachment.name, path.extname(attachment.name))) + "_" + thumbSize + path.extname(attachment.name);
-    var outputPath = path.join(attachmentBase, thumbRelativePath);
-    gm(file).size(function(err, size) {
-      gm(file)
-        .resize(size.width <= size.height ? thumbSize : null, size.height < size.width ? thumbSize : null)
-        .write(outputPath, function(err) {
-          if (err) {
-            console.log('Error thumbnailing file to size: ' + thumbSize, err);
-          } else {
-            // write to mongo
-            gm(outputPath).identify(function(err, identity) {
-              if (!err) {
-                var stat = fs.statSync(outputPath);
-
-                FeatureModel.addAttachmentThumbnail(layer, featureId, attachment._id, 
-                  { size: stat.size, 
-                    name: path.basename(attachment.name, path.extname(attachment.name)) + "_" + thumbSize + path.extname(attachment.name),
-                    relativePath: thumbRelativePath, 
-                    contentType: attachment.contentType,
-                    height: identity.size.height,
-                    width: identity.size.width},
-                function(err) {
-                  if (err) console.log('error writing thumb to db', err);
-                  else console.log('wrote thumb');
-                });
-              }
-            })
-          }
-        });
-      });
-    });
-}
-
-var processImage = function(layer, featureId, attachment, outputFile, callback) {
-  moveImage(attachment.path, outputFile, function(err) {
-    if (err) {
-      callback(err);
-      return;
-    }
-
-    FeatureModel.addAttachment(layer, featureId, attachment, function(err, newAttachment) {
-      if (err) return callback(err);
-      callback(err, newAttachment);
-      // generate thumbnails if we need to
-      if (attachmentProcessing.thumbSizes) {
-        generateThumbnails(layer, newAttachment, outputFile, featureId);
-      }
-    });
-  });
-}
-
-var processOtherAttachment = function(layer, featureId, attachment, outputFile, callback) {
-  fs.rename(attachment.path, outputFile, function(err) {
-    if (err) {
-      callback(err);
-      return;
-    }
-
-    FeatureModel.addAttachment(layer, featureId, attachment, function(err, newAttachment) {
-      if (err) return callback(err);
-      callback(err, newAttachment);
-    });
-  });
-}
-
-function Attachment(layer, feature) {
+function Attachment(layer, featureId) {
   this._layer = layer;
-  this._feature = feature;
+  this._featureId = featureId;
 };
 
-Attachment.prototype.getById = function(id, callback) {
-  if (id !== Object(id)) {
-    id = {id: id, field: '_id'};
-  }
+Attachment.prototype.getById = function(attachmentId, options, callback) {
+  var size = options.size ? Number(options.size) : null;
 
-  var attachment = null;
-  this._feature.attachments.forEach(function(a) {
-    if (a[id.field] == id.id) {
-      attachment = a;
-      return false; // found it, stop iterating
+  FeatureModel.getAttachment(this._layer, this._featureId, attachmentId, function(attachment) {
+    if (size) {
+      attachment.thumbnails.forEach(function(thumbnail) {
+        if ((thumbnail.minDimension < attachment.height || !attachment.height)
+          && (thumbnail.minDimension < attachment.width || !attachment.width)
+          && (thumbnail.minDimension >= size)) {
+            attachment = thumbnail;
+        }
+      });
     }
+
+    if (attachment) attachment.path = path.join(attachmentBase, attachment.relativePath);
+    
+    callback(null, attachment);
   });
-
-  if (attachment) attachment.path = path.join(attachmentBase, attachment.relativePath);
-  if (attachment.thumbnails) {
-    for (var i = 0; i < attachment.thumbnails.length; i++) {
-      attachment.thumbnails[i].path = path.join(attachmentBase, attachment.thumbnails[i].relativePath);
-    }
-  }
-
-  return callback(null, attachment);
 }
 
-Attachment.prototype.create = function(id, attachment, callback) {
+Attachment.prototype.create = function(featureId, attachment, callback) {
   var layer = this._layer;
   var feature = this._feature;
 
@@ -141,20 +60,16 @@ Attachment.prototype.create = function(id, attachment, callback) {
     attachment.relativePath = path.join(relativePath, fileName);
     var file = path.join(attachmentBase, attachment.relativePath);
 
-    var extension = path.extname(fileName).toLowerCase();
-    switch(extension) {
-      case '.jpg':
-      case '.jpeg':
-      case '.png':
-      case '.gif':
-        // OK it is an image, let's do this
-        processImage(layer, id, attachment, file, callback);
-        break;
-      default:
-        processOtherAttachment(layer, id, attachment, file, callback);
-    }
+    fs.rename(attachment.path, file, function(err) {
+      if (err) {
+        callback(err);
+        return;
+      }
 
-    
+      FeatureModel.addAttachment(layer, featureId, attachment, function(err, newAttachment) {
+        callback(err, newAttachment);
+      });
+    });
   });
 }
 

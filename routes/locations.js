@@ -43,10 +43,6 @@ module.exports = function(app, security) {
     }
 
     var valid = locations.every(function(l) {
-      console.log('location ', l);
-      console.log('geometry ', l.geometry);
-      console.log('properties ', l.properties);
-
       if (!l.geometry) {
         msg = "Missing required parameter 'geometry'.";
         return false;
@@ -101,7 +97,6 @@ module.exports = function(app, security) {
     access.authorize('CREATE_LOCATION'),
     validateLocations,
     function(req, res) {
-      console.log("HTF did IO get here$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
       Location.createLocations(req.user, req.locations, function(err, locations) {
         if (err) {
           return res.send(400, err);
