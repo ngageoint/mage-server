@@ -1,8 +1,5 @@
 'use strict';
 
-/*
-
-*/
 function AdminController($scope, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService) {
   // The variables that get set when clicking a team or user in the list, these get loaded into the editor.
   $scope.currentAdminPanel = "user"; // possible values user, team, and device
@@ -33,22 +30,8 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
       $scope.deviceSearch();
     });
   
-  $scope.team = {};
   $scope.user = {};
   $scope.device = {};
-
-  $scope.teams = [
-    {
-      'id': "0",
-      'teamName': "Fox Hound",
-      'description': "Desert search and rescue group."
-    },
-    {
-      'id': "1",
-      'teamName': "Diamond Dogs",
-      'description': "Urban search and rescue group."
-    }
-  ];
 
   // Edit form toggles
   $scope.showUserForm = false;
@@ -61,7 +44,6 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   $scope.statusTitle = '';
   $scope.statusMessage = '';
   $scope.statusLevel = ''; // use the bootstrap alert cl***REMOVED***es for this value, alert-error, alert-success, alert-info. Leave it as '' for yellow
-
 
   /* Status message functions */
   /**
@@ -127,23 +109,6 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
 
   $scope.deviceFilterCl***REMOVED*** = function (filter) {
     return filter === $scope.currentDeviceFilter ? 'active' : '';
-  }
-
-  /* Team admin functions */
-  $scope.getTeams = function() {
-
-  }
-
-  $scope.newTeam = function() {
-    $('#new-team-form').removeCl***REMOVED***('hide');
-  }
-
-  $scope.viewTeam = function(team) {
-    $scope.team = team;
-  }
-
-  $scope.saveTeam = function() {
-    console.log("saving team...");
   }
 
   /* User admin functions */
@@ -276,16 +241,6 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     }
   }
 
-
-  /* Device admin functions */
-  $scope.getDevices = function () {
-
-  }
-
-  $scope.newDevice = function () {
-
-  }
-
   $scope.editDevice = function (device) {
     $scope.device = device;
     $scope.setShowDeviceForm(true);
@@ -310,6 +265,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
           $scope.showStatusMessage("Success", "Device '" + device.uid + "' has been created.","alert-info");
           $scope.devices.push(data);
           $scope.setShowDeviceForm(false);
+          $scope.deviceSearch();
         })
         .error(function (data) {
           $scope.showStatusMessage("Unable to create device", data, "alert-error");
@@ -333,6 +289,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
       .success(function() {
         $scope.showStatusMessage("Success", "Device '" + device.uid + "' has been removed.","alert-info");
         $scope.devices = _.reject($scope.devices, function(d) { return d.uid === device.uid });
+        $scope.deviceSearch();
       })
       .error(function() {
         $scope.showStatusMessage("Unable to delete device", data, "alert-error");
