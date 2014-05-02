@@ -16,7 +16,8 @@ var AttachmentSchema = new Schema({
   name: { type: String, required: false },
   relativePath: { type: String, required: true },
   width: { type: Number, required: false },
-  height: { type: Number, required: false},
+  height: { type: Number, required: false },
+  oriented: {type: Boolean, required: true, default: false },
   thumbnails: [ThumbnailSchema]
 });
 
@@ -25,9 +26,10 @@ var ThumbnailSchema = new Schema({
   size: { type: Number, required: false },  
   name: { type: String, required: false },
   relativePath: { type: String, required: true },
+  minDimension: { type: Number, required: true },
   width: { type: Number, required: false },
   height: { type: Number, required: false}
-});
+}); 
 
 // Creates the Schema for the Attachments object
 var FeatureSchema = new Schema({
@@ -48,6 +50,9 @@ FeatureSchema.index({'deviceId': 1});
 FeatureSchema.index({'properties.type': 1});
 FeatureSchema.index({'properties.timestamp': 1});
 FeatureSchema.index({'states.name': 1});
+FeatureSchema.index({'attachments.oriented': 1});
+FeatureSchema.index({'attachments.contentType': 1});
+FeatureSchema.index({'attachments.thumbnails.minDimension': 1});
 
 var models = {};
 var Attachment = mongoose.model('Attachment', AttachmentSchema);
@@ -88,7 +93,7 @@ var parseFields = function(fields) {
 
     return fields;
   } else {
-    return {states: {$slice: 1}};
+    return { states: {$slice: 1}};
   }
 }
 
@@ -109,6 +114,7 @@ exports.featureModel = featureModel;
 exports.getFeatures = function(layer, o, callback) {
   var conditions = {};
   var fields = parseFields(o.fields);
+  console.log('fields', fields);
 
   var query = featureModel(layer).find(conditions, fields);
 
@@ -200,13 +206,9 @@ exports.updateFeature = function(layer, id, feature, callback) {
 
   var query = {};
   query[id.field] = id.id;
-  var update = {
-    geometry: feature.geometry,
-    properties: feature.properties || {}
-  };
-  update.lastModified = moment.utc().toDate();
+  feature.lastModified = moment.utc().toDate();
 
-  featureModel(layer).findOneAndUpdate(query, update, {new: true}, function (err, updatedFeature) {
+  featureModel(layer).findOneAndUpdate(query, feature, {new: true}, function (err, updatedFeature) {
     if (err) {
       console.log('Could not update feature', err);
     }
@@ -296,16 +298,12 @@ exports.getAttachments = function(layer, id, callback) {
   });
 }
 
-exports.getAttachment = function(layer, id, attachmentId, callback) {
-  var query = {};
-  query[id.field] = id.id;
-  var fields = {attachments: 1};
-  featureModel(layer).findOne(query, fields, function(err, feature) {
-    var attachments = feature.attachments.filter(function(attachment) {
-      return (attachment.id == attachmentId);
-    });
-
-    var attachment = attachments.length ? attachments[0] : null;
+exports.getAttachment = function(layer, featureId, attachmentId, callback) {
+  var id = {_id: featureId};
+  var attachment = {"attachments": {"$elemMatch": {_id: attachmentId}}};
+  var fields = {attachments: true};
+  featureModel(layer).findOne(id, attachment, fields, function(err, feature) {
+    var attachment = feature.attachments.length ? feature.attachments[0] : null;
     callback(attachment);
   });
 }
@@ -317,6 +315,7 @@ exports.addAttachment = function(layer, id, file, callback) {
 
   var condition = {};
   condition[id.field] = id.id;
+  
   var attachment = new Attachment({
     contentType: file.headers['content-type'],  
     size: file.size,
@@ -334,14 +333,18 @@ exports.addAttachment = function(layer, id, file, callback) {
   });
 }
 
-exports.updateAttachment = function(layer, attachmentId, file, callback) {
-  var condition = {'attachments.id': attachmentId};
+exports.updateAttachment = function(layer, featureId, attachmentId, file, callback) {
+  var condition = {_id: featureId, 'attachments._id': attachmentId};
+  var set = {};
+  if (file.name) set['attachments.$.name'] = file.name;
+  if (file.type) set['attachments.$.type'] = file.type;
+  if (file.size) set['attachments.$.size'] = file.size;
+  if (file.width) set['attachments.$.width'] = file.width;
+  if (file.height) set['attachments.$.height'] = file.height;
+  if (file.oriented) set['attachments.$.oriented'] = file.oriented;
+
   var update = {
-    '$set': {
-      'attachments.$.name': filesname,
-      'attachments.$.type': file.type,
-      'attachments.$.size': file.size
-    },
+    '$set': set,
     lastModified: new Date()
   };
 
@@ -367,8 +370,7 @@ exports.removeAttachment = function(feature, id, callback) {
 }
 
 exports.addAttachmentThumbnail = function(layer, featureId, attachmentId, thumbnail, callback) {
-  var thumb = new Thumbnail(thumbnail);
-  var condition = {'attachments._id': attachmentId};
+  var condition = {_id: featureId, 'attachments._id': attachmentId};
   var update = {'$push': { 'attachments.$.thumbnails': thumbnail }};
   featureModel(layer).update(condition, update, function(err, feature) {
     if (err) {

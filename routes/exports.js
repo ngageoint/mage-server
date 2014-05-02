@@ -129,11 +129,11 @@ module.exports = function(app, security) {
         function(layer, done) {
           Feature.getFeatures(layer, {filter: req.parameters.filter}, function(features) {
             features.forEach(function(feature) {
-              if (req.users[feature.properties.userId]) feature.properties.user = req.users[feature.properties.userId].username;
-              if (req.devices[feature.properties.deviceId]) feature.properties.device = req.devices[feature.properties.deviceId].uid;
+              if (req.users[feature.userId]) feature.properties.user = req.users[feature.userId].username;
+              if (req.devices[feature.deviceId]) feature.properties.device = req.devices[feature.deviceId].uid;
 
-              delete feature.properties.deviceId;
-              delete feature.properties.userId;
+              delete feature.deviceId;
+              delete feature.userId;
             });
 
             var streams = {
@@ -313,9 +313,9 @@ module.exports = function(app, security) {
               features.forEach(function(feature) {             
                 lon = feature.geometry.coordinates[0];
                 lat = feature.geometry.coordinates[1];
-                desc = feature.properties.TYPE;
+                desc = feature.properties.type;
                 attachments = feature.attachments;              
-                stream.write(generate_kml.generatePlacemark(feature.properties.TYPE, feature.properties.TYPE, lon ,lat ,0, feature.properties, attachments));
+                stream.write(generate_kml.generatePlacemark(feature.properties.type, feature.properties.type, lon ,lat ,0, feature.properties, attachments));
               });
 
               stream.write(generate_kml.generateKMLFolderClose());  
