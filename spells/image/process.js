@@ -8,12 +8,13 @@ var config = require('./config.json')
 	, Feature = require('../../models/feature')
 	, gm = require('gm');
 
-console.log('starting image processing');
-
 var attachmentBase = serverConfig.server.attachment.baseDirectory;
 var thumbSizes = config.image.thumbSizes;
 
-var timeout = 5 * 60 * 1000; // todo read this from config
+var timeout = config.image.interval * 1000;
+
+var featureTimes = {};
+var lastFeatureTimes = {orient: {}, thumbnail: {}};
 
 var mongodbConfig = config.mongodb;
 mongoose.connect(mongodbConfig.url, {server: {poolSize: mongodbConfig.poolSize}}, function(err) {
@@ -42,14 +43,16 @@ function processAttachment(layer, featureId, attachment, callback) {
 }
 
 function orient(layer, featureId, attachment, callback) {
-	console.log('orient attachment');
+	console.log('orient attachment ' + attachment.name);
 
 	var file = path.join(attachmentBase, attachment.relativePath);
 	var outputFile =  file + "_orient";
 	console.log("file", file);
 
+	var start = new Date().valueOf();
 	gm(file).autoOrient().write(outputFile, function(err) {
-		console.log("orientation of attachment " + attachment.name + " complete");
+		var end = new Date().valueOf();
+		console.log("orientation of attachment " + attachment.name + " complete in " + (end - start)/1000 + " seconds");
 		fs.rename(outputFile, file, function(err) {
 			if (err) return callback(err);
 
@@ -87,7 +90,7 @@ function thumbnail(layer, featureId, attachment, callback) {
 		if (thumbWidth > attachment.width || thumbHeight > attachment.height) return done();
 
 		console.log('thumbnailing attachment ' + attachment.name + ' for size ' + thumbSize);
-
+		var start = new Date().valueOf();
 		gm(file)
 			.in("-size").in(thumbWidth * 2 + "x" + thumbHeight * 2)
 			.resize(thumbWidth, thumbHeight)
@@ -98,7 +101,8 @@ function thumbnail(layer, featureId, attachment, callback) {
 					return;
 				} else {
 					// write to mongo
-					console.log('Finished thumbnailing ' + thumbSize);
+					var end = new Date().valueOf();
+					console.log('Finished thumbnailing ' + thumbSize + " in " + (end - start)/1000 + " seconds");
 
 					var stat = fs.statSync(thumbPath);
 
@@ -131,11 +135,21 @@ function thumbnail(layer, featureId, attachment, callback) {
 }
 
 var processAttachments = function() {
+	console.log('processing attachments, starting from', lastFeatureTimes);
+
 	async.waterfall([
 		function(done) {
 			//get feature layers      
 			Layer.getLayers({type: 'Feature'}, function(err, layers) {
-				done(err, layers);
+				async.each(layers, function(layer, done) {
+					Feature.featureModel(layer).findOne({}, {lastModified: true}, {sort: {"lastModified": -1}, limit: 1}, function(err, feature) {
+						if (feature) featureTimes[layer.collectionName] = feature.lastModified;
+						done();
+					});
+				},
+				function(err) {
+					done(err, layers);
+				});
 			});
 		},
 		function(layers, done) {
@@ -143,12 +157,19 @@ var processAttachments = function() {
 			var results = [];
 			async.eachSeries(layers, function(layer, done) {
 				var match = {
-					"$match": { "attachments.contentType": { "$regex": /^image/ }, "attachments.oriented": false }
+					"attachments.contentType": { "$regex": /^image/ }, 
+					"attachments.oriented": false
 				};
+
+				var lastTime = lastFeatureTimes.orient[layer.collectionName];
+        if (lastTime) {
+          match.lastModified = {"$gt": lastTime};
+        }
+
 				var sort = {"$sort": { "lastModified": 1 }};
 				var unwind = {"$unwind": "$attachments"};
-				var project = {"$project": {attachment: "$attachments"}};
-				Feature.featureModel(layer).aggregate(match, sort, unwind, match, project, function(err, aggregate) {
+				var project = {"$project": {lastModified: 1, attachment: "$attachments"}};
+				Feature.featureModel(layer).aggregate({"$match": match}, sort, unwind, {"$match": match}, project, function(err, aggregate) {
 					results.push({layer: layer, features: aggregate});
 					done(err);
 				});
@@ -159,7 +180,11 @@ var processAttachments = function() {
 		},
 		function(layers, results, done) {
 			async.eachSeries(results, function(result, done) {
-				processLayer(result, done);
+				processLayer(result, function(err) {
+					// Update time
+					lastFeatureTimes.orient[result.layer.collectionName] = featureTimes[result.layer.collectionName];
+					done();
+				});
 			},
 			function(err) {
 				done(err, layers);
@@ -170,17 +195,21 @@ var processAttachments = function() {
 			// but do no have all the nessecary thumbnails
 			var results = [];
 			async.eachSeries(layers, function(layer, done) {
-				var match = {
-					"$match": { 
-						"attachments.contentType": { "$regex": /^image/ }, 
-						"attachments.oriented": true, 
-						"attachments.thumbnails.size": { "$not": { "$all": thumbSizes } } 
-					}
+				var match =  { 
+					"attachments.contentType": { "$regex": /^image/ }, 
+					"attachments.oriented": true, 
+					"attachments.thumbnails.minDimension": { "$not": { "$all": thumbSizes } } 
 				};
+
+				var lastTime = lastFeatureTimes.thumbnail[layer.collectionName];
+        if (lastTime) {
+          match.lastModified = {"$gt": lastTime};
+        }
+
 				var sort = {"$sort": { "lastModified": 1 }};
 				var unwind = {"$unwind": "$attachments"};
-				var project = {"$project": {attachment: "$attachments"}};
-				Feature.featureModel(layer).aggregate(match, sort, unwind, match, project, function(err, aggregate) {
+				var project = {"$project": {lastModified: 1, attachment: "$attachments"}};
+				Feature.featureModel(layer).aggregate({"$match": match}, sort, unwind, {"$match": match}, project, function(err, aggregate) {
 					results.push({layer: layer, features: aggregate});
 					done(err);
 				});
@@ -191,7 +220,11 @@ var processAttachments = function() {
 		},
 		function(layers, results, done) {
 			async.eachSeries(results, function(result, done) {
-				processLayer(result, done);
+				processLayer(result, function(err) {
+					// Update time
+					lastFeatureTimes.thumbnail[result.layer.collectionName] = featureTimes[result.layer.collectionName];
+					done();
+				});
 			},
 			function(err) {
 				done(err, layers);
@@ -199,9 +232,10 @@ var processAttachments = function() {
 		}
 	],
 	function(err, result) {
-		if (err) console.log('error orienting images', err);
+		if (err) console.log('error processing images', err);
 
 		console.log('done processing attachments');
+
 		setTimeout(processAttachments, timeout);
 	});
 };
