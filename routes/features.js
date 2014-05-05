@@ -6,9 +6,10 @@ module.exports = function(app, auth) {
     , util = require('util')
     , moment = require('moment')
     , access = require('../access')
-    , geometryFormat = require('../format/geoJsonFormat');
+    , geometryFormat = require('../format/geoJsonFormat')
+    , geojson = require('../transformers/geojson');
 
-  var geojson = require('../transformers/geojson');
+  var sortColumnWhitelist = ["lastModified"];
 
   var getFeatureResource = function(req) {
       return req.getPath().match(/(.*features)/)[0];
@@ -93,7 +94,26 @@ module.exports = function(app, auth) {
 
     var states = req.param('states');
     if (states) {
-      parameters.filter.states = states.split(",");
+      parameters.filter.states = states.split(',');
+    }
+
+    var sort = req.param('sort');
+    if (sort) {
+      var columns = {};
+      sort.split(',').forEach(function(column) {
+        var sortParams = column.split('+');
+        // Check sort column is in whitelist
+        if (sortColumnWhitelist.indexOf(sortParams[0]) == -1) return res.send("Cannot sort on column '" + sortParams[0] + "'");
+
+        // Order can be nothing (ASC by default) or ASC, DESC
+        var direction = 1; //ASC
+        if (sortParams.length > 1 && sortParams[1] == 'DESC') {
+          direction = -1; // DESC
+        }
+
+        columns[sortParams[0]] = direction;
+      });
+      parameters.sort = columns;
     }
 
     req.parameters = parameters;
@@ -111,8 +131,9 @@ module.exports = function(app, auth) {
 
       var options = {
         filter: req.parameters.filter,
-        fields: req.parameters.fields
-      }
+        fields: req.parameters.fields,
+        sort: req.parameters.sort
+      };
       new api.Feature(req.layer).getAll(options, function(features) {
         var response = geojson.transform(features, {path: getFeatureResource(req)});
         res.json(response);
