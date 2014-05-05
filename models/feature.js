@@ -114,7 +114,6 @@ exports.featureModel = featureModel;
 exports.getFeatures = function(layer, o, callback) {
   var conditions = {};
   var fields = parseFields(o.fields);
-  console.log('fields', fields);
 
   var query = featureModel(layer).find(conditions, fields);
 
@@ -136,6 +135,11 @@ exports.getFeatures = function(layer, o, callback) {
     query.where('states.0.name').in(filter.states);
   }
 
+  if (o.sort) {
+    console.log('sort on ', o.sort);
+    query.sort(o.sort);
+  }
+
   query.exec(function (err, features) {
     if (err) {
       console.log("Error finding features in mongo: " + err);
@@ -145,17 +149,10 @@ exports.getFeatures = function(layer, o, callback) {
   });
 }
 
-exports.getFeatureById = function(layer, id, options, callback) {
-  if (id !== Object(id)) {
-    id = {id: id, field: '_id'};
-  }
-
-  var conditions = {};
-  conditions[id.field] = id.id;
-
+exports.getFeatureById = function(layer, featureId, options, callback) {
   var fields = parseFields(options.fields);
 
-  featureModel(layer).findOne(conditions, fields).exec(function (err, feature) {
+  featureModel(layer).findById(featureId, fields, function(err, feature) {
     if (err) {
       console.log("Error finding feature in mongo: " + err);
     }
@@ -199,16 +196,10 @@ exports.createGeoJsonFeature = function(layer, feature, callback) {
   }); 
 }
 
-exports.updateFeature = function(layer, id, feature, callback) {
-  if (id !== Object(id)) {
-    id = {id: id, field: '_id'};
-  }
-
-  var query = {};
-  query[id.field] = id.id;
+exports.updateFeature = function(layer, featureId, feature, callback) {
   feature.lastModified = moment.utc().toDate();
 
-  featureModel(layer).findOneAndUpdate(query, feature, {new: true}, function (err, updatedFeature) {
+  featureModel(layer).findByIdAndUpdate(featureId, feature, {new: true}, function (err, updatedFeature) {
     if (err) {
       console.log('Could not update feature', err);
     }
@@ -217,14 +208,8 @@ exports.updateFeature = function(layer, id, feature, callback) {
   });
 }
 
-exports.removeFeature = function(layer, id, callback) {
-  if (id !== Object(id)) {
-    id = {id: id, field: '_id'};
-  }
-
-  var query = {};
-  query[id.field] = id.id;
-  featureModel(layer).findOneAndRemove(query, function (err, feature) {
+exports.removeFeature = function(layer, featureId, callback) {
+  featureModel(layer).findByIdAndRemove(featureId, function (err, feature) {
     if (err) {
       console.log('Could not remove feature', err);
     }
