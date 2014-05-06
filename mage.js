@@ -75,5 +75,5 @@ var port = argv.port;
 app.listen(port);
 console.log('MAGE Server: Started listening on port ' + port);
 
-// install all spells
-require('./spells');
+// install all plugins
+require('./plugins');

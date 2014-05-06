@@ -198,7 +198,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   $scope.getUnregisteredUsers = function (users) {
     var result = [];
     angular.forEach(users, function (user) {
-      if (!user.role) {
+      if (!user.active) {
         result.push(user);
       }
     });
@@ -208,7 +208,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   $scope.getRegisteredUsers = function (users) {
     var result = [];
     angular.forEach(users, function (user) {
-      if (user.role) {
+      if (user.active) {
         result.push(user);
       }
     });
