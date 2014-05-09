@@ -11,25 +11,30 @@ var StateSchema = new Schema({
 });
 
 var AttachmentSchema = new Schema({
-  contentType: { type: String, required: false },  
-  size: { type: Number, required: false },  
+  lastModified: {type: Date, required: false},
+  contentType: { type: String, required: false },
+  size: { type: Number, required: false },
   name: { type: String, required: false },
   relativePath: { type: String, required: true },
   width: { type: Number, required: false },
   height: { type: Number, required: false },
   oriented: {type: Boolean, required: true, default: false },
   thumbnails: [ThumbnailSchema]
+},{
+  strict: false
 });
 
 var ThumbnailSchema = new Schema({
-  contentType: { type: String, required: false },  
-  size: { type: Number, required: false },  
+  contentType: { type: String, required: false },
+  size: { type: Number, required: false },
   name: { type: String, required: false },
   relativePath: { type: String, required: true },
   minDimension: { type: Number, required: true },
   width: { type: Number, required: false },
   height: { type: Number, required: false}
-}); 
+},{
+  strict: false
+});
 
 // Creates the Schema for the Attachments object
 var FeatureSchema = new Schema({
@@ -41,10 +46,13 @@ var FeatureSchema = new Schema({
   properties: Schema.Types.Mixed,
   attachments: [AttachmentSchema],
   states: [StateSchema]
+},{
+  strict: false
 });
 
 FeatureSchema.index({geometry: "2dsphere"});
 FeatureSchema.index({'lastModified': 1});
+FeatureSchema.index({'attachments.lastModified': 1});
 FeatureSchema.index({'userId': 1});
 FeatureSchema.index({'deviceId': 1});
 FeatureSchema.index({'properties.type': 1});
@@ -140,11 +148,11 @@ exports.getFeatures = function(layer, o, callback) {
     query.sort(o.sort);
   }
 
-  query.exec(function (err, features) {
+  query.lean().exec(function (err, features) {
     if (err) {
       console.log("Error finding features in mongo: " + err);
     }
-    
+
     callback(features);
   });
 }
@@ -193,7 +201,7 @@ exports.createGeoJsonFeature = function(layer, feature, callback) {
     }
 
     callback(err, newFeature);
-  }); 
+  });
 }
 
 exports.updateFeature = function(layer, featureId, feature, callback) {
@@ -264,7 +272,7 @@ exports.addState = function(layer, id, state, callback) {
   state._id = mongoose.Types.ObjectId();
   var update = {
     '$set': {
-      'states.-1': state, 
+      'states.-1': state,
       lastModified: moment.utc().toDate()
     }
   };
@@ -293,19 +301,20 @@ exports.getAttachment = function(layer, featureId, attachmentId, callback) {
   });
 }
 
-exports.addAttachment = function(layer, id, file, callback) {  
+exports.addAttachment = function(layer, id, file, callback) {
   if (id !== Object(id)) {
     id = {id: id, field: '_id'};
   }
 
   var condition = {};
   condition[id.field] = id.id;
-  
+
   var attachment = new Attachment({
-    contentType: file.headers['content-type'],  
+    contentType: file.headers['content-type'],
     size: file.size,
     name: file.name,
-    relativePath: file.relativePath
+    relativePath: file.relativePath,
+    lastModified: new Date()
   });
 
   var update = {'$push': { attachments: attachment }, 'lastModified': new Date()};
@@ -328,11 +337,9 @@ exports.updateAttachment = function(layer, featureId, attachmentId, file, callba
   if (file.height) set['attachments.$.height'] = file.height;
   if (file.oriented) set['attachments.$.oriented'] = file.oriented;
 
-  var update = {
-    '$set': set,
-    lastModified: new Date()
-  };
+  set['attachments.$.lastModified'] = new Date();
 
+  var update = { '$set': set };
   featureModel(layer).update(condition, update, function(err, feature) {
     if (err) {
       console.log('Error updating attachments from DB', err);
