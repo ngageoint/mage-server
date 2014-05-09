@@ -1,4 +1,7 @@
-var child = require('child_process');
+var child = require('child_process')
+, config = require('./config.json');
+
+if (!config.enable) return;
 
 console.log('activating image plugin');
 

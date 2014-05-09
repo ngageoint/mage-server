@@ -6,7 +6,7 @@ var Schema = mongoose.Schema;
 
 // Creates the Schema for the Attachments object
 var LayerSchema = new Schema({
-  id: { type: Number, required: true, unique: true }, 
+  id: { type: Number, required: true, unique: true },
   type: { type: String, required: true },
   base: { type: Boolean, required: false },
   name: { type: String, required: true, unique: true },
@@ -21,7 +21,7 @@ var LayerSchema = new Schema({
     version: { type: String }
   },
   collectionName: { type: String, required: false }
-},{ 
+},{
     versionKey: false
 });
 
@@ -88,8 +88,8 @@ var createFeatureCollection = function(layer) {
     if (err) {
       console.error(err);
       return;
-    } 
-      
+    }
+
     console.log("Successfully created feature collection for layer " + layer.name);
   });
 }

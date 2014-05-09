@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
-  .factory('LocationService', ['$http', '$q', '$rootScope', 'appConstants', 'mageLib', 
+  .factory('LocationService', ['$http', '$q', '$rootScope', 'appConstants', 'mageLib',
     function ($http, $q, $rootScope, appConstants, mageLib) {
       var ***REMOVED*** = {};
 
@@ -34,7 +34,7 @@ angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
       return ***REMOVED***;
     }])
 .factory('Location', ['$resource', '$http', function($resource, $http) {
-  var Location = $resource('/api/locations', {}, {
+  var Location = $resource('/api/locations/users', {}, {
     create: {
       method: 'POST',
       isArray: true,

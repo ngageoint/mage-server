@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 
 // Creates a new Mongoose Schema object
-var Schema = mongoose.Schema;  
+var Schema = mongoose.Schema;
 
 // Creates the Schema for FFT Locations
 var LocationSchema = new Schema({
@@ -11,8 +11,8 @@ var LocationSchema = new Schema({
     coordinates: { type: Array, required: true}
   },
   properties: Schema.Types.Mixed
-},{ 
-    versionKey: false 
+},{
+    versionKey: false
 });
 
 // TODO when user is removed need to remove thier locations.
@@ -24,7 +24,7 @@ LocationSchema.index({'properties.user': 1, 'properties.timestamp': 1});
 // Creates the Model for the User Schema
 var Location = mongoose.model('Location', LocationSchema);
 exports.Model = Location;
- 
+
 // create location
 exports.createLocations = function(user, locations, callback) {
   Location.create(locations, function(err) {
@@ -33,13 +33,15 @@ exports.createLocations = function(user, locations, callback) {
     }
 
     callback(err, Array.prototype.slice.call(arguments, 1));
-  });  
+  });
 }
 
 exports.getAllLocations = function(options, callback) {
+  var limit = options.limit || 1000;
+  var filter = options.filter
+
   var query = {};
 
-  var filter = options.filter
   var timeFilter = {};
   if (filter && filter.startDate) {
     timeFilter["$gte"] = filter.startDate;
@@ -58,22 +60,11 @@ exports.getAllLocations = function(options, callback) {
   });
 }
 
-// get locations for users team
-// TODO limit here limits based on entire collection so it doesn't really do what I want at this point
-// I really want to limit based on each users locations, i.e. I want every user but only max 10 locations for each
-exports.getLocations = function(user, limit, callback) {
-  var sort = { $sort: { "properties.timestamp": -1 }};
-  var limit = { $limit: limit };
-  var group = { $group: { _id: "$properties.user", locations: { $push: {location: {geometry: "$geometry", properties: "$properties"} } }}};
-  var project = { $project: { _id: 0, user: "$_id", locations: "$locations"} };
-  Location.aggregate(sort, limit, group, project, function(err, aggregate) {
-    callback(err, aggregate);
-  });
-}
-
 // get locations for users (filters for)
-exports.getLocationsWithFilters = function(user, filter, limit, callback) {
-  
+exports.getLocations = function(options, callback) {
+  var limit = options.limit || 1000;
+  var filter = options.filter;
+
   var timeFilter = {};
   if (filter.startDate) {
     timeFilter["$gte"] = filter.startDate;
@@ -84,11 +75,11 @@ exports.getLocationsWithFilters = function(user, filter, limit, callback) {
   }
 
   var match = (filter.startDate || filter.endDate) ? { $match: {'properties.timestamp': timeFilter}} : { $match: {}};
-  var sort = { $sort: { "properties.timestamp": -1 } };
+  var sort = { $sort: { "properties.timestamp": 1 } };
   var limit = { $limit: limit };
   var group = { $group: { _id: "$properties.user", locations: { $push: {_id: "$_id", type: "$type", geometry: "$geometry", properties: "$properties"} }}};
   var project = { $project: { _id: 0, user: "$_id", locations: "$locations"} };
-  
+
   Location.aggregate(match, sort, limit, group, project, function(err, aggregate) {
     callback(err, aggregate);
   });
