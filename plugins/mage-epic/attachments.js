@@ -41,6 +41,7 @@ function createEsriAttachment(esriId, attachment, callback) {
   var r = request.post({url: attachmentUrl}, function(err, res, body) {
     if (err) return done(err);
     var json = JSON.parse(body);
+    console.log('ESRI observation add response', json);
 
     if (res.statusCode != 200) return callback(new Error('Error sending ESRI json ' + res.statusCode));
     var result = json.addAttachmentResult;
@@ -64,6 +65,7 @@ function updateEsriAttachment(esriId, attachment, callback) {
   var r = request.post({url: attachmentUrl}, function(err, res, body) {
     if (err) return done(err);
     var json = JSON.parse(body);
+    console.log('ESRI observation update response', json);
 
     if (res.statusCode != 200) return callback(new Error('Error sending ESRI json ' + res.statusCode));
     var result = json.updateAttachmentResult;
@@ -75,7 +77,6 @@ function updateEsriAttachment(esriId, attachment, callback) {
   });
 
   var file = path.join(attachmentBase, attachment.relativePath);
-  console.log('attachment path is: ' + file);
   var form = r.form();
   form.append('attachment', fs.createReadStream(file));
   form.append('attachmentId', attachment.esriId);
@@ -93,9 +94,7 @@ function pushAttachments(done) {
         var featureMatch = { esriId: {"$exists": true} };
         var lastTime = lastAttachmentTimes[layer.collectionName];
         if (lastTime) {
-          featureMatch.attachments = {
-            lastModified: {"$gt": moment(lastTime).toDate()}
-          };
+          featureMatch['attachments.lastModified'] = {"$gt": moment(lastTime).toDate()}
         }
 
         var project = {"$project": {esriId: true, lastModified: true, attachments: true}};
@@ -105,7 +104,7 @@ function pushAttachments(done) {
           if (err) return done(err);
           console.log(aggregate.length + ' have changed');
 
-          async.each(aggregate, function(feature) {
+          async.each(aggregate, function(feature, done) {
             if (feature.attachments.esriId) {
               updateEsriAttachment(feature.esriId, feature.attachments, function(err, esriAttachmentId) {
                 if (err) {
