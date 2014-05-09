@@ -4,7 +4,7 @@ var express = require("express")
   , fs = require('fs-extra')
   , config = require('./config.json')
   , provision = require('./provision');
-  
+
 var optimist = require("optimist")
   .usage("Usage: $0 --port [number]")
   .describe('port', 'Port number that MAGE node server will run on.')
