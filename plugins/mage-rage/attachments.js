@@ -6,12 +6,12 @@ var config = require('./config.json')
   , request = require('request')
   , mongoose = require('mongoose')
   , moment = require('moment')
-  , User = require('../models/user')
-  , Device = require('../models/device')
-  , Layer = require('../models/layer')
-  , Feature = require('../models/feature')
-  , Location = require('../models/location')
-  , api = require('../api')
+  , User = require('../../models/user')
+  , Device = require('../../models/device')
+  , Layer = require('../../models/layer')
+  , Feature = require('../../models/feature')
+  , Location = require('../../models/location')
+  , api = require('../../api')
   , path = require('path')
   , fs = require('fs-extra');
 
@@ -33,7 +33,7 @@ var username = config.credentials.username;
 var p***REMOVED***word =  config.credentials.p***REMOVED***word;
 var uid =  config.credentials.uid;
 
-var baseUrl = config.baseUrl;
+var baseUrl = config.url;
 var token;
 
 var lastAttachmentTime = {};
