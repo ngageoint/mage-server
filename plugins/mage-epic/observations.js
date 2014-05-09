@@ -39,7 +39,7 @@ function getTypes(done) {
 
     if (json.types) {
       json.types.forEach(function(type) {
-        types[type.name] = type;
+        types[type.name.trim()] = type;
       });
     }
 
@@ -68,7 +68,6 @@ function transform(field, value) {
       return value + '';
     }
     case "Type": {
-      // TODO need to do something special with type
       var type = types[value];
       type = type ? type.id : defaultType;
       return type;
@@ -93,6 +92,7 @@ function createEsriObservation(feature, callback) {
   request.post({url: featureUrl}, function(err, res, body) {
     if (err) return done(err);
     var json = JSON.parse(body);
+    console.log('ESRI attachment add response', json);
 
     if (res.statusCode != 200) return callback(new Error('Error sending ESRI json ' + res.statusCode));
     var result = json.addResults[0];
@@ -119,7 +119,7 @@ function updateEsriObservation(feature, callback) {
   request.post({url: featureUrl}, function(err, res, body) {
     if (err) return done(err);
     var json = JSON.parse(body);
-    console.log('yo dog', json);
+    console.log('ESRI attachment update response', json);
 
     if (res.statusCode != 200) return callback(new Error('Error sending ESRI json ' + res.statusCode));
     var result = json.updateResults[0];
