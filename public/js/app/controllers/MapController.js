@@ -328,7 +328,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       });
     }
 
-    $scope.layer = {id: layer.id, checked: true};
+    $scope.layer = {id: layer.id, type: layer.type, checked: true};
   };
 
   $rootScope.$on('event:auth-loginConfirmed', function() {
