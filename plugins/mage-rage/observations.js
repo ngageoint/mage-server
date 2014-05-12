@@ -1,5 +1,6 @@
 var config = require('./config.json')
   , serverConfig = require('../../config.json')
+  , querystring = require('querystring')
   , fs = require('fs-extra')
   , crypto = require('crypto')
   , async = require('async')
@@ -229,16 +230,17 @@ var syncFeatures = function(done) {
   });
 }
 
-function requestLocations(time, done) {
-  console.log('inside request locations');
+function requestLocations(lastLocation, done) {
+  var url = baseUrl + '/api/locations?';
 
-  var url = baseUrl + '/api/locations?limit=2000';
-
-  if (time) {
-    // url += '&startDate=' + time.add('ms', 1).toISOString();
-    url += '&startDate=' + time.toISOString();
+  var query = {limit: 2000};
+  if (lastLocation) {
+    query.startDate = moment(lastLocation.timestamp).toISOString();
+    query.lastLocationId = lastLocation._id;
   }
-  console.log('location url is', url);
+
+  url = url + querystring.stringify(query);
+  console.log('RAGE requesting locations, location url is', url);
 
   var options = {
     url: url,
@@ -260,26 +262,28 @@ function requestLocations(time, done) {
 function syncLocations(done) {
   fs.readJson(__dirname + "/.locations_sync.json", function(err, lastLocationTimes) {
     lastLocationTimes = lastLocationTimes || {};
-    var lastTime = lastLocationTimes.locations;
-    if (lastTime) lastTime = moment(lastTime);
+    var lastLocation = lastLocationTimes.location;
+    var lastTime = lastLocation ? moment(lastLocation.timestamp) : null;
 
     var locations = [];
     async.doUntil(function(done) {
-      requestLocations(lastTime, function(err, requestedLocations) {
+      requestLocations(lastLocation, function(err, requestedLocations) {
         if (err) return done(err);
         locations = requestedLocations;
 
         syncUserLocations(locations, function(err) {
           if (err) return done(err);
           console.log('Successfully synced ' + locations.length + ' locations to mage');
-          if (locations.length > 0) {
-            var locationTime = moment(locations[locations.length - 1].properties.timestamp);
+          var last = locations.slice(-1).pop();
+          if (last) {
+            console.log('last is', last);
+            var locationTime = moment(last.properties.timestamp);
             if (!lastTime || (lastTime.isBefore(locationTime) && locationTime.isBefore(Date.now()))) {
-              lastTime = locationTime;
+              lastLocation = {_id: last._id, timestamp: last.properties.timestamp};
             }
           }
 
-          lastLocationTimes.locations = lastTime;
+          lastLocationTimes.location = lastLocation;
           fs.writeJson(__dirname + "/.locations_sync.json", lastLocationTimes, done);
         });
       });
@@ -300,9 +304,9 @@ function syncUserLocations(locations, done) {
     locationCollection: function(done) {
       // throw all this users locations in the location collection
       async.each(locations, function(location, done) {
-        var locationId = location._id;
-        delete location._id;
-        Location.Model.findByIdAndUpdate(locationId, location, {upsert: true}, function(err, location) {
+        // var locationId = location._id;
+        // delete location._id;
+        Location.Model.findByIdAndUpdate(location._id, location, {upsert: true}, function(err, location) {
           if (err) console.log('error inserting location into locations collection', err);
           done();
         });
