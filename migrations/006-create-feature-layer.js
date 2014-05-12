@@ -7,7 +7,7 @@ exports.up = function(next) {
   mongoose.connect(server.mongodb.url);
 
   var osm = {
-    name: "Field Observations 2",
+    name: "Field Observations",
     type: "Feature"
   };
 
