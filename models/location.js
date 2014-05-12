@@ -37,7 +37,10 @@ exports.createLocations = function(user, locations, callback) {
 }
 
 exports.getAllLocations = function(options, callback) {
-  var limit = options.limit || 1000;
+  var limit = 2000;
+  if (options.limit && options.limit < 2000) {
+    limit = options.limit;
+  }
   var filter = options.filter
 
   var query = {};
@@ -51,7 +54,7 @@ exports.getAllLocations = function(options, callback) {
   }
   if (filter.startDate || filter.endDate) query["properties.timestamp"] = timeFilter;
 
-  Location.find(query, function (err, locations) {
+  Location.find(query, {}, {sort: {"properties.timestamp": 1}, limit: limit}, function (err, locations) {
     if (err) {
       console.log("Error finding locations", err);
     }
