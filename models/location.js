@@ -41,18 +41,21 @@ exports.getAllLocations = function(options, callback) {
   if (options.limit && options.limit < 2000) {
     limit = options.limit;
   }
-  var filter = options.filter
+  var filter = options.filter || {};
 
-  var query = {};
+  var query = {'properties.timestamp': {}};
 
-  var timeFilter = {};
-  if (filter && filter.startDate) {
-    timeFilter["$gte"] = filter.startDate;
+  if (filter.startDate) {
+    query['properties.timestamp']['$gte'] = filter.startDate;
   }
-  if (filter && filter.endDate) {
-    timeFilter["$lt"] = filter.endDate;
+
+  if (filter.endDate) {
+    query['properties.timestamp']['$lt'] = filter.endDate;
   }
-  if (filter.startDate || filter.endDate) query["properties.timestamp"] = timeFilter;
+
+  if (filter.lastFeatureId) {
+    query._id = {'$ne': filter.lastFeatureId};
+  }
 
   Location.find(query, {}, {sort: {"properties.timestamp": 1}, limit: limit}, function (err, locations) {
     if (err) {
@@ -66,18 +69,22 @@ exports.getAllLocations = function(options, callback) {
 // get locations for users (filters for)
 exports.getLocations = function(options, callback) {
   var limit = options.limit || 1000;
-  var filter = options.filter;
+  var filter = options.filter || {};
 
-  var timeFilter = {};
+  var match = {'properties.timestamp': {}};
   if (filter.startDate) {
-    timeFilter["$gte"] = filter.startDate;
+    match['properties.timestamp']['$gte'] = filter.startDate;
   }
 
   if (filter.endDate) {
-    timeFilter["$lt"] = filter.endDate;
+    match['properties.timestamp']['$lt'] = filter.enDate;
   }
 
-  var match = (filter.startDate || filter.endDate) ? { $match: {'properties.timestamp': timeFilter}} : { $match: {}};
+  if (filter.lastFeatureId) {
+    match._id = {"$ne": filter.lastFeatureId};
+  }
+
+  var match = (filter.startDate || filter.endDate) ? { $match: match} : { $match: {}};
   var sort = { $sort: { "properties.timestamp": 1 } };
   var limit = { $limit: limit };
   var group = { $group: { _id: "$properties.user", locations: { $push: {_id: "$_id", type: "$type", geometry: "$geometry", properties: "$properties"} }}};

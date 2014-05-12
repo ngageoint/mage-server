@@ -27,6 +27,11 @@ module.exports = function(app, security) {
       parameters.filter.endDate = moment.utc(endDate).toDate();
     }
 
+    var lastFeatureId = req.param('lastFeatureId');
+    if (lastFeatureId) {
+      parameters.filter.lastFeatureId = lastFeatureId;
+    }
+
     var limit = req.param('limit');
     parameters.limit = limit ? parseInt(limit) : 1;
 
@@ -92,8 +97,8 @@ module.exports = function(app, security) {
     access.authorize('READ_LOCATION'),
     parseQueryParams,
     function(req, res) {
-      Location.getAllLocations({filter: req.parameters.filter, limit: req.parameters.limit}, function(err, users) {        
-        res.json(users);
+      Location.getAllLocations({filter: req.parameters.filter, limit: req.parameters.limit}, function(err, locations) {
+        res.json(locations);
       });
     }
   );
@@ -109,6 +114,16 @@ module.exports = function(app, security) {
         if (err) {
           return res.send(400, err);
         }
+
+        res.json(req.locations);
+      });
+
+      User.addLocationsForUser(req.user, req.locations, function(err, location) {
+        if (err) {
+          return res.send(400, err);
+        }
+
+        res.json(req.locations);
       });
     }
   );
