@@ -21,7 +21,7 @@ mongoose.connect(mongodbConfig.url, {server: {poolSize: mongodbConfig.poolSize}}
     throw err;
   }
 });
-mongoose.set('debug', true);
+mongoose.set('debug', false);
 
 var timeout = config.attachments.interval * 1000;
 
@@ -229,12 +229,14 @@ var syncFeatures = function(done) {
   });
 }
 
-function requestLocations(lastTime, done) {
-  var url = baseUrl + '/api/locations?limit=1000';
+function requestLocations(time, done) {
+  console.log('inside request locations');
 
-  if (lastTime) {
-    url += '&startDate=' + moment(lastTime).add('ms', 1).toISOString();
-    lastTime = moment(lastTime);
+  var url = baseUrl + '/api/locations?limit=2000';
+
+  if (time) {
+    // url += '&startDate=' + time.add('ms', 1).toISOString();
+    url += '&startDate=' + time.toISOString();
   }
   console.log('location url is', url);
 
@@ -245,49 +247,55 @@ function requestLocations(lastTime, done) {
   };
 
   request.get(options, function(err, res, locations) {
+    console.log('got locations from remote server', locations.length);
+
     if (err) return done(err);
 
-    if (res.statusCode != 200) return done(new Error('Error getting layers, respose code: ' + res.statusCode));
+    if (res.statusCode != 200) return done(new Error('Error getting locations, respose code: ' + res.statusCode));
 
-    console.log('syncing locations for: ' + locations.length + ' locations ' + JSON.stringify(locations));
-    async.each(locations, function(location) {
-      var locationTime = moment(location.properties.timestamp);
-      if (!lastTime || (lastTime.isBefore(locationTime) && locationTime.isBefore(Date.now()))) {
-        lastTime = locationTime;
-      }
-
-      syncUserLocations(locations, done);
-    },
-    function(err) {
-      if (err) return done(err);
-
-      done(null, locations);
-    });
+    return done(null, locations);
   });
 }
 
-var syncLocations = function(done) {
+function syncLocations(done) {
   fs.readJson(__dirname + "/.locations_sync.json", function(err, lastLocationTimes) {
     lastLocationTimes = lastLocationTimes || {};
     var lastTime = lastLocationTimes.locations;
+    if (lastTime) lastTime = moment(lastTime);
 
     var locations = [];
-    async.doUntil(function() {locations.length == 0}, function(done) {
+    async.doUntil(function(done) {
       requestLocations(lastTime, function(err, requestedLocations) {
         if (err) return done(err);
-        locations = requestLocations;
+        locations = requestedLocations;
+
+        syncUserLocations(locations, function(err) {
+          if (err) return done(err);
+          console.log('Successfully synced ' + locations.length + ' locations to mage');
+          if (locations.length > 0) {
+            var locationTime = moment(locations[locations.length - 1].properties.timestamp);
+            if (!lastTime || (lastTime.isBefore(locationTime) && locationTime.isBefore(Date.now()))) {
+              lastTime = locationTime;
+            }
+          }
+
+          lastLocationTimes.locations = lastTime;
+          fs.writeJson(__dirname + "/.locations_sync.json", lastLocationTimes, done);
+        });
       });
+    },
+    function() {
+      return locations.length == 0;
     },
     function(err) {
       if (err) return done(err);
 
       lastLocationTimes.location = lastTime;
-      fs.writeJson(__dirname + "/.locations_sync.json", lastLocationTimes, done);
     });
   });
 }
 
-var syncUserLocations = function(locations, done) {
+function syncUserLocations(locations, done) {
   async.parallel({
     locationCollection: function(done) {
       // throw all this users locations in the location collection
@@ -302,21 +310,22 @@ var syncUserLocations = function(locations, done) {
       function(err) {
         done();
       });
-    },
-    userCollection: function(done) {
-      // Also need to update the user location, for now the web only needs one location from this list
-      // just update the latest
-      async.each(locations, function(location, done) {
-        var locationId = location._id;
-        delete location._id;
-        User.addLocationsForUser({_id: location.properties.user}, [location], function(err) {
-          done();
-        });
-      },
-      function(err) {
-        done();
-      });
     }
+    // ,
+    // userCollection: function(done) {
+    //   // Also need to update the user location, for now the web only needs one location from this list
+    //   // just update the latest
+    //   async.each(locations, function(location, done) {
+    //     var locationId = location._id;
+    //     delete location._id;
+    //     User.addLocationsForUser({_id: location.properties.user}, [location], function(err) {
+    //       done();
+    //     });
+    //   },
+    //   function(err) {
+    //     done();
+    //   });
+    // }
   },
   function(err, results) {
     done(err);

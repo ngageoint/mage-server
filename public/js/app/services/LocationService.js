@@ -35,13 +35,6 @@ angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
     }])
 .factory('Location', ['$resource', '$http', function($resource, $http) {
   var Location = $resource('/api/locations/users', {}, {
-    create: {
-      method: 'POST',
-      isArray: true,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    },
     get: {
       method: 'GET',
       isArray: true,
@@ -51,6 +44,19 @@ angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
           return user.locations.length;
         });
       }])
+    }
+  });
+
+  return Location;
+}])
+.factory('CreateLocation', ['$resource', '$http', function($resource, $http) {
+  var Location = $resource('/api/locations', {}, {
+    create: {
+      method: 'POST',
+      isArray: true,
+      headers: {
+        'Content-Type': 'application/json'
+      }
     }
   });
   Location.prototype.$save = function(params, success, error) {
