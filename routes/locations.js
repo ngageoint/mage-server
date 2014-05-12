@@ -27,9 +27,9 @@ module.exports = function(app, security) {
       parameters.filter.endDate = moment.utc(endDate).toDate();
     }
 
-    var lastFeatureId = req.param('lastFeatureId');
-    if (lastFeatureId) {
-      parameters.filter.lastFeatureId = lastFeatureId;
+    var lastLocationId = req.param('lastLocationId');
+    if (lastLocationId) {
+      parameters.filter.lastLocationId = lastLocationId;
     }
 
     var limit = req.param('limit');
@@ -115,15 +115,13 @@ module.exports = function(app, security) {
           return res.send(400, err);
         }
 
-        res.json(req.locations);
+        res.json(locations);
       });
 
       User.addLocationsForUser(req.user, req.locations, function(err, location) {
         if (err) {
           return res.send(400, err);
         }
-
-        res.json(req.locations);
       });
     }
   );
