@@ -5,33 +5,33 @@ console.log('activating rage plugin');
 
 if (!config.enable) return;
 
-function startObservations() {
-  var observations = config.observations;
-  if (observations.enable) {
+function startData() {
+  var data = config.data;
+  if (data.enable) {
     // start observations worker
-    var observationsWorker = child.fork(__dirname + '/observations');
+    var dataWorker = child.fork(__dirname + '/data');
 
-    observationsWorker.on('error', function(err) {
+    dataWorker.on('error', function(err) {
       console.log('***************** rage observation error ******************************', err);
-      observationsWorker.kill();
-      startObservations();
+      dataWorker.kill();
+      startData();
     });
 
-    observationsWorker.on('exit', function(exitCode) {
+    dataWorker.on('exit', function(exitCode) {
       console.log('***************** rage observation  exit, code ************************', exitCode);
       if (exitCode != 0) {
-        observationsWorker.kill();
-        startObservations();
+        dataWorker.kill();
+        startData();
       }
     });
 
     process.on('exit', function() {
       console.log('***************** rage parent process exit, killing ********************', err);
-      observationsWorker.kill();
+      dataWorker.kill();
     });
   }
 }
-startObservations();
+startData();
 
 function startAttachments() {
   var attachments = config.attachments;

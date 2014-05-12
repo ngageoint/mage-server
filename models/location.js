@@ -41,20 +41,18 @@ exports.getAllLocations = function(options, callback) {
   if (options.limit && options.limit < 2000) {
     limit = options.limit;
   }
+
   var filter = options.filter || {};
 
-  var query = {'properties.timestamp': {}};
-
-  if (filter.startDate) {
-    query['properties.timestamp']['$gte'] = filter.startDate;
+  var query = {};
+  if (filter.startDate || filter.endDate) {
+    query['properties.timestamp'] = {};
+    if (filter.startDate) query['properties.timestamp']['$gte'] = filter.startDate;
+    if (filter.endDate) query['properties.timestamp']['$lt'] = filter.endDate;
   }
 
-  if (filter.endDate) {
-    query['properties.timestamp']['$lt'] = filter.endDate;
-  }
-
-  if (filter.lastFeatureId) {
-    query._id = {'$ne': filter.lastFeatureId};
+  if (filter.lastLocationId) {
+    query._id = {'$ne': filter.lastLocationId};
   }
 
   Location.find(query, {}, {sort: {"properties.timestamp": 1}, limit: limit}, function (err, locations) {

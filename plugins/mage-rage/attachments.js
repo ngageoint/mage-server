@@ -66,7 +66,7 @@ var getToken = function(done) {
 }
 
 var getLastAttachmentSyncTime = function(done) {
-  fs.readJson("rage/.attachment_sync.json", function(err, readInLastAttachmentTime) {
+  fs.readJson(__dirname + "/.attachment.json", function(err, readInLastAttachmentTime) {
     lastAttachmentTime = readInLastAttachmentTime || {};
     lastFeatureTime = lastAttachmentTime;
     console.log('last', lastAttachmentTime);
@@ -118,11 +118,11 @@ var sortFeaturesByTimestamp = function(features) {
 }
 
 var writeLastSyncTime = function(done) {
-  fs.writeJson("rage/.attachment_sync.json", lastFeatureTime, done);
+  fs.writeJson(__dirname + "/.attachment.json", lastFeatureTime, done);
 }
 
 var appendErrorFile = function(string) {
-  fs.writeJson("rage/.attachment_sync_errors.json", string);
+  fs.writeJson(__dirname + "/.attachment_errors.json", string);
 }
 
 // if this feature time is newer than we currently have
@@ -168,19 +168,20 @@ var pullAttachmentsCallbackWhenComplete = function(feature, layer, attachments, 
 
     var url = baseUrl + '/FeatureServer/'+
       layer.id + '/features/' +
-      feature.id + '/attachments/' +
+      feature._id + '/attachments/' +
       attachment._id + '?access_token=' + token;
     var r = request(url);
     r.on('response', function (resp) {
       console.info('attachment response status code is ' + resp.statusCode);
       if (resp.statusCode == 200) {
-        fs.mkdirsSync(path.dirname(config.attachmentBase + '/' + attachment.relativePath));
-        r.pipe(fs.createWriteStream(config.attachmentBase + '/' + attachment.relativePath));
-        console.info('write the file for url ' + url + ' to ' + config.attachmentBase + '/' + attachment.relativePath);
-        attachment.set("synced", Date.now(), {strict: false});
-        feature.save(function(err) {
-          // who cares
+        fs.mkdirsSync(path.dirname(attachmentBase + '/' + attachment.relativePath));
+        r.pipe(fs.createWriteStream(attachmentBase + '/' + attachment.relativePath));
+        console.info('write the file for url ' + url + ' to ' + attachmentBase + '/' + attachment.relativePath);
+
+        Feature.featureModel(layer).update({_id: feature._id, 'attachments._id': attachment._id}, {'attachments.$.synced': Date.now()}, function(err) {
+            // who cares
         });
+
         done();
       } else if (resp.statusCode == 404) {
         // uhhh no data, hmmm
@@ -189,11 +190,12 @@ var pullAttachmentsCallbackWhenComplete = function(feature, layer, attachments, 
           url:baseUrl + '/FeatureServer/'+
           layer.id + '/features/' +
           feature.id + '/attachments/' +
-          attachment._id, localFile: config.attachmentBase + '/' + attachment.relativePath
+          attachment._id, localFile: attachmentBase + '/' + attachment.relativePath
         }));
         done();
       } else {
         console.info('failed to sync with error code ' + resp.statusCode + ' url is ' + url);
+        console.log('poop', resp);
         done(new Error('something bad happend'));
       }
     });
