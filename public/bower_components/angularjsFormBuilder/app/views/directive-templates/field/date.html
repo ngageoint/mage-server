@@ -1,10 +1,10 @@
-<div cl***REMOVED***="field row">
+<div cl***REMOVED***="field row-fluid">
     <div cl***REMOVED***="span2">{{field.title}}:</div>
-    <span cl***REMOVED***="required-error" ng-show="field.required && !field.value">* required </span>
     <div cl***REMOVED***="span4">
         <div cl***REMOVED***="control-group input-append">
             <input type="text" ng-model="field.value" data-date-format="mm/dd/yyyy" bs-datepicker  ng-required="field.required">
             <button type="button" cl***REMOVED***="btn" data-toggle="datepicker"><i cl***REMOVED***="icon-calendar"></i></button>
         </div>
+        <span cl***REMOVED***="required-error" ng-show="field.required && !field.value">* required </span>
     </div>
 </div>

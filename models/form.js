@@ -3,12 +3,21 @@ var mongoose = require('mongoose');
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
 
+var OptionSchema = new Schema({
+  id: { type: Number, required: true },
+  title: { type: String, required: true },  
+  value: { type: Number, required: true }
+},{
+  _id: false
+});
+
 var FieldSchema = new Schema({
   id: { type: Number, required: true },
   title: { type: String, required: true },  
   type: { type: String, required: true },
   value: { type: Schema.Types.Mixed, required: true },
-  required: { type: Boolean, required: true }
+  required: { type: Boolean, required: true },
+  choices: [OptionSchema]
 },{
   _id: false
 });
