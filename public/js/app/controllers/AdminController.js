@@ -42,7 +42,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
       $scope.filteredDevices = $scope.devices;
       $scope.deviceSearch();
     });
-  
+
   $scope.user = {};
   $scope.device = {};
 
@@ -279,7 +279,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
 
   $scope.userSearch = function () {
     $scope.filteredUsers = $filter('filter')($scope.users, function (user) {
-      if (searchMatch(user['username'], $scope.userQuery) || searchMatch(user['firstname'], $scope.userQuery) || 
+      if (searchMatch(user['username'], $scope.userQuery) || searchMatch(user['firstname'], $scope.userQuery) ||
         searchMatch(user['lastname'], $scope.userQuery) || searchMatch(user['email'], $scope.userQuery)) {
         return true;
       }
@@ -370,7 +370,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
 
   $scope.deviceSearch = function () {
     $scope.filteredDevices = $filter('filter')($scope.devices, function (device) {
-      if (searchMatch(device['name'], $scope.deviceQuery) || searchMatch(device['uid'], $scope.deviceQuery) || 
+      if (searchMatch(device['name'], $scope.deviceQuery) || searchMatch(device['uid'], $scope.deviceQuery) ||
         searchMatch(device['description'], $scope.deviceQuery)) {
         return true;
       }
