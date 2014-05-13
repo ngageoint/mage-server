@@ -16,7 +16,7 @@
       <div cl***REMOVED***="span10">
         <div cl***REMOVED***="row-fluid">
           <div cl***REMOVED***="span12 top-gap" id="user-admin-area" ng-show="currentAdminPanel == 'user'">
-            <button cl***REMOVED***="btn" ng-click="newUser()" ngm-tap="newUser()"><i cl***REMOVED***="fa-plus-square-o"></i> New User</button>
+            <button cl***REMOVED***="btn" ng-click="newUser()" ngm-tap="newUser()"><i cl***REMOVED***="fa fa-plus-square-o"></i> New User</button>
             <div id="user-form" name="edit-form" cl***REMOVED***="top-gap" ng-show="showUserForm">
               <form ng-submit="saveUser()" id="userform" name="user-form" cl***REMOVED***="form-horizontal">
                 <fieldset>
@@ -93,7 +93,7 @@
               <div cl***REMOVED***="row-fluid">
                 <div cl***REMOVED***="span3">
                   <button cl***REMOVED***="btn" ng-click="editUser(u)" ngm-tap="editUser(u)">
-                    <i cl***REMOVED***="fa-edit"></i>
+                    <i cl***REMOVED***="fa fa-edit"></i>
                     Edit
                   </button>
                   <button cl***REMOVED***="btn btn-success" ng-hide='u.active' ng-click="approveUser(u)" ngm-tap="approveUser(u)">
@@ -112,7 +112,7 @@
                 </div>
                 <div cl***REMOVED***="span2">
                   <button cl***REMOVED***="btn btn-danger" ng-click="deleteUser(u)" ngm-tap="deleteUser(u)">
-                    <i cl***REMOVED***="fa-trash-o"></i>
+                    <i cl***REMOVED***="fa fa-trash-o"></i>
                     Delete user
                   </button>
                 </div>
@@ -123,7 +123,7 @@
 
         <div cl***REMOVED***="row-fluid">
           <div cl***REMOVED***="span12 top-gap" id="device-admin-area" ng-show="currentAdminPanel == 'device'">
-            <button cl***REMOVED***="btn" ng-click="setShowDeviceForm(true)" ngmtap="setShowDeviceForm(true)" ng-show="showNewDeviceButton"><i cl***REMOVED***="fa-plus-square-o icon-white"></i> New Device</button>
+            <button cl***REMOVED***="btn" ng-click="setShowDeviceForm(true)" ngmtap="setShowDeviceForm(true)" ng-show="showNewDeviceButton"><i cl***REMOVED***="fa fa-plus-square-o icon-white"></i> New Device</button>
             <div cl***REMOVED***="top-gap" ng-show="showDeviceForm">
               <form ng-submit="saveDevice()" id="device-form" cl***REMOVED***="form-horizontal">
                 <fieldset>
@@ -179,10 +179,10 @@
                   <div cl***REMOVED***="row-fluid">
                   <div cl***REMOVED***="span2">
                     <button cl***REMOVED***="btn" ng-click="editDevice(device)" ngm-tap="editDevice(device)">
-                      <i cl***REMOVED***="fa-edit pointer"></i> Edit
+                      <i cl***REMOVED***="fa fa-edit pointer"></i> Edit
                     </button>
                     <button cl***REMOVED***="btn btn-success" ng-hide="device.registered" ng-click="registerDevice(device)" ngm-tap="registerDevice(device)">
-                      <i cl***REMOVED***="fa-thumbs-up"></i> Register
+                      <i cl***REMOVED***="fa fa-thumbs-up"></i> Register
                     </button>
                   </div>
                   <div cl***REMOVED***="span2">
@@ -199,7 +199,7 @@
                   </div>
                   <div cl***REMOVED***="span2">
                   <button cl***REMOVED***="btn btn-danger" ng-click="deleteDevice(device)" ngm-tap="deleteDevice(device)">
-                    <i cl***REMOVED***="fa-trash-o"></i> Delete device
+                    <i cl***REMOVED***="fa fa-trash-o"></i> Delete device
                   </button>
                   </div>
                 </div>
@@ -212,10 +212,10 @@
           <div cl***REMOVED***="span12 top-gap" ng-show="currentAdminPanel == 'form'">
             <div cl***REMOVED***="row-fluid">
               <div cl***REMOVED***="span2">
-                <button cl***REMOVED***="btn" ng-click="createNewForm()"><i cl***REMOVED***="fa-plus-square-o icon-white"></i> New Form</button>
+                <button cl***REMOVED***="btn" ng-click="createNewForm()"><i cl***REMOVED***="fa fa-plus-square-o icon-white"></i> New Form</button>
                 <div ng-repeat="form in forms" cl***REMOVED***="row-fluid top-gap">
                   <div cl***REMOVED***="span12">
-                    <a ng-click="editForm(form)"><i cl***REMOVED***="fa-check" ng-show="form.inUse"></i> {{form.name}}</a>
+                    <a ng-click="editForm(form)"><i cl***REMOVED***="fa fa-check" ng-show="form.inUse"></i> {{form.name}}</a>
                   </div>
                 </div>
               </div>
@@ -251,7 +251,7 @@
                     <div cl***REMOVED***="add-field">
                         <form cl***REMOVED***="form-inline">
                           <select ng-model="addField.new" ng-options="type.name as type.value for type in addField.types"></select>
-                          <button type="submit" cl***REMOVED***="btn" ng-click="addNewField()"><i cl***REMOVED***="fa-plus-square-o"></i> Add Field</button>
+                          <button type="submit" cl***REMOVED***="btn" ng-click="addNewField()"><i cl***REMOVED***="fa fa-plus-square-o"></i> Add Field</button>
                         </form>
                     </div>
                     <hr>
@@ -260,7 +260,7 @@
                       <accordion close-others="accordion.oneAtATime">
                         <accordion-group heading="{{field.title}}" ng-repeat="field in form.fields">
                           <div cl***REMOVED***="accordion-edit">
-                            <button cl***REMOVED***="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i cl***REMOVED***="fa-trash icon-white"></i> Delete</button>
+                            <button cl***REMOVED***="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i cl***REMOVED***="fa fa-trash icon-white"></i> Delete</button>
                             <div cl***REMOVED***="row-fluid">
                                 <div cl***REMOVED***="span2">Field Type:</div>
                                 <div cl***REMOVED***="span4">{{field.type}}</div>
@@ -280,10 +280,10 @@
                               <div cl***REMOVED***="span6">
                                 <div ng-repeat="option in field.options">
                                     <input type="text" ng-model="option.title" value="{{option.title}}">
-                                    <a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(field, option)"><i cl***REMOVED***="fa-minus icon-white"></i></a>
+                                    <a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(field, option)"><i cl***REMOVED***="fa fa-minus icon-white"></i></a>
                                     <!--<span cl***REMOVED***="label label-inverse">Value: {{ option.value }}</span>-->
                                 </div>
-                                <button cl***REMOVED***="btn btn-primary btn-small" type="button" ng-click="addOption(field)"><i cl***REMOVED***="fa-plus-square-o icon-white"></i> Add Option</button>
+                                <button cl***REMOVED***="btn btn-primary btn-small" type="button" ng-click="addOption(field)"><i cl***REMOVED***="fa fa-plus-square-o icon-white"></i> Add Option</button>
                               </div>
                             </div>
                             <div cl***REMOVED***="row-fluid">
@@ -329,7 +329,7 @@
                           <tr ng-repeat="option in typeField.options">
                             <td>
                               <input type="text" ng-model="option.title" value="{{option.title}}">
-                                <a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(field, option)"><i cl***REMOVED***="fa-minus icon-white"></i></a>
+                                <a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(field, option)"><i cl***REMOVED***="fa fa-minus icon-white"></i></a>
                             </td>
                             <td>ICON</td>
                           </tr>
