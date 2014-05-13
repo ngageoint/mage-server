@@ -18,7 +18,7 @@ module.exports = function(app, security) {
 
   // get all form
   app.get(
-    '/api/forms', 
+    '/api/forms',
     access.authorize('READ_LAYER'),
     function (req, res) {
       Form.getAll(function (err, forms) {
@@ -29,8 +29,8 @@ module.exports = function(app, security) {
 
   // get form
   app.get(
-    '/api/forms/:formId', 
-    access.authorize('READ_LAYER'), 
+    '/api/forms/:formId',
+    access.authorize('READ_LAYER'),
     function (req, res) {
       res.json(req.form);
     }
@@ -61,7 +61,7 @@ module.exports = function(app, security) {
       Form.update(req.form.id, req.newForm, function(err, form) {
         if (err) {
           return res.send(400, err);
-        }
+        } 
 
         res.json(form);
       });
