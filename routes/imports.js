@@ -22,21 +22,19 @@ module.exports = function(app, security) {
   }
 
   app.post(
-    '/FeatureServer/:layerId/import', 
+    '/FeatureServer/:layerId/import',
     access.authorize('CREATE_FEATURE'),
     verifyLayer,
     readImportFile,
     function(req, res, next) {
       // todo make sure layer is 'static' layer
-
-
       var features = toGeoJson.kml(req.importData);
       new api.Feature(req.layer).createFeatures(features, function(err, newFeatures) {
         if (err) return next(err);
 
         var response = {
-          files: [{ 
-            name: req.files.file.name, 
+          files: [{
+            name: req.files.file.name,
             size: req.files.file.size,
             features: newFeatures.length
           }]

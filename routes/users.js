@@ -284,7 +284,7 @@ module.exports = function(app, security) {
       if (!req.user) return next();
 
       var role = req.param('role');
-      if (!role) return send(400, 'role is a required field');
+      if (!role) return res.send(400, 'role is a required field');
       req.newUser.role = role;
       
       // Authorized to update users, activate account by default

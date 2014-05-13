@@ -63,7 +63,7 @@ function orient(layer, featureId, attachment, callback) {
 				attachment.height = size.height;
 				attachment.oriented = true;
 				Feature.updateAttachment(layer, featureId, attachment._id, attachment, function(err, feature) {
-					callback();
+					callback(err);
 				});
 			});
 		});
@@ -79,7 +79,7 @@ function thumbnail(layer, featureId, attachment, callback) {
 		});
 		if (containsThumbnail) return done();
 
-		var thumbPath = path.join(path.dirname(file), path.basename(file, path.extname(file))) + "_" + thumbSize + path.extname(file);    
+		var thumbPath = path.join(path.dirname(file), path.basename(file, path.extname(file))) + "_" + thumbSize + path.extname(file);
 
 		var thumbWidth = attachment.width <= attachment.height ? thumbSize : null;
 		var thumbHeight = attachment.height < attachment.width ? thumbSize : null;
@@ -106,7 +106,7 @@ function thumbnail(layer, featureId, attachment, callback) {
 
 					var stat = fs.statSync(thumbPath);
 
-					Feature.addAttachmentThumbnail(layer, featureId, attachment._id, { 
+					Feature.addAttachmentThumbnail(layer, featureId, attachment._id, {
 						size: stat.size,
 						name: path.basename(attachment.name, path.extname(attachment.name)) + "_" + thumbSize + path.extname(attachment.name),
 						relativePath: path.join(path.dirname(attachment.relativePath), path.basename(attachment.relativePath, path.extname(attachment.relativePath))) + "_" + thumbSize + path.extname(attachment.relativePath),
@@ -139,7 +139,7 @@ var processAttachments = function() {
 
 	async.waterfall([
 		function(done) {
-			//get feature layers      
+			//get feature layers
 			Layer.getLayers({type: 'Feature'}, function(err, layers) {
 				async.each(layers, function(layer, done) {
 					Feature.featureModel(layer).findOne({}, {lastModified: true}, {sort: {"lastModified": -1}, limit: 1}, function(err, feature) {
@@ -157,7 +157,7 @@ var processAttachments = function() {
 			var results = [];
 			async.eachSeries(layers, function(layer, done) {
 				var match = {
-					"attachments.contentType": { "$regex": /^image/ }, 
+					"attachments.contentType": { "$regex": /^image/ },
 					"attachments.oriented": false
 				};
 
@@ -183,7 +183,7 @@ var processAttachments = function() {
 				processLayer(result, function(err) {
 					// Update time
 					lastFeatureTimes.orient[result.layer.collectionName] = featureTimes[result.layer.collectionName];
-					done();
+					done(err);
 				});
 			},
 			function(err) {
@@ -195,10 +195,10 @@ var processAttachments = function() {
 			// but do no have all the nessecary thumbnails
 			var results = [];
 			async.eachSeries(layers, function(layer, done) {
-				var match =  { 
-					"attachments.contentType": { "$regex": /^image/ }, 
-					"attachments.oriented": true, 
-					"attachments.thumbnails.minDimension": { "$not": { "$all": thumbSizes } } 
+				var match =  {
+					"attachments.contentType": { "$regex": /^image/ },
+					"attachments.oriented": true,
+					"attachments.thumbnails.minDimension": { "$not": { "$all": thumbSizes } }
 				};
 
 				var lastTime = lastFeatureTimes.thumbnail[layer.collectionName];

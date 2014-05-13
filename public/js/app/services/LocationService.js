@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
-  .factory('LocationService', ['$http', '$q', '$rootScope', 'appConstants', 'mageLib', 
+  .factory('LocationService', ['$http', '$q', '$rootScope', 'appConstants', 'mageLib',
     function ($http, $q, $rootScope, appConstants, mageLib) {
       var ***REMOVED*** = {};
 
@@ -34,14 +34,7 @@ angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
       return ***REMOVED***;
     }])
 .factory('Location', ['$resource', '$http', function($resource, $http) {
-  var Location = $resource('/api/locations', {}, {
-    create: {
-      method: 'POST',
-      isArray: true,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    },
+  var Location = $resource('/api/locations/users', {}, {
     get: {
       method: 'GET',
       isArray: true,
@@ -51,6 +44,19 @@ angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
           return user.locations.length;
         });
       }])
+    }
+  });
+
+  return Location;
+}])
+.factory('CreateLocation', ['$resource', '$http', function($resource, $http) {
+  var Location = $resource('/api/locations', {}, {
+    create: {
+      method: 'POST',
+      isArray: true,
+      headers: {
+        'Content-Type': 'application/json'
+      }
     }
   });
   Location.prototype.$save = function(params, success, error) {

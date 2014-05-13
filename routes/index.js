@@ -108,13 +108,6 @@ module.exports = function(app, security) {
     });
   });
 
-  app.param('objectId', /^\d+$/);  //ensure objectId is a number
-  app.param('objectId', function(req, res, next, objectId) {
-    var id = parseInt(objectId, 10);
-    req.objectId = id;
-    next();
-  });
-
   // Grab the feature for any endpoint that uses featureId
   app.param('featureId', function(req, res, next, featureId) {
     req.featureId = featureId;
@@ -134,25 +127,4 @@ module.exports = function(app, security) {
       next();
     });   
   });  
-
-  app.param('featureObjectId', /^\d+$/); //ensure featureObjectId is a number
-  app.param('featureObjectId', function(req, res, next, objectId) {
-    var id = parseInt(objectId, 10);
-    req.featureId = id;
-    new api.Feature(req.layer).getById({id: id, field: 'properties.OBJECTID'}, function(feature) {
-      if (!feature) {
-        res.json({
-          error: {
-            code: 404,
-            message: 'Feature (ID: ' + id + ') not found',
-            details: []
-          }
-        });
-        return;
-      }
-
-      req.feature = feature;
-      next();
-    });
-  });
 }

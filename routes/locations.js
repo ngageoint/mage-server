@@ -27,6 +27,11 @@ module.exports = function(app, security) {
       parameters.filter.endDate = moment.utc(endDate).toDate();
     }
 
+    var lastLocationId = req.param('lastLocationId');
+    if (lastLocationId) {
+      parameters.filter.lastLocationId = lastLocationId;
+    }
+
     var limit = req.param('limit');
     parameters.limit = limit ? parseInt(limit) : 1;
 
@@ -69,6 +74,20 @@ module.exports = function(app, security) {
     next();
   }
 
+  // get locations and group by user
+  // max of 100 locations per user
+  app.get(
+    '/api/locations/users',
+    p***REMOVED***port.authenticate(authenticationStrategy),
+    access.authorize('READ_LOCATION'),
+    parseQueryParams,
+    function(req, res) {
+      User.getLocations({filter: req.parameters.filter, limit: req.parameters.limit}, function(err, users) {
+        res.json(users);
+      });
+    }
+  );
+
   // get locations
   // Will only return locations for the teams that the user is a part of
   // TODO only one team for PDC, need to implement multiple teams later
@@ -78,15 +97,9 @@ module.exports = function(app, security) {
     access.authorize('READ_LOCATION'),
     parseQueryParams,
     function(req, res) {
-      if (req.parameters.limit > locationLimit) {
-        Location.getLocationsWithFilters(req.user, req.parameters.filter, 100000, function(err, users) { 
-          res.json(users);
-        });
-      } else {
-        User.getLocations({filter: req.parameters.filter, limit: req.parameters.limit}, function(err, users) {
-          res.json(users);
-        });
-      }
+      Location.getAllLocations({filter: req.parameters.filter, limit: req.parameters.limit}, function(err, locations) {
+        res.json(locations);
+      });
     }
   );
 
@@ -101,15 +114,15 @@ module.exports = function(app, security) {
         if (err) {
           return res.send(400, err);
         }
+
+        res.json(locations);
       });
 
       User.addLocationsForUser(req.user, req.locations, function(err, location) {
         if (err) {
           return res.send(400, err);
         }
-
-        res.json(req.locations);
-      })
+      });
     }
   );
 

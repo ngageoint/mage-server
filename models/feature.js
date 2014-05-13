@@ -11,25 +11,30 @@ var StateSchema = new Schema({
 });
 
 var AttachmentSchema = new Schema({
-  contentType: { type: String, required: false },  
-  size: { type: Number, required: false },  
+  lastModified: {type: Date, required: false},
+  contentType: { type: String, required: false },
+  size: { type: Number, required: false },
   name: { type: String, required: false },
   relativePath: { type: String, required: true },
   width: { type: Number, required: false },
   height: { type: Number, required: false },
   oriented: {type: Boolean, required: true, default: false },
   thumbnails: [ThumbnailSchema]
+},{
+  strict: false
 });
 
 var ThumbnailSchema = new Schema({
-  contentType: { type: String, required: false },  
-  size: { type: Number, required: false },  
+  contentType: { type: String, required: false },
+  size: { type: Number, required: false },
   name: { type: String, required: false },
   relativePath: { type: String, required: true },
   minDimension: { type: Number, required: true },
   width: { type: Number, required: false },
   height: { type: Number, required: false}
-}); 
+},{
+  strict: false
+});
 
 // Creates the Schema for the Attachments object
 var FeatureSchema = new Schema({
@@ -41,10 +46,13 @@ var FeatureSchema = new Schema({
   properties: Schema.Types.Mixed,
   attachments: [AttachmentSchema],
   states: [StateSchema]
+},{
+  strict: false
 });
 
 FeatureSchema.index({geometry: "2dsphere"});
 FeatureSchema.index({'lastModified': 1});
+FeatureSchema.index({'attachments.lastModified': 1});
 FeatureSchema.index({'userId': 1});
 FeatureSchema.index({'deviceId': 1});
 FeatureSchema.index({'properties.type': 1});
@@ -114,7 +122,6 @@ exports.featureModel = featureModel;
 exports.getFeatures = function(layer, o, callback) {
   var conditions = {};
   var fields = parseFields(o.fields);
-  console.log('fields', fields);
 
   var query = featureModel(layer).find(conditions, fields);
 
@@ -136,26 +143,24 @@ exports.getFeatures = function(layer, o, callback) {
     query.where('states.0.name').in(filter.states);
   }
 
-  query.exec(function (err, features) {
+  if (o.sort) {
+    console.log('sort on ', o.sort);
+    query.sort(o.sort);
+  }
+
+  query.lean().exec(function (err, features) {
     if (err) {
       console.log("Error finding features in mongo: " + err);
     }
-    
+
     callback(features);
   });
 }
 
-exports.getFeatureById = function(layer, id, options, callback) {
-  if (id !== Object(id)) {
-    id = {id: id, field: '_id'};
-  }
-
-  var conditions = {};
-  conditions[id.field] = id.id;
-
+exports.getFeatureById = function(layer, featureId, options, callback) {
   var fields = parseFields(options.fields);
 
-  featureModel(layer).findOne(conditions, fields).exec(function (err, feature) {
+  featureModel(layer).findById(featureId, fields, function(err, feature) {
     if (err) {
       console.log("Error finding feature in mongo: " + err);
     }
@@ -196,19 +201,13 @@ exports.createGeoJsonFeature = function(layer, feature, callback) {
     }
 
     callback(err, newFeature);
-  }); 
+  });
 }
 
-exports.updateFeature = function(layer, id, feature, callback) {
-  if (id !== Object(id)) {
-    id = {id: id, field: '_id'};
-  }
-
-  var query = {};
-  query[id.field] = id.id;
+exports.updateFeature = function(layer, featureId, feature, callback) {
   feature.lastModified = moment.utc().toDate();
 
-  featureModel(layer).findOneAndUpdate(query, feature, {new: true}, function (err, updatedFeature) {
+  featureModel(layer).findByIdAndUpdate(featureId, feature, {new: true}, function (err, updatedFeature) {
     if (err) {
       console.log('Could not update feature', err);
     }
@@ -217,14 +216,8 @@ exports.updateFeature = function(layer, id, feature, callback) {
   });
 }
 
-exports.removeFeature = function(layer, id, callback) {
-  if (id !== Object(id)) {
-    id = {id: id, field: '_id'};
-  }
-
-  var query = {};
-  query[id.field] = id.id;
-  featureModel(layer).findOneAndRemove(query, function (err, feature) {
+exports.removeFeature = function(layer, featureId, callback) {
+  featureModel(layer).findByIdAndRemove(featureId, function (err, feature) {
     if (err) {
       console.log('Could not remove feature', err);
     }
@@ -279,7 +272,7 @@ exports.addState = function(layer, id, state, callback) {
   state._id = mongoose.Types.ObjectId();
   var update = {
     '$set': {
-      'states.-1': state, 
+      'states.-1': state,
       lastModified: moment.utc().toDate()
     }
   };
@@ -308,19 +301,20 @@ exports.getAttachment = function(layer, featureId, attachmentId, callback) {
   });
 }
 
-exports.addAttachment = function(layer, id, file, callback) {  
+exports.addAttachment = function(layer, id, file, callback) {
   if (id !== Object(id)) {
     id = {id: id, field: '_id'};
   }
 
   var condition = {};
   condition[id.field] = id.id;
-  
+
   var attachment = new Attachment({
-    contentType: file.headers['content-type'],  
+    contentType: file.headers['content-type'],
     size: file.size,
     name: file.name,
-    relativePath: file.relativePath
+    relativePath: file.relativePath,
+    lastModified: new Date()
   });
 
   var update = {'$push': { attachments: attachment }, 'lastModified': new Date()};
@@ -343,11 +337,9 @@ exports.updateAttachment = function(layer, featureId, attachmentId, file, callba
   if (file.height) set['attachments.$.height'] = file.height;
   if (file.oriented) set['attachments.$.oriented'] = file.oriented;
 
-  var update = {
-    '$set': set,
-    lastModified: new Date()
-  };
+  set['attachments.$.lastModified'] = new Date();
 
+  var update = { '$set': set };
   featureModel(layer).update(condition, update, function(err, feature) {
     if (err) {
       console.log('Error updating attachments from DB', err);

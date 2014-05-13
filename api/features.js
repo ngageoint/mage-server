@@ -42,13 +42,13 @@ Feature.prototype.getAll = function(options, callback) {
   }
 }
 
-Feature.prototype.getById = function(id, options, callback) {
+Feature.prototype.getById = function(featureId, options, callback) {
   if (typeof options == 'function') {
     callback = options;
     options = {};
   }
 
-  FeatureModel.getFeatureById(this._layer, id, options, function(feature) {
+  FeatureModel.getFeatureById(this._layer, featureId, options, function(feature) {
     callback(feature);
   });
 }
@@ -65,20 +65,20 @@ Feature.prototype.createFeatures = function(features, callback) {
   });
 }
 
-Feature.prototype.update = function(id, feature, callback) {
-  FeatureModel.updateFeature(this._layer, id, feature, function(err, updatedFeature) {
+Feature.prototype.update = function(featureId, feature, callback) {
+  FeatureModel.updateFeature(this._layer, featureId, feature, function(err, updatedFeature) {
     callback(err, updatedFeature);
   });
 }
 
-Feature.prototype.addState = function(id, state, callback) {
-  FeatureModel.addState(this._layer, id, state, function(err, updatedFeature) {
+Feature.prototype.addState = function(featureId, state, callback) {
+  FeatureModel.addState(this._layer, featureId, state, function(err, updatedFeature) {
     callback(err, updatedFeature);
   });
 }
 
-Feature.prototype.delete = function(id, callback) {
-  FeatureModel.removeFeature(this._layer, id, function(err, feature) {
+Feature.prototype.delete = function(featureId, callback) {
+  FeatureModel.removeFeature(this._layer, featureId, function(err, feature) {
     if (feature) {
       feature.attachments.forEach(function(attachment) {
         var file = path.join(attachmentBase, attachment.relativePath);
