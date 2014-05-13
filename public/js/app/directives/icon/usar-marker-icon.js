@@ -9,11 +9,11 @@ mage.directive('***REMOVED***MarkerIcon', function (USARMarkerIconService) {
       types:'='
     },
     controller: function($scope) {
-      $scope.$watch('feature.properties.TYPE', function(type) {
+      $scope.$watch('feature.properties.type', function(type) {
         if (!type) return;
 
         var properties = $scope.feature.properties;
-        $scope.iconSrc = USARMarkerIconService.getIconUrl(properties.TYPE, {types: $scope.types});
+        $scope.iconSrc = USARMarkerIconService.getIconUrl(properties.type, {types: $scope.types});
     	});
     }
   };

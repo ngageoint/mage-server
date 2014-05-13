@@ -43,7 +43,8 @@ mage.directive('pdcObservation', ['FeatureTypeService' , 'Feature', function (Fe
       scope.createNewObservation = function(location) {
         return new Feature({
           properties: {
-            TYPE: scope.types[0].name,
+            type: scope.types[0].name,
+            timestamp: new Date(),
             EVENTLEVEL: scope.levels[0].name,
             TEAM: scope.teams[0] 
           }

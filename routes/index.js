@@ -13,6 +13,23 @@ module.exports = function(app, security) {
   var p***REMOVED***port = security.authentication.p***REMOVED***port
     , authenticationStrategy = security.authentication.authenticationStrategy;
 
+  var resources = {
+    layerResource: {
+      location: '/FeatureServer',
+      featureResource: {
+        location: '/features',
+        attachmentResource: {
+          location: '/attachments'
+        },
+        stateResource: {
+          location: '/states'
+        }
+      }
+    }
+  }
+
+  app.set('resources', resources);
+
   // Protect everthing in the private directory
   app.all('/private/*', p***REMOVED***port.authenticate(authenticationStrategy), function(req, res, next) {
     return next();
@@ -84,15 +101,6 @@ module.exports = function(app, security) {
       });
   });
 
-  // Grab the user for any endpoint that uses userId
-  app.param('userId', function(req, res, next, userId) {
-      User.getUserById(userId, function(err, user) {
-        if (!user) return res.send('User not found', 404);
-        req.user = user;
-        next();
-      });
-  });
-
   // Grab the role for any endpoint that uses roleId
   app.param('roleId', function(req, res, next, roleId) {
       Role.getRoleById(roleId, function(err, role) {
@@ -103,7 +111,6 @@ module.exports = function(app, security) {
   });
 
   // Grab the ESRI feature layer for any endpoint that uses layerId
-  app.param('layerId', /^\d+$/);  //ensure objectId is a number
   app.param('layerId', function(req, res, next, layerId) {
     Layer.getById(layerId, function(layer) {
       if (!layer) {
@@ -119,13 +126,6 @@ module.exports = function(app, security) {
       req.layer = layer;
       next();
     });
-  });
-
-  app.param('objectId', /^\d+$/);  //ensure objectId is a number
-  app.param('objectId', function(req, res, next, objectId) {
-    var id = parseInt(objectId, 10);
-    req.objectId = id;
-    next();
   });
 
   // Grab the feature for any endpoint that uses featureId
@@ -147,25 +147,4 @@ module.exports = function(app, security) {
       next();
     });   
   });  
-
-  app.param('featureObjectId', /^\d+$/); //ensure featureObjectId is a number
-  app.param('featureObjectId', function(req, res, next, objectId) {
-    var id = parseInt(objectId, 10);
-    req.featureId = id;
-    new api.Feature(req.layer).getById({id: id, field: 'properties.OBJECTID'}, function(feature) {
-      if (!feature) {
-        res.json({
-          error: {
-            code: 404,
-            message: 'Feature (ID: ' + id + ') not found',
-            details: []
-          }
-        });
-        return;
-      }
-
-      req.feature = feature;
-      next();
-    });
-  });
 }

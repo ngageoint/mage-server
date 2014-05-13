@@ -20,9 +20,8 @@ angular.module('mage')
             type: 'Point'
           },
           properties: {
-            userId: UserService.myself._id,
-            TYPE: ***REMOVED***.types[0].name,
-            EVENTDATE: new Date()
+            type: ***REMOVED***.types[0].name,
+            timestamp: new Date()
           }
         });
       };

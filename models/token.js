@@ -63,6 +63,8 @@ exports.createToken = function(options, callback) {
   var update = {token: token, timestamp: new Date()};
   var options = {upsert: true};
   Token.findOneAndUpdate(query, update, options, function(err, newToken) {
+    newToken.expirationDate = new Date(newToken.timestamp.getTime() +  tokenExpiration);
+
     if (err) {
       console.log('Could not create token for user: ' + user.username);
     }
@@ -72,8 +74,13 @@ exports.createToken = function(options, callback) {
 }
 
 exports.removeTokenForUser = function(user, callback) {
-  var conditions = {user: user._id};
-  Token.remove(conditions, function(err, numberRemoved) {
+  Token.remove({user: user._id}, function(err, numberRemoved) {
+    callback(err, numberRemoved);
+  });
+}
+
+exports.removeTokenForDevice = function(device, callback) {
+  Token.remove({deviceId: device._id}, function(err, numberRemoved) {
     callback(err, numberRemoved);
   });
 }

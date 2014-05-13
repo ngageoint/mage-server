@@ -46,7 +46,7 @@ module.exports = function(app, security) {
       parameters.filter.fft = fft === 'true';
     }
 
-    if(!layerIds && !fft) {        
+    if(!layerIds && !fft) {
       return res.send(400, "Error.  Please Select Layer for Export.");
     }
 
@@ -67,7 +67,7 @@ module.exports = function(app, security) {
   var mapUsers = function(req, res, next) {
     //get users for lookup
     User.getUsers(function (users) {
-      var map = {};    
+      var map = {};
       users.forEach(function(user) {
         map[user._id] = user;
       });
@@ -80,7 +80,7 @@ module.exports = function(app, security) {
   var mapDevices = function(req, res, next) {
     //get users for lookup
     Device.getDevices(function (err, devices) {
-      var map = {};    
+      var map = {};
       devices.forEach(function(device) {
         map[device._id] = device;
       });
@@ -129,11 +129,11 @@ module.exports = function(app, security) {
         function(layer, done) {
           Feature.getFeatures(layer, {filter: req.parameters.filter}, function(features) {
             features.forEach(function(feature) {
-              if (req.users[feature.properties.userId]) feature.properties.user = req.users[feature.properties.userId].username;
-              if (req.devices[feature.properties.deviceId]) feature.properties.device = req.devices[feature.properties.deviceId].uid;
+              if (req.users[feature.userId]) feature.properties.user = req.users[feature.userId].username;
+              if (req.devices[feature.deviceId]) feature.properties.device = req.devices[feature.deviceId].uid;
 
-              delete feature.properties.deviceId;
-              delete feature.properties.userId;
+              delete feature.deviceId;
+              delete feature.userId;
             });
 
             var streams = {
@@ -180,7 +180,7 @@ module.exports = function(app, security) {
       if (err) return next(err);
 
       var zipFile = '/tmp/mage-shapefile-export-' + now.getTime() + '.zip';
-      exec("zip -r " + zipFile + " " + req.directory + "/*", 
+      exec("zip -r " + zipFile + " " + req.directory + "/*",
         function (err, stdout, stderr) {
 
           if (err !== null) {
@@ -227,9 +227,9 @@ module.exports = function(app, security) {
 
     var now = new Date();
 
-    var getFeatures = function(done) {             
+    var getFeatures = function(done) {
       if(!layers) return done();
-        
+
       async.each(layers, function(layer, done) {
         Feature.getFeatures(layer, {filter: req.parameters.filter}, function(features) {
           layer.features = features;
@@ -238,13 +238,13 @@ module.exports = function(app, security) {
       },
       function(){
         done();
-      });                     
+      });
     }
 
     var getLocations = function(done) {
       if (!fft) return done();
 
-      Location.getLocationsWithFilters(req.user, req.parameters.filter, 100000, function(err, locationResponse) { 
+      Location.getLocations({filter: req.parameters.filter, limit: 1000}, function(err, locationResponse) {
         if(err) {
           console.log(err);
           return done(err);
@@ -264,7 +264,7 @@ module.exports = function(app, security) {
     var copyFeatureMediaAttachmentsToStagingDirectory = function(done) {
       async.each(layers,
         function(layer, layerDone) {
-          async.each(layer.features, 
+          async.each(layer.features,
             function(feature, featureDone) {
               async.each(feature.attachments,
                 function(attachment, attachmentDone) {
@@ -276,7 +276,7 @@ module.exports = function(app, security) {
                     }
 
                     return attachmentDone();
-                  });  
+                  });
                 },
                 function(err) {
                   featureDone();
@@ -298,30 +298,30 @@ module.exports = function(app, security) {
       var filename = "mage-export.kml"
       var stream = fs.createWriteStream(req.directory + "/" + filename);
       stream.once('open', function(fd) {
-            
+
         stream.write(generate_kml.generateKMLHeader());
-        stream.write(generate_kml.generateKMLDocument());    
+        stream.write(generate_kml.generateKMLDocument());
 
         //writing requested feature layers
-        if (layers) {    
+        if (layers) {
           layers.forEach(function(layer) {
             var features = layer.features;
-              
+
             if (layer) {
               stream.write(generate_kml.generateKMLFolderStart(layer.name, false));
 
-              features.forEach(function(feature) {             
+              features.forEach(function(feature) {
                 lon = feature.geometry.coordinates[0];
                 lat = feature.geometry.coordinates[1];
-                desc = feature.properties.TYPE;
-                attachments = feature.attachments;              
-                stream.write(generate_kml.generatePlacemark(feature.properties.TYPE, feature.properties.TYPE, lon ,lat ,0, feature.properties, attachments));
+                desc = feature.properties.type;
+                attachments = feature.attachments;
+                stream.write(generate_kml.generatePlacemark(feature.properties.type, feature.properties.type, lon ,lat ,0, feature.properties, attachments));
               });
 
-              stream.write(generate_kml.generateKMLFolderClose());  
-            }  
+              stream.write(generate_kml.generateKMLFolderClose());
+            }
           });
-        }    
+        }
 
         //writing requested FFT locations
         if (fft) {
@@ -334,12 +334,12 @@ module.exports = function(app, security) {
               userLocation.locations.forEach(function(location) {
                 if (location) {
                   lon = location.geometry.coordinates[0];
-                  lat = location.geometry.coordinates[1];                  
-                  stream.write(generate_kml.generatePlacemark(user.username, 'FFT' , lon ,lat ,0, location.properties)); 
-                } 
+                  lat = location.geometry.coordinates[1];
+                  stream.write(generate_kml.generatePlacemark(user.username, 'FFT' , lon ,lat ,0, location.properties));
+                }
               });
 
-              stream.write(generate_kml.generateKMLFolderClose());  
+              stream.write(generate_kml.generateKMLFolderClose());
             }
 
           });
@@ -351,7 +351,7 @@ module.exports = function(app, security) {
             console.log(err);
           }
           done();
-        });             
+        });
       });
     }
 
@@ -396,10 +396,10 @@ module.exports = function(app, security) {
     ////////////////////////////////////////////////////////////////////
     //END DEFINE SERIES FUNCTIONS///////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
-          
+
     async.series([
-      getFeatures, 
-      getLocations, 
+      getFeatures,
+      getLocations,
       copyKmlIcons,
       copyFeatureMediaAttachmentsToStagingDirectory,
       writeKmlFile

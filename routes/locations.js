@@ -27,6 +27,11 @@ module.exports = function(app, security) {
       parameters.filter.endDate = moment.utc(endDate).toDate();
     }
 
+    var lastLocationId = req.param('lastLocationId');
+    if (lastLocationId) {
+      parameters.filter.lastLocationId = lastLocationId;
+    }
+
     var limit = req.param('limit');
     parameters.limit = limit ? parseInt(limit) : 1;
 
@@ -36,29 +41,52 @@ module.exports = function(app, security) {
   }
 
   var validateLocations = function(req, res, next) {
-    var objects = req.body;
+    var locations = req.body;
 
-    if (!Array.isArray(objects)) {
-      objects = [objects];
+    if (!Array.isArray(locations)) {
+      locations = [locations];
     }
 
-    var locations = [];
-    objects.forEach(function(o) {
-      if (!o.location) return res.send(400, "Missing required parameter 'location'.");
-      if (!o.timestamp) return res.send(400, "Missing required parameter 'timestamp");
+    var valid = locations.every(function(l) {
+      if (!l.geometry) {
+        msg = "Missing required parameter 'geometry'.";
+        return false;
+      }
 
-      o.location.properties = o.location.properties || {};
-      o.location.properties.timestamp = moment.utc(o.timestamp).toDate();
-      o.location.properties.user = req.user._id;
-      o.location.properties.deviceId = req.provisionedDeviceId;
+      if (!l.properties || !l.properties.timestamp) {
+        msg = "Missing required parameter 'properties.timestamp";
+        return false;
+      }
 
-      locations.push(o.location);
+      l.properties.timestamp = moment.utc(l.properties.timestamp).toDate();
+      l.properties.user = req.user._id;
+      l.properties.deviceId = req.provisionedDeviceId;
+
+      l.type = "Feature";
+
+      return true;
     });
+
+    if (!valid) return res.send(400, msg);
 
     req.locations = locations;
 
     next();
   }
+
+  // get locations and group by user
+  // max of 100 locations per user
+  app.get(
+    '/api/locations/users',
+    p***REMOVED***port.authenticate(authenticationStrategy),
+    access.authorize('READ_LOCATION'),
+    parseQueryParams,
+    function(req, res) {
+      User.getLocations({filter: req.parameters.filter, limit: req.parameters.limit}, function(err, users) {
+        res.json(users);
+      });
+    }
+  );
 
   // get locations
   // Will only return locations for the teams that the user is a part of
@@ -69,15 +97,9 @@ module.exports = function(app, security) {
     access.authorize('READ_LOCATION'),
     parseQueryParams,
     function(req, res) {
-      if (req.parameters.limit > locationLimit) {
-        Location.getLocationsWithFilters(req.user, req.parameters.filter, 100000, function(err, users) { 
-          res.json(users);
-        });
-      } else {
-        User.getLocations({filter: req.parameters.filter, limit: req.parameters.limit}, function(err, users) {
-          res.json(users);
-        });
-      }
+      Location.getAllLocations({filter: req.parameters.filter, limit: req.parameters.limit}, function(err, locations) {
+        res.json(locations);
+      });
     }
   );
 
@@ -92,15 +114,15 @@ module.exports = function(app, security) {
         if (err) {
           return res.send(400, err);
         }
+
+        res.json(locations);
       });
 
       User.addLocationsForUser(req.user, req.locations, function(err, location) {
         if (err) {
           return res.send(400, err);
         }
-
-        res.json(req.locations);
-      })
+      });
     }
   );
 

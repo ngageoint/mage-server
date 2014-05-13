@@ -1,6 +1,7 @@
 // Setup mongoose
 var mongoose = require('mongoose')
-  , Role = require('../models/role');
+  , Role = require('../models/role')
+  , server = require('../config').server;
 
 var adminPermissions = [
   'CREATE_DEVICE', 'READ_DEVICE', 'UPDATE_DEVICE', 'DELETE_DEVICE',
@@ -12,7 +13,7 @@ var adminPermissions = [
   'CREATE_TEAM', 'READ_TEAM', 'UPDATE_TEAM', 'DELETE_TEAM'];
 
 exports.up = function(next) {
-  mongoose.connect('mongodb://localhost/sagedb');
+  mongoose.connect(server.mongodb.url);
 
   var adminRole = {
     name: "ADMIN_ROLE",
@@ -31,7 +32,7 @@ exports.up = function(next) {
 };
 
 exports.down = function(next) {
-  mongoose.connect('mongodb://localhost/sagedb');
+  mongoose.connect(server.mongodb.url);
 
   Role.getRole("ADMIN_ROLE", function(err, role) {
     if (err) {

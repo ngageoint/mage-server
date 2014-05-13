@@ -6,12 +6,66 @@ module.exports = function(app, auth) {
     , util = require('util')
     , moment = require('moment')
     , access = require('../access')
-    , geometryFormat = require('../format/geoJsonFormat');
+    , geometryFormat = require('../format/geoJsonFormat')
+    , geojson = require('../transformers/geojson');
 
-  var geojson = require('../transformers/geojson');
+  var sortColumnWhitelist = ["lastModified"];
+
+  var getFeatureResource = function(req) {
+      return req.getPath().match(/(.*features)/)[0];
+  }
+
+  var validateFeature = function(req, res, next) {
+    var feature = req.body;
+
+    if (!feature.type || feature.type != 'Feature' ) {
+      return res.send(400, "cannot create feature 'type' param not specified, or is not set to 'Feature'");
+    }
+
+    if (!feature.geometry) {
+      return res.send(400, "cannot create feature 'geometry' param not specified");
+    }
+
+    if (!feature.properties) {
+      return res.send(400, "cannot create feature 'properties.type' and 'properties.timestamp' params not specified");
+    }
+
+    if (!feature.properties.type) {
+      return res.send(400, "cannot create feature 'properties.type' param not specified");
+    }
+
+    if (!feature.properties.timestamp) {
+      return res.send(400, "cannot create feature 'properties.timestamp' param not specified");
+    }
+
+    feature.properties.timestamp = moment(feature.properties.timestamp).toDate();
+
+    var state = {name: 'active'};
+    if (userId) state.userId = userId;
+    feature.states = [state];
+
+    req.newFeature = {
+      type: feature.type,
+      geometry: feature.geometry,
+      properties: feature.properties,
+      states: [state]
+    };
+
+    var userId = req.user ? req.user._id : null;
+    if (userId) req.newFeature.userId = userId;
+
+    var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
+    if (deviceId) req.newFeature.deviceId = deviceId;
+
+    next();
+  }
 
   var parseQueryParams = function(req, res, next) {
-    var parameters = {filter: {}};
+    // setup defaults
+    var parameters = {
+      filter: {
+      }
+    };
 
     var fields = req.param('fields');
     if (fields) {
@@ -38,6 +92,30 @@ module.exports = function(app, auth) {
       parameters.filter.geometries = geometryFormat.parse('geometry', geometry);
     }
 
+    var states = req.param('states');
+    if (states) {
+      parameters.filter.states = states.split(',');
+    }
+
+    var sort = req.param('sort');
+    if (sort) {
+      var columns = {};
+      sort.split(',').forEach(function(column) {
+        var sortParams = column.split('+');
+        // Check sort column is in whitelist
+        if (sortColumnWhitelist.indexOf(sortParams[0]) == -1) return res.send("Cannot sort on column '" + sortParams[0] + "'");
+
+        // Order can be nothing (ASC by default) or ASC, DESC
+        var direction = 1; //ASC
+        if (sortParams.length > 1 && sortParams[1] == 'DESC') {
+          direction = -1; // DESC
+        }
+
+        columns[sortParams[0]] = direction;
+      });
+      parameters.sort = columns;
+    }
+
     req.parameters = parameters;
 
     next();
@@ -53,10 +131,11 @@ module.exports = function(app, auth) {
 
       var options = {
         filter: req.parameters.filter,
-        fields: req.parameters.fields
-      }
+        fields: req.parameters.fields,
+        sort: req.parameters.sort
+      };
       new api.Feature(req.layer).getAll(options, function(features) {
-        var response = geojson.transform(features);
+        var response = geojson.transform(features, {path: getFeatureResource(req)});
         res.json(response);
       });
     }
@@ -72,7 +151,7 @@ module.exports = function(app, auth) {
       
       var options = {fields: req.parameters.fields};
       new api.Feature(req.layer).getById(req.param('id'), options, function(feature) {
-        var response = geojson.transform(feature);
+        var response = geojson.transform(feature, {path: getFeatureResource(req)});
         res.json(response);
       });
     }
@@ -82,31 +161,18 @@ module.exports = function(app, auth) {
   app.post(
     '/FeatureServer/:layerId/features', 
     access.authorize('CREATE_FEATURE'),
+    validateFeature,
     function (req, res) {
       console.log("MAGE Features POST REST Service Requested");
 
-      var feature = req.body;
-      feature.properties = feature.properties || {};
-
-      var userId = req.user ? req.user._id : null;
-      if (userId) feature.properties.userId = userId;
-
-      var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
-      if (deviceId) feature.properties.deviceId = deviceId;
-
-      var state = {name: 'active'};
-      if (userId) state.userId = userId;
-      feature.states = [state];
-
-      new api.Feature(req.layer).create(feature, function(newFeature) {
+      new api.Feature(req.layer).create(req.newFeature, function(newFeature) {
         if (!newFeature) return res.send(400);
 
-        var response = geojson.transform(newFeature);
+        var response = geojson.transform(newFeature, {path: getFeatureResource(req)});
         res.location(newFeature._id.toString()).json(response);
       }
     );
-  }); 
-
+  });
 
   // This function will update a feature by the ID
   app.put(
@@ -115,31 +181,29 @@ module.exports = function(app, auth) {
     function (req, res) {
       console.log("MAGE Features (ID) UPDATE REST Service Requested");
 
-      var feature = req.body;
-      feature.properties = feature.properties || {};
+      var feature = {};
+      if (req.body.geometry) feature.geometry = req.body.geometry;
+      if (req.body.properties) {
+        feature.properties = req.body.properties;
+        if (!feature.properties.type) {
+          return res.send(400, "cannot create feature 'properties.type' param not specified");
+        }
+
+        if (!feature.properties.timestamp) {
+          return res.send(400, "cannot create feature 'properties.timestamp' param not specified");
+        }
+        
+        feature.properties.timestamp = moment(feature.properties.timestamp).toDate();
+      }
 
       var userId = req.user ? req.user._id : null;
-      if (userId) feature.properties.userId = userId;
+      if (userId) feature.userId = userId;
 
       var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
-      if (deviceId) feature.properties.deviceId = deviceId;
+      if (deviceId) feature.deviceId = deviceId;
 
-      new api.Feature(req.layer).update(req.param('id'), req.body, function(err, updatedFeature) {
-        var response = geojson.transform(updatedFeature);
-        res.json(response);
-      }
-    );
-  }); 
-
-  // This function deletes one feature based on ID
-  app.delete(
-    '/FeatureServer/:layerId/features/:id',
-    access.authorize('DELETE_FEATURE'),
-    function (req, res) {
-      console.log("MAGE Features (ID) DELETE REST Service Requested");
-
-      new api.Feature(req.layer).delete(req.param('id'), function(err, deletedFeature) {
-        var response = geojson.transform(deletedFeature);
+      new api.Feature(req.layer).update(req.param('id'), feature, function(err, updatedFeature) {
+        var response = geojson.transform(updatedFeature, {path: getFeatureResource(req)});
         res.json(response);
       }
     );
@@ -149,6 +213,8 @@ module.exports = function(app, auth) {
     '/FeatureServer/:layerId/features/:id/states',
     access.authorize('UPDATE_FEATURE'),
     function(req, res, next) {
+      console.log('got body: ', req.body);
+
       var state = req.body;
       if (!state) return res.send(400);
       if (!state.name) return res.send(400, 'name required');
@@ -164,8 +230,21 @@ module.exports = function(app, auth) {
           return res.send(400, 'state is already ' + "'" + state.name + "'");
         }
 
-        var response = geojson.transform(feature);
+        var response = geojson.transform(feature, {path: getFeatureResource(req)});
         res.json(201, response);
+      });
+    }
+  );
+
+  app.get(
+    '/FeatureServer/:layerId/features/:id/attachments',
+    access.authorize('READ_FEATURE'),
+    function(req, res, next) {
+      var fields = {attachments: true};
+      var options = {fields: fields};
+      new api.Feature(req.layer).getById(req.param('id'), options, function(feature) {
+        var response = geojson.transform(feature, {path: getFeatureResource(req)});
+        res.json(response.attachments);
       });
     }
   );
@@ -174,7 +253,9 @@ module.exports = function(app, auth) {
     '/FeatureServer/:layerId/features/:featureId/attachments/:attachmentId',
     access.authorize('READ_FEATURE'),
     function(req, res, next) {
-      new api.Attachment(req.layer, req.feature).getById(req.param('attachmentId'), function(err, attachment) {
+      console.log("MAGE Features (ID) Attachment GET REST Service Requested");
+
+      new api.Attachment(req.layer, req.feature).getById(req.param('attachmentId'), {size: req.param('size')}, function(err, attachment) {
         if (err) return next(err);
 
         if (!attachment) return res.send(404);
