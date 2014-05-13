@@ -1,7 +1,7 @@
 <div ng-show="showExport" cl***REMOVED***="filter-panel">
   <h3>Export</h3>
 
-  <form cl***REMOVED***="form">  
+  <form cl***REMOVED***="form">
 
     <div cl***REMOVED***="top-gap">
       <h4><i cl***REMOVED***="icon-layers icon-sage"></i>  Select Layers</h4>
@@ -27,8 +27,8 @@
       <select cl***REMOVED***="input-xlarge" ng-model="export" ng-options="o.label for o in exportOptions"></select>
     </div>
 
-    <div ng-show="export.custom">
-		<div>
+    <div ng-show="export.custom" style="z-index:2000;">
+		    <div>
 	        <div cl***REMOVED***="control-group input-append">
 	    	  <label cl***REMOVED***="control-label">Start Date/Time</label>
 	          <input cl***REMOVED***="input-small" type="text" ng-model="exportStartDate" data-date-format="mm/dd/yyyy" bs-datepicker>
