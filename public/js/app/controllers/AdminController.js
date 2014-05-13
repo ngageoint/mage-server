@@ -1,79 +1,5 @@
 'use strict';
 
-mage.directive('fileUploader', function() {
-  return {
-    restrict: 'A',
-    transclude: true,
-    template: '<div><span ng-show="files.length">{{files[0].name}} - {{files[0].type}} </span> <span cl***REMOVED***="btn btn-primary fileinput-button" ng-hide="files.length">'
-                    +'<i cl***REMOVED***="glyphicon glyphicon-plus"></i>'
-                    +'<span>Choose New Icon</span>'
-                    +'<input type="file"/>'
-                +'</span><button ng-show="files.length" cl***REMOVED***="btn btn-success" ng-click="upload()">Upload</button></div>',
-    controller: function($scope, $fileUpload, CustomIconService) {
-      $scope.notReady = true;
-      $scope.upload = function() {
-        $fileUpload.upload($scope.files, function(data, status, headers, config) {
-          CustomIconService.addNewIcon(data);
-        });
-      };
-    },
-    link: function($scope, $element) {
-      var fileInput = $element.find('input[type="file"]');
-      fileInput.bind('change', function(e) {
-        $scope.notReady = e.target.files.length == 0;
-        $scope.files = [];
-        for(var i in e.target.files) {
-          //Only push if the type is object for some ***REMOVED***-***REMOVED*** reason browsers like to include functions and other junk
-          if(typeof e.target.files[i] == 'object') $scope.files.push(e.target.files[i]);
-        }
-        $scope.$apply();
-      });
-    }
-  }
-});
-
-mage.***REMOVED***('$fileUpload', ['$http', 'mageLib', function($http, mageLib) {
-  this.upload = function(files, success) {
-    //Not really sure why we have to use FormData().  Oh yeah, browsers suck.
-    var formData = new FormData();
-    for(var i in files) {
-      formData.append('icon', files[i]);
-    }
-    console.log(formData);
-    $http({method: 'POST', url: '/api/icons', data: formData, headers: {'Content-Type': undefined}, transformRequest: angular.identity})
-    .success(success);
-  }
-}]);
-
-
-mage.factory('CustomIconService', ['$rootScope', '$http', '$q',
-    function ($rootScope, $http, $q) {
-
-      var allIconsPromise;
-      var theIcons;
-
-      var ***REMOVED*** = {};
-
-      ***REMOVED***.getAllIcons = function () {
-        allIconsPromise = allIconsPromise || $http.get('/api/icons').then(function(response) {
-          theIcons = response.data;
-          return theIcons;
-        });
-        return allIconsPromise;
-      };
-
-      ***REMOVED***.addNewIcon = function (response) {
-        theIcons.push(response);
-        allIconsPromise = $q.when(theIcons);
-        $rootScope.$broadcast('newIcon', allIconsPromise);
-      };
-
-      return ***REMOVED***;
-    }]);
-
-/*
-
-*/
 function AdminController($scope, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService, FormService, Layer, mageLib, CustomIconService) {
   // The variables that get set when clicking a team or user in the list, these get loaded into the editor.
   $scope.currentAdminPanel = "user"; // possible values user, team, and device
@@ -117,7 +43,6 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
       $scope.deviceSearch();
     });
   
-  $scope.team = {};
   $scope.user = {};
   $scope.device = {};
 
@@ -163,7 +88,6 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   $scope.statusTitle = '';
   $scope.statusMessage = '';
   $scope.statusLevel = ''; // use the bootstrap alert cl***REMOVED***es for this value, alert-error, alert-success, alert-info. Leave it as '' for yellow
-
 
   $scope.editForm = function(form) {
     FormService.setCurrentEditForm(form);
@@ -239,29 +163,19 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     return filter === $scope.currentDeviceFilter ? 'active' : '';
   }
 
-  /* Team admin functions */
-  $scope.getTeams = function() {
-
-  }
-
-  $scope.newTeam = function() {
-    $('#new-team-form').removeCl***REMOVED***('hide');
-  }
-
-  $scope.viewTeam = function(team) {
-    $scope.team = team;
-  }
-
-  $scope.saveTeam = function() {
-    console.log("saving team...");
-  }
-
   /* User admin functions */
   $scope.saveUser = function () {
     if ($scope.user._id) {
-      UserService.updateUser($scope.user);
-      $scope.setShowUserForm(false);
-      $scope.showStatusMessage("User updated", $scope.user.username + " saved", "alert-success");
+      UserService.updateUser($scope.user)
+        .success(function (data, status, headers, config) {
+          $scope.setShowUserForm(false);
+          $scope.showStatusMessage("User updated", $scope.user.username + " saved", "alert-success");
+        })
+        .error(function (data, status, headers, config) {
+          $scope.showStatusMessage("Unable to create user", data, "alert-error");
+          console.log('Something bad happened while creating a user...' + status);
+      });;
+
     } else {
       UserService.createUser($scope.user).
       success(function (data, status, headers, config) {
@@ -309,11 +223,8 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   /* shortcut for giving a user the USER_ROLE */
   $scope.approveUser = function (user) {
     var userRole = _.find($scope.roles, function (role) { return role.name == 'USER_ROLE' });
-    user.role = userRole._id;
-    UserService.updateUser(user)
-      .success(function (data, status, headers, config) {
-
-      });
+    user.active = true;
+    UserService.updateUser(user).success(function () {});
   }
 
   $scope.deleteUser = function (user) {
@@ -339,7 +250,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   $scope.getUnregisteredUsers = function (users) {
     var result = [];
     angular.forEach(users, function (user) {
-      if (!user.role) {
+      if (!user.active) {
         result.push(user);
       }
     });
@@ -349,7 +260,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   $scope.getRegisteredUsers = function (users) {
     var result = [];
     angular.forEach(users, function (user) {
-      if (user.role) {
+      if (user.active) {
         result.push(user);
       }
     });
@@ -382,16 +293,6 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     }
   }
 
-
-  /* Device admin functions */
-  $scope.getDevices = function () {
-
-  }
-
-  $scope.newDevice = function () {
-
-  }
-
   $scope.editDevice = function (device) {
     $scope.device = device;
     $scope.setShowDeviceForm(true);
@@ -416,6 +317,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
           $scope.showStatusMessage("Success", "Device '" + device.uid + "' has been created.","alert-info");
           $scope.devices.push(data);
           $scope.setShowDeviceForm(false);
+          $scope.deviceSearch();
         })
         .error(function (data) {
           $scope.showStatusMessage("Unable to create device", data, "alert-error");
@@ -439,6 +341,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
       .success(function() {
         $scope.showStatusMessage("Success", "Device '" + device.uid + "' has been removed.","alert-info");
         $scope.devices = _.reject($scope.devices, function(d) { return d.uid === device.uid });
+        $scope.deviceSearch();
       })
       .error(function() {
         $scope.showStatusMessage("Unable to delete device", data, "alert-error");

@@ -8,7 +8,8 @@ var FeatureModel = require('../models/feature')
   , config = require('../config.json')
   , geometryFormat = require('../format/geoJsonFormat');
 
-var attachmentBase = config.server.attachmentBaseDirectory;
+var attachmentConfig = config.server.attachment;
+var attachmentBase = attachmentConfig.baseDirectory;
 
 var createAttachmentPath = function(layer) {
   var now = new Date();
@@ -20,34 +21,36 @@ var createAttachmentPath = function(layer) {
   );
 }
 
-function Attachment(layer, feature) {
+function Attachment(layer, featureId) {
   this._layer = layer;
-  this._feature = feature;
+  this._featureId = featureId;
 };
 
-Attachment.prototype.getById = function(id, callback) {
-  if (id !== Object(id)) {
-    id = {id: id, field: '_id'};
-  }
+Attachment.prototype.getById = function(attachmentId, options, callback) {
+  var size = options.size ? Number(options.size) : null;
 
-  var attachment = null;
-  this._feature.attachments.forEach(function(a) {
-    if (a[id.field] == id.id) {
-      attachment = a;
-      return false; // found it, stop iterating
+  FeatureModel.getAttachment(this._layer, this._featureId, attachmentId, function(attachment) {
+    if (size) {
+      attachment.thumbnails.forEach(function(thumbnail) {
+        if ((thumbnail.minDimension < attachment.height || !attachment.height)
+          && (thumbnail.minDimension < attachment.width || !attachment.width)
+          && (thumbnail.minDimension >= size)) {
+            attachment = thumbnail;
+        }
+      });
     }
+
+    if (attachment) attachment.path = path.join(attachmentBase, attachment.relativePath);
+    
+    callback(null, attachment);
   });
-
-  if (attachment) attachment.path = path.join(attachmentBase, attachment.relativePath);
-
-  return callback(null, attachment);
 }
 
-Attachment.prototype.create = function(id, attachment, callback) {
+Attachment.prototype.create = function(featureId, attachment, callback) {
   var layer = this._layer;
   var feature = this._feature;
 
-  var relativePath = createAttachmentPath(layer)
+  var relativePath = createAttachmentPath(layer);
   // move file upload to its new home
   var dir = path.join(attachmentBase, relativePath);
   fs.mkdirp(dir, function(err) {
@@ -56,14 +59,16 @@ Attachment.prototype.create = function(id, attachment, callback) {
     var fileName = path.basename(attachment.path);
     attachment.relativePath = path.join(relativePath, fileName);
     var file = path.join(attachmentBase, attachment.relativePath);
+
     fs.rename(attachment.path, file, function(err) {
-      if (err) return next(err);
+      if (err) {
+        callback(err);
+        return;
+      }
 
-      FeatureModel.addAttachment(layer, id, attachment, function(err, newAttachment) {
-        if (err) return callback(err);
-
-        callback(null, newAttachment);
-      });  
+      FeatureModel.addAttachment(layer, featureId, attachment, function(err, newAttachment) {
+        callback(err, newAttachment);
+      });
     });
   });
 }

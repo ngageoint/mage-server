@@ -11,7 +11,7 @@ module.exports = function(app, security) {
     , provision = security.provisioning.provision
     , provisionStrategy = security.provisioning.strategy;
 
-  var p***REMOVED***wordLength = config.server.authentication.p***REMOVED***wordMinLength;
+  var p***REMOVED***wordLength = config.api.authentication.p***REMOVED***wordMinLength;
   var emailRegex = /^[^\s@]+@[^\s@]+\./;
 
   var isAuthenticated = function(strategy) {
@@ -38,6 +38,13 @@ module.exports = function(app, security) {
 
       });
     }
+  }
+
+  var getDefaultRole = function(req, res, next) {
+    Role.getRole('USER_ROLE', function(err, role) {
+      req.role = role;
+      next();
+    });
   }
 
   var validateUser = function(req, res, next) {
@@ -98,7 +105,7 @@ module.exports = function(app, security) {
     }
 
     if (p***REMOVED***word.length < p***REMOVED***wordLength) {
-      return res.send(400, 'p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
+      return res.send(400, 'p***REMOVED***word does not meet minimum length requirement of ' + p***REMOVED***wordLength + ' characters');
     }
 
     user.p***REMOVED***word = p***REMOVED***word;
@@ -169,7 +176,9 @@ module.exports = function(app, security) {
 
         res.json({
           token: token.token,
-          user: req.user
+          expirationDate: token.expirationDate,
+          user: req.user,
+          device: options.device
         });
       });
     }
@@ -219,6 +228,10 @@ module.exports = function(app, security) {
     access.authorize('READ_USER'),
     function(req, res) {
       User.getUserById(req.params.userId, function(err, user) {
+        if (err) return next(err);
+
+        if (!user) return res.send(404);
+
         res.json(user);
       })
     }
@@ -266,15 +279,16 @@ module.exports = function(app, security) {
     isAuthorized('UPDATE_USER'),
     validateUser,
     function(req, res, next) {
-
       // If I did not authenticate a user go to the next route
       // '/api/users' route which does not require authentication
       if (!req.user) return next();
 
       var role = req.param('role');
-      if (role) {
-        req.newUser.role = role
-      }
+      if (!role) return res.send(400, 'role is a required field');
+      req.newUser.role = role;
+      
+      // Authorized to update users, activate account by default
+      req.newUser.active = true;
 
       User.createUser(req.newUser, function(err, newUser) {
         if (err) return res.send(400, err.message);
@@ -284,11 +298,16 @@ module.exports = function(app, security) {
     }
   );
 
-  // Create a new user (Unauthenticated)
-  // Anyone can create a new user, no roles will be ***REMOVED***igned
+  // Create a new user
+  // Anyone can create a new user, but the new user will not be active
   app.post(
-    '/api/users', 
+    '/api/users',
+    getDefaultRole,
+    validateUser,
     function(req, res) {
+      req.newUser.active = false;
+      req.newUser.role = req.role._id;
+
       User.createUser(req.newUser, function(err, newUser) {
         if (err) return res.send(400, err.message);
 
@@ -335,6 +354,7 @@ module.exports = function(app, security) {
       User.getUserById(req.params.userId, function(err, user) {
         if (err) return res.send(400, 'User not found');
 
+        if (req.param('active')) user.active = req.param('active');
         if (req.param('username')) user.username = req.param('username');
         if (req.param('firstname')) user.firstname = req.param('firstname');
         if (req.param('lastname')) user.lastname = req.param('lastname');
@@ -353,6 +373,10 @@ module.exports = function(app, security) {
         if (p***REMOVED***word && p***REMOVED***wordconfirm) {
           if (p***REMOVED***word != p***REMOVED***wordconfirm) {
             return res.send(400, 'p***REMOVED***words do not match');
+          }
+
+          if (p***REMOVED***word.length < p***REMOVED***wordLength) {
+            return res.send(400, 'p***REMOVED***word does not meet minimum length requirement of ' + p***REMOVED***wordLength + ' characters');
           }
 
           user.p***REMOVED***word = p***REMOVED***word;
@@ -393,18 +417,6 @@ module.exports = function(app, security) {
       User.setRoleForUser(req.user, req.role, function(err, user) {
         res.json(user);
       });
-    }
-  );
-
-  // remove role from user
-  app.delete(
-    '/api/users/:userId/role',
-    p***REMOVED***port.authenticate(authenticationStrategy),
-    access.authorize('UPDATE_USER'),
-    function(req, res) {
-      User.removeRolesForUser(req.user, function(err, user) {
-        res.json(user);
-      })
     }
   );
 

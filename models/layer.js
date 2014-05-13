@@ -22,7 +22,7 @@ var LayerSchema = new Schema({
     version: { type: String }
   },
   collectionName: { type: String, required: false }
-},{ 
+},{
     versionKey: false
 });
 
@@ -61,7 +61,7 @@ exports.getLayers = function(filter, callback) {
   if (type) query.type = type;
 
   var ids = filter.ids;
-  if (ids) query.id = {$in: ids};
+  if (ids) query._id = {$in: ids};
 
   Layer.find(query, function (err, layers) {
     if (err) {
@@ -73,8 +73,7 @@ exports.getLayers = function(filter, callback) {
 }
 
 exports.getById = function(id, callback) {
-  var query = {'id': id};
-  Layer.findOne(query, function (err, layer) {
+  Layer.findOne({id: id}, function (err, layer) {
     if (err) {
       console.log("Error finding layer in mongo: " + err);
     }
@@ -89,8 +88,8 @@ var createFeatureCollection = function(layer) {
     if (err) {
       console.error(err);
       return;
-    } 
-      
+    }
+
     console.log("Successfully created feature collection for layer " + layer.name);
   });
 }

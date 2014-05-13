@@ -3,6 +3,7 @@ var mongoose = require('mongoose')
   , hasher = require('../utilities/pbkdf2')()
   , config = require('../config')
   , Token = require('../models/token')
+  , Feature = require('../models/feature')
   , Location = require('../models/location');
 
 var locationLimit = config.server.locationServices.userCollectionLocationLimit;
@@ -41,7 +42,8 @@ var UserSchema = new Schema({
     lastname: {type: String, required: true },
     email: {type: String, required: false },
     phones: [PhoneSchema],
-    role: { type: Schema.Types.ObjectId, ref: 'Role' },
+    active: { type: Boolean, required: true },
+    role: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
     teams: [Schema.Types.ObjectId],
     status: { type: String, required: false, index: 'sparse' },
     locations: [LocationSchema]
@@ -116,9 +118,16 @@ UserSchema.pre('remove', function(next) {
     token: function(done) {
       Token.removeTokenForUser(user, function(err) {
         done(err);
-        next(err);
-      })
+      });
+    },
+    feature: function(done) {
+      Feature.removeUser(user, function(err) {
+        done(err);
+      });
     }
+  },
+  function(err, results) {
+    next(err);
   });
 });
 
@@ -185,6 +194,7 @@ exports.createUser = function(user, callback) {
     email: user.email,
     phones: user.phones,
     p***REMOVED***word: user.p***REMOVED***word,
+    active: user.active,
     role: user.role
   }
   

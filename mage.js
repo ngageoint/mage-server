@@ -13,7 +13,7 @@ var argv = optimist.argv;
 if (argv.h || argv.help) return optimist.showHelp();
 
 // Create directory for storing SAGE media attachments
-var attachmentBase = config.server.attachmentBaseDirectory;
+var attachmentBase = config.server.attachment.baseDirectory;
 fs.mkdirp(attachmentBase, function(err) {
   if (err) {
     console.error("Could not create directory to store MAGE media attachments. "  + err);
@@ -32,8 +32,8 @@ fs.mkdirp(iconBase, function(err) {
 });
 
 // Configure authentication
-var authentication = require('./authentication')(config.server.authentication.strategy);
-var provisioning = require('./provision/' + config.server.provision.strategy)(provision);
+var authentication = require('./authentication')(config.api.authentication.strategy);
+var provisioning = require('./provision/' + config.api.provision.strategy)(provision);
 console.log('Authentication: ' + authentication.loginStrategy);
 console.log('Provision: ' + provisioning.strategy);
 
@@ -49,7 +49,20 @@ app.configure(function () {
   });
   mongoose.set('debug', true);
 
+  app.use(function(req, res, next) {
+    req.getRoot = function() {
+      return req.protocol + "://" + req.get('host');
+    }
+
+    req.getPath = function() {
+      return req.getRoot() + req.path;
+    }
+
+    return next();
+  });
+
   app.set('config', config);
+  app.enable('trust proxy');
 
   app.use(function(req, res, next) {
     req.getRoot = function() {
@@ -76,3 +89,6 @@ require('./routes')(app, {authentication: authentication, provisioning: provisio
 var port = argv.port;
 app.listen(port);
 console.log('MAGE Server: Started listening on port ' + port);
+
+// install all plugins
+require('./plugins');

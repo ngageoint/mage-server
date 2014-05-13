@@ -1,6 +1,8 @@
-var mongoose = require('mongoose');
-
-var User = require('./user');
+var mongoose = require('mongoose')
+  , async = require('async')
+  , Feature = require('./feature')
+  , User = require('./user')
+  , Token = require('./token');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema; 
@@ -26,9 +28,7 @@ DeviceSchema.pre('save', function(next) {
     return next(new Error("uid cannot be null"));
   }
 
-  // only validate uid if it has been modified (or is new)
-  if (!device.isModified('uid')) return next();
-
+  device.uid = device.uid.toLowerCase();
   Device.findOne({uid: device.uid}, function(err, device) {
     if (err) return next(err);
 
@@ -58,6 +58,26 @@ DeviceSchema.pre('save', function(next) {
   });
 });
 
+DeviceSchema.pre('remove', function(next) {
+  var device = this;
+
+  async.parallel({
+    token: function(done) {
+      Token.removeTokenForDevice(device, function(err) {
+        done(err);
+      });
+    },
+    feature: function(done) {
+      Feature.removeDevice(device, function(err) {
+        done(err);
+      });
+    }
+  },
+  function(err, results) {
+    next(err);
+  });
+});
+
 // Creates the Model for the User Schema
 var Device = mongoose.model('Device', DeviceSchema);
 exports.Model = Device;
@@ -73,7 +93,7 @@ exports.getDeviceById = function(id, callback) {
 }
 
 exports.getDeviceByUid = function(uid, callback) {
-  var conditions = {uid: uid};
+  var conditions = {uid: uid.toLowerCase()};
   Device.findOne(conditions, function(err, device) {
     if (err) {
       console.log('Error finding device for id: ' + id + ' err: ' + err);
@@ -125,13 +145,20 @@ exports.updateDevice = function(id, update, callback) {
   });
 }
 
-exports.deleteDevice = function(device, callback) {
-  var conditions = { _id: device._id };
-  Device.remove(conditions, function(err, deletedDevice) {
-    if (err) {
-      console.log('Error removing device: ' + device._id + ' err: ' + err);
+exports.deleteDevice = function(id, callback) {
+  Device.findById(id, function(err, device) {
+    if (!device) {
+      var msg = "Device with id '" + id + "' not found and could not be deleted.";
+      console.log(msg + " Error: " + err);
+      return callback(new Error(msg));
     }
 
-    callback(err, deletedDevice);
+    device.remove(function(err, removedDevice) {
+      if (err) {
+        console.log("Error removing device", err);
+      }
+
+      callback(err, removedDevice);
+    });
   });
 }

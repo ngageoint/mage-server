@@ -7,7 +7,7 @@
       <!--<div cl***REMOVED***="span4" ng-cl***REMOVED***="{'admin-active': currentAdminPanel == 'team'}">
         <h3><a href="" ng-click="changeCurrentPanel('team')" ngm-tap="changeCurrentPanel('team')">Teams</a></h3>
       </div>-->
-      <div cl***REMOVED***="span4" ng-cl***REMOVED***="{'admin-active': currentAdminPanel == 'user'}">
+      <div cl***REMOVED***="span6" ng-cl***REMOVED***="{'admin-active': currentAdminPanel == 'user'}">
         <h3><a href="" ng-click="changeCurrentPanel('user')" ngm-tap="changeCurrentPanel('user')">Users</a></h3>
       </div>
       <div cl***REMOVED***="span4" ng-cl***REMOVED***="{'admin-active': currentAdminPanel == 'device'}">
@@ -115,7 +115,7 @@
                 <i cl***REMOVED***="icon-edit"></i>
                 Edit
               </button>
-              <button cl***REMOVED***="btn btn-success" ng-hide='u.role' ng-click="approveUser(u)" ngm-tap="approveUser(u)">
+              <button cl***REMOVED***="btn btn-success" ng-hide='u.active' ng-click="approveUser(u)" ngm-tap="approveUser(u)">
                 <i cl***REMOVED***="icon-thumbs-up"></i> 
                 Approve Account
               </button>
