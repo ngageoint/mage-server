@@ -129,9 +129,7 @@ exports.create = function(layer, callback) {
 }
 
 exports.update = function(id, layer, callback) {
-  var conditions = {id: id};
-
-  Layer.findOneAndUpdate(conditions, layer, function(err, updatedLayer) {
+  Layer.findOneAndUpdate({id: id}, layer, function(err, updatedLayer) {
     if (err) {
       console.log("Could not update layer: " + err);
     }

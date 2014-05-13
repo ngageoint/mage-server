@@ -52,9 +52,6 @@
           <div cl***REMOVED***="control-group" ng-show="layer.id == undefined">
             <label cl***REMOVED***="control-label">Layer type</label>
             <div cl***REMOVED***="controls">
-            <label cl***REMOVED***="radio inline">
-              <input type="radio" name="layer-type" value="Feature" ng-model="layer.type"> Feature
-              </label>
               <label cl***REMOVED***="radio inline">
                 <input type="radio" name="layer-type" value="Imagery" ng-model="layer.type"> Imagery
               </label>
@@ -90,7 +87,7 @@
             <div cl***REMOVED***="controls">
               <label cl***REMOVED***="checkbox inline">
                 <input type="checkbox" name="layer-type" ng-model="layer.base">
-              </label>             
+              </label>
             </div>
           </div>
 
@@ -112,14 +109,14 @@
           <div cl***REMOVED***="control-group" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
             <label cl***REMOVED***="control-label">Layers</label>
             <div cl***REMOVED***="controls">
-              <input cl***REMOVED***="input-xlarge" type="text" placeholder="Comma seperated list of layer names" ng-model="layer.wms.layers"/>           
+              <input cl***REMOVED***="input-xlarge" type="text" placeholder="Comma seperated list of layer names" ng-model="layer.wms.layers"/>
             </div>
           </div>
 
           <div cl***REMOVED***="control-group" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
             <label cl***REMOVED***="control-label">Styles</label>
             <div cl***REMOVED***="controls">
-              <input cl***REMOVED***="input-xlarge" type="text" placeholder="Comma seperated list of layer styles" ng-model="layer.wms.styles"/>           
+              <input cl***REMOVED***="input-xlarge" type="text" placeholder="Comma seperated list of layer styles" ng-model="layer.wms.styles"/>
             </div>
           </div>
 
@@ -136,7 +133,7 @@
             <div cl***REMOVED***="controls">
               <label cl***REMOVED***="checkbox inline">
                 <input type="checkbox" name="layer-wms-transparency" ng-model="layer.wms.transparent">
-              </label>             
+              </label>
             </div>
           </div>
 
