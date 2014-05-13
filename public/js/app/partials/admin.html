@@ -4,13 +4,13 @@
     <div cl***REMOVED***="row-fluid">
       <div cl***REMOVED***="span2" style="padding-left: 15px">
         <div ng-cl***REMOVED***="{'admin-active': currentAdminPanel == 'user'}">
-          <h2><a href="" ng-click="changeCurrentPanel('user')" ngm-tap="changeCurrentPanel('user')">Users</a></h2>
+          <h3><a href="" ng-click="changeCurrentPanel('user')" ngm-tap="changeCurrentPanel('user')">Users</a></h3>
         </div>
         <div ng-cl***REMOVED***="{'admin-active': currentAdminPanel == 'device'}">
-          <h2><a href="" ng-click="changeCurrentPanel('device')" ngm-tap="changeCurrentPanel('device')">Devices</a></h2>
+          <h3><a href="" ng-click="changeCurrentPanel('device')" ngm-tap="changeCurrentPanel('device')">Devices</a></h3>
         </div>
         <div ng-cl***REMOVED***="{'admin-active': currentAdminPanel == 'form'}">
-          <h2><a href="" ng-click="changeCurrentPanel('form')" ngm-tap="changeCurrentPanel('form')">Forms</a></h2>
+          <h3><a href="" ng-click="changeCurrentPanel('form')" ngm-tap="changeCurrentPanel('form')">Forms</a></h3>
         </div>
       </div>
       <div cl***REMOVED***="span10">
@@ -93,11 +93,11 @@
               <div cl***REMOVED***="row-fluid">
                 <div cl***REMOVED***="span3">
                   <button cl***REMOVED***="btn" ng-click="editUser(u)" ngm-tap="editUser(u)">
-                    <i cl***REMOVED***="icon-edit"></i>
+                    <i cl***REMOVED***="fa-edit"></i>
                     Edit
                   </button>
                   <button cl***REMOVED***="btn btn-success" ng-hide='u.active' ng-click="approveUser(u)" ngm-tap="approveUser(u)">
-                    <i cl***REMOVED***="icon-thumbs-up"></i>
+                    <i cl***REMOVED***="fa-thumbs-up"></i>
                     Approve Account
                   </button>
                 </div>
@@ -112,7 +112,7 @@
                 </div>
                 <div cl***REMOVED***="span2">
                   <button cl***REMOVED***="btn btn-danger" ng-click="deleteUser(u)" ngm-tap="deleteUser(u)">
-                    <i cl***REMOVED***="icon-remove"></i>
+                    <i cl***REMOVED***="fa-trash-o"></i>
                     Delete user
                   </button>
                 </div>
@@ -179,10 +179,10 @@
                   <div cl***REMOVED***="row-fluid">
                   <div cl***REMOVED***="span2">
                     <button cl***REMOVED***="btn" ng-click="editDevice(device)" ngm-tap="editDevice(device)">
-                      <i cl***REMOVED***="icon-edit pointer"></i> Edit
+                      <i cl***REMOVED***="fa-edit pointer"></i> Edit
                     </button>
                     <button cl***REMOVED***="btn btn-success" ng-hide="device.registered" ng-click="registerDevice(device)" ngm-tap="registerDevice(device)">
-                      <i cl***REMOVED***="icon-thumbs-up"></i> Register
+                      <i cl***REMOVED***="fa-thumbs-up"></i> Register
                     </button>
                   </div>
                   <div cl***REMOVED***="span2">
@@ -199,7 +199,7 @@
                   </div>
                   <div cl***REMOVED***="span2">
                   <button cl***REMOVED***="btn btn-danger" ng-click="deleteDevice(device)" ngm-tap="deleteDevice(device)">
-                    <i cl***REMOVED***="icon-remove"></i> Delete device
+                    <i cl***REMOVED***="fa-trash-o"></i> Delete device
                   </button>
                   </div>
                 </div>
@@ -215,18 +215,18 @@
                 <button cl***REMOVED***="btn" ng-click="createNewForm()"><i cl***REMOVED***="fa-plus-square-o icon-white"></i> New Form</button>
                 <div ng-repeat="form in forms" cl***REMOVED***="row-fluid top-gap">
                   <div cl***REMOVED***="span12">
-                    <a ng-click="editForm(form)"><i cl***REMOVED***="icon-check" ng-show="form.inUse"></i> {{form.name}}</a>
+                    <a ng-click="editForm(form)"><i cl***REMOVED***="fa-check" ng-show="form.inUse"></i> {{form.name}}</a>
                   </div>
                 </div>
               </div>
               <div cl***REMOVED***="span10" ng-controller="CreateCtrl" ng-show="form">
-                <h1 ng-hide="form.id">Create a new form</h1> <h1 ng-show="form.id">{{form.name}}</h1><br>
+                <h2 ng-hide="form.id">Create a new form</h2> <h2 ng-show="form.id">{{form.name}}</h2><br>
                 <div cl***REMOVED***="form-fields-preview well">
                   <h3>Form Preview</h3>
                   <form-directive form="form"></form-directive>
                 </div>
                 <hr>
-                <h1 ng-show="form.id">Edit {{form.name}}</h1>
+                <h3 ng-show="form.id">Edit {{form.name}}</h3>
                 <strong>
                     <p>Select field type you want to add to the form below and click on 'Add Field' button. Don't forget to set field properties. After you finish creating the form, you can preview the form by clicking Preview Form button.</p>
                 </strong>
@@ -251,7 +251,7 @@
                     <div cl***REMOVED***="add-field">
                         <form cl***REMOVED***="form-inline">
                           <select ng-model="addField.new" ng-options="type.name as type.value for type in addField.types"></select>
-                          <button type="submit" cl***REMOVED***="btn" ng-click="addNewField()"><i cl***REMOVED***="icon-plus"></i> Add Field</button>
+                          <button type="submit" cl***REMOVED***="btn" ng-click="addNewField()"><i cl***REMOVED***="fa-plus-square-o"></i> Add Field</button>
                         </form>
                     </div>
                     <hr>
@@ -260,7 +260,7 @@
                       <accordion close-others="accordion.oneAtATime">
                         <accordion-group heading="{{field.title}}" ng-repeat="field in form.fields">
                           <div cl***REMOVED***="accordion-edit">
-                            <button cl***REMOVED***="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i cl***REMOVED***="icon-trash icon-white"></i> Delete</button>
+                            <button cl***REMOVED***="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i cl***REMOVED***="fa-trash icon-white"></i> Delete</button>
                             <div cl***REMOVED***="row-fluid">
                                 <div cl***REMOVED***="span2">Field Type:</div>
                                 <div cl***REMOVED***="span4">{{field.type}}</div>
@@ -280,10 +280,10 @@
                               <div cl***REMOVED***="span6">
                                 <div ng-repeat="option in field.options">
                                     <input type="text" ng-model="option.title" value="{{option.title}}">
-                                    <a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(field, option)"><i cl***REMOVED***="icon-minus icon-white"></i></a>
+                                    <a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(field, option)"><i cl***REMOVED***="fa-minus icon-white"></i></a>
                                     <!--<span cl***REMOVED***="label label-inverse">Value: {{ option.value }}</span>-->
                                 </div>
-                                <button cl***REMOVED***="btn btn-primary btn-small" type="button" ng-click="addOption(field)"><i cl***REMOVED***="icon-plus icon-white"></i> Add Option</button>
+                                <button cl***REMOVED***="btn btn-primary btn-small" type="button" ng-click="addOption(field)"><i cl***REMOVED***="fa-plus-square-o icon-white"></i> Add Option</button>
                               </div>
                             </div>
                             <div cl***REMOVED***="row-fluid">
@@ -329,7 +329,7 @@
                           <tr ng-repeat="option in typeField.options">
                             <td>
                               <input type="text" ng-model="option.title" value="{{option.title}}">
-                                <a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(field, option)"><i cl***REMOVED***="icon-minus icon-white"></i></a>
+                                <a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(field, option)"><i cl***REMOVED***="fa-minus icon-white"></i></a>
                             </td>
                             <td>ICON</td>
                           </tr>
@@ -342,7 +342,7 @@
                     </div>
 
                     <p cl***REMOVED***="text-center">
-                      <button cl***REMOVED***="btn btn-success right" type="button" ng-click="useForm(form)"><i cl***REMOVED***="icon-check icon-white"></i>Save And Use This Form</button>
+                      <button cl***REMOVED***="btn btn-success right" type="button" ng-click="useForm(form)"><i cl***REMOVED***="fa-check icon-white"></i>Save And Use This Form</button>
                       <button cl***REMOVED***="btn btn-primary right" type="button" ng-click="createForm()">Save Form</button>
                     </p>
                     <br>
