@@ -5,6 +5,7 @@ module.exports = function(app, security) {
     , User = require('../models/user')
     , Role = require('../models/role')
     , Device = require('../models/device')
+    , Form = require('../models/form')
     , Layer = require('../models/layer')
     , Feature = require('../models/feature')
     , Form = require('../models/form')
@@ -110,13 +111,13 @@ module.exports = function(app, security) {
       });
   });
 
-  // Grab the ESRI feature layer for any endpoint that uses layerId
+  // Grab the feature layer for any endpoint that uses layerId
   app.param('layerId', function(req, res, next, layerId) {
     Layer.getById(layerId, function(layer) {
       if (!layer) {
         res.json({
           error: {
-            code: 400, 
+            code: 400,
             message: "Layer / Table not found: " + layerId
           }
         });
@@ -127,6 +128,24 @@ module.exports = function(app, security) {
       next();
     });
   });
+
+  // // Grab the form for any endpoint that uses formId
+  // app.param('formId', function(req, res, next, formId) {
+  //   Form.getById(layerId, function(layer) {
+  //     if (!layer) {
+  //       res.json({
+  //         error: {
+  //           code: 400,
+  //           message: "Form not found: " + layerId
+  //         }
+  //       });
+  //       return;
+  //     }
+  //
+  //     req.layer = layer;
+  //     next();
+  //   });
+  // });
 
   // Grab the feature for any endpoint that uses featureId
   app.param('featureId', function(req, res, next, featureId) {
@@ -145,6 +164,6 @@ module.exports = function(app, security) {
 
       req.feature = feature;
       next();
-    });   
-  });  
+    });
+  });
 }

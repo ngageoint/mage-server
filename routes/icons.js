@@ -11,9 +11,9 @@ module.exports = function(app, security) {
   // TODO when we switch to events we need to change all the *_LAYER roles
   // to *_EVENT roles
 
-  // get all icons
+  // get all icons for a form
   app.get(
-    '/api/icons', 
+    '/api/icons/:formId',
     access.authorize('READ_LAYER'),
     function (req, res) {
       new api.Icon().getAll(function(err, icons) {
@@ -28,7 +28,7 @@ module.exports = function(app, security) {
 
   // get icon
   app.get(
-    '/api/icons/:id', 
+    '/api/icons/:formId/:id',
     access.authorize('READ_LAYER'),
     function(req, res, next) {
       new api.Icon().getById(req.param('id'), function(err, icon) {
@@ -53,7 +53,7 @@ module.exports = function(app, security) {
 
   // Create a new icon
   app.post(
-    '/api/icons',
+    '/api/icons/:formId/',
     access.authorize('CREATE_LAYER'),
     function(req, res, next) {
       // console.log('icon', req.files);
@@ -67,9 +67,9 @@ module.exports = function(app, security) {
     }
   );
 
-  // Delete an icon
+  // Delete an icon from a form
   app.delete(
-    '/api/icons/:iconId',
+    '/api/icons/:formId/:iconId',
     access.authorize('DELETE_LAYER'),
     function(req, res) {
       new api.Icon().delete(req.icon, function(err, icon) {
