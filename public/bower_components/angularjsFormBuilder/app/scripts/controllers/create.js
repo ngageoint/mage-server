@@ -149,8 +149,12 @@ angular.module('mage').controller('CreateCtrl', function ($scope, FormService, L
     }
 
     $scope.useForm = function(form) {
-        FormService.submitForm(form).then(function() {
-            $scope.setFeatureForm(form);
+        FormService.submitForm(form).then(function(savedForm) {
+          if (!form.id) {
+            form.id = savedForm.id;
+            $scope.forms.push(form);
+          }
+          $scope.setFeatureForm(form);
         });
     }
     $scope.setFeatureForm = function(form) {
