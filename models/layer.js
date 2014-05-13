@@ -6,7 +6,7 @@ var Schema = mongoose.Schema;
 
 // Creates the Schema for the Attachments object
 var LayerSchema = new Schema({
-  id: { type: Number, required: true, unique: true }, 
+  id: { type: Number, required: true, unique: true },
   type: { type: String, required: true },
   base: { type: Boolean, required: false },
   name: { type: String, required: true, unique: true },
@@ -21,12 +21,11 @@ var LayerSchema = new Schema({
     version: { type: String }
   },
   collectionName: { type: String, required: false }
-},{ 
+},{
     versionKey: false
 });
 
 var transform = function(layer, ret, options) {
-  ret.id = ret._id;
   delete ret._id;
   delete ret.collectionName;
 }
@@ -73,7 +72,7 @@ exports.getLayers = function(filter, callback) {
 }
 
 exports.getById = function(id, callback) {
-  Layer.findById(id, function (err, layer) {
+  Layer.findOne({id: id}, function (err, layer) {
     if (err) {
       console.log("Error finding layer in mongo: " + err);
     }
@@ -88,8 +87,8 @@ var createFeatureCollection = function(layer) {
     if (err) {
       console.error(err);
       return;
-    } 
-      
+    }
+
     console.log("Successfully created feature collection for layer " + layer.name);
   });
 }

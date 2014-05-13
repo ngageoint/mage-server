@@ -4,7 +4,7 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($rootScope, $scope, $log, $http, ObservationService, FeatureTypeService, appConstants, mageLib, IconService, UserService, DataService, MapService, Layer, LocationService, Location, TimerService, Feature, TimeBucketService) {
+function MapController($rootScope, $scope, $log, $http, ObservationService, FeatureTypeService, appConstants, mageLib, IconService, UserService, DataService, MapService, Layer, LocationService, Location, CreateLocation, TimerService, Feature, TimeBucketService) {
   $scope.customer = appConstants.customer;
   var ds = DataService;
   $scope.ms = MapService;
@@ -53,7 +53,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
 
   $scope.currentLayerId = 0;
 
-  $scope.setActiveFeature = function(feature, layer) {  
+  $scope.setActiveFeature = function(feature, layer) {
     $scope.activeFeature = {feature: feature, layerId: layer.id, featureId: feature.id};
     $scope.featureTableClick = {feature: feature, layerId: layer.id, featureId: feature.id};
     $scope.activeLocation = undefined;
@@ -85,7 +85,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
   $scope.exportLayers = [];
   $scope.baseLayers = [];
   $scope.featureLayers = [];
-  $scope.imageryLayers = []; 
+  $scope.imageryLayers = [];
   $scope.startTime = new Date();
   $scope.endTime = new Date();
 
@@ -114,7 +114,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       } else {
         $scope.externalLayers = MapService.externalLayers = _.filter(layers, function(layer) {
           return layer.type == 'External';
-        });  
+        });
       }
 
       $scope.privateBaseLayers = MapService.privateBaseLayer = _.filter($scope.baseLayers, function(layer) {
@@ -262,7 +262,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
         method: "GET",
         url: $scope.externalLayers[0].url,
         headers: {
-          "Accepts": "application/json", 
+          "Accepts": "application/json",
           "Content-Type": "application/json"
         }
       }
@@ -293,10 +293,10 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
         options.states = 'active';
       }
 
-      var features = Feature.getAll(options, 
+      var features = Feature.getAll(options,
         function(response) {
         $scope.loadingLayers[layer.id] = false;
-        
+
         _.each(features.features, function(feature) {
           feature.layerId = layer.id;
         });
@@ -320,15 +320,15 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
           $scope.layer.features = features;
           createAllFeaturesArray();
         }
-        
-        
+
+
 
       }, function(response) {
         console.info('there was an error, code was ' + response.status);
       });
     }
 
-    $scope.layer = {id: layer.id, checked: true};
+    $scope.layer = {id: layer.id, type: layer.type, checked: true};
   };
 
   $rootScope.$on('event:auth-loginConfirmed', function() {
@@ -369,7 +369,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       createAllFeaturesArray();
       _.each($scope.locations, function(userLocation) {
         if ($scope.ms.followedUser == userLocation.user) {
-          if(!$scope.ms.lastFollowedLocation || 
+          if(!$scope.ms.lastFollowedLocation ||
               $scope.ms.lastFollowedLocation.locations[0].properties.timestamp != userLocation.locations[0].properties.timestamp) {
             $scope.ms.lastFollowedLocation = userLocation;
             $scope.locationClick(userLocation);
@@ -379,7 +379,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
           .then(function(user) {
             userLocation.userModel = user.data || user;
           });
-          
+
         });
     });
   }
@@ -442,7 +442,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       TimerService.start(timerName, 5000, function() {
         if (!$scope.location) return;
 
-        $scope.positionBroadcast = Location.create({
+        $scope.positionBroadcast = CreateLocation.create({
           geometry: {
             type: 'Point',
             coordinates: [$scope.location.longitude, $scope.location.latitude]
@@ -454,7 +454,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
             altitudeAccuracy: $scope.location.altitudeAccuracy,
             heading: $scope.location.heading,
             speed: $scope.location.speed
-          }       
+          }
         });
       });
     } else {

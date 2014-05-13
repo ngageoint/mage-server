@@ -19,7 +19,7 @@ L.AwesomeMarkers.divIcon = function (options) {
 (function () {
   var leafletDirective = angular.module("leaflet-directive", ["mage.***REMOVED***s"]);
 
-  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, IconService, appConstants, MapService, DataService, TimeBucketService) {
+  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, IconService, appConstants, MapService, DataService, TimeBucketService, AwesomeMarkerIconService) {
     return {
       restrict: "A",
       replace: true,
@@ -244,16 +244,23 @@ L.AwesomeMarkers.divIcon = function (options) {
           return {
             pointToLayer: function (feature, latlng) {
               var icon;
-              if (feature.properties.style) {
-                var style = feature.properties.style;
+              if (layer.type == 'External') {
+                var style = feature.properties.style || {};
+                var icon;
                 if (style.iconStyle) {
-                  var icon = L.icon({
+                  icon = L.icon({
                     iconUrl: style.iconStyle.icon.href,
                     iconSize: [28, 28],
                     iconAnchor: [14, 14],
                   });
-                  return L.marker(latlng, { icon: icon });
+                } else {
+                  icon = L.AwesomeMarkers.icon({
+                    icon: 'circle',
+                    markerColor: 'blue'
+                  });
                 }
+
+                return L.marker(latlng, {icon: icon});
               } else {
                 var icon = IconService.leafletIcon(feature, {types: scope.types});
                 var marker =  L.marker(latlng, { icon: icon });
@@ -300,12 +307,18 @@ L.AwesomeMarkers.divIcon = function (options) {
                 // TODO, tmp for PDC, only have layerId so I cannot check if external layer
                 // using style property to indicate an external layer
                 activeMarker = marker;
-                if (feature.properties.style) {
+                if (layer.type == 'External') {
                   scope.$apply(function(s) {
                     scope.externalFeature = {layerId: layer.id, featureId: feature.id, feature: feature};
                   });
-                  marker.bindPopup(L.popup().setContent(feature.properties.description));
-                  // marker.bindPopup(L.popup());
+                  var content = "";
+                  if (feature.properties.name) {
+                    content += '<div><strong><u>' + feature.properties.name + '</u></strong></div>';
+                  }
+                  if (feature.properties.description) {
+                    content += '<div>' + feature.properties.description + '</div>';
+                  }
+                  marker.bindPopup(L.popup().setContent(content));
                 } else {
                   scope.$apply(function(s) {
                     var oldBucket = scope.selectedBucket;
@@ -331,7 +344,7 @@ L.AwesomeMarkers.divIcon = function (options) {
                       $timeout(runAnimate, 500);
                     }
                     scope.activeFeature = {layerId: feature.layerId, featureId: feature.id, feature: feature};
-                    
+
                     //console.info('scroll top is ' + $('#'+feature.id).position().top);
                     //$('.news-items').scrollTop($('#'+feature.id).position().top);
                   });
@@ -398,7 +411,7 @@ L.AwesomeMarkers.divIcon = function (options) {
                 } else {
                   featuresUpdated(layer.features);
                 }
-                
+
               }
 
               layers[layer.id] = {
