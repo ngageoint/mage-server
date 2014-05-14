@@ -129,23 +129,23 @@ module.exports = function(app, security) {
     });
   });
 
-  // // Grab the form for any endpoint that uses formId
-  // app.param('formId', function(req, res, next, formId) {
-  //   Form.getById(layerId, function(layer) {
-  //     if (!layer) {
-  //       res.json({
-  //         error: {
-  //           code: 400,
-  //           message: "Form not found: " + layerId
-  //         }
-  //       });
-  //       return;
-  //     }
-  //
-  //     req.layer = layer;
-  //     next();
-  //   });
-  // });
+  // Grab the form for any endpoint that uses formId
+  app.param('formId', function(req, res, next, formId) {
+    Form.getById(formId, function(err, form) {
+      if (err || !form) {
+        res.json({
+          error: {
+            code: 400,
+            message: "Form not found: " + formId
+          }
+        });
+        return;
+      }
+
+      req.form = form;
+      next();
+    });
+  });
 
   // Grab the feature for any endpoint that uses featureId
   app.param('featureId', function(req, res, next, featureId) {

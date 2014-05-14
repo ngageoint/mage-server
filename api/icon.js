@@ -9,43 +9,49 @@ var IconModel = require('../models/icon')
 
 var iconBase = config.server.iconBaseDirectory;
 
-function Icon() {
-};
+function createIconPath(icon, name) {
+  console.log('stuff', icon);
+  var ext = path.extname(name);
+  var iconPath = path.join(iconBase, icon._form._id.toString());
+  if (icon._type) {
+    iconPath = path.join(iconPath, icon._type);
+    if (icon._variant) {
+      iconPath = path.join(iconPath, icon._variant + ext);
+    } else {
+      iconPath = path.join(iconPath, "default" + ext);
+    }
+  } else {
+    iconPath = path.join(iconPath, "default" + ext);
+  }
 
-Icon.prototype.getAll = function(callback) {
-  IconModel.getAll(function(err, icons) {
-    if (err) console.log("Error getting icons");
-
-    return callback(err, icons);
-  });
+  return iconPath;
 }
 
-Icon.prototype.getById = function(id, callback) {
-  var icon = null;
+function Icon(form, type, variant) {
+  this._form = form;
+  this._type = type;
+  this._variant = variant;
+};
 
-  IconModel.getById(id, function(err, icon) {
-    if (err) console.log("Error getting icon with id: '" + id + "'.", err);
+Icon.prototype.getIcon = function(callback) {
+  if (this._type) {
 
-    if (icon) icon.path = path.join(iconBase, icon.relativePath);
-
-    return callback(err, icon);
-  });
+  } else {
+    
+  }
 }
 
 Icon.prototype.create = function(icon, callback) {
-  var fileName = path.basename(icon.path);
-  icon.relativePath = fileName;
-  var file = path.join(iconBase, icon.relativePath);
-  console.log('trying to reaname from', icon.path);
-  console.log('trying to reaname to', file);
-  fs.rename(icon.path, file, function(err) {
-    if (err) return next(err);
+  var iconPath = createIconPath(this, icon.name);
 
-    IconModel.create(icon, function(err, newIcon) {
+  fs.mkdirp(path.dirname(iconPath), function(err) {
+    console.log('trying to reaname from', icon.path);
+    console.log('trying to reaname to', iconPath);
+    fs.rename(icon.path, iconPath, function(err) {
       if (err) return callback(err);
 
-      callback(null, newIcon);
-    });  
+      callback();
+    });
   });
 }
 
