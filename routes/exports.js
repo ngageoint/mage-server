@@ -98,6 +98,31 @@ module.exports = function(app, security) {
     });
   }
 
+  var requestLocations = function(options, done) {
+    var filter = {};
+    if (options.lastLocationId) {
+      filter.lastLocationId = options.lastLocationId;
+    }
+    if (options.startDate) {
+      filter.startDate = options.startDate.toDate();
+    }
+    if (options.endDate) {
+      filter.endDate = options.endDate.toDate();
+    }
+    if(options.userId) {
+      filter.userId = options.userId;
+    }
+
+    Location.getLocations({filter: filter, limit: 2000}, function(err, locations) {
+      if(err) {
+        console.log(err);
+        return done(err);
+      }
+
+      done(null, locations);
+    });
+  }
+
   app.get(
     '/api/export',
     access.authorize('READ_FEATURE'),
@@ -156,33 +181,71 @@ module.exports = function(app, security) {
     var locationsToShapefiles = function(done) {
       if (!fft) return done(null, []);
 
-      Location.getLocations({filter: req.parameters.filter}, function(err, locations) {
-        locations.forEach(function(location) {
-          if (req.users[location.properties.user]) location.properties.user = req.users[location.properties.user].username;
-          if (req.users[location.properties.deviceId]) location.properties.device = req.users[location.properties.deviceId].uid;
+      var startDate = req.parameters.filter.startDate ? moment(req.parameters.filter.startDate) : null;
+      var endDate = req.parameters.filter.endDate ? moment(req.parameters.filter.endDate) : null;
+      var lastLocationId = null;
 
-          delete location.properties.deviceId;
-        });
+      var locations = [];
+      async.doUntil(function(done) {
+        requestLocations({startDate: startDate, endDate: endDate, lastLocationId: lastLocationId}, function(err, requestedLocations) {
+          if (err) return done(err)
+          locations = requestedLocations;
 
-        var streams = {
-          shp: fs.createWriteStream(req.directory + "/locations.shp"),
-          shx: fs.createWriteStream(req.directory + "/locations.shx"),
-          dbf: fs.createWriteStream(req.directory + "/locations.dbf"),
-          prj: fs.createWriteStream(req.directory + "/locations.prj")
-        };
-        shp.writeGeoJson(streams, {features: JSON.parse(JSON.stringify(locations))}, function(err, files) {
-          done(err, {files: files});
+          console.log('got some locations ' + locations.length);
+
+          locations.forEach(function(location) {
+            if (req.users[location.properties.user]) location.properties.user = req.users[location.properties.user].username;
+            if (req.users[location.properties.deviceId]) location.properties.device = req.users[location.properties.deviceId].uid;
+
+            delete location.properties.deviceId;
+          });
+
+          var first = locations.slice(1).pop();
+          var last = locations.slice(-1).pop();
+          if (last) {
+            var interval = moment(first.properties.timestamp).toISOString() + '_' +
+              moment(last.properties.timestamp).toISOString();
+
+            var streams = {
+              shp: fs.createWriteStream(req.directory + "/locations_" + interval + ".shp"),
+              shx: fs.createWriteStream(req.directory + "/locations_" + interval + ".shx"),
+              dbf: fs.createWriteStream(req.directory + "/locations_" + interval + ".dbf"),
+              prj: fs.createWriteStream(req.directory + "/locations_" + interval + ".prj")
+            };
+
+            shp.writeGeoJson(streams, {features: JSON.parse(JSON.stringify(locations))}, function(err, files) {
+              if (err) return done(err);
+
+              console.log('Successfully wrote ' + locations.length + ' locations to SHAPEFILE');
+
+              var locationTime = moment(last.properties.timestamp);
+              lastLocationId = last._id;
+              if (!startDate || startDate.isBefore(locationTime) && locationTime.isBefore(Date.now())) {
+                startDate = locationTime;
+              }
+
+              done();
+            });
+          } else {
+            done();
+          }
         });
+      },
+      function() {
+        return locations.length == 0;
+      },
+      function(err) {
+        console.log('done writing all locations for to SHAPEFILE', err);
+        done(err);
       });
     }
 
     var generateZip = function(err, result) {
       if (err) return next(err);
-
       var zipFile = '/tmp/mage-shapefile-export-' + now.getTime() + '.zip';
-      exec("zip -r " + zipFile + " " + req.directory + "/*",
+      exec("zip -r " + zipFile + " " + req.directory + "/",
         function (err, stdout, stderr) {
-
+          console.log('something bad happened', err);
           if (err !== null) {
             return next(err);
           }
@@ -302,31 +365,6 @@ module.exports = function(app, security) {
       }
 
       done();
-    }
-
-    var requestLocations = function(options, done) {
-      var filter = {};
-      if (options.lastLocationId) {
-        filter.lastLocationId = options.lastLocationId;
-      }
-      if (options.startDate) {
-        filter.startDate = options.startDate.toDate();
-      }
-      if (options.endDate) {
-        filter.endDate = options.endDate.toDate();
-      }
-      if(options.userId) {
-        filter.userId = options.userId;
-      }
-
-      Location.getLocations({filter: filter, limit: 2000}, function(err, locations) {
-        if(err) {
-          console.log(err);
-          return done(err);
-        }
-
-        done(null, locations);
-      });
     }
 
     var writeUserLocations = function(stream, user, done) {
