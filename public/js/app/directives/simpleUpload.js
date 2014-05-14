@@ -2,7 +2,8 @@ mage.directive('simpleUpload', function() {
   return {
     restrict: "A",
     scope: {
-      url: '@'
+      url: '@',
+      allowUpload: '='
     },
     controller: function ($scope, $element) {
 
@@ -36,52 +37,68 @@ mage.directive('simpleUpload', function() {
         if(e.lengthComputable){
           console.log("progress is " + e.loaded + " of " + e.total);
           //$('progress').attr({value:e.loaded,max:e.total});
+
+          $scope.uploadProgress = (e.loaded/e.total) * 100;
+          $scope.$apply();
         }
+      }
+
+      var uploadComplete = function() {
+
+      }
+
+      var uploadFailed = function() {
+
+      }
+
+      var uploadStarted = function() {
+        $scope.uploading = true;
       }
 
       var upload = function() {
         console.log("URL chnaged or upload fired ", $scope.url);
-        if (!$scope.file) return;
-        if (!$scope.url) return;
+        console.log("Allow upload: " + $scope.allowUpload);
+        if (!$scope.file || !$scope.url || !$scope.allowUpload) return;
         var formData = new FormData($element[0]);
-        // $.ajax({
-        //     url: $scope.url,  //Server script to process data
-        //     type: 'POST',
-        //     xhr: function() {  // Custom XMLHttpRequest
-        //         var myXhr = $.ajaxSettings.xhr();
-        //         if(myXhr.upload){ // Check if upload property exists
-        //             myXhr.upload.addEventListener('progress',progressHandlingFunction, false); // For handling the progress of the upload
-        //         }
-        //         return myXhr;
-        //     },
-        //     //Ajax events
-        //     // beforeSend: beforeSendHandler,
-        //     // success: completeHandler,
-        //     // error: errorHandler,
-        //     // Form data
-        //     data: formData,
-        //     //Options to tell jQuery not to process data or worry about content-type.
-        //     cache: false,
-        //     contentType: false,
-        //     processData: false
-        // });
-
         $.ajax({
-            url: $scope.url,
-            type: "POST",
+            url: $scope.url,  //Server script to process data
+            type: 'POST',
+            xhr: function() {  // Custom XMLHttpRequest
+                var myXhr = $.ajaxSettings.xhr();
+                if(myXhr.upload){ // Check if upload property exists
+                    myXhr.upload.addEventListener('progress',uploadProgress, false); // For handling the progress of the upload
+                }
+                return myXhr;
+            },
+            //Ajax events
+            beforeSend: uploadStarted,
+            // success: completeHandler,
+            // error: errorHandler,
+            // Form data
             data: formData,
-            processData: false,
+            //Options to tell jQuery not to process data or worry about content-type.
+            cache: false,
             contentType: false,
-            success: function (res) {
-              console.log("upload complete");
-             },
-             error: function() {
-               console.log('upload failed');
-             }
+            processData: false
         });
+
+        // $.ajax({
+        //     url: $scope.url,
+        //     type: "POST",
+        //     data: formData,
+        //     processData: false,
+        //     contentType: false,
+        //     success: function (res) {
+        //       console.log("upload complete");
+        //      },
+        //      error: function() {
+        //        console.log('upload failed');
+        //      }
+        // });
       }
 
       $scope.$watch('url', upload);
+      $scope.$watch('allowUpload', upload);
     }
   };
 });
