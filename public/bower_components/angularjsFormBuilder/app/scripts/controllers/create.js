@@ -12,7 +12,6 @@ angular.module('mage').controller('CreateCtrl', function ($scope, FormService, L
     $scope.fileUploadOptions = {
     };
 
-    console.log("scope.form is ", $scope.form);
     if ($scope.form) {
         angular.forEach($scope.form.fields, function(field) {
             if (field.title == 'Type') {
@@ -22,9 +21,7 @@ angular.module('mage').controller('CreateCtrl', function ($scope, FormService, L
     }
 
     $scope.$watch('fs.editForm', function(newForm, oldForm){
-        console.log('form changed');
         $scope.form = FormService.editForm;
-        console.log("scope.form now is ", $scope.form);
         if ($scope.form) {
             angular.forEach($scope.form.fields, function(field) {
                 if (field.title == 'Type') {

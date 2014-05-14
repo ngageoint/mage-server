@@ -5,7 +5,7 @@ var Schema = mongoose.Schema;
 
 var OptionSchema = new Schema({
   id: { type: Number, required: true },
-  title: { type: String, required: true },  
+  title: { type: String, required: true },
   value: { type: Number, required: true }
 },{
   _id: false
@@ -13,7 +13,7 @@ var OptionSchema = new Schema({
 
 var FieldSchema = new Schema({
   id: { type: Number, required: true },
-  title: { type: String, required: true },  
+  title: { type: String, required: true },
   type: { type: String, required: true },
   value: { type: Schema.Types.Mixed, required: true },
   required: { type: Boolean, required: true },
@@ -24,8 +24,9 @@ var FieldSchema = new Schema({
 
 var FormSchema = new Schema({
   name: { type: String, required: true },
+  iconFields: [{type:String}],
   fields: [FieldSchema]
-},{ 
+},{
     versionKey: false
 });
 

@@ -309,7 +309,7 @@
                       <h3>Symbology</h3>
 
                       <h4>Choose a field to be used for icon variants:</h4>
-                      <select ng-model="variantField" ng-options="field as field.title for field in form.fields | filter: { type: 'dropdown'}"/>
+                      <select ng-model="form.iconFields[0]" ng-options="field as field.title for field in form.fields | filter: { type: 'dropdown'}"/>
 
                       <div cl***REMOVED***="well striped-rows">
                         <div cl***REMOVED***="row-fluid">
@@ -337,7 +337,6 @@
                             </div>
                           </form>
                         </div>
-
                         <div cl***REMOVED***="row-fluid" ng-repeat="option in typeField.choices">
                           <div cl***REMOVED***="row-fluid">
                             <div cl***REMOVED***="span12 strong">
@@ -379,13 +378,13 @@
                                 </div>
                               </form>
                             </div>
-                            <div cl***REMOVED***="span2" ng-repeat="variant in variantField.choices">
+                            <div cl***REMOVED***="span2" ng-repeat="variant in form.iconFields[0].choices">
                               <div cl***REMOVED***="row-fluid">
                                 <div cl***REMOVED***="span12 strong">
                                   {{variant.title}}
                                 </div>
                               </div>
-                              <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'/'+option.title+'/'+variant+'?access_token=' + token}}" allow-upload="form.id">
+                              <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'/'+option.title+'/'+variant.title+'?access_token=' + token}}" allow-upload="form.id">
                                 <div cl***REMOVED***="row-fluid">
                                   <div cl***REMOVED***="span12">
                                     <div cl***REMOVED***="preview" style="float:left;">
