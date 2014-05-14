@@ -11,55 +11,28 @@ module.exports = function(app, security) {
   // TODO when we switch to events we need to change all the *_LAYER roles
   // to *_EVENT roles
 
-  // get all icons for a form
-  app.get(
-    '/api/icons/:formId',
-    access.authorize('READ_LAYER'),
-    function (req, res) {
-      new api.Icon().getAll(function(err, icons) {
-        var response = [];
-        icons.forEach(function(icon) {
-          response.push(icon.toObject({transform: true, rootUrl: req.getRoot()}));
-        });
-        res.json(response);
-      });
-    }
-  );
-
   // get icon
   app.get(
-    '/api/icons/:formId/:id',
+    '/api/icons/:formId/:type?/:variant?',
     access.authorize('READ_LAYER'),
     function(req, res, next) {
-      new api.Icon().getById(req.param('id'), function(err, icon) {
+      new api.Icon(req.form, req.params.type, req.params.variant).getIcon(function(err, iconPath) {
         if (err) return next(err);
 
-        if (!icon) return res.send(404);
+        if (!iconPath) return res.send(404);
 
-        var stream = fs.createReadStream(icon.path);
-        stream.on('open', function() {
-          if (icon.contentType) res.type(icon.contentType);
-          res.attachment(icon.name);
-          res.header('Content-Length', icon.size);
-          stream.pipe(res);
-        });
-        stream.on('error', function(err) {
-          console.log('error', err);
-          res.send(404);
-        });
+        res.sendFile(iconPath);
       });
     }
   );
 
   // Create a new icon
   app.post(
-    '/api/icons/:formId/',
+    '/api/icons/:formId/:type?/:variant?',
     access.authorize('CREATE_LAYER'),
     function(req, res, next) {
-      // console.log('icon', req.files);
-      // console.log('name', req.files.icon);
-
-      new api.Icon().create(req.files.icon, function(err, icon) {
+      console.log('params', req.params);
+      new api.Icon(req.form, req.params.type, req.params.variant).create(req.files.icon, function(err, icon) {
         if (err) return next(err);
 
         return res.json(icon);
