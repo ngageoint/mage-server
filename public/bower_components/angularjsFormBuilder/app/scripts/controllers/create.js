@@ -147,7 +147,9 @@ angular.module('mage').controller('CreateCtrl', function ($scope, FormService, L
     }
 
     $scope.createForm = function() {
-        FormService.submitForm($scope.form);
+        FormService.submitForm($scope.form).then(function(savedForm) {
+          $scope.form.id = savedForm.id;
+        });
     }
 
     $scope.useForm = function(form) {
