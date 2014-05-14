@@ -21,7 +21,7 @@ module.exports = function(app, security) {
 
         if (!iconPath) return res.send(404);
 
-        res.sendFile(iconPath);
+        res.sendfile(iconPath);
       });
     }
   );
@@ -40,15 +40,15 @@ module.exports = function(app, security) {
     }
   );
 
-  // Delete an icon from a form
+  // Delete an icon
   app.delete(
-    '/api/icons/:formId/:iconId',
+    '/api/icons/:formId/:type?/:variant?',
     access.authorize('DELETE_LAYER'),
     function(req, res) {
-      new api.Icon().delete(req.icon, function(err, icon) {
+      new api.Icon(req.form, req.params.type, req.params.variant).delete(function(err, icon) {
         if (err) return next(err);
 
-        return res.json(icon);
+        return res.send(204);
       });
     }
   );

@@ -6,49 +6,20 @@ var mongoose = require('mongoose')
 var Schema = mongoose.Schema;
 
 var IconSchema = new Schema({
-  contentType: { type: String, required: false },  
-  size: { type: String, required: false },  
-  name: { type: String, required: false },
-  relativePath: { type: String, required: true }
-},{ 
-    versionKey: false
-});
-
-var transform = function(icon, ret, options) {
-  console.log('calling xform with options', options);
-
-  return {
-    url: url.resolve(options.rootUrl || "", path.join('api/icons', icon._id.toString())),
-    name: icon.name,
-    size: icon.size,
-    contentType: icon.contentType
-  };
-}
-
-IconSchema.set("toObject", {
-  transform: transform
-});
-
-IconSchema.set("toJSON", {
-  transform: transform
+  formId: { type: Schema.Types.ObjectId, required: true },
+  type: { type: String, required: false },
+  variant: { type: String, required: false },
+  relativePath: {type: String, required: true }
+},{
+  versionKey: false
 });
 
 // Creates the Model for the Layer Schema
 var Icon = mongoose.model('Icon', IconSchema);
 exports.Model = Icon;
 
-exports.getAll = function(callback) {
-  Icon.find({}, function (err, icons) {
-    if (err) {
-      console.log("Error finding icons in mongo: " + err);
-    }
-
-    callback(err, icons);
-  });
-}
-
-exports.getById = function(id, callback) {
-  Icon.findById(id, function (err, icon) {
+exports.getIcon = function(icon, callback) {
+  Icon.findOne(icon, function (err, icon) {
     if (err) {
       console.log("Error finding icon in mongo: " + err);
     }
@@ -67,12 +38,12 @@ exports.create = function(icon, callback) {
   });
 }
 
-exports.remove = function(id, callback) {
-  Icon.findByIdAndRemove(id, function(err) {
+exports.remove = function(icon, callback) {
+  Icon.findOneAndRemove(icon, function(err, removedIcon) {
     if (err) {
       console.log("Could not remove form: " + err);
     }
 
-    callback(err);
+    callback(err, removedIcon);
   });
 }
