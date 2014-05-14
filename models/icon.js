@@ -18,8 +18,16 @@ var IconSchema = new Schema({
 var Icon = mongoose.model('Icon', IconSchema);
 exports.Model = Icon;
 
-exports.getIcon = function(icon, callback) {
-  Icon.findOne(icon, function (err, icon) {
+exports.getIcon = function(options, callback) {
+  var type = options.type || null;
+  var variant = options.variant || null;
+
+  var condition = {
+    formId: options.formId,
+    type: {"$in": [type, null]},
+    variant: {"$in": [variant, null]}
+  };
+  Icon.findOne(condition, {}, {sort: {type: -1, variant: -1}}, function (err, icon) {
     if (err) {
       console.log("Error finding icon in mongo: " + err);
     }

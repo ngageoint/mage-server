@@ -33,14 +33,15 @@ Icon.prototype.createIconPath = function(icon, name) {
 }
 
 Icon.prototype.getIcon = function(callback) {
-  var conditions = {
+  var options = {
     formId: this._form._id,
-    type: this._type || null,
-    variant: this._variant || null
+    type: this._type,
+    variant: this._variant
   };
 
-  IconModel.getIcon(conditions, function(err, icon) {
+  IconModel.getIcon(options, function(err, icon) {
     if (err || !icon) return callback(err);
+    
 
     callback(null, path.join(iconBase, icon.relativePath));
   });
