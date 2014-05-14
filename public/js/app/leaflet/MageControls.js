@@ -9,8 +9,8 @@ L.Control.MageFeature = L.Control.extend({
 	},
 
 	onAdd: function (map) {
-        // create the control container with a particular cl***REMOVED*** name
-        var container = L.DomUtil.get('new-feature-toolbar');
+    // create the control container with a particular cl***REMOVED*** name
+    var container = L.DomUtil.get('new-feature-toolbar');
 
 		var stop = L.DomEvent.stopPropagation;
 		$(container).find('a').on('dblclick', stop);

@@ -99,7 +99,7 @@ angular.module('mage').***REMOVED***('FormService', function FormService($http, 
                     title: 'Type',
                     type: 'dropdown',
                     required: true,
-                    options: []
+                    choices: []
                 }]
             };
             this.editForm = form;

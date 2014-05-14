@@ -54,7 +54,7 @@
                     <div cl***REMOVED***="row" ng-show="showAddOptions(field)">
                         <div cl***REMOVED***="span2">Field Options:</div>
                         <div cl***REMOVED***="span6">
-                            <div ng-repeat="option in field.field_options">
+                            <div ng-repeat="option in field.field_choices">
                                 <input type="text" ng-model="option.option_title" value="{{option.option_title}}">
                                 <a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(field, option)"><i cl***REMOVED***="icon-minus icon-white"></i></a>
                                 <span cl***REMOVED***="label label-inverse">Value: {{ option.option_value }}</span>
@@ -101,4 +101,3 @@
         </p>
     </div>
 </div>
-

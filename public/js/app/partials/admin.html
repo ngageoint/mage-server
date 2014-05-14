@@ -278,7 +278,7 @@
                             <div cl***REMOVED***="row-fluid" ng-show="showAddOptions(field)">
                               <div cl***REMOVED***="span2">Field Options:</div>
                               <div cl***REMOVED***="span6">
-                                <div ng-repeat="option in field.options">
+                                <div ng-repeat="option in field.choices">
                                     <input type="text" ng-model="option.title" value="{{option.title}}">
                                     <a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(field, option)"><i cl***REMOVED***="fa fa-minus icon-white"></i></a>
                                     <!--<span cl***REMOVED***="label label-inverse">Value: {{ option.value }}</span>-->
@@ -326,7 +326,7 @@
                               <hr>
                             </td>
                           </tr>
-                          <tr ng-repeat="option in typeField.options">
+                          <tr ng-repeat="option in typeField.choices">
                             <td>
                               <input type="text" ng-model="option.title" value="{{option.title}}">
                                 <a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(field, option)"><i cl***REMOVED***="fa fa-minus icon-white"></i></a>

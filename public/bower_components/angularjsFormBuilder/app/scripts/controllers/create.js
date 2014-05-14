@@ -12,6 +12,7 @@ angular.module('mage').controller('CreateCtrl', function ($scope, FormService, L
     $scope.fileUploadOptions = {
     };
 
+    console.log("scope.form is ", $scope.form);
     if ($scope.form) {
         angular.forEach($scope.form.fields, function(field) {
             if (field.title == 'Type') {
@@ -23,6 +24,7 @@ angular.module('mage').controller('CreateCtrl', function ($scope, FormService, L
     $scope.$watch('fs.editForm', function(newForm, oldForm){
         console.log('form changed');
         $scope.form = FormService.editForm;
+        console.log("scope.form now is ", $scope.form);
         if ($scope.form) {
             angular.forEach($scope.form.fields, function(field) {
                 if (field.title == 'Type') {
@@ -73,13 +75,13 @@ angular.module('mage').controller('CreateCtrl', function ($scope, FormService, L
 
     // add new option to the field
     $scope.addOption = function (field){
-        if(!field.options)
-            field.options = new Array();
+        if(!field.choices)
+            field.choices = new Array();
 
         var lastOptionID = 0;
 
-        if(field.options[field.options.length-1])
-            lastOptionID = field.options[field.options.length-1].id;
+        if(field.choices[field.choices.length-1])
+            lastOptionID = field.choices[field.choices.length-1].id;
 
         // new option's id
         var id = lastOptionID + 1;
@@ -91,7 +93,7 @@ angular.module('mage').controller('CreateCtrl', function ($scope, FormService, L
         };
 
         // put new option into field_options array
-        field.options.push(newOption);
+        field.choices.push(newOption);
     }
 
     $scope.addType = function() {
@@ -100,9 +102,9 @@ angular.module('mage').controller('CreateCtrl', function ($scope, FormService, L
 
     // delete particular option
     $scope.deleteOption = function (field, option){
-        for(var i = 0; i < field.options.length; i++){
-            if(field.options[i].id == option.id){
-                field.options.splice(i, 1);
+        for(var i = 0; i < field.choices.length; i++){
+            if(field.choices[i].id == option.id){
+                field.choices.splice(i, 1);
                 break;
             }
         }
