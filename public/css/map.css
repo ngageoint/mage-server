@@ -112,7 +112,7 @@ html, body, div.leaflet-container {
 @media (max-width: 979px) {
 	.navbar-fixed-top, .navbar-fixed-bottom {
 		position: absolute;
-	}	
+	}
 }
 
 #settings {
@@ -124,10 +124,10 @@ html, body, div.leaflet-container {
 	z-index: 999;
 }
 
-/* I switched the position for goto-address and new observation buttons for a better layout while 
+/* I switched the position for goto-address and new observation buttons for a better layout while
 	 we are waiting to get the rest of the buttons wired up so the UI doesnt look weird.
 */
-#goto-address { 
+#goto-address {
 	position: absolute;
 	height: 50px;
 	width: 50px;
@@ -371,6 +371,11 @@ html, body, div.leaflet-container {
 #list-tool-list .row:hover {
 	background: #9ac;
 	color: #eee;
+}
+
+.striped-rows .row-fluid:nth-child(odd)  {
+	background: #def;
+	background: rgba(221, 238, 255, 0.6);
 }
 
 .row-selected {
