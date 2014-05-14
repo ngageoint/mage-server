@@ -4,6 +4,14 @@
 	src: url('../fonts/SANSB___.TTF');
 }
 
+*,
+*:before,
+*:after {
+	-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+					box-sizing: border-box;
+}
+
 h1, h2, h3, h4, h5 {
 	font-family: SansBetween, Arial, sans-serif;
 	color: #324962;
@@ -43,6 +51,10 @@ img.rotate270 {
     -o-transform: rotate(-90deg);
     -khtml-transform: rotate(-90deg);
     -ms-transform: rotate(-90deg);
+}
+
+input {
+	height: auto !important;
 }
 
 
@@ -203,7 +215,7 @@ textarea {
     border: solid 1px #c8c8c8;
     background: #FAFAFA;
     box-shadow: none;;
-} 
+}
 
 .btn-inverse, .leaflet-bar a.btn-inverse {
     background: #5278A2;

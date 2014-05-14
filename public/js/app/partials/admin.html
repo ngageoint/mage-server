@@ -311,34 +311,57 @@
                       </div>
                       -->
                       <h3>Symbology</h3>
-                      <table cl***REMOVED***="table table-striped table-bordered">
-                        <thead>
-                          <tr>
-                            <th>Type</th>
-                            <th>Icon</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td><span cl***REMOVED***="strong">Default Icon</span></td>
-                            <td>
-                              <div file-uploader></div>
-                              <hr>
-                            </td>
-                          </tr>
-                          <tr ng-repeat="option in typeField.choices">
-                            <td>
+                      <div cl***REMOVED***="well striped-rows">
+                        <div cl***REMOVED***="row-fluid">
+                          <div cl***REMOVED***="span3">
+                            <div cl***REMOVED***="strong">Type</div>
+                          </div>
+                          <div cl***REMOVED***="span4">
+                            <div cl***REMOVED***="strong">Icon</div>
+                          </div>
+                          <div cl***REMOVED***="span5">
+
+                          </div>
+                        </div>
+
+                        <div cl***REMOVED***="row-fluid">
+                            <div cl***REMOVED***="span3">
+                              Default Icon
+                            </div>
+                            <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'?access_token=' + token}}">
+                            <div cl***REMOVED***="span4 preview">
+                              <img ng-src="{{url}}"/>
+                              {{url}}
+                            </div>
+                            <div cl***REMOVED***="span5">
+                                <label cl***REMOVED***="file">
+                                  <input type="file" name="icon">
+                                  <span cl***REMOVED***="file-custom"></span>
+                                </label>
+
+                            </div>
+                          </form>
+                        </div>
+
+                        <div cl***REMOVED***="row-fluid" ng-repeat="option in typeField.choices">
+                            <div cl***REMOVED***="span3">
                               <input type="text" ng-model="option.title" value="{{option.title}}">
                                 <a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(field, option)"><i cl***REMOVED***="fa fa-minus icon-white"></i></a>
-                            </td>
-                            <td>ICON</td>
-                          </tr>
-                          <tr>
-                            <td><button cl***REMOVED***="btn btn-primary btn-small" type="button" ng-click="addType()">Add Type</button></td>
-                            <td></td>
-                          </tr>
-                        </tbody>
-                      </table>
+                            </div>
+                            <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'/'+option.title+'?access_token=' + token}}">
+                            <div cl***REMOVED***="span4 preview">
+                              <img ng-src="{{url}}"/>
+                              {{url}}
+                            </div>
+                            <div cl***REMOVED***="span5">
+                              <label cl***REMOVED***="file">
+                                <input type="file" name="icon">
+                                <span cl***REMOVED***="file-custom"></span>
+                              </label>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
                     </div>
 
                     <p cl***REMOVED***="text-center">
