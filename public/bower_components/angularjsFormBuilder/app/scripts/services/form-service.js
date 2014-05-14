@@ -89,6 +89,7 @@ angular.module('mage').***REMOVED***('FormService', function FormService($http, 
         createNewForm: function() {
             var form = {
                 name: 'Please Name This Form',
+                iconFields: ['Type'],
                 fields: [{
                     id: 1,
                     title: 'Observation Date',
