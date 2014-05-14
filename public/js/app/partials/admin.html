@@ -305,25 +305,13 @@
                     </div>
 
                     <div cl***REMOVED***="symbology">
-                      <!--
-                      <div ng-repeat="icon in icons">
-                        icon is {{icon}} <img ng-src="{{icon.url + '?access_token=' + token}}"/>
-                      </div>
-                      -->
+
                       <h3>Symbology</h3>
+
+                      <h4>Choose a field to be used for icon variants:</h4>
+                      <select ng-model="variantField" ng-options="field as field.title for field in form.fields | filter: { type: 'dropdown'}"/>
+
                       <div cl***REMOVED***="well striped-rows">
-                        <div cl***REMOVED***="row-fluid">
-                          <div cl***REMOVED***="span3">
-                            <div cl***REMOVED***="strong">Type</div>
-                          </div>
-                          <div cl***REMOVED***="span4">
-                            <div cl***REMOVED***="strong">Icon</div>
-                          </div>
-                          <div cl***REMOVED***="span5">
-
-                          </div>
-                        </div>
-
                         <div cl***REMOVED***="row-fluid">
                             <div cl***REMOVED***="span3">
                               Default Icon
@@ -332,10 +320,12 @@
                             <div cl***REMOVED***="span4">
                               <div cl***REMOVED***="preview" style="float:left;">
                                 <img ng-src="{{url}}"/>
-                                {{url}}
                               </div>
                               <div ng-show="uploading" cl***REMOVED***="progress progress-striped" style="margin-left: 60px; margin-top: 15px;">
                                 <div cl***REMOVED***="bar" style="width: {{uploadProgress}}%;"></div>
+                              </div>
+                              <div ng-show="uploadStatus" cl***REMOVED***="strong">
+                                {{uploadStatus}}
                               </div>
                             </div>
                             <div cl***REMOVED***="span5">
@@ -349,27 +339,81 @@
                         </div>
 
                         <div cl***REMOVED***="row-fluid" ng-repeat="option in typeField.choices">
-                            <div cl***REMOVED***="span3">
-                              <input type="text" ng-model="option.title" value="{{option.title}}">
-                                <a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(field, option)"><i cl***REMOVED***="fa fa-minus icon-white"></i></a>
+                          <div cl***REMOVED***="row-fluid">
+                            <div cl***REMOVED***="span12 strong">
+                              {{option.title}}
                             </div>
-                            <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'/'+option.title+'?access_token=' + token}}" allow-upload="form.id">
-                            <div cl***REMOVED***="span4">
-                              <div cl***REMOVED***="preview" style="float:left;">
-                                <img ng-src="{{url}}"/>
-                                {{url}}
+                          </div>
+                          <div cl***REMOVED***="row-fluid">
+                            <div cl***REMOVED***="span2">
+                              <div cl***REMOVED***="row-fluid">
+                                <div cl***REMOVED***="span12 strong">
+                                  Default
+                                </div>
                               </div>
-                              <div ng-show="uploading" cl***REMOVED***="progress progress-striped" style="margin-left: 60px; margin-top: 15px;">
-                                <div cl***REMOVED***="bar" style="width: {{uploadProgress}}%;"></div>
+                              <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'/'+option.title+'?access_token=' + token}}" allow-upload="form.id">
+                                <div cl***REMOVED***="row-fluid">
+                                  <div cl***REMOVED***="span12">
+                                    <div cl***REMOVED***="preview" style="float:left;">
+                                      <img ng-src="{{url}}"/>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div cl***REMOVED***="row-fluid">
+                                  <div cl***REMOVED***="span12">
+                                    <div ng-show="uploading" cl***REMOVED***="progress progress-striped" style="margin-left: 60px; margin-top: 15px;">
+                                      <div cl***REMOVED***="bar" style="width: {{uploadProgress}}%;"></div>
+                                    </div>
+                                    <div ng-show="uploadStatus" cl***REMOVED***="strong">
+                                      {{uploadStatus}}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div cl***REMOVED***="row-fluid">
+                                  <div cl***REMOVED***="span12">
+                                    <label cl***REMOVED***="file">
+                                      <input type="file" name="icon">
+                                      <span cl***REMOVED***="file-custom"></span>
+                                    </label>
+                                  </div>
+                                </div>
+                              </form>
+                            </div>
+                            <div cl***REMOVED***="span2" ng-repeat="variant in variantField.choices">
+                              <div cl***REMOVED***="row-fluid">
+                                <div cl***REMOVED***="span12 strong">
+                                  {{variant.title}}
+                                </div>
                               </div>
+                              <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'/'+option.title+'/'+variant+'?access_token=' + token}}" allow-upload="form.id">
+                                <div cl***REMOVED***="row-fluid">
+                                  <div cl***REMOVED***="span12">
+                                    <div cl***REMOVED***="preview" style="float:left;">
+                                      <img ng-src="{{url}}"/>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div cl***REMOVED***="row-fluid">
+                                  <div cl***REMOVED***="span12">
+                                    <div ng-show="uploading" cl***REMOVED***="progress progress-striped" style="margin-left: 60px; margin-top: 15px;">
+                                      <div cl***REMOVED***="bar" style="width: {{uploadProgress}}%;"></div>
+                                    </div>
+                                    <div ng-show="uploadStatus" cl***REMOVED***="strong">
+                                      {{uploadStatus}}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div cl***REMOVED***="row-fluid">
+                                  <div cl***REMOVED***="span12">
+                                    <label cl***REMOVED***="file">
+                                      <input type="file" name="icon">
+                                      <span cl***REMOVED***="file-custom"></span>
+                                    </label>
+                                  </div>
+                                </div>
+                              </form>
                             </div>
-                            <div cl***REMOVED***="span5">
-                              <label cl***REMOVED***="file">
-                                <input type="file" name="icon">
-                                <span cl***REMOVED***="file-custom"></span>
-                              </label>
-                            </div>
-                          </form>
+                          </div>
                         </div>
                       </div>
                     </div>
