@@ -24,9 +24,9 @@ mage.directive('simpleUpload', function() {
           var reader = new FileReader();
 
           reader.onload = (function(theFile) {
-                return function(e) {
-                  $element.find('.preview').html(['<img src="', e.target.result,'" title="', theFile.name, '" style="max-width: 50px;" />'].join(''));
-                };
+            return function(e) {
+              $element.find('.preview').html(['<img src="', e.target.result,'" title="', theFile.name, '"/>'].join(''));
+            };
           })(file);
 
           reader.readAsDataURL(file);
@@ -35,29 +35,29 @@ mage.directive('simpleUpload', function() {
 
       var uploadProgress = function(e) {
         if(e.lengthComputable){
-          console.log("progress is " + e.loaded + " of " + e.total);
-          //$('progress').attr({value:e.loaded,max:e.total});
-
           $scope.uploadProgress = (e.loaded/e.total) * 100;
           $scope.$apply();
         }
       }
 
       var uploadComplete = function() {
-
+        $scope.uploadStatus = "Upload Complete";
+        $scope.uploading = false;
+        $scope.$apply();
       }
 
       var uploadFailed = function() {
-
+        $scope.uploadStatus = "Upload Failed";
+        $scope.uploading = false;
+        $scope.$apply();
       }
 
       var uploadStarted = function() {
         $scope.uploading = true;
+        $scope.$apply();
       }
 
       var upload = function() {
-        console.log("URL chnaged or upload fired ", $scope.url);
-        console.log("Allow upload: " + $scope.allowUpload);
         if (!$scope.file || !$scope.url || !$scope.allowUpload) return;
         var formData = new FormData($element[0]);
         $.ajax({
@@ -72,8 +72,8 @@ mage.directive('simpleUpload', function() {
             },
             //Ajax events
             beforeSend: uploadStarted,
-            // success: completeHandler,
-            // error: errorHandler,
+            success: uploadComplete,
+            error: uploadFailed,
             // Form data
             data: formData,
             //Options to tell jQuery not to process data or worry about content-type.
@@ -81,20 +81,6 @@ mage.directive('simpleUpload', function() {
             contentType: false,
             processData: false
         });
-
-        // $.ajax({
-        //     url: $scope.url,
-        //     type: "POST",
-        //     data: formData,
-        //     processData: false,
-        //     contentType: false,
-        //     success: function (res) {
-        //       console.log("upload complete");
-        //      },
-        //      error: function() {
-        //        console.log('upload failed');
-        //      }
-        // });
       }
 
       $scope.$watch('url', upload);
