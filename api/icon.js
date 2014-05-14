@@ -40,7 +40,7 @@ Icon.prototype.getIcon = function(callback) {
   };
 
   IconModel.getIcon(conditions, function(err, icon) {
-    if (err) callback(err);
+    if (err || !icon) return callback(err);
 
     callback(null, path.join(iconBase, icon.relativePath));
   });
