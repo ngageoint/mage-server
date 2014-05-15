@@ -8,7 +8,7 @@ var Schema = mongoose.Schema;
 var IconSchema = new Schema({
   formId: { type: Schema.Types.ObjectId, required: true },
   type: { type: String, required: false },
-  variant: { type: String, required: false },
+  variant: { type: Object, required: false },
   relativePath: {type: String, required: true }
 },{
   versionKey: false
@@ -19,14 +19,20 @@ var Icon = mongoose.model('Icon', IconSchema);
 exports.Model = Icon;
 
 exports.getIcon = function(options, callback) {
-  var type = options.type || null;
-  var variant = options.variant || null;
+  var type = options.type;
+  var variant = options.variant;
 
   var condition = {
     formId: options.formId,
     type: {"$in": [type, null]},
-    variant: {"$in": [variant, null]}
   };
+
+  if (Number.isNaN(variant)) {
+    condition.variant = {"$in": [variant, null]};
+  } else {
+    condition.variant = {"$lte": variant};
+  }
+
   Icon.findOne(condition, {}, {sort: {type: -1, variant: -1}}, function (err, icon) {
     if (err) {
       console.log("Error finding icon in mongo: " + err);
@@ -37,7 +43,12 @@ exports.getIcon = function(options, callback) {
 }
 
 exports.create = function(icon, callback) {
-  Icon.create(icon, function(err, newIcon) {
+  var conditions = {
+    formId: icon.formId,
+    type: icon.type,
+    variant: icon.variant
+  };
+  Icon.findOneAndUpdate(conditions, icon, {upsert: true}, function(err, newIcon) {
     if (err) {
       console.log("Problem creating icon. " + err);
     }
@@ -46,12 +57,19 @@ exports.create = function(icon, callback) {
   });
 }
 
-exports.remove = function(icon, callback) {
-  Icon.findOneAndRemove(icon, function(err, removedIcon) {
+exports.remove = function(options, callback) {
+  var condition = {
+    formId: options.formId
+  };
+
+  if (options.type) condition.type = options.type;
+  if (options.variant) condition.variant = options.variant;
+
+  Icon.remove(condition, function(err) {
     if (err) {
-      console.log("Could not remove form: " + err);
+      console.log("Could not remove icons: " + err);
     }
 
-    callback(err, removedIcon);
+    callback(err);
   });
 }
