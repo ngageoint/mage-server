@@ -46,12 +46,19 @@ exports.create = function(icon, callback) {
   });
 }
 
-exports.remove = function(icon, callback) {
-  Icon.findOneAndRemove(icon, function(err, removedIcon) {
+exports.remove = function(options, callback) {
+  var condition = {
+    formId: options.formId
+  };
+
+  if (options.type) condition.type = options.type;
+  if (options.variant) condition.variant = options.variant;
+
+  Icon.remove(condition, function(err) {
     if (err) {
-      console.log("Could not remove form: " + err);
+      console.log("Could not remove icons: " + err);
     }
 
-    callback(err, removedIcon);
+    callback(err);
   });
 }

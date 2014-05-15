@@ -15,13 +15,13 @@ function Icon(form, type, variant) {
   this._variant = variant;
 };
 
-Icon.prototype.createIconPath = function(icon, name) {
+function createIconPath(icon, name) {
   var ext = path.extname(name);
-  var iconPath = this._form._id.toString();
+  var iconPath = icon._form._id.toString();
   if (icon._type) {
     iconPath = path.join(iconPath, icon._type);
-    if (this._variant) {
-      iconPath = path.join(iconPath, this._variant + ext);
+    if (icon._variant) {
+      iconPath = path.join(iconPath, icon._variant + ext);
     } else {
       iconPath = path.join(iconPath, "default" + ext);
     }
@@ -41,14 +41,13 @@ Icon.prototype.getIcon = function(callback) {
 
   IconModel.getIcon(options, function(err, icon) {
     if (err || !icon) return callback(err);
-    
 
     callback(null, path.join(iconBase, icon.relativePath));
   });
 }
 
 Icon.prototype.create = function(icon, callback) {
-  var relativePath = this.createIconPath(this, icon.name);
+  var relativePath = createIconPath(this, icon.name);
   var newIcon = {
     formId: this._form._id,
     type: this._type || null,
@@ -66,23 +65,42 @@ Icon.prototype.create = function(icon, callback) {
 }
 
 Icon.prototype.delete = function(callback) {
-  var icon = {
+  var self = this;
+  var conditions = {
     formId: this._form._id,
-    type: this._type || null,
-    variant: this._variant || null
-  }
+    type: this._type,
+    variant: this._variant
+  };
 
-  IconModel.remove(icon, function(err, removedIcon) {
+  IconModel.getIcon(conditions, function(err, icon) {
     if (err) return callback(err);
 
-    var file = path.join(iconBase, removedIcon.relativePath);
-    fs.remove(file, function(err) {
-      if (err) {
-        console.error("Could not remove attachment file " + file + ". ", err);
-      }
-    });
+    var remove = {formId: self._form._id};
+    if (self._type) remove.type = self._type;
+    if (self._variant) remove.variant = self._variant;
 
-    callback(err, icon);
+    IconModel.remove(remove, function(err) {
+      if (err) return callback(err);
+
+      callback(err);
+
+      //TODO need to remove the variant file, type dir, or default.png
+      var removePath;
+      if (self._type && self._variant) {
+        removePath = path.join(iconBase, icon.relativePath);
+      } else if (self._type) {
+        removePath = [iconBase, self._form._id, self._type].join("/");
+      } else {
+        removePath = path.join(iconBase, self._form._id.toString());
+      }
+
+      console.log('removing icons: ', removePath);
+      fs.remove(removePath, function(err) {
+        if (err) {
+          console.error("Could not remove attachment file " + file + ". ", err);
+        }
+      });
+    });
   });
 }
 
