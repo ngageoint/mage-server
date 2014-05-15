@@ -39,6 +39,10 @@ function createIconPath(icon, name) {
   return iconPath;
 }
 
+Icon.prototype.getBasePath = function() {
+  return path.join(iconBase, this._form._id.toString());
+}
+
 Icon.prototype.getIcon = function(callback) {
   var options = {
     formId: this._form._id,
