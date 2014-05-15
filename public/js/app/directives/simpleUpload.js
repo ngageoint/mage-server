@@ -36,6 +36,7 @@ mage.directive('simpleUpload', function() {
       var uploadProgress = function(e) {
         if(e.lengthComputable){
           $scope.$apply(function() {
+            $scope.uploading = true;
             $scope.uploadProgress = (e.loaded/e.total) * 100;
           });
         }
@@ -55,12 +56,6 @@ mage.directive('simpleUpload', function() {
         });
       }
 
-      var uploadStarted = function() {
-        $scope.$apply(function() {
-          $scope.uploading = true;
-        });
-      }
-
       var upload = function() {
         if (!$scope.file || !$scope.url || !$scope.allowUpload) return;
         var formData = new FormData($element[0]);
@@ -74,7 +69,6 @@ mage.directive('simpleUpload', function() {
                 }
                 return myXhr;
             },
-            beforeSend: uploadStarted,
             success: uploadComplete,
             error: uploadFailed,
             data: formData,
