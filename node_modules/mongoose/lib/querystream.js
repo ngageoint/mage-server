@@ -212,7 +212,7 @@ QueryStream.prototype._onNextObject = function _onNextObject (err, doc) {
     return this.destroy();
   }
 
-  var opts = this.query.options;
+  var opts = this.query._mongooseOptions;
 
   if (!opts.populate) {
     return true === opts.lean
@@ -221,7 +221,7 @@ QueryStream.prototype._onNextObject = function _onNextObject (err, doc) {
   }
 
   var self = this;
-  var pop = helpers.preparePopulationOptions(self.query, self.query.options);
+  var pop = helpers.preparePopulationOptionsMQ(self.query, self.query._mongooseOptions);
 
   self.query.model.populate(doc, pop, function (err, doc) {
     if (err) return self.destroy(err);
@@ -232,7 +232,8 @@ QueryStream.prototype._onNextObject = function _onNextObject (err, doc) {
 }
 
 function createAndEmit (self, doc) {
-  var instance = new self.query.model(undefined, self._fields, true);
+  var instance = helpers.createModel(self.query.model, doc, self._fields);
+
   instance.init(doc, function (err) {
     if (err) return self.destroy(err);
     emit(self, instance);

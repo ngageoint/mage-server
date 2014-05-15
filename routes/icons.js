@@ -14,9 +14,11 @@ module.exports = function(app, security) {
 
 // get a zip of all archives
 app.get(
-  '/api/icons/:formId',
+  '/api/icons/:formId.zip',
   access.authorize('READ_LAYER'),
   function(req, res, next) {
+    console.log('ZIP');
+
     var iconBasePath = new api.Icon(req.form).getBasePath();
     var archive = archiver('zip');
     res.attachment("icons.zip");
