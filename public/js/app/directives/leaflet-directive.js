@@ -19,7 +19,7 @@ L.AwesomeMarkers.divIcon = function (options) {
 (function () {
   var leafletDirective = angular.module("leaflet-directive", ["mage.***REMOVED***s"]);
 
-  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, IconService, appConstants, MapService, DataService, TimeBucketService, AwesomeMarkerIconService) {
+  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, IconService, appConstants, MapService, DataService, TimeBucketService, IconService) {
     return {
       restrict: "A",
       replace: true,
