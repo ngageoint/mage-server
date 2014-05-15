@@ -1,7 +1,8 @@
 module.exports = function(app, security) {
   var api = require('../api')
     , access = require('../access')
-    , fs = require('fs-extra');
+    , fs = require('fs-extra')
+    , archiver = require('archiver');
 
   var p***REMOVED***port = security.authentication.p***REMOVED***port
     , authenticationStrategy = security.authentication.authenticationStrategy;
@@ -10,6 +11,20 @@ module.exports = function(app, security) {
 
   // TODO when we switch to events we need to change all the *_LAYER roles
   // to *_EVENT roles
+
+// get a zip of all archives
+app.get(
+  '/api/icons/:formId',
+  access.authorize('READ_LAYER'),
+  function(req, res, next) {
+    var iconBasePath = new api.Icon(req.form).getBasePath();
+    var archive = archiver('zip');
+    res.attachment("icons.zip");
+    archive.pipe(res);
+    archive.bulk([{src: ['**'], dest: '/icons', expand: true, cwd: iconBasePath}]);
+    archive.finalize();
+  }
+);
 
   // get icon
   app.get(
