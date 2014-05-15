@@ -44,6 +44,7 @@ angular.module('mage').controller('CreateCtrl', function ($scope, FormService, L
     // accordion settings
     $scope.accordion = {}
     $scope.accordion.oneAtATime = true;
+    $scope.variants = [];
 
     // create new field button click
     $scope.addNewField = function(){
@@ -53,12 +54,27 @@ angular.module('mage').controller('CreateCtrl', function ($scope, FormService, L
             "title" : "New field - " + ($scope.form.fields.length+1),
             "type" : $scope.addField.new,
             "value" : "",
-            "required" : true
+            "required" : true,
+            "name" : "field" + ($scope.form.fields.length+1)
         };
 
         // put newField into fields array
         $scope.form.fields.push(newField);
     }
+
+    $scope.populateVariants = function() {
+      if (!$scope.form) return;
+      for (var i = 0; i < $scope.form.fields.length; i++) {
+        if ($scope.form.fields[i].name == $scope.form.variantField) {
+          if ($scope.form.fields[i].type == 'dropdown') {
+            $scope.variants = $scope.form.fields[i].choices;
+            break;
+          }
+        }
+      }
+    }
+
+    $scope.$watch('form.variantField', $scope.populateVariants);
 
     // deletes particular field on button click
     $scope.deleteField = function (id){
