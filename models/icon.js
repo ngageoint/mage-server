@@ -27,7 +27,7 @@ exports.getIcon = function(options, callback) {
     type: {"$in": [type, null]},
   };
 
-  if (Number.isNaN(variant)) {
+  if (isNaN(variant)) {
     condition.variant = {"$in": [variant, null]};
   } else {
     condition.variant = {"$lte": variant};
