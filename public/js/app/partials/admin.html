@@ -316,10 +316,10 @@
                             <div cl***REMOVED***="span3">
                               Default Icon
                             </div>
-                            <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'?access_token=' + token}}" allow-upload="form.id">
+                            <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'?access_token=' + $parent.token}}" allow-upload="form.id">
                             <div cl***REMOVED***="span4">
                               <div cl***REMOVED***="preview" style="float:left;">
-                                <img ng-src="{{url}}"/>
+                                <img ng-src="{{'/api/icons/'+$parent.form.id+'?access_token=' + $parent.token}}"/>
                               </div>
                               <div ng-show="uploading" cl***REMOVED***="progress progress-striped" style="margin-left: 60px; margin-top: 15px;">
                                 <div cl***REMOVED***="bar" style="width: {{uploadProgress}}%;"></div>
@@ -350,11 +350,11 @@
                                   Default
                                 </div>
                               </div>
-                              <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'/'+option.title+'?access_token=' + token}}" allow-upload="form.id">
+                              <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'/'+option.title+'?access_token=' + $parent.token}}" allow-upload="form.id">
                                 <div cl***REMOVED***="row-fluid">
                                   <div cl***REMOVED***="span12">
                                     <div cl***REMOVED***="preview" style="float:left;">
-                                      <img ng-src="{{url}}"/>
+                                      <img ng-src="{{'/api/icons/'+$parent.form.id+'/'+$parent.option.title+'?access_token=' + $parent.token}}"/>
                                     </div>
                                   </div>
                                 </div>
@@ -384,11 +384,11 @@
                                   {{variant.title}}
                                 </div>
                               </div>
-                              <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'/'+option.title+'/'+variant.title+'?access_token=' + token}}" allow-upload="form.id">
+                              <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'/'+option.title+'/'+variant.title+'?access_token=' + $parent.token}}" allow-upload="form.id">
                                 <div cl***REMOVED***="row-fluid">
                                   <div cl***REMOVED***="span12">
                                     <div cl***REMOVED***="preview" style="float:left;">
-                                      <img ng-src="{{url}}"/>
+                                      <img ng-src="{{'/api/icons/'+$parent.form.id+'/'+$parent.option.title+'/'+$parent.variant.title+'?access_token=' + $parent.token}}"/>
                                     </div>
                                   </div>
                                 </div>
