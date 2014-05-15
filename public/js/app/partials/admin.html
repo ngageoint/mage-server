@@ -309,7 +309,7 @@
                       <h3>Symbology</h3>
 
                       <h4>Choose a field to be used for icon variants:</h4>
-                      <select ng-model="form.iconFields[0]" ng-options="field as field.title for field in form.fields | filter: { type: 'dropdown'}"/>
+                      <select ng-model="form.variantField" ng-options="field.name as field.title for field in form.fields | filter: { type: 'dropdown'}"/>
 
                       <div cl***REMOVED***="well striped-rows">
                         <div cl***REMOVED***="row-fluid">
@@ -378,7 +378,7 @@
                                 </div>
                               </form>
                             </div>
-                            <div cl***REMOVED***="span2" ng-repeat="variant in form.iconFields[0].choices">
+                            <div cl***REMOVED***="span2" ng-repeat="variant in variants">
                               <div cl***REMOVED***="row-fluid">
                                 <div cl***REMOVED***="span12 strong">
                                   {{variant.title}}
