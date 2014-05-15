@@ -32,7 +32,6 @@ module.exports = function(app, security) {
     '/api/icons/:formId/:type?/:variant?',
     access.authorize('CREATE_LAYER'),
     function(req, res, next) {
-      console.log('params', req.params);
       new api.Icon(req.form, req.params.type, req.params.variant).create(req.files.icon, function(err, icon) {
         if (err) return next(err);
 
