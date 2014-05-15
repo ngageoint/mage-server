@@ -17,6 +17,7 @@ app.get(
   '/api/icons/:formId',
   access.authorize('READ_LAYER'),
   function(req, res, next) {
+    if (!req.is('application/zip')) return next();
     var iconBasePath = new api.Icon(req.form).getBasePath();
     var archive = archiver('zip');
     res.attachment("icons.zip");
