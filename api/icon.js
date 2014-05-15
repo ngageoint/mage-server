@@ -11,16 +11,23 @@ var iconBase = config.server.iconBaseDirectory;
 
 function Icon(form, type, variant) {
   this._form = form;
-  this._type = type;
-  this._variant = variant;
+  this._type = type || null;
+  this._variant = variant || null;
+
+  if (this._variant) {
+    var number = Number(this._variant);
+    if (!Number.isNaN(number)) {
+      this._variant = number;
+    }
+  }
 };
 
 function createIconPath(icon, name) {
   var ext = path.extname(name);
   var iconPath = icon._form._id.toString();
-  if (icon._type) {
+  if (icon._type != null) {
     iconPath = path.join(iconPath, icon._type);
-    if (icon._variant) {
+    if (icon._variant != null) {
       iconPath = path.join(iconPath, icon._variant + ext);
     } else {
       iconPath = path.join(iconPath, "default" + ext);
@@ -50,8 +57,8 @@ Icon.prototype.create = function(icon, callback) {
   var relativePath = createIconPath(this, icon.name);
   var newIcon = {
     formId: this._form._id,
-    type: this._type || null,
-    variant: this._variant || null,
+    type: this._type,
+    variant: this._variant,
     relativePath: relativePath
   }
 
