@@ -9,7 +9,7 @@ $('#main-nav a').on('click', function(){
 });
 
 var mage = angular.module(
-  "mage", 
+  "mage",
   [
     "$strap.directives",
     "ui.bootstrap",
@@ -23,7 +23,6 @@ var mage = angular.module(
     "mage.locationService",
     "mage.aboutService",
     "mage.httpAuthService",
-    "blueimp.fileupload",
     "mage.lib",
     "ngSanitize",
     "ngRoute",
@@ -62,7 +61,7 @@ var mage = angular.module(
       templateUrl:    'js/app/partials/signup.html',
       controller:     "SignupController"
       //resolve: resolveLogin()
-    }); 
+    });
     $routeProvider.when('/admin',
     {
       templateUrl:    'js/app/partials/admin.html',
@@ -71,23 +70,23 @@ var mage = angular.module(
     });
     $routeProvider.when('/map',
     {
-      templateUrl:    'js/app/partials/map.html', 
-      controller:     "MapController", 
+      templateUrl:    'js/app/partials/map.html',
+      controller:     "MapController",
       resolve: resolveLogin(["USER_ROLE", "ADMIN_ROLE"])
     });
-    $routeProvider.when('/layers', 
+    $routeProvider.when('/layers',
     {
       templateUrl:    "js/app/partials/layers.html",
       controller:      "LayerController",
       resolve: resolveLogin(["ADMIN_ROLE"])
     });
-    $routeProvider.when('/user', 
+    $routeProvider.when('/user',
     {
       templateUrl:    "js/app/partials/user.html",
       controller:      "UserController",
       resolve: resolveLogin(["USER_ROLE", "ADMIN_ROLE"])
     });
-    $routeProvider.when('/about', 
+    $routeProvider.when('/about',
     {
       templateUrl:    "/js/app/partials/about.html",
       controller:     "AboutController",
@@ -95,17 +94,17 @@ var mage = angular.module(
     });
     $routeProvider.when('/aboot', {
       templateUrl:    "/js/app/partials/about.html",
-      controller:     AboutController  
+      controller:     AboutController
     });
     $routeProvider.otherwise(
     {
       redirectTo:     '/signin',
-      controller:     SigninController, 
+      controller:     SigninController,
     }
   );
 }).run(function($rootScope, $modal, UserService, $location, authService) {
   $rootScope.$on('event:auth-loginRequired', function() {
-    
+
     if (!$rootScope.loginDialogPresented && $location.path() != '/' && $location.path() != '/signin' && $location.path() != '/signup') {
       $rootScope.loginDialogPresented = true;
       var modalInstance = $modal.open({
@@ -131,7 +130,7 @@ var mage = angular.module(
             $modalInstance.dismiss('cancel');
           };
         }
-      }); 
+      });
       modalInstance.result.then(function () {
       }, function () {
       });

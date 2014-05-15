@@ -35,48 +35,43 @@ mage.directive('simpleUpload', function() {
 
       var uploadProgress = function(e) {
         if(e.lengthComputable){
-          $scope.uploadProgress = (e.loaded/e.total) * 100;
-          $scope.$apply();
+          $scope.$apply(function() {
+            $scope.uploading = true;
+            $scope.uploadProgress = (e.loaded/e.total) * 100;
+          });
         }
       }
 
       var uploadComplete = function() {
-        $scope.uploadStatus = "Upload Complete";
-        $scope.uploading = false;
-        $scope.$apply();
+        $scope.$apply(function() {
+          $scope.uploadStatus = "Upload Complete";
+          $scope.uploading = false;
+        })
       }
 
       var uploadFailed = function() {
-        $scope.uploadStatus = "Upload Failed";
-        $scope.uploading = false;
-        $scope.$apply();
-      }
-
-      var uploadStarted = function() {
-        $scope.uploading = true;
-        $scope.$apply();
+        $scope.apply(function() {
+          $scope.uploadStatus = "Upload Failed";
+          $scope.uploading = false;
+        });
       }
 
       var upload = function() {
         if (!$scope.file || !$scope.url || !$scope.allowUpload) return;
         var formData = new FormData($element[0]);
         $.ajax({
-            url: $scope.url,  //Server script to process data
+            url: $scope.url,
             type: 'POST',
-            xhr: function() {  // Custom XMLHttpRequest
+            xhr: function() {
                 var myXhr = $.ajaxSettings.xhr();
-                if(myXhr.upload){ // Check if upload property exists
-                    myXhr.upload.addEventListener('progress',uploadProgress, false); // For handling the progress of the upload
+                if(myXhr.upload){
+                    myXhr.upload.addEventListener('progress',uploadProgress, false);
                 }
                 return myXhr;
             },
-            //Ajax events
-            beforeSend: uploadStarted,
             success: uploadComplete,
             error: uploadFailed,
-            // Form data
             data: formData,
-            //Options to tell jQuery not to process data or worry about content-type.
             cache: false,
             contentType: false,
             processData: false
