@@ -16,6 +16,7 @@ var FieldSchema = new Schema({
   title: { type: String, required: true },
   type: { type: String, required: true },
   value: { type: Schema.Types.Mixed, required: true },
+  name: { type: String, required: true },
   required: { type: Boolean, required: true },
   choices: [OptionSchema]
 },{
@@ -24,7 +25,7 @@ var FieldSchema = new Schema({
 
 var FormSchema = new Schema({
   name: { type: String, required: true },
-  iconFields: [{type:String}],
+  variantField: {type:String},
   fields: [FieldSchema]
 },{
     versionKey: false
