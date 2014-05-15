@@ -1,4 +1,6 @@
 var express = require("express")
+  , bodyParser = require('body-parser')
+  , multer = require('multer')
   , path = require('path')
   , mongoose = require('mongoose')
   , fs = require('fs-extra')
@@ -40,7 +42,7 @@ console.log('Provision: ' + provisioning.strategy);
 // Configuration of the MAGE Express server
 var app = express();
 var mongodbConfig = config.server.mongodb;
-app.configure(function () {
+
   mongoose.connect(mongodbConfig.url, {server: {poolSize: mongodbConfig.poolSize}}, function(err) {
     if (err) {
       console.log('Error connecting to mongo database, please make sure mongodbConfig is running...');
@@ -70,17 +72,17 @@ app.configure(function () {
     }
     return next();
   });
-  app.use(express.bodyParser({ keepExtensions: true}));
-  app.use(express.methodOverride());
+  app.use(require('body-parser')({ keepExtensions: true}));
+  app.use(require('method-override')());
+  app.use(require('multer')());
   app.use(authentication.p***REMOVED***port.initialize());
-  app.use(app.router);
   app.use('/private', express.static(path.join(__dirname, "private")));
   app.use(express.static(path.join(__dirname, "public")));
   app.use(function(err, req, res, next) {
     console.error(err.stack);
     res.send(500, 'Internal server error, please contact MAGE administrator.');
   });
-});
+
 
 // Configure routes
 require('./routes')(app, {authentication: authentication, provisioning: provisioning});

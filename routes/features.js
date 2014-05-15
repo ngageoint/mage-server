@@ -125,7 +125,7 @@ module.exports = function(app, auth) {
   app.get(
     '/FeatureServer/:layerId/features',
     access.authorize('READ_FEATURE'),
-    parseQueryParams, 
+    parseQueryParams,
     function (req, res) {
       console.log("MAGE ESRI Features GET REST Service Requested");
 
@@ -141,25 +141,25 @@ module.exports = function(app, auth) {
     }
   );
 
-  // This function gets one feature with universal JSON formatting  
+  // This function gets one feature with universal JSON formatting
   app.get(
-    '/FeatureServer/:layerId/features/:id', 
+    '/FeatureServer/:layerId/features/:id',
     access.authorize('READ_FEATURE'),
     parseQueryParams,
     function (req, res) {
       console.log("MAGE Features (ID) GET REST Service Requested");
-      
+
       var options = {fields: req.parameters.fields};
       new api.Feature(req.layer).getById(req.param('id'), options, function(feature) {
         var response = geojson.transform(feature, {path: getFeatureResource(req)});
         res.json(response);
       });
     }
-  ); 
+  );
 
   // This function creates a new Feature
   app.post(
-    '/FeatureServer/:layerId/features', 
+    '/FeatureServer/:layerId/features',
     access.authorize('CREATE_FEATURE'),
     validateFeature,
     function (req, res) {
@@ -192,7 +192,7 @@ module.exports = function(app, auth) {
         if (!feature.properties.timestamp) {
           return res.send(400, "cannot create feature 'properties.timestamp' param not specified");
         }
-        
+
         feature.properties.timestamp = moment(feature.properties.timestamp).toDate();
       }
 
@@ -275,7 +275,7 @@ module.exports = function(app, auth) {
     }
   );
 
-  // This function will add an attachment for a particular ESRI record 
+  // This function will add an attachment for a particular observation 
   app.post(
     '/FeatureServer/:layerId/features/:featureId/attachments',
     access.authorize('CREATE_FEATURE'),
