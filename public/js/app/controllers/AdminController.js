@@ -1,21 +1,11 @@
 'use strict';
 
-function AdminController($scope, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService, FormService, Layer, mageLib, CustomIconService) {
+function AdminController($scope, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService, FormService, Layer, mageLib) {
   // The variables that get set when clicking a team or user in the list, these get loaded into the editor.
   $scope.currentAdminPanel = "user"; // possible values user, team, and device
   $scope.currentUserFilter = "all"; // possible values all, active, unregistered
   $scope.currentDeviceFilter = "all"; // possible values all, registered, unregistered
   $scope.token = mageLib.getLocalItem('token');
-
-  $scope.icons = CustomIconService.getAllIcons();
-
-  $scope.$on('newIcon', function(event, promise) {
-    $scope.icons = promise;
-  });
-
-  $scope.fileUploadOptions = {
-    url: '/api/icons?access_token='+mageLib.getLocalItem('token')
-  };
 
   $scope.users = [];
   $scope.filteredUsers = [];
