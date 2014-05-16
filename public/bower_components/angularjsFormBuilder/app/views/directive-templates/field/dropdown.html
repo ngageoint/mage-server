@@ -1,7 +1,7 @@
 <div cl***REMOVED***="field control-group">
   <label cl***REMOVED***="control-label">{{field.title}}</label>
   <div cl***REMOVED***="controls">
-    <select ng-model="field.value"ng-options="option.title for option in field.choices"
+    <select ng-model="field.value"ng-options="option.title as option.title for option in field.choices"
             ng-required="field.required"></select>
     <span cl***REMOVED***="required-error" ng-show="field.required && !field.value">*</span>
   </div>
