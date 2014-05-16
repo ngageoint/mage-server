@@ -4,8 +4,12 @@ var express = require("express")
   , path = require('path')
   , mongoose = require('mongoose')
   , fs = require('fs-extra')
+  , winston = require('winston')
   , config = require('./config.json')
-  , provision = require('./provision');
+  , provision = require('./provision')
+  , log = require('./logger.js');
+
+log.info('Starting mage');
 
 var optimist = require("optimist")
   .usage("Usage: $0 --port [number]")
@@ -49,7 +53,9 @@ var mongodbConfig = config.server.mongodb;
       throw err;
     }
   });
-  mongoose.set('debug', true);
+  mongoose.set('debug', function(collection, method, query, doc, options) {
+    log.verbose('Mongoose: %s.%s(%j, %j, %j)', collection, method, query, doc, options);
+  });
 
   app.use(function(req, res, next) {
     req.getRoot = function() {
