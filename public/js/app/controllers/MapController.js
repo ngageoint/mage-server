@@ -146,6 +146,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       return;
     }
     $scope.newFeature = ObservationService.createNewObservation();
+    $scope.newFeature.properties.level = "low";
     isEditing = false;
     $scope.newObservationEnabled = true;
     $scope.observationTab = 1;
@@ -155,7 +156,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
     if ($scope.markerLocation) {
       $scope.newFeature.geometry.coordinates = [$scope.markerLocation.lng, $scope.markerLocation.lat];
     }
-    $scope.newFeature.properties.timestamp = new Date().getTime();
+    $scope.newFeature.properties.timestamp = moment().toISOString();
     if (MapService.featureLayers.length == 1) {
       $scope.newFeature.layerId = MapService.featureLayers[0].id;
     }
@@ -249,7 +250,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
 
     if (!isEditing && $scope.newObservationEnabled) {
       $scope.newFeature.geometry.coordinates = [location.lng, location.lat];
-      $scope.newFeature.properties.timestamp = new Date().getTime();
+      $scope.newFeature.properties.timestamp = moment().toISOString();
     }
   }, true);
 
