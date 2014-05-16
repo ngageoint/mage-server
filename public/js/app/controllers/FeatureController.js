@@ -13,7 +13,6 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureService,
 
   $scope.saveObservation = function (observation) {
 
-
     var fields = $scope.os.form.fields;
     _.each(fields, function(field) {
       observation.properties[field.name] = field.value;
@@ -21,7 +20,7 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureService,
 
     console.log('trying to save', observation);
 
-    // var create = observation.id == null;
+    var create = observation.id == null;
     // var layerId = observation.layerId;
     // observation.$save({}, function(value, responseHeaders) {
     //   create ? $scope.newFeature = value : $scope.updatedFeature = value;

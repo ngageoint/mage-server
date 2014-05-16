@@ -1,8 +1,14 @@
 'use strict';
 
-angular.module('mage').directive('formDirective', function (FormService) {
+angular.module('mage').directive('formDirective', function (FormService, ObservationService) {
     return {
-        controller: function($scope){
+        controller: function($scope) {
+            ObservationService.newForm().then(function(form) {
+              $scope.form = form;
+            });
+
+            console.log('gotta form', $scope.form);
+
             $scope.submit = function() {
                 FormService.submitForm($scope.form);
                 alert('Form submitted..');
@@ -16,7 +22,6 @@ angular.module('mage').directive('formDirective', function (FormService) {
         templateUrl: 'bower_components/angularjsFormBuilder/app/views/directive-templates/form/form.html',
         restrict: 'E',
         scope: {
-            form:'='
         }
     };
   });

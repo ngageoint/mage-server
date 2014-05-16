@@ -1,20 +1,21 @@
 'use strict';
 
 angular.module('mage')
-  .factory('ObservationService', ['appConstants', 'FeatureTypeService', 'Feature', 'UserService', 'Layer', 'FormService',
-    function (appConstants, FeatureTypeService, Feature, UserService, Layer, FormService) {
+  .factory('ObservationService', ['$q', 'appConstants', 'FeatureTypeService', 'Feature', 'UserService', 'Layer', 'FormService',
+    function ($q, appConstants, FeatureTypeService, Feature, UserService, Layer, FormService) {
       var ***REMOVED*** = {};
 
-      ***REMOVED***.form = {};
+      var form = $q.defer();
+      var formPromise = form.promise;
       var layers = Layer.query(function(){
           angular.forEach(layers, function (layer) {
             if (layer.type == 'Feature') {
               console.log('Form to use is: ' + layer.formId);
               FormService.forms().then(function(returnedForms) {
-                  angular.forEach(returnedForms, function(form) {
-                    if (form.id == layer.formId) {
-                      form.inUse = true;
-                      ***REMOVED***.form = form;
+                  angular.forEach(returnedForms, function(returnedForm) {
+                    if (returnedForm.id == layer.formId) {
+                      returnedForm.inUse = true;
+                      form.resolve(returnedForm);
                     }
                   });
               });
@@ -62,6 +63,17 @@ angular.module('mage')
         error(function (data, status, headers, config) {
           console.log("Error getting types: " + status);
         });
+
+      ***REMOVED***.newForm = function() {
+        var promise = formPromise.then(function(form) {
+            var newForm = angular.copy(form);
+            var timestampField = _.find(newForm.fields, function(field) {return field.name == 'timestamp'});
+            timestampField.value = moment().format('MM/DD/YYYY');
+            console.log('time is', timestampField.value);
+            return newForm;
+        });
+        return promise;
+      }
 
       ***REMOVED***.createNewObservation = function(location) {
         return new Feature({
