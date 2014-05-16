@@ -45,7 +45,7 @@ angular.module('mage').***REMOVED***('FormService', function FormService($http, 
                 value : 'Hidden'
             }
         ],
-        form:function (id) {
+        form: function (id) {
             resolvedForms[id] = resolvedForms[id] || $http.get(
               appConstants.rootUrl + '/api/forms/' + id
             );
@@ -63,7 +63,7 @@ angular.module('mage').***REMOVED***('FormService', function FormService($http, 
         },
         submitForm: function(form) {
             if (form.id) {
-                return $http.put('/api/forms/'+form.id, form, {
+                return $http.put('/api/forms/'+ form.id, form, {
                 headers: {
                     'Content-Type': 'application/json'
                 }

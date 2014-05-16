@@ -9,7 +9,8 @@ module.exports = function(app, security) {
     , Layer = require('../models/layer')
     , Feature = require('../models/feature')
     , Form = require('../models/form')
-    , Icon = require('../models/icon');
+    , Icon = require('../models/icon')
+    , log = require('winston');
 
   var p***REMOVED***port = security.authentication.p***REMOVED***port
     , authenticationStrategy = security.authentication.authenticationStrategy;
@@ -40,6 +41,7 @@ module.exports = function(app, security) {
   app.all('/FeatureServer*', p***REMOVED***port.authenticate(authenticationStrategy, {session: false}));
 
   app.get('/api', function(req, res) {
+    log.info('get api info');
     var config = app.get('config');
     res.json(config.api);
   });
