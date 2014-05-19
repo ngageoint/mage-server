@@ -7,8 +7,14 @@ var express = require("express")
   , winston = require('winston')
   , config = require('./config.json')
   , provision = require('./provision')
-  , log = require('./logger.js');
+  , log = require('winston');
 
+log.remove(winston.transports.Console);
+log.add(winston.transports.Console, {
+  timestamp: true,
+  level: 'debug',
+  colorize: true
+});
 log.info('Starting mage');
 
 var optimist = require("optimist")
@@ -54,7 +60,7 @@ var mongodbConfig = config.server.mongodb;
     }
   });
   mongoose.set('debug', function(collection, method, query, doc, options) {
-    log.verbose('Mongoose: %s.%s(%j, %j, %j)', collection, method, query, doc, options);
+    log.debug("(mongoose) %s.%s(%j, %j, %j)", collection, method, query, doc, options);
   });
 
   app.use(function(req, res, next) {
