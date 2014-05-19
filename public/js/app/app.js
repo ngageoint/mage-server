@@ -27,6 +27,7 @@ var mage = angular.module(
     "ngSanitize",
     "ngRoute",
     'ngResource',
+    'ngQuickDate',
     "http-auth-interceptor"])
   .config(function ($routeProvider, $locationProvider, $httpProvider) {
     $httpProvider.defaults.withCredentials = true;

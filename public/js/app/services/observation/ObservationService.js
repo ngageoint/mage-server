@@ -68,7 +68,7 @@ angular.module('mage')
         var promise = formPromise.then(function(form) {
             var newForm = angular.copy(form);
             var timestampField = _.find(newForm.fields, function(field) {return field.name == 'timestamp'});
-            timestampField.value = moment().format('MM/DD/YYYY');
+            timestampField.value = moment().format('MM/DD/YYYY hh:mm:ss');
             console.log('time is', timestampField.value);
             return newForm;
         });
