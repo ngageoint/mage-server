@@ -5,7 +5,8 @@ mage.directive('observation', function (ObservationService, MapService) {
     restrict: "A",
     templateUrl: ObservationService.observationTemplate,
     scope: {
-      observation:'='
+      observation: '=',
+      form: '='
     },
     controller: "FeatureController",
     link: function(scope) {
@@ -24,6 +25,9 @@ mage.directive('observation', function (ObservationService, MapService) {
         scope.$emit('cancelEdit', scope.observation);
       }
 
+      scope.$watch('form', function(form) {
+        console.log('yeah buddy form changed', form);
+      });
     }
   };
 });

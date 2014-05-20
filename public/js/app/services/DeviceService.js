@@ -6,37 +6,37 @@ angular.module('mage.deviceService', ['mage.***REMOVED***s', 'mage.lib'])
       var ***REMOVED*** = {};
 
       ***REMOVED***.getAllDevices = function () {
-        return $http.get(appConstants.rootUrl + '/api/devices/');
+        return $http.get('/api/devices/');
       };
 
       var resolvedDevices = {};
 
       ***REMOVED***.getDevice = function(id) {
         resolvedDevices[id] = resolvedDevices[id] || $http.get(
-          appConstants.rootUrl + '/api/devices/' + id
+          '/api/devices/' + id
         );
         return resolvedDevices[id];
       }
 
       ***REMOVED***.createDevice = function(device) {
         return $http.post(
-          appConstants.rootUrl + '/api/devices', 
-          $.param(device), 
+          '/api/devices',
+          $.param(device),
           {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
         );
       };
 
       ***REMOVED***.updateDevice = function(device) {
         return $http.put(
-          appConstants.rootUrl + '/api/devices/' + device._id, 
-          $.param(device), 
+          '/api/devices/' + device._id,
+          $.param(device),
           {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
         );
       };
 
       ***REMOVED***.registerDevice = function(device) {
         return $http.put(
-          appConstants.rootUrl + '/api/devices/' + device._id,
+          '/api/devices/' + device._id,
           $.param({registered: true}),
           {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
         );
@@ -44,7 +44,7 @@ angular.module('mage.deviceService', ['mage.***REMOVED***s', 'mage.lib'])
 
       ***REMOVED***.deleteDevice = function(device) {
         return $http.delete(
-          appConstants.rootUrl + '/api/devices/' + device._id
+        '/api/devices/' + device._id
         );
       }
 

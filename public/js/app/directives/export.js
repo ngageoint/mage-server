@@ -80,12 +80,12 @@ mage.directive('export', function(UserService, appConstants, mageLib) {
 	    if (start) params.startDate = start;
 
 	    if (end) params.endDate = end;
-	      
+
 	    if ($scope.fft) params.fft = $scope.fft;
 
 	    if (layerIds.length) params.layerIds = layerIds.join(",");
 
-	    var url = appConstants.rootUrl + "api/export?" + $.param(params);
+	    var url = "api/export?" + $.param(params);
 	    $.fileDownload(url)
 	    	.done(function() {
 	      		$scope.$apply(function() {
@@ -97,7 +97,7 @@ mage.directive('export', function(UserService, appConstants, mageLib) {
 	      			$scope.exporting[type] = false;
 	      		});
 	    	});
-	  }
+	     }
     }
   };
 });

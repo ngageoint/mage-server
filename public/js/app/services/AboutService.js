@@ -6,7 +6,7 @@ angular.module('mage.aboutService', ['mage.***REMOVED***s', 'mage.lib'])
       var ***REMOVED*** = {};
 
       ***REMOVED***.about = function () {
-        return $http.get(appConstants.rootUrl + '/api/');
+        return $http.get('/api/');
       };
 
       return ***REMOVED***;

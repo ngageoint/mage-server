@@ -6,7 +6,7 @@ angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
       var ***REMOVED*** = {};
 
       ***REMOVED***.export = function () {
-        return $http.get(appConstants.rootUrl + "/api/locations/export");
+        return $http.get("/api/locations/export");
       };
 
       ***REMOVED***.getPosition = function() {

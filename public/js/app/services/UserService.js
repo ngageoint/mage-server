@@ -17,7 +17,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       /* For the sign up page, no token necessary */
       ***REMOVED***.signup = function (data) {
         return $http.post(
-          appConstants.rootUrl + '/api/users', $.param(data), 
+          '/api/users', $.param(data),
           {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
         );
       }
@@ -26,10 +26,10 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
         userDeferred = $q.defer();
 
         var promise = $http.post(
-          appConstants.rootUrl + '/api/login',
-          $.param(data), 
+         '/api/login',
+          $.param(data),
           {headers: {"Content-Type": "application/x-www-form-urlencoded"},ignoreAuthModule:true});
-        
+
         promise.success(function(data) {
           mageLib.setLocalItem('token', data.token);
           setUser(data.user);
@@ -44,7 +44,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       ***REMOVED***.login = function(roles) {
         var theDeferred = $q.defer();
         $http.get(
-          appConstants.rootUrl + '/api/users/myself',
+          '/api/users/myself',
           {headers: {"Content-Type": "application/x-www-form-urlencoded"}})
         .success(function(user) {
           setUser(user);
@@ -53,7 +53,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
             // TODO probably want to redirect to a unauthorized page.
             $location.path('/signin');
           }
-          
+
           theDeferred.resolve(user);
         })
         .error(function(data, status) {
@@ -66,7 +66,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       ***REMOVED***.checkLoggedInUser = function(roles) {
         console.info('check login');
         $http.get(
-          appConstants.rootUrl + '/api/users/myself',
+          '/api/users/myself',
           {
             ignoreAuthModule: true})
         .success(function(user) {
@@ -81,9 +81,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       }
 
       ***REMOVED***.logout = function() {
-        var promise =  $http.post(
-          appConstants.rootUrl + '/api/logout'
-        );
+        var promise =  $http.post('/api/logout');
 
         promise.success(function() {
           ***REMOVED***.clearUser();
@@ -95,19 +93,19 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
 
       ***REMOVED***.updateMyself = function(user) {
         return $http.put(
-          appConstants.rootUrl + '/api/users/myself', 
-          $.param(user), 
+          '/api/users/myself',
+          $.param(user),
           {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
         );
       }
 
       ***REMOVED***.updateMyP***REMOVED***word = function(user) {
         var promise = $http.put(
-          appConstants.rootUrl + '/api/users/myself', 
-          $.param(user), 
+          '/api/users/myself',
+          $.param(user),
           {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
         );
-          
+
         promise.success(function(user) {
           ***REMOVED***.clearUser();
         });
@@ -119,7 +117,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
 
       ***REMOVED***.getUser = function(id) {
         resolvedUsers[id] = resolvedUsers[id] || $http.get(
-          appConstants.rootUrl + '/api/users/' + id
+          '/api/users/' + id
         );
         return resolvedUsers[id];
       }
@@ -129,7 +127,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       };
 
       ***REMOVED***.getAllUsers = function () {
-        return $http.get(appConstants.rootUrl + '/api/users').success(function(users) {
+        return $http.get('/api/users').success(function(users) {
           for (var i = 0; i < users.length; i++) {
           resolvedUsers[users[i]._id] = $q.when(users[i]);
           }
@@ -138,28 +136,28 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
 
       ***REMOVED***.createUser = function(user) {
         return $http.post(
-          appConstants.rootUrl + '/api/users',
-           $.param(user), 
+          '/api/users',
+           $.param(user),
            {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
          );
       };
 
       ***REMOVED***.updateUser = function(user) {
         return $http.put(
-          appConstants.rootUrl + '/api/users/' + user._id, 
-          $.param(user), 
+          '/api/users/' + user._id,
+          $.param(user),
           {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
         );
       };
 
       ***REMOVED***.deleteUser = function(user) {
         return $http.delete(
-          appConstants.rootUrl + '/api/users/' + user._id
+          '/api/users/' + user._id
         );
       };
 
       ***REMOVED***.getRoles = function () {
-        return $http.get(appConstants.rootUrl + '/api/roles');
+        return $http.get('/api/roles');
       };
 
       ***REMOVED***.clearUser = function() {

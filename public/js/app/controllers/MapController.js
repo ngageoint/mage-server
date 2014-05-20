@@ -4,7 +4,7 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($rootScope, $scope, $log, $http, ObservationService, FeatureTypeService, appConstants, mageLib, IconService, UserService, DataService, MapService, Layer, LocationService, Location, CreateLocation, TimerService, Feature, TimeBucketService) {
+function MapController($rootScope, $scope, $log, $http, $compile, ObservationService, FeatureTypeService, appConstants, mageLib, IconService, UserService, DataService, MapService, Layer, LocationService, Location, CreateLocation, TimerService, Feature, TimeBucketService) {
   $scope.customer = appConstants.customer;
   var ds = DataService;
   $scope.ms = MapService;
@@ -145,6 +145,20 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
       $scope.newObservationEnabled = false;
       return;
     }
+
+    ObservationService.createNewForm({
+      geometry: {
+        type: 'Point',
+        coordinates: [0,0]
+      },
+      properties: {
+        timestamp: new Date()
+      }
+    }).then(function(form) {
+      $scope.form = form;
+      console.log('form', form);
+    });
+
     $scope.newFeature = ObservationService.createNewObservation();
     $scope.newFeature.properties.level = "low";
     isEditing = false;
@@ -156,7 +170,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
     if ($scope.markerLocation) {
       $scope.newFeature.geometry.coordinates = [$scope.markerLocation.lng, $scope.markerLocation.lat];
     }
-    $scope.newFeature.properties.timestamp = moment().toISOString();
+    $scope.newFeature.properties.timestamp = new Date();
     if (MapService.featureLayers.length == 1) {
       $scope.newFeature.layerId = MapService.featureLayers[0].id;
     }
@@ -249,8 +263,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
     if (!location) return;
 
     if (!isEditing && $scope.newObservationEnabled) {
-      $scope.newFeature.geometry.coordinates = [location.lng, location.lat];
-      $scope.newFeature.properties.timestamp = moment().toISOString();
+      $scope.form.getField('geometry').value = [location.lng, location.lat];
     }
   }, true);
 
