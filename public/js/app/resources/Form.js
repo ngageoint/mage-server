@@ -1,4 +1,4 @@
-angular.module('mage').factory('Form', ['$resource', '$http', function($resource, $http) {
+angular.module('mage').factory('Form', ['$resource', '$http', 'appConstants', 'Feature', function($resource, $http, appConstants, Feature) {
   var Form = $resource('/api/forms/:id', {
     id: '@id'
   }, {
@@ -27,6 +27,37 @@ angular.module('mage').factory('Form', ['$resource', '$http', function($resource
       this.$create(params, success, error);
     }
   };
+
+  Form.prototype.getField = function(fieldName) {
+    return _.find(this.fields, function(field) { return field.name == fieldName});
+  };
+
+  Form.prototype.getObservation = function() {
+    var observation = new Feature({
+      type: 'Feature',
+      layerId: appConstants.featureLayerId,
+      properties: {
+      }
+    });
+
+    _.each(this.fields, function(field) {
+      switch (field.name) {
+      case 'id':
+        observation.id = field.value;
+        break;
+      case 'geometry':
+        observation.geometry = {
+          type: 'Point',
+          coordinates: field.value
+        }
+        break;
+      default:
+        observation.properties[field.name] = field.value;
+      }
+    });
+
+    return observation;
+  }
 
   return Form;
 

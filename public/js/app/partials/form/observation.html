@@ -31,16 +31,16 @@
       </li>
     </ul>
     <div cl***REMOVED***="tab-content" ng-init="observationTab = 1" ng-show="observationTab == 1">
-      <form-directive form="form" cl***REMOVED***="row-fluid"/>
+      <form-directive form="form" cl***REMOVED***="row-fluid"></form-directive>
       <span cl***REMOVED***="pull-right">
         <button cl***REMOVED***="btn btn-inverse" ng-click="cancelEdit()" ngm-tap="cancelEdit()"><span ng-show="observation.id">Close</span><span ng-hide="observation.id">Cancel</span></button>
-        <button cl***REMOVED***="btn" ng-click="saveObservation(observation)" ngm-tap="saveObservation(observation)"><i cl***REMOVED***="icon-save"></i> Save</button>
+        <button cl***REMOVED***="btn" ng-click="save()" ngm-tap="save()"><i cl***REMOVED***="icon-save"></i> Save</button>
       </span>
       <span>
         <button cl***REMOVED***="btn btn-danger pull-left" ng-show="observation.id && amAdmin" ng-click="deleteObservation(observation)" ngm-tap="deleteObservation(observation)"><i cl***REMOVED***="icon-trash"></i> Delete</button>
       </span>
-
     </div>
+
     <!-- Start of tab2 -->
     <div cl***REMOVED***="tab-content" ng-show="observationTab == 2">
       <form>

@@ -1,10 +1,9 @@
 'use strict';
 
 angular.module('mage')
-  .factory('IconService', ['appConstants', 'FeatureTypeService',
-    function (appConstants, FeatureTypeService) {
+  .factory('IconService', ['appConstants',
+    function (appConstants) {
       var ***REMOVED*** = {};
-      var featureTypes = FeatureTypeService.getTypes();
 
       ***REMOVED***.getCl***REMOVED*** = function(typeName, o) {
         var type = _.find(o.types, function(t) {
@@ -50,7 +49,7 @@ angular.module('mage')
 
         return L.AwesomeMarkers.icon({
           icon: ***REMOVED***.getCl***REMOVED***(properties.type, o),
-          markerColor: appConstants.featureToColor(feature)
+          markerColor: 'blue' // TODO DYNAMIC fix this
         });
       };
 
@@ -63,17 +62,17 @@ angular.module('mage')
         var level = _.find(o.levels, function(level) {
           return level.name === feature.properties.EVENTLEVEL;
         });
-        var color = appConstants.featureToColor(feature);
+        var color = 'blue'; // TODO DYNAMIC FIX THIS
 
         return '<i cl***REMOVED***="icon-'+icon+'" style="color:'+color+'"></i>';
       };
 
       ***REMOVED***.setTemplateVariables = function(feature, scope) {
-        if (feature && feature.properties && feature.properties.type) {
-          featureTypes.success(function(success) {
-            scope.markerCl***REMOVED*** = "icon-" + ***REMOVED***.getCl***REMOVED***(feature.properties.type, {types: success});
-          })
-        }
+        // if (feature && feature.properties && feature.properties.type) {
+        //   featureTypes.success(function(success) {
+        //     scope.markerCl***REMOVED*** = "icon-" + ***REMOVED***.getCl***REMOVED***(feature.properties.type, {types: success});
+        //   })
+        // }
         if (feature && feature.properties && feature.properties.timestamp) {
           scope.markerColor = "awesome-marker-icon-" + appConstants.featureToColor(feature);
         }
