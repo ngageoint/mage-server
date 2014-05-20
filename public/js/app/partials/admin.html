@@ -215,7 +215,7 @@
                 <button cl***REMOVED***="btn" ng-click="createNewForm()"><i cl***REMOVED***="fa fa-plus-square-o icon-white"></i> New Form</button>
                 <div ng-repeat="form in forms" cl***REMOVED***="row-fluid top-gap">
                   <div cl***REMOVED***="span12">
-                    <a ng-click="editForm(form)"><i cl***REMOVED***="fa fa-check" ng-show="form.inUse"></i> {{form.name}}</a>
+                    <a ng-click="editForm(form)"><i cl***REMOVED***="fa fa-check" ng-show="form.id == appConstants.formId"></i> {{form.name}}</a>
                   </div>
                 </div>
               </div>
@@ -420,7 +420,7 @@
 
                     <p cl***REMOVED***="text-center">
                       <button cl***REMOVED***="btn btn-success right" type="button" ng-click="useForm(form)"><i cl***REMOVED***="fa-check icon-white"></i>Save And Use This Form</button>
-                      <button cl***REMOVED***="btn btn-primary right" type="button" ng-click="createForm()">Save Form</button>
+                      <button cl***REMOVED***="btn btn-primary right" type="button" ng-click="saveForm()">Save Form</button>
                     </p>
                     <br>
                     <hr>

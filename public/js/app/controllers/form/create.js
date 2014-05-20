@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mage').controller('CreateCtrl', function ($scope, FormService, Layer) {
+angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, FormService, Layer, Form) {
 
     // preview form mode
     $scope.previewMode = false;
@@ -159,38 +159,25 @@ angular.module('mage').controller('CreateCtrl', function ($scope, FormService, L
         $scope.addField.lastAddedID = 0;
     }
 
-    $scope.createForm = function() {
-        FormService.submitForm($scope.form).then(function(savedForm) {
-          $scope.form.id = savedForm.id;
-        });
+    $scope.saveForm = function() {
+        $scope.form.$save();
     }
 
     $scope.useForm = function(form) {
-        FormService.submitForm(form).then(function(savedForm) {
-          if (!form.id) {
-            form.id = savedForm.id;
-            $scope.forms.push(form);
-          }
-          $scope.setFeatureForm(form);
-        });
+      $scope.form.$save({}, function(savedForm) {
+        $scope.setFeatureForm(form);
+      });
     }
-    $scope.setFeatureForm = function(form) {
-        var layers = Layer.query(function(){
-            angular.forEach(layers, function (layer) {
-              if (layer.type == 'Feature') {
-                layer.formId = form.id;
-                layer.$save();
-                form.inUse = true;
-                FormService.forms().then(function(forms) {
-                    angular.forEach(forms, function(theForm) {
-                        if (theForm.id != form.id) {
-                            theForm.inUse = false;
-                        }
-                    });
-                });
-              }
-            });
-        });
 
+    $scope.setFeatureForm = function(form) {
+      var layers = Layer.query(function(){
+        angular.forEach(layers, function (layer) {
+          if (layer.type == 'Feature') {
+            layer.formId = form.id;
+            layer.$save();
+            appConstants.formId = form.id;
+          }
+        });
+      });
     }
 });
