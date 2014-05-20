@@ -1,8 +1,8 @@
 'use strict';
 
 angular.module('mage')
-  .factory('ObservationService', ['$q', 'appConstants', 'FeatureTypeService', 'Feature', 'UserService', 'Layer', 'FormService',
-    function ($q, appConstants, FeatureTypeService, Feature, UserService, Layer, FormService) {
+  .factory('ObservationService', ['$q', 'appConstants', 'FeatureTypeService', 'Feature', 'UserService', 'Layer', 'Form', 'FormService',
+    function ($q, appConstants, FeatureTypeService, Feature, UserService, Layer, Form, FormService) {
       var ***REMOVED*** = {};
 
       var form = $q.defer();
@@ -11,13 +11,13 @@ angular.module('mage')
           angular.forEach(layers, function (layer) {
             if (layer.type == 'Feature') {
               console.log('Form to use is: ' + layer.formId);
-              FormService.forms().then(function(returnedForms) {
-                  angular.forEach(returnedForms, function(returnedForm) {
-                    if (returnedForm.id == layer.formId) {
-                      returnedForm.inUse = true;
-                      form.resolve(returnedForm);
-                    }
-                  });
+              Form.query(function(forms) {
+                angular.forEach(forms, function(returnedForm) {
+                  if (returnedForm.id == layer.formId) {
+                    form.resolve(returnedForm);
+                    appConstants.formId = layer.formId;
+                  }
+                });
               });
               // layer.formId = form.id;
               // layer.$save();

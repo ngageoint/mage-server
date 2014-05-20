@@ -1,6 +1,6 @@
 'use strict';
 
-function AdminController($scope, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService, FormService, Layer, mageLib) {
+function AdminController($scope, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService, FormService, Form, Layer, mageLib) {
   // The variables that get set when clicking a team or user in the list, these get loaded into the editor.
   $scope.currentAdminPanel = "user"; // possible values user, team, and device
   $scope.currentUserFilter = "all"; // possible values all, active, unregistered
@@ -22,8 +22,6 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
       $scope.roles = data;
     });
 
-
-
   $scope.devices = [];
   $scope.filteredDevices = [];
   DeviceService.getAllDevices().
@@ -36,35 +34,19 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   $scope.user = {};
   $scope.device = {};
 
-  $scope.teams = [
-    {
-      'id': "0",
-      'teamName': "Fox Hound",
-      'description': "Desert search and rescue group."
-    },
-    {
-      'id': "1",
-      'teamName': "Diamond Dogs",
-      'description': "Urban search and rescue group."
-    }
-  ];
-  //$scope.forms = FormService.forms();
+  $scope.appConstants = appConstants;
 
-  FormService.forms().then(function(returnedForms) {
-      $scope.layers = Layer.query(function(layers) {
-        var theFormId;
-        angular.forEach(layers, function (layer) {
-          if (layer.type == 'Feature' && !theFormId) {
-            theFormId = layer.formId;
-          }
-        });
-        angular.forEach(returnedForms, function(form) {
-          if (form.id == theFormId) {
-            form.inUse = true;
-          }
-        });
+  Form.query(function(forms) {
+    $scope.layers = Layer.query(function(layers) {
+      var featureLayer = _.find(layers, function(layer) { return layer.type == 'Feature'});
+      angular.forEach(forms, function(form) {
+        if (form.id == featureLayer.formId) {
+          appConstants.formId = featureLayer.formId
+        }
       });
-      $scope.forms = returnedForms;
+    });
+
+    $scope.forms = forms;
   });
 
   // Edit form toggles
@@ -84,7 +66,8 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   }
 
   $scope.createNewForm = function() {
-    FormService.createNewForm();
+    var newForm = FormService.newForm();
+    $scope.forms.push(newForm);
   }
 
   /* Status message functions */
