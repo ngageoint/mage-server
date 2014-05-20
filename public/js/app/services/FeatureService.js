@@ -2,7 +2,7 @@
 
 /*
   Taking the feature functionality out of the observation directive and sonsolidating and cleaning
-  it up here. 
+  it up here.
 
   Trying to make it so that the heavy lifting and data manipulation is on the caller of these functions.
   In most cases, for MAGE, that is going to be the map controller.
@@ -16,10 +16,10 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
         Handles saving new features as well as updating existing ones.
         @param {Number} layerId: The layer that you would like to create the new observation in.
         @param {Object} observation: The observation to be created.
-        @param {String} operation: Since ESRI created their API with Flex clients in mind, they have no PUT, 
-          as such, updates are handled as a POST. The operation parameter tells our implementation 
+        @param {String} operation: Since ESRI created their API with Flex clients in mind, they have no PUT,
+          as such, updates are handled as a POST. The operation parameter tells our implementation
           of the ESRI API whether to create (addFeatures), or update (updateFeatures).
-        @return A promise of the REST call that the caller can use to determine what to do with the 
+        @return A promise of the REST call that the caller can use to determine what to do with the
           success or failure.
       */
       featureServiceFunctions.createFeature = function (layerId, observation) {
@@ -35,7 +35,7 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
       };
 
       /*
-        If an observation has attachments, after it has been created, call this menthod with the new 
+        If an observation has attachments, after it has been created, call this menthod with the new
         observation ID, to upload photos, videos, etc.
         @param {Number} layerId: The layer that corresponds to the object to which would like to add attachments.
         @param {Number} observationId: The observation that you would like to attach the files to.
@@ -62,15 +62,15 @@ angular.module('mage.featureService', ['mage.***REMOVED***s', 'mage.lib'])
         @return A promise of the REST call.
       */
       featureServiceFunctions.getFeature = function (layerId, observationId) {
-        return $http.get(appConstants.rootUrl + '/FeatureServer/'+ layerId + '/' + observationId + "?query&outFields=*");
+        return $http.get('/FeatureServer/'+ layerId + '/' + observationId + "?query&outFields=*");
       };
 
       featureServiceFunctions.getAttachments = function (layerId, observationId) {
-        return $http.get(appConstants.rootUrl + '/FeatureServer/'+ layerId + '/' + observationId + '/attachments');
+        return $http.get('/FeatureServer/'+ layerId + '/' + observationId + '/attachments');
       }
 
       featureServiceFunctions.deleteAttachment = function (layerId, observationId, attachmentId) {
-        return $http.post(appConstants.rootUrl + '/FeatureServer/' + layerId + '/' + observationId + '/deleteAttachments' + '?attachmentIds=' +  attachmentId);
+        return $http.post('/FeatureServer/' + layerId + '/' + observationId + '/deleteAttachments' + '?attachmentIds=' +  attachmentId);
       }
 
       return featureServiceFunctions;

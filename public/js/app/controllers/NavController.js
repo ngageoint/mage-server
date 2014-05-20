@@ -3,7 +3,7 @@
 function NavController($scope, $location, UserService) {
 
   $scope.user = UserService;
-
+  
   $scope.navCl***REMOVED*** = function (page) {
     var currentRoute = $location.path().substring(1) || 'map';
     return page === currentRoute ? 'active' : '';

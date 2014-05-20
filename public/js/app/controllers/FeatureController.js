@@ -29,7 +29,7 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureService,
     //   observation.layerId = layerId;
     //   isEditing = false;
     //   if ($scope.files && $scope.files.length > 0) {
-    //     $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + observation.layerId + '/features/' + observation.id + '/attachments';
+    //     $scope.fileUploadUrl = ='/FeatureServer/' + observation.layerId + '/features/' + observation.id + '/attachments';
     //     $scope.uploadFile(observation);
     //   }
     //   $scope.editMode = false;

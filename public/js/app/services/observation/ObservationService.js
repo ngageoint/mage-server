@@ -64,12 +64,15 @@ angular.module('mage')
           console.log("Error getting types: " + status);
         });
 
-      ***REMOVED***.newForm = function() {
+      ***REMOVED***.createNewForm = function(observation) {
         var promise = formPromise.then(function(form) {
             var newForm = angular.copy(form);
             var timestampField = _.find(newForm.fields, function(field) {return field.name == 'timestamp'});
-            timestampField.value = moment().format('MM/DD/YYYY hh:mm:ss');
-            console.log('time is', timestampField.value);
+            timestampField.value = observation.properties.timestamp;
+
+            var geometryField = _.find(newForm.fields, function(field) {return field.name == 'timestamp'});
+            geometryField.value = observation.geometry.coordinates;
+
             return newForm;
         });
         return promise;
@@ -89,7 +92,7 @@ angular.module('mage')
           }
         });
       };
-      ***REMOVED***.observationTemplate = '/js/app/partials/dynamic/observation.html';
+      ***REMOVED***.observationTemplate = '/js/app/partials/form/observation.html';
 
       return ***REMOVED***;
     }
