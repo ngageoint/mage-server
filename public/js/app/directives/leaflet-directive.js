@@ -19,7 +19,7 @@ L.AwesomeMarkers.divIcon = function (options) {
 (function () {
   var leafletDirective = angular.module("leaflet-directive", ["mage.***REMOVED***s"]);
 
-  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, IconService, appConstants, MapService, DataService, TimeBucketService, IconService) {
+  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, IconService, appConstants, MapService, ObservationService, DataService, TimeBucketService, IconService) {
     return {
       restrict: "A",
       replace: true,
@@ -32,6 +32,7 @@ L.AwesomeMarkers.divIcon = function (options) {
         var layerControl = L.control.layers();
         layerControl.addTo(map);
         scope.ds = DataService;
+        scope.os = ObservationService;
 
         map.on('baselayerchange', function(e) {
           MapService.updateLeafletLayer(e.layer._url, e.layer.options);
@@ -64,7 +65,7 @@ L.AwesomeMarkers.divIcon = function (options) {
         });
 
         map.on("click", function(e) {
-          if (scope.newObservationEnabled) {
+          if (ObservationService.newForm) {
             _.delay(function() { addMarker.setLatLng(e.latlng); }, 250);
             if (!map.hasLayer(addMarker)) {
               _.delay(function() { map.addLayer(addMarker); }, 250);
@@ -76,10 +77,10 @@ L.AwesomeMarkers.divIcon = function (options) {
           }
         });
 
-        scope.$watch('newObservationEnabled', function() {
-          if (!scope.newObservationEnabled && map.hasLayer(addMarker)) {
+        scope.$watch('os.newForm', function() {
+          if (!ObservationService.newForm && map.hasLayer(addMarker)) {
             map.removeLayer(addMarker);
-          } else if (scope.newObservationEnabled) {
+          } else if (ObservationService.newForm) {
             addMarker.setLatLng(map.getCenter());
             scope.markerLocation = map.getCenter();
             if (!map.hasLayer(addMarker)) {

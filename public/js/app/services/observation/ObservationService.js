@@ -1,8 +1,8 @@
 'use strict';
 
 angular.module('mage')
-  .factory('ObservationService', ['$q', 'appConstants', 'FeatureTypeService', 'Feature', 'UserService', 'Layer', 'Form', 'FormService',
-    function ($q, appConstants, FeatureTypeService, Feature, UserService, Layer, Form, FormService) {
+  .factory('ObservationService', ['$q', 'appConstants', 'Feature', 'UserService', 'Layer', 'Form', 'FormService',
+    function ($q, appConstants, Feature, UserService, Layer, Form, FormService) {
       var ***REMOVED*** = {};
 
       var form = $q.defer();
@@ -10,7 +10,6 @@ angular.module('mage')
       var layers = Layer.query(function(){
           angular.forEach(layers, function (layer) {
             if (layer.type == 'Feature') {
-              console.log('Form to use is: ' + layer.formId);
               Form.query(function(forms) {
                 angular.forEach(forms, function(returnedForm) {
                   if (returnedForm.id == layer.formId) {
@@ -19,80 +18,30 @@ angular.module('mage')
                   }
                 });
               });
-              // layer.formId = form.id;
-              // layer.$save();
-              // form.inUse = true;
-              // FormService.forms().then(function(forms) {
-              //     angular.forEach(forms, function(theForm) {
-              //         if (theForm.id != form.id) {
-              //             theForm.inUse = false;
-              //         }
-              //     });
-              // });
             }
           });
       });
 
-
-      ***REMOVED***.teams = [
-        'Coastal Cluster',
-        'Coastal Olympic Village',
-        'Mountain Cluster',
-        'Mountain Olympic Village',
-        'Mountain Endurance',
-        'ISEG JOC'
-      ];
-      ***REMOVED***.levels = [{
-        name: 'None',
-        color: 'blue'
-      },{
-        name: 'Low',
-        color: 'green'
-      },{
-        name: 'Medium',
-        color: 'yellow'
-      },{
-        name: 'High',
-        color: 'red'
-      }];
-
-      FeatureTypeService.getTypes().
-        success(function (types, status, headers, config) {
-          ***REMOVED***.types = types;
-        }).
-        error(function (data, status, headers, config) {
-          console.log("Error getting types: " + status);
-        });
-
+      ***REMOVED***.newForm = null;
       ***REMOVED***.createNewForm = function(observation) {
         var promise = formPromise.then(function(form) {
             var newForm = angular.copy(form);
             var timestampField = _.find(newForm.fields, function(field) {return field.name == 'timestamp'});
             timestampField.value = observation.properties.timestamp;
 
-            var geometryField = _.find(newForm.fields, function(field) {return field.name == 'timestamp'});
+            var geometryField = _.find(newForm.fields, function(field) {return field.name == 'geometry'});
             geometryField.value = observation.geometry.coordinates;
 
+            ***REMOVED***.newForm = newForm;
             return newForm;
         });
+
         return promise;
       }
 
-      ***REMOVED***.createNewObservation = function(location) {
-        return new Feature({
-          type: 'Feature',
-          geometry: {
-            type: 'Point'
-          },
-          properties: {
-            // type: ***REMOVED***.types[0].name,
-            // EVENTLEVEL: ***REMOVED***.levels[0].name,
-            // TEAM: ***REMOVED***.teams[0],
-            timestamp: new Date()
-          }
-        });
-      };
-      ***REMOVED***.observationTemplate = '/js/app/partials/form/observation.html';
+      ***REMOVED***.cancelNewForm = function() {
+        ***REMOVED***.newForm = null;
+      }
 
       return ***REMOVED***;
     }

@@ -4,16 +4,12 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($rootScope, $scope, $log, $http, $compile, ObservationService, FeatureTypeService, appConstants, mageLib, IconService, UserService, DataService, MapService, Layer, LocationService, Location, CreateLocation, TimerService, Feature, TimeBucketService) {
+function MapController($rootScope, $scope, $log, $http, $compile, ObservationService, appConstants, mageLib, IconService, UserService, DataService, MapService, Layer, LocationService, Location, CreateLocation, TimerService, Feature, TimeBucketService) {
   $scope.customer = appConstants.customer;
   var ds = DataService;
   $scope.ms = MapService;
+  $scope.os = ObservationService;
   $scope.readOnlyMode = appConstants.readOnly;
-
-  FeatureTypeService.getTypes().
-    success(function (types, status, headers, config) {
-      $scope.types = types;
-    });
 
   $scope.locate = false;
   $scope.broadcast = false;
@@ -98,6 +94,8 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
       $scope.featureLayers = MapService.featureLayers = _.filter(layers, function(layer) {
         return layer.type == 'Feature';
       });
+      appConstants.featureLayerId = $scope.featureLayers[0].id;
+
       // Pull out all imagery layers
       $scope.baseLayers = MapService.baseLayers = _.filter(layers, function(layer) {
         return layer.type == 'Imagery' && layer.base;
@@ -141,8 +139,8 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
 
   var isEditing;
   $scope.newObservation = function () {
-    if ($scope.newObservationEnabled) {
-      $scope.newObservationEnabled = false;
+    if (ObservationService.newForm) {
+      ObservationService.cancelNewForm();
       return;
     }
 
@@ -154,26 +152,25 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
       properties: {
         timestamp: new Date()
       }
-    }).then(function(form) {
-      $scope.form = form;
-      console.log('form', form);
     });
 
-    $scope.newFeature = ObservationService.createNewObservation();
-    $scope.newFeature.properties.level = "low";
-    isEditing = false;
-    $scope.newObservationEnabled = true;
-    $scope.observationTab = 1;
-    $scope.observationCloseText = "Cancel";
-    $scope.attachments = [];
-    $scope.files = [];
-    if ($scope.markerLocation) {
-      $scope.newFeature.geometry.coordinates = [$scope.markerLocation.lng, $scope.markerLocation.lat];
-    }
-    $scope.newFeature.properties.timestamp = new Date();
-    if (MapService.featureLayers.length == 1) {
-      $scope.newFeature.layerId = MapService.featureLayers[0].id;
-    }
+    // $scope.newFeature = ObservationService.createNewObservation();
+    // $scope.newFeature.properties.level = "low";
+
+    // isEditing = false;
+    // $scope.newObservationEnabled = true;
+    // $scope.observationTab = 1;
+    // $scope.observationCloseText = "Cancel";
+    // $scope.attachments = [];
+    // $scope.files = [];
+
+    // if ($scope.markerLocation) {
+    //   $scope.newFeature.geometry.coordinates = [$scope.markerLocation.lng, $scope.markerLocation.lat];
+    // }
+    // $scope.newFeature.properties.timestamp = new Date();
+    // if (MapService.featureLayers.length == 1) {
+    //   $scope.newFeature.layerId = MapService.featureLayers[0].id;
+    // }
   }
 
   $scope.$on('cancelEdit', function(event) {
@@ -187,6 +184,7 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
     var featureLayer = _.find($scope.featureLayers, function(layer) {
       return layer.id == observation.layerId;
     });
+
     if (featureLayer) {
       var existingFeature = _.find(featureLayer.features, function(feature) {
         return feature.id == observation.id;
@@ -199,6 +197,7 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
       // this has to change.  This is how the leaflet-directive knows to pick up new features, but it is not good
       $scope.layer.features = {features: featureLayer.features};
     }
+
     createAllFeaturesArray();
   });
 
@@ -262,8 +261,8 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
   $scope.$watch("markerLocation", function(location) {
     if (!location) return;
 
-    if (!isEditing && $scope.newObservationEnabled) {
-      $scope.form.getField('geometry').value = [location.lng, location.lat];
+    if (ObservationService.newForm) {
+      ObservationService.newForm.getField('geometry').value = [location.lng, location.lat];
     }
   }, true);
 
@@ -296,11 +295,6 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
           console.log("Error getting features for layer 'layer.name' : " + status);
           $scope.loadingLayers[id] = false;
         });
-
-      // gets back the JSON, but doesnt seem to be handling everything right
-      //jsonp($scope.externalLayers[0].url).then(function(response) {
-      //    $scope.layer.features = response.features;
-      //});
     } else {
       var options = {layerId: layer.id};
       if (layer.type == 'Feature') {
@@ -334,8 +328,6 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
           $scope.layer.features = features;
           createAllFeaturesArray();
         }
-
-
 
       }, function(response) {
         console.info('there was an error, code was ' + response.status);

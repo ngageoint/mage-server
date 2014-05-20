@@ -1,22 +1,21 @@
 'use strict';
 
 angular.module('mage')
-  .factory('AwesomeMarkerIconService', ['appConstants', 'FeatureTypeService',
-    function (appConstants, FeatureTypeService) {
+  .factory('AwesomeMarkerIconService', ['appConstants',
+    function (appConstants,) {
       var ***REMOVED*** = {};
-      var featureTypes = FeatureTypeService.getTypes();
 
       ***REMOVED***.getCl***REMOVED*** = function(typeName, o) {
-        var type = _.find(o.types, function(t) { 
-          return t.name == typeName; 
+        var type = _.find(o.types, function(t) {
+          return t.name == typeName;
         });
 
-        return type ? type.icon : 'circle';  
+        return type ? type.icon : 'circle';
       }
 
       ***REMOVED***.markerTemplate = function() {
         return '<div cl***REMOVED***="awesome-marker awesome-marker-display" ng-cl***REMOVED***="markerColor">' +
-                '<i cl***REMOVED***="icon-white" ng-cl***REMOVED***="markerCl***REMOVED***"></i>' + 
+                '<i cl***REMOVED***="icon-white" ng-cl***REMOVED***="markerCl***REMOVED***"></i>' +
                '</div>';
       }
 
@@ -55,8 +54,8 @@ angular.module('mage')
       };
 
       ***REMOVED***.iconHtml = function(feature, o) {
-        var type = _.find(o.types, function(type) { 
-          return type.name == feature.properties.type; 
+        var type = _.find(o.types, function(type) {
+          return type.name == feature.properties.type;
         });
         var icon = type ? type.icon : 'circle';
 
@@ -69,11 +68,12 @@ angular.module('mage')
       };
 
       ***REMOVED***.setTemplateVariables = function(feature, scope) {
-        if (feature && feature.properties && feature.properties.type) {
-          featureTypes.success(function(success) {
-            scope.markerCl***REMOVED*** = "icon-" + ***REMOVED***.getCl***REMOVED***(feature.properties.type, {types: success});
-          })
-        }
+        // if (feature && feature.properties && feature.properties.type) {
+        //   featureTypes.success(function(success) {
+        //     scope.markerCl***REMOVED*** = "icon-" + ***REMOVED***.getCl***REMOVED***(feature.properties.type, {types: success});
+        //   })
+        // }
+
         if (feature && feature.properties && feature.properties.timestamp) {
           scope.markerColor = "awesome-marker-icon-" + appConstants.featureToColor(feature);
         }
