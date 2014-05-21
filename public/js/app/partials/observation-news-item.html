@@ -18,8 +18,7 @@
 
     <div cl***REMOVED***="map-clip row-fluid" style="width: 100%; height: 150px;" map-clip="mapClipConfig"/>
 
-    <div cl***REMOVED***="row-fluid top-gap-s" ng-repeat="field in viewForm.fields | filter: {type: '!date'} | filter: {type: '!geometry'}">
-      <strong cl***REMOVED***="muted">{{field.title}}</strong> <span>{{field.value}}</span>
+    <div cl***REMOVED***="row-fluid top-gap-s" ng-repeat="field in viewForm.fields | filter: {name: '!timestamp'} | filter: {name: '!geometry'}">
       <property-view field="field">
     </div>
 
