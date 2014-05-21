@@ -40,11 +40,9 @@ angular.module('mage').factory('Form', ['$resource', '$http', 'appConstants', 'F
       }
     });
 
+    observation.id = this.observationId;
     _.each(this.fields, function(field) {
       switch (field.name) {
-      case 'id':
-        observation.id = field.value;
-        break;
       case 'geometry':
         observation.geometry = {
           type: 'Point',

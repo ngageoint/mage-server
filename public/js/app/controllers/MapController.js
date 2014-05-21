@@ -138,13 +138,13 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
     });
 
   var isEditing;
-  $scope.newObservation = function () {
+  $scope.createNewObservation = function () {
     if (ObservationService.newForm) {
       ObservationService.cancelNewForm();
       return;
     }
 
-    ObservationService.createNewForm({
+    $scope.newObservation = new Feature({
       geometry: {
         type: 'Point',
         coordinates: [0,0]
@@ -152,6 +152,10 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
       properties: {
         timestamp: new Date()
       }
+    });
+
+    ObservationService.createNewForm($scope.newObservation).then(function(form) {
+      ObservationService.newForm = form;
     });
 
     // $scope.newFeature = ObservationService.createNewObservation();
@@ -172,6 +176,23 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
     //   $scope.newFeature.layerId = MapService.featureLayers[0].id;
     // }
   }
+
+  $scope.$watch('newObservation.id', function(newObservation) {
+    if (!newObservation) return;
+
+    var featureLayer = _.find($scope.featureLayers, function(layer) {
+      return layer.id == appConstants.featureLayerId;
+    });
+
+    if (!featureLayer.features) return;
+
+    featureLayer.features.push($scope.newObservation);
+
+    // this has to change.  This is how the leaflet-directive knows to pick up new features, but it is not good
+    $scope.layer.features = {features: featureLayer.features};
+
+    createAllFeaturesArray();
+  });
 
   $scope.$on('cancelEdit', function(event) {
     $scope.newObservationEnabled = false;
