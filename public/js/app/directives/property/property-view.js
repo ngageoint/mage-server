@@ -52,8 +52,8 @@ angular.module('mage').directive('propertyView', function ($http, $compile) {
       // GET template content from path
       var templateUrl = getTemplateUrl(scope.field);
       $http.get(templateUrl).success(function(data) {
-          element.html(data);
-          $compile(element.contents())(scope);
+        element.html(data);
+        $compile(element.contents())(scope);
       });
     }
   };
