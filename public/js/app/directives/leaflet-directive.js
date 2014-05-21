@@ -344,7 +344,7 @@ L.AwesomeMarkers.divIcon = function (options) {
                       };
                       $timeout(runAnimate, 500);
                     }
-                    scope.activeFeature = {layerId: feature.layerId, featureId: feature.id, feature: feature};
+                    scope.activeFeature = {layerId: appConstants.featureLayerId, featureId: feature.id, feature: feature};
 
                     //console.info('scroll top is ' + $('#'+feature.id).position().top);
                     //$('.news-items').scrollTop($('#'+feature.id).position().top);
@@ -357,20 +357,20 @@ L.AwesomeMarkers.divIcon = function (options) {
 
         scope.$watch('activeFeature', function(newFeature, oldFeature) {
           if (!newFeature && oldFeature) {
-            var marker = markers[oldFeature.layerId][oldFeature.featureId];
+            var marker = markers[appConstants.featureLayerId][oldFeature.featureId];
             marker.unselect();
           } else if (newFeature) {
-            var marker = markers[newFeature.layerId][newFeature.featureId];
+            var marker = markers[appConstants.featureLayerId][newFeature.featureId];
             marker.select();
           }
         });
 
         scope.$watch('featureTableClick', function(o) {
           if (!o) return;
-          var marker = markers[o.layerId][o.featureId];
+          var marker = markers[appConstants.featureLayerId][o.featureId];
           activeMarker = marker;
           map.setView(marker.getLatLng(), map.getZoom() > 17 ? map.getZoom() : 17);
-          layers[o.layerId].leafletLayer.zoomToShowLayer(marker, function(){});
+          layers[appConstants.featureLayerId].leafletLayer.zoomToShowLayer(marker, function(){});
         });
 
         scope.$watch('locationTableClick', function(location, oldLocation) {
@@ -491,22 +491,22 @@ L.AwesomeMarkers.divIcon = function (options) {
         scope.$watch("deletedFeature", function(feature) {
           if (!feature) return;
 
-          var layer = layers[feature.layerId].leafletLayer;
+          var layer = layers[appConstants.featureLayerId].leafletLayer;
           if (layer) {
             layer.removeLayer(activeMarker);
           }
-          markers[feature.layerId][feature.id] = undefined;
+          markers[appConstants.featureLayerId][feature.id] = undefined;
         });
 
         // this is a hack to fix the other hacks
         scope.$watch("removeFeaturesFromMap", function(layerAndFeaturesToRemove) {
           if (!layerAndFeaturesToRemove) return;
 
-          var layer = layers[layerAndFeaturesToRemove.layerId].leafletLayer;
+          var layer = layers[appConstants.featureLayerId].leafletLayer;
           if (layer) {
             _.each(layerAndFeaturesToRemove.features, function(feature) {
-              layer.removeLayer(markers[layerAndFeaturesToRemove.layerId][feature.id]);
-              markers[layerAndFeaturesToRemove.layerId][feature.id] = undefined;
+              layer.removeLayer(markers[appConstants.featureLayerId][feature.id]);
+              markers[appConstants.featureLayerId][feature.id] = undefined;
             })
           }
         });

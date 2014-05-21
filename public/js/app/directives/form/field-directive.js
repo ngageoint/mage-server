@@ -41,21 +41,19 @@ angular.module('mage').directive('fieldDirective', function ($http, $compile) {
             return templateUrl;
         }
 
-        var linker = function(scope, element) {
-            // GET template content from path
-            var templateUrl = getTemplateUrl(scope.field);
-            $http.get(templateUrl).success(function(data) {
-                element.html(data);
-                $compile(element.contents())(scope);
-            });
-        }
-
         return {
-            template: '<div>{{field}}</div>',
+            template: '<div></div>',
             restrict: 'E',
             scope: {
                 field:'='
             },
-            link: linker
+            link: function(scope, element) {
+                // GET template content from path
+                var templateUrl = getTemplateUrl(scope.field);
+                $http.get(templateUrl).success(function(data) {
+                    element.html(data);
+                    $compile(element.contents())(scope);
+                });
+            }
         };
   });

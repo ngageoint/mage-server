@@ -26,13 +26,14 @@ angular.module('mage')
       ***REMOVED***.createNewForm = function(observation) {
         var promise = formPromise.then(function(form) {
             var newForm = angular.copy(form);
-            var timestampField = _.find(newForm.fields, function(field) {return field.name == 'timestamp'});
-            timestampField.value = observation.properties.timestamp;
+            newForm.observationId = observation.id;
+            newForm.getField("timestamp").value  = observation.properties.timestamp;
+            newForm.getField("geometry").value = observation.geometry.coordinates;
 
-            var geometryField = _.find(newForm.fields, function(field) {return field.name == 'geometry'});
-            geometryField.value = observation.geometry.coordinates;
+            _.each(observation.properties, function(value, key) {
+              newForm.getField(key).value = value;
+            });
 
-            ***REMOVED***.newForm = newForm;
             return newForm;
         });
 
