@@ -220,26 +220,17 @@
                 </div>
               </div>
               <div cl***REMOVED***="span10" ng-controller="CreateCtrl" ng-show="form">
-                <h2 ng-hide="form.id">Create a new form</h2> <h2 ng-show="form.id">{{form.name}}</h2><br>
-                <div cl***REMOVED***="form-fields-preview well">
-                  <h3>Form Preview</h3>
-                  <form-directive form="form"></form-directive>
-                </div>
-                <hr>
+                <h2 ng-hide="form.id">Create a new form</h2>
                 <h3 ng-show="form.id">Edit {{form.name}}</h3>
-                <strong>
-                    <p>Select field type you want to add to the form below and click on 'Add Field' button. Don't forget to set field properties. After you finish creating the form, you can preview the form by clicking Preview Form button.</p>
-                </strong>
 
                 <div>
                   <div cl***REMOVED***="form-fields">
                     <div cl***REMOVED***="form-properties">
-                        <h3>Form Properties</h3>
                         <div cl***REMOVED***="row-fluid">
                             <div cl***REMOVED***="span12">
                               <form cl***REMOVED***="form-inline">
                                 <div cl***REMOVED***="control-group">
-                                  <label cl***REMOVED***="control-label">Form Name</label>
+                                  <label cl***REMOVED***="control-label strong">Form Name</label>
                                   <input type="text" name="form-name" ng-disabled="previewMode" ng-model="form.name"/>
                                 </div>
                               </form>
@@ -248,17 +239,10 @@
                     </div>
                     <hr>
                     <h3>Fields</h3>
-                    <div cl***REMOVED***="add-field">
-                        <form cl***REMOVED***="form-inline">
-                          <select ng-model="addField.new" ng-options="type.name as type.value for type in addField.types"></select>
-                          <button type="submit" cl***REMOVED***="btn" ng-click="addNewField()"><i cl***REMOVED***="fa fa-plus-square-o"></i> Add Field</button>
-                        </form>
-                    </div>
-                    <hr>
                     <p ng-show="form.fields.length == 0">No fields added yet.</p>
                     <div cl***REMOVED***="well">
                       <accordion close-others="accordion.oneAtATime">
-                        <accordion-group heading="{{field.title}}" ng-repeat="field in form.fields">
+                        <accordion-group heading="{{field.title}}" ng-repeat="field in form.fields" is-open="true">
                           <div cl***REMOVED***="accordion-edit">
                             <button cl***REMOVED***="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i cl***REMOVED***="fa fa-trash icon-white"></i> Delete</button>
                             <div cl***REMOVED***="row-fluid">
@@ -302,6 +286,12 @@
                          </div>
                         </accordion-group>
                       </accordion>
+                      <div cl***REMOVED***="add-field">
+                          <form cl***REMOVED***="form-inline">
+                            <select ng-model="addField.new" ng-options="type.name as type.value for type in addField.types"></select>
+                            <button type="submit" cl***REMOVED***="btn" ng-click="addNewField()"><i cl***REMOVED***="fa fa-plus-square-o"></i> Add Field</button>
+                          </form>
+                      </div>
                     </div>
 
                     <div cl***REMOVED***="symbology">
@@ -422,8 +412,10 @@
                       <button cl***REMOVED***="btn btn-success right" type="button" ng-click="useForm(form)"><i cl***REMOVED***="fa-check icon-white"></i>Save And Use This Form</button>
                       <button cl***REMOVED***="btn btn-primary right" type="button" ng-click="saveForm()">Save Form</button>
                     </p>
-                    <br>
-                    <hr>
+                    <div cl***REMOVED***="form-fields-preview well">
+                      <h3>Form Preview</h3>
+                      <form-directive form="form"></form-directive>
+                    </div>
                   </div>
                 </div>
               </div>
