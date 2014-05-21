@@ -283,7 +283,10 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
     if (!location) return;
 
     if (ObservationService.newForm) {
-      ObservationService.newForm.getField('geometry').value = [location.lng, location.lat];
+      ObservationService.newForm.getField('geometry').value = {
+        x: location.lng,
+        y: location.lat
+      };
     }
   }, true);
 
