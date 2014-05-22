@@ -46,7 +46,7 @@ angular.module('mage').factory('Form', ['$resource', '$http', 'appConstants', 'F
       case 'geometry':
         observation.geometry = {
           type: 'Point',
-          coordinates: field.value
+          coordinates: [field.value.x, field.value.y]
         }
         break;
       default:
