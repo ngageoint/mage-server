@@ -371,3 +371,7 @@ div.image-button input {
     background: #43719F;
     color: white;
 }
+
+.muted {
+	color: #777777;
+}

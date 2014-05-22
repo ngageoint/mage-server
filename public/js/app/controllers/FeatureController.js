@@ -1,6 +1,6 @@
 'use strict';
 
-function FeatureController($scope, $location, $timeout, Feature, FeatureService, FeatureState, FeatureAttachment, MapService, UserService, IconService, mageLib, appConstants) {
+function FeatureController($scope, $location, $timeout, Feature, FeatureService, FeatureState, FeatureAttachment, MapService, UserService, mageLib, appConstants) {
   var isEditing = false;
   $scope.amAdmin = UserService.amAdmin;
   $scope.token = mageLib.getLocalItem('token');

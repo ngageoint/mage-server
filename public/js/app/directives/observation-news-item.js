@@ -6,10 +6,9 @@ mage.directive('observationNewsItem', function() {
     	observation: '=observationNewsItem',
       containerElement: '@'
     },
-    controller: function ($scope, IconService, ObservationService, $sce, mageLib, MapService, $element, appConstants) {
+    controller: function ($scope, ObservationService, mageLib, MapService, $element, appConstants) {
       $scope.ms = MapService;
-    	$scope.iconTag = $sce.trustAsHtml(IconService.iconHtml($scope.observation, $scope));
-      $scope.attachmentUrl = '/FeatureServer/'+$scope.observation.layerId+'/features/';
+      $scope.attachmentUrl = '/FeatureServer/' + $scope.observation.layerId + '/features/';
       $scope.token = mageLib.getLocalItem('token');
       $scope.readOnlyMode = appConstants.readOnly;
       $scope.mapClipConfig = {
@@ -17,21 +16,22 @@ mage.directive('observationNewsItem', function() {
         geoJsonFormat: true
       };
 
-      ObservationService.createNewForm($scope.observation)
-        .then(function(form) {
-          $scope.viewForm = form;
-        });
-
       $scope.setActiveObservation = function(observation) {
         $scope.$emit('observationClick', observation);
       }
 
       $scope.startEdit = function() {
+        ObservationService.createNewForm($scope.observation).then(function(form) {
+          $scope.editForm = form;
+        });
+      }
+
+      $scope.$watch('editForm', function() {
         ObservationService.createNewForm($scope.observation)
           .then(function(form) {
-            $scope.editForm = form;
+            $scope.viewForm = form;
           });
-      }
+      });
     }
   };
 });
