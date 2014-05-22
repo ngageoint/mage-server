@@ -303,27 +303,28 @@
 
                       <div cl***REMOVED***="well striped-rows">
                         <div cl***REMOVED***="row-fluid">
-                            <div cl***REMOVED***="span3">
-                              Default Icon
-                            </div>
-                            <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'?access_token=' + $parent.token}}" allow-upload="form.id">
-                            <div cl***REMOVED***="span4">
-                              <div cl***REMOVED***="preview" style="float:left;">
-                                <img ng-src="{{'/api/icons/'+$parent.form.id+'?access_token=' + $parent.token}}"/>
+                          <div cl***REMOVED***="span3">
+                            Default Icon
+                          </div>
+                          <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'?access_token=' + $parent.token}}" allow-upload="form.id">
+                            <div cl***REMOVED***="upload-file">
+                              <div cl***REMOVED***="span4">
+                                <div cl***REMOVED***="preview" style="float:left;">
+                                  <img ng-src="{{'/api/icons/'+form.id+'?access_token=' + $parent.token}}"/>
+                                </div>
+                                <div ng-show="uploading" cl***REMOVED***="progress progress-striped" style="margin-left: 60px; margin-top: 15px;">
+                                  <div cl***REMOVED***="bar" style="width: {{uploadProgress}}%;"></div>
+                                </div>
+                                <div ng-show="uploadStatus" cl***REMOVED***="strong">
+                                  {{uploadStatus}}
+                                </div>
                               </div>
-                              <div ng-show="uploading" cl***REMOVED***="progress progress-striped" style="margin-left: 60px; margin-top: 15px;">
-                                <div cl***REMOVED***="bar" style="width: {{uploadProgress}}%;"></div>
-                              </div>
-                              <div ng-show="uploadStatus" cl***REMOVED***="strong">
-                                {{uploadStatus}}
-                              </div>
-                            </div>
-                            <div cl***REMOVED***="span5">
+                              <div cl***REMOVED***="span5">
                                 <label cl***REMOVED***="file">
                                   <input type="file" name="icon">
                                   <span cl***REMOVED***="file-custom"></span>
                                 </label>
-
+                              </div>
                             </div>
                           </form>
                         </div>
@@ -341,29 +342,31 @@
                                 </div>
                               </div>
                               <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'/'+option.title+'?access_token=' + $parent.token}}" allow-upload="form.id">
-                                <div cl***REMOVED***="row-fluid">
-                                  <div cl***REMOVED***="span12">
-                                    <div cl***REMOVED***="preview" style="float:left;">
-                                      <img ng-src="{{'/api/icons/'+$parent.form.id+'/'+$parent.option.title+'?access_token=' + $parent.token}}"/>
+                                <div cl***REMOVED***="upload-file">
+                                  <div cl***REMOVED***="row-fluid">
+                                    <div cl***REMOVED***="span12">
+                                      <div cl***REMOVED***="preview" style="float:left;">
+                                        <img ng-src="{{'/api/icons/'+$parent.form.id+'/'+$parent.option.title+'?access_token=' + $parent.token}}"/>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                                <div cl***REMOVED***="row-fluid">
-                                  <div cl***REMOVED***="span12">
-                                    <div ng-show="uploading" cl***REMOVED***="progress progress-striped" style="margin-left: 60px; margin-top: 15px;">
-                                      <div cl***REMOVED***="bar" style="width: {{uploadProgress}}%;"></div>
-                                    </div>
-                                    <div ng-show="uploadStatus" cl***REMOVED***="strong">
-                                      {{uploadStatus}}
+                                  <div cl***REMOVED***="row-fluid">
+                                    <div cl***REMOVED***="span12">
+                                      <div ng-show="uploading" cl***REMOVED***="progress progress-striped" style="margin-left: 60px; margin-top: 15px;">
+                                        <div cl***REMOVED***="bar" style="width: {{uploadProgress}}%;"></div>
+                                      </div>
+                                      <div ng-show="uploadStatus" cl***REMOVED***="strong">
+                                        {{uploadStatus}}
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                                <div cl***REMOVED***="row-fluid">
-                                  <div cl***REMOVED***="span12">
-                                    <label cl***REMOVED***="file">
-                                      <input type="file" name="icon">
-                                      <span cl***REMOVED***="file-custom"></span>
-                                    </label>
+                                  <div cl***REMOVED***="row-fluid">
+                                    <div cl***REMOVED***="span12">
+                                      <label cl***REMOVED***="file">
+                                        <input type="file" name="icon">
+                                        <span cl***REMOVED***="file-custom"></span>
+                                      </label>
+                                    </div>
                                   </div>
                                 </div>
                               </form>
@@ -375,29 +378,31 @@
                                 </div>
                               </div>
                               <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'/'+option.title+'/'+variant.title+'?access_token=' + $parent.token}}" allow-upload="form.id">
-                                <div cl***REMOVED***="row-fluid">
-                                  <div cl***REMOVED***="span12">
-                                    <div cl***REMOVED***="preview" style="float:left;">
-                                      <img ng-src="{{'/api/icons/'+$parent.form.id+'/'+$parent.option.title+'/'+$parent.variant.title+'?access_token=' + $parent.token}}"/>
+                                <div cl***REMOVED***="upload-file">
+                                  <div cl***REMOVED***="row-fluid">
+                                    <div cl***REMOVED***="span12">
+                                      <div cl***REMOVED***="preview" style="float:left;">
+                                        <img ng-src="{{'/api/icons/'+$parent.form.id+'/'+$parent.option.title+'/'+$parent.variant.title+'?access_token=' + $parent.token}}"/>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                                <div cl***REMOVED***="row-fluid">
-                                  <div cl***REMOVED***="span12">
-                                    <div ng-show="uploading" cl***REMOVED***="progress progress-striped" style="margin-left: 60px; margin-top: 15px;">
-                                      <div cl***REMOVED***="bar" style="width: {{uploadProgress}}%;"></div>
-                                    </div>
-                                    <div ng-show="uploadStatus" cl***REMOVED***="strong">
-                                      {{uploadStatus}}
+                                  <div cl***REMOVED***="row-fluid">
+                                    <div cl***REMOVED***="span12">
+                                      <div ng-show="uploading" cl***REMOVED***="progress progress-striped" style="margin-left: 60px; margin-top: 15px;">
+                                        <div cl***REMOVED***="bar" style="width: {{uploadProgress}}%;"></div>
+                                      </div>
+                                      <div ng-show="uploadStatus" cl***REMOVED***="strong">
+                                        {{uploadStatus}}
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                                <div cl***REMOVED***="row-fluid">
-                                  <div cl***REMOVED***="span12">
-                                    <label cl***REMOVED***="file">
-                                      <input type="file" name="icon">
-                                      <span cl***REMOVED***="file-custom"></span>
-                                    </label>
+                                  <div cl***REMOVED***="row-fluid">
+                                    <div cl***REMOVED***="span12">
+                                      <label cl***REMOVED***="file">
+                                        <input type="file" name="icon">
+                                        <span cl***REMOVED***="file-custom"></span>
+                                      </label>
+                                    </div>
                                   </div>
                                 </div>
                               </form>
