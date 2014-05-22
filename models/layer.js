@@ -61,7 +61,7 @@ exports.getLayers = function(filter, callback) {
   if (type) query.type = type;
 
   var ids = filter.ids;
-  if (ids) query._id = {$in: ids};
+  if (ids) query.id = {$in: ids};
 
   Layer.find(query, function (err, layers) {
     if (err) {
