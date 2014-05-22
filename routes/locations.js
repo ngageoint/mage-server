@@ -97,7 +97,7 @@ module.exports = function(app, security) {
     access.authorize('READ_LOCATION'),
     parseQueryParams,
     function(req, res) {
-      Location.getAllLocations({filter: req.parameters.filter, limit: req.parameters.limit}, function(err, locations) {
+      Location.getLocations({filter: req.parameters.filter, limit: req.parameters.limit}, function(err, locations) {
         res.json(locations);
       });
     }
