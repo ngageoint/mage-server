@@ -4,16 +4,18 @@ angular.module('mage').factory('ObservationService', ['$q', 'appConstants', 'Fea
   function ($q, appConstants, Feature, UserService, Layer, Form, FormService) {
     var ***REMOVED*** = {};
 
-    var form = $q.defer();
-    var formPromise = form.promise;
+    ***REMOVED***.form = null;
+    var formDeferred = $q.defer();
+    var formPromise = formDeferred.promise;
     var layers = Layer.query(function(){
       angular.forEach(layers, function (layer) {
         if (layer.type == 'Feature') {
           Form.query(function(forms) {
             angular.forEach(forms, function(returnedForm) {
               if (returnedForm.id == layer.formId) {
-                form.resolve(returnedForm);
+                formDeferred.resolve(returnedForm);
                 appConstants.formId = layer.formId;
+                ***REMOVED***.form = returnedForm;
               }
             });
           });

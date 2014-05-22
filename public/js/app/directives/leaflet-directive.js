@@ -19,13 +19,21 @@ L.AwesomeMarkers.divIcon = function (options) {
 (function () {
   var leafletDirective = angular.module("leaflet-directive", ["mage.***REMOVED***s"]);
 
-  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, IconService, appConstants, MapService, ObservationService, DataService, TimeBucketService, IconService) {
+  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, appConstants, MapService, ObservationService, DataService, TimeBucketService, mageLib) {
     return {
       restrict: "A",
       replace: true,
       transclude: true,
       template: '<div cl***REMOVED***="map"></div>',
       link: function (scope, element, attrs, ctrl) {
+        function createIcon(observation) {
+          return L.icon({
+            iconSize: [35, 46],
+            iconAnchor: [17, 46],
+            iconUrl: "/api/icons/" + ObservationService.form.id + "/" + observation.properties.type + "/" + observation.properties[ObservationService.form.variantField] + "?access_token=" + mageLib.getToken()
+          });
+        }
+
         // Create the map
         var map = L.map("map", {trackResize: true});
         map.setView([0, 0], 3);
@@ -244,7 +252,7 @@ L.AwesomeMarkers.divIcon = function (options) {
         var featureConfig = function(layer) {
           return {
             pointToLayer: function (feature, latlng) {
-              var icon;
+              var icon = null;
               if (layer.type == 'External') {
                 var style = feature.properties.style || {};
                 var icon;
@@ -254,17 +262,11 @@ L.AwesomeMarkers.divIcon = function (options) {
                     iconSize: [28, 28],
                     iconAnchor: [14, 14],
                   });
-                } else {
-                  icon = L.AwesomeMarkers.icon({
-                    icon: 'circle',
-                    markerColor: 'blue'
-                  });
                 }
 
                 return L.marker(latlng, {icon: icon});
               } else {
-                var icon = IconService.leafletIcon(feature, {types: scope.types});
-                var marker =  L.marker(latlng, { icon: icon });
+                var marker =  L.marker(latlng, { icon: createIcon(feature) });
 
                 markers[layer.id][feature.id] = marker;
                 return marker;
@@ -438,7 +440,7 @@ L.AwesomeMarkers.divIcon = function (options) {
               if (!marker) {
                 addThese.features.push(features.features[i]);
               } else {
-                marker.setIcon(IconService.leafletIcon(features.features[i], {types: scope.types}));
+                marker.setIcon(createIcon(features.features[i]));
               }
             }
             newLayer = layers[scope.layer.id].leafletLayer;
@@ -479,7 +481,7 @@ L.AwesomeMarkers.divIcon = function (options) {
         scope.$watch("updatedFeature", function(feature) {
           if (!feature) return;
 
-          activeMarker.setIcon(IconService.leafletIcon(feature, {types: scope.types, levels: scope.levels}));
+          activeMarker.setIcon(createIcon(feature));
         });
 
         scope.$watch("externalFeature", function(value) {
