@@ -6,9 +6,8 @@ mage.directive('observationNewsItem', function() {
     	observation: '=observationNewsItem',
       containerElement: '@'
     },
-    controller: function ($scope, IconService, ObservationService, $sce, mageLib, MapService, $element, appConstants) {
+    controller: function ($scope, ObservationService, mageLib, MapService, $element, appConstants) {
       $scope.ms = MapService;
-    	$scope.iconTag = $sce.trustAsHtml(IconService.iconHtml($scope.observation, $scope));
       $scope.attachmentUrl = '/FeatureServer/' + $scope.observation.layerId + '/features/';
       $scope.token = mageLib.getLocalItem('token');
       $scope.readOnlyMode = appConstants.readOnly;

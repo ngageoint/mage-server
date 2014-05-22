@@ -4,7 +4,7 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($rootScope, $scope, $log, $http, $compile, ObservationService, appConstants, mageLib, IconService, UserService, DataService, MapService, Layer, LocationService, Location, CreateLocation, TimerService, Feature, TimeBucketService) {
+function MapController($rootScope, $scope, $log, $http, $compile, ObservationService, appConstants, mageLib, UserService, DataService, MapService, Layer, LocationService, Location, CreateLocation, TimerService, Feature, TimeBucketService) {
   $scope.customer = appConstants.customer;
   var ds = DataService;
   $scope.ms = MapService;
@@ -43,9 +43,6 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
   $scope.newsFeedEnabled = true;
 
   $scope.showListTool = false;
-  $scope.iconTag = function(feature) {
-    return IconService.iconHtml(feature, $scope);
-  }
 
   $scope.currentLayerId = 0;
 
