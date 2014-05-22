@@ -22,8 +22,8 @@ a {
 }
 
 body {
-	background: #D0E7FF;
-	color: #6389b3;
+	background: #EEEEEE;
+	color: #1B4069;
 }
 
 img.rotate180 {
@@ -149,7 +149,7 @@ input {
 }
 
 .well {
-	background: #efefef;
+	border: 1px solid #5278A2;
 }
 
 .sage-color {
