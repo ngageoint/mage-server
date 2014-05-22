@@ -98,6 +98,31 @@ module.exports = function(app, security) {
     });
   }
 
+  var requestLocations = function(options, done) {
+    var filter = {};
+    if (options.lastLocationId) {
+      filter.lastLocationId = options.lastLocationId;
+    }
+    if (options.startDate) {
+      filter.startDate = options.startDate.toDate();
+    }
+    if (options.endDate) {
+      filter.endDate = options.endDate.toDate();
+    }
+    if(options.userId) {
+      filter.userId = options.userId;
+    }
+
+    Location.getLocations({filter: filter, limit: 2000}, function(err, locations) {
+      if(err) {
+        console.log(err);
+        return done(err);
+      }
+
+      done(null, locations);
+    });
+  }
+
   app.get(
     '/api/export',
     access.authorize('READ_FEATURE'),
@@ -156,33 +181,71 @@ module.exports = function(app, security) {
     var locationsToShapefiles = function(done) {
       if (!fft) return done(null, []);
 
-      Location.getAllLocations({filter: req.parameters.filter}, function(err, locations) {
-        locations.forEach(function(location) {
-          if (req.users[location.properties.user]) location.properties.user = req.users[location.properties.user].username;
-          if (req.users[location.properties.deviceId]) location.properties.device = req.users[location.properties.deviceId].uid;
+      var startDate = req.parameters.filter.startDate ? moment(req.parameters.filter.startDate) : null;
+      var endDate = req.parameters.filter.endDate ? moment(req.parameters.filter.endDate) : null;
+      var lastLocationId = null;
 
-          delete location.properties.deviceId;
-        });
+      var locations = [];
+      async.doUntil(function(done) {
+        requestLocations({startDate: startDate, endDate: endDate, lastLocationId: lastLocationId}, function(err, requestedLocations) {
+          if (err) return done(err)
+          locations = requestedLocations;
 
-        var streams = {
-          shp: fs.createWriteStream(req.directory + "/locations.shp"),
-          shx: fs.createWriteStream(req.directory + "/locations.shx"),
-          dbf: fs.createWriteStream(req.directory + "/locations.dbf"),
-          prj: fs.createWriteStream(req.directory + "/locations.prj")
-        };
-        shp.writeGeoJson(streams, {features: JSON.parse(JSON.stringify(locations))}, function(err, files) {
-          done(err, {files: files});
+          console.log('got some locations ' + locations.length);
+
+          locations.forEach(function(location) {
+            if (req.users[location.properties.user]) location.properties.user = req.users[location.properties.user].username;
+            if (req.users[location.properties.deviceId]) location.properties.device = req.users[location.properties.deviceId].uid;
+
+            delete location.properties.deviceId;
+          });
+
+          var first = locations.slice(1).pop();
+          var last = locations.slice(-1).pop();
+          if (last) {
+            var interval = moment(first.properties.timestamp).toISOString() + '_' +
+              moment(last.properties.timestamp).toISOString();
+
+            var streams = {
+              shp: fs.createWriteStream(req.directory + "/locations_" + interval + ".shp"),
+              shx: fs.createWriteStream(req.directory + "/locations_" + interval + ".shx"),
+              dbf: fs.createWriteStream(req.directory + "/locations_" + interval + ".dbf"),
+              prj: fs.createWriteStream(req.directory + "/locations_" + interval + ".prj")
+            };
+
+            shp.writeGeoJson(streams, {features: JSON.parse(JSON.stringify(locations))}, function(err, files) {
+              if (err) return done(err);
+
+              console.log('Successfully wrote ' + locations.length + ' locations to SHAPEFILE');
+
+              var locationTime = moment(last.properties.timestamp);
+              lastLocationId = last._id;
+              if (!startDate || startDate.isBefore(locationTime) && locationTime.isBefore(Date.now())) {
+                startDate = locationTime;
+              }
+
+              done();
+            });
+          } else {
+            done();
+          }
         });
+      },
+      function() {
+        return locations.length == 0;
+      },
+      function(err) {
+        console.log('done writing all locations for to SHAPEFILE', err);
+        done(err);
       });
     }
 
     var generateZip = function(err, result) {
       if (err) return next(err);
-
       var zipFile = '/tmp/mage-shapefile-export-' + now.getTime() + '.zip';
-      exec("zip -r " + zipFile + " " + req.directory + "/*",
+      exec("zip -r " + zipFile + " " + req.directory + "/",
         function (err, stdout, stderr) {
-
+          console.log('something bad happened', err);
           if (err !== null) {
             return next(err);
           }
@@ -219,7 +282,6 @@ module.exports = function(app, security) {
   }
 
   var exportKML = function(req, res, next) {
-
     var userLocations;
     var layers = req.layers;
     var layerIds = req.parameters.filter.layerIds;
@@ -237,20 +299,6 @@ module.exports = function(app, security) {
         });
       },
       function(){
-        done();
-      });
-    }
-
-    var getLocations = function(done) {
-      if (!fft) return done();
-
-      Location.getLocations({filter: req.parameters.filter, limit: 1000}, function(err, locationResponse) {
-        if(err) {
-          console.log(err);
-          return done(err);
-        }
-
-        userLocations = locationResponse;
         done();
       });
     }
@@ -294,63 +342,116 @@ module.exports = function(app, security) {
       );
     }
 
+    var writeFeatures = function(stream, done) {
+      //writing requested feature layers
+      if (layers) {
+        layers.forEach(function(layer) {
+          var features = layer.features;
+
+          if (layer) {
+            stream.write(generate_kml.generateKMLFolderStart(layer.name, false));
+
+            features.forEach(function(feature) {
+              lon = feature.geometry.coordinates[0];
+              lat = feature.geometry.coordinates[1];
+              desc = feature.properties.type;
+              attachments = feature.attachments;
+              stream.write(generate_kml.generatePlacemark(feature.properties.type, feature.properties.type, lon ,lat ,0, feature.properties, attachments));
+            });
+
+            stream.write(generate_kml.generateKMLFolderClose());
+          }
+        });
+      }
+
+      done();
+    }
+
+    var writeUserLocations = function(stream, user, done) {
+      console.log('writing locations for user ' + user.username);
+
+      var startDate = req.parameters.filter.startDate ? moment(req.parameters.filter.startDate) : null;
+      var endDate = req.parameters.filter.endDate ? moment(req.parameters.filter.endDate) : null;
+      var lastLocationId = null;
+
+      var locations = [];
+      async.doUntil(function(done) {
+        requestLocations({startDate: startDate, endDate: endDate, lastLocationId: lastLocationId, userId: user._id}, function(err, requestedLocations) {
+          if (err) return done(err);
+          locations = requestedLocations;
+
+          if (!lastLocationId && locations.length) { // first time through
+            stream.write(generate_kml.generateKMLFolderStart('user: ' + user.username, false));
+          }
+
+          locations.forEach(function(location) {
+            stream.write(generate_kml.generatePlacemark(user.username, 'FFT' , location.geometry.coordinates[0] ,location.geometry.coordinates[1] ,0, location.properties));
+          });
+
+          console.log('Successfully wrote ' + locations.length + ' locations to KML for user ' + user.username);
+          var last = locations.slice(-1).pop();
+          if (last) {
+            var locationTime = moment(last.properties.timestamp);
+            lastLocationId = last._id;
+            if (!startDate || startDate.isBefore(locationTime) && locationTime.isBefore(Date.now())) {
+              startDate = locationTime;
+            }
+          }
+
+          done();
+        });
+      },
+      function() {
+        return locations.length == 0;
+      },
+      function(err) {
+        if (lastLocationId) { // if we got at least one location
+          stream.write(generate_kml.generateKMLFolderClose());
+        }
+        console.log('done writing all locations for ' + user.username);
+        done(err);
+      });
+    }
+
+    var writeLocations = function(stream, done) {
+      if (!fft) return done();
+
+      async.eachSeries(Object.keys(req.users), function(userId, callback) {
+        writeUserLocations(stream,  req.users[userId], callback);
+      },
+      function(err) {
+        done(err);
+      });
+    }
+
     var writeKmlFile = function(done) {
       var filename = "mage-export.kml"
       var stream = fs.createWriteStream(req.directory + "/" + filename);
       stream.once('open', function(fd) {
-
-        stream.write(generate_kml.generateKMLHeader());
-        stream.write(generate_kml.generateKMLDocument());
-
-        //writing requested feature layers
-        if (layers) {
-          layers.forEach(function(layer) {
-            var features = layer.features;
-
-            if (layer) {
-              stream.write(generate_kml.generateKMLFolderStart(layer.name, false));
-
-              features.forEach(function(feature) {
-                lon = feature.geometry.coordinates[0];
-                lat = feature.geometry.coordinates[1];
-                desc = feature.properties.type;
-                attachments = feature.attachments;
-                stream.write(generate_kml.generatePlacemark(feature.properties.type, feature.properties.type, lon ,lat ,0, feature.properties, attachments));
-              });
-
-              stream.write(generate_kml.generateKMLFolderClose());
-            }
-          });
-        }
-
-        //writing requested FFT locations
-        if (fft) {
-          userLocations.forEach(function(userLocation) {
-            var user = req.users[userLocation.user];
-
-            if (user) {
-              stream.write(generate_kml.generateKMLFolderStart('user: ' + user.username, false));
-
-              userLocation.locations.forEach(function(location) {
-                if (location) {
-                  lon = location.geometry.coordinates[0];
-                  lat = location.geometry.coordinates[1];
-                  stream.write(generate_kml.generatePlacemark(user.username, 'FFT' , lon ,lat ,0, location.properties));
-                }
-              });
-
-              stream.write(generate_kml.generateKMLFolderClose());
-            }
-
-          });
-        }
-
-        stream.write(generate_kml.generateKMLDocumentClose());
-        stream.end(generate_kml.generateKMLClose(), function(err) {
-          if(err) {
-            console.log(err);
+        async.series([
+          function(done) {
+            stream.write(generate_kml.generateKMLHeader());
+            stream.write(generate_kml.generateKMLDocument());
+            done();
+          },
+          function(done) {
+            writeFeatures(stream, done);
+          },
+          function(done) {
+            writeLocations(stream, done);
+          },
+          function(done) {
+            stream.write(generate_kml.generateKMLDocumentClose());
+            done();
           }
-          done();
+        ],
+        function(err) {
+          stream.end(generate_kml.generateKMLClose(), function(err) {
+            if(err) {
+              console.log(err);
+            }
+            done();
+          });
         });
       });
     }
@@ -399,7 +500,6 @@ module.exports = function(app, security) {
 
     async.series([
       getFeatures,
-      getLocations,
       copyKmlIcons,
       copyFeatureMediaAttachmentsToStagingDirectory,
       writeKmlFile

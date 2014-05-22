@@ -80,7 +80,7 @@ mage.directive('export', function(UserService, appConstants, mageLib) {
 	    if (start) params.startDate = start;
 
 	    if (end) params.endDate = end;
-	      
+
 	    if ($scope.fft) params.fft = $scope.fft;
 
 	    if (layerIds.length) params.layerIds = layerIds.join(",");
