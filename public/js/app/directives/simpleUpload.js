@@ -3,7 +3,8 @@ mage.directive('simpleUpload', function() {
     restrict: "A",
     scope: {
       url: '@',
-      allowUpload: '='
+      allowUpload: '=',
+      allowMultiple: '='
     },
     controller: function ($scope, $element) {
 
@@ -13,19 +14,20 @@ mage.directive('simpleUpload', function() {
         $scope.file = this.files[0];
         var name = $scope.file.name;
 
-        $element.find('.file-custom').attr('data-filename', name);
+        var element = $($element.find('.upload-file')[0]);
+        //element.find('.file-custom').attr('data-filename', name);
 
-        previewFile($scope.file);
+        previewFile($scope.file, element);
         upload();
       });
 
-      var previewFile = function(file) {
+      var previewFile = function(file, element) {
         if (window.FileReader) {
           var reader = new FileReader();
 
           reader.onload = (function(theFile) {
             return function(e) {
-              $element.find('.preview').html(['<img src="', e.target.result,'" title="', theFile.name, '"/>'].join(''));
+              element.find('.preview').html(['<img src="', e.target.result,'" title="', theFile.name, '"/>'].join(''));
             };
           })(file);
 
