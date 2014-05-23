@@ -1,0 +1,27 @@
+<div cl***REMOVED***="upload-file">
+  <div ng-if="preview" cl***REMOVED***="row-fluid">
+    <div cl***REMOVED***="span12">
+      <div cl***REMOVED***="preview" style="float:left;">
+        <img ng-src="{{url}}"/>
+      </div>
+    </div>
+  </div>
+  <div cl***REMOVED***="row-fluid">
+    <div cl***REMOVED***="span12">
+      <div ng-show="uploading" cl***REMOVED***="progress progress-striped" style="margin-left: 60px; margin-top: 15px;">
+        <div cl***REMOVED***="bar" style="width: {{uploadProgress}}%;"></div>
+      </div>
+      <div ng-show="uploadStatus" cl***REMOVED***="strong">
+        {{uploadStatus}}
+      </div>
+    </div>
+  </div>
+  <div cl***REMOVED***="row-fluid">
+    <div cl***REMOVED***="span12">
+      <label cl***REMOVED***="file">
+        <input type="file" name="{{uploadFileFormName}}">
+        <span cl***REMOVED***="file-custom" data-filename="{{file.name}}"></span>
+      </label>
+    </div>
+  </div>
+</div>

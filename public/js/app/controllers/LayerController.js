@@ -11,6 +11,7 @@ function LayerController($scope, $log, $http, $injector, appConstants, mageLib, 
   $scope.fileUploadOptions = {
     acceptFileTypes: /(\.|\/)(kml)$/i,
   };
+  $scope.uploads = [{}];
 
   $scope.layers = Layer.query();
 
@@ -40,6 +41,14 @@ function LayerController($scope, $log, $http, $injector, appConstants, mageLib, 
     $scope.layers.push($scope.layer);
   }
 
+  $scope.addAnotherFile = function() {
+    $scope.uploads.push({});
+    // var uploadDiv = angular.element('.kml-upload-div');
+    //
+    // <form enctype="multipart/form-data" simple-upload url="{{fileUploadOptions.url}}" allow-upload="uploadConfirmed">
+    // </form>
+  }
+
   $scope.viewLayer = function (layer) {
     $scope.layer = layer;
     $scope.showLayerForm = true;
@@ -49,6 +58,10 @@ function LayerController($scope, $log, $http, $injector, appConstants, mageLib, 
       url: '/FeatureServer/'+layer.id+'/import?access_token='+mageLib.getLocalItem('token'),
       acceptFileTypes: /(\.|\/)(kml)$/i,
     };
+  }
+
+  $scope.confirmUpload = function() {
+    $scope.uploadConfirmed = true;
   }
 
   $scope.deleteLayer = function(layer) {
@@ -73,7 +86,7 @@ function LayerController($scope, $log, $http, $injector, appConstants, mageLib, 
           $modalInstance.dismiss('cancel');
         };
       }
-    }); 
+    });
     modalInstance.result.then(function (layer) {
       console.info('success');
       $scope.layers = _.without($scope.layers, layer);
