@@ -6,23 +6,29 @@ mage.directive('simpleUpload', function() {
       url: '@',
       allowUpload: '=',
       allowMultiple: '=',
-      preview: '=',
-      uploadFileFormName: '='
+      preview: '='
     },
     controller: function ($scope, $element) {
 
-      $element.find('.file-custom').attr('data-filename', 'Choose a file...');
+      $scope.filesToUpload = [{}];
+
+      //$scope.file = {name: 'pee'};
+
+      //$element.find('.file-custom').attr('data-filename', 'Choose a file...');
 
       $element.find(':file').change(function() {
-        $scope.file = this.files[0];
-        var name = $scope.file.name;
+        if ($scope.allowMultiple) {
+          for (var i = 0; i < this.files; i++) {
+            $scope.filesToUpload.push(this.files[i]);
+          }
+        } else {
+          $scope.filesToUpload[0] = this.files[0];
+        }
 
         var element = $($element.find('.upload-file')[0]);
-        //element.find('.file-custom').attr('data-filename', name);
         if ($scope.preview) {
-          previewFile($scope.file, element);
+          previewFile($scope.filesToUpload[0], element);
         }
-        $scope.$apply();
         upload();
       });
 
@@ -53,11 +59,11 @@ mage.directive('simpleUpload', function() {
         $scope.$apply(function() {
           $scope.uploadStatus = "Upload Complete";
           $scope.uploading = false;
-        });
+        })
       }
 
       var uploadFailed = function() {
-        $scope.$apply(function() {
+        $scope.apply(function() {
           $scope.uploadStatus = "Upload Failed";
           $scope.uploading = false;
         });
