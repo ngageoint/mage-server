@@ -199,7 +199,7 @@ textarea {
     border: solid 1px #c8c8c8;
     background: #FAFAFA;
     box-shadow: none;;
-} 
+}
 
 .btn-inverse, .leaflet-bar a.btn-inverse {
     background: #5278A2;
@@ -275,7 +275,7 @@ textarea {
 
 .icon-sage-inverse {
     color: #FEFEFE;
-    font-size: 1.4em;
+    font-size: 1.2em;
     background-image: none;
     margin-bottom: 9px;
 }
