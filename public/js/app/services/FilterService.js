@@ -26,6 +26,8 @@ mage.factory('FilterService', ['mageLib',
 
     ***REMOVED***.setTimeInterval = function(newInterval) {
       interval = newInterval || {};
+      console.log('set interval changed', interval)
+
     }
 
     return ***REMOVED***;

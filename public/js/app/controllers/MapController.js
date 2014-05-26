@@ -254,9 +254,12 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Filt
   }, true);
 
   $scope.$watch(FilterService.getTimeInterval, function(interval) {
-    if (!$scope.layer) return;
-
-    loadLayer($scope.layer);
+    if ($scope.layer) {
+      loadLayer($scope.layer);
+    };
+    if ($scope.locationServicesEnabled) {
+      getUserLocations();
+    }
   });
 
   var loadLayer = function(layer) {
@@ -374,8 +377,15 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Filt
   }
 
   var getUserLocations = function() {
+    var options = {};
+    var interval = FilterService.formatInterval();
+    if (interval) {
+      options.startDate = interval.start;
+      options.endDate = interval.end;
+    }
+
     ds.locationsLoaded = false;
-    ds.locations = Location.get({/*startTime: $scope.startTime, endTime: $scope.endTime*/}, function(success) {
+    ds.locations = Location.get(options, function(success) {
       ds.locationsLoaded = true;
       $scope.locations = ds.locations;
       createAllFeaturesArray();

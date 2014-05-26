@@ -9,7 +9,6 @@ mage.directive('filter', function(FilterService, mageLib) {
         } else if ($scope.interval.filter == 'today') {
           FilterService.setTimeInterval({ today: true });
         } else if ($scope.interval.filter == 'custom') {
-          console.log('custom changed')
           var startDate = moment($scope.filterStartDate).utc();
           if (startDate) {
             var startTime = $scope.filterStartTime || '00:00:00';
