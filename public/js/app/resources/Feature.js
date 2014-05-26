@@ -79,7 +79,7 @@ angular.module('mage.featureService')
 }])
 .factory('FeatureAttachment', ['$resource', '$http', function($resource, $http) {
   var FeatureAttachment = $resource('/FeatureServer/:layerId/features/:featureId/attachments/:id', {
-    
+
   }, {
     get: {
       method: 'GET'
