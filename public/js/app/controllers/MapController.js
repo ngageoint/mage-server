@@ -335,9 +335,6 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Filt
           $scope.layer.features = features;
           createAllFeaturesArray();
         }
-
-
-
       }, function(response) {
         console.info('there was an error, code was ' + response.status);
       });
