@@ -427,7 +427,9 @@ L.AwesomeMarkers.divIcon = function (options) {
         }); // watch layer
 
         var featuresUpdated = function(features) {
+          console.log('feautes updated')
           if (!features) return;
+
           if (layers[scope.layer.id]) {
             var addThese = {
               features: []
@@ -442,6 +444,22 @@ L.AwesomeMarkers.divIcon = function (options) {
             }
             newLayer = layers[scope.layer.id].leafletLayer;
             newLayer.addLayer(L.geoJson(addThese, featureConfig(layers[scope.layer.id].layer)));
+
+            // TODO remove all markers/layers that are not in the features
+            var featureIdMap = _.reduce(features.features, function(map, feature) {
+              map[feature.id] = feature;
+              return map;
+            }, {});
+
+            newLayer.eachLayer(function(layer) {
+              console.log('layer', layer);
+              var feature = featureIdMap[layer.feature.id];
+              if (!feature) {
+                newLayer.removeLayer(layer);
+                delete markers[scope.layer.id][layer.feature.id];
+              }
+            });
+            var t =32;
           } else {
             markers[scope.layer.id] = {};
             var gj = L.geoJson(features, featureConfig(scope.layer));
