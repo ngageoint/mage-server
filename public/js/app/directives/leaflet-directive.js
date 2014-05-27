@@ -165,7 +165,7 @@ L.AwesomeMarkers.divIcon = function (options) {
         var currentLocationMarkers = {};
         var locationLayerGroup = new L.LayerGroup().addTo(map);
         scope.activeUserPopup = undefined;
-        scope.$watch("ds.locations", function(derp) {
+        scope.$watch("ds.locations", function() {
           if (!scope.ds.locations || !scope.ds.locations.$resolved) {
             if (scope.ds.locations && !scope.ds.locations.$promise) {
               locationLayerGroup.clearLayers();
@@ -445,7 +445,6 @@ L.AwesomeMarkers.divIcon = function (options) {
             newLayer = layers[scope.layer.id].leafletLayer;
             newLayer.addLayer(L.geoJson(addThese, featureConfig(layers[scope.layer.id].layer)));
 
-            // TODO remove all markers/layers that are not in the features
             var featureIdMap = _.reduce(features.features, function(map, feature) {
               map[feature.id] = feature;
               return map;
@@ -459,7 +458,6 @@ L.AwesomeMarkers.divIcon = function (options) {
                 delete markers[scope.layer.id][layer.feature.id];
               }
             });
-            var t =32;
           } else {
             markers[scope.layer.id] = {};
             var gj = L.geoJson(features, featureConfig(scope.layer));
