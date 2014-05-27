@@ -8,15 +8,6 @@ mage.directive('pdcObservation', ['FeatureTypeService' , 'Feature', function (Fe
     controller: "FeatureController",
     link: function(scope) {
 
-      scope.teams = [
-        'Coastal Cluster',
-        'Coastal Olympic Village',
-        'Mountain Cluster',
-        'Mountain Olympic Village',
-        'Mountain Endurance',
-        'ISEG JOC'
-      ];
-
       scope.levels = [{
         name: 'None',
         color: 'blue'
@@ -45,8 +36,7 @@ mage.directive('pdcObservation', ['FeatureTypeService' , 'Feature', function (Fe
           properties: {
             type: scope.types[0].name,
             timestamp: new Date(),
-            EVENTLEVEL: scope.levels[0].name,
-            TEAM: scope.teams[0] 
+            EVENTLEVEL: scope.levels[0].name
           }
         });
       }
