@@ -42,6 +42,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
       angular.forEach(forms, function(form) {
         if (form.id == featureLayer.formId) {
           appConstants.formId = featureLayer.formId
+          FormService.setCurrentEditForm(form);
         }
       });
     });
