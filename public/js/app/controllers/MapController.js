@@ -382,9 +382,10 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Filt
     }
 
     ds.locationsLoaded = false;
-    ds.locations = Location.get(options, function(success) {
+    Location.get(options).$promise.then(function(data) {
       ds.locationsLoaded = true;
-      $scope.locations = ds.locations;
+      ds.locations = data;
+      $scope.locations = data;
       createAllFeaturesArray();
       _.each($scope.locations, function(userLocation) {
         if ($scope.ms.followedUser == userLocation.user) {
@@ -398,7 +399,6 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Filt
           .then(function(user) {
             userLocation.userModel = user.data || user;
           });
-
         });
     });
   }
