@@ -165,16 +165,12 @@ L.AwesomeMarkers.divIcon = function (options) {
         var currentLocationMarkers = {};
         var locationLayerGroup = new L.LayerGroup().addTo(map);
         scope.activeUserPopup = undefined;
-        scope.$watch("ds.locations", function() {
-          if (!scope.ds.locations || !scope.ds.locations.$resolved) {
-            if (scope.ds.locations && !scope.ds.locations.$promise) {
-              locationLayerGroup.clearLayers();
-              currentLocationMarkers = {};
-            }
+        scope.$watch("ds.locations", function(users) {
+          if (!users) {
+            locationLayerGroup.clearLayers();
+            currentLocationMarkers = {};
             return;
           }
-
-          var users = scope.ds.locations;
 
           if (users.length == 0) {
             locationLayerGroup.clearLayers();
