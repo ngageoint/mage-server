@@ -192,13 +192,13 @@ L.AwesomeMarkers.divIcon = function (options) {
                 delete currentLocationMarkers[u.user];
                 locationMarkers[u.user] = marker;
                 // Just update the location
-                marker.setLatLng([l.geometry.coordinates[1], l.geometry.coordinates[0]]).setAccuracy(l.properties.accuracy).setColor(appConstants.userLocationToColor(l));
+                marker.setLatLng([l.geometry.coordinates[1], l.geometry.coordinates[0]]).setColor(appConstants.userLocationToColor(l));//.setAccuracy(l.properties.accuracy);
                 return;
               }
 
               var layer = new L.GeoJSON(u.locations[0], {
                 pointToLayer: function (feature, latlng) {
-                  return L.locationMarker(latlng, {color: appConstants.userLocationToColor(feature)}).setAccuracy(feature.properties.accuracy);
+                  return L.locationMarker(latlng, {color: appConstants.userLocationToColor(feature)});//.setAccuracy(feature.properties.accuracy);
                 },
                 onEachFeature: function(feature, layer) {
                   var e = $compile("<div user-location></div>")(scope);
@@ -372,14 +372,23 @@ L.AwesomeMarkers.divIcon = function (options) {
           layers[o.layerId].leafletLayer.zoomToShowLayer(marker, function(){});
         });
 
+        var onPopupClose = function(popupEvent) {
+          // this is a marker
+          this.setAccuracy(0);
+          this.offPopupClose(onPopupClose, this);
+        };
+
         scope.$watch('locationTableClick', function(location, oldLocation) {
           if (oldLocation) {
             currentLocationMarkers[oldLocation.user].closePopup();
           }
           if (!location) return;
           var marker = currentLocationMarkers[location.user];
+          marker.setAccuracy(location.locations[0].properties.accuracy);
+          //marker.setAccuracy(feature.properties.accuracy);
           marker.openPopup();
           marker.fireEvent('click');
+          marker.onPopupClose(onPopupClose, marker);
           map.setView(marker.getLatLng(), map.getZoom() > 17 ? map.getZoom() : 17);
         });
 
