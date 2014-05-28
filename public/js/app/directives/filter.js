@@ -32,18 +32,28 @@ mage.directive('filter', function(FilterService, mageLib) {
         }
       }
 
+      $scope.filterLocalTime = true;
+      $scope.filterLocalOffset = moment().format('Z');
+      $scope.filterStartDate = moment().startOf('day').toDate();
+      $scope.filterStartTime = '00:00:00';
+      $scope.filterEndDate = moment().startOf('day').toDate();
+      $scope.filterEndTime = '23:59:59';
+
       $scope.intervals = [{
         filter: 'all',
         label: 'All'
       },{
         filter: 'today',
-        label: 'Today'
+        label: 'Today (Local GMT ' + $scope.filterLocalOffset + ')'
       },{
         filter: 86400,
         label: 'Last 24 Hours'
       },{
         filter: 43200,
         label: 'Last 12 Hours'
+      },{
+        filter: 21600,
+        label: 'Last 6 Hours'
       },{
         filter: 3600,
         label: 'Last Hour'
@@ -53,11 +63,6 @@ mage.directive('filter', function(FilterService, mageLib) {
       }];
 
       $scope.interval = $scope.intervals[0];
-      $scope.filterLocalTime = true;
-      $scope.filterStartDate = moment().startOf('day').toDate();
-      $scope.filterStartTime = '00:00:00';
-      $scope.filterEndDate = moment().startOf('day').toDate();
-      $scope.filterEndTime = '23:59:59';
     }
   }
 });
