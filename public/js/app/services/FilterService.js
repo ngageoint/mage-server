@@ -12,7 +12,7 @@ mage.factory('FilterService', ['mageLib',
       if (interval.since != null) {
         return { start: moment().utc().subtract('seconds', interval.since).toISOString() };
       } else if (interval.today) {
-        return { start: moment().utc().startOf('day').toISOString() };
+        return { start: moment().startOf('day').toISOString() };
       } else if (interval.start || interval.end) {
         return { start: interval.start, end: interval.end };
       } else {

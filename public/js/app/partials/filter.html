@@ -53,7 +53,7 @@
     </div>
   </form>
 
-  <h4>Time Interval</h4>
+  <h4>Time</h4>
   <div cl***REMOVED***="control-group">
     <select ng-model="interval" ng-options="o.label for o in intervals" ng-change="updateInterval()"></select>
 
@@ -71,7 +71,7 @@
           <span cl***REMOVED***="add-on">
             <span ng-click="filterLocalTime = !filterLocalTime; updateInterval()" ngm-tap="filterLocalTime = !filterLocalTime; updateInterval()">
               <i cl***REMOVED***="icon-sage icon-time"></i>
-              <span ng-show="filterLocalTime"> Local (GMT {{localOffset}})</span>
+              <span ng-show="filterLocalTime"> Local (GMT {{filterLocalOffset}})</span>
               <span ng-show="!filterLocalTime"> GMT (GMT +00:00)</span>
             </span>
           </span>
@@ -90,7 +90,7 @@
           <span cl***REMOVED***="add-on">
             <span ng-click="filterLocalTime = !filterLocalTime; updateInterval()" ngm-tap="filterLocalTime = !filterLocalTime; updateInterval()">
               <i cl***REMOVED***="icon-sage icon-time"></i>
-              <span ng-show="filterLocalTime"> Local (GMT {{localOffset}})</span>
+              <span ng-show="filterLocalTime"> Local (GMT {{filterLocalOffset}})</span>
               <span ng-show="!filterLocalTime"> GMT (GMT +00:00)</span>
             </span>
           </span>
