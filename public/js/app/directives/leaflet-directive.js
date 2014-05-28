@@ -192,39 +192,32 @@ L.AwesomeMarkers.divIcon = function (options) {
                 return;
               }
 
-              var layer = new L.GeoJSON(u.locations[0], {
-                pointToLayer: function (feature, latlng) {
-                  return L.locationMarker(latlng, {color: appConstants.userLocationToColor(feature)});//.setAccuracy(feature.properties.accuracy);
-                },
-                onEachFeature: function(feature, layer) {
-                  var e = $compile("<div user-location></div>")(scope);
-                  // TODO this sucks but for now set a min width
-                  layer.bindPopup(e[0], {minWidth: 200});
 
-                  layer.on('click', function() {
+              marker = L.locationMarker(L.latLng(u.locations[0].geometry.coordinates[1], u.locations[0].geometry.coordinates[0]), {color: appConstants.userLocationToColor(u.locations[0])});
+              var e = $compile("<div user-location></div>")(scope);
+              // TODO this sucks but for now set a min width
+              marker.bindPopup(e[0], {minWidth: 200});
 
-                    scope.activeFeature = undefined;
+              marker.on('click', function() {
+                scope.activeFeature = undefined;
 
-                    // location table click handling here
-                    if(!scope.$$phase) {
-                      scope.$apply(function(s) {
-                        scope.activeLocation = {locations: [feature], user: feature.properties.user};
-                      });
-                    } else {
-                      scope.activeLocation = {locations: [feature], user: feature.properties.user};
-                    }
-                    var gu = angular.element(e).scope().getUser;
-                    if (gu) {
-                      gu(u.user);
-                    }
-                    scope.activeUserPopup = layer;
+                // location table click handling here
+                if(!scope.$$phase) {
+                  scope.$apply(function(s) {
+                    scope.activeLocation = {locations: [feature], user: feature.properties.user};
                   });
-
-                  locationMarkers[u.user] = layer;
+                } else {
+                  scope.activeLocation = {locations: [feature], user: feature.properties.user};
                 }
+                var gu = angular.element(e).scope().getUser;
+                if (gu) {
+                  gu(u.user);
+                }
+                scope.activeUserPopup = marker;
               });
 
-              locationLayerGroup.addLayer(layer);
+              locationMarkers[u.user] = marker;
+              locationLayerGroup.addLayer(marker);
             }
           });
 
