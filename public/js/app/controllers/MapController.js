@@ -254,7 +254,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Filt
   }, true);
 
   $scope.$watch(FilterService.getTimeInterval, function(interval) {
-    if ($scope.layer) {
+    if ($scope.layer && scope.layer.checked) {
       loadLayer($scope.layer);
     };
     if ($scope.locationServicesEnabled) {
