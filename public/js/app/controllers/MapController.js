@@ -4,7 +4,7 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($rootScope, $scope, $log, $http, ObservationService, FeatureTypeService, appConstants, mageLib, IconService, UserService, DataService, MapService, Layer, LocationService, Location, CreateLocation, TimerService, Feature, TimeBucketService) {
+function MapController($rootScope, $scope, $log, $http, ObservationService, FilterService, FeatureTypeService, appConstants, mageLib, IconService, UserService, DataService, MapService, Layer, LocationService, Location, CreateLocation, TimerService, Feature, TimeBucketService) {
   $scope.customer = appConstants.customer;
   var ds = DataService;
   $scope.ms = MapService;
@@ -253,6 +253,15 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
     }
   }, true);
 
+  $scope.$watch(FilterService.getTimeInterval, function(interval) {
+    if ($scope.layer) {
+      loadLayer($scope.layer);
+    };
+    if ($scope.locationServicesEnabled) {
+      getUserLocations();
+    }
+  });
+
   var loadLayer = function(layer) {
     $scope.loadingLayers[layer.id] = true;
 
@@ -293,6 +302,12 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
         options.states = 'active';
       }
 
+      var interval = FilterService.formatInterval();
+      if (interval) {
+        options.startDate = interval.start;
+        options.endDate = interval.end;
+      }
+
       var features = Feature.getAll(options,
         function(response) {
         $scope.loadingLayers[layer.id] = false;
@@ -320,9 +335,6 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
           $scope.layer.features = features;
           createAllFeaturesArray();
         }
-
-
-
       }, function(response) {
         console.info('there was an error, code was ' + response.status);
       });
@@ -362,10 +374,18 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
   }
 
   var getUserLocations = function() {
+    var options = {};
+    var interval = FilterService.formatInterval();
+    if (interval) {
+      options.startDate = interval.start;
+      options.endDate = interval.end;
+    }
+
     ds.locationsLoaded = false;
-    ds.locations = Location.get({/*startTime: $scope.startTime, endTime: $scope.endTime*/}, function(success) {
+    Location.get(options).$promise.then(function(data) {
       ds.locationsLoaded = true;
-      $scope.locations = ds.locations;
+      ds.locations = data;
+      $scope.locations = data;
       createAllFeaturesArray();
       _.each($scope.locations, function(userLocation) {
         if ($scope.ms.followedUser == userLocation.user) {
@@ -379,7 +399,6 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Feat
           .then(function(user) {
             userLocation.userModel = user.data || user;
           });
-
         });
     });
   }

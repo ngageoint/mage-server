@@ -2,7 +2,7 @@
     <div cl***REMOVED***="row-fluid feature-title">
       <div cl***REMOVED***="span2">
         <div marker-icon="observation" types="types"></div>
-      </div>    
+      </div>
       <div cl***REMOVED***="span10">
         <div>
           <span cl***REMOVED***="muted">
@@ -19,13 +19,13 @@
     <ul cl***REMOVED***="nav nav-pills">
       <li ng-cl***REMOVED***="{active: observationTab == 1}">
         <a href="" ng-click="observationTab = 1;">
-          <i cl***REMOVED***="icon-list" style="background-image: none;"></i> 
+          <i cl***REMOVED***="icon-list" style="background-image: none;"></i>
           Details
         </a>
       </li>
       <li ng-cl***REMOVED***="{active: observationTab == 2}">
         <a href="" ng-click="observationTab = 2;">
-          <i cl***REMOVED***="icon-camera" style="background-image: none;"></i> 
+          <i cl***REMOVED***="icon-camera" style="background-image: none;"></i>
           Media
         </a>
       </li>
@@ -48,12 +48,6 @@
           <label cl***REMOVED***="control-label" for="level">Level</label>
           <div cl***REMOVED***="controls">
             <select ng-model="observation.properties.EVENTLEVEL" ng-selected="level" ng-options="level.name as level.name for level in os.levels"></select>
-          </div>
-        </div>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="team">Team</label>
-          <div cl***REMOVED***="controls">
-            <select ng-model="observation.properties.TEAM" ng-selected="team" ng-options="team for team in os.teams"></select>
           </div>
         </div>
         <div cl***REMOVED***="control-group">

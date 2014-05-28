@@ -104,7 +104,7 @@ module.exports = function(app, security) {
       filter.lastLocationId = options.lastLocationId;
     }
     if (options.startDate) {
-      filter.startDate = options.startDate.toDate();
+      filter.startDate = options.startDate.clone().add('milliseconds', 1).toDate();
     }
     if (options.endDate) {
       filter.endDate = options.endDate.toDate();

@@ -27,17 +27,17 @@ function LayerController($scope, $log, $http, $injector, appConstants, mageLib, 
     });
 
     $scope.showLayerForm = true;
+    $scope.layers.push($scope.layer);
   }
 
   $scope.saveLayer = function () {
     var layer = $scope.layer;
     $scope.layer.$save({}, function(success) {
       $scope.fileUploadOptions = {
-        url: '/FeatureServer/'+$scope.layer.id+'/import?access_token='+mageLib.getLocalItem('token'),
+        url: '/FeatureServer/' + $scope.layer.id + '/import?access_token=' + mageLib.getLocalItem('token'),
         acceptFileTypes: /(\.|\/)(kml)$/i,
       };
     });
-    $scope.layers.push($scope.layer);
   }
 
   $scope.viewLayer = function (layer) {
@@ -46,7 +46,7 @@ function LayerController($scope, $log, $http, $injector, appConstants, mageLib, 
     //$scope.fileUploadOptions.url = '/FeatureServer/'+layer.id+'/import';
     console.info('changing the file upload options');
     $scope.fileUploadOptions = {
-      url: '/FeatureServer/'+layer.id+'/import?access_token='+mageLib.getLocalItem('token'),
+      url: '/FeatureServer/ '+ layer.id + '/import?access_token=' + mageLib.getLocalItem('token'),
       acceptFileTypes: /(\.|\/)(kml)$/i,
     };
   }
@@ -73,7 +73,7 @@ function LayerController($scope, $log, $http, $injector, appConstants, mageLib, 
           $modalInstance.dismiss('cancel');
         };
       }
-    }); 
+    });
     modalInstance.result.then(function (layer) {
       console.info('success');
       $scope.layers = _.without($scope.layers, layer);
