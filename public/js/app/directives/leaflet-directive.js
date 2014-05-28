@@ -165,16 +165,12 @@ L.AwesomeMarkers.divIcon = function (options) {
         var currentLocationMarkers = {};
         var locationLayerGroup = new L.LayerGroup().addTo(map);
         scope.activeUserPopup = undefined;
-        scope.$watch("ds.locations", function(derp) {
-          if (!scope.ds.locations || !scope.ds.locations.$resolved) {
-            if (scope.ds.locations && !scope.ds.locations.$promise) {
-              locationLayerGroup.clearLayers();
-              currentLocationMarkers = {};
-            }
+        scope.$watch("ds.locations", function(users) {
+          if (!users) {
+            locationLayerGroup.clearLayers();
+            currentLocationMarkers = {};
             return;
           }
-
-          var users = scope.ds.locations;
 
           if (users.length == 0) {
             locationLayerGroup.clearLayers();
@@ -192,13 +188,13 @@ L.AwesomeMarkers.divIcon = function (options) {
                 delete currentLocationMarkers[u.user];
                 locationMarkers[u.user] = marker;
                 // Just update the location
-                marker.setLatLng([l.geometry.coordinates[1], l.geometry.coordinates[0]]).setAccuracy(l.properties.accuracy).setColor(appConstants.userLocationToColor(l));
+                marker.setLatLng([l.geometry.coordinates[1], l.geometry.coordinates[0]]).setColor(appConstants.userLocationToColor(l));//.setAccuracy(l.properties.accuracy);
                 return;
               }
 
               var layer = new L.GeoJSON(u.locations[0], {
                 pointToLayer: function (feature, latlng) {
-                  return L.locationMarker(latlng, {color: appConstants.userLocationToColor(feature)}).setAccuracy(feature.properties.accuracy);
+                  return L.locationMarker(latlng, {color: appConstants.userLocationToColor(feature)});//.setAccuracy(feature.properties.accuracy);
                 },
                 onEachFeature: function(feature, layer) {
                   var e = $compile("<div user-location></div>")(scope);
@@ -372,14 +368,23 @@ L.AwesomeMarkers.divIcon = function (options) {
           layers[o.layerId].leafletLayer.zoomToShowLayer(marker, function(){});
         });
 
+        var onPopupClose = function(popupEvent) {
+          // this is a marker
+          this.setAccuracy(0);
+          this.offPopupClose(onPopupClose, this);
+        };
+
         scope.$watch('locationTableClick', function(location, oldLocation) {
           if (oldLocation) {
             currentLocationMarkers[oldLocation.user].closePopup();
           }
           if (!location) return;
           var marker = currentLocationMarkers[location.user];
+          marker.setAccuracy(location.locations[0].properties.accuracy);
+          //marker.setAccuracy(feature.properties.accuracy);
           marker.openPopup();
           marker.fireEvent('click');
+          marker.onPopupClose(onPopupClose, marker);
           map.setView(marker.getLatLng(), map.getZoom() > 17 ? map.getZoom() : 17);
         });
 
@@ -427,7 +432,9 @@ L.AwesomeMarkers.divIcon = function (options) {
         }); // watch layer
 
         var featuresUpdated = function(features) {
+          console.log('feautes updated')
           if (!features) return;
+
           if (layers[scope.layer.id]) {
             var addThese = {
               features: []
@@ -442,6 +449,20 @@ L.AwesomeMarkers.divIcon = function (options) {
             }
             newLayer = layers[scope.layer.id].leafletLayer;
             newLayer.addLayer(L.geoJson(addThese, featureConfig(layers[scope.layer.id].layer)));
+
+            var featureIdMap = _.reduce(features.features, function(map, feature) {
+              map[feature.id] = feature;
+              return map;
+            }, {});
+
+            newLayer.eachLayer(function(layer) {
+              console.log('layer', layer);
+              var feature = featureIdMap[layer.feature.id];
+              if (!feature) {
+                newLayer.removeLayer(layer);
+                delete markers[scope.layer.id][layer.feature.id];
+              }
+            });
           } else {
             markers[scope.layer.id] = {};
             var gj = L.geoJson(features, featureConfig(scope.layer));
