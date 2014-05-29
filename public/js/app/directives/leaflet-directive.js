@@ -192,8 +192,8 @@ L.AwesomeMarkers.divIcon = function (options) {
                 return;
               }
 
-
-              marker = L.locationMarker(L.latLng(u.locations[0].geometry.coordinates[1], u.locations[0].geometry.coordinates[0]), {color: appConstants.userLocationToColor(u.locations[0])});
+              var location = u.locations[0];
+              marker = L.locationMarker(L.latLng(location.geometry.coordinates[1], location.geometry.coordinates[0]), {color: appConstants.userLocationToColor(location)});
               var e = $compile("<div user-location></div>")(scope);
               // TODO this sucks but for now set a min width
               marker.bindPopup(e[0], {minWidth: 200});
@@ -204,10 +204,10 @@ L.AwesomeMarkers.divIcon = function (options) {
                 // location table click handling here
                 if(!scope.$$phase) {
                   scope.$apply(function(s) {
-                    scope.activeLocation = {locations: [feature], user: feature.properties.user};
+                    scope.activeLocation = {locations: [location], user: location.properties.user};
                   });
                 } else {
-                  scope.activeLocation = {locations: [feature], user: feature.properties.user};
+                  scope.activeLocation = {locations: [location], user: location.properties.user};
                 }
                 var gu = angular.element(e).scope().getUser;
                 if (gu) {
