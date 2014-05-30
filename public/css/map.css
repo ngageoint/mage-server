@@ -21,11 +21,6 @@ html, body, div.leaflet-container {
 	margin-bottom: 0;
 }
 
-.container-fluid {
-	padding-left: 0;
-	padding-right: 0;
-}
-
 /* Leaflet stuff */
 .map-wrap {
   left: 0;
