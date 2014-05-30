@@ -262,17 +262,18 @@ exports.removeDevice = function(device, callback) {
   });
 }
 
-// IMPORTANT:
-// This is a complete hack to get the new state to insert into
-// the beginning of the array.  Once mongo 2.6 is released
-// we can use the $push -> $each -> $position operator
 exports.addState = function(layer, id, state, callback) {
   var condition = {_id: mongoose.Types.ObjectId(id), 'states.0.name': {'$ne': state.name}};
 
   state._id = mongoose.Types.ObjectId();
   var update = {
+    '$push': {
+      states: {
+        '$each': [state],
+        '$position': 0
+      }
+    },
     '$set': {
-      'states.-1': state,
       lastModified: moment.utc().toDate()
     }
   };
