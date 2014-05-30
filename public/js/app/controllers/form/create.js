@@ -68,6 +68,12 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
         if ($scope.form.fields[i].name == $scope.form.variantField) {
           if ($scope.form.fields[i].type == 'dropdown') {
             $scope.variants = $scope.form.fields[i].choices;
+            $scope.showNumberVariants = false;
+            break;
+          } else if ($scope.form.fields[i].type == 'date') {
+            $scope.form.fields[i].choices = [];
+            $scope.variants = $scope.form.fields[i].choices;
+            $scope.showNumberVariants = true;
             break;
           }
         }
@@ -84,6 +90,10 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
                 break;
             }
         }
+    }
+
+    $scope.variantFilter = function(field) {
+      return field.type == 'dropdown' || field.type == 'date';
     }
 
     // add new option to the field
@@ -107,6 +117,22 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
 
         // put new option into field_options array
         field.choices.push(newOption);
+    }
+
+    $scope.addVariantOption = function(min, max) {
+      if (!field.choices) {
+        field.choices = new Array();
+      }
+      for (var i = 0; i < $scope.form.fields.length; i++) {
+        if ($scope.form.fields[i].name == $scope.form.variantField) {
+          var newOption = {
+              "id" : field.choices.length,
+              "title" : min + (max ? ' - ' + max : '+'),
+              "value" : min
+          };
+          $scope.form.fields[i].choices.push(newOption);
+        }
+      }
     }
 
     $scope.addType = function() {

@@ -14,6 +14,14 @@
         </div>
       </div>
       <div cl***REMOVED***="span10">
+        <!-- Status message area -->
+        <div cl***REMOVED***="row top-gap" ng-show="showStatus">
+          <div cl***REMOVED***="span11 alert alert-block" ng-cl***REMOVED***="statusLevel">
+            <button type="button" cl***REMOVED***="close" ng-click="setShowStatus(false)">&times;</button>
+            <h4>{{statusTitle}}</h4>
+            {{statusMessage}}
+          </div>
+        </div>
         <div cl***REMOVED***="row-fluid">
           <div cl***REMOVED***="span12 top-gap" id="user-admin-area" ng-show="currentAdminPanel == 'user'">
             <button cl***REMOVED***="btn" ng-click="newUser()" ngm-tap="newUser()"><i cl***REMOVED***="fa fa-plus-square-o"></i> New User</button>
@@ -298,10 +306,8 @@
 
                       <h3>Symbology</h3>
 
-                      <h4>Choose a field to be used for icon variants:</h4>
-                      <select ng-model="form.variantField" ng-options="field.name as field.title for field in form.fields | filter: { type: 'dropdown'}"/>
 
-                      <div cl***REMOVED***="well striped-rows">
+                      <div cl***REMOVED***="well">
                         <div cl***REMOVED***="row-fluid">
                           <div cl***REMOVED***="span3 strong">
                             Default Icon
@@ -310,6 +316,20 @@
 
                           </form>
                         </div>
+
+                      </div>
+
+                      <h4>Choose a field to be used for icon variants:</h4>
+                      <select ng-model="form.variantField" ng-options="field.name as field.title for field in form.fields | filter: variantFilter"/>
+
+                      <div ng-show="showNumberVariants">
+                        <h4>You have chosen a date field for your icon variants.  Please define the ranges for each variant.</h4>
+                        <div ng-repeat="variant in variants">
+                          
+                        </div>
+                      </div>
+
+                      <div cl***REMOVED***="well">
                         <div cl***REMOVED***="row-fluid" ng-repeat="option in typeField.choices">
                           <div cl***REMOVED***="row-fluid">
                             <div cl***REMOVED***="span12 strong">
@@ -363,16 +383,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Status message area -->
-      <div cl***REMOVED***="row top-gap" ng-show="showStatus">
-        <div cl***REMOVED***="span11 alert alert-block" ng-cl***REMOVED***="statusLevel">
-          <button type="button" cl***REMOVED***="close" ng-click="setShowStatus(false)">&times;</button>
-          <h4>{{statusTitle}}</h4>
-          {{statusMessage}}
-        </div>
-      </div>
-
     </div>
   </div>
 </div>
