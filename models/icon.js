@@ -48,12 +48,12 @@ exports.create = function(icon, callback) {
     type: icon.type,
     variant: icon.variant
   };
-  Icon.findOneAndUpdate(conditions, icon, {upsert: true}, function(err, newIcon) {
+  Icon.findOneAndUpdate(conditions, icon, {upsert: true, new: false}, function(err, oldIcon) {
     if (err) {
       console.log("Problem creating icon. " + err);
     }
 
-    callback(err, newIcon);
+    callback(err, oldIcon);
   });
 }
 

@@ -70,7 +70,16 @@ Icon.prototype.create = function(icon, callback) {
   fs.mkdirp(path.dirname(iconPath), function(err) {
     fs.rename(icon.path, iconPath, function(err) {
       if (err) return callback(err);
-      IconModel.create(newIcon, callback);
+
+      IconModel.create(newIcon, function(err, oldIcon) {
+        callback(err, newIcon);
+
+        if (oldIcon && oldIcon.relativePath != newIcon.relativePath) {
+          fs.remove(path.join(iconBase, oldIcon.relativePath), function(err) {
+            if (err) console.log('could not remove old icon from file system', err);
+          });
+        }
+      });
     });
   });
 }
