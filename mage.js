@@ -59,9 +59,10 @@ var mongodbConfig = config.server.mongodb;
       throw err;
     }
   });
-  mongoose.set('debug', function(collection, method, query, doc, options) {
-    log.debug("(mongoose) %s.%s(%j, %j, %j)", collection, method, query, doc, options);
-  });
+  // mongoose.set('debug', function(collection, method, query, doc, options) {
+  //   log.debug("(mongoose) %s.%s(%j, %j, %j)", collection, method, query, doc, options);
+  // });
+  mongoose.set('debug', true);
 
   app.use(function(req, res, next) {
     req.getRoot = function() {
