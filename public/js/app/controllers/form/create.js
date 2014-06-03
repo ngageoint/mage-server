@@ -71,7 +71,7 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
             $scope.showNumberVariants = false;
             break;
           } else if ($scope.form.fields[i].type == 'date') {
-            $scope.form.fields[i].choices = [];
+            $scope.form.fields[i].choices = $scope.form.fields[i].choices || [];
             $scope.variants = $scope.form.fields[i].choices;
             $scope.showNumberVariants = true;
             break;
@@ -120,16 +120,17 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
     }
 
     $scope.addVariantOption = function(min, max) {
-      if (!field.choices) {
-        field.choices = new Array();
-      }
+
       for (var i = 0; i < $scope.form.fields.length; i++) {
         if ($scope.form.fields[i].name == $scope.form.variantField) {
           var newOption = {
-              "id" : field.choices.length,
-              "title" : min + (max ? ' - ' + max : '+'),
+              "id" : $scope.form.fields[i].choices.length,
+              "title" : min + (max ? ' - ' + max : '+') + ' minutes old',
               "value" : min
           };
+          if (!$scope.form.fields[i].choices) {
+            $scope.form.fields[i].choices = new Array();
+          }
           $scope.form.fields[i].choices.push(newOption);
         }
       }
