@@ -325,7 +325,10 @@
                       <div ng-show="showNumberVariants">
                         <h4>You have chosen a date field for your icon variants.  Please define the ranges for each variant.</h4>
                         <div ng-repeat="variant in variants">
-                          
+                          <span cl***REMOVED***="strong">{{variant.value}} <span ng-show="variants[$index+1]"> - {{variants[$index+1].value}}</span><span ng-hide="variants[$index+1]">+</span> minutes old</span>
+                        </div>
+                        <div cl***REMOVED***="row-fluid">
+                          <span>More than <input type="text" ng-model="newVariantMin"/> minutes old <button cl***REMOVED***="btn btn-primary" ng-click="addVariantOption(newVariantMin)">Add Variant</button></span>
                         </div>
                       </div>
 
