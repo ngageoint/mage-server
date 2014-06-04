@@ -267,6 +267,17 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
     }
   }
 
+  $scope.refreshUsers = function() {
+    $scope.users = [];
+    $scope.filteredUsers = [];
+    UserService.getAllUsers().
+      success(function (data) {
+        $scope.users = data;
+        $scope.filteredUsers = $scope.users;
+        $scope.userSearch();
+      });
+  }
+
   $scope.editDevice = function (device) {
     $scope.device = device;
     $scope.setShowDeviceForm(true);
@@ -356,5 +367,16 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
     } else if ($scope.currentDeviceFilter == 'unregistered') {
       $scope.filteredDevices = $scope.getUnregisteredDevices($scope.filteredDevices);
     }
+  }
+
+  $scope.refreshDevices = function() {
+    $scope.devices = [];
+    $scope.filteredDevices = [];
+    DeviceService.getAllDevices().
+      success(function (data) {
+        $scope.devices = data;
+        $scope.filteredDevices = $scope.devices;
+        $scope.deviceSearch();
+      });
   }
 }

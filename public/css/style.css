@@ -4,14 +4,6 @@
 	src: url('../fonts/SANSB___.TTF');
 }
 
-*,
-*:before,
-*:after {
-	-webkit-box-sizing: border-box;
-		-moz-box-sizing: border-box;
-					box-sizing: border-box;
-}
-
 h1, h2, h3, h4, h5 {
 	font-family: SansBetween, Arial, sans-serif;
 	color: #324962;
@@ -52,11 +44,6 @@ img.rotate270 {
     -khtml-transform: rotate(-90deg);
     -ms-transform: rotate(-90deg);
 }
-
-input {
-	height: auto !important;
-}
-
 
 [cl***REMOVED***^="icon-"], [cl***REMOVED****=" icon-"]{
     background:none;
@@ -124,15 +111,11 @@ input {
     float: left;
     font-size: 20px;
     font-weight: 200;
-    margin-left: -20px;
-    padding: 10px 20px;
     text-shadow: 0 1px 0 #2B2620;
 }
 
 .navbar .nav > li > a {
     color: #FFF;
-    float: none;
-    padding: 10px 15px;
     text-decoration: none;
     text-shadow: 0 1px 0 #222;
 }
@@ -209,12 +192,6 @@ textarea {
 .nav-pills>.active>a, .nav-pills>.active>a:hover, .nav-pills>.active>a:focus {
     background: #456588;
     color: #F5F3DA;
-}
-
-.btn {
-    border: solid 1px #c8c8c8;
-    background: #FAFAFA;
-    box-shadow: none;;
 }
 
 .btn-inverse, .leaflet-bar a.btn-inverse {
