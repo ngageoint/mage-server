@@ -4,13 +4,13 @@
     <div cl***REMOVED***="row-fluid">
       <div cl***REMOVED***="span2" style="padding-left: 15px">
         <div ng-cl***REMOVED***="{'admin-active': currentAdminPanel == 'user'}">
-          <h3><a href="" ng-click="changeCurrentPanel('user')" ngm-tap="changeCurrentPanel('user')">Users</a></h3>
+          <h3><a href="#/admin/user">Users</a></h3>
         </div>
         <div ng-cl***REMOVED***="{'admin-active': currentAdminPanel == 'device'}">
-          <h3><a href="" ng-click="changeCurrentPanel('device')" ngm-tap="changeCurrentPanel('device')">Devices</a></h3>
+          <h3><a href="#/admin/device">Devices</a></h3>
         </div>
         <div ng-cl***REMOVED***="{'admin-active': currentAdminPanel == 'form'}">
-          <h3><a href="" ng-click="changeCurrentPanel('form')" ngm-tap="changeCurrentPanel('form')">Forms</a></h3>
+          <h3><a href="#/admin/form">Forms</a></h3>
         </div>
       </div>
       <div cl***REMOVED***="span10">
@@ -91,9 +91,12 @@
                     <li ng-cl***REMOVED***="userFilterCl***REMOVED***('active')"><a href="" ng-click="changeCurrentUserFilter('active')">Active Users</a></li>
                     <li ng-cl***REMOVED***="userFilterCl***REMOVED***('unregistered')"><a href="" ng-click="changeCurrentUserFilter('unregistered')">Users Awaiting Approval</a></li>
                   </ul>
+
                   <form cl***REMOVED***="navbar-search pull-right">
                     <input type="text" cl***REMOVED***="form-search search-query" ng-model="userQuery" placeholder="Search" ng-change="userSearch()">
                   </form>
+                  <!-- <a cl***REMOVED***="nav navbar-nav pull-right"><i cl***REMOVED***="fa fa-refresh"></i> Refresh</a> -->
+
                 </div>
               </div>
             </div>
@@ -303,20 +306,15 @@
                     </div>
 
                     <div cl***REMOVED***="symbology">
-
                       <h3>Symbology</h3>
-
-
                       <div cl***REMOVED***="well">
                         <div cl***REMOVED***="row-fluid">
                           <div cl***REMOVED***="span3 strong">
                             Default Icon
                           </div>
                           <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'?access_token=' + $parent.token}}" allow-upload="form.id" preview="true" upload-file-form-name="'icon'">
-
                           </form>
                         </div>
-
                       </div>
 
                       <h4>Choose a field to be used for icon variants:</h4>
@@ -395,9 +393,9 @@
                   <div cl***REMOVED***="row-fluid">
                     <div cl***REMOVED***="span12">
                       <p cl***REMOVED***="text-center">
-                      <a cl***REMOVED***="btn right" ng-show="form.id" ng-href="{{'/api/icons/'+form.id+'.zip?access_token=' + token}}">Download Icon Pack</a>
-                      <button cl***REMOVED***="btn btn-success right" type="button" ng-click="useForm(form)"><i cl***REMOVED***="fa-check icon-white"></i>Save And Use This Form</button>
-                      <button cl***REMOVED***="btn btn-primary right" type="button" ng-click="saveForm()">Save Form</button>
+                      <a cl***REMOVED***="btn right" ng-show="form.id" ng-href="{{'/api/forms/'+form.id+'.zip?access_token=' + token}}"> <i cl***REMOVED***="fa fa-sign-out"></i> Export</a>
+                      <button cl***REMOVED***="btn btn-success right" type="button" ng-click="useForm(form)"><i cl***REMOVED***="fa-check icon-white"></i> Save And Use This Form</button>
+                      <button cl***REMOVED***="btn btn-primary right" type="button" ng-click="saveForm()"><i cl***REMOVED***="fa fa-save"></i> Save Form</button>
                     </p>
                     </div>
                   </div>
