@@ -324,11 +324,22 @@
 
                       <div ng-show="showNumberVariants">
                         <h4>You have chosen a date field for your icon variants.  Please define the ranges for each variant.</h4>
-                        <div ng-repeat="variant in variants">
-                          <span cl***REMOVED***="strong">{{variant.value}} <span ng-show="variants[$index+1]"> - {{variants[$index+1].value}}</span><span ng-hide="variants[$index+1]">+</span> minutes old</span>
+                        <div ng-repeat="variant in variants" cl***REMOVED***="row-fluid">
+                          <div cl***REMOVED***="span12">
+                            <span cl***REMOVED***="strong">{{variant.value}}
+                              <span ng-show="variants[$index+1]">
+                                 - {{variants[$index+1].value}}
+                              </span>
+                              <span ng-hide="variants[$index+1]">+</span>
+                               minutes old
+                               <button cl***REMOVED***="btn btn-small btn-danger" ng-click="removeVariant(variant)">Remove Variant</button>
+                             </span>
+                          </div>
                         </div>
                         <div cl***REMOVED***="row-fluid">
-                          <span>More than <input type="text" ng-model="newVariantMin"/> minutes old <button cl***REMOVED***="btn btn-primary" ng-click="addVariantOption(newVariantMin)">Add Variant</button></span>
+                          <div cl***REMOVED***="span12">
+                            <span>More than <input type="number" ng-model="newVariantMin"/> minutes old <button cl***REMOVED***="btn btn-primary" ng-click="addVariantOption(newVariantMin)">Add Variant</button></span>
+                          </div>
                         </div>
                       </div>
 
@@ -352,11 +363,17 @@
                             </div>
                             <div cl***REMOVED***="span2" ng-repeat="variant in variants">
                               <div cl***REMOVED***="row-fluid">
-                                <div cl***REMOVED***="span12 strong">
-                                  {{variant.title}}
+                                <div cl***REMOVED***="span12">
+                                  <span cl***REMOVED***="strong">{{variant.value}}
+                                    <span ng-show="variants[$index+1]">
+                                       - {{variants[$index+1].value}}
+                                    </span>
+                                    <span ng-hide="variants[$index+1]">+</span>
+                                     minutes old
+                                   </span>
                                 </div>
                               </div>
-                              <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'/'+option.title+'/'+variant.title+'?access_token=' + $parent.token}}" allow-upload="form.id" preview="true" upload-file-form-name="'icon'">
+                              <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'/'+option.title+'/'+variant.value+'?access_token=' + $parent.token}}" allow-upload="form.id" preview="true" upload-file-form-name="'icon'">
 
                               </form>
                             </div>
