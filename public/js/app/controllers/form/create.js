@@ -59,7 +59,7 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
         $scope.newField.id = $scope.form.fields.length+1;
         $scope.newField.name = "field" + ($scope.form.fields.length+1);
         $scope.form.fields.push($scope.newField);
-        
+
         $scope.newField = {
             "title" : "New field",
             "type" : $scope.fieldTypes[0].name,
@@ -114,26 +114,13 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
     }
 
     // add new option to the field
-    $scope.addOption = function (field){
-        if(!field.choices)
-            field.choices = new Array();
-
-        var lastOptionID = 0;
-
-        if(field.choices[field.choices.length-1])
-            lastOptionID = field.choices[field.choices.length-1].id;
-
-        // new option's id
-        var id = lastOptionID + 1;
-
-        var newOption = {
-            "id" : id,
-            "title" : "Option " + id,
-            "value" : id
-        };
-
-        // put new option into field_options array
-        field.choices.push(newOption);
+    $scope.addOption = function (field, optionTitle){
+      field.choices = field.choices || new Array();
+      field.choices.push({
+          "id" : field.choices.length,
+          "title" : optionTitle,
+          "value" : field.choices.length
+      });
     }
 
     $scope.removeVariant = function(variant) {

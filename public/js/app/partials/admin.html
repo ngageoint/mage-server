@@ -263,19 +263,30 @@
                               <div cl***REMOVED***="span2">Field Title:</div>
                               <div cl***REMOVED***="span4"><input type="text" ng-model="field.title" value="{{field.title}}"></div>
                             </div>
-                            <div cl***REMOVED***="row-fluid">
+                            <div cl***REMOVED***="row-fluid" ng-hide="showAddOptions(field)">
                               <div cl***REMOVED***="span2">Field Default Value:</div>
-                              <div cl***REMOVED***="span4"><input type="text" ng-model="field.value" value="{{field.value}}"></div>
+                              <div cl***REMOVED***="span4"><input type="text" ng-model="newField.value" value="{{newField.value}}"></div>
+                            </div>
+                            <div cl***REMOVED***="row-fluid" ng-show="showAddOptions(field)">
+                              <div cl***REMOVED***="span2">Field Default Value:</div>
+                              <div cl***REMOVED***="span4">
+                                <select ng-model="newField.value" ng-options="choice.title for choice in field.choices">
+                                  <option value="">No Default</option>
+                                </select>
+                              </div>
                             </div>
                             <div cl***REMOVED***="row-fluid" ng-show="showAddOptions(field)">
                               <div cl***REMOVED***="span2">Field Options:</div>
                               <div cl***REMOVED***="span6">
-                                <div ng-repeat="option in field.choices">
-                                    <input type="text" ng-model="option.title" value="{{option.title}}">
-                                    <a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(field, option)"><i cl***REMOVED***="fa fa-minus icon-white"></i></a>
-                                    <!--<span cl***REMOVED***="label label-inverse">Value: {{ option.value }}</span>-->
+
+                                <div ng-repeat="option in field.choices" cl***REMOVED***="row-fluid">
+                                    <div cl***REMOVED***="span3 strong">{{option.title}}</div>
+                                    <div cl***REMOVED***="span3"><a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(field, option)"><i cl***REMOVED***="fa fa-minus icon-white"></i></a></div>
                                 </div>
-                                <button cl***REMOVED***="btn btn-primary btn-small" type="button" ng-click="addOption(field)"><i cl***REMOVED***="fa fa-plus-square-o icon-white"></i> Add Option</button>
+                                <div cl***REMOVED***="row-fluid">
+                                    <input type="text" ng-model="newOptionTitle">
+                                    <button cl***REMOVED***="btn btn-primary btn-small" type="button" ng-click="addOption(field, newOptionTitle)"><i cl***REMOVED***="fa fa-plus-square-o icon-white"></i> Add Option</button>
+                                </div>
                               </div>
                             </div>
                             <div cl***REMOVED***="row-fluid">
@@ -296,9 +307,7 @@
                       </accordion>
                       <div cl***REMOVED***="add-field">
                         <h3>Add A New Field</h3>
-                          <form cl***REMOVED***="form-inline well">
-
-                            <div cl***REMOVED***="accordion-edit">
+                          <div cl***REMOVED***="well">
                               <div cl***REMOVED***="row-fluid">
                                   <div cl***REMOVED***="span2">Field Type:</div>
                                   <div cl***REMOVED***="span4"><select ng-model="newField.type" ng-options="type.name as type.value for type in fieldTypes"></select></div>
@@ -309,18 +318,29 @@
                                 <div cl***REMOVED***="span2">Field Title:</div>
                                 <div cl***REMOVED***="span4"><input type="text" ng-model="newField.title" value="{{newField.title}}"></div>
                               </div>
-                              <div cl***REMOVED***="row-fluid">
+                              <div cl***REMOVED***="row-fluid" ng-hide="showAddOptions(newField)">
                                 <div cl***REMOVED***="span2">Field Default Value:</div>
                                 <div cl***REMOVED***="span4"><input type="text" ng-model="newField.value" value="{{newField.value}}"></div>
                               </div>
                               <div cl***REMOVED***="row-fluid" ng-show="showAddOptions(newField)">
+                                <div cl***REMOVED***="span2">Field Default Value:</div>
+                                <div cl***REMOVED***="span4">
+                                  <select ng-model="newField.value" ng-options="choice.title for choice in newField.choices">
+                                    <option value="">No Default</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div cl***REMOVED***="row-fluid" ng-show="showAddOptions(newField)">
                                 <div cl***REMOVED***="span2">Field Options:</div>
                                 <div cl***REMOVED***="span6">
-                                  <div ng-repeat="option in newField.choices">
+                                  <div ng-repeat="option in newField.choices" cl***REMOVED***="row-fluid">
                                       <input type="text" ng-model="option.title" value="{{option.title}}">
                                       <a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(newField, option)"><i cl***REMOVED***="fa fa-minus icon-white"></i></a>
                                   </div>
-                                  <button cl***REMOVED***="btn btn-primary btn-small" type="button" ng-click="addOption(newField)"><i cl***REMOVED***="fa fa-plus-square-o icon-white"></i> Add Option</button>
+                                  <div cl***REMOVED***="row-fluid">
+                                      <input type="text" ng-model="newFieldNewOptionTitle">
+                                      <button cl***REMOVED***="btn btn-primary btn-small" type="button" ng-click="addOption(newField, newFieldNewOptionTitle)"><i cl***REMOVED***="fa fa-plus-square-o icon-white"></i> Add Option</button>
+                                  </div>
                                 </div>
                               </div>
                               <div cl***REMOVED***="row-fluid">
@@ -335,10 +355,9 @@
                                     &nbsp; No
                                   </label>
                                 </div>
-                              </div>
                            </div>
                             <button type="submit" cl***REMOVED***="btn btn-primary" ng-click="addNewField()"><i cl***REMOVED***="fa fa-plus-square-o"></i> Add Field</button>
-                          </form>
+                          </div>
                       </div>
                     </div>
 
