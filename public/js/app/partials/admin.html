@@ -334,8 +334,8 @@
                                 <div cl***REMOVED***="span2">Field Options:</div>
                                 <div cl***REMOVED***="span6">
                                   <div ng-repeat="option in newField.choices" cl***REMOVED***="row-fluid">
-                                      <input type="text" ng-model="option.title" value="{{option.title}}">
-                                      <a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(newField, option)"><i cl***REMOVED***="fa fa-minus icon-white"></i></a>
+                                      <div cl***REMOVED***="span3 strong">{{option.title}}</div>
+                                      <div cl***REMOVED***="span3"><a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(newField, option)"><i cl***REMOVED***="fa fa-minus icon-white"></i></a></div>
                                   </div>
                                   <div cl***REMOVED***="row-fluid">
                                       <input type="text" ng-model="newFieldNewOptionTitle">
