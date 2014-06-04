@@ -1,8 +1,8 @@
 'use strict';
 
-function AdminController($scope, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService, FormService, Form, Layer, mageLib) {
+function AdminController($scope, $routeParams, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService, FormService, Form, Layer, mageLib) {
   // The variables that get set when clicking a team or user in the list, these get loaded into the editor.
-  $scope.currentAdminPanel = "user"; // possible values user, team, and device
+  $scope.currentAdminPanel = $routeParams.adminPanel || "user";
   $scope.currentUserFilter = "all"; // possible values all, active, unregistered
   $scope.currentDeviceFilter = "all"; // possible values all, registered, unregistered
   $scope.token = mageLib.getLocalItem('token');
