@@ -250,7 +250,7 @@
                     <p ng-show="form.fields.length == 0">No fields added yet.</p>
                     <div cl***REMOVED***="well">
                       <accordion close-others="accordion.oneAtATime">
-                        <accordion-group heading="{{field.title}}" ng-repeat="field in form.fields" is-open="true">
+                        <accordion-group heading="{{field.title}}" ng-repeat="field in form.fields">
                           <div cl***REMOVED***="accordion-edit">
                             <button ng-show="deletableField(field)" cl***REMOVED***="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i cl***REMOVED***="fa fa-trash icon-white"></i> Delete</button>
                             <div cl***REMOVED***="row-fluid">
@@ -295,9 +295,49 @@
                         </accordion-group>
                       </accordion>
                       <div cl***REMOVED***="add-field">
-                          <form cl***REMOVED***="form-inline">
-                            <select ng-model="addField.new" ng-options="type.name as type.value for type in addField.types"></select>
-                            <button type="submit" cl***REMOVED***="btn" ng-click="addNewField()"><i cl***REMOVED***="fa fa-plus-square-o"></i> Add Field</button>
+                        <h3>Add A New Field</h3>
+                          <form cl***REMOVED***="form-inline well">
+                            <select ng-model="newField.type" ng-options="type.name as type.value for type in fieldTypes"></select>
+                            <div cl***REMOVED***="accordion-edit">
+                              <div cl***REMOVED***="row-fluid">
+                                  <div cl***REMOVED***="span2">Field Type:</div>
+                                  <div cl***REMOVED***="span4">{{newField.type}}</div>
+                              </div>
+                              <div cl***REMOVED***="clear"></div>
+                              <hr>
+                              <div cl***REMOVED***="row-fluid">
+                                <div cl***REMOVED***="span2">Field Title:</div>
+                                <div cl***REMOVED***="span4"><input type="text" ng-model="newField.title" value="{{newField.title}}"></div>
+                              </div>
+                              <div cl***REMOVED***="row-fluid">
+                                <div cl***REMOVED***="span2">Field Default Value:</div>
+                                <div cl***REMOVED***="span4"><input type="text" ng-model="newField.value" value="{{newField.value}}"></div>
+                              </div>
+                              <div cl***REMOVED***="row-fluid" ng-show="showAddOptions(newField)">
+                                <div cl***REMOVED***="span2">Field Options:</div>
+                                <div cl***REMOVED***="span6">
+                                  <div ng-repeat="option in newField.choices">
+                                      <input type="text" ng-model="option.title" value="{{option.title}}">
+                                      <a cl***REMOVED***="btn btn-danger btn-mini right" type="button" ng-click="deleteOption(newField, option)"><i cl***REMOVED***="fa fa-minus icon-white"></i></a>
+                                  </div>
+                                  <button cl***REMOVED***="btn btn-primary btn-small" type="button" ng-click="addOption(newField)"><i cl***REMOVED***="fa fa-plus-square-o icon-white"></i> Add Option</button>
+                                </div>
+                              </div>
+                              <div cl***REMOVED***="row-fluid">
+                                <div cl***REMOVED***="span2">Required:</div>
+                                <div cl***REMOVED***="span4">
+                                  <label>
+                                    <input type="radio" ng-value="true" ng-selected ng-model="newField.required"/>
+                                    &nbsp; Yes
+                                  </label>
+                                  <label>
+                                    <input type="radio" ng-value="false" ng-model="newField.required"/>
+                                    &nbsp; No
+                                  </label>
+                                </div>
+                              </div>
+                           </div>
+                            <button type="submit" cl***REMOVED***="btn btn-primary" ng-click="addNewField()"><i cl***REMOVED***="fa fa-plus-square-o"></i> Add Field</button>
                           </form>
                       </div>
                     </div>
@@ -305,8 +345,6 @@
                     <div cl***REMOVED***="symbology">
 
                       <h3>Symbology</h3>
-
-
                       <div cl***REMOVED***="well">
                         <div cl***REMOVED***="row-fluid">
                           <div cl***REMOVED***="span3 strong">
