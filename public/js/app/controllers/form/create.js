@@ -64,23 +64,23 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
 
     $scope.populateVariants = function() {
       if (!$scope.form) return;
-      for (var i = 0; i < $scope.form.fields.length; i++) {
-        if ($scope.form.fields[i].name == $scope.form.variantField) {
-          if ($scope.form.fields[i].type == 'dropdown') {
-            $scope.variants = $filter('orderBy')($scope.form.fields[i].choices, 'value');
-            $scope.showNumberVariants = false;
-            break;
-          } else if ($scope.form.fields[i].type == 'date') {
-            $scope.form.fields[i].choices = $scope.form.fields[i].choices || [];
-            $scope.variants = $filter('orderBy')($scope.form.fields[i].choices, 'value');
-            $scope.showNumberVariants = true;
-            break;
-          }
-        }
+      if ($scope.variantField.type == 'dropdown') {
+        $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
+        $scope.showNumberVariants = false;
+      } else if ($scope.variantField.type == 'date') {
+        $scope.variantField.choices = $scope.variantField.choices || [];
+        $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
+        $scope.showNumberVariants = true;
       }
     }
 
-    $scope.$watch('form.variantField', $scope.populateVariants);
+    $scope.$watch('form', function() {
+      $scope.variantField = _.find($scope.form.fields, function(field) {
+        return field.name == $scope.form.variantField;
+      });
+    });
+
+    $scope.$watch('variantField', $scope.populateVariants);
 
     // deletes particular field on button click
     $scope.deleteField = function (id){
@@ -120,27 +120,20 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
     }
 
     $scope.removeVariant = function(variant) {
-      var variantField = _.find($scope.form.fields, function(field) {
-        return field.name == $scope.form.variantField;
-      });
-      variantField.choices = _.without(variantField.choices, variant);
-      $scope.variants = $filter('orderBy')(variantField.choices, 'value');
+      $scope.variantField.choices = _.without($scope.variantField.choices, variant);
+      $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
     }
 
     $scope.addVariantOption = function(min, max) {
-      var variantField = _.find($scope.form.fields, function(field) {
-        return field.name == $scope.form.variantField;
-      });
-
       var newOption = {
-          "id" : variantField.choices.length,
+          "id" : $scope.variantField.choices.length,
           "title" : min,
           "value" : min
       };
 
-      variantField.choices = variantField.choices || new Array();
-      variantField.choices.push(newOption);
-      $scope.variants = $filter('orderBy')(variantField.choices, 'value');
+      $scope.variantField.choices = $scope.variantField.choices || new Array();
+      $scope.variantField.choices.push(newOption);
+      $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
     }
 
     $scope.addType = function() {

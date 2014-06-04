@@ -320,15 +320,15 @@
                       </div>
 
                       <h4>Choose a field to be used for icon variants:</h4>
-                      <select ng-model="form.variantField" ng-options="field.name as field.title for field in form.fields | filter: variantFilter"/>
+                      <select ng-model="variantField" ng-options="field as field.title for field in form.fields | filter: variantFilter"/>
 
                       <div ng-show="showNumberVariants">
                         <h4>You have chosen a date field for your icon variants.  Please define the ranges for each variant.</h4>
                         <div ng-repeat="variant in variants" cl***REMOVED***="row-fluid">
                           <div cl***REMOVED***="span12">
-                            <span cl***REMOVED***="strong">{{variant.value}}
+                            <span cl***REMOVED***="strong">{{variant.title}}
                               <span ng-show="variants[$index+1]">
-                                 - {{variants[$index+1].value}}
+                                 - {{variants[$index+1].title}}
                               </span>
                               <span ng-hide="variants[$index+1]">+</span>
                                minutes old
@@ -364,16 +364,18 @@
                             <div cl***REMOVED***="span2" ng-repeat="variant in variants">
                               <div cl***REMOVED***="row-fluid">
                                 <div cl***REMOVED***="span12">
-                                  <span cl***REMOVED***="strong">{{variant.value}}
-                                    <span ng-show="variants[$index+1]">
-                                       - {{variants[$index+1].value}}
-                                    </span>
-                                    <span ng-hide="variants[$index+1]">+</span>
-                                     minutes old
+                                  <span cl***REMOVED***="strong">{{variant.title}}
+                                    <span ng-show="variantField.type == 'date'">
+                                      <span ng-show="variants[$index+1]">
+                                         - {{variants[$index+1].title}}
+                                      </span>
+                                      <span ng-hide="variants[$index+1]">+</span>
+                                       minutes old
+                                     </span>
                                    </span>
                                 </div>
                               </div>
-                              <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'/'+option.title+'/'+variant.value+'?access_token=' + $parent.token}}" allow-upload="form.id" preview="true" upload-file-form-name="'icon'">
+                              <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'/'+option.title+'/'+variant.title+'?access_token=' + $parent.token}}" allow-upload="form.id" preview="true" upload-file-form-name="'icon'">
 
                               </form>
                             </div>
