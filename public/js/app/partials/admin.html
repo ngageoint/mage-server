@@ -252,7 +252,7 @@
                       <accordion close-others="accordion.oneAtATime">
                         <accordion-group heading="{{field.title}}" ng-repeat="field in form.fields" is-open="true">
                           <div cl***REMOVED***="accordion-edit">
-                            <button cl***REMOVED***="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i cl***REMOVED***="fa fa-trash icon-white"></i> Delete</button>
+                            <button ng-show="deletableField(field)" cl***REMOVED***="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i cl***REMOVED***="fa fa-trash icon-white"></i> Delete</button>
                             <div cl***REMOVED***="row-fluid">
                                 <div cl***REMOVED***="span2">Field Type:</div>
                                 <div cl***REMOVED***="span4">{{field.type}}</div>
@@ -320,7 +320,9 @@
                       </div>
 
                       <h4>Choose a field to be used for icon variants:</h4>
-                      <select ng-model="variantField" ng-options="field as field.title for field in form.fields | filter: variantFilter"/>
+                      <select ng-model="variantField" ng-options="field as field.title for field in form.fields | filter: variantFilter">
+                        <option value="">No Variant</option>
+                      </select>
 
                       <div ng-show="showNumberVariants">
                         <h4>You have chosen a date field for your icon variants.  Please define the ranges for each variant.</h4>
