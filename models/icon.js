@@ -30,7 +30,7 @@ exports.getIcon = function(options, callback) {
   if (isNaN(variant)) {
     condition.variant = {"$in": [variant, null]};
   } else {
-    condition.variant = {"$lte": variant};
+    condition["$or"] = [{variant: {"$lte": variant}}, {variant: null}];
   }
 
   Icon.findOne(condition, {}, {sort: {type: -1, variant: -1}}, function (err, icon) {
