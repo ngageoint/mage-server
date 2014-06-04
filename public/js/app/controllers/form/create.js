@@ -46,6 +46,10 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
     $scope.accordion.oneAtATime = true;
     $scope.variants = [];
 
+    $scope.deletableField = function(field) {
+      return field.name.indexOf('field') != -1;
+    }
+
     // create new field button click
     $scope.addNewField = function() {
 
@@ -64,6 +68,10 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
 
     $scope.populateVariants = function() {
       if (!$scope.form) return;
+      if (!$scope.variantField) {
+        // they do not want a variant
+        $scope.variants = [];
+      }
       if ($scope.variantField.type == 'dropdown') {
         $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
         $scope.showNumberVariants = false;
@@ -75,6 +83,8 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
     }
 
     $scope.$watch('form', function() {
+      if (!$scope.form) return;
+
       $scope.variantField = _.find($scope.form.fields, function(field) {
         return field.name == $scope.form.variantField;
       });
@@ -93,7 +103,7 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
     }
 
     $scope.variantFilter = function(field) {
-      return field.type == 'dropdown' || field.type == 'date';
+      return (field.type == 'dropdown' || field.type == 'date') && field.name != 'type';
     }
 
     // add new option to the field
