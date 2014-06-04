@@ -35,11 +35,13 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
     // otherwise, actual form might get manipulated in preview mode
     $scope.previewForm = {};
 
-    // add new field drop-down:
-    $scope.addField = {};
-    $scope.addField.types = FormService.fields;
-    $scope.addField.new = $scope.addField.types[0].name;
-    $scope.addField.lastAddedID = 0;
+    $scope.fieldTypes = FormService.fields;
+    $scope.newField = {
+        "title" : "New field",
+        "type" : $scope.fieldTypes[0].name,
+        "value" : "",
+        "required" : true
+    };
 
     // accordion settings
     $scope.accordion = {}
@@ -53,25 +55,29 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
     // create new field button click
     $scope.addNewField = function() {
 
-        var newField = {
-            "id" : $scope.form.fields.length+1,
-            "title" : "New field - " + ($scope.form.fields.length+1),
-            "type" : $scope.addField.new,
-            "value" : "",
-            "required" : true,
-            "name" : "field" + ($scope.form.fields.length+1)
-        };
-
         // put newField into fields array
-        $scope.form.fields.push(newField);
+        $scope.newField.id = $scope.form.fields.length+1;
+        $scope.newField.name = "field" + ($scope.form.fields.length+1);
+        $scope.form.fields.push($scope.newField);
+        
+        $scope.newField = {
+            "title" : "New field",
+            "type" : $scope.fieldTypes[0].name,
+            "value" : "",
+            "required" : true
+        };
     }
 
     $scope.populateVariants = function() {
       if (!$scope.form) return;
+
       if (!$scope.variantField) {
         // they do not want a variant
         $scope.variants = [];
+        $scope.form.variantField = null;
+        return;
       }
+      $scope.form.variantField = $scope.variantField.name;
       if ($scope.variantField.type == 'dropdown') {
         $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
         $scope.showNumberVariants = false;
@@ -84,7 +90,7 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
 
     $scope.$watch('form', function() {
       if (!$scope.form) return;
-
+      console.log('form changed');
       $scope.variantField = _.find($scope.form.fields, function(field) {
         return field.name == $scope.form.variantField;
       });
@@ -100,6 +106,7 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
                 break;
             }
         }
+        if ($scope.form.id) { $scope.form.$save(); }
     }
 
     $scope.variantFilter = function(field) {
@@ -193,7 +200,6 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
     // deletes all the fields
     $scope.reset = function (){
         $scope.form.fields.splice(0, $scope.form.fields.length);
-        $scope.addField.lastAddedID = 0;
     }
 
     $scope.saveForm = function() {
