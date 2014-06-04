@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, FormService, Layer, Form) {
+angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, FormService, Layer, Form, $filter) {
 
     // preview form mode
     $scope.previewMode = false;
@@ -67,12 +67,12 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
       for (var i = 0; i < $scope.form.fields.length; i++) {
         if ($scope.form.fields[i].name == $scope.form.variantField) {
           if ($scope.form.fields[i].type == 'dropdown') {
-            $scope.variants = $scope.form.fields[i].choices;
+            $scope.variants = $filter('orderBy')($scope.form.fields[i].choices, 'value');
             $scope.showNumberVariants = false;
             break;
           } else if ($scope.form.fields[i].type == 'date') {
             $scope.form.fields[i].choices = $scope.form.fields[i].choices || [];
-            $scope.variants = $scope.form.fields[i].choices;
+            $scope.variants = $filter('orderBy')($scope.form.fields[i].choices, 'value');
             $scope.showNumberVariants = true;
             break;
           }
@@ -119,21 +119,28 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
         field.choices.push(newOption);
     }
 
-    $scope.addVariantOption = function(min, max) {
+    $scope.removeVariant = function(variant) {
+      var variantField = _.find($scope.form.fields, function(field) {
+        return field.name == $scope.form.variantField;
+      });
+      variantField.choices = _.without(variantField.choices, variant);
+      $scope.variants = $filter('orderBy')(variantField.choices, 'value');
+    }
 
-      for (var i = 0; i < $scope.form.fields.length; i++) {
-        if ($scope.form.fields[i].name == $scope.form.variantField) {
-          var newOption = {
-              "id" : $scope.form.fields[i].choices.length,
-              "title" : min + (max ? ' - ' + max : '+') + ' minutes old',
-              "value" : min
-          };
-          if (!$scope.form.fields[i].choices) {
-            $scope.form.fields[i].choices = new Array();
-          }
-          $scope.form.fields[i].choices.push(newOption);
-        }
-      }
+    $scope.addVariantOption = function(min, max) {
+      var variantField = _.find($scope.form.fields, function(field) {
+        return field.name == $scope.form.variantField;
+      });
+
+      var newOption = {
+          "id" : variantField.choices.length,
+          "title" : min,
+          "value" : min
+      };
+
+      variantField.choices = variantField.choices || new Array();
+      variantField.choices.push(newOption);
+      $scope.variants = $filter('orderBy')(variantField.choices, 'value');
     }
 
     $scope.addType = function() {
