@@ -15,7 +15,6 @@ angular.module('mage').factory('Form', ['$resource', '$http', 'appConstants', 'F
       }
     },
     query: {
-      cache: true,
       isArray: true
     }
   });
