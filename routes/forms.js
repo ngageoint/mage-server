@@ -1,6 +1,8 @@
 module.exports = function(app, security) {
   var Form = require('../models/form')
-    , access = require('../access');
+    , api = require('../api')
+    , access = require('../access')
+    , archiver = require('archiver');
 
   var p***REMOVED***port = security.authentication.p***REMOVED***port
     , authenticationStrategy = security.authentication.authenticationStrategy;
@@ -16,7 +18,7 @@ module.exports = function(app, security) {
   // TODO when we switch to events we need to change all the *_LAYER roles
   // to *_EVENT roles
 
-  // get all form
+  // get all forms
   app.get(
     '/api/forms',
     access.authorize('READ_LAYER'),
@@ -24,6 +26,21 @@ module.exports = function(app, security) {
       Form.getAll(function (err, forms) {
         res.json(forms);
       });
+    }
+  );
+
+  // export a zip of the form json and icons
+  app.get(
+    '/api/forms/:formId.zip',
+    access.authorize('READ_LAYER'),
+    function(req, res, next) {
+      var iconBasePath = new api.Icon(req.form).getBasePath();
+      var archive = archiver('zip');
+      res.attachment("form.zip");
+      archive.pipe(res);
+      archive.bulk([{src: ['**'], dest: '/icons', expand: true, cwd: iconBasePath}]);
+      archive.append(JSON.stringify(req.form), {name: "form.json"});
+      archive.finalize();
     }
   );
 
@@ -61,7 +78,7 @@ module.exports = function(app, security) {
       Form.update(req.form.id, req.newForm, function(err, form) {
         if (err) {
           return res.send(400, err);
-        } 
+        }
 
         res.json(form);
       });
