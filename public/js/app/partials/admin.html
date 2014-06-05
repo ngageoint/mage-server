@@ -375,7 +375,7 @@
                       </div>
 
                       <h4>Choose a field to be used for icon variants:</h4>
-                      <select ng-model="variantField" ng-options="field as field.title for field in form.fields | filter: variantFilter">
+                      <select ng-model="variantField" ng-options="field as field.title for field in form.fields | filter: variantFilter track by field.id">
                         <option value="">No Variant</option>
                       </select>
 
