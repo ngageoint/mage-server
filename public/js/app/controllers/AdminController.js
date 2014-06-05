@@ -1,8 +1,8 @@
 'use strict';
 
-function AdminController($scope, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService, FormService, Form, Layer, mageLib) {
+function AdminController($scope, $routeParams, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService, FormService, Form, Layer, mageLib) {
   // The variables that get set when clicking a team or user in the list, these get loaded into the editor.
-  $scope.currentAdminPanel = "user"; // possible values user, team, and device
+  $scope.currentAdminPanel = $routeParams.adminPanel || "user";
   $scope.currentUserFilter = "all"; // possible values all, active, unregistered
   $scope.currentDeviceFilter = "all"; // possible values all, registered, unregistered
   $scope.token = mageLib.getLocalItem('token');
@@ -267,6 +267,17 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     }
   }
 
+  $scope.refreshUsers = function() {
+    $scope.users = [];
+    $scope.filteredUsers = [];
+    UserService.getAllUsers().
+      success(function (data) {
+        $scope.users = data;
+        $scope.filteredUsers = $scope.users;
+        $scope.userSearch();
+      });
+  }
+
   $scope.editDevice = function (device) {
     $scope.device = device;
     $scope.setShowDeviceForm(true);
@@ -356,5 +367,16 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     } else if ($scope.currentDeviceFilter == 'unregistered') {
       $scope.filteredDevices = $scope.getUnregisteredDevices($scope.filteredDevices);
     }
+  }
+
+  $scope.refreshDevices = function() {
+    $scope.devices = [];
+    $scope.filteredDevices = [];
+    DeviceService.getAllDevices().
+      success(function (data) {
+        $scope.devices = data;
+        $scope.filteredDevices = $scope.devices;
+        $scope.deviceSearch();
+      });
   }
 }
