@@ -6,6 +6,7 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
     $scope.previewMode = false;
 
     $scope.fs = FormService;
+    $scope.saveTime = 0;
 
     $scope.form = FormService.editForm;
 
@@ -89,6 +90,11 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
         }
       });
     }, 1000);
+
+    $scope.$on('uploadComplete', function(event, args) {
+      $scope.savedTime = Date.now();
+      console.log('saved time ', $scope.savedTime);
+    });
 
     $scope.autoSave = function() {
       debouncedAutoSave();

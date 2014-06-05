@@ -32,7 +32,7 @@ mage.directive('simpleUpload', function() {
 
           reader.onload = (function(theFile) {
             return function(e) {
-              element.find('.preview').html(['<img src="', e.target.result,'" title="', theFile.name, '"/>'].join(''));
+              element.find('.preview').html(['<img cl***REMOVED***="preview-image" src="', e.target.result,'" title="', theFile.name, '"/>'].join(''));
             };
           })(file);
 
@@ -53,6 +53,7 @@ mage.directive('simpleUpload', function() {
         $scope.$apply(function() {
           $scope.uploadStatus = "Upload Complete";
           $scope.uploading = false;
+          $scope.$emit('uploadComplete', $scope.url);
         });
       }
 
@@ -85,7 +86,6 @@ mage.directive('simpleUpload', function() {
         });
       }
 
-      $scope.$watch('url', upload);
       $scope.$watch('allowUpload', upload);
     }
   };
