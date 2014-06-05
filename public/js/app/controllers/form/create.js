@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, FormService, Layer, Form, $filter, $timeout) {
+angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, FormService, Layer, Form, $filter, $timeout, ObservationService) {
 
     // preview form mode
     $scope.previewMode = false;
@@ -57,8 +57,11 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
     $scope.addNewField = function() {
 
         // put newField into fields array
-        $scope.newField.id = $scope.form.fields.length+1;
-        $scope.newField.name = "field" + ($scope.form.fields.length+1);
+
+        var id = $scope.form.fields[$scope.form.fields.length-1].id + 1;
+
+        $scope.newField.id = id;
+        $scope.newField.name = "field" + id;
         $scope.form.fields.push($scope.newField);
 
         $scope.newField = {
@@ -73,7 +76,6 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
 
     var debounceHideSave = _.debounce(function() {
       $scope.$apply(function() {
-        console.log('hide saved');
         $scope.saved = false;
       });
     }, 5000);
@@ -81,11 +83,12 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
     var debouncedAutoSave = _.debounce(function() {
       $scope.$apply(function() {
         if ($scope.form.id) {
-          $scope.form.$save();
-          console.log("Auto save");
-          $scope.saved = true;
-          $timeout(function() {
-            debounceHideSave();
+          $scope.form.$save({}, function() {
+            $scope.saved = true;
+            ObservationService.updateForm();
+            $timeout(function() {
+              debounceHideSave();
+            });
           });
         }
       });
@@ -93,7 +96,6 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
 
     $scope.$on('uploadComplete', function(event, args) {
       $scope.savedTime = Date.now();
-      console.log('saved time ', $scope.savedTime);
     });
 
     $scope.autoSave = function() {
@@ -246,8 +248,10 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
         angular.forEach(layers, function (layer) {
           if (layer.type == 'Feature') {
             layer.formId = form.id;
-            layer.$save();
-            appConstants.formId = form.id;
+            layer.$save({}, function() {
+              appConstants.formId = form.id;
+              ObservationService.updateForm();
+            });
           }
         });
       });

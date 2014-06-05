@@ -1,27 +1,11 @@
 'use strict';
 
-angular.module('mage').factory('ObservationService', ['$q', 'appConstants', 'Feature', 'UserService', 'Layer', 'Form', 'FormService',
-  function ($q, appConstants, Feature, UserService, Layer, Form, FormService) {
+angular.module('mage').factory('ObservationService', ['$q', 'appConstants','Layer', 'Form',
+  function ($q, appConstants, Layer, Form) {
     var ***REMOVED*** = {};
-
     ***REMOVED***.form = null;
-    var formDeferred = $q.defer();
-    var formPromise = formDeferred.promise;
-    var layers = Layer.query(function(){
-      angular.forEach(layers, function (layer) {
-        if (layer.type == 'Feature') {
-          Form.query(function(forms) {
-            angular.forEach(forms, function(returnedForm) {
-              if (returnedForm.id == layer.formId) {
-                formDeferred.resolve(returnedForm);
-                appConstants.formId = layer.formId;
-                ***REMOVED***.form = returnedForm;
-              }
-            });
-          });
-        }
-      });
-    });
+
+    var formPromise;
 
     ***REMOVED***.newForm = null;
     ***REMOVED***.createNewForm = function(observation) {
@@ -47,9 +31,33 @@ angular.module('mage').factory('ObservationService', ['$q', 'appConstants', 'Fea
       return promise;
     }
 
+    ***REMOVED***.updateForm = function() {
+      console.log('update form');
+      var formDeferred = $q.defer();
+
+      formPromise = formDeferred.promise;
+      var layers = Layer.query(function(){
+        angular.forEach(layers, function (layer) {
+          if (layer.type == 'Feature') {
+            Form.query(function(forms) {
+              angular.forEach(forms, function(returnedForm) {
+                if (returnedForm.id == layer.formId) {
+                  formDeferred.resolve(returnedForm);
+                  appConstants.formId = layer.formId;
+                  ***REMOVED***.form = returnedForm;
+                }
+              });
+            });
+          }
+        });
+      });
+    }
+
     ***REMOVED***.cancelNewForm = function() {
       ***REMOVED***.newForm = null;
     }
+
+    ***REMOVED***.updateForm();
 
     return ***REMOVED***;
   }
