@@ -352,3 +352,11 @@ div.image-button input {
 .muted {
 	color: #777777;
 }
+
+.file-custom:before {
+	box-sizing: border-box;
+}
+
+.file-custom {
+	box-sizing: border-box;
+}
