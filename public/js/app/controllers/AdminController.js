@@ -71,6 +71,10 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
     $scope.forms.push(newForm);
   }
 
+  $scope.importForm = function() {
+    
+  }
+
   /* Status message functions */
   /**
     @param {String} statusLevel - bootstrap alert cl***REMOVED***es: alert-error, alert-success, alert-info, or roll your own and add it to the css

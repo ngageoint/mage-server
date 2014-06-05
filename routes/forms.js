@@ -53,6 +53,24 @@ module.exports = function(app, security) {
     }
   );
 
+  // Import a form
+  app.post(
+    '/api/forms',
+    access.authorize('CREATE_LAYER'),
+    validateFormParams,
+    function(req, res, next) {
+      if (!req.is('application/zip')) return next();
+
+      Form.create(req.newForm, function(err, form) {
+        if (err) {
+          return res.send(400, err);
+        }
+
+        res.json(form);
+      });
+    }
+  );
+
   // Create a new form
   app.post(
     '/api/forms',

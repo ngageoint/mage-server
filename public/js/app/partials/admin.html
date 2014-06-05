@@ -219,7 +219,11 @@
           <div cl***REMOVED***="span12 top-gap" ng-show="currentAdminPanel == 'form'">
             <div cl***REMOVED***="row-fluid">
               <div cl***REMOVED***="span2">
-                <button cl***REMOVED***="btn" ng-click="createNewForm()"><i cl***REMOVED***="fa fa-plus-square-o icon-white"></i> New Form</button>
+                <button cl***REMOVED***="btn" ng-click="createNewForm()"><i cl***REMOVED***="fa fa-plus-square-o"></i> New Form</button>
+                <!-- <button cl***REMOVED***="btn" ng-click="importForm()"><i cl***REMOVED***="fa fa-sign-in"></i> Import Form</button> -->
+<form enctype="multipart/form-data" simple-upload url="{{'/api/forms/'+form.id+'/'+option.title+'?access_token=' + $parent.token}}" allow-upload="true" upload-file-form-name="'form'">
+
+</form>
                 <div ng-repeat="form in forms" cl***REMOVED***="row-fluid top-gap">
                   <div cl***REMOVED***="span12">
                     <a ng-click="editForm(form)"><i cl***REMOVED***="fa fa-check" ng-show="form.id == appConstants.formId"></i> {{form.name}}</a>
