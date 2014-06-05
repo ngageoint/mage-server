@@ -66,6 +66,12 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
             "value" : "",
             "required" : true
         };
+
+        $scope.autoSave();
+    }
+
+    $scope.autoSave = function() {
+      if ($scope.form.id) { $scope.form.$save(); }
     }
 
     $scope.populateVariants = function() {
@@ -75,6 +81,7 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
         // they do not want a variant
         $scope.variants = [];
         $scope.form.variantField = null;
+        if ($scope.form.id) { $scope.form.$save(); }
         return;
       }
       $scope.form.variantField = $scope.variantField.name;
@@ -86,6 +93,7 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
         $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
         $scope.showNumberVariants = true;
       }
+      if ($scope.form.id) { $scope.form.$save(); }
     }
 
     $scope.$watch('form', function() {
@@ -121,11 +129,13 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
           "title" : optionTitle,
           "value" : field.choices.length
       });
+      if ($scope.form.id) { $scope.form.$save(); }
     }
 
     $scope.removeVariant = function(variant) {
       $scope.variantField.choices = _.without($scope.variantField.choices, variant);
       $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
+      if ($scope.form.id) { $scope.form.$save(); }
     }
 
     $scope.addVariantOption = function(min, max) {
@@ -138,10 +148,12 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
       $scope.variantField.choices = $scope.variantField.choices || new Array();
       $scope.variantField.choices.push(newOption);
       $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
+      if ($scope.form.id) { $scope.form.$save(); }
     }
 
     $scope.addType = function() {
         $scope.addOption($scope.typeField);
+        if ($scope.form.id) { $scope.form.$save(); }
     }
 
     // delete particular option
@@ -152,6 +164,7 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
                 break;
             }
         }
+        if ($scope.form.id) { $scope.form.$save(); }
     }
 
 
