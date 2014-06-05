@@ -238,7 +238,7 @@
                               <form cl***REMOVED***="form-inline">
                                 <div cl***REMOVED***="control-group">
                                   <label cl***REMOVED***="control-label strong">Form Name</label>
-                                  <input type="text" name="form-name" ng-disabled="previewMode" ng-model="form.name"/>
+                                  <input type="text" name="form-name" ng-change="autoSave()" ng-disabled="previewMode" ng-model="form.name"/>
                                 </div>
                               </form>
                             </div>
@@ -251,7 +251,7 @@
                     <p ng-show="form.fields.length == 0">No fields added yet.</p>
                     <div cl***REMOVED***="well">
                       <accordion close-others="accordion.oneAtATime">
-                        <accordion-group heading="{{field.title}}" ng-repeat="field in form.fields">
+                        <accordion-group heading="{{field.title}}" ng-repeat="field in form.fields track by field.id">
                           <div cl***REMOVED***="accordion-edit">
                             <button ng-show="deletableField(field)" cl***REMOVED***="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i cl***REMOVED***="fa fa-trash icon-white"></i> Delete</button>
                             <div cl***REMOVED***="row-fluid">
@@ -266,12 +266,12 @@
                             </div>
                             <div cl***REMOVED***="row-fluid" ng-hide="showAddOptions(field)">
                               <div cl***REMOVED***="span2">Field Default Value:</div>
-                              <div cl***REMOVED***="span4"><input type="text" ng-change="autoSave()" ng-model="newField.value" value="{{newField.value}}"></div>
+                              <div cl***REMOVED***="span4"><input type="text" ng-change="autoSave()" ng-model="field.value" value="{{field.value}}"></div>
                             </div>
                             <div cl***REMOVED***="row-fluid" ng-show="showAddOptions(field)">
                               <div cl***REMOVED***="span2">Field Default Value:</div>
                               <div cl***REMOVED***="span4">
-                                <select ng-model="newField.value" ng-change="autoSave()" ng-options="choice.title for choice in field.choices">
+                                <select ng-model="field.value" ng-change="autoSave()" ng-options="choice.title for choice in field.choices">
                                   <option value="">No Default</option>
                                 </select>
                               </div>
