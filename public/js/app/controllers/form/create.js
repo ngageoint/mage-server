@@ -70,9 +70,13 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
         $scope.autoSave();
     }
 
-    $scope.autoSave = function() {
+    var debouncedAutoSave = _.debounce(function() {
       console.log("Auto save");
       if ($scope.form.id) { $scope.form.$save(); }
+    }, 1000);
+
+    $scope.autoSave = function() {
+      debouncedAutoSave();
     }
 
     $scope.populateVariants = function() {
@@ -99,11 +103,9 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
 
     $scope.$watch('form', function() {
       if (!$scope.form) return;
-      console.log('form changed');
       $scope.variantField = _.find($scope.form.fields, function(field) {
         return field.name == $scope.form.variantField;
       });
-      console.log('variant field set to', $scope.variantField);
     });
 
     $scope.$watch('variantField', $scope.populateVariants);
