@@ -81,7 +81,7 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
         // they do not want a variant
         $scope.variants = [];
         $scope.form.variantField = null;
-        if ($scope.form.id) { $scope.form.$save(); }
+        $scope.autoSave();
         return;
       }
       $scope.form.variantField = $scope.variantField.name;
@@ -93,7 +93,7 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
         $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
         $scope.showNumberVariants = true;
       }
-      if ($scope.form.id) { $scope.form.$save(); }
+      $scope.autoSave();
     }
 
     $scope.$watch('form', function() {
@@ -114,7 +114,7 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
                 break;
             }
         }
-        if ($scope.form.id) { $scope.form.$save(); }
+        $scope.autoSave();
     }
 
     $scope.variantFilter = function(field) {
@@ -129,13 +129,13 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
           "title" : optionTitle,
           "value" : field.choices.length
       });
-      if ($scope.form.id) { $scope.form.$save(); }
+      $scope.autoSave();
     }
 
     $scope.removeVariant = function(variant) {
       $scope.variantField.choices = _.without($scope.variantField.choices, variant);
       $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
-      if ($scope.form.id) { $scope.form.$save(); }
+      $scope.autoSave();
     }
 
     $scope.addVariantOption = function(min, max) {
@@ -148,7 +148,7 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
       $scope.variantField.choices = $scope.variantField.choices || new Array();
       $scope.variantField.choices.push(newOption);
       $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
-      if ($scope.form.id) { $scope.form.$save(); }
+      $scope.autoSave();
     }
 
     $scope.addType = function() {
@@ -164,9 +164,8 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
                 break;
             }
         }
-        if ($scope.form.id) { $scope.form.$save(); }
+        $scope.autoSave();
     }
-
 
     // preview form
     $scope.previewOn = function(){

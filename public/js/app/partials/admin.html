@@ -244,6 +244,8 @@
                             </div>
                         </div>
                     </div>
+                    <button ng-show="form.id && form.id != appConstants.formId" cl***REMOVED***="btn btn-success right" type="button" ng-click="useForm(form)"><i cl***REMOVED***="fa-check icon-white"></i>Use This Form</button>
+                    <a cl***REMOVED***="btn right" ng-show="form.id" ng-href="{{'/api/forms/'+form.id+'.zip?access_token=' + token}}"> <i cl***REMOVED***="fa fa-sign-out"></i> Export Form</a>
                     <hr>
                     <h3>Fields</h3>
                     <p ng-show="form.fields.length == 0">No fields added yet.</p>
@@ -260,16 +262,16 @@
                             <hr>
                             <div cl***REMOVED***="row-fluid">
                               <div cl***REMOVED***="span2">Field Title:</div>
-                              <div cl***REMOVED***="span4"><input type="text" ng-model="field.title" value="{{field.title}}"></div>
+                              <div cl***REMOVED***="span4"><input type="text" ng-change="autoSave()" ng-model="field.title" value="{{field.title}}"></div>
                             </div>
                             <div cl***REMOVED***="row-fluid" ng-hide="showAddOptions(field)">
                               <div cl***REMOVED***="span2">Field Default Value:</div>
-                              <div cl***REMOVED***="span4"><input type="text" ng-model="newField.value" value="{{newField.value}}"></div>
+                              <div cl***REMOVED***="span4"><input type="text" ng-change="autoSave()" ng-model="newField.value" value="{{newField.value}}"></div>
                             </div>
                             <div cl***REMOVED***="row-fluid" ng-show="showAddOptions(field)">
                               <div cl***REMOVED***="span2">Field Default Value:</div>
                               <div cl***REMOVED***="span4">
-                                <select ng-model="newField.value" ng-options="choice.title for choice in field.choices">
+                                <select ng-model="newField.value" ng-change="autoSave()" ng-options="choice.title for choice in field.choices">
                                   <option value="">No Default</option>
                                 </select>
                               </div>
@@ -292,11 +294,11 @@
                               <div cl***REMOVED***="span2">Required:</div>
                               <div cl***REMOVED***="span4">
                                 <label>
-                                  <input type="radio" ng-value="true" ng-selected ng-model="field.required"/>
+                                  <input type="radio" ng-value="true" ng-change="autoSave()" ng-selected ng-model="field.required"/>
                                   &nbsp; Yes
                                 </label>
                                 <label>
-                                  <input type="radio" ng-value="false" ng-model="field.required"/>
+                                  <input type="radio" ng-value="false" ng-change="autoSave()" ng-model="field.required"/>
                                   &nbsp; No
                                 </label>
                               </div>
@@ -448,9 +450,11 @@
                   <div cl***REMOVED***="row-fluid">
                     <div cl***REMOVED***="span12">
                       <p cl***REMOVED***="text-center">
-                      <a cl***REMOVED***="btn right" ng-show="form.id" ng-href="{{'/api/forms/'+form.id+'.zip?access_token=' + token}}"> <i cl***REMOVED***="fa fa-sign-out"></i> Export</a>
-                      <button cl***REMOVED***="btn btn-success right" type="button" ng-click="useForm(form)"><i cl***REMOVED***="fa-check icon-white"></i> Save And Use This Form</button>
-                      <button cl***REMOVED***="btn btn-primary right" type="button" ng-click="saveForm()"><i cl***REMOVED***="fa fa-save"></i> Save Form</button>
+                      <a cl***REMOVED***="btn right" ng-show="form.id" ng-href="{{'/api/forms/'+form.id+'.zip?access_token=' + token}}"> <i cl***REMOVED***="fa fa-sign-out"></i> Export Form</a>
+                      <div ng-hide="form.id">
+                        <button cl***REMOVED***="btn btn-success right" type="button" ng-click="useForm(form)"><i cl***REMOVED***="fa-check icon-white"></i> Create And Use This Form</button>
+                        <button cl***REMOVED***="btn btn-primary right" type="button" ng-click="saveForm()"><i cl***REMOVED***="fa fa-save"></i> Create Form</button>
+                      </div>
                     </p>
                     </div>
                   </div>
