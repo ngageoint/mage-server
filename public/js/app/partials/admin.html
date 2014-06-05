@@ -227,6 +227,9 @@
                 </div>
               </div>
               <div cl***REMOVED***="span10" ng-controller="CreateCtrl" ng-show="form">
+                <div style="position: fixed; top: 40px; left: 50%" cl***REMOVED***="fade alert alert-success" ng-cl***REMOVED***="{'in': saved, 'out': !saved}">
+                  Successfully Saved The Form
+                </div>
                 <h2 ng-hide="form.id">Create a new form</h2>
                 <h3 ng-show="form.id">Edit {{form.name}}</h3>
 
@@ -375,7 +378,7 @@
                       </div>
 
                       <h4>Choose a field to be used for icon variants:</h4>
-                      <select ng-model="variantField" ng-options="field as field.title for field in form.fields | filter: variantFilter track by field.id">
+                      <select ng-model="variantField" ng-change="populateVariants()" ng-options="field as field.title for field in form.fields | filter: variantFilter track by field.id">
                         <option value="">No Variant</option>
                       </select>
 

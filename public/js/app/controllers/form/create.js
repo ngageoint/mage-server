@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, FormService, Layer, Form, $filter) {
+angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, FormService, Layer, Form, $filter, $timeout) {
 
     // preview form mode
     $scope.previewMode = false;
@@ -70,23 +70,40 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
         $scope.autoSave();
     }
 
+    var debounceHideSave = _.debounce(function() {
+      $scope.$apply(function() {
+        console.log('hide saved');
+        $scope.saved = false;
+      });
+    }, 5000);
+
     var debouncedAutoSave = _.debounce(function() {
-      console.log("Auto save");
-      if ($scope.form.id) { $scope.form.$save(); }
+      $scope.$apply(function() {
+        if ($scope.form.id) {
+          $scope.form.$save();
+          console.log("Auto save");
+          $scope.saved = true;
+          $timeout(function() {
+            debounceHideSave();
+          });
+        }
+      });
     }, 1000);
 
     $scope.autoSave = function() {
       debouncedAutoSave();
     }
 
-    $scope.populateVariants = function() {
+    $scope.populateVariants = function(doNotAutoSave) {
       if (!$scope.form) return;
 
       if (!$scope.variantField) {
         // they do not want a variant
         $scope.variants = [];
         $scope.form.variantField = null;
-        $scope.autoSave();
+        if (!doNotAutoSave) {
+          $scope.autoSave();
+        }
         return;
       }
       $scope.form.variantField = $scope.variantField.name;
@@ -98,7 +115,9 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
         $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
         $scope.showNumberVariants = true;
       }
-      $scope.autoSave();
+      if (!doNotAutoSave) {
+        $scope.autoSave();
+      }
     }
 
     $scope.$watch('form', function() {
@@ -106,9 +125,10 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
       $scope.variantField = _.find($scope.form.fields, function(field) {
         return field.name == $scope.form.variantField;
       });
+      $scope.populateVariants(true);
     });
 
-    $scope.$watch('variantField', $scope.populateVariants);
+    //$scope.$watch('variantField', $scope.populateVariants);
 
     // deletes particular field on button click
     $scope.deleteField = function (id){
