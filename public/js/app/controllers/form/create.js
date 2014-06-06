@@ -1,11 +1,12 @@
 'use strict';
 
-angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, FormService, Layer, Form, $filter) {
+angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, FormService, Layer, Form, $filter, $timeout, ObservationService) {
 
     // preview form mode
     $scope.previewMode = false;
 
     $scope.fs = FormService;
+    $scope.saveTime = 0;
 
     $scope.form = FormService.editForm;
 
@@ -56,8 +57,11 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
     $scope.addNewField = function() {
 
         // put newField into fields array
-        $scope.newField.id = $scope.form.fields.length+1;
-        $scope.newField.name = "field" + ($scope.form.fields.length+1);
+
+        var id = $scope.form.fields[$scope.form.fields.length-1].id + 1;
+
+        $scope.newField.id = id;
+        $scope.newField.name = "field" + id;
         $scope.form.fields.push($scope.newField);
 
         $scope.newField = {
@@ -70,18 +74,44 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
         $scope.autoSave();
     }
 
+    var debounceHideSave = _.debounce(function() {
+      $scope.$apply(function() {
+        $scope.saved = false;
+      });
+    }, 5000);
+
+    var debouncedAutoSave = _.debounce(function() {
+      $scope.$apply(function() {
+        if ($scope.form.id) {
+          $scope.form.$save({}, function() {
+            $scope.saved = true;
+            ObservationService.updateForm();
+            $timeout(function() {
+              debounceHideSave();
+            });
+          });
+        }
+      });
+    }, 1000);
+
+    $scope.$on('uploadComplete', function(event, args) {
+      $scope.savedTime = Date.now();
+    });
+
     $scope.autoSave = function() {
-      if ($scope.form.id) { $scope.form.$save(); }
+      debouncedAutoSave();
     }
 
-    $scope.populateVariants = function() {
+    $scope.populateVariants = function(doNotAutoSave) {
       if (!$scope.form) return;
 
       if (!$scope.variantField) {
         // they do not want a variant
         $scope.variants = [];
         $scope.form.variantField = null;
-        $scope.autoSave();
+        if (!doNotAutoSave) {
+          $scope.autoSave();
+        }
         return;
       }
       $scope.form.variantField = $scope.variantField.name;
@@ -93,18 +123,20 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
         $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
         $scope.showNumberVariants = true;
       }
-      $scope.autoSave();
+      if (!doNotAutoSave) {
+        $scope.autoSave();
+      }
     }
 
     $scope.$watch('form', function() {
       if (!$scope.form) return;
-      console.log('form changed');
       $scope.variantField = _.find($scope.form.fields, function(field) {
         return field.name == $scope.form.variantField;
       });
+      $scope.populateVariants(true);
     });
 
-    $scope.$watch('variantField', $scope.populateVariants);
+    //$scope.$watch('variantField', $scope.populateVariants);
 
     // deletes particular field on button click
     $scope.deleteField = function (id){
@@ -216,8 +248,10 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
         angular.forEach(layers, function (layer) {
           if (layer.type == 'Feature') {
             layer.formId = form.id;
-            layer.$save();
-            appConstants.formId = form.id;
+            layer.$save({}, function() {
+              appConstants.formId = form.id;
+              ObservationService.updateForm();
+            });
           }
         });
       });
