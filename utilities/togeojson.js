@@ -74,7 +74,8 @@ var kml = function(data, o) {
         // atomic geospatial types supported by KML - MultiGeometry is
         // handled separately
         geotypes = ['Polygon', 'LineString', 'Point', 'Track'],
-        styles = get(doc, 'Style');
+        styles = get(doc, 'Style'),
+        styleMaps = get(doc, 'StyleMap');
 
     for (var k = 0; k < styles.length; k++) {
       var kmlStyle = styles[k];
@@ -88,10 +89,14 @@ var kml = function(data, o) {
 
         style.iconStyle = {};
         if (scale) style.iconStyle.scale = nodeVal(scale[0]);
+
         if (icon) {
           style.iconStyle.icon = {};
           var href = get(icon[0], 'href');
-          if (href) style.iconStyle.icon.href = nodeVal(href[0]);
+
+          if (href) {
+            style.iconStyle.icon.href = nodeVal(href[0]);
+          }
         }
 
       }
@@ -134,6 +139,25 @@ var kml = function(data, o) {
       }
 
       styleIndex[styleId] = style;
+    }
+
+    for (var k = 0; k < styleMaps.length; k++) {
+      var styleMap = styleMaps[k];
+      var pairs = xpath.select("Pair", styleMap);
+      for (var p = 0; p < pairs.length; p++) {
+        var key = get(pairs[p], 'key');
+        if (key) {
+          var keyName = nodeVal(key[0]);
+          if (keyName == 'normal') {
+            var styleUrl = get(pairs[p], 'styleUrl');
+            if (styleUrl) {
+              var styleUrlName = nodeVal(styleUrl[0]);
+              var styleId = '#' + attr(styleMap, 'id');
+              styleIndex[styleId] = styleIndex[styleUrlName];
+            }
+          }
+        }
+      }
     }
 
     // only ever get placemarks.
