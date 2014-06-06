@@ -360,3 +360,8 @@ div.image-button input {
 .file-custom {
 	box-sizing: border-box;
 }
+
+.preview-image {
+	width: 35px;
+	height: 46px;
+}
