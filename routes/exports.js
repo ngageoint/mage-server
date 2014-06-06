@@ -104,12 +104,12 @@ module.exports = function(app, security) {
       filter.lastLocationId = options.lastLocationId;
     }
     if (options.startDate) {
-      filter.startDate = options.startDate.clone().add('milliseconds', 1).toDate();
+      filter.startDate = options.startDate.toDate();
     }
     if (options.endDate) {
       filter.endDate = options.endDate.toDate();
     }
-    if(options.userId) {
+    if (options.userId) {
       filter.userId = options.userId;
     }
 
@@ -220,7 +220,7 @@ module.exports = function(app, security) {
 
               var locationTime = moment(last.properties.timestamp);
               lastLocationId = last._id;
-              if (!startDate || startDate.isBefore(locationTime) && locationTime.isBefore(Date.now())) {
+              if (!startDate || startDate.isBefore(locationTime)) {
                 startDate = locationTime;
               }
 
@@ -236,6 +236,7 @@ module.exports = function(app, security) {
       },
       function(err) {
         console.log('done writing all locations for to SHAPEFILE', err);
+
         done(err);
       });
     }
@@ -393,7 +394,7 @@ module.exports = function(app, security) {
           if (last) {
             var locationTime = moment(last.properties.timestamp);
             lastLocationId = last._id;
-            if (!startDate || startDate.isBefore(locationTime) && locationTime.isBefore(Date.now())) {
+            if (!startDate || startDate.isBefore(locationTime)) {
               startDate = locationTime;
             }
           }
