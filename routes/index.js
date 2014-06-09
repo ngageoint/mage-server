@@ -79,7 +79,7 @@ module.exports = function(app, security) {
 
   // Grab the form for any endpoint that uses formId
   app.param('formId', function(req, res, next, formId) {
-      Form.getById(formId, function(err, form) {
+      new api.Form().getById(formId, function(err, form) {
         if (!form) return res.send('Form not found', 404);
         req.form = form;
         next();
