@@ -2,6 +2,8 @@ module.exports = function(app, security) {
   var Form = require('../models/form')
     , api = require('../api')
     , access = require('../access')
+    , fs = require('fs-extra')
+    , Zip = require('adm-zip')
     , archiver = require('archiver');
 
   var p***REMOVED***port = security.authentication.p***REMOVED***port
@@ -23,7 +25,7 @@ module.exports = function(app, security) {
     '/api/forms',
     access.authorize('READ_LAYER'),
     function (req, res) {
-      Form.getAll(function (err, forms) {
+      new api.Form().getAll(function (err, forms) {
         res.json(forms);
       });
     }
@@ -34,13 +36,10 @@ module.exports = function(app, security) {
     '/api/forms/:formId.zip',
     access.authorize('READ_LAYER'),
     function(req, res, next) {
-      var iconBasePath = new api.Icon(req.form).getBasePath();
-      var archive = archiver('zip');
-      res.attachment("form.zip");
-      archive.pipe(res);
-      archive.bulk([{src: ['**'], dest: '/icons', expand: true, cwd: iconBasePath}]);
-      archive.append(JSON.stringify(req.form), {name: "form.json"});
-      archive.finalize();
+      new api.Form().export(req.form, function(err, file) {
+        res.attachment("form.zip");
+        file.pipe(res);
+      });
     }
   );
 
@@ -59,9 +58,9 @@ module.exports = function(app, security) {
     access.authorize('CREATE_LAYER'),
     validateFormParams,
     function(req, res, next) {
-      if (!req.is('application/zip')) return next();
+      if (!req.is('multipart/form-data')) return next();
 
-      Form.create(req.newForm, function(err, form) {
+      new api.Form().import(req.files.form, function(err, form) {
         if (err) {
           return res.send(400, err);
         }
@@ -77,7 +76,7 @@ module.exports = function(app, security) {
     access.authorize('CREATE_LAYER'),
     validateFormParams,
     function(req, res) {
-      Form.create(req.newForm, function(err, form) {
+      new api.Form().create(req.newForm, function(err, form) {
         if (err) {
           return res.send(400, err);
         }
@@ -93,7 +92,7 @@ module.exports = function(app, security) {
     access.authorize('UPDATE_LAYER'),
     validateFormParams,
     function(req, res) {
-      Form.update(req.form.id, req.newForm, function(err, form) {
+      new api.Form().update(req.form.id, req.newForm, function(err, form) {
         if (err) {
           return res.send(400, err);
         }
@@ -108,7 +107,7 @@ module.exports = function(app, security) {
     '/api/forms/:id',
     access.authorize('DELETE_LAYER'),
     function(req, res) {
-      Form.remove(req.param('id'), function(err) {
+      new api.Form().delete(req.param('id'), function(err) {
         if (err) return res.send(400, "Could not delete form");
 
         res.send(204);

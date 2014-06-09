@@ -84,6 +84,21 @@ Icon.prototype.create = function(icon, callback) {
   });
 }
 
+Icon.prototype.add = function(icon, callback) {
+  var relativePath = createIconPath(this, icon.name);
+  var newIcon = {
+    formId: this._form._id,
+    type: this._type,
+    variant: this._variant,
+    relativePath: relativePath
+  }
+
+  var iconPath = path.join(iconBase, relativePath);
+  IconModel.create(newIcon, function(err, oldIcon) {
+    callback(err, newIcon);
+  });
+}
+
 Icon.prototype.delete = function(callback) {
   var self = this;
   var conditions = {
