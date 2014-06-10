@@ -71,10 +71,6 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
     $scope.forms.push(newForm);
   }
 
-  $scope.importForm = function() {
-    
-  }
-
   /* Status message functions */
   /**
     @param {String} statusLevel - bootstrap alert cl***REMOVED***es: alert-error, alert-success, alert-info, or roll your own and add it to the css
@@ -382,5 +378,16 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
         $scope.filteredDevices = $scope.devices;
         $scope.deviceSearch();
       });
+  }
+
+  $scope.$on('formImportComplete', function(event, form) {
+    form = new Form(form);
+    $scope.forms.push(form);
+    FormService.setCurrentEditForm(form);
+    $scope.importSuccess = true;
+  });
+
+  $scope.removeForm = function(form) {
+    $scope.forms = _.reject($scope.forms, function(f) { return f.id == form.id});
   }
 }
