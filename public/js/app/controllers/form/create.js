@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, FormService, Layer, Form, $filter, $timeout, ObservationService) {
+angular.module('mage').controller('CreateCtrl', function ($scope, $injector, appConstants, FormService, Layer, Form, $filter, $timeout, ObservationService) {
 
     // preview form mode
     $scope.previewMode = false;
@@ -241,11 +241,38 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
       });
     }
 
-    $scope.deleteForm = function(form) {
-      form.$delete({}, function() {
+    $scope.deleteForm = function(layer) {
+      var modalInstance = $injector.get('$modal').open({
+        templateUrl: 'deleteForm.html',
+        resolve: {
+          form: function () {
+            return $scope.form;
+          }
+        },
+        controller: function ($scope, $modalInstance, form) {
+          $scope.form = form;
+
+          $scope.deleteForm = function(form, force) {
+            console.info('delete form');
+            form.$delete(function(success) {
+              console.info('form delete success');
+              $modalInstance.close(form);
+            });
+          }
+          $scope.cancel = function () {
+            $modalInstance.dismiss('cancel');
+          };
+        }
+      });
+
+      modalInstance.result.then(function (form) {
+        console.info('success');
         $scope.form = null;
         $scope.removeForm(form);
+      }, function () {
+        console.info('failure');
       });
+      return;
     }
 
     $scope.setFeatureForm = function(form) {
