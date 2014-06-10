@@ -136,8 +136,6 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
       $scope.populateVariants(true);
     });
 
-    //$scope.$watch('variantField', $scope.populateVariants);
-
     // deletes particular field on button click
     $scope.deleteField = function (id){
         for(var i = 0; i < $scope.form.fields.length; i++){
@@ -240,6 +238,13 @@ angular.module('mage').controller('CreateCtrl', function ($scope, appConstants, 
     $scope.useForm = function(form) {
       $scope.form.$save({}, function(savedForm) {
         $scope.setFeatureForm(form);
+      });
+    }
+
+    $scope.deleteForm = function(form) {
+      form.$delete({}, function() {
+        $scope.form = null;
+        $scope.removeForm(form);
       });
     }
 

@@ -37,7 +37,7 @@ module.exports = function(app, security) {
     access.authorize('READ_LAYER'),
     function(req, res, next) {
       new api.Form().export(req.form, function(err, file) {
-        res.attachment("form.zip");
+        res.attachment(req.form.name + ".zip");
         file.pipe(res);
       });
     }
@@ -62,7 +62,8 @@ module.exports = function(app, security) {
 
       new api.Form().import(req.files.form, function(err, form) {
         if (err) {
-          return res.send(400, err);
+          console.log('form error', err);
+          return res.send(400, err.message);
         }
 
         res.json(form);
@@ -78,7 +79,7 @@ module.exports = function(app, security) {
     function(req, res) {
       new api.Form().create(req.newForm, function(err, form) {
         if (err) {
-          return res.send(400, err);
+          return res.send(400, err.message);
         }
 
         res.json(form);
