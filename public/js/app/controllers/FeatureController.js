@@ -11,32 +11,6 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureService,
     isEditing = false;
   }
 
-  // $scope.saveObservation = function (observation) {
-  //
-  //   var fields = $scope.os.form.fields;
-  //   _.each(fields, function(field) {
-  //     observation.properties[field.name] = field.value;
-  //   });
-  //
-  //   console.log('trying to save', observation);
-  //
-  //   var create = observation.id == null;
-  //   var layerId = observation.layerId;
-  //   observation.$save({}, function(value, responseHeaders) {
-  //     create ? $scope.newFeature = value : $scope.updatedFeature = value;
-  //     $scope.newObservationEnabled = false;
-  //     $scope.activeFeature = null;
-  //     observation.layerId = layerId;
-  //     isEditing = false;
-  //     if ($scope.files && $scope.files.length > 0) {
-  //       $scope.fileUploadUrl ='/FeatureServer/' + observation.layerId + '/features/' + observation.id + '/attachments';
-  //       $scope.uploadFile(observation);
-  //     }
-  //     $scope.editMode = false;
-  //     $scope.$emit('newObservationSaved', observation);
-  //   });
-  // }
-
   $scope.deleteObservation = function (observation) {
     console.log('making call to archive observation');
     FeatureState.save(

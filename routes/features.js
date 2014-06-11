@@ -26,15 +26,7 @@ module.exports = function(app, auth) {
       return res.send(400, "cannot create feature 'geometry' param not specified");
     }
 
-    if (!feature.properties) {
-      return res.send(400, "cannot create feature 'properties.type' and 'properties.timestamp' params not specified");
-    }
-
-    if (!feature.properties.type) {
-      return res.send(400, "cannot create feature 'properties.type' param not specified");
-    }
-
-    if (!feature.properties.timestamp) {
+    if (!feature.properties || !feature.properties.timestamp) {
       return res.send(400, "cannot create feature 'properties.timestamp' param not specified");
     }
 
@@ -275,7 +267,7 @@ module.exports = function(app, auth) {
     }
   );
 
-  // This function will add an attachment for a particular observation 
+  // This function will add an attachment for a particular observation
   app.post(
     '/FeatureServer/:layerId/features/:featureId/attachments',
     access.authorize('CREATE_FEATURE'),

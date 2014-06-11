@@ -117,13 +117,7 @@ module.exports = function(app, security) {
   app.param('layerId', function(req, res, next, layerId) {
     Layer.getById(layerId, function(layer) {
       if (!layer) {
-        res.json({
-          error: {
-            code: 400,
-            message: "Layer / Table not found: " + layerId
-          }
-        });
-        return;
+        return res.send(400, "Layer / Table not found: ");
       }
 
       req.layer = layer;
@@ -135,13 +129,7 @@ module.exports = function(app, security) {
   app.param('formId', function(req, res, next, formId) {
     Form.getById(formId, function(err, form) {
       if (err || !form) {
-        res.json({
-          error: {
-            code: 400,
-            message: "Form not found: " + formId
-          }
-        });
-        return;
+        return res.send(400, "Form not found: " + formId);
       }
 
       req.form = form;
@@ -154,14 +142,7 @@ module.exports = function(app, security) {
     req.featureId = featureId;
     new api.Feature(req.layer).getById(featureId, function(feature) {
       if (!feature) {
-        res.json({
-          error: {
-            code: 404,
-            message: 'Feature (ID: ' + featureId + ') not found',
-            details: []
-          }
-        });
-        return;
+        return res.json(400, 'Feature (ID: ' + featureId + ') not found');
       }
 
       req.feature = feature;
