@@ -14,9 +14,9 @@ var attachmentBase = attachmentConfig.baseDirectory;
 var createAttachmentPath = function(layer) {
   var now = new Date();
   return path.join(
-    layer.collectionName, 
-    now.getFullYear().toString(), 
-    (now.getMonth() + 1).toString(), 
+    layer.collectionName,
+    now.getFullYear().toString(),
+    (now.getMonth() + 1).toString(),
     now.getDate().toString()
   );
 }
@@ -41,7 +41,7 @@ Attachment.prototype.getById = function(attachmentId, options, callback) {
     }
 
     if (attachment) attachment.path = path.join(attachmentBase, attachment.relativePath);
-    
+
     callback(null, attachment);
   });
 }
@@ -93,7 +93,7 @@ Attachment.prototype.update = function(id, attachment, callback) {
         if (err) return callback(err);
 
         callback(null, attachment);
-      });  
+      });
     });
   });
 }

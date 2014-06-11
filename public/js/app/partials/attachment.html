@@ -1,0 +1,33 @@
+<div ng-switch on="attachment.contentType">
+  <a ng-switch-when="image/jpg"  ng-href="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
+  <a ng-switch-when="image/jpeg" ng-href="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
+  <a ng-switch-when="image/png"  ng-href="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
+  <a ng-switch-when="image/gif"  ng-href="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
+  <input type="button" value="Delete" ng-show="edit && amAdmin && (attachment.contentType != 'application/octet-stream')" cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(observation, attachment.id)">
+  <div ng-switch-when="video/mp4">
+    <video cl***REMOVED***="news-feed-video" controls="controls">
+      <source ng-src="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token}}" type="video/mp4">
+    </video>
+    <i cl***REMOVED***="icon-sage icon-facetime-video"></i><a target="_blank" ng-href="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token}}"> Download video</a>
+  </div>
+
+  <div ng-switch-default>
+     <div ng-switch on="attachment.name.substr(attachment.name.lastIndexOf('.') + 1)">
+      <a ng-switch-when="jpg"  ng-href="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
+      <a ng-switch-when="jpeg" ng-href="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
+      <a ng-switch-when="png"  ng-href="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
+      <a ng-switch-when="gif"  ng-href="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-src="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
+      <input type="button" value="Delete" ng-show="edit && amAdmin && (attachment.contentType != 'application/octet-stream')" cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(observation, attachment.id)">
+      <div ng-switch-when="mp4">
+        <video cl***REMOVED***="news-feed-video" controls="controls">
+          <source ng-src="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token + '&synced=' + attachment.synced}}" type="video/mp4">
+        </video>
+        <i cl***REMOVED***="icon-sage icon-facetime-video"></i><a target="_blank" ng-href="{{'/FeatureServer/' + appConstants.featureLayerId + '/features/' + observationId + '/attachments/' + attachment.id + '?access_token=' + token}}"> Download video</a>
+      </div>
+      <div ng-switch-default ng-show="edit && amAdmin">
+        <span>{{attachment.name}}</span>
+        <div><button cl***REMOVED***="btn btn-danger" ng-click="deleteAttachment(observation, attachment.id)">Delete</button></div>
+      </div>
+     </div>
+  </div>
+</div>
