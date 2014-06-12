@@ -1,4 +1,5 @@
-var mongoose = require('mongoose');
+var mongoose = require('mongoose')
+  , Icon = require('./icon');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -29,6 +30,12 @@ var FormSchema = new Schema({
   fields: [FieldSchema]
 },{
     versionKey: false
+});
+
+FormSchema.pre('remove', function(done) {
+  var form = this;
+
+
 });
 
 var transform = function(form, ret, options) {
@@ -98,6 +105,8 @@ exports.remove = function(id, callback) {
       console.log("Could not remove form: " + err);
     }
 
-    callback(err);
+    Icon.remove({formId: id}, function(err) {
+      callback(err);
+    });
   });
 }

@@ -73,28 +73,25 @@ Form.prototype.import = function(file, callback) {
 
     var iconsEntry = zip.getEntry('form/icons/');
     if (iconsEntry) {
-      var iconPath = new api.Icon(newForm).getBasePath();
+      var iconPath = new api.Icon(newForm).getBasePath() + path.sep;
       console.log('extracting icons for imported zip to ', iconPath);
 
       zip.extractEntryTo(iconsEntry, iconPath, false, false);
 
       // for each file in each directory
       var walker = walk.walk(iconPath);
-      walker.on("file", function(root, stat, next) {
-        var name = stat.name;
-        var isBaseIconPath = path.basename(root) == newForm._id.toString();
+      walker.on("file", function(filePath, stat, next) {
         var type = null;
         var variant = null;
-        if (!isBaseIconPath) {
-          type = path.basename(root);
-
-          var basename = path.basename(name, path.extname(name));
-          if (basename != 'default') {
-            variant = basename;
-          }
+        var regex = new RegExp(iconPath + path.sep + "+(.*)");
+        var match = regex.exec(filePath);
+        if (match && match[1]) {
+          var variants = match[1].split("/");
+          type = variants.shift();
+          variant = variants.shift();
         }
 
-        new api.Icon(newForm, type, variant).add({name: name}, function(err, addedIcon) {
+        new api.Icon(newForm, type, variant).add({name: stat.name}, function(err, addedIcon) {
           next(err);
         });
       });
