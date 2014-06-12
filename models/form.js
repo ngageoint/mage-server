@@ -26,7 +26,7 @@ var FieldSchema = new Schema({
 
 var FormSchema = new Schema({
   name: { type: String, required: true },
-  variantField: {type:String},
+  variantField: { type:String, required: false },
   fields: [FieldSchema]
 },{
     versionKey: false
