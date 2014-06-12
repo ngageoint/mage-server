@@ -28,13 +28,11 @@ function createIconPath(icon, name) {
   if (icon._type != null) {
     iconPath = path.join(iconPath, icon._type);
     if (icon._variant != null) {
-      iconPath = path.join(iconPath, icon._variant + ext);
-    } else {
-      iconPath = path.join(iconPath, "default" + ext);
+      iconPath = path.join(iconPath, icon._variant);
     }
-  } else {
-    iconPath = path.join(iconPath, "default" + ext);
   }
+
+  iconPath = path.join(iconPath, "icon" + ext);
 
   return iconPath;
 }
@@ -93,7 +91,6 @@ Icon.prototype.add = function(icon, callback) {
     relativePath: relativePath
   }
 
-  var iconPath = path.join(iconBase, relativePath);
   IconModel.create(newIcon, function(err, oldIcon) {
     callback(err, newIcon);
   });
@@ -119,14 +116,13 @@ Icon.prototype.delete = function(callback) {
 
       callback(err);
 
-      //TODO need to remove the variant file, type dir, or default.png
-      var removePath;
-      if (self._type && self._variant) {
-        removePath = path.join(iconBase, icon.relativePath);
-      } else if (self._type) {
-        removePath = [iconBase, self._form._id, self._type].join("/");
-      } else {
-        removePath = path.join(iconBase, self._form._id.toString());
+      // remove the variant dir, type dir, or base dir
+      var removePath = path.join(iconBase, self._form._id);
+      if (self._type) {
+        removePath = path.join(removePath, self._type);
+        if (self._variant) {
+          removePath = path.join(removePath, self._variant);
+        }
       }
 
       console.log('removing icons: ', removePath);
