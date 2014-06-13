@@ -108,6 +108,7 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
       if (!$scope.variantField) {
         // they do not want a variant
         $scope.variants = [];
+        $scope.form.variantField = null;
         if (!doNotAutoSave) {
           $scope.autoSave();
         }
