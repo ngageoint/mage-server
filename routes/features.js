@@ -272,13 +272,14 @@ module.exports = function(app, auth) {
     '/FeatureServer/:layerId/features/:featureId/attachments',
     access.authorize('CREATE_FEATURE'),
     function(req, res, next) {
-      console.log("SAGE ESRI Features (ID) Attachments POST REST Service Requested");
+      console.log("MAGE Attachment POST REST Service Requested");
 
       new api.Attachment(req.layer, req.feature).create(req.featureId, req.files.attachment, function(err, attachment) {
         if (err) return next(err);
 
-        var feature = geojson.transform({attachments: [attachment.toObject()]});
-        return res.json(feature.attachments[0]);
+        var feature = req.feature;
+        feature.attachments = [attachment.toObject()];
+        return res.json(geojson.transform(feature, {path: getFeatureResource(req)}).attachments[0]);
       });
     }
   );
@@ -288,13 +289,14 @@ module.exports = function(app, auth) {
     '/FeatureServer/:layerId/features/:featureId/attachments/:attachmentId',
     access.authorize('UPDATE_FEATURE'),
     function(req, res, next) {
-      console.log("SAGE ESRI Features (ID) Attachments UPDATE REST Service Requested");
+      console.log("MAGE Attachment UPDATE REST Service Requested");
 
       new api.Attachment(req.layer, req.feature).update(req.featureId, req.files.attachment, function(err, attachment) {
         if (err) return next(err);
 
-        var feature = geojson.transform({attachments: [attachment.toObject()]});
-        return res.json(feature.attachments[0]);
+        var feature = req.feature;
+        feature.attachments = [attachment.toObject()];
+        return res.json(geojson.transform(feature, {path: getFeatureResource(req)}).attachments[0]);
       });
     }
   );
@@ -304,7 +306,7 @@ module.exports = function(app, auth) {
     '/FeatureServer/:layerId/features/:featureId/attachments/:attachmentId',
     access.authorize('DELETE_FEATURE'),
     function(req, res) {
-      console.log("SAGE ESRI Features (ID) Attachments DELETE REST Service Requested");
+      console.log("MAGE Attachment DELETE REST Service Requested");
 
       new api.Attachment(req.layer, req.feature).delete(req.param('attachmentId'), function(err) {
         res.send(200);
