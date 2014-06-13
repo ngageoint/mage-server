@@ -21,15 +21,15 @@ var createAttachmentPath = function(layer) {
   );
 }
 
-function Attachment(layer, featureId) {
+function Attachment(layer, feature) {
   this._layer = layer;
-  this._featureId = featureId;
+  this._feature = feature;
 };
 
 Attachment.prototype.getById = function(attachmentId, options, callback) {
   var size = options.size ? Number(options.size) : null;
 
-  FeatureModel.getAttachment(this._layer, this._featureId, attachmentId, function(attachment) {
+  FeatureModel.getAttachment(this._layer, this._feature._id, attachmentId, function(attachment) {
     if (size) {
       attachment.thumbnails.forEach(function(thumbnail) {
         if ((thumbnail.minDimension < attachment.height || !attachment.height)

@@ -16,7 +16,6 @@ mage.directive('observation', function (appConstants) {
           angular.copy(observation, scope.observation);
 
           if (scope.files && scope.files.length > 0) {
-            scope.fileUploadUrl ='/FeatureServer/' + appConstants.featureLayerId + '/features/' + observation.id + '/attachments';
             scope.uploadFile(observation);
           }
         });
