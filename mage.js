@@ -15,6 +15,9 @@ log.add(winston.transports.Console, {
   level: 'debug',
   colorize: true
 });
+
+mongoose.Error.messages.general.required = "{PATH} is required.";
+
 log.info('Starting mage');
 
 var optimist = require("optimist")
@@ -53,48 +56,48 @@ console.log('Provision: ' + provisioning.strategy);
 var app = express();
 var mongodbConfig = config.server.mongodb;
 
-  mongoose.connect(mongodbConfig.url, {server: {poolSize: mongodbConfig.poolSize}}, function(err) {
-    if (err) {
-      console.log('Error connecting to mongo database, please make sure mongodbConfig is running...');
-      throw err;
-    }
-  });
-  // mongoose.set('debug', function(collection, method, query, doc, options) {
-  //   log.debug("(mongoose) %s.%s(%j, %j, %j)", collection, method, query, doc, options);
-  // });
-  mongoose.set('debug', true);
+mongoose.connect(mongodbConfig.url, {server: {poolSize: mongodbConfig.poolSize}}, function(err) {
+  if (err) {
+    console.log('Error connecting to mongo database, please make sure mongodbConfig is running...');
+    throw err;
+  }
+});
+// mongoose.set('debug', function(collection, method, query, doc, options) {
+//   log.debug("(mongoose) %s.%s(%j, %j, %j)", collection, method, query, doc, options);
+// });
+mongoose.set('debug', true);
 
-  app.use(function(req, res, next) {
-    req.getRoot = function() {
-      return req.protocol + "://" + req.get('host');
-    }
+app.use(function(req, res, next) {
+  req.getRoot = function() {
+    return req.protocol + "://" + req.get('host');
+  }
 
-    req.getPath = function() {
-      return req.getRoot() + req.path;
-    }
+  req.getPath = function() {
+    return req.getRoot() + req.path;
+  }
 
-    return next();
-  });
+  return next();
+});
 
-  app.set('config', config);
-  app.enable('trust proxy');
+app.set('config', config);
+app.enable('trust proxy');
 
-  app.use(function(req, res, next) {
-    req.getRoot = function() {
-      return req.protocol + "://" + req.get('host');
-    }
-    return next();
-  });
-  app.use(require('body-parser')({ keepExtensions: true}));
-  app.use(require('method-override')());
-  app.use(require('multer')());
-  app.use(authentication.p***REMOVED***port.initialize());
-  app.use('/private', express.static(path.join(__dirname, "private")));
-  app.use(express.static(path.join(__dirname, "public")));
-  app.use(function(err, req, res, next) {
-    console.error(err.stack);
-    res.send(500, 'Internal server error, please contact MAGE administrator.');
-  });
+app.use(function(req, res, next) {
+  req.getRoot = function() {
+    return req.protocol + "://" + req.get('host');
+  }
+  return next();
+});
+app.use(require('body-parser')({ keepExtensions: true}));
+app.use(require('method-override')());
+app.use(require('multer')());
+app.use(authentication.p***REMOVED***port.initialize());
+app.use('/private', express.static(path.join(__dirname, "private")));
+app.use(express.static(path.join(__dirname, "public")));
+app.use(function(err, req, res, next) {
+  console.error(err.stack);
+  res.send(500, 'Internal server error, please contact MAGE administrator.');
+});
 
 
 // Configure routes
