@@ -183,18 +183,21 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
     $scope.newObservationEnabled = false;
     isEditing = false;
 
-    var existingFeature = _.find(appConstants.featureLayer.features, function(feature) {
+    // this will get me a new copy of the array to mod and p***REMOVED*** to leaflet leaflet-directive
+    // as below this is not great and can be reworked if there is one place to look for features
+    var features = appConstants.featureLayer.features.slice(0);
+    var existingFeature = _.find(features, function(feature) {
       return feature.id == observation.id;
     });
+
     if (existingFeature) {
       existingFeature = observation;
     } else {
-      appConstants.featureLayer.features.push(observation);
+      features.push(observation);
     }
-    // this has to change.  This is how the leaflet-directive knows to pick up new features, but it is not good
-    $scope.layer.features = {features: appConstants.featureLayer.features};
 
-    createAllFeaturesArray();
+    // this has to change.  This is how the leaflet-directive knows to pick up new features, but it is not good
+    $scope.layer.features = {features: features};
   });
 
   $scope.$on('observationDeleted', function(event, observation) {
