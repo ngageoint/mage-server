@@ -88,13 +88,13 @@ var kml = function(data, o) {
         var icon = get(iconStyle[0], 'Icon');
 
         style.iconStyle = {};
-        if (scale) style.iconStyle.scale = nodeVal(scale[0]);
+        if (scale[0]) style.iconStyle.scale = nodeVal(scale[0]);
 
         if (icon) {
           style.iconStyle.icon = {};
           var href = get(icon[0], 'href');
 
-          if (href) {
+          if (href[0]) {
             style.iconStyle.icon.href = nodeVal(href[0]);
           }
         }
@@ -105,12 +105,12 @@ var kml = function(data, o) {
       if (lineStyle[0]) {
         style.lineStyle = {};
         var color = get(lineStyle[0], 'color');
-        if (color) {
+        if (color[0]) {
           style.lineStyle.color = parseColor(nodeVal(color[0]));
         }
 
         var width = get(lineStyle[0], 'width');
-        if (width) {
+        if (width[0]) {
           style.lineStyle.width = nodeVal(width[0]);
         }
       }
@@ -119,12 +119,12 @@ var kml = function(data, o) {
       if (labelStyle[0]) {
         style.labelStyle = {};
         var color = get(labelStyle[0], 'color');
-        if (color) {
+        if (color[0]) {
           style.labelStyle.color = parseColor(nodeVal(color[0]));
         }
 
         var scale = get(labelStyle[0], 'scale');
-        if (scale) {
+        if (scale[0]) {
           style.labelStyle.color = nodeVal(scale[0]);
         }
       }
@@ -133,7 +133,7 @@ var kml = function(data, o) {
       if (polyStyle[0]) {
         style.polyStyle = {};
         var color = get(polyStyle[0], 'color');
-        if (color) {
+        if (color[0]) {
           style.polyStyle.color = parseColor(nodeVal(color[0]));
         }
       }
