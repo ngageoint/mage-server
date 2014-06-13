@@ -91,6 +91,7 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
       $scope.featureLayers = MapService.featureLayers = _.filter(layers, function(layer) {
         return layer.type == 'Feature';
       });
+      appConstants.featureLayer = $scope.featureLayers[0];
       appConstants.featureLayerId = $scope.featureLayers[0].id;
 
       // Pull out all imagery layers
@@ -154,24 +155,6 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
     ObservationService.createNewForm($scope.newObservation).then(function(form) {
       ObservationService.newForm = form;
     });
-
-    // $scope.newFeature = ObservationService.createNewObservation();
-    // $scope.newFeature.properties.level = "low";
-
-    // isEditing = false;
-    // $scope.newObservationEnabled = true;
-    // $scope.observationTab = 1;
-    // $scope.observationCloseText = "Cancel";
-    // $scope.attachments = [];
-    // $scope.files = [];
-
-    // if ($scope.markerLocation) {
-    //   $scope.newFeature.geometry.coordinates = [$scope.markerLocation.lng, $scope.markerLocation.lat];
-    // }
-    // $scope.newFeature.properties.timestamp = new Date();
-    // if (MapService.featureLayers.length == 1) {
-    //   $scope.newFeature.layerId = MapService.featureLayers[0].id;
-    // }
   }
 
   $scope.$watch('newObservation.id', function(newObservation) {
@@ -199,22 +182,17 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
   $scope.$on('newObservationSaved', function(event, observation) {
     $scope.newObservationEnabled = false;
     isEditing = false;
-    var featureLayer = _.find($scope.featureLayers, function(layer) {
-      return layer.id == observation.layerId;
-    });
 
-    if (featureLayer) {
-      var existingFeature = _.find(featureLayer.features, function(feature) {
-        return feature.id == observation.id;
-      });
-      if (existingFeature) {
-        existingFeature = observation;
-      } else {
-        featureLayer.features.push(observation);
-      }
-      // this has to change.  This is how the leaflet-directive knows to pick up new features, but it is not good
-      $scope.layer.features = {features: featureLayer.features};
+    var existingFeature = _.find(appConstants.featureLayer.features, function(feature) {
+      return feature.id == observation.id;
+    });
+    if (existingFeature) {
+      existingFeature = observation;
+    } else {
+      appConstants.featureLayer.features.push(observation);
     }
+    // this has to change.  This is how the leaflet-directive knows to pick up new features, but it is not good
+    $scope.layer.features = {features: appConstants.featureLayer.features};
 
     createAllFeaturesArray();
   });

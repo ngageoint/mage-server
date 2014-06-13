@@ -14,6 +14,7 @@ mage.directive('observation', function (appConstants) {
         scope.form.getObservation().$save({}, function(observation) {
           scope.form = null;
           angular.copy(observation, scope.observation);
+          scope.$emit('newObservationSaved', observation);
 
           if (scope.files && scope.files.length > 0) {
             scope.uploadFile(observation);
