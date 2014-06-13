@@ -1,7 +1,6 @@
 module.exports = function(options) {
 
-var featureTypes = require('../models/featureType')
-  , moment = require('moment')
+var moment = require('moment')
   , config = require('../config.json');
 
 var deploymentType = config.server.type;
@@ -9,19 +8,19 @@ var deploymentType = config.server.type;
 var timeFormat = "YYYY-MM-DDTHH:mm:ss";
 
 var generateKMLHeader = function() {
-  var header = "<?xml version='1.0' encoding='UTF-8'?>" + 
-               "<kml xmlns='http://www.opengis.net/kml/2.2' " + 
-               "xmlns:gx='http://www.google.com/kml/ext/2.2' " + 
-               "xmlns:kml='http://www.opengis.net/kml/2.2' " + 
+  var header = "<?xml version='1.0' encoding='UTF-8'?>" +
+               "<kml xmlns='http://www.opengis.net/kml/2.2' " +
+               "xmlns:gx='http://www.google.com/kml/ext/2.2' " +
+               "xmlns:kml='http://www.opengis.net/kml/2.2' " +
                "xmlns:atom='http://www.w3.org/2005/Atom'>";
   return header;
 };
 
 var generateKMLDocument = function() {
-	
-  var types = featureTypes.getFeatureTypes(deploymentType);
 
-  var doc = "<Document>" + 
+  var types = {}; //featureTypes.getFeatureTypes(deploymentType);
+
+  var doc = "<Document>" +
 	          "  <name>MAGE-Export.kml</name>" +
 	          "  <open>1</open>";
 
@@ -31,12 +30,12 @@ var generateKMLDocument = function() {
     doc += "<Style id='" + type.name + "-yellow'><IconStyle><Icon><href>icons/yellow/" + type.kmlIcon + ".png</href></Icon></IconStyle></Style>";
     doc += "<Style id='" + type.name + "-red'><IconStyle><Icon><href>icons/red/" + type.kmlIcon +       ".png</href></Icon></IconStyle></Style>";
   });
-	
+
   return doc;
 };
 
 var generateKMLFolderStart = function(name) {
-  var folder = "<Folder>" + 
+  var folder = "<Folder>" +
                "  <name>" + name + "</name>";
 
   return folder;
@@ -56,11 +55,11 @@ var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachm
 
   description += '<table style="font-family:Arial,Verdana,Times;font-size:12px;text-align:left;width:100%;border-collapse:collapse;padding:3px 3px 3px 3px">';
 
-  description += 
+  description +=
     '<tr bgcolor="#D4E4F3">' +
       '<td>Lat</td>' + '<td>' + lat + '</td>' +
     '<tr>';
-  description += 
+  description +=
     '<tr>' +
       '<td>Lon</td>' + '<td>' + lon + '</td>' +
     '<tr>';
@@ -71,7 +70,7 @@ var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachm
     if (odd) color = "#D4E4F3";
     odd = !odd;
 
-    description += 
+    description +=
     '<tr bgcolor="' + color + '">' +
       '<td>' + key + '</td>' + '<td>' + feature[key] + '</td>' +
     '</tr>';
@@ -88,8 +87,8 @@ var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachm
 
       //determine media type (image or other)
       if ((/^image/).test(attachment.contentType)) {
-        description += 
-          '<div>' + 
+        description +=
+          '<div>' +
             '<img src="files/' + attachment.relativePath + '" width="150"; height="150";/>' +
           '</div>';
       }
@@ -119,9 +118,9 @@ var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachm
   }
 
   //build the actual placemark
-  var placemark = 
-    "<Placemark>" + 
-      "<name>" + name + " " + feature.timestamp + "</name>" + 
+  var placemark =
+    "<Placemark>" +
+      "<name>" + name + " " + feature.timestamp + "</name>" +
       "<visibility>0</visibility>" +
       "<styleUrl>#" + styleUrl + "-" + styleColor + "</styleUrl>" +
       "<Point>" +
@@ -135,12 +134,12 @@ var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachm
 };
 
 var generateKMLDocumentClose = function() {
-  var doc = "</Document>";	
+  var doc = "</Document>";
   return doc;
 };
 
 var generateKMLFolderClose = function() {
-  var folder = "</Folder>";  
+  var folder = "</Folder>";
   return folder;
 };
 
