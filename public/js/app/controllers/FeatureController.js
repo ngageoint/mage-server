@@ -37,7 +37,7 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureService,
   }
 
   $scope.uploadFile = function(observation) {
-    var fileUploadUrl ='/FeatureServer/' + appConstants.featureLayerId + '/features/' + observation.id + '/attachments';
+    var fileUploadUrl ='/FeatureServer/' + appConstants.featureLayer.id + '/features/' + observation.id + '/attachments';
 
     var fd = new FormData()
     for (var i in $scope.files) {

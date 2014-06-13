@@ -15,7 +15,7 @@ mage.directive('attachment', function () {
       $scope.token = mageLib.getToken();
 
       $scope.deleteAttachment = function (observation, attachmentId) {
-        FeatureAttachment.delete({id: $scope.attachment.id, layerId: appConstants.featureLayerId, featureId: $scope.attachmentObservation.id}, function(success) {
+        FeatureAttachment.delete({id: $scope.attachment.id, layerId: appConstants.featureLayer.id, featureId: $scope.attachmentObservation.id}, function(success) {
           $scope.attachmentObservation.attachments = _.filter($scope.attachmentObservation.attachments, function(attachment) {return attachment.id != $scope.attachment.id});
         });
       }
