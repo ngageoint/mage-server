@@ -189,7 +189,7 @@ module.exports = function(app, security) {
     '/api/logout',
     isAuthenticated(authenticationStrategy),
     function(req, res, next) {
-      if (!req.user) { 
+      if (!req.user) {
         res.send(200, 'not logged in');
       }
 
@@ -203,7 +203,7 @@ module.exports = function(app, security) {
 
   // get all uses
   app.get(
-    '/api/users', 
+    '/api/users',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_USER'),
     function(req, res) {
@@ -222,7 +222,7 @@ module.exports = function(app, security) {
   );
 
   // get user by id
-  app.get( 
+  app.get(
     '/api/users/:userId',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_USER'),
@@ -286,7 +286,7 @@ module.exports = function(app, security) {
       var role = req.param('role');
       if (!role) return res.send(400, 'role is a required field');
       req.newUser.role = role;
-      
+
       // Authorized to update users, activate account by default
       req.newUser.active = true;
 
@@ -347,18 +347,17 @@ module.exports = function(app, security) {
 
   // Update a specific user
   app.put(
-    '/api/users/:userId', 
+    '/api/users/:userId',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('UPDATE_USER'),
     function(req, res) {
       User.getUserById(req.params.userId, function(err, user) {
         if (err) return res.send(400, 'User not found');
-
         if (req.param('active')) user.active = req.param('active');
-        if (req.param('username')) user.username = req.param('username');
-        if (req.param('firstname')) user.firstname = req.param('firstname');
-        if (req.param('lastname')) user.lastname = req.param('lastname');
-        if (req.param('email')) user.email = req.param('email');
+        user.username = req.param('username');
+        user.firstname = req.param('firstname');
+        user.lastname = req.param('lastname');
+        user.email = req.param('email');
         if (req.param('role')) user.role = req.param('role');
         var phone = req.param('phone');
         if (phone) {
@@ -383,7 +382,8 @@ module.exports = function(app, security) {
         }
 
         User.updateUser(user, function(err, updatedUser) {
-          if (err) return res.send(400, "Error updating user, " + err.message);
+          console.log('error', err);
+          if (err) return res.send(400, "Error updating user, " + err.toString());
 
           res.json(updatedUser);
         });
@@ -393,7 +393,7 @@ module.exports = function(app, security) {
 
   // Delete a specific user
   app.delete(
-    '/api/users/:userId', 
+    '/api/users/:userId',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('DELETE_USER'),
     function(req, res) {
