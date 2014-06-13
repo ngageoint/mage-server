@@ -36,7 +36,6 @@ module.exports = function(app, security) {
 
         if (!iconPath) return res.send(404);
 
-        console.log('getting image', iconPath);
         res.sendfile(iconPath);
       });
     }
