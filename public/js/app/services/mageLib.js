@@ -36,7 +36,7 @@ angular.module('mage.lib', [])
 
       libFunctions.setLocalItem = function (key, value) {
         try {
-          if ('localStorage' in window && window['localStorage'] !== null) {
+          if ('localStorage' in window && window.localStorage !== null) {
             return localStorage.setItem(key, value);
           }
         } catch (e) {

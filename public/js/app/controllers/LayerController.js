@@ -28,17 +28,17 @@ function LayerController($scope, $log, $http, $injector, appConstants, mageLib, 
     });
 
     $scope.showLayerForm = true;
+    $scope.layers.push($scope.layer);
   }
 
   $scope.saveLayer = function () {
     var layer = $scope.layer;
     $scope.layer.$save({}, function(success) {
       $scope.fileUploadOptions = {
-        url: '/FeatureServer/'+$scope.layer.id+'/import?access_token='+mageLib.getLocalItem('token'),
+        url: '/FeatureServer/' + $scope.layer.id + '/import?access_token=' + mageLib.getLocalItem('token'),
         acceptFileTypes: /(\.|\/)(kml)$/i,
       };
     });
-    $scope.layers.push($scope.layer);
   }
 
   $scope.addAnotherFile = function() {
@@ -55,7 +55,7 @@ function LayerController($scope, $log, $http, $injector, appConstants, mageLib, 
     //$scope.fileUploadOptions.url = '/FeatureServer/'+layer.id+'/import';
     console.info('changing the file upload options');
     $scope.fileUploadOptions = {
-      url: '/FeatureServer/'+layer.id+'/import?access_token='+mageLib.getLocalItem('token'),
+      url: '/FeatureServer/ '+ layer.id + '/import?access_token=' + mageLib.getLocalItem('token'),
       acceptFileTypes: /(\.|\/)(kml)$/i,
     };
   }

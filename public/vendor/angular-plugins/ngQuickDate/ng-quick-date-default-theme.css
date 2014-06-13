@@ -8,7 +8,6 @@
 .quickdate select {
   font-size: 13px;
 }
-
 .quickdate-button {
   background: #ffffff;
   color: #333333;
@@ -19,13 +18,11 @@
   display: inline-block;
   text-decoration: none;
 }
-
-.quickdate-button a {
+a.quickdate-button {
   color: #333333;
 }
-
 .quickdate-button:hover {
-  text-decoration: underline;
+  text-decoration: none;
 }
 .quickdate-button:hover i {
   text-decoration: none;
