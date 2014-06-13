@@ -66,12 +66,12 @@ module.exports = function(app, auth) {
 
     var startDate = req.param('startDate');
     if (startDate) {
-      parameters.filter.startDate = moment.utc(startDate).toDate();
+      parameters.filter.startDate = moment(startDate).utc().toDate();
     }
 
     var endDate = req.param('endDate');
     if (endDate) {
-      parameters.filter.endDate = moment.utc(endDate).toDate();
+      parameters.filter.endDate = moment(endDate).utc().toDate();
     }
 
     var bbox = req.param('bbox');

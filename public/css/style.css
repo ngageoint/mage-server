@@ -14,8 +14,8 @@ a {
 }
 
 body {
-	background: #EEEEEE;
-	color: #1B4069;
+	background: #D0E7FF;
+	color: #6389b3;
 }
 
 img.rotate180 {
@@ -268,7 +268,7 @@ textarea {
 
 .icon-sage-inverse {
     color: #FEFEFE;
-    font-size: 1.4em;
+    font-size: 1.2em;
     background-image: none;
     margin-bottom: 9px;
 }

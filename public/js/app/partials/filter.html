@@ -1,5 +1,7 @@
 <div cl***REMOVED***="filter-panel" ng-show="showFilter">
   <h3>Filter</h3>
+
+  <h4>Layers</h4>
   <form cl***REMOVED***="form">
     <div cl***REMOVED***="control-group">
       <div cl***REMOVED***="controls">
@@ -15,9 +17,6 @@
     </div>
 
     <div ng-show="featureLayers.length > 0">
-      <div style="display: inline-block;">
-        <h4>Feature Layers</h4>
-      </div>
       <div cl***REMOVED***="control-group">
         <div cl***REMOVED***="controls">
           <div ng-repeat="layer in featureLayers">
@@ -25,11 +24,6 @@
               <input type="checkbox" ng-model="layer.checked" ng-change="onFeatureLayer(layer)"/>{{layer.name}}
               <i cl***REMOVED***="icon-globe icon-spin" ng-show="loadingLayers[layer.id]" style="margin-left: 7px;"></i>
             </label>
-            <!--
-            <label cl***REMOVED***="checkbox" ng-show="layer.checked">
-              <input style="margin-left: 0px" type="checkbox" ng-model="layer.hideClearedFeatures" ng-click="hideClearedFeatures(layer)" ngm-tap="hideClearedFeatures(layer)"/>Hide Cleared Features
-            </label>
-          -->
           </div>
         </div>
       </div>
@@ -58,6 +52,30 @@
       </div>
     </div>
   </form>
+
+  <h4>Time</h4>
+  <div cl***REMOVED***="control-group">
+    <select ng-model="interval" ng-options="o.label for o in intervals" ng-change="updateInterval()"></select>
+
+    <div ng-show="interval.filter == 'custom'">
+      <div>
+        <div cl***REMOVED***="control-group">
+          <label cl***REMOVED***="control-label">Start Date/Time</label>
+          <quick-datepicker ng-model='filterStartDate' icon-cl***REMOVED***='fa fa-calendar' time-format="HH:mm:ss" ng-change="updateInterval()"></quick-datepicker>
+          <button type="button" ng-click="localTime = !localTime" ngm-tap="localTime = !localTime" cl***REMOVED***="btn quickdate-button"><i cl***REMOVED***="fa fa-clock-o"></i><span ng-show="localTime"> Local (GMT {{localOffset}})</span><span ng-show="!localTime"> GMT (GMT +00:00)</span></button>
+        </div>
+      </div>
+
+      <div>
+        <div cl***REMOVED***="control-group">
+          <label cl***REMOVED***="control-label">End Date/Time</label>
+          <quick-datepicker ng-model='filterEndDate' icon-cl***REMOVED***='fa fa-calendar' time-format="HH:mm:ss" ng-change="updateInterval()"></quick-datepicker>
+          <button type="button" ng-click="localTime = !localTime" ngm-tap="localTime = !localTime" cl***REMOVED***="btn quickdate-button"><i cl***REMOVED***="fa fa-clock-o"></i><span ng-show="localTime"> Local (GMT {{localOffset}})</span><span ng-show="!localTime"> GMT (GMT +00:00)</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div cl***REMOVED***="row-fluid">
     <button cl***REMOVED***="btn btn-inverse pull-right" ng-click="showFilter = false" ngm-tap="showFilter = false">Close</button>
   </div>

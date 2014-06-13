@@ -13,6 +13,7 @@
   text-align: center;
   width: 250px;
   display: none;
+  position: absolute;
   padding: 5px;
 }
 .quickdate-popup.open {
@@ -107,14 +108,10 @@ table.quickdate-calendar td:hover {
   padding: 4px 8px;
   display: inline-block;
   text-decoration: none;
-  margin-bottom: 15px;
 }
-
 a.quickdate-button {
-  width: 100%;
   color: #333333;
 }
-
 .quickdate-button:hover {
   text-decoration: none;
 }

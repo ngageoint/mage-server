@@ -13,6 +13,7 @@
   text-align: center;
   width: 250px;
   display: none;
+  position: absolute;
   padding: 5px;
 }
 .quickdate-popup.open {
