@@ -277,7 +277,7 @@
                             <div cl***REMOVED***="row-fluid" ng-show="showAddOptions(field)">
                               <div cl***REMOVED***="span2">Field Default Value:</div>
                               <div cl***REMOVED***="span4">
-                                <select ng-model="field.value" ng-change="autoSave()" ng-options="choice.title for choice in field.choices">
+                                <select ng-model="field.value" ng-change="autoSave()" ng-options="choice.title as choice.title for choice in field.choices">
                                   <option value="">No Default</option>
                                 </select>
                               </div>
