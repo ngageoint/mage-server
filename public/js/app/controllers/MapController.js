@@ -92,7 +92,6 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
         return layer.type == 'Feature';
       });
       appConstants.featureLayer = $scope.featureLayers[0];
-      appConstants.featureLayerId = $scope.featureLayers[0].id;
 
       // Pull out all imagery layers
       $scope.baseLayers = MapService.baseLayers = _.filter(layers, function(layer) {
@@ -161,7 +160,7 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
     if (!newObservation) return;
 
     var featureLayer = _.find($scope.featureLayers, function(layer) {
-      return layer.id == appConstants.featureLayerId;
+      return layer.id == appConstants.featureLayer.id;
     });
 
     if (!featureLayer.features) return;
@@ -366,21 +365,12 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
 
 
   $scope.onFeatureLayer = function(layer) {
-    var timerName = 'pollLayer'+layer.id;
-    if (!layer.checked) {
-      $scope.layer = {id: layer.id, checked: false};
-      var featureLayer = _.find($scope.featureLayers, function(l) {
-        return l.id == layer.id;
-      });
-      if (!featureLayer) {
-        featureLayer = _.find($scope.externalLayers, function(l) {
-          return l.id == layer.id;
-        });
-      }
-      featureLayer.features = [];
-      createAllFeaturesArray();
-    } else {
+    if (layer.checked) {
       loadLayer(layer);
+    } else {
+      $scope.layer = {id: layer.id, checked: false};
+      layer.features = [];
+      createAllFeaturesArray();
     }
   }
 
