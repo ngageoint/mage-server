@@ -34,7 +34,7 @@ angular.module('mage').factory('Form', ['$resource', '$http', 'appConstants', 'F
   Form.prototype.getObservation = function() {
     var observation = new Feature({
       type: 'Feature',
-      layerId: appConstants.featureLayerId,
+      layerId: appConstants.featureLayer.id,
       properties: {
       }
     });
