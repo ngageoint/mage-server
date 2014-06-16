@@ -429,18 +429,20 @@ L.AwesomeMarkers.divIcon = function (options) {
         }); // watch layer
 
         var featuresUpdated = function(features) {
-          console.log('feautes updated')
+          console.log('features updated')
           if (!features) return;
 
           if (layers[scope.layer.id]) {
             var addThese = {
               features: []
             };
+
             for (var i = 0; i < features.features.length; i++) {
               var marker = markers[scope.layer.id][features.features[i].id];
               if (!marker) {
                 addThese.features.push(features.features[i]);
               } else {
+                marker.setLatLng(L.latLng(features.features[i].geometry.coordinates[1], features.features[i].geometry.coordinates[0]));
                 marker.setIcon(createIcon(features.features[i]));
               }
             }
