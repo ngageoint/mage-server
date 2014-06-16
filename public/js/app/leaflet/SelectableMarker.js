@@ -23,6 +23,10 @@
 
       map.on('layeradd', this._onLayerAdd, this);
       map.on('layerremove', this._onLayerRemove, this);
+
+      this.on('move', function(e) {
+        this._selectMarker.setLatLng(e.latlng);
+      });
     },
 
     select: function () {
@@ -71,7 +75,7 @@
         // The marker/layer being removed is the selected marker.
         // Remove the select marker as well
         o.target.removeLayer(this._selectMarker);
-      }  
+      }
     }
 
   });
