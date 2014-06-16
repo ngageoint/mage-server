@@ -18,6 +18,15 @@ var IconSchema = new Schema({
 var Icon = mongoose.model('Icon', IconSchema);
 exports.Model = Icon;
 
+exports.getAll = function(options, callback) {
+  var conditions = {};
+  if (options.formId) conditions.formId = options.formId;
+
+  Icon.find(conditions, function(err, icons) {
+    callback(err, icons);
+  });
+}
+
 exports.getIcon = function(options, callback) {
   var type = options.type;
   var variant = options.variant;

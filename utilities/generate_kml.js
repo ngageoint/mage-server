@@ -1,49 +1,49 @@
 module.exports = function(options) {
 
 var moment = require('moment')
+  , path = require('path')
   , config = require('../config.json');
-
-var deploymentType = config.server.type;
 
 var timeFormat = "YYYY-MM-DDTHH:mm:ss";
 
 var generateKMLHeader = function() {
-  var header = "<?xml version='1.0' encoding='UTF-8'?>" +
+  return "<?xml version='1.0' encoding='UTF-8'?>" +
                "<kml xmlns='http://www.opengis.net/kml/2.2' " +
                "xmlns:gx='http://www.google.com/kml/ext/2.2' " +
                "xmlns:kml='http://www.opengis.net/kml/2.2' " +
                "xmlns:atom='http://www.w3.org/2005/Atom'>";
-  return header;
 };
 
 var generateKMLDocument = function() {
+  return "<Document>" +
+	          "<name>MAGE-Export.kml</name>" +
+	          "<open>1</open>";
+};
 
-  var types = {}; //featureTypes.getFeatureTypes(deploymentType);
+var generateStyles = function(icons) {
+  var styles = "";
+  icons.forEach(function(icon) {
+    var style = [icon.formId];
+    if (icon.type != null) {
+      style.push(icon.type);
+      if (icon.variant != null) {
+        style.push(icon.variant);
+      }
+    }
 
-  var doc = "<Document>" +
-	          "  <name>MAGE-Export.kml</name>" +
-	          "  <open>1</open>";
-
-  types.forEach(function(type) {
-    doc += "<Style id='" + type.name + "-blue'><IconStyle><Icon><href>icons/blue/" + type.kmlIcon +     ".png</href></Icon></IconStyle></Style>";
-    doc += "<Style id='" + type.name + "-green'><IconStyle><Icon><href>icons/green/" + type.kmlIcon +   ".png</href></Icon></IconStyle></Style>";
-    doc += "<Style id='" + type.name + "-yellow'><IconStyle><Icon><href>icons/yellow/" + type.kmlIcon + ".png</href></Icon></IconStyle></Style>";
-    doc += "<Style id='" + type.name + "-red'><IconStyle><Icon><href>icons/red/" + type.kmlIcon +       ".png</href></Icon></IconStyle></Style>";
+    styles += "<Style id='" + style.join("-") + "'><IconStyle><Icon><href>" + path.join("icons", icon.relativePath) + "</href></Icon></IconStyle></Style>";
   });
 
-  return doc;
-};
+  return styles;
+}
 
 var generateKMLFolderStart = function(name) {
-  var folder = "<Folder>" +
-               "  <name>" + name + "</name>";
-
-  return folder;
+  return "<Folder>" + "<name>" + name + "</name>";
 };
 
-var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachments) {
+var generatePlacemark = function(name, feature, form) {
   var timestamp = "<TimeStamp>" +
-    "<when>" + moment(feature.timestamp).utc().format(timeFormat) + "Z</when>" +
+    "<when>" + moment(feature.properties.timestamp).utc().format(timeFormat) + "Z</when>" +
     "</TimeStamp>";
 
   var description = "<description>" +
@@ -57,32 +57,32 @@ var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachm
 
   description +=
     '<tr bgcolor="#D4E4F3">' +
-      '<td>Lat</td>' + '<td>' + lat + '</td>' +
+      '<td>Lat</td>' + '<td>' + feature.geometry.coordinates[1] + '</td>' +
     '<tr>';
   description +=
     '<tr>' +
-      '<td>Lon</td>' + '<td>' + lon + '</td>' +
+      '<td>Lon</td>' + '<td>' + feature.geometry.coordinates[0] + '</td>' +
     '<tr>';
 
   var odd = true;
-  Object.keys(feature).forEach(function(key) {
+  Object.keys(feature.properties).forEach(function(key) {
     var color = "";
     if (odd) color = "#D4E4F3";
     odd = !odd;
 
     description +=
     '<tr bgcolor="' + color + '">' +
-      '<td>' + key + '</td>' + '<td>' + feature[key] + '</td>' +
+      '<td>' + key + '</td>' + '<td>' + feature.properties[key] + '</td>' +
     '</tr>';
   });
 
   description += '</table>';
 
   //does this feature have media
-  if (attachments && attachments.length) {
+  if (feature.attachments && feature.attachments.length) {
     description += '<div>'
 
-    attachments.forEach(function(attachment) {
+    feature.attachments.forEach(function(attachment) {
       description += '<div style="padding-top:15px;"><a href="files/' + attachment.relativePath + '">' + attachment.name + '</a></div>';
 
       //determine media type (image or other)
@@ -99,32 +99,25 @@ var generatePlacemark = function(name, styleUrl, lon, lat, alt, feature, attachm
 
   description += '</html>]]></description>';
 
-  //determine event level ***REMOVED***ign icon color
-  switch (feature.EVENTLEVEL) {
-    case 'None':
-      styleColor = "blue";
-      break;
-    case 'Low':
-      styleColor = "green";
-      break;
-    case 'Medium':
-      styleColor = "yellow";
-      break;
-    case 'High':
-      styleColor = "red";
-      break;
-    default:
-      styleColor = "blue";
+  var style = [];
+  if (form) {
+    style.push(form._id.toString());
+    if (feature.properties.type) {
+      style.push(feature.properties.type);
+      if (feature.properties[form.variantField]) {
+        style.push(feature.properties[form.variantField]);
+      }
+    }
   }
 
   //build the actual placemark
   var placemark =
     "<Placemark>" +
-      "<name>" + name + " " + feature.timestamp + "</name>" +
+      "<name>" + name + " " + feature.properties.timestamp + "</name>" +
       "<visibility>0</visibility>" +
-      "<styleUrl>#" + styleUrl + "-" + styleColor + "</styleUrl>" +
+      "<styleUrl>#" + style.join("-") + "</styleUrl>" +
       "<Point>" +
-      "<coordinates>" + lon + "," + lat + "," + alt + "</coordinates>" +
+      "<coordinates>" + feature.geometry.coordinates[0] + "," + feature.geometry.coordinates[1] + "," + 0 + "</coordinates>" +
       "</Point>" +
       timestamp +
       description +
@@ -150,6 +143,7 @@ var generateKMLClose = function() {
 
 return {
   generateKMLHeader: generateKMLHeader,
+  generateStyles: generateStyles,
   generateKMLDocument: generateKMLDocument,
   generateKMLFolderStart: generateKMLFolderStart,
   generatePlacemark: generatePlacemark,
