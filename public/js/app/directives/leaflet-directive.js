@@ -61,8 +61,6 @@ L.AwesomeMarkers.divIcon = function (options) {
             sidebar.hide();
           }
         });
-        //map.addControl(new L.Control.SideBar());
-        //map.addControl(new L.Control.TimeScale());
 
         var addMarker = L.marker([0,0], {
           draggable: true,
@@ -167,7 +165,6 @@ L.AwesomeMarkers.divIcon = function (options) {
            });
           if (firstLayer) {
             firstLayer.addTo(map);
-            //MapService.currentBaseLayer = firstLayer;
           }
         });
 
@@ -203,9 +200,12 @@ L.AwesomeMarkers.divIcon = function (options) {
 
               var location = u.locations[0];
               marker = L.locationMarker(L.latLng(location.geometry.coordinates[1], location.geometry.coordinates[0]), {color: appConstants.userLocationToColor(location)});
-              var e = $compile("<div user-location></div>")(scope);
+
+              var el = angular.element('<div user-location="' + location.properties.user + '"></div>');
+              var compiled = $compile(el);
               // TODO this sucks but for now set a min width
-              marker.bindPopup(e[0], {minWidth: 200});
+              marker.bindPopup(el[0], {minWidth: 200});
+              compiled(scope.$new());
 
               marker.on('click', function() {
                 scope.activeFeature = undefined;
@@ -218,10 +218,7 @@ L.AwesomeMarkers.divIcon = function (options) {
                 } else {
                   scope.activeLocation = {locations: [location], user: location.properties.user};
                 }
-                var gu = angular.element(e).scope().getUser;
-                if (gu) {
-                  gu(u.user);
-                }
+
                 scope.activeUserPopup = marker;
               });
 
