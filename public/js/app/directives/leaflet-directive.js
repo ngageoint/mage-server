@@ -209,6 +209,7 @@ L.AwesomeMarkers.divIcon = function (options) {
 
               marker.on('click', function() {
                 scope.activeFeature = undefined;
+                marker.setAccuracy(location.properties.accuracy);
 
                 // location table click handling here
                 if(!scope.$$phase) {
@@ -220,6 +221,10 @@ L.AwesomeMarkers.divIcon = function (options) {
                 }
 
                 scope.activeUserPopup = marker;
+              });
+
+              marker.onPopupClose(function() {
+                marker.setAccuracy(0);
               });
 
               locationMarkers[u.user] = marker;
@@ -374,7 +379,6 @@ L.AwesomeMarkers.divIcon = function (options) {
           if (!location) return;
           var marker = currentLocationMarkers[location.user];
           marker.setAccuracy(location.locations[0].properties.accuracy);
-          //marker.setAccuracy(feature.properties.accuracy);
           marker.openPopup();
           marker.fireEvent('click');
           marker.onPopupClose(onPopupClose, marker);
