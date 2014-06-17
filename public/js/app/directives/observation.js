@@ -8,23 +8,6 @@ mage.directive('observation', function (appConstants) {
       form: '=',
       observation: '='
     },
-    controller: "FeatureController",
-    link: function(scope) {
-      scope.save = function() {
-        scope.form.getObservation().$save({}, function(observation) {
-          scope.form = null;
-          angular.copy(observation, scope.observation);
-          scope.$emit('newObservationSaved', observation);
-
-          if (scope.files && scope.files.length > 0) {
-            scope.uploadFile(observation);
-          }
-        });
-      }
-
-      scope.cancelEdit = function() {
-        scope.form = null;
-      }
-    }
+    controller: "FeatureController"
   };
 });

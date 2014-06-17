@@ -1,9 +1,48 @@
-
-<form name="myForm" id="myForm" cl***REMOVED***="form">
+<form name="observationForm" id="myForm" cl***REMOVED***="form" novalidate>
     <div ng-repeat="field in form.fields | filter: { archived: '!' }">
-        <field-directive field="field">
-
-        </field-directive>
+        <field-directive field="field"></field-directive>
     </div>
     <span>* required</span>
+
+    <div ng-show="formEdit" cl***REMOVED***="top-gap-l">
+      <div cl***REMOVED***="attachment" ng-repeat="attachment in observation.attachments track by attachment.id">
+        <span ng-switch on="$index % 2">
+          <span ng-switch-when="0">
+            <div cl***REMOVED***="row-fluid">
+              <div cl***REMOVED***="span6">
+                <div attachment="observation.attachments[$index]" attachment-observation="observation" edit="true"></div>
+              </div>
+              <div cl***REMOVED***="span6">
+                <div attachment="observation.attachments[$index + 1]" attachment-observation="observation" edit="true"></div>
+              </div>
+            </div>
+          </span>
+        </span>
+      </div>
+
+      <form name="observationForm" novalidate>
+        <div cl***REMOVED***="control-group">
+          <label cl***REMOVED***="control-label" for="unit">Select File</label>
+          <div cl***REMOVED***="controls">
+            <input type="file" id="file-upload" accept="audio/*|video/*|image/*" capture="camera" ng-model-instant multiple onchange="angular.element(this).scope().setFiles(this)">
+          </div>
+          <div ng-show="progressVisible">
+            <div cl***REMOVED***="percent">{{progress}}%</div>
+            <div cl***REMOVED***="progress-bar">
+                <div cl***REMOVED***="uploaded" ng-style="{'width': progress+'%'}"></div>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <div>
+        <span cl***REMOVED***="pull-right">
+          <button cl***REMOVED***="btn btn-inverse" ng-click="cancelEdit()" ngm-tap="cancelEdit()"><span ng-show="formObservation.id">Close</span><span ng-hide="formObservation.id">Cancel</span></button>
+          <button cl***REMOVED***="btn" ng-click="save()" ngm-tap="save()" ng-disabled="observationForm.$invalid"><i cl***REMOVED***="icon-save"></i> Save</button>
+        </span>
+        <span>
+          <button cl***REMOVED***="btn btn-danger pull-left" ng-show="formObservation.id && amAdmin" ng-click="deleteObservation(observation)" ngm-tap="deleteObservation(observation)"><i cl***REMOVED***="icon-trash"></i> Delete</button>
+        </span>
+      </div>
+    </div>
 </form>
