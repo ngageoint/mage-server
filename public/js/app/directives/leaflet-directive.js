@@ -12,6 +12,29 @@ L.AwesomeMarkers.DivIcon = L.AwesomeMarkers.Icon.extend({
   }
 });
 
+L.MageDivIcon = L.DivIcon.extend({
+  initialize: function (options) {
+    options.cl***REMOVED***Name = 'mage-icon';
+    options.iconSize = null;
+    L.DivIcon.prototype.initialize.call(this, options);
+  },
+  createIcon: function() {
+    var div = L.DivIcon.prototype.createIcon.call(this);
+    var form = this.options.form;
+    var observation = this.options.observation;
+
+    var s = document.createElement('img');
+    s.cl***REMOVED***Name = "mage-icon-image";
+    s.src = "/api/icons/" + form.id + "/" + observation.properties.type + "/" + observation.properties[form.variantField] + "?access_token=" + this.options.token;;
+    $(s).load(function() {
+      var height = $(this).height();
+      $(div).css('margin-top', height * -1);
+    });
+    div.appendChild(s);
+    return div;
+  }
+});
+
 L.AwesomeMarkers.divIcon = function (options) {
   return new L.AwesomeMarkers.DivIcon(options);
 };
@@ -27,10 +50,10 @@ L.AwesomeMarkers.divIcon = function (options) {
       template: '<div cl***REMOVED***="map"></div>',
       link: function (scope, element, attrs, ctrl) {
         function createIcon(observation) {
-          return L.icon({
-            iconSize: [35, 46],
-            iconAnchor: [17, 46],
-            iconUrl: "/api/icons/" + ObservationService.form.id + "/" + observation.properties.type + "/" + observation.properties[ObservationService.form.variantField] + "?access_token=" + mageLib.getToken()
+          return new L.MageDivIcon({
+            observation: observation,
+            form: ObservationService.form,
+            token: mageLib.getToken()
           });
         }
 
@@ -61,8 +84,6 @@ L.AwesomeMarkers.divIcon = function (options) {
             sidebar.hide();
           }
         });
-        //map.addControl(new L.Control.SideBar());
-        //map.addControl(new L.Control.TimeScale());
 
         var addMarker = L.marker([0,0], {
           draggable: true,
@@ -167,7 +188,6 @@ L.AwesomeMarkers.divIcon = function (options) {
            });
           if (firstLayer) {
             firstLayer.addTo(map);
-            //MapService.currentBaseLayer = firstLayer;
           }
         });
 
@@ -203,12 +223,16 @@ L.AwesomeMarkers.divIcon = function (options) {
 
               var location = u.locations[0];
               marker = L.locationMarker(L.latLng(location.geometry.coordinates[1], location.geometry.coordinates[0]), {color: appConstants.userLocationToColor(location)});
-              var e = $compile("<div user-location></div>")(scope);
+
+              var el = angular.element('<div user-location="' + location.properties.user + '"></div>');
+              var compiled = $compile(el);
               // TODO this sucks but for now set a min width
-              marker.bindPopup(e[0], {minWidth: 200});
+              marker.bindPopup(el[0], {minWidth: 200});
+              compiled(scope.$new());
 
               marker.on('click', function() {
                 scope.activeFeature = undefined;
+                marker.setAccuracy(location.properties.accuracy);
 
                 // location table click handling here
                 if(!scope.$$phase) {
@@ -218,11 +242,12 @@ L.AwesomeMarkers.divIcon = function (options) {
                 } else {
                   scope.activeLocation = {locations: [location], user: location.properties.user};
                 }
-                var gu = angular.element(e).scope().getUser;
-                if (gu) {
-                  gu(u.user);
-                }
+
                 scope.activeUserPopup = marker;
+              });
+
+              marker.onPopupClose(function() {
+                marker.setAccuracy(0);
               });
 
               locationMarkers[u.user] = marker;
@@ -377,7 +402,6 @@ L.AwesomeMarkers.divIcon = function (options) {
           if (!location) return;
           var marker = currentLocationMarkers[location.user];
           marker.setAccuracy(location.locations[0].properties.accuracy);
-          //marker.setAccuracy(feature.properties.accuracy);
           marker.openPopup();
           marker.fireEvent('click');
           marker.onPopupClose(onPopupClose, marker);
@@ -428,18 +452,20 @@ L.AwesomeMarkers.divIcon = function (options) {
         }); // watch layer
 
         var featuresUpdated = function(features) {
-          console.log('feautes updated')
+          console.log('features updated')
           if (!features) return;
 
           if (layers[scope.layer.id]) {
             var addThese = {
               features: []
             };
+
             for (var i = 0; i < features.features.length; i++) {
               var marker = markers[scope.layer.id][features.features[i].id];
               if (!marker) {
                 addThese.features.push(features.features[i]);
               } else {
+                marker.setLatLng(L.latLng(features.features[i].geometry.coordinates[1], features.features[i].geometry.coordinates[0]));
                 marker.setIcon(createIcon(features.features[i]));
               }
             }
