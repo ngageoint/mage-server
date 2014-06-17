@@ -89,6 +89,7 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
             $timeout(function() {
               debounceHideSave();
             });
+            console.log($scope.form);
           });
         }
       });
@@ -137,7 +138,7 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
     });
 
     $scope.$watch('form.variantField', function() {
-      if (!$scope.form.variantField) return;
+      if (!$scope.form || !$scope.form.variantField) return;
       $scope.populateVariants()
     })
 
