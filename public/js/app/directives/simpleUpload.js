@@ -25,7 +25,6 @@ mage.directive('simpleUpload', function() {
         var name = $scope.file.name;
 
         var element = $($element.find('.upload-file')[0]);
-        //element.find('.file-custom').attr('data-filename', name);
         if ($scope.preview) {
           previewFile($scope.file, element);
         }
