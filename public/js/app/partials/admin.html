@@ -272,8 +272,6 @@
                     <p ng-show="form.fields.length == 0">No fields added yet.</p>
                     <div cl***REMOVED***="well">
                       <accordion close-others="accordion.oneAtATime">
-                        <div ng-repeat="field in form.fields | filter: { archived: '!' }">
-
                         <accordion-group heading="{{field.title}}" ng-repeat="field in form.fields | filter: { archived: '!'} track by field.id">
                           <div cl***REMOVED***="accordion-edit">
                             <button ng-show="deletableField(field)" cl***REMOVED***="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i cl***REMOVED***="fa fa-trash icon-white"></i> Delete</button>
@@ -393,13 +391,13 @@
                           <div cl***REMOVED***="span3 strong">
                             Default Icon
                           </div>
-                          <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'?access_token=' + $parent.token}}" allow-upload="form.id" preview="true" upload-file-form-name="'icon'">
+                          <form enctype="multipart/form-data" simple-upload url="{{'/api/icons/'+form.id+'?access_token=' + $parent.token}}" upload-default="true" allow-upload="form.id" preview="true" upload-file-form-name="'icon'">
                           </form>
                         </div>
                       </div>
 
                       <h4>Choose a field to be used for icon variants:</h4>
-                      <select ng-model="form.variantField" ng-options="field.name as field.name for field in form.fields | filter: variantFilter track by field.id">
+                      <select ng-model="form.variantField" ng-options="field.name as field.title for field in form.fields | filter: variantFilter">
                         <option value="">No Variant</option>
                       </select>
 

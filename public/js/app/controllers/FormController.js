@@ -89,6 +89,7 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
             $timeout(function() {
               debounceHideSave();
             });
+            console.log($scope.form);
           });
         }
       });
