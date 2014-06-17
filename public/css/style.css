@@ -364,3 +364,7 @@ div.image-button input {
 .preview-image {
 	width: 35px;
 }
+
+.deleted-border {
+	border: 3px dashed #336699;
+}

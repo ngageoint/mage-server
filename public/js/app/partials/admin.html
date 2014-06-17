@@ -98,31 +98,38 @@
               </div>
             </div>
             <div cl***REMOVED***="top-gap" ng-repeat="u in filteredUsers">
-              <div cl***REMOVED***="row-fluid">
-                <div cl***REMOVED***="span3">
-                  <button cl***REMOVED***="btn" ng-click="editUser(u)" ngm-tap="editUser(u)">
-                    <i cl***REMOVED***="fa fa-edit"></i>
-                    Edit
-                  </button>
-                  <button cl***REMOVED***="btn btn-success" ng-hide='u.active' ng-click="approveUser(u)" ngm-tap="approveUser(u)">
-                    <i cl***REMOVED***="fa fa-thumbs-up"></i>
-                    Approve Account
-                  </button>
+              <div ng-switch on="u.deleted">
+                <div ng-switch-when="true" cl***REMOVED***="row-fluid deleted-border">
+                  <div cl***REMOVED***="span12">
+                    <h4 style="text-align: center;">User: {{u.username}} - {{u.firstname}} {{u.lastname}} has been deleted.</h4>
+                  </div>
                 </div>
-                <div cl***REMOVED***="span2">
-                  {{u.username}}
-                </div>
-                <div cl***REMOVED***="span2">
-                  {{u.firstname}} {{u.lastname}}
-                </div>
-                <div cl***REMOVED***="span3">
-                  {{u.email}}
-                </div>
-                <div cl***REMOVED***="span2">
-                  <button cl***REMOVED***="btn btn-danger" ng-click="deleteUser(u)" ngm-tap="deleteUser(u)">
-                    <i cl***REMOVED***="fa fa-trash-o"></i>
-                    Delete user
-                  </button>
+                <div ng-switch-default cl***REMOVED***="row-fluid">
+                  <div cl***REMOVED***="span3">
+                    <button cl***REMOVED***="btn" ng-click="editUser(u)" ngm-tap="editUser(u)">
+                      <i cl***REMOVED***="fa fa-edit"></i>
+                      Edit
+                    </button>
+                    <button cl***REMOVED***="btn btn-success" ng-hide='u.active' ng-click="approveUser(u)" ngm-tap="approveUser(u)">
+                      <i cl***REMOVED***="fa fa-thumbs-up"></i>
+                      Approve Account
+                    </button>
+                  </div>
+                  <div cl***REMOVED***="span2">
+                    {{u.username}}
+                  </div>
+                  <div cl***REMOVED***="span2">
+                    {{u.firstname}} {{u.lastname}}
+                  </div>
+                  <div cl***REMOVED***="span3">
+                    {{u.email}}
+                  </div>
+                  <div cl***REMOVED***="span2">
+                    <button cl***REMOVED***="btn btn-danger" ng-click="deleteUser(u)" ngm-tap="deleteUser(u)">
+                      <i cl***REMOVED***="fa fa-trash-o"></i>
+                      Delete user
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -183,31 +190,39 @@
             </div>
             <div cl***REMOVED***="top-gap">
               <div ng-repeat="device in filteredDevices" cl***REMOVED***="top-gap">
-                  <div cl***REMOVED***="row-fluid">
-                  <div cl***REMOVED***="span2">
-                    <button cl***REMOVED***="btn" ng-click="editDevice(device)" ngm-tap="editDevice(device)">
-                      <i cl***REMOVED***="fa fa-edit pointer"></i> Edit
-                    </button>
-                    <button cl***REMOVED***="btn btn-success" ng-hide="device.registered" ng-click="registerDevice(device)" ngm-tap="registerDevice(device)">
-                      <i cl***REMOVED***="fa fa-thumbs-up"></i> Register
-                    </button>
+                <div ng-switch on="device.deleted">
+                  <div ng-switch-when="true" cl***REMOVED***="row-fluid deleted-border">
+                    <div cl***REMOVED***="span12">
+                      <h4 style="text-align: center;">Device: {{device.uid}} - {{device.name}} {{u.description}} has been deleted.</h4>
+                    </div>
                   </div>
-                  <div cl***REMOVED***="span2">
-                    {{device.uid}}
-                  </div>
-                  <div cl***REMOVED***="span2">
-                    {{device.name}}
-                  </div>
-                  <div cl***REMOVED***="span2">
-                    {{device.description}}
-                  </div>
-                  <div cl***REMOVED***="span2">
-                    {{getUserDisplayName(device.poc)}}
-                  </div>
-                  <div cl***REMOVED***="span2">
-                  <button cl***REMOVED***="btn btn-danger" ng-click="deleteDevice(device)" ngm-tap="deleteDevice(device)">
-                    <i cl***REMOVED***="fa fa-trash-o"></i> Delete device
-                  </button>
+                  <div ng-switch-default cl***REMOVED***="row-fluid" ng-cl***REMOVED***="{'alert-success': device.registeredThisSession}" style="padding: 7px;">
+                    <div cl***REMOVED***="span2">
+                      <button cl***REMOVED***="btn" ng-click="editDevice(device)" ngm-tap="editDevice(device)">
+                        <i cl***REMOVED***="fa fa-edit pointer"></i> Edit
+                      </button>
+                      <button cl***REMOVED***="btn btn-success" ng-hide="device.registered" ng-click="registerDevice(device)" ngm-tap="registerDevice(device)">
+                        <i cl***REMOVED***="fa fa-thumbs-up"></i> Register
+                      </button>
+                      <span cl***REMOVED***="strong" ng-show="device.registeredThisSession">Successfully registered</span>
+                    </div>
+                      <div cl***REMOVED***="span2">
+                        {{device.uid}}
+                      </div>
+                      <div cl***REMOVED***="span2">
+                        {{device.name}}
+                      </div>
+                      <div cl***REMOVED***="span2">
+                        {{device.description}}
+                      </div>
+                      <div cl***REMOVED***="span2">
+                        {{getUserDisplayName(device.poc)}}
+                      </div>
+                      <div cl***REMOVED***="span2">
+                      <button cl***REMOVED***="btn btn-danger" ng-click="deleteDevice(device)" ngm-tap="deleteDevice(device)">
+                        <i cl***REMOVED***="fa fa-trash-o"></i> Delete device
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -274,7 +289,8 @@
                             </div>
                             <div cl***REMOVED***="row-fluid" ng-hide="showAddOptions(field)">
                               <div cl***REMOVED***="span2">Field Default Value:</div>
-                              <div cl***REMOVED***="span4"><input type="text" ng-change="autoSave()" ng-model="field.value" value="{{field.value}}"></div>
+                              <div cl***REMOVED***="span4"><input ng-show="field.type=='checkbox'" ng-model="field.value" id="{{field.id}}" type="checkbox" ng-change="autoSave()" ng-checked="field.value == true" ng-required="field.required"/>
+                                <input ng-hide="field.type=='checkbox'" type="text" ng-change="autoSave()" ng-model="field.value" value="{{field.value}}"></div>
                             </div>
                             <div cl***REMOVED***="row-fluid" ng-show="showAddOptions(field)">
                               <div cl***REMOVED***="span2">Field Default Value:</div>
@@ -294,7 +310,7 @@
                                 </div>
                                 <div cl***REMOVED***="row-fluid">
                                     <input type="text" ng-model="newOptionTitle">
-                                    <button cl***REMOVED***="btn btn-primary btn-small" type="button" ng-click="addOption(field, newOptionTitle)"><i cl***REMOVED***="fa fa-plus-square-o icon-white"></i> Add Option</button>
+                                    <button cl***REMOVED***="btn btn-primary btn-small" type="button" ng-click="addOption(field, newOptionTitle); newOptionTitle = '';"><i cl***REMOVED***="fa fa-plus-square-o icon-white"></i> Add Option</button>
                                 </div>
                               </div>
                             </div>
@@ -348,7 +364,7 @@
                                   </div>
                                   <div cl***REMOVED***="row-fluid">
                                       <input type="text" ng-model="newFieldNewOptionTitle">
-                                      <button cl***REMOVED***="btn btn-primary btn-small" type="button" ng-click="addOption(newField, newFieldNewOptionTitle)"><i cl***REMOVED***="fa fa-plus-square-o icon-white"></i> Add Option</button>
+                                      <button cl***REMOVED***="btn btn-primary btn-small" type="button" ng-click="addOption(newField, newFieldNewOptionTitle); newFieldNewOptionTitle='';"><i cl***REMOVED***="fa fa-plus-square-o icon-white"></i> Add Option</button>
                                   </div>
                                 </div>
                               </div>
@@ -383,7 +399,7 @@
                       </div>
 
                       <h4>Choose a field to be used for icon variants:</h4>
-                      <select ng-model="variantField" ng-change="populateVariants()" ng-options="field as field.title for field in form.fields | filter: variantFilter track by field.id">
+                      <select ng-model="form.variantField" ng-options="field.name as field.name for field in form.fields | filter: variantFilter track by field.id">
                         <option value="">No Variant</option>
                       </select>
 
