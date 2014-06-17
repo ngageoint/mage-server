@@ -1,6 +1,6 @@
 
 <form name="myForm" id="myForm" cl***REMOVED***="form">
-    <div ng-repeat="field in form.fields">
+    <div ng-repeat="field in form.fields | filter: { archived: '!' }">
         <field-directive field="field">
 
         </field-directive>

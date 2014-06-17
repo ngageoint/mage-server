@@ -272,7 +272,9 @@
                     <p ng-show="form.fields.length == 0">No fields added yet.</p>
                     <div cl***REMOVED***="well">
                       <accordion close-others="accordion.oneAtATime">
-                        <accordion-group heading="{{field.title}}" ng-repeat="field in form.fields track by field.id">
+                        <div ng-repeat="field in form.fields | filter: { archived: '!' }">
+
+                        <accordion-group heading="{{field.title}}" ng-repeat="field in form.fields | filter: { archived: '!'} track by field.id">
                           <div cl***REMOVED***="accordion-edit">
                             <button ng-show="deletableField(field)" cl***REMOVED***="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i cl***REMOVED***="fa fa-trash icon-white"></i> Delete</button>
                             <div cl***REMOVED***="row-fluid">
