@@ -14,6 +14,7 @@ var OptionSchema = new Schema({
 
 var FieldSchema = new Schema({
   id: { type: Number, required: true },
+  archived: { type: Boolean, required: false},
   title: { type: String, required: true },
   type: { type: String, required: true },
   value: { type: Schema.Types.Mixed, required: false },

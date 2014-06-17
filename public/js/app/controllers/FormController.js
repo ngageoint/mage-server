@@ -137,14 +137,12 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
     });
 
     // deletes particular field on button click
-    $scope.deleteField = function (id){
-        for(var i = 0; i < $scope.form.fields.length; i++){
-            if($scope.form.fields[i].id == id){
-                $scope.form.fields.splice(i, 1);
-                break;
-            }
-        }
+    $scope.deleteField = function (id) {
+      var deletedField = _.find($scope.form.fields, function(field) { return id == field.id});
+      if (deletedField) {
+        deletedField.archived = true;
         $scope.autoSave();
+      }
     }
 
     $scope.variantFilter = function(field) {
@@ -152,7 +150,7 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
     }
 
     // add new option to the field
-    $scope.addOption = function (field, optionTitle){
+    $scope.addOption = function (field, optionTitle) {
       field.choices = field.choices || new Array();
       field.choices.push({
           "id" : field.choices.length,
