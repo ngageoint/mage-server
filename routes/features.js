@@ -274,6 +274,9 @@ module.exports = function(app, auth) {
     function(req, res, next) {
       console.log("MAGE Attachment POST REST Service Requested");
 
+      var attachment = req.files.attachment;
+      if (!attachment) return res.send(400, "no attachment");
+
       new api.Attachment(req.layer, req.feature).create(req.featureId, req.files.attachment, function(err, attachment) {
         if (err) return next(err);
 
