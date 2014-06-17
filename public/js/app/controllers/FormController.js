@@ -104,7 +104,9 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
 
     $scope.populateVariants = function(doNotAutoSave) {
       if (!$scope.form) return;
-
+      $scope.variantField = _.find($scope.form.fields, function(field) {
+        return field.name == $scope.form.variantField;
+      });
       if (!$scope.variantField) {
         // they do not want a variant
         $scope.variants = [];
@@ -114,7 +116,7 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
         }
         return;
       }
-      $scope.form.variantField = $scope.variantField.name;
+      //$scope.form.variantField = $scope.variantField.name;
       if ($scope.variantField.type == 'dropdown') {
         $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
         $scope.showNumberVariants = false;
@@ -130,11 +132,14 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
 
     $scope.$watch('form', function() {
       if (!$scope.form) return;
-      $scope.variantField = _.find($scope.form.fields, function(field) {
-        return field.name == $scope.form.variantField;
-      });
-      $scope.populateVariants(true);
+
+      $scope.populateVariants();
     });
+
+    $scope.$watch('form.variantField', function() {
+      if (!$scope.form.variantField) return;
+      $scope.populateVariants()
+    })
 
     // deletes particular field on button click
     $scope.deleteField = function (id){
@@ -144,6 +149,7 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
                 break;
             }
         }
+        $scope.populateVariants();
         $scope.autoSave();
     }
 
@@ -159,6 +165,7 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
           "title" : optionTitle,
           "value" : field.choices.length
       });
+      $scope.populateVariants();
       $scope.autoSave();
     }
 
@@ -194,6 +201,7 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
                 break;
             }
         }
+        $scope.populateVariants();
         $scope.autoSave();
     }
 

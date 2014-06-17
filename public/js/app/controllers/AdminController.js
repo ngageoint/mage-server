@@ -208,7 +208,8 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
           return u._id !== user._id;
         });
         // TODO this is somewhat of a hack for now, call filter fucntion so users gets removed
-        $scope.userSearch();
+        //$scope.userSearch();
+        user.deleted="true";
         $scope.showStatusMessage("User deleted", user.username + " has been successfully deleted", "alert-success");
       });
   }
@@ -313,8 +314,8 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
   $scope.registerDevice = function(device) {
     DeviceService.registerDevice(device)
       .success(function(data, status) {
-        $scope.showStatusMessage("Successfully registered device", "Device '" + device.uid + "' is now registered.","alert-info");
         device.registered = true;
+        device.registeredThisSession = true;
       })
       .error(function(data, status) {
         $scope.showStatusMessage("Unable to register device", data, "alert-error");
@@ -324,9 +325,8 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
   $scope.deleteDevice = function (device) {
     DeviceService.deleteDevice(device)
       .success(function() {
-        $scope.showStatusMessage("Success", "Device '" + device.uid + "' has been removed.","alert-info");
         $scope.devices = _.reject($scope.devices, function(d) { return d.uid === device.uid });
-        $scope.deviceSearch();
+        device.deleted = "true";
       })
       .error(function() {
         $scope.showStatusMessage("Unable to delete device", data, "alert-error");
