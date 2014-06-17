@@ -12,6 +12,29 @@ L.AwesomeMarkers.DivIcon = L.AwesomeMarkers.Icon.extend({
   }
 });
 
+L.MageDivIcon = L.DivIcon.extend({
+  initialize: function (options) {
+    options.cl***REMOVED***Name = 'mage-icon';
+    options.iconSize = null;
+    L.DivIcon.prototype.initialize.call(this, options);
+  },
+  createIcon: function() {
+    var div = L.DivIcon.prototype.createIcon.call(this);
+    var form = this.options.form;
+    var observation = this.options.observation;
+
+    var s = document.createElement('img');
+    s.cl***REMOVED***Name = "mage-icon-image";
+    s.src = "/api/icons/" + form.id + "/" + observation.properties.type + "/" + observation.properties[form.variantField] + "?access_token=" + this.options.token;;
+    $(s).load(function() {
+      var height = $(this).height();
+      $(div).css('margin-top', height * -1);
+    });
+    div.appendChild(s);
+    return div;
+  }
+});
+
 L.AwesomeMarkers.divIcon = function (options) {
   return new L.AwesomeMarkers.DivIcon(options);
 };
@@ -27,10 +50,10 @@ L.AwesomeMarkers.divIcon = function (options) {
       template: '<div cl***REMOVED***="map"></div>',
       link: function (scope, element, attrs, ctrl) {
         function createIcon(observation) {
-          return L.icon({
-            iconSize: [35, 46],
-            iconAnchor: [17, 46],
-            iconUrl: "/api/icons/" + ObservationService.form.id + "/" + observation.properties.type + "/" + observation.properties[ObservationService.form.variantField] + "?access_token=" + mageLib.getToken()
+          return new L.MageDivIcon({
+            observation: observation,
+            form: ObservationService.form,
+            token: mageLib.getToken()
           });
         }
 
