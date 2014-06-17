@@ -365,3 +365,7 @@ div.image-button input {
 	width: 35px;
 	height: 46px;
 }
+
+.deleted-border {
+	border: 3px dashed #336699;
+}
