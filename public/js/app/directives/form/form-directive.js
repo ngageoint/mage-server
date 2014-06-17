@@ -1,22 +1,33 @@
 'use strict';
 
-angular.module('mage').directive('formDirective', function (FormService, ObservationService) {
+angular.module('mage').directive('formDirective', function (FormService, ObservationService, UserService) {
     return {
         controller: function($scope) {
-            $scope.submit = function() {
-                FormService.submitForm($scope.form);
-                alert('Form submitted..');
-                $scope.form.submitted = true;
+            $scope.amAdmin = UserService.amAdmin;
+
+            $scope.save = function() {
+              $scope.form.getObservation().$save({}, function(observation) {
+                $scope.form = null;
+                angular.copy(observation, $scope.formObservation);
+                $scope.$emit('newObservationSaved', observation);
+
+                if ($scope.files && $scope.files.length > 0) {
+                  $scope.uploadFile(observation);
+                }
+              });
             }
 
-            $scope.cancel = function() {
-                alert('Form canceled..');
+            $scope.cancelEdit = function() {
+              $scope.form = null;
             }
         },
         templateUrl: 'js/app/partials/form/form.html',
         restrict: 'E',
+        transclude: true,
         scope: {
-          form: '='
+          form: '=',
+          formObservation: '=',
+          formEdit: '='
         }
     };
   });
