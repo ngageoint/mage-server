@@ -6,7 +6,7 @@
 
     <div ng-show="formEdit" cl***REMOVED***="top-gap">
       <h4 cl***REMOVED***="muted">Attachments</h4>
-      <div cl***REMOVED***="attachment" ng-repeat="attachment in formObservation.attachments">
+      <div cl***REMOVED***="attachment" ng-repeat="attachment in formObservation.attachments track by attachment.id">
         <div cl***REMOVED***="row-fluid">
           <div>
             <div attachment="attachment" attachment-observation="formObservation" edit="true"></div>

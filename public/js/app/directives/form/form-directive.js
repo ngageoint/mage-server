@@ -11,6 +11,8 @@ angular.module('mage').directive('formDirective', function (FormService, Observa
         formEdit: '='
       },
       controller: function($scope) {
+          var attachmentsUploaded = 0;
+
           $scope.getToken = mageLib.getToken;
           $scope.amAdmin = UserService.amAdmin;
           $scope.attachmentUploads = [];
@@ -19,18 +21,7 @@ angular.module('mage').directive('formDirective', function (FormService, Observa
             $scope.form.getObservation().$save({}, function(observation) {
 
               if ($scope.attachmentUploads.length > 0) {
-                var attachmentsUploaded = 0;
                 $scope.observationSaved = true;
-                $scope.$on('uploadComplete', function(e, url, response) {
-                  $scope.$emit('newAttachmentSaved', response);
-
-                  attachmentsUploaded++;
-                  if (attachmentsUploaded == $scope.attachmentUploads.length) {
-                    $scope.form = null;
-                    $scope.observationSaved = false;
-                    $scope.attachmentUploads = [];
-                  }
-                });
               } else {
                 $scope.form = null;
               }
@@ -59,6 +50,18 @@ angular.module('mage').directive('formDirective', function (FormService, Observa
           $scope.addAttachment = function() {
             $scope.attachmentUploads.push({});
           }
+
+          $scope.$on('uploadComplete', function(e, url, response) {
+            $scope.$emit('newAttachmentSaved', response);
+
+            attachmentsUploaded++;
+            if (attachmentsUploaded == $scope.attachmentUploads.length) {
+              $scope.form = null;
+              $scope.observationSaved = false;
+              $scope.attachmentUploads = [];
+              attachmentsUploaded = 0;
+            }
+          });
       }
     };
   });
