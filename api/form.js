@@ -104,6 +104,14 @@ Form.prototype.import = function(file, callback) {
 
 Form.prototype.create = function(form, callback) {
   FormModel.create(form, function(err, newForm) {
+
+    if (!err) {
+      var rootDir = path.dirname(require.main.filename);
+      new api.Icon(newForm).create({name: 'default-icon.png', path: path.join(rootDir,'/public/img/default-icon.png')}, function(err, icon) {
+        callback(err, newForm);
+      });
+    }
+
     callback(err, newForm);
   });
 }
