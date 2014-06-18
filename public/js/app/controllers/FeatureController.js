@@ -2,7 +2,6 @@
 
 function FeatureController($scope, $location, $timeout, Feature, FeatureService, FeatureState, MapService, UserService, mageLib, appConstants) {
   var isEditing = false;
-  $scope.amAdmin = UserService.amAdmin;
   $scope.token = mageLib.getLocalItem('token');
 
   $scope.cancelObservation = function (observation) {

@@ -319,15 +319,26 @@ div.image-button {
     position: relative;
 }
 
-div.image-button:hover input {
+div.image-button:hover button {
     display: block;
 }
 
-div.image-button input {
+div.image-button button {
     position: absolute;
     top: 0;
     left: 0;
     display: none;
+}
+
+.image-delete {
+	opacity: 0.2;
+}
+
+h4.image-delete {
+	position: absolute;
+  text-align: center;
+	color: white;
+	font-weight: bold;
 }
 
 .awesome-marker-display {
