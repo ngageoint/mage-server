@@ -103,8 +103,9 @@ mage.directive('simpleUpload', function() {
       }
 
       $scope.$watch('allowUpload', function(newValue, old) {
-        if (old != newValue) {
+        if (newValue && old != newValue) {
           upload();
+          missingIcon = false;
         }
       });
     }
