@@ -30,6 +30,8 @@ Attachment.prototype.getById = function(attachmentId, options, callback) {
   var size = options.size ? Number(options.size) : null;
 
   FeatureModel.getAttachment(this._layer, this._feature._id, attachmentId, function(attachment) {
+    if (!attachment) return callback();
+
     if (size) {
       attachment.thumbnails.forEach(function(thumbnail) {
         if ((thumbnail.minDimension < attachment.height || !attachment.height)

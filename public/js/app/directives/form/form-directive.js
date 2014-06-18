@@ -1,42 +1,64 @@
 'use strict';
 
-angular.module('mage').directive('formDirective', function (FormService, ObservationService, UserService, mageLib) {
+angular.module('mage').directive('formDirective', function (FormService, ObservationService, UserService, FeatureAttachment, appConstants, mageLib) {
     return {
-        controller: function($scope) {
-            console.log('form observation', $scope.formObservation);
-            $scope.getToken = mageLib.getToken;
-            $scope.amAdmin = UserService.amAdmin;
-            $scope.attachmentUploads = [];
+      templateUrl: 'js/app/partials/form/form.html',
+      restrict: 'E',
+      transclude: true,
+      scope: {
+        form: '=',
+        formObservation: '=',
+        formEdit: '='
+      },
+      controller: function($scope) {
+          $scope.getToken = mageLib.getToken;
+          $scope.amAdmin = UserService.amAdmin;
+          $scope.attachmentUploads = [];
 
-            $scope.save = function() {
-              $scope.form.getObservation().$save({}, function(observation) {
-                $scope.form = null;
-                angular.copy(observation, $scope.formObservation);
-                $scope.$emit('newObservationSaved', observation);
+          $scope.save = function() {
+            $scope.form.getObservation().$save({}, function(observation) {
+
+              if ($scope.attachmentUploads.length > 0) {
+                var attachmentsUploaded = 0;
                 $scope.observationSaved = true;
-                // TODO upload all attachments
-                // if ($scope.files && $scope.files.length > 0) {
-                //   $scope.uploadFile(observation);
-                // }
+                $scope.$on('uploadComplete', function(e, url, response) {
+                  $scope.$emit('newAttachmentSaved', response);
+
+                  attachmentsUploaded++;
+                  if (attachmentsUploaded == $scope.attachmentUploads.length) {
+                    $scope.form = null;
+                    $scope.observationSaved = false;
+                    $scope.attachmentUploads = [];
+                  }
+                });
+              } else {
+                $scope.form = null;
+              }
+
+              // delete any attachments that are marked for delete
+              var markedForDelete = _.filter($scope.formObservation.attachments, function(a){ return a.markedForDelete; });
+              _.each(markedForDelete, function(attachment) {
+                var data = {id: attachment.id, layerId: appConstants.featureLayer.id, featureId: $scope.formObservation.id};
+                FeatureAttachment.delete(data, function(success) {
+                  $scope.$emit('attachmentDeleted', attachment);
+                });
               });
-            }
 
-            $scope.cancelEdit = function() {
-              $scope.form = null;
-              $scope.attachmentUploads = [];
-            }
+              $scope.$emit('newObservationSaved', observation);
+            });
+          }
 
-            $scope.addAttachment = function() {
-              $scope.attachmentUploads.push({});
-            }
-        },
-        templateUrl: 'js/app/partials/form/form.html',
-        restrict: 'E',
-        transclude: true,
-        scope: {
-          form: '=',
-          formObservation: '=',
-          formEdit: '='
-        }
+          $scope.cancelEdit = function() {
+            $scope.form = null;
+            $scope.attachmentUploads = [];
+            _.each($scope.formObservation.attachments, function(attachment) {
+              delete attachment.markedForDelete;
+            });
+          }
+
+          $scope.addAttachment = function() {
+            $scope.attachmentUploads.push({});
+          }
+      }
     };
   });
