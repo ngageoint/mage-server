@@ -28,7 +28,7 @@ module.exports = function(app, security) {
 
   // get icon
   app.get(
-    '/api/icons/:formId/:type?/:variant?',
+    '/api/icons/:formId?/:type?/:variant?',
     access.authorize('READ_LAYER'),
     function(req, res, next) {
       new api.Icon(req.form, req.params.type, req.params.variant).getIcon(function(err, iconPath) {

@@ -6,6 +6,7 @@ var FormModel = require('../models/form')
   , path = require('path')
   , util = require('util')
   , fs = require('fs-extra')
+  , os = require('os')
   , async = require('async')
   , moment = require('moment')
   , access = require('../access')
@@ -104,6 +105,20 @@ Form.prototype.import = function(file, callback) {
 
 Form.prototype.create = function(form, callback) {
   FormModel.create(form, function(err, newForm) {
+
+    if (!err) {
+      var rootDir = path.dirname(require.main.filename);
+
+      // copy the default icon to a tmp place
+      fs.copy(path.join(rootDir,'/public/img/default-icon.png'), path.join(os.tmpdir(), newForm.id+'.png'), function(err) {
+        if (err) { console.log('error creating temp icon', err); return callback(err, newForm); }
+        console.log('creating the default icon');
+        new api.Icon(newForm).create({name: newForm.id+'.png', path: path.join(os.tmpdir(), newForm.id+'.png')}, function(err, icon) {
+          callback(err, newForm);
+        });
+      });
+    }
+
     callback(err, newForm);
   });
 }
