@@ -8,6 +8,7 @@ var IconModel = require('../models/icon')
   , config = require('../config.json');
 
 var iconBase = config.server.iconBaseDirectory;
+var rootDir = path.dirname(require.main.filename);
 
 function Icon(form, type, variant) {
   this._form = form;
@@ -43,13 +44,18 @@ Icon.prototype.getBasePath = function() {
 
 Icon.prototype.getIcon = function(callback) {
   var options = {
-    formId: this._form._id,
+    formId: this._form ? this._form._id : null,
     type: this._type,
     variant: this._variant
   };
 
   IconModel.getIcon(options, function(err, icon) {
-    if (err || !icon) return callback(err);
+    if (err) return callback(err);
+
+    if (!icon) {
+      console.log('no icon returning default');
+      return callback(null, path.join(rootDir,'/public/img/default-icon.png'));
+    }
 
     callback(null, path.join(iconBase, icon.relativePath));
   });
