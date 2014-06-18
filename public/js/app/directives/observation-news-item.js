@@ -24,6 +24,7 @@ mage.directive('observationNewsItem', function() {
       $scope.startEdit = function() {
         ObservationService.createNewForm($scope.observation).then(function(form) {
           $scope.editForm = form;
+          $scope.editObservation = angular.copy($scope.observation);
         });
       }
 
@@ -32,6 +33,18 @@ mage.directive('observationNewsItem', function() {
           .then(function(form) {
             $scope.viewForm = form;
           });
+      });
+
+      $scope.$on('newObservationSaved', function(e, observation) {
+        angular.copy(observation, $scope.observation);
+      });
+
+      $scope.$on('newAttachmentSaved', function(e, attachment) {
+        $scope.observation.attachments.push(attachment);
+      });
+
+      $scope.$on('attachmentDeleted', function(e, attachment) {
+        $scope.observation.attachments = _.filter($scope.observation.attachments, function(a) {return a.id != attachment.id});
       });
     }
   };

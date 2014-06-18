@@ -54,11 +54,11 @@ mage.directive('simpleUpload', function() {
         }
       }
 
-      var uploadComplete = function() {
+      var uploadComplete = function(response) {
         $scope.$apply(function() {
           $scope.uploadStatus = "Upload Complete";
           $scope.uploading = false;
-          $scope.$emit('uploadComplete', $scope.url);
+          $scope.$emit('uploadComplete', $scope.url, response);
         });
       }
 
