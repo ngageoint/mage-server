@@ -23,8 +23,8 @@ mage.directive('observationNewsItem', function() {
 
       $scope.startEdit = function() {
         ObservationService.createNewForm($scope.observation).then(function(form) {
-          $scope.editForm = form;
           $scope.editObservation = angular.copy($scope.observation);
+          $scope.editForm = form;
         });
       }
 
