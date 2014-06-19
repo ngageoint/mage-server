@@ -10,8 +10,8 @@ var IconModel = require('../models/icon')
 var iconBase = config.server.iconBaseDirectory;
 var rootDir = path.dirname(require.main.filename);
 
-function Icon(form, type, variant) {
-  this._form = form;
+function Icon(formId, type, variant) {
+  this._formId = formId || null;
   this._type = type || null;
   this._variant = variant || null;
 
@@ -25,7 +25,7 @@ function Icon(form, type, variant) {
 
 function createIconPath(icon, name) {
   var ext = path.extname(name);
-  var iconPath = icon._form._id.toString();
+  var iconPath = icon._formId.toString();
   if (icon._type != null) {
     iconPath = path.join(iconPath, icon._type);
     if (icon._variant != null) {
@@ -39,32 +39,31 @@ function createIconPath(icon, name) {
 }
 
 Icon.prototype.getBasePath = function() {
-  return path.join(iconBase, this._form._id.toString());
+  return path.join(iconBase, this._formId.toString());
 }
 
 Icon.prototype.getIcon = function(callback) {
   var options = {
-    formId: this._form ? this._form._id : null,
+    formId: this._formId,
     type: this._type,
     variant: this._variant
   };
 
   IconModel.getIcon(options, function(err, icon) {
-    if (err) return callback(err);
-
-    if (!icon) {
-      console.log('no icon returning default');
-      return callback(null, path.join(rootDir,'/public/img/default-icon.png'));
-    }
+    if (err || !icon) return callback(err);
 
     callback(null, path.join(iconBase, icon.relativePath));
   });
 }
 
+Icon.prototype.getDefaultIcon = function(callback) {
+  return callback(null, path.join(rootDir,'/public/img/default-icon.png'));
+}
+
 Icon.prototype.create = function(icon, callback) {
   var relativePath = createIconPath(this, icon.name);
   var newIcon = {
-    formId: this._form._id,
+    formId: this._formId,
     type: this._type,
     variant: this._variant,
     relativePath: relativePath
@@ -91,7 +90,7 @@ Icon.prototype.create = function(icon, callback) {
 Icon.prototype.add = function(icon, callback) {
   var relativePath = createIconPath(this, icon.name);
   var newIcon = {
-    formId: this._form._id,
+    formId: this._formId,
     type: this._type,
     variant: this._variant,
     relativePath: relativePath
@@ -113,7 +112,7 @@ Icon.prototype.delete = function(callback) {
   IconModel.getIcon(conditions, function(err, icon) {
     if (err) return callback(err);
 
-    var remove = {formId: self._form._id};
+    var remove = {formId: self._formId};
     if (self._type) remove.type = self._type;
     if (self._variant) remove.variant = self._variant;
 
@@ -123,7 +122,7 @@ Icon.prototype.delete = function(callback) {
       callback(err);
 
       // remove the variant dir, type dir, or base dir
-      var removePath = path.join(iconBase, self._form._id);
+      var removePath = path.join(iconBase, self._formId);
       if (self._type) {
         removePath = path.join(removePath, self._type);
         if (self._variant) {
