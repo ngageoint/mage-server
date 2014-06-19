@@ -47,7 +47,7 @@ Form.prototype.getById = function(id, callback) {
 }
 
 Form.prototype.export = function(form, callback) {
-  var iconBasePath = new api.Icon(form).getBasePath();
+  var iconBasePath = new api.Icon(form._id).getBasePath();
   var archive = archiver('zip');
   archive.bulk([{src: ['**'], dest: 'form/icons', expand: true, cwd: iconBasePath}]);
   archive.append(JSON.stringify(form), {name: "form/form.json"});
@@ -74,7 +74,7 @@ Form.prototype.import = function(file, callback) {
 
     var iconsEntry = zip.getEntry('form/icons/');
     if (iconsEntry) {
-      var iconPath = new api.Icon(newForm).getBasePath() + path.sep;
+      var iconPath = new api.Icon(newForm._id).getBasePath() + path.sep;
       console.log('extracting icons for imported zip to ', iconPath);
 
       zip.extractEntryTo(iconsEntry, iconPath, false, false);
@@ -92,7 +92,7 @@ Form.prototype.import = function(file, callback) {
           variant = variants.shift();
         }
 
-        new api.Icon(newForm, type, variant).add({name: stat.name}, function(err, addedIcon) {
+        new api.Icon(newForm._id, type, variant).add({name: stat.name}, function(err, addedIcon) {
           next(err);
         });
       });
@@ -113,7 +113,7 @@ Form.prototype.create = function(form, callback) {
       fs.copy(path.join(rootDir,'/public/img/default-icon.png'), path.join(os.tmpdir(), newForm.id+'.png'), function(err) {
         if (err) { console.log('error creating temp icon', err); return callback(err, newForm); }
         console.log('creating the default icon');
-        new api.Icon(newForm).create({name: newForm.id+'.png', path: path.join(os.tmpdir(), newForm.id+'.png')}, function(err, icon) {
+        new api.Icon(newForm._id).create({name: newForm.id+'.png', path: path.join(os.tmpdir(), newForm.id+'.png')}, function(err, icon) {
           callback(err, newForm);
         });
       });
@@ -133,7 +133,7 @@ Form.prototype.delete = function(id, callback) {
   FormModel.remove(id, function(err) {
     if (err) return callback(err);
 
-    var iconPath = new api.Icon({_id: id}).getBasePath();
+    var iconPath = new api.Icon(id).getBasePath();
     fs.remove(iconPath, function(err) {
       if (err) console.log('could not remove icon dir for deleted form id: ' + id)
     });

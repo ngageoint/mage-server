@@ -17,7 +17,7 @@ module.exports = function(app, security) {
     '/api/icons/:formId.zip',
     access.authorize('READ_LAYER'),
     function(req, res, next) {
-      var iconBasePath = new api.Icon(req.form).getBasePath();
+      var iconBasePath = new api.Icon(req.form._id).getBasePath();
       var archive = archiver('zip');
       res.attachment("icons.zip");
       archive.pipe(res);
@@ -58,7 +58,7 @@ module.exports = function(app, security) {
     '/api/icons/:formId/:type?/:variant?',
     access.authorize('CREATE_LAYER'),
     function(req, res, next) {
-      new api.Icon(req.form, req.params.type, req.params.variant).create(req.files.icon, function(err, icon) {
+      new api.Icon(req.form._id, req.params.type, req.params.variant).create(req.files.icon, function(err, icon) {
         if (err) return next(err);
 
         return res.json(icon);
@@ -71,7 +71,7 @@ module.exports = function(app, security) {
     '/api/icons/:formId/:type?/:variant?',
     access.authorize('DELETE_LAYER'),
     function(req, res) {
-      new api.Icon(req.form, req.params.type, req.params.variant).delete(function(err, icon) {
+      new api.Icon(req.form._id, req.params.type, req.params.variant).delete(function(err, icon) {
         if (err) return next(err);
 
         return res.send(204);

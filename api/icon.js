@@ -25,6 +25,8 @@ function Icon(formId, type, variant) {
 
 function createIconPath(icon, name) {
   var ext = path.extname(name);
+  console.log('formId:', icon._formId);
+  console.log('formId:', this._formId);
   var iconPath = icon._formId.toString();
   if (icon._type != null) {
     iconPath = path.join(iconPath, icon._type);
@@ -72,7 +74,7 @@ Icon.prototype.create = function(icon, callback) {
   var iconPath = path.join(iconBase, relativePath);
   fs.mkdirp(path.dirname(iconPath), function(err) {
     fs.rename(icon.path, iconPath, function(err) {
-      if (err) return callback(err);
+      if (err) { console.log(err); return callback(err); }
 
       IconModel.create(newIcon, function(err, oldIcon) {
         callback(err, newIcon);
