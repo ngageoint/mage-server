@@ -78,6 +78,7 @@ module.exports = function(app, security) {
   });
 
   // Grab the form for any endpoint that uses formId
+  app.param('formId', /^[0-9a-f]{24}/); //ensure formId is a mongo id
   app.param('formId', function(req, res, next, formId) {
       new api.Form().getById(formId, function(err, form) {
         if (!form) return res.send('Form not found', 404);
