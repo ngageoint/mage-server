@@ -88,14 +88,6 @@ L.LocationMarker = L.Marker.extend({
     return this._locationMarker.off('popupclose', fn, context);
   }
 
-  // on: function(types, fn, context) {
-  //   return this._locationMarker.on(types, fn, context);
-  // },
-  //
-  // off: function(types, fn, context) {
-  //   return this._locationMarker.off(types, fn, context);
-  // }
-
 });
 
 L.locationMarker = function (latlng, options) {

@@ -9,21 +9,16 @@ mage.directive('filter', function(FilterService, mageLib) {
         } else if ($scope.interval.filter == 'today') {
           FilterService.setTimeInterval({ today: true });
         } else if ($scope.interval.filter == 'custom') {
-          var startDate = moment($scope.filterStartDate).utc();
+          var startDate = moment($scope.filterStartDate);
           if (startDate) {
-            var startTime = $scope.filterStartTime || '00:00:00';
-            var start;
-            if ($scope.filterLocalTime) {
-              start = moment(startDate.format("YYYY-MM-DD") + " " + startTime).utc().format("YYYY-MM-DD HH:mm:ss")
-            } else {
-              start = startDate.format("YYYY-MM-DD") + " " + startTime
-            }
+            startDate = $scope.filterLocalTime ? startDate.utc() : startDate;
+            var start = startDate.format("YYYY-MM-DD HH:mm:ss");
           }
 
-          var endDate = moment($scope.filterEndDate).utc();
+          var endDate = moment($scope.filterEndDate);
           if (endDate) {
-            var endTime = $scope.filterEndTime || '23:59:59';
-            var end = $scope.filterLocalTime ? moment(endDate.format("YYYY-MM-DD") + " " + endTime).utc().format("YYYY-MM-DD HH:mm:ss") : endDate.format("YYYY-MM-DD") + " " + endTime;
+            endDate = $scope.filterLocalTime ? endDate.utc() : endDate;
+            var end = endDate.format("YYYY-MM-DD HH:mm:ss");
           }
 
           FilterService.setTimeInterval({start: start, end: end});
@@ -32,12 +27,11 @@ mage.directive('filter', function(FilterService, mageLib) {
         }
       }
 
+
       $scope.filterLocalTime = true;
       $scope.filterLocalOffset = moment().format('Z');
       $scope.filterStartDate = moment().startOf('day').toDate();
-      $scope.filterStartTime = '00:00:00';
-      $scope.filterEndDate = moment().startOf('day').toDate();
-      $scope.filterEndTime = '23:59:59';
+      $scope.filterEndDate = moment().endOf('day').toDate();
 
       $scope.intervals = [{
         filter: 'all',

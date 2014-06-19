@@ -1,19 +1,18 @@
-mage.directive('userId', function(UserService, appConstants) {
+mage.directive('userId', function() {
   return {
     restrict: "A",
     scope: {
     	userId: '='
     },
+    template: '{{user.firstname}} {{user.lastname}}',
     controller: function ($scope, UserService) {
-      $scope.$watch("userId", function(userId) {
-        if (!userId) return;
+      if (!$scope.userId) return;
 
-        UserService.getUser($scope.userId)
-          .then(function(user) {
-            $scope.user = user.data || user;
-          });
-        }
-      );
+      UserService.getUser($scope.userId)
+        .then(function(user) {
+          $scope.user = user.data || user;
+          console.log('s.userId', $scope.user);
+        });
     }
   };
 });

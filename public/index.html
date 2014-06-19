@@ -23,9 +23,12 @@
   <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.awesomemarkers/leaflet.awesome-markers.css"/>
   <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.markercluster/MarkerCluster.css"/>
   <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.markercluster/MarkerCluster.Default.css"/>
+  <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.control.sidebar/L.Control.Sidebar.css"/>
   <link rel="stylesheet" href="vendor/bootstrap-datepicker/css/datepicker.css"/>
   <link rel="stylesheet" href="vendor/bootstrap-timepicker/css/bootstrap-timepicker.min.css"/>
-  <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.control.sidebar/L.Control.Sidebar.css"/>
+  <link rel="stylesheet" href="vendor/angular-plugins/ngQuickDate/ng-quick-date.css"/>
+  <link rel="stylesheet" href="vendor/angular-plugins/ngQuickDate/ng-quick-date-plus-default-theme.css"/>
+  <link rel="stylesheet" href="css/wtf-forms.css"/>
   <link rel="stylesheet" href="css/style.css"/>
   <link rel="stylesheet" href="css/map.css"/>
 
@@ -54,14 +57,11 @@
 
 
   <script type="text/javascript" src="vendor/jquery/jquery.min.js"></script>
-  <!--
-  <script type="text/javascript" src="vendor/jquery-ui/jquery-ui.min.js"></script>
--->
   <script type="text/javascript" src="vendor/underscore/underscore-min.js"></script>
-  <script type="text/javascript" src="vendor/angular/1.2.0/angular.js"></script>
-  <script type="text/javascript" src="vendor/angular/1.2.0/angular-resource.js"></script>
-  <script type="text/javascript" src="vendor/angular/1.2.0/angular-sanitize.min.js"></script>
-  <script type="text/javascript" src="vendor/angular/1.2.0/angular-route.min.js"></script>
+  <script type="text/javascript" src="vendor/angular/1.2.16/angular.js"></script>
+  <script type="text/javascript" src="vendor/angular/1.2.16/angular-resource.js"></script>
+  <script type="text/javascript" src="vendor/angular/1.2.16/angular-sanitize.min.js"></script>
+  <script type="text/javascript" src="vendor/angular/1.2.16/angular-route.min.js"></script>
 
   <div cl***REMOVED***="navbar navbar-fixed-top" ng-controller="NavController">
     <div cl***REMOVED***="navbar-inner">
@@ -138,14 +138,11 @@
   <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.control.sidebar/L.Control.Sidebar.js"></script>
   <script type="text/javascript" src="vendor/ui-bootstrap/ui-bootstrap-0.6.0.js"></script>
   <script type="text/javascript" src="vendor/ui-bootstrap/ui-bootstrap-tpls-0.6.0.js"></script>
-  <!--
-  <script type="text/javascript" src="vendor/angular-ui/date.js"></script>
-  <script type="text/javascript" src="vendor/angular-ui/slider.js"></script>
--->
 
   <script type="text/javascript" src="vendor/angular-strap/js/angular-strap.js"></script>
   <script type="text/javascript" src="vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
   <script type="text/javascript" src="vendor/bootstrap-timepicker/js/bootstrap-timepicker.js"></script>
+  <script type="text/javascript" src="vendor/angular-plugins/ngQuickDate/ng-quick-date.js"></script>
 
 
   <script type="text/javascript" src="vendor/angular-plugins/http-auth-interceptor.js"></script>
@@ -158,79 +155,56 @@
   <script type="text/javascript" src="js/app/app.js"></script>
   <script type="text/javascript" src="js/app/directives/leaflet-directive.js"></script>
   <script type="text/javascript" src="js/app/directives/filter-navbar.js"></script>
-  <script type="text/javascript" src="js/app/directives/observation.js"></script>
-  <script type="text/javascript" src="js/app/directives/***REMOVED***/observation.js"></script>
-  <script type="text/javascript" src="js/app/directives/pdc/observation.js"></script>
-  <script type="text/javascript" src="js/app/directives/ss/observation.js"></script>
-  <script type="text/javascript" src="js/app/directives/tomnod/observation.js"></script>
   <script type="text/javascript" src="js/app/directives/user-location.js"></script>
-  <script type="text/javascript" src="js/app/directives/thirdPartyObservation.js"></script>
   <script type="text/javascript" src="js/app/directives/user-id.js"></script>
   <script type="text/javascript" src="js/app/directives/device-id.js"></script>
-  <script type="text/javascript" src="js/app/directives/icon/awesome-marker-icon.js"></script>
-  <script type="text/javascript" src="js/app/directives/icon/***REMOVED***-marker-icon.js"></script>
   <script type="text/javascript" src="js/app/directives/user-location-news-item.js"></script>
   <script type="text/javascript" src="js/app/directives/observation-news-item.js"></script>
-  <script type="text/javascript" src="js/app/directives/icon/marker-icon.js"></script>
+  <script type="text/javascript" src="js/app/directives/attachment.js"></script>
+  <script type="text/javascript" src="js/app/directives/map-clip.js"></script>
   <script type="text/javascript" src="js/app/directives/news-feed.js"></script>
   <script type="text/javascript" src="js/app/directives/export.js"></script>
   <script type="text/javascript" src="js/app/directives/filter.js"></script>
   <script type="text/javascript" src="js/app/directives/rotated-image.js"></script>
+  <script type="text/javascript" src="js/app/directives/simpleUpload.js"></script>
+  <script type="text/javascript" src="js/app/directives/form/field-directive.js"></script>
+  <script type="text/javascript" src="js/app/directives/form/form-directive.js"></script>
+  <script type="text/javascript" src="js/app/directives/form/import.js"></script>
+  <script type="text/javascript" src="js/app/directives/property/property-view.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/observation/ObservationService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/observation/PDCObservationService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/observation/SSObservationService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/observation/USARObservationService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/observation/TomnodObservationService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/ObservationService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/AboutService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/UserService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/DeviceService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/MapService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/FeatureService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/FeatureTypeService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/FilterService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/LocationService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/TimerService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/HttpAuthService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/mageLib.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/TimeBucketService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/FormService.js"></script>
   <script type="text/javascript" src="js/app/controllers/AboutController.js"></script>
   <script type="text/javascript" src="js/app/controllers/AdminController.js"></script>
   <script type="text/javascript" src="js/app/controllers/MapController.js"></script>
   <script type="text/javascript" src="js/app/controllers/NavController.js"></script>
   <script type="text/javascript" src="js/app/controllers/LayerController.js"></script>
   <script type="text/javascript" src="js/app/controllers/FeatureController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/FormBuilderController.js"></script>
   <script type="text/javascript" src="js/app/controllers/SigninController.js"></script>
   <script type="text/javascript" src="js/app/controllers/SignupController.js"></script>
   <script type="text/javascript" src="js/app/controllers/UserController.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/icon/IconService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/icon/AwesomeMarkerIconService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/icon/USARMarkerIconService.js"></script>
+  <script type="text/javascript" src="js/app/controllers/FormController.js"></script>
+
   <script type="text/javascript" src="js/app/resources/Feature.js"></script>
   <script type="text/javascript" src="js/app/resources/Layer.js"></script>
-  <script type="text/javascript" src="js/app/filters/moment-filter.js"></script>
+  <script type="text/javascript" src="js/app/resources/Form.js"></script>
+  <script type="text/javascript" src="js/app/filters/moment.js"></script>
+  <script type="text/javascript" src="js/app/filters/p***REMOVED***word.js"></script>
+
 
   <!-- file download -->
   <script type="text/javascript" src="vendor/jQuery-File-Download/js/jquery.fileDownload.js"></script>
-
-  <!-- file upload -->
-  <script src="vendor/jQuery-File-Upload/js/vendor/jquery.ui.widget.js"></script>
-  <script src="vendor/jQuery-File-Upload/js/load-image.min.js"></script>
-  <script src="vendor/jQuery-File-Upload/js/canvas-to-blob.min.js"></script>
-  <script src="vendor/jQuery-File-Upload/js/jquery.blueimp-gallery.min.js"></script>
-  <script src="vendor/jQuery-File-Upload/js/jquery.iframe-transport.js"></script>
-  <script src="vendor/jQuery-File-Upload/js/jquery.fileupload.js"></script>
-  <script src="vendor/jQuery-File-Upload/js/jquery.fileupload-process.js"></script>
-  <script src="vendor/jQuery-File-Upload/js/jquery.fileupload-image.js"></script>
-  <script src="vendor/jQuery-File-Upload/js/jquery.fileupload-audio.js"></script>
-  <script src="vendor/jQuery-File-Upload/js/jquery.fileupload-video.js"></script>
-  <script src="vendor/jQuery-File-Upload/js/jquery.fileupload-validate.js"></script>
-  <script src="vendor/jQuery-File-Upload/js/jquery.fileupload-ui.js"></script>
-  <script src="vendor/jQuery-File-Upload/js/jquery.fileupload-angular.js"></script>
-
-  <script src="vendor/exif/binaryajax.js"></script>
-  <script src="vendor/exif/exif.js"></script>
 
     <script type="text/ng-template" id="myModalContent.html">
       <div cl***REMOVED***="modal-header">
@@ -277,6 +251,20 @@
         <div cl***REMOVED***="row-fluid"><h4>Do you want to delete the layer '{{layer.name}}'?<h4></div>
         <span>
           <button cl***REMOVED***="btn btn-danger" ng-click="deleteLayer(layer, true)" ngm-tap="deleteLayer(layer, true)"><i cl***REMOVED***="icon-trash"> </i>Confirm Delete Layer</button>
+          <button cl***REMOVED***="btn pull-right" ng-click="cancel()" ngm-tap="cancel()">Cancel</button>
+        </span>
+      </div>
+    </script>
+
+    <script type="text/ng-template" id="deleteForm.html">
+      <div cl***REMOVED***="modal-header">
+        <h3>Please Confirm Delete '{{form.name}}'</h3>
+      </div>
+      <div cl***REMOVED***="modal-body">
+        <div cl***REMOVED***="row-fluid"><h4>Form '{{form.name}}' will be deleted.  <strong>This cannot be undone<strong>.  All data will be unrecoverable.</h4></div>
+        <div cl***REMOVED***="row-fluid"><h4>Do you want to delete the form '{{form.name}}'?<h4></div>
+        <span>
+          <button cl***REMOVED***="btn btn-danger" ng-click="deleteForm(form, true)" ngm-tap="deleteForm(form, true)"><i cl***REMOVED***="icon-trash"> </i>Confirm Delete Form</button>
           <button cl***REMOVED***="btn pull-right" ng-click="cancel()" ngm-tap="cancel()">Cancel</button>
         </span>
       </div>

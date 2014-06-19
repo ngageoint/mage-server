@@ -1,0 +1,38 @@
+<form name="observationForm" id="myForm" cl***REMOVED***="form" novalidate>
+    <div ng-repeat="field in form.fields | filter: { archived: '!' }">
+      <field-directive field="field"></field-directive>
+    </div>
+    <span>* required</span>
+
+    <div cl***REMOVED***="top-gap">
+      <h4 cl***REMOVED***="muted">Attachments</h4>
+      <div cl***REMOVED***="attachment" ng-repeat="attachment in formObservation.attachments track by attachment.id">
+        <div cl***REMOVED***="row-fluid">
+          <div>
+            <div attachment="attachment" attachment-observation="formObservation" edit="true"></div>
+          </div>
+        </div>
+      </div>
+
+      <div ng-repeat="(id, file) in attachmentUploads" cl***REMOVED***="row-fluid">
+        <div cl***REMOVED***="span10" enctype="multipart/form-data" simple-upload url="{{formObservation.url + '/attachments?access_token=' + getToken()}}" allow-upload="observationSaved" upload-file-form-name="'attachment'" preview="true" upload-id="id"></div>
+        <span>
+          <button cl***REMOVED***="btn btn-danger btn-mini top-gap-s" ng-click="removeFileUpload(id)"><i cl***REMOVED***="fa fa-minus"></i></button>
+        </span>
+      </div>
+
+      <div cl***REMOVED***="row-fluid top-gap-s">
+        <button cl***REMOVED***="btn btn-primary" ng-click="addAttachment()" ngm-tap="addAttachment()">Add Attachment</button>
+      </div>
+
+      <div cl***REMOVED***="top-gap-l">
+        <span cl***REMOVED***="pull-right">
+          <button cl***REMOVED***="btn btn-inverse" ng-click="cancelEdit()" ngm-tap="cancelEdit()">Cancel</button>
+          <button cl***REMOVED***="btn" ng-click="save()" ngm-tap="save()" ng-disabled="observationForm.$invalid"><i cl***REMOVED***="icon-save"></i> Save</button>
+        </span>
+        <span>
+          <button cl***REMOVED***="btn btn-danger pull-left" ng-show="formObservation.id && amAdmin" ng-click="deleteObservation(observation)" ngm-tap="deleteObservation(observation)"><i cl***REMOVED***="icon-trash"></i> Delete Observation</button>
+        </span>
+      </div>
+    </div>
+</form>

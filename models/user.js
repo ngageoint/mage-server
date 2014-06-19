@@ -9,7 +9,7 @@ var mongoose = require('mongoose')
 var locationLimit = config.server.locationServices.userCollectionLocationLimit;
 
 // Creates a new Mongoose Schema object
-var Schema = mongoose.Schema; 
+var Schema = mongoose.Schema;
 
 var PhoneSchema = new Schema({
   type: { type: String, required: true },
@@ -47,10 +47,12 @@ var UserSchema = new Schema({
     teams: [Schema.Types.ObjectId],
     status: { type: String, required: false, index: 'sparse' },
     locations: [LocationSchema]
-  },{ 
+  },{
     versionKey: false
   }
 );
+
+UserSchema
 
 UserSchema.method('validP***REMOVED***word', function(p***REMOVED***word, callback) {
   var user = this;
@@ -197,7 +199,7 @@ exports.createUser = function(user, callback) {
     active: user.active,
     role: user.role
   }
-  
+
   User.create(create, function(err, user) {
     if (err) return callback(err);
 

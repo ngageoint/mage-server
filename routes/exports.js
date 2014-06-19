@@ -1,10 +1,12 @@
 module.exports = function(app, security) {
   var moment = require('moment')
+    , api = require('../api')
     , Location = require('../models/location')
     , Layer = require('../models/layer')
     , User = require('../models/user')
     , Device = require('../models/device')
-    , Feature = require('../models/feature')
+    , Form = require('../models/form')
+    , Icon = require('../models/icon')
     , access = require('../access')
     , generate_kml = require('../utilities/generate_kml')
     , async = require('async')
@@ -150,9 +152,11 @@ module.exports = function(app, security) {
     var now = new Date();
 
     var layersToShapefiles = function(done) {
+      var filter = req.parameters.filter;
+      filter.states = ['active'];
       async.map(req.layers,
         function(layer, done) {
-          Feature.getFeatures(layer, {filter: req.parameters.filter}, function(features) {
+          new api.Feature(layer).getAll({filter: filter}, function(features) {
             features.forEach(function(feature) {
               if (req.users[feature.userId]) feature.properties.user = req.users[feature.userId].username;
               if (req.devices[feature.deviceId]) feature.properties.device = req.devices[feature.deviceId].uid;
@@ -293,10 +297,15 @@ module.exports = function(app, security) {
     var getFeatures = function(done) {
       if(!layers) return done();
 
+      var filter = req.parameters.filter;
+      filter.states = ['active'];
       async.each(layers, function(layer, done) {
-        Feature.getFeatures(layer, {filter: req.parameters.filter}, function(features) {
+        new api.Feature(layer).getAll({filter: filter}, function(features) {
           layer.features = features;
-          done();
+          Form.getById(layer.formId, function(err, form) {
+            layer.form = form;
+            done();
+          });
         });
       },
       function(){
@@ -304,9 +313,14 @@ module.exports = function(app, security) {
       });
     }
 
-    var copyKmlIcons= function(done) {
-      fs.copy('public/img/kml-icons', req.directory + "/icons", function(err) {
-        done(err);
+    var copyKmlIcons = function(done) {
+      async.each(layers, function(layer, done) {
+        var iconPath = new api.Icon(layer.form).getBasePath();
+        fs.copy(iconPath, req.directory + "/icons/" + layer.form._id, function(err) {
+          done(err);
+        });
+      }, function() {
+        done();
       });
     }
 
@@ -353,11 +367,7 @@ module.exports = function(app, security) {
             stream.write(generate_kml.generateKMLFolderStart(layer.name, false));
 
             features.forEach(function(feature) {
-              lon = feature.geometry.coordinates[0];
-              lat = feature.geometry.coordinates[1];
-              desc = feature.properties.type;
-              attachments = feature.attachments;
-              stream.write(generate_kml.generatePlacemark(feature.properties.type, feature.properties.type, lon ,lat ,0, feature.properties, attachments));
+              stream.write(generate_kml.generatePlacemark(feature.properties.type, feature, layer.form));
             });
 
             stream.write(generate_kml.generateKMLFolderClose());
@@ -386,7 +396,7 @@ module.exports = function(app, security) {
           }
 
           locations.forEach(function(location) {
-            stream.write(generate_kml.generatePlacemark(user.username, 'FFT' , location.geometry.coordinates[0] ,location.geometry.coordinates[1] ,0, location.properties));
+            stream.write(generate_kml.generatePlacemark('FFT', location));
           });
 
           console.log('Successfully wrote ' + locations.length + ' locations to KML for user ' + user.username);
@@ -433,7 +443,15 @@ module.exports = function(app, security) {
           function(done) {
             stream.write(generate_kml.generateKMLHeader());
             stream.write(generate_kml.generateKMLDocument());
-            done();
+            async.each(layers, function(layer, done) {
+              Icon.getAll({formId: layer.form._id}, function(err, icons) {
+                stream.write(generate_kml.generateStyles(icons));
+                done();
+              });
+            },
+            function(){
+              done();
+            });
           },
           function(done) {
             writeFeatures(stream, done);
@@ -491,8 +509,6 @@ module.exports = function(app, security) {
         res.cookie("fileDownload", "true", {path: '/'});
         stream.pipe(res);
       });
-
-      var t = 32;
     }
 
     ////////////////////////////////////////////////////////////////////

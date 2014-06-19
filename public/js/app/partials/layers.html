@@ -52,9 +52,6 @@
           <div cl***REMOVED***="control-group" ng-show="layer.id == undefined">
             <label cl***REMOVED***="control-label">Layer type</label>
             <div cl***REMOVED***="controls">
-            <label cl***REMOVED***="radio inline">
-              <input type="radio" name="layer-type" value="Feature" ng-model="layer.type"> Feature
-              </label>
               <label cl***REMOVED***="radio inline">
                 <input type="radio" name="layer-type" value="Imagery" ng-model="layer.type"> Imagery
               </label>
@@ -90,7 +87,7 @@
             <div cl***REMOVED***="controls">
               <label cl***REMOVED***="checkbox inline">
                 <input type="checkbox" name="layer-type" ng-model="layer.base">
-              </label>             
+              </label>
             </div>
           </div>
 
@@ -112,14 +109,14 @@
           <div cl***REMOVED***="control-group" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
             <label cl***REMOVED***="control-label">Layers</label>
             <div cl***REMOVED***="controls">
-              <input cl***REMOVED***="input-xlarge" type="text" placeholder="Comma seperated list of layer names" ng-model="layer.wms.layers"/>           
+              <input cl***REMOVED***="input-xlarge" type="text" placeholder="Comma seperated list of layer names" ng-model="layer.wms.layers"/>
             </div>
           </div>
 
           <div cl***REMOVED***="control-group" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
             <label cl***REMOVED***="control-label">Styles</label>
             <div cl***REMOVED***="controls">
-              <input cl***REMOVED***="input-xlarge" type="text" placeholder="Comma seperated list of layer styles" ng-model="layer.wms.styles"/>           
+              <input cl***REMOVED***="input-xlarge" type="text" placeholder="Comma seperated list of layer styles" ng-model="layer.wms.styles"/>
             </div>
           </div>
 
@@ -136,7 +133,7 @@
             <div cl***REMOVED***="controls">
               <label cl***REMOVED***="checkbox inline">
                 <input type="checkbox" name="layer-wms-transparency" ng-model="layer.wms.transparent">
-              </label>             
+              </label>
             </div>
           </div>
 
@@ -155,85 +152,65 @@
         </form>
 
         <div ng-show="layer.type == 'External' && layer.id">
+          <div cl***REMOVED***="kml-upload-div" ng-repeat="upload in uploads">
+            <form enctype="multipart/form-data" simple-upload url="{{fileUploadOptions.url}}" allow-upload="uploadConfirmed" upload-file-form-name="'file'">
+            </form>
+          </div>
+          <div cl***REMOVED***="row-fluid">
+            <button cl***REMOVED***="btn btn-primary" ng-click="addAnotherFile()" ngm-tap="addAnotherFile()">Add Another File</button>
+            <button cl***REMOVED***="btn btn-success" ng-click="confirmUpload()" ngm-tap="confirmUpload()">Upload File(s)</button>
+          </div>
+
+          <!-- <table cl***REMOVED***="table table-striped files ng-cloak">
+              <tr data-ng-repeat="file in queue" data-ng-cl***REMOVED***="{'processing': file.$processing(), 'unacceptable-file': file.doNotSend}">
+                  <td data-ng-switch data-on="!!file.thumbnailUrl">
+                      <div cl***REMOVED***="preview" data-ng-switch-when="true">
+                          <a data-ng-href="{{file.url}}" title="{{file.name}}" download="{{file.name}}" data-gallery><img data-ng-src="{{file.thumbnailUrl}}" alt=""></a>
+                      </div>
+                      <div cl***REMOVED***="preview" data-ng-switch-default data-file-upload-preview="file"></div>
+                  </td>
+                  <td>
+                      <p cl***REMOVED***="name" data-ng-switch data-on="!!file.url">
+                          <span data-ng-switch-when="true" data-ng-switch data-on="!!file.thumbnailUrl">
+                              <a data-ng-switch-when="true" data-ng-href="{{file.url}}" title="{{file.name}}" download="{{file.name}}" data-gallery>{{file.name}}</a>
+                              <a data-ng-switch-default data-ng-href="{{file.url}}" title="{{file.name}}" download="{{file.name}}">{{file.name}}</a>
+                          </span>
+                          <span data-ng-switch-default>{{file.name}}</span>
+                      </p>
+                      <strong data-ng-show="file.features" cl***REMOVED***="success text-success">File successfully imported. {{file.features}} features were created.</strong>
+                      <strong data-ng-show="file.error" cl***REMOVED***="error text-danger">{{file.error}} <span data-ng-show="file.doNotSend">File will not be uploaded</span></strong>
+                  </td>
+                  <td>
+                      <p cl***REMOVED***="size">{{file.size | formatFileSize}}</p>
+                      <div cl***REMOVED***="progress progress-striped active fade" data-ng-cl***REMOVED***="{pending: 'in'}[file.$state()]" data-file-upload-progress="file.$progress()"><div cl***REMOVED***="progress-bar progress-bar-success" data-ng-style="{width: num + '%'}"></div></div>
+                  </td>
+                  <td>
+                    <button type="button" cl***REMOVED***="btn btn-danger cancel" data-ng-click="file.$cancel()" data-ng-hide="!file.$cancel">
+                        <i cl***REMOVED***="glyphicon glyphicon-ban-circle"></i>
+                        <span>Remove</span>
+                    </button>
+                  </td>
+              </tr>
+          </table> -->
+<!--
             <form method="POST" enctype="multipart/form-data" data-file-upload="fileUploadOptions" data-ng-cl***REMOVED***="{'fileupload-processing': processing() || loadingFiles}">
-                <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
                 <div cl***REMOVED***="row-fluid fileupload-buttonbar">
                     <div cl***REMOVED***="span7">
-                        <!-- The fileinput-button span is used to style the file input field as button -->
                         <span cl***REMOVED***="btn btn-success fileinput-button" ng-cl***REMOVED***="{disabled: disabled}">
                             <i cl***REMOVED***="glyphicon glyphicon-plus"></i>
                             <span>Add KML files...</span>
                             <input type="file" name="file" multiple ng-disabled="disabled">
                         </span>
-                        <!--
-                        <button type="button" cl***REMOVED***="btn btn-primary start" data-ng-click="submit()">
-                            <i cl***REMOVED***="glyphicon glyphicon-upload"></i>
-                            <span>Start upload</span>
-                        </button>
-                        <button type="button" cl***REMOVED***="btn btn-warning cancel" data-ng-click="cancel()">
-                            <i cl***REMOVED***="glyphicon glyphicon-ban-circle"></i>
-                        </button>
-                            <span>Cancel upload</span>
-                      -->
-                        <!-- The global file processing state -->
                         <span cl***REMOVED***="fileupload-process"></span>
                     </div>
-                    <!-- The global progress state -->
                     <div cl***REMOVED***="span5 fade" data-ng-cl***REMOVED***="{in: active()}">
-                        <!-- The global progress bar -->
                         <div cl***REMOVED***="progress progress-striped active" data-file-upload-progress="progress()"><div cl***REMOVED***="progress-bar progress-bar-success" data-ng-style="{width: num + '%'}"></div></div>
-                        <!-- The extended global progress state -->
                         <div cl***REMOVED***="progress-extended">&nbsp;</div>
                     </div>
                 </div>
-                <!-- The table listing the files available for upload/download -->
-                <table cl***REMOVED***="table table-striped files ng-cloak">
-                    <tr data-ng-repeat="file in queue" data-ng-cl***REMOVED***="{'processing': file.$processing(), 'unacceptable-file': file.doNotSend}">
-                        <td data-ng-switch data-on="!!file.thumbnailUrl">
-                            <div cl***REMOVED***="preview" data-ng-switch-when="true">
-                                <a data-ng-href="{{file.url}}" title="{{file.name}}" download="{{file.name}}" data-gallery><img data-ng-src="{{file.thumbnailUrl}}" alt=""></a>
-                            </div>
-                            <div cl***REMOVED***="preview" data-ng-switch-default data-file-upload-preview="file"></div>
-                        </td>
-                        <td>
-                            <p cl***REMOVED***="name" data-ng-switch data-on="!!file.url">
-                                <span data-ng-switch-when="true" data-ng-switch data-on="!!file.thumbnailUrl">
-                                    <a data-ng-switch-when="true" data-ng-href="{{file.url}}" title="{{file.name}}" download="{{file.name}}" data-gallery>{{file.name}}</a>
-                                    <a data-ng-switch-default data-ng-href="{{file.url}}" title="{{file.name}}" download="{{file.name}}">{{file.name}}</a>
-                                </span>
-                                <span data-ng-switch-default>{{file.name}}</span>
-                            </p>
-                            <strong data-ng-show="file.features" cl***REMOVED***="success text-success">File successfully imported. {{file.features}} features were created.</strong>
-                            <strong data-ng-show="file.error" cl***REMOVED***="error text-danger">{{file.error}} <span data-ng-show="file.doNotSend">File will not be uploaded</span></strong>
-                        </td>
-                        <td>
-                            <p cl***REMOVED***="size">{{file.size | formatFileSize}}</p>
-                            <div cl***REMOVED***="progress progress-striped active fade" data-ng-cl***REMOVED***="{pending: 'in'}[file.$state()]" data-file-upload-progress="file.$progress()"><div cl***REMOVED***="progress-bar progress-bar-success" data-ng-style="{width: num + '%'}"></div></div>
-                        </td>
-                        <td>
-                          <button type="button" cl***REMOVED***="btn btn-danger cancel" data-ng-click="file.$cancel()" data-ng-hide="!file.$cancel">
-                              <i cl***REMOVED***="glyphicon glyphicon-ban-circle"></i>
-                              <span>Remove</span>
-                          </button>
-                          <!--
-                            <button type="button" cl***REMOVED***="btn btn-primary start" data-ng-click="file.$submit()" data-ng-hide="!file.$submit || options.autoUpload" data-ng-disabled="file.$state() == 'pending' || file.$state() == 'rejected'">
-                                <i cl***REMOVED***="glyphicon glyphicon-upload"></i>
-                                <span>Start</span>
-                            </button>
-                            <button type="button" cl***REMOVED***="btn btn-warning cancel" data-ng-click="file.$cancel()" data-ng-hide="!file.$cancel">
-                                <i cl***REMOVED***="glyphicon glyphicon-ban-circle"></i>
-                                <span>Cancel</span>
-                            </button>
-                            <button data-ng-controller="FileDestroyController" type="button" cl***REMOVED***="btn btn-danger destroy" data-ng-click="file.$destroy()" data-ng-hide="!file.$destroy">
-                                <i cl***REMOVED***="glyphicon glyphicon-trash"></i>
-                                <span>Delete</span>
-                            </button>
-                          -->
-                        </td>
-                    </tr>
-                </table>
+
                 <button cl***REMOVED***="btn" ng-click="submit()" ngm-tap="submit()"><i cl***REMOVED***="icon-save"></i> Import Data</button>
-            </form>
+            </form> -->
 
           </div>
       </div>
