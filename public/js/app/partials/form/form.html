@@ -15,7 +15,7 @@
       </div>
 
       <div ng-repeat="(id, file) in attachmentUploads" cl***REMOVED***="row-fluid">
-        <div cl***REMOVED***="span10" enctype="multipart/form-data" simple-upload url="{{formObservation.url + '/attachments?access_token=' + getToken()}}" allow-upload="observationSaved" upload-file-form-name="'attachment'" upload-id="id"></div>
+        <div cl***REMOVED***="span10" enctype="multipart/form-data" simple-upload url="{{formObservation.url + '/attachments?access_token=' + getToken()}}" allow-upload="observationSaved" upload-file-form-name="'attachment'" preview="true" upload-id="id"></div>
         <span>
           <button cl***REMOVED***="btn btn-danger btn-mini top-gap-s" ng-click="removeFileUpload(id)"><i cl***REMOVED***="fa fa-minus"></i></button>
         </span>

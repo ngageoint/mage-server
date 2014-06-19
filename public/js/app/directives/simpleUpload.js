@@ -12,10 +12,14 @@ mage.directive('simpleUpload', function() {
       defaultImageUrl: '='
     },
     controller: function ($scope, $element) {
-      var missingIcon = false;
-      $element.find("img").error(function(){
+      $scope.uploadImageMissing = true;
+      $element.find("img").error(function() {
+        $scope.uploadImageMissing = true;
+        $scope.$apply();
         if (!$scope.defaultImageUrl) return;
          $(this).attr('src', $scope.defaultImageUrl);
+      }).load(function() {
+        $scope.uploadImageMissing = false;
       });
 
       $element.find('.file-custom').attr('data-filename', 'Choose a file...');
@@ -40,6 +44,8 @@ mage.directive('simpleUpload', function() {
 
           reader.onload = (function(theFile) {
             return function(e) {
+              $scope.uploadImageMissing = false;
+              $scope.$apply();
               element.find('.preview').html(['<img cl***REMOVED***="preview-image" src="', e.target.result,'" title="', theFile.name, '"/>'].join(''));
             };
           })(file);
