@@ -28,10 +28,10 @@ module.exports = function(app, security) {
 
   // get icon
   app.get(
-    '/api/icons/:id?/:type?/:variant?',
+    '/api/icons/:formId/:type?/:variant?',
     access.authorize('READ_LAYER'),
     function(req, res, next) {
-      new api.Icon(req.params.id, req.params.type, req.params.variant).getIcon(function(err, iconPath) {
+      new api.Icon(req.form._id, req.params.type, req.params.variant).getIcon(function(err, iconPath) {
         if (err || !iconPath) return next();
 
         res.sendfile(iconPath);
