@@ -19,7 +19,7 @@ angular.module('mage').directive('formDirective', function (FormService, Observa
 
         $scope.save = function() {
           $scope.form.getObservation().$save({}, function(observation) {
-
+            $scope.formObservation = observation;
             if (_.some(_.values($scope.attachmentUploads), function(v) {return v;})) {
               $scope.observationSaved = true;
             } else {
@@ -58,7 +58,7 @@ angular.module('mage').directive('formDirective', function (FormService, Observa
         }
 
         $scope.$on('uploadComplete', function(e, url, response, id) {
-          $scope.$emit('newAttachmentSaved', response);
+          $scope.$emit('newAttachmentSaved', response, $scope.formObservation.id);
 
           delete $scope.attachmentUploads[id];
           if (_.keys($scope.attachmentUploads).length == 0) {
