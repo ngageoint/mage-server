@@ -7,6 +7,7 @@ mage.directive('simpleUpload', function() {
       allowUpload: '=',
       allowMultiple: '=',
       preview: '=',
+      uploadId: '=',
       uploadFileFormName: '=',
       defaultImageUrl: '='
     },
@@ -27,7 +28,9 @@ mage.directive('simpleUpload', function() {
         if ($scope.preview) {
           previewFile($scope.file, element);
         }
-        $scope.$apply();
+        $scope.$apply(function() {
+          $scope.$emit('uploadFile', $scope.uploadId);
+        });
         upload();
       });
 
@@ -58,7 +61,7 @@ mage.directive('simpleUpload', function() {
         $scope.$apply(function() {
           $scope.uploadStatus = "Upload Complete";
           $scope.uploading = false;
-          $scope.$emit('uploadComplete', $scope.url, response);
+          $scope.$emit('uploadComplete', $scope.url, response, $scope.uploadId);
         });
       }
 
