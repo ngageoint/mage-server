@@ -28,9 +28,10 @@ module.exports = function(app, security) {
 
   // get icon
   app.get(
-    '/api/icons/:id?/:type?/:variant?',
+    '/api/icons/:formId?/:type?/:variant?',
     access.authorize('READ_LAYER'),
     function(req, res, next) {
+      console.log('get icon');
       new api.Icon(req.params.id, req.params.type, req.params.variant).getIcon(function(err, iconPath) {
         if (err || !iconPath) return next();
 
@@ -43,6 +44,8 @@ module.exports = function(app, security) {
     '/api/icons*',
     access.authorize('READ_LAYER'),
     function(req, res, next) {
+      console.log('get default icon');
+
       new api.Icon().getDefaultIcon(function(err, iconPath) {
         if (err) return next(err);
 
