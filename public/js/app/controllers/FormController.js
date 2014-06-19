@@ -13,19 +13,11 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
     $scope.fileUploadOptions = {
     };
 
-    if ($scope.form) {
-        angular.forEach($scope.form.fields, function(field) {
-            if (field.title == 'Type') {
-                $scope.typeField = field;
-            }
-        });
-    }
-
     $scope.$watch('fs.editForm', function(newForm, oldForm){
         $scope.form = FormService.editForm;
         if ($scope.form) {
             angular.forEach($scope.form.fields, function(field) {
-                if (field.title == 'Type') {
+                if (field.name == 'type') {
                     $scope.typeField = field;
                 }
             });
@@ -135,6 +127,15 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
       if (!$scope.form) return;
 
       $scope.populateVariants();
+    });
+
+    $scope.$watch('form.fields', function() {
+      if (!$scope.form || !$scope.form.fields) return;
+      angular.forEach($scope.form.fields, function(field) {
+          if (field.name == 'type') {
+              $scope.typeField = field;
+          }
+      });
     });
 
     $scope.$watch('form.variantField', function() {
