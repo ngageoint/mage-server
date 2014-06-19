@@ -68,7 +68,9 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
 
   $scope.createNewForm = function() {
     var newForm = FormService.newForm();
-    $scope.forms.push(newForm);
+    newForm.$save(function(savedForm) {
+      $scope.forms.push(newForm);
+    });
   }
 
   /* Status message functions */
