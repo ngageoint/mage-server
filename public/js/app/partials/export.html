@@ -1,7 +1,7 @@
 <div ng-show="showExport" cl***REMOVED***="filter-panel">
   <h3>Export</h3>
 
-  <form cl***REMOVED***="form">  
+  <form cl***REMOVED***="form">
 
     <div cl***REMOVED***="top-gap">
       <h4><i cl***REMOVED***="icon-layers icon-sage"></i>  Select Layers</h4>
@@ -27,31 +27,17 @@
       <select cl***REMOVED***="input-xlarge" ng-model="export" ng-options="o.label for o in exportOptions"></select>
     </div>
 
-    <div ng-show="export.custom">
-		<div>
-	        <div cl***REMOVED***="control-group input-append">
-	    	  <label cl***REMOVED***="control-label">Start Date/Time</label>
-	          <input cl***REMOVED***="input-small" type="text" ng-model="exportStartDate" data-date-format="mm/dd/yyyy" bs-datepicker>
-	          <button type="button" cl***REMOVED***="btn" data-toggle="datepicker"><i cl***REMOVED***="icon-sage icon-calendar"></i></button>
-	        </div>
-	        <div cl***REMOVED***="control-group input-append">
-	    	  <label cl***REMOVED***="control-label" for="">&nbsp</label>
-	   		  <input cl***REMOVED***="input-small" type="text" ng-model="exportStartTime" bs-timepicker data-template="false" data-show-inputs="false" data-show-seconds="true" data-show-meridian="false">
-	   		  <span cl***REMOVED***="add-on"><span ng-click="localTime = !localTime" ngm-tap="localTime = !localTime"><i cl***REMOVED***="icon-sage icon-time"></i><span ng-show="localTime"> Local (GMT {{localOffset}})</span><span ng-show="!localTime"> GMT (GMT +00:00)</span><span></span>
-	        </div>
-        </div>
-        <div>
-	        <div cl***REMOVED***="control-group input-append">
-	    	  <label cl***REMOVED***="control-label">End Date/Time</label>
-	          <input cl***REMOVED***="input-small" type="text" ng-model="exportEndDate" data-date-format="mm/dd/yyyy" bs-datepicker>
-	          <button type="button" cl***REMOVED***="btn" data-toggle="datepicker"><i cl***REMOVED***="icon-sage icon-calendar"></i></button>
-	        </div>
-	        <div cl***REMOVED***="control-group input-append">
-	    	  <label cl***REMOVED***="control-label" for="">&nbsp</label>
-	   		  <input cl***REMOVED***="input-small" type="text" ng-model="exportEndTime" bs-timepicker data-template="false" data-show-inputs="false" data-show-seconds="true" data-show-meridian="false">
-	   		  <span cl***REMOVED***="add-on"><span ng-click="localTime = !localTime" ngm-tap="localTime = !localTime"><i cl***REMOVED***="icon-sage icon-time"></i><span ng-show="localTime"> Local (GMT {{localOffset}})</span><span ng-show="!localTime"> GMT (GMT +00:00)</span></span></span>
-	        </div>
-        </div>
+    <div ng-show="export.custom" style="z-index:2000;">
+	    <div cl***REMOVED***="control-group">
+        <label cl***REMOVED***="control-label">Start Date/Time</label>
+        <quick-datepicker ng-model='exportStartDate' icon-cl***REMOVED***='fa fa-calendar' time-format="HH:mm:ss"></quick-datepicker>
+        <button type="button" ng-click="localTime = !localTime" ngm-tap="localTime = !localTime" cl***REMOVED***="btn quickdate-button"><i cl***REMOVED***="fa fa-clock-o"></i><span ng-show="localTime"> Local (GMT {{localOffset}})</span><span ng-show="!localTime"> GMT (GMT +00:00)</span></button>
+      </div>
+      <div cl***REMOVED***="control-group">
+    	  <label cl***REMOVED***="control-label">End Date/Time</label>
+        <quick-datepicker ng-model='exportEndDate' icon-cl***REMOVED***='fa fa-calendar' time-format="HH:mm:ss"></quick-datepicker>
+        <button type="button" ng-click="localTime = !localTime" ngm-tap="localTime = !localTime" cl***REMOVED***="btn quickdate-button"><i cl***REMOVED***="fa fa-clock-o"></i><span ng-show="localTime"> Local (GMT {{localOffset}})</span><span ng-show="!localTime"> GMT (GMT +00:00)</span></button>
+      </div>
 		</div>
 
     <div ng-show="showLayerError" cl***REMOVED***="alert-error" bs-alert>

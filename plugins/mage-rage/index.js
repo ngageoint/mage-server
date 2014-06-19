@@ -1,9 +1,9 @@
 var child = require('child_process')
   , config = require('./config.json')
 
-console.log('activating rage plugin');
-
 if (!config.enable) return;
+
+console.log('activating rage plugin');
 
 function startData() {
   var data = config.data;

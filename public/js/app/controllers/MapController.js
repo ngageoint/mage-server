@@ -4,16 +4,12 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($rootScope, $scope, $log, $http, ObservationService, FilterService, FeatureTypeService, appConstants, mageLib, IconService, UserService, DataService, MapService, Layer, LocationService, Location, CreateLocation, TimerService, Feature, TimeBucketService) {
+function MapController($rootScope, $scope, $log, $http, $compile, ObservationService, appConstants, mageLib, UserService, DataService, MapService, Layer, LocationService, FilterService, Location, CreateLocation, TimerService, Feature, TimeBucketService) {
   $scope.customer = appConstants.customer;
   var ds = DataService;
   $scope.ms = MapService;
+  $scope.os = ObservationService;
   $scope.readOnlyMode = appConstants.readOnly;
-
-  FeatureTypeService.getTypes().
-    success(function (types, status, headers, config) {
-      $scope.types = types;
-    });
 
   $scope.locate = false;
   $scope.broadcast = false;
@@ -47,9 +43,6 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Filt
   $scope.newsFeedEnabled = true;
 
   $scope.showListTool = false;
-  $scope.iconTag = function(feature) {
-    return IconService.iconHtml(feature, $scope);
-  }
 
   $scope.currentLayerId = 0;
 
@@ -98,6 +91,8 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Filt
       $scope.featureLayers = MapService.featureLayers = _.filter(layers, function(layer) {
         return layer.type == 'Feature';
       });
+      appConstants.featureLayer = $scope.featureLayers[0];
+
       // Pull out all imagery layers
       $scope.baseLayers = MapService.baseLayers = _.filter(layers, function(layer) {
         return layer.type == 'Imagery' && layer.base;
@@ -140,26 +135,43 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Filt
     });
 
   var isEditing;
-  $scope.newObservation = function () {
-    if ($scope.newObservationEnabled) {
-      $scope.newObservationEnabled = false;
+  $scope.createNewObservation = function () {
+    if (ObservationService.newForm) {
+      ObservationService.cancelNewForm();
       return;
     }
-    $scope.newFeature = ObservationService.createNewObservation();
-    isEditing = false;
-    $scope.newObservationEnabled = true;
-    $scope.observationTab = 1;
-    $scope.observationCloseText = "Cancel";
-    $scope.attachments = [];
-    $scope.files = [];
-    if ($scope.markerLocation) {
-      $scope.newFeature.geometry.coordinates = [$scope.markerLocation.lng, $scope.markerLocation.lat];
-    }
-    $scope.newFeature.properties.timestamp = new Date().getTime();
-    if (MapService.featureLayers.length == 1) {
-      $scope.newFeature.layerId = MapService.featureLayers[0].id;
-    }
+
+    $scope.newObservation = new Feature({
+      geometry: {
+        type: 'Point',
+        coordinates: [0,0]
+      },
+      properties: {
+        timestamp: new Date()
+      }
+    });
+
+    ObservationService.createNewForm($scope.newObservation).then(function(form) {
+      ObservationService.newForm = form;
+    });
   }
+
+  $scope.$watch('newObservation.id', function(newObservation) {
+    if (!newObservation) return;
+
+    var featureLayer = _.find($scope.featureLayers, function(layer) {
+      return layer.id == appConstants.featureLayer.id;
+    });
+
+    if (!featureLayer.features) return;
+
+    featureLayer.features.push($scope.newObservation);
+
+    // this has to change.  This is how the leaflet-directive knows to pick up new features, but it is not good
+    $scope.layer.features = {features: featureLayer.features};
+
+    createAllFeaturesArray();
+  });
 
   $scope.$on('cancelEdit', function(event) {
     $scope.newObservationEnabled = false;
@@ -169,22 +181,35 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Filt
   $scope.$on('newObservationSaved', function(event, observation) {
     $scope.newObservationEnabled = false;
     isEditing = false;
-    var featureLayer = _.find($scope.featureLayers, function(layer) {
-      return layer.id == observation.layerId;
+
+    // this will get me a new copy of the array to mod and p***REMOVED*** to leaflet leaflet-directive
+    // as below this is not great and can be reworked if there is one place to look for features
+    var features = appConstants.featureLayer.features ? appConstants.featureLayer.features.slice(0) : [];
+    var existingFeature = _.find(features, function(feature) {
+      return feature.id == observation.id;
     });
-    if (featureLayer) {
-      var existingFeature = _.find(featureLayer.features, function(feature) {
-        return feature.id == observation.id;
-      });
-      if (existingFeature) {
-        existingFeature = observation;
-      } else {
-        featureLayer.features.push(observation);
-      }
-      // this has to change.  This is how the leaflet-directive knows to pick up new features, but it is not good
-      $scope.layer.features = {features: featureLayer.features};
+
+    if (existingFeature) {
+      existingFeature = observation;
+    } else {
+      features.push(observation);
     }
-    createAllFeaturesArray();
+
+    // this has to change.  This is how the leaflet-directive knows to pick up new features, but it is not good
+    if ($scope.layer) {
+      $scope.layer.features = {features: features};
+    }
+  });
+
+  $scope.$on('newAttachmentSaved', function(e, attachment, observationId) {
+    var features = appConstants.featureLayer.features ? appConstants.featureLayer.features.slice(0) : [];
+    var existingFeature = _.find(features, function(feature) {
+      return feature.id == observationId;
+    });
+
+    if (existingFeature) {
+      existingFeature.attachments.push(attachment);
+    }
   });
 
   $scope.$on('observationDeleted', function(event, observation) {
@@ -247,9 +272,11 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Filt
   $scope.$watch("markerLocation", function(location) {
     if (!location) return;
 
-    if (!isEditing && $scope.newObservationEnabled) {
-      $scope.newFeature.geometry.coordinates = [location.lng, location.lat];
-      $scope.newFeature.properties.timestamp = new Date().getTime();
+    if (ObservationService.newForm) {
+      ObservationService.newForm.getField('geometry').value = {
+        x: location.lng,
+        y: location.lat
+      };
     }
   }, true);
 
@@ -291,11 +318,6 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Filt
           console.log("Error getting features for layer 'layer.name' : " + status);
           $scope.loadingLayers[id] = false;
         });
-
-      // gets back the JSON, but doesnt seem to be handling everything right
-      //jsonp($scope.externalLayers[0].url).then(function(response) {
-      //    $scope.layer.features = response.features;
-      //});
     } else {
       var options = {layerId: layer.id};
       if (layer.type == 'Feature') {
@@ -335,6 +357,7 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Filt
           $scope.layer.features = features;
           createAllFeaturesArray();
         }
+
       }, function(response) {
         console.info('there was an error, code was ' + response.status);
       });
@@ -355,21 +378,12 @@ function MapController($rootScope, $scope, $log, $http, ObservationService, Filt
 
 
   $scope.onFeatureLayer = function(layer) {
-    var timerName = 'pollLayer'+layer.id;
-    if (!layer.checked) {
-      $scope.layer = {id: layer.id, checked: false};
-      var featureLayer = _.find($scope.featureLayers, function(l) {
-        return l.id == layer.id;
-      });
-      if (!featureLayer) {
-        featureLayer = _.find($scope.externalLayers, function(l) {
-          return l.id == layer.id;
-        });
-      }
-      featureLayer.features = [];
-      createAllFeaturesArray();
-    } else {
+    if (layer.checked) {
       loadLayer(layer);
+    } else {
+      $scope.layer = {id: layer.id, checked: false};
+      layer.features = [];
+      createAllFeaturesArray();
     }
   }
 

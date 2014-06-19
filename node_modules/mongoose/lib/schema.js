@@ -5,7 +5,7 @@
 var EventEmitter = require('events').EventEmitter
   , VirtualType = require('./virtualtype')
   , utils = require('./utils')
-  , NamedScope
+  , mquery = require('mquery')
   , Query
   , Types
 
@@ -63,6 +63,8 @@ function Schema (obj, options) {
   this.statics = {};
   this.tree = {};
   this._requiredpaths = undefined;
+  this.discriminatorMapping = undefined;
+  this._indexedpaths = undefined;
 
   this.options = this.defaultOptions(options);
 
@@ -149,11 +151,17 @@ Schema.prototype.defaultOptions = function (options) {
     options.safe = { w: 0 };
   }
 
+  if (options && options.safe && 0 === options.safe.w) {
+    // if you turn off safe writes, then versioning goes off as well
+    options.versionKey = false;
+  }
+
   options = utils.options({
       strict: true
     , bufferCommands: true
     , capped: false // { size, max, autoIndexId }
     , versionKey: '__v'
+    , discriminatorKey: '__t'
     , minimize: true
     , autoIndex: true
     , shardKey: null
@@ -163,10 +171,12 @@ Schema.prototype.defaultOptions = function (options) {
     , _id: true
     , noVirtualId: false // deprecated, use { id: false }
     , id: true
+//    , pluralization: true  // only set this to override the global option
   }, options);
 
-  if (options.read)
+  if (options.read) {
     options.read = utils.readPref(options.read);
+  }
 
   return options;
 }
@@ -214,7 +224,7 @@ Schema.prototype.add = function add (obj, prefix) {
  *
  * Keys in this object are names that are rejected in schema declarations b/c they conflict with mongoose functionality. Using these key name will throw an error.
  *
- *      on, emit, _events, db, init, isNew, errors, schema, options, modelName, collection, _pres, _posts, toObject
+ *      on, emit, _events, db, get, set, init, isNew, errors, schema, options, modelName, collection, _pres, _posts, toObject
  *
  * _NOTE:_ Use of these terms as method names is permitted, but play at your own risk, as they may be existing mongoose document methods you are stomping on.
  *
@@ -226,6 +236,8 @@ Schema.reserved = Object.create(null);
 var reserved = Schema.reserved;
 reserved.on =
 reserved.db =
+reserved.set =
+reserved.get =
 reserved.init =
 reserved.isNew =
 reserved.errors =
@@ -399,6 +411,19 @@ Schema.prototype.requiredPaths = function requiredPaths () {
 }
 
 /**
+ * Returns indexes from fields and schema-level indexes (cached).
+ *
+ * @api private
+ * @return {Array}
+ */
+
+Schema.prototype.indexedPaths = function indexedPaths () {
+  if (this._indexedpaths) return this._indexedpaths;
+
+  return this._indexedpaths = this.indexes();
+}
+
+/**
  * Returns the pathType of `path` for this schema.
  *
  * Given a path, returns whether it is a real, virtual, nested, or ad-hoc/undefined path.
@@ -506,7 +531,7 @@ Schema.prototype.pre = function(){
 };
 
 /**
- * Defines a post for the document
+ * Defines a post hook for the document
  *
  * Post hooks fire `on` the event emitted from document instances of Models compiled from this schema.
  *
@@ -826,42 +851,6 @@ Schema.prototype.virtualpath = function (name) {
   return this.virtuals[name];
 };
 
-/**
- * These still haven't been fixed. Once they're working we'll make them public again.
- * @api private
- */
-
-Schema.prototype.namedScope = function (name, fn) {
-  var namedScopes = this.namedScopes || (this.namedScopes = new NamedScope)
-    , newScope = Object.create(namedScopes)
-    , allScopes = namedScopes.scopesByName || (namedScopes.scopesByName = {});
-  allScopes[name] = newScope;
-  newScope.name = name;
-  newScope.block = fn;
-  newScope.query = new Query();
-  newScope.decorate(namedScopes, {
-    block0: function (block) {
-      return function () {
-        block.call(this.query);
-        return this;
-      };
-    },
-    blockN: function (block) {
-      return function () {
-        block.apply(this.query, arguments);
-        return this;
-      };
-    },
-    basic: function (query) {
-      return function () {
-        this.query.find(query);
-        return this;
-      };
-    }
-  });
-  return newScope;
-};
-
 /*!
  * Module exports.
  */
@@ -904,7 +893,6 @@ Schema.Types = require('./schema/index');
  */
 
 Types = Schema.Types;
-NamedScope = require('./namedscope')
 Query = require('./query');
 var ObjectId = exports.ObjectId = Types.ObjectId;
 

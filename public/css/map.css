@@ -21,11 +21,6 @@ html, body, div.leaflet-container {
 	margin-bottom: 0;
 }
 
-.container-fluid {
-	padding-left: 0;
-	padding-right: 0;
-}
-
 /* Leaflet stuff */
 .map-wrap {
   left: 0;
@@ -112,7 +107,7 @@ html, body, div.leaflet-container {
 @media (max-width: 979px) {
 	.navbar-fixed-top, .navbar-fixed-bottom {
 		position: absolute;
-	}	
+	}
 }
 
 #settings {
@@ -124,10 +119,10 @@ html, body, div.leaflet-container {
 	z-index: 999;
 }
 
-/* I switched the position for goto-address and new observation buttons for a better layout while 
+/* I switched the position for goto-address and new observation buttons for a better layout while
 	 we are waiting to get the rest of the buttons wired up so the UI doesnt look weird.
 */
-#goto-address { 
+#goto-address {
 	position: absolute;
 	height: 50px;
 	width: 50px;
@@ -373,6 +368,11 @@ html, body, div.leaflet-container {
 	color: #eee;
 }
 
+.striped-rows .row-fluid:nth-child(odd)  {
+	background: #def;
+	background: rgba(221, 238, 255, 0.6);
+}
+
 .row-selected {
 	background: #5077A4 !important;
 	background: rgba(80, 119, 164, 0.7) !important;
@@ -447,4 +447,12 @@ html, body, div.leaflet-container {
 		width: 45%;
 		padding-right: 15px;
 	}
+}
+
+.mage-icon {
+	margin-left: -17px;
+}
+
+.mage-icon-image {
+	width: 35px;
 }

@@ -14,7 +14,7 @@ a {
 }
 
 body {
-	background: #D0E7FF;
+	background: #EEEEEE;
 	color: #6389b3;
 }
 
@@ -45,7 +45,6 @@ img.rotate270 {
     -ms-transform: rotate(-90deg);
 }
 
-
 [cl***REMOVED***^="icon-"], [cl***REMOVED****=" icon-"]{
     background:none;
 }
@@ -69,7 +68,7 @@ img.rotate270 {
 }
 
 .modal-body {
-    background: #D0E7FF;
+    background: #EEEEEE;
     color: #6389b3;
 }
 
@@ -110,19 +109,19 @@ img.rotate270 {
     color: #FFF;
     display: block;
     float: left;
-    font-size: 20px;
+    font-size: 19px;
     font-weight: 200;
-    margin-left: -20px;
-    padding: 10px 20px;
     text-shadow: 0 1px 0 #2B2620;
 }
 
 .navbar .nav > li > a {
     color: #FFF;
-    float: none;
-    padding: 10px 15px;
     text-decoration: none;
     text-shadow: 0 1px 0 #222;
+}
+
+.accordion-group {
+    border: 1px solid #999999;
 }
 
 .navbar .nav > .active > a,
@@ -133,7 +132,7 @@ img.rotate270 {
 }
 
 .well {
-	background: #efefef;
+	border: 1px solid #999999;
 }
 
 .sage-color {
@@ -193,12 +192,6 @@ textarea {
 .nav-pills>.active>a, .nav-pills>.active>a:hover, .nav-pills>.active>a:focus {
     background: #456588;
     color: #F5F3DA;
-}
-
-.btn {
-    border: solid 1px #c8c8c8;
-    background: #FAFAFA;
-    box-shadow: none;;
 }
 
 .btn-inverse, .leaflet-bar a.btn-inverse {
@@ -326,15 +319,26 @@ div.image-button {
     position: relative;
 }
 
-div.image-button:hover input {
+div.image-button:hover button {
     display: block;
 }
 
-div.image-button input {
+div.image-button button {
     position: absolute;
     top: 0;
     left: 0;
     display: none;
+}
+
+.image-delete {
+	opacity: 0.2;
+}
+
+h4.image-delete {
+	position: absolute;
+  text-align: center;
+	color: white;
+	font-weight: bold;
 }
 
 .awesome-marker-display {
@@ -354,4 +358,24 @@ div.image-button input {
 .edit-well {
     background: #43719F;
     color: white;
+}
+
+.muted {
+	color: #777777;
+}
+
+.file-custom:before {
+	box-sizing: border-box;
+}
+
+.file-custom {
+	box-sizing: border-box;
+}
+
+.preview-image {
+	width: 35px;
+}
+
+.deleted-border {
+	border: 3px dashed #336699;
 }

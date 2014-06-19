@@ -1,8 +1,7 @@
 'use strict';
 
-function FeatureController($scope, $location, $timeout, Feature, FeatureService, FeatureState, FeatureAttachment, MapService, UserService, IconService, mageLib, appConstants) {
+function FeatureController($scope, $location, $timeout, Feature, FeatureService, FeatureState, MapService, UserService, mageLib, appConstants) {
   var isEditing = false;
-  $scope.amAdmin = UserService.amAdmin;
   $scope.token = mageLib.getLocalItem('token');
 
   $scope.cancelObservation = function (observation) {
@@ -11,34 +10,11 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureService,
     isEditing = false;
   }
 
-  $scope.saveObservation = function (observation) {
-    // Build the observation object
-    var operation = "";
-
-    // TODO this should be UTC time
-    observation.properties.timestamp = new Date().getTime();
-    var create = observation.id == null;
-    var layerId = observation.layerId;
-    observation.$save({}, function(value, responseHeaders) {
-      create ? $scope.newFeature = value : $scope.updatedFeature = value;
-      $scope.newObservationEnabled = false;
-      $scope.activeFeature = null;
-      observation.layerId = layerId;
-      isEditing = false;
-      if ($scope.files && $scope.files.length > 0) {
-        $scope.fileUploadUrl = appConstants.rootUrl + '/FeatureServer/' + observation.layerId + '/features/' + observation.id + '/attachments';
-        $scope.uploadFile(observation);
-      }
-      $scope.editMode = false;
-      $scope.$emit('newObservationSaved', observation);
-    });
-  }
-
   $scope.deleteObservation = function (observation) {
     console.log('making call to archive observation');
     FeatureState.save(
-      {layerId: observation.layerId, featureId: observation.id}, 
-      {name: 'archive'}, 
+      {layerId: observation.layerId, featureId: observation.id},
+      {name: 'archive'},
       function(success) {
         $scope.deletedFeature = $scope.activeFeature;
         isEditing = false;
@@ -60,6 +36,8 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureService,
   }
 
   $scope.uploadFile = function(observation) {
+    var fileUploadUrl ='/FeatureServer/' + appConstants.featureLayer.id + '/features/' + observation.id + '/attachments';
+
     var fd = new FormData()
     for (var i in $scope.files) {
       fd.append("attachment", $scope.files[i])
@@ -67,12 +45,11 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureService,
     var xhr = new XMLHttpRequest();
     xhr.upload.addEventListener("progress", uploadProgress, false);
     xhr.addEventListener("load", function(event) {
-      uploadComplete(event, observation);
+      uploadComplete(event);
     }, false);
     xhr.addEventListener("error", uploadFailed, false);
     xhr.addEventListener("abort", uploadCanceled, false);
-    xhr.open("POST", $scope.fileUploadUrl + "?access_token=" + mageLib.getToken());
-    // xhr.setRequestHeader('Authorization', 'Bearer ' + mageLib.getToken());
+    xhr.open("POST", fileUploadUrl + "?access_token=" + mageLib.getToken());
     $scope.progressVisible = true;
     xhr.send(fd)
   }
@@ -87,15 +64,11 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureService,
     });
   }
 
-  function uploadComplete(event, observation) {
+  function uploadComplete(event) {
     $scope.files = [];
     $scope.progressVisible = false;
-    console.info('event is ', event);
     var response = angular.fromJson(event.target.responseText);
-    console.info('response is', response);
-    console.info('observation.layerId ' + observation.layerId);
-    console.info('observation', observation);
-    observation.attachments.push(response);
+    $scope.observation.attachments.push(response);
   }
 
   function uploadFailed(evt) {
@@ -151,18 +124,4 @@ function FeatureController($scope, $location, $timeout, Feature, FeatureService,
         $scope.externalFeature = data;
       });
   }, true);
-
-  $scope.deleteAttachment = function (observation, attachmentId) {
-    FeatureAttachment.delete({id: attachmentId, layerId: observation.layerId, featureId: observation.id}, function(success) {
-      console.info('success');
-      console.log("attachment deleted");
-      for (var i = 0; i < observation.attachments.length; i++) {
-        if (observation.attachments[i].id == attachmentId) {
-          observation.attachments.splice(i, 1);
-        }
-      }
-    }, function(failure) {
-      console.info('failure');
-    });
-  }
 }
