@@ -8,7 +8,7 @@ angular.module('mage').factory('ObservationService', ['$q', 'appConstants','Laye
     var formPromise;
 
     ***REMOVED***.newForm = null;
-    ***REMOVED***.createNewForm = function(observation) {
+    ***REMOVED***.createNewForm = function(observation, viewMode) {
       var promise = formPromise.then(function(form) {
         var newForm = angular.copy(form);
         newForm.observationId = observation.id;
@@ -18,12 +18,18 @@ angular.module('mage').factory('ObservationService', ['$q', 'appConstants','Laye
           y: observation.geometry.coordinates[1]
         }
 
+        var existingPropertyFields = [];
         _.each(observation.properties, function(value, key) {
           var field = newForm.getField(key);
           if (field) {
             field.value = value;
+            existingPropertyFields.push(field);
           }
         });
+
+        if (viewMode) {
+          newForm.fields = _.intersection(newForm.fields, existingPropertyFields);
+        }
 
         return newForm;
       });
