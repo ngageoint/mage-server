@@ -29,7 +29,7 @@ mage.directive('observationNewsItem', function() {
       }
 
       $scope.$watch('editForm', function() {
-        ObservationService.createNewForm($scope.observation)
+        ObservationService.createNewForm($scope.observation, true)
           .then(function(form) {
             $scope.viewForm = form;
           });
