@@ -343,12 +343,15 @@
                               </div>
                               <div cl***REMOVED***="row-fluid" ng-hide="showAddOptions(newField)">
                                 <div cl***REMOVED***="span2">Field Default Value:</div>
-                                <div cl***REMOVED***="span4"><input type="text" ng-model="newField.value" value="{{newField.value}}"></div>
+                                <div cl***REMOVED***="span4">
+                                  <input ng-show="newField.type=='checkbox'" ng-model="newField.value" type="checkbox" ng-checked="newField.value == true"/>
+                                  <input ng-hide="newField.type=='checkbox'" type="text" ng-model="newField.value" value="{{newField.value}}">
+                                </div>
                               </div>
                               <div cl***REMOVED***="row-fluid" ng-show="showAddOptions(newField)">
                                 <div cl***REMOVED***="span2">Field Default Value:</div>
                                 <div cl***REMOVED***="span4">
-                                  <select ng-model="newField.value" ng-options="choice.title for choice in newField.choices">
+                                  <select ng-model="newField.value" ng-options="choice.title as choice.title for choice in newField.choices">
                                     <option value="">No Default</option>
                                   </select>
                                 </div>
