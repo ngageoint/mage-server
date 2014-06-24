@@ -351,7 +351,7 @@
                               <div cl***REMOVED***="row-fluid" ng-show="showAddOptions(newField)">
                                 <div cl***REMOVED***="span2">Field Default Value:</div>
                                 <div cl***REMOVED***="span4">
-                                  <select ng-model="newField.value" ng-options="choice.title for choice in newField.choices">
+                                  <select ng-model="newField.value" ng-options="choice.title as choice.title for choice in newField.choices">
                                     <option value="">No Default</option>
                                   </select>
                                 </div>
