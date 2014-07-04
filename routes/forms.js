@@ -13,6 +13,28 @@ module.exports = function(app, security) {
 
   var validateFormParams = function(req, res, next) {
     var form = req.body;
+
+    // check for required fields
+    var fields = form.fields;
+    if (!fields) return res.send(400, 'fields is required');
+
+    var fieldNames = {};
+    fields.forEach(function(field) {
+      fieldNames[field.name] = field;
+    });
+
+    var missing = [];
+    if (fieldNames.timestamp == null) missing.push("'timestamp' missing field is required");
+    if (fieldNames.geometry == null) missing.push("'geometry' missing field is required");
+    if (fieldNames.type == null) missing.push("'type' missing field is required");
+    if (missing.length) return res.send(400, missing.join(","));
+
+    var required = [];
+    if (!fieldNames.timestamp.required) required.push("'timestamp' required property must be true");
+    if (!fieldNames.geometry.required) required.push("'geometry' required property must be true");
+    if (!fieldNames.type.required) required.push("'type' required property must be true");
+    if (required.length) return res.send(400, required.join(","));
+
     req.newForm = form;
     next();
   }
