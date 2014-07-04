@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mage').directive('formDirective', function (FormService, ObservationService, UserService, FeatureAttachment, appConstants, mageLib) {
+angular.module('mage').directive('formDirective', function (FormService, ObservationService, UserService, FeatureAttachment, appConstants, mageLib, FeatureState) {
     return {
       templateUrl: 'js/app/partials/form/form.html',
       restrict: 'E',
@@ -46,6 +46,22 @@ angular.module('mage').directive('formDirective', function (FormService, Observa
           _.each($scope.formObservation.attachments, function(attachment) {
             delete attachment.markedForDelete;
           });
+        }
+
+        $scope.deleteObservation = function() {
+            console.log("delte it now");
+            var observation = $scope.form.getObservation();
+
+            console.log('making call to archive observation');
+            FeatureState.save(
+              {layerId: observation.layerId, featureId: observation.id},
+              {name: 'archive'},
+              function(state) {
+                $scope.form = null;
+                // $scope.deletedFeature = $scope.activeFeature;
+                observation.state = state;
+                $scope.$emit('observationDeleted', observation);
+            });
         }
 
         $scope.addAttachment = function() {

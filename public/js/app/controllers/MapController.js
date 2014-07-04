@@ -222,7 +222,12 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
       return layer.id == observation.layerId;
     });
     if (featureLayer) {
-      featureLayer.features = _.without(featureLayer.features, observation);
+
+      var existingObservation = _.find(featureLayer.features, function(o) {
+        return o.id == observation.id;
+      });
+
+      featureLayer.features = _.without(featureLayer.features, existingObservation);
       // this has to change.  This is how the leaflet-directive knows to pick up new features, but it is not good
       $scope.layer.features = {features: featureLayer.features};
     }
@@ -260,7 +265,9 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
     var allFeatures = $scope.locations && !$scope.hideLocationsFromNewsFeed ? $scope.locations : [];
     _.each($scope.featureLayers, function(layer) {
       if (layer.checked) {
-        allFeatures = allFeatures.concat(layer.hideClearedFeatures ? _.filter(layer.features, function(feature){ return !feature.properties.EVENTCLEAR; }) : layer.features);
+        allFeatures = allFeatures.concat(_.filter(layer.features, function(feature){
+           return !feature.state || feature.state.name != 'archive';
+        }));
       }
     });
     $scope.feedItems = allFeatures;
