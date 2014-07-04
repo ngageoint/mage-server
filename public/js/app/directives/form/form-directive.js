@@ -8,7 +8,7 @@ angular.module('mage').directive('formDirective', function (FormService, Observa
       scope: {
         form: '=',
         formObservation: '=',
-        formEdit: '='
+        formPreview: '='
       },
       controller: function($scope) {
         var uploadId = 0;
