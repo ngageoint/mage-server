@@ -126,7 +126,7 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
     $scope.$watch('form', function() {
       if (!$scope.form) return;
 
-      $scope.populateVariants();
+      $scope.populateVariants(true);
     });
 
     $scope.$watch('form.fields', function() {

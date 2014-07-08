@@ -38,6 +38,11 @@ mage.directive('simpleUpload', function() {
         upload();
       });
 
+      $scope.$watch('url', function() {
+        $scope.uploadImageMissing = false;
+        element.find('.preview').html(['<img cl***REMOVED***="preview-image" src="',$scope.url,'"/>'].join(''));
+      });
+
       var previewFile = function(file, element) {
         if (window.FileReader) {
           var reader = new FileReader();
