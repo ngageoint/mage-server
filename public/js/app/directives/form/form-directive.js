@@ -19,7 +19,6 @@ angular.module('mage').directive('formDirective', function (FormService, Observa
 
         $scope.save = function() {
           $scope.form.getObservation().$save({}, function(observation) {
-            $scope.formObservation = observation;
             if (_.some(_.values($scope.attachmentUploads), function(v) {return v;})) {
               $scope.observationSaved = true;
             } else {
@@ -36,6 +35,7 @@ angular.module('mage').directive('formDirective', function (FormService, Observa
               });
             });
 
+            $scope.formObservation = observation;
             $scope.$emit('newObservationSaved', observation);
           });
         }
