@@ -138,8 +138,8 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
       });
     });
 
-    $scope.$watch('form.variantField', function() {
-      if (!$scope.form || !$scope.form.variantField) return;
+    $scope.$watch('form.variantField', function(newValue, oldValue) {
+      if (!$scope.form || newValue == oldValue) return;
       $scope.populateVariants()
     })
 
