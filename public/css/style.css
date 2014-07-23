@@ -180,6 +180,16 @@ img.rotate270 {
     background-image: none;
 }
 
+.icon-brand-s {
+	font-size: 75px;
+	color: #324962;
+}
+
+.icon-brand-l {
+	font-size: 300px;
+	color: #324962;
+}
+
 /* Overrides */
 .form-horizontal .control-group {
     margin-bottom: 10px;
@@ -379,3 +389,5 @@ h4.image-delete {
 .deleted-border {
 	border: 3px dashed #336699;
 }
+
+.
