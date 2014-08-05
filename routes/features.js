@@ -255,7 +255,6 @@ module.exports = function(app, auth) {
         var stream = fs.createReadStream(attachment.path);
         stream.on('open', function() {
           res.type(attachment.contentType);
-          res.attachment(attachment.name);
           res.header('Content-Length', attachment.size);
           stream.pipe(res);
         });
