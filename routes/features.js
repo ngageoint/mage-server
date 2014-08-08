@@ -127,8 +127,12 @@ module.exports = function(app, auth) {
         sort: req.parameters.sort
       };
       new api.Feature(req.layer).getAll(options, function(features) {
-        var response = geojson.transform(features, {path: getFeatureResource(req)});
-        res.json(response);
+        var features = geojson.transform(features, {path: getFeatureResource(req)});
+        res.json({
+          type: "FeatureCollection",
+          bbox: [-180, -90, 180, 90.0],
+          features: features
+        });
       });
     }
   );

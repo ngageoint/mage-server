@@ -2,7 +2,7 @@ mage.directive('export', function(UserService, appConstants, mageLib) {
   return {
     restrict: "A",
     templateUrl:  "js/app/partials/export.html",
-    controller: function ($scope, $window, MapService, mageLib) {
+    controller: function ($scope, $http, $window, MapService, mageLib) {
 
       var fileExport = angular.element('#file-export');
       fileExport.load(function() {
