@@ -127,8 +127,12 @@ module.exports = function(app, auth) {
         sort: req.parameters.sort
       };
       new api.Feature(req.layer).getAll(options, function(features) {
-        var response = geojson.transform(features, {path: getFeatureResource(req)});
-        res.json(response);
+        var features = geojson.transform(features, {path: getFeatureResource(req)});
+        res.json({
+          type: "FeatureCollection",
+          bbox: [-180, -90, 180, 90.0],
+          features: features
+        });
       });
     }
   );
@@ -255,7 +259,6 @@ module.exports = function(app, auth) {
         var stream = fs.createReadStream(attachment.path);
         stream.on('open', function() {
           res.type(attachment.contentType);
-          res.attachment(attachment.name);
           res.header('Content-Length', attachment.size);
           stream.pipe(res);
         });

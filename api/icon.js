@@ -25,8 +25,6 @@ function Icon(formId, type, variant) {
 
 function createIconPath(icon, name) {
   var ext = path.extname(name);
-  console.log('formId:', icon._formId);
-  console.log('formId:', this._formId);
   var iconPath = icon._formId.toString();
   if (icon._type != null) {
     iconPath = path.join(iconPath, icon._type);

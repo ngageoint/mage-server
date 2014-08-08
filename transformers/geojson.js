@@ -12,7 +12,7 @@ var transformState = function(feature, state) {
   state.id = state._id;
   delete state._id;
 
-  state.url = [feature.url, "states", state.id].join("/"); 
+  state.url = [feature.url, "states", state.id].join("/");
   return state;
 }
 
@@ -23,7 +23,7 @@ var transformFeature = function(feature, options) {
   feature = feature.toObject ? feature.toObject() : feature;
   feature.id = feature._id;
   var path = options.path ? options.path : "";
-  feature.url = [path, feature.id].join("/"); 
+  feature.url = [path, feature.id].join("/");
   delete feature._id;
 
   if (feature.attachments) {
@@ -45,11 +45,7 @@ var transformFeatures = function(features, options) {
     return transformFeature(feature, options);
   });
 
-  return { 
-    type: "FeatureCollection",
-    bbox: [-180, -90, 180, 90.0],
-    features: features
-  };
+  return features;
 }
 
 exports.transform = function(features, options) {

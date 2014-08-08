@@ -46,10 +46,13 @@
   </form>
 
   <button cl***REMOVED***="btn btn-inverse pull-right" ng-click="showExport = false" ngm-tap="showExport = false">Close</button>
-  <button cl***REMOVED***="btn sage-color" ng-disabled="exporting.kml" ng-click="exportData($event, 'kml')">
-    <i cl***REMOVED***="icon-sage" ng-cl***REMOVED***="exporting.kml && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.kml && "Exporting..." || "KML"}}
-  </button>
-	<button cl***REMOVED***="btn sage-color" ng-disabled="exporting.shapefile" ng-click="exportData($event, 'shapefile')">
+  <button cl***REMOVED***="btn sage-color" ng-disabled="exporting.shapefile || exporting.geojson" ng-click="exportData($event, 'shapefile')">
     <i cl***REMOVED***="icon-sage" ng-cl***REMOVED***="exporting.shapefile && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.shapefile && "Exporting..." || "Shapefile"}}
+  </button>
+  <button cl***REMOVED***="btn sage-color" ng-disabled="exporting.shapefile || exporting.kml" ng-click="exportData($event, 'geojson')">
+    <i cl***REMOVED***="icon-sage" ng-cl***REMOVED***="exporting.shapefile && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.geojson && "Exporting..." || "GeoJSON"}}
+  </button>
+  <button cl***REMOVED***="btn sage-color" ng-disabled="exporting.kml || exporting.geojson" ng-click="exportData($event, 'kml')">
+    <i cl***REMOVED***="icon-sage" ng-cl***REMOVED***="exporting.kml && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.kml && "Exporting..." || "KML"}}
   </button>
 </div>

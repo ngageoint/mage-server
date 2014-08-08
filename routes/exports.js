@@ -1,5 +1,6 @@
 module.exports = function(app, security) {
   var moment = require('moment')
+    , config = require('../config')
     , api = require('../api')
     , Location = require('../models/location')
     , Layer = require('../models/layer')
@@ -14,7 +15,10 @@ module.exports = function(app, security) {
     , sys = require('sys')
     , path = require('path')
     , toGeoJson = require('../utilities/togeojson')
+    , geojson = require('../transformers/geojson')
     , shp = require('shp-write')
+    , stream = require('stream')
+    , archiver = require('archiver')
     , DOMParser = require('xmldom').DOMParser
     , spawn = require('child_process').spawn
     , exec = require('child_process').exec;
@@ -115,7 +119,7 @@ module.exports = function(app, security) {
       filter.userId = options.userId;
     }
 
-    Location.getLocations({filter: filter, limit: 2000}, function(err, locations) {
+    Location.getLocations({filter: filter, limit: options.limit}, function(err, locations) {
       if(err) {
         console.log(err);
         return done(err);
@@ -142,6 +146,10 @@ module.exports = function(app, security) {
         case 'kml':
           console.log('exporting KML...');
           exportKML(req, res, next);
+          break;
+        case 'geojson':
+          console.log('exporting GeoJSON...');
+          exportGeoJSON(req, res, next);
           break;
       }
     }
@@ -315,7 +323,7 @@ module.exports = function(app, security) {
 
     var copyKmlIcons = function(done) {
       async.each(layers, function(layer, done) {
-        var iconPath = new api.Icon(layer.form).getBasePath();
+        var iconPath = new api.Icon(layer.form._id).getBasePath();
         fs.copy(iconPath, req.directory + "/icons/" + layer.form._id, function(err) {
           done(err);
         });
@@ -521,5 +529,159 @@ module.exports = function(app, security) {
       copyFeatureMediaAttachmentsToStagingDirectory,
       writeKmlFile
    ], streamZipFileToClient);
+  }
+
+  var exportGeoJSON = function(req, res, next) {
+    var userLocations;
+    var layers = req.layers;
+    var layerIds = req.parameters.filter.layerIds;
+    var fft = req.parameters.filter.fft;
+
+    var now = new Date();
+
+    var getFeatures = function(done) {
+      if(!layers) return done();
+
+      var filter = req.parameters.filter;
+      filter.states = ['active'];
+      async.each(layers, function(layer, done) {
+        new api.Feature(layer).getAll({filter: filter}, function(features) {
+          layer.features = features;
+          Form.getById(layer.formId, function(err, form) {
+            layer.form = form;
+            done();
+          });
+        });
+      },
+      function(){
+        done();
+      });
+    }
+
+    var writeFeatures = function(stream, done) {
+      //writing requested feature layers
+      layers.forEach(function(layer) {
+        stream.write(JSON.stringify({
+          type: 'FeatureCollection',
+          features: geojson.transform(layer.features)
+        }));
+      });
+
+      stream.end();
+      done();
+    }
+
+    var writeLocations = function(stream, done) {
+      console.log('writing locations...');
+      var limit = 2000;
+
+      var startDate = req.parameters.filter.startDate ? moment(req.parameters.filter.startDate) : null;
+      var endDate = req.parameters.filter.endDate ? moment(req.parameters.filter.endDate) : null;
+      var lastLocationId = null;
+
+      stream.write('{"type": "FeatureCollection", "features": [');
+      var locations = [];
+      async.doUntil(function(done) {
+        requestLocations({startDate: startDate, endDate: endDate, lastLocationId: lastLocationId, limit: limit}, function(err, requestedLocations) {
+          if (err) return done(err);
+          locations = requestedLocations;
+
+          if (locations.length) {
+            if (lastLocationId) stream.write(",");  // not first time through
+
+            var data = JSON.stringify(locations);
+            stream.write(data.substr(1, data.length - 2));
+          } else {
+            stream.end(']}');
+          }
+
+          console.log('Successfully wrote ' + locations.length + ' locations to GeoJSON');
+          var last = locations.slice(-1).pop();
+          if (last) {
+            var locationTime = moment(last.properties.timestamp);
+            lastLocationId = last._id;
+            if (!startDate || startDate.isBefore(locationTime)) {
+              startDate = locationTime;
+            }
+          }
+
+          done();
+        });
+      },
+      function() {
+        return locations.length == 0;
+      },
+      function(err) {
+        console.log('done writing locations');
+        done(err);
+      });
+    }
+
+    var streamGeoJSONFile = function(done) {
+      res.type('application/zip');
+      res.attachment("mage-export.zip");
+      res.cookie("fileDownload", "true", {path: '/'});
+
+      var archive = archiver('zip');
+      archive.pipe(res);
+
+
+
+      async.parallel([
+        function(done) {
+          if (!layers.length) return done();
+
+          var observationStream = new stream.P***REMOVED***Through();
+          archive.append(observationStream, { name:'mage-export/observations.geojson' });
+          writeFeatures(observationStream, done);
+
+          layers.forEach(function(layer) {
+            // throw in attachments
+            archive.bulk([{
+              cwd: path.join(config.server.attachment.baseDirectory, layer.collectionName),
+              src: ['*/**'],
+              dest: 'mage-export/attachments',
+              expand: true,
+              data: { date: new Date() } }
+            ]);
+
+            // throw in icons
+            var iconPath = new api.Icon(layer.form._id).getBasePath();
+            archive.bulk([{
+              cwd: iconPath,
+              src: ['*/**'],
+              dest: 'mage-export/icons',
+              expand: true,
+              data: { date: new Date() } }
+            ]);
+          });
+
+
+        },
+        function(done) {
+          if (!fft) return done();
+
+          var locationStream = new stream.P***REMOVED***Through();
+          archive.append(locationStream, {name: 'mage-export/locations.geojson'});
+          writeLocations(locationStream, done);
+        }
+      ],
+      function(err) {
+        if (err) {
+          console.log(err);
+        }
+
+        archive.finalize();
+      });
+
+    }
+
+    ////////////////////////////////////////////////////////////////////
+    //END DEFINE SERIES FUNCTIONS///////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    async.series([
+      getFeatures,
+   ], streamGeoJSONFile);
   }
 }
