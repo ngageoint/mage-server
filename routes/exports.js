@@ -295,16 +295,11 @@ module.exports = function(app, security) {
   }
 
   var exportKML = function(req, res, next) {
-    var userLocations;
     var layers = req.layers;
     var layerIds = req.parameters.filter.layerIds;
     var fft = req.parameters.filter.fft;
 
-    var now = new Date();
-
-    var getFeatures = function(done) {
-      if(!layers) return done();
-
+    var streamFeatures = function(stream, done) {
       var filter = req.parameters.filter;
       filter.states = ['active'];
       async.each(layers, function(layer, done) {
@@ -312,7 +307,18 @@ module.exports = function(app, security) {
           layer.features = features;
           Form.getById(layer.formId, function(err, form) {
             layer.form = form;
-            done();
+            Icon.getAll({formId: layer.form._id}, function(err, icons) {
+              kmlStream.write(generate_kml.generateStyles(icons));
+              stream.write(generate_kml.generateKMLFolderStart(layer.name, false));
+
+              features.forEach(function(feature) {
+                stream.write(generate_kml.generatePlacemark(feature.properties.type, feature, layer.form));
+              });
+
+              stream.write(generate_kml.generateKMLFolderClose());
+
+              done();
+            });
           });
         });
       },
@@ -321,76 +327,12 @@ module.exports = function(app, security) {
       });
     }
 
-    var copyKmlIcons = function(done) {
-      async.each(layers, function(layer, done) {
-        var iconPath = new api.Icon(layer.form._id).getBasePath();
-        fs.copy(iconPath, req.directory + "/icons/" + layer.form._id, function(err) {
-          done(err);
-        });
-      }, function() {
-        done();
-      });
-    }
-
-    var copyFeatureMediaAttachmentsToStagingDirectory = function(done) {
-      async.each(layers,
-        function(layer, layerDone) {
-          async.each(layer.features,
-            function(feature, featureDone) {
-              async.each(feature.attachments,
-                function(attachment, attachmentDone) {
-                  var src = '/var/lib/mage/attachments/' + attachment.relativePath;
-                  var dest = req.directory + '/files/' + attachment.relativePath;
-                  fs.copy(src, dest, function(err) {
-                    if (err) {
-                      console.log('Could not copy file for KML export', err);
-                    }
-
-                    return attachmentDone();
-                  });
-                },
-                function(err) {
-                  featureDone();
-                }
-              );
-            },
-            function(err) {
-              layerDone();
-            }
-          );
-        },
-        function(err) {
-          done();
-        }
-      );
-    }
-
-    var writeFeatures = function(stream, done) {
-      //writing requested feature layers
-      if (layers) {
-        layers.forEach(function(layer) {
-          var features = layer.features;
-
-          if (layer) {
-            stream.write(generate_kml.generateKMLFolderStart(layer.name, false));
-
-            features.forEach(function(feature) {
-              stream.write(generate_kml.generatePlacemark(feature.properties.type, feature, layer.form));
-            });
-
-            stream.write(generate_kml.generateKMLFolderClose());
-          }
-        });
-      }
-
-      done();
-    }
-
-    var writeUserLocations = function(stream, user, done) {
+    var streamUserLocations = function(stream, user, done) {
       console.log('writing locations for user ' + user.username);
 
       var startDate = req.parameters.filter.startDate ? moment(req.parameters.filter.startDate) : null;
       var endDate = req.parameters.filter.endDate ? moment(req.parameters.filter.endDate) : null;
+      
       var lastLocationId = null;
 
       var locations = [];
@@ -432,103 +374,68 @@ module.exports = function(app, security) {
       });
     }
 
-    var writeLocations = function(stream, done) {
-      if (!fft) return done();
-
-      async.eachSeries(Object.keys(req.users), function(userId, callback) {
-        writeUserLocations(stream,  req.users[userId], callback);
-      },
-      function(err) {
-        done(err);
-      });
-    }
-
-    var writeKmlFile = function(done) {
-      var filename = "mage-export.kml"
-      var stream = fs.createWriteStream(req.directory + "/" + filename);
-      stream.once('open', function(fd) {
-        async.series([
-          function(done) {
-            stream.write(generate_kml.generateKMLHeader());
-            stream.write(generate_kml.generateKMLDocument());
-            async.each(layers, function(layer, done) {
-              Icon.getAll({formId: layer.form._id}, function(err, icons) {
-                stream.write(generate_kml.generateStyles(icons));
-                done();
-              });
-            },
-            function(){
-              done();
-            });
-          },
-          function(done) {
-            writeFeatures(stream, done);
-          },
-          function(done) {
-            writeLocations(stream, done);
-          },
-          function(done) {
-            stream.write(generate_kml.generateKMLDocumentClose());
-            done();
-          }
-        ],
-        function(err) {
-          stream.end(generate_kml.generateKMLClose(), function(err) {
-            if(err) {
-              console.log(err);
-            }
-            done();
-          });
-        });
-      });
-    }
+    res.type('application/zip');
+    res.attachment('mage-export-kml.zip');
+    res.cookie("fileDownload", "true", {path: '/'});
 
     //Known bug in Google Earth makes embedded images from a kmz file not render properly.  Treating
     //it as a zip file for now.
-    var streamZipFileToClient = function(err) {
-      var zipFile = '/tmp/mage-kml-export-' + now.getTime() + '.zip';
+    var archive = archiver('zip');
+    archive.pipe(res);
+    var kmlStream = new stream.P***REMOVED***Through();
+    archive.append(kmlStream, { name:'mage-export/mage-export.kml' });
 
-      var zip = spawn('zip', ['-r', '-q', zipFile, req.directory], {stdio: [ 'ignore', 'ignore', 'ignore' ]});
+    kmlStream.write(generate_kml.generateKMLHeader());
+    kmlStream.write(generate_kml.generateKMLDocument());
+    async.series([
+      function(done) {
+        if (!layers.length) return done();
 
-      zip.on("exit", function (code) {
-        console.log('done generating zip');
+        streamFeatures(kmlStream, function(err) {
+          layers.forEach(function(layer) {
+            // throw in attachments
+            archive.bulk([{
+              cwd: path.join(config.server.attachment.baseDirectory, layer.collectionName),
+              src: ['*/**'],
+              dest: 'mage-export/attachments',
+              expand: true,
+              data: { date: new Date() } }
+            ]);
 
-        if (code !== 0) {
-          console.log('error generating zip, code: ' + code);
-        }
+            // throw in icons
+            archive.bulk([{
+              cwd: config.server.iconBaseDirectory,
+              src: ['*/**'],
+              dest: 'mage-export/icons',
+              expand: true,
+              data: { date: new Date() } }
+            ]);
 
-        var stream = fs.createReadStream(zipFile);
-        stream.on('end', function() {
-          // remove dir
-          fs.remove(req.directory, function(err) {
-            if (err) console.log('could not remove KML dir', req.directory);
-          });
-          //remove zip file
-          fs.remove(zipFile, function(err) {
-            if (err) console.log('could not remove KML zip', zipFile);
+            done();
           });
         });
+      },
+      function(done) {
+        if (!fft) return done();
 
-        var stat = fs.statSync(zipFile);
+        async.eachSeries(Object.keys(req.users), function(userId, callback) {
+          streamUserLocations(kmlStream,  req.users[userId], callback);
+        },
+        function(err) {
+          done(err);
+        });
+      }
+    ],
+    function(err) {
+      if (err) {
+        console.log(err);
+      }
 
-        res.type('application/zip');
-        res.attachment(zipFile);
-        res.header('Content-Length', stat.size)
-        res.cookie("fileDownload", "true", {path: '/'});
-        stream.pipe(res);
-      });
-    }
+      kmlStream.write(generate_kml.generateKMLDocumentClose());
+      kmlStream.end(generate_kml.generateKMLClose());
 
-    ////////////////////////////////////////////////////////////////////
-    //END DEFINE SERIES FUNCTIONS///////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////
-
-    async.series([
-      getFeatures,
-      copyKmlIcons,
-      copyFeatureMediaAttachmentsToStagingDirectory,
-      writeKmlFile
-   ], streamZipFileToClient);
+      archive.finalize();
+    });
   }
 
   var exportGeoJSON = function(req, res, next) {
@@ -539,9 +446,7 @@ module.exports = function(app, security) {
 
     var now = new Date();
 
-    var getFeatures = function(done) {
-      if(!layers) return done();
-
+    var streamFeatures = function(stream, done) {
       var filter = req.parameters.filter;
       filter.states = ['active'];
       async.each(layers, function(layer, done) {
@@ -549,6 +454,11 @@ module.exports = function(app, security) {
           layer.features = features;
           Form.getById(layer.formId, function(err, form) {
             layer.form = form;
+            stream.write(JSON.stringify({
+              type: 'FeatureCollection',
+              features: geojson.transform(layer.features)
+            }));
+
             done();
           });
         });
@@ -558,20 +468,7 @@ module.exports = function(app, security) {
       });
     }
 
-    var writeFeatures = function(stream, done) {
-      //writing requested feature layers
-      layers.forEach(function(layer) {
-        stream.write(JSON.stringify({
-          type: 'FeatureCollection',
-          features: geojson.transform(layer.features)
-        }));
-      });
-
-      stream.end();
-      done();
-    }
-
-    var writeLocations = function(stream, done) {
+    var streamLocations = function(stream, done) {
       console.log('writing locations...');
       var limit = 2000;
 
@@ -592,7 +489,7 @@ module.exports = function(app, security) {
             var data = JSON.stringify(locations);
             stream.write(data.substr(1, data.length - 2));
           } else {
-            stream.end(']}');
+            stream.write(']}');
           }
 
           console.log('Successfully wrote ' + locations.length + ' locations to GeoJSON');
@@ -617,23 +514,24 @@ module.exports = function(app, security) {
       });
     }
 
-    var streamGeoJSONFile = function(done) {
-      res.type('application/zip');
-      res.attachment("mage-export.zip");
-      res.cookie("fileDownload", "true", {path: '/'});
+    ////////////////////////////////////////////////////////////////////
+    //END DEFINE SERIES FUNCTIONS///////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+    res.type('application/zip');
+    res.attachment("mage-export-geojson.zip");
+    res.cookie("fileDownload", "true", {path: '/'});
 
-      var archive = archiver('zip');
-      archive.pipe(res);
+    var archive = archiver('zip');
+    archive.pipe(res);
 
+    async.parallel([
+      function(done) {
+        if (!layers.length) return done();
 
-
-      async.parallel([
-        function(done) {
-          if (!layers.length) return done();
-
-          var observationStream = new stream.P***REMOVED***Through();
-          archive.append(observationStream, { name:'mage-export/observations.geojson' });
-          writeFeatures(observationStream, done);
+        var observationStream = new stream.P***REMOVED***Through();
+        archive.append(observationStream, { name:'mage-export/observations.geojson' });
+        streamFeatures(observationStream, function(err) {
+          observationStream.end();
 
           layers.forEach(function(layer) {
             // throw in attachments
@@ -654,34 +552,30 @@ module.exports = function(app, security) {
               expand: true,
               data: { date: new Date() } }
             ]);
+
+            done();
           });
+        });
+      },
+      function(done) {
+        if (!fft) return done();
 
+        var locationStream = new stream.P***REMOVED***Through();
+        archive.append(locationStream, {name: 'mage-export/locations.geojson'});
+        streamLocations(locationStream, function(err) {
+          locationStream.end();
 
-        },
-        function(done) {
-          if (!fft) return done();
+          done();
+        });
+      }
+    ],
+    function(err) {
+      if (err) {
+        console.log(err);
+      }
 
-          var locationStream = new stream.P***REMOVED***Through();
-          archive.append(locationStream, {name: 'mage-export/locations.geojson'});
-          writeLocations(locationStream, done);
-        }
-      ],
-      function(err) {
-        if (err) {
-          console.log(err);
-        }
+      archive.finalize();
+    });
 
-        archive.finalize();
-      });
-
-    }
-
-    ////////////////////////////////////////////////////////////////////
-    //END DEFINE SERIES FUNCTIONS///////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////
-
-    async.series([
-      getFeatures,
-   ], streamGeoJSONFile);
   }
 }
