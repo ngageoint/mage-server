@@ -58,8 +58,9 @@ exports.getLocations = function(options, callback) {
 
     if (filter.endDate) query['properties.timestamp'] = {'$lt': filter.endDate};
   } else if (filter.startDate || filter.endDate) {
-    if (filter.startDate) query['properties.timestamp'] = {'$gte': filter.startDate};
-    if (filter.endDate) query['properties.timestamp'] = {'$lt': filter.endDate};
+    query['properties.timestamp'] = {};
+    if (filter.startDate) query['properties.timestamp']['$gte'] = filter.startDate;
+    if (filter.endDate) query['properties.timestamp']['$lt'] = filter.endDate;
   }
 
   if (filter.userId) {
