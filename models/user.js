@@ -46,7 +46,8 @@ var UserSchema = new Schema({
     role: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
     teams: [Schema.Types.ObjectId],
     status: { type: String, required: false, index: 'sparse' },
-    locations: [LocationSchema]
+    locations: [LocationSchema],
+    userAgent: {type: String, required: false }
   },{
     versionKey: false
   }

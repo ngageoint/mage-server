@@ -174,6 +174,10 @@ module.exports = function(app, security) {
           return res.send(500, "Error generating token");
         }
 
+        //update user
+        req.user.userAgent = req.headers['user-agent'];
+        User.updateUser(req.user, function(err, updatedUser) {});
+
         res.json({
           token: token.token,
           expirationDate: token.expirationDate,
