@@ -47,7 +47,8 @@ var UserSchema = new Schema({
     teams: [Schema.Types.ObjectId],
     status: { type: String, required: false, index: 'sparse' },
     locations: [LocationSchema],
-    userAgent: {type: String, required: false }
+    userAgent: {type: String, required: false }, 
+    mageVersion: {type: String, required: false }
   },{
     versionKey: false
   }

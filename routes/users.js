@@ -176,6 +176,7 @@ module.exports = function(app, security) {
 
         //update user
         req.user.userAgent = req.headers['user-agent'];
+        req.user.mageVersion = req.param('mageVersion');
         User.updateUser(req.user, function(err, updatedUser) {});
 
         res.json({
