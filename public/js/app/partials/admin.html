@@ -105,7 +105,7 @@
                   </div>
                 </div>
                 <div ng-switch-default cl***REMOVED***="row-fluid">
-                  <div cl***REMOVED***="span3">
+                  <div cl***REMOVED***="span1">
                     <button cl***REMOVED***="btn" ng-click="editUser(u)" ngm-tap="editUser(u)">
                       <i cl***REMOVED***="fa fa-edit"></i>
                       Edit
@@ -115,14 +115,17 @@
                       Approve Account
                     </button>
                   </div>
-                  <div cl***REMOVED***="span2">
+                  <div cl***REMOVED***="span1">
                     {{u.username}}
                   </div>
                   <div cl***REMOVED***="span2">
                     {{u.firstname}} {{u.lastname}}
                   </div>
-                  <div cl***REMOVED***="span3">
+                  <div cl***REMOVED***="span2">
                     {{u.email}}
+                  </div>
+                  <div cl***REMOVED***="span4">
+                    {{u.userAgent}}
                   </div>
                   <div cl***REMOVED***="span2">
                     <button cl***REMOVED***="btn btn-danger" ng-click="deleteUser(u)" ngm-tap="deleteUser(u)">
