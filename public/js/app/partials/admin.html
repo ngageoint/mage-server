@@ -105,10 +105,10 @@
                   </div>
                 </div>
                 <div ng-switch-default cl***REMOVED***="row-fluid">
-                  <div cl***REMOVED***="span1">
+                  <div cl***REMOVED***="span2">
                     <button cl***REMOVED***="btn" ng-click="editUser(u)" ngm-tap="editUser(u)">
                       <i cl***REMOVED***="fa fa-edit"></i>
-                      Edit
+                      Edit User
                     </button>
                     <button cl***REMOVED***="btn btn-success" ng-hide='u.active' ng-click="approveUser(u)" ngm-tap="approveUser(u)">
                       <i cl***REMOVED***="fa fa-thumbs-up"></i>
@@ -124,13 +124,16 @@
                   <div cl***REMOVED***="span2">
                     {{u.email}}
                   </div>
-                  <div cl***REMOVED***="span4">
+                  <div cl***REMOVED***="span2">
                     {{u.userAgent}}
+                  </div>
+                  <div cl***REMOVED***="span1">
+                    {{u.mageVersion}}
                   </div>
                   <div cl***REMOVED***="span2">
                     <button cl***REMOVED***="btn btn-danger" ng-click="deleteUser(u)" ngm-tap="deleteUser(u)">
                       <i cl***REMOVED***="fa fa-trash-o"></i>
-                      Delete user
+                      Delete User
                     </button>
                   </div>
                 </div>
