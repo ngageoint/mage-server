@@ -10,7 +10,7 @@
           ng-cl***REMOVED***="{false: 'icon-sage-inverse', true: 'icon-sage'}[locationServicesEnabled]"></i> Show People
         </label>
         <label cl***REMOVED***="checkbox" ng-show="locationServicesEnabled">
-          <input style="margin-left: 0px" type="checkbox" ng-model="hideLocationsFromNewsFeed" ng-click="hideLocations()" ngm-tap="hideLocations()"/>Hide People in News Feed
+          <input style="margin-left: 0px" type="checkbox" ng-model="hideLocationsFromNewsFeed" ng-change="hideLocations()" ngm-tap="hideLocations()"/>Hide People in News Feed
         </label>
       </div>
     </div>
