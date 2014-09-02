@@ -1,4 +1,12 @@
 mage.directive('avatarUser', function() {
+  function avatarUrl(user, token) {
+    if (user.avatarUrl) {
+      return user.avatarUrl + "?access_token=" + token;
+    } else {
+      return "img/missing_photo.png";
+    }
+  }
+
   return {
     restrict: "A",
     templateUrl: '/js/app/partials/user-avatar.html',
@@ -6,12 +14,12 @@ mage.directive('avatarUser', function() {
       avatarUser: '='
     },
     controller: function ($scope, $element, mageLib) {
-      $scope.avatarUrl = $scope.avatarUser.avatarUrl + "?access_token=" + mageLib.getToken() || "img/missing_photo.png";
-
-      $element.find('.file-custom').attr('data-filename', 'Choose an image...');
+      $scope.fileName = 'Choose an image...';
+      $scope.avatarUrl = avatarUrl($scope.avatarUser, mageLib.getToken);
 
       $element.find(':file').change(function() {
         $scope.file = this.files[0];
+        $scope.fileName = $scope.file.name;
         $scope.$emit('userAvatar', $scope.file);
 
         if (window.FileReader) {
@@ -31,8 +39,8 @@ mage.directive('avatarUser', function() {
       $scope.$watch('avatarUser', function(avatarUser) {
         if (!avatarUser) return;
 
-        $scope.avatarUrl = $scope.avatarUser.avatarUrl + "?access_token=" + mageLib.getToken() || "img/missing_photo.png";
-        $element.find('.file-custom').attr('data-filename', 'Choose an image...');
+        $scope.avatarUrl = avatarUrl($scope.avatarUser, mageLib.getToken);
+        $scope.fileName = 'Choose an image...';
       });
     }
   }

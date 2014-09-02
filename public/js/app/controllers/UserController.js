@@ -17,7 +17,7 @@ function UserController($scope, $location, $timeout, UserService, user) {
       avatar: $scope.avatar
     }
 
-// TODO throw in progress
+    // TODO throw in progress
     var progress = function(e) {
       if(e.lengthComputable){
         $scope.$apply(function() {
@@ -30,19 +30,12 @@ function UserController($scope, $location, $timeout, UserService, user) {
     var complete = function(response) {
       $scope.$apply(function() {
         $scope.status("Success", "Your account information has been updated.", "alert-success");
-        //
-        // $scope.uploadStatus = "Upload Complete";
-        // $scope.uploading = false;
-        // $scope.$emit('uploadComplete', $scope.url, response, $scope.uploadId);
       });
     }
 
-    var failed = function() {
+    var failed = function(data) {
       $scope.$apply(function() {
         $scope.status("Error", data, "alert-danger");
-
-        // $scope.uploadStatus = "Upload Failed";
-        // $scope.uploading = false;
       });
     }
 
@@ -92,7 +85,6 @@ function UserController($scope, $location, $timeout, UserService, user) {
   }
 
   $scope.$on('userAvatar', function(event, userAvatar) {
-    console.log('avatar changed');
     $scope.avatar = userAvatar;
   });
 }
