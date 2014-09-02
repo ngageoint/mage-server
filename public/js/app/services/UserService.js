@@ -15,11 +15,30 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       };
 
       /* For the sign up page, no token necessary */
-      ***REMOVED***.signup = function (data) {
-        return $http.post(
-          '/api/users', $.param(data),
-          {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
-        );
+      ***REMOVED***.signup = function (data, success, error, progress) {
+        var formData = new FormData();
+        for (var property in data) {
+          if (data[property] != null)
+            formData.append(property, data[property]);
+        }
+
+        $.ajax({
+            url: '/api/users',
+            type: 'POST',
+            xhr: function() {
+                var myXhr = $.ajaxSettings.xhr();
+                if (myXhr.upload){
+                    myXhr.upload.addEventListener('progress', progress, false);
+                }
+                return myXhr;
+            },
+            success: success,
+            error: error,
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false
+        });
       }
 
       ***REMOVED***.signin = function (data) {
@@ -93,7 +112,6 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
 
       ***REMOVED***.updateMyself = function(user, success, error, progress) {
         var formData = new FormData();
-        // formData.append($scope.uploadFileFormName, user.avatar);
         for (var property in user) {
           formData.append(property, user[property]);
         }
@@ -115,13 +133,6 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
             contentType: false,
             processData: false
         });
-
-
-        // return $http.put(
-        //   '/api/users/myself',
-        //   $.param(user),
-        //   {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
-        // );
       }
 
       ***REMOVED***.updateMyP***REMOVED***word = function(user) {

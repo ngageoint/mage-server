@@ -45,7 +45,7 @@ var UserSchema = new Schema({
     avatar: {
       contentType: { type: String, required: false },
       size: { type: Number, required: false },
-      relativePath: { type: String, required: true }
+      relativePath: { type: String, required: false }
     },
     active: { type: Boolean, required: true },
     role: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
