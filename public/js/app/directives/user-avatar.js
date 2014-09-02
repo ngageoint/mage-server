@@ -3,10 +3,7 @@ mage.directive('avatarUser', function() {
     restrict: "A",
     templateUrl: '/js/app/partials/user-avatar.html',
     scope: {
-      avatarUser: '=',
-      url: '@',
-      uploadId: '=',
-      uploadFileFormName: '=',
+      avatarUser: '='
     },
     controller: function ($scope, $element, mageLib) {
       $scope.avatarUrl = $scope.avatarUser.avatarUrl + "?access_token=" + mageLib.getToken() || "img/missing_photo.png";
