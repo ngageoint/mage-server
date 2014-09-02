@@ -42,19 +42,22 @@ var UserSchema = new Schema({
     lastname: {type: String, required: true },
     email: {type: String, required: false },
     phones: [PhoneSchema],
+    avatar: {
+      contentType: { type: String, required: false },
+      size: { type: Number, required: false },
+      relativePath: { type: String, required: true }
+    },
     active: { type: Boolean, required: true },
     role: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
     teams: [Schema.Types.ObjectId],
     status: { type: String, required: false, index: 'sparse' },
     locations: [LocationSchema],
-    userAgent: {type: String, required: false }, 
+    userAgent: {type: String, required: false },
     mageVersion: {type: String, required: false }
   },{
     versionKey: false
   }
 );
-
-UserSchema
 
 UserSchema.method('validP***REMOVED***word', function(p***REMOVED***word, callback) {
   var user = this;
@@ -139,6 +142,12 @@ var transformUser = function(user, ret, options) {
   if ('function' != typeof user.ownerDocument) {
     delete ret.p***REMOVED***word;
     delete ret.locations;
+    delete ret.avatar;
+
+    if (user.avatar) {
+      // TODO, don't really like this, need a better way to set user resource, route
+      ret.avatarUrl = [(options.path ? options.path : ""), "api", "users", user._id, "avatar"].join("/");
+    }
   }
 }
 

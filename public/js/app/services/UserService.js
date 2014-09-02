@@ -91,12 +91,37 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
         return promise;
       }
 
-      ***REMOVED***.updateMyself = function(user) {
-        return $http.put(
-          '/api/users/myself',
-          $.param(user),
-          {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
-        );
+      ***REMOVED***.updateMyself = function(user, success, error, progress) {
+        var formData = new FormData();
+        // formData.append($scope.uploadFileFormName, user.avatar);
+        for (var property in user) {
+          formData.append(property, user[property]);
+        }
+
+        $.ajax({
+            url: '/api/users/myself?access_token=' + mageLib.getLocalItem('token'),
+            type: 'PUT',
+            xhr: function() {
+                var myXhr = $.ajaxSettings.xhr();
+                if(myXhr.upload){
+                    myXhr.upload.addEventListener('progress', progress, false);
+                }
+                return myXhr;
+            },
+            success: success,
+            error: error,
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false
+        });
+
+
+        // return $http.put(
+        //   '/api/users/myself',
+        //   $.param(user),
+        //   {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
+        // );
       }
 
       ***REMOVED***.updateMyP***REMOVED***word = function(user) {

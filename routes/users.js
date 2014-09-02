@@ -1,10 +1,14 @@
 module.exports = function(app, security) {
-  var User = require('../models/user')
+  var api = require('../api')
+    , User = require('../models/user')
     , Token = require('../models/token')
     , Role = require('../models/role')
     , Team = require('../models/team')
     , access = require('../access')
+    , userTransformer = require('../transformers/user')
     , config = require('../config.json')
+    , fs = require('fs-extra')
+    , path = require('path')
     , p***REMOVED***port = security.authentication.p***REMOVED***port
     , loginStrategy = security.authentication.loginStrategy
     , authenticationStrategy = security.authentication.authenticationStrategy
@@ -145,7 +149,6 @@ module.exports = function(app, security) {
           return (teamId === validTeam._id.toString());
         });
 
-
         if (!found) {
           return res.send(400, "Team '" + teamId + "' is not a valid team id");
         }
@@ -174,15 +177,16 @@ module.exports = function(app, security) {
           return res.send(500, "Error generating token");
         }
 
-        //update user
+        // set user-agent and mage version on user
+        // no need to wait for response from this save before returning
         req.user.userAgent = req.headers['user-agent'];
         req.user.mageVersion = req.param('mageVersion');
-        User.updateUser(req.user, function(err, updatedUser) {});
+        User.updateUser(req.user, function(err, updatedUser) { /* no-op */ });
 
         res.json({
           token: token.token,
           expirationDate: token.expirationDate,
-          user: req.user,
+          user: userTransformer.transform(req.user, {path: req.getRoot()}),
           device: options.device
         });
       });
@@ -213,6 +217,7 @@ module.exports = function(app, security) {
     access.authorize('READ_USER'),
     function(req, res) {
       User.getUsers(function (users) {
+        users = userTransformer.transform(users, {path: req.getRoot()});
         res.json(users);
       });
   });
@@ -222,7 +227,8 @@ module.exports = function(app, security) {
     '/api/users/myself',
     p***REMOVED***port.authenticate(authenticationStrategy),
     function(req, res) {
-      res.json(req.user);
+      var user = userTransformer.transform(req.user, {path: req.getRoot()});
+      res.json(user);
     }
   );
 
@@ -237,8 +243,34 @@ module.exports = function(app, security) {
 
         if (!user) return res.send(404);
 
+        user = userTransformer.transform(user, {path: req.getRoot()});
         res.json(user);
       })
+    }
+  );
+
+  // get user avatar by id
+  app.get(
+    '/api/users/:userId/avatar',
+    p***REMOVED***port.authenticate(authenticationStrategy),
+    access.authorize('READ_USER'),
+    function(req, res) {
+      new api.User().avatar(req.user, function(err, avatar) {
+        if (err) return next(err);
+
+        if (!avatar) return res.send(404);
+
+        var stream = fs.createReadStream(avatar.path);
+        stream.on('open', function() {
+          res.type(avatar.contentType);
+          res.header('Content-Length', avatar.size);
+          stream.pipe(res);
+        });
+        stream.on('error', function(err) {
+          console.log('error', err);
+          res.send(404);
+        });
+      });
     }
   );
 
@@ -246,12 +278,13 @@ module.exports = function(app, security) {
   app.put(
     '/api/users/myself',
     p***REMOVED***port.authenticate(authenticationStrategy),
-    function(req, res) {
+    function(req, res, next) {
       var user = req.user;
       if (req.param('username')) user.username = req.param('username');
       if (req.param('firstname')) user.firstname = req.param('firstname');
       if (req.param('lastname')) user.lastname = req.param('lastname');
       if (req.param('email')) user.email = req.param('email');
+
       var phone = req.param('phone');
       if (phone) {
         user.phones = [{
@@ -274,9 +307,8 @@ module.exports = function(app, security) {
         user.p***REMOVED***word = p***REMOVED***word;
       }
 
-      User.updateUser(user, function(err, updatedUser) {
-        if (err) return res.send(400, err.message);
-
+      new api.User().update(user, {avatar: req.files.avatar}, function(err, updatedUser) {
+        updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
         res.json(updatedUser);
       });
     }
@@ -305,6 +337,7 @@ module.exports = function(app, security) {
       User.createUser(req.newUser, function(err, newUser) {
         if (err) return res.send(400, err.message);
 
+        newUser = userTransformer.transform(newUser, {path: req.getRoot()});
         res.json(newUser);
       });
     }
@@ -323,6 +356,7 @@ module.exports = function(app, security) {
       User.createUser(req.newUser, function(err, newUser) {
         if (err) return res.send(400, err.message);
 
+        newUser = userTransformer.transform(newUser, {path: req.getRoot()});
         res.json(newUser);
       });
     }
@@ -338,6 +372,7 @@ module.exports = function(app, security) {
 
       var update = {status: status};
       User.updateUser(req.user._id, update, function(err, updatedUser) {
+        updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
         res.json(updatedUser);
       });
     }
@@ -352,6 +387,7 @@ module.exports = function(app, security) {
 
       var update = {$unset: {status: 1}};
       User.updateUser(req.user._id, update, function(err, updatedUser) {
+        updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
         res.json(updatedUser);
       });
     }
@@ -397,6 +433,7 @@ module.exports = function(app, security) {
           console.log('error', err);
           if (err) return res.send(400, "Error updating user, " + err.toString());
 
+          updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
           res.json(updatedUser);
         });
       });
@@ -414,7 +451,7 @@ module.exports = function(app, security) {
           return res.send(400, err);
         }
 
-        res.json(user);
+        res.send(200);
       });
     }
   );
@@ -427,6 +464,7 @@ module.exports = function(app, security) {
     validateRoleParams,
     function(req, res) {
       User.setRoleForUser(req.user, req.role, function(err, user) {
+        user = userTransformer.transform(user, {path: req.getRoot()});
         res.json(user);
       });
     }
@@ -440,6 +478,7 @@ module.exports = function(app, security) {
     validateTeamParams,
     function(req, res) {
       User.setTeamsForUser(req.user, req.teamIds, function(err, user) {
+        user = userTransformer.transform(user, {path: req.getRoot()});
         res.json(user);
       });
     }
@@ -452,6 +491,7 @@ module.exports = function(app, security) {
     access.authorize('UPDATE_USER'),
     function(req, res) {
       User.removeTeamsForUser(req.user, function(err, user) {
+        user = userTransformer.transform(user, {path: req.getRoot()});
         res.json(user);
       })
     }
