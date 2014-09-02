@@ -225,14 +225,8 @@ module.exports = function(app, security) {
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_USER'),
     function(req, res) {
-      User.getUserById(req.params.userId, function(err, user) {
-        if (err) return next(err);
-
-        if (!user) return res.send(404);
-
-        user = userTransformer.transform(user, {path: req.getRoot()});
-        res.json(user);
-      })
+      user = userTransformer.transform(req.userParam, {path: req.getRoot()});
+      res.json(user);
     }
   );
 
@@ -242,7 +236,7 @@ module.exports = function(app, security) {
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_USER'),
     function(req, res) {
-      new api.User().avatar(req.user, function(err, avatar) {
+      new api.User().avatar(req.userParam, function(err, avatar) {
         if (err) return next(err);
 
         if (!avatar) return res.send(404);
@@ -266,6 +260,7 @@ module.exports = function(app, security) {
     '/api/users/myself',
     p***REMOVED***port.authenticate(authenticationStrategy),
     function(req, res, next) {
+
       var user = req.user;
       if (req.param('username')) user.username = req.param('username');
       if (req.param('firstname')) user.firstname = req.param('firstname');
@@ -340,7 +335,7 @@ module.exports = function(app, security) {
       req.newUser.active = false;
       req.newUser.role = req.role._id;
 
-      User.createUser(req.newUser, function(err, newUser) {
+      new api.User().create(req.newUser, {avatar: req.files.avatar}, function(err, newUser) {
         if (err) return res.send(400, err.message);
 
         newUser = userTransformer.transform(newUser, {path: req.getRoot()});
@@ -386,43 +381,39 @@ module.exports = function(app, security) {
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('UPDATE_USER'),
     function(req, res) {
-      User.getUserById(req.params.userId, function(err, user) {
-        if (err) return res.send(400, 'User not found');
-        if (req.param('active')) user.active = req.param('active');
-        user.username = req.param('username');
-        user.firstname = req.param('firstname');
-        user.lastname = req.param('lastname');
-        user.email = req.param('email');
-        if (req.param('role')) user.role = req.param('role');
-        var phone = req.param('phone');
-        if (phone) {
-          user.phones = [{
-            type: "Main",
-            number: phone
-          }];
+      var user = req.userParam;
+
+      if (req.param('active')) user.active = req.param('active');
+      user.username = req.param('username');
+      user.firstname = req.param('firstname');
+      user.lastname = req.param('lastname');
+      user.email = req.param('email');
+      if (req.param('role')) user.role = req.param('role');
+      var phone = req.param('phone');
+      if (phone) {
+        user.phones = [{
+          type: "Main",
+          number: phone
+        }];
+      }
+
+      var p***REMOVED***word = req.param('p***REMOVED***word');
+      var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
+      if (p***REMOVED***word && p***REMOVED***wordconfirm) {
+        if (p***REMOVED***word != p***REMOVED***wordconfirm) {
+          return res.send(400, 'p***REMOVED***words do not match');
         }
 
-        var p***REMOVED***word = req.param('p***REMOVED***word');
-        var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
-        if (p***REMOVED***word && p***REMOVED***wordconfirm) {
-          if (p***REMOVED***word != p***REMOVED***wordconfirm) {
-            return res.send(400, 'p***REMOVED***words do not match');
-          }
-
-          if (p***REMOVED***word.length < p***REMOVED***wordLength) {
-            return res.send(400, 'p***REMOVED***word does not meet minimum length requirement of ' + p***REMOVED***wordLength + ' characters');
-          }
-
-          user.p***REMOVED***word = p***REMOVED***word;
+        if (p***REMOVED***word.length < p***REMOVED***wordLength) {
+          return res.send(400, 'p***REMOVED***word does not meet minimum length requirement of ' + p***REMOVED***wordLength + ' characters');
         }
 
-        User.updateUser(user, function(err, updatedUser) {
-          console.log('error', err);
-          if (err) return res.send(400, "Error updating user, " + err.toString());
+        user.p***REMOVED***word = p***REMOVED***word;
+      }
 
-          updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
-          res.json(updatedUser);
-        });
+      new api.User().update(user, {avatar: req.files.avatar}, function(err, updatedUser) {
+        updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
+        res.json(updatedUser);
       });
     }
   );

@@ -36,11 +36,11 @@ function User() {
 //   });
 // }
 //
-// Form.prototype.getById = function(id, callback) {
-//   FormModel.getById(id, function(err, form) {
-//     callback(err, form);
-//   });
-// }
+User.prototype.getById = function(id, callback) {
+  UserModel.getUserById(id, function(err, user) {
+    callback(err, user);
+  });
+}
 
 User.prototype.login = function(user, device, options, callback) {
   TokenModel.createToken({user: user, device: device}, function(err, token) {
@@ -56,27 +56,38 @@ User.prototype.login = function(user, device, options, callback) {
   });
 }
 
-User.prototype.create = function(form, callback) {
-  // FormModel.create(form, function(err, newForm) {
-  //
-  //   if (!err) {
-  //     var rootDir = path.dirname(require.main.filename);
-  //
-  //     // copy the default icon to a tmp place
-  //     fs.copy(path.join(rootDir,'/public/img/default-icon.png'), path.join(os.tmpdir(), newForm.id+'.png'), function(err) {
-  //       if (err) { console.log('error creating temp icon', err); return callback(err, newForm); }
-  //       console.log('creating the default icon');
-  //       new api.Icon(newForm._id).create({name: newForm.id+'.png', path: path.join(os.tmpdir(), newForm.id+'.png')}, function(err, icon) {
-  //         callback(err, newForm);
-  //       });
-  //     });
-  //   }
-  //
-  //   callback(err, newForm);
-  // });
+User.prototype.create = function(user, options, callback) {
+  UserModel.createUser(user, function(err, newUser) {
+    if (err) return callback(err);
+
+    if (options.avatar) {
+      var relativePath = avatarPath(newUser, options.avatar);
+      fs.move(options.avatar.path, path.join(avatarBase, relativePath), function(err) {
+        if (err) {
+          console.log('Could not create user avatar');
+          return callback(err);
+        }
+
+        newUser.avatar = {
+          relativePath: relativePath,
+          contentType: options.avatar.mimetype,
+          size: options.avatar.size
+        };
+
+        UserModel.updateUser(newUser, callback);
+      });
+    } else {
+      callback(null, newUser);
+    }
+  });
 }
 
 User.prototype.update = function(user, options, callback) {
+  if (typeof options == 'function') {
+    callback = options;
+    options = {};
+  }
+
   if (options.avatar) {
     var relativePath = avatarPath(user, options.avatar);
     fs.move(options.avatar.path, path.join(avatarBase, relativePath), {clobber: true}, function(err) {

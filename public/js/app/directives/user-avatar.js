@@ -15,7 +15,7 @@ mage.directive('avatarUser', function() {
     },
     controller: function ($scope, $element, mageLib) {
       $scope.fileName = 'Choose an image...';
-      $scope.avatarUrl = avatarUrl($scope.avatarUser, mageLib.getToken);
+      $scope.avatarUrl = avatarUrl($scope.avatarUser, mageLib.getToken());
 
       $element.find(':file').change(function() {
         $scope.file = this.files[0];
@@ -39,7 +39,7 @@ mage.directive('avatarUser', function() {
       $scope.$watch('avatarUser', function(avatarUser) {
         if (!avatarUser) return;
 
-        $scope.avatarUrl = avatarUrl($scope.avatarUser, mageLib.getToken);
+        $scope.avatarUrl = avatarUrl(avatarUser, mageLib.getToken());
         $scope.fileName = 'Choose an image...';
       });
     }
