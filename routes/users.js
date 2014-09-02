@@ -167,27 +167,14 @@ module.exports = function(app, security) {
     p***REMOVED***port.authenticate(loginStrategy),
     provision.check(provisionStrategy),
     function(req, res) {
-      var options = {user: req.user};
-      if (req.provisionedDevice) {
-        options.device = req.provisionedDevice;
-      }
-
-      Token.createToken(options, function(err, token) {
-        if (err) {
-          return res.send(500, "Error generating token");
-        }
-
-        // set user-agent and mage version on user
-        // no need to wait for response from this save before returning
-        req.user.userAgent = req.headers['user-agent'];
-        req.user.mageVersion = req.param('mageVersion');
-        User.updateUser(req.user, function(err, updatedUser) { /* no-op */ });
-
+      req.user.userAgent = req.headers['user-agent'];
+      req.user.mageVersion = req.param('mageVersion');
+      new api.User().login(req.user, req.provisionedDevice, {userAgent: req.headers['user-agent'], version: req.param('mageVersion')}, function(err, token) {
         res.json({
           token: token.token,
           expirationDate: token.expirationDate,
           user: userTransformer.transform(req.user, {path: req.getRoot()}),
-          device: options.device
+          device: req.provisionedDevice
         });
       });
     }

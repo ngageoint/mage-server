@@ -1,4 +1,5 @@
 var UserModel = require('../models/user')
+  , TokenModel = require('../models/token')
   , path = require('path')
   , fs = require('fs-extra')
   , config = require('../config.json');
@@ -40,6 +41,20 @@ function User() {
 //     callback(err, form);
 //   });
 // }
+
+User.prototype.login = function(user, device, options, callback) {
+  TokenModel.createToken({user: user, device: device}, function(err, token) {
+    if (err) return callback(err);
+
+    // set user-agent and mage version on user
+    // no need to wait for response from this save before returning
+    user.userAgent = options.userAgent;
+    user.mageVersion = options.version;
+    UserModel.updateUser(user, function(err, updatedUser) { /* no-op */ });
+
+    callback(null, token);
+  });
+}
 
 User.prototype.create = function(form, callback) {
   // FormModel.create(form, function(err, newForm) {
