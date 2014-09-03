@@ -105,7 +105,6 @@ User.prototype.delete = function(user, callback) {
 }
 
 User.prototype.avatar = function(user, callback) {
-  console.log('avatar: ', user.avatar);
   if (!user.avatar.relativePath) return callback();
 
   var avatar = user.avatar;
