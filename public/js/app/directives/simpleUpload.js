@@ -38,9 +38,11 @@ mage.directive('simpleUpload', function() {
         upload();
       });
 
-      $scope.$watch('url', function() {
+      $scope.$watch('url', function(url) {
+        if (!url) rerturn;
+
         $scope.uploadImageMissing = false;
-        element.find('.preview').html(['<img cl***REMOVED***="preview-image" src="',$scope.url,'"/>'].join(''));
+        $element.find('.preview').html(['<img cl***REMOVED***="preview-image" src="',$scope.url,'"/>'].join(''));
       });
 
       var previewFile = function(file, element) {

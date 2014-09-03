@@ -280,7 +280,7 @@ module.exports = function(app, security) {
       // Authorized to update users, activate account by default
       req.newUser.active = true;
 
-      new api.User().create(req.newUser, {avatar: req.files.avatar}, function(err, newUser) {
+      new api.User().create(req.newUser, {avatar: req.files.avatar, icon: req.files.icon}, function(err, newUser) {
         if (err) return res.send(400, err.message);
 
         newUser = userTransformer.transform(newUser, {path: req.getRoot()});
@@ -375,7 +375,7 @@ module.exports = function(app, security) {
         user.p***REMOVED***word = p***REMOVED***word;
       }
 
-      new api.User().update(user, {avatar: req.files.avatar}, function(err, updatedUser) {
+      new api.User().update(user, {avatar: req.files.avatar, icon: req.files.icon}, function(err, updatedUser) {
         if (err) return next(err);
 
         updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});

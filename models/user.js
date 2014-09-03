@@ -148,10 +148,16 @@ var transformUser = function(user, ret, options) {
     delete ret.p***REMOVED***word;
     delete ret.locations;
     delete ret.avatar;
+    delete ret.icon;
 
     if (user.avatar && user.avatar.relativePath) {
       // TODO, don't really like this, need a better way to set user resource, route
       ret.avatarUrl = [(options.path ? options.path : ""), "api", "users", user._id, "avatar"].join("/");
+    }
+
+    if (user.icon && user.icon.relativePath) {
+      // TODO, don't really like this, need a better way to set user resource, route
+      ret.iconUrl = [(options.path ? options.path : ""), "api", "users", user._id, "icon"].join("/");
     }
   }
 }
