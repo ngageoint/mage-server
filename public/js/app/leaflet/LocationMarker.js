@@ -1,3 +1,26 @@
+L.UserDivIcon = L.DivIcon.extend({
+  initialize: function (options) {
+    options.cl***REMOVED***Name = 'mage-icon';
+    options.iconSize = null;
+    L.DivIcon.prototype.initialize.call(this, options);
+  },
+  createIcon: function() {
+    var div = L.DivIcon.prototype.createIcon.call(this);
+    var form = this.options.form;
+    var observation = this.options.observation;
+
+    var s = document.createElement('img');
+    s.cl***REMOVED***Name = "mage-icon-image";
+    s.src = this.options.iconUrl;
+    $(s).load(function() {
+      var height = $(this).height();
+      $(div).css('margin-top', height * -1);
+    });
+    div.appendChild(s);
+    return div;
+  }
+});
+
 L.LocationMarker = L.Marker.extend({
   initialize: function (latlng, options) {
     L.Marker.prototype.initialize.call(this, latlng);
@@ -20,7 +43,20 @@ L.LocationMarker = L.Marker.extend({
       radius: 5
     });
 
-    this._location = L.layerGroup([this._accuracyCircle, this._locationMarker]);
+    var group = [this._accuracyCircle, this._locationMarker];
+
+    if (options.iconUrl) {
+      var icon = new L.UserDivIcon({
+        iconUrl: options.iconUrl
+      });
+      this._iconMarker = L.marker(latlng, {
+        icon: icon
+      });
+
+      group.push(this._iconMarker);
+    }
+
+    this._location = L.layerGroup(group);
   },
 
   addTo: function (map) {

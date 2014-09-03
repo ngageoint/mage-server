@@ -113,7 +113,7 @@ User.prototype.create = function(user, options, callback) {
 
     if (!newUser.avatar && !newUser.icon) return callback(null, newUser);
 
-    UserModel.update(newUser, callback);
+    UserModel.updateUser(newUser, callback);
   });
 }
 

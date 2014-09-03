@@ -21,6 +21,8 @@ mage.directive('userLocation', function(UserService, appConstants) {
       }
 
       $scope.$watch('user', function(user) {
+        if (!user) return;
+
         if (user.avatarUrl) {
           $scope.avatarUrl = user.avatarUrl + "?access_token=" + mageLib.getToken();
         } else {
