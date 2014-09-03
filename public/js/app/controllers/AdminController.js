@@ -163,7 +163,7 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
       },
       function(data) {
         $scope.$apply(function() {
-          $scope.showStatusMessage("Unable to create user", data, "alert-error");
+          $scope.showStatusMessage("Unable to update user", data, "alert-error");
         });
       },
       function(e) {
