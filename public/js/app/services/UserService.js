@@ -14,20 +14,19 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
         ***REMOVED***.amAdmin = ***REMOVED***.myself && ***REMOVED***.myself.role && (***REMOVED***.myself.role.name == "ADMIN_ROLE");
       };
 
-      /* For the sign up page, no token necessary */
-      ***REMOVED***.signup = function (data, success, error, progress) {
+      function saveUser(user, options, success, error, progress) {
         var formData = new FormData();
-        for (var property in data) {
-          if (data[property] != null)
-            formData.append(property, data[property]);
+        for (var property in user) {
+          if (user[property] != null)
+            formData.append(property, user[property]);
         }
 
         $.ajax({
-            url: '/api/users',
-            type: 'POST',
+            url: options.url,
+            type: options.type,
             xhr: function() {
                 var myXhr = $.ajaxSettings.xhr();
-                if (myXhr.upload){
+                if(myXhr.upload){
                     myXhr.upload.addEventListener('progress', progress, false);
                 }
                 return myXhr;
@@ -39,6 +38,14 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
             contentType: false,
             processData: false
         });
+      }
+
+      /* For the sign up page, no token necessary */
+      ***REMOVED***.signup = function (user, success, error, progress) {
+        saveUser(user, {
+          url: '/api/users',
+          type: 'POST'
+        }, success, error, progress);
       }
 
       ***REMOVED***.signin = function (data) {
@@ -111,29 +118,10 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       }
 
       ***REMOVED***.updateMyself = function(user, success, error, progress) {
-        var formData = new FormData();
-        for (var property in user) {
-          if (user[property] != null)
-            formData.append(property, user[property]);
-        }
-
-        $.ajax({
-            url: '/api/users/myself?access_token=' + mageLib.getLocalItem('token'),
-            type: 'PUT',
-            xhr: function() {
-                var myXhr = $.ajaxSettings.xhr();
-                if(myXhr.upload){
-                    myXhr.upload.addEventListener('progress', progress, false);
-                }
-                return myXhr;
-            },
-            success: success,
-            error: error,
-            data: formData,
-            cache: false,
-            contentType: false,
-            processData: false
-        });
+        saveUser(user, {
+          url: '/api/users/myself?access_token=' + mageLib.getLocalItem('token'),
+          type: 'PUT'
+        }, success, error, progress);
       }
 
       ***REMOVED***.updateMyP***REMOVED***word = function(user) {
@@ -172,55 +160,17 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       };
 
       ***REMOVED***.createUser = function(user, success, error, progress) {
-        var formData = new FormData();
-        for (var property in user) {
-          if (user[property] != null)
-            formData.append(property, user[property]);
-        }
-
-        $.ajax({
-            url: '/api/users?access_token=' + mageLib.getLocalItem('token'),
-            type: 'POST',
-            xhr: function() {
-                var myXhr = $.ajaxSettings.xhr();
-                if(myXhr.upload){
-                    myXhr.upload.addEventListener('progress', progress, false);
-                }
-                return myXhr;
-            },
-            success: success,
-            error: error,
-            data: formData,
-            cache: false,
-            contentType: false,
-            processData: false
-        });
+        saveUser(user, {
+          url: '/api/users?access_token=' + mageLib.getLocalItem('token'),
+          type: 'POST'
+        }, success, error, progress);
       };
 
       ***REMOVED***.updateUser = function(user, success, error, progress) {
-        var formData = new FormData();
-        for (var property in user) {
-          if (user[property] != null)
-            formData.append(property, user[property]);
-        }
-
-        $.ajax({
-            url: '/api/users/' + user._id + '?access_token=' + mageLib.getLocalItem('token'),
-            type: 'PUT',
-            xhr: function() {
-                var myXhr = $.ajaxSettings.xhr();
-                if(myXhr.upload){
-                    myXhr.upload.addEventListener('progress', progress, false);
-                }
-                return myXhr;
-            },
-            success: success,
-            error: error,
-            data: formData,
-            cache: false,
-            contentType: false,
-            processData: false
-        });
+        saveUser(user, {
+          url: '/api/users/' + user._id + '?access_token=' + mageLib.getLocalItem('token'),
+          type: 'PUT'
+        }, success, error, progress);
       };
 
       ***REMOVED***.deleteUser = function(user) {
