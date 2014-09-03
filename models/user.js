@@ -42,11 +42,11 @@ var UserSchema = new Schema({
     lastname: {type: String, required: true },
     // email: {type: String, required: false },
     phones: [PhoneSchema],
-    // avatar: {
-    //   contentType: { type: String, required: false },
-    //   size: { type: Number, required: false },
-    //   relativePath: { type: String, required: false }
-    // },
+    avatar: {
+      contentType: { type: String, required: false },
+      size: { type: Number, required: false },
+      relativePath: { type: String, required: false }
+    },
     active: { type: Boolean, required: true },
     role: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
     teams: [Schema.Types.ObjectId],
