@@ -154,9 +154,8 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
     }
 
     if ($scope.user._id) {
-      user._id = $scope.user._id;
 
-      UserService.updateUser(user, function(response) {
+      UserService.updateUser($scope.user._id, user, function(response) {
         $scope.$apply(function() {
           $scope.showStatusMessage("User updated", $scope.user.username + " saved", "alert-success");
         });
