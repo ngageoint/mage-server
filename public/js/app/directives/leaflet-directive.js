@@ -222,7 +222,12 @@ L.AwesomeMarkers.divIcon = function (options) {
               }
 
               var location = u.locations[0];
-              marker = L.locationMarker(L.latLng(location.geometry.coordinates[1], location.geometry.coordinates[0]), {color: appConstants.userLocationToColor(location)});
+              var latLng = L.latLng(location.geometry.coordinates[1], location.geometry.coordinates[0]);
+              var options = {
+                color: appConstants.userLocationToColor(location),
+                iconUrl: 'img/default_user_icon.png'
+              };
+              marker = L.locationMarker(latLng, options);
 
               var el = angular.element('<div user-location="' + location.properties.user + '"></div>');
               var compiled = $compile(el);
