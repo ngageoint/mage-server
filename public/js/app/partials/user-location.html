@@ -1,12 +1,19 @@
-<div ng-show="user">
-  <span>
-    <strong>{{user.firstname}} {{user.lastname}} </strong>
-    <span cl***REMOVED***="muted">({{user.username}})</span>
-  </span>
-  <div>
-    {{user.email}}
-  </div>
-  <div>
-    {{user.phones[0].number}}
+<div ng-show="user" cl***REMOVED***="container">
+  <div cl***REMOVED***="row-fluid">
+    <div cl***REMOVED***="span1">
+      <img cl***REMOVED***="img-rounded" ng-src="{{avatarUrl}}" width="73" height="73"></img>
+    </div>
+    <div cl***REMOVED***="span10">
+      <span>
+        <strong>{{user.firstname}} {{user.lastname}} </strong>
+        <span cl***REMOVED***="muted">({{user.username}})</span>
+      </span>
+      <div>
+        {{user.email}}
+      </div>
+      <div>
+        {{user.phones[0].number}}
+      </div>
+    </div>
   </div>
 <div>

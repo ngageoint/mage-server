@@ -227,7 +227,9 @@ L.AwesomeMarkers.divIcon = function (options) {
               var el = angular.element('<div user-location="' + location.properties.user + '"></div>');
               var compiled = $compile(el);
               // TODO this sucks but for now set a min width
-              marker.bindPopup(el[0], {minWidth: 200});
+              // marker.bindPopup(el[0], {minWidth: 200});
+              marker.bindPopup(el[0]);
+
               compiled(scope.$new());
 
               marker.on('click', function() {
