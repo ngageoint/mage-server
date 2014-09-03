@@ -13,46 +13,36 @@ function avatarPath(user, avatar) {
 function User() {
 };
 
-// function createAvatarPath(icon, name) {
-//   var ext = path.extname(name);
-//   var iconPath = icon._form._id.toString();
-//   if (icon._type != null) {
-//     iconPath = path.join(iconPath, icon._type);
-//     if (icon._variant != null) {
-//       iconPath = path.join(iconPath, icon._variant + ext);
-//     } else {
-//       iconPath = path.join(iconPath, "default" + ext);
-//     }
-//   } else {
-//     iconPath = path.join(iconPath, "default" + ext);
-//   }
-//
-//   return iconPath;
-// }
-
-// Form.prototype.getAll = function(callback) {
-//   FormModel.getAll(function (err, forms) {
-//     callback(err, forms);
-//   });
-// }
-//
-User.prototype.getById = function(id, callback) {
-  UserModel.getUserById(id, function(err, user) {
-    callback(err, user);
-  });
-}
-
 User.prototype.login = function(user, device, options, callback) {
   TokenModel.createToken({user: user, device: device}, function(err, token) {
     if (err) return callback(err);
 
     // set user-agent and mage version on user
-    // no need to wait for response from this save before returning
     user.userAgent = options.userAgent;
     user.mageVersion = options.version;
-    UserModel.updateUser(user, function(err, updatedUser) { /* no-op */ });
+    UserModel.updateUser(user, function(err, updatedUser) {
+      callback(null, token, updatedUser);
+    });
+  });
+}
 
-    callback(null, token);
+User.prototype.logout = function(user, callback) {
+  if (!user) return callback();
+
+  TokenModel.removeTokenForUser(user, function(err, token){
+    callback(err);
+  });
+}
+
+User.prototype.getAll = function(callback) {
+  UserModel.getUsers(function (err, users) {
+    callback(err, users);
+  });
+}
+
+User.prototype.getById = function(id, callback) {
+  UserModel.getUserById(id, function(err, user) {
+    callback(err, user);
   });
 }
 
@@ -108,21 +98,15 @@ User.prototype.update = function(user, options, callback) {
   }
 }
 
-// Form.prototype.delete = function(id, callback) {
-//   FormModel.remove(id, function(err) {
-//     if (err) return callback(err);
-//
-//     var iconPath = new api.Icon(id).getBasePath();
-//     fs.remove(iconPath, function(err) {
-//       if (err) console.log('could not remove icon dir for deleted form id: ' + id)
-//     });
-//
-//     callback();
-//   });
-// }
+User.prototype.delete = function(user, callback) {
+  UserModel.deleteUser(user, function(err) {
+    callback(err);
+  });
+}
 
 User.prototype.avatar = function(user, callback) {
-  if (!user || !user.avatar) return callback();
+  console.log('avatar: ', user.avatar);
+  if (!user.avatar.relativePath) return callback();
 
   var avatar = user.avatar;
   avatar.path = path.join(avatarBase, user.avatar.relativePath);

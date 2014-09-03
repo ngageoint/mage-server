@@ -144,7 +144,7 @@ var transformUser = function(user, ret, options) {
     delete ret.locations;
     delete ret.avatar;
 
-    if (user.avatar) {
+    if (user.avatar.relativePath) {
       // TODO, don't really like this, need a better way to set user resource, route
       ret.avatarUrl = [(options.path ? options.path : ""), "api", "users", user._id, "avatar"].join("/");
     }
@@ -195,7 +195,7 @@ exports.getUsers = function(callback) {
       console.log("Error finding users: " + err);
     }
 
-    callback(users);
+    callback(err, users);
   });
 }
 
@@ -228,21 +228,10 @@ exports.updateUser = function(user, callback) {
   });
 }
 
-exports.deleteUser = function(id, callback) {
-  User.findById(id, function(err, user) {
-    if (!user) {
-      var msg = "User with id '" + id + "' not found and could not be deleted.";
-      console.log(msg + " Error: " + err);
-      return callback(new Error(msg));
-    }
-
-    user.remove(function(err, removedUser) {
-      if (err) {
-        console.log("Error removing user: " + err);
-      }
-
-      callback(err, removedUser);
-    });
+exports.deleteUser = function(user, callback) {
+  user.remove(function(err, removedUser) {
+    if (err) console.log("Error removing user: " + err);
+    callback(err, removedUser);
   });
 }
 
