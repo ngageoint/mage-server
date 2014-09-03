@@ -74,7 +74,7 @@ User.prototype.create = function(user, options, callback) {
       fs.move(options.avatar.path, avatarPath.absolute, function(err) {
         if (err) {
           console.log('Could not create user avatar');
-          return callback(err);
+          return done(err);
         }
 
         newUser.avatar = {
@@ -94,7 +94,7 @@ User.prototype.create = function(user, options, callback) {
       fs.move(options.icon.path, iconPath.absolute, function(err) {
         if (err) {
           console.log('Could not create user icon');
-          return callback(err);
+          return done(err);
         }
 
         newUser.icon = {
@@ -131,10 +131,10 @@ User.prototype.update = function(user, options, callback) {
   if (options.avatar) {
     operations.push(function(updatedUser, done) {
       var thePath = avatarPath(updatedUser, options.avatar);
-      fs.move(options.avatar.path, thePath.absolute, function(err) {
+      fs.move(options.avatar.path, thePath.absolute, {clobber: true}, function(err) {
         if (err) {
-          console.log('Could not create user avatar');
-          return callback(err);
+          console.log('Could not create user avatar', err);
+          return done(err);
         }
 
         updatedUser.avatar = {
@@ -153,8 +153,8 @@ User.prototype.update = function(user, options, callback) {
       var thePath = iconPath(updatedUser, options.icon);
       fs.move(options.icon.path, thePath.absolute, function(err) {
         if (err) {
-          console.log('Could not create user icon');
-          return callback(err);
+          console.log('Could not create user icon', err);
+          return done(err);
         }
 
         updatedUser.icon = {
@@ -169,6 +169,8 @@ User.prototype.update = function(user, options, callback) {
   }
 
   async.waterfall(operations, function(err, updatedUser) {
+    if (err) return callback(err);
+
     UserModel.updateUser(updatedUser, callback);
   });
 }

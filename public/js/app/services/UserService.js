@@ -166,9 +166,9 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
         }, success, error, progress);
       };
 
-      ***REMOVED***.updateUser = function(user, success, error, progress) {
+      ***REMOVED***.updateUser = function(id, user, success, error, progress) {
         saveUser(user, {
-          url: '/api/users/' + user._id + '?access_token=' + mageLib.getLocalItem('token'),
+          url: '/api/users/' + id + '?access_token=' + mageLib.getLocalItem('token'),
           type: 'PUT'
         }, success, error, progress);
       };
