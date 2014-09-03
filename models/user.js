@@ -40,7 +40,7 @@ var UserSchema = new Schema({
     p***REMOVED***word: { type: String, required: true },
     firstname: { type: String, required: true },
     lastname: {type: String, required: true },
-    // email: {type: String, required: false },
+    email: {type: String, required: false },
     phones: [PhoneSchema],
     avatar: {
       contentType: { type: String, required: false },
