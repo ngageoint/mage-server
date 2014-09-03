@@ -40,13 +40,13 @@ var UserSchema = new Schema({
     p***REMOVED***word: { type: String, required: true },
     firstname: { type: String, required: true },
     lastname: {type: String, required: true },
-    email: {type: String, required: false },
+    // email: {type: String, required: false },
     phones: [PhoneSchema],
-    avatar: {
-      contentType: { type: String, required: false },
-      size: { type: Number, required: false },
-      relativePath: { type: String, required: false }
-    },
+    // avatar: {
+    //   contentType: { type: String, required: false },
+    //   size: { type: Number, required: false },
+    //   relativePath: { type: String, required: false }
+    // },
     active: { type: Boolean, required: true },
     role: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
     teams: [Schema.Types.ObjectId],
@@ -144,7 +144,7 @@ var transformUser = function(user, ret, options) {
     delete ret.locations;
     delete ret.avatar;
 
-    if (user.avatar.relativePath) {
+    if (user.avatar && user.avatar.relativePath) {
       // TODO, don't really like this, need a better way to set user resource, route
       ret.avatarUrl = [(options.path ? options.path : ""), "api", "users", user._id, "avatar"].join("/");
     }

@@ -7,6 +7,10 @@
 | source        | https://github.com/mongodb/node-mongodb-native |
 | mongodb       | http://www.mongodb.org/                        |
 
+### Blogs of Engineers involved in the driver
+- Christian Kvalheim [@christkv](https://twitter.com/christkv) <http://christiankvalheim.com>
+- Valeri Karpov [@code_barbarian](https://twitter.com/code_barbarian) <http://thecodebarbarian.wordpress.com/>
+
 ### Bugs / Feature Requests
 
 Think you’ve found a bug? Want to see a new feature in node-mongodb-native? Please open a
