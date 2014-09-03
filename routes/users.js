@@ -194,21 +194,21 @@ module.exports = function(app, security) {
     }
   );
 
-  // get user avatar by id
+  // get user avatar/icon by id
   app.get(
-    '/api/users/:userId/avatar',
+    '/api/users/:userId/:content(avatar|icon)',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_USER'),
     function(req, res) {
-      new api.User().avatar(req.userParam, function(err, avatar) {
+      new api.User()[req.params.content](req.userParam, function(err, content) {
         if (err) return next(err);
 
-        if (!avatar) return res.send(404);
+        if (!content) return res.send(404);
 
-        var stream = fs.createReadStream(avatar.path);
+        var stream = fs.createReadStream(content.path);
         stream.on('open', function() {
-          res.type(avatar.contentType);
-          res.header('Content-Length', avatar.size);
+          res.type(content.contentType);
+          res.header('Content-Length', content.size);
           stream.pipe(res);
         });
         stream.on('error', function(err) {

@@ -47,6 +47,11 @@ var UserSchema = new Schema({
       size: { type: Number, required: false },
       relativePath: { type: String, required: false }
     },
+    icon: {
+      contentType: { type: String, required: false },
+      size: { type: Number, required: false },
+      relativePath: { type: String, required: false }
+    },
     active: { type: Boolean, required: true },
     role: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
     teams: [Schema.Types.ObjectId],
@@ -208,7 +213,9 @@ exports.createUser = function(user, callback) {
     phones: user.phones,
     p***REMOVED***word: user.p***REMOVED***word,
     active: user.active,
-    role: user.role
+    role: user.role,
+    avatar: user.avatar,
+    icon: user.icon
   }
 
   User.create(create, function(err, user) {
