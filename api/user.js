@@ -21,7 +21,7 @@ function avatarPath(user, avatar) {
 }
 
 function iconPath(user, icon) {
-  return contentPath(user, avater, 'icon');
+  return contentPath(user, icon, 'icon');
 }
 
 function User() {
@@ -151,7 +151,7 @@ User.prototype.update = function(user, options, callback) {
   if (options.icon) {
     operations.push(function(updatedUser, done) {
       var thePath = iconPath(updatedUser, options.icon);
-      fs.move(options.icon.path, thePath.absolute, function(err) {
+      fs.move(options.icon.path, thePath.absolute, {clobber: true}, function(err) {
         if (err) {
           console.log('Could not create user icon', err);
           return done(err);
@@ -159,8 +159,8 @@ User.prototype.update = function(user, options, callback) {
 
         updatedUser.icon = {
           relativePath: thePath.relative,
-          contentType: options.avatar.mimetype,
-          size: options.avatar.size
+          contentType: options.icon.mimetype,
+          size: options.icon.size
         };
 
         done(null, updatedUser);

@@ -150,11 +150,11 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
       p***REMOVED***word: this.user.p***REMOVED***word,
       p***REMOVED***wordconfirm: this.user.p***REMOVED***wordconfirm,
       role: $scope.user.role,
-      avatar: $scope.user.avatar
+      avatar: $scope.user.avatar,
+      icon: $scope.user.icon
     }
 
     if ($scope.user._id) {
-
       UserService.updateUser($scope.user._id, user, function(response) {
         $scope.$apply(function() {
           $scope.showStatusMessage("User updated", $scope.user.username + " saved", "alert-success");
@@ -219,6 +219,10 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
 
   $scope.$on('userAvatar', function(event, userAvatar) {
     $scope.user.avatar = userAvatar;
+  });
+
+  $scope.$on('userIcon', function(event, userIcon) {
+    $scope.user.icon = userIcon;
   });
 
   $scope.newUser = function() {
