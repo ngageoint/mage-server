@@ -42,7 +42,7 @@ L.AwesomeMarkers.divIcon = function (options) {
 (function () {
   var leafletDirective = angular.module("leaflet-directive", ["mage.***REMOVED***s"]);
 
-  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, appConstants, MapService, ObservationService, DataService, TimeBucketService, mageLib) {
+  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, appConstants, MapService, ObservationService, DataService, TimeBucketService, UserService, mageLib) {
     return {
       restrict: "A",
       replace: true,
@@ -211,54 +211,59 @@ L.AwesomeMarkers.divIcon = function (options) {
           _.each(users, function(user) {
             var u = user;
             if (user.locations.length > 0) {
-              var l = u.locations[0];
+              var location = u.locations[0];
+              var latLng = L.latLng(location.geometry.coordinates[1], location.geometry.coordinates[0]);
               var marker = currentLocationMarkers[u.user];
               if (marker) {
                 delete currentLocationMarkers[u.user];
                 locationMarkers[u.user] = marker;
                 // Just update the location
-                marker.setLatLng([l.geometry.coordinates[1], l.geometry.coordinates[0]]).setColor(appConstants.userLocationToColor(l));//.setAccuracy(l.properties.accuracy);
+                marker.setLatLng(latLng).setColor(appConstants.userLocationToColor(location));
                 return;
               }
 
-              var location = u.locations[0];
-              var latLng = L.latLng(location.geometry.coordinates[1], location.geometry.coordinates[0]);
-              var options = {
-                color: appConstants.userLocationToColor(location),
-                iconUrl: 'img/default_user_icon.png'
-              };
-              marker = L.locationMarker(latLng, options);
+              UserService.getUser(u.user).then(function(user) {
+                user = user.data || user;
 
-              var el = angular.element('<div user-location="' + location.properties.user + '"></div>');
-              var compiled = $compile(el);
-              // TODO this sucks but for now set a min width
-              // marker.bindPopup(el[0], {minWidth: 200});
-              marker.bindPopup(el[0]);
+                var options = {
+                  color: appConstants.userLocationToColor(location),
+                  iconUrl: user.iconUrl ? user.iconUrl + '?access_token=' + mageLib.getToken()  : null
+                };
+                marker = L.locationMarker(latLng, options);
 
-              compiled(scope.$new());
+                var el = angular.element('<div user-location="user"></div>');
+                var compiled = $compile(el);
+                // TODO this sucks but for now set a min width
+                // marker.bindPopup(el[0], {minWidth: 200});
+                marker.bindPopup(el[0]);
 
-              marker.on('click', function() {
-                scope.activeFeature = undefined;
-                marker.setAccuracy(location.properties.accuracy);
+                var newScope = scope.$new();
+                newScope.user = user;
+                compiled(newScope);
 
-                // location table click handling here
-                if(!scope.$$phase) {
-                  scope.$apply(function(s) {
+                marker.on('click', function() {
+                  scope.activeFeature = undefined;
+                  marker.setAccuracy(location.properties.accuracy);
+
+                  // location table click handling here
+                  if(!scope.$$phase) {
+                    scope.$apply(function(s) {
+                      scope.activeLocation = {locations: [location], user: location.properties.user};
+                    });
+                  } else {
                     scope.activeLocation = {locations: [location], user: location.properties.user};
-                  });
-                } else {
-                  scope.activeLocation = {locations: [location], user: location.properties.user};
-                }
+                  }
 
-                scope.activeUserPopup = marker;
+                  scope.activeUserPopup = marker;
+                });
+
+                marker.onPopupClose(function() {
+                  marker.setAccuracy(0);
+                });
+
+                locationMarkers[u.user] = marker;
+                locationLayerGroup.addLayer(marker);
               });
-
-              marker.onPopupClose(function() {
-                marker.setAccuracy(0);
-              });
-
-              locationMarkers[u.user] = marker;
-              locationLayerGroup.addLayer(marker);
             }
           });
 
