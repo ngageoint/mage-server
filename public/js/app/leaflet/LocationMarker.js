@@ -6,8 +6,6 @@ L.UserDivIcon = L.DivIcon.extend({
   },
   createIcon: function() {
     var div = L.DivIcon.prototype.createIcon.call(this);
-    var form = this.options.form;
-    var observation = this.options.observation;
 
     var s = document.createElement('img');
     s.cl***REMOVED***Name = "mage-icon-image";
@@ -46,11 +44,15 @@ L.LocationMarker = L.Marker.extend({
     var group = [this._accuracyCircle, this._locationMarker];
 
     if (options.iconUrl) {
+      this._location
+
       var icon = new L.UserDivIcon({
         iconUrl: options.iconUrl
       });
+
       this._iconMarker = L.marker(latlng, {
-        icon: icon
+        clickable: true,
+        icon: L.icon({iconUrl: options.iconUrl, iconSize: [42, 42], iconAnchor: [21, 42]})
       });
 
       group.push(this._iconMarker);
@@ -67,7 +69,6 @@ L.LocationMarker = L.Marker.extend({
   onAdd: function (map) {
     this._map = map;
     map.addLayer(this._location);
-    this._locationMarker
 
     L.DomEvent.on(this._locationMarker, 'click', this._onMouseClick, this);
   },
@@ -83,6 +84,7 @@ L.LocationMarker = L.Marker.extend({
   setLatLng: function (latlng) {
     this._accuracyCircle.setLatLng(latlng);
     this._locationMarker.setLatLng(latlng);
+    this._iconMarker.setLatLng(latlng);
     return this;
   },
 
