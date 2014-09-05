@@ -84,7 +84,7 @@ L.LocationMarker = L.Marker.extend({
   setLatLng: function (latlng) {
     this._accuracyCircle.setLatLng(latlng);
     this._locationMarker.setLatLng(latlng);
-    this._iconMarker.setLatLng(latlng);
+    if (this._iconMarker) this._iconMarker.setLatLng(latlng);
     return this;
   },
 
