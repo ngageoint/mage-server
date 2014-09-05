@@ -14,12 +14,38 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
         ***REMOVED***.amAdmin = ***REMOVED***.myself && ***REMOVED***.myself.role && (***REMOVED***.myself.role.name == "ADMIN_ROLE");
       };
 
+      function saveUser(user, options, success, error, progress) {
+        var formData = new FormData();
+        for (var property in user) {
+          if (user[property] != null)
+            formData.append(property, user[property]);
+        }
+
+        $.ajax({
+            url: options.url,
+            type: options.type,
+            xhr: function() {
+                var myXhr = $.ajaxSettings.xhr();
+                if(myXhr.upload){
+                    myXhr.upload.addEventListener('progress', progress, false);
+                }
+                return myXhr;
+            },
+            success: success,
+            error: error,
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false
+        });
+      }
+
       /* For the sign up page, no token necessary */
-      ***REMOVED***.signup = function (data) {
-        return $http.post(
-          '/api/users', $.param(data),
-          {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
-        );
+      ***REMOVED***.signup = function (user, success, error, progress) {
+        saveUser(user, {
+          url: '/api/users',
+          type: 'POST'
+        }, success, error, progress);
       }
 
       ***REMOVED***.signin = function (data) {
@@ -91,12 +117,11 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
         return promise;
       }
 
-      ***REMOVED***.updateMyself = function(user) {
-        return $http.put(
-          '/api/users/myself',
-          $.param(user),
-          {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
-        );
+      ***REMOVED***.updateMyself = function(user, success, error, progress) {
+        saveUser(user, {
+          url: '/api/users/myself?access_token=' + mageLib.getLocalItem('token'),
+          type: 'PUT'
+        }, success, error, progress);
       }
 
       ***REMOVED***.updateMyP***REMOVED***word = function(user) {
@@ -129,25 +154,23 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       ***REMOVED***.getAllUsers = function () {
         return $http.get('/api/users').success(function(users) {
           for (var i = 0; i < users.length; i++) {
-          resolvedUsers[users[i]._id] = $q.when(users[i]);
+            resolvedUsers[users[i]._id] = $q.when(users[i]);
           }
         });
       };
 
-      ***REMOVED***.createUser = function(user) {
-        return $http.post(
-          '/api/users',
-           $.param(user),
-           {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
-         );
+      ***REMOVED***.createUser = function(user, success, error, progress) {
+        saveUser(user, {
+          url: '/api/users?access_token=' + mageLib.getLocalItem('token'),
+          type: 'POST'
+        }, success, error, progress);
       };
 
-      ***REMOVED***.updateUser = function(user) {
-        return $http.put(
-          '/api/users/' + user._id,
-          $.param(user),
-          {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
-        );
+      ***REMOVED***.updateUser = function(id, user, success, error, progress) {
+        saveUser(user, {
+          url: '/api/users/' + id + '?access_token=' + mageLib.getLocalItem('token'),
+          type: 'PUT'
+        }, success, error, progress);
       };
 
       ***REMOVED***.deleteUser = function(user) {

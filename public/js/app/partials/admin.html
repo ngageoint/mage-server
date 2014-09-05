@@ -27,60 +27,62 @@
             <button cl***REMOVED***="btn" ng-click="newUser()" ngm-tap="newUser()"><i cl***REMOVED***="fa fa-plus-square-o"></i> New User</button>
             <div id="user-form" name="edit-form" cl***REMOVED***="top-gap" ng-show="showUserForm">
               <form ng-submit="saveUser()" id="userform" name="user-form" cl***REMOVED***="form-horizontal">
-                <fieldset>
-                  <div cl***REMOVED***="control-group">
-                    <label cl***REMOVED***="control-label" for="type">Username</label>
-                    <div cl***REMOVED***="controls">
-                      <input type="text" placeholder="i.e. jappleseed" ng-model="user.username" name="username">
-                    </div>
+
+                <div avatar-user="user"/>
+                <div icon-user="user" cl***REMOVED***="top-gap-xl"/>
+
+                <div cl***REMOVED***="control-group top-gap-l">
+                  <label cl***REMOVED***="control-label" for="type">Username</label>
+                  <div cl***REMOVED***="controls">
+                    <input type="text" placeholder="i.e. jappleseed" ng-model="user.username" name="username">
                   </div>
-                  <div cl***REMOVED***="control-group">
-                    <label cl***REMOVED***="control-label" for="type">First Name</label>
-                    <div cl***REMOVED***="controls">
-                      <input type="text" placeholder="Johnny" ng-model="user.firstname" name="firstname">
-                    </div>
+                </div>
+                <div cl***REMOVED***="control-group">
+                  <label cl***REMOVED***="control-label" for="type">First Name</label>
+                  <div cl***REMOVED***="controls">
+                    <input type="text" placeholder="Johnny" ng-model="user.firstname" name="firstname">
                   </div>
-                  <div cl***REMOVED***="control-group">
-                    <label cl***REMOVED***="control-label" for="type">Last Name</label>
-                    <div cl***REMOVED***="controls">
-                      <input type="text" placeholder="Appleseed" ng-model="user.lastname" name="lastname">
-                    </div>
+                </div>
+                <div cl***REMOVED***="control-group">
+                  <label cl***REMOVED***="control-label" for="type">Last Name</label>
+                  <div cl***REMOVED***="controls">
+                    <input type="text" placeholder="Appleseed" ng-model="user.lastname" name="lastname">
                   </div>
-                  <div cl***REMOVED***="control-group">
-                    <label cl***REMOVED***="control-label" for="type">Email</label>
-                    <div cl***REMOVED***="controls">
-                      <input type="text" placeholder="johnny@appleseed.com" ng-model="user.email" name="email">
-                    </div>
+                </div>
+                <div cl***REMOVED***="control-group">
+                  <label cl***REMOVED***="control-label" for="type">Email</label>
+                  <div cl***REMOVED***="controls">
+                    <input type="text" placeholder="johnny@appleseed.com" ng-model="user.email" name="email">
                   </div>
-                  <div cl***REMOVED***="control-group">
-                    <label cl***REMOVED***="control-label" for="type">Phone</label>
-                    <div cl***REMOVED***="controls">
-                      <input type="text" placeholder="(xxx) xxx-xxxx" ng-model="user.phone" name="phone">
-                    </div>
+                </div>
+                <div cl***REMOVED***="control-group">
+                  <label cl***REMOVED***="control-label" for="type">Phone</label>
+                  <div cl***REMOVED***="controls">
+                    <input type="text" placeholder="(xxx) xxx-xxxx" ng-model="user.phone" name="phone">
                   </div>
-                  <div cl***REMOVED***="control-group">
-                    <label cl***REMOVED***="control-label" for="type">P***REMOVED***word</label>
-                    <div cl***REMOVED***="controls">
-                      <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***word" name="p***REMOVED***word">
-                    </div>
+                </div>
+                <div cl***REMOVED***="control-group">
+                  <label cl***REMOVED***="control-label" for="type">P***REMOVED***word</label>
+                  <div cl***REMOVED***="controls">
+                    <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***word" name="p***REMOVED***word">
                   </div>
-                  <div cl***REMOVED***="control-group">
-                    <label cl***REMOVED***="control-label" for="type">Confirm P***REMOVED***word</label>
-                    <div cl***REMOVED***="controls">
-                      <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***wordconfirm" name="p***REMOVED***wordconfirm">
-                    </div>
+                </div>
+                <div cl***REMOVED***="control-group">
+                  <label cl***REMOVED***="control-label" for="type">Confirm P***REMOVED***word</label>
+                  <div cl***REMOVED***="controls">
+                    <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***wordconfirm" name="p***REMOVED***wordconfirm">
                   </div>
-                  <div cl***REMOVED***="control-group">
-                    <label cl***REMOVED***="control-label" for="type">Role</label>
-                    <div cl***REMOVED***="controls">
-                      <select ng-model="user.role" ng-options="role._id as role.name for role in roles"></select>
-                    </div>
+                </div>
+                <div cl***REMOVED***="control-group">
+                  <label cl***REMOVED***="control-label" for="type">Role</label>
+                  <div cl***REMOVED***="controls">
+                    <select ng-model="user.role" ng-options="role._id as role.name for role in roles"></select>
                   </div>
-                  <span>
-                    <button type="reset" cl***REMOVED***="btn btn-inverse" ng-click="setShowUserForm(false)" ngmtap="setShowUserForm(false)">Cancel</button>
-                    <button type="submit" cl***REMOVED***="btn">Save user</button>
-                  </span>
-                </fieldset>
+                </div>
+                <span>
+                  <button type="reset" cl***REMOVED***="btn btn-inverse" ng-click="setShowUserForm(false)" ngmtap="setShowUserForm(false)">Cancel</button>
+                  <button type="submit" cl***REMOVED***="btn">Save user</button>
+                </span>
               </form>
             </div>
             <div cl***REMOVED***="navbar top-gap row-fluid">
@@ -105,29 +107,35 @@
                   </div>
                 </div>
                 <div ng-switch-default cl***REMOVED***="row-fluid">
-                  <div cl***REMOVED***="span3">
+                  <div cl***REMOVED***="span2">
                     <button cl***REMOVED***="btn" ng-click="editUser(u)" ngm-tap="editUser(u)">
                       <i cl***REMOVED***="fa fa-edit"></i>
-                      Edit
+                      Edit User
                     </button>
                     <button cl***REMOVED***="btn btn-success" ng-hide='u.active' ng-click="approveUser(u)" ngm-tap="approveUser(u)">
                       <i cl***REMOVED***="fa fa-thumbs-up"></i>
                       Approve Account
                     </button>
                   </div>
-                  <div cl***REMOVED***="span2">
+                  <div cl***REMOVED***="span1">
                     {{u.username}}
                   </div>
                   <div cl***REMOVED***="span2">
                     {{u.firstname}} {{u.lastname}}
                   </div>
-                  <div cl***REMOVED***="span3">
+                  <div cl***REMOVED***="span2">
                     {{u.email}}
+                  </div>
+                  <div cl***REMOVED***="span2">
+                    {{u.userAgent}}
+                  </div>
+                  <div cl***REMOVED***="span1">
+                    {{u.mageVersion}}
                   </div>
                   <div cl***REMOVED***="span2">
                     <button cl***REMOVED***="btn btn-danger" ng-click="deleteUser(u)" ngm-tap="deleteUser(u)">
                       <i cl***REMOVED***="fa fa-trash-o"></i>
-                      Delete user
+                      Delete User
                     </button>
                   </div>
                 </div>

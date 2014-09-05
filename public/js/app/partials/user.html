@@ -8,8 +8,10 @@
   <div cl***REMOVED***="row">
     <div cl***REMOVED***="span6">
       <form ng-submit="saveUser()" cl***REMOVED***="form-horizontal">
-        <fieldset>
-          <div cl***REMOVED***="control-group">
+
+          <div avatar-user="user"/>
+
+          <div cl***REMOVED***="control-group top-gap-l">
             <label cl***REMOVED***="control-label" for="type">Username</label>
             <div cl***REMOVED***="controls">
               <input type="text" placeholder="i.e. jappleseed" ng-model="user.username" name="username">
@@ -40,11 +42,11 @@
             </div>
           </div>
           <span>
-            <button type="reset" cl***REMOVED***="btn btn-inverse" ng-click="cancel()" ngmtap="cancel()">Cancel</button>
+            <button type="button" cl***REMOVED***="btn btn-inverse" ng-click="cancel()" ngmtap="cancel()">Cancel</button>
             <button type="submit" cl***REMOVED***="btn">Save</button>
           </span>
-        </fieldset>
       </form>
+
     </div>
     <div cl***REMOVED***="span6" ng-show="showUserStatus">
       <div cl***REMOVED***="alert alert-block" ng-cl***REMOVED***="statusLevel">

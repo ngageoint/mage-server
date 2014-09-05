@@ -141,30 +141,60 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
 
   /* User admin functions */
   $scope.saveUser = function () {
-    if ($scope.user._id) {
-      UserService.updateUser($scope.user)
-        .success(function (data, status, headers, config) {
-          $scope.setShowUserForm(false);
-          $scope.showStatusMessage("User updated", $scope.user.username + " saved", "alert-success");
-        })
-        .error(function (data, status, headers, config) {
-          $scope.showStatusMessage("Unable to create user", data, "alert-error");
-          console.log('Something bad happened while creating a user...' + status);
-      });;
+    var user = {
+      username: $scope.user.username,
+      firstname: $scope.user.firstname,
+      lastname: $scope.user.lastname,
+      email: $scope.user.email,
+      phone: $scope.user.phone,
+      p***REMOVED***word: this.user.p***REMOVED***word,
+      p***REMOVED***wordconfirm: this.user.p***REMOVED***wordconfirm,
+      role: $scope.user.role,
+      avatar: $scope.user.avatar,
+      icon: $scope.user.icon
+    }
 
+    if ($scope.user._id) {
+      UserService.updateUser($scope.user._id, user, function(response) {
+        $scope.$apply(function() {
+          $scope.showStatusMessage("User updated", $scope.user.username + " saved", "alert-success");
+        });
+      },
+      function(data) {
+        $scope.$apply(function() {
+          $scope.showStatusMessage("Unable to update user", data, "alert-error");
+        });
+      },
+      function(e) {
+        if(e.lengthComputable){
+          $scope.$apply(function() {
+            $scope.uploading = true;
+            $scope.uploadProgress = (e.loaded/e.total) * 100;
+          });
+        }
+      });
     } else {
-      UserService.createUser($scope.user).
-      success(function (data, status, headers, config) {
-        $scope.setShowUserForm(false);
-        console.log('created user ' + data);
-        $scope.showStatusMessage("User created", "Nice work!", "alert-success");
-        $scope.users.push(data);
-        // TODO this is somewhat of a hack for now, call filter fucntion so users appear
-        $scope.userSearch();
-      }).
-      error(function (data, status, headers, config) {
-        $scope.showStatusMessage("Unable to create user", data, "alert-error");
-        console.log('Something bad happened while creating a user...' + status);
+      UserService.createUser(user, function(response) {
+        $scope.$apply(function() {
+          $scope.setShowUserForm(false);
+          $scope.showStatusMessage("User created", "Nice work!", "alert-success");
+          $scope.users.push(response);
+          // TODO this is somewhat of a hack for now, call filter fucntion so users appear
+          $scope.userSearch();
+        });
+      },
+      function(data) {
+        $scope.$apply(function() {
+          $scope.showStatusMessage("Unable to create user", data, "alert-error");
+        });
+      },
+      function(e) {
+        if(e.lengthComputable){
+          $scope.$apply(function() {
+            $scope.uploading = true;
+            $scope.uploadProgress = (e.loaded/e.total) * 100;
+          });
+        }
       });
     }
   }
@@ -186,6 +216,14 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
     $scope.setShowUserForm(true);
     $scope.scrollTo('user-form');
   }
+
+  $scope.$on('userAvatar', function(event, userAvatar) {
+    $scope.user.avatar = userAvatar;
+  });
+
+  $scope.$on('userIcon', function(event, userIcon) {
+    $scope.user.icon = userIcon;
+  });
 
   $scope.newUser = function() {
     $scope.user = {};
