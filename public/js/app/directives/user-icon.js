@@ -3,7 +3,7 @@ mage.directive('iconUser', function() {
     if (user.iconUrl) {
       return user.iconUrl + "?access_token=" + token;
     } else {
-      return "img/default_user_icon.png";
+      return "img/missing_marker.png";
     }
   }
 
@@ -14,7 +14,7 @@ mage.directive('iconUser', function() {
       iconUser: '='
     },
     controller: function ($scope, $element, mageLib) {
-      $scope.fileName = 'Choose an image...';
+      $scope.fileName = 'Choose a map icon...';
       $scope.iconUrl = iconUrl($scope.iconUser, mageLib.getToken());
 
       $element.find(':file').change(function() {
@@ -40,7 +40,7 @@ mage.directive('iconUser', function() {
         if (!iconUser) return;
 
         $scope.iconUrl = iconUrl(iconUser, mageLib.getToken());
-        $scope.fileName = 'Choose an image...';
+        $scope.fileName = 'Choose a map icon...';
       });
     }
   }
