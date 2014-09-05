@@ -10,7 +10,7 @@
           ng-cl***REMOVED***="{false: 'icon-sage-inverse', true: 'icon-sage'}[locationServicesEnabled]"></i> Show People
         </label>
         <label cl***REMOVED***="checkbox" ng-show="locationServicesEnabled">
-          <input style="margin-left: 0px" type="checkbox" ng-model="hideLocationsFromNewsFeed" ng-click="hideLocations()" ngm-tap="hideLocations()"/>Hide People in News Feed
+          <input style="margin-left: 0px" type="checkbox" ng-model="hideLocationsFromNewsFeed" ng-change="hideLocations()" ngm-tap="hideLocations()"/>Hide People in News Feed
         </label>
       </div>
     </div>
@@ -46,7 +46,7 @@
       <div cl***REMOVED***="control-group">
         <div cl***REMOVED***="controls">
           <label cl***REMOVED***="checkbox" ng-repeat="layer in imageryLayers">
-            <input type="checkbox" ng-model="layer.checked" ng-click="onImageryLayer(layer)"/>{{layer.name}}
+            <input type="checkbox" ng-model="layer.checked" ng-change="onImageryLayer(layer)"/>{{layer.name}}
           </label>
         </div>
       </div>

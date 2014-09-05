@@ -69,31 +69,42 @@ module.exports = function(app, security) {
   });
 
   // Grab the team for any endpoint that uses teamId
+  app.param('userId', /^[0-9a-f]{24}$/); //ensure formId is a mongo id
+  app.param('userId', function(req, res, next, userId) {
+    console.log('user id: ' + userId);
+    new api.User().getById(userId, function(err, user) {
+      if (!user) return res.send('User not found', 404);
+      req.userParam = user;
+      next();
+    });
+  });
+
+  // Grab the team for any endpoint that uses teamId
   app.param('teamId', function(req, res, next, teamId) {
-      Team.getTeamById(teamId, function(err, team) {
-        if (!team) return res.send('Team not found', 404);
-        req.team = team;
-        next();
-      });
+    Team.getTeamById(teamId, function(err, team) {
+      if (!team) return res.send('Team not found', 404);
+      req.team = team;
+      next();
+    });
   });
 
   // Grab the form for any endpoint that uses formId
   app.param('formId', /^[0-9a-f]{24}$/); //ensure formId is a mongo id
   app.param('formId', function(req, res, next, formId) {
-      new api.Form().getById(formId, function(err, form) {
-        if (!form) return res.send('Form not found', 404);
-        req.form = form;
-        next();
-      });
+    new api.Form().getById(formId, function(err, form) {
+      if (!form) return res.send('Form not found', 404);
+      req.form = form;
+      next();
+    });
   });
 
   // Grab the form for any endpoint that uses formId
   app.param('iconId', function(req, res, next, iconId) {
-      Icon.getById(iconId, function(err, icon) {
-        if (!icon) return res.send('Form not found', 404);
-        req.icon = icon;
-        next();
-      });
+    Icon.getById(iconId, function(err, icon) {
+      if (!icon) return res.send('Form not found', 404);
+      req.icon = icon;
+      next();
+    });
   });
 
   // Grab the device for any endpoint that uses deviceId

@@ -1,10 +1,10 @@
 module.exports = function(app, security) {
-  var User = require('../models/user')
-    , Token = require('../models/token')
+  var api = require('../api')
     , Role = require('../models/role')
-    , Team = require('../models/team')
     , access = require('../access')
     , config = require('../config.json')
+    , fs = require('fs-extra')
+    , userTransformer = require('../transformers/user')
     , p***REMOVED***port = security.authentication.p***REMOVED***port
     , loginStrategy = security.authentication.loginStrategy
     , authenticationStrategy = security.authentication.authenticationStrategy
@@ -35,7 +35,6 @@ module.exports = function(app, security) {
         if (!hasPermission) req.user = null;
 
         next();
-
       });
     }
   }
@@ -131,54 +130,19 @@ module.exports = function(app, security) {
     });
   }
 
-  var validateTeamParams = function(req, res, next) {
-    var teamIds = req.param('teamIds');
-    if (!teamIds) {
-      return res.send(400, "Cannot set teams, 'teamIds' param not specified");
-    }
-
-    var teamIds = teamIds.split(",");
-    var validatedTeams = [];
-    Team.getTeams(function (err, validTeams) {
-      teamIds.forEach(function(teamId) {
-        var found = validTeams.some(function(validTeam) {
-          return (teamId === validTeam._id.toString());
-        });
-
-
-        if (!found) {
-          return res.send(400, "Team '" + teamId + "' is not a valid team id");
-        }
-
-        validatedTeams.push(teamId);
-      });
-
-      req.teamIds = validatedTeams;
-      next();
-    });
-  }
-
   // login
   app.post(
     '/api/login',
     p***REMOVED***port.authenticate(loginStrategy),
     provision.check(provisionStrategy),
     function(req, res) {
-      var options = {user: req.user};
-      if (req.provisionedDevice) {
-        options.device = req.provisionedDevice;
-      }
-
-      Token.createToken(options, function(err, token) {
-        if (err) {
-          return res.send(500, "Error generating token");
-        }
-
+      var options = {userAgent: req.headers['user-agent'], version: req.param('mageVersion')};
+      new api.User().login(req.user, req.provisionedDevice, options, function(err, token, user) {
         res.json({
           token: token.token,
           expirationDate: token.expirationDate,
-          user: req.user,
-          device: options.device
+          user: userTransformer.transform(req.user, {path: req.getRoot()}),
+          device: req.provisionedDevice
         });
       });
     }
@@ -189,11 +153,7 @@ module.exports = function(app, security) {
     '/api/logout',
     isAuthenticated(authenticationStrategy),
     function(req, res, next) {
-      if (!req.user) {
-        res.send(200, 'not logged in');
-      }
-
-      Token.removeTokenForUser(req.user, function(err, token){
+      new api.User().logout(req.user, function(err) {
         if (err) return next(err);
 
         res.send(200, 'successfully logged out');
@@ -207,7 +167,8 @@ module.exports = function(app, security) {
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_USER'),
     function(req, res) {
-      User.getUsers(function (users) {
+      new api.User().getAll(function (err, users) {
+        users = userTransformer.transform(users, {path: req.getRoot()});
         res.json(users);
       });
   });
@@ -217,7 +178,8 @@ module.exports = function(app, security) {
     '/api/users/myself',
     p***REMOVED***port.authenticate(authenticationStrategy),
     function(req, res) {
-      res.json(req.user);
+      var user = userTransformer.transform(req.user, {path: req.getRoot()});
+      res.json(user);
     }
   );
 
@@ -227,13 +189,33 @@ module.exports = function(app, security) {
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_USER'),
     function(req, res) {
-      User.getUserById(req.params.userId, function(err, user) {
+      user = userTransformer.transform(req.userParam, {path: req.getRoot()});
+      res.json(user);
+    }
+  );
+
+  // get user avatar/icon by id
+  app.get(
+    '/api/users/:userId/:content(avatar|icon)',
+    p***REMOVED***port.authenticate(authenticationStrategy),
+    access.authorize('READ_USER'),
+    function(req, res) {
+      new api.User()[req.params.content](req.userParam, function(err, content) {
         if (err) return next(err);
 
-        if (!user) return res.send(404);
+        if (!content) return res.send(404);
 
-        res.json(user);
-      })
+        var stream = fs.createReadStream(content.path);
+        stream.on('open', function() {
+          res.type(content.contentType);
+          res.header('Content-Length', content.size);
+          stream.pipe(res);
+        });
+        stream.on('error', function(err) {
+          console.log('error', err);
+          res.send(404);
+        });
+      });
     }
   );
 
@@ -241,12 +223,14 @@ module.exports = function(app, security) {
   app.put(
     '/api/users/myself',
     p***REMOVED***port.authenticate(authenticationStrategy),
-    function(req, res) {
+    function(req, res, next) {
+
       var user = req.user;
       if (req.param('username')) user.username = req.param('username');
       if (req.param('firstname')) user.firstname = req.param('firstname');
       if (req.param('lastname')) user.lastname = req.param('lastname');
       if (req.param('email')) user.email = req.param('email');
+
       var phone = req.param('phone');
       if (phone) {
         user.phones = [{
@@ -269,9 +253,8 @@ module.exports = function(app, security) {
         user.p***REMOVED***word = p***REMOVED***word;
       }
 
-      User.updateUser(user, function(err, updatedUser) {
-        if (err) return res.send(400, err.message);
-
+      new api.User().update(user, {avatar: req.files.avatar}, function(err, updatedUser) {
+        updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
         res.json(updatedUser);
       });
     }
@@ -297,9 +280,10 @@ module.exports = function(app, security) {
       // Authorized to update users, activate account by default
       req.newUser.active = true;
 
-      User.createUser(req.newUser, function(err, newUser) {
+      new api.User().create(req.newUser, {avatar: req.files.avatar, icon: req.files.icon}, function(err, newUser) {
         if (err) return res.send(400, err.message);
 
+        newUser = userTransformer.transform(newUser, {path: req.getRoot()});
         res.json(newUser);
       });
     }
@@ -315,9 +299,10 @@ module.exports = function(app, security) {
       req.newUser.active = false;
       req.newUser.role = req.role._id;
 
-      User.createUser(req.newUser, function(err, newUser) {
+      new api.User().create(req.newUser, {avatar: req.files.avatar}, function(err, newUser) {
         if (err) return res.send(400, err.message);
 
+        newUser = userTransformer.transform(newUser, {path: req.getRoot()});
         res.json(newUser);
       });
     }
@@ -332,7 +317,9 @@ module.exports = function(app, security) {
       if (!status) return res.send(400, "Missing required parameter 'status'");
 
       var update = {status: status};
-      User.updateUser(req.user._id, update, function(err, updatedUser) {
+
+      new api.User().update(req.user._id, update, function(err, updatedUser) {
+        updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
         res.json(updatedUser);
       });
     }
@@ -345,8 +332,9 @@ module.exports = function(app, security) {
     function(req, res) {
       var status = req.param.status;
 
-      var update = {$unset: {status: 1}};
-      User.updateUser(req.user._id, update, function(err, updatedUser) {
+      req.user.status = undefined;
+      new api.User().update(req.user, function(err, updatedUser) {
+        updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
         res.json(updatedUser);
       });
     }
@@ -357,43 +345,41 @@ module.exports = function(app, security) {
     '/api/users/:userId',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('UPDATE_USER'),
-    function(req, res) {
-      User.getUserById(req.params.userId, function(err, user) {
-        if (err) return res.send(400, 'User not found');
-        if (req.param('active')) user.active = req.param('active');
-        user.username = req.param('username');
-        user.firstname = req.param('firstname');
-        user.lastname = req.param('lastname');
-        user.email = req.param('email');
-        if (req.param('role')) user.role = req.param('role');
-        var phone = req.param('phone');
-        if (phone) {
-          user.phones = [{
-            type: "Main",
-            number: phone
-          }];
+    function(req, res, next) {
+      var user = req.userParam;
+
+      if (req.param('username')) user.username = req.param('username');
+      if (req.param('firstname')) user.firstname = req.param('firstname');
+      if (req.param('lastname')) user.lastname = req.param('lastname');
+      if (req.param('email')) user.email = req.param('email');
+
+      var phone = req.param('phone');
+      if (phone) {
+        user.phones = [{
+          type: "Main",
+          number: phone
+        }];
+      }
+
+      var p***REMOVED***word = req.param('p***REMOVED***word');
+      var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
+      if (p***REMOVED***word && p***REMOVED***wordconfirm) {
+        if (p***REMOVED***word != p***REMOVED***wordconfirm) {
+          return res.send(400, 'p***REMOVED***words do not match');
         }
 
-        var p***REMOVED***word = req.param('p***REMOVED***word');
-        var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
-        if (p***REMOVED***word && p***REMOVED***wordconfirm) {
-          if (p***REMOVED***word != p***REMOVED***wordconfirm) {
-            return res.send(400, 'p***REMOVED***words do not match');
-          }
-
-          if (p***REMOVED***word.length < p***REMOVED***wordLength) {
-            return res.send(400, 'p***REMOVED***word does not meet minimum length requirement of ' + p***REMOVED***wordLength + ' characters');
-          }
-
-          user.p***REMOVED***word = p***REMOVED***word;
+        if (p***REMOVED***word.length < p***REMOVED***wordLength) {
+          return res.send(400, 'p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
         }
 
-        User.updateUser(user, function(err, updatedUser) {
-          console.log('error', err);
-          if (err) return res.send(400, "Error updating user, " + err.toString());
+        user.p***REMOVED***word = p***REMOVED***word;
+      }
 
-          res.json(updatedUser);
-        });
+      new api.User().update(user, {avatar: req.files.avatar, icon: req.files.icon}, function(err, updatedUser) {
+        if (err) return next(err);
+
+        updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
+        res.json(updatedUser);
       });
     }
   );
@@ -404,12 +390,10 @@ module.exports = function(app, security) {
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('DELETE_USER'),
     function(req, res) {
-      User.deleteUser(req.params.userId, function(err, user) {
-        if (err) {
-          return res.send(400, err);
-        }
+      new api.User().delete(req.userParam, function(err) {
+        if (err) return res.send(400, err);
 
-        res.json(user);
+        res.send(200);
       });
     }
   );
@@ -421,34 +405,14 @@ module.exports = function(app, security) {
     access.authorize('UPDATE_USER'),
     validateRoleParams,
     function(req, res) {
-      User.setRoleForUser(req.user, req.role, function(err, user) {
-        res.json(user);
-      });
-    }
-  );
+      req.userParm.role = role;
 
-  // set teams for users
-  app.post(
-    '/api/users/:userId/teams',
-    p***REMOVED***port.authenticate(authenticationStrategy),
-    access.authorize('UPDATE_USER'),
-    validateTeamParams,
-    function(req, res) {
-      User.setTeamsForUser(req.user, req.teamIds, function(err, user) {
-        res.json(user);
-      });
-    }
-  );
+      new api.User().update(req.userParam, function(err, updatedUser) {
+        if (err) return next(err);
 
-  // remove all teams from user
-  app.delete(
-    '/api/users/:userId/teams',
-    p***REMOVED***port.authenticate(authenticationStrategy),
-    access.authorize('UPDATE_USER'),
-    function(req, res) {
-      User.removeTeamsForUser(req.user, function(err, user) {
-        res.json(user);
-      })
+        updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
+        res.json(updatedUser);
+      });
     }
   );
 }
