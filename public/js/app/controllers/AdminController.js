@@ -238,7 +238,7 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
   $scope.approveUser = function (user) {
     var userRole = _.find($scope.roles, function (role) { return role.name == 'USER_ROLE' });
     user.active = true;
-    UserService.updateUser(user).success(function () {});
+    UserService.updateUser(user._id, user, function() {});
   }
 
   $scope.deleteUser = function (user) {
