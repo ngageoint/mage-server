@@ -232,8 +232,6 @@ exports.createUser = function(user, callback) {
 }
 
 exports.updateUser = function(user, callback) {
-  console.log('trying to save user', user);
-
   user.save(function(err) {
     if (err) {
       console.log('Could not update user ' + user.username + ' error ' + err);
