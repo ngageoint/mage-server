@@ -8,11 +8,11 @@ var UserModel = require('../models/user')
 var userBase = config.server.userBaseDirectory;
 
 function contentPath(user, content, type) {
-  var relative = path.join(user._id.toString(), type + path.extname(content.path));
-  var absolute = path.join(userBase, relative);
+  var relativePath = path.join(user._id.toString(), type + path.extname(content.path));
+  var absolutePath = path.join(userBase, relativePath);
   return {
-    relative: relative,
-    absolute: absolute
+    relativePath: relativePath,
+    absolutePath: absolutePath
   };
 }
 
@@ -70,15 +70,15 @@ User.prototype.create = function(user, options, callback) {
 
   if (options.avatar) {
     operations.push(function(newUser, done) {
-      var avatarPath = avatarPath(newUser, options.avatar);
-      fs.move(options.avatar.path, avatarPath.absolute, function(err) {
+      var avatar = avatarPath(newUser, options.avatar);
+      fs.move(options.avatar.path, avatar.absolutePath, function(err) {
         if (err) {
           console.log('Could not create user avatar');
           return done(err);
         }
 
         newUser.avatar = {
-          relativePath: avatarPath.relative,
+          relativePath: avatar.relativePath,
           contentType: options.avatar.mimetype,
           size: options.avatar.size
         };
@@ -90,15 +90,15 @@ User.prototype.create = function(user, options, callback) {
 
   if (options.icon) {
     operations.push(function(newUser, done) {
-      var iconPath = iconPath(newUser, options.icon);
-      fs.move(options.icon.path, iconPath.absolute, function(err) {
+      var icon = iconPath(newUser, options.icon);
+      fs.move(options.icon.path, icon.absolutePath, function(err) {
         if (err) {
           console.log('Could not create user icon');
           return done(err);
         }
 
         newUser.icon = {
-          relativePath: iconPath.relative,
+          relativePath: icon.relativePath,
           contentType: options.avatar.mimetype,
           size: options.avatar.size
         };
@@ -130,15 +130,15 @@ User.prototype.update = function(user, options, callback) {
 
   if (options.avatar) {
     operations.push(function(updatedUser, done) {
-      var thePath = avatarPath(updatedUser, options.avatar);
-      fs.move(options.avatar.path, thePath.absolute, {clobber: true}, function(err) {
+      var avatar = avatarPath(updatedUser, options.avatar);
+      fs.move(options.avatar.path, avatar.absolutePath, {clobber: true}, function(err) {
         if (err) {
           console.log('Could not create user avatar', err);
           return done(err);
         }
 
         updatedUser.avatar = {
-          relativePath: thePath.relative,
+          relativePath: avatar.relativePath,
           contentType: options.avatar.mimetype,
           size: options.avatar.size
         };
@@ -150,15 +150,15 @@ User.prototype.update = function(user, options, callback) {
 
   if (options.icon) {
     operations.push(function(updatedUser, done) {
-      var thePath = iconPath(updatedUser, options.icon);
-      fs.move(options.icon.path, thePath.absolute, {clobber: true}, function(err) {
+      var icon = iconPath(updatedUser, options.icon);
+      fs.move(options.icon.path, icon.absolutePath, {clobber: true}, function(err) {
         if (err) {
           console.log('Could not create user icon', err);
           return done(err);
         }
 
         updatedUser.icon = {
-          relativePath: thePath.relative,
+          relativePath: icon.relativePath,
           contentType: options.icon.mimetype,
           size: options.icon.size
         };

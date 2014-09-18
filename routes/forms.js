@@ -77,7 +77,6 @@ module.exports = function(app, security) {
   app.post(
     '/api/forms',
     access.authorize('CREATE_LAYER'),
-    validateFormParams,
     function(req, res, next) {
       if (!req.is('multipart/form-data')) return next();
 
