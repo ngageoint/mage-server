@@ -1,10 +1,8 @@
-// Setup mongoose
-var mongoose = require('mongoose')
-  , Device = require('../models/device')
-  , server = require('../config').server;
+var Device = require('../models/device');
 
-exports.up = function(next) {
-  mongoose.connect(server.mongodb.url);
+exports.id = 'create-initial-device';
+
+exports.up = function(done) {
 
   var device = {
     name: "Initial Device",
@@ -13,34 +11,13 @@ exports.up = function(next) {
     description: "This is the initial device for the web console.  Please create a new device with a more secure unique id and delete this device."
   };
 
-  Device.createDevice(device, function(err, device) {
-    if (err) {
-      mongoose.disconnect();
-      return next(err);
-    }
-
-    mongoose.disconnect(function(err) {
-      next(err);
-    });
-  });
+  Device.createDevice(device, done);
 };
 
-exports.down = function(next) {
-  mongoose.connect(server.mongodb.url);
-
+exports.down = function(done) {
   Device.getDeviceByUid("12345", function(err, device) {
-    if (err) {
-      mongoose.disconnect();
-      return next(err);
-    }
+    if (err || !device ) return done(err);
 
-    if (!device) {
-      mongoose.disconnect();
-      return next();
-    }
-
-    Device.deleteDevice(device, function(err, device) {
-      mongoose.disconnect(next);
-    });
+    Device.deleteDevice(device, done);
   });
 };
