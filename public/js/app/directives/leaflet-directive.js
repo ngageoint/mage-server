@@ -207,7 +207,6 @@ L.AwesomeMarkers.divIcon = function (options) {
             return;
           }
 
-          var locationMarkers = {};
           _.each(users, function(user) {
             var u = user;
             if (user.locations.length > 0) {
@@ -215,8 +214,6 @@ L.AwesomeMarkers.divIcon = function (options) {
               var latLng = L.latLng(location.geometry.coordinates[1], location.geometry.coordinates[0]);
               var marker = currentLocationMarkers[u.user];
               if (marker) {
-                delete currentLocationMarkers[u.user];
-                locationMarkers[u.user] = marker;
                 // Just update the location
                 marker.setLatLng(latLng).setColor(appConstants.userLocationToColor(location));
                 return;
@@ -261,17 +258,11 @@ L.AwesomeMarkers.divIcon = function (options) {
                   marker.setAccuracy(0);
                 });
 
-                locationMarkers[u.user] = marker;
+                currentLocationMarkers[u.user] = marker;
                 locationLayerGroup.addLayer(marker);
               });
             }
           });
-
-          _.each(currentLocationMarkers, function(marker, user) {
-            locationLayerGroup.removeLayer(marker);
-          });
-
-          currentLocationMarkers = locationMarkers;
         }, true);
 
         var activeMarker;
@@ -352,7 +343,7 @@ L.AwesomeMarkers.divIcon = function (options) {
                   scope.$apply(function(s) {
                     var oldBucket = scope.selectedBucket;
                     scope.selectedBucket = TimeBucketService.findItemBucketIdx(feature, 'newsfeed', function(item) {
-                      return item.properties ? item.properties.timestamp : moment(item.locations[0].properties.timestamp).valueOf();
+                      return item.properties ? moment(item.properties.timestamp).valueOf() : moment(item.locations[0].properties.timestamp).valueOf();
                     });
                     if (oldBucket == scope.selectedBucket) {
                       $('.news-items').animate({scrollTop: $('#'+feature.id).position().top},500);

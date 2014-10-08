@@ -288,7 +288,7 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
   }, true);
 
   $scope.$watch(FilterService.getTimeInterval, function(interval) {
-    if ($scope.layer && $scope.layer.checked) {
+    if ($scope.layer && $scope.layer.checked && $scope.layer.type == 'Feature') {
       loadLayer($scope.layer);
     };
     if ($scope.locationServicesEnabled) {
@@ -332,7 +332,7 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
       }
 
       var interval = FilterService.formatInterval();
-      if (interval) {
+      if (interval && layer.type == 'Feature') {
         options.startDate = interval.start;
         options.endDate = interval.end;
       }
@@ -405,7 +405,6 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
     ds.locationsLoaded = false;
     Location.get(options).$promise.then(function(data) {
       ds.locationsLoaded = true;
-      ds.locations = data;
       $scope.locations = data;
       createAllFeaturesArray();
       _.each($scope.locations, function(userLocation) {
@@ -416,11 +415,9 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
             $scope.locationClick(userLocation);
           }
         }
-        UserService.getUser(userLocation.user)
-          .then(function(user) {
-            userLocation.userModel = user.data || user;
-          });
-        });
+      });
+      
+      ds.locations = data;
     });
   }
 
