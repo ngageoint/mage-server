@@ -353,6 +353,7 @@ module.exports = function(app, security) {
       if (req.param('lastname')) user.lastname = req.param('lastname');
       if (req.param('email')) user.email = req.param('email');
       if (req.param('active')) user.active = req.param('active');
+      if (req.param('role')) user.role = req.param('role');
 
       var phone = req.param('phone');
       if (phone) {
