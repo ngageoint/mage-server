@@ -56,7 +56,8 @@ console.log('Provision: ' + provisioning.strategy);
 var app = express();
 var mongodbConfig = config.server.mongodb;
 
-mongoose.connect(mongodbConfig.url, {server: {poolSize: mongodbConfig.poolSize}}, function(err) {
+var mongoUri = "mongodb://" + mongodbConfig.host + "/" + mongodbConfig.db;
+mongoose.connect(mongoUri, {server: {poolSize: mongodbConfig.poolSize}}, function(err) {
   if (err) {
     console.log('Error connecting to mongo database, please make sure mongodbConfig is running...');
     throw err;

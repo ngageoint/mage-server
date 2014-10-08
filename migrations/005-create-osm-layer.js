@@ -1,11 +1,8 @@
-// Setup mongoose
-var mongoose = require('mongoose')
-  , Layer = require('../models/layer')
-  , server = require('../config').server;
+var Layer = require('../models/layer');
 
-exports.up = function(next) {
-  mongoose.connect(server.mongodb.url);
+exports.id = 'create-initial-osm-layer';
 
+exports.up = function(done) {
   var osm = {
     name: "Open Street Map",
     type: "Imagery",
@@ -14,15 +11,9 @@ exports.up = function(next) {
     url: "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
   };
 
-  Layer.create(osm, function(err, layer) {
-    return mongoose.disconnect(next);
-  });
+  Layer.create(osm, done);
 };
 
 exports.down = function(next) {
-  mongoose.connect(server.mongodb.url);
-
-  Layer.Model.remove({name: "Open Street Map"}, function(err) {
-    return mongoose.disconnect(next);
-  });
+  Layer.Model.remove({name: "Open Street Map"}, done);
 };

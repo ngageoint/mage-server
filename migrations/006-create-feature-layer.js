@@ -1,25 +1,16 @@
-// Setup mongoose
-var mongoose = require('mongoose')
-  , Layer = require('../models/layer')
-  , server = require('../config').server;
+var Layer = require('../models/layer');
 
-exports.up = function(next) {
-  mongoose.connect(server.mongodb.url);
+exports.id = 'create-initial-feature-layer';
 
+exports.up = function(done) {
   var osm = {
     name: "Field Observations",
     type: "Feature"
   };
 
-  Layer.create(osm, function(err, layer) {
-    return next(err);
-  });
+  Layer.create(osm, done);
 };
 
-exports.down = function(next) {
-  mongoose.connect(server.mongodb.url);
-
-  Layer.Model.remove({name: "Field Observations", type: "Feature"}, function(err) {
-    return next(err);
-  });
+exports.down = function(done) {
+  Layer.Model.remove({name: "Field Observations", type: "Feature"}, done);
 };

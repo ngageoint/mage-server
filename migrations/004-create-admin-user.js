@@ -1,13 +1,9 @@
-// Setup mongoose
-var mongoose = require('mongoose')
-  , hasher = require('../utilities/pbkdf2')()
-  , Role = require('../models/role')
-  , User = require('../models/user')
-  , server = require('../config').server;
+var Role = require('../models/role')
+  , User = require('../models/user');
 
-exports.up = function(next) {
-  mongoose.connect(server.mongodb.url);
+exports.id = 'create-initial-admin-user';
 
+exports.up = function(done) {
   var p***REMOVED***word = 'admin';
   Role.getRole('ADMIN_ROLE', function(err, role) {
     if (err) return next(err);
@@ -23,33 +19,14 @@ exports.up = function(next) {
       role: role._id
     };
 
-    User.createUser(adminUser, function(err, user) {
-      if (err) {
-        mongoose.disconnect();
-        return next(err);
-      }
-
-      mongoose.disconnect(next);
-    });
+    User.createUser(adminUser, done);
   });
 };
 
-exports.down = function(next) {
-  mongoose.connect(server.mongodb.url);
-
+exports.down = function(done) {
   User.getUserByUsername('admin', function(err, user) {
-    if (err) {
-      mongoose.disconnect();
-      return next(err);
-    }
+    if (err || !user) return done(err);
 
-    if (!user) {
-      mongoose.disconnect();
-      return next();
-    }
-
-    User.deleteUser(user, function(err, user) {
-      mongoose.disconnect(next);
-    });
+    User.deleteUser(user, done);
   });
 };
