@@ -66,7 +66,7 @@ mongoose.connect(mongoUri, {server: {poolSize: mongodbConfig.poolSize}}, functio
 // mongoose.set('debug', function(collection, method, query, doc, options) {
 //   log.debug("(mongoose) %s.%s(%j, %j, %j)", collection, method, query, doc, options);
 // });
-mongoose.set('debug', true);
+mongoose.set('debug', false);
 
 app.use(function(req, res, next) {
   req.getRoot = function() {
