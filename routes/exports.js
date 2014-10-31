@@ -72,7 +72,7 @@ module.exports = function(app, security) {
 
   var mapUsers = function(req, res, next) {
     //get users for lookup
-    User.getUsers(function (users) {
+    User.getUsers(function (err, users) {
       var map = {};
       users.forEach(function(user) {
         map[user._id] = user;
@@ -332,7 +332,7 @@ module.exports = function(app, security) {
 
       var startDate = req.parameters.filter.startDate ? moment(req.parameters.filter.startDate) : null;
       var endDate = req.parameters.filter.endDate ? moment(req.parameters.filter.endDate) : null;
-      
+
       var lastLocationId = null;
 
       var locations = [];
