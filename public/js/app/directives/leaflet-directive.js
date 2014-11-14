@@ -207,6 +207,7 @@ L.AwesomeMarkers.divIcon = function (options) {
             return;
           }
 
+          var locationMarkers = {};
           _.each(users, function(user) {
             var u = user;
             if (user.locations.length > 0) {
@@ -214,6 +215,8 @@ L.AwesomeMarkers.divIcon = function (options) {
               var latLng = L.latLng(location.geometry.coordinates[1], location.geometry.coordinates[0]);
               var marker = currentLocationMarkers[u.user];
               if (marker) {
+                delete currentLocationMarkers[u.user];
+                locationMarkers[u.user] = marker;
                 // Just update the location
                 marker.setLatLng(latLng).setColor(appConstants.userLocationToColor(location));
                 return;
@@ -258,11 +261,17 @@ L.AwesomeMarkers.divIcon = function (options) {
                   marker.setAccuracy(0);
                 });
 
-                currentLocationMarkers[u.user] = marker;
+                locationMarkers[u.user] = marker;
                 locationLayerGroup.addLayer(marker);
               });
             }
           });
+
+          _.each(currentLocationMarkers, function(marker, user) {
+            locationLayerGroup.removeLayer(marker);
+          });
+
+          currentLocationMarkers = locationMarkers;
         }, true);
 
         var activeMarker;
