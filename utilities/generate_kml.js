@@ -89,7 +89,7 @@ var generatePlacemark = function(name, feature, form) {
       if ((/^image/).test(attachment.contentType)) {
         description +=
           '<div>' +
-            '<img src="files/' + attachment.relativePath + '" width="150"; height="150";/>' +
+            '<img src="attachments/' + attachment.relativePath + '" width="150"; height="150";/>' +
           '</div>';
       }
     });

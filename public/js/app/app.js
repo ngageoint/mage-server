@@ -68,6 +68,12 @@ var mage = angular.module(
       controller:     "AdminController",
       resolve: resolveLogin(["ADMIN_ROLE"])
     });
+    $routeProvider.when('/debug-info',
+    {
+      templateUrl:    'js/app/partials/debug.html',
+      controller:     "DebugController",
+      resolve: resolveLogin(["ADMIN_ROLE"])
+    });
     $routeProvider.when('/map',
     {
       templateUrl:    'js/app/partials/map.html',
