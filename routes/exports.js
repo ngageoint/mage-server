@@ -397,7 +397,7 @@ module.exports = function(app, security) {
             archive.bulk([{
               cwd: path.join(config.server.attachment.baseDirectory, layer.collectionName),
               src: ['*/**'],
-              dest: 'mage-export/attachments',
+              dest: 'mage-export/attachments/' + layer.collectionName,
               expand: true,
               data: { date: new Date() } }
             ]);
