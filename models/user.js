@@ -57,6 +57,7 @@ var UserSchema = new Schema({
     teams: [Schema.Types.ObjectId],
     status: { type: String, required: false, index: 'sparse' },
     locations: [LocationSchema],
+    futureLocations: [LocationSchema],
     userAgent: {type: String, required: false },
     mageVersion: {type: String, required: false }
   },{
@@ -211,6 +212,8 @@ exports.getUsers = function(callback) {
 }
 
 exports.createUser = function(user, callback) {
+  console.log('trying to create user', user);
+
   var create = {
     username: user.username,
     firstname: user.firstname,
@@ -355,7 +358,13 @@ exports.getLocations = function(options, callback) {
 }
 
 exports.addLocationsForUser = function(user, locations, callback) {
-  var update = {$push: {locations: {$each: locations, $sort: {"properties.timestamp": 1}, $slice: -1 * locationLimit}}};
+  var update = {
+    $push: {
+      locations: {$each: locations.valid, $sort: {"properties.timestamp": 1}, $slice: -1 * locationLimit},
+      futureLocations: {$each: locations.future, $sort: {"properties.timestamp": 1}, $slice: -1 * locationLimit}
+    }
+  };
+
   User.findByIdAndUpdate(user._id, update, {upsert: true}, function(err, user) {
     if (err) {
       console.log('Error add location for user.', err);
