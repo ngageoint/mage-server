@@ -256,10 +256,30 @@ module.exports = function(app, auth) {
 
         if (!attachment) return res.send(404);
 
-        var stream = fs.createReadStream(attachment.path);
+        var stream;
+        if (req.headers.range) {
+          var range = req.headers.range;
+          var rangeParts = range.replace(/bytes=/, "").split("-");
+          var rangeStart = parseInt(rangeParts[0], 10);
+          var rangeEnd = rangeParts[1] ? parseInt(rangeParts[1], 10) : attachment.size - 1;
+          var contentLength = (rangeEnd - rangeStart) + 1;
+
+          res.writeHead(206, {
+            'Content-Range': 'bytes ' + rangeStart + '-' + rangeEnd + '/' + attachment.size,
+            'Accept-Ranges': 'bytes',
+            'Content-Length': contentLength,
+            'Content-Type': attachment.contentType
+          });
+          stream = fs.createReadStream(attachment.path, {start: rangeStart, end: rangeEnd});
+        } else {
+          res.writeHead(200, {
+            'Content-Length': attachment.size,
+            'Content-Type': attachment.contentType
+          });
+          stream = fs.createReadStream(attachment.path);
+        }
+
         stream.on('open', function() {
-          res.type(attachment.contentType);
-          res.header('Content-Length', attachment.size);
           stream.pipe(res);
         });
         stream.on('error', function(err) {
