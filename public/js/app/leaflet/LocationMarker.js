@@ -20,7 +20,18 @@ L.LocationMarker = L.Marker.extend({
       radius: 5
     });
 
-    this._location = L.layerGroup([this._accuracyCircle, this._locationMarker]);
+    var group = [this._accuracyCircle, this._locationMarker];
+
+    if (options.iconUrl) {
+      this._iconMarker = L.marker(latlng, {
+        clickable: true,
+        icon: L.icon({iconUrl: options.iconUrl, iconSize: [42, 42], iconAnchor: [21, 42]})
+      });
+
+      group.push(this._iconMarker);
+    }
+
+    this._location = L.layerGroup(group);
   },
 
   addTo: function (map) {
@@ -31,7 +42,6 @@ L.LocationMarker = L.Marker.extend({
   onAdd: function (map) {
     this._map = map;
     map.addLayer(this._location);
-    this._locationMarker
 
     L.DomEvent.on(this._locationMarker, 'click', this._onMouseClick, this);
   },
@@ -47,7 +57,9 @@ L.LocationMarker = L.Marker.extend({
   setLatLng: function (latlng) {
     this._accuracyCircle.setLatLng(latlng);
     this._locationMarker.setLatLng(latlng);
-    return this;
+    if (this._iconMarker) this._iconMarker.setLatLng(latlng);
+
+    return L.Marker.prototype.setLatLng.call(this, latlng);
   },
 
   setAccuracy: function (accuracy) {
@@ -87,14 +99,6 @@ L.LocationMarker = L.Marker.extend({
   offPopupClose: function(fn, context) {
     return this._locationMarker.off('popupclose', fn, context);
   }
-
-  // on: function(types, fn, context) {
-  //   return this._locationMarker.on(types, fn, context);
-  // },
-  //
-  // off: function(types, fn, context) {
-  //   return this._locationMarker.off(types, fn, context);
-  // }
 
 });
 

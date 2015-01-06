@@ -1,25 +1,15 @@
-mage.directive('userLocation', function(UserService, appConstants) {
+mage.directive('userLocation', function() {
   return {
     restrict: "A",
     templateUrl:  "js/app/partials/user-location.html",
     scope: {
+      userLocation: '='
     },
-    controller: function ($scope, UserService) {
-      $scope.getUser = function(userId) {
-        var u = UserService.getUser(userId);
-        if (u.success) {
-          u.success(function(user) {
-            $scope.user = user;
-          })
-          .error(function() {
-            console.log('error trying to get user');
-          });
-        } else if (u.then) {
-          u.then(function(user) {
-            $scope.user = user;
-          })
-        }
-        
+    controller: function ($scope, mageLib) {
+      if ($scope.userLocation.avatarUrl) {
+        $scope.avatarUrl = $scope.userLocation.avatarUrl + "?access_token=" + mageLib.getToken();
+      } else {
+        $scope.avatarUrl = "img/missing_photo.png";
       }
     }
   };

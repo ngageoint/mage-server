@@ -1,17 +1,15 @@
-// Setup mongoose
-var mongoose = require('mongoose')
-  , Role = require('../models/role')
-  , server = require('../config').server;
+var Role = require('../models/role');
 
-var userPermissions = [
-  'READ_DEVICE',
-  'READ_LAYER',
-  'READ_USER',
-  'CREATE_FEATURE', 'READ_FEATURE', 'UPDATE_FEATURE', 'DELETE_FEATURE', 
-  'CREATE_LOCATION', 'READ_LOCATION', 'UPDATE_LOCATION', 'DELETE_LOCATION'];
+exports.id = 'create-initial-user-role';
 
-exports.up = function(next) {
-  mongoose.connect(server.mongodb.url);
+exports.up = function(done) {
+
+  var userPermissions = [
+    'READ_DEVICE',
+    'READ_LAYER',
+    'READ_USER',
+    'CREATE_FEATURE', 'READ_FEATURE', 'UPDATE_FEATURE', 'DELETE_FEATURE',
+    'CREATE_LOCATION', 'READ_LOCATION', 'UPDATE_LOCATION', 'DELETE_LOCATION'];
 
   var userRole = {
     name: "USER_ROLE",
@@ -19,32 +17,13 @@ exports.up = function(next) {
     permissions: userPermissions
   };
 
-  Role.createRole(userRole, function(err, role) {
-    if (err) {
-      mongoose.disconnect();
-      return next(err);
-    }
-
-    mongoose.disconnect(next);
-  });
+  Role.createRole(userRole, done);
 };
 
-exports.down = function(next) {
-  mongoose.connect(server.mongodb.url);
-
+exports.down = function(done) {
   Role.getRole("USER_ROLE", function(err, role) {
-    if (err) {
-      mongoose.disconnect();
-      return next(err);
-    }
+    if (err || !role) return done(err);
 
-    if (!role) {
-      mongoose.disconnect();
-      return next();
-    }
-
-    Role.deleteRole(role, function(err, role) {
-      mongoose.disconnect(next);
-    });
+    Role.deleteRole(role, done);
   });
 };

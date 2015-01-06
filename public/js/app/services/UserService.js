@@ -14,22 +14,48 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
         ***REMOVED***.amAdmin = ***REMOVED***.myself && ***REMOVED***.myself.role && (***REMOVED***.myself.role.name == "ADMIN_ROLE");
       };
 
+      function saveUser(user, options, success, error, progress) {
+        var formData = new FormData();
+        for (var property in user) {
+          if (user[property] != null)
+            formData.append(property, user[property]);
+        }
+
+        $.ajax({
+            url: options.url,
+            type: options.type,
+            xhr: function() {
+                var myXhr = $.ajaxSettings.xhr();
+                if(myXhr.upload){
+                    myXhr.upload.addEventListener('progress', progress, false);
+                }
+                return myXhr;
+            },
+            success: success,
+            error: error,
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false
+        });
+      }
+
       /* For the sign up page, no token necessary */
-      ***REMOVED***.signup = function (data) {
-        return $http.post(
-          appConstants.rootUrl + '/api/users', $.param(data), 
-          {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
-        );
+      ***REMOVED***.signup = function (user, success, error, progress) {
+        saveUser(user, {
+          url: '/api/users',
+          type: 'POST'
+        }, success, error, progress);
       }
 
       ***REMOVED***.signin = function (data) {
         userDeferred = $q.defer();
 
         var promise = $http.post(
-          appConstants.rootUrl + '/api/login',
-          $.param(data), 
+         '/api/login',
+          $.param(data),
           {headers: {"Content-Type": "application/x-www-form-urlencoded"},ignoreAuthModule:true});
-        
+
         promise.success(function(data) {
           mageLib.setLocalItem('token', data.token);
           setUser(data.user);
@@ -44,7 +70,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       ***REMOVED***.login = function(roles) {
         var theDeferred = $q.defer();
         $http.get(
-          appConstants.rootUrl + '/api/users/myself',
+          '/api/users/myself',
           {headers: {"Content-Type": "application/x-www-form-urlencoded"}})
         .success(function(user) {
           setUser(user);
@@ -53,7 +79,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
             // TODO probably want to redirect to a unauthorized page.
             $location.path('/signin');
           }
-          
+
           theDeferred.resolve(user);
         })
         .error(function(data, status) {
@@ -66,7 +92,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       ***REMOVED***.checkLoggedInUser = function(roles) {
         console.info('check login');
         $http.get(
-          appConstants.rootUrl + '/api/users/myself',
+          '/api/users/myself',
           {
             ignoreAuthModule: true})
         .success(function(user) {
@@ -81,33 +107,31 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       }
 
       ***REMOVED***.logout = function() {
-        var promise =  $http.post(
-          appConstants.rootUrl + '/api/logout'
-        );
+        var promise =  $http.post('/api/logout');
 
         promise.success(function() {
           ***REMOVED***.clearUser();
+          mageLib.removeLocalItem('token');
           $location.path("/signin");
         });
 
         return promise;
       }
 
-      ***REMOVED***.updateMyself = function(user) {
-        return $http.put(
-          appConstants.rootUrl + '/api/users/myself', 
-          $.param(user), 
-          {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
-        );
+      ***REMOVED***.updateMyself = function(user, success, error, progress) {
+        saveUser(user, {
+          url: '/api/users/myself?access_token=' + mageLib.getLocalItem('token'),
+          type: 'PUT'
+        }, success, error, progress);
       }
 
       ***REMOVED***.updateMyP***REMOVED***word = function(user) {
         var promise = $http.put(
-          appConstants.rootUrl + '/api/users/myself', 
-          $.param(user), 
+          '/api/users/myself',
+          $.param(user),
           {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
         );
-          
+
         promise.success(function(user) {
           ***REMOVED***.clearUser();
         });
@@ -119,7 +143,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
 
       ***REMOVED***.getUser = function(id) {
         resolvedUsers[id] = resolvedUsers[id] || $http.get(
-          appConstants.rootUrl + '/api/users/' + id
+          '/api/users/' + id
         );
         return resolvedUsers[id];
       }
@@ -129,37 +153,35 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       };
 
       ***REMOVED***.getAllUsers = function () {
-        return $http.get(appConstants.rootUrl + '/api/users').success(function(users) {
+        return $http.get('/api/users').success(function(users) {
           for (var i = 0; i < users.length; i++) {
-          resolvedUsers[users[i]._id] = $q.when(users[i]);
+            resolvedUsers[users[i]._id] = $q.when(users[i]);
           }
         });
       };
 
-      ***REMOVED***.createUser = function(user) {
-        return $http.post(
-          appConstants.rootUrl + '/api/users',
-           $.param(user), 
-           {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
-         );
+      ***REMOVED***.createUser = function(user, success, error, progress) {
+        saveUser(user, {
+          url: '/api/users?access_token=' + mageLib.getLocalItem('token'),
+          type: 'POST'
+        }, success, error, progress);
       };
 
-      ***REMOVED***.updateUser = function(user) {
-        return $http.put(
-          appConstants.rootUrl + '/api/users/' + user._id, 
-          $.param(user), 
-          {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
-        );
+      ***REMOVED***.updateUser = function(id, user, success, error, progress) {
+        saveUser(user, {
+          url: '/api/users/' + id + '?access_token=' + mageLib.getLocalItem('token'),
+          type: 'PUT'
+        }, success, error, progress);
       };
 
       ***REMOVED***.deleteUser = function(user) {
         return $http.delete(
-          appConstants.rootUrl + '/api/users/' + user._id
+          '/api/users/' + user._id
         );
       };
 
       ***REMOVED***.getRoles = function () {
-        return $http.get(appConstants.rootUrl + '/api/roles');
+        return $http.get('/api/roles');
       };
 
       ***REMOVED***.clearUser = function() {

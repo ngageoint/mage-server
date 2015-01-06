@@ -9,7 +9,7 @@ var mongoose = require('mongoose')
 var locationLimit = config.server.locationServices.userCollectionLocationLimit;
 
 // Creates a new Mongoose Schema object
-var Schema = mongoose.Schema; 
+var Schema = mongoose.Schema;
 
 var PhoneSchema = new Schema({
   type: { type: String, required: true },
@@ -42,12 +42,25 @@ var UserSchema = new Schema({
     lastname: {type: String, required: true },
     email: {type: String, required: false },
     phones: [PhoneSchema],
+    avatar: {
+      contentType: { type: String, required: false },
+      size: { type: Number, required: false },
+      relativePath: { type: String, required: false }
+    },
+    icon: {
+      contentType: { type: String, required: false },
+      size: { type: Number, required: false },
+      relativePath: { type: String, required: false }
+    },
     active: { type: Boolean, required: true },
     role: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
     teams: [Schema.Types.ObjectId],
     status: { type: String, required: false, index: 'sparse' },
-    locations: [LocationSchema]
-  },{ 
+    locations: [LocationSchema],
+    futureLocations: [LocationSchema],
+    userAgent: {type: String, required: false },
+    mageVersion: {type: String, required: false }
+  },{
     versionKey: false
   }
 );
@@ -135,6 +148,18 @@ var transformUser = function(user, ret, options) {
   if ('function' != typeof user.ownerDocument) {
     delete ret.p***REMOVED***word;
     delete ret.locations;
+    delete ret.avatar;
+    delete ret.icon;
+
+    if (user.avatar && user.avatar.relativePath) {
+      // TODO, don't really like this, need a better way to set user resource, route
+      ret.avatarUrl = [(options.path ? options.path : ""), "api", "users", user._id, "avatar"].join("/");
+    }
+
+    if (user.icon && user.icon.relativePath) {
+      // TODO, don't really like this, need a better way to set user resource, route
+      ret.iconUrl = [(options.path ? options.path : ""), "api", "users", user._id, "icon"].join("/");
+    }
   }
 }
 
@@ -182,11 +207,13 @@ exports.getUsers = function(callback) {
       console.log("Error finding users: " + err);
     }
 
-    callback(users);
+    callback(err, users);
   });
 }
 
 exports.createUser = function(user, callback) {
+  console.log('trying to create user', user);
+
   var create = {
     username: user.username,
     firstname: user.firstname,
@@ -195,9 +222,11 @@ exports.createUser = function(user, callback) {
     phones: user.phones,
     p***REMOVED***word: user.p***REMOVED***word,
     active: user.active,
-    role: user.role
+    role: user.role,
+    avatar: user.avatar,
+    icon: user.icon
   }
-  
+
   User.create(create, function(err, user) {
     if (err) return callback(err);
 
@@ -215,21 +244,10 @@ exports.updateUser = function(user, callback) {
   });
 }
 
-exports.deleteUser = function(id, callback) {
-  User.findById(id, function(err, user) {
-    if (!user) {
-      var msg = "User with id '" + id + "' not found and could not be deleted.";
-      console.log(msg + " Error: " + err);
-      return callback(new Error(msg));
-    }
-
-    user.remove(function(err, removedUser) {
-      if (err) {
-        console.log("Error removing user: " + err);
-      }
-
-      callback(err, removedUser);
-    });
+exports.deleteUser = function(user, callback) {
+  user.remove(function(err, removedUser) {
+    if (err) console.log("Error removing user: " + err);
+    callback(err, removedUser);
   });
 }
 
@@ -340,7 +358,13 @@ exports.getLocations = function(options, callback) {
 }
 
 exports.addLocationsForUser = function(user, locations, callback) {
-  var update = {$push: {locations: {$each: locations, $sort: {"properties.timestamp": 1}, $slice: -1 * locationLimit}}};
+  var update = {
+    $push: {
+      locations: {$each: locations.valid, $sort: {"properties.timestamp": 1}, $slice: -1 * locationLimit},
+      futureLocations: {$each: locations.future, $sort: {"properties.timestamp": 1}, $slice: -1 * locationLimit}
+    }
+  };
+
   User.findByIdAndUpdate(user._id, update, {upsert: true}, function(err, user) {
     if (err) {
       console.log('Error add location for user.', err);

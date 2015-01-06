@@ -1,11 +1,12 @@
 'use strict';
 
-function AdminController($scope, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService) {
+function AdminController($scope, $routeParams, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService, FormService, Form, Layer, mageLib) {
   // The variables that get set when clicking a team or user in the list, these get loaded into the editor.
-  $scope.currentAdminPanel = "user"; // possible values user, team, and device
+  $scope.currentAdminPanel = $routeParams.adminPanel || "user";
   $scope.currentUserFilter = "all"; // possible values all, active, unregistered
   $scope.currentDeviceFilter = "all"; // possible values all, registered, unregistered
-  
+  $scope.token = mageLib.getLocalItem('token');
+
   $scope.users = [];
   $scope.filteredUsers = [];
   UserService.getAllUsers().
@@ -29,9 +30,25 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
       $scope.filteredDevices = $scope.devices;
       $scope.deviceSearch();
     });
-  
+
   $scope.user = {};
   $scope.device = {};
+
+  $scope.appConstants = appConstants;
+
+  Form.query(function(forms) {
+    $scope.layers = Layer.query(function(layers) {
+      var featureLayer = _.find(layers, function(layer) { return layer.type == 'Feature'});
+      angular.forEach(forms, function(form) {
+        if (form.id == featureLayer.formId) {
+          appConstants.formId = featureLayer.formId
+          FormService.setCurrentEditForm(form);
+        }
+      });
+    });
+
+    $scope.forms = forms;
+  });
 
   // Edit form toggles
   $scope.showUserForm = false;
@@ -44,6 +61,17 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   $scope.statusTitle = '';
   $scope.statusMessage = '';
   $scope.statusLevel = ''; // use the bootstrap alert cl***REMOVED***es for this value, alert-error, alert-success, alert-info. Leave it as '' for yellow
+
+  $scope.editForm = function(form) {
+    FormService.setCurrentEditForm(form);
+  }
+
+  $scope.createNewForm = function() {
+    var newForm = FormService.newForm();
+    newForm.$save(function(savedForm) {
+      $scope.forms.push(newForm);
+    });
+  }
 
   /* Status message functions */
   /**
@@ -113,30 +141,60 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
 
   /* User admin functions */
   $scope.saveUser = function () {
-    if ($scope.user._id) {
-      UserService.updateUser($scope.user)
-        .success(function (data, status, headers, config) {
-          $scope.setShowUserForm(false);
-          $scope.showStatusMessage("User updated", $scope.user.username + " saved", "alert-success");
-        })
-        .error(function (data, status, headers, config) {
-          $scope.showStatusMessage("Unable to create user", data, "alert-error");
-          console.log('Something bad happened while creating a user...' + status);
-      });;
+    var user = {
+      username: $scope.user.username,
+      firstname: $scope.user.firstname,
+      lastname: $scope.user.lastname,
+      email: $scope.user.email,
+      phone: $scope.user.phone,
+      p***REMOVED***word: this.user.p***REMOVED***word,
+      p***REMOVED***wordconfirm: this.user.p***REMOVED***wordconfirm,
+      role: $scope.user.role,
+      avatar: $scope.user.avatar,
+      icon: $scope.user.icon
+    }
 
+    if ($scope.user._id) {
+      UserService.updateUser($scope.user._id, user, function(response) {
+        $scope.$apply(function() {
+          $scope.showStatusMessage("User updated", $scope.user.username + " saved", "alert-success");
+        });
+      },
+      function(data) {
+        $scope.$apply(function() {
+          $scope.showStatusMessage("Unable to update user", data, "alert-error");
+        });
+      },
+      function(e) {
+        if(e.lengthComputable){
+          $scope.$apply(function() {
+            $scope.uploading = true;
+            $scope.uploadProgress = (e.loaded/e.total) * 100;
+          });
+        }
+      });
     } else {
-      UserService.createUser($scope.user).
-      success(function (data, status, headers, config) {
-        $scope.setShowUserForm(false);
-        console.log('created user ' + data);
-        $scope.showStatusMessage("User created", "Nice work!", "alert-success");
-        $scope.users.push(data);
-        // TODO this is somewhat of a hack for now, call filter fucntion so users appear
-        $scope.userSearch();
-      }).
-      error(function (data, status, headers, config) {
-        $scope.showStatusMessage("Unable to create user", data, "alert-error");
-        console.log('Something bad happened while creating a user...' + status);
+      UserService.createUser(user, function(response) {
+        $scope.$apply(function() {
+          $scope.setShowUserForm(false);
+          $scope.showStatusMessage("User created", "Nice work!", "alert-success");
+          $scope.users.push(response);
+          // TODO this is somewhat of a hack for now, call filter fucntion so users appear
+          $scope.userSearch();
+        });
+      },
+      function(data) {
+        $scope.$apply(function() {
+          $scope.showStatusMessage("Unable to create user", data, "alert-error");
+        });
+      },
+      function(e) {
+        if(e.lengthComputable){
+          $scope.$apply(function() {
+            $scope.uploading = true;
+            $scope.uploadProgress = (e.loaded/e.total) * 100;
+          });
+        }
       });
     }
   }
@@ -159,6 +217,14 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     $scope.scrollTo('user-form');
   }
 
+  $scope.$on('userAvatar', function(event, userAvatar) {
+    $scope.user.avatar = userAvatar;
+  });
+
+  $scope.$on('userIcon', function(event, userIcon) {
+    $scope.user.icon = userIcon;
+  });
+
   $scope.newUser = function() {
     $scope.user = {};
     $scope.setShowUserForm(true);
@@ -172,7 +238,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   $scope.approveUser = function (user) {
     var userRole = _.find($scope.roles, function (role) { return role.name == 'USER_ROLE' });
     user.active = true;
-    UserService.updateUser(user).success(function () {});
+    UserService.updateUser(user._id, user, function() {});
   }
 
   $scope.deleteUser = function (user) {
@@ -182,7 +248,8 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
           return u._id !== user._id;
         });
         // TODO this is somewhat of a hack for now, call filter fucntion so users gets removed
-        $scope.userSearch();
+        //$scope.userSearch();
+        user.deleted="true";
         $scope.showStatusMessage("User deleted", user.username + " has been successfully deleted", "alert-success");
       });
   }
@@ -227,7 +294,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
 
   $scope.userSearch = function () {
     $scope.filteredUsers = $filter('filter')($scope.users, function (user) {
-      if (searchMatch(user['username'], $scope.userQuery) || searchMatch(user['firstname'], $scope.userQuery) || 
+      if (searchMatch(user['username'], $scope.userQuery) || searchMatch(user['firstname'], $scope.userQuery) ||
         searchMatch(user['lastname'], $scope.userQuery) || searchMatch(user['email'], $scope.userQuery)) {
         return true;
       }
@@ -239,6 +306,17 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     } else if ($scope.currentUserFilter == 'unregistered') {
       $scope.filteredUsers = $scope.getUnregisteredUsers($scope.filteredUsers);
     }
+  }
+
+  $scope.refreshUsers = function() {
+    $scope.users = [];
+    $scope.filteredUsers = [];
+    UserService.getAllUsers().
+      success(function (data) {
+        $scope.users = data;
+        $scope.filteredUsers = $scope.users;
+        $scope.userSearch();
+      });
   }
 
   $scope.editDevice = function (device) {
@@ -276,8 +354,8 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   $scope.registerDevice = function(device) {
     DeviceService.registerDevice(device)
       .success(function(data, status) {
-        $scope.showStatusMessage("Successfully registered device", "Device '" + device.uid + "' is now registered.","alert-info");
         device.registered = true;
+        device.registeredThisSession = true;
       })
       .error(function(data, status) {
         $scope.showStatusMessage("Unable to register device", data, "alert-error");
@@ -287,9 +365,8 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
   $scope.deleteDevice = function (device) {
     DeviceService.deleteDevice(device)
       .success(function() {
-        $scope.showStatusMessage("Success", "Device '" + device.uid + "' has been removed.","alert-info");
         $scope.devices = _.reject($scope.devices, function(d) { return d.uid === device.uid });
-        $scope.deviceSearch();
+        device.deleted = "true";
       })
       .error(function() {
         $scope.showStatusMessage("Unable to delete device", data, "alert-error");
@@ -318,7 +395,7 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
 
   $scope.deviceSearch = function () {
     $scope.filteredDevices = $filter('filter')($scope.devices, function (device) {
-      if (searchMatch(device['name'], $scope.deviceQuery) || searchMatch(device['uid'], $scope.deviceQuery) || 
+      if (searchMatch(device['name'], $scope.deviceQuery) || searchMatch(device['uid'], $scope.deviceQuery) ||
         searchMatch(device['description'], $scope.deviceQuery)) {
         return true;
       }
@@ -330,5 +407,27 @@ function AdminController($scope, $log, $http, $location, $anchorScroll, $injecto
     } else if ($scope.currentDeviceFilter == 'unregistered') {
       $scope.filteredDevices = $scope.getUnregisteredDevices($scope.filteredDevices);
     }
+  }
+
+  $scope.refreshDevices = function() {
+    $scope.devices = [];
+    $scope.filteredDevices = [];
+    DeviceService.getAllDevices().
+      success(function (data) {
+        $scope.devices = data;
+        $scope.filteredDevices = $scope.devices;
+        $scope.deviceSearch();
+      });
+  }
+
+  $scope.$on('formImportComplete', function(event, form) {
+    form = new Form(form);
+    $scope.forms.push(form);
+    FormService.setCurrentEditForm(form);
+    $scope.importSuccess = true;
+  });
+
+  $scope.removeForm = function(form) {
+    $scope.forms = _.reject($scope.forms, function(f) { return f.id == form.id});
   }
 }

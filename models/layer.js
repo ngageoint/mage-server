@@ -13,6 +13,7 @@ var LayerSchema = new Schema({
   format: { type: String, required: false },
   url: { type: String, required: false },
   description: { type: String, required: false },
+  formId: {type: Schema.Types.ObjectId, required: false },
   wms: {
     layers: { type: String },
     styles: { type: String },
@@ -128,9 +129,7 @@ exports.create = function(layer, callback) {
 }
 
 exports.update = function(id, layer, callback) {
-  var conditions = {id: id};
-
-  Layer.findOneAndUpdate(conditions, layer, function(err, updatedLayer) {
+  Layer.findOneAndUpdate({id: id}, layer, function(err, updatedLayer) {
     if (err) {
       console.log("Could not update layer: " + err);
     }

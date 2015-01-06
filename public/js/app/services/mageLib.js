@@ -45,6 +45,17 @@ angular.module('mage.lib', [])
         }
       }
 
+      libFunctions.removeLocalItem = function (key) {
+        try {
+          if ('localStorage' in window && window.localStorage !== null) {
+            return localStorage.removeItem(key);
+          }
+        } catch (e) {
+          console.log("HTML5 Local Storage is not available...");
+          return false;
+        }
+      }
+
       /* URL Param token convenience method */
       libFunctions.getTokenParams = function () {
         return {"access_token" : libFunctions.getLocalItem('token')};

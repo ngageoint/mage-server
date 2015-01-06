@@ -26,15 +26,7 @@ module.exports = function(app, auth) {
       return res.send(400, "cannot create feature 'geometry' param not specified");
     }
 
-    if (!feature.properties) {
-      return res.send(400, "cannot create feature 'properties.type' and 'properties.timestamp' params not specified");
-    }
-
-    if (!feature.properties.type) {
-      return res.send(400, "cannot create feature 'properties.type' param not specified");
-    }
-
-    if (!feature.properties.timestamp) {
+    if (!feature.properties || !feature.properties.timestamp) {
       return res.send(400, "cannot create feature 'properties.timestamp' param not specified");
     }
 
@@ -135,8 +127,12 @@ module.exports = function(app, auth) {
         sort: req.parameters.sort
       };
       new api.Feature(req.layer).getAll(options, function(features) {
-        var response = geojson.transform(features, {path: getFeatureResource(req)});
-        res.json(response);
+        var features = geojson.transform(features, {path: getFeatureResource(req)});
+        res.json({
+          type: "FeatureCollection",
+          bbox: [-180, -90, 180, 90.0],
+          features: features
+        });
       });
     }
   );
@@ -260,33 +256,56 @@ module.exports = function(app, auth) {
 
         if (!attachment) return res.send(404);
 
-        var stream = fs.createReadStream(attachment.path);
+        var stream;
+        if (req.headers.range) {
+          var range = req.headers.range;
+          var rangeParts = range.replace(/bytes=/, "").split("-");
+          var rangeStart = parseInt(rangeParts[0], 10);
+          var rangeEnd = rangeParts[1] ? parseInt(rangeParts[1], 10) : attachment.size - 1;
+          var contentLength = (rangeEnd - rangeStart) + 1;
+
+          res.writeHead(206, {
+            'Content-Range': 'bytes ' + rangeStart + '-' + rangeEnd + '/' + attachment.size,
+            'Accept-Ranges': 'bytes',
+            'Content-Length': contentLength,
+            'Content-Type': attachment.contentType
+          });
+          stream = fs.createReadStream(attachment.path, {start: rangeStart, end: rangeEnd});
+        } else {
+          res.writeHead(200, {
+            'Content-Length': attachment.size,
+            'Content-Type': attachment.contentType
+          });
+          stream = fs.createReadStream(attachment.path);
+        }
+
         stream.on('open', function() {
-          res.type(attachment.contentType);
-          res.attachment(attachment.name);
-          res.header('Content-Length', attachment.size);
           stream.pipe(res);
         });
         stream.on('error', function(err) {
           console.log('error', err);
           res.send(404);
         });
-       }
-    );
-  });
+      });
+    }
+  );
 
-  // This function will add an attachment for a particular ESRI record
+  // This function will add an attachment for a particular observation
   app.post(
     '/FeatureServer/:layerId/features/:featureId/attachments',
     access.authorize('CREATE_FEATURE'),
     function(req, res, next) {
-      console.log("SAGE ESRI Features (ID) Attachments POST REST Service Requested");
+      console.log("MAGE Attachment POST REST Service Requested");
+
+      var attachment = req.files.attachment;
+      if (!attachment) return res.send(400, "no attachment");
 
       new api.Attachment(req.layer, req.feature).create(req.featureId, req.files.attachment, function(err, attachment) {
         if (err) return next(err);
 
-        var feature = geojson.transform({attachments: [attachment.toObject()]});
-        return res.json(feature.attachments[0]);
+        var feature = req.feature;
+        feature.attachments = [attachment.toObject()];
+        return res.json(geojson.transform(feature, {path: getFeatureResource(req)}).attachments[0]);
       });
     }
   );
@@ -296,13 +315,14 @@ module.exports = function(app, auth) {
     '/FeatureServer/:layerId/features/:featureId/attachments/:attachmentId',
     access.authorize('UPDATE_FEATURE'),
     function(req, res, next) {
-      console.log("SAGE ESRI Features (ID) Attachments UPDATE REST Service Requested");
+      console.log("MAGE Attachment UPDATE REST Service Requested");
 
       new api.Attachment(req.layer, req.feature).update(req.featureId, req.files.attachment, function(err, attachment) {
         if (err) return next(err);
 
-        var feature = geojson.transform({attachments: [attachment.toObject()]});
-        return res.json(feature.attachments[0]);
+        var feature = req.feature;
+        feature.attachments = [attachment.toObject()];
+        return res.json(geojson.transform(feature, {path: getFeatureResource(req)}).attachments[0]);
       });
     }
   );
@@ -312,7 +332,7 @@ module.exports = function(app, auth) {
     '/FeatureServer/:layerId/features/:featureId/attachments/:attachmentId',
     access.authorize('DELETE_FEATURE'),
     function(req, res) {
-      console.log("SAGE ESRI Features (ID) Attachments DELETE REST Service Requested");
+      console.log("MAGE Attachment DELETE REST Service Requested");
 
       new api.Attachment(req.layer, req.feature).delete(req.param('attachmentId'), function(err) {
         res.send(200);
