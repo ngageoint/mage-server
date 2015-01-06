@@ -4,13 +4,12 @@ var express = require("express")
   , path = require('path')
   , mongoose = require('mongoose')
   , fs = require('fs-extra')
-  , winston = require('winston')
+  , log = require('winston')
   , config = require('./config.json')
-  , provision = require('./provision')
-  , log = require('winston');
+  , provision = require('./provision');
 
-log.remove(winston.transports.Console);
-log.add(winston.transports.Console, {
+log.remove(log.transports.Console);
+log.add(log.transports.Console, {
   timestamp: true,
   level: 'debug',
   colorize: true
@@ -93,8 +92,11 @@ app.use(require('body-parser')({ keepExtensions: true}));
 app.use(require('method-override')());
 app.use(require('multer')());
 app.use(authentication.p***REMOVED***port.initialize());
-app.use('/private', express.static(path.join(__dirname, "private")));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/api/swagger', express.static('./public/vendor/swagger-ui/'));
+app.use('/private',
+  authentication.p***REMOVED***port.authenticate(authentication.authenticationStrategy),
+  express.static(path.join(__dirname, 'private')));
 app.use(function(err, req, res, next) {
   console.error(err.stack);
   res.send(500, 'Internal server error, please contact MAGE administrator.');

@@ -130,7 +130,6 @@ module.exports = function(app, security) {
     });
   }
 
-  // login
   app.post(
     '/api/login',
     p***REMOVED***port.authenticate(loginStrategy),
@@ -395,12 +394,13 @@ module.exports = function(app, security) {
       new api.User().delete(req.userParam, function(err) {
         if (err) return res.send(400, err);
 
-        res.send(200);
+        res.send(204);
       });
     }
   );
 
   // set role for user
+  // TODO not sure used, remove in next version (teams/events)
   app.post(
     '/api/users/:userId/role',
     p***REMOVED***port.authenticate(authenticationStrategy),

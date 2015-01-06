@@ -111,6 +111,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
 
         promise.success(function() {
           ***REMOVED***.clearUser();
+          mageLib.removeLocalItem('token');
           $location.path("/signin");
         });
 

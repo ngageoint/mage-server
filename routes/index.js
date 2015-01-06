@@ -32,11 +32,6 @@ module.exports = function(app, security) {
 
   app.set('resources', resources);
 
-  // Protect everthing in the private directory
-  app.all('/private/*', p***REMOVED***port.authenticate(authenticationStrategy), function(req, res, next) {
-    return next();
-  });
-
   // Protect all FeatureServer routes with token authentication
   app.all('/FeatureServer*', p***REMOVED***port.authenticate(authenticationStrategy, {session: false}));
 
