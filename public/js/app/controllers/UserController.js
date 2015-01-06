@@ -2,8 +2,10 @@
 
 function UserController($scope, $location, $timeout, UserService, user) {
   $scope.user = user;
+  $scope.originalUser = angular.copy(user);
   $scope.p***REMOVED***wordStatus = {};
   $scope.showUserStatus = false;
+  $scope.avatar = null;
 
   $scope.saveUser = function() {
     var user = {
@@ -11,16 +13,37 @@ function UserController($scope, $location, $timeout, UserService, user) {
       firstname: this.user.firstname,
       lastname: this.user.lastname,
       email: this.user.email,
-      phone: this.user.phone
+      phone: this.user.phone,
+      avatar: $scope.avatar
     }
 
-    UserService.updateMyself(user)
-      .success(function(user) {
+    // TODO throw in progress
+    var progress = function(e) {
+      if(e.lengthComputable){
+        $scope.$apply(function() {
+          $scope.uploading = true;
+          $scope.uploadProgress = (e.loaded/e.total) * 100;
+        });
+      }
+    }
+
+    var complete = function(response) {
+      $scope.$apply(function() {
         $scope.status("Success", "Your account information has been updated.", "alert-success");
-      })
-      .error(function(data, status) {
+      });
+    }
+
+    var failed = function(data) {
+      $scope.$apply(function() {
         $scope.status("Error", data, "alert-danger");
       });
+    }
+
+    UserService.updateMyself(user, complete, failed, progress);
+  }
+
+  $scope.cancel = function() {
+    $scope.user = angular.copy($scope.originalUser);
   }
 
   $scope.updateP***REMOVED***word = function() {
@@ -60,6 +83,10 @@ function UserController($scope, $location, $timeout, UserService, user) {
     $scope.statusLevel = statusLevel;
     $scope.showUserStatus = true;
   }
+
+  $scope.$on('userAvatar', function(event, userAvatar) {
+    $scope.avatar = userAvatar;
+  });
 }
 
 // function ModalDemoCtrl($scope, $modal, $log) {

@@ -15,13 +15,21 @@
     </div>
     <div cl***REMOVED***="span6">
       <table cl***REMOVED***="table">
-        <p><strong>Version:</strong> {{serverVersion}}</p>
+        <p><strong>Version:</strong> {{serverVersion.major}}.{{serverVersion.minor}}.{{serverVersion.micro}}</p>
         <p>Device Provisioning:<strong> {{deviceProvisioning}}</strong></p>
         <p>LocationServices:<strong> {{locationServices}}</strong></p>
       </table>
     </div>
   </div>
-  <div cl***REMOVED***="row-fluid top-gap-xl">
+  <div cl***REMOVED***="row-fluid top-gap-l">
+    <div cl***REMOVED***="span12">
+      <h2>API</h2>
+  <p>Browse the MAGE API live with <a href="/api/swagger">Swagger.</a></p>
+  <p><strong>Important:</strong> Swagger interactive documentation will modify MAGE data via API calls, please be careful with <strong>POST/PUT/DELETE</strong> routes.</p>
+
+</div>
+</div>
+  <div cl***REMOVED***="row-fluid top-gap-l">
     <div cl***REMOVED***="span12">
       <h2>Apps</h2>
       <!--
@@ -38,7 +46,7 @@
   </div>
   <div cl***REMOVED***="row-fluid top-gap">
     <div cl***REMOVED***="span1">
-      <a href="apps/mage.apk"><img src="img/mage-flat-small.png" cl***REMOVED***="top-gap"></a>
+      <i cl***REMOVED***="fa fa-magic icon-brand-s"></i>
     </div>
     <div cl***REMOVED***="span5">
       <h3>MAGE for Android</h3>

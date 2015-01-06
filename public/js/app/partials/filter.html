@@ -6,11 +6,11 @@
     <div cl***REMOVED***="control-group">
       <div cl***REMOVED***="controls">
         <label cl***REMOVED***="checkbox">
-          <input type="checkbox" ng-model="locationServicesEnabled" ng-click="locationServices()" ngm-tap="locationServices()"/><i cl***REMOVED***="icon-users icon-sage"
+          <input type="checkbox" ng-model="locationServicesEnabled" ng-change="locationServices()" ngm-tap="locationServices()"/><i cl***REMOVED***="icon-users icon-sage"
           ng-cl***REMOVED***="{false: 'icon-sage-inverse', true: 'icon-sage'}[locationServicesEnabled]"></i> Show People
         </label>
         <label cl***REMOVED***="checkbox" ng-show="locationServicesEnabled">
-          <input style="margin-left: 0px" type="checkbox" ng-model="hideLocationsFromNewsFeed" ng-click="hideLocations()" ngm-tap="hideLocations()"/>Hide People in News Feed
+          <input style="margin-left: 0px" type="checkbox" ng-model="hideLocationsFromNewsFeed" ng-change="hideLocations()" ngm-tap="hideLocations()"/>Hide People in News Feed
         </label>
       </div>
     </div>
@@ -20,7 +20,7 @@
         <div cl***REMOVED***="controls">
           <div ng-repeat="layer in featureLayers">
             <label cl***REMOVED***="checkbox">
-              <input type="checkbox" ng-init="layer.checked=false" ng-model="layer.checked" ng-click="onFeatureLayer(layer)" ngm-tap="onFeatureLayer(layer)"/><i cl***REMOVED***="icon-sage icon-map-marker"
+              <input type="checkbox" ng-init="layer.checked=false" ng-model="layer.checked" ng-change="onFeatureLayer(layer)" ngm-tap="onFeatureLayer(layer)"/><i cl***REMOVED***="icon-sage fa fa-map-marker"
               ng-cl***REMOVED***="{false: 'icon-sage-inverse', true: 'icon-sage'}[layer.checked]"></i> {{layer.name}}
               <i cl***REMOVED***="icon-globe icon-spin" ng-show="loadingLayers[layer.id]" style="margin-left: 7px;"></i>
             </label>
@@ -34,7 +34,7 @@
       <div cl***REMOVED***="control-group" ng-show="showStaticLayers">
         <div cl***REMOVED***="controls">
           <label cl***REMOVED***="checkbox" ng-repeat="layer in externalLayers">
-            <input type="checkbox" ng-model="layer.checked" ng-click="onFeatureLayer(layer)"/>{{layer.name}}
+            <input type="checkbox" ng-model="layer.checked" ng-change="onFeatureLayer(layer)"/>{{layer.name}}
             <i cl***REMOVED***="icon-globe icon-spin" ng-show="loadingLayers[layer.id]" style="margin-left: 7px;"></i>
           </label>
         </div>
@@ -46,7 +46,7 @@
       <div cl***REMOVED***="control-group">
         <div cl***REMOVED***="controls">
           <label cl***REMOVED***="checkbox" ng-repeat="layer in imageryLayers">
-            <input type="checkbox" ng-model="layer.checked" ng-click="onImageryLayer(layer)"/>{{layer.name}}
+            <input type="checkbox" ng-model="layer.checked" ng-change="onImageryLayer(layer)"/>{{layer.name}}
           </label>
         </div>
       </div>
@@ -59,41 +59,18 @@
 
     <div ng-show="interval.filter == 'custom'">
       <div>
-        <div cl***REMOVED***="control-group input-append">
+        <div cl***REMOVED***="control-group">
           <label cl***REMOVED***="control-label">Start Date/Time</label>
-          <input cl***REMOVED***="input-small" type="text" ng-model="filterStartDate" data-date-format="mm/dd/yyyy" bs-datepicker ng-change="updateInterval()">
-          <button type="button" cl***REMOVED***="btn" data-toggle="datepicker"><i cl***REMOVED***="icon-sage icon-calendar"></i></button>
-        </div>
-
-        <div cl***REMOVED***="control-group input-append">
-          <label cl***REMOVED***="control-label" for="">&nbsp</label>
-          <input cl***REMOVED***="input-small" type="text" ng-model="filterStartTime" bs-timepicker data-template="false" data-show-inputs="false" data-show-seconds="true" data-show-meridian="false" ng-change="updateInterval()">
-          <span cl***REMOVED***="add-on">
-            <span ng-click="filterLocalTime = !filterLocalTime; updateInterval()" ngm-tap="filterLocalTime = !filterLocalTime; updateInterval()">
-              <i cl***REMOVED***="icon-sage icon-time"></i>
-              <span ng-show="filterLocalTime"> Local (GMT {{filterLocalOffset}})</span>
-              <span ng-show="!filterLocalTime"> GMT (GMT +00:00)</span>
-            </span>
-          </span>
+          <quick-datepicker ng-model='filterStartDate' icon-cl***REMOVED***='fa fa-calendar' time-format="HH:mm:ss" ng-change="updateInterval()"></quick-datepicker>
+          <button type="button" ng-click="localTime = !localTime" ngm-tap="localTime = !localTime" cl***REMOVED***="btn quickdate-button"><i cl***REMOVED***="fa fa-clock-o"></i><span ng-show="localTime"> Local (GMT {{localOffset}})</span><span ng-show="!localTime"> GMT (GMT +00:00)</span></button>
         </div>
       </div>
 
       <div>
-        <div cl***REMOVED***="control-group input-append">
+        <div cl***REMOVED***="control-group">
           <label cl***REMOVED***="control-label">End Date/Time</label>
-          <input cl***REMOVED***="input-small" type="text" ng-model="filterEndDate" data-date-format="mm/dd/yyyy" bs-datepicker ng-change="updateInterval()">
-          <button type="button" cl***REMOVED***="btn" data-toggle="datepicker"><i cl***REMOVED***="icon-sage icon-calendar"></i></button>
-        </div>
-        <div cl***REMOVED***="control-group input-append">
-          <label cl***REMOVED***="control-label" for="">&nbsp</label>
-          <input cl***REMOVED***="input-small" type="text" ng-model="filterEndTime" bs-timepicker data-template="false" data-show-inputs="false" data-show-seconds="true" data-show-meridian="false" ng-change="updateInterval()">
-          <span cl***REMOVED***="add-on">
-            <span ng-click="filterLocalTime = !filterLocalTime; updateInterval()" ngm-tap="filterLocalTime = !filterLocalTime; updateInterval()">
-              <i cl***REMOVED***="icon-sage icon-time"></i>
-              <span ng-show="filterLocalTime"> Local (GMT {{filterLocalOffset}})</span>
-              <span ng-show="!filterLocalTime"> GMT (GMT +00:00)</span>
-            </span>
-          </span>
+          <quick-datepicker ng-model='filterEndDate' icon-cl***REMOVED***='fa fa-calendar' time-format="HH:mm:ss" ng-change="updateInterval()"></quick-datepicker>
+          <button type="button" ng-click="localTime = !localTime" ngm-tap="localTime = !localTime" cl***REMOVED***="btn quickdate-button"><i cl***REMOVED***="fa fa-clock-o"></i><span ng-show="localTime"> Local (GMT {{localOffset}})</span><span ng-show="!localTime"> GMT (GMT +00:00)</span></button>
         </div>
       </div>
     </div>

@@ -1,0 +1,14 @@
+{
+  "name": "leaflet-sidebar",
+  "homepage": "https://github.com/Turbo87/leaflet-sidebar",
+  "version": "0.1.4",
+  "_release": "0.1.4",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.1.4",
+    "commit": "30aa7b976246e64d8234fd87cbbe1bdf8b5c7ec1"
+  },
+  "_source": "git://github.com/Turbo87/leaflet-sidebar.git",
+  "_target": "*",
+  "_originalSource": "leaflet-sidebar"
+}

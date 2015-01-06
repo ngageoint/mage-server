@@ -25,6 +25,10 @@ function startObservations() {
       }
     });
 
+    observationsWorker.on('uncaughtException', function (err) {
+      console.log('*****************  Observation worker uncaught exception: ***************** ' + err);
+    });
+
     process.on('exit', function() {
       console.log('***************** epic parent process exit, killing ********************', err);
       observationsWorker.kill();
@@ -50,6 +54,10 @@ function startAttachments() {
         attachmentsWorker.kill();
         startAttachments();
       }
+    });
+
+    attachmentsWorker.on('uncaughtException', function (err) {
+      console.log('*****************  Attachment worker uncaught exception: ***************** ' + err);
     });
 
     process.on('exit', function() {

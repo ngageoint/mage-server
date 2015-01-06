@@ -12,6 +12,29 @@ L.AwesomeMarkers.DivIcon = L.AwesomeMarkers.Icon.extend({
   }
 });
 
+L.MageDivIcon = L.DivIcon.extend({
+  initialize: function (options) {
+    options.cl***REMOVED***Name = 'mage-icon';
+    options.iconSize = null;
+    L.DivIcon.prototype.initialize.call(this, options);
+  },
+  createIcon: function() {
+    var div = L.DivIcon.prototype.createIcon.call(this);
+    var form = this.options.form;
+    var observation = this.options.observation;
+
+    var s = document.createElement('img');
+    s.cl***REMOVED***Name = "mage-icon-image";
+    s.src = "/api/icons/" + form.id + "/" + observation.properties.type + "/" + observation.properties[form.variantField] + "?access_token=" + this.options.token;;
+    $(s).load(function() {
+      var height = $(this).height();
+      $(div).css('margin-top', height * -1);
+    });
+    div.appendChild(s);
+    return div;
+  }
+});
+
 L.AwesomeMarkers.divIcon = function (options) {
   return new L.AwesomeMarkers.DivIcon(options);
 };
@@ -19,19 +42,28 @@ L.AwesomeMarkers.divIcon = function (options) {
 (function () {
   var leafletDirective = angular.module("leaflet-directive", ["mage.***REMOVED***s"]);
 
-  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, IconService, appConstants, MapService, DataService, TimeBucketService, AwesomeMarkerIconService) {
+  leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, appConstants, MapService, ObservationService, DataService, TimeBucketService, UserService, mageLib) {
     return {
       restrict: "A",
       replace: true,
       transclude: true,
       template: '<div cl***REMOVED***="map"></div>',
       link: function (scope, element, attrs, ctrl) {
+        function createIcon(observation) {
+          return new L.MageDivIcon({
+            observation: observation,
+            form: ObservationService.form,
+            token: mageLib.getToken()
+          });
+        }
+
         // Create the map
         var map = L.map("map", {trackResize: true});
         map.setView([0, 0], 3);
         var layerControl = L.control.layers();
         layerControl.addTo(map);
         scope.ds = DataService;
+        scope.os = ObservationService;
 
         map.on('baselayerchange', function(e) {
           MapService.updateLeafletLayer(e.layer._url, e.layer.options);
@@ -52,8 +84,6 @@ L.AwesomeMarkers.divIcon = function (options) {
             sidebar.hide();
           }
         });
-        //map.addControl(new L.Control.SideBar());
-        //map.addControl(new L.Control.TimeScale());
 
         var addMarker = L.marker([0,0], {
           draggable: true,
@@ -64,7 +94,7 @@ L.AwesomeMarkers.divIcon = function (options) {
         });
 
         map.on("click", function(e) {
-          if (scope.newObservationEnabled) {
+          if (ObservationService.newForm) {
             _.delay(function() { addMarker.setLatLng(e.latlng); }, 250);
             if (!map.hasLayer(addMarker)) {
               _.delay(function() { map.addLayer(addMarker); }, 250);
@@ -76,10 +106,10 @@ L.AwesomeMarkers.divIcon = function (options) {
           }
         });
 
-        scope.$watch('newObservationEnabled', function() {
-          if (!scope.newObservationEnabled && map.hasLayer(addMarker)) {
+        scope.$watch('os.newForm', function() {
+          if (!ObservationService.newForm && map.hasLayer(addMarker)) {
             map.removeLayer(addMarker);
-          } else if (scope.newObservationEnabled) {
+          } else if (ObservationService.newForm) {
             addMarker.setLatLng(map.getCenter());
             scope.markerLocation = map.getCenter();
             if (!map.hasLayer(addMarker)) {
@@ -158,7 +188,6 @@ L.AwesomeMarkers.divIcon = function (options) {
            });
           if (firstLayer) {
             firstLayer.addTo(map);
-            //MapService.currentBaseLayer = firstLayer;
           }
         });
 
@@ -182,42 +211,59 @@ L.AwesomeMarkers.divIcon = function (options) {
           _.each(users, function(user) {
             var u = user;
             if (user.locations.length > 0) {
-              var l = u.locations[0];
+              var location = u.locations[0];
+              var latLng = L.latLng(location.geometry.coordinates[1], location.geometry.coordinates[0]);
               var marker = currentLocationMarkers[u.user];
               if (marker) {
                 delete currentLocationMarkers[u.user];
                 locationMarkers[u.user] = marker;
                 // Just update the location
-                marker.setLatLng([l.geometry.coordinates[1], l.geometry.coordinates[0]]).setColor(appConstants.userLocationToColor(l));//.setAccuracy(l.properties.accuracy);
+                marker.setLatLng(latLng).setColor(appConstants.userLocationToColor(location));
                 return;
               }
 
-              var location = u.locations[0];
-              marker = L.locationMarker(L.latLng(location.geometry.coordinates[1], location.geometry.coordinates[0]), {color: appConstants.userLocationToColor(location)});
-              var e = $compile("<div user-location></div>")(scope);
-              // TODO this sucks but for now set a min width
-              marker.bindPopup(e[0], {minWidth: 200});
+              UserService.getUser(u.user).then(function(user) {
+                user = user.data || user;
 
-              marker.on('click', function() {
-                scope.activeFeature = undefined;
+                var options = {
+                  color: appConstants.userLocationToColor(location),
+                  iconUrl: user.iconUrl ? user.iconUrl + '?access_token=' + mageLib.getToken()  : null
+                };
+                marker = L.locationMarker(latLng, options);
 
-                // location table click handling here
-                if(!scope.$$phase) {
-                  scope.$apply(function(s) {
+                var el = angular.element('<div user-location="user"></div>');
+                var compiled = $compile(el);
+                // TODO this sucks but for now set a min width
+                // marker.bindPopup(el[0], {minWidth: 200});
+                marker.bindPopup(el[0]);
+
+                var newScope = scope.$new();
+                newScope.user = user;
+                compiled(newScope);
+
+                marker.on('click', function() {
+                  scope.activeFeature = undefined;
+                  marker.setAccuracy(location.properties.accuracy);
+
+                  // location table click handling here
+                  if(!scope.$$phase) {
+                    scope.$apply(function(s) {
+                      scope.activeLocation = {locations: [location], user: location.properties.user};
+                    });
+                  } else {
                     scope.activeLocation = {locations: [location], user: location.properties.user};
-                  });
-                } else {
-                  scope.activeLocation = {locations: [location], user: location.properties.user};
-                }
-                var gu = angular.element(e).scope().getUser;
-                if (gu) {
-                  gu(u.user);
-                }
-                scope.activeUserPopup = marker;
-              });
+                  }
 
-              locationMarkers[u.user] = marker;
-              locationLayerGroup.addLayer(marker);
+                  scope.activeUserPopup = marker;
+                });
+
+                marker.onPopupClose(function() {
+                  marker.setAccuracy(0);
+                });
+
+                locationMarkers[u.user] = marker;
+                locationLayerGroup.addLayer(marker);
+              });
             }
           });
 
@@ -232,7 +278,7 @@ L.AwesomeMarkers.divIcon = function (options) {
         var featureConfig = function(layer) {
           return {
             pointToLayer: function (feature, latlng) {
-              var icon;
+              var icon = null;
               if (layer.type == 'External') {
                 var style = feature.properties.style || {};
                 var icon;
@@ -242,17 +288,11 @@ L.AwesomeMarkers.divIcon = function (options) {
                     iconSize: [28, 28],
                     iconAnchor: [14, 14],
                   });
-                } else {
-                  icon = L.AwesomeMarkers.icon({
-                    icon: 'circle',
-                    markerColor: 'blue'
-                  });
                 }
 
                 return L.marker(latlng, {icon: icon});
               } else {
-                var icon = IconService.leafletIcon(feature, {types: scope.types});
-                var marker =  L.marker(latlng, { icon: icon });
+                var marker =  L.marker(latlng, { icon: createIcon(feature) });
 
                 markers[layer.id][feature.id] = marker;
                 return marker;
@@ -312,7 +352,7 @@ L.AwesomeMarkers.divIcon = function (options) {
                   scope.$apply(function(s) {
                     var oldBucket = scope.selectedBucket;
                     scope.selectedBucket = TimeBucketService.findItemBucketIdx(feature, 'newsfeed', function(item) {
-                      return item.properties ? item.properties.timestamp : moment(item.locations[0].properties.timestamp).valueOf();
+                      return item.properties ? moment(item.properties.timestamp).valueOf() : moment(item.locations[0].properties.timestamp).valueOf();
                     });
                     if (oldBucket == scope.selectedBucket) {
                       $('.news-items').animate({scrollTop: $('#'+feature.id).position().top},500);
@@ -332,7 +372,7 @@ L.AwesomeMarkers.divIcon = function (options) {
                       };
                       $timeout(runAnimate, 500);
                     }
-                    scope.activeFeature = {layerId: feature.layerId, featureId: feature.id, feature: feature};
+                    scope.activeFeature = {layerId: appConstants.featureLayer.id, featureId: feature.id, feature: feature};
 
                     //console.info('scroll top is ' + $('#'+feature.id).position().top);
                     //$('.news-items').scrollTop($('#'+feature.id).position().top);
@@ -345,20 +385,20 @@ L.AwesomeMarkers.divIcon = function (options) {
 
         scope.$watch('activeFeature', function(newFeature, oldFeature) {
           if (!newFeature && oldFeature) {
-            var marker = markers[oldFeature.layerId][oldFeature.featureId];
+            var marker = markers[appConstants.featureLayer.id][oldFeature.featureId];
             marker.unselect();
           } else if (newFeature) {
-            var marker = markers[newFeature.layerId][newFeature.featureId];
+            var marker = markers[appConstants.featureLayer.id][newFeature.featureId];
             marker.select();
           }
         });
 
         scope.$watch('featureTableClick', function(o) {
           if (!o) return;
-          var marker = markers[o.layerId][o.featureId];
+          var marker = markers[appConstants.featureLayer.id][o.featureId];
           activeMarker = marker;
           map.setView(marker.getLatLng(), map.getZoom() > 17 ? map.getZoom() : 17);
-          layers[o.layerId].leafletLayer.zoomToShowLayer(marker, function(){});
+          layers[appConstants.featureLayer.id].leafletLayer.zoomToShowLayer(marker, function(){});
         });
 
         var onPopupClose = function(popupEvent) {
@@ -374,7 +414,6 @@ L.AwesomeMarkers.divIcon = function (options) {
           if (!location) return;
           var marker = currentLocationMarkers[location.user];
           marker.setAccuracy(location.locations[0].properties.accuracy);
-          //marker.setAccuracy(feature.properties.accuracy);
           marker.openPopup();
           marker.fireEvent('click');
           marker.onPopupClose(onPopupClose, marker);
@@ -425,19 +464,21 @@ L.AwesomeMarkers.divIcon = function (options) {
         }); // watch layer
 
         var featuresUpdated = function(features) {
-          console.log('feautes updated')
+          console.log('features updated')
           if (!features) return;
 
           if (layers[scope.layer.id]) {
             var addThese = {
               features: []
             };
+
             for (var i = 0; i < features.features.length; i++) {
               var marker = markers[scope.layer.id][features.features[i].id];
               if (!marker) {
                 addThese.features.push(features.features[i]);
               } else {
-                marker.setIcon(IconService.leafletIcon(features.features[i], {types: scope.types}));
+                marker.setLatLng(L.latLng(features.features[i].geometry.coordinates[1], features.features[i].geometry.coordinates[0]));
+                marker.setIcon(createIcon(features.features[i]));
               }
             }
             newLayer = layers[scope.layer.id].leafletLayer;
@@ -492,7 +533,7 @@ L.AwesomeMarkers.divIcon = function (options) {
         scope.$watch("updatedFeature", function(feature) {
           if (!feature) return;
 
-          activeMarker.setIcon(IconService.leafletIcon(feature, {types: scope.types, levels: scope.levels}));
+          activeMarker.setIcon(createIcon(feature));
         });
 
         scope.$watch("externalFeature", function(value) {
@@ -504,22 +545,22 @@ L.AwesomeMarkers.divIcon = function (options) {
         scope.$watch("deletedFeature", function(feature) {
           if (!feature) return;
 
-          var layer = layers[feature.layerId].leafletLayer;
+          var layer = layers[appConstants.featureLayer.id].leafletLayer;
           if (layer) {
             layer.removeLayer(activeMarker);
           }
-          markers[feature.layerId][feature.id] = undefined;
+          markers[appConstants.featureLayer.id][feature.id] = undefined;
         });
 
         // this is a hack to fix the other hacks
         scope.$watch("removeFeaturesFromMap", function(layerAndFeaturesToRemove) {
           if (!layerAndFeaturesToRemove) return;
 
-          var layer = layers[layerAndFeaturesToRemove.layerId].leafletLayer;
+          var layer = layers[appConstants.featureLayer.id].leafletLayer;
           if (layer) {
             _.each(layerAndFeaturesToRemove.features, function(feature) {
-              layer.removeLayer(markers[layerAndFeaturesToRemove.layerId][feature.id]);
-              markers[layerAndFeaturesToRemove.layerId][feature.id] = undefined;
+              layer.removeLayer(markers[appConstants.featureLayer.id][feature.id]);
+              markers[appConstants.featureLayer.id][feature.id] = undefined;
             })
           }
         });
