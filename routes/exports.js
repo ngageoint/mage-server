@@ -16,7 +16,7 @@ module.exports = function(app, security) {
     , path = require('path')
     , toGeoJson = require('../utilities/togeojson')
     , geojson = require('../transformers/geojson')
-    , shp = require('shp-write')
+    , shp = require('../shp-write')
     , stream = require('stream')
     , archiver = require('archiver')
     , DOMParser = require('xmldom').DOMParser
@@ -25,12 +25,6 @@ module.exports = function(app, security) {
 
   var parseQueryParams = function(req, res, next) {
     var parameters = {filter: {}};
-
-    var type = req.param('type');
-    if (!type) {
-      return res.send(401, "You must choose a type");
-    }
-    parameters.type = type;
 
     var startDate = req.param('startDate');
     if (startDate) {
@@ -130,7 +124,7 @@ module.exports = function(app, security) {
   }
 
   app.get(
-    '/api/export',
+    '/api/:exportType(geojson|kml|shapefile)',
     access.authorize('READ_FEATURE'),
     parseQueryParams,
     getLayers,
@@ -138,7 +132,7 @@ module.exports = function(app, security) {
     mapDevices,
     createTmpDirectory,
     function(req, res, next) {
-      switch (req.parameters.type) {
+      switch (req.params.exportType) {
         case 'shapefile':
           console.log('exporting shapefiles...');
           exportShapefile(req, res, next);

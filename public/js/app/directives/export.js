@@ -71,7 +71,6 @@ mage.directive('export', function(UserService, appConstants, mageLib) {
 
       var params = {
       	access_token: mageLib.getLocalItem('token'),
-      	type: type
       };
 
       if (start) params.startDate = start;
@@ -79,7 +78,7 @@ mage.directive('export', function(UserService, appConstants, mageLib) {
 	    if ($scope.fft) params.fft = $scope.fft;
       if (layerIds.length) params.layerIds = layerIds.join(",");
 
-      var url = "api/export?" + $.param(params);
+      var url = "api/" + type + "?" + $.param(params);
       $.fileDownload(url)
       	.done(function() {
         		$scope.$apply(function() {
