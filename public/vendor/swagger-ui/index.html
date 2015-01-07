@@ -28,7 +28,7 @@
       function addApiKey(api_key) {
         $('#input_apiKey').val(api_key || "");
         if(api_key && api_key.trim() != "") {
-          window.authorizations.add("api_key", new ApiKeyAuthorization("Authorization", "Bearer " + api_key, "header"));
+          window.authorizations.add("api_key", new ApiKeyAuthorization("access_token", api_key, "query"));
         }
       }
 
