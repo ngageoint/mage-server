@@ -13,10 +13,6 @@
             "url": "http://opensource.org/licenses/MIT"
         }
     },
-    "schemes": [
-        "http",
-        "https"
-    ],
     "consumes": [
         "application/json"
     ],
