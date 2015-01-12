@@ -110,15 +110,27 @@ var generatePlacemark = function(name, feature, form) {
     }
   }
 
+  var coordinates = "<Point><coordinates>" +
+  feature.geometry.coordinates[0] + "," +
+  feature.geometry.coordinates[1];
+
+  if (feature.properties.altitude) {
+    coordinates += "," + feature.properties.altitude;
+  }
+
+  coordinates += "</coordinates></Point>";
+
+  if (feature.properties.altitude) {
+    coordinates += "<altitudeMode>absolute</altitudeMode>";
+  }
+
   //build the actual placemark
   var placemark =
     "<Placemark>" +
       "<name>" + name + " " + feature.properties.timestamp + "</name>" +
       "<visibility>0</visibility>" +
       "<styleUrl>#" + style.join("-") + "</styleUrl>" +
-      "<Point>" +
-      "<coordinates>" + feature.geometry.coordinates[0] + "," + feature.geometry.coordinates[1] + "," + 0 + "</coordinates>" +
-      "</Point>" +
+      coordinates +
       timestamp +
       description +
     "</Placemark>";

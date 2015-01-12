@@ -19,6 +19,7 @@ var LocationSchema = new Schema({
 
 LocationSchema.index({geometry: "2dsphere"});
 LocationSchema.index({'properties.timestamp': 1});
+LocationSchema.index({'properties.timestamp': 1, _id: 1});
 LocationSchema.index({'properties.user': 1, 'properties.timestamp': 1});
 
 // Creates the Model for the User Schema
