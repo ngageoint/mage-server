@@ -1,6 +1,7 @@
 module.exports = function(app, security) {
   var fs = require('fs-extra')
     , api = require('../api')
+    , Event = require('../models/event')
     , Team = require('../models/team')
     , User = require('../models/user')
     , Role = require('../models/role')
@@ -63,10 +64,19 @@ module.exports = function(app, security) {
     }
   });
 
-  // Grab the team for any endpoint that uses teamId
+  // Grab the user for any endpoint that uses userId
+  app.param('eventId', /^[0-9]+$/); //ensure eventId is a number
+  app.param('eventId', function(req, res, next, eventId) {
+    Event.getById(eventId, function(err, event) {
+      if (!event) return res.send('Event not found', 404);
+      req.event = event;
+      next();
+    });
+  });
+
+  // Grab the user for any endpoint that uses userId
   app.param('userId', /^[0-9a-f]{24}$/); //ensure formId is a mongo id
   app.param('userId', function(req, res, next, userId) {
-    console.log('user id: ' + userId);
     new api.User().getById(userId, function(err, user) {
       if (!user) return res.send('User not found', 404);
       req.userParam = user;
@@ -93,7 +103,7 @@ module.exports = function(app, security) {
     });
   });
 
-  // Grab the form for any endpoint that uses formId
+  // Grab the icon for any endpoint that uses iconId
   app.param('iconId', function(req, res, next, iconId) {
     Icon.getById(iconId, function(err, icon) {
       if (!icon) return res.send('Form not found', 404);
@@ -120,7 +130,7 @@ module.exports = function(app, security) {
       });
   });
 
-  // Grab the feature layer for any endpoint that uses layerId
+  // Grab the layer for any endpoint that uses layerId
   app.param('layerId', function(req, res, next, layerId) {
     Layer.getById(layerId, function(layer) {
       if (!layer) {

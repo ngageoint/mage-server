@@ -212,8 +212,6 @@ exports.getUsers = function(callback) {
 }
 
 exports.createUser = function(user, callback) {
-  console.log('trying to create user', user);
-
   var create = {
     username: user.username,
     firstname: user.firstname,

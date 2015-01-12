@@ -19,12 +19,19 @@ var rolePermissions = [
   'DELETE_ROLE'
 ];
 
+var eventPermissions = [
+  'CREATE_EVENT',
+  'READ_EVENT',
+  'UPDATE_EVENT',
+  'DELETE_EVENT'
+]
+
 var layerPermissions = [
   'CREATE_LAYER',
   'READ_LAYER',
   'UPDATE_LAYER',
   'DELETE_LAYER'
-]
+];
 
 var featurePermissions = [
   'CREATE_FEATURE',
@@ -51,6 +58,7 @@ var allPermissions = []
   .concat(devicePermissions)
   .concat(userPermissions)
   .concat(rolePermissions)
+  .concat(eventPermissions)
   .concat(layerPermissions)
   .concat(featurePermissions)
   .concat(locationPermissions)
