@@ -448,6 +448,129 @@
                 }
             }
         },
+        "/api/events": {
+            "get": {
+                "description": "get all events",
+                "operationId": "getEvents",
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "event response",
+                        "schema": {
+                            "$ref": "#/definitions/Event"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "add new event",
+                "operationId": "addEvent",
+                "tags": [
+                    "Event"
+                ],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "new event body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/EventCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "new event response",
+                        "schema": {
+                            "$ref": "#/definitions/Event"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/events/{id}": {
+            "get": {
+                "description": "Returns a single event based on id",
+                "operationId": "getEventById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of event to fetch",
+                        "required": true,
+                        "type": "number"
+                    }
+                ],
+                "tags": [
+                    "Layer"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "event response",
+                        "schema": {
+                            "$ref": "#/definitions/Event"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "update a single event based on id",
+                "operationId": "updateEventById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of event to update",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "event update body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/EventCreate"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "event update response",
+                        "schema": {
+                            "$ref": "#/definitions/Event"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "deletes a single event based on id",
+                "operationId": "deleteEvent",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of event to delete",
+                        "required": true,
+                        "type": "number"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "event deleted"
+                    }
+                }
+            }
+        },
         "/api/layers": {
             "get": {
                 "description": "get all layers",
@@ -1711,6 +1834,36 @@
                 },
                 "registered": {
                     "type": "boolean"
+                }
+            }
+        },
+        "EventCreate": {
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "Event": {
+            "required": [
+                "id",
+                "name"
+            ],
+            "properties": {
+                "id": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
                 }
             }
         },

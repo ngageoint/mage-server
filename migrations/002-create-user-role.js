@@ -6,6 +6,7 @@ exports.up = function(done) {
 
   var userPermissions = [
     'READ_DEVICE',
+    'READ_EVENT',
     'READ_LAYER',
     'READ_USER',
     'CREATE_FEATURE', 'READ_FEATURE', 'UPDATE_FEATURE', 'DELETE_FEATURE',
