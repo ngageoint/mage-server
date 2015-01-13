@@ -505,7 +505,7 @@
                     }
                 ],
                 "tags": [
-                    "Layer"
+                    "Event"
                 ],
                 "responses": {
                     "200": {
@@ -567,6 +567,102 @@
                 "responses": {
                     "204": {
                         "description": "event deleted"
+                    }
+                }
+            }
+        },
+        "/api/events/{id}/form.zip": {
+            "get": {
+                "description": "Export a zip archive of the form .  Includes metadata and icon symbology",
+                "operationId": "getFormArchive",
+                "produces": [
+                    "application/zip"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of event to fetch",
+                        "required": true,
+                        "type": "number"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "form archive response"
+                    }
+                }
+            }
+        },
+        "/api/events/{id}/form": {
+            "get": {
+                "description": "Get form for specified event",
+                "operationId": "getForm",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of event to fetch",
+                        "required": true,
+                        "type": "number"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "form archive response",
+                        "schema": {
+                            "$ref": "#/definitions/Form"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "import a form archive for specified event",
+                "operationId": "importFormArchive",
+                "consumes": [
+                    "multipart/form-data",
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of event to update",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "archive",
+                        "in": "formData",
+                        "description": "form archive",
+                        "required": false,
+                        "type": "file"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "form update body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/FormCreate"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "event update response",
+                        "schema": {
+                            "$ref": "#/definitions/Event"
+                        }
                     }
                 }
             }
@@ -694,166 +790,6 @@
                 }
             }
         },
-        "/api/forms": {
-            "get": {
-                "description": "get all forms",
-                "operationId": "getForms",
-                "tags": [
-                    "Form"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "form response",
-                        "schema": {
-                            "$ref": "#/definitions/Form"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "add new form",
-                "operationId": "addForm",
-                "tags": [
-                    "Form"
-                ],
-                "consumes": [
-                    "application/json",
-                    "mutipart/form-data"
-                ],
-                "parameters": [
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "description": "new layer body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/FormCreate"
-                        }
-                    },
-                    {
-                        "name": "form",
-                        "in": "formData",
-                        "type": "file",
-                        "description": "form zip file",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "new form response",
-                        "schema": {
-                            "$ref": "#/definitions/Form"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/forms/{id}": {
-            "get": {
-                "description": "Returns a single form based on id",
-                "operationId": "getFormById",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "id of form to fetch",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "tags": [
-                    "Form"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "form response",
-                        "schema": {
-                            "$ref": "#/definitions/Form"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/forms/{id}.zip": {
-            "get": {
-                "description": "Returns a zip file that includes form metadata(json) as well as all icons",
-                "operationId": "getFormArchiveById",
-                "produces": [
-                    "application/zip"
-                ],
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "id of form to fetch",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "tags": [
-                    "Form"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "form response"
-                    }
-                }
-            },
-            "put": {
-                "description": "update a single form based on id",
-                "operationId": "updateFormById",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "id of form to update",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "description": "form update body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/FormCreate"
-                        }
-                    }
-                ],
-                "tags": [
-                    "Form"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "layer update response",
-                        "schema": {
-                            "$ref": "#/definitions/Layer"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "deletes a single form based on id",
-                "operationId": "deleteForm",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "id of form to delete",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "tags": [
-                    "Form"
-                ],
-                "responses": {
-                    "204": {
-                        "description": "form deleted"
-                    }
-                }
-            }
-        },
         "/api/icons/{formId}.zip": {
             "get": {
                 "description": "get all icons",
@@ -868,7 +804,7 @@
                     }
                 ],
                 "tags": [
-                    "Form"
+                    "Event"
                 ],
                 "responses": {
                     "200": {
@@ -903,7 +839,7 @@
                     }
                 ],
                 "tags": [
-                    "Form"
+                    "Event"
                 ],
                 "responses": {
                     "200": {
@@ -915,7 +851,7 @@
                 "description": "add new icon",
                 "operationId": "addIcon",
                 "tags": [
-                    "Form"
+                    "Event"
                 ],
                 "consumes": [
                     "mutipart/form-data"
@@ -972,7 +908,7 @@
                     }
                 ],
                 "tags": [
-                    "Form"
+                    "Event"
                 ],
                 "responses": {
                     "204": {

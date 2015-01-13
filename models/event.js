@@ -4,12 +4,38 @@ var mongoose = require('mongoose')
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
 
+var OptionSchema = new Schema({
+  id: { type: Number, required: true },
+  title: { type: String, required: true },
+  value: { type: Number, required: true }
+},{
+  _id: false
+});
+
+var FieldSchema = new Schema({
+  id: { type: Number, required: true },
+  archived: { type: Boolean, required: false},
+  title: { type: String, required: true },
+  type: { type: String, required: true },
+  value: { type: Schema.Types.Mixed, required: false },
+  name: { type: String, required: true },
+  required: { type: Boolean, required: true },
+  choices: [OptionSchema]
+},{
+  _id: false
+});
+
 // Creates the Schema for the Attachments object
 var EventSchema = new Schema({
   id: { type: Number, required: true, unique: true },
   name: { type: String, required: true, unique: true },
   description: { type: String, required: false },
-  collectionName: { type: String, required: true }
+  collectionName: { type: String, required: true },
+  form: {
+    name: { type: String, required: true },
+    variantField: { type:String, required: false },
+    fields: [FieldSchema]
+  }
 },{
   versionKey: false
 });
@@ -120,5 +146,25 @@ exports.remove = function(event, callback) {
     }
 
     callback(err, event);
+  });
+}
+
+exports.getForm = function(event, callback) {
+  event.findOneById({id: event.id}, function(err) {
+    if (err) {
+      console.log("Could not get form for event: " + err);
+    }
+
+    callback(err, event.form);
+  });
+}
+
+exports.setForm = function(event, form, callback) {
+  event.findOneAndUpdate({id: event.id}, {form: form}, function(err, event) {
+    if (err) {
+      console.log("Could not set form for event: " + err);
+    }
+
+    callback(err, event.form);
   });
 }

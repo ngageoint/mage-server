@@ -6,7 +6,6 @@ module.exports = function(app, security) {
     , Layer = require('../models/layer')
     , User = require('../models/user')
     , Device = require('../models/device')
-    , Form = require('../models/form')
     , Icon = require('../models/icon')
     , access = require('../access')
     , generate_kml = require('../utilities/generate_kml')
@@ -299,21 +298,22 @@ module.exports = function(app, security) {
       async.each(layers, function(layer, done) {
         new api.Feature(layer).getAll({filter: filter}, function(features) {
           layer.features = features;
-          Form.getById(layer.formId, function(err, form) {
-            layer.form = form;
-            Icon.getAll({formId: layer.form._id}, function(err, icons) {
-              kmlStream.write(generate_kml.generateStyles(icons));
-              stream.write(generate_kml.generateKMLFolderStart(layer.name, false));
-
-              features.forEach(function(feature) {
-                stream.write(generate_kml.generatePlacemark(feature.properties.type, feature, layer.form));
-              });
-
-              stream.write(generate_kml.generateKMLFolderClose());
-
-              done();
-            });
-          });
+          // TODO redo based on event
+          // Form.getById(layer.formId, function(err, form) {
+          //   layer.form = form;
+          //   Icon.getAll({formId: layer.form._id}, function(err, icons) {
+          //     kmlStream.write(generate_kml.generateStyles(icons));
+          //     stream.write(generate_kml.generateKMLFolderStart(layer.name, false));
+          //
+          //     features.forEach(function(feature) {
+          //       stream.write(generate_kml.generatePlacemark(feature.properties.type, feature, layer.form));
+          //     });
+          //
+          //     stream.write(generate_kml.generateKMLFolderClose());
+          //
+          //     done();
+          //   });
+          // });
         });
       },
       function(){
@@ -446,15 +446,16 @@ module.exports = function(app, security) {
       async.each(layers, function(layer, done) {
         new api.Feature(layer).getAll({filter: filter}, function(features) {
           layer.features = features;
-          Form.getById(layer.formId, function(err, form) {
-            layer.form = form;
-            stream.write(JSON.stringify({
-              type: 'FeatureCollection',
-              features: geojson.transform(layer.features)
-            }));
-
-            done();
-          });
+          // TODO redo based on event
+          // Form.getById(layer.formId, function(err, form) {
+          //   layer.form = form;
+          //   stream.write(JSON.stringify({
+          //     type: 'FeatureCollection',
+          //     features: geojson.transform(layer.features)
+          //   }));
+          //
+          //   done();
+          // });
         });
       },
       function(){
