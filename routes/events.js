@@ -31,11 +31,11 @@ module.exports = function(app, security) {
   }
 
   var validateFormParams = function(req, res, next) {
-    var form = req.body;
+    var form = req.body.form;
 
     // check for required fields
     var fields = form.fields;
-    if (!fields) return res.send(400, 'fields is required');
+    if (!fields) return res.status(400).send('fields is required');
 
     var fieldNames = {};
     fields.forEach(function(field) {
@@ -46,13 +46,13 @@ module.exports = function(app, security) {
     if (fieldNames.timestamp == null) missing.push("'timestamp' missing field is required");
     if (fieldNames.geometry == null) missing.push("'geometry' missing field is required");
     if (fieldNames.type == null) missing.push("'type' missing field is required");
-    if (missing.length) return res.send(400, missing.join(","));
+    if (missing.length) return res.status(400).send(missing.join(","));
 
     var required = [];
     if (!fieldNames.timestamp.required) required.push("'timestamp' required property must be true");
     if (!fieldNames.geometry.required) required.push("'geometry' required property must be true");
     if (!fieldNames.type.required) required.push("'type' required property must be true");
-    if (required.length) return res.send(400, required.join(","));
+    if (required.length) return res.status(400).send(required.join(","));
 
     req.newForm = form;
     next();
@@ -85,22 +85,15 @@ module.exports = function(app, security) {
       if (!req.is('multipart/form-data')) return next();
 
       Event.create(req.newEvent, function(err, event) {
-        if (err) {
-          return res.send(400, err);
-        }
+        if (err) return next(err);
 
         new api.Form(event).import(req.files.form, function(err, form) {
-          if (err) {
-            console.log('form error', err);
-            return next(err);
-          }
-          Event.update(event.id, {form: form}, function(err, event) {
-            if (err) {
-              console.log('error updating event with form', err);
-              return next(err);
-            }
+          if (err) return next(err);
 
-            res.status(201).send(event);
+          Event.update(event.id, {form: form}, function(err, event) {
+            if (err) return next(err);
+
+            res.status(201).json(event);
           });
         });
       });
@@ -112,13 +105,11 @@ module.exports = function(app, security) {
     access.authorize('CREATE_EVENT'),
     validateEventParams,
     validateFormParams,
-    function(req, res) {
+    function(req, res, next) {
       Event.create(req.newEvent, function(err, event) {
-        if (err) {
-          return res.send(400, err);
-        }
+        if (err) return next(err);
 
-        res.send(201, event);
+        res.status(201).json(event);
       });
     }
   );
@@ -127,11 +118,9 @@ module.exports = function(app, security) {
     '/api/events/:eventId',
     access.authorize('UPDATE_EVENT'),
     validateEventParams,
-    function(req, res) {
+    function(req, res, next) {
       Event.update(req.event.id, req.newEvent, function(err, event) {
-        if (err) {
-          return res.send(400, err);
-        }
+        if (err) return next(err);
 
         res.json(event);
       });
@@ -141,13 +130,11 @@ module.exports = function(app, security) {
   app.delete(
     '/api/events/:eventId',
     access.authorize('DELETE_EVENT'),
-    function(req, res) {
+    function(req, res, next) {
       Event.remove(req.event, function(err, event) {
-        if (err) {
-          return res.send(400, err);
-        }
+        if (err) return next(err);
 
-        res.send(204);
+        res.status(204).send();
       });
     }
   );
@@ -158,21 +145,89 @@ module.exports = function(app, security) {
     access.authorize('READ_EVENT'),
     function(req, res, next) {
       new api.Form(req.event).export(req.form, function(err, file) {
+        if (err) return next(err);
+
         res.attachment(req.form.name + ".zip");
         file.pipe(res);
       });
     }
   );
 
-  // get form for a specific event
-  app.get(
-    '/api/events/:eventId/form',
-    access.authorize('READ_EVENT'),
-    function (req, res) {
-      Event.getForm(function(err, form) {
-        if (!form) return res.send('Form not found', 404);
+  // // get form for a specific event
+  // app.get(
+  //   '/api/events/:eventId/form',
+  //   access.authorize('READ_EVENT'),
+  //   function (req, res) {
+  //     Event.getForm(function(err, form) {
+  //       if (!form) return res.send('Form not found', 404);
+  //
+  //       return res.json(form);
+  //     });
+  //   }
+  // );
 
-        return res.json(form);
+  app.get(
+    '/api/events/:eventId/form/icons.zip',
+    access.authorize('READ_EVENT'),
+    function(req, res, next) {
+      var iconBasePath = new api.Icon(req.event.id).getBasePath();
+      var archive = archiver('zip');
+      res.attachment("icons.zip");
+      archive.pipe(res);
+      archive.bulk([{src: ['**'], dest: '/icons', expand: true, cwd: iconBasePath}]);
+      archive.finalize();
+    }
+  );
+
+  // get icon
+  app.get(
+    '/api/events/:eventId/form/icons/:type?/:variant?',
+    access.authorize('READ_EVENT'),
+    function(req, res, next) {
+      new api.Icon(req.event.id, req.params.type, req.params.variant).getIcon(function(err, iconPath) {
+        if (err || !iconPath) return next();
+
+        res.sendFile(iconPath);
+      });
+    }
+  );
+
+  app.get(
+    '/api/events/:eventId/form/icons*',
+    access.authorize('READ_EVENT'),
+    function(req, res, next) {
+      new api.Icon().getDefaultIcon(function(err, iconPath) {
+        if (err) return next(err);
+
+        if (!iconPath) return res.status(404).send();
+
+        res.sendFile(iconPath);
+      });
+    }
+  );
+
+  // Create a new icon
+  app.post(
+    '/api/events/:eventId/form/icons/:type?/:variant?',
+    access.authorize('CREATE_EVENT'),
+    function(req, res, next) {
+      new api.Icon(req.event.id, req.params.type, req.params.variant).create(req.files.icon, function(err, icon) {
+        if (err) return next(err);
+
+        return res.json(icon);
+      });
+    }
+  );
+
+  // Delete an icon
+  app.delete(
+    '/api/events/:eventId/form/icons/:type?/:variant?',
+    access.authorize('DELETE_EVENT'),
+    function(req, res) {
+      new api.Icon(req.event.id, req.params.type, req.params.variant).delete(function(err, icon) {
+        if (err) return next(err);
+
+        return res.status(204).send();
       });
     }
   );

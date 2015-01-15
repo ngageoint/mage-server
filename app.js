@@ -98,6 +98,7 @@ app.use('/private',
   authentication.p***REMOVED***port.authenticate(authentication.authenticationStrategy),
   express.static(path.join(__dirname, 'private')));
 app.use(function(err, req, res, next) {
+  console.error(err.message);
   console.error(err.stack);
   res.send(500, 'Internal server error, please contact MAGE administrator.');
 });

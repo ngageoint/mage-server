@@ -7,6 +7,7 @@ var IconModel = require('../models/icon')
   , access = require('../access')
   , config = require('../config.json');
 
+var appRoot = path.dirname(require.main.filename);
 var iconBase = config.server.iconBaseDirectory;
 
 function Icon(eventId, type, variant) {
@@ -56,7 +57,7 @@ Icon.prototype.getIcon = function(callback) {
 }
 
 Icon.prototype.getDefaultIcon = function(callback) {
-  return callback(null, path.join(__dirname, '/public/img/default-icon.png'));
+  return callback(null, path.join(appRoot, '/public/img/default-icon.png'));
 }
 
 Icon.prototype.create = function(icon, callback) {
@@ -67,6 +68,8 @@ Icon.prototype.create = function(icon, callback) {
     variant: this._variant,
     relativePath: relativePath
   }
+
+console.log('try to create this icon: ', JSON.stringify(newIcon));
 
   var iconPath = path.join(iconBase, relativePath);
   fs.mkdirp(path.dirname(iconPath), function(err) {

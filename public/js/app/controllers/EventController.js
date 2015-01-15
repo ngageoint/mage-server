@@ -10,18 +10,17 @@ angular.module('mage').controller('EventCtrl', function ($scope, $injector, appC
 
     $scope.event = EventService.editEvent;
 
-    $scope.fileUploadOptions = {
-    };
+    $scope.fileUploadOptions = {};
 
     $scope.$watch('es.editEvent', function(newEvent, oldEvent) {
-        $scope.event = EventService.editEvent;
-        if ($scope.event && $scope.event.form) {
-            angular.forEach($scope.event.form.fields, function(field) {
-                if (field.name == 'type') {
-                    $scope.typeField = field;
-                }
-            });
-         }
+      $scope.event = EventService.editEvent;
+      if ($scope.event && $scope.event.form) {
+        angular.forEach($scope.event.form.fields, function(field) {
+          if (field.name == 'type') {
+            $scope.typeField = field;
+          }
+        });
+      }
     });
 
     // previewForm - for preview purposes, form will be copied into this
@@ -30,10 +29,10 @@ angular.module('mage').controller('EventCtrl', function ($scope, $injector, appC
 
     $scope.fieldTypes = EventService.form.fields;
     $scope.newField = {
-        "title" : "New field",
-        "type" : $scope.fieldTypes[0].name,
-        "value" : "",
-        "required" : true
+      "title" : "New field",
+      "type" : $scope.fieldTypes[0].name,
+      "value" : "",
+      "required" : true
     };
 
     // accordion settings
@@ -47,23 +46,22 @@ angular.module('mage').controller('EventCtrl', function ($scope, $injector, appC
 
     // create new field button click
     $scope.addNewField = function() {
+      // put newField into fields array
+      var fields = $scope.event.form.fields;
+      var id = fields[fields.length - 1].id + 1;
 
-        // put newField into fields array
+      $scope.newField.id = id;
+      $scope.newField.name = "field" + id;
+      fields.push($scope.newField);
 
-        var id = $scope.event.form.fields[$scope.form.fields.length-1].id + 1;
+      $scope.newField = {
+        "title" : "New field",
+        "type" : $scope.fieldTypes[0].name,
+        "value" : "",
+        "required" : true
+      };
 
-        $scope.newField.id = id;
-        $scope.newField.name = "field" + id;
-        $scope.event.form.fields.push($scope.newField);
-
-        $scope.newField = {
-            "title" : "New field",
-            "type" : $scope.fieldTypes[0].name,
-            "value" : "",
-            "required" : true
-        };
-
-        $scope.autoSave();
+      $scope.autoSave();
     }
 
     var debounceHideSave = _.debounce(function() {
@@ -96,6 +94,7 @@ angular.module('mage').controller('EventCtrl', function ($scope, $injector, appC
 
     $scope.populateVariants = function(doNotAutoSave) {
       if (!$scope.event.form) return;
+      
       $scope.variantField = _.find($scope.event.form.fields, function(field) {
         return field.name == $scope.event.form.variantField;
       });
@@ -123,16 +122,16 @@ angular.module('mage').controller('EventCtrl', function ($scope, $injector, appC
 
     $scope.$watch('event', function() {
       if (!$scope.event) return;
-
       $scope.populateVariants(true);
     });
 
     $scope.$watch('event.form.fields', function() {
       if (!$scope.event || !$scope.event.form || !$scope.event.form.fields) return;
+
       angular.forEach($scope.event.form.fields, function(field) {
-          if (field.name == 'type') {
-              $scope.typeField = field;
-          }
+        if (field.name == 'type') {
+            $scope.typeField = field;
+        }
       });
     });
 
@@ -163,9 +162,9 @@ angular.module('mage').controller('EventCtrl', function ($scope, $injector, appC
     $scope.addOption = function (field, optionTitle) {
       field.choices = field.choices || new Array();
       field.choices.push({
-          "id" : field.choices.length,
-          "title" : optionTitle,
-          "value" : field.choices.length
+        "id" : field.choices.length,
+        "title" : optionTitle,
+        "value" : field.choices.length
       });
       $scope.populateVariants();
       $scope.autoSave();
@@ -179,9 +178,9 @@ angular.module('mage').controller('EventCtrl', function ($scope, $injector, appC
 
     $scope.addVariantOption = function(min, max) {
       var newOption = {
-          "id" : $scope.variantField.choices.length,
-          "title" : min,
-          "value" : min
+        "id" : $scope.variantField.choices.length,
+        "title" : min,
+        "value" : min
       };
 
       $scope.variantField.choices = $scope.variantField.choices || new Array();
@@ -191,61 +190,50 @@ angular.module('mage').controller('EventCtrl', function ($scope, $injector, appC
     }
 
     $scope.addType = function() {
-        $scope.addOption($scope.typeField);
-        if ($scope.event.id) { $scope.event.$save(); }
+      $scope.addOption($scope.typeField);
+      if ($scope.event.id) { $scope.event.$save(); }
     }
 
     // delete particular option
     $scope.deleteOption = function (field, option){
-        for(var i = 0; i < field.choices.length; i++){
-            if(field.choices[i].id == option.id){
-                field.choices.splice(i, 1);
-                break;
-            }
+      for (var i = 0; i < field.choices.length; i++){
+        if(field.choices[i].id == option.id){
+          field.choices.splice(i, 1);
+          break;
         }
-        $scope.populateVariants();
-        $scope.autoSave();
+      }
+      $scope.populateVariants();
+      $scope.autoSave();
     }
 
     // preview form
     $scope.previewOn = function(){
-        if($scope.event.form.fields == null || $scope.event.form.fields.length == 0) {
-            var title = 'Error';
-            var msg = 'No fields added yet, please add fields to the form before preview.';
-            var btns = [{result:'ok', label: 'OK', cssCl***REMOVED***: 'btn-primary'}];
-
-            //$modal.messageBox(title, msg, btns).open();
-
-        }
-        else {
-            $scope.previewMode = true;
-            angular.copy($scope.event.form, $scope.previewEvent);
-        }
+      if($scope.event.form.fields == null || $scope.event.form.fields.length == 0) {
+        var title = 'Error';
+        var msg = 'No fields added yet, please add fields to the form before preview.';
+        var btns = [{result:'ok', label: 'OK', cssCl***REMOVED***: 'btn-primary'}];
+      } else {
+        $scope.previewMode = true;
+        angular.copy($scope.event.form, $scope.previewEvent);
+      }
     }
 
     // hide preview form, go back to create mode
     $scope.previewOff = function(){
-        $scope.previewMode = false;
+      $scope.previewMode = false;
     }
 
     // decides whether field options block will be shown (true for dropdown and radio fields)
-    $scope.showAddOptions = function (field){
-        if(field.type == "radio" || field.type == "dropdown")
-            return true;
-        else
-            return false;
+    $scope.showAddOptions = function (field) {
+      return (field.type == "radio" || field.type == "dropdown");
     }
 
     // deletes all the fields
     $scope.reset = function() {
-        $scope.event.form.fields.splice(0, $scope.event.form.fields.length);
+      $scope.event.form.fields.splice(0, $scope.event.form.fields.length);
     }
 
     $scope.saveEvent = function() {
-        $scope.event.$save();
-    }
-
-    $scope.createEvent = function() {
       $scope.event.$save();
     }
 
