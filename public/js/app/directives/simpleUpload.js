@@ -24,7 +24,7 @@ mage.directive('simpleUpload', function() {
 
       $element.find('.file-custom').attr('data-filename', 'Choose a file...');
 
-      $element.find(':file').change(function() {
+      $element.find(':file').bind('change', function() {
         $scope.file = this.files[0];
         var name = $scope.file.name;
 

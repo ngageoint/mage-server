@@ -1,22 +1,22 @@
 'use strict';
 
-angular.module('mage').controller('FormCtrl', function ($scope, $injector, appConstants, FormService, Layer, Form, $filter, $timeout, ObservationService) {
+angular.module('mage').controller('EventCtrl', function ($scope, $injector, appConstants, EventService, Layer, Event, $filter, $timeout, ObservationService) {
 
     // preview form mode
     $scope.previewMode = false;
 
-    $scope.fs = FormService;
+    $scope.es = EventService;
     $scope.saveTime = 0;
 
-    $scope.form = FormService.editForm;
+    $scope.event = EventService.editEvent;
 
     $scope.fileUploadOptions = {
     };
 
-    $scope.$watch('fs.editForm', function(newForm, oldForm){
-        $scope.form = FormService.editForm;
-        if ($scope.form) {
-            angular.forEach($scope.form.fields, function(field) {
+    $scope.$watch('es.editEvent', function(newEvent, oldEvent) {
+        $scope.event = EventService.editEvent;
+        if ($scope.event && $scope.event.form) {
+            angular.forEach($scope.event.form.fields, function(field) {
                 if (field.name == 'type') {
                     $scope.typeField = field;
                 }
@@ -26,9 +26,9 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
 
     // previewForm - for preview purposes, form will be copied into this
     // otherwise, actual form might get manipulated in preview mode
-    $scope.previewForm = {};
+    $scope.previewEvent = {};
 
-    $scope.fieldTypes = FormService.fields;
+    $scope.fieldTypes = EventService.form.fields;
     $scope.newField = {
         "title" : "New field",
         "type" : $scope.fieldTypes[0].name,
@@ -50,11 +50,11 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
 
         // put newField into fields array
 
-        var id = $scope.form.fields[$scope.form.fields.length-1].id + 1;
+        var id = $scope.event.form.fields[$scope.form.fields.length-1].id + 1;
 
         $scope.newField.id = id;
         $scope.newField.name = "field" + id;
-        $scope.form.fields.push($scope.newField);
+        $scope.event.form.fields.push($scope.newField);
 
         $scope.newField = {
             "title" : "New field",
@@ -74,14 +74,13 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
 
     var debouncedAutoSave = _.debounce(function() {
       $scope.$apply(function() {
-        if ($scope.form.id) {
-          $scope.form.$save({}, function() {
+        if ($scope.event.id) {
+          $scope.event.$save({}, function() {
             $scope.saved = true;
-            ObservationService.updateForm();
             $timeout(function() {
               debounceHideSave();
             });
-            console.log($scope.form);
+            console.log($scope.event);
           });
         }
       });
@@ -96,20 +95,19 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
     }
 
     $scope.populateVariants = function(doNotAutoSave) {
-      if (!$scope.form) return;
-      $scope.variantField = _.find($scope.form.fields, function(field) {
-        return field.name == $scope.form.variantField;
+      if (!$scope.event.form) return;
+      $scope.variantField = _.find($scope.event.form.fields, function(field) {
+        return field.name == $scope.event.form.variantField;
       });
       if (!$scope.variantField) {
         // they do not want a variant
         $scope.variants = [];
-        $scope.form.variantField = null;
+        $scope.event.form.variantField = null;
         if (!doNotAutoSave) {
           $scope.autoSave();
         }
         return;
       }
-      //$scope.form.variantField = $scope.variantField.name;
       if ($scope.variantField.type == 'dropdown') {
         $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
         $scope.showNumberVariants = false;
@@ -123,29 +121,33 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
       }
     }
 
-    $scope.$watch('form', function() {
-      if (!$scope.form) return;
+    $scope.$watch('event', function() {
+      if (!$scope.event) return;
 
       $scope.populateVariants(true);
     });
 
-    $scope.$watch('form.fields', function() {
-      if (!$scope.form || !$scope.form.fields) return;
-      angular.forEach($scope.form.fields, function(field) {
+    $scope.$watch('event.form.fields', function() {
+      if (!$scope.event || !$scope.event.form || !$scope.event.form.fields) return;
+      angular.forEach($scope.event.form.fields, function(field) {
           if (field.name == 'type') {
               $scope.typeField = field;
           }
       });
     });
 
-    $scope.$watch('form.variantField', function(newValue, oldValue) {
-      if (!$scope.form || newValue == oldValue) return;
+    $scope.$watch('event.form.variantField', function(newValue, oldValue) {
+      if (!$scope.event || !$scope.event.form || newValue == oldValue) return;
       $scope.populateVariants()
-    })
+    });
+
+    $scope.$on('uploadFile', function(e, uploadFile) {
+      $scope.event.formArchiveFile = uploadFile;
+    });
 
     // deletes particular field on button click
     $scope.deleteField = function (id) {
-      var deletedField = _.find($scope.form.fields, function(field) { return id == field.id});
+      var deletedField = _.find($scope.event.form.fields, function(field) { return id == field.id});
       if (deletedField) {
         deletedField.archived = true;
         $scope.populateVariants();
@@ -190,7 +192,7 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
 
     $scope.addType = function() {
         $scope.addOption($scope.typeField);
-        if ($scope.form.id) { $scope.form.$save(); }
+        if ($scope.event.id) { $scope.event.$save(); }
     }
 
     // delete particular option
@@ -207,7 +209,7 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
 
     // preview form
     $scope.previewOn = function(){
-        if($scope.form.fields == null || $scope.form.fields.length == 0) {
+        if($scope.event.form.fields == null || $scope.event.form.fields.length == 0) {
             var title = 'Error';
             var msg = 'No fields added yet, please add fields to the form before preview.';
             var btns = [{result:'ok', label: 'OK', cssCl***REMOVED***: 'btn-primary'}];
@@ -217,7 +219,7 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
         }
         else {
             $scope.previewMode = true;
-            angular.copy($scope.form, $scope.previewForm);
+            angular.copy($scope.event.form, $scope.previewEvent);
         }
     }
 
@@ -235,35 +237,33 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
     }
 
     // deletes all the fields
-    $scope.reset = function (){
-        $scope.form.fields.splice(0, $scope.form.fields.length);
+    $scope.reset = function() {
+        $scope.event.form.fields.splice(0, $scope.event.form.fields.length);
     }
 
-    $scope.saveForm = function() {
-        $scope.form.$save();
+    $scope.saveEvent = function() {
+        $scope.event.$save();
     }
 
-    $scope.useForm = function(form) {
-      $scope.form.$save({}, function(savedForm) {
-        $scope.setFeatureForm(form);
-      });
+    $scope.createEvent = function() {
+      $scope.event.$save();
     }
 
-    $scope.deleteForm = function(layer) {
+    $scope.deleteEvent= function() {
       var modalInstance = $injector.get('$modal').open({
-        templateUrl: 'deleteForm.html',
+        templateUrl: 'deleteEvent.html',
         resolve: {
-          form: function () {
-            return $scope.form;
+          event: function () {
+            return $scope.event;
           }
         },
-        controller: function ($scope, $modalInstance, form) {
-          $scope.form = form;
+        controller: function ($scope, $modalInstance, event) {
+          $scope.event = event;
 
-          $scope.deleteForm = function(form, force) {
-            console.info('delete form');
-            form.$delete(function(success) {
-              console.info('form delete success');
+          $scope.deleteEvent = function(event, force) {
+            console.info('delete event');
+            event.$delete(function(success) {
+              console.info('event delete success');
               $modalInstance.close(form);
             });
           }
@@ -273,27 +273,13 @@ angular.module('mage').controller('FormCtrl', function ($scope, $injector, appCo
         }
       });
 
-      modalInstance.result.then(function (form) {
+      modalInstance.result.then(function (event) {
         console.info('success');
-        $scope.form = null;
-        $scope.removeForm(form);
+        $scope.event = null;
+        $scope.removEvent(event);
       }, function () {
         console.info('failure');
       });
       return;
-    }
-
-    $scope.setFeatureForm = function(form) {
-      var layers = Layer.query(function(){
-        angular.forEach(layers, function (layer) {
-          if (layer.type == 'Feature') {
-            layer.formId = form.id;
-            layer.$save({}, function() {
-              appConstants.formId = form.id;
-              ObservationService.updateForm();
-            });
-          }
-        });
-      });
     }
 });

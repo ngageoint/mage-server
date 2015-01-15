@@ -9,7 +9,6 @@ module.exports = function(app, security) {
   , authenticationStrategy = security.authentication.authenticationStrategy;
 
   app.all('/api/events*', p***REMOVED***port.authenticate(authenticationStrategy));
-  app.all('/api/forms*', p***REMOVED***port.authenticate(authenticationStrategy));
 
   var validateEventParams = function(req, res, next) {
     var event = req.body;
@@ -78,11 +77,41 @@ module.exports = function(app, security) {
     }
   );
 
+  app.post(
+    '/api/events',
+    access.authorize('CREATE_EVENT'),
+    validateEventParams,
+    function(req, res, next) {
+      if (!req.is('multipart/form-data')) return next();
+
+      Event.create(req.newEvent, function(err, event) {
+        if (err) {
+          return res.send(400, err);
+        }
+
+        new api.Form(event).import(req.files.form, function(err, form) {
+          if (err) {
+            console.log('form error', err);
+            return next(err);
+          }
+          Event.update(event.id, {form: form}, function(err, event) {
+            if (err) {
+              console.log('error updating event with form', err);
+              return next(err);
+            }
+
+            res.status(201).send(event);
+          });
+        });
+      });
+    }
+  );
 
   app.post(
     '/api/events',
     access.authorize('CREATE_EVENT'),
     validateEventParams,
+    validateFormParams,
     function(req, res) {
       Event.create(req.newEvent, function(err, event) {
         if (err) {
@@ -144,42 +173,6 @@ module.exports = function(app, security) {
         if (!form) return res.send('Form not found', 404);
 
         return res.json(form);
-      });
-    }
-  );
-
-  // Import a form into a specific event
-  app.put(
-    '/api/events/:eventId/form',
-    access.authorize('CREATE_EVENT'),
-    function(req, res, next) {
-      if (!req.is('multipart/form-data')) return next();
-
-      new api.Form().import(req.files.form, function(err, form) {
-        if (err) {
-          console.log('form error', err);
-          return res.send(400, err.message);
-        }
-
-        Event.setForm(req.event, form, function(err, event) {
-          res.json(form);
-        });
-      });
-    }
-  );
-
-  // Update a form for an event
-  app.put(
-    '/api/events/:eventId/form',
-    access.authorize('UPDATE_EVENT'),
-    validateFormParams,
-    function(req, res) {
-      new api.Form().update(req.form.id, req.newForm, function(err, form) {
-        if (err) {
-          return res.send(400, err);
-        }
-
-        res.json(form);
       });
     }
   );
