@@ -1,26 +1,26 @@
 'use strict';
 
-angular.module('mage').factory('ObservationService', ['$q', 'appConstants','Layer', 'Form',
-  function ($q, appConstants, Layer, Form) {
+angular.module('mage').factory('ObservationService', ['$q', 'appConstants','Layer', 'Event',
+  function ($q, appConstants, Layer, Event) {
     var ***REMOVED*** = {};
-    ***REMOVED***.form = null;
+    ***REMOVED***.event = null;
 
-    var formPromise;
+    var eventPromise;
 
     ***REMOVED***.newForm = null;
-    ***REMOVED***.createNewForm = function(observation, viewMode) {
-      var promise = formPromise.then(function(form) {
-        var newForm = angular.copy(form);
-        newForm.observationId = observation.id;
-        newForm.getField("timestamp").value  = observation.properties.timestamp;
-        newForm.getField("geometry").value = {
+    ***REMOVED***.createNewEvent = function(observation, viewMode) {
+      var promise = eventPromise.then(function(event) {
+        var newEvent = angular.copy(form);
+        newEvent.observationId = observation.id;
+        newEvent.getField("timestamp").value  = observation.properties.timestamp;
+        newEvent.getField("geometry").value = {
           x: observation.geometry.coordinates[0],
           y: observation.geometry.coordinates[1]
         }
 
         var existingPropertyFields = [];
         _.each(observation.properties, function(value, key) {
-          var field = newForm.getField(key);
+          var field = newEvent.getField(key);
           if (field) {
             field.value = value;
             existingPropertyFields.push(field);
@@ -28,42 +28,36 @@ angular.module('mage').factory('ObservationService', ['$q', 'appConstants','Laye
         });
 
         if (viewMode) {
-          newForm.fields = _.intersection(newForm.fields, existingPropertyFields);
+          newEvent.fields = _.intersection(newEvent.fields, existingPropertyFields);
         }
 
-        return newForm;
+        return newEvent;
       });
 
       return promise;
     }
 
-    ***REMOVED***.updateForm = function() {
-      console.log('update form');
-      var formDeferred = $q.defer();
-
-      formPromise = formDeferred.promise;
-      var layers = Layer.query(function(){
-        angular.forEach(layers, function (layer) {
-          if (layer.type == 'Feature') {
-            Form.query(function(forms) {
-              angular.forEach(forms, function(returnedForm) {
-                if (returnedForm.id == layer.formId) {
-                  formDeferred.resolve(returnedForm);
-                  appConstants.formId = layer.formId;
-                  ***REMOVED***.form = returnedForm;
-                }
-              });
-            });
-          }
-        });
-      });
+    ***REMOVED***.updateEvent = function() {
+      console.log('update event');
+      // var eventDeferred = $q.defer();
+      //
+      // eventPromise = eventDeferred.promise;
+      // var layers = Layer.query(function(){
+      //   Event.query(function(events) {
+      //     angular.forEach(events, function(returnedEvent) {
+      //         eventDeferred.resolve(returnedEvent);
+      //         appConstants.eventId = layer.eventId;
+      //         ***REMOVED***.event = returnedEvent;
+      //     });
+      //   });
+      // });
     }
 
-    ***REMOVED***.cancelNewForm = function() {
-      ***REMOVED***.newForm = null;
+    ***REMOVED***.cancelNewEvent = function() {
+      ***REMOVED***.newEvent = null;
     }
 
-    ***REMOVED***.updateForm();
+    ***REMOVED***.updateEvent();
 
     return ***REMOVED***;
   }

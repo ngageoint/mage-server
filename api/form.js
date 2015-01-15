@@ -58,44 +58,34 @@ Form.prototype.import = function(file, callback) {
     return callback(new Error('invalid zip archive cannot parse'));
   }
 
-  this.create(form, function(err, newForm) {
-    if (err) return callback(err);
+  var iconsEntry = zip.getEntry('form/icons/');
+  if (iconsEntry) {
+    var iconPath = new api.Icon(event.id).getBasePath() + path.sep;
+    console.log('extracting icons for imported zip to ', iconPath);
 
-    var iconsEntry = zip.getEntry('form/icons/');
-    if (iconsEntry) {
-      var iconPath = new api.Icon(event.id).getBasePath() + path.sep;
-      console.log('extracting icons for imported zip to ', iconPath);
+    zip.extractEntryTo(iconsEntry, iconPath, false, false);
 
-      zip.extractEntryTo(iconsEntry, iconPath, false, false);
+    // for each file in each directory
+    var walker = walk.walk(iconPath);
+    walker.on("file", function(filePath, stat, next) {
+      var type = null;
+      var variant = null;
+      var regex = new RegExp(iconPath + path.sep + "+(.*)");
+      var match = regex.exec(filePath);
+      if (match && match[1]) {
+        var variants = match[1].split("/");
+        type = variants.shift();
+        variant = variants.shift();
+      }
 
-      // for each file in each directory
-      var walker = walk.walk(iconPath);
-      walker.on("file", function(filePath, stat, next) {
-        var type = null;
-        var variant = null;
-        var regex = new RegExp(iconPath + path.sep + "+(.*)");
-        var match = regex.exec(filePath);
-        if (match && match[1]) {
-          var variants = match[1].split("/");
-          type = variants.shift();
-          variant = variants.shift();
-        }
-
-        new api.Icon(event.id, type, variant).add({name: stat.name}, function(err, addedIcon) {
-          next(err);
-        });
+      new api.Icon(event.id, type, variant).add({name: stat.name}, function(err, addedIcon) {
+        next(err);
       });
-      walker.on("end", function() {
-        callback(null, newForm);
-      });
-    }
-  });
-}
-
-Form.prototype.update = function(form, callback) {
-  Event.setForm(this._event, form, function(err, updatedForm) {
-    callback(err, updatedForm);
-  });
+    });
+    walker.on("end", function() {
+      callback(null, form);
+    });
+  }
 }
 
 module.exports = Form;

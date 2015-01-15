@@ -1,6 +1,6 @@
 'use strict';
 
-function AdminController($scope, $routeParams, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService, FormService, Form, Layer, mageLib) {
+function AdminController($scope, $routeParams, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService, EventService, Event, Layer, mageLib) {
   // The variables that get set when clicking a team or user in the list, these get loaded into the editor.
   $scope.currentAdminPanel = $routeParams.adminPanel || "user";
   $scope.currentUserFilter = "all"; // possible values all, active, unregistered
@@ -36,18 +36,8 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
 
   $scope.appConstants = appConstants;
 
-  Form.query(function(forms) {
-    $scope.layers = Layer.query(function(layers) {
-      var featureLayer = _.find(layers, function(layer) { return layer.type == 'Feature'});
-      angular.forEach(forms, function(form) {
-        if (form.id == featureLayer.formId) {
-          appConstants.formId = featureLayer.formId
-          FormService.setCurrentEditForm(form);
-        }
-      });
-    });
-
-    $scope.forms = forms;
+  Event.query(function(events) {
+    $scope.events = events;
   });
 
   // Edit form toggles
@@ -62,14 +52,21 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
   $scope.statusMessage = '';
   $scope.statusLevel = ''; // use the bootstrap alert cl***REMOVED***es for this value, alert-error, alert-success, alert-info. Leave it as '' for yellow
 
-  $scope.editForm = function(form) {
-    FormService.setCurrentEditForm(form);
+  $scope.editEvent = function(event) {
+    EventService.setCurrentEditEvent(event);
   }
 
-  $scope.createNewForm = function() {
-    var newForm = FormService.newForm();
-    newForm.$save(function(savedForm) {
-      $scope.forms.push(newForm);
+  $scope.newEvent = function() {
+    var newEvent = EventService.newEvent();
+    // newEvent.$save(function(savedEvent) {
+    //   $scope.events.push(newEvent);
+    // });
+  }
+
+  $scope.createNewEvent = function() {
+    var newEvent = EventService.newEvent();
+    newEvent.$save(function(savedEvent) {
+      $scope.events.push(newEvent);
     });
   }
 
@@ -420,14 +417,14 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
       });
   }
 
-  $scope.$on('formImportComplete', function(event, form) {
-    form = new Form(form);
-    $scope.forms.push(form);
-    FormService.setCurrentEditForm(form);
-    $scope.importSuccess = true;
-  });
+  // $scope.$on('formImportComplete', function(event, form) {
+  //   form = new Form(form);
+  //   $scope.forms.push(form);
+  //   FormService.setCurrentEditForm(form);
+  //   $scope.importSuccess = true;
+  // });
 
-  $scope.removeForm = function(form) {
-    $scope.forms = _.reject($scope.forms, function(f) { return f.id == form.id});
+  $scope.removeEvent = function(event) {
+    $scope.events = _.reject($scope.events, function(f) { return f.id == event.id});
   }
 }

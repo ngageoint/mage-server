@@ -32,7 +32,6 @@ var EventSchema = new Schema({
   description: { type: String, required: false },
   collectionName: { type: String, required: true },
   form: {
-    name: { type: String, required: true },
     variantField: { type:String, required: false },
     fields: [FieldSchema]
   }
@@ -128,6 +127,7 @@ exports.create = function(event, callback) {
 }
 
 exports.update = function(id, event, callback) {
+  console.log('update id ' + id + ' with ', JSON.stringify(event));
   Event.findOneAndUpdate({id: id}, event, function(err, updatedEvent) {
     if (err) {
       console.log("Could not update event: " + err);
@@ -153,16 +153,6 @@ exports.getForm = function(event, callback) {
   event.findOneById({id: event.id}, function(err) {
     if (err) {
       console.log("Could not get form for event: " + err);
-    }
-
-    callback(err, event.form);
-  });
-}
-
-exports.setForm = function(event, form, callback) {
-  event.findOneAndUpdate({id: event.id}, {form: form}, function(err, event) {
-    if (err) {
-      console.log("Could not set form for event: " + err);
     }
 
     callback(err, event.form);

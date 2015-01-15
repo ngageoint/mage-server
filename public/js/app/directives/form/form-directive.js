@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mage').directive('formDirective', function (FormService, ObservationService, UserService, FeatureAttachment, appConstants, mageLib, FeatureState) {
+angular.module('mage').directive('formDirective', function (EventService, ObservationService, UserService, FeatureAttachment, appConstants, mageLib, FeatureState) {
     return {
       templateUrl: 'js/app/partials/form/form.html',
       restrict: 'E',
