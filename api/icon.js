@@ -124,7 +124,7 @@ Icon.prototype.delete = function(callback) {
       callback(err);
 
       // remove the variant dir, type dir, or base dir
-      var removePath = path.join(iconBase, self._eventId);
+      var removePath = path.join(iconBase, self._eventId.toString());
       if (self._type) {
         removePath = path.join(removePath, self._type);
         if (self._variant) {

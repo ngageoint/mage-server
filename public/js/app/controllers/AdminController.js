@@ -52,24 +52,6 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
   $scope.statusMessage = '';
   $scope.statusLevel = ''; // use the bootstrap alert cl***REMOVED***es for this value, alert-error, alert-success, alert-info. Leave it as '' for yellow
 
-  $scope.editEvent = function(event) {
-    EventService.setCurrentEditEvent(event);
-  }
-
-  $scope.newEvent = function() {
-    var newEvent = EventService.newEvent();
-    // newEvent.$save(function(savedEvent) {
-    //   $scope.events.push(newEvent);
-    // });
-  }
-
-  $scope.createNewEvent = function() {
-    var newEvent = EventService.newEvent();
-    newEvent.$save(function(savedEvent) {
-      $scope.events.push(newEvent);
-    });
-  }
-
   /* Status message functions */
   /**
     @param {String} statusLevel - bootstrap alert cl***REMOVED***es: alert-error, alert-success, alert-info, or roll your own and add it to the css
@@ -415,16 +397,5 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
         $scope.filteredDevices = $scope.devices;
         $scope.deviceSearch();
       });
-  }
-
-  // $scope.$on('formImportComplete', function(event, form) {
-  //   form = new Form(form);
-  //   $scope.forms.push(form);
-  //   FormService.setCurrentEditForm(form);
-  //   $scope.importSuccess = true;
-  // });
-
-  $scope.removeEvent = function(event) {
-    $scope.events = _.reject($scope.events, function(f) { return f.id == event.id});
   }
 }

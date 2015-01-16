@@ -309,11 +309,12 @@ textarea {
 
 .admin-active {
     background: #4F719B;
+		padding: 10px;
+		border-radius: 5px;
 }
 
-.admin-active > h3 a {
+a.admin-active {
     color: #eee;
-    margin-left: 15px;
 }
 
 .pointer {

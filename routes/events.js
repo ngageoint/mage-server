@@ -14,7 +14,7 @@ module.exports = function(app, security) {
     var event = req.body;
 
     if (!event.name) {
-      return res.send(400, "cannot create event 'name' param not specified");
+      return res.status(400).send("cannot create event 'name' param not specified");
     }
 
     req.newEvent = event;
@@ -152,19 +152,6 @@ module.exports = function(app, security) {
       });
     }
   );
-
-  // // get form for a specific event
-  // app.get(
-  //   '/api/events/:eventId/form',
-  //   access.authorize('READ_EVENT'),
-  //   function (req, res) {
-  //     Event.getForm(function(err, form) {
-  //       if (!form) return res.send('Form not found', 404);
-  //
-  //       return res.json(form);
-  //     });
-  //   }
-  // );
 
   app.get(
     '/api/events/:eventId/form/icons.zip',
