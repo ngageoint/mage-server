@@ -44,29 +44,7 @@ angular.module('mage').factory('Event', ['$resource', '$http', 'appConstants', '
     };
   }
 
-  function uploadProgress(e) {
-    if(e.lengthComputable){
-      $scope.$apply(function() {
-        $scope.uploading = true;
-        $scope.uploadProgress = (e.loaded/e.total) * 100;
-      });
-    }
-  }
 
-  function uploadComplete(response) {
-    $scope.$apply(function() {
-      $scope.uploadStatus = "Upload Complete";
-      $scope.uploading = false;
-      $scope.$emit('uploadComplete', $scope.url, response, $scope.uploadId);
-    });
-  }
-
-  function uploadFailed() {
-    $scope.$apply(function() {
-      $scope.uploadStatus = "Upload Failed";
-      $scope.uploading = false;
-    });
-  }
 
   Event.prototype.$save = function(params, success, error) {
     // Check for form import.  If so its a file upload
@@ -78,6 +56,31 @@ angular.module('mage').factory('Event', ['$resource', '$http', 'appConstants', '
         if (this.hasOwnProperty(key) && key != 'formArchiveFile' ) {
           formData.append(key, this[key]);
         }
+      }
+
+      var self = this;
+      var uploadProgress = function(e) {
+        if(e.lengthComputable){
+          $scope.$apply(function() {
+            $scope.uploading = true;
+            $scope.uploadProgress = (e.loaded/e.total) * 100;
+          });
+        }
+      }
+
+      var uploadComplete = function(response) {
+        $scope.$apply(function() {
+          $scope.uploadStatus = "Upload Complete";
+          $scope.uploading = false;
+          $scope.$emit('uploadComplete', $scope.url, response, $scope.uploadId);
+        });
+      }
+
+      var uploadFailed = function() {
+        $scope.$apply(function() {
+          $scope.uploadStatus = "Upload Failed";
+          $scope.uploading = false;
+        });
       }
 
       $.ajax({

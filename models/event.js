@@ -1,5 +1,6 @@
 var mongoose = require('mongoose')
-, Counter = require('./counter');
+, Counter = require('./counter')
+, api = require('../api');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -139,22 +140,14 @@ exports.update = function(id, event, callback) {
 
 exports.remove = function(event, callback) {
   event.remove(function(err) {
-    if (err) {
-      console.error(err);
-    } else {
-      dropObservationCollection(event);
-    }
+    if (err) return callback(err);
 
-    callback(err, event);
-  });
-}
+    dropObservationCollection(event);
 
-exports.getForm = function(event, callback) {
-  event.findOneById({id: event.id}, function(err) {
-    if (err) {
-      console.log("Could not get form for event: " + err);
-    }
+    new api.Icon(event.id).delete(function(err) {
+      if (err) return callback(err);
 
-    callback(err, event.form);
+      callback(err, event);
+    });
   });
 }

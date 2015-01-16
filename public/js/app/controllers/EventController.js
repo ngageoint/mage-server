@@ -40,6 +40,24 @@ angular.module('mage').controller('EventCtrl', function ($scope, $injector, appC
     $scope.accordion.oneAtATime = true;
     $scope.variants = [];
 
+    $scope.editEvent = function(event) {
+      EventService.setCurrentEditEvent(event);
+    }
+
+    $scope.newEvent = function() {
+      var newEvent = EventService.newEvent();
+    }
+
+    $scope.createEvent = function() {
+      $scope.event.$save(function(savedEvent) {
+        $scope.events.push($scope.event);
+      });
+    }
+
+    $scope.removeEvent = function(event) {
+      $scope.events = _.reject($scope.events, function(f) { return f.id == event.id});
+    }
+
     $scope.deletableField = function(field) {
       return field.name.indexOf('field') != -1;
     }
@@ -94,7 +112,7 @@ angular.module('mage').controller('EventCtrl', function ($scope, $injector, appC
 
     $scope.populateVariants = function(doNotAutoSave) {
       if (!$scope.event.form) return;
-      
+
       $scope.variantField = _.find($scope.event.form.fields, function(field) {
         return field.name == $scope.event.form.variantField;
       });
@@ -237,9 +255,9 @@ angular.module('mage').controller('EventCtrl', function ($scope, $injector, appC
       $scope.event.$save();
     }
 
-    $scope.deleteEvent= function() {
+    $scope.deleteEvent = function() {
       var modalInstance = $injector.get('$modal').open({
-        templateUrl: 'deleteEvent.html',
+        templateUrl: '/js/app/partials/delete-event.html',
         resolve: {
           event: function () {
             return $scope.event;
@@ -252,7 +270,7 @@ angular.module('mage').controller('EventCtrl', function ($scope, $injector, appC
             console.info('delete event');
             event.$delete(function(success) {
               console.info('event delete success');
-              $modalInstance.close(form);
+              $modalInstance.close(event);
             });
           }
           $scope.cancel = function () {
@@ -264,7 +282,7 @@ angular.module('mage').controller('EventCtrl', function ($scope, $injector, appC
       modalInstance.result.then(function (event) {
         console.info('success');
         $scope.event = null;
-        $scope.removEvent(event);
+        $scope.removeEvent(event);
       }, function () {
         console.info('failure');
       });
