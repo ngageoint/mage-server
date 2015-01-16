@@ -1,4 +1,4 @@
-angular.module('mage').factory('Event', ['$resource', '$http', 'appConstants', 'mageLib', 'Feature', function($resource, $http, appConstants, mageLib, Feature) {
+angular.module('mage').factory('Event', ['$rootScope', '$resource', '$http', 'appConstants', 'mageLib', 'Feature', function($rootScope, $resource, $http, appConstants, mageLib, Feature) {
   var Event = $resource('/api/events/:id', {
     id: '@id'
   },{
@@ -44,74 +44,43 @@ angular.module('mage').factory('Event', ['$resource', '$http', 'appConstants', '
     };
   }
 
-
-
-  Event.prototype.$save = function(params, success, error) {
-    // Check for form import.  If so its a file upload
-    if (!this.id && this.formArchiveFile) {
-      console.log('upload time');
-      var formData = new FormData();
-      formData.append('form', this.formArchiveFile);
-      for (var key in this) {
-        if (this.hasOwnProperty(key) && key != 'formArchiveFile' ) {
-          formData.append(key, this[key]);
-        }
-      }
-
-      var self = this;
-      var uploadProgress = function(e) {
-        if(e.lengthComputable){
-          $scope.$apply(function() {
-            $scope.uploading = true;
-            $scope.uploadProgress = (e.loaded/e.total) * 100;
-          });
-        }
-      }
-
-      var uploadComplete = function(response) {
-        $scope.$apply(function() {
-          $scope.uploadStatus = "Upload Complete";
-          $scope.uploading = false;
-          $scope.$emit('uploadComplete', $scope.url, response, $scope.uploadId);
-        });
-      }
-
-      var uploadFailed = function() {
-        $scope.$apply(function() {
-          $scope.uploadStatus = "Upload Failed";
-          $scope.uploading = false;
-        });
-      }
-
-      $.ajax({
-        url: '/api/events',
-        type: 'POST',
-        headers: {
-          authorization: 'Bearer ' + mageLib.getLocalItem('token')
-        },
-        xhr: function() {
-          var myXhr = $.ajaxSettings.xhr();
-          if(myXhr.upload){
-            myXhr.upload.addEventListener('progress',uploadProgress, false);
-          }
-          return myXhr;
-        },
-        success: uploadComplete,
-        error: uploadFailed,
-        data: formData,
-        cache: false,
-        contentType: false,
-        processData: false
-      });
-
-      return;
-    }
-
+  Event.prototype.$save = function(success, error) {
     if (this.id) {
-      this.$update(params, success, error);
+      this.$update(success, error);
     } else {
-      this.form = defaultForm();
-      this.$create(params, success, error);
+      if (this.formArchiveFile) {
+        var formData = new FormData();
+        formData.append('form', this.formArchiveFile);
+        for (var key in this) {
+          if (this.hasOwnProperty(key) && key != 'formArchiveFile' ) {
+            formData.append(key, this[key]);
+          }
+        }
+
+        var self = this;
+        $.ajax({
+          url: '/api/events',
+          type: 'POST',
+          headers: {
+            authorization: 'Bearer ' + mageLib.getLocalItem('token')
+          },
+          success: function(response) {
+            delete self.formArchiveFile;
+            _.extend(self, response);
+            $rootScope.$apply(function() {
+              success(self);
+            });
+          },
+          error: error,
+          data: formData,
+          cache: false,
+          contentType: false,
+          processData: false
+        });
+      } else {
+        this.form = defaultForm();
+        this.$create(success, error);
+      }
     }
   };
 
