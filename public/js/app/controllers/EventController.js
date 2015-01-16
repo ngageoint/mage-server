@@ -50,7 +50,7 @@ angular.module('mage').controller('EventCtrl', function ($scope, $injector, appC
 
     $scope.createEvent = function() {
       $scope.event.$save(function(savedEvent) {
-        $scope.events.push($scope.event);
+        $scope.events.push(savedEvent);
       });
     }
 
