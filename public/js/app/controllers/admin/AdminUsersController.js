@@ -1,12 +1,11 @@
 'use strict';
 
-function AdminController($scope, $routeParams, $log, $http, $location, $anchorScroll, $injector, $filter, appConstants, UserService, DeviceService, EventService, Event, Layer, mageLib) {
-  // The variables that get set when clicking a team or user in the list, these get loaded into the editor.
-  $scope.currentAdminPanel = $routeParams.adminPanel || "user";
+angular.module('mage').controller('AdminUsersCtrl', function ($scope, appConstants, mageLib, UserService, $filter) {
+  $scope.appConstants = appConstants;
   $scope.currentUserFilter = "all"; // possible values all, active, unregistered
-  $scope.currentDeviceFilter = "all"; // possible values all, registered, unregistered
   $scope.token = mageLib.getLocalItem('token');
 
+  $scope.user = {};
   $scope.users = [];
   $scope.filteredUsers = [];
   UserService.getAllUsers().
@@ -22,68 +21,11 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
       $scope.roles = data;
     });
 
-  $scope.devices = [];
-  $scope.filteredDevices = [];
-  DeviceService.getAllDevices().
-    success(function (data) {
-      $scope.devices = data;
-      $scope.filteredDevices = $scope.devices;
-      $scope.deviceSearch();
-    });
-
-  $scope.user = {};
-  $scope.device = {};
-
-  $scope.appConstants = appConstants;
-
-  Event.query(function(events) {
-    $scope.events = events;
-  });
-
   // Edit form toggles
   $scope.showUserForm = false;
-  $scope.showDeviceForm = false;
-  $scope.showNewDeviceButton = true;
-  $scope.showTeamForm = false;
-
-  // Status message values
-  $scope.showStatus = false;
-  $scope.statusTitle = '';
-  $scope.statusMessage = '';
-  $scope.statusLevel = ''; // use the bootstrap alert cl***REMOVED***es for this value, alert-error, alert-success, alert-info. Leave it as '' for yellow
-
-  /* Status message functions */
-  /**
-    @param {String} statusLevel - bootstrap alert cl***REMOVED***es: alert-error, alert-success, alert-info, or roll your own and add it to the css
-  */
-  $scope.showStatusMessage = function (title, message, statusLevel) {
-    $scope.statusTitle = title;
-    $scope.statusMessage = message;
-    $scope.statusLevel = statusLevel;
-    $scope.showStatus = true;
-  }
-
-  $scope.setShowStatus = function (visibility) {
-    $scope.showStatus = visibility;
-  }
 
   $scope.setShowUserForm = function (visibility) {
     $scope.showUserForm = visibility;
-  }
-
-  $scope.setShowDeviceForm = function (visibility) {
-    $scope.showDeviceForm = visibility;
-    $scope.showNewDeviceButton = !visibility;
-  }
-
-  $scope.setShowTeamForm = function (visibility) {
-    $scope.showTeamForm = visibility;
-  }
-
-  /* Set the current activity, this will tell the directives which one of them should be visible at the moment. */
-  $scope.changeCurrentPanel = function (panel) {
-    console.log("change current panel " + panel);
-    $scope.currentAdminPanel = panel;
   }
 
   $scope.changeCurrentUserFilter = function (filter) {
@@ -98,27 +40,10 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
     }
   }
 
-  $scope.changeCurrentDeviceFilter = function (filter) {
-    $scope.deviceQuery = '';
-    $scope.currentDeviceFilter = filter;
-    if (filter == 'all') {
-      $scope.filteredDevices = $scope.devices;
-    } else if ( filter == "registered") {
-      $scope.filteredDevices = $scope.getRegisteredDevices($scope.devices);
-    } else {
-      $scope.filteredDevices = $scope.getUnregisteredDevices($scope.devices);
-    }
-  }
-
   $scope.userFilterCl***REMOVED*** = function (filter) {
     return filter === $scope.currentUserFilter ? 'active' : '';
   }
 
-  $scope.deviceFilterCl***REMOVED*** = function (filter) {
-    return filter === $scope.currentDeviceFilter ? 'active' : '';
-  }
-
-  /* User admin functions */
   $scope.saveUser = function () {
     var user = {
       username: $scope.user.username,
@@ -261,14 +186,14 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
     return result;
   }
 
-  var searchMatch = function (haystack, needle) {
-    if (!needle) {
+  var searchMatch = function (property, query) {
+    if (!query) {
       return true;
-    } else if (!haystack) {
+    } else if (!property) {
       return false;
     }
 
-    return haystack.toLowerCase().indexOf(needle.toLowerCase()) !== -1;
+    return property.toLowerCase().indexOf(query.toLowerCase()) !== -1;
   };
 
   $scope.userSearch = function () {
@@ -297,105 +222,4 @@ function AdminController($scope, $routeParams, $log, $http, $location, $anchorSc
         $scope.userSearch();
       });
   }
-
-  $scope.editDevice = function (device) {
-    $scope.device = device;
-    $scope.setShowDeviceForm(true);
-    $scope.scrollTo('device-form');
-  }
-
-  $scope.saveDevice = function () {
-    var device = $scope.device;
-
-    if (device._id) {
-      DeviceService.updateDevice(device)
-        .success(function(data) {
-          $scope.showStatusMessage("Success", "Device '" + device.uid + "' has been updated.","alert-info");
-          $scope.setShowDeviceForm(false);
-        })
-        .error(function(data) {
-          $scope.showStatusMessage("Unable to update device", data, "alert-error");
-        });
-    } else {
-      DeviceService.createDevice(device)
-        .success(function (data) {
-          $scope.showStatusMessage("Success", "Device '" + device.uid + "' has been created.","alert-info");
-          $scope.devices.push(data);
-          $scope.setShowDeviceForm(false);
-          $scope.deviceSearch();
-        })
-        .error(function (data) {
-          $scope.showStatusMessage("Unable to create device", data, "alert-error");
-        });
-    }
-  }
-
-  $scope.registerDevice = function(device) {
-    DeviceService.registerDevice(device)
-      .success(function(data, status) {
-        device.registered = true;
-        device.registeredThisSession = true;
-      })
-      .error(function(data, status) {
-        $scope.showStatusMessage("Unable to register device", data, "alert-error");
-      });
-  }
-
-  $scope.deleteDevice = function (device) {
-    DeviceService.deleteDevice(device)
-      .success(function() {
-        $scope.devices = _.reject($scope.devices, function(d) { return d.uid === device.uid });
-        device.deleted = "true";
-      })
-      .error(function() {
-        $scope.showStatusMessage("Unable to delete device", data, "alert-error");
-      });
-  }
-
-  $scope.getUnregisteredDevices = function (devices) {
-    var result = [];
-    angular.forEach(devices, function (device) {
-      if (device.registered == false) {
-        result.push(device);
-      }
-    });
-    return result;
-  }
-
-  $scope.getRegisteredDevices = function (devices) {
-    var result = [];
-    angular.forEach(devices, function (device) {
-      if (device.registered == true) {
-        result.push(device);
-      }
-    });
-    return result;
-  }
-
-  $scope.deviceSearch = function () {
-    $scope.filteredDevices = $filter('filter')($scope.devices, function (device) {
-      if (searchMatch(device['name'], $scope.deviceQuery) || searchMatch(device['uid'], $scope.deviceQuery) ||
-        searchMatch(device['description'], $scope.deviceQuery)) {
-        return true;
-      }
-      return false;
-    });
-
-    if ($scope.currentDeviceFilter == 'registered') {
-      $scope.filteredDevices = $scope.getRegisteredDevices($scope.filteredDevices);
-    } else if ($scope.currentDeviceFilter == 'unregistered') {
-      $scope.filteredDevices = $scope.getUnregisteredDevices($scope.filteredDevices);
-    }
-  }
-
-  $scope.refreshDevices = function() {
-    $scope.devices = [];
-    $scope.filteredDevices = [];
-    DeviceService.getAllDevices().
-      success(function (data) {
-        $scope.devices = data;
-        $scope.filteredDevices = $scope.devices;
-        $scope.deviceSearch();
-      });
-  }
-}
+});

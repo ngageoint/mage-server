@@ -63,11 +63,11 @@
   <script type="text/javascript" src="vendor/angular/1.2.16/angular-sanitize.min.js"></script>
   <script type="text/javascript" src="vendor/angular/1.2.16/angular-route.min.js"></script>
 
-  <div cl***REMOVED***="navbar navbar-fixed-top" ng-controller="NavController">
+  <header cl***REMOVED***="navbar navbar-fixed-top" ng-controller="NavController">
     <div cl***REMOVED***="navbar-inner">
       <div cl***REMOVED***="container ng-cloak" ng-show="user">
 
-        <a cl***REMOVED***="brand" href="#/">
+        <a cl***REMOVED***="mage brand" href="#/">
           <i cl***REMOVED***="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
         </a>
         <ul cl***REMOVED***="nav pull-right" ng-show="user.myself">
@@ -126,7 +126,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </header>
 
 
   <div data-ng-view></div>
@@ -189,7 +189,6 @@
   <script type="text/javascript" src="js/app/***REMOVED***s/TimeBucketService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/EventService.js"></script>
   <script type="text/javascript" src="js/app/controllers/AboutController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/AdminController.js"></script>
   <script type="text/javascript" src="js/app/controllers/DebugController.js"></script>
   <script type="text/javascript" src="js/app/controllers/MapController.js"></script>
   <script type="text/javascript" src="js/app/controllers/NavController.js"></script>
@@ -198,11 +197,18 @@
   <script type="text/javascript" src="js/app/controllers/SigninController.js"></script>
   <script type="text/javascript" src="js/app/controllers/SignupController.js"></script>
   <script type="text/javascript" src="js/app/controllers/UserController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/EventController.js"></script>
+
+  <script type="text/javascript" src="js/app/controllers/admin/AdminController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/admin/AdminDevicesController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/admin/AdminEventsController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/admin/AdminUsersController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/admin/AdminTeamsController.js"></script>
 
   <script type="text/javascript" src="js/app/resources/Feature.js"></script>
   <script type="text/javascript" src="js/app/resources/Layer.js"></script>
   <script type="text/javascript" src="js/app/resources/Event.js"></script>
+  <script type="text/javascript" src="js/app/resources/Team.js"></script>
+
   <script type="text/javascript" src="js/app/filters/moment.js"></script>
   <script type="text/javascript" src="js/app/filters/p***REMOVED***word.js"></script>
 
