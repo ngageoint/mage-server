@@ -64,7 +64,7 @@ var mage = angular.module(
     });
     $routeProvider.when('/admin/:adminPanel?',
     {
-      templateUrl:    'js/app/partials/admin.html',
+      templateUrl:    'js/app/partials/admin/admin.html',
       controller:     "AdminController",
       resolve: resolveLogin(["ADMIN_ROLE"])
     });

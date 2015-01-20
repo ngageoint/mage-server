@@ -1,0 +1,93 @@
+<div cl***REMOVED***="row-fluid" ng-controller="AdminDevicesCtrl">
+  <div cl***REMOVED***="span12 top-gap" id="device-admin-area" ng-show="currentAdminPanel == 'device'">
+    <button cl***REMOVED***="btn" ng-click="setShowDeviceForm(true)" ngmtap="setShowDeviceForm(true)" ng-show="showNewDeviceButton"><i cl***REMOVED***="fa fa-plus-square-o icon-white"></i> New Device</button>
+    <div cl***REMOVED***="top-gap" ng-show="showDeviceForm">
+      <form ng-submit="saveDevice()" id="device-form" cl***REMOVED***="form-horizontal">
+        <fieldset>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">Device Identifier</label>
+            <div cl***REMOVED***="controls">
+              <input type="text" placeholder="for example 01:02:03:04:05:06:08" ng-model="device.uid">
+              <span cl***REMOVED***="help-block top-gap">MAC address, or some sort of unique identifier for your device.</span>
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">Device Name</label>
+            <div cl***REMOVED***="controls">
+              <input type="text" placeholder="i.e. Jacks Android" ng-model="device.name">
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">Description</label>
+            <div cl***REMOVED***="controls">
+              <textarea type="text" placeholder="A bit about the device" ng-model="device.description"></textarea>
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">Point of Contact</label>
+            <div cl***REMOVED***="controls">
+              <select ng-model="device.poc" ng-options="user._id as user.firstname + ' ' + user.lastname for user in users">
+              </select>
+            </div>
+          </div>
+          <span>
+            <button type="reset" cl***REMOVED***="btn btn-inverse" ng-click="setShowDeviceForm(false)" ngmtap="setShowDeviceForm(false)">Cancel</button>
+            <button type="submit" cl***REMOVED***="btn">Save device</button>
+          </span>
+        </fieldset>
+      </form>
+    </div>
+    <div cl***REMOVED***="navbar top-gap">
+      <div cl***REMOVED***="navbar-inner">
+        <ul cl***REMOVED***="nav navbar-nav">
+          <li cl***REMOVED***="pull-left"><a href="" ng-click="refreshDevices()"><i cl***REMOVED***="fa fa-refresh"></i></a></li>
+          <li ng-cl***REMOVED***="deviceFilterCl***REMOVED***('all')"><a href="" ng-click="changeCurrentDeviceFilter('all')">All Devices</a></li>
+          <li ng-cl***REMOVED***="deviceFilterCl***REMOVED***('registered')"><a href="" ng-click="changeCurrentDeviceFilter('registered')">Registered Devices</a></li>
+          <li ng-cl***REMOVED***="deviceFilterCl***REMOVED***('unregistered')"><a href="" ng-click="changeCurrentDeviceFilter('unregistered')">Unregistered Devices</a></li>
+        </ul>
+        <form cl***REMOVED***="navbar-search pull-right">
+          <input type="text" cl***REMOVED***="form-search search-query" ng-model="deviceQuery" placeholder="Search" ng-change="deviceSearch()">
+        </form>
+      </div>
+    </div>
+    <div cl***REMOVED***="top-gap">
+      <div ng-repeat="device in filteredDevices" cl***REMOVED***="top-gap">
+        <div ng-switch on="device.deleted">
+          <div ng-switch-when="true" cl***REMOVED***="row-fluid deleted-border">
+            <div cl***REMOVED***="span12">
+              <h4 style="text-align: center;">Device: {{device.uid}} - {{device.name}} {{u.description}} has been deleted.</h4>
+            </div>
+          </div>
+          <div ng-switch-default cl***REMOVED***="row-fluid" ng-cl***REMOVED***="{'alert-success': device.registeredThisSession}" style="padding: 7px;">
+            <div cl***REMOVED***="span2">
+              <button cl***REMOVED***="btn" ng-click="editDevice(device)" ngm-tap="editDevice(device)">
+                <i cl***REMOVED***="fa fa-edit pointer"></i> Edit
+              </button>
+              <button cl***REMOVED***="btn btn-success" ng-hide="device.registered" ng-click="registerDevice(device)" ngm-tap="registerDevice(device)">
+                <i cl***REMOVED***="fa fa-thumbs-up"></i> Register
+              </button>
+              <span cl***REMOVED***="strong" ng-show="device.registeredThisSession">Successfully registered</span>
+            </div>
+            <div cl***REMOVED***="span2">
+              {{device.uid}}
+            </div>
+            <div cl***REMOVED***="span2">
+              {{device.name}}
+            </div>
+            <div cl***REMOVED***="span2">
+              {{device.description}}
+            </div>
+            <div cl***REMOVED***="span2">
+              {{getUserDisplayName(device.poc)}}
+            </div>
+            <div cl***REMOVED***="span2">
+              <button cl***REMOVED***="btn btn-danger" ng-click="deleteDevice(device)" ngm-tap="deleteDevice(device)">
+                <i cl***REMOVED***="fa fa-trash-o"></i> Delete device
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

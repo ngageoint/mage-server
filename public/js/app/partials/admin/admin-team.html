@@ -1,0 +1,125 @@
+<div ng-controller="AdminTeamsCtrl">
+  <div cl***REMOVED***="row-fluid">
+    <div cl***REMOVED***="span2">
+      <div cl***REMOVED***="row-fluid admin-header bottom-border">
+        <div cl***REMOVED***="span12">
+          <span ng-click="refreshTeams()"><i cl***REMOVED***="fa fa-refresh icon-spacer pointer"></i></span>
+          <span>Teams ({{teams.length}})
+            <button cl***REMOVED***="btn pull-right" ng-click="newTeam()">New Team</button>
+          </span>
+        </div>
+      </div>
+
+      <div cl***REMOVED***="row-fluid bottom-gap">
+        <div cl***REMOVED***="form-search">
+          <input type="text" cl***REMOVED***="search-query span12" placeholder="Search">
+        </div>
+      </div>
+
+     <div>
+       <div ng-repeat="team in teams" cl***REMOVED***="row-fluid pointer" ng-click="editTeam(team)">
+         <div cl***REMOVED***="bottom-gap-l">
+           <div cl***REMOVED***="strong">{{team.name}}</div>
+           <div cl***REMOVED***="muted">{{team.description}}</div>
+         </div>
+       </div>
+     </div>
+   </div>
+
+   <div cl***REMOVED***="span9 offset1" ng-show="team">
+     <div cl***REMOVED***="row-fluid">
+       <div cl***REMOVED***="span8">
+         <form cl***REMOVED***="form">
+           <div cl***REMOVED***="control-group">
+             <label cl***REMOVED***="control-label">Name</label>
+             <input type="text" ng-change="autoSave()" placeholder="Team name" ng-model="team.name"/>
+           </div>
+           <div cl***REMOVED***="control-group">
+             <label cl***REMOVED***="control-label">Description</label>
+             <div cl***REMOVED***="controls">
+               <textarea type="text" ng-change="autoSave()" placeholder="Brief description of the team." ng-model="team.description"/>
+             </div>
+           </div>
+         </form>
+
+         <div cl***REMOVED***="navbar">
+           <div cl***REMOVED***="navbar-inner admin-table-nav">
+             <button cl***REMOVED***="pull-left btn" ng-click="edit = !edit">Edit</button>
+             <button cl***REMOVED***="pull-right btn" ng-click="add = !add">Add</button>
+
+             <a cl***REMOVED***="brand" href="#">Team Members ({{team.members.length}})</a>
+
+             <form cl***REMOVED***="navbar-search">
+               <input type="text" cl***REMOVED***="search-query" placeholder="Filter Team Members">
+             </form>
+           </div>
+
+           <div ng-show="add" style="background-color: #E2E2E2; padding: 10px;">
+             <div cl***REMOVED***="row-fluid">
+               <form cl***REMOVED***="navbar-search">
+                 <input type="text" cl***REMOVED***="search-query" placeholder="Search Users">
+               </form>
+             </div>
+
+             <div cl***REMOVED***="row-fluid top-gap-s">
+               <div cl***REMOVED***="pre-scrollable-small well well-small admin-table">
+                 <div ng-repeat="member in team.members" cl***REMOVED***="row-fluid well-item bottom-gap-s">
+                   <div cl***REMOVED***="span2">
+                     <span cl***REMOVED***="icon-spacer">
+                       <button cl***REMOVED***="btn btn-mini btn-success"><i cl***REMOVED***="fa fa-plus"></i></button>
+                     </span>
+                     <span>
+                       {{member.name}}
+                     </span>
+                   </div>
+                 </div>
+               </div>
+             </div>
+           </div>
+         </div>
+
+         <div cl***REMOVED***="pre-scrollable-large well well-small admin-table">
+           <div ng-repeat="member in team.members" cl***REMOVED***="row-fluid well-item bottom-gap-s">
+             <div cl***REMOVED***="span2">
+               <span cl***REMOVED***="icon-spacer" ng-show="edit">
+                  <button cl***REMOVED***="btn btn-mini btn-danger"><i cl***REMOVED***="fa fa-minus"></i></button>
+               </span>
+               <span>
+                 {{member.name}}
+               </span>
+              </div>
+           </div>
+         </div>
+
+        <button cl***REMOVED***="btn btn-success top-gap" ng-hide="team.id" ng-click="createTeam(team)"> <i cl***REMOVED***="fa fa-check"></i> Create Team</button>
+
+       </div>
+
+     </div>
+
+     <button cl***REMOVED***="btn btn-danger right" ng-show="team.id" ng-click="deleteTeam(team)"> <i cl***REMOVED***="fa fa-trash-o"></i> Delete Team</button>
+
+     <!-- <div cl***REMOVED***="row-fluid top-gap-xl">
+       <h4>Add team members</h4>
+       <div cl***REMOVED***="navbar">
+         <div cl***REMOVED***="navbar-inner">
+           <form cl***REMOVED***="navbar-search">
+             <input type="text" cl***REMOVED***="search-query" placeholder="Search">
+           </form>
+         </div>
+       </div>
+       <div cl***REMOVED***="pre-scrollable-small well well-small top-gap-s admin-table">
+         <div ng-repeat="user in users" cl***REMOVED***="row-fluid well-item">
+           <div cl***REMOVED***="bottom-gap">
+             <span>
+               <span cl***REMOVED***="strong">{{user.username}}</span>
+               <span cl***REMOVED***="muted">{{user.firstname}} {{user.lastname}}</span>
+             </span>
+           </div>
+         </div>
+       </div>
+     </div> -->
+
+   </div>
+  </div>
+</div>
