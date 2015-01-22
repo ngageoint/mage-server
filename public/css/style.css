@@ -137,8 +137,13 @@ img.rotate270 {
 }
 
 .pre-scrollable-large {
-	max-height: 550px;
+	max-height: 450px;
 	overflow-y: scroll;
+}
+
+.wtf {
+	height: 100vh;
+	background-color: orange;
 }
 
 .well {
@@ -154,7 +159,7 @@ img.rotate270 {
 }
 
 .admin-nav-gap {
-	margin-top: 84;
+	padding-top: 84px;
 }
 
 .top-gap-s {
@@ -189,10 +194,6 @@ img.rotate270 {
     margin-bottom: 50px;
 }
 
-.bottom-border {
-	border-bottom: 1px solid rgba(52,84,119,0.8);
-}
-
 .icon-spacer {
     margin-right: 5px;
 }
@@ -224,14 +225,6 @@ textarea {
 .nav-pills>.active>a, .nav-pills>.active>a:hover, .nav-pills>.active>a:focus {
     background: #456588;
     color: #F5F3DA;
-}
-
-.col {
-	margin-bottom: -99999px;
-	padding-bottom: 99999px;
-	background-color: rgba(208, 231, 255, 0.8);
-	/*background-color: rgba(52,84,119,0.7);*/
-
 }
 
 .col-wrap {
@@ -346,12 +339,17 @@ textarea {
 	background-color: #E2E2E2;
 }
 
+a.admin-nav-active {
+	border-bottom: 2px solid #345477;
+	color: #345477;
+}
+
 .admin-header {
 	color: #345477;
 	font-size: 20px;
-	font-weight: bold;
 	padding-bottom: 20px;
 	margin-bottom: 20px;
+	border-bottom: 1px solid rgba(52,84,119,0.8);
 }
 
 .admin-area {
@@ -385,9 +383,13 @@ textarea {
 	color: #345477;
 }
 
-a.admin-active {
-	border-bottom: 2px solid #345477;
-	color: #345477;
+.admin-row {
+	padding: 7px;
+}
+
+.admin-active {
+	background-color: #E2E2E2;
+	border-radius: 5px;
 }
 
 .pointer {
@@ -440,7 +442,15 @@ h4.image-delete {
 }
 
 .well-item {
+	padding-bottom: 5px;
+	margin-bottom: 5px;
 	border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.well-item:last-child {
+	padding-bottom: 0;
+	margin-bottom: 0;
+	border-bottom: none;
 }
 
 .edit-well {

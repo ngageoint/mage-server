@@ -9,18 +9,21 @@ module.exports = function(app, security) {
   var validateTeamParams = function(req, res, next) {
     var name = req.param('name');
     if (!name) {
-      return res.send(400, "cannot create team 'name' param not specified");
+      return res.status(400).send("cannot create team 'name' param not specified");
     }
+    
+    req.teamParam = {
+      name: name,
+      description: req.param('description'),
+      members: req.param('members')
+    };
 
-    var description = req.param('description');
-
-    req.teamParam = {name: name, description: description};
     next();
   }
 
   // get all teams
   app.get(
-    '/api/teams', 
+    '/api/teams',
     access.authorize('READ_TEAM'),
       function (req, res) {
       Team.getTeams(function (err, teams) {
@@ -30,8 +33,8 @@ module.exports = function(app, security) {
 
   // get team
   app.get(
-    '/api/teams/:teamId', 
-    access.authorize('READ_TEAM'), 
+    '/api/teams/:teamId',
+    access.authorize('READ_TEAM'),
     function (req, res) {
       res.json(req.team);
     }
@@ -44,9 +47,7 @@ module.exports = function(app, security) {
     validateTeamParams,
     function(req, res) {
       Team.createTeam(req.teamParam, function(err, team) {
-        if (err) {
-          return res.send(400, err);
-        }
+        if (err) return next(err);
 
         res.json(team);
       });
@@ -56,16 +57,16 @@ module.exports = function(app, security) {
   // Update a team
   app.put(
     '/api/teams/:teamId',
-    access.authorize('UPDATE_TEAM'), 
+    access.authorize('UPDATE_TEAM'),
+    validateTeamParams,
     function(req, res) {
       var update = {};
       if (req.teamParam.name) update.name = req.teamParam.name;
       if (req.teamParam.description) update.description = req.teamParam.description;
+      if (req.teamParam.members) update.members = req.teamParam.members;
 
       Team.updateTeam(req.team._id, update, function(err, team) {
-        if (err) {
-          return res.send(400, err);
-        }
+        if (err) return next(err);
 
         res.json(team);
       });
@@ -74,13 +75,11 @@ module.exports = function(app, security) {
 
   // Delete a team
   app.delete(
-    '/api/teams/:teamId', 
+    '/api/teams/:teamId',
     access.authorize('DELETE_TEAM'),
-    function(req, res) {
+    function(req, res, next) {
       Team.deleteTeam(req.team, function(err, team) {
-        if (err) {
-          return res.send(400, err);
-        }
+        if (err) return next(err);
 
         res.json(team);
       });

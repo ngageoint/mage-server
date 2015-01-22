@@ -26,5 +26,5 @@ angular.module('mage').factory('Team', ['$resource', '$http', function($resource
 	};
 
 	return Team;
-	
+
 }]);

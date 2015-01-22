@@ -144,8 +144,11 @@ UserSchema.pre('remove', function(next) {
   });
 });
 
-var transformUser = function(user, ret, options) {
+var transform = function(user, ret, options) {
   if ('function' != typeof user.ownerDocument) {
+    ret.id = ret._id;
+    delete ret._id;
+
     delete ret.p***REMOVED***word;
     delete ret.locations;
     delete ret.avatar;
@@ -164,11 +167,11 @@ var transformUser = function(user, ret, options) {
 }
 
 UserSchema.set("toObject", {
-  transform: transformUser
+  transform: transform
 });
 
 UserSchema.set("toJSON", {
-  transform: transformUser
+  transform: transform
 });
 
 // Creates the Model for the User Schema

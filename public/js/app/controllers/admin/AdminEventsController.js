@@ -262,7 +262,7 @@ angular.module('mage').controller('AdminEventsCtrl', function ($scope, $injector
 
   $scope.deleteEvent = function() {
     var modalInstance = $injector.get('$modal').open({
-      templateUrl: '/js/app/partials/delete-event.html',
+      templateUrl: '/js/app/partials/admin/delete-event.html',
       resolve: {
         event: function () {
           return $scope.event;
@@ -291,6 +291,5 @@ angular.module('mage').controller('AdminEventsCtrl', function ($scope, $injector
     }, function () {
       console.info('failure');
     });
-    return;
   }
 });
