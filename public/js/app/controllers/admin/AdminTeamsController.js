@@ -58,31 +58,31 @@ angular.module('mage').controller('AdminTeamsCtrl', function ($scope, $filter, $
     });
   }, 5000);
 
-  $scope.saveTeam = function(team) {
+  var saveTeam = function(team, success, failure) {
     $scope.saving = true;
     $scope.error = false;
-    if ($scope.team.id) {
-      $scope.team.$update(function() {
-        $scope.saved = true;
-        $scope.saving = false;
 
-        debounceHideSave();
-      }, function(response) {
-        $scope.error = response.data;
-        $scope.saving = false;
-      });
-    } else {
-      $scope.team.$create(function() {
-        $scope.teams.push($scope.team);
-        $scope.saved = true;
-        $scope.saving = false;
+    $scope.team.$save(function() {
+      $scope.saved = true;
+      $scope.saving = false;
 
-        debounceHideSave();
-      }, function(response) {
-        $scope.error = response.data;
-        $scope.saving = false;
-      });
-    }
+      debounceHideSave();
+      if (success) success();
+    }, function(reponse) {
+      $scope.error = response.data;
+      $scope.saving = false;
+      if (failure) failure();
+    });
+  }
+
+  $scope.updateTeam = function(team) {
+    saveTeam(team);
+  }
+
+  $scope.createTeam = function(team) {
+    saveTeam(team, function() {
+      $scope.teams.push($scope.team);
+    });
   }
 
   $scope.deleteTeam = function(team) {

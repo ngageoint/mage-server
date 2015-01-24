@@ -1,50 +1,68 @@
 'use strict';
 
-angular.module('mage').controller('AdminUsersCtrl', function ($scope, appConstants, mageLib, UserService, $filter) {
-  $scope.appConstants = appConstants;
-  $scope.currentUserFilter = "all"; // possible values all, active, unregistered
+angular.module('mage').controller('AdminUsersCtrl', function ($scope, $injector, $filter, appConstants, mageLib, UserService) {
   $scope.token = mageLib.getLocalItem('token');
-
-  $scope.user = {};
+  $scope.filter = "all"; // possible values all, active, unregistered
   $scope.users = [];
-  $scope.filteredUsers = [];
-  UserService.getAllUsers().
-    success(function (data) {
-      $scope.users = data;
-      $scope.filteredUsers = $scope.users;
-      $scope.userSearch();
-    });
-
   $scope.roles = [];
-  UserService.getRoles().
-    success(function (data) {
-      $scope.roles = data;
-    });
+  $scope.page = 0;
+  $scope.itemsPerPage = 10;
 
-  // Edit form toggles
-  $scope.showUserForm = false;
+  UserService.getRoles().success(function (roles) {
+    $scope.roles = roles;
+  });
 
-  $scope.setShowUserForm = function (visibility) {
-    $scope.showUserForm = visibility;
-  }
+  UserService.getAllUsers(true).success(function(users) {
+    $scope.users = users;
+  });
 
-  $scope.changeCurrentUserFilter = function (filter) {
-    $scope.userQuery = '';
-    $scope.currentUserFilter = filter;
-    if (filter == 'all') {
-      $scope.filteredUsers = $scope.users;
-    } else if ( filter == "active") {
-      $scope.filteredUsers = $scope.getRegisteredUsers($scope.users);
-    } else {
-      $scope.filteredUsers = $scope.getUnregisteredUsers($scope.users);
+  $scope.$watch('users', function(users) {
+    $scope.filteredUsers = users;
+  });
+
+  $scope.$on('userAvatar', function(event, userAvatar) {
+    $scope.user.avatar = userAvatar;
+  });
+
+  $scope.$on('userIcon', function(event, userIcon) {
+    $scope.user.icon = userIcon;
+  });
+
+
+  $scope.filterActive = function (user) {
+    switch ($scope.filter) {
+      case 'all': return true;
+      case 'active': return user.active;
+      case 'inactive': return !user.active;
     }
   }
 
-  $scope.userFilterCl***REMOVED*** = function (filter) {
-    return filter === $scope.currentUserFilter ? 'active' : '';
+  $scope.newUser = function() {
+    $scope.user = {};
   }
 
+  $scope.editUser = function(user) {
+    $scope.edit = false;
+    $scope.add = false;
+
+    // TODO temp code to convert array of phones to one phone
+    if (user.phones && user.phones.length > 0) {
+      user.phone = user.phones[0].number;
+    }
+
+    $scope.user = user;
+  }
+
+  var debounceHideSave = _.debounce(function() {
+    $scope.$apply(function() {
+      $scope.saved = false;
+    });
+  }, 5000);
+
   $scope.saveUser = function () {
+    $scope.saving = true;
+    $scope.error = false;
+
     var user = {
       username: $scope.user.username,
       firstname: $scope.user.firstname,
@@ -56,170 +74,93 @@ angular.module('mage').controller('AdminUsersCtrl', function ($scope, appConstan
       role: $scope.user.role,
       avatar: $scope.user.avatar,
       icon: $scope.user.icon
+    };
+
+    var failure = function(response) {
+      $scope.$apply(function() {
+        $scope.saving = false;
+        $scope.error = response.responseText;
+      });
     }
 
-    if ($scope.user._id) {
-      UserService.updateUser($scope.user._id, user, function(response) {
+    var progress = function(e) {
+      if(e.lengthComputable){
         $scope.$apply(function() {
-          $scope.showStatusMessage("User updated", $scope.user.username + " saved", "alert-success");
+          $scope.uploading = true;
+          $scope.uploadProgress = (e.loaded/e.total) * 100;
         });
-      },
-      function(data) {
+      }
+    }
+
+    if ($scope.user.id) {
+      UserService.updateUser($scope.user.id, user, function(response) {
         $scope.$apply(function() {
-          $scope.showStatusMessage("Unable to update user", data, "alert-error");
+          $scope.saved = true;
+          $scope.saving = false;
+          debounceHideSave();
         });
-      },
-      function(e) {
-        if(e.lengthComputable){
-          $scope.$apply(function() {
-            $scope.uploading = true;
-            $scope.uploadProgress = (e.loaded/e.total) * 100;
-          });
-        }
-      });
+      }, failure, progress);
     } else {
       UserService.createUser(user, function(response) {
         $scope.$apply(function() {
-          $scope.setShowUserForm(false);
-          $scope.showStatusMessage("User created", "Nice work!", "alert-success");
+          $scope.saved = true;
+          $scope.saving = false;
+          debounceHideSave();
           $scope.users.push(response);
-          // TODO this is somewhat of a hack for now, call filter fucntion so users appear
-          $scope.userSearch();
         });
+      }, failure, progress);
+    }
+  }
+
+  $scope.deleteUser = function(team) {
+    var modalInstance = $injector.get('$modal').open({
+      templateUrl: '/js/app/partials/admin/delete-user.html',
+      resolve: {
+        user: function () {
+          return $scope.user;
+        }
       },
-      function(data) {
-        $scope.$apply(function() {
-          $scope.showStatusMessage("Unable to create user", data, "alert-error");
-        });
-      },
-      function(e) {
-        if(e.lengthComputable){
-          $scope.$apply(function() {
-            $scope.uploading = true;
-            $scope.uploadProgress = (e.loaded/e.total) * 100;
+      controller: function ($scope, $modalInstance, user) {
+        $scope.user = user;
+
+        $scope.deleteUser = function(user, force) {
+          UserService.deleteUser(user).success(function() {
+            $modalInstance.close(user);
           });
         }
-      });
-    }
-  }
-
-  $scope.scrollTo = function (id) {
-    var old = $location.hash();
-    $location.hash(id);
-    $anchorScroll();
-    $location.hash(old);
-  }
-
-  $scope.editUser = function (user) {
-    // TODO temp code to convert array of phones to one phone
-    if (user.phones && user.phones.length > 0) {
-      user.phone = user.phones[0].number;
-    }
-
-    $scope.user = user;
-    $scope.setShowUserForm(true);
-    $scope.scrollTo('user-form');
-  }
-
-  $scope.$on('userAvatar', function(event, userAvatar) {
-    $scope.user.avatar = userAvatar;
-  });
-
-  $scope.$on('userIcon', function(event, userIcon) {
-    $scope.user.icon = userIcon;
-  });
-
-  $scope.newUser = function() {
-    $scope.user = {};
-    $scope.setShowUserForm(true);
-  }
-
-  $scope.viewUser = function(user) {
-    $scope.user = new UserService.user(user);
-  }
-
-  /* shortcut for giving a user the USER_ROLE */
-  $scope.approveUser = function (user) {
-    var userRole = _.find($scope.roles, function (role) { return role.name == 'USER_ROLE' });
-    user.active = true;
-    UserService.updateUser(user._id, user, function() {});
-  }
-
-  $scope.deleteUser = function (user) {
-    UserService.deleteUser(user)
-      .success(function(data, status) {
-        $scope.users = _.filter($scope.users, function(u) {
-          return u._id !== user._id;
-        });
-        // TODO this is somewhat of a hack for now, call filter fucntion so users gets removed
-        //$scope.userSearch();
-        user.deleted="true";
-        $scope.showStatusMessage("User deleted", user.username + " has been successfully deleted", "alert-success");
-      });
-  }
-
-  $scope.getUserDisplayName = function(id) {
-    var user = _.find($scope.users, function(user) {
-      return user._id == id;
-    });
-
-    return user ? user.firstname + " " + user.lastname : "";
-  }
-
-  $scope.getUnregisteredUsers = function (users) {
-    var result = [];
-    angular.forEach(users, function (user) {
-      if (!user.active) {
-        result.push(user);
+        $scope.cancel = function () {
+          $modalInstance.dismiss('cancel');
+        };
       }
     });
-    return result;
-  }
 
-  $scope.getRegisteredUsers = function (users) {
-    var result = [];
-    angular.forEach(users, function (user) {
-      if (user.active) {
-        result.push(user);
-      }
+    modalInstance.result.then(function(user) {
+      $scope.user = null;
+      $scope.users = _.reject($scope.users, function(u) { return u.id == user.id});
     });
-    return result;
   }
 
-  var searchMatch = function (property, query) {
-    if (!query) {
-      return true;
-    } else if (!property) {
-      return false;
-    }
-
-    return property.toLowerCase().indexOf(query.toLowerCase()) !== -1;
-  };
-
-  $scope.userSearch = function () {
-    $scope.filteredUsers = $filter('filter')($scope.users, function (user) {
-      if (searchMatch(user['username'], $scope.userQuery) || searchMatch(user['firstname'], $scope.userQuery) ||
-        searchMatch(user['lastname'], $scope.userQuery) || searchMatch(user['email'], $scope.userQuery)) {
-        return true;
-      }
-      return false;
-    });
-
-    if ($scope.currentUserFilter == 'active') {
-      $scope.filteredUsers = $scope.getRegisteredUsers($scope.filteredUsers);
-    } else if ($scope.currentUserFilter == 'unregistered') {
-      $scope.filteredUsers = $scope.getUnregisteredUsers($scope.filteredUsers);
-    }
-  }
-
-  $scope.refreshUsers = function() {
+  $scope.refresh = function() {
     $scope.users = [];
     $scope.filteredUsers = [];
     UserService.getAllUsers().
-      success(function (data) {
-        $scope.users = data;
-        $scope.filteredUsers = $scope.users;
-        $scope.userSearch();
+      success(function (users) {
+        $scope.users = users;
       });
+  }
+
+  /* shortcut for giving a user the USER_ROLE */
+  $scope.activateUser = function (user) {
+    user.active = true;
+    UserService.updateUser(user.id, user, function(response) {
+      $scope.$apply(function() {
+        $scope.saved = true;
+        debounceHideSave();
+      });
+    }, function(response) {
+      $scope.$apply(function() {
+        $scope.error = response.responseText;
+      });
+    });
   }
 });

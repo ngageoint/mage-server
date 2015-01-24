@@ -1,6 +1,6 @@
 mage.directive('iconUser', function() {
   function iconUrl(user, token) {
-    if (user.iconUrl) {
+    if (user && user.iconUrl) {
       return user.iconUrl + "?access_token=" + token;
     } else {
       return "img/missing_marker.png";
