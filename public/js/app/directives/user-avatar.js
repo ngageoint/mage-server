@@ -1,6 +1,6 @@
 mage.directive('avatarUser', function() {
   function avatarUrl(user, token) {
-    if (user.avatarUrl) {
+    if (user && user.avatarUrl) {
       return user.avatarUrl + "?access_token=" + token;
     } else {
       return "img/missing_photo.png";
@@ -13,7 +13,7 @@ mage.directive('avatarUser', function() {
     scope: {
       avatarUser: '='
     },
-    controller: function ($scope, $element, mageLib) {
+    controller: function ($scope, $element, mageLib) {      
       $scope.fileName = 'Choose an image...';
       $scope.avatarUrl = avatarUrl($scope.avatarUser, mageLib.getToken());
 

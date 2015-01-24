@@ -155,7 +155,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
       ***REMOVED***.getAllUsers = function () {
         return $http.get('/api/users').success(function(users) {
           for (var i = 0; i < users.length; i++) {
-            resolvedUsers[users[i]._id] = $q.when(users[i]);
+            resolvedUsers[users[i].id] = $q.when(users[i]);
           }
         });
       };
@@ -176,7 +176,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
 
       ***REMOVED***.deleteUser = function(user) {
         return $http.delete(
-          '/api/users/' + user._id
+          '/api/users/' + user.id
         );
       };
 

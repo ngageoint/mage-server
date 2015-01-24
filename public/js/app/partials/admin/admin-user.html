@@ -1,65 +1,185 @@
 <div cl***REMOVED***="row-fluid" ng-controller="AdminUsersCtrl">
-  <div cl***REMOVED***="span12 top-gap" id="user-admin-area">
+
+  <div cl***REMOVED***="span2">
+    <div cl***REMOVED***="row-fluid admin-header">
+      <div cl***REMOVED***="span12">
+        <span ng-click="refresh()"><i cl***REMOVED***="fa fa-refresh icon-spacer pointer"></i></span>
+        <h3 style="display: inline">Users ({{filteredUsers.length}})</h3>
+        <a cl***REMOVED***="btn pull-right" ng-click="newUser()">New User</a>
+      </div>
+    </div>
+    <div cl***REMOVED***="row-fluid bottom-gap">
+      <div cl***REMOVED***="btn-group span12" bs-buttons-radio ng-model="filter">
+        <button type="button" value="all" cl***REMOVED***="btn span4">All</button>
+        <button type="button" value="active" cl***REMOVED***="btn span4">Active</button>
+        <button type="button" value="inactive" cl***REMOVED***="btn span4">Inactive</button>
+      </div>
+    </div>
+
+    <div cl***REMOVED***="row-fluid">
+      <div cl***REMOVED***="form-search">
+        <input type="text" cl***REMOVED***="search-query span12" placeholder="Search" ng-model="userSearch">
+      </div>
+    </div>
+
+    <div cl***REMOVED***="row-fluid">
+      <ul cl***REMOVED***="pager">
+        <li cl***REMOVED***="previous" ng-show="page != 0">
+          <a ng-click="page=page-1">&larr; Previous</a>
+        </li>
+        <li cl***REMOVED***="next" ng-show="page < (filteredTeams.length/itemsPerPage) - 1">
+          <a ng-click="page=page+1">Next &rarr;</a>
+        </li>
+      </ul>
+    </div>
+
+    <div cl***REMOVED***="pointer bottom-gap"
+        ng-click="editUser(u)"
+        ng-repeat="u in (filteredUsers = (users | filter:filterActive | user: ['username']:userSearch | orderBy:'username' | offset: page*itemsPerPage | limitTo:itemsPerPage))" >
+      <div ng-cl***REMOVED***="{'admin-active': user.id == u.id}" cl***REMOVED***="admin-row row-fluid">
+        <div cl***REMOVED***="span9">
+          <div cl***REMOVED***="strong">{{u.username}}</div>
+          <div cl***REMOVED***="muted">{{u.firstname}} {{u.lastname}}</div>
+        </div>
+        <div cl***REMOVED***="span3" ng-hide="u.active">
+          <a cl***REMOVED***="btn btn-mini btn-success pull-right" ng-click="activateUser(u)">Activate</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div cl***REMOVED***="span10" ng-show="user">
+    <div style="position: fixed; top: 84px; left: 35%" cl***REMOVED***="fade alert alert-success" ng-cl***REMOVED***="{'in': saved, 'out': !saved}">
+      Successfully Saved {{user.username}}
+    </div>
+    <div style="position: fixed; top: 84px; left: 35%" cl***REMOVED***="fade alert alert-error" ng-cl***REMOVED***="{'in': error, 'out': !error}">
+      Error saving user: {{error}}
+    </div>
+
+    <div cl***REMOVED***="row-fluid">
+      <div cl***REMOVED***="span4">
+        <form ng-submit="saveUser()" cl***REMOVED***="form-horizontal">
+
+          <div avatar-user="user"/>
+          <div icon-user="user" cl***REMOVED***="top-gap-xl"/>
+
+          <div cl***REMOVED***="control-group top-gap-l">
+            <label cl***REMOVED***="control-label" for="type">Username</label>
+            <div cl***REMOVED***="controls">
+              <input type="text" placeholder="i.e. jappleseed" ng-model="user.username" name="username">
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">First Name</label>
+            <div cl***REMOVED***="controls">
+              <input type="text" placeholder="Johnny" ng-model="user.firstname" name="firstname">
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">Last Name</label>
+            <div cl***REMOVED***="controls">
+              <input type="text" placeholder="Appleseed" ng-model="user.lastname" name="lastname">
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">Email</label>
+            <div cl***REMOVED***="controls">
+              <input type="text" placeholder="johnny@appleseed.com" ng-model="user.email" name="email">
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">Phone</label>
+            <div cl***REMOVED***="controls">
+              <input type="text" placeholder="(xxx) xxx-xxxx" ng-model="user.phone" name="phone">
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">P***REMOVED***word</label>
+            <div cl***REMOVED***="controls">
+              <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***word" name="p***REMOVED***word">
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">Confirm P***REMOVED***word</label>
+            <div cl***REMOVED***="controls">
+              <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***wordconfirm" name="p***REMOVED***wordconfirm">
+            </div>
+          </div>
+          <div cl***REMOVED***="control-group">
+            <label cl***REMOVED***="control-label" for="type">Role</label>
+            <div cl***REMOVED***="controls">
+              <select ng-model="user.role" ng-options="role._id as role.name for role in roles"></select>
+            </div>
+          </div>
+
+          <span cl***REMOVED***="pull-right">
+            <a cl***REMOVED***="btn btn-danger" ng-show="user.id" ng-click="deleteUser(user)"> <i cl***REMOVED***="fa fa-trash-o"></i> Delete User</a>
+            <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-hide="user.id" ng-click="saveUser(user)"> <i cl***REMOVED***="fa fa-check"></i> Create User</a>
+            <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-show="user.id" ng-click="saveUser(user)"> <i cl***REMOVED***="fa fa-check"></i> Save User</a>
+          </span>
+        </form>
+
+
+
+
+        <!-- <div cl***REMOVED***="navbar">
+          <div cl***REMOVED***="navbar-inner admin-table-nav">
+            <a cl***REMOVED***="pull-left btn" ng-click="edit = !edit">Edit</a>
+            <a cl***REMOVED***="pull-right btn" ng-click="add = !add">Add</a>
+
+            <a cl***REMOVED***="brand" href="#">Team Members ({{team.members.length}})</a>
+
+            <form cl***REMOVED***="navbar-search">
+              <input type="text" cl***REMOVED***="search-query" placeholder="Filter Team Members" ng-model="memberSearch">
+            </form>
+
+            <div ng-show="add" style="padding: 10px;">
+              <div cl***REMOVED***="row-fluid top-gap-xl">
+                <form cl***REMOVED***="navbar-search">
+                  <input type="text" cl***REMOVED***="search-query" placeholder="Search Non Members" ng-model="nonMemberSearch">
+                </form>
+              </div>
+
+              <div cl***REMOVED***="pre-scrollable-small well well-small admin-table top-gap-s">
+                <div ng-repeat="nonMember in nonMembers |  user: ['username','firstname','lastname']:nonMemberSearch" cl***REMOVED***="row-fluid well-item">
+                  <div cl***REMOVED***="span12">
+                    <span cl***REMOVED***="icon-spacer">
+                      <a cl***REMOVED***="btn btn-mini btn-success" ng-click="addMember(nonMember)"><i cl***REMOVED***="fa fa-plus"></i></a>
+                    </span>
+                    <span>
+                      {{nonMember.firstname}} {{nonMember.lastname}}
+                    </span>
+                    <span cl***REMOVED***="muted"> ({{nonMember.username}})</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div cl***REMOVED***="pre-scrollable-large well well-small admin-table">
+          <div ng-repeat="member in team.members | user: ['username','firstname','lastname']:memberSearch" cl***REMOVED***="row-fluid well-item">
+            <div cl***REMOVED***="span12">
+              <span cl***REMOVED***="icon-spacer" ng-show="edit">
+                <a cl***REMOVED***="btn btn-mini btn-danger" ng-click="removeMember(member)"><i cl***REMOVED***="fa fa-minus"></i></a>
+              </span>
+              <span>
+                {{member.firstname}} {{member.lastname}}
+              </span>
+              <span cl***REMOVED***="muted"> ({{member.username}})</span>
+            </div>
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+
+  <!-- <div cl***REMOVED***="span12 top-gap" id="user-admin-area">
     <button cl***REMOVED***="btn" ng-click="newUser()" ngm-tap="newUser()"><i cl***REMOVED***="fa fa-plus-square-o"></i> New User</button>
     <div id="user-form" name="edit-form" cl***REMOVED***="top-gap" ng-show="showUserForm">
-      <form ng-submit="saveUser()" id="userform" name="user-form" cl***REMOVED***="form-horizontal">
 
-        <div avatar-user="user"/>
-        <div icon-user="user" cl***REMOVED***="top-gap-xl"/>
-
-        <div cl***REMOVED***="control-group top-gap-l">
-          <label cl***REMOVED***="control-label" for="type">Username</label>
-          <div cl***REMOVED***="controls">
-            <input type="text" placeholder="i.e. jappleseed" ng-model="user.username" name="username">
-          </div>
-        </div>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="type">First Name</label>
-          <div cl***REMOVED***="controls">
-            <input type="text" placeholder="Johnny" ng-model="user.firstname" name="firstname">
-          </div>
-        </div>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="type">Last Name</label>
-          <div cl***REMOVED***="controls">
-            <input type="text" placeholder="Appleseed" ng-model="user.lastname" name="lastname">
-          </div>
-        </div>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="type">Email</label>
-          <div cl***REMOVED***="controls">
-            <input type="text" placeholder="johnny@appleseed.com" ng-model="user.email" name="email">
-          </div>
-        </div>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="type">Phone</label>
-          <div cl***REMOVED***="controls">
-            <input type="text" placeholder="(xxx) xxx-xxxx" ng-model="user.phone" name="phone">
-          </div>
-        </div>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="type">P***REMOVED***word</label>
-          <div cl***REMOVED***="controls">
-            <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***word" name="p***REMOVED***word">
-          </div>
-        </div>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="type">Confirm P***REMOVED***word</label>
-          <div cl***REMOVED***="controls">
-            <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***wordconfirm" name="p***REMOVED***wordconfirm">
-          </div>
-        </div>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="type">Role</label>
-          <div cl***REMOVED***="controls">
-            <select ng-model="user.role" ng-options="role._id as role.name for role in roles"></select>
-          </div>
-        </div>
-        <span>
-          <button type="reset" cl***REMOVED***="btn btn-inverse" ng-click="setShowUserForm(false)" ngmtap="setShowUserForm(false)">Cancel</button>
-          <button type="submit" cl***REMOVED***="btn">Save user</button>
-        </span>
-      </form>
     </div>
     <div cl***REMOVED***="navbar top-gap row-fluid">
       <div cl***REMOVED***="navbar-inner">
@@ -117,5 +237,6 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
+
 </div>
