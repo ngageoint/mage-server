@@ -1,16 +1,40 @@
 <div cl***REMOVED***="row-fluid" ng-controller="AdminEventsCtrl">
   <div cl***REMOVED***="row-fluid">
-    <div cl***REMOVED***="span1">
-      <button cl***REMOVED***="btn" ng-click="newEvent()"><i cl***REMOVED***="fa fa-plus-square-o"></i> New Event</button>
-      <!-- <span form-import enctype="multipart/form-data" url="{{'/api/events/eventId/forms' + '?access_token=' + token}}" upload-file-form-name="'form'"></span> -->
-      <div ng-repeat="event in events" cl***REMOVED***="row-fluid top-gap">
+    <div cl***REMOVED***="span2">
+      <div cl***REMOVED***="row-fluid admin-header">
         <div cl***REMOVED***="span12">
-          <a ng-click="editEvent(event)" ng-cl***REMOVED***="{'admin-active': event.id == es.editEvent.id}">{{event.name}}</a>
+          <span ng-click="refresh()"><i cl***REMOVED***="fa fa-refresh icon-spacer pointer"></i></span>
+          <h3 style="display: inline">Teams ({{filteredEvents.length}})</h3>
+          <a cl***REMOVED***="btn pull-right" ng-click="newEvent()">New Event</a>
+        </div>
+      </div>
+
+      <div cl***REMOVED***="row-fluid">
+        <div cl***REMOVED***="form-search">
+          <input type="text" cl***REMOVED***="search-query span12" placeholder="Search" ng-model="eventSearch" ng-change="filterEvents()">
+        </div>
+      </div>
+
+      <div cl***REMOVED***="row-fluid">
+        <ul cl***REMOVED***="pager">
+          <li cl***REMOVED***="previous" ng-show="page != 0">
+            <a ng-click="page=page-1">&larr; Previous</a>
+          </li>
+          <li cl***REMOVED***="next" ng-show="page < (filteredEvents.length/itemsPerPage) - 1">
+            <a ng-click="page=page+1">Next &rarr;</a>
+          </li>
+        </ul>
+      </div>
+
+      <div ng-repeat="e in filteredEvents | orderBy:'name' | offset: page*itemsPerPage | limitTo:itemsPerPage" cl***REMOVED***="row-fluid pointer bottom-gap-s" ng-click="editEvent(e)">
+        <div ng-cl***REMOVED***="{'admin-active': event.id == e.id}" cl***REMOVED***="admin-row">
+          <div cl***REMOVED***="strong">{{e.name}}</div>
+          <div cl***REMOVED***="muted">{{e.description}}</div>
         </div>
       </div>
     </div>
 
-    <div cl***REMOVED***="span11" ng-show="event">
+    <div cl***REMOVED***="span10" ng-show="event">
       <div style="position: fixed; top: 84px; left: 50%" cl***REMOVED***="fade alert alert-success" ng-cl***REMOVED***="{'in': saved, 'out': !saved}">
         Successfully Saved The Event
       </div>
@@ -185,7 +209,7 @@
             </div>
 
             <h4>Choose a field to be used for icon variants:</h4>
-            <select ng-model="event.form.variantField" ng-options="field.name as field.title for field in event.form.fields | filter: variantFilter">
+            <select ng-model="event.form.variantField" ng-change="variantChanged()" ng-options="field.name as field.title for field in event.form.fields | filter: variantFilter">
               <option value="">No Variant</option>
             </select>
 

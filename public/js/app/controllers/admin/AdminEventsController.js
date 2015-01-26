@@ -1,8 +1,12 @@
 'use strict';
 
-angular.module('mage').controller('AdminEventsCtrl', function ($scope, $injector, appConstants, mageLib, ObservationService, EventService, Event, $filter, $timeout) {
+angular.module('mage').controller('AdminEventsCtrl', function ($scope, $injector, $filter, $timeout, appConstants, mageLib, ObservationService, EventService, Event) {
   $scope.appConstants = appConstants;
   $scope.token = mageLib.getLocalItem('token');
+  $scope.events = [];
+  $scope.filteredEvents = [];
+  $scope.page = 0;
+  $scope.itemsPerPage = 10;
 
   // preview form mode
   $scope.previewMode = false;
@@ -27,6 +31,15 @@ angular.module('mage').controller('AdminEventsCtrl', function ($scope, $injector
       });
     }
   });
+
+  $scope.$watch('events', function(events) {
+    $scope.filteredEvents = events;
+  });
+
+  $scope.filterEvents = function() {
+    $scope.page = 0;
+    $scope.filteredEvents = $filter('event')($scope.events, $scope.eventSearch);
+  }
 
   // previewForm - for preview purposes, form will be copied into this
   // otherwise, actual form might get manipulated in preview mode
@@ -158,14 +171,13 @@ angular.module('mage').controller('AdminEventsCtrl', function ($scope, $injector
     });
   });
 
-  $scope.$watch('event.form.variantField', function(newValue, oldValue) {
-    if (!$scope.event || !$scope.event.form || newValue == oldValue) return;
-    $scope.populateVariants()
-  });
-
   $scope.$on('uploadFile', function(e, uploadFile) {
     $scope.event.formArchiveFile = uploadFile;
   });
+
+  $scope.variantChanged = function() {
+    $scope.populateVariants();
+  }
 
   // deletes particular field on button click
   $scope.deleteField = function (id) {
