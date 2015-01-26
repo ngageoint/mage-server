@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mage').controller('AdminEventsCtrl', function ($scope, $injector, $filter, $timeout, appConstants, mageLib, ObservationService, EventService, Event) {
+angular.module('mage').controller('AdminEventsCtrl', function ($scope, $injector, $filter, $timeout, appConstants, mageLib, ObservationService, EventService, Event, Team) {
   $scope.appConstants = appConstants;
   $scope.token = mageLib.getLocalItem('token');
   $scope.events = [];
@@ -17,6 +17,10 @@ angular.module('mage').controller('AdminEventsCtrl', function ($scope, $injector
   $scope.event = EventService.editEvent;
   Event.query(function(events) {
     $scope.events = events;
+  });
+
+  Team.query(function(teams) {
+    $scope.teams = teams;
   });
 
   $scope.fileUploadOptions = {};
@@ -59,11 +63,18 @@ angular.module('mage').controller('AdminEventsCtrl', function ($scope, $injector
   $scope.variants = [];
 
   $scope.editEvent = function(event) {
+    $scope.add = false;
+
     EventService.setCurrentEditEvent(event);
+    $scope.teamsById = _.indexBy(event.teams, 'id');
+    $scope.nonTeams = _.filter($scope.teams, function(team) {
+      return $scope.teamsById[team.id] == null;
+    });
   }
 
   $scope.newEvent = function() {
     var newEvent = EventService.newEvent();
+    $scope.nonTeams = $scope.teams.slice();
   }
 
   $scope.createEvent = function() {
@@ -74,6 +85,18 @@ angular.module('mage').controller('AdminEventsCtrl', function ($scope, $injector
 
   $scope.removeEvent = function(event) {
     $scope.events = _.reject($scope.events, function(f) { return f.id == event.id});
+  }
+
+  $scope.addTeam = function(team) {
+    $scope.event.teams.push(team);
+    $scope.nonTeams = _.reject($scope.nonTeams, function(t) { return t.id == team.id});
+    $scope.autoSave();
+  }
+
+  $scope.removeTeam = function(team) {
+    $scope.nonTeams.push(team);
+    $scope.event.teams = _.reject($scope.event.teams, function(t) { return t.id == team.id});
+    $scope.autoSave();
   }
 
   $scope.deletableField = function(field) {

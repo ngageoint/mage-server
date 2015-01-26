@@ -32,6 +32,7 @@ var EventSchema = new Schema({
   name: { type: String, required: true, unique: true },
   description: { type: String, required: false },
   collectionName: { type: String, required: true },
+  teamIds: [{type: Schema.Types.ObjectId, ref: 'Team'}],
   form: {
     variantField: { type:String, required: false },
     fields: [FieldSchema]
@@ -41,8 +42,13 @@ var EventSchema = new Schema({
 });
 
 var transform = function(event, ret, options) {
-  delete ret._id;
-  delete ret.collectionName;
+  if ('function' != typeof event.ownerDocument) {
+    delete ret._id;
+    delete ret.collectionName;
+
+    ret.teams = ret.teamIds;
+    delete ret.teamIds;
+  }
 }
 
 EventSchema.set("toObject", {
@@ -67,7 +73,7 @@ exports.getEvents = function(filter, callback) {
   // var type = filter.type;
   // if (type) query.type = type;
 
-  Event.find(query, function (err, events) {
+  Event.find(query).populate('teamIds').exec(function (err, events) {
     if (err) {
       console.log("Error finding events in mongo: " + err);
     }
@@ -77,7 +83,7 @@ exports.getEvents = function(filter, callback) {
 }
 
 exports.getById = function(id, callback) {
-  Event.findOne({id: id}, function (err, event) {
+  Event.findOne({id: id}).populate('teamIds').exec(function (err, event) {
     if (err) {
       console.log("Error finding event in mongo: " + err);
     }
@@ -115,6 +121,10 @@ exports.create = function(event, callback) {
     event.id = id;
     event.collectionName = 'observations' + id;
 
+    if (event.teams) {
+      event.teamIds = event.teams.map(function(team) { return mongoose.Types.ObjectId(team.id); });
+    }
+
     Event.create(event, function(err, newEvent) {
       if (err) {
         console.log("Problem creating event. " + err);
@@ -122,19 +132,22 @@ exports.create = function(event, callback) {
       }
 
       createObservationCollection(newEvent);
-      callback(err, newEvent);
+      Event.populate(newEvent, {path: 'teamIds'}, callback);
     });
   });
 }
 
 exports.update = function(id, event, callback) {
-  console.log('update id ' + id + ' with ', JSON.stringify(event));
+  if (event.teams) {
+    event.teamIds = event.teams.map(function(team) { return mongoose.Types.ObjectId(team.id); });
+  }
+
   Event.findOneAndUpdate({id: id}, event, function(err, updatedEvent) {
     if (err) {
       console.log("Could not update event: " + err);
     }
 
-    callback(err, updatedEvent);
+    Event.populate(updatedEvent, {path: 'teamIds'}, callback);
   });
 }
 
