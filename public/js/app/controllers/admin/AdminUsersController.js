@@ -2,7 +2,7 @@
 
 angular.module('mage').controller('AdminUsersCtrl', function ($scope, $injector, $filter, appConstants, mageLib, UserService) {
   $scope.token = mageLib.getLocalItem('token');
-  $scope.filter = "all"; // possible values all, active, unregistered
+  $scope.filter = "all"; // possible values all, active, inactive
   $scope.users = [];
   $scope.roles = [];
   $scope.page = 0;
@@ -20,6 +20,11 @@ angular.module('mage').controller('AdminUsersCtrl', function ($scope, $injector,
     $scope.filteredUsers = users;
   });
 
+  $scope.filterUsers = function() {
+    $scope.page = 0;
+    $scope.filteredUsers = $filter('user')($scope.users, ['username', 'firstname', 'lastname'], $scope.userSearch);
+  }
+
   $scope.$on('userAvatar', function(event, userAvatar) {
     $scope.user.avatar = userAvatar;
   });
@@ -27,7 +32,6 @@ angular.module('mage').controller('AdminUsersCtrl', function ($scope, $injector,
   $scope.$on('userIcon', function(event, userIcon) {
     $scope.user.icon = userIcon;
   });
-
 
   $scope.filterActive = function (user) {
     switch ($scope.filter) {
@@ -43,7 +47,6 @@ angular.module('mage').controller('AdminUsersCtrl', function ($scope, $injector,
 
   $scope.editUser = function(user) {
     $scope.edit = false;
-    $scope.add = false;
 
     // TODO temp code to convert array of phones to one phone
     if (user.phones && user.phones.length > 0) {
@@ -112,12 +115,12 @@ angular.module('mage').controller('AdminUsersCtrl', function ($scope, $injector,
     }
   }
 
-  $scope.deleteUser = function(team) {
+  $scope.deleteUser = function(user) {
     var modalInstance = $injector.get('$modal').open({
       templateUrl: '/js/app/partials/admin/delete-user.html',
       resolve: {
         user: function () {
-          return $scope.user;
+          return user;
         }
       },
       controller: function ($scope, $modalInstance, user) {
@@ -142,11 +145,9 @@ angular.module('mage').controller('AdminUsersCtrl', function ($scope, $injector,
 
   $scope.refresh = function() {
     $scope.users = [];
-    $scope.filteredUsers = [];
-    UserService.getAllUsers().
-      success(function (users) {
-        $scope.users = users;
-      });
+    UserService.getAllUsers().success(function (users) {
+      $scope.users = users;
+    });
   }
 
   /* shortcut for giving a user the USER_ROLE */

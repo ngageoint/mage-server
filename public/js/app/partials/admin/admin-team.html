@@ -26,7 +26,7 @@
         </ul>
       </div>
 
-       <div ng-repeat="t in filteredTeams | orderBy:'name' | offset: page*itemsPerPage | limitTo:itemsPerPage" cl***REMOVED***="row-fluid pointer bottom-gap-l" ng-click="editTeam(t)">
+       <div ng-repeat="t in filteredTeams | orderBy:'name' | offset: page*itemsPerPage | limitTo:itemsPerPage" cl***REMOVED***="row-fluid pointer bottom-gap-s" ng-click="editTeam(t)">
          <div ng-cl***REMOVED***="{'admin-active': team.id == t.id}" cl***REMOVED***="admin-row">
            <div cl***REMOVED***="strong">{{t.name}}</div>
            <div cl***REMOVED***="muted">{{t.description}}</div>

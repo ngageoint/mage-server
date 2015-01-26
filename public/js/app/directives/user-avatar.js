@@ -13,7 +13,7 @@ mage.directive('avatarUser', function() {
     scope: {
       avatarUser: '='
     },
-    controller: function ($scope, $element, mageLib) {      
+    controller: function ($scope, $element, mageLib) {
       $scope.fileName = 'Choose an image...';
       $scope.avatarUrl = avatarUrl($scope.avatarUser, mageLib.getToken());
 

@@ -1,161 +1,143 @@
 'use strict';
 
-angular.module('mage').controller('AdminDevicesCtrl', function ($scope, $injector, appConstants, mageLib, DeviceService, $filter) {
-
-  $scope.currentDeviceFilter = "all"; // possible values all, registered, unregistered
+angular.module('mage').controller('AdminDevicesCtrl', function ($scope, $injector, $filter, appConstants, mageLib, DeviceService, UserService) {
   $scope.token = mageLib.getLocalItem('token');
-  $scope.appConstants = appConstants;
-
-  $scope.device = {};
+  $scope.filter = "all"; // possible values all, registered, unregistered
   $scope.devices = [];
-  $scope.filteredDevices = [];
-  DeviceService.getAllDevices().
-    success(function (data) {
-      $scope.devices = data;
-      $scope.filteredDevices = $scope.devices;
-      $scope.deviceSearch();
+  $scope.page = 0;
+  $scope.itemsPerPage = 10;
+
+  DeviceService.getAllDevices().success(function (devices) {
+    $scope.devices = devices;
+  });
+
+  UserService.getAllUsers().success(function (users) {
+    $scope.users = users;
+  });
+
+  $scope.$watch('devices', function(devices) {
+    $scope.filteredDevices = devices;
+  });
+
+  $scope.userIdMap = {};
+  $scope.$watch('users', function(users) {
+    $scope.userIdMap = _.indexBy(users, 'id');
+  });
+
+  $scope.filterDevices = function() {
+    $scope.page = 0;
+
+    var filteredDevices = $filter('filter')($scope.devices, $scope.deviceSearch);
+    var filteredDeviceIdMap = _.indexBy(filteredDevices, 'id');
+
+    var filteredUsers = $filter('user')($scope.users, ['username', 'firstname', 'lastname'], $scope.deviceSearch);
+    _.each(filteredUsers, function(filteredUser) {
+      _.each($scope.devices, function(device) {
+        if (device.userId === filteredUser.id) filteredDeviceIdMap[device.id] = device;
+      });
     });
 
-  // Edit form toggles
-  $scope.showDeviceForm = false;
-  $scope.showNewDeviceButton = true;
-
-  $scope.setShowDeviceForm = function (visibility) {
-    $scope.showDeviceForm = visibility;
-    $scope.showNewDeviceButton = !visibility;
+    $scope.filteredDevices = _.values(filteredDeviceIdMap);
   }
 
-  $scope.changeCurrentDeviceFilter = function (filter) {
-    $scope.deviceQuery = '';
-    $scope.currentDeviceFilter = filter;
-    if (filter == 'all') {
-      $scope.filteredDevices = $scope.devices;
-    } else if ( filter == "registered") {
-      $scope.filteredDevices = $scope.getRegisteredDevices($scope.devices);
-    } else {
-      $scope.filteredDevices = $scope.getUnregisteredDevices($scope.devices);
+  $scope.filterRegistered = function (device) {
+    switch ($scope.filter) {
+      case 'all': return true;
+      case 'registered': return device.registered;
+      case 'unregistered': return !device.registered;
     }
   }
 
-  $scope.deviceFilterCl***REMOVED*** = function (filter) {
-    return filter === $scope.currentDeviceFilter ? 'active' : '';
+  $scope.newDevice = function() {
+    $scope.device = {};
   }
 
-  $scope.scrollTo = function (id) {
-    var old = $location.hash();
-    $location.hash(id);
-    $anchorScroll();
-    $location.hash(old);
-  }
-
-  $scope.editDevice = function (device) {
+  $scope.editDevice = function(device) {
+    $scope.edit = false;
     $scope.device = device;
-    $scope.setShowDeviceForm(true);
-    $scope.scrollTo('device-form');
   }
+
+  var debounceHideSave = _.debounce(function() {
+    $scope.$apply(function() {
+      $scope.saved = false;
+    });
+  }, 5000);
 
   $scope.saveDevice = function () {
+    $scope.saving = true;
+    $scope.error = false;
+
     var device = $scope.device;
 
-    if (device._id) {
-      DeviceService.updateDevice(device)
-        .success(function(data) {
-          $scope.showStatusMessage("Success", "Device '" + device.uid + "' has been updated.","alert-info");
-          $scope.setShowDeviceForm(false);
-        })
-        .error(function(data) {
-          $scope.showStatusMessage("Unable to update device", data, "alert-error");
-        });
+    if (device.id) {
+      DeviceService.updateDevice(device).success(function(data) {
+        $scope.saved = true;
+        $scope.saving = false;
+        debounceHideSave();
+      })
+      .error(function(response) {
+        $scope.saving = false;
+        $scope.error = response.responseText;
+      });
     } else {
-      DeviceService.createDevice(device)
-        .success(function (data) {
-          $scope.showStatusMessage("Success", "Device '" + device.uid + "' has been created.","alert-info");
-          $scope.devices.push(data);
-          $scope.setShowDeviceForm(false);
-          $scope.deviceSearch();
-        })
-        .error(function (data) {
-          $scope.showStatusMessage("Unable to create device", data, "alert-error");
-        });
-    }
-  }
-
-  $scope.registerDevice = function(device) {
-    DeviceService.registerDevice(device)
-      .success(function(data, status) {
-        device.registered = true;
-        device.registeredThisSession = true;
+      DeviceService.createDevice(device).success(function (data) {
+        $scope.saved = true;
+        $scope.saving = false;
+        debounceHideSave();
+        $scope.devices.push(data);
       })
-      .error(function(data, status) {
-        $scope.showStatusMessage("Unable to register device", data, "alert-error");
+      .error(function (response) {
+        $scope.saving = false;
+        $scope.error = response.responseText;
       });
-  }
-
-  $scope.deleteDevice = function (device) {
-    DeviceService.deleteDevice(device)
-      .success(function() {
-        $scope.devices = _.reject($scope.devices, function(d) { return d.uid === device.uid });
-        device.deleted = "true";
-      })
-      .error(function() {
-        $scope.showStatusMessage("Unable to delete device", data, "alert-error");
-      });
-  }
-
-  $scope.getUnregisteredDevices = function (devices) {
-    var result = [];
-    angular.forEach(devices, function (device) {
-      if (device.registered == false) {
-        result.push(device);
-      }
-    });
-    return result;
-  }
-
-  $scope.getRegisteredDevices = function (devices) {
-    var result = [];
-    angular.forEach(devices, function (device) {
-      if (device.registered == true) {
-        result.push(device);
-      }
-    });
-    return result;
-  }
-
-  var searchMatch = function (property, query) {
-    if (!query) {
-      return true;
-    } else if (!property) {
-      return false;
-    }
-
-    return property.toLowerCase().indexOf(query.toLowerCase()) !== -1;
-  };
-
-  $scope.deviceSearch = function () {
-    $scope.filteredDevices = $filter('filter')($scope.devices, function (device) {
-      if (searchMatch(device['name'], $scope.deviceQuery) || searchMatch(device['uid'], $scope.deviceQuery) ||
-        searchMatch(device['description'], $scope.deviceQuery)) {
-        return true;
-      }
-      return false;
-    });
-
-    if ($scope.currentDeviceFilter == 'registered') {
-      $scope.filteredDevices = $scope.getRegisteredDevices($scope.filteredDevices);
-    } else if ($scope.currentDeviceFilter == 'unregistered') {
-      $scope.filteredDevices = $scope.getUnregisteredDevices($scope.filteredDevices);
     }
   }
 
-  $scope.refreshDevices = function() {
+  $scope.deleteDevice = function(device) {
+    var modalInstance = $injector.get('$modal').open({
+      templateUrl: '/js/app/partials/admin/delete-device.html',
+      resolve: {
+        device: function () {
+          return device;
+        }
+      },
+      controller: function ($scope, $modalInstance, device) {
+        $scope.device = device;
+
+        $scope.deleteDevice = function(device, force) {
+          DeviceService.deleteDevice(device).success(function() {
+            $modalInstance.close(device);
+          });
+        }
+        $scope.cancel = function () {
+          $modalInstance.dismiss('cancel');
+        };
+      }
+    });
+
+    modalInstance.result.then(function(device) {
+      $scope.device = null;
+      $scope.devices = _.reject($scope.devices, function(d) { return d.id == device.id});
+    });
+  }
+
+  $scope.refresh = function() {
     $scope.devices = [];
-    $scope.filteredDevices = [];
-    DeviceService.getAllDevices().
-      success(function (data) {
-        $scope.devices = data;
-        $scope.filteredDevices = $scope.devices;
-        $scope.deviceSearch();
+    DeviceService.getAllDevices().success(function (devices) {
+      $scope.devices = devices;
+    });
+  }
+
+  $scope.registerDevice = function (device) {
+    DeviceService.registerDevice(device).success(function(data) {
+      $scope.$apply(function() {
+        $scope.saved = true;
+        debounceHideSave();
       });
+    }, function(response) {
+      $scope.$apply(function() {
+        $scope.error = response.responseText;
+      });
+    });
   }
 });

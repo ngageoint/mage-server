@@ -5,17 +5,17 @@ var mongoose = require('mongoose')
   , Token = require('./token');
 
 // Creates a new Mongoose Schema object
-var Schema = mongoose.Schema; 
+var Schema = mongoose.Schema;
 
 // Collection to hold users
-// TODO cascade delete from poc when user is deleted.
+// TODO cascade delete from userId when user is deleted.
 var DeviceSchema = new Schema({
     uid: { type: String, required: true, unique: true },
     name: { type: String, required: false },
     description: { type: String, required: false },
     registered: { type: Boolean, required: true },
-    poc: Schema.Types.ObjectId,
-  },{ 
+    userId: Schema.Types.ObjectId,
+  },{
     versionKey: false
   }
 );
@@ -38,20 +38,20 @@ DeviceSchema.pre('save', function(next) {
   });
 });
 
-// Validate that poc is unique
+// Validate that userId is unique
 DeviceSchema.pre('save', function(next) {
   var device = this;
 
-  // only validate poc if it has been modified (or is new)
-  if (!device.poc || !device.isModified('poc')) return next();
+  // only validate userId if it has been modified (or is new)
+  if (!device.userId || !device.isModified('userId')) return next();
 
-  User.getUserById(device.poc, function(err, user) {
+  User.getUserById(device.userId, function(err, user) {
     if (err) {
       return next(err);
     }
 
     if (!user) {
-      return next(new Error('invlaid POC user, user does not exist'));
+      return next(new Error('invlaid POC user, userId does not exist'));
     }
 
     next();
@@ -76,6 +76,21 @@ DeviceSchema.pre('remove', function(next) {
   function(err, results) {
     next(err);
   });
+});
+
+var transform = function(device, ret, options) {
+  if ('function' != typeof device.ownerDocument) {
+    ret.id = ret._id;
+    delete ret._id;
+  }
+}
+
+DeviceSchema.set("toObject", {
+  transform: transform
+});
+
+DeviceSchema.set("toJSON", {
+  transform: transform
 });
 
 // Creates the Model for the User Schema
@@ -120,7 +135,7 @@ exports.createDevice = function(device, callback) {
     name: device.name,
     description: device.description,
     registered: device.registered,
-    poc: device.poc
+    userId: device.userId
   }
 
   if (device.registered) create.registered = device.registered;

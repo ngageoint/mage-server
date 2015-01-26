@@ -28,7 +28,7 @@ angular.module('mage.deviceService', ['mage.***REMOVED***s', 'mage.lib'])
 
       ***REMOVED***.updateDevice = function(device) {
         return $http.put(
-          '/api/devices/' + device._id,
+          '/api/devices/' + device.id,
           $.param(device),
           {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
         );
@@ -36,7 +36,7 @@ angular.module('mage.deviceService', ['mage.***REMOVED***s', 'mage.lib'])
 
       ***REMOVED***.registerDevice = function(device) {
         return $http.put(
-          '/api/devices/' + device._id,
+          '/api/devices/' + device.id,
           $.param({registered: true}),
           {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
         );
@@ -44,7 +44,7 @@ angular.module('mage.deviceService', ['mage.***REMOVED***s', 'mage.lib'])
 
       ***REMOVED***.deleteDevice = function(device) {
         return $http.delete(
-        '/api/devices/' + device._id
+        '/api/devices/' + device.id
         );
       }
 

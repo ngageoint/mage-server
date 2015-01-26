@@ -231,6 +231,26 @@ textarea {
 	overflow: hidden;
 }
 
+.btn-file {
+	position: relative;
+	overflow: hidden;
+}
+.btn-file input[type=file] {
+	position: absolute;
+	top: 0;
+	right: 0;
+	min-width: 100%;
+	min-height: 100%;
+	font-size: 100px;
+	text-align: right;
+	filter: alpha(opacity=0);
+	opacity: 0;
+	outline: none;
+	background: white;
+	cursor: inherit;
+	display: block;
+}
+
 .btn-inverse, .leaflet-bar a.btn-inverse {
     background: #5278A2;
 }
@@ -475,4 +495,16 @@ h4.image-delete {
 
 .deleted-border {
 	border: 3px dashed #336699;
+}
+
+.img-container {
+	width: 40px;
+	height: 40px;
+	overflow: hidden;
+	margin-right: 10px
+}
+
+.img-container img {
+	width: 100%;
+	height: 100%;
 }
