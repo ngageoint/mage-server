@@ -1,5 +1,4 @@
 <div cl***REMOVED***="row-fluid" ng-controller="AdminUsersCtrl">
-
   <div cl***REMOVED***="span2">
     <div cl***REMOVED***="row-fluid admin-header">
       <div cl***REMOVED***="span12">
@@ -18,7 +17,7 @@
 
     <div cl***REMOVED***="row-fluid">
       <div cl***REMOVED***="form-search">
-        <input type="text" cl***REMOVED***="search-query span12" placeholder="Search" ng-model="userSearch">
+        <input type="text" cl***REMOVED***="search-query span12" placeholder="Search" ng-model="userSearch" ng-change="filterUsers()">
       </div>
     </div>
 
@@ -27,21 +26,25 @@
         <li cl***REMOVED***="previous" ng-show="page != 0">
           <a ng-click="page=page-1">&larr; Previous</a>
         </li>
-        <li cl***REMOVED***="next" ng-show="page < (filteredTeams.length/itemsPerPage) - 1">
+        <li cl***REMOVED***="next" ng-show="page < (filteredUsers.length/itemsPerPage) - 1">
           <a ng-click="page=page+1">Next &rarr;</a>
         </li>
       </ul>
     </div>
 
-    <div cl***REMOVED***="pointer bottom-gap"
+    <div cl***REMOVED***="pointer bottom-gap-s"
         ng-click="editUser(u)"
-        ng-repeat="u in (filteredUsers = (users | filter:filterActive | user: ['username']:userSearch | orderBy:'username' | offset: page*itemsPerPage | limitTo:itemsPerPage))" >
+        ng-repeat="u in filteredUsers | filter:filterActive | orderBy:'username' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
       <div ng-cl***REMOVED***="{'admin-active': user.id == u.id}" cl***REMOVED***="admin-row row-fluid">
-        <div cl***REMOVED***="span9">
+
+        <div cl***REMOVED***="span10">
+          <div cl***REMOVED***="img-container pull-left">
+            <img cl***REMOVED***="avatar-thumbnail img-rounded" ng-src="{{u.avatarUrl ? u.avatarUrl + '?access_token=' + token : '/img/missing_photo.png'}}"/>
+          </div>
           <div cl***REMOVED***="strong">{{u.username}}</div>
           <div cl***REMOVED***="muted">{{u.firstname}} {{u.lastname}}</div>
         </div>
-        <div cl***REMOVED***="span3" ng-hide="u.active">
+        <div cl***REMOVED***="span2" ng-hide="u.active">
           <a cl***REMOVED***="btn btn-mini btn-success pull-right" ng-click="activateUser(u)">Activate</a>
         </div>
       </div>
@@ -60,8 +63,8 @@
       <div cl***REMOVED***="span4">
         <form ng-submit="saveUser()" cl***REMOVED***="form-horizontal">
 
-          <div avatar-user="user"/>
-          <div icon-user="user" cl***REMOVED***="top-gap-xl"/>
+          <div avatar-user="user"></div>
+          <div icon-user="user" cl***REMOVED***="top-gap-xl"></div>
 
           <div cl***REMOVED***="control-group top-gap-l">
             <label cl***REMOVED***="control-label" for="type">Username</label>
@@ -118,125 +121,7 @@
             <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-show="user.id" ng-click="saveUser(user)"> <i cl***REMOVED***="fa fa-check"></i> Save User</a>
           </span>
         </form>
-
-
-
-
-        <!-- <div cl***REMOVED***="navbar">
-          <div cl***REMOVED***="navbar-inner admin-table-nav">
-            <a cl***REMOVED***="pull-left btn" ng-click="edit = !edit">Edit</a>
-            <a cl***REMOVED***="pull-right btn" ng-click="add = !add">Add</a>
-
-            <a cl***REMOVED***="brand" href="#">Team Members ({{team.members.length}})</a>
-
-            <form cl***REMOVED***="navbar-search">
-              <input type="text" cl***REMOVED***="search-query" placeholder="Filter Team Members" ng-model="memberSearch">
-            </form>
-
-            <div ng-show="add" style="padding: 10px;">
-              <div cl***REMOVED***="row-fluid top-gap-xl">
-                <form cl***REMOVED***="navbar-search">
-                  <input type="text" cl***REMOVED***="search-query" placeholder="Search Non Members" ng-model="nonMemberSearch">
-                </form>
-              </div>
-
-              <div cl***REMOVED***="pre-scrollable-small well well-small admin-table top-gap-s">
-                <div ng-repeat="nonMember in nonMembers |  user: ['username','firstname','lastname']:nonMemberSearch" cl***REMOVED***="row-fluid well-item">
-                  <div cl***REMOVED***="span12">
-                    <span cl***REMOVED***="icon-spacer">
-                      <a cl***REMOVED***="btn btn-mini btn-success" ng-click="addMember(nonMember)"><i cl***REMOVED***="fa fa-plus"></i></a>
-                    </span>
-                    <span>
-                      {{nonMember.firstname}} {{nonMember.lastname}}
-                    </span>
-                    <span cl***REMOVED***="muted"> ({{nonMember.username}})</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div cl***REMOVED***="pre-scrollable-large well well-small admin-table">
-          <div ng-repeat="member in team.members | user: ['username','firstname','lastname']:memberSearch" cl***REMOVED***="row-fluid well-item">
-            <div cl***REMOVED***="span12">
-              <span cl***REMOVED***="icon-spacer" ng-show="edit">
-                <a cl***REMOVED***="btn btn-mini btn-danger" ng-click="removeMember(member)"><i cl***REMOVED***="fa fa-minus"></i></a>
-              </span>
-              <span>
-                {{member.firstname}} {{member.lastname}}
-              </span>
-              <span cl***REMOVED***="muted"> ({{member.username}})</span>
-            </div>
-          </div>
-        </div>
-
-
       </div>
     </div>
   </div>
-
-  <!-- <div cl***REMOVED***="span12 top-gap" id="user-admin-area">
-    <button cl***REMOVED***="btn" ng-click="newUser()" ngm-tap="newUser()"><i cl***REMOVED***="fa fa-plus-square-o"></i> New User</button>
-    <div id="user-form" name="edit-form" cl***REMOVED***="top-gap" ng-show="showUserForm">
-
-    </div>
-    <div cl***REMOVED***="navbar top-gap row-fluid">
-      <div cl***REMOVED***="navbar-inner">
-        <ul cl***REMOVED***="nav navbar-nav">
-          <li cl***REMOVED***="pull-left"><a href="" ng-click="refreshUsers()"><i cl***REMOVED***="fa fa-refresh"></i></a></li>
-          <li ng-cl***REMOVED***="userFilterCl***REMOVED***('all')"><a href="" ng-click="changeCurrentUserFilter('all')">All Users</a></li>
-          <li ng-cl***REMOVED***="userFilterCl***REMOVED***('active')"><a href="" ng-click="changeCurrentUserFilter('active')">Active Users</a></li>
-          <li ng-cl***REMOVED***="userFilterCl***REMOVED***('unregistered')"><a href="" ng-click="changeCurrentUserFilter('unregistered')">Users Awaiting Approval</a></li>
-        </ul>
-
-        <form cl***REMOVED***="navbar-search pull-right">
-          <input type="text" cl***REMOVED***="form-search search-query" ng-model="userQuery" placeholder="Search" ng-change="userSearch()">
-        </form>
-      </div>
-    </div>
-    <div cl***REMOVED***="top-gap" ng-repeat="u in filteredUsers">
-      <div ng-switch on="u.deleted">
-        <div ng-switch-when="true" cl***REMOVED***="row-fluid deleted-border">
-          <div cl***REMOVED***="span12">
-            <h4 style="text-align: center;">User: {{u.username}} - {{u.firstname}} {{u.lastname}} has been deleted.</h4>
-          </div>
-        </div>
-        <div ng-switch-default cl***REMOVED***="row-fluid">
-          <div cl***REMOVED***="span2">
-            <button cl***REMOVED***="btn" ng-click="editUser(u)" ngm-tap="editUser(u)">
-              <i cl***REMOVED***="fa fa-edit"></i>
-              Edit User
-            </button>
-            <button cl***REMOVED***="btn btn-success" ng-hide='u.active' ng-click="approveUser(u)" ngm-tap="approveUser(u)">
-              <i cl***REMOVED***="fa fa-thumbs-up"></i>
-              Approve Account
-            </button>
-          </div>
-          <div cl***REMOVED***="span1">
-            {{u.username}}
-          </div>
-          <div cl***REMOVED***="span2">
-            {{u.firstname}} {{u.lastname}}
-          </div>
-          <div cl***REMOVED***="span2">
-            {{u.email}}
-          </div>
-          <div cl***REMOVED***="span2">
-            {{u.userAgent}}
-          </div>
-          <div cl***REMOVED***="span1">
-            {{u.mageVersion}}
-          </div>
-          <div cl***REMOVED***="span2">
-            <button cl***REMOVED***="btn btn-danger" ng-click="deleteUser(u)" ngm-tap="deleteUser(u)">
-              <i cl***REMOVED***="fa fa-trash-o"></i>
-              Delete User
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div> -->
-
 </div>
