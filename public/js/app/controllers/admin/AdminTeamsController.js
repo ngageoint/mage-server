@@ -13,9 +13,6 @@ angular.module('mage').controller('AdminTeamsCtrl', function ($scope, $filter, $
     });
   });
 
-  // Edit form toggles
-  $scope.showTeamForm = false;
-
   $scope.$watch('teams', function(teams) {
     $scope.filteredTeams = teams;
   });
