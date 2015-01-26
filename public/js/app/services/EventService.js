@@ -39,6 +39,7 @@ angular.module('mage').***REMOVED***('EventService', function EventService($http
         editEvent: null,
         newEvent: function() {
           var event = new Event();
+          event.teams = [];
           this.editEvent = event;
           return event;
         },
