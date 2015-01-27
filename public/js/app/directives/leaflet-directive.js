@@ -25,7 +25,13 @@ L.MageDivIcon = L.DivIcon.extend({
 
     var s = document.createElement('img');
     s.cl***REMOVED***Name = "mage-icon-image";
-    s.src = "/api/icons/" + form.id + "/" + observation.properties.type + "/" + observation.properties[form.variantField] + "?access_token=" + this.options.token;;
+
+    s.src = "/api/icons/" + form.id + "/" + observation.properties.type;
+    if (form.variantField) {
+      s.src += "/" + observation.properties[form.variantField];
+    }
+    s.src += "?access_token=" + this.options.token;
+
     $(s).load(function() {
       var height = $(this).height();
       $(div).css('margin-top', height * -1);
