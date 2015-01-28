@@ -166,10 +166,6 @@ var transform = function(user, ret, options) {
   }
 }
 
-UserSchema.set("toObject", {
-  transform: transform
-});
-
 UserSchema.set("toJSON", {
   transform: transform
 });

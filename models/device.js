@@ -85,10 +85,6 @@ var transform = function(device, ret, options) {
   }
 }
 
-DeviceSchema.set("toObject", {
-  transform: transform
-});
-
 DeviceSchema.set("toJSON", {
   transform: transform
 });
