@@ -24,8 +24,8 @@ angular.module('mage').controller('AdminTeamsCtrl', function ($scope, $filter, $
 
   $scope.newTeam = function() {
     $scope.team = new Team();
-    $scope.team.members = [];
-    $scope.nonMembers = $scope.users.slice();
+    $scope.team.users = [];
+    $scope.nonUsers = $scope.users.slice();
   }
 
   $scope.editTeam = function(team) {
@@ -33,20 +33,20 @@ angular.module('mage').controller('AdminTeamsCtrl', function ($scope, $filter, $
     $scope.add = false;
 
     $scope.team = team;
-    $scope.teamMembersById = _.indexBy($scope.team.members, 'id');
-    $scope.nonMembers = _.filter($scope.users, function(user) {
-      return $scope.teamMembersById[user.id] == null;
+    $scope.teamUsersById = _.indexBy($scope.team.users, 'id');
+    $scope.nonUsers = _.filter($scope.users, function(user) {
+      return $scope.teamUsersById[user.id] == null;
     });
   }
 
-  $scope.addMember = function(user) {
-    $scope.team.members.push(user);
-    $scope.nonMembers = _.reject($scope.nonMembers, function(team) { return user.id == team.id});
+  $scope.addUser = function(user) {
+    $scope.team.users.push(user);
+    $scope.nonUsers = _.reject($scope.nonUsers, function(u) { return user.id == u.id});
   }
 
-  $scope.removeMember = function(user) {
-    $scope.nonMembers.push(user);
-    $scope.team.members = _.reject($scope.team.members, function(team) { return user.id == team.id});
+  $scope.removeUser = function(user) {
+    $scope.nonUsers.push(user);
+    $scope.team.users = _.reject($scope.team.users, function(u) { return user.id == u.id});
   }
 
   var debounceHideSave = _.debounce(function() {

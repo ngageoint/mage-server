@@ -448,12 +448,142 @@
                 }
             }
         },
+        "/api/teams": {
+            "get": {
+                "description": "get all teams",
+                "operationId": "getTeams",
+                "tags": [
+                    "Team"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "team response",
+                        "schema": {
+                            "$ref": "#/definitions/Team"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "add new team",
+                "operationId": "addTeam",
+                "tags": [
+                    "Team"
+                ],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "new team body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/TeamCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "new team response",
+                        "schema": {
+                            "$ref": "#/definitions/Team"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/teams/{id}": {
+            "get": {
+                "description": "Returns a single team based on id",
+                "operationId": "getTeamById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of team to fetch",
+                        "required": true,
+                        "type": "number"
+                    }
+                ],
+                "tags": [
+                    "Team"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "team response",
+                        "schema": {
+                            "$ref": "#/definitions/Team"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "update a single team based on id",
+                "operationId": "updateTeamById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of team to update",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "team update body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/TeamCreate"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Team"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "team update response",
+                        "schema": {
+                            "$ref": "#/definitions/Team"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "deletes a single team based on id",
+                "operationId": "deleteTeam",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of team to delete",
+                        "required": true,
+                        "type": "number"
+                    }
+                ],
+                "tags": [
+                    "Team"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "team deleted"
+                    }
+                }
+            }
+        },
         "/api/events": {
             "get": {
                 "description": "get all events",
                 "operationId": "getEvents",
                 "tags": [
                     "Event"
+                ],
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "query",
+                        "type": "string"
+                    }
                 ],
                 "responses": {
                     "200": {
@@ -667,6 +797,133 @@
                 }
             }
         },
+        "/api/events/{eventId}/form/icons.zip": {
+            "get": {
+                "description": "get all icons",
+                "operationId": "getIcons",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "icon response"
+                    }
+                }
+            }
+        },
+        "/api/events/{eventId}/form/icons/{type}/{variant}": {
+            "get": {
+                "description": "Returns a single form based on id",
+                "operationId": "getIcon",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "icon type",
+                        "type": "string"
+                    },
+                    {
+                        "name": "variant",
+                        "in": "path",
+                        "description": "variant type",
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "form response"
+                    }
+                }
+            },
+            "post": {
+                "description": "add new icon",
+                "operationId": "addIcon",
+                "tags": [
+                    "Event"
+                ],
+                "consumes": [
+                    "mutipart/form-data"
+                ],
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "icon type",
+                        "type": "string"
+                    },
+                    {
+                        "name": "variant",
+                        "in": "path",
+                        "description": "variant type",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "new icon response"
+                    }
+                }
+            },
+            "delete": {
+                "description": "deletes a single icon",
+                "operationId": "deleteIcon",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "icon type",
+                        "type": "string"
+                    },
+                    {
+                        "name": "variant",
+                        "in": "path",
+                        "description": "variant type",
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "icon deleted"
+                    }
+                }
+            }
+        },
         "/api/layers": {
             "get": {
                 "description": "get all layers",
@@ -786,133 +1043,6 @@
                 "responses": {
                     "204": {
                         "description": "layer deleted"
-                    }
-                }
-            }
-        },
-        "/api/icons/{formId}.zip": {
-            "get": {
-                "description": "get all icons",
-                "operationId": "getIcons",
-                "parameters": [
-                    {
-                        "name": "formId",
-                        "in": "path",
-                        "description": "formId in which icon resides",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "tags": [
-                    "Event"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "icon response"
-                    }
-                }
-            }
-        },
-        "/api/icons/{formId}/{type}/{variant}": {
-            "get": {
-                "description": "Returns a single form based on id",
-                "operationId": "getIcon",
-                "parameters": [
-                    {
-                        "name": "formId",
-                        "in": "path",
-                        "description": "formId in which icon resides",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "type",
-                        "in": "path",
-                        "description": "icon type",
-                        "type": "string"
-                    },
-                    {
-                        "name": "variant",
-                        "in": "path",
-                        "description": "variant type",
-                        "type": "string"
-                    }
-                ],
-                "tags": [
-                    "Event"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "form response"
-                    }
-                }
-            },
-            "post": {
-                "description": "add new icon",
-                "operationId": "addIcon",
-                "tags": [
-                    "Event"
-                ],
-                "consumes": [
-                    "mutipart/form-data"
-                ],
-                "parameters": [
-                    {
-                        "name": "formId",
-                        "in": "path",
-                        "description": "formId in which icon resides",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "type",
-                        "in": "path",
-                        "description": "icon type",
-                        "type": "string"
-                    },
-                    {
-                        "name": "variant",
-                        "in": "path",
-                        "description": "variant type",
-                        "type": "string"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "new icon response"
-                    }
-                }
-            },
-            "delete": {
-                "description": "deletes a single icon",
-                "operationId": "deleteIcon",
-                "parameters": [
-                    {
-                        "name": "formId",
-                        "in": "path",
-                        "description": "formId in which icon resides",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "type",
-                        "in": "path",
-                        "description": "icon type",
-                        "type": "string"
-                    },
-                    {
-                        "name": "variant",
-                        "in": "path",
-                        "description": "variant type",
-                        "type": "string"
-                    }
-                ],
-                "tags": [
-                    "Event"
-                ],
-                "responses": {
-                    "204": {
-                        "description": "icon deleted"
                     }
                 }
             }
@@ -1773,6 +1903,48 @@
                 }
             }
         },
+        "TeamCreate": {
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "members": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/User"
+                    }
+                }
+            }
+        },
+        "Team": {
+            "required": [
+                "id",
+                "name"
+            ],
+            "properties": {
+                "id": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "members": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/User"
+                    }
+                }
+            }
+        },
         "EventCreate": {
             "required": [
                 "name"
@@ -1800,6 +1972,15 @@
                 },
                 "description": {
                     "type": "string"
+                },
+                "form": {
+                    "$ref": "#/definitions/Form"
+                },
+                "teams": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Team"
+                    }
                 }
             }
         },

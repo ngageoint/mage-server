@@ -62,7 +62,7 @@
              <a cl***REMOVED***="pull-left btn" ng-click="edit = !edit">Edit</a>
              <a cl***REMOVED***="pull-right btn" ng-click="add = !add">Add</a>
 
-             <a cl***REMOVED***="brand" href="#">Team Members ({{team.members.length}})</a>
+             <a cl***REMOVED***="brand" href="#">Team Members ({{team.users.length}})</a>
 
              <form cl***REMOVED***="navbar-search">
                <input type="text" cl***REMOVED***="search-query" placeholder="Filter Team Members" ng-model="memberSearch">
@@ -76,15 +76,15 @@
                </div>
 
                <div cl***REMOVED***="pre-scrollable-small well well-small admin-table top-gap-s">
-                 <div ng-repeat="nonMember in nonMembers |  user: ['username','firstname','lastname']:nonMemberSearch" cl***REMOVED***="row-fluid well-item">
+                 <div ng-repeat="nonUser in nonUsers |  user: ['username','firstname','lastname']:nonMemberSearch" cl***REMOVED***="row-fluid well-item">
                    <div cl***REMOVED***="span12">
                      <span cl***REMOVED***="icon-spacer">
-                       <a cl***REMOVED***="btn btn-mini btn-success" ng-click="addMember(nonMember)"><i cl***REMOVED***="fa fa-plus"></i></a>
+                       <a cl***REMOVED***="btn btn-mini btn-success" ng-click="addUser(nonUser)"><i cl***REMOVED***="fa fa-plus"></i></a>
                      </span>
                      <span>
-                       {{nonMember.firstname}} {{nonMember.lastname}}
+                       {{nonUser.firstname}} {{nonUser.lastname}}
                      </span>
-                     <span cl***REMOVED***="muted"> ({{nonMember.username}})</span>
+                     <span cl***REMOVED***="muted"> ({{nonUser.username}})</span>
                    </div>
                  </div>
                </div>
@@ -93,15 +93,15 @@
          </div>
 
          <div cl***REMOVED***="pre-scrollable-large well well-small admin-table">
-           <div ng-repeat="member in team.members | user: ['username','firstname','lastname']:memberSearch" cl***REMOVED***="row-fluid well-item">
+           <div ng-repeat="user in team.users | user: ['username','firstname','lastname']:memberSearch" cl***REMOVED***="row-fluid well-item">
              <div cl***REMOVED***="span12">
                <span cl***REMOVED***="icon-spacer" ng-show="edit">
-                 <a cl***REMOVED***="btn btn-mini btn-danger" ng-click="removeMember(member)"><i cl***REMOVED***="fa fa-minus"></i></a>
+                 <a cl***REMOVED***="btn btn-mini btn-danger" ng-click="removeUser(user)"><i cl***REMOVED***="fa fa-minus"></i></a>
                </span>
                <span>
-                 {{member.firstname}} {{member.lastname}}
+                 {{user.firstname}} {{user.lastname}}
                </span>
-               <span cl***REMOVED***="muted"> ({{member.username}})</span>
+               <span cl***REMOVED***="muted"> ({{user.username}})</span>
              </div>
            </div>
          </div>

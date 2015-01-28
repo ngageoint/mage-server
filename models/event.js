@@ -1,5 +1,6 @@
 var mongoose = require('mongoose')
 , Counter = require('./counter')
+, Team = require('./team')
 , api = require('../api');
 
 // Creates a new Mongoose Schema object
@@ -51,10 +52,6 @@ var transform = function(event, ret, options) {
   }
 }
 
-EventSchema.set("toObject", {
-  transform: transform
-});
-
 EventSchema.set("toJSON", {
   transform: transform
 });
@@ -69,16 +66,22 @@ exports.getEvents = function(filter, callback) {
     filter = {};
   }
 
-  var query = {};
-  // var type = filter.type;
-  // if (type) query.type = type;
-
-  Event.find(query).populate('teamIds').exec(function (err, events) {
+  Event.find().populate('teamIds').exec(function (err, events) {
     if (err) {
       console.log("Error finding events in mongo: " + err);
     }
 
-    callback(err, events);
+    if (filter.userId) {
+      var filteredEvents = events.filter(function(event) {
+        return event.teamIds.some(function(team) {
+          return team.userIds.indexOf(filter.userId) !== -1;
+        });
+      });
+
+      return Event.populate(filteredEvents, {path: 'teamIds.userIds', model: 'User'}, callback);
+    }
+
+    return Event.populate(events, {path: 'teamIds.userIds', model: 'User'}, callback);
   });
 }
 
@@ -88,7 +91,7 @@ exports.getById = function(id, callback) {
       console.log("Error finding event in mongo: " + err);
     }
 
-    callback(err, event);
+    Event.populate(event, {path: 'teamIds.userIds', model: 'User'}, callback);
   });
 }
 
@@ -132,7 +135,9 @@ exports.create = function(event, callback) {
       }
 
       createObservationCollection(newEvent);
-      Event.populate(newEvent, {path: 'teamIds'}, callback);
+      Event.populate(newEvent, {path: 'teamIds'}, function(err, event) {
+        Event.populate(event, {path: 'teamIds.userIds', model: 'User'}, callback);
+      });
     });
   });
 }
@@ -147,7 +152,9 @@ exports.update = function(id, event, callback) {
       console.log("Could not update event: " + err);
     }
 
-    Event.populate(updatedEvent, {path: 'teamIds'}, callback);
+    Event.populate(updatedEvent, {path: 'teamIds'}, function(err, event) {
+      Event.populate(event, {path: 'teamIds.userIds', model: 'User'}, callback);
+    });
   });
 }
 
