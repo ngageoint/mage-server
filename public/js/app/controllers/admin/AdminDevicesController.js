@@ -24,20 +24,15 @@ angular.module('mage').controller('AdminDevicesCtrl', function ($scope, $injecto
     $scope.userIdMap = _.indexBy(users, 'id');
   });
 
-  $scope.filterDevices = function() {
-    $scope.page = 0;
+  $scope.filterDevices = function(device) {
+    var filteredDevices = $filter('filter')([device], $scope.deviceSearch);
+    if (filteredDevices && filteredDevices.length) return true;
 
-    var filteredDevices = $filter('filter')($scope.devices, $scope.deviceSearch);
     var filteredDeviceIdMap = _.indexBy(filteredDevices, 'id');
-
     var filteredUsers = $filter('user')($scope.users, ['username', 'firstname', 'lastname'], $scope.deviceSearch);
-    _.each(filteredUsers, function(filteredUser) {
-      _.each($scope.devices, function(device) {
-        if (device.userId === filteredUser.id) filteredDeviceIdMap[device.id] = device;
-      });
+    return _.some(filteredUsers, function(filteredUser) {
+      if (device.userId === filteredUser.id) return true;
     });
-
-    $scope.filteredDevices = _.values(filteredDeviceIdMap);
   }
 
   $scope.filterRegistered = function (device) {

@@ -4,7 +4,6 @@ angular.module('mage').controller('AdminEventsCtrl', function ($scope, $injector
   $scope.appConstants = appConstants;
   $scope.token = mageLib.getLocalItem('token');
   $scope.events = [];
-  $scope.filteredEvents = [];
   $scope.page = 0;
   $scope.itemsPerPage = 10;
 
@@ -35,15 +34,6 @@ angular.module('mage').controller('AdminEventsCtrl', function ($scope, $injector
       });
     }
   });
-
-  $scope.$watch('events', function(events) {
-    $scope.filteredEvents = events;
-  });
-
-  $scope.filterEvents = function() {
-    $scope.page = 0;
-    $scope.filteredEvents = $filter('event')($scope.events, $scope.eventSearch);
-  }
 
   // previewForm - for preview purposes, form will be copied into this
   // otherwise, actual form might get manipulated in preview mode

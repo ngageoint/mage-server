@@ -8,7 +8,7 @@
       </div>
     </div>
     <div cl***REMOVED***="row-fluid bottom-gap">
-      <div cl***REMOVED***="btn-group span12" bs-buttons-radio ng-model="filter">
+      <div cl***REMOVED***="btn-group span12" bs-buttons-radio ng-model="filter" ng-change="page=0">
         <button type="button" value="all" cl***REMOVED***="btn span4">All</button>
         <button type="button" value="active" cl***REMOVED***="btn span4">Active</button>
         <button type="button" value="inactive" cl***REMOVED***="btn span4">Inactive</button>
@@ -17,7 +17,7 @@
 
     <div cl***REMOVED***="row-fluid">
       <div cl***REMOVED***="form-search">
-        <input type="text" cl***REMOVED***="search-query span12" placeholder="Search" ng-model="userSearch" ng-change="filterUsers()">
+        <input type="text" cl***REMOVED***="search-query span12" placeholder="Search" ng-model="userSearch" ng-change="page=0">
       </div>
     </div>
 
@@ -34,7 +34,7 @@
 
     <div cl***REMOVED***="pointer bottom-gap-s"
         ng-click="editUser(u)"
-        ng-repeat="u in filteredUsers | filter:filterActive | orderBy:'username' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
+        ng-repeat="u in (filteredUsers = (users | user:['username','firstname','lastname','email']:userSearch | filter:filterActive)) | orderBy:'username' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
       <div ng-cl***REMOVED***="{'admin-active': user.id == u.id}" cl***REMOVED***="admin-row row-fluid">
 
         <div cl***REMOVED***="span10">
