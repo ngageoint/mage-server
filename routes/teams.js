@@ -11,11 +11,11 @@ module.exports = function(app, security) {
     if (!name) {
       return res.status(400).send("cannot create team 'name' param not specified");
     }
-    
+
     req.teamParam = {
       name: name,
       description: req.param('description'),
-      members: req.param('members')
+      users: req.param('users')
     };
 
     next();
@@ -63,7 +63,7 @@ module.exports = function(app, security) {
       var update = {};
       if (req.teamParam.name) update.name = req.teamParam.name;
       if (req.teamParam.description) update.description = req.teamParam.description;
-      if (req.teamParam.members) update.members = req.teamParam.members;
+      if (req.teamParam.users) update.users = req.teamParam.users;
 
       Team.updateTeam(req.team._id, update, function(err, team) {
         if (err) return next(err);

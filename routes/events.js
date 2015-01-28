@@ -22,10 +22,10 @@ module.exports = function(app, security) {
   }
 
   var parseEventQueryParams = function(req, res, next) {
-    // var parameters = {};
-    // parameters.type = req.param('type');
-    //
-    // req.parameters = parameters;
+    var parameters = {};
+    parameters.userId = req.param('userId');
+
+    req.parameters = parameters;
 
     next();
   }
@@ -63,7 +63,7 @@ module.exports = function(app, security) {
     access.authorize('READ_EVENT'),
     parseEventQueryParams,
     function (req, res) {
-      Event.getEvents({}, function (err, events) {
+      Event.getEvents({userId: req.parameters.userId}, function (err, events) {
         res.json(events);
       });
     }

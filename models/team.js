@@ -9,7 +9,7 @@ var Schema = mongoose.Schema;
 var TeamSchema = new Schema({
     name: { type: String, required: true, unique: true},
     description: { type: String },
-    memberIds: [{type: Schema.Types.ObjectId, ref: 'User'}],
+    userIds: [{type: Schema.Types.ObjectId, ref: 'User'}],
   },{
     versionKey: false
   }
@@ -27,13 +27,9 @@ var transform = function(team, ret, options) {
   ret.id = ret._id;
   delete ret._id;
 
-  ret.members = ret.memberIds;
-  delete ret.memberIds;
+  ret.users = ret.userIds;
+  delete ret.userIds;
 }
-
-TeamSchema.set("toObject", {
-  transform: transform
-});
 
 TeamSchema.set("toJSON", {
   transform: transform
@@ -41,14 +37,15 @@ TeamSchema.set("toJSON", {
 
 // Creates the Model for the User Schema
 var Team = mongoose.model('Team', TeamSchema);
+exports.TeamModel = Team;
 
 exports.getTeamById = function(id, callback) {
-  Team.findById(id).populate('memberIds').exec(callback);
+  Team.findById(id).populate('userIds').exec(callback);
 }
 
 exports.getTeams = function(callback) {
   var query = {};
-  Team.find(query).populate('memberIds').exec(function (err, teams) {
+  Team.find(query).populate('userIds').exec(function (err, teams) {
     if (err) {
       console.log("Error finding teams in mongo: " + err);
     }
@@ -63,8 +60,8 @@ exports.createTeam = function(team, callback) {
     description: team.description,
   }
 
-  if (team.members) {
-    create.memberIds = team.members.map(function(member) { return mongoose.Types.ObjectId(member.id); });
+  if (team.users) {
+    create.userIds = team.users.map(function(user) { return mongoose.Types.ObjectId(user.id); });
   }
 
   Team.create(create, function(err, team) {
@@ -72,13 +69,13 @@ exports.createTeam = function(team, callback) {
       console.log('error creating new team: ' + err);
     }
 
-    Team.populate(team, {path: 'memberIds'}, callback);
+    Team.populate(team, {path: 'userIds'}, callback);
   });
 }
 
 exports.updateTeam = function(id, update, callback) {
-  if (update.members) {
-    update.memberIds = update.members.map(function(member) { return mongoose.Types.ObjectId(member.id); });
+  if (update.users) {
+    update.userIds = update.users.map(function(user) { return mongoose.Types.ObjectId(user.id); });
   }
 
   Team.findByIdAndUpdate(id, update, function(err, team) {
@@ -86,7 +83,7 @@ exports.updateTeam = function(id, update, callback) {
       console.log('error updating team: ' + id + 'err: ' + err);
     }
 
-    Team.populate(team, {path: 'memberIds'}, callback);
+    Team.populate(team, {path: 'userIds'}, callback);
   });
 }
 
