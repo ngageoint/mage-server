@@ -16,15 +16,6 @@ angular.module('mage').controller('AdminUsersCtrl', function ($scope, $injector,
     $scope.users = users;
   });
 
-  $scope.$watch('users', function(users) {
-    $scope.filteredUsers = users;
-  });
-
-  $scope.filterUsers = function() {
-    $scope.page = 0;
-    $scope.filteredUsers = $filter('user')($scope.users, ['username', 'firstname', 'lastname'], $scope.userSearch);
-  }
-
   $scope.$on('userAvatar', function(event, userAvatar) {
     $scope.user.avatar = userAvatar;
   });

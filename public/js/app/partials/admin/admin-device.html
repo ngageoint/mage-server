@@ -8,7 +8,7 @@
       </div>
     </div>
     <div cl***REMOVED***="row-fluid bottom-gap">
-      <div cl***REMOVED***="btn-group" bs-buttons-radio ng-model="filter">
+      <div cl***REMOVED***="btn-group" bs-buttons-radio ng-model="filter" ng-change="page=0">
         <button type="button" value="all" cl***REMOVED***="btn">All</button>
         <button type="button" value="registered" cl***REMOVED***="btn">Registered</button>
         <button type="button" value="unregistered" cl***REMOVED***="btn">Unregistered</button>
@@ -17,7 +17,7 @@
 
     <div cl***REMOVED***="row-fluid">
       <div cl***REMOVED***="form-search">
-        <input type="text" cl***REMOVED***="search-query span12" placeholder="Search" ng-model="deviceSearch" ng-change="filterDevices()">
+        <input type="text" cl***REMOVED***="search-query span12" placeholder="Search" ng-model="deviceSearch" ng-change="page=0">
       </div>
     </div>
 
@@ -34,7 +34,7 @@
 
     <div cl***REMOVED***="pointer bottom-gap-s"
       ng-click="editDevice(d)"
-      ng-repeat="d in filteredDevices | filter:filterRegistered | orderBy:'uid' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
+      ng-repeat="d in (filteredDevices = (devices | filter:filterRegistered | filter:filterDevices)) | filter:filterRegistered | orderBy:'uid' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
       <div ng-cl***REMOVED***="{'admin-active': device.id == d.id}" cl***REMOVED***="admin-row row-fluid">
 
         <div cl***REMOVED***="span10">

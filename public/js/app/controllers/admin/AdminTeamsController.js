@@ -13,15 +13,6 @@ angular.module('mage').controller('AdminTeamsCtrl', function ($scope, $filter, $
     });
   });
 
-  $scope.$watch('teams', function(teams) {
-    $scope.filteredTeams = teams;
-  });
-
-  $scope.filterTeams = function() {
-    $scope.page = 0;
-    $scope.filteredTeams = $filter('filter')($scope.teams, $scope.teamSearch);
-  }
-
   $scope.newTeam = function() {
     $scope.team = new Team();
     $scope.team.users = [];

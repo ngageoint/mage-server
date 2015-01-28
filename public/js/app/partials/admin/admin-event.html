@@ -11,7 +11,7 @@
 
       <div cl***REMOVED***="row-fluid">
         <div cl***REMOVED***="form-search">
-          <input type="text" cl***REMOVED***="search-query span12" placeholder="Search" ng-model="eventSearch" ng-change="filterEvents()">
+          <input type="text" cl***REMOVED***="search-query span12" placeholder="Search" ng-model="eventSearch" ng-change="page=0">
         </div>
       </div>
 
@@ -26,7 +26,7 @@
         </ul>
       </div>
 
-      <div ng-repeat="e in filteredEvents | orderBy:'name' | offset: page*itemsPerPage | limitTo:itemsPerPage" cl***REMOVED***="row-fluid pointer bottom-gap-s" ng-click="editEvent(e)">
+      <div ng-repeat="e in (filteredEvents = (events | filter:eventSearch)) | orderBy:'name' | offset: page*itemsPerPage | limitTo:itemsPerPage" cl***REMOVED***="row-fluid pointer bottom-gap-s" ng-click="editEvent(e)">
         <div ng-cl***REMOVED***="{'admin-active': event.id == e.id}" cl***REMOVED***="admin-row">
           <div cl***REMOVED***="strong">{{e.name}}</div>
           <div cl***REMOVED***="muted">{{e.description}}</div>

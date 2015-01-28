@@ -11,7 +11,7 @@
 
       <div cl***REMOVED***="row-fluid">
         <div cl***REMOVED***="form-search">
-          <input type="text" cl***REMOVED***="search-query span12" placeholder="Search" ng-model="teamSearch" ng-change="filterTeams()">
+          <input type="text" cl***REMOVED***="search-query span12" placeholder="Search" ng-model="teamSearch" ng-change="page=0">
         </div>
       </div>
 
@@ -26,7 +26,7 @@
         </ul>
       </div>
 
-       <div ng-repeat="t in filteredTeams | orderBy:'name' | offset: page*itemsPerPage | limitTo:itemsPerPage" cl***REMOVED***="row-fluid pointer bottom-gap-s" ng-click="editTeam(t)">
+       <div ng-repeat="t in (filteredTeams = (teams | filter:teamSearch)) | orderBy:'name' | offset: page*itemsPerPage | limitTo:itemsPerPage" cl***REMOVED***="row-fluid pointer bottom-gap-s" ng-click="editTeam(t)">
          <div ng-cl***REMOVED***="{'admin-active': team.id == t.id}" cl***REMOVED***="admin-row">
            <div cl***REMOVED***="strong">{{t.name}}</div>
            <div cl***REMOVED***="muted">{{t.description}}</div>
