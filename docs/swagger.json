@@ -1724,13 +1724,13 @@
         },
         "Role": {
             "required": [
-                "_id",
+                "id",
                 "name",
                 "description",
                 "permissions"
             ],
             "properties": {
-                "_id": {
+                "id": {
                     "type": "string"
                 },
                 "name": {
@@ -1785,7 +1785,7 @@
         },
         "User": {
             "required": [
-                "_id",
+                "id",
                 "username",
                 "firstname",
                 "lastname",
@@ -1793,7 +1793,7 @@
                 "role"
             ],
             "properties": {
-                "_id": {
+                "id": {
                     "type": "string"
                 },
                 "username": {
@@ -1824,7 +1824,7 @@
         },
         "Users": {
             "required": [
-                "_id",
+                "id",
                 "username",
                 "firstname",
                 "lastname",
@@ -1832,7 +1832,7 @@
                 "role"
             ],
             "properties": {
-                "_id": {
+                "id": {
                     "type": "string"
                 },
                 "username": {
@@ -1880,13 +1880,13 @@
         },
         "Device": {
             "required": [
-                "_id",
+                "id",
                 "uid",
                 "name",
                 "description"
             ],
             "properties": {
-                "_id": {
+                "id": {
                     "type": "string"
                 },
                 "uid": {
