@@ -1,6 +1,6 @@
 var mongoose = require('mongoose')
   , async = require('async')
-  , Feature = require('./feature')
+  , Observation = require('./observation')
   , User = require('./user')
   , Token = require('./token');
 
@@ -67,8 +67,8 @@ DeviceSchema.pre('remove', function(next) {
         done(err);
       });
     },
-    feature: function(done) {
-      Feature.removeDevice(device, function(err) {
+    observation: function(done) {
+      Observation.removeDevice(device, function(err) {
         done(err);
       });
     }

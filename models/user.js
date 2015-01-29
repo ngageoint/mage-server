@@ -3,7 +3,7 @@ var mongoose = require('mongoose')
   , hasher = require('../utilities/pbkdf2')()
   , config = require('../config')
   , Token = require('../models/token')
-  , Feature = require('../models/feature')
+  , Observation = require('../models/observation')
   , Location = require('../models/location');
 
 var locationLimit = config.server.locationServices.userCollectionLocationLimit;
@@ -133,8 +133,8 @@ UserSchema.pre('remove', function(next) {
         done(err);
       });
     },
-    feature: function(done) {
-      Feature.removeUser(user, function(err) {
+    observation: function(done) {
+      Observation.removeUser(user, function(err) {
         done(err);
       });
     }
@@ -169,6 +169,8 @@ var transform = function(user, ret, options) {
 UserSchema.set("toJSON", {
   transform: transform
 });
+
+exports.transform = transform;
 
 // Creates the Model for the User Schema
 var User = mongoose.model('User', UserSchema);

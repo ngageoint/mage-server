@@ -1,9 +1,10 @@
-var util = require('util');
+var util = require('util')
+  , User = require('../models/user');
 
 var transformUser = function(user, options) {
   if (!user) return null;
 
-  user = user.toObject ? user.toObject({path: options.path, transform: true}) : user;
+  user = user.toObject ? user.toObject({path: options.path, transform: User.transform}) : user;
 
   return user;
 }

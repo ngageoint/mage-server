@@ -7,7 +7,7 @@ module.exports = function(app, security) {
     , Role = require('../models/role')
     , Device = require('../models/device')
     , Layer = require('../models/layer')
-    , Feature = require('../models/feature')
+    , Observation = require('../models/observation')
     , Icon = require('../models/icon')
     , log = require('winston');
 
@@ -30,9 +30,6 @@ module.exports = function(app, security) {
   }
 
   app.set('resources', resources);
-
-  // Protect all FeatureServer routes with token authentication
-  app.all('/FeatureServer*', p***REMOVED***port.authenticate(authenticationStrategy, {session: false}));
 
   app.get('/api', function(req, res) {
     log.info('get api info');
@@ -130,15 +127,15 @@ module.exports = function(app, security) {
     });
   });
 
-  // Grab the feature for any endpoint that uses featureId
-  app.param('featureId', function(req, res, next, featureId) {
-    req.featureId = featureId;
-    new api.Feature(req.layer).getById(featureId, function(feature) {
-      if (!feature) {
-        return res.json(400, 'Feature (ID: ' + featureId + ') not found');
+  // Grab the feature for any endpoint that uses observationId
+  app.param('featureId', function(req, res, next, observationId) {
+    req.observationId = observationId;
+    new api.Observation(req.event).getById(observationId, function(observation) {
+      if (!observation) {
+        return res.json(400, 'Observation (ID: ' + observationId + ') not found');
       }
 
-      req.feature = feature;
+      req.observation = observation;
       next();
     });
   });

@@ -58,7 +58,7 @@ var mongodbConfig = config.server.mongodb;
 var mongoUri = "mongodb://" + mongodbConfig.host + "/" + mongodbConfig.db;
 mongoose.connect(mongoUri, {server: {poolSize: mongodbConfig.poolSize}}, function(err) {
   if (err) {
-    console.log('Error connecting to mongo database, please make sure mongodbConfig is running...');
+    console.log('Error connecting to mongo database, please make sure mongodb is running...');
     throw err;
   }
 });
