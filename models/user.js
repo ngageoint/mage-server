@@ -54,7 +54,6 @@ var UserSchema = new Schema({
     },
     active: { type: Boolean, required: true },
     role: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
-    teams: [Schema.Types.ObjectId],
     status: { type: String, required: false, index: 'sparse' },
     locations: [LocationSchema],
     futureLocations: [LocationSchema],
