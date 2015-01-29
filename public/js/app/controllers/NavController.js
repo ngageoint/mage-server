@@ -1,8 +1,19 @@
 'use strict';
 
-function NavController($scope, $location, UserService) {
+function NavController($scope, $location, UserService, EventService, Event) {
 
   $scope.user = UserService;
+
+  $scope.$watch('user.myself', function(myself) {
+    if (!myself) return;
+
+    Event.query({userId: myself.id},function(events) {
+      if (events && events.length) {
+        EventService.currentEvent = events[0];
+        $scope.event = EventService.currentEvent;
+      }
+    });
+  });
 
   $scope.navCl***REMOVED*** = function (page) {
     var match = $location.path().match(new RegExp('^\/' + page + '.*'));

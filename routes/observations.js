@@ -1,9 +1,7 @@
-// feature routes
 module.exports = function(app, auth) {
 
   var api = require('../api')
     , fs = require('fs-extra')
-    , util = require('util')
     , moment = require('moment')
     , access = require('../access')
     , geometryFormat = require('../format/geoJsonFormat')
@@ -11,43 +9,43 @@ module.exports = function(app, auth) {
 
   var sortColumnWhitelist = ["lastModified"];
 
-  var getFeatureResource = function(req) {
-      return req.getPath().match(/(.*features)/)[0];
+  var getObservationResource = function(req) {
+    return req.getPath().match(/(.*observations)/)[0];
   }
 
-  var validateFeature = function(req, res, next) {
-    var feature = req.body;
+  var validateObservation = function(req, res, next) {
+    var observation = req.body;
 
-    if (!feature.type || feature.type != 'Feature' ) {
-      return res.send(400, "cannot create feature 'type' param not specified, or is not set to 'Feature'");
+    if (!observation.type || observation.type != 'Feature' ) {
+      return res.send(400, "cannot create observation 'type' param not specified, or is not set to 'Feature'");
     }
 
-    if (!feature.geometry) {
-      return res.send(400, "cannot create feature 'geometry' param not specified");
+    if (!observation.geometry) {
+      return res.send(400, "cannot create observation 'geometry' param not specified");
     }
 
-    if (!feature.properties || !feature.properties.timestamp) {
-      return res.send(400, "cannot create feature 'properties.timestamp' param not specified");
+    if (!observation.properties || !observation.properties.timestamp) {
+      return res.send(400, "cannot create observation 'properties.timestamp' param not specified");
     }
 
-    feature.properties.timestamp = moment(feature.properties.timestamp).toDate();
+    observation.properties.timestamp = moment(observation.properties.timestamp).toDate();
 
     var state = {name: 'active'};
     if (userId) state.userId = userId;
-    feature.states = [state];
+    observation.states = [state];
 
-    req.newFeature = {
-      type: feature.type,
-      geometry: feature.geometry,
-      properties: feature.properties,
+    req.newObservation = {
+      type: observation.type,
+      geometry: observation.geometry,
+      properties: observation.properties,
       states: [state]
     };
 
     var userId = req.user ? req.user._id : null;
-    if (userId) req.newFeature.userId = userId;
+    if (userId) req.newObservation.userId = userId;
 
     var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
-    if (deviceId) req.newFeature.deviceId = deviceId;
+    if (deviceId) req.newObservation.deviceId = deviceId;
 
     next();
   }
@@ -113,104 +111,99 @@ module.exports = function(app, auth) {
     next();
   }
 
-  // Queries for ESRI Styled records built for the ESRI format and syntax
   app.get(
-    '/FeatureServer/:layerId/features',
+    '/api/events/:eventId/observations',
     access.authorize('READ_FEATURE'),
     parseQueryParams,
-    function (req, res) {
-      console.log("MAGE ESRI Features GET REST Service Requested");
-
+    function (req, res, next) {
       var options = {
         filter: req.parameters.filter,
         fields: req.parameters.fields,
         sort: req.parameters.sort
       };
-      new api.Feature(req.layer).getAll(options, function(features) {
-        var features = geojson.transform(features, {path: getFeatureResource(req)});
+      new api.Observation(req.event).getAll(options, function(err, observations) {
+        if (err) return next(err);
+
+        var observations = geojson.transform(observations, {path: getObservationResource(req)});
         res.json({
           type: "FeatureCollection",
           bbox: [-180, -90, 180, 90.0],
-          features: features
+          features: observations
         });
       });
     }
   );
 
-  // This function gets one feature with universal JSON formatting
   app.get(
-    '/FeatureServer/:layerId/features/:id',
+    '/api/events/:eventId/observations/:id',
     access.authorize('READ_FEATURE'),
     parseQueryParams,
     function (req, res) {
-      console.log("MAGE Features (ID) GET REST Service Requested");
-
       var options = {fields: req.parameters.fields};
-      new api.Feature(req.layer).getById(req.param('id'), options, function(feature) {
-        var response = geojson.transform(feature, {path: getFeatureResource(req)});
+      new api.Observation(req.event).getById(req.param('id'), options, function(err, observation) {
+        if (err) return next(err);
+
+        var response = geojson.transform(observation, {path: getObservationResource(req)});
         res.json(response);
       });
     }
   );
 
-  // This function creates a new Feature
   app.post(
-    '/FeatureServer/:layerId/features',
+    '/api/events/:eventId/observations',
     access.authorize('CREATE_FEATURE'),
-    validateFeature,
-    function (req, res) {
-      console.log("MAGE Features POST REST Service Requested");
+    validateObservation,
+    function (req, res, next) {
+      new api.Observation(req.event).create(req.newObservation, function(err, newObservation) {
+        if (err) return next(err);
 
-      new api.Feature(req.layer).create(req.newFeature, function(newFeature) {
-        if (!newFeature) return res.send(400);
+        if (!newObservation) return res.status(400).send();
 
-        var response = geojson.transform(newFeature, {path: getFeatureResource(req)});
-        res.location(newFeature._id.toString()).json(response);
+        var response = geojson.transform(newObservation, {path: getObservationResource(req)});
+        res.location(newObservation._id.toString()).json(response);
       }
     );
   });
 
-  // This function will update a feature by the ID
   app.put(
-    '/FeatureServer/:layerId/features/:id',
+    '/api/events/:eventId/observations/:id',
     access.authorize('UPDATE_FEATURE'),
-    function (req, res) {
-      console.log("MAGE Features (ID) UPDATE REST Service Requested");
+    function (req, res, next) {
 
-      var feature = {};
-      if (req.body.geometry) feature.geometry = req.body.geometry;
+      var observation = {};
+      if (req.body.geometry) observation.geometry = req.body.geometry;
       if (req.body.properties) {
-        feature.properties = req.body.properties;
-        if (!feature.properties.type) {
-          return res.send(400, "cannot create feature 'properties.type' param not specified");
+        observation.properties = req.body.properties;
+        if (!observation.properties.type) {
+          return res.send(400, "cannot create observation 'properties.type' param not specified");
         }
 
-        if (!feature.properties.timestamp) {
-          return res.send(400, "cannot create feature 'properties.timestamp' param not specified");
+        if (!observation.properties.timestamp) {
+          return res.send(400, "cannot create observation 'properties.timestamp' param not specified");
         }
 
-        feature.properties.timestamp = moment(feature.properties.timestamp).toDate();
+        observation.properties.timestamp = moment(observation.properties.timestamp).toDate();
       }
 
       var userId = req.user ? req.user._id : null;
-      if (userId) feature.userId = userId;
+      if (userId) observation.userId = userId;
 
       var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
-      if (deviceId) feature.deviceId = deviceId;
+      if (deviceId) observation.deviceId = deviceId;
 
-      new api.Feature(req.layer).update(req.param('id'), feature, function(err, updatedFeature) {
-        var response = geojson.transform(updatedFeature, {path: getFeatureResource(req)});
+      new api.Observation(req.event).update(req.param('id'), observation, function(err, updatedObservation) {
+        if (err) return next(err);
+
+        var response = geojson.transform(updatedObservation, {path: getObservationResource(req)});
         res.json(response);
       }
     );
   });
 
   app.post(
-    '/FeatureServer/:layerId/features/:id/states',
+    '/api/events/:eventId/observations/:id/states',
     access.authorize('UPDATE_FEATURE'),
     function(req, res, next) {
-      console.log('got body: ', req.body);
-
       var state = req.body;
       if (!state) return res.send(400);
       if (!state.name) return res.send(400, 'name required');
@@ -221,37 +214,37 @@ module.exports = function(app, auth) {
       state = { name: state.name };
       if (req.user) state.userId = req.user._id;
 
-      new api.Feature(req.layer).addState(req.param('id'), state, function(err, feature) {
+      new api.Observation(req.event).addState(req.param('id'), state, function(err, observation) {
         if (err) {
-          return res.send(400, 'state is already ' + "'" + state.name + "'");
+          return res.status(400).send('state is already ' + "'" + state.name + "'");
         }
 
-        var response = geojson.transform(feature, {path: getFeatureResource(req)});
+        var response = geojson.transform(observation, {path: getObservationResource(req)});
         res.json(201, response);
       });
     }
   );
 
   app.get(
-    '/FeatureServer/:layerId/features/:id/attachments',
+    '/api/events/:eventId/observations/:id/attachments',
     access.authorize('READ_FEATURE'),
     function(req, res, next) {
       var fields = {attachments: true};
       var options = {fields: fields};
-      new api.Feature(req.layer).getById(req.param('id'), options, function(feature) {
-        var response = geojson.transform(feature, {path: getFeatureResource(req)});
+      new api.Observation(req.event).getById(req.param('id'), options, function(err, observation) {
+        if (err) return next(err);
+
+        var response = geojson.transform(observation, {path: getObservationResource(req)});
         res.json(response.attachments);
       });
     }
   );
 
   app.get(
-    '/FeatureServer/:layerId/features/:featureId/attachments/:attachmentId',
+    '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
     access.authorize('READ_FEATURE'),
     function(req, res, next) {
-      console.log("MAGE Features (ID) Attachment GET REST Service Requested");
-
-      new api.Attachment(req.layer, req.feature).getById(req.param('attachmentId'), {size: req.param('size')}, function(err, attachment) {
+      new api.Attachment(req.event, req.observation).getById(req.param('attachmentId'), {size: req.param('size')}, function(err, attachment) {
         if (err) return next(err);
 
         if (!attachment) return res.send(404);
@@ -283,58 +276,50 @@ module.exports = function(app, auth) {
           stream.pipe(res);
         });
         stream.on('error', function(err) {
-          console.log('error', err);
           res.send(404);
         });
       });
     }
   );
 
-  // This function will add an attachment for a particular observation
   app.post(
-    '/FeatureServer/:layerId/features/:featureId/attachments',
+    '/api/events/:eventId/observations/:observationId/attachments',
     access.authorize('CREATE_FEATURE'),
     function(req, res, next) {
-      console.log("MAGE Attachment POST REST Service Requested");
-
       var attachment = req.files.attachment;
-      if (!attachment) return res.send(400, "no attachment");
+      if (!attachment) return res.status(400).send("no attachment");
 
-      new api.Attachment(req.layer, req.feature).create(req.featureId, req.files.attachment, function(err, attachment) {
+      new api.Attachment(req.event, req.observation).create(req.observationId, req.files.attachment, function(err, attachment) {
         if (err) return next(err);
 
-        var feature = req.feature;
-        feature.attachments = [attachment.toObject()];
-        return res.json(geojson.transform(feature, {path: getFeatureResource(req)}).attachments[0]);
+        var observation = req.observation;
+        observation.attachments = [attachment.toObject()];
+        return res.json(geojson.transform(observation, {path: getObservationResource(req)}).attachments[0]);
       });
     }
   );
 
-  // This function will update the specified attachment
   app.put(
-    '/FeatureServer/:layerId/features/:featureId/attachments/:attachmentId',
+    '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
     access.authorize('UPDATE_FEATURE'),
     function(req, res, next) {
-      console.log("MAGE Attachment UPDATE REST Service Requested");
-
-      new api.Attachment(req.layer, req.feature).update(req.featureId, req.files.attachment, function(err, attachment) {
+      new api.Attachment(req.event, req.observation).update(req.observationId, req.files.attachment, function(err, attachment) {
         if (err) return next(err);
 
-        var feature = req.feature;
-        feature.attachments = [attachment.toObject()];
-        return res.json(geojson.transform(feature, {path: getFeatureResource(req)}).attachments[0]);
+        var observation = req.observation;
+        observation.attachments = [attachment.toObject()];
+        return res.json(geojson.transform(observation, {path: getObservationResource(req)}).attachments[0]);
       });
     }
   );
 
-  // This function will delete all attachments for the given list of attachment ids
   app.delete(
-    '/FeatureServer/:layerId/features/:featureId/attachments/:attachmentId',
+    '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
     access.authorize('DELETE_FEATURE'),
-    function(req, res) {
-      console.log("MAGE Attachment DELETE REST Service Requested");
+    function(req, res, next) {
+      new api.Attachment(req.event, req.observation).delete(req.param('attachmentId'), function(err) {
+        if (err) return next(err);
 
-      new api.Attachment(req.layer, req.feature).delete(req.param('attachmentId'), function(err) {
         res.send(200);
       });
     }

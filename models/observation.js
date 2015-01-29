@@ -1,7 +1,7 @@
 var mongoose = require('mongoose')
   , async = require('async')
   , moment = require('moment')
-  , Layer = require('../models/layer');
+  , Event = require('../models/event');
 
 var Schema = mongoose.Schema;
 
@@ -37,7 +37,7 @@ var ThumbnailSchema = new Schema({
 });
 
 // Creates the Schema for the Attachments object
-var FeatureSchema = new Schema({
+var ObservationSchema = new Schema({
   type: {type: String, required: true},
   lastModified: {type: Date, required: false},
   userId: {type: Schema.Types.ObjectId, required: false, sparse: true},
@@ -50,17 +50,17 @@ var FeatureSchema = new Schema({
   strict: false
 });
 
-FeatureSchema.index({geometry: "2dsphere"});
-FeatureSchema.index({'lastModified': 1});
-FeatureSchema.index({'attachments.lastModified': 1});
-FeatureSchema.index({'userId': 1});
-FeatureSchema.index({'deviceId': 1});
-FeatureSchema.index({'properties.type': 1});
-FeatureSchema.index({'properties.timestamp': 1});
-FeatureSchema.index({'states.name': 1});
-FeatureSchema.index({'attachments.oriented': 1});
-FeatureSchema.index({'attachments.contentType': 1});
-FeatureSchema.index({'attachments.thumbnails.minDimension': 1});
+ObservationSchema.index({geometry: "2dsphere"});
+ObservationSchema.index({'lastModified': 1});
+ObservationSchema.index({'attachments.lastModified': 1});
+ObservationSchema.index({'userId': 1});
+ObservationSchema.index({'deviceId': 1});
+ObservationSchema.index({'properties.type': 1});
+ObservationSchema.index({'properties.timestamp': 1});
+ObservationSchema.index({'states.name': 1});
+ObservationSchema.index({'attachments.oriented': 1});
+ObservationSchema.index({'attachments.contentType': 1});
+ObservationSchema.index({'attachments.thumbnails.minDimension': 1});
 
 var models = {};
 var Attachment = mongoose.model('Attachment', AttachmentSchema);
@@ -105,25 +105,25 @@ var parseFields = function(fields) {
   }
 }
 
-var featureModel = function(layer) {
-  var name = layer.collectionName;
+var observationModel = function(event) {
+  var name = event.collectionName;
   var model = models[name];
   if (!model) {
     // Creates the Model for the Features Schema
-    var model = mongoose.model(name, FeatureSchema, name);
+    var model = mongoose.model(name, ObservationSchema, name);
     models[name] = model;
   }
 
   return model;
 }
 
-exports.featureModel = featureModel;
+exports.observationModel = observationModel;
 
-exports.getFeatures = function(layer, o, callback) {
+exports.getObservations = function(event, o, callback) {
   var conditions = {};
   var fields = parseFields(o.fields);
 
-  var query = featureModel(layer).find(conditions, fields);
+  var query = observationModel(event).find(conditions, fields);
 
   var filter = o.filter || {};
   // Filter by geometry
@@ -144,84 +144,63 @@ exports.getFeatures = function(layer, o, callback) {
   }
 
   if (o.sort) {
-    console.log('sort on ', o.sort);
     query.sort(o.sort);
   }
 
-  query.lean().exec(function (err, features) {
-    if (err) {
-      console.log("Error finding features in mongo: " + err);
-    }
-
-    callback(features);
+  query.lean().exec(function (err, observations) {
+    callback(err, observations);
   });
 }
 
-exports.getFeatureById = function(layer, featureId, options, callback) {
+exports.getObservationById = function(event, observationId, options, callback) {
   var fields = parseFields(options.fields);
 
-  featureModel(layer).findById(featureId, fields, function(err, feature) {
-    if (err) {
-      console.log("Error finding feature in mongo: " + err);
-    }
-
-    callback(feature);
+  observationModel(event).findById(observationId, fields, function(err, observation) {
+    callback(err, observation);
   });
 }
 
-exports.createFeature = function(layer, feature, callback) {
-  feature.lastModified = moment.utc().toDate();
+exports.createObservation = function(event, observation, callback) {
+  observation.lastModified = moment.utc().toDate();
 
-  featureModel(layer).create(feature, function(err, newFeature) {
-    if (err) {
-      console.log(JSON.stringify(err));
-    }
-
-    callback(newFeature);
+  observationModel(event).create(observation, function(err, newObservation) {
+    callback(err, newObservation);
   });
 }
 
-exports.createFeatures = function(layer, features, callback) {
-  features.forEach(function(feature) {
-    feature.properties = feature.properties || {};
-  });
+// exports.createFeatures = function(layer, features, callback) {
+//   features.forEach(function(feature) {
+//     feature.properties = feature.properties || {};
+//   });
+//
+//   featureModel(layer).create(features, function(err) {
+//     callback(err, features);
+//   });
+// }
+//
+// exports.createGeoJsonFeature = function(layer, feature, callback) {
+//   var properties = feature.properties ? feature.properties : {};
+//
+//   featureModel(layer).create(feature, function(err, newFeature) {
+//     if (err) {
+//       console.log('Error creating feature', err);
+//       console.log('feature is: ', feature);
+//     }
+//
+//     callback(err, newFeature);
+//   });
+// }
 
-  featureModel(layer).create(features, function(err) {
-    callback(err, features);
-  });
-}
+exports.updateObservation = function(event, observationId, observation, callback) {
+  observation.lastModified = moment.utc().toDate();
 
-exports.createGeoJsonFeature = function(layer, feature, callback) {
-  var properties = feature.properties ? feature.properties : {};
-
-  featureModel(layer).create(feature, function(err, newFeature) {
-    if (err) {
-      console.log('Error creating feature', err);
-      console.log('feature is: ', feature);
-    }
-
-    callback(err, newFeature);
-  });
-}
-
-exports.updateFeature = function(layer, featureId, feature, callback) {
-  feature.lastModified = moment.utc().toDate();
-
-  featureModel(layer).findByIdAndUpdate(featureId, feature, {new: true}, function (err, updatedFeature) {
-    if (err) {
-      console.log('Could not update feature', err);
-    }
-
-    callback(err, updatedFeature);
+  observationModel(event).findByIdAndUpdate(observationId, observation, {new: true}, function (err, updatedObservation) {
+    callback(err, updatedObservation);
   });
 }
 
-exports.removeFeature = function(layer, featureId, callback) {
-  featureModel(layer).findByIdAndRemove(featureId, function (err, feature) {
-    if (err) {
-      console.log('Could not remove feature', err);
-    }
-
+exports.removeObservation = function(event, observationId, callback) {
+  observationModel(event).findByIdAndRemove(observationId, function (err, observation) {
     callback(err, feature);
   });
 }
@@ -230,6 +209,8 @@ exports.removeUser = function(user, callback) {
   var condition = { userId: user._id };
   var update = { '$unset': { userId: true } };
   var options = { multi: true };
+
+
 
   Layer.getLayers({type: 'Feature'}, function(err, layers) {
     async.each(layers, function(layer, done) {
@@ -249,10 +230,10 @@ exports.removeDevice = function(device, callback) {
   var update = { '$unset': { deviceId: true } };
   var options = { multi: true };
 
-  Layer.getLayers({type: 'Feature'}, function(err, layers) {
-    async.each(layers, function(layer, done) {
-      featureModel(layer).update(condition, update, options, function(err, numberAffected) {
-        console.log('Remove deleted device from ' + numberAffected + ' documents for layer ' + layer.name);
+  Events.getEvents(function(err, events) {
+    async.each(events, function(event, done) {
+      observationModel(event).update(condition, update, options, function(err, numberAffected) {
+        console.log('Remove deleted device from ' + numberAffected + ' documents for event ' + event.name);
         done();
       });
     },
@@ -262,7 +243,7 @@ exports.removeDevice = function(device, callback) {
   });
 }
 
-exports.addState = function(layer, id, state, callback) {
+exports.addState = function(event, id, state, callback) {
   var condition = {_id: mongoose.Types.ObjectId(id), 'states.0.name': {'$ne': state.name}};
 
   state._id = mongoose.Types.ObjectId();
@@ -278,31 +259,33 @@ exports.addState = function(layer, id, state, callback) {
     }
   };
 
-  featureModel(layer).collection.update(condition, update, {upsert: true}, function(err) {
+  observationModel(event).collection.update(condition, update, {upsert: true}, function(err) {
     callback(err, state);
   });
 }
 
-exports.getAttachments = function(layer, id, callback) {
+exports.getAttachments = function(event, id, callback) {
   var query = {};
   query[id.field] = id.id;
   var fields = {attachments: 1};
-  featureModel(layer).findOne(query, fields, function(err, feature) {
-    callback(feature.attachments);
+  observationModel(event).findOne(query, fields, function(err, observation) {
+    callback(observation.attachments);
   });
 }
 
-exports.getAttachment = function(layer, featureId, attachmentId, callback) {
-  var id = {_id: featureId};
+exports.getAttachment = function(event, observationId, attachmentId, callback) {
+  var id = {_id: observationId};
   var attachment = {"attachments": {"$elemMatch": {_id: attachmentId}}};
   var fields = {attachments: true};
-  featureModel(layer).findOne(id, attachment, fields, function(err, feature) {
-    var attachment = feature.attachments.length ? feature.attachments[0] : null;
-    callback(attachment);
+  observationModel(event).findOne(id, attachment, fields, function(err, observation) {
+    if (err) return callback(err);
+
+    var attachment = observation.attachments.length ? observation.attachments[0] : null;
+    callback(err, attachment);
   });
 }
 
-exports.addAttachment = function(layer, id, file, callback) {
+exports.addAttachment = function(event, id, file, callback) {
   if (id !== Object(id)) {
     id = {id: id, field: '_id'};
   }
@@ -319,16 +302,12 @@ exports.addAttachment = function(layer, id, file, callback) {
   });
 
   var update = {'$push': { attachments: attachment }, 'lastModified': new Date()};
-  featureModel(layer).update(condition, update, function(err, feature) {
-    if (err) {
-      console.log('Error updating attachments from DB', err);
-    }
-
+  observationModel(event).update(condition, update, function(err, observation) {
     callback(err, attachment);
   });
 }
 
-exports.updateAttachment = function(layer, featureId, attachmentId, file, callback) {
+exports.updateAttachment = function(event, observationId, attachmentId, file, callback) {
   var condition = {_id: featureId, 'attachments._id': attachmentId};
   var set = {};
   if (file.name) set['attachments.$.name'] = file.name;
@@ -341,35 +320,23 @@ exports.updateAttachment = function(layer, featureId, attachmentId, file, callba
   set['attachments.$.lastModified'] = new Date();
 
   var update = { '$set': set };
-  featureModel(layer).update(condition, update, function(err, feature) {
-    if (err) {
-      console.log('Error updating attachments from DB', err);
-    }
-
+  observationModel(event).update(condition, update, function(err, observation) {
     callback(err);
   });
 }
 
-exports.removeAttachment = function(feature, id, callback) {
+exports.removeAttachment = function(observation, id, callback) {
   var attachments = {};
   attachments[id.field] = id.id;
-  feature.update({'$pull': {attachments: attachments}}, function(err, number, raw) {
-    if (err) {
-      console.log('Error pulling attachments from DB', err);
-    }
-
+  observation.update({'$pull': {attachments: attachments}}, function(err, number, raw) {
     callback(err);
   });
 }
 
-exports.addAttachmentThumbnail = function(layer, featureId, attachmentId, thumbnail, callback) {
-  var condition = {_id: featureId, 'attachments._id': attachmentId};
+exports.addAttachmentThumbnail = function(event, observationId, attachmentId, thumbnail, callback) {
+  var condition = {_id: observationId, 'attachments._id': attachmentId};
   var update = {'$push': { 'attachments.$.thumbnails': thumbnail }};
-  featureModel(layer).update(condition, update, function(err, feature) {
-    if (err) {
-      console.log('Error updating thumbnails to DB', err);
-    }
+  observationModel(event).update(condition, update, function(err, observation) {
     callback(err);
   });
-
 }

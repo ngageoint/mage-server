@@ -36,6 +36,7 @@ angular.module('mage').***REMOVED***('EventService', function EventService($http
             value : 'Hidden'
           }]
         },
+        currentEvent: null,
         editEvent: null,
         newEvent: function() {
           var event = new Event();

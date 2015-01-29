@@ -93,6 +93,29 @@
             </ul>
           </li>
         </ul>
+        <ul cl***REMOVED***="nav pull-right" ng-show="event">
+          <li cl***REMOVED***="dropdown">
+            <button data-toggle="dropdown" cl***REMOVED***="btn dropdown-toggle" href="#">
+              <i cl***REMOVED***="icon-user"></i>
+              {{event.name}}
+              <b cl***REMOVED***="caret"></b>
+            </button>
+            <ul cl***REMOVED***="dropdown-menu">
+              <li>
+                <a href="#/user">
+                  <i cl***REMOVED***="icon-cog"></i>
+                  My Profile
+                </a>
+              </li>
+              <li>
+                <a ng-click="logout()">
+                  <i cl***REMOVED***="icon-off"></i>
+                  Sign Out
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
 
         <a cl***REMOVED***="btn btn-navbar" id="main-nav-collapse" data-toggle="collapse" data-target=".nav-collapse" ng-show="user.myself">
           <span cl***REMOVED***="icon-bar" style="color: #fff"></span>
@@ -190,6 +213,7 @@
   <script type="text/javascript" src="js/app/***REMOVED***s/EventService.js"></script>
   <script type="text/javascript" src="js/app/controllers/AboutController.js"></script>
   <script type="text/javascript" src="js/app/controllers/DebugController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/EventController.js"></script>
   <script type="text/javascript" src="js/app/controllers/MapController.js"></script>
   <script type="text/javascript" src="js/app/controllers/NavController.js"></script>
   <script type="text/javascript" src="js/app/controllers/LayerController.js"></script>
@@ -208,7 +232,6 @@
   <script type="text/javascript" src="js/app/resources/Layer.js"></script>
   <script type="text/javascript" src="js/app/resources/Event.js"></script>
   <script type="text/javascript" src="js/app/resources/Team.js"></script>
-  <script type="text/javascript" src="js/app/resources/User.js"></script>
 
   <script type="text/javascript" src="js/app/filters/moment.js"></script>
   <script type="text/javascript" src="js/app/filters/p***REMOVED***word.js"></script>
