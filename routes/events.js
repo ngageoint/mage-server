@@ -84,6 +84,11 @@ module.exports = function(app, security) {
     function(req, res, next) {
       if (!req.is('multipart/form-data')) return next();
 
+      if (req.files.teams) {
+        var teams = fs.readFileSync(req.files.teams.path);
+        req.newEvent.teams = JSON.parse(teams);
+      }
+      
       Event.create(req.newEvent, function(err, event) {
         if (err) return next(err);
 

@@ -1,6 +1,6 @@
 'use strict';
 
-function LayerController($scope, $log, $http, $injector, appConstants, mageLib, Layer) {
+angular.module('mage').controller('AdminLayersCtrl', function ($scope, $injector, appConstants, mageLib, Layer) {
 
   $scope.layerName = "";
   $scope.showLayerForm = false;
@@ -151,4 +151,4 @@ function LayerController($scope, $log, $http, $injector, appConstants, mageLib, 
     })
     alert("The upload has been canceled by the user or the browser dropped the connection.")
   }
-}
+})

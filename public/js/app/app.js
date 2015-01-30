@@ -38,7 +38,7 @@ var mage = angular.module(
     var resolveLogin = function(roles) {
       return {
         user: function(UserService) {
-         return UserService.login(roles);
+         return UserService.getMyself(roles);
         }
       }
     }
@@ -80,12 +80,6 @@ var mage = angular.module(
       controller:     "MapController",
       resolve: resolveLogin(["USER_ROLE", "ADMIN_ROLE"])
     });
-    $routeProvider.when('/layers',
-    {
-      templateUrl:    "js/app/partials/layers.html",
-      controller:      "LayerController",
-      resolve: resolveLogin(["ADMIN_ROLE"])
-    });
     $routeProvider.when('/user',
     {
       templateUrl:    "js/app/partials/user.html",
@@ -114,8 +108,8 @@ var mage = angular.module(
         templateUrl: 'myModalContent.html',
         controller: function ($scope, $modalInstance, authService) {
           var oldUsername = UserService.myself && UserService.myself.username || undefined;
-          $scope.signin = function (data) {
-            UserService.signin(data).success(function(){
+          $scope.login = function (data) {
+            UserService.login(data).success(function(){
               if (data.username != oldUsername) {
                 data.newUser = true;
               }
