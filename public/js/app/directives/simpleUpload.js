@@ -39,7 +39,7 @@ mage.directive('simpleUpload', function() {
       });
 
       $scope.$watch('url', function(url) {
-        if (!url) rerturn;
+        if (!url) return;
 
         $scope.uploadImageMissing = false;
         $element.find('.preview').html(['<img cl***REMOVED***="preview-image" src="',$scope.url,'"/>'].join(''));

@@ -65,84 +65,41 @@
 
   <header cl***REMOVED***="navbar navbar-fixed-top" ng-controller="NavController">
     <div cl***REMOVED***="navbar-inner">
-      <div cl***REMOVED***="container ng-cloak" ng-show="user">
+      <div cl***REMOVED***="container ng-cloak" ng-show="myself">
 
-        <a cl***REMOVED***="mage brand" href="#/">
+        <a cl***REMOVED***="mage brand" href="#/map">
           <i cl***REMOVED***="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
         </a>
-        <ul cl***REMOVED***="nav pull-right" ng-show="user.myself">
-          <li cl***REMOVED***="dropdown">
-            <button data-toggle="dropdown" cl***REMOVED***="btn dropdown-toggle" href="#">
-              <i cl***REMOVED***="icon-user"></i>
-              {{user.myself.username}}
-              <b cl***REMOVED***="caret"></b>
-            </button>
-            <ul cl***REMOVED***="dropdown-menu">
-              <li>
-                <a href="#/user">
-                  <i cl***REMOVED***="icon-cog"></i>
-                  My Profile
-                </a>
-              </li>
-              <li>
-                <a ng-click="logout()">
-                  <i cl***REMOVED***="icon-off"></i>
-                  Sign Out
-                </a>
-              </li>
-            </ul>
-          </li>
-        </ul>
-        <ul cl***REMOVED***="nav pull-right" ng-show="event">
-          <li cl***REMOVED***="dropdown">
-            <button data-toggle="dropdown" cl***REMOVED***="btn dropdown-toggle" href="#">
-              <i cl***REMOVED***="icon-user"></i>
-              {{event.name}}
-              <b cl***REMOVED***="caret"></b>
-            </button>
-            <ul cl***REMOVED***="dropdown-menu">
-              <li>
-                <a href="#/user">
-                  <i cl***REMOVED***="icon-cog"></i>
-                  My Profile
-                </a>
-              </li>
-              <li>
-                <a ng-click="logout()">
-                  <i cl***REMOVED***="icon-off"></i>
-                  Sign Out
-                </a>
-              </li>
-            </ul>
-          </li>
-        </ul>
 
-        <a cl***REMOVED***="btn btn-navbar" id="main-nav-collapse" data-toggle="collapse" data-target=".nav-collapse" ng-show="user.myself">
+        <a cl***REMOVED***="btn btn-navbar" id="main-nav-collapse" data-toggle="collapse" data-target=".nav-collapse" ng-show="myself">
           <span cl***REMOVED***="icon-bar" style="color: #fff"></span>
           <span cl***REMOVED***="icon-bar" style="color: #000"></span>
           <span cl***REMOVED***="icon-bar"></span>
         </a>
 
-        <div cl***REMOVED***="nav-collapse collapse">
-          <ul id="main-nav" cl***REMOVED***="nav navbar-nav" ng-show="showMapNav()">
-            <li ng-cl***REMOVED***="navCl***REMOVED***('map')">
-              <a href="#/map">
-                <i cl***REMOVED***="icon-map icon-spacer"></i> Map
+        <div cl***REMOVED***="nav-collapse collapse pull-right">
+          <ul id="main-nav" cl***REMOVED***="nav navbar-nav">
+            <li>
+              <a href="#/user" cl***REMOVED***="nav-link">
+                <span>
+                  <img cl***REMOVED***="avatar-img" ng-src="{{myself.avatarUrl ? myself.avatarUrl + '?access_token=' + token : '/img/missing_photo.png'}}"/>
+                </span>
+                <i cl***REMOVED***="fa fa-icon-info icon-spacer"></i> {{myself.username}}
               </a>
             </li>
-            <li ng-cl***REMOVED***="navCl***REMOVED***('layers')" ng-show="showLayerNav()">
-              <a href="#/layers">
-                <i cl***REMOVED***="icon-layers icon-spacer"></i> Layer Manager
+            <li ng-show="amAdmin" bs-tooltip="'Admin'" data-placement="bottom">
+              <a href="#/admin" cl***REMOVED***="nav-link">
+                <i cl***REMOVED***="icon-cogs icon-spacer"></i>
               </a>
             </li>
-            <li ng-cl***REMOVED***="navCl***REMOVED***('admin')" ng-show="showAdminNav()">
-              <a href="#/admin">
-                <i cl***REMOVED***="icon-cogs icon-spacer"></i>  Admin Panel
+            <li>
+              <a href="#/about" cl***REMOVED***="nav-link" bs-tooltip="'About'" data-placement="bottom">
+                <i cl***REMOVED***="fa fa-info-circle icon-spacer"></i>
               </a>
             </li>
-            <li ng-cl***REMOVED***="navCl***REMOVED***('about')">
-              <a href="#/about">
-                <i cl***REMOVED***="icon-info icon-spacer"></i> About
+            <li>
+              <a ng-click="logout()" cl***REMOVED***="nav-link pointer" bs-tooltip="'Sign out'" data-html="true" data-placement="bottom">
+                <i cl***REMOVED***="fa fa-sign-out icon-spacer"></i>
               </a>
             </li>
           </ul>
@@ -169,7 +126,7 @@
 
 
   <script type="text/javascript" src="vendor/angular-plugins/http-auth-interceptor.js"></script>
-  <script type="text/javascript" src="vendor/bootstrap/bootstrap.min.js"></script>
+  <script type="text/javascript" src="vendor/bootstrap/bootstrap.js"></script>
   <script type="text/javascript" src="vendor/moment/moment.min.js"></script>
   <script type="text/javascript" src="js/app/leaflet/LocationMarker.js"></script>
   <script type="text/javascript" src="js/app/leaflet/LocationMarker.Popup.js"></script>
@@ -213,10 +170,8 @@
   <script type="text/javascript" src="js/app/***REMOVED***s/EventService.js"></script>
   <script type="text/javascript" src="js/app/controllers/AboutController.js"></script>
   <script type="text/javascript" src="js/app/controllers/DebugController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/EventController.js"></script>
   <script type="text/javascript" src="js/app/controllers/MapController.js"></script>
   <script type="text/javascript" src="js/app/controllers/NavController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/LayerController.js"></script>
   <script type="text/javascript" src="js/app/controllers/FeatureController.js"></script>
   <script type="text/javascript" src="js/app/controllers/SigninController.js"></script>
   <script type="text/javascript" src="js/app/controllers/SignupController.js"></script>
@@ -227,6 +182,8 @@
   <script type="text/javascript" src="js/app/controllers/admin/AdminEventsController.js"></script>
   <script type="text/javascript" src="js/app/controllers/admin/AdminUsersController.js"></script>
   <script type="text/javascript" src="js/app/controllers/admin/AdminTeamsController.js"></script>
+  <script type="text/javascript" src="js/app/controllers/admin/AdminLayersController.js"></script>
+
 
   <script type="text/javascript" src="js/app/resources/Feature.js"></script>
   <script type="text/javascript" src="js/app/resources/Layer.js"></script>
@@ -268,7 +225,7 @@
           </div>
         </div>
         <span>
-          <button cl***REMOVED***="btn" ng-click="signin({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})" ngm-tap="signin({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})">Login</button>
+          <button cl***REMOVED***="btn" ng-click="login({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})" ngm-tap="login({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})">Login</button>
         </span>
         <div cl***REMOVED***="top-gap-s alert alert-block" ng-show="status > 399">
           <h4>Failed login</h4>

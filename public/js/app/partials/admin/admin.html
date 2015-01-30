@@ -10,6 +10,9 @@
       <h4><a href="#/admin/event" cl***REMOVED***="admin-tab" ng-cl***REMOVED***="{'admin-nav-active': currentAdminPanel == 'event'}">Events</a></h4>
     </div>
     <div cl***REMOVED***="span2">
+      <h4><a href="#/admin/layer" cl***REMOVED***="admin-tab" ng-cl***REMOVED***="{'admin-nav-active': currentAdminPanel == 'layer'}">Layers</a></h4>
+    </div>
+    <div cl***REMOVED***="span2">
       <h4><a href="#/admin/device" cl***REMOVED***="admin-tab" ng-cl***REMOVED***="{'admin-nav-active': currentAdminPanel == 'device'}">Devices</a></h4>
     </div>
   </div>
@@ -35,6 +38,9 @@
           </div>
           <div ng-switch-when="event">
             <div ng-include="'js/app/partials/admin/admin-event.html'"></div>
+          </div>
+          <div ng-switch-when="layer">
+            <div ng-include="'js/app/partials/admin/admin-layer.html'"></div>
           </div>
           <div ng-switch-when="team">
             <div ng-include="'js/app/partials/admin/admin-team.html'"></div>

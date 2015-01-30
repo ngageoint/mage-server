@@ -1,43 +1,25 @@
 'use strict';
 
-function NavController($scope, $location, UserService, EventService, Event) {
+function NavController($scope, $location, UserService) {
 
-  $scope.user = UserService;
-
-  $scope.$watch('user.myself', function(myself) {
-    if (!myself) return;
-
-    Event.query({userId: myself.id},function(events) {
-      if (events && events.length) {
-        EventService.currentEvent = events[0];
-        $scope.event = EventService.currentEvent;
-      }
-    });
+  $scope.$on('login', function(event, login) {
+    $scope.myself = login.user;
+    $scope.amAdmin = login.isAdmin;
+    $scope.token = login.token;
   });
 
-  $scope.navCl***REMOVED*** = function (page) {
-    var match = $location.path().match(new RegExp('^\/' + page + '.*'));
-    return match != null ? 'active' : '';
-  };
+  $scope.$on('logout', function() {
+    $scope.token = null;
+    $scope.myself = null;
+    $scope.amAdmin = null;
+  })
 
   $scope.navigate = function(path) {
     $location.url(path);
   }
 
-  $scope.showMapNav = function() {
-    return $scope.user.amUser;
-  }
-
-  $scope.showLayerNav = function() {
-    return $scope.user.amAdmin;
-  }
-
   $scope.showAdminNav = function() {
-    return $scope.user.amAdmin;
-  }
-
-  $scope.getUser = function() {
-    return $scope.user.myself;
+    return UserService.amAdmin;
   }
 
   $scope.logout = function() {

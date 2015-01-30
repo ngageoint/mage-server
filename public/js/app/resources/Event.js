@@ -53,7 +53,12 @@ angular.module('mage').factory('Event', ['$rootScope', '$resource', '$http', 'ap
         formData.append('form', this.formArchiveFile);
         for (var key in this) {
           if (this.hasOwnProperty(key) && key != 'formArchiveFile' ) {
-            formData.append(key, this[key]);
+            if (_.isObject(this[key]) || _.isArray(this[key])) {
+              var blob = new Blob([angular.toJson(this[key])], {type: 'application/json'});
+              formData.append(key, blob);
+            } else {
+              formData.append(key, this[key]);
+            }
           }
         }
 

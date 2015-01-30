@@ -1,8 +1,8 @@
 'use strict';
 
 angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
-  .factory('UserService', ['$q', '$http', '$location', '$timeout', 'appConstants', 'mageLib',
-    function ($q, $http, $location, $timeout, appConstants, mageLib) {
+  .factory('UserService', ['$rootScope', '$q', '$http', '$location', '$timeout', 'appConstants', 'mageLib',
+    function ($rootScope, $q, $http, $location, $timeout, appConstants, mageLib) {
       var ***REMOVED*** = {
         myself: null
       };
@@ -48,7 +48,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
         }, success, error, progress);
       }
 
-      ***REMOVED***.signin = function (data) {
+      ***REMOVED***.login = function (data) {
         userDeferred = $q.defer();
 
         var promise = $http.post(
@@ -59,6 +59,9 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
         promise.success(function(data) {
           mageLib.setLocalItem('token', data.token);
           setUser(data.user);
+
+          $rootScope.$broadcast('login', {user: data.user, token: data.token, isAdmin: ***REMOVED***.amAdmin, isUser: ***REMOVED***.amUser});
+
           if ($location.path() == '/signin') {
             $location.path('/map');
           }
@@ -67,13 +70,15 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
         return promise;
       }
 
-      ***REMOVED***.login = function(roles) {
+      ***REMOVED***.getMyself = function(roles) {
         var theDeferred = $q.defer();
         $http.get(
           '/api/users/myself',
           {headers: {"Content-Type": "application/x-www-form-urlencoded"}})
         .success(function(user) {
           setUser(user);
+
+          $rootScope.$broadcast('login', {user: user, token: mageLib.getToken(), isAdmin: ***REMOVED***.amAdmin, isUser: ***REMOVED***.amUser});
 
           if (roles && !_.contains(roles, user.role.name)) {
             // TODO probably want to redirect to a unauthorized page.
@@ -111,7 +116,6 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
 
         promise.success(function() {
           ***REMOVED***.clearUser();
-          mageLib.removeLocalItem('token');
           $location.path("/signin");
         });
 
@@ -188,6 +192,10 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
         ***REMOVED***.myself = null;
         ***REMOVED***.amUser = null;
         ***REMOVED***.amAdmin = null;
+
+        // mageLib.removeLocalItem('token');
+
+        $rootScope.$broadcast('logout');
       };
 
       return ***REMOVED***;
