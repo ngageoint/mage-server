@@ -1,6 +1,6 @@
 var fs = require('fs'),
     types = require('./types'),
-    dbf = require('dbf'),
+    dbf = require('./dbf'),
     prj = require('./prj'),
     ext = require('./extent'),
     getFields = require('./fields'),
@@ -46,9 +46,9 @@ function write(streams, rows, geometry_type, geometries, callback) {
         prjStream.end(prj);
     }
 
-    shpStream.on('finish', finish);   
-    shxStream.on('finish', finish);   
-    dbfStream.on('finish', finish);   
+    shpStream.on('finish', finish);
+    shxStream.on('finish', finish);
+    dbfStream.on('finish', finish);
 
     var TYPE = types.geometries[geometry_type],
         shpLength = 100 + writer.shpLength(geometries),
