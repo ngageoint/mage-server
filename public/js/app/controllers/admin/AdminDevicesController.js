@@ -126,14 +126,11 @@ function ($scope, $injector, $filter, mageLib, DeviceService, UserService) {
 
   $scope.registerDevice = function (device) {
     DeviceService.registerDevice(device).success(function(data) {
-      $scope.$apply(function() {
-        $scope.saved = true;
-        debounceHideSave();
-      });
+      angular.copy(data, device);
+      $scope.saved = true;
+      debounceHideSave();
     }, function(response) {
-      $scope.$apply(function() {
-        $scope.error = response.responseText;
-      });
+      $scope.error = response.responseText;
     });
   }
 }]);
