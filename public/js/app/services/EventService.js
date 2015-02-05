@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mage').***REMOVED***('EventService', function EventService($rootScope, $http, $q, Event, Observation, FilterService) {
+angular.module('mage').***REMOVED***('EventService', function EventService($rootScope, $http, $q, Event, Observation, ObservationState, FilterService) {
   var ***REMOVED*** = {};
 
   ***REMOVED***.currentEvent = null;
@@ -44,7 +44,7 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
   function fetchObservations(event, options) {
     var deferred = $q.defer();
 
-    Observation.query({eventId: event.id}, function(observations) {
+    Observation.query({eventId: event.id, states: 'active'}, function(observations) {
       _.each(observations, function(observation) {
         observation.eventId = event.id;
       });
@@ -82,7 +82,10 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
     fetchObservations(event).then(function(observations) {
       eventsById[event.id] = event;
       eventsById[event.id].observationsById = _.indexBy(observations, 'id');
-     $rootScope.$broadcast('observations:refresh', observations, event);
+
+      var archived =
+
+      $rootScope.$broadcast('observations:refresh', observations, event);
     });
   });
 
@@ -123,6 +126,22 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
       }
 
       deferred.resolve(observation);
+    });
+
+    return deferred.promise;
+  }
+
+  ***REMOVED***.archiveObservation = function(observation) {
+    var deferred = $q.defer();
+
+    var eventId = observation.eventId;
+    var observationId = observation.id;
+    ObservationState.save({eventId: eventId, observationId: observationId}, {name: 'archive'}, function(state) {
+      var event = eventsById[eventId];
+      var observation = eventsById[eventId].observationsById[observationId];
+      observation.state = state;
+
+      $rootScope.$broadcast('observations:archive', [observation], event);
     });
 
     return deferred.promise;
