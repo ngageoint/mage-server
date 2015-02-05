@@ -1,9 +1,9 @@
 <div cl***REMOVED***="observation-news-item"  ng-init="editObservation = observation">
-  <div ng-hide="editForm" ng-click="setActiveObservation(observation)" ngm-tap="setActiveObservation(observation)">
+  <div ng-hide="edit" ng-click="setActiveObservation(observation)" ngm-tap="setActiveObservation(observation)">
   	<div cl***REMOVED***="row-fluid">
   		<div cl***REMOVED***="span2">
         <img cl***REMOVED***="pull-left preview-image" width="35" height="46"
-          ng-src="{{'/api/events/' + observation.eventId + '/form/icons/' + observation.properties.type + '/' + observation.properties[viewForm.variantField] + '?access_token=' + token}}"
+          ng-src="{{'/api/events/' + observation.eventId + '/form/icons/' + observation.properties.type + '/' + observation.properties[form.variantField] + '?access_token=' + token}}"
         />
       </div>
   		<div cl***REMOVED***="span10">
@@ -44,12 +44,12 @@
       </div>
     </div>
 
-    <button cl***REMOVED***="btn" ng-hide="readOnlyMode" ngm-tap="startEdit()" ng-click="startEdit()">Edit</button>
+    <button cl***REMOVED***="btn" ng-click="edit = true">Edit</button>
 
   </div>
 
-  <div ng-show="editForm">
-    <form-directive form="editForm" form-edit="true" form-observation="editObservation" cl***REMOVED***="row-fluid"></form-directive>
+  <div ng-show="edit">
+    <form-directive form="form" form-observation="observation" cl***REMOVED***="row-fluid"></form-directive>
   </div>
 
 </div>

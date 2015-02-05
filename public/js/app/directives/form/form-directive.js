@@ -16,6 +16,9 @@ angular.module('mage').directive('formDirective', function (EventService, Observ
         $scope.amAdmin = UserService.amAdmin;
         $scope.attachmentUploads = {};
 
+        $scope.editObservation = angular.copy($scope.observation);
+        $scope.editForm = EventService.createForm($scope.observation);
+
         function formToObservation(form, observation) {
           var newObservation = new Observation({
             id: observation.id,
@@ -43,7 +46,7 @@ angular.module('mage').directive('formDirective', function (EventService, Observ
         }
 
         $scope.save = function() {
-          var observation = formToObservation($scope.form, $scope.observation);
+          var observation = formToObservation($scope.editForm, $scope.editObservation);
 
           EventService.saveObservation(observation).then(function(observation) {
             if (_.some(_.values($scope.attachmentUploads), function(v) {return v;})) {
@@ -57,36 +60,25 @@ angular.module('mage').directive('formDirective', function (EventService, Observ
             var markedForDelete = _.filter($scope.observation.attachments, function(a){ return a.markedForDelete; });
             _.each(markedForDelete, function(attachment) {
               var data = {id: attachment.id, layerId: appConstants.featureLayer.id, featureId: $scope.observation.id};
-              FeatureAttachment.delete(data, function(success) {
+              ObservationAttachment.delete(data, function(success) {
                 $scope.$emit('attachmentDeleted', attachment);
               });
             });
 
-            $scope.observation = observation;
-            $scope.$emit('newObservationSaved', observation);
+            angular.copy(observation, $scope.observation);
+            $scope.form = EventService.createForm($scope.observation);
+
+            $scope.$emit('observationEditDone');
           });
         }
 
         $scope.cancelEdit = function() {
-          $scope.form = null;
-          $scope.attachmentUploads = [];
-          _.each($scope.formObservation.attachments, function(attachment) {
-            delete attachment.markedForDelete;
-          });
+          $scope.$emit('observationEditDone');
         }
 
         $scope.deleteObservation = function() {
-          var observation = $scope.form.getObservation();
-
-          console.log('making call to archive observation');
-          FeatureState.save(
-            {layerId: observation.layerId, featureId: observation.id},
-            {name: 'archive'},
-            function(state) {
-              $scope.form = null;
-              // $scope.deletedFeature = $scope.activeFeature;
-              observation.state = state;
-              $scope.$emit('observationDeleted', observation);
+          EventService.archiveObservation($scope.editObservation).then(function(observation) {
+            $scope.$emit('observationEditDone');
           });
         }
 
@@ -104,7 +96,7 @@ angular.module('mage').directive('formDirective', function (EventService, Observ
         }
 
         $scope.$on('uploadComplete', function(e, url, response, id) {
-          $scope.$emit('newAttachmentSaved', response, $scope.observation.id);
+          $scope.$emit('attachmentSaved', response, $scope.observation.id);
 
           delete $scope.attachmentUploads[id];
           if (_.keys($scope.attachmentUploads).length == 0) {

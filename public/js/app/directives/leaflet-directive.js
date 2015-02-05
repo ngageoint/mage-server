@@ -106,17 +106,17 @@ L.AwesomeMarkers.divIcon = function (options) {
           }
         });
 
-        scope.$watch('os.newForm', function() {
-          if (!ObservationService.newForm && map.hasLayer(addMarker)) {
-            map.removeLayer(addMarker);
-          } else if (ObservationService.newForm) {
-            addMarker.setLatLng(map.getCenter());
-            scope.markerLocation = map.getCenter();
-            if (!map.hasLayer(addMarker)) {
-              _.delay(function() { map.addLayer(addMarker); }, 250);
-            }
-          }
-        });
+        // scope.$watch('os.newForm', function() {
+        //   if (!ObservationService.newForm && map.hasLayer(addMarker)) {
+        //     map.removeLayer(addMarker);
+        //   } else if (ObservationService.newForm) {
+        //     addMarker.setLatLng(map.getCenter());
+        //     scope.markerLocation = map.getCenter();
+        //     if (!map.hasLayer(addMarker)) {
+        //       _.delay(function() { map.addLayer(addMarker); }, 250);
+        //     }
+        //   }
+        // });
 
         addMarker.on('dragend', function(e) {
           scope.$apply(function(s) {

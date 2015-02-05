@@ -2,7 +2,8 @@ mage.directive('newsFeed', function() {
   return {
     restrict: "A",
     templateUrl:  "js/app/partials/news-feed.html",
-    controller: function ($rootScope, $scope) {
+    scope: {},
+    controller: function ($rootScope, $scope, FilterService, EventService, Observation, ObservationService) {
       $scope.currentFeedPanel = 'observationsTab';
       $scope.observations = [];
 
@@ -17,12 +18,35 @@ mage.directive('newsFeed', function() {
         $scope.observations = $scope.observations.concat(observations);
       });
 
-      // $rootScope.$on('observations:delete', function(e, observations) {
-      //   $scope.observations = observations.slice();  // get a new array of observations
-      // });
+      $rootScope.$on('observations:archive', function(e, deletedObservations) {
+        $scope.observations = _.reject($scope.observations, function(observation) {
+          return _.some(deletedObservations, function(deletedObservation) { return observation.id == deletedObservation.id});
+        });
+      });
 
       $rootScope.$on('observations:refresh', function(e, observations) {
         $scope.observations = observations.slice();  // get a new array of observations
+      });
+
+      $scope.$on('createNewObservation', function() {
+        var event = FilterService.getEvent();
+        $scope.newObservation = new Observation({
+          eventId: event.id,
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [0,0]
+          },
+          properties: {
+            timestamp: new Date()
+          }
+        });
+
+        $scope.newObservationForm = EventService.createForm($scope.newObservation);
+      });
+
+      $scope.$on('observationEditDone', function() {
+        $scope.newObservation = null;
       });
 
       $scope.observationOrder = function(observation) {

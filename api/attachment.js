@@ -29,7 +29,7 @@ function Attachment(event, observation) {
 Attachment.prototype.getById = function(attachmentId, options, callback) {
   var size = options.size ? Number(options.size) : null;
 
-  ObservationModel.getAttachment(this._event, this._observation._id, attachmentId, function(attachment) {
+  ObservationModel.getAttachment(this._event, this._observation._id, attachmentId, function(err, attachment) {
     if (!attachment) return callback();
 
     if (size) {

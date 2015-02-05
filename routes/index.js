@@ -128,9 +128,11 @@ module.exports = function(app, security) {
   });
 
   // Grab the feature for any endpoint that uses observationId
-  app.param('featureId', function(req, res, next, observationId) {
+  app.param('observationId', function(req, res, next, observationId) {
     req.observationId = observationId;
-    new api.Observation(req.event).getById(observationId, function(observation) {
+    new api.Observation(req.event).getById(observationId, function(err, observation) {
+      if (err) return next(err);
+
       if (!observation) {
         return res.json(400, 'Observation (ID: ' + observationId + ') not found');
       }

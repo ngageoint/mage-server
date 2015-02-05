@@ -65,6 +65,10 @@ function ($rootScope, $scope, $log, $http, $compile, UserService, ObservationSer
     $scope.featureTableClick = undefined;
   }
 
+  $scope.onNewObservationClick = function() {
+    $scope.$broadcast('createNewObservation');
+  }
+
   $scope.$on('followUser', function(event, user) {
     $scope.ms.followedUser = $scope.ms.followedUser == user ? undefined : user;
   });
@@ -136,29 +140,6 @@ function ($rootScope, $scope, $log, $http, $compile, UserService, ObservationSer
       //$scope.baseLayer = $scope.baseLayers[0];
     });
 
-  var isEditing;
-  $scope.createNewObservation = function () {
-    if (ObservationService.newForm) {
-      ObservationService.cancelNewForm();
-      return;
-    }
-
-    var event = FilterService.getEvent();
-    $scope.newObservation = new Observation({
-      eventId: event.id,
-      type: 'Feature',
-      geometry: {
-        type: 'Point',
-        coordinates: [0,0]
-      },
-      properties: {
-        timestamp: new Date()
-      }
-    });
-
-    ObservationService.newForm = EventService.createForm($scope.newObservation);
-  }
-
   // $scope.$watch('newObservation.id', function(newObservation) {
   //   if (!newObservation) return;
   //
@@ -176,10 +157,6 @@ function ($rootScope, $scope, $log, $http, $compile, UserService, ObservationSer
   //   createAllFeaturesArray();
   // });
 
-  $scope.$on('cancelEdit', function(event) {
-    $scope.newObservationEnabled = false;
-    isEditing = false;
-  });
 
   // $scope.$on('newObservationSaved', function(event, observation) {
     // $scope.newObservationEnabled = false;

@@ -9,7 +9,7 @@ mage.directive('attachment', function () {
       attachmentObservation: '=',
       edit: '='
     },
-    controller: function ($scope, appConstants, mageLib, UserService, FeatureAttachment) {
+    controller: function ($scope, appConstants, mageLib, UserService, ObservationAttachment) {
       $scope.amAdmin = UserService.amAdmin;
       $scope.appConstants = appConstants;
       $scope.token = mageLib.getToken();
