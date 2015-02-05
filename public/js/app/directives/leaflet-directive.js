@@ -383,23 +383,23 @@ L.AwesomeMarkers.divIcon = function (options) {
           }
         };
 
-        scope.$watch('activeFeature', function(newFeature, oldFeature) {
-          if (!newFeature && oldFeature) {
-            var marker = markers[appConstants.featureLayer.id][oldFeature.featureId];
-            marker.unselect();
-          } else if (newFeature) {
-            var marker = markers[appConstants.featureLayer.id][newFeature.featureId];
-            marker.select();
-          }
-        });
+        // scope.$watch('activeFeature', function(newFeature, oldFeature) {
+        //   if (!newFeature && oldFeature) {
+        //     var marker = markers[appConstants.featureLayer.id][oldFeature.featureId];
+        //     marker.unselect();
+        //   } else if (newFeature) {
+        //     var marker = markers[appConstants.featureLayer.id][newFeature.featureId];
+        //     marker.select();
+        //   }
+        // });
 
-        scope.$watch('featureTableClick', function(o) {
-          if (!o) return;
-          var marker = markers[appConstants.featureLayer.id][o.featureId];
-          activeMarker = marker;
-          map.setView(marker.getLatLng(), map.getZoom() > 17 ? map.getZoom() : 17);
-          layers[appConstants.featureLayer.id].leafletLayer.zoomToShowLayer(marker, function(){});
-        });
+        // scope.$watch('featureTableClick', function(o) {
+        //   if (!o) return;
+        //   var marker = markers[appConstants.featureLayer.id][o.featureId];
+        //   activeMarker = marker;
+        //   map.setView(marker.getLatLng(), map.getZoom() > 17 ? map.getZoom() : 17);
+        //   layers[appConstants.featureLayer.id].leafletLayer.zoomToShowLayer(marker, function(){});
+        // });
 
         var onPopupClose = function(popupEvent) {
           // this is a marker

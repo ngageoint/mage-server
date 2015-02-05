@@ -46,11 +46,13 @@ angular.module('mage').directive('formDirective', function (EventService, Observ
         }
 
         $scope.save = function() {
+          $scope.saving = true;
+          $scope.uploadAttachments = false;
           var observation = formToObservation($scope.editForm, $scope.editObservation);
 
           EventService.saveObservation(observation).then(function(observation) {
             if (_.some(_.values($scope.attachmentUploads), function(v) {return v;})) {
-              $scope.observationSaved = true;
+              $scope.uploadAttachments = true;
             } else {
               $scope.form = null;
               $scope.attachmentUploads = {};
@@ -68,7 +70,10 @@ angular.module('mage').directive('formDirective', function (EventService, Observ
             angular.copy(observation, $scope.observation);
             $scope.form = EventService.createForm($scope.observation);
 
-            $scope.$emit('observationEditDone');
+            if (!$scope.uploadAttachments) {
+              $scope.$emit('observationEditDone');
+              $scope.saving = false;
+            }
           });
         }
 
@@ -95,19 +100,31 @@ angular.module('mage').directive('formDirective', function (EventService, Observ
           return !field.archived;
         }
 
+        $scope.$on('uploadFile', function(e, id) {
+          $scope.attachmentUploads[id] = true;
+        });
+
         $scope.$on('uploadComplete', function(e, url, response, id) {
-          $scope.$emit('attachmentSaved', response, $scope.observation.id);
+          EventService.addAttachmentToObservation($scope.observation, response);
 
           delete $scope.attachmentUploads[id];
           if (_.keys($scope.attachmentUploads).length == 0) {
-            $scope.form = null;
-            $scope.observationSaved = false;
             $scope.attachmentUploads = {};
+
+            $scope.$emit('observationEditDone');
+            $scope.saving = false;
           }
         });
 
-        $scope.$on('uploadFile', function(e, id) {
-          $scope.attachmentUploads[id] = true;
+        // TODO warn user in some way that attachment didn't upload
+        $scope.$on('uploadFailed', function(e, url, response, id) {
+          delete $scope.attachmentUploads[id];
+          if (_.keys($scope.attachmentUploads).length == 0) {
+            $scope.attachmentUploads = {};
+
+            $scope.$emit('observationEditDone');
+            $scope.saving = false;
+          }
         });
       }
     };
