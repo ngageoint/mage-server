@@ -1,7 +1,7 @@
 'use strict';
 
-angular.module('mage').controller('AdminEventsCtrl', function ($scope, $injector, $filter, $timeout, appConstants, mageLib, ObservationService, EventService, Event, Team) {
-  $scope.appConstants = appConstants;
+angular.module('mage').controller('AdminEventsCtrl', ['$scope', '$injector', '$filter', '$timeout', 'mageLib', 'EventService', 'Event', 'Team',
+function ($scope, $injector, $filter, $timeout, mageLib, EventService, Event, Team) {
   $scope.token = mageLib.getLocalItem('token');
   $scope.events = [];
   $scope.page = 0;
@@ -317,4 +317,4 @@ angular.module('mage').controller('AdminEventsCtrl', function ($scope, $injector
       console.info('failure');
     });
   }
-});
+}]);

@@ -123,7 +123,7 @@ img.rotate270 {
 .navbar .nav > .active > a,
 .navbar .nav > .active > a:hover,
 .navbar .nav > .active > a:focus {
-	color: #00F;
+	color: #FFF;
 	background-color: #305680;
 }
 
@@ -367,6 +367,10 @@ a.admin-nav-active {
 	color: #345477;
 }
 
+a.admin-nav-inactive {
+	color: #777;
+}
+
 .admin-header {
 	color: #345477;
 	font-size: 20px;
@@ -382,7 +386,6 @@ a.admin-nav-active {
 
 .admin-tab {
 	padding: 10px;
-	color: #777;
 }
 
 .admin-table {

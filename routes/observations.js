@@ -125,11 +125,7 @@ module.exports = function(app, auth) {
         if (err) return next(err);
 
         var observations = geojson.transform(observations, {path: getObservationResource(req)});
-        res.json({
-          type: "FeatureCollection",
-          bbox: [-180, -90, 180, 90.0],
-          features: observations
-        });
+        res.json(observations);
       });
     }
   );

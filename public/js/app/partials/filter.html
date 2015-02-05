@@ -1,9 +1,9 @@
 <div cl***REMOVED***="filter-panel" ng-show="showFilter">
-  <h3>Filter</h3>
+  <!-- <h3>Filter</h3> -->
 
-  <h4>Layers</h4>
+  <!-- <h4>Layers</h4> -->
   <form cl***REMOVED***="form">
-    <div cl***REMOVED***="control-group">
+    <!-- <div cl***REMOVED***="control-group">
       <div cl***REMOVED***="controls">
         <label cl***REMOVED***="checkbox">
           <input type="checkbox" ng-model="locationServicesEnabled" ng-change="locationServices()" ngm-tap="locationServices()"/><i cl***REMOVED***="icon-users icon-sage"
@@ -13,9 +13,9 @@
           <input style="margin-left: 0px" type="checkbox" ng-model="hideLocationsFromNewsFeed" ng-change="hideLocations()" ngm-tap="hideLocations()"/>Hide People in News Feed
         </label>
       </div>
-    </div>
+    </div> -->
 
-    <div ng-show="featureLayers.length > 0">
+    <!-- <div ng-show="featureLayers.length > 0">
       <div cl***REMOVED***="control-group">
         <div cl***REMOVED***="controls">
           <div ng-repeat="layer in featureLayers">
@@ -27,7 +27,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <div ng-show="externalLayers.length > 0">
       <h4 style="display:inline;">Static Layers </h4><a style="cursor:pointer" ng-click="showStaticLayers = !showStaticLayers">(<span ng-hide="showStaticLayers">show</span><span ng-show="showStaticLayers">hide</span> {{externalLayers.length}})</a>
@@ -41,7 +41,7 @@
       </div>
     </div>
 
-    <div ng-show="imageryLayers.length > 0">
+    <!-- <div ng-show="imageryLayers.length > 0">
       <h4>Imagery Layers</h4>
       <div cl***REMOVED***="control-group">
         <div cl***REMOVED***="controls">
@@ -50,10 +50,10 @@
           </label>
         </div>
       </div>
-    </div>
+    </div> -->
   </form>
 
-  <h4>Time</h4>
+  <!-- <h4>Time</h4>
   <div cl***REMOVED***="control-group">
     <select ng-model="interval" ng-options="o.label for o in intervals" ng-change="updateInterval()"></select>
 
@@ -74,7 +74,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
 
   <div cl***REMOVED***="row-fluid">
     <button cl***REMOVED***="btn btn-inverse pull-right" ng-click="showFilter = false" ngm-tap="showFilter = false">Close</button>

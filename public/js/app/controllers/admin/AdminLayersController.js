@@ -1,12 +1,12 @@
 'use strict';
 
-angular.module('mage').controller('AdminLayersCtrl', function ($scope, $injector, appConstants, mageLib, Layer) {
+angular.module('mage').controller('AdminLayersCtrl', ['$scope', '$injector', 'mageLib', 'Layer',
+function ($scope, $injector, mageLib, Layer) {
 
   $scope.layerName = "";
   $scope.showLayerForm = false;
   $scope.wmsFormats = ['image/jpeg', 'image/png'];
   $scope.wmsVersions = ['1.1.1', '1.3.0'];
-  $scope.readOnlyMode = appConstants.readOnly;
 
   $scope.fileUploadOptions = {
     acceptFileTypes: /(\.|\/)(kml)$/i,
@@ -151,4 +151,4 @@ angular.module('mage').controller('AdminLayersCtrl', function ($scope, $injector
     })
     alert("The upload has been canceled by the user or the browser dropped the connection.")
   }
-})
+}])

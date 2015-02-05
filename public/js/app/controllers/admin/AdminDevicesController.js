@@ -1,6 +1,7 @@
 'use strict';
 
-angular.module('mage').controller('AdminDevicesCtrl', function ($scope, $injector, $filter, appConstants, mageLib, DeviceService, UserService) {
+angular.module('mage').controller('AdminDevicesCtrl', ['$scope', '$injector', '$filter', 'mageLib', 'DeviceService', 'UserService',
+function ($scope, $injector, $filter, mageLib, DeviceService, UserService) {
   $scope.token = mageLib.getLocalItem('token');
   $scope.filter = "all"; // possible values all, registered, unregistered
   $scope.devices = [];
@@ -135,4 +136,4 @@ angular.module('mage').controller('AdminDevicesCtrl', function ($scope, $injecto
       });
     });
   }
-});
+}]);

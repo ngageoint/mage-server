@@ -1,55 +1,38 @@
 <div cl***REMOVED***="news-feed-panel-content">
   <div cl***REMOVED***="news-feed-header">
-    <div filter-navbar/>
     <div cl***REMOVED***="feature-panel" ng-show="os.newForm">
         <form-directive form="os.newForm" form-edit="true" form-observation="newObservation" cl***REMOVED***="row-fluid"></form-directive>
-      <!-- <div observation="newObservation" form="os.newForm"></div> -->
     </div>
   </div>
   <div cl***REMOVED***="overview-map hide-on-ipad-landscape" map-clip="activeFeature.feature" style="width: 100%; height: 150px;"/>
 
+  <div cl***REMOVED***="row-fluid news-feed-tabs">
+    <div cl***REMOVED***="span4 offset2">
+      <h4><a cl***REMOVED***="admin-tab pointer" ng-click="currentFeedPanel = 'observationsTab'" ng-cl***REMOVED***="{observationsTab:'admin-nav-active', peopleTab:'admin-nav-inactive'}[currentFeedPanel]">Observations</a></h4>
+    </div>
+    <div cl***REMOVED***="span4 offset1">
+      <h4><a cl***REMOVED***="admin-tab pointer" ng-click="currentFeedPanel = 'peopleTab'" ng-cl***REMOVED***="{peopleTab:'admin-nav-active', observationsTab:'admin-nav-inactive'}[currentFeedPanel]">People</a></h4>
+    </div>
+  </div>
+
+  <!-- TODO add paging -->
   <div cl***REMOVED***="news-items-wrapper">
     <div cl***REMOVED***="news-items">
       <div cl***REMOVED***="news-items-list">
         <div cl***REMOVED***="the-news-items">
-          <div filter/>
-          <div export/>  <!-- Export panel -->
-          <div ng-show="timebuckets.newsfeed" cl***REMOVED***="bucket-panel">
-            <!-- bucket list -->
-            <label>Jump to time</label>
-            <select ng-model="selectedBucket" ng-options="timebuckets.newsfeed.indexOf(bucket) as bucket[0].locations[0].properties.timestamp || bucket[0].properties.timestamp | moment: 'fromNow' for bucket in timebuckets.newsfeed">
-            </select>
-            <!--
-            <ul>
-              <li data-ng-repeat="bucket in timebuckets.newsfeed">
-                <a ngm-tap="setBucket($index)" ng-click="setBucket($index)" data-ng-cl***REMOVED***="{strong: $index == selectedBucket}">
-                  <span data-ng-show="$index == 0">Now</span>
-                  <span data-ng-show="$index != 0 && bucket[0].locations">{{bucket[0].locations[0].properties.timestamp | moment: 'fromNow'}}</span>
-                  <span data-ng-show="$index != 0 && bucket[0].properties.timestamp">{{bucket[0].properties.timestamp | moment: 'fromNow'}}</span>
-
-                 </a>
-              </li>
-            </ul>
-            <!--
-                                 <!-- -
-                   <span data-ng-show="bucket[bucket.length-1].locations">{{bucket[(bucket.length-1)].locations[0].properties.timestamp | moment: 'fromNow'}}</span>
-                   <span data-ng-show="bucket[bucket.length-1].properties.timestamp">{{bucket[(bucket.length-1)].properties.timestamp | moment: 'fromNow'}}</span>
-                    -->
-          </div>
-          <div cl***REMOVED***="news-feed-item pointer" id="{{feedItem.id || feedItem.user}}"
-          ng-cl***REMOVED***="((activeFeature.feature && (activeFeature.feature.id == feedItem.id)) || (activeLocation && (activeLocation.user == feedItem.user))) && 'active-news-feed-item'"
-          data-ng-repeat="feedItem in buckets[selectedBucket] | orderBy: newsFeedOrder : true track by feedItem.id || feedItem.user">
-            <div ng-if="feedItem.locations">
-             <div user-location-news-item="feedItem"/>
+          <div ng-switch="currentFeedPanel">
+            <div ng-switch-when="observationsTab">
+              <div cl***REMOVED***="news-feed-item pointer" id="{{observation.id}}"
+                ng-cl***REMOVED***="(activeFeature.feature && (activeFeature.feature.id == observation.id)) && 'active-news-feed-item'"
+                data-ng-repeat="observation in observations | orderBy:observationOrder track by observation.id">
+                <div observation-news-item="observation" observation-form="event.form" container-element="side-bar"></div>
+              </div>
             </div>
-            <div ng-if="feedItem.properties.timestamp">
-              <div observation-news-item="feedItem" container-element="side-bar"/>
+            <div ng-switch-when="peopleTab">
+                <!-- <div ng-if="feedItem.locations">
+                <div user-location-news-item="feedItem"/>
+              </div> -->
             </div>
-          </div>
-          <div ng-show="timebuckets.newsfeed" cl***REMOVED***="bucket-panel">
-          <label>Jump to time</label>
-            <select ng-model="selectedBucket" ng-options="timebuckets.newsfeed.indexOf(bucket) as bucket[0].locations[0].properties.timestamp || bucket[0].properties.timestamp | moment: 'fromNow' for bucket in timebuckets.newsfeed">
-            </select>
           </div>
         </div>
       </div>

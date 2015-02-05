@@ -1,6 +1,7 @@
 'use strict';
 
-angular.module('mage').controller('AdminUsersCtrl', function ($scope, $injector, $filter, appConstants, mageLib, UserService) {
+angular.module('mage').controller('AdminUsersCtrl', ['$scope', '$injector', '$filter', 'mageLib', 'UserService',
+function ($scope, $injector, $filter, mageLib, UserService) {
   $scope.token = mageLib.getLocalItem('token');
   $scope.filter = "all"; // possible values all, active, inactive
   $scope.users = [];
@@ -155,4 +156,4 @@ angular.module('mage').controller('AdminUsersCtrl', function ($scope, $injector,
       });
     });
   }
-});
+}]);

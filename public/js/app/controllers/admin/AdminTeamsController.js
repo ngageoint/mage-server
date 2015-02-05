@@ -1,5 +1,6 @@
 'use strict';
-angular.module('mage').controller('AdminTeamsCtrl', function ($scope, $filter, $injector, $location, $anchorScroll, mageLib, Team, UserService) {
+angular.module('mage').controller('AdminTeamsCtrl', ['$scope', '$injector', 'mageLib', 'ObservationService', 'UserService', 'Team',
+function ($scope, $injector, mageLib, ObservationService, UserService, Team) {
   $scope.token = mageLib.getLocalItem('token');
   $scope.teams = [];
   $scope.page = 0;
@@ -117,4 +118,4 @@ angular.module('mage').controller('AdminTeamsCtrl', function ($scope, $filter, $
       });
     });
   }
-});
+}]);

@@ -4,7 +4,9 @@
   Handle communication between the server and the map.
   Load observations, allow users to view them, and allow them to add new ones themselves.
 */
-function MapController($rootScope, $scope, $log, $http, $compile, ObservationService, appConstants, mageLib, UserService, DataService, MapService, Layer, LocationService, FilterService, Location, CreateLocation, TimerService, Feature, TimeBucketService) {
+angular.module('mage').controller('MapController', ['$rootScope', '$scope', '$log', '$http', '$compile', 'UserService', 'ObservationService', 'EventService', 'appConstants', 'mageLib', 'DataService', 'MapService', 'Layer', 'LocationService', 'FilterService', 'Location', 'CreateLocation', 'TimerService', 'Observation', 'TimeBucketService',
+function ($rootScope, $scope, $log, $http, $compile, UserService, ObservationService, EventService, appConstants, mageLib, DataService, MapService, Layer, LocationService, FilterService, Location, CreateLocation, TimerService, Observation, TimeBucketService) {
+
   $scope.customer = appConstants.customer;
   var ds = DataService;
   $scope.ms = MapService;
@@ -141,7 +143,10 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
       return;
     }
 
-    $scope.newObservation = new Feature({
+    var event = FilterService.getEvent();
+    $scope.newObservation = new Observation({
+      eventId: event.id,
+      type: 'Feature',
       geometry: {
         type: 'Point',
         coordinates: [0,0]
@@ -151,55 +156,53 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
       }
     });
 
-    ObservationService.createNewForm($scope.newObservation).then(function(form) {
-      ObservationService.newForm = form;
-    });
+    ObservationService.newForm = EventService.createForm($scope.newObservation);
   }
 
-  $scope.$watch('newObservation.id', function(newObservation) {
-    if (!newObservation) return;
-
-    var featureLayer = _.find($scope.featureLayers, function(layer) {
-      return layer.id == appConstants.featureLayer.id;
-    });
-
-    if (!featureLayer.features) return;
-
-    featureLayer.features.push($scope.newObservation);
-
-    // this has to change.  This is how the leaflet-directive knows to pick up new features, but it is not good
-    $scope.layer.features = {features: featureLayer.features};
-
-    createAllFeaturesArray();
-  });
+  // $scope.$watch('newObservation.id', function(newObservation) {
+  //   if (!newObservation) return;
+  //
+  //   var featureLayer = _.find($scope.featureLayers, function(layer) {
+  //     return layer.id == appConstants.featureLayer.id;
+  //   });
+  //
+  //   if (!featureLayer.features) return;
+  //
+  //   featureLayer.features.push($scope.newObservation);
+  //
+  //   // this has to change.  This is how the leaflet-directive knows to pick up new features, but it is not good
+  //   $scope.layer.features = {features: featureLayer.features};
+  //
+  //   createAllFeaturesArray();
+  // });
 
   $scope.$on('cancelEdit', function(event) {
     $scope.newObservationEnabled = false;
     isEditing = false;
   });
 
-  $scope.$on('newObservationSaved', function(event, observation) {
-    $scope.newObservationEnabled = false;
-    isEditing = false;
-
-    // this will get me a new copy of the array to mod and p***REMOVED*** to leaflet leaflet-directive
-    // as below this is not great and can be reworked if there is one place to look for features
-    var features = appConstants.featureLayer.features ? appConstants.featureLayer.features.slice(0) : [];
-    var existingFeature = _.find(features, function(feature) {
-      return feature.id == observation.id;
-    });
-
-    if (existingFeature) {
-      existingFeature = observation;
-    } else {
-      features.push(observation);
-    }
-
-    // this has to change.  This is how the leaflet-directive knows to pick up new features, but it is not good
-    if ($scope.layer) {
-      $scope.layer.features = {features: features};
-    }
-  });
+  // $scope.$on('newObservationSaved', function(event, observation) {
+    // $scope.newObservationEnabled = false;
+    // isEditing = false;
+    //
+    // // this will get me a new copy of the array to mod and p***REMOVED*** to leaflet leaflet-directive
+    // // as below this is not great and can be reworked if there is one place to look for features
+    // var features = appConstants.featureLayer.features ? appConstants.featureLayer.features.slice(0) : [];
+    // var existingFeature = _.find(features, function(feature) {
+    //   return feature.id == observation.id;
+    // });
+    //
+    // if (existingFeature) {
+    //   existingFeature = observation;
+    // } else {
+    //   features.push(observation);
+    // }
+    //
+    // // this has to change.  This is how the leaflet-directive knows to pick up new features, but it is not good
+    // if ($scope.layer) {
+    //   $scope.layer.features = {features: features};
+    // }
+  // });
 
   $scope.$on('newAttachmentSaved', function(e, attachment, observationId) {
     var features = appConstants.featureLayer.features ? appConstants.featureLayer.features.slice(0) : [];
@@ -280,7 +283,7 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
     if (!location) return;
 
     if (ObservationService.newForm) {
-      ObservationService.newForm.getField('geometry').value = {
+      EventService.getFormField(ObservationService.newForm, 'geometry'). value = {
         x: location.lng,
         y: location.lat
       };
@@ -416,7 +419,7 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
           }
         }
       });
-      
+
       ds.locations = data;
     });
   }
@@ -531,4 +534,4 @@ function MapController($rootScope, $scope, $log, $http, $compile, ObservationSer
     console.log("in dismissLocations");
     $scope.showLocations = false;
   }
-}
+}]);
