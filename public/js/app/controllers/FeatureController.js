@@ -1,6 +1,6 @@
 'use strict';
 
-function FeatureController($scope, $location, $timeout, Feature, FeatureService, FeatureState, MapService, UserService, mageLib, appConstants) {
+function FeatureController($scope, $location, $timeout, Observation, ObservationState, FeatureService, MapService, UserService, mageLib, appConstants) {
   var isEditing = false;
   $scope.token = mageLib.getLocalItem('token');
 

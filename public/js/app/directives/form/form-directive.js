@@ -1,14 +1,13 @@
 'use strict';
 
-angular.module('mage').directive('formDirective', function (EventService, ObservationService, UserService, FeatureAttachment, appConstants, mageLib, FeatureState) {
+angular.module('mage').directive('formDirective', function (EventService, Observation, ObservationService, UserService, ObservationAttachment, appConstants, mageLib, ObservationState) {
     return {
       templateUrl: 'js/app/partials/form/form.html',
       restrict: 'E',
       transclude: true,
       scope: {
         form: '=',
-        formObservation: '=',
-        formPreview: '='
+        observation: '=formObservation'
       },
       controller: function($scope) {
         var uploadId = 0;
@@ -17,8 +16,36 @@ angular.module('mage').directive('formDirective', function (EventService, Observ
         $scope.amAdmin = UserService.amAdmin;
         $scope.attachmentUploads = {};
 
+        function formToObservation(form, observation) {
+          var newObservation = new Observation({
+            id: observation.id,
+            eventId: observation.eventId,
+            type: 'Feature',
+            properties: {
+            }
+          });
+
+          _.each(form.fields, function(field) {
+            switch (field.name) {
+              case 'geometry':
+                newObservation.geometry = {
+                  type: 'Point',
+                  coordinates: [field.value.x, field.value.y]
+                }
+
+                break;
+              default:
+                newObservation.properties[field.name] = field.value;
+            }
+          });
+
+          return newObservation;
+        }
+
         $scope.save = function() {
-          $scope.form.getObservation().$save({}, function(observation) {
+          var observation = formToObservation($scope.form, $scope.observation);
+
+          EventService.saveObservation(observation).then(function(observation) {
             if (_.some(_.values($scope.attachmentUploads), function(v) {return v;})) {
               $scope.observationSaved = true;
             } else {
@@ -27,15 +54,15 @@ angular.module('mage').directive('formDirective', function (EventService, Observ
             }
 
             // delete any attachments that are marked for delete
-            var markedForDelete = _.filter($scope.formObservation.attachments, function(a){ return a.markedForDelete; });
+            var markedForDelete = _.filter($scope.observation.attachments, function(a){ return a.markedForDelete; });
             _.each(markedForDelete, function(attachment) {
-              var data = {id: attachment.id, layerId: appConstants.featureLayer.id, featureId: $scope.formObservation.id};
+              var data = {id: attachment.id, layerId: appConstants.featureLayer.id, featureId: $scope.observation.id};
               FeatureAttachment.delete(data, function(success) {
                 $scope.$emit('attachmentDeleted', attachment);
               });
             });
 
-            $scope.formObservation = observation;
+            $scope.observation = observation;
             $scope.$emit('newObservationSaved', observation);
           });
         }
@@ -49,19 +76,18 @@ angular.module('mage').directive('formDirective', function (EventService, Observ
         }
 
         $scope.deleteObservation = function() {
-            console.log("delte it now");
-            var observation = $scope.form.getObservation();
+          var observation = $scope.form.getObservation();
 
-            console.log('making call to archive observation');
-            FeatureState.save(
-              {layerId: observation.layerId, featureId: observation.id},
-              {name: 'archive'},
-              function(state) {
-                $scope.form = null;
-                // $scope.deletedFeature = $scope.activeFeature;
-                observation.state = state;
-                $scope.$emit('observationDeleted', observation);
-            });
+          console.log('making call to archive observation');
+          FeatureState.save(
+            {layerId: observation.layerId, featureId: observation.id},
+            {name: 'archive'},
+            function(state) {
+              $scope.form = null;
+              // $scope.deletedFeature = $scope.activeFeature;
+              observation.state = state;
+              $scope.$emit('observationDeleted', observation);
+          });
         }
 
         $scope.addAttachment = function() {
@@ -73,8 +99,12 @@ angular.module('mage').directive('formDirective', function (EventService, Observ
           delete $scope.attachmentUploads[id];
         }
 
+        $scope.filterArchived = function(field) {
+          return !field.archived;
+        }
+
         $scope.$on('uploadComplete', function(e, url, response, id) {
-          $scope.$emit('newAttachmentSaved', response, $scope.formObservation.id);
+          $scope.$emit('newAttachmentSaved', response, $scope.observation.id);
 
           delete $scope.attachmentUploads[id];
           if (_.keys($scope.attachmentUploads).length == 0) {

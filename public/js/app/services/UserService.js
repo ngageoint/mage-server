@@ -10,7 +10,6 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
 
       var setUser = function(user) {
         ***REMOVED***.myself = user;
-        ***REMOVED***.amUser = ***REMOVED***.myself && ***REMOVED***.myself.role && (***REMOVED***.myself.role.name == "USER_ROLE" || ***REMOVED***.myself.role.name == "ADMIN_ROLE");
         ***REMOVED***.amAdmin = ***REMOVED***.myself && ***REMOVED***.myself.role && (***REMOVED***.myself.role.name == "ADMIN_ROLE");
       };
 
@@ -60,7 +59,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
           mageLib.setLocalItem('token', data.token);
           setUser(data.user);
 
-          $rootScope.$broadcast('login', {user: data.user, token: data.token, isAdmin: ***REMOVED***.amAdmin, isUser: ***REMOVED***.amUser});
+          $rootScope.$broadcast('login', {user: data.user, token: data.token, isAdmin: ***REMOVED***.amAdmin});
 
           if ($location.path() == '/signin') {
             $location.path('/map');
@@ -78,7 +77,7 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
         .success(function(user) {
           setUser(user);
 
-          $rootScope.$broadcast('login', {user: user, token: mageLib.getToken(), isAdmin: ***REMOVED***.amAdmin, isUser: ***REMOVED***.amUser});
+          $rootScope.$broadcast('login', {user: user, token: mageLib.getToken(), isAdmin: ***REMOVED***.amAdmin});
 
           if (roles && !_.contains(roles, user.role.name)) {
             // TODO probably want to redirect to a unauthorized page.
@@ -190,7 +189,6 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
 
       ***REMOVED***.clearUser = function() {
         ***REMOVED***.myself = null;
-        ***REMOVED***.amUser = null;
         ***REMOVED***.amAdmin = null;
 
         // mageLib.removeLocalItem('token');

@@ -1,5 +1,4 @@
-angular.module('mage')
-.factory('Layer', ['$resource', '$http', function($resource, $http) {
+angular.module('mage').factory('Layer', ['$resource', '$http', function($resource, $http) {
 
 	var Layer = $resource('/api/layers/:id', {
 		id: '@id'

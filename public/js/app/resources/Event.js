@@ -1,4 +1,4 @@
-angular.module('mage').factory('Event', ['$rootScope', '$resource', '$http', 'appConstants', 'mageLib', 'Feature', function($rootScope, $resource, $http, appConstants, mageLib, Feature) {
+angular.module('mage').factory('Event', ['$rootScope', '$resource', '$http', 'appConstants', 'mageLib', 'Observation', function($rootScope, $resource, $http, appConstants, mageLib, Observation) {
   var Event = $resource('/api/events/:id', {
     id: '@id'
   },{
@@ -88,35 +88,6 @@ angular.module('mage').factory('Event', ['$rootScope', '$resource', '$http', 'ap
       }
     }
   };
-
-  Event.prototype.getField = function(fieldName) {
-    return _.find(this.form.fields, function(field) { return field.name == fieldName});
-  };
-
-  Event.prototype.getObservation = function() {
-    var observation = new Feature({
-      type: 'Feature',
-      layerId: appConstants.featureLayer.id,
-      properties: {
-      }
-    });
-
-    observation.id = this.observationId;
-    _.each(this.fields, function(field) {
-      switch (field.name) {
-      case 'geometry':
-        observation.geometry = {
-          type: 'Point',
-          coordinates: [field.value.x, field.value.y]
-        }
-        break;
-      default:
-        observation.properties[field.name] = field.value;
-      }
-    });
-
-    return observation;
-  }
 
   return Event;
 

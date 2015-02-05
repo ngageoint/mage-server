@@ -36,6 +36,23 @@ html, body, div.leaflet-container {
 	width: 100%;
 }
 
+.news-feed-tabs {
+	border-radius: 3px;
+	background-color: rgba(208, 231, 255, 0.8);
+}
+
+.news-feed-tab:hover {
+	border-bottom: 2px solid #EEE;
+	text-decoration: none;
+	color: #EEE;
+}
+
+
+a.news-feed-tab-active {
+	border-bottom: 3px solid #EEE;
+	color: #EEE;
+}
+
 @media(max-width:1024px){
   .map-clip {
     display: none;
@@ -65,7 +82,6 @@ html, body, div.leaflet-container {
 
 .leaflet-sidebar > .leaflet-control {
 	overflow: hidden;
-	padding: 0;
 	padding-left:10px;
 	background: transparent;
 }

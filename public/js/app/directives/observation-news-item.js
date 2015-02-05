@@ -6,7 +6,9 @@ mage.directive('observationNewsItem', function() {
     	observation: '=observationNewsItem',
       containerElement: '@'
     },
-    controller: function ($scope, ObservationService, mageLib, MapService, $element, appConstants) {
+    controller: function ($scope, EventService, ObservationService, mageLib, MapService, $element, appConstants) {
+      $scope.form = EventService.createForm($scope.observation);
+
       $scope.appConstants = appConstants;
       $scope.ms = MapService;
       $scope.attachmentUrl = '/FeatureServer/' + $scope.observation.layerId + '/features/';
@@ -22,21 +24,23 @@ mage.directive('observationNewsItem', function() {
       }
 
       $scope.startEdit = function() {
-        ObservationService.createNewForm($scope.observation).then(function(form) {
-          $scope.editObservation = angular.copy($scope.observation);
-          $scope.editForm = form;
-        });
+        $scope.editObservation = angular.copy($scope.observation);
+        $scope.editForm = EventService.createForm($scope.observation);
       }
 
-      $scope.$watch('editForm', function() {
-        ObservationService.createNewForm($scope.observation, true)
-          .then(function(form) {
-            $scope.viewForm = form;
-          });
+      $scope.filterArchived = function(field) {
+        return !field.archived;
+      }
+
+      $scope.$watch('editForm', function(editForm) {
+        if (!editForm) return;
+
+        $scope.viewForm = EventService.createForm($scope.observation, true);
       });
 
       $scope.$on('newObservationSaved', function(e, observation) {
         angular.copy(observation, $scope.observation);
+        $scope.form = EventService.createForm($scope.observation);
       });
 
       $scope.$on('newAttachmentSaved', function(e, attachment) {

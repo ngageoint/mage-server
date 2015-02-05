@@ -1,14 +1,11 @@
 <div>
   <!-- News Feed panel -->
   <div id="side-bar" cl***REMOVED***="side-bar-holder">
-    <a cl***REMOVED***="close sidebar-close" aria-hidden="true" ngm-tap="newsFeedEnabled = false" ng-click="newsFeedEnabled = false">&times;</a>
     <div cl***REMOVED***="news-feed-pane" news-feed/>
   </div>
   <div cl***REMOVED***="map-filter" ng-hide="newsFeedEnabled">
 
-    <div filter-navbar/>
-    <div filter/>
-    <div export/>  <!-- Export panel -->
+    <!-- <div export/> -->
     <div id="observation-form" cl***REMOVED***="feature-panel" ng-show="newObservationEnabled">
     </div>
   </div>
@@ -46,7 +43,7 @@
       ng-cl***REMOVED***="{true: 'btn-inverse'}[newsFeedEnabled]"
       ng-click="newsFeedEnabled = !newsFeedEnabled"
       ngm-tap="newsFeedEnabled = !newsFeedEnabled">
-      <i ng-cl***REMOVED***="newsFeedEnabled && 'icon-sage-inverse' || 'icon-sage'"cl***REMOVED***="fa-rss"></i>
+      <i ng-cl***REMOVED***="newsFeedEnabled && 'icon-sage-inverse' || 'icon-sage'"cl***REMOVED***="fa fa-bars"></i>
     </a>
   </div>
 

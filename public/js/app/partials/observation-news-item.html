@@ -3,7 +3,7 @@
   	<div cl***REMOVED***="row-fluid">
   		<div cl***REMOVED***="span2">
         <img cl***REMOVED***="pull-left preview-image" width="35" height="46"
-          ng-src="{{'/api/icons/' + viewForm.id + '/' + observation.properties.type + '/' + observation.properties[viewForm.variantField] + '?access_token=' + token}}"
+          ng-src="{{'/api/events/' + observation.eventId + '/form/icons/' + observation.properties.type + '/' + observation.properties[viewForm.variantField] + '?access_token=' + token}}"
         />
       </div>
   		<div cl***REMOVED***="span10">
@@ -23,7 +23,7 @@
       <div cl***REMOVED***="map-clip row-fluid" style="width: 100%; height: 150px;" map-clip="mapClipConfig"/>
     </div>
 
-    <div cl***REMOVED***="row-fluid top-gap-s" ng-repeat="field in viewForm.fields | filter: { archived: '!' } | filter: {name: '!timestamp'} | filter: {name: '!geometry'}">
+    <div cl***REMOVED***="row-fluid top-gap-s" ng-repeat="field in form.fields | filter:filterArchived | filter: {name: '!timestamp'} | filter: {name: '!geometry'}">
       <property-view field="field">
     </div>
 
