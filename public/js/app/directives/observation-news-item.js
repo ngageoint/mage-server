@@ -3,10 +3,9 @@ mage.directive('observationNewsItem', function() {
     restrict: "A",
     templateUrl:  "js/app/partials/observation-news-item.html",
     scope: {
-    	observation: '=observationNewsItem',
-      containerElement: '@'
+    	observation: '=observationNewsItem'
     },
-    controller: function ($scope, EventService, ObservationService, mageLib, MapService, $element) {
+    controller: function ($scope, EventService, ObservationService, mageLib, MapService) {
       $scope.form = EventService.createForm($scope.observation);
 
       $scope.ms = MapService;
@@ -30,14 +29,15 @@ mage.directive('observationNewsItem', function() {
       });
 
       // TODO should this be moved into the form directive?
-      $scope.$on('attachmentSaved', function(e, attachment) {
-        $scope.observation.attachments.push(attachment);
-      });
+      // $scope.$on('attachmentSaved', function(e, attachment) {
+      //   $scope.observation.attachments.push(attachment);
+      // });
 
-      // TODO should this be moved into the form directive?
-      $scope.$on('attachmentDeleted', function(e, attachment) {
-        $scope.observation.attachments = _.filter($scope.observation.attachments, function(a) {return a.id != attachment.id});
-      });
+      //
+      // // TODO should this be moved into the form directive?
+      // $scope.$on('attachmentDeleted', function(e, attachment) {
+      //   $scope.observation.attachments = _.filter($scope.observation.attachments, function(a) {return a.id != attachment.id});
+      // });
     }
   };
 });

@@ -78,10 +78,11 @@ mage.directive('simpleUpload', function() {
         });
       }
 
-      var uploadFailed = function() {
+      var uploadFailed = function(response, status, error) {
         $scope.$apply(function() {
           $scope.uploadStatus = "Upload Failed";
           $scope.uploading = false;
+          $scope.$emit('uploadFailed', $scope.url, response, $scope.uploadId);
         });
       }
 

@@ -44,6 +44,8 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
   function fetchObservations(event, options) {
     var deferred = $q.defer();
 
+// TODO when polling make sure not to filter on active, as we will need to grab archived events
+// and remove them
     Observation.query({eventId: event.id, states: 'active'}, function(observations) {
       _.each(observations, function(observation) {
         observation.eventId = event.id;
@@ -94,21 +96,6 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
     console.log('filter:time changed', time);
   });
 
-  ***REMOVED***.createObservation = function(observation) {
-    var deferred = $q.defer();
-
-    var eventId = observation.eventId;
-    observation.$save({}, function(updatedObservation) {
-      updatedObservation.eventId = eventId;
-
-      eventsById[eventId].observationsById[updatedObservation.id] = updatedObservation;
-      $rootScope.$broadcast('observations:new', [updatedObservation]);
-      deferred.resolve(updatedObservation);
-    });
-
-    return deferred.promise;
-  }
-
   ***REMOVED***.saveObservation = function(observation) {
     var deferred = $q.defer();
 
@@ -145,6 +132,14 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
     });
 
     return deferred.promise;
+  }
+
+  ***REMOVED***.addAttachmentToObservation = function(observation, attachment) {
+    var event = eventsById[observation.eventId];
+    var observation = event.observationsById[observation.id];
+    observation.attachments.push(attachment);
+
+    $rootScope.$broadcast('observations:update', [observation], event);
   }
 
   ***REMOVED***.getFormField = function(form, fieldName) {
