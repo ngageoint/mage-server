@@ -16,6 +16,9 @@ angular.module('mage').directive('formDirective', function (EventService, Observ
         $scope.amAdmin = UserService.amAdmin;
         $scope.attachmentUploads = {};
 
+        $scope.editObservation = angular.copy($scope.observation);
+        $scope.editForm = EventService.createForm($scope.observation);
+
         function formToObservation(form, observation) {
           var newObservation = new Observation({
             id: observation.id,
@@ -92,11 +95,6 @@ angular.module('mage').directive('formDirective', function (EventService, Observ
         $scope.filterArchived = function(field) {
           return !field.archived;
         }
-
-        $scope.$watch('observation', function(observation) {
-          $scope.editObservation = angular.copy(observation);
-          $scope.editForm = EventService.createForm($scope.observation);
-        }, true);
 
         $scope.$on('uploadFile', function(e, id) {
           $scope.attachmentUploads[id] = true;

@@ -7,6 +7,7 @@ mage.directive('observationNewsItem', function() {
     },
     controller: function ($scope, EventService, ObservationService, mageLib, MapService) {
       $scope.ms = MapService;
+      $scope.edit = false;
       $scope.attachmentUrl = '/FeatureServer/' + $scope.observation.layerId + '/features/';
       $scope.token = mageLib.getLocalItem('token');
       $scope.mapClipConfig = {
@@ -20,6 +21,10 @@ mage.directive('observationNewsItem', function() {
 
       $scope.filterArchived = function(field) {
         return !field.archived;
+      }
+
+      $scope.editObservation = function() {
+        $scope.edit = true;
       }
 
       $scope.$on('observationEditDone', function() {
