@@ -10,7 +10,7 @@ mage.directive('newsFeed', function() {
       $rootScope.$on('observations:update', function(e, updatedObservations) {
         _.each(updatedObservations, function(updatedObservation) {
           var observation = _.find($scope.observations, function(observation) {return observation.id === updatedObservation.id});
-          if (observation) angular.copy(updatedObservation, observation);
+          if (observation && observation !== updatedObservation) angular.copy(updatedObservation, observation);
         });
       });
 

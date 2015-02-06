@@ -71,5 +71,7 @@ angular.module('mage').factory('Observation', ['$resource', '$http', function($r
       method: 'GET'
     }
   });
+
+
   return ObservationAttachment;
 }]);
