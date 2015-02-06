@@ -13,7 +13,6 @@ var mage = angular.module(
   [
     "$strap.directives",
     "ui.bootstrap",
-    "leaflet-directive",
     "mage.***REMOVED***s",
     "mage.userService",
     "mage.deviceService",
@@ -75,8 +74,8 @@ var mage = angular.module(
     });
     $routeProvider.when('/map',
     {
-      templateUrl:    'js/app/partials/map.html',
-      controller:     "MapController",
+      templateUrl:    'js/app/partials/mage.html',
+      controller:     "MageController",
       resolve: resolveLogin(["USER_ROLE", "ADMIN_ROLE"])
     });
     $routeProvider.when('/user',

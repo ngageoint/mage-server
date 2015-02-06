@@ -5,7 +5,8 @@ mage.directive('newsFeed', function() {
     scope: {},
     controller: function ($rootScope, $scope, FilterService, EventService, Observation, ObservationService) {
       $scope.currentFeedPanel = 'observationsTab';
-      $scope.observations = [];
+
+      $scope.observations = EventService.getObservations();
 
       $rootScope.$on('observations:update', function(e, updatedObservations) {
         _.each(updatedObservations, function(updatedObservation) {
