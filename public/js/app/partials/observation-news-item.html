@@ -1,5 +1,5 @@
-<div cl***REMOVED***="observation-news-item">
-  <div ng-hide="edit" ng-click="setActiveObservation(observation)">
+<div cl***REMOVED***="observation-news-item" ng-cloak>
+  <div ng-if="edit === false" ng-click="setActiveObservation(observation)">
   	<div cl***REMOVED***="row-fluid">
   		<div cl***REMOVED***="span2">
         <img cl***REMOVED***="pull-left preview-image" width="35" height="46"
@@ -20,7 +20,7 @@
   	</div>
 
     <div cl***REMOVED***="top-gap-s">
-      <div cl***REMOVED***="map-clip row-fluid" style="width: 100%; height: 150px;" map-clip="mapClipConfig"/>
+      <div cl***REMOVED***="map-clip row-fluid" style="width: 100%; height: 150px;" map-clip="mapClipConfig"></div>
     </div>
 
     <div cl***REMOVED***="row-fluid top-gap-s" ng-repeat="field in form.fields | filter:filterArchived | filter: {name: '!timestamp'} | filter: {name: '!geometry'}">
@@ -44,11 +44,10 @@
       </div>
     </div>
 
-    <button cl***REMOVED***="btn" ng-click="edit = true">Edit</button>
-
+    <button cl***REMOVED***="btn" ng-click="editObservation()">Edit</button>
   </div>
 
-  <div ng-show="edit">
+  <div ng-if="edit === true">
     <form-directive form="form" form-observation="observation" cl***REMOVED***="row-fluid"></form-directive>
   </div>
 
