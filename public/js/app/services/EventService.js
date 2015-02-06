@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mage').***REMOVED***('EventService', function EventService($rootScope, $http, $q, Event, Observation, ObservationState, FilterService) {
+angular.module('mage').***REMOVED***('EventService', function EventService($rootScope, $http, $q, Event, Observation, ObservationAttachment, ObservationState, FilterService) {
   var ***REMOVED*** = {};
 
   ***REMOVED***.currentEvent = null;
@@ -140,6 +140,18 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
     observation.attachments.push(attachment);
 
     $rootScope.$broadcast('observations:update', [observation], event);
+  }
+
+  ***REMOVED***.deleteAttachmentForObservation = function(observation, attachment) {
+    var eventId = observation.eventId;
+    var observationId = observation.id;
+    return ObservationAttachment.delete({eventId: eventId, observationId: observationId, id: attachment.id}, function(success) {
+      var event = eventsById[eventId];
+      var observation = event.observationsById[observationId];
+
+      observation.attachments = _.reject(observation.attachments, function(a) { return attachment.id === a.id});
+      $rootScope.$broadcast('observations:update', [observation], event);
+    });
   }
 
   ***REMOVED***.getFormField = function(form, fieldName) {
