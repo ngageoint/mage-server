@@ -98,7 +98,6 @@ function ($scope, $injector, mageLib, Layer) {
     return;
   }
 
-  /* Attachment upload functions, some of these make more sense in the FeatureService...more copy pasta */
   $scope.setFiles = function (element) {
     $scope.$apply(function(scope) {
       console.log('files:', element.files);
