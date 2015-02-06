@@ -3,8 +3,7 @@
 angular.module('mage').***REMOVED***('EventService', function EventService($rootScope, $http, $q, Event, Observation, ObservationAttachment, ObservationState, FilterService) {
   var ***REMOVED*** = {};
 
-  ***REMOVED***.currentEvent = null;
-  ***REMOVED***.editEvent = null;
+  // ***REMOVED***.editEvent = null;
 
   ***REMOVED***.form = {
     fields:[{
@@ -41,6 +40,7 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
   };
 
   var eventsById = {};
+
   function fetchObservations(event, options) {
     var deferred = $q.defer();
 
@@ -51,6 +51,10 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
         observation.eventId = event.id;
       });
 
+      eventsById[event.id] = event;
+      eventsById[event.id].observationsById = _.indexBy(observations, 'id');
+
+      $rootScope.$broadcast('observations:refresh', observations, event);
       deferred.resolve(observations);
     });
 
@@ -75,19 +79,29 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
   //   });
   // });
 
-  $rootScope.$on('filter:event', function(e, event) {
-    fetchObservations(event).then(function(observations) {
-      eventsById[event.id] = event;
-      eventsById[event.id].observationsById = _.indexBy(observations, 'id');
+  var event = FilterService.getEvent();
+  if (event) {
+    fetchObservations(event);
+  }
 
-      $rootScope.$broadcast('observations:refresh', observations, event);
-    });
+  $rootScope.$on('filter:event', function(e, event) {
+    ***REMOVED***.fetchObservations(event);
   });
 
   var time = FilterService.getTimeInterval();
   $rootScope.$on('filter:time', function(e, time) {
     console.log('filter:time changed', time);
   });
+
+  ***REMOVED***.getObservations = function() {
+    var events = _.values(eventsById);
+    var observations = [];
+    _.each(_.values(eventsById), function(event) {
+      observations.concat(_.values(event.observationsById));
+    });
+
+    return observations;
+  }
 
   ***REMOVED***.saveObservation = function(observation) {
     var deferred = $q.defer();
@@ -151,16 +165,16 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
     return _.find(form.fields, function(field) { return field.name == fieldName});
   }
 
-  ***REMOVED***.newEvent = function() {
-    var event = new Event();
-    event.teams = [];
-    this.editEvent = event;
-    return event;
-  }
+  // ***REMOVED***.newEvent = function() {
+  //   var event = new Event();
+  //   event.teams = [];
+  //   this.editEvent = event;
+  //   return event;
+  // }
 
-  ***REMOVED***.setCurrentEditEvent = function(event) {
-    this.editEvent = event;
-  }
+  // ***REMOVED***.setCurrentEditEvent = function(event) {
+  //   this.editEvent = event;
+  // }
 
   ***REMOVED***.createForm = function(observation, viewMode) {
     var event = eventsById[observation.eventId];
