@@ -25,10 +25,12 @@ mage.directive('observationNewsItem', function() {
 
       $scope.editObservation = function() {
         $scope.edit = true;
+        $scope.editForm = angular.copy($scope.form);
       }
 
       $scope.$on('observationEditDone', function() {
         $scope.edit = false;
+        $scope.editForm = null;
       });
 
       $scope.$watch('observation', function(observation) {
