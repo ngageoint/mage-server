@@ -3,8 +3,6 @@
 angular.module('mage').***REMOVED***('EventService', function EventService($rootScope, $http, $q, Event, Observation, ObservationAttachment, ObservationState, FilterService) {
   var ***REMOVED*** = {};
 
-  // ***REMOVED***.editEvent = null;
-
   ***REMOVED***.form = {
     fields:[{
       name : 'textfield',
@@ -85,7 +83,7 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
   }
 
   $rootScope.$on('filter:event', function(e, event) {
-    ***REMOVED***.fetchObservations(event);
+    fetchObservations(event);
   });
 
   var time = FilterService.getTimeInterval();
@@ -164,17 +162,6 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
   ***REMOVED***.getFormField = function(form, fieldName) {
     return _.find(form.fields, function(field) { return field.name == fieldName});
   }
-
-  // ***REMOVED***.newEvent = function() {
-  //   var event = new Event();
-  //   event.teams = [];
-  //   this.editEvent = event;
-  //   return event;
-  // }
-
-  // ***REMOVED***.setCurrentEditEvent = function(event) {
-  //   this.editEvent = event;
-  // }
 
   ***REMOVED***.createForm = function(observation, viewMode) {
     var event = eventsById[observation.eventId];

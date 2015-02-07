@@ -116,7 +116,7 @@
 
         </div>
 
-        <div ng-show="event.id">
+        <div ng-if="event.id">
             <h2 cl***REMOVED***="top-gap-xl">Form</h2>
 
             <div cl***REMOVED***="form-fields">
@@ -124,7 +124,7 @@
               <p ng-show="event.form.fields.length == 0">No fields added yet.</p>
               <div cl***REMOVED***="well">
                 <accordion close-others="accordion.oneAtATime">
-                  <accordion-group heading="{{field.title}}" ng-repeat="field in event.form.fields | filter: { archived: '!'} track by field.id">
+                  <accordion-group heading="{{field.title}}" ng-repeat="field in event.form.fields | filter:filterArchived track by field.id">
                     <div cl***REMOVED***="accordion-edit">
                       <button ng-show="deletableField(field)" cl***REMOVED***="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i cl***REMOVED***="fa fa-trash icon-white"></i> Delete</button>
                       <div cl***REMOVED***="row-fluid">
@@ -328,7 +328,7 @@
 
           <div cl***REMOVED***="form-fields-preview well">
             <h3>Form Preview</h3>
-            <form-directive form="event.form" form-preview="true"></form-directive>
+            <form-directive preview-form="event.form"></form-directive>
           </div>
 
         </div>

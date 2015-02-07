@@ -54,7 +54,6 @@ module.exports = function(app, security) {
     if (!fieldNames.type.required) required.push("'type' required property must be true");
     if (required.length) return res.status(400).send(required.join(","));
 
-    req.newForm = form;
     next();
   }
 
@@ -88,7 +87,7 @@ module.exports = function(app, security) {
         var teams = fs.readFileSync(req.files.teams.path);
         req.newEvent.teams = JSON.parse(teams);
       }
-      
+
       Event.create(req.newEvent, function(err, event) {
         if (err) return next(err);
 
