@@ -1,17 +1,17 @@
 <form name="observationForm" id="myForm" cl***REMOVED***="form" novalidate>
-  
-    <div ng-repeat="field in editForm.fields | filter:filterArchived">
+
+    <div ng-repeat="field in form.fields | filter:filterArchived">
 
       <field-directive field="field"></field-directive>
     </div>
     <span>* required</span>
 
-    <div cl***REMOVED***="top-gap" ng-if="previewForm != null">
+    <div cl***REMOVED***="top-gap" ng-if="preview !== true">
       <h4 cl***REMOVED***="muted">Attachments</h4>
-      <div cl***REMOVED***="attachment" ng-repeat="attachment in editObservation.attachments track by attachment.id">
+      <div cl***REMOVED***="attachment" ng-repeat="attachment in observation.attachments track by attachment.id">
         <div cl***REMOVED***="row-fluid">
           <div>
-            <div attachment="attachment" attachment-observation="editObservation" edit="true"></div>
+            <div attachment="attachment" attachment-observation="observation" edit="true"></div>
           </div>
         </div>
       </div>
@@ -33,7 +33,7 @@
           <button cl***REMOVED***="btn" ng-click="save()" ng-disabled="observationForm.$invalid || saving"><i ng-cl***REMOVED***="{true: 'fa fa-spinner fa-spin', false: 'icon-save'}[saving]"></i> Save</button>
         </span>
         <span>
-          <button cl***REMOVED***="btn btn-danger pull-left" ng-show="editObservation.id && amAdmin" ng-click="deleteObservation(observation)"><i cl***REMOVED***="icon-trash"></i> Delete Observation</button>
+          <button cl***REMOVED***="btn btn-danger pull-left" ng-show="observation.id && amAdmin" ng-click="deleteObservation(observation)"><i cl***REMOVED***="icon-trash"></i> Delete Observation</button>
         </span>
       </div>
     </div>
