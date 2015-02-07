@@ -1,11 +1,12 @@
 <form name="observationForm" id="myForm" cl***REMOVED***="form" novalidate>
+  
     <div ng-repeat="field in editForm.fields | filter:filterArchived">
 
       <field-directive field="field"></field-directive>
     </div>
     <span>* required</span>
 
-    <div cl***REMOVED***="top-gap" ng-show="!formPreview">
+    <div cl***REMOVED***="top-gap" ng-if="previewForm != null">
       <h4 cl***REMOVED***="muted">Attachments</h4>
       <div cl***REMOVED***="attachment" ng-repeat="attachment in editObservation.attachments track by attachment.id">
         <div cl***REMOVED***="row-fluid">

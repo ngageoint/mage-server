@@ -1,13 +1,13 @@
 'use strict';
 
-angular.module('mage').directive('formDirective', function (EventService, Observation, ObservationService, UserService, appConstants, mageLib, ObservationState) {
+angular.module('mage').directive('formDirective', function (EventService, Observation, UserService, mageLib) {
     return {
       templateUrl: 'js/app/partials/form/form.html',
       restrict: 'E',
       transclude: true,
       scope: {
-        form: '=',
-        observation: '=formObservation'
+        observation: '=formObservation',
+        editForm: '=previewForm',
       },
       controller: function($scope) {
         var uploadId = 0;
@@ -16,8 +16,10 @@ angular.module('mage').directive('formDirective', function (EventService, Observ
         $scope.amAdmin = UserService.amAdmin;
         $scope.attachmentUploads = {};
 
-        $scope.editObservation = angular.copy($scope.observation);
-        $scope.editForm = EventService.createForm($scope.observation);
+        if ($scope.observation) {
+          $scope.editObservation = angular.copy($scope.observation);
+          $scope.editForm = EventService.createForm($scope.observation);
+        }
 
         function formToObservation(form, observation) {
           var newObservation = new Observation({

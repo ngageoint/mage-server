@@ -1,0 +1,46 @@
+<div>
+  <!-- News Feed panel -->
+  <div id="side-bar" cl***REMOVED***="side-bar-holder">
+    <div cl***REMOVED***="news-feed-pane" news-feed/>
+  </div>
+  <div cl***REMOVED***="map-filter" ng-hide="newsFeedEnabled">
+
+    <!-- <div export/> -->
+    <div id="observation-form" cl***REMOVED***="feature-panel" ng-show="newObservationEnabled">
+    </div>
+  </div>
+
+  <!-- The leaflet directive -->
+  <div id="map" cl***REMOVED***="map-wrap">
+    <div leaflet></div>
+  </div>
+
+  <div id="new-feature-toolbar" cl***REMOVED***="leaflet-bar">
+    <a ng-cl***REMOVED***="os.newForm && 'btn-inverse'" ng-hide="readOnlyMode" ng-click="onNewObservationClick()">
+      <i cl***REMOVED***="fa-map-marker" ng-cl***REMOVED***="os.newForm && 'icon-sage-inverse' || 'icon-sage'"></i>
+    </a>
+  </div>
+
+  <div id="user-location-toolbar" cl***REMOVED***="leaflet-bar">
+    <a
+      ng-cl***REMOVED***="{true: 'btn-inverse'}[locate]"
+      ng-click="toggleLocate()"
+      ngm-tap="toggleLocate()">
+      <i cl***REMOVED***="icon-target" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[locate]"></i>
+    </a>
+
+    <a
+      ng-cl***REMOVED***="{true: 'btn-inverse'}[broadcast]"
+      ng-hide="readOnlyMode"
+      ng-click="toggleBroadcast()"
+      ngm-tap="toggleBroadcast()">
+      <i cl***REMOVED***="icon-megaphone" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[broadcast]"></i>
+    </a>
+  </div>
+
+  <-- TODO move element creation to the toolbar itself in MageControls.js-->
+  <div id="list-tool-toolbars" cl***REMOVED***="leaflet-bar">
+    <a cl***REMOVED***="pointer"><i cl***REMOVED***="fa fa-bars icon-sage"></i></a>
+  </div>
+
+</div>

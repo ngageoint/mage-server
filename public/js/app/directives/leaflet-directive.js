@@ -49,7 +49,6 @@ mage.directive('leaflet', function($rootScope, LeafletService) {
       var map = L.map("map", {trackResize: true});
       map.setView([0, 0], 3);
 
-
       // toolbar  and controls config
       var sidebar = L.control.sidebar('side-bar', {closeButton: false});
       map.addControl(new L.Control.MageFeature());
@@ -62,11 +61,15 @@ mage.directive('leaflet', function($rootScope, LeafletService) {
       map.addControl(sidebar);
       sidebar.show();
 
-      var layerControl = null;
-      function setupLayers(layers) {
-        if (_.values(layers).length == 0) return;
+      var layerControl = L.control.groupedLayers();
+      var layers = {};
 
-        if (layerControl) layerControl.remove();
+      /*
+        Raster Layers
+      */
+
+      function setupRasterLayers(layers) {
+        if (_.values(layers).length == 0) return;
 
         var groupedLayers = {
           // "MAGE": {
@@ -79,14 +82,55 @@ mage.directive('leaflet', function($rootScope, LeafletService) {
         if (baseLayerNames.length > 0) {
           layers.baseLayers[baseLayerNames[0]].addTo(map);
         }
-        
-        layerControl = L.control.groupedLayers(layers.baseLayers, groupedLayers);
+
+        _.each(layers.baseLayers, function(baseLayer, name) {
+          layerControl.addBaseLayer(baseLayer, name);
+        });
+
         layerControl.addTo(map);
       }
 
-      setupLayers(LeafletService.getLayers());
-      $rootScope.$on('layers', function(e, layers) {
-        setupLayers(layers);
+      setupRasterLayers(LeafletService.getRasterLayers());
+      $rootScope.$on('layers:raster', function(e, layers) {
+        setupRasterLayers(layers);
+      });
+
+      /*
+        Vector Layers
+      */
+
+      function setupVectorLayers(vectorLayers) {
+        _.each(vectorLayers, function(data, id) {
+          var vectorLayer = layers[id];
+
+          if (!vectorLayer) {
+            layerControl.addOverlay(data.layer, data.name, data.group);
+            vectorLayer = layers[id] = data.layer;
+            vectorLayer.featuresById = {};
+            _.each(data.layer.getLayers(), function(l) {
+              vectorLayer.featuresById[L.stamp(l)] = l;
+            });
+
+            if (data.selected) data.layer.addTo(map);
+          } else {
+            _.each(data.layer.getLayers(), function(l) {
+              var feature = vectorLayer.featuresById[L.stamp(l)];
+
+              if (feature) {
+                vectorLayer.featuresById[L.stamp(l)] = l;
+                // TODO copy properties, it was updated
+              } else {
+                vectorLayer.addLayer(l);
+              }
+            });
+          }
+        });
+      }
+
+      setupVectorLayers(LeafletService.getVectorLayers());
+
+      $rootScope.$on('layers:vector', function(e, layers) {
+        setupVectorLayers(layers);
       });
     }
   };

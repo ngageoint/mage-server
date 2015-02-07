@@ -25,14 +25,7 @@ function ($scope, $injector, $filter, $timeout, mageLib, EventService, Event, Te
   $scope.fileUploadOptions = {};
 
   $scope.$watch('es.editEvent', function(newEvent, oldEvent) {
-    $scope.event = EventService.editEvent;
-    if ($scope.event && $scope.event.form) {
-      angular.forEach($scope.event.form.fields, function(field) {
-        if (field.name == 'type') {
-          $scope.typeField = field;
-        }
-      });
-    }
+
   });
 
   // previewForm - for preview purposes, form will be copied into this
@@ -53,17 +46,26 @@ function ($scope, $injector, $filter, $timeout, mageLib, EventService, Event, Te
   $scope.variants = [];
 
   $scope.editEvent = function(event) {
+    $scope.event = event;
     $scope.add = false;
 
-    EventService.setCurrentEditEvent(event);
     $scope.teamsById = _.indexBy(event.teams, 'id');
     $scope.nonTeams = _.filter($scope.teams, function(team) {
       return $scope.teamsById[team.id] == null;
     });
+
+    _.each($scope.event.form.fields, function(field) {
+      if (field.name == 'type') {
+        $scope.typeField = field;
+      }
+    });
   }
 
   $scope.newEvent = function() {
-    var newEvent = EventService.newEvent();
+    $scope.event = new Event({
+      teams: []
+    });
+
     $scope.nonTeams = $scope.teams.slice();
   }
 
@@ -200,6 +202,10 @@ function ($scope, $injector, $filter, $timeout, mageLib, EventService, Event, Te
       $scope.populateVariants();
       $scope.autoSave();
     }
+  }
+
+  $scope.filterArchived = function(field) {
+    return !field.archived;
   }
 
   $scope.variantFilter = function(field) {

@@ -1,6 +1,7 @@
 'use strict';
 
-function UserController($scope, $location, $timeout, UserService, user) {
+angular.module('mage').controller('UserController', ['$scope', '$location', '$timeout', 'UserService', 'user', function ($scope, $location, $timeout, UserService, user) {
+
   $scope.user = user;
   $scope.originalUser = angular.copy(user);
   $scope.p***REMOVED***wordStatus = {};
@@ -87,44 +88,5 @@ function UserController($scope, $location, $timeout, UserService, user) {
   $scope.$on('userAvatar', function(event, userAvatar) {
     $scope.avatar = userAvatar;
   });
-}
 
-// function ModalDemoCtrl($scope, $modal, $log) {
-
-//   $scope.items = ['item1', 'item2', 'item3'];
-
-//   $scope.$watch('tokenExpired', function(){
-//     if (!$scope.tokenExpired) return;
-//     var modalInstance = $modal.open({
-//       templateUrl: 'myModalContent.html',
-//       controller: ModalInstanceCtrl,
-//       resolve: {
-//         items: function () {
-//           return $scope.items;
-//         }
-//       }
-//     });
-
-//     modalInstance.result.then(function (selectedItem) {
-//       $scope.selected = selectedItem;
-//     }, function () {
-//       $log.info('Modal dismissed at: ' + new Date());
-//     });
-//   });
-// };
-
-// function ModalInstanceCtrl($scope, $modalInstance, items) {
-
-//   // $scope.items = items;
-//   // $scope.selected = {
-//   //   item: $scope.items[0]
-//   // };
-
-//   $scope.ok = function () {
-//     $modalInstance.close($scope);
-//   };
-
-//   $scope.cancel = function () {
-//     $modalInstance.dismiss('cancel');
-//   };
-// };
+}]);
