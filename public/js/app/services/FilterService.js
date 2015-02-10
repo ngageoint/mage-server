@@ -8,11 +8,23 @@ mage.factory('FilterService', ['$rootScope', 'mageLib',
 
     var event = null;
 
+    var eventChangedListeners = [];
+    function eventChanged(event) {
+      _.each(eventChangedListeners, function(listener) {
+        if (_.isFunction(listener.onEventChanged)) {
+          listener.onEventChanged(event);
+        }
+      });
+    }
+
+    ***REMOVED***.addEventChangedListener = function(listener) {
+      eventChangedListeners.push(listener);
+    }
+
     ***REMOVED***.setEvent = function(newEvent) {
       event = newEvent;
-
-      $rootScope.$broadcast('filter:event', event);
-    }
+      eventChanged(newEvent)
+    };
 
     ***REMOVED***.getEvent = function() {
       return event;

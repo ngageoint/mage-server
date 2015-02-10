@@ -1,6 +1,57 @@
 'use strict';
 
-angular.module('mage').controller('MageController', ['$rootScope', '$scope', function ($scope) {
+angular.module('mage').controller('MageController', ['$scope', 'EventService', 'MapService', function ($scope, EventService, MapService) {
+
+  function onObservationsChanged(changed) {
+    _.each(changed.added, function(added) {
+      observationsById[added.id] = added;
+
+      MapService.addFeature("Observations", added);
+    });
+
+    _.each(changed.updated, function(updated) {
+      var observation = observationsById[updated.id];
+
+      if (observation) {
+        observation = updated;
+      }
+    });
+
+    _.each(changed.removed, function(removed) {
+      delete observationsById[removed.id];
+
+      MapService.removeFeature("Observations", removed);
+    });
+
+    // update the news feed observations
+    $scope.newsFeedObservations = _.values(observationsById);
+  }
+
+  // Add an observations changed listener
+  EventService.addObservationsChangedListener({
+    onObservationsChanged: onObservationsChanged
+  });
+
+  // grab any existing observations to start with
+  var observations = EventService.getObservations();
+  $scope.newsFeedObservations = observations;
+
+  // keep a map of observation id to observation to facilitate fast lookups
+  var observationsById = _.indexBy(observations, 'id');
+
+
+  function onObservationClick(observation) {
+    console.log('observation clicked', observation);
+  }
+
+  var observationLayer = MapService.createGeoJsonLayer({
+    name: "Observations",
+    group: "MAGE",
+    selected: true,
+    options: {
+      onClick: onObservationClick
+    }
+  });
 
   $scope.onNewObservationClick = function() {
     $scope.$broadcast('createNewObservation');
