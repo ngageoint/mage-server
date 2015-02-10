@@ -15,10 +15,6 @@ mage.directive('observationNewsItem', function() {
         geoJsonFormat: true
       };
 
-      $scope.setActiveObservation = function(observation) {
-        $scope.$emit('observationClick', observation);
-      }
-
       $scope.filterArchived = function(field) {
         return !field.archived;
       }

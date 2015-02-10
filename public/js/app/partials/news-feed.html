@@ -25,9 +25,9 @@
           <div ng-switch="currentFeedPanel">
             <div ng-switch-when="observationsTab">
               <div cl***REMOVED***="news-feed-item pointer" id="{{observation.id}}"
-                ng-cl***REMOVED***="(activeFeature.feature && (activeFeature.feature.id == observation.id)) && 'active-news-feed-item'"
+                ng-cl***REMOVED***="(selectedObservation.id == observation.id) && 'active-news-feed-item'"
                 data-ng-repeat="observation in observations | orderBy:observationOrder track by observation.id">
-                <div observation-news-item="observation" observation-form="event.form" container-element="side-bar"></div>
+                <div observation-news-item="observation" observation-form="event.form" container-element="side-bar" ng-click="onObservationClick(observation)"></div>
               </div>
             </div>
             <div ng-switch-when="peopleTab">

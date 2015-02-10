@@ -39,18 +39,21 @@ angular.module('mage').controller('MageController', ['$scope', 'EventService', '
   // keep a map of observation id to observation to facilitate fast lookups
   var observationsById = _.indexBy(observations, 'id');
 
-
-  function onObservationClick(observation) {
-    console.log('observation clicked', observation);
-  }
-
   var observationLayer = MapService.createGeoJsonLayer({
     name: "Observations",
     group: "MAGE",
     selected: true,
     options: {
-      onClick: onObservationClick
+      onClick: function(observation) {
+        $scope.$broadcast('observation:selected', observation);
+        $scope.$apply();
+      }
     }
+  });
+
+  $scope.$on('observation:selected', function(e, observation) {
+    $scope.$broadcast('observation:select', observation);
+    MapService.selectObservation(observation);
   });
 
   $scope.onNewObservationClick = function() {
