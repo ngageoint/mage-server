@@ -21,6 +21,7 @@ mage.factory('MapService', ['$rootScope', 'mageLib', 'Layer', 'EventService', fu
       changed.added = changed.added || [];
       changed.updated = changed.updated || [];
       changed.removed = changed.removed || [];
+      changed.selected = changed.selected || [];
 
       if (_.isFunction(listener.onFeaturesChanged)) {
         listener.onFeaturesChanged(changed);
@@ -124,6 +125,13 @@ mage.factory('MapService', ['$rootScope', 'mageLib', 'Layer', 'EventService', fu
     featuresChanged({
       name: layerName,
       removed: [feature]
+    });
+  }
+
+  ***REMOVED***.selectObservation = function(feature) {
+    featuresChanged({
+      name: 'Observations',
+      selected: [feature]
     });
   }
 

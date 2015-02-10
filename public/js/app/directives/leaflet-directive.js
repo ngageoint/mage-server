@@ -136,6 +136,19 @@ mage.directive('leaflet', function($rootScope, MapService) {
           var layer = featureLayer.featureIdToLayer[feature.id];
           featureLayer.layer.removeLayer(layer);
         });
+
+        _.each(changed.selected, function(feature) {
+          var layer = featureLayer.featureIdToLayer[feature.id];
+          if (_.isFunction(layer.select)) layer.select();
+        });
+      }
+
+      function onFeatureSelected(feature, layerName) {
+        var featureLayer = layers[layerName];
+        var layer = featureLayer.featureIdToLayer[feature.id];
+        if (_.isFunction(layer.select)) {
+          layer.select();
+        }
       }
 
       // setup my listeners
@@ -144,6 +157,17 @@ mage.directive('leaflet', function($rootScope, MapService) {
         onFeaturesChanged: onFeaturesChanged
       });
 
+      scope.$on('feature:selected', function(feature, layerName) {
+
+
+        if (!newFeature && oldFeature) {
+          var marker = markers[appConstants.featureLayer.id][oldFeature.featureId];
+          marker.unselect();
+        } else if (newFeature) {
+          var marker = markers[appConstants.featureLayer.id][newFeature.featureId];
+          marker.select();
+        }
+      });
 
       // $rootScope.$on('geojson:new', function(e, name, group, geojson) {
       //   var layer = layers[name];

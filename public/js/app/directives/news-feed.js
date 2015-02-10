@@ -32,6 +32,15 @@ mage.directive('newsFeed', function() {
       $scope.observationOrder = function(observation) {
         return moment(observation.properties.timestamp).valueOf() * -1;
       }
+
+      $scope.onObservationClick = function(observation) {
+        // $scope.selectedObservation = observation;
+        $scope.$emit('observation:selected', observation);
+      }
+
+      $scope.$on('observation:select', function(e, observation) {
+        $scope.selectedObservation = observation;
+      })
     }
   };
 });
