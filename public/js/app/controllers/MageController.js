@@ -6,7 +6,7 @@ angular.module('mage').controller('MageController', ['$scope', 'EventService', '
     _.each(changed.added, function(added) {
       observationsById[added.id] = added;
 
-      MapService.addFeature("Observations", added);
+      MapService.addObservation(added);
     });
 
     _.each(changed.updated, function(updated) {
@@ -20,7 +20,7 @@ angular.module('mage').controller('MageController', ['$scope', 'EventService', '
     _.each(changed.removed, function(removed) {
       delete observationsById[removed.id];
 
-      MapService.removeFeature("Observations", removed);
+      MapService.removeObservation(removed);
     });
 
     // update the news feed observations
@@ -32,22 +32,14 @@ angular.module('mage').controller('MageController', ['$scope', 'EventService', '
     onObservationsChanged: onObservationsChanged
   });
 
-  // grab any existing observations to start with
-  var observations = EventService.getObservations();
-  $scope.newsFeedObservations = observations;
-
   // keep a map of observation id to observation to facilitate fast lookups
-  var observationsById = _.indexBy(observations, 'id');
+  var observationsById = {};
 
-  var observationLayer = MapService.createGeoJsonLayer({
-    name: "Observations",
-    group: "MAGE",
+  var observationLayer = MapService.createObservationLayer({
     selected: true,
-    options: {
-      onClick: function(observation) {
-        $scope.$broadcast('observation:selected', observation);
-        $scope.$apply();
-      }
+    onClick: function(observation) {
+      $scope.$broadcast('observation:selected', observation);
+      $scope.$apply();
     }
   });
 
@@ -61,6 +53,7 @@ angular.module('mage').controller('MageController', ['$scope', 'EventService', '
   }
 
 }]);
+
   // $scope.locate = false;
   // $scope.broadcast = false;
   // $scope.loadingLayers = {};

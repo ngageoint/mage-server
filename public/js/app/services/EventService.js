@@ -40,17 +40,23 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
 
   ***REMOVED***.addObservationsChangedListener = function(listener) {
     observationsChangedListeners.push(listener);
+
+    if (_.isFunction(listener.onObservationsChanged)) {
+      _.each(_.values(eventsById), function(event) {
+        listener.onObservationsChanged({added: _.value(event.observationsById)});
+      });
+    }
   }
 
-  ***REMOVED***.getObservations = function() {
-    var events = _.values(eventsById);
-    var observations = [];
-    _.each(_.values(eventsById), function(event) {
-      observations.concat(_.values(event.observationsById));
-    });
-
-    return observations;
-  }
+  // ***REMOVED***.getObservations = function() {
+  //   var events = _.values(eventsById);
+  //   var observations = [];
+  //   _.each(_.values(eventsById), function(event) {
+  //     observations.concat(_.values(event.observationsById));
+  //   });
+  //
+  //   return observations;
+  // }
 
   ***REMOVED***.saveObservation = function(observation) {
     var event = eventsById[observation.eventId];

@@ -105,8 +105,14 @@ mage.factory('MapService', ['$rootScope', 'mageLib', 'Layer', 'EventService', fu
   //   vectorLayers.observations = {name: 'Observations', group: 'MAGE', layer: geoJson, selected: true};
   // }
 
-  ***REMOVED***.createGeoJsonLayer = function(layer) {
-    layer.type = 'geojson';
+  ***REMOVED***.createObservationLayer = function(options) {
+    var layer = {
+      name: 'Observations',
+      group: 'MAGE',
+      type: 'geojson',
+      options: options
+    };
+
     layers[layer.name] = layer;
     layersChanged({
       added: [layer],
@@ -114,32 +120,26 @@ mage.factory('MapService', ['$rootScope', 'mageLib', 'Layer', 'EventService', fu
     });
   }
 
-  ***REMOVED***.addFeature = function(layerName, feature) {
-    featuresChanged({
-      name: layerName,
-      added: [feature]
-    });
-  }
-
-  ***REMOVED***.removeFeature = function(layerName, feature) {
-    featuresChanged({
-      name: layerName,
-      removed: [feature]
-    });
-  }
-
-  ***REMOVED***.selectObservation = function(feature) {
+  ***REMOVED***.addObservation = function(observation) {
     featuresChanged({
       name: 'Observations',
-      selected: [feature]
+      added: [observation]
     });
   }
 
-  ***REMOVED***.removeLayerFromGeoJson = function(geojson, layer) {
-    $rootScope.$broadcast('geojson:remove', geojson, layer);
+  ***REMOVED***.removeObservation = function(observation) {
+    featuresChanged({
+      name: 'Observations',
+      removed: [observation]
+    });
   }
 
-
+  ***REMOVED***.selectObservation = function(observation) {
+    featuresChanged({
+      name: 'Observations',
+      selected: [observation]
+    });
+  }
 
   return ***REMOVED***;
 }]);

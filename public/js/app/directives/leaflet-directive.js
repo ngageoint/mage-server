@@ -120,8 +120,8 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
 
         layers[layer.name] = {type: 'geojson', layer: geojson, featureIdToLayer: featureIdToLayer};
 
-        layerControl.addOverlay(layer, layer.name, layer.group);
-        if (layer.selected) geojson.addTo(map);
+        layerControl.addOverlay(geojson, layer.name, layer.group);
+        if (layer.options.selected) geojson.addTo(map);
       }
 
       function onLayersChanged(changed) {
