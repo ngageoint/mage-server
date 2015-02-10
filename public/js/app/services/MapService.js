@@ -41,26 +41,7 @@ mage.factory('MapService', ['$rootScope', 'mageLib', 'Layer', 'EventService', fu
     return layers;
   }
 
-  function createBaseLayer(layer) {
-    var baseLayer = null;
-    var options = {};
-    if (layer.format == 'XYZ' || layer.format == 'TMS') {
-      options = { tms: layer.format == 'TMS', maxZoom: 18}
-      baseLayer = new L.TileLayer(layer.url, options);
-    } else if (layer.format == 'WMS') {
-      options = {
-        layers: layer.wms.layers,
-        version: layer.wms.version,
-        format: layer.wms.format,
-        transparent: layer.wms.transparent
-      };
 
-      if (layer.wms.styles) options.styles = layer.wms.styles;
-      baseLayer = new L.TileLayer.WMS(layer.url, options);
-    }
-
-    return baseLayer;
-  }
 
   var rasterLayers = {};
   ***REMOVED***.getRasterLayers = function() {
@@ -68,7 +49,7 @@ mage.factory('MapService', ['$rootScope', 'mageLib', 'Layer', 'EventService', fu
   }
 
   Layer.query(function (layers) {
-    var rasterLayers = {};
+    var baseLayerFound = false;
     _.each(layers, function(layer) {
       // Add token to the url of all private layers
       // TODO add watch for token change and reset the url for these layers
@@ -76,13 +57,20 @@ mage.factory('MapService', ['$rootScope', 'mageLib', 'Layer', 'EventService', fu
         layer.url = layer.url + "?access_token=" + mageLib.getToken();
       }
 
-      if (layer.type === 'Imagery' && layer.base) {
-        rasterLayers.baseLayers = rasterLayers.baseLayers || {};
-        rasterLayers.baseLayers[layer.name] = createBaseLayer(layer);
+      if (layer.type === 'Imagery') {
+        layer.type = 'raster';
+
+        if (layer.base && !baseLayerFound) {
+          layer.options = {selected: true};
+          baseLayerFound = true;
+        }
       }
+
     });
 
-    $rootScope.$broadcast('layers:raster', rasterLayers);
+    layersChanged({
+      added: layers
+    });
   });
 
 

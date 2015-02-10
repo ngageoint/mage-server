@@ -62,37 +62,33 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
       sidebar.show();
 
       var layerControl = L.control.groupedLayers();
+      layerControl.addTo(map);
+
       var layers = {};
 
-      /*
-        Raster Layers
-      */
+      function createRasterLayer(layer) {
+        var baseLayer = null;
+        var options = {};
+        if (layer.format == 'XYZ' || layer.format == 'TMS') {
+          options = { tms: layer.format == 'TMS', maxZoom: 18}
+          baseLayer = new L.TileLayer(layer.url, options);
+        } else if (layer.format == 'WMS') {
+          options = {
+            layers: layer.wms.layers,
+            version: layer.wms.version,
+            format: layer.wms.format,
+            transparent: layer.wms.transparent
+          };
 
-      function setupRasterLayers(layers) {
-        if (_.values(layers).length == 0) return;
-
-        var baseLayerNames = _.keys(layers.baseLayers);
-        if (baseLayerNames.length > 0) {
-          layers.baseLayers[baseLayerNames[0]].addTo(map);
+          if (layer.wms.styles) options.styles = layer.wms.styles;
+          baseLayer = new L.TileLayer.WMS(layer.url, options);
         }
 
-        _.each(layers.baseLayers, function(baseLayer, name) {
-          layerControl.addBaseLayer(baseLayer, name);
-        });
+        layers[layer.name] = {type: 'tile', layer: baseLayer};
+        layerControl.addBaseLayer(baseLayer, layer.name);
 
-        layerControl.addTo(map);
+        if (layer.options && layer.options.selected) baseLayer.addTo(map);
       }
-
-      setupRasterLayers(MapService.getRasterLayers());
-      $rootScope.$on('layers:raster', function(e, layers) {
-        setupRasterLayers(layers);
-      });
-
-      /*
-        Vector Layers
-      */
-
-      var layers = {};
 
       function createGeoJsonLayer(layer) {
         var featureIdToLayer = {};
@@ -126,7 +122,14 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
 
       function onLayersChanged(changed) {
         _.each(changed.added, function(added) {
-          if (added.type === 'geojson') createGeoJsonLayer(added);
+          switch(added.type) {
+            case 'raster':
+              createRasterLayer(added);
+              break;
+            case 'geojson':
+              createGeoJsonLayer(added);
+              break;
+          }
         });
 
         _.each(changed.removed, function(removed) {
@@ -165,18 +168,6 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
       MapService.addListener({
         onLayersChanged: onLayersChanged,
         onFeaturesChanged: onFeaturesChanged
-      });
-
-      scope.$on('feature:selected', function(feature, layerName) {
-
-
-        if (!newFeature && oldFeature) {
-          var marker = markers[appConstants.featureLayer.id][oldFeature.featureId];
-          marker.unselect();
-        } else if (newFeature) {
-          var marker = markers[appConstants.featureLayer.id][newFeature.featureId];
-          marker.select();
-        }
       });
 
       // $rootScope.$on('geojson:new', function(e, name, group, geojson) {
