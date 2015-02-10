@@ -7,13 +7,8 @@ function ($scope, $injector, $filter, $timeout, mageLib, EventService, Event, Te
   $scope.page = 0;
   $scope.itemsPerPage = 10;
 
-  // preview form mode
-  $scope.previewMode = false;
-
-  $scope.es = EventService;
   $scope.saveTime = 0;
 
-  $scope.event = EventService.editEvent;
   Event.query(function(events) {
     $scope.events = events;
   });
@@ -24,15 +19,38 @@ function ($scope, $injector, $filter, $timeout, mageLib, EventService, Event, Te
 
   $scope.fileUploadOptions = {};
 
-  $scope.$watch('es.editEvent', function(newEvent, oldEvent) {
+  $scope.fieldTypes = [{
+    name : 'textfield',
+    value : 'Textfield'
+  },{
+    name : 'email',
+    value : 'E-mail'
+  },{
+    name : 'p***REMOVED***word',
+    value : 'P***REMOVED***word'
+  },{
+    name : 'radio',
+    value : 'Radio Buttons'
+  },{
+    name : 'dropdown',
+    value : 'Dropdown List'
+  },{
+    name : 'date',
+    value : 'Date'
+  },{
+    name : 'geometry',
+    value : 'Geometry'
+  },{
+    name : 'textarea',
+    value : 'Text Area'
+  },{
+    name : 'checkbox',
+    value : 'Checkbox'
+  },{
+    name : 'hidden',
+    value : 'Hidden'
+  }];
 
-  });
-
-  // previewForm - for preview purposes, form will be copied into this
-  // otherwise, actual form might get manipulated in preview mode
-  $scope.previewEvent = {};
-
-  $scope.fieldTypes = EventService.form.fields;
   $scope.newField = {
     "title" : "New field",
     "type" : $scope.fieldTypes[0].name,
@@ -258,23 +276,6 @@ function ($scope, $injector, $filter, $timeout, mageLib, EventService, Event, Te
     }
     $scope.populateVariants();
     $scope.autoSave();
-  }
-
-  // preview form
-  $scope.previewOn = function(){
-    if($scope.event.form.fields == null || $scope.event.form.fields.length == 0) {
-      var title = 'Error';
-      var msg = 'No fields added yet, please add fields to the form before preview.';
-      var btns = [{result:'ok', label: 'OK', cssCl***REMOVED***: 'btn-primary'}];
-    } else {
-      $scope.previewMode = true;
-      angular.copy($scope.event.form, $scope.previewEvent);
-    }
-  }
-
-  // hide preview form, go back to create mode
-  $scope.previewOff = function(){
-    $scope.previewMode = false;
   }
 
   // decides whether field options block will be shown (true for dropdown and radio fields)

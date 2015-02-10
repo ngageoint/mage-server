@@ -3,41 +3,24 @@
 angular.module('mage').***REMOVED***('EventService', function EventService($rootScope, $http, $q, Event, Observation, ObservationAttachment, ObservationState, FilterService) {
   var ***REMOVED*** = {};
 
-  ***REMOVED***.form = {
-    fields:[{
-      name : 'textfield',
-      value : 'Textfield'
-    },{
-      name : 'email',
-      value : 'E-mail'
-    },{
-      name : 'p***REMOVED***word',
-      value : 'P***REMOVED***word'
-    },{
-      name : 'radio',
-      value : 'Radio Buttons'
-    },{
-      name : 'dropdown',
-      value : 'Dropdown List'
-    },{
-      name : 'date',
-      value : 'Date'
-    },{
-      name : 'geometry',
-      value : 'Geometry'
-    },{
-      name : 'textarea',
-      value : 'Text Area'
-    },{
-      name : 'checkbox',
-      value : 'Checkbox'
-    },{
-      name : 'hidden',
-      value : 'Hidden'
-    }]
-  };
-
   var eventsById = {};
+
+  var observationsChangedListeners = [];
+  function observationsChanged(changed) {
+    _.each(observationsChangedListeners, function(listener) {
+      changed.added = changed.added || [];
+      changed.updated = changed.updated || [];
+      changed.removed = changed.removed || [];
+
+      if (_.isFunction(listener.onObservationsChanged)) {
+        listener.onObservationsChanged(changed);
+      }
+    });
+  }
+
+  ***REMOVED***.addObservationsChangedListener = function(listener) {
+    observationsChangedListeners.push(listener);
+  }
 
   function fetchObservations(event, options) {
     var deferred = $q.defer();
@@ -52,7 +35,8 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
       eventsById[event.id] = event;
       eventsById[event.id].observationsById = _.indexBy(observations, 'id');
 
-      $rootScope.$broadcast('observations:refresh', observations, event);
+      observationsChanged({added: observations});
+
       deferred.resolve(observations);
     });
 
@@ -77,14 +61,14 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
   //   });
   // });
 
-  var event = FilterService.getEvent();
-  if (event) {
-    fetchObservations(event);
-  }
-
-  $rootScope.$on('filter:event', function(e, event) {
-    fetchObservations(event);
+  FilterService.addEventChangedListener({
+    onEventChanged: function(event) {
+      fetchObservations(event);
+    }
   });
+
+  var event = FilterService.getEvent();
+  if (event) fetchObservations(event);
 
   var time = FilterService.getTimeInterval();
   $rootScope.$on('filter:time', function(e, time) {
@@ -111,11 +95,7 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
 
       var event = eventsById[eventId];
       eventsById[eventId].observationsById[observation.id] = observation;
-      if (observationId) {
-        $rootScope.$broadcast('observations:update', [observation], event);
-      } else {
-        $rootScope.$broadcast('observations:new', [observation], event);
-      }
+      observationId ? observationsChanged({updated: [observation]}) : observationsChanged({added: [observation]});
 
       deferred.resolve(observation);
     });
@@ -133,7 +113,7 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
       var observation = eventsById[eventId].observationsById[observationId];
       observation.state = state;
 
-      $rootScope.$broadcast('observations:archive', [observation], event);
+      observationsChanged({removed: [observation]});
     });
 
     return deferred.promise;
@@ -144,7 +124,7 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
     var observation = event.observationsById[observation.id];
     observation.attachments.push(attachment);
 
-    $rootScope.$broadcast('observations:update', [observation], event);
+    observationsChanged({updated: [observation]});
   }
 
   ***REMOVED***.deleteAttachmentForObservation = function(observation, attachment) {
@@ -155,7 +135,7 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
       var observation = event.observationsById[observationId];
 
       observation.attachments = _.reject(observation.attachments, function(a) { return attachment.id === a.id});
-      $rootScope.$broadcast('observations:update', [observation], event);
+      observationsChanged({updated: [observation]});
     });
   }
 

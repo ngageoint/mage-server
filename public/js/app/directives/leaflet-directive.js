@@ -39,7 +39,7 @@ L.AwesomeMarkers.divIcon = function (options) {
   return new L.AwesomeMarkers.DivIcon(options);
 };
 
-mage.directive('leaflet', function($rootScope, LeafletService) {
+mage.directive('leaflet', function($rootScope, MapService) {
   return {
     restrict: "A",
     replace: true,
@@ -71,13 +71,6 @@ mage.directive('leaflet', function($rootScope, LeafletService) {
       function setupRasterLayers(layers) {
         if (_.values(layers).length == 0) return;
 
-        var groupedLayers = {
-          // "MAGE": {
-          //   "Observations": layers.observations,
-          //   "People": layers.people
-          // }
-        };
-
         var baseLayerNames = _.keys(layers.baseLayers);
         if (baseLayerNames.length > 0) {
           layers.baseLayers[baseLayerNames[0]].addTo(map);
@@ -90,7 +83,7 @@ mage.directive('leaflet', function($rootScope, LeafletService) {
         layerControl.addTo(map);
       }
 
-      setupRasterLayers(LeafletService.getRasterLayers());
+      setupRasterLayers(MapService.getRasterLayers());
       $rootScope.$on('layers:raster', function(e, layers) {
         setupRasterLayers(layers);
       });
@@ -99,39 +92,99 @@ mage.directive('leaflet', function($rootScope, LeafletService) {
         Vector Layers
       */
 
-      function setupVectorLayers(vectorLayers) {
-        _.each(vectorLayers, function(data, id) {
-          var vectorLayer = layers[id];
+      var layers = {};
 
-          if (!vectorLayer) {
-            layerControl.addOverlay(data.layer, data.name, data.group);
-            vectorLayer = layers[id] = data.layer;
-            vectorLayer.featuresById = {};
-            _.each(data.layer.getLayers(), function(l) {
-              vectorLayer.featuresById[L.stamp(l)] = l;
+      function createGeoJsonLayer(layer) {
+        var featureIdToLayer = {};
+        var onClick = _.isFunction(layer.options.onClick) ? layer.options.onClick : null;
+
+        var geojson = L.geoJson(layer.geojson, {
+          onEachFeature: function (feature, layer) {
+            layer.on('click', function() {
+              if (onClick) onClick(feature);
             });
 
-            if (data.selected) data.layer.addTo(map);
-          } else {
-            _.each(data.layer.getLayers(), function(l) {
-              var feature = vectorLayer.featuresById[L.stamp(l)];
-
-              if (feature) {
-                vectorLayer.featuresById[L.stamp(l)] = l;
-                // TODO copy properties, it was updated
-              } else {
-                vectorLayer.addLayer(l);
-              }
-            });
+            featureIdToLayer[feature.id] = layer;
           }
+        });
+
+        layers[layer.name] = {type: 'geojson', layer: geojson, featureIdToLayer: featureIdToLayer};
+
+        layerControl.addOverlay(layer, layer.name, layer.group);
+        if (layer.selected) geojson.addTo(map);
+      }
+
+      function onLayersChanged(changed) {
+        _.each(changed.added, function(added) {
+          if (added.type === 'geojson') createGeoJsonLayer(added);
+        });
+
+        _.each(changed.removed, function(removed) {
+          //TODO implement, currently not removing layers
+          //Will only happen if server removes a static layer
+        })
+      }
+
+      function onFeaturesChanged(changed) {
+        var featureLayer = layers[changed.name];
+
+        _.each(changed.added, function(feature) {
+          featureLayer.layer.addData(feature);
+        });
+
+        _.each(changed.removed, function(feature) {
+          var layer = featureLayer.featureIdToLayer[feature.id];
+          featureLayer.layer.removeLayer(layer);
         });
       }
 
-      setupVectorLayers(LeafletService.getVectorLayers());
-
-      $rootScope.$on('layers:vector', function(e, layers) {
-        setupVectorLayers(layers);
+      // setup my listeners
+      MapService.addListener({
+        onLayersChanged: onLayersChanged,
+        onFeaturesChanged: onFeaturesChanged
       });
+
+
+      // $rootScope.$on('geojson:new', function(e, name, group, geojson) {
+      //   var layer = layers[name];
+      //   // TODO need to do something on update
+      //
+      //   layerControl.addOverlay(geojson, name, group);
+      // });
+
+      // function setupVectorLayers(vectorLayers) {
+      //   _.each(vectorLayers, function(data, id) {
+      //     var vectorLayer = layers[id];
+      //
+      //     if (!vectorLayer) {
+      //       layerControl.addOverlay(data.layer, data.name, data.group);
+      //       vectorLayer = layers[id] = data.layer;
+      //       vectorLayer.featuresById = {};
+      //       _.each(data.layer.getLayers(), function(l) {
+      //         vectorLayer.featuresById[L.stamp(l)] = l;
+      //       });
+      //
+      //       if (data.selected) data.layer.addTo(map);
+      //     } else {
+      //       _.each(data.layer.getLayers(), function(l) {
+      //         var feature = vectorLayer.featuresById[L.stamp(l)];
+      //
+      //         if (feature) {
+      //           vectorLayer.featuresById[L.stamp(l)] = l;
+      //           // TODO copy properties, it was updated
+      //         } else {
+      //           vectorLayer.addLayer(l);
+      //         }
+      //       });
+      //     }
+      //   });
+      // }
+
+      // setupVectorLayers(LeafletService.getVectorLayers());
+
+      // $rootScope.$on('layers:vector', function(e, layers) {
+      //   setupVectorLayers(layers);
+      // });
     }
   };
 });
