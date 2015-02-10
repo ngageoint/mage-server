@@ -8,17 +8,33 @@ mage.factory('FilterService', ['$rootScope', 'mageLib',
 
     var event = null;
 
-    var eventChangedListeners = [];
+    var listeners = [];
     function eventChanged(event) {
-      _.each(eventChangedListeners, function(listener) {
+      _.each(listeners, function(listener) {
         if (_.isFunction(listener.onEventChanged)) {
           listener.onEventChanged(event);
         }
       });
     }
 
-    ***REMOVED***.addEventChangedListener = function(listener) {
-      eventChangedListeners.push(listener);
+    function timeIntervalChanged(interval) {
+      _.each(listeners, function(listener) {
+        if (_.isFunction(listener.onTimeIntervalChanged)) {
+          listener.onTimeIntervalChanged(interval);
+        }
+      });
+    }
+
+    ***REMOVED***.addListener = function(listener) {
+      listeners.push(listener);
+
+      if (event && _.isFunction(listener.onEventChanged)) {
+        listener.onEventChanged(event);
+      }
+
+      if (interval && _.isFunction(listener.onTimeIntervalChanged)) {
+        listener.onTimeIntervalChanged(interval);
+      }
     }
 
     ***REMOVED***.setEvent = function(newEvent) {

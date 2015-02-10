@@ -12,7 +12,7 @@ L.AwesomeMarkers.DivIcon = L.AwesomeMarkers.Icon.extend({
   }
 });
 
-L.MageDivIcon = L.DivIcon.extend({
+L.UrlDivIcon = L.DivIcon.extend({
   initialize: function (options) {
     options.cl***REMOVED***Name = 'mage-icon';
     options.iconSize = null;
@@ -21,11 +21,11 @@ L.MageDivIcon = L.DivIcon.extend({
   createIcon: function() {
     var div = L.DivIcon.prototype.createIcon.call(this);
     var form = this.options.form;
-    var observation = this.options.observation;
+    var feature = this.options.feature;
 
     var s = document.createElement('img');
     s.cl***REMOVED***Name = "mage-icon-image";
-    s.src = "/api/icons/" + form.id + "/" + observation.properties.type + "/" + observation.properties[form.variantField] + "?access_token=" + this.options.token;;
+    s.src = feature.iconUrl + "?access_token=" + this.options.token;
     $(s).load(function() {
       var height = $(this).height();
       $(div).css('margin-top', height * -1);
@@ -39,7 +39,7 @@ L.AwesomeMarkers.divIcon = function (options) {
   return new L.AwesomeMarkers.DivIcon(options);
 };
 
-mage.directive('leaflet', function($rootScope, MapService) {
+mage.directive('leaflet', function($rootScope, MapService, TokenService) {
   return {
     restrict: "A",
     replace: true,
@@ -105,6 +105,16 @@ mage.directive('leaflet', function($rootScope, MapService) {
             });
 
             featureIdToLayer[feature.id] = layer;
+          },
+          pointToLayer: function (feature, latlng) {
+            var marker =  L.marker(latlng, {
+              icon: new L.UrlDivIcon({
+                feature: feature,
+                token: TokenService.getToken()
+              })
+            });
+
+            return marker;
           }
         });
 
