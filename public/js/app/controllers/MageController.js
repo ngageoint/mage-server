@@ -44,9 +44,14 @@ angular.module('mage').controller('MageController', ['$scope', 'EventService', '
     }
   });
 
+  var selectedObservationId = null;
   $scope.$on('observation:selected', function(e, observation) {
-    $scope.$broadcast('observation:select', observation);
-    MapService.selectObservation(observation);
+    // Prevent selected event for same observation
+    if (selectedObservationId !== observation.id) {
+      selectedObservationId = observation.id;
+      $scope.$broadcast('observation:select', observation);
+      MapService.selectObservation(observation);
+    }
   });
 
   $scope.onNewObservationClick = function() {

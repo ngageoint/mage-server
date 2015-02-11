@@ -153,7 +153,9 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
           var layer = featureLayer.featureIdToLayer[feature.id];
 
           // Copy over the updated feature data
-          if (layer.feature) layer.feature = feature;
+          if (layer.feature) {
+            layer.feature = feature;
+          }
 
           // Set the icon
           layer.setIcon(L.urlDivIcon({
