@@ -43,7 +43,7 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
 
     if (_.isFunction(listener.onObservationsChanged)) {
       _.each(_.values(eventsById), function(event) {
-        listener.onObservationsChanged({added: _.value(event.observationsById)});
+        listener.onObservationsChanged({added: _.values(event.observationsById)});
       });
     }
   }
