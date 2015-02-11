@@ -11,9 +11,10 @@ angular.module('mage').controller('MageController', ['$scope', 'EventService', '
 
     _.each(changed.updated, function(updated) {
       var observation = observationsById[updated.id];
-
       if (observation) {
         observation = updated;
+
+        MapService.updateObservation(observation);
       }
     });
 
