@@ -1,6 +1,7 @@
 'use strict';
 
-function SigninController($scope, $location, UserService) {
+angular.module('mage').controller('SigninController', ['$scope', 'UserService', function ($scope, UserService) {
+
   $scope.status = 0;
 
   $scope.signin = function () {
@@ -9,4 +10,5 @@ function SigninController($scope, $location, UserService) {
         $scope.status = status;
       });
   }
-}
+
+}]);

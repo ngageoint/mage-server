@@ -57,6 +57,7 @@ var UserSchema = new Schema({
     status: { type: String, required: false, index: 'sparse' },
     locations: [LocationSchema],
     futureLocations: [LocationSchema],
+    recentEventIds: [{type: Number, ref: 'Event'}],
     userAgent: {type: String, required: false },
     mageVersion: {type: String, required: false }
   },{
@@ -368,6 +369,28 @@ exports.addLocationsForUser = function(user, locations, callback) {
       console.log('Error add location for user.', err);
     }
 
+    callback(err, user);
+  });
+}
+
+exports.addRecentEventForUser = function(user, event, callback) {
+  var eventIds = user.recentEventIds.slice();
+
+  // push new event on from of list
+  eventIds.unshift(event._id);
+
+  // remove dupes
+  eventIds = eventIds.filter(function(eventId, index) {
+    return eventIds.indexOf(eventId) == index;
+  });
+
+  // limit to 5
+  if (eventIds.length > 5) {
+    eventIds = user.recentEventIds.slice(0, 4);
+  }
+  console.log('event ids', eventIds);
+
+  User.findByIdAndUpdate(user._id, {recentEventIds: eventIds}, function(err, user) {
     callback(err, user);
   });
 }

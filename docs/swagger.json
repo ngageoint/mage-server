@@ -244,6 +244,39 @@
                 }
             }
         },
+        "/api/users/{userId}/events/{eventId}/recent": {
+            "post": {
+                "description": "Adds event to top of recent list, capped at 5",
+                "operationId": "addRecentEventForUser",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "id of user to add recent event",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "id of recent event",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "User"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "user response",
+                        "schema": {
+                            "$ref": "#/definitions/User"
+                        }
+                    }
+                }
+            }
+        },
         "/api/users/myself": {
             "get": {
                 "description": "Returns user currently logged",
@@ -1885,6 +1918,9 @@
                 },
                 "description": {
                     "type": "string"
+                },
+                "form": {
+                    "$ref": "#/definitions/FormCreate"
                 }
             }
         },

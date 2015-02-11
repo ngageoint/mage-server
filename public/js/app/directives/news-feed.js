@@ -34,7 +34,6 @@ mage.directive('newsFeed', function() {
       }
 
       $scope.onObservationClick = function(observation) {
-        // $scope.selectedObservation = observation;
         $scope.$emit('observation:selected', observation);
       }
 
