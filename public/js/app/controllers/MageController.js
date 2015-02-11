@@ -1,6 +1,28 @@
 'use strict';
 
-angular.module('mage').controller('MageController', ['$scope', 'EventService', 'MapService', function ($scope, EventService, MapService) {
+angular.module('mage').controller('MageController', ['$scope', 'EventService', 'MapService', 'Layer', function ($scope, EventService, MapService, Layer) {
+
+  Layer.query(function (layers) {
+    var baseLayerFound = false;
+    _.each(layers, function(layer) {
+      // Add token to the url of all private layers
+      // TODO add watch for token change and reset the url for these layers
+      if (layer.type === 'Imagery' && layer.url.indexOf('private') == 0) {
+        layer.url = layer.url + "?access_token=" + mageLib.getToken();
+      }
+
+      if (layer.type === 'Imagery') {
+        layer.type = 'raster';
+
+        if (layer.base && !baseLayerFound) {
+          layer.options = {selected: true};
+          baseLayerFound = true;
+        }
+      }
+
+      MapService.createRasterLayer(layer);
+    });
+  });
 
   function onObservationsChanged(changed) {
     _.each(changed.added, function(added) {

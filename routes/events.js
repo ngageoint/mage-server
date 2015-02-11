@@ -93,7 +93,6 @@ module.exports = function(app, security) {
 
         new api.Form(event).import(req.files.form, function(err, form) {
           if (err) return next(err);
-
           Event.update(event._id, {form: form}, function(err, event) {
             if (err) return next(err);
 
