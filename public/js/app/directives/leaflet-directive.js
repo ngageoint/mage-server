@@ -12,6 +12,10 @@ L.AwesomeMarkers.DivIcon = L.AwesomeMarkers.Icon.extend({
   }
 });
 
+L.AwesomeMarkers.divIcon = function (options) {
+  return new L.AwesomeMarkers.DivIcon(options);
+};
+
 L.UrlDivIcon = L.DivIcon.extend({
   initialize: function (options) {
     options.cl***REMOVED***Name = 'mage-icon';
@@ -35,9 +39,9 @@ L.UrlDivIcon = L.DivIcon.extend({
   }
 });
 
-L.AwesomeMarkers.divIcon = function (options) {
-  return new L.AwesomeMarkers.DivIcon(options);
-};
+L.urlDivIcon = function(options) {
+  return new L.UrlDivIcon(options);
+}
 
 mage.directive('leaflet', function($rootScope, MapService, TokenService) {
   return {
@@ -104,7 +108,7 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
           },
           pointToLayer: function (feature, latlng) {
             var marker =  L.marker(latlng, {
-              icon: new L.UrlDivIcon({
+              icon: L.urlDivIcon({
                 feature: feature,
                 token: TokenService.getToken()
               })
@@ -143,6 +147,25 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
 
         _.each(changed.added, function(feature) {
           featureLayer.layer.addData(feature);
+        });
+
+        _.each(changed.updated, function(feature) {
+          var layer = featureLayer.featureIdToLayer[feature.id];
+
+          // Copy over the updated feature data
+          if (layer.feature) layer.feature = feature;
+
+          // Set the icon
+          layer.setIcon(L.urlDivIcon({
+              feature: feature,
+              token: TokenService.getToken()
+            })
+          );
+
+          // Set the lat/lng
+          if (feature.geometry.coordinates) {
+            layer.setLatLng(L.GeoJSON.coordsToLatLng(feature.geometry.coordinates));
+          }
         });
 
         _.each(changed.removed, function(feature) {

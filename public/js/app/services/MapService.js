@@ -115,6 +115,13 @@ mage.factory('MapService', ['$rootScope', 'mageLib', 'Layer', 'EventService', fu
     });
   }
 
+  ***REMOVED***.updateObservation = function(observation) {
+    featuresChanged({
+      name: 'Observations',
+      updated: [observation]
+    });
+  }
+
   ***REMOVED***.removeObservation = function(observation) {
     featuresChanged({
       name: 'Observations',
