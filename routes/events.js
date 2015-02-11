@@ -94,7 +94,7 @@ module.exports = function(app, security) {
         new api.Form(event).import(req.files.form, function(err, form) {
           if (err) return next(err);
 
-          Event.update(event.id, {form: form}, function(err, event) {
+          Event.update(event._id, {form: form}, function(err, event) {
             if (err) return next(err);
 
             res.status(201).json(event);
@@ -123,7 +123,7 @@ module.exports = function(app, security) {
     access.authorize('UPDATE_EVENT'),
     validateEventParams,
     function(req, res, next) {
-      Event.update(req.event.id, req.newEvent, function(err, event) {
+      Event.update(req.event._id, req.newEvent, function(err, event) {
         if (err) return next(err);
 
         res.json(event);
@@ -161,7 +161,7 @@ module.exports = function(app, security) {
     '/api/events/:eventId/form/icons.zip',
     access.authorize('READ_EVENT'),
     function(req, res, next) {
-      var iconBasePath = new api.Icon(req.event.id).getBasePath();
+      var iconBasePath = new api.Icon(req.event._id).getBasePath();
       var archive = archiver('zip');
       res.attachment("icons.zip");
       archive.pipe(res);
@@ -175,7 +175,7 @@ module.exports = function(app, security) {
     '/api/events/:eventId/form/icons/:type?/:variant?',
     access.authorize('READ_EVENT'),
     function(req, res, next) {
-      new api.Icon(req.event.id, req.params.type, req.params.variant).getIcon(function(err, iconPath) {
+      new api.Icon(req.event._id, req.params.type, req.params.variant).getIcon(function(err, iconPath) {
         if (err || !iconPath) return next();
 
         res.sendFile(iconPath);
@@ -202,7 +202,7 @@ module.exports = function(app, security) {
     '/api/events/:eventId/form/icons/:type?/:variant?',
     access.authorize('CREATE_EVENT'),
     function(req, res, next) {
-      new api.Icon(req.event.id, req.params.type, req.params.variant).create(req.files.icon, function(err, icon) {
+      new api.Icon(req.event._id, req.params.type, req.params.variant).create(req.files.icon, function(err, icon) {
         if (err) return next(err);
 
         return res.json(icon);
@@ -215,7 +215,7 @@ module.exports = function(app, security) {
     '/api/events/:eventId/form/icons/:type?/:variant?',
     access.authorize('DELETE_EVENT'),
     function(req, res) {
-      new api.Icon(req.event.id, req.params.type, req.params.variant).delete(function(err, icon) {
+      new api.Icon(req.event._id, req.params.type, req.params.variant).delete(function(err, icon) {
         if (err) return next(err);
 
         return res.status(204).send();

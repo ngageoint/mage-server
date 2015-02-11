@@ -36,7 +36,7 @@ function createIconPath(icon, name) {
 }
 
 Form.prototype.export = function(callback) {
-  var iconBasePath = new api.Icon(this._event.id).getBasePath();
+  var iconBasePath = new api.Icon(this._event._id).getBasePath();
   var archive = archiver('zip');
   archive.bulk([{src: ['**'], dest: 'form/icons', expand: true, cwd: iconBasePath}]);
   archive.append(JSON.stringify(form), {name: "form/form.json"});
@@ -60,7 +60,7 @@ Form.prototype.import = function(file, callback) {
 
   var iconsEntry = zip.getEntry('form/icons/');
   if (iconsEntry) {
-    var iconPath = new api.Icon(event.id).getBasePath() + path.sep;
+    var iconPath = new api.Icon(event._id).getBasePath() + path.sep;
     console.log('extracting icons for imported zip to ', iconPath);
 
     zip.extractEntryTo(iconsEntry, iconPath, false, false);
@@ -78,7 +78,7 @@ Form.prototype.import = function(file, callback) {
         variant = variants.shift();
       }
 
-      new api.Icon(event.id, type, variant).add({name: stat.name}, function(err, addedIcon) {
+      new api.Icon(event._id, type, variant).add({name: stat.name}, function(err, addedIcon) {
         next(err);
       });
     });

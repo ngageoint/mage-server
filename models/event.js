@@ -29,7 +29,7 @@ var FieldSchema = new Schema({
 
 // Creates the Schema for the Attachments object
 var EventSchema = new Schema({
-  id: { type: Number, required: true, unique: true },
+  _id: { type: Number, required: true, unique: true },
   name: { type: String, required: true, unique: true },
   description: { type: String, required: false },
   collectionName: { type: String, required: true },
@@ -44,6 +44,7 @@ var EventSchema = new Schema({
 
 var transform = function(event, ret, options) {
   if ('function' != typeof event.ownerDocument) {
+    ret.id = ret._id;
     delete ret._id;
     delete ret.collectionName;
 
@@ -86,7 +87,7 @@ exports.getEvents = function(filter, callback) {
 }
 
 exports.getById = function(id, callback) {
-  Event.findOne({id: id}).populate('teamIds').exec(function (err, event) {
+  Event.findById(id).populate('teamIds').exec(function (err, event) {
     if (err) {
       console.log("Error finding event in mongo: " + err);
     }
@@ -121,7 +122,7 @@ var dropObservationCollection = function(event) {
 
 exports.create = function(event, callback) {
   Counter.getNext('event', function(id) {
-    event.id = id;
+    event._id = id;
     event.collectionName = 'observations' + id;
 
     if (event.teams) {
@@ -147,7 +148,7 @@ exports.update = function(id, event, callback) {
     event.teamIds = event.teams.map(function(team) { return mongoose.Types.ObjectId(team.id); });
   }
 
-  Event.findOneAndUpdate({id: id}, event, function(err, updatedEvent) {
+  Event.findByIdAndUpdate({id: id}, event, function(err, updatedEvent) {
     if (err) {
       console.log("Could not update event: " + err);
     }
@@ -164,7 +165,7 @@ exports.remove = function(event, callback) {
 
     dropObservationCollection(event);
 
-    new api.Icon(event.id).delete(function(err) {
+    new api.Icon(event._id).delete(function(err) {
       if (err) return callback(err);
 
       callback(err, event);

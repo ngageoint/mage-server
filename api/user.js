@@ -199,5 +199,8 @@ User.prototype.icon = function(user, callback) {
   callback(null, icon);
 }
 
+User.prototype.addRecentEvent = function(user, event, callback) {
+  UserModel.addRecentEventForUser(user, event, callback);
+}
 
 module.exports = User;

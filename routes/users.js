@@ -417,4 +417,18 @@ module.exports = function(app, security) {
       });
     }
   );
+
+  app.post(
+    '/api/users/:userId/events/:eventId/recent',
+    p***REMOVED***port.authenticate(authenticationStrategy),
+    access.authorize('READ_USER'),
+    function(req, res, next) {
+      new api.User().addRecentEvent(req.user, req.event, function(err, user) {
+        if (err) return next(err);
+
+        res.json(user);
+      });
+    }
+  );
+
 }

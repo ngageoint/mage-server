@@ -18,7 +18,7 @@ angular.module('mage').controller('NavController', ['$scope', '$location', 'User
       var event = FilterService.getEvent();
       if (event) {
         $scope.event = event;
-      } else {
+      } else if (events.length > 0) {
         // TODO 'welcome to MAGE dialog'
         $scope.event = events[0];
         FilterService.setEvent($scope.event);

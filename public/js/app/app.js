@@ -92,7 +92,7 @@ var mage = angular.module(
     $routeProvider.otherwise(
     {
       redirectTo:     '/signin',
-      controller:     SigninController,
+      controller:     "SigninController",
     }
   );
 }).run(function($rootScope, $modal, UserService, $location, authService) {
