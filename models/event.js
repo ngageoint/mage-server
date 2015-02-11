@@ -148,7 +148,7 @@ exports.update = function(id, event, callback) {
     event.teamIds = event.teams.map(function(team) { return mongoose.Types.ObjectId(team.id); });
   }
 
-  Event.findByIdAndUpdate({id: id}, event, function(err, updatedEvent) {
+  Event.findByIdAndUpdate(id, event, function(err, updatedEvent) {
     if (err) {
       console.log("Could not update event: " + err);
     }

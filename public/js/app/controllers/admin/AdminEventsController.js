@@ -189,8 +189,9 @@ function ($scope, $injector, $filter, $timeout, mageLib, EventService, Event, Te
     }
   }
 
-  $scope.$watch('event', function() {
-    if (!$scope.event) return;
+  $scope.$watch('event.form.variantField', function(variantField) {
+    if (!variantField) return;
+    
     $scope.populateVariants(true);
   });
 

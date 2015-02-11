@@ -48,30 +48,37 @@ mage.factory('MapService', ['$rootScope', 'mageLib', 'Layer', 'EventService', fu
     return rasterLayers;
   }
 
-  Layer.query(function (layers) {
-    var baseLayerFound = false;
-    _.each(layers, function(layer) {
-      // Add token to the url of all private layers
-      // TODO add watch for token change and reset the url for these layers
-      if (layer.type === 'Imagery' && layer.url.indexOf('private') == 0) {
-        layer.url = layer.url + "?access_token=" + mageLib.getToken();
-      }
-
-      if (layer.type === 'Imagery') {
-        layer.type = 'raster';
-
-        if (layer.base && !baseLayerFound) {
-          layer.options = {selected: true};
-          baseLayerFound = true;
-        }
-      }
-
-    });
-
+  ***REMOVED***.createRasterLayer = function(layer) {
     layersChanged({
-      added: layers
+      added: [layer],
+      options: layer.options
     });
-  });
+  }
+
+  // Layer.query(function (layers) {
+  //   var baseLayerFound = false;
+  //   _.each(layers, function(layer) {
+  //     // Add token to the url of all private layers
+  //     // TODO add watch for token change and reset the url for these layers
+  //     if (layer.type === 'Imagery' && layer.url.indexOf('private') == 0) {
+  //       layer.url = layer.url + "?access_token=" + mageLib.getToken();
+  //     }
+  //
+  //     if (layer.type === 'Imagery') {
+  //       layer.type = 'raster';
+  //
+  //       if (layer.base && !baseLayerFound) {
+  //         layer.options = {selected: true};
+  //         baseLayerFound = true;
+  //       }
+  //     }
+  //
+  //   });
+  //
+  //   layersChanged({
+  //     added: layers
+  //   });
+  // });
 
 
   var vectorLayers = {};
