@@ -2,6 +2,7 @@ module.exports = function(app, security) {
   var Event = require('../models/event')
   , access = require('../access')
   , api = require('../api')
+  , archiver = require('archiver')
   , fs = require('fs-extra')
   , Zip = require('adm-zip');
 
