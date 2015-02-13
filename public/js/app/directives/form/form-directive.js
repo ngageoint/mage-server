@@ -52,19 +52,19 @@ angular.module('mage').directive('formDirective', function (EventService, Observ
             });
 
             if (!$scope.uploadAttachments) {
-              $scope.$emit('observationEditDone');
+              $scope.$emit('observation:editDone', $scope.observation);
               $scope.saving = false;
             }
           });
         }
 
         $scope.cancelEdit = function() {
-          $scope.$emit('observationEditDone');
+          $scope.$emit('observation:editDone', $scope.observation);
         }
 
         $scope.deleteObservation = function() {
           EventService.archiveObservation($scope.observation).then(function(observation) {
-            $scope.$emit('observationEditDone');
+            $scope.$emit('observation:editDone',  $scope.observation);
           });
         }
 
@@ -92,7 +92,7 @@ angular.module('mage').directive('formDirective', function (EventService, Observ
           if (_.keys($scope.attachmentUploads).length == 0) {
             $scope.attachmentUploads = {};
 
-            $scope.$emit('observationEditDone');
+            $scope.$emit('observation:editDone');
             $scope.saving = false;
             $scope.uploadAttachments = false;
           }
@@ -104,7 +104,7 @@ angular.module('mage').directive('formDirective', function (EventService, Observ
           if (_.keys($scope.attachmentUploads).length == 0) {
             $scope.attachmentUploads = {};
 
-            $scope.$emit('observationEditDone');
+            $scope.$emit('observation:editDone');
             $scope.saving = false;
           }
         });

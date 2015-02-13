@@ -44,10 +44,18 @@ angular.module('mage').directive('fieldDirective', function ($http) {
     template: '<div ng-include src="templatePath"></div>',
     restrict: 'E',
     scope: {
-      field: '='
+      field: '=',
+      observation: '=fieldObservation'
     },
     controller: function($scope) {
       $scope.templatePath = getTemplateUrl($scope.field);
+
+      $scope.onLatLngChange = function(field) {
+        if (field.name === 'geometry') {
+          $scope.$emit('observation:move', $scope.observation, {lat: $scope.field.value.y, lng: $scope.field.value.x});
+        }
+      }
+
     }
   };
 });

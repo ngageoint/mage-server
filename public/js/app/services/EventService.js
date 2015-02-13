@@ -48,16 +48,6 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
     }
   }
 
-  // ***REMOVED***.getObservations = function() {
-  //   var events = _.values(eventsById);
-  //   var observations = [];
-  //   _.each(_.values(eventsById), function(event) {
-  //     observations.concat(_.values(event.observationsById));
-  //   });
-  //
-  //   return observations;
-  // }
-
   ***REMOVED***.saveObservation = function(observation) {
     var event = eventsById[observation.eventId];
     var observationId = observation.id;
