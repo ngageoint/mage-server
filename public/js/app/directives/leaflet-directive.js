@@ -1,4 +1,4 @@
-L.AwesomeMarkers.DivIcon = L.AwesomeMarkers.Icon.extend({
+L.AwesomeMarkers.NewDivIcon = L.AwesomeMarkers.Icon.extend({
   initialize: function (options) {
     L.AwesomeMarkers.Icon.prototype.initialize.call(this, options);
   },
@@ -12,8 +12,8 @@ L.AwesomeMarkers.DivIcon = L.AwesomeMarkers.Icon.extend({
   }
 });
 
-L.AwesomeMarkers.divIcon = function (options) {
-  return new L.AwesomeMarkers.DivIcon(options);
+L.AwesomeMarkers.newDivIcon = function (options) {
+  return new L.AwesomeMarkers.NewDivIcon(options);
 };
 
 L.UrlDivIcon = L.DivIcon.extend({
@@ -55,7 +55,11 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
 
       // toolbar  and controls config
       var sidebar = L.control.sidebar('side-bar', {closeButton: false});
-      map.addControl(new L.Control.MageFeature());
+      map.addControl(new L.Control.MageFeature({
+        onClick: function(latlng) {
+          scope.$emit('observation:create', latlng);
+        }
+      }));
       map.addControl(new L.Control.MageUserLocation());
       map.addControl(new L.Control.MageListTools({
         onClick: function() {
@@ -69,6 +73,46 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
       layerControl.addTo(map);
 
       var layers = {};
+
+      function createMarker(marker) {
+        // cannot create another marker with the same id
+        if (layers[marker.layerId]) return;
+
+        var options = marker.options || {};
+
+        if (marker.geometry && marker.geometry.type === 'Point') {
+          var latlng = [0, 0];
+          if (marker.geometry.coordinates) {
+            latlng = [marker.geometry.coordinates[1], marker.geometry.coordinates[0]];
+          } else {
+            latlng = map.getCenter();
+          }
+
+          var layer = L.marker(latlng, {
+            draggable: options.draggable,
+            icon: L.AwesomeMarkers.newDivIcon({
+              icon: 'plus',
+              color: 'cadetblue'
+            })
+          });
+
+          if (_.isFunction(options.onDragEnd)) {
+            layer.on('dragend', function() {
+              options.onDragEnd(layer.getLatLng());
+            });
+          }
+
+          if (options.selected) layer.addTo(map);
+          layers[marker.layerId] = {layer: layer};
+        }
+      }
+
+      function updateMarker(marker) {
+        var layer = layers[marker.id];
+        if (marker.geometry && marker.geometry.type === 'Point') {
+          layer.setLatLng([marker.geometry.coordinates[1], marker.geometry.coordinates[0]]);
+        }
+      }
 
       function createRasterLayer(layer) {
         var baseLayer = null;
@@ -127,6 +171,9 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
       function onLayersChanged(changed) {
         _.each(changed.added, function(added) {
           switch(added.type) {
+            case 'Feature':
+              createMarker(added);
+              break;
             case 'raster':
               createRasterLayer(added);
               break;
@@ -136,10 +183,21 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
           }
         });
 
+        _.each(changed.updated, function(updated) {
+          switch(updated.type) {
+            case 'Feature':
+              updateMarker(updated);
+              break;
+          }
+        });
+
         _.each(changed.removed, function(removed) {
-          //TODO implement, currently not removing layers
-          //Will only happen if server removes a static layer
-        })
+          var layer = layers[removed.layerId];
+          if (layer) {
+            map.removeLayer(layer.layer);
+            delete layers[removed.layerId];
+          }
+        });
       }
 
       function onFeaturesChanged(changed) {

@@ -1,11 +1,4 @@
 <div cl***REMOVED***="news-feed-panel-content">
-  <div cl***REMOVED***="news-feed-header">
-
-    <div cl***REMOVED***="feature-panel" ng-if="newObservation">
-      <form-directive form="newObservationForm" form-observation="newObservation" cl***REMOVED***="row-fluid"></form-directive>
-    </div>
-
-  </div>
   <div cl***REMOVED***="overview-map hide-on-ipad-landscape" map-clip="activeFeature.feature" style="width: 100%; height: 150px;"/>
 
   <div cl***REMOVED***="row-fluid news-feed-tabs">
@@ -22,6 +15,10 @@
     <div cl***REMOVED***="news-items">
       <div cl***REMOVED***="news-items-list">
         <div cl***REMOVED***="the-news-items">
+          <div cl***REMOVED***="feature-panel" ng-if="newObservation">
+            <form-directive form="newObservationForm" form-observation="newObservation" cl***REMOVED***="row-fluid"></form-directive>
+          </div>
+
           <div ng-switch="currentFeedPanel">
             <div ng-switch-when="observationsTab">
               <div cl***REMOVED***="news-feed-item pointer" id="{{observation.id}}"

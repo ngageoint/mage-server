@@ -24,7 +24,7 @@ mage.directive('observationNewsItem', function() {
         $scope.editForm = angular.copy($scope.form);
       }
 
-      $scope.$on('observationEditDone', function() {
+      $scope.$on('observation:editDone', function() {
         $scope.edit = false;
         $scope.editForm = null;
       });

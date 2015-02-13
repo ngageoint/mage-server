@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mage').controller('MageController', ['$scope', 'EventService', 'MapService', 'Layer', function ($scope, EventService, MapService, Layer) {
+angular.module('mage').controller('MageController', ['$scope', 'FilterService', 'EventService', 'MapService', 'Layer', 'Observation', function ($scope, FilterService, EventService, MapService, Layer, Observation) {
 
   Layer.query(function (layers) {
     var baseLayerFound = false;
@@ -28,7 +28,7 @@ angular.module('mage').controller('MageController', ['$scope', 'EventService', '
     _.each(changed.added, function(added) {
       observationsById[added.id] = added;
 
-      MapService.addObservation(added);
+      MapService.addFeatureToLayer(added, 'Observations');
     });
 
     _.each(changed.updated, function(updated) {
@@ -36,14 +36,14 @@ angular.module('mage').controller('MageController', ['$scope', 'EventService', '
       if (observation) {
         observation = updated;
 
-        MapService.updateObservation(observation);
+        MapService.updateFeatureForLayer(observation, 'Observations');
       }
     });
 
     _.each(changed.removed, function(removed) {
       delete observationsById[removed.id];
 
-      MapService.removeObservation(removed);
+      MapService.removeFeatureFromLayer(removed, 'Observations');
     });
 
     // update the news feed observations
@@ -58,11 +58,16 @@ angular.module('mage').controller('MageController', ['$scope', 'EventService', '
   // keep a map of observation id to observation to facilitate fast lookups
   var observationsById = {};
 
-  var observationLayer = MapService.createObservationLayer({
-    selected: true,
-    onClick: function(observation) {
-      $scope.$broadcast('observation:selected', observation);
-      $scope.$apply();
+  var observationLayer = MapService.createVectorLayer({
+    name: 'Observations',
+    group: 'MAGE',
+    type: 'geojson',
+    options: {
+      selected: true,
+      onClick: function(observation) {
+        $scope.$broadcast('observation:selected', observation);
+        $scope.$apply();
+      }
     }
   });
 
@@ -72,13 +77,51 @@ angular.module('mage').controller('MageController', ['$scope', 'EventService', '
     if (selectedObservationId !== observation.id) {
       selectedObservationId = observation.id;
       $scope.$broadcast('observation:select', observation);
-      MapService.selectObservation(observation);
+      MapService.selectFeatureInLayer(observation, 'Observations');
     }
   });
 
-  $scope.onNewObservationClick = function() {
-    $scope.$broadcast('createNewObservation');
-  }
+  var newObservation = null;
+  $scope.$on('observation:create', function(e, latlng) {
+    var event = FilterService.getEvent();
+    newObservation = new Observation({
+      eventId: event.id,
+      type: 'Feature',
+      geometry: {
+        type: 'Point',
+        coordinates: [latlng.lng, latlng.lat]
+      },
+      properties: {
+        timestamp: new Date()
+      }
+    });
+
+    MapService.createMarker(newObservation, {
+      layerId: 'NewObservation',
+      selected: true,
+      draggable: true,
+      onDragEnd: function(latlng) {
+        $scope.$broadcast('observation:moved', newObservation, latlng);
+        $scope.$apply();
+      }
+    });
+
+    $scope.$broadcast('observation:new', newObservation);
+    $scope.$apply();
+  });
+
+  $scope.$on('observation:editDone', function(e, observation) {
+    if (newObservation === observation) {
+      MapService.removeMarker(observation, 'NewObservation');
+    }
+
+    newObservation = null;
+  });
+
+  $scope.$on('observation:move', function(e, observation, latlng) {
+    $scope.$broadcast('observation:moved', observation, latlng);
+    MapService.updateMarker(observation, 'NewObservation');
+  });
 
 }]);
 

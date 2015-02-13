@@ -8,24 +8,23 @@ mage.directive('newsFeed', function() {
     controller: function ($rootScope, $scope, FilterService, EventService, Observation, ObservationService) {
       $scope.currentFeedPanel = 'observationsTab';
 
-      $scope.$on('createNewObservation', function() {
-        var event = FilterService.getEvent();
-        $scope.newObservation = new Observation({
-          eventId: event.id,
-          type: 'Feature',
-          geometry: {
-            type: 'Point',
-            coordinates: [0,0]
-          },
-          properties: {
-            timestamp: new Date()
-          }
-        });
+      $scope.$on('observation:new', function(e, newObservation) {
+        if ($scope.newObservation) return;
 
+        $scope.newObservation = newObservation;
         $scope.newObservationForm = EventService.createForm($scope.newObservation);
       });
 
-      $scope.$on('observationEditDone', function() {
+      $scope.$on('observation:moved', function(e, observation, latlng) {
+        if (!$scope.newObservation || !latlng) return;
+
+        $scope.newObservation.geometry.coordinates = [latlng.lng, latlng.lat];
+
+        var geometryField = EventService.getFormField($scope.newObservationForm, 'geometry');
+        geometryField.value = {x: latlng.lng, y: latlng.lat};
+      });
+
+      $scope.$on('observation:editDone', function(e, observation) {
         $scope.newObservation = null;
       });
 

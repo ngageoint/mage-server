@@ -41,105 +41,67 @@ mage.factory('MapService', ['$rootScope', 'mageLib', 'Layer', 'EventService', fu
     return layers;
   }
 
-
-
-  var rasterLayers = {};
-  ***REMOVED***.getRasterLayers = function() {
-    return rasterLayers;
-  }
-
   ***REMOVED***.createRasterLayer = function(layer) {
     layersChanged({
-      added: [layer],
-      options: layer.options
+      added: [layer]
     });
   }
 
-  // Layer.query(function (layers) {
-  //   var baseLayerFound = false;
-  //   _.each(layers, function(layer) {
-  //     // Add token to the url of all private layers
-  //     // TODO add watch for token change and reset the url for these layers
-  //     if (layer.type === 'Imagery' && layer.url.indexOf('private') == 0) {
-  //       layer.url = layer.url + "?access_token=" + mageLib.getToken();
-  //     }
-  //
-  //     if (layer.type === 'Imagery') {
-  //       layer.type = 'raster';
-  //
-  //       if (layer.base && !baseLayerFound) {
-  //         layer.options = {selected: true};
-  //         baseLayerFound = true;
-  //       }
-  //     }
-  //
-  //   });
-  //
-  //   layersChanged({
-  //     added: layers
-  //   });
-  // });
-
-
-  var vectorLayers = {};
-  // var observationsById = _.indexBy(EventService.getObservations(), 'id');
-  // observationsToVectorLayer(_.values(observationsById));
-
-  // ***REMOVED***.getVectorLayers = function() {
-  //   return vectorLayers;
-  // }
-
-  // function observationsToVectorLayer(observations) {
-  //   var geoJson = L.geoJson({
-  //     type: 'FeatureCollection',
-  //     features: observations
-  //   },{
-  //     onEachFeature: onEachObservation
-  //   });
-  //
-  //   vectorLayers.observations = {name: 'Observations', group: 'MAGE', layer: geoJson, selected: true};
-  // }
-
-  ***REMOVED***.createObservationLayer = function(options) {
-    var layer = {
-      name: 'Observations',
-      group: 'MAGE',
-      type: 'geojson',
-      options: options
-    };
-
+  ***REMOVED***.createVectorLayer = function(layer) {
     layers[layer.name] = layer;
     layersChanged({
-      added: [layer],
-      options: layer.options
+      added: [layer]
     });
   }
 
-  ***REMOVED***.addObservation = function(observation) {
-    featuresChanged({
-      name: 'Observations',
-      added: [observation]
+  ***REMOVED***.createMarker = function(marker, options) {
+    if (options) marker.options = options;
+
+    layersChanged({
+      name: marker.id,
+      added: [marker]
     });
   }
 
-  ***REMOVED***.updateObservation = function(observation) {
-    featuresChanged({
-      name: 'Observations',
-      updated: [observation]
+  ***REMOVED***.removeMarker = function(marker, markerId) {
+    layersChanged({
+      name: markerId,
+      removed: [marker]
     });
   }
 
-  ***REMOVED***.removeObservation = function(observation) {
-    featuresChanged({
-      name: 'Observations',
-      removed: [observation]
+  ***REMOVED***.updateMarker = function(marker, markerId) {
+    layersChanged({
+      name: markerId,
+      updated: [marker]
     });
   }
 
-  ***REMOVED***.selectObservation = function(observation) {
+  ***REMOVED***.addFeatureToLayer = function(feature, layerId) {
     featuresChanged({
-      name: 'Observations',
-      selected: [observation]
+      name: layerId,
+      added: [feature]
+    });
+  }
+
+  ***REMOVED***.updateFeatureForLayer = function(feature, layerId) {
+    featuresChanged({
+      name: layerId,
+      updated: [feature]
+    });
+  }
+
+  ***REMOVED***.removeFeatureFromLayer = function(feature, layerId) {
+    featuresChanged({
+      name: layerId,
+      removed: [feature]
+    });
+  }
+
+  ***REMOVED***.selectFeatureInLayer = function(feature, layerId) {
+    featuresChanged({
+      name: layerId,
+      selected: [feature]
     });
   }
 

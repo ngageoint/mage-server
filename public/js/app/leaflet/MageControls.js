@@ -13,9 +13,15 @@ L.Control.MageFeature = L.Control.extend({
     var container = L.DomUtil.get('new-feature-toolbar');
 
 		var stop = L.DomEvent.stopPropagation;
-		$(container).find('a').on('dblclick', stop);
+		var button = $(container).find('a');
+		button.on('dblclick', stop);
 		// also stop the click so that the new marker does not show up right behind the toolbar
 		$(container).find('a').on('click', stop);
+
+		var onClick = this.options.onClick;
+		if (onClick) button.on('click', function() {
+			onClick(map.getCenter());
+		});
 
     return container;
   }
@@ -62,25 +68,4 @@ L.Control.MageListTools = L.Control.extend({
 
     return container;
   }
-});
-
-L.Control.TimeScale = L.Control.extend({
-
-	options: {
-		position: 'bottomleft'
-	},
-
-	initialize: function(options) {
-		L.Control.prototype.initialize.call(this, options);
-	},
-
-	onAdd: function(map) {
-		var container = L.DomUtil.get('time-scale');
-    var stop = L.DomEvent.stopPropagation;
-		$(container).find('a').on('click', stop);
-		$(container).find('a').on('mousedown', stop);
-		$(container).find('a').on('mouseup', stop);
-
-    return container;
-	}
 });
