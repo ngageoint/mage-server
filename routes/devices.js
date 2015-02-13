@@ -98,6 +98,8 @@ module.exports = function(app, security) {
       // Devices not created by ADMIN are not registered by default
       req.newDevice.registered = false;
 
+      if(!req.newDevice.description) req.newDevice.description = req.headers['user-agent'];
+
       Device.getDeviceByUid(req.newDevice.uid, function(err, device) {
         if (device) {
           // already exists, do not register
