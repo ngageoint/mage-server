@@ -62,6 +62,7 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
       }));
       map.addControl(new L.Control.MageUserLocation());
       map.addControl(new L.Control.MageListTools({
+        enabled: true,
         onClick: function() {
           sidebar.toggle();
         }
