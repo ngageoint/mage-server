@@ -106,14 +106,55 @@
 
         <div cl***REMOVED***="nav-collapse collapse" ng-show="location.path() === '/map'">
           <ul id="main-nav" cl***REMOVED***="nav navbar-nav">
-            <li ng-cl***REMOVED***="{'active':  filter}">
-              <a cl***REMOVED***="pointer" ng-click="filter = !filter">
+            <li ng-cl***REMOVED***="{'active':  filter}" cl***REMOVED***="dropdown">
+              <a cl***REMOVED***="pointer dropdown-toggle" ng-click="filter = !filter">
                 <i cl***REMOVED***="fa fa-filter icon-spacer"></i> Filter
+                <b cl***REMOVED***="caret"></b>
               </a>
+            </li>
+            <li cl***REMOVED***="dropdown">
+              <a href="#" cl***REMOVED***="dropdown-toggle" data-toggle="dropdown">
+                <i style="margin-right: 3px;" ng-cl***REMOVED***="pollingInterval == 0 ? 'fa fa-square-o' : 'fa fa-check-square-o'"></i> Live Update
+                <b cl***REMOVED***="caret"></b>
+              </a>
+              <ul cl***REMOVED***="dropdown-menu">
+                <li cl***REMOVED***="nav-header">Poll Time</li>
+                <li>
+                  <a ng-click="onPollingIntervalChanged('5000')" cl***REMOVED***="pointer">
+                    <i ng-cl***REMOVED***="pollingInterval == 5000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
+                    5 Seconds
+                  </a>
+                </li>
+                <li>
+                  <a ng-click="onPollingIntervalChanged('30000')" cl***REMOVED***="pointer">
+                    <i ng-cl***REMOVED***="pollingInterval == 30000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
+                    30 Seconds
+                  </a>
+                </li>
+                <li>
+                  <a ng-click="onPollingIntervalChanged('120000')" cl***REMOVED***="pointer">
+                    <i ng-cl***REMOVED***="pollingInterval == 120000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
+                    2 Minutes
+                  </a>
+                </li>
+                <li>
+                  <a ng-click="onPollingIntervalChanged('300000')" cl***REMOVED***="pointer">
+                    <i ng-cl***REMOVED***="pollingInterval == 300000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
+                    5 Minutes
+                  </a>
+                </li>
+                <li>
+                  <a ng-click="onPollingIntervalChanged('0')" cl***REMOVED***="pointer">
+                    <i ng-cl***REMOVED***="pollingInterval == 0 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
+                    No Polling
+                  </a>
+                </li>
+              </ul>
             </li>
           </ul>
         </div>
       </div>
+
 
       <div style="padding: 10px;" cl***REMOVED***="container" ng-show="filter" ng-cloak>
 
@@ -132,7 +173,7 @@
             <div>
               <div cl***REMOVED***="control-group">
                 <label cl***REMOVED***="control-label">Start Date/Time</label>
-                <quick-datepicker ng-model='customStartDate' icon-cl***REMOVED***='fa fa-calendar' time-format="HH:mm:ss" ng-change="updateCustomInterval(interval)"></quick-datepicker>
+                <quick-datepicker ng-model='customStartDate' icon-cl***REMOVED***='fa fa-calendar' time-format="HH:mm:ss" ng-change="onCustomIntervalChanged(interval)"></quick-datepicker>
                 <button type="button" ng-click="localTime = !localTime" ngm-tap="localTime = !localTime" cl***REMOVED***="btn quickdate-button"><i cl***REMOVED***="fa fa-clock-o"></i><span ng-show="localTime"> Local (GMT {{localOffset}})</span><span ng-show="!localTime"> GMT (GMT +00:00)</span></button>
               </div>
             </div>
@@ -140,7 +181,7 @@
             <div>
               <div cl***REMOVED***="control-group">
                 <label cl***REMOVED***="control-label">End Date/Time</label>
-                <quick-datepicker ng-model='customEndDate' icon-cl***REMOVED***='fa fa-calendar' time-format="HH:mm:ss" ng-change="updateCustomInterval(interval)"></quick-datepicker>
+                <quick-datepicker ng-model='customEndDate' icon-cl***REMOVED***='fa fa-calendar' time-format="HH:mm:ss" ng-change="onCustomIntervalChanged(interval)"></quick-datepicker>
                 <button type="button" ng-click="localTime = !localTime" ngm-tap="localTime = !localTime" cl***REMOVED***="btn quickdate-button"><i cl***REMOVED***="fa fa-clock-o"></i><span ng-show="localTime"> Local (GMT {{localOffset}})</span><span ng-show="!localTime"> GMT (GMT +00:00)</span></button>
               </div>
             </div>
@@ -210,6 +251,7 @@
   <script type="text/javascript" src="js/app/***REMOVED***s/MapService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/FilterService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/LocationService.js"></script>
+  <script type="text/javascript" src="js/app/***REMOVED***s/PollingService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/TimerService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/HttpAuthService.js"></script>
   <script type="text/javascript" src="js/app/***REMOVED***s/mageLib.js"></script>

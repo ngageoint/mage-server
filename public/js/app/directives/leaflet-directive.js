@@ -216,11 +216,13 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
           }
 
           // Set the icon
-          layer.setIcon(L.urlDivIcon({
-              feature: feature,
-              token: TokenService.getToken()
-            })
-          );
+          if (layer.feature && layer.feature.iconUrl !== feature.iconUrl) {
+            layer.setIcon(L.urlDivIcon({
+                feature: feature,
+                token: TokenService.getToken()
+              })
+            );
+          }
 
           // Set the lat/lng
           if (feature.geometry.coordinates) {

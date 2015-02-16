@@ -1,6 +1,14 @@
 'use strict';
 
-angular.module('mage').controller('MageController', ['$scope', 'FilterService', 'EventService', 'MapService', 'Layer', 'Observation', function ($scope, FilterService, EventService, MapService, Layer, Observation) {
+angular
+  .module('mage')
+  .controller('MageController', MageController);
+
+MageController.$inject = ['$scope', 'FilterService', 'EventService', 'MapService', 'PollingService', 'Layer', 'Observation'];
+
+function MageController($scope, FilterService, EventService, MapService, PollingService, Layer, Observation) {
+
+  var observationsById = {};
 
   Layer.query(function (layers) {
     var baseLayerFound = false;
@@ -50,13 +58,19 @@ angular.module('mage').controller('MageController', ['$scope', 'FilterService', 
     $scope.newsFeedObservations = _.values(observationsById);
   }
 
-  // Add an observations changed listener
-  EventService.addObservationsChangedListener({
+  var observationsChangedListener = {
     onObservationsChanged: onObservationsChanged
+  };
+
+  // Add an observations changed listener
+  EventService.addObservationsChangedListener(observationsChangedListener);
+
+  $scope.$on('$destroy', function() {
+    EventService.removeObservationsChangedListener(observationsChangedListener);
+    PollingService.setPollingInterval(0); // stop polling
   });
 
   // keep a map of observation id to observation to facilitate fast lookups
-  var observationsById = {};
 
   var observationLayer = MapService.createVectorLayer({
     name: 'Observations',
@@ -125,7 +139,7 @@ angular.module('mage').controller('MageController', ['$scope', 'FilterService', 
     MapService.updateMarker(observation, 'NewObservation');
   });
 
-}]);
+}
 
   // $scope.locate = false;
   // $scope.broadcast = false;

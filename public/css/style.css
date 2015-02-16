@@ -131,6 +131,21 @@ img.rotate270 {
 	color: #FFF;
 }
 
+.navbar .nav li.dropdown > .dropdown-toggle .caret {
+	border-top-color: #FFF;
+	border-bottom-color: #FFF;
+}
+
+.navbar .nav li.dropdown.open > .dropdown-toggle .caret, .navbar .nav li.dropdown.active > .dropdown-toggle .caret, .navbar .nav li.dropdown.open.active > .dropdown-toggle .caret {
+	border-top-color: #FFF;
+	border-bottom-color: #FFF;
+}
+
+.navbar .nav li.dropdown.open > .dropdown-toggle, .navbar .nav li.dropdown.active > .dropdown-toggle, .navbar .nav li.dropdown.open.active > .dropdown-toggle {
+	color: #FFF;
+	background-color: #305680;
+}
+
 .accordion-group {
     border: 1px solid #999999;
 }

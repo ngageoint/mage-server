@@ -1,7 +1,8 @@
 'use strict';
 
-angular.module('mage').controller('NavController', ['$scope', '$location', 'UserService', 'FilterService', 'Event', function ($scope, $location, UserService, FilterService, Event) {
+angular.module('mage').controller('NavController', ['$scope', '$location', 'UserService', 'FilterService', 'PollingService', 'Event', function ($scope, $location, UserService, FilterService, PollingService, Event) {
   $scope.location = $location;
+
   $scope.filter = false;
   $scope.intervals = FilterService.intervals;
   $scope.interval = FilterService.getTimeInterval();
@@ -10,10 +11,14 @@ angular.module('mage').controller('NavController', ['$scope', '$location', 'User
   $scope.customStartDate = moment().startOf('day').toDate();
   $scope.customEndDate = moment().endOf('day').toDate();
 
+  $scope.pollingInterval = 30000;
+
   $scope.$on('login', function(event, login) {
     $scope.myself = login.user;
     $scope.amAdmin = login.isAdmin;
     $scope.token = login.token;
+
+    if ($location.path() !== '/map') return;
 
     Event.query({userId: $scope.myself.id}, function(events) {
       $scope.events = events;
@@ -23,14 +28,17 @@ angular.module('mage').controller('NavController', ['$scope', '$location', 'User
       if (recentEvent) {
         $scope.event = recentEvent;
         FilterService.setEvent($scope.event);
+        PollingService.setPollingInterval($scope.pollingInterval);
       } else if (events.length > 0) {
         // TODO 'welcome to MAGE dialog'
         $scope.event = events[0];
         FilterService.setEvent($scope.event);
+        PollingService.setPollingInterval($scope.pollingInterval);
       } else {
         // TODO welcome to mage, sorry you have no events
       }
     });
+
   });
 
   $scope.$on('logout', function() {
@@ -58,12 +66,17 @@ angular.module('mage').controller('NavController', ['$scope', '$location', 'User
     FilterService.setTimeInterval(interval, options);
   }
 
-  $scope.updateCustomInterval = function(interval) {
+  $scope.onCustomIntervalChanged = function(interval) {
     FilterService.setTimeInterval(interval, {
       startDate: $scope.customStartDate,
       endDate: $scope.customEndDate,
       localTime: $scope.localTime
     });
+  }
+
+  $scope.onPollingIntervalChanged = function(pollingInterval) {
+    $scope.pollingInterval = pollingInterval;
+    PollingService.setPollingInterval(pollingInterval);
   }
 
 }]);
