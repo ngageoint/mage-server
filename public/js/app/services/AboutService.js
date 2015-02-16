@@ -1,14 +1,19 @@
 'use strict';
 
-angular.module('mage.aboutService', ['mage.***REMOVED***s', 'mage.lib'])
-  .factory('AboutService', ['$http', 'appConstants',
-    function ($http, appConstants) {
-      var ***REMOVED*** = {};
+angular
+  .module('mage.aboutService', ['mage.***REMOVED***s', 'mage.lib'])
+  .factory('AboutService', AboutService);
 
-      ***REMOVED***.about = function () {
-        return $http.get('/api/');
-      };
+AboutService.$inject = ['$http'];
 
-      return ***REMOVED***;
+function AboutService($http) {
+  var ***REMOVED*** = {
+    about: about
+  };
 
-    }]);
+  return ***REMOVED***;
+
+  function about() {
+    return $http.get('/api/');
+  };
+}
