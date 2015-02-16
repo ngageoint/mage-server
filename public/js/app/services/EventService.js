@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('mage').***REMOVED***('EventService', function EventService($rootScope, $timeout, Event, ObservationService, FilterService) {
+angular.module('mage').***REMOVED***('EventService', function EventService($rootScope, $timeout, Event, ObservationService, FilterService, PollingService) {
   var ***REMOVED*** = {};
 
   FilterService.addListener({
@@ -18,6 +18,17 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
       if (event) {
         fetchObservations(event, interval);
       }
+    }
+  });
+
+  PollingService.addListener({
+    onPollingIntervalChanged: function(interval) {
+      if (pollingTimeout) {
+        // cancel previous poll
+        $timeout.cancel(pollingTimeout);
+      }
+
+      poll(interval);
     }
   });
 
@@ -45,7 +56,7 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
       parameters.interval = time;
     }
 
-    ObservationService.getObservationsForEvent(event, parameters).then(function(observations) {
+    return ObservationService.getObservationsForEvent(event, parameters).then(function(observations) {
       var added = [];
       var updated = [];
       var removed = [];
@@ -74,7 +85,22 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
     });
   }
 
-  // TODO add polling
+  var pollingTimeout = null;
+  function poll(interval) {
+    if (interval <= 0) return;
+
+    fetchObservations(FilterService.getEvent(), FilterService.getTimeInterval()).then(function() {
+      pollingTimeout = $timeout(function() {
+        poll(interval);
+      }, interval);
+    });
+  }
+
+  $rootScope.$on('$destory', function() {
+    if (pollingTimeout) {
+      $timeout.cancel(pollingTimeout);
+    }
+  });
 
   ***REMOVED***.addObservationsChangedListener = function(listener) {
     observationsChangedListeners.push(listener);
@@ -84,6 +110,12 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
         listener.onObservationsChanged({added: _.values(event.observationsById)});
       });
     }
+  }
+
+  ***REMOVED***.removeObservationsChangedListener = function(listener) {
+    observationsChangedListeners = _.filter(observationsChangedListeners, function(l) {
+      return listener !== l;
+    });
   }
 
   ***REMOVED***.saveObservation = function(observation) {

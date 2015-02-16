@@ -11,7 +11,6 @@ mage.directive('userId', function() {
       UserService.getUser($scope.userId)
         .then(function(user) {
           $scope.user = user.data || user;
-          console.log('s.userId', $scope.user);
         });
     }
   };
