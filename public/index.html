@@ -161,7 +161,7 @@
         <div cl***REMOVED***="control-group">
           <label cl***REMOVED***="control-label" for="type">Event</label>
           <div cl***REMOVED***="controls">
-            <select ng-model="event" ng-options="event as event.name for event in events" ng-change="onEventChange(event)"></select>
+            <select ng-model="event" ng-options="event as event.name for event in events | orderBy:'name'" ng-change="onEventChange(event)"></select>
           </div>
         </div>
 
