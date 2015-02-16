@@ -1,4 +1,5 @@
-angular.module('mage').factory('Event', ['$rootScope', '$resource', '$http', 'appConstants', 'mageLib', 'Observation', function($rootScope, $resource, $http, appConstants, mageLib, Observation) {
+angular.module('mage').factory('Event', ['$rootScope', '$resource', '$http', 'mageLib', 'Observation', function($rootScope, $resource, $http, mageLib, Observation) {
+
   var Event = $resource('/api/events/:id', {
     id: '@id'
   },{

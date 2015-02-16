@@ -196,5 +196,14 @@ angular.module('mage.userService', ['mage.***REMOVED***s', 'mage.lib'])
         $rootScope.$broadcast('logout');
       };
 
+      ***REMOVED***.addRecentEvent = function(event) {
+        return $http.post('/api/users/' + ***REMOVED***.myself.id + '/events/' + event.id + '/recent');
+      }
+
+      ***REMOVED***.getRecentEventId = function() {
+        var recentEventIds = ***REMOVED***.myself.recentEventIds;
+        return recentEventIds.length > 0 ? recentEventIds[0]: null;
+      }
+
       return ***REMOVED***;
     }])

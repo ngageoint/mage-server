@@ -1,7 +1,7 @@
 'use strict';
 
-mage.factory('FilterService', ['$rootScope', 'mageLib',
-  function ($rootScope, mageLib) {
+mage.factory('FilterService', ['$rootScope', 'UserService',
+  function ($rootScope, UserService) {
     var localStorageKey = 'FilterService.interval';
 
     var ***REMOVED*** = {};
@@ -38,8 +38,15 @@ mage.factory('FilterService', ['$rootScope', 'mageLib',
     }
 
     ***REMOVED***.setEvent = function(newEvent) {
+      eventChanged({
+        added: [newEvent],
+        removed: event ? [event] : []
+      });
+
       event = newEvent;
-      eventChanged(newEvent)
+
+      // Tell server that user is using this event
+      UserService.addRecentEvent(event);
     };
 
     ***REMOVED***.getEvent = function() {
@@ -69,11 +76,7 @@ mage.factory('FilterService', ['$rootScope', 'mageLib',
       label: 'Custom'
     }];
 
-    var interval = ***REMOVED***.intervals[0];
-    var timeInterval = {};
-    var filterLocalOffset = moment().format('Z');
-
-    ***REMOVED***.formatInterval = function() {
+    ***REMOVED***.formatInterval = function(interval) {
       if (interval.since != null) {
         return { start: moment().utc().subtract('seconds', interval.since).toISOString() };
       } else if (interval.today) {
@@ -85,6 +88,7 @@ mage.factory('FilterService', ['$rootScope', 'mageLib',
       }
     }
 
+    var interval = null;
     ***REMOVED***.getTimeInterval = function() {
       return interval;
     };
@@ -97,15 +101,15 @@ mage.factory('FilterService', ['$rootScope', 'mageLib',
       } else if (newInterval.filter == 'today') {
         timeInterval = { today: true };
       } else if (newInterval.filter == 'custom') {
-        var startDate = moment(options.filterStartDate);
+        var startDate = moment(options.startDate);
         if (startDate) {
-          startDate = options.filterLocalTime ? startDate.utc() : startDate;
+          startDate = options.localTime ? startDate.utc() : startDate;
           var start = startDate.format("YYYY-MM-DD HH:mm:ss");
         }
 
-        var endDate = moment(options.filterEndDate);
+        var endDate = moment(options.endDate);
         if (endDate) {
-          endDate = options.filterLocalTime ? endDate.utc() : endDate;
+          endDate = options.localTime ? endDate.utc() : endDate;
           var end = endDate.format("YYYY-MM-DD HH:mm:ss");
         }
 
@@ -114,8 +118,13 @@ mage.factory('FilterService', ['$rootScope', 'mageLib',
         timeInterval = { since: parseInt(newInterval.filter) }
       }
 
-      $rootScope.$broadcast('filter:time', timeInterval);
+      timeIntervalChanged(timeInterval);
     }
+
+    ***REMOVED***.setTimeInterval(***REMOVED***.intervals[0]);
+    var timeInterval = {};
+    var filterLocalOffset = moment().format('Z');
+
 
     return ***REMOVED***;
   }]);

@@ -19,15 +19,6 @@ angular.module('mage').factory('Observation', ['$resource', '$http', function($r
     get: {
       method: 'GET'
     }
-    // query: {
-    //   isArray: true,
-    //   method: 'GET',
-    //   transformResponse: function(observations) {
-    //     _.each(observations, function(observation) {
-    //       observation.eventId = this.eventId;
-    //     });
-    //   }
-    // }
   });
 
   Observation.prototype.$save = function(params, success, error) {
