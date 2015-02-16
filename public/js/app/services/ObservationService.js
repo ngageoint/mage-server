@@ -13,12 +13,17 @@ angular.module('mage').factory('ObservationService', ['$q', 'Observation', 'Obse
       });
     }
 
-    ***REMOVED***.getObservationsForEvent = function(event) {
+    ***REMOVED***.getObservationsForEvent = function(event, options) {
       var deferred = $q.defer();
 
-      Observation.query({eventId: event.id, states: 'active'}, function(observations) {
-        transformObservations(observations, event);
+      var parameters = {eventId: event.id, states: 'active'};
+      if (options.interval) {
+        parameters.startDate = options.interval.start;
+        parameters.endDate = options.interval.end;
+      }
 
+      Observation.query(parameters, function(observations) {
+        transformObservations(observations, event);
         deferred.resolve(observations);
       });
 

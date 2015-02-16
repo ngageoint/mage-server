@@ -1,9 +1,29 @@
 'use strict';
 
-angular.module('mage').***REMOVED***('EventService', function EventService($rootScope, Event, ObservationService, FilterService) {
+angular.module('mage').***REMOVED***('EventService', function EventService($rootScope, $timeout, Event, ObservationService, FilterService) {
   var ***REMOVED*** = {};
 
+  FilterService.addListener({
+    onEventChanged: function(event) {
+      _.each(event.added, function(added) {
+        fetchObservations(added, FilterService.getTimeInterval());
+      });
+
+      _.each(event.removed, function(removed) {
+        delete eventsById[removed.id];
+      });
+    },
+    onTimeIntervalChanged: function(interval) {
+      var event = FilterService.getEvent();
+      if (event) {
+        fetchObservations(event, interval);
+      }
+    }
+  });
+
+  var selectedEvent = null;
   var eventsById = {};
+  var allMyObservationsForCurrentEvent = [];
 
   var observationsChangedListeners = [];
   function observationsChanged(changed) {
@@ -18,23 +38,41 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
     });
   }
 
-  function fetchObservations(event, options) {
-    ObservationService.getObservationsForEvent(event, options).then(function(observations) {
-      eventsById[event.id] = event;
-      eventsById[event.id].observationsById = _.indexBy(observations, 'id');
+  function fetchObservations(event, interval) {
+    var parameters = {};
+    if (interval) {
+      var time = FilterService.formatInterval(interval);
+      parameters.interval = time;
+    }
 
-      observationsChanged({added: observations});
+    ObservationService.getObservationsForEvent(event, parameters).then(function(observations) {
+      var added = [];
+      var updated = [];
+      var removed = [];
+
+      if (!eventsById[event.id]) {
+        eventsById[event.id] = event;
+        added = observations;
+      } else {
+        var observationsById = eventsById[event.id].observationsById;
+        _.each(observations, function(observation) {
+          // Check if we already have this observation, if so update, otherwise add
+          var localObservation = observationsById[observation.id];
+          localObservation ? updated.push(observation) : added.push(observation);
+
+          // remove from list of observations if it came back from server
+          // remaining elements in this list will be removed
+          delete observationsById[observation.id];
+        });
+
+        // remaining elements were not pulled from the server, hence we should remove them
+        removed = _.values(observationsById);
+      }
+
+      eventsById[event.id].observationsById = _.indexBy(observations, 'id');
+      observationsChanged({added: added, updated: updated, removed: removed});
     });
   }
-
-  FilterService.addListener({
-    onEventChanged: function(event) {
-      fetchObservations(event);
-    },
-    onTimeIntervalChanged: function(interval) {
-      // TODO add time filter
-    }
-  });
 
   // TODO add polling
 
@@ -50,10 +88,10 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
 
   ***REMOVED***.saveObservation = function(observation) {
     var event = eventsById[observation.eventId];
-    var observationId = observation.id;
+    var isNewObservation = observation.id == null;
     return ObservationService.saveObservationForEvent(event, observation).then(function(observation) {
-      event.observationsById[observationId] = observation;
-      observationId ? observationsChanged({updated: [observation]}) : observationsChanged({added: [observation]});
+      event.observationsById[observation.id] = observation;
+      isNewObservation ? observationsChanged({added: [observation]}) : observationsChanged({updated: [observation]});
     });
   }
 

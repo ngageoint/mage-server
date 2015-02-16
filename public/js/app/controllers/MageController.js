@@ -84,6 +84,8 @@ angular.module('mage').controller('MageController', ['$scope', 'FilterService', 
   var newObservation = null;
   $scope.$on('observation:create', function(e, latlng) {
     var event = FilterService.getEvent();
+    console.log('create obs for event', event.name);
+
     newObservation = new Observation({
       eventId: event.id,
       type: 'Feature',

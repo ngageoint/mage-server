@@ -120,19 +120,19 @@
         <div cl***REMOVED***="control-group">
           <label cl***REMOVED***="control-label" for="type">Event</label>
           <div cl***REMOVED***="controls">
-            <select ng-model="event" ng-options="event as event.name for event in events"></select>
+            <select ng-model="event" ng-options="event as event.name for event in events" ng-change="onEventChange(event)"></select>
           </div>
         </div>
 
         <div cl***REMOVED***="control-group">
           <label cl***REMOVED***="control-label" for="type">Time</label>
-          <select ng-model="interval" ng-options="o.label for o in intervals" ng-change="updateInterval()"></select>
+          <select ng-model="interval" ng-options="interval.label for interval in intervals" ng-change="onIntervalUpdate(interval)"></select>
 
           <div ng-show="interval.filter == 'custom'">
             <div>
               <div cl***REMOVED***="control-group">
                 <label cl***REMOVED***="control-label">Start Date/Time</label>
-                <quick-datepicker ng-model='filterStartDate' icon-cl***REMOVED***='fa fa-calendar' time-format="HH:mm:ss" ng-change="updateInterval()"></quick-datepicker>
+                <quick-datepicker ng-model='customStartDate' icon-cl***REMOVED***='fa fa-calendar' time-format="HH:mm:ss" ng-change="updateCustomInterval(interval)"></quick-datepicker>
                 <button type="button" ng-click="localTime = !localTime" ngm-tap="localTime = !localTime" cl***REMOVED***="btn quickdate-button"><i cl***REMOVED***="fa fa-clock-o"></i><span ng-show="localTime"> Local (GMT {{localOffset}})</span><span ng-show="!localTime"> GMT (GMT +00:00)</span></button>
               </div>
             </div>
@@ -140,12 +140,14 @@
             <div>
               <div cl***REMOVED***="control-group">
                 <label cl***REMOVED***="control-label">End Date/Time</label>
-                <quick-datepicker ng-model='filterEndDate' icon-cl***REMOVED***='fa fa-calendar' time-format="HH:mm:ss" ng-change="updateInterval()"></quick-datepicker>
+                <quick-datepicker ng-model='customEndDate' icon-cl***REMOVED***='fa fa-calendar' time-format="HH:mm:ss" ng-change="updateCustomInterval(interval)"></quick-datepicker>
                 <button type="button" ng-click="localTime = !localTime" ngm-tap="localTime = !localTime" cl***REMOVED***="btn quickdate-button"><i cl***REMOVED***="fa fa-clock-o"></i><span ng-show="localTime"> Local (GMT {{localOffset}})</span><span ng-show="!localTime"> GMT (GMT +00:00)</span></button>
               </div>
             </div>
           </div>
         </div>
+
+        <button cl***REMOVED***="btn" ng-click="filter = false">Close</button>
 
       </div>
 
