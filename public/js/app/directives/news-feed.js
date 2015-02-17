@@ -5,8 +5,13 @@ mage.directive('newsFeed', function() {
     scope: {
       observations: '=newsFeedObservations'
     },
-    controller: function ($rootScope, $scope, FilterService, EventService, Observation, ObservationService) {
+    controller: function ($rootScope, $scope, $element, $filter, $timeout, FilterService, EventService, Observation, ObservationService) {
       $scope.currentFeedPanel = 'observationsTab';
+      $scope.currentObservationPage = 0;
+      var observationsPerPage = 5;
+
+      $scope.observationPages = null;
+      calculateObservationPages($scope.observations);
 
       $scope.$on('observation:new', function(e, newObservation) {
         if ($scope.newObservation) return;
@@ -28,17 +33,52 @@ mage.directive('newsFeed', function() {
         $scope.newObservation = null;
       });
 
-      $scope.observationOrder = function(observation) {
-        return moment(observation.properties.timestamp).valueOf() * -1;
-      }
-
       $scope.onObservationClick = function(observation) {
         $scope.$emit('observation:selected', observation);
       }
 
       $scope.$on('observation:select', function(e, observation) {
         $scope.selectedObservation = observation;
-      })
+
+        // locate the page this observation is on
+        var page;
+        for (page = 0; page < $scope.observationPages.length; page++) {
+          var last = _.last($scope.observationPages[page]);
+          if (last.properties.timestamp <= observation.properties.timestamp) {
+            break;
+          }
+        }
+        
+        // goto that page (if not already there)
+        $scope.currentObservationPage = page;
+
+        // scroll to observation in that page
+        $timeout(function() {
+          var feedElement = $($element.find(".news-items"));
+          feedElement.animate({scrollTop: $('#' + observation.id).position().top});
+        });
+      });
+
+      $scope.$watch('observations', function(observations) {
+        calculateObservationPages(observations);
+      });
+
+      function calculateObservationPages(observations) {
+        if (!observations) return;
+
+        // sort the observations
+        observations = $filter('orderBy')(observations, function(observation) {
+          return moment(observation.properties.timestamp).valueOf() * -1;
+        });
+
+        // slice into pages
+        var pages = [];
+        for (var i = 0, j = observations.length; i < j; i += observationsPerPage) {
+          pages.push(observations.slice(i, i + observationsPerPage));
+        }
+
+        $scope.observationPages = pages;
+      }
     }
   };
 });

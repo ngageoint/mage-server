@@ -19,11 +19,18 @@
             <form-directive form="newObservationForm" form-observation="newObservation" cl***REMOVED***="row-fluid"></form-directive>
           </div>
 
+          <div cl***REMOVED***="row-fluid">
+            <div cl***REMOVED***="bucket-panel">
+              <select cl***REMOVED***="span12" style="margin-bottom: 0;" ng-model="currentObservationPage" ng-options="observationPages.indexOf(observationPage) as observationPage[0].properties.timestamp | moment: 'fromNow' for observationPage in observationPages">
+              </select>
+            </div>
+          </div>
+
           <div ng-switch="currentFeedPanel">
             <div ng-switch-when="observationsTab">
               <div cl***REMOVED***="news-feed-item pointer" id="{{observation.id}}"
                 ng-cl***REMOVED***="(selectedObservation.id == observation.id) && 'active-news-feed-item'"
-                data-ng-repeat="observation in observations | orderBy:observationOrder track by observation.id">
+                ng-repeat="observation in observationPages[currentObservationPage] track by observation.id">
                 <div observation-news-item="observation" observation-form="event.form" container-element="side-bar" ng-click="onObservationClick(observation)"></div>
               </div>
             </div>

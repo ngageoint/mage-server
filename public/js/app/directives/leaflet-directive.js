@@ -62,7 +62,6 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
       }));
       map.addControl(new L.Control.MageUserLocation());
       map.addControl(new L.Control.MageListTools({
-        enabled: true,
         onClick: function() {
           sidebar.toggle();
         }
@@ -240,14 +239,6 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
           var layer = featureLayer.featureIdToLayer[feature.id];
           if (_.isFunction(layer.select)) layer.select();
         });
-      }
-
-      function onFeatureSelected(feature, layerName) {
-        var featureLayer = layers[layerName];
-        var layer = featureLayer.featureIdToLayer[feature.id];
-        if (_.isFunction(layer.select)) {
-          layer.select();
-        }
       }
 
       // setup my listeners

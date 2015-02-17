@@ -2,7 +2,7 @@
 
   var _onAdd = L.Marker.prototype.onAdd;
   var _setOpacity = L.Marker.prototype.setOpacity;
-  var _selectedMarkerId = null;
+  var _selectedMarker = null;
 
   L.Marker.include({
 
@@ -23,10 +23,6 @@
 
       map.on('layeradd', this._onLayerAdd, this);
       map.on('layerremove', this._onLayerRemove, this);
-
-      this.on('move', function(e) {
-        this._selectMarker.setLatLng(e.latlng);
-      });
     },
 
     select: function () {
@@ -36,7 +32,7 @@
         if (this._map) {
           this._map.addLayer(this._selectMarker);
         }
-        _selectedMarkerId = L.stamp(this);
+        _selectedMarker = this;
       }
 
       return this;
@@ -46,13 +42,25 @@
       if (this._map && this.isSelected()) {
         this._map.removeLayer(this._selectMarker);
       }
-      _selectedMarkerId = null;
+      _selectedMarker = null;
 
       return this;
     },
 
     isSelected: function() {
-      return _selectedMarkerId === L.stamp(this)
+      return _selectedMarker === this;
+    },
+
+    setLatLng: function (latlng) {
+      var oldLatLng = this._latlng;
+      this._latlng = L.latLng(latlng);
+
+      if (this.isSelected()) {
+        this._selectMarker.setLatLng(latlng);
+      }
+
+      this.update();
+      return this.fire('move', {oldLatLng: oldLatLng, latlng: this._latlng});
     },
 
     setOpacity: function(opacity) {
