@@ -9,6 +9,8 @@ L.Control.MageFeature = L.Control.extend({
 	},
 
 	onAdd: function (map) {
+		// TODO create html here
+
     // create the control container with a particular cl***REMOVED*** name
     var container = L.DomUtil.get('new-feature-toolbar');
 
@@ -38,6 +40,7 @@ L.Control.MageUserLocation = L.Control.extend({
 	},
 
 	onAdd: function (map) {
+		// TODO create html here
     // create the control container with a particular cl***REMOVED*** name
     var container = L.DomUtil.get('user-location-toolbar');
     var stop = L.DomEvent.stopPropagation;
