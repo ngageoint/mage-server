@@ -97,10 +97,10 @@ mage.factory('MapService', ['$rootScope', 'mageLib', 'Layer', 'EventService', fu
     });
   }
 
-  ***REMOVED***.selectFeatureInLayer = function(feature, layerId) {
+  ***REMOVED***.selectFeatureInLayer = function(feature, layerId, options) {
     featuresChanged({
       name: layerId,
-      selected: [feature]
+      selected: [{feature: feature, options: options}]
     });
   }
 
