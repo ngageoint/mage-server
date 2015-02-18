@@ -1,6 +1,10 @@
-'use strict';
+angular
+  .module('mage')
+  .***REMOVED***('EventService', EventService);
 
-angular.module('mage').***REMOVED***('EventService', function EventService($rootScope, $timeout, Event, ObservationService, FilterService, PollingService) {
+EventService.$inject = ['$rootScope', '$timeout', 'Event', 'ObservationService', 'FilterService', 'PollingService'];
+
+function EventService($rootScope, $timeout, Event, ObservationService, FilterService, PollingService) {
   var ***REMOVED*** = {};
 
   FilterService.addListener({
@@ -10,6 +14,7 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
       });
 
       _.each(event.removed, function(removed) {
+        observationsChanged({removed: _.values(eventsById[removed.id].observationsById)});
         delete eventsById[removed.id];
       });
     },
@@ -34,7 +39,6 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
 
   var selectedEvent = null;
   var eventsById = {};
-  var allMyObservationsForCurrentEvent = [];
 
   var observationsChangedListeners = [];
   function observationsChanged(changed) {
@@ -179,4 +183,4 @@ angular.module('mage').***REMOVED***('EventService', function EventService($root
   }
 
   return ***REMOVED***;
-});
+}
