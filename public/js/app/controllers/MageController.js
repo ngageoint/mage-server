@@ -4,9 +4,9 @@ angular
   .module('mage')
   .controller('MageController', MageController);
 
-MageController.$inject = ['$scope', 'FilterService', 'EventService', 'MapService', 'PollingService', 'Layer', 'Observation'];
+MageController.$inject = ['$scope', '$compile', '$timeout', 'FilterService', 'EventService', 'MapService', 'PollingService', 'Layer', 'Observation'];
 
-function MageController($scope, FilterService, EventService, MapService, PollingService, Layer, Observation) {
+function MageController($scope, $compile, $timeout, FilterService, EventService, MapService, PollingService, Layer, Observation) {
 
   var observationsById = {};
 
@@ -52,6 +52,12 @@ function MageController($scope, FilterService, EventService, MapService, Polling
       delete observationsById[removed.id];
 
       MapService.removeFeatureFromLayer(removed, 'Observations');
+
+      var scope = popupScopes[removed.id];
+      if (scope) {
+        scope.$destroy();
+        delete popupScopes[removed.id];
+      }
     });
 
     // update the news feed observations
@@ -70,29 +76,57 @@ function MageController($scope, FilterService, EventService, MapService, Polling
     PollingService.setPollingInterval(0); // stop polling
   });
 
-  // keep a map of observation id to observation to facilitate fast lookups
+  var selectedObservationId = null;
+  function onObservationSelected(observation, options) {
+    // Prevent selected event for same observation
+    if (selectedObservationId !== observation.id) {
+      selectedObservationId = observation.id;
+      $scope.$broadcast('observation:select', observation);
+      MapService.selectFeatureInLayer(observation, 'Observations', options);
+    }
+  }
 
+  function onObservationDeselected(observation) {
+    selectedObservationId = null;
+    $scope.$broadcast('observation:deselect', observation);
+  }
+
+  // TODO is there a better way to do this?
+  // Need to hang onto popup scopes so that I can delete the scope if the observation
+  // get deleted.  I.E. no observation, no popup so remove its scope
+  var popupScopes = {};
   var observationLayer = MapService.createVectorLayer({
     name: 'Observations',
     group: 'MAGE',
     type: 'geojson',
     options: {
       selected: true,
-      onClick: function(observation) {
-        $scope.$broadcast('observation:selected', observation);
-        $scope.$apply();
+      popup: {
+        html: function(observation) {
+          var el = angular.element('<div observation-popup="observation" observation-popup-info="onInfo(observation)"></div>');
+          var compiled = $compile(el);
+          var newScope = $scope.$new(true);
+          newScope.observation = observation;
+          newScope.onInfo = function(observation) {
+            onObservationSelected(observation);
+          }
+          compiled(newScope);
+          popupScopes[observation.id] = newScope;
+
+          return el[0];
+        },
+        closeButton: false,
+        onClose: function(observation) {
+          $timeout(function() {
+            onObservationDeselected(observation);
+          });
+        }
       }
     }
   });
 
-  var selectedObservationId = null;
-  $scope.$on('observation:selected', function(e, observation) {
-    // Prevent selected event for same observation
-    if (selectedObservationId !== observation.id) {
-      selectedObservationId = observation.id;
-      $scope.$broadcast('observation:select', observation);
-      MapService.selectFeatureInLayer(observation, 'Observations');
-    }
+  $scope.$on('observation:selected', function(e, observation, options) {
+    onObservationSelected(observation, options);
   });
 
   var newObservation = null;

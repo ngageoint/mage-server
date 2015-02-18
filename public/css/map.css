@@ -233,8 +233,12 @@ a.news-feed-tab-active {
 }
 
 .active-news-feed-item {
-	border: 3px solid #7C22C7;
+	border: 2px solid #345477;
 	border-radius: 6px;
+}
+
+.inactive-news-feed-item {
+	opacity: .7;
 }
 
 .observation-news-item .news-feed-image {
@@ -471,4 +475,25 @@ a.news-feed-tab-active {
 
 .mage-icon-image {
 	width: 35px;
+}
+
+.observation-popup {
+	color: #345477;
+	width: 200px;
+}
+
+.observation-popup-title {
+	font-size: 14px;
+	padding-bottom: 2px;
+}
+
+.observation-popup-subtitle {
+	font-size: 12px;
+	color: #999;
+}
+
+.observation-popup-info i {
+	font-size: 18px;
+	padding-top: 8px;
+	color: #345477;
 }

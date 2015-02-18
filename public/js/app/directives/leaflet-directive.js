@@ -16,6 +16,19 @@ L.AwesomeMarkers.newDivIcon = function (options) {
   return new L.AwesomeMarkers.NewDivIcon(options);
 };
 
+L.MageMarker = L.LocationMarker = L.Marker.extend({
+  openPopup: function () {
+    if (this._popup && this._map && !this._map.hasLayer(this._popup)) {
+      this._popup.options.offset = [0, this._icon.offsetTop + 7];
+
+      this._popup.setLatLng(this._latlng);
+      this._map.openPopup(this._popup);
+    }
+
+    return this;
+  }
+});
+
 L.UrlDivIcon = L.DivIcon.extend({
   initialize: function (options) {
     options.cl***REMOVED***Name = 'mage-icon';
@@ -24,12 +37,12 @@ L.UrlDivIcon = L.DivIcon.extend({
   },
   createIcon: function() {
     var div = L.DivIcon.prototype.createIcon.call(this);
-    var form = this.options.form;
     var feature = this.options.feature;
 
     var s = document.createElement('img');
     s.cl***REMOVED***Name = "mage-icon-image";
     s.src = feature.iconUrl + "?access_token=" + this.options.token;
+    var self = this;
     $(s).load(function() {
       var height = $(this).height();
       $(div).css('margin-top', height * -1);
@@ -37,6 +50,7 @@ L.UrlDivIcon = L.DivIcon.extend({
     div.appendChild(s);
     return div;
   }
+
 });
 
 L.urlDivIcon = function(options) {
@@ -140,18 +154,35 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
 
       function createGeoJsonLayer(layer) {
         var featureIdToLayer = {};
-        var onClick = _.isFunction(layer.options.onClick) ? layer.options.onClick : null;
+        // var onInfo = _.isFunction(layer.options.onInfo) ? layer.options.onInfo: null;
+        var popup = layer.options.popup;
 
         var geojson = L.geoJson(layer.geojson, {
           onEachFeature: function (feature, layer) {
-            layer.on('click', function() {
-              if (onClick) onClick(feature);
-            });
+            if (popup) {
+              if (_.isFunction(popup.html)) {
+                var options = {};
+                if (popup.closeButton != null) options.closeButton = popup.closeButton;
+                layer.bindPopup(popup.html(feature), options);
+              }
+
+              if (_.isFunction(popup.onOpen)) {
+                layer.on('popupopen', function() {
+                  popup.onOpen(feature);
+                });
+              }
+
+              if (_.isFunction(popup.onClose)) {
+                layer.on('popupclose', function() {
+                  popup.onClose(feature);
+                });
+              }
+            }
 
             featureIdToLayer[feature.id] = layer;
           },
           pointToLayer: function (feature, latlng) {
-            var marker =  L.marker(latlng, {
+            var marker =  new L.MageMarker(latlng, {
               icon: L.urlDivIcon({
                 feature: feature,
                 token: TokenService.getToken()
@@ -195,6 +226,8 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
           var layer = layers[removed.layerId];
           if (layer) {
             map.removeLayer(layer.layer);
+            delete layer.layer;
+            delete layer;
             delete layers[removed.layerId];
           }
         });
@@ -235,9 +268,10 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
           featureLayer.layer.removeLayer(layer);
         });
 
-        _.each(changed.selected, function(feature) {
-          var layer = featureLayer.featureIdToLayer[feature.id];
-          if (_.isFunction(layer.select)) layer.select();
+        _.each(changed.selected, function(selected) {
+          var layer = featureLayer.featureIdToLayer[selected.feature.id];
+          layer.openPopup();
+          if (selected.options && selected.options.zoomToLocation) map.panTo(layer.getLatLng());
         });
       }
 
@@ -247,46 +281,6 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
         onFeaturesChanged: onFeaturesChanged
       });
 
-      // $rootScope.$on('geojson:new', function(e, name, group, geojson) {
-      //   var layer = layers[name];
-      //   // TODO need to do something on update
-      //
-      //   layerControl.addOverlay(geojson, name, group);
-      // });
-
-      // function setupVectorLayers(vectorLayers) {
-      //   _.each(vectorLayers, function(data, id) {
-      //     var vectorLayer = layers[id];
-      //
-      //     if (!vectorLayer) {
-      //       layerControl.addOverlay(data.layer, data.name, data.group);
-      //       vectorLayer = layers[id] = data.layer;
-      //       vectorLayer.featuresById = {};
-      //       _.each(data.layer.getLayers(), function(l) {
-      //         vectorLayer.featuresById[L.stamp(l)] = l;
-      //       });
-      //
-      //       if (data.selected) data.layer.addTo(map);
-      //     } else {
-      //       _.each(data.layer.getLayers(), function(l) {
-      //         var feature = vectorLayer.featuresById[L.stamp(l)];
-      //
-      //         if (feature) {
-      //           vectorLayer.featuresById[L.stamp(l)] = l;
-      //           // TODO copy properties, it was updated
-      //         } else {
-      //           vectorLayer.addLayer(l);
-      //         }
-      //       });
-      //     }
-      //   });
-      // }
-
-      // setupVectorLayers(LeafletService.getVectorLayers());
-
-      // $rootScope.$on('layers:vector', function(e, layers) {
-      //   setupVectorLayers(layers);
-      // });
     }
   };
 });

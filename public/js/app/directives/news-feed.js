@@ -34,7 +34,7 @@ mage.directive('newsFeed', function() {
       });
 
       $scope.onObservationClick = function(observation) {
-        $scope.$emit('observation:selected', observation);
+        $scope.$emit('observation:selected', observation, {zoomToLocation: true});
       }
 
       $scope.$on('observation:select', function(e, observation) {
@@ -48,7 +48,7 @@ mage.directive('newsFeed', function() {
             break;
           }
         }
-        
+
         // goto that page (if not already there)
         $scope.currentObservationPage = page;
 
@@ -57,6 +57,12 @@ mage.directive('newsFeed', function() {
           var feedElement = $($element.find(".news-items"));
           feedElement.animate({scrollTop: $('#' + observation.id).position().top});
         });
+      });
+
+      $scope.$on('observation:deselect', function(e, observation) {
+        if ($scope.selectedObservation && $scope.selectedObservation.id == observation.id) {
+          $scope.selectedObservation = null;
+        }
       });
 
       $scope.$watch('observations', function(observations) {
