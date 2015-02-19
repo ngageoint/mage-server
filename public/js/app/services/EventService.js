@@ -73,7 +73,11 @@ function EventService($rootScope, $timeout, Event, ObservationService, FilterSer
         _.each(observations, function(observation) {
           // Check if we already have this observation, if so update, otherwise add
           var localObservation = observationsById[observation.id];
-          localObservation ? updated.push(observation) : added.push(observation);
+          if (localObservation) {
+            if (localObservation.lastModified !== observation.lastModified) updated.push(observation);
+          } else {
+            added.push(observation);
+          }
 
           // remove from list of observations if it came back from server
           // remaining elements in this list will be removed

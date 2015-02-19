@@ -3,12 +3,14 @@ mage.directive('newsFeed', function() {
     restrict: "A",
     templateUrl:  "js/app/partials/news-feed.html",
     scope: {
-      observations: '=newsFeedObservations'
+      observations: '=newsFeedObservations',
+      observationsChanged: '=newsFeedObservationsChanged'
     },
     controller: function ($rootScope, $scope, $element, $filter, $timeout, FilterService, EventService, Observation, ObservationService) {
       $scope.currentFeedPanel = 'observationsTab';
       $scope.currentObservationPage = 0;
-      var observationsPerPage = 5;
+      $scope.observationsChangedSeen = 0;
+      var observationsPerPage = 25;
 
       $scope.observationPages = null;
       calculateObservationPages($scope.observations);
@@ -33,6 +35,20 @@ mage.directive('newsFeed', function() {
         $scope.newObservation = null;
       });
 
+      $scope.tabSelected = function(tab) {
+        $scope.currentFeedPanel = tab;
+
+        if ($scope.currentFeedPanel === 'observationsTab') $scope.observationsChangedSeen = $scope.observationsChanged;
+      }
+
+      $scope.$watch('observationsChanged', function(observationsChanged) {
+        if (!observationsChanged) return;
+
+        if ($scope.currentFeedPanel === 'observationsTab') {
+          $scope.observationsChangedSeen = $scope.observationsChanged;
+        }
+      });
+
       $scope.onObservationClick = function(observation) {
         $scope.$emit('observation:selected', observation, {zoomToLocation: true});
       }
@@ -49,11 +65,11 @@ mage.directive('newsFeed', function() {
           }
         }
 
-        // goto that page (if not already there)
         $scope.currentObservationPage = page;
+        $scope.currentFeedPanel = 'observationsTab';
 
-        // scroll to observation in that page
         $timeout(function() {
+          // scroll to observation in that page
           var feedElement = $($element.find(".news-items"));
           feedElement.animate({scrollTop: $('#' + observation.id).position().top});
         });
@@ -65,8 +81,8 @@ mage.directive('newsFeed', function() {
         }
       });
 
-      $scope.$watch('observations', function(observations) {
-        calculateObservationPages(observations);
+      $scope.$watch('observations', function(newObservations, oldObservations) {
+        calculateObservationPages(newObservations);
       });
 
       function calculateObservationPages(observations) {

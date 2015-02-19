@@ -400,6 +400,14 @@ a.admin-nav-inactive {
 }
 
 .admin-tab {
+	color: #345477;
+	font-size: 17.5px;
+	font-weight: bold;
+	font-family: SansBetween, Arial, sans-serif;
+	line-height: 20px;
+}
+
+.admin-tab a {
 	padding: 10px;
 }
 
@@ -418,7 +426,7 @@ a.admin-nav-inactive {
 	margin-left: 0px;
 }
 
-.admin-tab:hover {
+.admin-tab:hover a {
 	border-bottom: 2px solid #345477;
 	text-decoration: none;
 	color: #345477;

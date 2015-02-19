@@ -9,6 +9,8 @@ MageController.$inject = ['$scope', '$compile', '$timeout', 'FilterService', 'Ev
 function MageController($scope, $compile, $timeout, FilterService, EventService, MapService, PollingService, Layer, Observation) {
 
   var observationsById = {};
+  $scope.newsFeedObservations = [];
+  $scope.newsFeedChangedObservations = 0;
 
   Layer.query(function (layers) {
     var baseLayerFound = false;
@@ -62,6 +64,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
 
     // update the news feed observations
     $scope.newsFeedObservations = _.values(observationsById);
+    $scope.newsFeedChangedObservations += changed.added.length + changed.updated.length;
   }
 
   var observationsChangedListener = {
@@ -108,7 +111,9 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
           var newScope = $scope.$new(true);
           newScope.observation = observation;
           newScope.onInfo = function(observation) {
-            onObservationSelected(observation);
+            $timeout(function() {
+              onObservationSelected(observation);
+            });
           }
           compiled(newScope);
           popupScopes[observation.id] = newScope;
