@@ -21,7 +21,6 @@ mage.factory('MapService', ['$rootScope', 'mageLib', 'Layer', 'EventService', fu
       changed.added = changed.added || [];
       changed.updated = changed.updated || [];
       changed.removed = changed.removed || [];
-      changed.selected = changed.selected || [];  // TODO maybe move this to a different listener
 
       if (_.isFunction(listener.onFeaturesChanged)) {
         listener.onFeaturesChanged(changed);
@@ -29,8 +28,17 @@ mage.factory('MapService', ['$rootScope', 'mageLib', 'Layer', 'EventService', fu
     });
   }
 
+  function featureSelected(selected) {
+    _.each(listeners, function(listener) {
+      if (_.isFunction(listener.onFeatureSelected)) {
+        listener.onFeatureSelected(selected);
+      }
+    });
+  }
+
   ***REMOVED***.addListener = function(listener) {
     listeners.push(listener);
+
     _.each(layers, function(layer, name) {
       layersChanged({ added: [layer] });
     });
@@ -98,9 +106,10 @@ mage.factory('MapService', ['$rootScope', 'mageLib', 'Layer', 'EventService', fu
   }
 
   ***REMOVED***.selectFeatureInLayer = function(feature, layerId, options) {
-    featuresChanged({
+    featureSelected({
       name: layerId,
-      selected: [{feature: feature, options: options}]
+      feature: feature,
+      options: options
     });
   }
 

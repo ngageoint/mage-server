@@ -104,6 +104,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     type: 'geojson',
     options: {
       selected: true,
+      cluster: true,
       popup: {
         html: function(observation) {
           var el = angular.element('<div observation-popup="observation" observation-popup-info="onInfo(observation)"></div>');
