@@ -64,8 +64,13 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
     transclude: true,
     template: '<div cl***REMOVED***="map"></div>',
     link: function (scope, element, attrs, ctrl) {
-      var map = L.map("map", {trackResize: true});
-      map.setView([0, 0], 3);
+      var map = L.map("map", {
+        center: [0,0],
+        zoom: 3,
+        trackResize: true,
+        minZoom: 0,
+        maxZoom: 18
+      });
 
       // toolbar  and controls config
       var sidebar = L.control.sidebar('side-bar', {closeButton: false});
@@ -152,12 +157,10 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
         if (layer.options && layer.options.selected) baseLayer.addTo(map);
       }
 
-      function createGeoJsonLayer(layer) {
-        var featureIdToLayer = {};
-        // var onInfo = _.isFunction(layer.options.onInfo) ? layer.options.onInfo: null;
-        var popup = layer.options.popup;
+      function createGeoJsonForLayer(json, layerInfo) {
+        var popup = layerInfo.options.popup;
 
-        var geojson = L.geoJson(layer.geojson, {
+        var geojson = L.geoJson(json, {
           onEachFeature: function (feature, layer) {
             if (popup) {
               if (_.isFunction(popup.html)) {
@@ -179,7 +182,14 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
               }
             }
 
-            featureIdToLayer[feature.id] = layer;
+            layer.on('popupclose', function() {
+              if (spiderfyState && spiderfyState.layer == layer) {
+                spiderfyState.cluster.unspiderfy();
+                spiderfyState = null;
+              }
+            });
+
+            layerInfo.featureIdToLayer[feature.id] = layer;
           },
           pointToLayer: function (feature, latlng) {
             var marker =  new L.MageMarker(latlng, {
@@ -193,10 +203,32 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
           }
         });
 
-        layers[layer.name] = {type: 'geojson', layer: geojson, featureIdToLayer: featureIdToLayer};
+        return geojson;
+      }
 
-        layerControl.addOverlay(geojson, layer.name, layer.group);
-        if (layer.options.selected) geojson.addTo(map);
+      function createGeoJsonLayer(data) {
+        var layerInfo = {
+          type: 'geojson',
+          featureIdToLayer: {},
+          options: data.options
+        };
+
+        var geojson = createGeoJsonForLayer(data.geojson, layerInfo);
+        if (data.options.cluster) {
+          layerInfo.layer = L.markerClusterGroup().addLayer(geojson);
+          layerInfo.layer.on('spiderfied', function(e) {
+            if (spiderfyState) {
+              spiderfyState.layer.openPopup();
+            }
+          });
+        } else {
+          layerInfo.layer = geojson;
+        }
+
+        layerControl.addOverlay(layerInfo.layer, data.name, data.group);
+        if (data.options.selected) layerInfo.layer.addTo(map);
+
+        layers[data.name] = layerInfo;
       }
 
       function onLayersChanged(changed) {
@@ -237,7 +269,12 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
         var featureLayer = layers[changed.name];
 
         _.each(changed.added, function(feature) {
-          featureLayer.layer.addData(feature);
+          if (featureLayer.options.cluster) {
+            featureLayer.layer.addLayer(createGeoJsonForLayer(feature, featureLayer));
+          } else {
+            featureLayer.layer.addData(feature);
+          }
+
         });
 
         _.each(changed.updated, function(feature) {
@@ -267,18 +304,60 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
           var layer = featureLayer.featureIdToLayer[feature.id];
           featureLayer.layer.removeLayer(layer);
         });
+      }
 
-        _.each(changed.selected, function(selected) {
-          var layer = featureLayer.featureIdToLayer[selected.feature.id];
-          layer.openPopup();
-          if (selected.options && selected.options.zoomToLocation && map.hasLayer(layer)) map.panTo(layer.getLatLng());
-        });
+      var spiderfyState = null;
+      function openPopup(layer, options) {
+        layer.openPopup();
+        if (selected.options && selected.options.zoomToLocation && map.hasLayer(layer)) {
+          map.panTo(layer.getLatLng());
+        }
+      }
+
+      function onFeatureSelected(selected) {
+        var featureLayer = layers[selected.name];
+        var layer = featureLayer.featureIdToLayer[selected.feature.id];
+        var options = selected.options;
+
+        if (featureLayer.options.cluster) {
+          var cluster = featureLayer.layer.getVisibleParent(layer);
+          // If layer is visible, ie not in cluster
+          if (layer == cluster) {
+            // TODO only do this if layer is not in spiderfied cluster
+            if (spiderfyState) {
+              var childOfCluster = _.find(spiderfyState.cluster.getAllChildMarkers(), function(child) {
+                return child.feature.id === layer.feature.id;
+              });
+
+              if (childOfCluster) { // layer in cluster that is already unspiderfied
+                spiderfyState.layer = layer;
+                openPopup(layer, options);
+              } else {
+                spiderfyState.cluster.unspiderfy();
+                spiderfyState = null;
+
+                openPopup(layer, options);
+              }
+            } else {
+              openPopup(layer, options);
+            }
+          } else {
+            if (options && options.zoomToLocation && map.hasLayer(cluster)) {
+              map.panTo(cluster.getLatLng());
+              spiderfyState = { layer: layer, cluster: cluster };
+              cluster.spiderfy();
+            }
+          }
+        } else {  // Not clustered
+          openPopup(layer, options);
+        }
       }
 
       // setup my listeners
       MapService.addListener({
         onLayersChanged: onLayersChanged,
-        onFeaturesChanged: onFeaturesChanged
+        onFeaturesChanged: onFeaturesChanged,
+        onFeatureSelected: onFeatureSelected
       });
 
     }
