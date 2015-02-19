@@ -271,7 +271,7 @@ mage.directive('leaflet', function($rootScope, MapService, TokenService) {
         _.each(changed.selected, function(selected) {
           var layer = featureLayer.featureIdToLayer[selected.feature.id];
           layer.openPopup();
-          if (selected.options && selected.options.zoomToLocation) map.panTo(layer.getLatLng());
+          if (selected.options && selected.options.zoomToLocation && map.hasLayer(layer)) map.panTo(layer.getLatLng());
         });
       }
 
