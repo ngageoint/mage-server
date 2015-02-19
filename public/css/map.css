@@ -39,6 +39,7 @@ html, body, div.leaflet-container {
 .news-feed-tabs {
 	border-radius: 3px;
 	background-color: rgba(208, 231, 255, 0.8);
+	padding-top: 10px;
 }
 
 .news-feed-tab:hover {
