@@ -548,3 +548,13 @@ h4.image-delete {
 .nav-link:focus {
 	outline: none;
 }
+
+.observation-type {
+	font-size: 17.5px;
+	padding-bottom: 2px;
+}
+
+.observation-variant {
+	font-size: 14px;
+	font-style: italic;
+}
