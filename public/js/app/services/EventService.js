@@ -121,8 +121,8 @@ function EventService($rootScope, $timeout, Event, ObservationService, FilterSer
   }
 
   ***REMOVED***.removeObservationsChangedListener = function(listener) {
-    observationsChangedListeners = _.filter(observationsChangedListeners, function(l) {
-      return listener !== l;
+    observationsChangedListeners = _.reject(observationsChangedListeners, function(l) {
+      return listener === l;
     });
   }
 
