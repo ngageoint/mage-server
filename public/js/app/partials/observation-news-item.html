@@ -1,12 +1,11 @@
 <div cl***REMOVED***="observation-news-item" ng-cloak>
   <div ng-if="edit === false">
   	<div cl***REMOVED***="row-fluid">
-  		<div cl***REMOVED***="span2">
-        <img cl***REMOVED***="pull-left preview-image" width="35" height="46"
-          ng-src="{{'/api/events/' + observation.eventId + '/form/icons/' + observation.properties.type + '/' + observation.properties[form.variantField] + '?access_token=' + token}}"
-        />
+  		<div cl***REMOVED***="span7">
+        <div cl***REMOVED***="news-feed-item-support observation-type">{{observation.properties.type}}</div>
+        <div cl***REMOVED***="news-feed-item-support observation-variant" ng-if="observation.properties[form.variantField]">{{observation.properties[form.variantField]}}</div>
       </div>
-  		<div cl***REMOVED***="span10">
+  		<div cl***REMOVED***="span5">
   			<div cl***REMOVED***="row-fluid">
   				<div cl***REMOVED***="pull-right news-feed-item-support small-text" user-id="observation.userId"></div>
   			</div>
@@ -23,7 +22,7 @@
       <div cl***REMOVED***="map-clip row-fluid" style="width: 100%; height: 150px;" map-clip="observation" map-clip-feature="observation"></div>
     </div>
 
-    <div cl***REMOVED***="row-fluid top-gap-s" ng-repeat="field in form.fields | filter:filterArchived | filter: {name: '!timestamp'} | filter: {name: '!geometry'}">
+    <div cl***REMOVED***="row-fluid top-gap-s" ng-repeat="field in form.fields | filter:filterHidden">
       <property-view field="field">
     </div>
 
