@@ -64,7 +64,9 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
 
     // update the news feed observations
     $scope.newsFeedObservations = _.values(observationsById);
-    $scope.newsFeedChangedObservations += changed.added.length + changed.updated.length;
+
+    if (changed.added) $scope.newsFeedChangedObservations += changed.added.length;
+    if (changed.updated) $scope.newsFeedChangedObservations += changed.updated.length;
   }
 
   var observationsChangedListener = {
@@ -138,8 +140,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   var newObservation = null;
   $scope.$on('observation:create', function(e, latlng) {
     var event = FilterService.getEvent();
-    console.log('create obs for event', event.name);
-
+    
     newObservation = new Observation({
       eventId: event.id,
       type: 'Feature',

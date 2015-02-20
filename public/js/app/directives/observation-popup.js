@@ -20,10 +20,6 @@ mage.directive('observationPopup', function() {
       $scope.onInfoClicked = function() {
         $scope.observationInfo({observation: $scope.observation});
       }
-
-      $scope.$on('$destroy', function() {
-        console.log('marker popup scope destorying');
-      });
     }
   };
 });
