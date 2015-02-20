@@ -1,4 +1,4 @@
-mage.directive('export', function(UserService, appConstants, mageLib) {
+mage.directive('export', function(UserService, mageLib) {
   return {
     restrict: "A",
     templateUrl:  "js/app/partials/export.html",

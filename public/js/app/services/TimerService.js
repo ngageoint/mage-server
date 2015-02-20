@@ -1,33 +1,34 @@
-'use strict';
+angular
+  .module('mage')
+  .factory('TimerService', TimerService);
 
-angular.module('mage.timerService', ['mage.***REMOVED***s', 'mage.lib'])
-  .factory('TimerService', [ 
-    function () {
-      var timers = {};
+TimerService.$inject = [];
 
-      var startTimer = function(name, interval, callback) {
-        // Stop the timer if its already running, no-op if not running
-        stopTimer(name);
+function TimerService() {
+  var ***REMOVED*** = {
+    startTimer: startTimer,
+    stopTimer: stopTimer
+  };
 
-        timers[name] = setInterval(function() {
-          callback();
-        }, interval);
+  return ***REMOVED***;
 
-        // Fire right away, interval will fire again in specified interval
-        callback();
-      }
+  function startTimer(name, interval, callback) {
+    // Stop the timer if its already running, no-op if not running
+    stopTimer(name);
 
+    timers[name] = setInterval(function() {
+      callback();
+    }, interval);
 
-      var stopTimer = function(name) {
-        var timer = timers[name];
-        if (timer) {
-          clearInterval(timer);
-          delete timers[name];
-        }
-      }
+    // Fire right away, interval will fire again in specified interval
+    callback();
+  }
 
-      return {
-        start: startTimer,
-        stop: stopTimer
-      };
-    }]);
+  function stopTimer(name) {
+    var timer = timers[name];
+    if (timer) {
+      clearInterval(timer);
+      delete timers[name];
+    }
+  }
+}

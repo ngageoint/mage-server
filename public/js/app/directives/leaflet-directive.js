@@ -329,7 +329,7 @@ function LeafletController($rootScope, $scope, MapService, TokenService) {
 // (function () {
 //   var leafletDirective = angular.module("leaflet-directive", ["mage.***REMOVED***s"]);
 //
-//   leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, appConstants, MapService, ObservationService, DataService, TimeBucketService, UserService, mageLib) {
+//   leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, ppConstants, MapService, ObservationService, DataService, TimeBucketService, UserService, mageLib) {
 //     return {
 //       restrict: "A",
 //       replace: true,
@@ -490,7 +490,7 @@ function LeafletController($rootScope, $scope, MapService, TokenService) {
 //                 delete currentLocationMarkers[u.user];
 //                 locationMarkers[u.user] = marker;
 //                 // Just update the location
-//                 marker.setLatLng(latLng).setColor(appConstants.userLocationToColor(location));
+//                 marker.setLatLng(latLng).setColor(ppConstants.userLocationToColor(location));
 //                 return;
 //               }
 //
@@ -498,7 +498,7 @@ function LeafletController($rootScope, $scope, MapService, TokenService) {
 //                 user = user.data || user;
 //
 //                 var options = {
-//                   color: appConstants.userLocationToColor(location),
+//                   color: ppConstants.userLocationToColor(location),
 //                   iconUrl: user.iconUrl ? user.iconUrl + '?access_token=' + mageLib.getToken()  : null
 //                 };
 //                 marker = L.locationMarker(latLng, options);
@@ -644,7 +644,7 @@ function LeafletController($rootScope, $scope, MapService, TokenService) {
 //                       };
 //                       $timeout(runAnimate, 500);
 //                     }
-//                     scope.activeFeature = {layerId: appConstants.featureLayer.id, featureId: feature.id, feature: feature};
+//                     scope.activeFeature = {layerId: ppConstants.featureLayer.id, featureId: feature.id, feature: feature};
 //
 //                     //console.info('scroll top is ' + $('#'+feature.id).position().top);
 //                     //$('.news-items').scrollTop($('#'+feature.id).position().top);
@@ -657,20 +657,20 @@ function LeafletController($rootScope, $scope, MapService, TokenService) {
 //
 //         // scope.$watch('activeFeature', function(newFeature, oldFeature) {
 //         //   if (!newFeature && oldFeature) {
-//         //     var marker = markers[appConstants.featureLayer.id][oldFeature.featureId];
+//         //     var marker = markers[ppConstants.featureLayer.id][oldFeature.featureId];
 //         //     marker.unselect();
 //         //   } else if (newFeature) {
-//         //     var marker = markers[appConstants.featureLayer.id][newFeature.featureId];
+//         //     var marker = markers[ppConstants.featureLayer.id][newFeature.featureId];
 //         //     marker.select();
 //         //   }
 //         // });
 //
 //         // scope.$watch('featureTableClick', function(o) {
 //         //   if (!o) return;
-//         //   var marker = markers[appConstants.featureLayer.id][o.featureId];
+//         //   var marker = markers[ppConstants.featureLayer.id][o.featureId];
 //         //   activeMarker = marker;
 //         //   map.setView(marker.getLatLng(), map.getZoom() > 17 ? map.getZoom() : 17);
-//         //   layers[appConstants.featureLayer.id].leafletLayer.zoomToShowLayer(marker, function(){});
+//         //   layers[ppConstants.featureLayer.id].leafletLayer.zoomToShowLayer(marker, function(){});
 //         // });
 //
 //         var onPopupClose = function(popupEvent) {
@@ -817,22 +817,22 @@ function LeafletController($rootScope, $scope, MapService, TokenService) {
 //         scope.$watch("deletedFeature", function(feature) {
 //           if (!feature) return;
 //
-//           var layer = layers[appConstants.featureLayer.id].leafletLayer;
+//           var layer = layers[ppConstants.featureLayer.id].leafletLayer;
 //           if (layer) {
 //             layer.removeLayer(activeMarker);
 //           }
-//           markers[appConstants.featureLayer.id][feature.id] = undefined;
+//           markers[ppConstants.featureLayer.id][feature.id] = undefined;
 //         });
 //
 //         // this is a hack to fix the other hacks
 //         scope.$watch("removeFeaturesFromMap", function(layerAndFeaturesToRemove) {
 //           if (!layerAndFeaturesToRemove) return;
 //
-//           var layer = layers[appConstants.featureLayer.id].leafletLayer;
+//           var layer = layers[ppConstants.featureLayer.id].leafletLayer;
 //           if (layer) {
 //             _.each(layerAndFeaturesToRemove.features, function(feature) {
-//               layer.removeLayer(markers[appConstants.featureLayer.id][feature.id]);
-//               markers[appConstants.featureLayer.id][feature.id] = undefined;
+//               layer.removeLayer(markers[ppConstants.featureLayer.id][feature.id]);
+//               markers[ppConstants.featureLayer.id][feature.id] = undefined;
 //             })
 //           }
 //         });
