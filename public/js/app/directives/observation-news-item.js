@@ -10,10 +10,11 @@ mage.directive('observationNewsItem', function() {
       $scope.edit = false;
       $scope.attachmentUrl = '/FeatureServer/' + $scope.observation.layerId + '/features/';
       $scope.token = mageLib.getLocalItem('token');
-      $scope.mapClipConfig = {
-        coordinates: $scope.observation.geometry.coordinates,
-        geoJsonFormat: true
-      };
+
+      // $scope.mapClipConfig = {
+      //   coordinates: $scope.observation.geometry.coordinates,
+      //   geoJsonFormat: true
+      // };
 
       $scope.filterArchived = function(field) {
         return !field.archived;

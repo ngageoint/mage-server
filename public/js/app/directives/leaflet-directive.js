@@ -1,368 +1,330 @@
-L.AwesomeMarkers.NewDivIcon = L.AwesomeMarkers.Icon.extend({
-  initialize: function (options) {
-    L.AwesomeMarkers.Icon.prototype.initialize.call(this, options);
-  },
-  createIcon: function() {
-    var div = L.AwesomeMarkers.Icon.prototype.createIcon.call(this);
-    var s = document.createElement('div');
-    s.cl***REMOVED***Name = "marker-tooltip";
-    s.innerHTML = '<b>New Observation</b><p>Drag this marker to re-position</p>';
-    div.insertBefore(s, div.firstChild);
-    return div;
-  }
-});
+angular
+  .module('mage')
+  .directive('leaflet', leaflet);
 
-L.AwesomeMarkers.newDivIcon = function (options) {
-  return new L.AwesomeMarkers.NewDivIcon(options);
-};
-
-L.MageMarker = L.LocationMarker = L.Marker.extend({
-  openPopup: function () {
-    if (this._popup && this._map && !this._map.hasLayer(this._popup)) {
-      this._popup.options.offset = [0, this._icon.offsetTop + 7];
-
-      this._popup.setLatLng(this._latlng);
-      this._map.openPopup(this._popup);
-    }
-
-    return this;
-  }
-});
-
-L.UrlDivIcon = L.DivIcon.extend({
-  initialize: function (options) {
-    options.cl***REMOVED***Name = 'mage-icon';
-    options.iconSize = null;
-    L.DivIcon.prototype.initialize.call(this, options);
-  },
-  createIcon: function() {
-    var div = L.DivIcon.prototype.createIcon.call(this);
-    var feature = this.options.feature;
-
-    var s = document.createElement('img');
-    s.cl***REMOVED***Name = "mage-icon-image";
-    s.src = feature.iconUrl + "?access_token=" + this.options.token;
-    var self = this;
-    $(s).load(function() {
-      var height = $(this).height();
-      $(div).css('margin-top', height * -1);
-    });
-    div.appendChild(s);
-    return div;
-  }
-
-});
-
-L.urlDivIcon = function(options) {
-  return new L.UrlDivIcon(options);
-}
-
-mage.directive('leaflet', function($rootScope, MapService, TokenService) {
-  return {
+function leaflet() {
+  var directive = {
     restrict: "A",
     replace: true,
     transclude: true,
     template: '<div cl***REMOVED***="map"></div>',
-    link: function (scope, element, attrs, ctrl) {
-      var map = L.map("map", {
-        center: [0,0],
-        zoom: 3,
-        trackResize: true,
-        minZoom: 0,
-        maxZoom: 18
+    controller: LeafletController,
+    bindToController: true
+  };
+
+  return directive;
+}
+
+LeafletController.$inject = ['$rootScope', '$scope', 'MapService', 'TokenService'];
+
+function LeafletController($rootScope, $scope, MapService, TokenService) {
+  var layers = {};
+  var map = L.map("map", {
+    center: [0,0],
+    zoom: 3,
+    trackResize: true,
+    minZoom: 0,
+    maxZoom: 18
+  });
+
+  // toolbar  and controls config
+  var sidebar = L.control.sidebar('side-bar', {closeButton: false});
+  map.addControl(new L.Control.MageFeature({
+    onClick: function(latlng) {
+      $scope.$emit('observation:create', latlng);
+    }
+  }));
+  map.addControl(new L.Control.MageUserLocation());
+  map.addControl(new L.Control.MageListTools({
+    onClick: function() {
+      sidebar.toggle();
+    }
+  }));
+  map.addControl(sidebar);
+  sidebar.show();
+
+  var layerControl = L.control.groupedLayers();
+  layerControl.addTo(map);
+  map.on('baselayerchange', function(baseLayer) {
+    var layer = layers[baseLayer.name];
+    MapService.selectBaseLayer(layer.rasterLayer);
+  });
+
+  map.on('overlayadd', function(overlay, name) {
+    var layer = layers[name];
+    MapService.addOverlay(overlay.rasterLayer);
+  });
+
+  map.on('overlayremove', function(overlay, name) {
+    var layer = layers[name];
+    MapService.removeOverlay(overlay.rasterLayer);
+  });
+
+  // setup my listeners
+  MapService.addListener({
+    onLayersChanged: onLayersChanged,
+    onFeaturesChanged: onFeaturesChanged,
+    onFeatureSelected: onFeatureSelected
+  });
+
+  function createMarker(marker) {
+    // cannot create another marker with the same id
+    if (layers[marker.layerId]) return;
+
+    var options = marker.options || {};
+
+    if (marker.geometry && marker.geometry.type === 'Point') {
+      var latlng = [0, 0];
+      if (marker.geometry.coordinates) {
+        latlng = [marker.geometry.coordinates[1], marker.geometry.coordinates[0]];
+      } else {
+        latlng = map.getCenter();
+      }
+
+      var layer = L.marker(latlng, {
+        draggable: options.draggable,
+        icon: L.AwesomeMarkers.newDivIcon({
+          icon: 'plus',
+          color: 'cadetblue'
+        })
       });
 
-      // toolbar  and controls config
-      var sidebar = L.control.sidebar('side-bar', {closeButton: false});
-      map.addControl(new L.Control.MageFeature({
-        onClick: function(latlng) {
-          scope.$emit('observation:create', latlng);
-        }
-      }));
-      map.addControl(new L.Control.MageUserLocation());
-      map.addControl(new L.Control.MageListTools({
-        onClick: function() {
-          sidebar.toggle();
-        }
-      }));
-      map.addControl(sidebar);
-      sidebar.show();
+      if (_.isFunction(options.onDragEnd)) {
+        layer.on('dragend', function() {
+          options.onDragEnd(layer.getLatLng());
+        });
+      }
 
-      var layerControl = L.control.groupedLayers();
-      layerControl.addTo(map);
+      if (options.selected) layer.addTo(map);
+      layers[marker.layerId] = {layer: layer};
+    }
+  }
 
-      var layers = {};
+  function updateMarker(marker) {
+    var layer = layers[marker.id];
+    if (marker.geometry && marker.geometry.type === 'Point') {
+      layer.setLatLng([marker.geometry.coordinates[1], marker.geometry.coordinates[0]]);
+    }
+  }
 
-      function createMarker(marker) {
-        // cannot create another marker with the same id
-        if (layers[marker.layerId]) return;
+  // TODO move into leaflet ***REMOVED***, this and map clip both use it
+  function createRasterLayer(layer) {
+    var baseLayer = null;
+    var options = {};
+    if (layer.format == 'XYZ' || layer.format == 'TMS') {
+      options = { tms: layer.format == 'TMS', maxZoom: 18}
+      baseLayer = new L.TileLayer(layer.url, options);
+    } else if (layer.format == 'WMS') {
+      options = {
+        layers: layer.wms.layers,
+        version: layer.wms.version,
+        format: layer.wms.format,
+        transparent: layer.wms.transparent
+      };
 
-        var options = marker.options || {};
+      if (layer.wms.styles) options.styles = layer.wms.styles;
+      baseLayer = new L.TileLayer.WMS(layer.url, options);
+    }
 
-        if (marker.geometry && marker.geometry.type === 'Point') {
-          var latlng = [0, 0];
-          if (marker.geometry.coordinates) {
-            latlng = [marker.geometry.coordinates[1], marker.geometry.coordinates[0]];
-          } else {
-            latlng = map.getCenter();
+    layers[layer.name] = {type: 'tile', layer: baseLayer, rasterLayer: layer};
+    layerControl.addBaseLayer(baseLayer, layer.name);
+
+    if (layer.options && layer.options.selected) baseLayer.addTo(map);
+  }
+
+  function createGeoJsonForLayer(json, layerInfo) {
+    var popup = layerInfo.options.popup;
+
+    var geojson = L.geoJson(json, {
+      onEachFeature: function (feature, layer) {
+        if (popup) {
+          if (_.isFunction(popup.html)) {
+            var options = {};
+            if (popup.closeButton != null) options.closeButton = popup.closeButton;
+            layer.bindPopup(popup.html(feature), options);
           }
 
-          var layer = L.marker(latlng, {
-            draggable: options.draggable,
-            icon: L.AwesomeMarkers.newDivIcon({
-              icon: 'plus',
-              color: 'cadetblue'
-            })
-          });
-
-          if (_.isFunction(options.onDragEnd)) {
-            layer.on('dragend', function() {
-              options.onDragEnd(layer.getLatLng());
+          if (_.isFunction(popup.onOpen)) {
+            layer.on('popupopen', function() {
+              popup.onOpen(feature);
             });
           }
 
-          if (options.selected) layer.addTo(map);
-          layers[marker.layerId] = {layer: layer};
-        }
-      }
-
-      function updateMarker(marker) {
-        var layer = layers[marker.id];
-        if (marker.geometry && marker.geometry.type === 'Point') {
-          layer.setLatLng([marker.geometry.coordinates[1], marker.geometry.coordinates[0]]);
-        }
-      }
-
-      function createRasterLayer(layer) {
-        var baseLayer = null;
-        var options = {};
-        if (layer.format == 'XYZ' || layer.format == 'TMS') {
-          options = { tms: layer.format == 'TMS', maxZoom: 18}
-          baseLayer = new L.TileLayer(layer.url, options);
-        } else if (layer.format == 'WMS') {
-          options = {
-            layers: layer.wms.layers,
-            version: layer.wms.version,
-            format: layer.wms.format,
-            transparent: layer.wms.transparent
-          };
-
-          if (layer.wms.styles) options.styles = layer.wms.styles;
-          baseLayer = new L.TileLayer.WMS(layer.url, options);
-        }
-
-        layers[layer.name] = {type: 'tile', layer: baseLayer};
-        layerControl.addBaseLayer(baseLayer, layer.name);
-
-        if (layer.options && layer.options.selected) baseLayer.addTo(map);
-      }
-
-      function createGeoJsonForLayer(json, layerInfo) {
-        var popup = layerInfo.options.popup;
-
-        var geojson = L.geoJson(json, {
-          onEachFeature: function (feature, layer) {
-            if (popup) {
-              if (_.isFunction(popup.html)) {
-                var options = {};
-                if (popup.closeButton != null) options.closeButton = popup.closeButton;
-                layer.bindPopup(popup.html(feature), options);
-              }
-
-              if (_.isFunction(popup.onOpen)) {
-                layer.on('popupopen', function() {
-                  popup.onOpen(feature);
-                });
-              }
-
-              if (_.isFunction(popup.onClose)) {
-                layer.on('popupclose', function() {
-                  popup.onClose(feature);
-                });
-              }
-            }
-
+          if (_.isFunction(popup.onClose)) {
             layer.on('popupclose', function() {
-              if (spiderfyState && spiderfyState.layer == layer) {
-                spiderfyState.cluster.unspiderfy();
-                spiderfyState = null;
-              }
+              popup.onClose(feature);
             });
+          }
+        }
 
-            layerInfo.featureIdToLayer[feature.id] = layer;
-          },
-          pointToLayer: function (feature, latlng) {
-            var marker =  new L.MageMarker(latlng, {
-              icon: L.urlDivIcon({
-                feature: feature,
-                token: TokenService.getToken()
-              })
-            });
-
-            return marker;
+        layer.on('popupclose', function() {
+          if (spiderfyState && spiderfyState.layer == layer) {
+            spiderfyState.cluster.unspiderfy();
+            spiderfyState = null;
           }
         });
 
-        return geojson;
+        layerInfo.featureIdToLayer[feature.id] = layer;
+      },
+      pointToLayer: function (feature, latlng) {
+        var marker =  new L.FixedWidthMarker(latlng, {
+          iconUrl: feature.iconUrl + '?access_token=' + TokenService.getToken()
+        });
+
+        return marker;
+      }
+    });
+
+    return geojson;
+  }
+
+  function createGeoJsonLayer(data) {
+    var layerInfo = {
+      type: 'geojson',
+      featureIdToLayer: {},
+      options: data.options
+    };
+
+    var geojson = createGeoJsonForLayer(data.geojson, layerInfo);
+    if (data.options.cluster) {
+      layerInfo.layer = L.markerClusterGroup().addLayer(geojson);
+      layerInfo.layer.on('spiderfied', function(e) {
+        if (spiderfyState) {
+          spiderfyState.layer.openPopup();
+        }
+      });
+    } else {
+      layerInfo.layer = geojson;
+    }
+
+    layerControl.addOverlay(layerInfo.layer, data.name, data.group);
+    if (data.options.selected) layerInfo.layer.addTo(map);
+
+    layers[data.name] = layerInfo;
+  }
+
+  function onLayersChanged(changed) {
+    _.each(changed.added, function(added) {
+      switch(added.type) {
+        case 'Feature':
+          createMarker(added);
+          break;
+        case 'raster':
+          createRasterLayer(added);
+          break;
+        case 'geojson':
+          createGeoJsonLayer(added);
+          break;
+      }
+    });
+
+    _.each(changed.updated, function(updated) {
+      switch(updated.type) {
+        case 'Feature':
+          updateMarker(updated);
+          break;
+      }
+    });
+
+    _.each(changed.removed, function(removed) {
+      var layer = layers[removed.layerId];
+      if (layer) {
+        map.removeLayer(layer.layer);
+        delete layer.layer;
+        delete layer;
+        delete layers[removed.layerId];
+      }
+    });
+  }
+
+  function onFeaturesChanged(changed) {
+    var featureLayer = layers[changed.name];
+
+    _.each(changed.added, function(feature) {
+      if (featureLayer.options.cluster) {
+        featureLayer.layer.addLayer(createGeoJsonForLayer(feature, featureLayer));
+      } else {
+        featureLayer.layer.addData(feature);
       }
 
-      function createGeoJsonLayer(data) {
-        var layerInfo = {
-          type: 'geojson',
-          featureIdToLayer: {},
-          options: data.options
-        };
+    });
 
-        var geojson = createGeoJsonForLayer(data.geojson, layerInfo);
-        if (data.options.cluster) {
-          layerInfo.layer = L.markerClusterGroup().addLayer(geojson);
-          layerInfo.layer.on('spiderfied', function(e) {
-            if (spiderfyState) {
-              spiderfyState.layer.openPopup();
-            }
+    _.each(changed.updated, function(feature) {
+      var layer = featureLayer.featureIdToLayer[feature.id];
+
+      // Copy over the updated feature data
+      if (layer.feature) {
+        layer.feature = feature;
+      }
+
+      // Set the icon
+      if (layer.feature && layer.feature.iconUrl !== feature.iconUrl) {
+        layer.setIcon(L.urlDivIcon({
+            feature: feature,
+            token: TokenService.getToken()
+          })
+        );
+      }
+
+      // Set the lat/lng
+      if (feature.geometry.coordinates) {
+        layer.setLatLng(L.GeoJSON.coordsToLatLng(feature.geometry.coordinates));
+      }
+    });
+
+    _.each(changed.removed, function(feature) {
+      var layer = featureLayer.featureIdToLayer[feature.id];
+      featureLayer.layer.removeLayer(layer);
+    });
+  }
+
+  var spiderfyState = null;
+  function openPopup(layer, options) {
+    layer.openPopup();
+    if (options && options.zoomToLocation && map.hasLayer(layer)) {
+      map.panTo(layer.getLatLng());
+    }
+  }
+
+  function onFeatureSelected(selected) {
+    var featureLayer = layers[selected.name];
+    var layer = featureLayer.featureIdToLayer[selected.feature.id];
+    var options = selected.options;
+
+    if (featureLayer.options.cluster) {
+      var cluster = featureLayer.layer.getVisibleParent(layer);
+      // If layer is visible, ie not in cluster
+      if (layer == cluster) {
+        // TODO only do this if layer is not in spiderfied cluster
+        if (spiderfyState) {
+          var childOfCluster = _.find(spiderfyState.cluster.getAllChildMarkers(), function(child) {
+            return child.feature.id === layer.feature.id;
           });
+
+          if (childOfCluster) { // layer in cluster that is already unspiderfied
+            spiderfyState.layer = layer;
+            openPopup(layer, options);
+          } else {
+            spiderfyState.cluster.unspiderfy();
+            spiderfyState = null;
+
+            openPopup(layer, options);
+          }
         } else {
-          layerInfo.layer = geojson;
-        }
-
-        layerControl.addOverlay(layerInfo.layer, data.name, data.group);
-        if (data.options.selected) layerInfo.layer.addTo(map);
-
-        layers[data.name] = layerInfo;
-      }
-
-      function onLayersChanged(changed) {
-        _.each(changed.added, function(added) {
-          switch(added.type) {
-            case 'Feature':
-              createMarker(added);
-              break;
-            case 'raster':
-              createRasterLayer(added);
-              break;
-            case 'geojson':
-              createGeoJsonLayer(added);
-              break;
-          }
-        });
-
-        _.each(changed.updated, function(updated) {
-          switch(updated.type) {
-            case 'Feature':
-              updateMarker(updated);
-              break;
-          }
-        });
-
-        _.each(changed.removed, function(removed) {
-          var layer = layers[removed.layerId];
-          if (layer) {
-            map.removeLayer(layer.layer);
-            delete layer.layer;
-            delete layer;
-            delete layers[removed.layerId];
-          }
-        });
-      }
-
-      function onFeaturesChanged(changed) {
-        var featureLayer = layers[changed.name];
-
-        _.each(changed.added, function(feature) {
-          if (featureLayer.options.cluster) {
-            featureLayer.layer.addLayer(createGeoJsonForLayer(feature, featureLayer));
-          } else {
-            featureLayer.layer.addData(feature);
-          }
-
-        });
-
-        _.each(changed.updated, function(feature) {
-          var layer = featureLayer.featureIdToLayer[feature.id];
-
-          // Copy over the updated feature data
-          if (layer.feature) {
-            layer.feature = feature;
-          }
-
-          // Set the icon
-          if (layer.feature && layer.feature.iconUrl !== feature.iconUrl) {
-            layer.setIcon(L.urlDivIcon({
-                feature: feature,
-                token: TokenService.getToken()
-              })
-            );
-          }
-
-          // Set the lat/lng
-          if (feature.geometry.coordinates) {
-            layer.setLatLng(L.GeoJSON.coordsToLatLng(feature.geometry.coordinates));
-          }
-        });
-
-        _.each(changed.removed, function(feature) {
-          var layer = featureLayer.featureIdToLayer[feature.id];
-          featureLayer.layer.removeLayer(layer);
-        });
-      }
-
-      var spiderfyState = null;
-      function openPopup(layer, options) {
-        layer.openPopup();
-        if (selected.options && selected.options.zoomToLocation && map.hasLayer(layer)) {
-          map.panTo(layer.getLatLng());
-        }
-      }
-
-      function onFeatureSelected(selected) {
-        var featureLayer = layers[selected.name];
-        var layer = featureLayer.featureIdToLayer[selected.feature.id];
-        var options = selected.options;
-
-        if (featureLayer.options.cluster) {
-          var cluster = featureLayer.layer.getVisibleParent(layer);
-          // If layer is visible, ie not in cluster
-          if (layer == cluster) {
-            // TODO only do this if layer is not in spiderfied cluster
-            if (spiderfyState) {
-              var childOfCluster = _.find(spiderfyState.cluster.getAllChildMarkers(), function(child) {
-                return child.feature.id === layer.feature.id;
-              });
-
-              if (childOfCluster) { // layer in cluster that is already unspiderfied
-                spiderfyState.layer = layer;
-                openPopup(layer, options);
-              } else {
-                spiderfyState.cluster.unspiderfy();
-                spiderfyState = null;
-
-                openPopup(layer, options);
-              }
-            } else {
-              openPopup(layer, options);
-            }
-          } else {
-            if (options && options.zoomToLocation && map.hasLayer(cluster)) {
-              map.panTo(cluster.getLatLng());
-              spiderfyState = { layer: layer, cluster: cluster };
-              cluster.spiderfy();
-            }
-          }
-        } else {  // Not clustered
           openPopup(layer, options);
         }
+      } else {
+        if (options && options.zoomToLocation && map.hasLayer(cluster)) {
+          map.panTo(cluster.getLatLng());
+          spiderfyState = { layer: layer, cluster: cluster };
+          cluster.spiderfy();
+        }
       }
-
-      // setup my listeners
-      MapService.addListener({
-        onLayersChanged: onLayersChanged,
-        onFeaturesChanged: onFeaturesChanged,
-        onFeatureSelected: onFeatureSelected
-      });
-
+    } else {  // Not clustered
+      openPopup(layer, options);
     }
-  };
-});
+  }
+}
 
 // (function () {
 //   var leafletDirective = angular.module("leaflet-directive", ["mage.***REMOVED***s"]);

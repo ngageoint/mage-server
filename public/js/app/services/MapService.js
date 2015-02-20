@@ -1,18 +1,126 @@
-'use strict';
+angular
+  .module('mage')
+  .factory('MapService', MapService);
 
-mage.factory('MapService', ['$rootScope', 'mageLib', 'Layer', 'EventService', function ($rootScope, mageLib, Layer, EventService) {
-  var ***REMOVED*** = {};
+MapService.$inject = ['$q', 'Observation', 'ObservationAttachment', 'ObservationState'];
 
-  var layers = {};
+function MapService($rootScope, mageLib, Layer, EventService) {
+
+  var ***REMOVED*** = {
+    addListener: addListener,
+    removeListener: removeListener,
+    getRasterLayers: getRasterLayers,
+    selectBaseLayer: selectBaseLayer,
+    addOverlay: addOverlay,
+    removeOverlay: removeOverlay,
+    getVectorLayers: getVectorLayers,
+    createRasterLayer: createRasterLayer,
+    createVectorLayer: createVectorLayer,
+    createMarker: createMarker,
+    removeMarker: removeMarker,
+    updateMarker: updateMarker,
+    addFeatureToLayer: addFeatureToLayer,
+    updateFeatureForLayer: updateFeatureForLayer,
+    removeFeatureFromLayer: removeFeatureFromLayer,
+    selectFeatureInLayer: selectFeatureInLayer
+  };
+
+  var baseLayer = null;
+  var rasterLayers = [];
+  var vectorLayers = [];
   var listeners = [];
-  function layersChanged(changed) {
-    _.each(listeners, function(listener) {
-      changed.added = changed.added || [];
-      changed.removed = changed.removed || [];
 
-      if (_.isFunction(listener.onLayersChanged)) {
-        listener.onLayersChanged(changed);
-      }
+  return ***REMOVED***;
+
+  function addListener(listener) {
+    listeners.push(listener);
+
+    if (_.isFunction(listener.onLayersChanged)) {
+      listener.onLayersChanged({added: rasterLayers.concat(vectorLayers)});
+    }
+
+    if (_.isFunction(listener.onBaseLayerSelected) && baseLayer) {
+      listener.onBaseLayerSelected(baseLayer);
+    }
+  }
+
+  function removeListener(listener) {
+    listeners = _.reject(listeners, function(l) { return l === listener; });
+  }
+
+  function getRasterLayers() {
+    return rasterLayers;
+  }
+
+  function getVectorLayers() {
+    return vectorLayers;
+  }
+
+  function createRasterLayer(layer) {
+    layersChanged({
+      added: [layer]
+    });
+
+    rasterLayers.push(layer);
+  }
+
+  function createVectorLayer(layer) {
+    layersChanged({
+      added: [layer]
+    });
+
+    vectorLayers.push(layer);
+  }
+
+  function createMarker(marker, options) {
+    if (options) marker.options = options;
+
+    layersChanged({
+      name: marker.id,
+      added: [marker]
+    });
+  }
+
+  function removeMarker(marker, markerId) {
+    layersChanged({
+      name: markerId,
+      removed: [marker]
+    });
+  }
+
+  function updateMarker(marker, markerId) {
+    layersChanged({
+      name: markerId,
+      updated: [marker]
+    });
+  }
+
+  function addFeatureToLayer(feature, layerId) {
+    featuresChanged({
+      name: layerId,
+      added: [feature]
+    });
+  }
+
+  function updateFeatureForLayer(feature, layerId) {
+    featuresChanged({
+      name: layerId,
+      updated: [feature]
+    });
+  }
+
+  function removeFeatureFromLayer(feature, layerId) {
+    featuresChanged({
+      name: layerId,
+      removed: [feature]
+    });
+  }
+
+  function selectFeatureInLayer(feature, layerId, options) {
+    featureSelected({
+      name: layerId,
+      feature: feature,
+      options: options
     });
   }
 
@@ -36,82 +144,39 @@ mage.factory('MapService', ['$rootScope', 'mageLib', 'Layer', 'EventService', fu
     });
   }
 
-  ***REMOVED***.addListener = function(listener) {
-    listeners.push(listener);
+  function layersChanged(changed) {
+    _.each(listeners, function(listener) {
+      changed.added = changed.added || [];
+      changed.removed = changed.removed || [];
 
-    _.each(layers, function(layer, name) {
-      layersChanged({ added: [layer] });
+      if (_.isFunction(listener.onLayersChanged)) {
+        listener.onLayersChanged(changed);
+      }
     });
   }
 
-  ***REMOVED***.getLayers = function() {
-    return layers;
-  }
-
-  ***REMOVED***.createRasterLayer = function(layer) {
-    layersChanged({
-      added: [layer]
+  function selectBaseLayer(layer) {
+    baseLayer = layer;
+    _.each(listeners, function(listener) {
+      if (_.isFunction(listener.onBaseLayerSelected)) {
+        listener.onBaseLayerSelected(layer);
+      }
     });
   }
 
-  ***REMOVED***.createVectorLayer = function(layer) {
-    layers[layer.name] = layer;
-    layersChanged({
-      added: [layer]
+  function addOverlay(overlay) {
+    _.each(listeners, function(listener) {
+      if (_.isFunction(listener.onOverlayRemoved)) {
+        listener.onOverlayAdded(overlay);
+      }
     });
   }
 
-  ***REMOVED***.createMarker = function(marker, options) {
-    if (options) marker.options = options;
-
-    layersChanged({
-      name: marker.id,
-      added: [marker]
+  function removeOverlay(overlay) {
+    _.each(listeners, function(listener) {
+      if (_.isFunction(listener.onOverlayRemoved)) {
+        listener.onOverlayRemoved(overlay);
+      }
     });
   }
-
-  ***REMOVED***.removeMarker = function(marker, markerId) {
-    layersChanged({
-      name: markerId,
-      removed: [marker]
-    });
-  }
-
-  ***REMOVED***.updateMarker = function(marker, markerId) {
-    layersChanged({
-      name: markerId,
-      updated: [marker]
-    });
-  }
-
-  ***REMOVED***.addFeatureToLayer = function(feature, layerId) {
-    featuresChanged({
-      name: layerId,
-      added: [feature]
-    });
-  }
-
-  ***REMOVED***.updateFeatureForLayer = function(feature, layerId) {
-    featuresChanged({
-      name: layerId,
-      updated: [feature]
-    });
-  }
-
-  ***REMOVED***.removeFeatureFromLayer = function(feature, layerId) {
-    featuresChanged({
-      name: layerId,
-      removed: [feature]
-    });
-  }
-
-  ***REMOVED***.selectFeatureInLayer = function(feature, layerId, options) {
-    featureSelected({
-      name: layerId,
-      feature: feature,
-      options: options
-    });
-  }
-
-  return ***REMOVED***;
-}]);
+}
