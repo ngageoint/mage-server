@@ -1,78 +1,106 @@
-mage.directive('mapClip', function() {
-  return {
+angular
+  .module('mage')
+  .directive('mapClip', mapClip);
+
+function mapClip() {
+  var directive = {
     restrict: 'A',
     scope: {
-      mapClip: '=',
-      inView: '='
+      feature: '=mapClipFeature',
     },
-    controller: function($scope, MapService, $element, $window, $rootScope) {
-      var zoomControl = new L.Control.Zoom();
-      $scope.ms = MapService;
-      var layer = {};
+    controller: MapClipController,
+    bindToController: true
+  };
 
-      // verify options
-      var verifyOptions = function() {
-        return $scope.mapClip && ($scope.mapClip.coordinates
-          || ($scope.mapClip.geometry && $scope.mapClip.geometry.coordinates));
-      }
+  return directive;
+}
 
-      $rootScope.$on('leafletLayerChanged', function() {
-        if (!MapService.leafletBaseLayerUrl) return;
-        if (layer) {
-          $scope.map.removeLayer(layer);
-        }
-        layer = new L.TileLayer(MapService.leafletBaseLayerUrl, MapService.leafletBaseLayerOptions);
-        $scope.map.addLayer(layer);
-      });
+MapClipController.$inject = ['$rootScope', '$scope', '$element', 'MapService', 'TokenService'];
 
-      var createMap = function() {
-        if (!$scope.map) {
-          $scope.map = new L.Map($element[0], {zoomControl: false, trackResize: true});
-          if (MapService.leafletBaseLayerUrl) {
-            layer = new L.TileLayer(MapService.leafletBaseLayerUrl, MapService.leafletBaseLayerOptions);
-            $scope.map.addLayer(layer);
-          }
-          $scope.map.scrollWheelZoom.disable();
-        }
+function MapClipController($rootScope, $scope, $element, MapService, TokenService) {
+  var zoomControl = new L.Control.Zoom();
+  var map = null;
+  var baseLayer = null;
+  var zoomEnabled = false;
+  var layers = {};
 
-        var latLng = {
-          lat: 0,
-          lng: 0
-        }
-        if (verifyOptions()) {
-          var coords = $scope.mapClip.geometry ? $scope.mapClip.geometry.coordinates : $scope.mapClip.coordinates;
-          latLng = {
-            lat: $scope.mapClip.latLngFormat ? coords[0] : coords[1],
-            lng: $scope.mapClip.latLngFormat ? coords[1] : coords[0]
-          };
-          if (!$scope.marker) {
-          $scope.marker = L.marker([latLng.lat, latLng.lng]);
-            $scope.marker.addTo($scope.map);
-          }
-          $scope.marker.setLatLng(new L.LatLng(latLng.lat, latLng.lng));
-          $scope.map.setView(new L.LatLng(latLng.lat, latLng.lng),15);
-        } else {
-          $scope.map.setView(new L.LatLng(0,0), 1);
-        }
+  initialize();
 
-        $element.on('click', function() {
-          if ($scope.zoomEnabled) {
-            $scope.map.removeControl(zoomControl);
-            $scope.map.scrollWheelZoom.disable();
-            $scope.zoomEnabled = false;
-          } else {
-            $scope.map.addControl(zoomControl);
-            $scope.map.scrollWheelZoom.enable();
-            $scope.zoomEnabled = true;
-          }
-        });
+  var mapListener = {
+    onBaseLayerSelected: onBaseLayerSelected
+  };
+  MapService.addListener(mapListener);
 
-      }
+  $scope.$on('$destroy', function() {
+    MapService.removeListener(mapListener);
+  });
 
-      $scope.$watch('mapClip', function() {
-        createMap();
-      });
-    }
+  function onBaseLayerSelected(baseLayer) {
+    var layer = layers[baseLayer.name];
+    if (layer) map.removeLayer(layer.layer);
+
+    layer = createRasterLayer(baseLayer);
+    layers[baseLayer.name] = {type: 'tile', layer: baseLayer, rasterLayer: layer};
+
+    layer.addTo(map);
   }
 
-});
+  function createRasterLayer(layer) {
+    var baseLayer = null;
+    var options = {};
+    if (layer.format == 'XYZ' || layer.format == 'TMS') {
+      options = { tms: layer.format == 'TMS', maxZoom: 18}
+      baseLayer = new L.TileLayer(layer.url, options);
+    } else if (layer.format == 'WMS') {
+      options = {
+        layers: layer.wms.layers,
+        version: layer.wms.version,
+        format: layer.wms.format,
+        transparent: layer.wms.transparent
+      };
+
+      if (layer.wms.styles) options.styles = layer.wms.styles;
+      baseLayer = new L.TileLayer.WMS(layer.url, options);
+    }
+
+    return baseLayer;
+  }
+
+  function initialize() {
+    map = L.map($element[0], {
+      center: [0,0],
+      zoom: 3,
+      minZoom: 0,
+      maxZoom: 18,
+      zoomControl: false,
+      trackResize: true,
+      scrollWheelZoom: false
+    });
+
+    var latLng = [0,0];
+    if ($scope.feature && $scope.feature.geometry) {
+      var geojson = L.geoJson($scope.feature, {
+        pointToLayer: function (feature, latlng) {
+          return L.fixedWidthMarker(latlng, {
+            iconUrl: feature.iconUrl + '?access_token=' + TokenService.getToken()
+          });
+        }
+      });
+
+      geojson.addTo(map);
+      map.setView(L.GeoJSON.coordsToLatLng($scope.feature.geometry.coordinates), 15);
+    }
+
+    $element.on('click', function() {
+      if (zoomEnabled) {
+        map.removeControl(zoomControl);
+        map.scrollWheelZoom.disable();
+        zoomEnabled = false;
+      } else {
+        map.addControl(zoomControl);
+        map.scrollWheelZoom.enable();
+        zoomEnabled = true;
+      }
+    });
+  }
+}
