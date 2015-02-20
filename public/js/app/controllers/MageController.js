@@ -1,5 +1,3 @@
-'use strict';
-
 angular
   .module('mage')
   .controller('MageController', MageController);
@@ -140,7 +138,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   var newObservation = null;
   $scope.$on('observation:create', function(e, latlng) {
     var event = FilterService.getEvent();
-    
+
     newObservation = new Observation({
       eventId: event.id,
       type: 'Feature',
@@ -254,7 +252,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   //   if (!newObservation) return;
   //
   //   var featureLayer = _.find($scope.featureLayers, function(layer) {
-  //     return layer.id == appConstants.featureLayer.id;
+  //     return layer.id == ppConstants.featureLayer.id;
   //   });
   //
   //   if (!featureLayer.features) return;
@@ -274,7 +272,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     //
     // // this will get me a new copy of the array to mod and p***REMOVED*** to leaflet leaflet-directive
     // // as below this is not great and can be reworked if there is one place to look for features
-    // var features = appConstants.featureLayer.features ? appConstants.featureLayer.features.slice(0) : [];
+    // var features = ppConstants.featureLayer.features ? ppConstants.featureLayer.features.slice(0) : [];
     // var existingFeature = _.find(features, function(feature) {
     //   return feature.id == observation.id;
     // });
@@ -292,7 +290,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   // });
 
   // $scope.$on('newAttachmentSaved', function(e, attachment, observationId) {
-  //   var features = appConstants.featureLayer.features ? appConstants.featureLayer.features.slice(0) : [];
+  //   var features = ppConstants.featureLayer.features ? ppConstants.featureLayer.features.slice(0) : [];
   //   var existingFeature = _.find(features, function(feature) {
   //     return feature.id == observationId;
   //   });
@@ -361,7 +359,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   //     }
   //   });
   //   $scope.feedItems = allFeatures;
-  //   $scope.buckets = TimeBucketService.createBuckets(allFeatures, appConstants.newsFeedItemLimit(), function(item) {
+  //   $scope.buckets = TimeBucketService.createBuckets(allFeatures, ppConstants.newsFeedItemLimit(), function(item) {
   //     return item.properties ? moment(item.properties.timestamp).valueOf() : moment(item.locations[0].properties.timestamp).valueOf();
   //   }, 'newsfeed');
   // }

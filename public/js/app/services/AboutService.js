@@ -1,7 +1,5 @@
-'use strict';
-
 angular
-  .module('mage.aboutService', ['mage.***REMOVED***s', 'mage.lib'])
+  .module('mage')
   .factory('AboutService', AboutService);
 
 AboutService.$inject = ['$http'];

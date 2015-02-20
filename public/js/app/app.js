@@ -13,12 +13,6 @@ var mage = angular.module(
   [
     "$strap.directives",
     "ui.bootstrap",
-    "mage.***REMOVED***s",
-    "mage.userService",
-    "mage.deviceService",
-    "mage.timerService",
-    "mage.locationService",
-    "mage.aboutService",
     "mage.httpAuthService",
     "mage.lib",
     "ngSanitize",

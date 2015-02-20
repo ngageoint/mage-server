@@ -1,51 +1,62 @@
-'use strict';
+angular
+  .module('mage')
+  .factory('DeviceService', DeviceService )
 
-angular.module('mage.deviceService', ['mage.***REMOVED***s', 'mage.lib']).factory('DeviceService', ['$http', 'appConstants', 'mageLib',
-  function ($http, appConstants, mageLib) {
-    var ***REMOVED*** = {};
+DeviceService.$inject = ['$http'];
 
-    ***REMOVED***.getAllDevices = function () {
-      return $http.get('/api/devices/');
-    };
+function DeviceService($http) {
+  var resolvedDevices = {};
 
-    var resolvedDevices = {};
+  var ***REMOVED*** = {
+    getAllDevices: getAllDevices,
+    getDevice: getDevice,
+    createDevice: createDevice,
+    updateDevice: updateDevice,
+    registerDevice: registerDevice,
+    deleteDevice: deleteDevice
+  };
 
-    ***REMOVED***.getDevice = function(id) {
-      resolvedDevices[id] = resolvedDevices[id] || $http.get(
-        '/api/devices/' + id
-      );
-      return resolvedDevices[id];
-    }
+  return ***REMOVED***;
 
-    ***REMOVED***.createDevice = function(device) {
-      return $http.post(
-        '/api/devices',
-        $.param(device),
-        {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
-      );
-    };
+  function getAllDevices() {
+    return $http.get('/api/devices/');
+  };
 
-    ***REMOVED***.updateDevice = function(device) {
-      return $http.put(
-        '/api/devices/' + device.id,
-        $.param(device),
-        {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
-      );
-    };
 
-    ***REMOVED***.registerDevice = function(device) {
-      return $http.put(
-        '/api/devices/' + device.id,
-        $.param({registered: true}),
-        {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
-      );
-    };
+  function getDevice(id) {
+    resolvedDevices[id] = resolvedDevices[id] || $http.get(
+      '/api/devices/' + id
+    );
+    return resolvedDevices[id];
+  }
 
-    ***REMOVED***.deleteDevice = function(device) {
-      return $http.delete(
-      '/api/devices/' + device.id
-      );
-    }
+  function createDevice(device) {
+    return $http.post(
+      '/api/devices',
+      $.param(device),
+      {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
+    );
+  };
 
-    return ***REMOVED***;
-}]);
+  function updateDevice(device) {
+    return $http.put(
+      '/api/devices/' + device.id,
+      $.param(device),
+      {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
+    );
+  };
+
+  function registerDevice(device) {
+    return $http.put(
+      '/api/devices/' + device.id,
+      $.param({registered: true}),
+      {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
+    );
+  };
+
+  function deleteDevice(device) {
+    return $http.delete(
+    '/api/devices/' + device.id
+    );
+  }
+}

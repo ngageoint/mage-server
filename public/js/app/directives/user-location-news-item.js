@@ -1,4 +1,4 @@
-mage.directive('userLocationNewsItem', function(UserService, appConstants) {
+mage.directive('userLocationNewsItem', function(UserService) {
   return {
     restrict: "A",
     templateUrl:  "js/app/partials/user-location-news-item.html",

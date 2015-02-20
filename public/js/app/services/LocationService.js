@@ -1,39 +1,49 @@
-'use strict';
+angular
+  .module('mage')
+  .factory('LocationService', LocationService);
 
-angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
-  .factory('LocationService', ['$http', '$q', '$rootScope', 'appConstants', 'mageLib',
-    function ($http, $q, $rootScope, appConstants, mageLib) {
-      var ***REMOVED*** = {};
+LocationService.$inject = ['$http', '$q', '$rootScope', 'mageLib'];
 
-      ***REMOVED***.export = function () {
-        return $http.get("/api/locations/export");
-      };
+function LocationService($http, $q, $rootScope, mageLib) {
+  var ***REMOVED*** = {};
 
-      ***REMOVED***.getPosition = function() {
-        var deferred = $q.defer();
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            function (position) {
-              $rootScope.$apply(function() {
-                deferred.resolve(position);
-              });
-            },
-            function (error) {
-              console.log('could not get location: ' + JSON.stringify(error));
-              deferred.reject(error);
-            }
-          );
+  ***REMOVED***.export = function () {
+    return $http.get("/api/locations/export");
+  };
+
+  ***REMOVED***.getPosition = function() {
+    var deferred = $q.defer();
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          $rootScope.$apply(function() {
+            deferred.resolve(position);
+          });
+        },
+        function (error) {
+          console.log('could not get location: ' + JSON.stringify(error));
+          deferred.reject(error);
         }
-        else {
-          deferred.reject('location ***REMOVED***s not allowed');
-        }
+      );
+    }
+    else {
+      deferred.reject('location ***REMOVED***s not allowed');
+    }
 
-        return deferred.promise;
-      }
+    return deferred.promise;
+  }
 
-      return ***REMOVED***;
-    }])
-.factory('Location', ['$resource', '$http', function($resource, $http) {
+  return ***REMOVED***;
+}
+
+
+angular
+  .module('mage')
+  .factory('Location', Location);
+
+LocationService.$inject = ['$resource', '$http'];
+
+function LocationService($resource, $http) {
   var Location = $resource('/api/locations/users', {}, {
     get: {
       method: 'GET',
@@ -48,8 +58,15 @@ angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
   });
 
   return Location;
-}])
-.factory('CreateLocation', ['$resource', '$http', function($resource, $http) {
+}
+
+angular
+  .module('mage')
+  .factory('CreateLocation', CreateLocation);
+
+LocationService.$inject = ['$resource', '$http'];
+
+function CreateLocation($resource, $http) {
   var Location = $resource('/api/locations', {}, {
     create: {
       method: 'POST',
@@ -59,6 +76,7 @@ angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
       }
     }
   });
+  
   Location.prototype.$save = function(params, success, error) {
     if(this.id) {
       this.$update(params, success, error);
@@ -67,4 +85,4 @@ angular.module('mage.locationService', ['mage.***REMOVED***s', 'mage.lib'])
     }
   }
   return Location;
-}]);
+}

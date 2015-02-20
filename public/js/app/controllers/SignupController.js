@@ -1,6 +1,6 @@
 'use strict';
 
-function SignupController($rootScope, $scope, $log, $http, $injector, $location, appConstants, UserService) {
+function SignupController($rootScope, $scope, $log, $http, $injector, $location, UserService) {
   // The variables that get set when clicking a team or user in the list, these get loaded into the editor.
   console.log('up in the signin controller');
 
