@@ -329,7 +329,7 @@ function LeafletController($rootScope, $scope, MapService, TokenService) {
 // (function () {
 //   var leafletDirective = angular.module("leaflet-directive", ["mage.***REMOVED***s"]);
 //
-//   leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, ppConstants, MapService, ObservationService, DataService, TimeBucketService, UserService, mageLib) {
+//   leafletDirective.directive("leaflet", function ($http, $log, $compile, $timeout, ppConstants, MapService, ObservationService, DataService, TimeBucketService, UserService) {
 //     return {
 //       restrict: "A",
 //       replace: true,
@@ -340,7 +340,7 @@ function LeafletController($rootScope, $scope, MapService, TokenService) {
 //           return new L.MageDivIcon({
 //             observation: observation,
 //             form: ObservationService.form,
-//             token: mageLib.getToken()
+//             token: TokenService.getToken()
 //           });
 //         }
 //
@@ -499,7 +499,7 @@ function LeafletController($rootScope, $scope, MapService, TokenService) {
 //
 //                 var options = {
 //                   color: ppConstants.userLocationToColor(location),
-//                   iconUrl: user.iconUrl ? user.iconUrl + '?access_token=' + mageLib.getToken()  : null
+//                   iconUrl: user.iconUrl ? user.iconUrl + '?access_token=' + TokenService.getToken()  : null
 //                 };
 //                 marker = L.locationMarker(latLng, options);
 //

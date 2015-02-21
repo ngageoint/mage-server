@@ -1,4 +1,5 @@
-mage.directive('filter', function(FilterService, mageLib) {
+// TODO do we still need this
+mage.directive('filter', function(FilterService) {
   return {
     restrict: "A",
     templateUrl:  "js/app/partials/filter.html",

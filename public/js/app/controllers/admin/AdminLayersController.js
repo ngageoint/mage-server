@@ -1,8 +1,10 @@
-'use strict';
+angular
+  .module('mage')
+  .controller('AdminLayersController', AdminLayersController);
 
-angular.module('mage').controller('AdminLayersCtrl', ['$scope', '$injector', 'mageLib', 'Layer',
-function ($scope, $injector, mageLib, Layer) {
+AdminLayersController.$inject = ['$scope', '$injector', 'TokenService', 'Layer'];
 
+function AdminLayersController($scope, $injector, TokenService, Layer) {
   $scope.layerName = "";
   $scope.showLayerForm = false;
   $scope.wmsFormats = ['image/jpeg', 'image/png'];
@@ -35,7 +37,7 @@ function ($scope, $injector, mageLib, Layer) {
     var layer = $scope.layer;
     $scope.layer.$save({}, function(success) {
       $scope.fileUploadOptions = {
-        url: '/FeatureServer/' + $scope.layer.id + '/import?access_token=' + mageLib.getLocalItem('token'),
+        url: '/FeatureServer/' + $scope.layer.id + '/import?access_token=' + TokenService.getToken(),
         acceptFileTypes: /(\.|\/)(kml)$/i,
       };
     });
@@ -43,10 +45,6 @@ function ($scope, $injector, mageLib, Layer) {
 
   $scope.addAnotherFile = function() {
     $scope.uploads.push({});
-    // var uploadDiv = angular.element('.kml-upload-div');
-    //
-    // <form enctype="multipart/form-data" simple-upload url="{{fileUploadOptions.url}}" allow-upload="uploadConfirmed">
-    // </form>
   }
 
   $scope.viewLayer = function (layer) {
@@ -55,7 +53,7 @@ function ($scope, $injector, mageLib, Layer) {
     //$scope.fileUploadOptions.url = '/FeatureServer/'+layer.id+'/import';
     console.info('changing the file upload options');
     $scope.fileUploadOptions = {
-      url: '/FeatureServer/ '+ layer.id + '/import?access_token=' + mageLib.getLocalItem('token'),
+      url: '/FeatureServer/ '+ layer.id + '/import?access_token=' + TokenService.getToken(),
       acceptFileTypes: /(\.|\/)(kml)$/i,
     };
   }
@@ -150,4 +148,4 @@ function ($scope, $injector, mageLib, Layer) {
     })
     alert("The upload has been canceled by the user or the browser dropped the connection.")
   }
-}])
+}

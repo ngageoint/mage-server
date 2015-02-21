@@ -1,8 +1,11 @@
-'use strict';
+angular
+  .module('mage')
+  .controller('AdminUsersController', AdminUsersController);
 
-angular.module('mage').controller('AdminUsersCtrl', ['$scope', '$injector', '$filter', 'mageLib', 'UserService',
-function ($scope, $injector, $filter, mageLib, UserService) {
-  $scope.token = mageLib.getLocalItem('token');
+AdminUsersController.$inject = ['$scope', '$injector', '$filter', 'TokenService', 'UserService'];
+
+function AdminUsersController($scope, $injector, $filter, TokenService, UserService) {
+  $scope.token = TokenService.getToken();
   $scope.filter = "all"; // possible values all, active, inactive
   $scope.users = [];
   $scope.roles = [];
@@ -156,4 +159,4 @@ function ($scope, $injector, $filter, mageLib, UserService) {
       });
     });
   }
-}]);
+}

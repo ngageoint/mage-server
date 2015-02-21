@@ -1,7 +1,11 @@
-'use strict';
-angular.module('mage').controller('AdminTeamsCtrl', ['$scope', '$injector', 'mageLib', 'ObservationService', 'UserService', 'Team',
-function ($scope, $injector, mageLib, ObservationService, UserService, Team) {
-  $scope.token = mageLib.getLocalItem('token');
+angular
+  .module('mage')
+  .controller('AdminTeamsController', AdminTeamsController);
+
+AdminTeamsController.$inject = ['$scope', '$injector', 'TokenService', 'ObservationService', 'UserService', 'Team'];
+
+function AdminTeamsController($scope, $injector, TokenService, ObservationService, UserService, Team) {
+  $scope.token = TokenService.getToken();
   $scope.teams = [];
   $scope.page = 0;
   $scope.itemsPerPage = 10;
@@ -118,4 +122,4 @@ function ($scope, $injector, mageLib, ObservationService, UserService, Team) {
       });
     });
   }
-}]);
+}

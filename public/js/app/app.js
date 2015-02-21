@@ -14,7 +14,6 @@ var mage = angular.module(
     "$strap.directives",
     "ui.bootstrap",
     "mage.httpAuthService",
-    "mage.lib",
     "ngSanitize",
     "ngRoute",
     'ngResource',

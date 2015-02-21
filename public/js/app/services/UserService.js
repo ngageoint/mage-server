@@ -2,9 +2,9 @@ angular
   .module('mage')
   .factory('UserService', UserService);
 
-UserService.$inject = ['$rootScope', '$q', '$http', '$location', '$timeout', 'mageLib'];
+UserService.$inject = ['$rootScope', '$q', '$http', '$location', '$timeout', 'TokenService'];
 
-function UserService($rootScope, $q, $http, $location, $timeout, mageLib) {
+function UserService($rootScope, $q, $http, $location, $timeout, TokenService) {
   var userDeferred = $q.defer();
   var resolvedUsers = {};
   var myself = null;
@@ -49,7 +49,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, mageLib) {
       {headers: {"Content-Type": "application/x-www-form-urlencoded"}, ignoreAuthModule:true});
 
     promise.success(function(data) {
-      mageLib.setLocalItem('token', data.token);
+      TokenService.setToken(data.token);
       setUser(data.user);
 
       $rootScope.$broadcast('login', {user: data.user, token: data.token, isAdmin: amAdmin});
@@ -81,7 +81,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, mageLib) {
     .success(function(user) {
       setUser(user);
 
-      $rootScope.$broadcast('login', {user: user, token: mageLib.getToken(), isAdmin: amAdmin});
+      $rootScope.$broadcast('login', {user: user, token: TokenService.getToken(), isAdmin: amAdmin});
 
       if (roles && !_.contains(roles, user.role.name)) {
         // TODO probably want to redirect to a unauthorized page.
@@ -99,7 +99,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, mageLib) {
 
   function updateMyself(user, success, error, progress) {
     saveUser(user, {
-      url: '/api/users/myself?access_token=' + mageLib.getLocalItem('token'),
+      url: '/api/users/myself?access_token=' + TokenService.getToken(),
       type: 'PUT'
     }, success, error, progress);
   }
@@ -152,14 +152,14 @@ function UserService($rootScope, $q, $http, $location, $timeout, mageLib) {
 
   function createUser(user, success, error, progress) {
     saveUser(user, {
-      url: '/api/users?access_token=' + mageLib.getLocalItem('token'),
+      url: '/api/users?access_token=' + TokenService.getToken(),
       type: 'POST'
     }, success, error, progress);
   };
 
   function updateUser(id, user, success, error, progress) {
     saveUser(user, {
-      url: '/api/users/' + id + '?access_token=' + mageLib.getLocalItem('token'),
+      url: '/api/users/' + id + '?access_token=' + TokenService.getToken(),
       type: 'PUT'
     }, success, error, progress);
   };

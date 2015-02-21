@@ -1,8 +1,11 @@
-'use strict';
+angular
+  .module('mage')
+  .controller('AdminEventsController', AdminEventsController);
 
-angular.module('mage').controller('AdminEventsCtrl', ['$scope', '$injector', '$filter', '$timeout', 'mageLib', 'EventService', 'Event', 'Team',
-function ($scope, $injector, $filter, $timeout, mageLib, EventService, Event, Team) {
-  $scope.token = mageLib.getLocalItem('token');
+AdminEventsController.$inject = ['$scope', '$injector', '$filter', '$timeout', 'TokenService', 'EventService', 'Event', 'Team'];
+
+function AdminEventsController($scope, $injector, $filter, $timeout, TokenService, EventService, Event, Team) {
+  $scope.token = TokenService.getToken();
   $scope.events = [];
   $scope.page = 0;
   $scope.itemsPerPage = 10;
@@ -191,7 +194,7 @@ function ($scope, $injector, $filter, $timeout, mageLib, EventService, Event, Te
 
   $scope.$watch('event.form.variantField', function(variantField) {
     if (!variantField) return;
-    
+
     $scope.populateVariants(true);
   });
 
@@ -325,4 +328,4 @@ function ($scope, $injector, $filter, $timeout, mageLib, EventService, Event, Te
       console.info('failure');
     });
   }
-}]);
+}

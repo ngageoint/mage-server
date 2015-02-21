@@ -2,9 +2,9 @@ angular
   .module('mage')
   .factory('LocationService', LocationService);
 
-LocationService.$inject = ['$http', '$q', '$rootScope', 'mageLib'];
+LocationService.$inject = ['$http', '$q', '$rootScope'];
 
-function LocationService($http, $q, $rootScope, mageLib) {
+function LocationService($http, $q, $rootScope) {
   var ***REMOVED*** = {};
 
   ***REMOVED***.export = function () {
@@ -36,14 +36,13 @@ function LocationService($http, $q, $rootScope, mageLib) {
   return ***REMOVED***;
 }
 
-
 angular
   .module('mage')
   .factory('Location', Location);
 
-LocationService.$inject = ['$resource', '$http'];
+Location.$inject = ['$resource', '$http'];
 
-function LocationService($resource, $http) {
+function Location($resource, $http) {
   var Location = $resource('/api/locations/users', {}, {
     get: {
       method: 'GET',
@@ -64,7 +63,7 @@ angular
   .module('mage')
   .factory('CreateLocation', CreateLocation);
 
-LocationService.$inject = ['$resource', '$http'];
+CreateLocation.$inject = ['$resource', '$http'];
 
 function CreateLocation($resource, $http) {
   var Location = $resource('/api/locations', {}, {
@@ -76,7 +75,7 @@ function CreateLocation($resource, $http) {
       }
     }
   });
-  
+
   Location.prototype.$save = function(params, success, error) {
     if(this.id) {
       this.$update(params, success, error);
