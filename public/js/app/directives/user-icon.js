@@ -16,11 +16,11 @@ function iconUser() {
   return directive;
 }
 
-IconUserController.$inject = ['$scope', '$element', 'TokenService'];
+IconUserController.$inject = ['$scope', '$element', 'LocalStorageService'];
 
-function IconUserController($scope, $element, TokenService) {
+function IconUserController($scope, $element, LocalStorageService) {
   $scope.fileName = 'Choose a map icon...';
-  $scope.iconUrl = iconUrl($scope.iconUser, TokenService.getToken());
+  $scope.iconUrl = iconUrl($scope.iconUser, LocalStorageService.getToken());
 
   $element.find(':file').change(function() {
     $scope.file = this.files[0];
@@ -44,7 +44,7 @@ function IconUserController($scope, $element, TokenService) {
   $scope.$watch('iconUser', function(iconUser) {
     if (!iconUser) return;
 
-    $scope.iconUrl = iconUrl(iconUser, TokenService.getToken());
+    $scope.iconUrl = iconUrl(iconUser, LocalStorageService.getToken());
     $scope.fileName = 'Choose a map icon...';
   });
 

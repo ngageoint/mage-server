@@ -19,12 +19,12 @@ function formDirective() {
   return directive;
 }
 
-FormDirectiveController.$inject = ['$scope', 'EventService', 'Observation', 'UserService', 'TokenService'];
+FormDirectiveController.$inject = ['$scope', 'EventService', 'Observation', 'UserService', 'LocalStorageService'];
 
-function FormDirectiveController($scope, EventService, Observation, UserService, TokenService) {
+function FormDirectiveController($scope, EventService, Observation, UserService, LocalStorageService) {
   var uploadId = 0;
 
-  $scope.getToken = TokenService.getToken;
+  $scope.getToken = LocalStorageService.getToken;
   $scope.amAdmin = UserService.amAdmin;
   $scope.attachmentUploads = {};
 

@@ -16,11 +16,11 @@ function avatarUser() {
   return directive;
 }
 
-AvatarUserController.$inject = ['$scope', '$element', 'TokenService'];
+AvatarUserController.$inject = ['$scope', '$element', 'LocalStorageService'];
 
-function AvatarUserController($scope, $element, TokenService) {
+function AvatarUserController($scope, $element, LocalStorageService) {
   $scope.fileName = 'Choose an image...';
-  $scope.avatarUrl = avatarUrl($scope.avatarUser, TokenService.getToken());
+  $scope.avatarUrl = avatarUrl($scope.avatarUser, LocalStorageService.getToken());
 
   $element.find(':file').change(function() {
     $scope.file = this.files[0];
@@ -44,7 +44,7 @@ function AvatarUserController($scope, $element, TokenService) {
   $scope.$watch('avatarUser', function(avatarUser) {
     if (!avatarUser) return;
 
-    $scope.avatarUrl = avatarUrl(avatarUser, TokenService.getToken());
+    $scope.avatarUrl = avatarUrl(avatarUser, LocalStorageService.getToken());
     $scope.fileName = 'Choose an image...';
   });
 

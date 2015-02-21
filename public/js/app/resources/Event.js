@@ -2,9 +2,9 @@ angular
   .module('mage')
   .factory('Event', Event);
 
-Event.$inject = ['$rootScope', '$resource', '$http', 'TokenService', 'Observation'];
+Event.$inject = ['$rootScope', '$resource', '$http', 'LocalStorageService', 'Observation'];
 
-function Event($rootScope, $resource, $http, TokenService, Observation) {
+function Event($rootScope, $resource, $http, LocalStorageService, Observation) {
   var Event = $resource('/api/events/:id', {
     id: '@id'
   },{
@@ -73,7 +73,7 @@ function Event($rootScope, $resource, $http, TokenService, Observation) {
           url: '/api/events',
           type: 'POST',
           headers: {
-            authorization: 'Bearer ' + TokenService.getToken()
+            authorization: 'Bearer ' + LocalStorageService.getToken()
           },
           success: function(response) {
             delete self.formArchiveFile;

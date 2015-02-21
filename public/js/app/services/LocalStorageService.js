@@ -1,40 +1,58 @@
-'use strict';
+angular
+  .module('mage')
+  .factory('LocalStorageService', LocalStorageService);
 
-mage.factory('LocalStorageService', function () {
-  var ***REMOVED*** = {};
+LocalStorageService.$inject = [];
 
-  ***REMOVED***.getLocalItem = function (key) {
+function LocalStorageService() {
+  var tokenKey = 'token';
+
+  var ***REMOVED*** = {
+    getToken: getToken,
+    setToken: setToken
+  };
+
+  return ***REMOVED***;
+
+  function getToken() {
+    return getLocalItem(tokenKey);
+  };
+
+  function setToken(token) {
+    return setLocalItem(tokenKey, token);
+  }
+
+  function removeToken() {
+    return removeLocalItem(tokenKey);
+  }
+
+  function getLocalItem(key) {
     try {
       if ('localStorage' in window && window['localStorage'] !== null) {
         return localStorage.getItem(key);
       }
     } catch (e) {
-      console.log("HTML5 Local Storage is not available...");
       return false;
     }
   }
 
-  ***REMOVED***.setLocalItem = function (key, value) {
+  function setLocalItem(key, value) {
     try {
       if ('localStorage' in window && window.localStorage !== null) {
         return localStorage.setItem(key, value);
       }
     } catch (e) {
-      console.log("HTML5 Local Storage is not available...");
       return false;
     }
   }
 
-  ***REMOVED***.removeLocalItem = function (key) {
+  function removeLocalItem(key) {
     try {
       if ('localStorage' in window && window.localStorage !== null) {
         return localStorage.removeItem(key);
       }
     } catch (e) {
-      console.log("HTML5 Local Storage is not available...");
       return false;
     }
   }
-
-  return ***REMOVED***;
-});
+}

@@ -2,10 +2,10 @@ angular
   .module('mage')
   .controller('AdminUsersController', AdminUsersController);
 
-AdminUsersController.$inject = ['$scope', '$injector', '$filter', 'TokenService', 'UserService'];
+AdminUsersController.$inject = ['$scope', '$injector', '$filter', 'LocalStorageService', 'UserService'];
 
-function AdminUsersController($scope, $injector, $filter, TokenService, UserService) {
-  $scope.token = TokenService.getToken();
+function AdminUsersController($scope, $injector, $filter, LocalStorageService, UserService) {
+  $scope.token = LocalStorageService.getToken();
   $scope.filter = "all"; // possible values all, active, inactive
   $scope.users = [];
   $scope.roles = [];

@@ -15,9 +15,9 @@ function leaflet() {
   return directive;
 }
 
-LeafletController.$inject = ['$rootScope', '$scope', 'MapService', 'TokenService'];
+LeafletController.$inject = ['$rootScope', '$scope', 'MapService', 'LocalStorageService'];
 
-function LeafletController($rootScope, $scope, MapService, TokenService) {
+function LeafletController($rootScope, $scope, MapService, LocalStorageService) {
   var layers = {};
   var map = L.map("map", {
     center: [0,0],
@@ -168,7 +168,7 @@ function LeafletController($rootScope, $scope, MapService, TokenService) {
       },
       pointToLayer: function (feature, latlng) {
         var marker =  new L.FixedWidthMarker(latlng, {
-          iconUrl: feature.iconUrl + '?access_token=' + TokenService.getToken()
+          iconUrl: feature.iconUrl + '?access_token=' + LocalStorageService.getToken()
         });
 
         return marker;
@@ -261,7 +261,7 @@ function LeafletController($rootScope, $scope, MapService, TokenService) {
       if (layer.feature && layer.feature.iconUrl !== feature.iconUrl) {
         layer.setIcon(L.urlDivIcon({
             feature: feature,
-            token: TokenService.getToken()
+            token: LocalStorageService.getToken()
           })
         );
       }
@@ -340,7 +340,7 @@ function LeafletController($rootScope, $scope, MapService, TokenService) {
 //           return new L.MageDivIcon({
 //             observation: observation,
 //             form: ObservationService.form,
-//             token: TokenService.getToken()
+//             token: LocalStorageService.getToken()
 //           });
 //         }
 //
@@ -499,7 +499,7 @@ function LeafletController($rootScope, $scope, MapService, TokenService) {
 //
 //                 var options = {
 //                   color: ppConstants.userLocationToColor(location),
-//                   iconUrl: user.iconUrl ? user.iconUrl + '?access_token=' + TokenService.getToken()  : null
+//                   iconUrl: user.iconUrl ? user.iconUrl + '?access_token=' + LocalStorageService.getToken()  : null
 //                 };
 //                 marker = L.locationMarker(latLng, options);
 //

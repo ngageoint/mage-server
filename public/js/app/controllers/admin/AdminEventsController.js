@@ -2,10 +2,10 @@ angular
   .module('mage')
   .controller('AdminEventsController', AdminEventsController);
 
-AdminEventsController.$inject = ['$scope', '$injector', '$filter', '$timeout', 'TokenService', 'EventService', 'Event', 'Team'];
+AdminEventsController.$inject = ['$scope', '$injector', '$filter', '$timeout', 'LocalStorageService', 'EventService', 'Event', 'Team'];
 
-function AdminEventsController($scope, $injector, $filter, $timeout, TokenService, EventService, Event, Team) {
-  $scope.token = TokenService.getToken();
+function AdminEventsController($scope, $injector, $filter, $timeout, LocalStorageService, EventService, Event, Team) {
+  $scope.token = LocalStorageService.getToken();
   $scope.events = [];
   $scope.page = 0;
   $scope.itemsPerPage = 10;

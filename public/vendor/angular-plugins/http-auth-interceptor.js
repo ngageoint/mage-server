@@ -37,11 +37,11 @@
    */
   .config(['$httpProvider', function($httpProvider) {
 
-    var interceptor = ['$rootScope', '$q', 'httpBuffer', 'TokenService', function($rootScope, $q, httpBuffer, TokenService) {
+    var interceptor = ['$rootScope', '$q', 'httpBuffer', 'LocalStorageService', function($rootScope, $q, httpBuffer, LocalStorageService) {
       return {
         'request': function(request) {
           if (!request.ignoreAuthModule && request.url.lastIndexOf('.html') != request.url.length - 5) {
-            request.headers.authorization = "Bearer " + TokenService.getToken();
+            request.headers.authorization = "Bearer " + LocalStorageService.getToken();
           }
           return request;
         },

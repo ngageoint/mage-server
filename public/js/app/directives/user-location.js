@@ -17,11 +17,11 @@ function userLocation() {
   return directive;
 }
 
-UserLocationController.$inject = ['$scope', 'TokenService'];
+UserLocationController.$inject = ['$scope', 'LocalStorageService'];
 
-function UserLocationController($scope, TokenService) {
+function UserLocationController($scope, LocalStorageService) {
   if ($scope.userLocation.avatarUrl) {
-    $scope.avatarUrl = $scope.userLocation.avatarUrl + "?access_token=" + TokenService.getToken();
+    $scope.avatarUrl = $scope.userLocation.avatarUrl + "?access_token=" + LocalStorageService.getToken();
   } else {
     $scope.avatarUrl = "img/missing_photo.png";
   }

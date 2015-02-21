@@ -16,12 +16,12 @@ function observationNewsItem() {
   return directive;
 }
 
-ObservationNewsItemController.$inject = ['$scope', 'EventService', 'TokenService'];
+ObservationNewsItemController.$inject = ['$scope', 'EventService', 'LocalStorageService'];
 
-function ObservationNewsItemController($scope, EventService, TokenService) {
+function ObservationNewsItemController($scope, EventService, LocalStorageService) {
   $scope.edit = false;
   $scope.attachmentUrl = '/FeatureServer/' + $scope.observation.layerId + '/features/';
-  $scope.token = TokenService.getToken();
+  $scope.token = LocalStorageService.getToken();
 
   $scope.filterHidden = function(field) {
     return !field.archived &&
