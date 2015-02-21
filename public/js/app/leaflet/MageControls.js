@@ -1,42 +1,38 @@
 L.Control.MageFeature = L.Control.extend({
 
 	options: {
-		position: 'topleft'
-	},
-
-	initialize: function(options) {
-		L.Control.prototype.initialize.call(this, options);
+		position: 'topleft',
+		enabled: true
 	},
 
 	onAdd: function (map) {
-		// TODO create html here
+		var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+		this._link = L.DomUtil.create('a', '', container);
+		this._icon = L.DomUtil.create('i', 'fa fa-map-marker icon-sage', this._link);
 
-    // create the control container with a particular cl***REMOVED*** name
-    var container = L.DomUtil.get('new-feature-toolbar');
+		this._link.href = '#';
+		this._link.title = 'New Observation';
 
-		var stop = L.DomEvent.stopPropagation;
-		var button = $(container).find('a');
-		button.on('dblclick', stop);
-		// also stop the click so that the new marker does not show up right behind the toolbar
-		$(container).find('a').on('click', stop);
-
-		var onClick = this.options.onClick;
-		if (onClick) button.on('click', function() {
-			onClick(map.getCenter());
-		});
+		L.DomEvent
+			.on(this._link, 'mousedown dblclick', L.DomEvent.stopPropagation)
+			.on(this._link, 'click', L.DomEvent.stop)
+			.on(this._link, 'click', this._onClick, this);
 
     return container;
-  }
+  },
+
+	_onClick: function() {
+		if (this.options.onClick) {
+			this.options.onClick(this._map.getCenter());
+		}
+	}
+
 });
 
 L.Control.MageUserLocation = L.Control.extend({
 
 	options: {
 		position: 'topleft'
-	},
-
-	initialize: function(options) {
-		L.Control.prototype.initialize.call(this, options);
 	},
 
 	onAdd: function (map) {
@@ -56,10 +52,6 @@ L.Control.MageListTools = L.Control.extend({
 	options: {
 		position: 'topleft',
 		enabled: true
-	},
-
-	initialize: function(options) {
-		L.Control.prototype.initialize.call(this, options);
 	},
 
 	onAdd: function (map) {
