@@ -1,8 +1,11 @@
-'use strict';
+angular
+  .module('mage')
+  .controller('AdminDevicesController', AdminDevicesController);
 
-angular.module('mage').controller('AdminDevicesCtrl', ['$scope', '$injector', '$filter', 'mageLib', 'DeviceService', 'UserService',
-function ($scope, $injector, $filter, mageLib, DeviceService, UserService) {
-  $scope.token = mageLib.getLocalItem('token');
+AdminDevicesController.$inject = ['$scope', '$injector', '$filter', 'TokenService', 'DeviceService', 'UserService'];
+
+function AdminDevicesController($scope, $injector, $filter, TokenService, DeviceService, UserService) {
+  $scope.token = TokenService.getToken();
   $scope.filter = "all"; // possible values all, registered, unregistered
   $scope.devices = [];
   $scope.page = 0;
@@ -133,4 +136,4 @@ function ($scope, $injector, $filter, mageLib, DeviceService, UserService) {
       $scope.error = response.responseText;
     });
   }
-}]);
+}

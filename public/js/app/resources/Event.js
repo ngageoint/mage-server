@@ -1,5 +1,10 @@
-angular.module('mage').factory('Event', ['$rootScope', '$resource', '$http', 'mageLib', 'Observation', function($rootScope, $resource, $http, mageLib, Observation) {
+angular
+  .module('mage')
+  .factory('Event', Event);
 
+Event.$inject = ['$rootScope', '$resource', '$http', 'TokenService', 'Observation'];
+
+function Event($rootScope, $resource, $http, TokenService, Observation) {
   var Event = $resource('/api/events/:id', {
     id: '@id'
   },{
@@ -68,7 +73,7 @@ angular.module('mage').factory('Event', ['$rootScope', '$resource', '$http', 'ma
           url: '/api/events',
           type: 'POST',
           headers: {
-            authorization: 'Bearer ' + mageLib.getLocalItem('token')
+            authorization: 'Bearer ' + TokenService.getToken()
           },
           success: function(response) {
             delete self.formArchiveFile;
@@ -91,5 +96,4 @@ angular.module('mage').factory('Event', ['$rootScope', '$resource', '$http', 'ma
   };
 
   return Event;
-
-}]);
+}

@@ -4,7 +4,7 @@ angular
 
 MapService.$inject = ['$q', 'Observation', 'ObservationAttachment', 'ObservationState'];
 
-function MapService($rootScope, mageLib, Layer, EventService) {
+function MapService($rootScope, Layer, EventService) {
 
   var ***REMOVED*** = {
     addListener: addListener,

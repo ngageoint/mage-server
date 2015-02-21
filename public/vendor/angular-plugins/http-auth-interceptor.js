@@ -37,11 +37,11 @@
    */
   .config(['$httpProvider', function($httpProvider) {
 
-    var interceptor = ['$rootScope', '$q', 'httpBuffer', 'mageLib', function($rootScope, $q, httpBuffer, mageLib) {
+    var interceptor = ['$rootScope', '$q', 'httpBuffer', 'TokenService', function($rootScope, $q, httpBuffer, TokenService) {
       return {
         'request': function(request) {
           if (!request.ignoreAuthModule && request.url.lastIndexOf('.html') != request.url.length - 5) {
-            request.headers.authorization = "Bearer " + mageLib.getToken();
+            request.headers.authorization = "Bearer " + TokenService.getToken();
           }
           return request;
         },

@@ -1,7 +1,9 @@
-'use strict';
+angular
+  .module('mage')
+  .directive('attachment', attachment);
 
-mage.directive('attachment', function () {
-  return {
+function attachment() {
+  var directive = {
     restrict: "A",
     templateUrl: '/js/app/partials/attachment.html',
     scope: {
@@ -9,13 +11,20 @@ mage.directive('attachment', function () {
       attachmentObservation: '=',
       edit: '='
     },
-    controller: function ($scope, mageLib, UserService) {
-      $scope.amAdmin = UserService.amAdmin;
-      $scope.token = mageLib.getToken();
-
-      $scope.deleteAttachment = function () {
-        $scope.attachment.markedForDelete = true;
-      }
-    }
+    controller: AttachmentController,
+    bindToController: true
   };
-});
+
+  return directive;
+}
+
+AttachmentController.$inject = ['$scope', 'UserService', 'TokenService'];
+
+function AttachmentController($scope, UserService, TokenService) {
+  $scope.amAdmin = UserService.amAdmin;
+  $scope.token = TokenService.getToken();
+
+  $scope.deleteAttachment = function () {
+    $scope.attachment.markedForDelete = true;
+  }
+}
