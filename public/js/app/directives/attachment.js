@@ -18,11 +18,11 @@ function attachment() {
   return directive;
 }
 
-AttachmentController.$inject = ['$scope', 'UserService', 'TokenService'];
+AttachmentController.$inject = ['$scope', 'UserService', 'LocalStorageService'];
 
-function AttachmentController($scope, UserService, TokenService) {
+function AttachmentController($scope, UserService, LocalStorageService) {
   $scope.amAdmin = UserService.amAdmin;
-  $scope.token = TokenService.getToken();
+  $scope.token = LocalStorageService.getToken();
 
   $scope.deleteAttachment = function () {
     $scope.attachment.markedForDelete = true;

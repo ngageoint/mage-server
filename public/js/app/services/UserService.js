@@ -2,9 +2,9 @@ angular
   .module('mage')
   .factory('UserService', UserService);
 
-UserService.$inject = ['$rootScope', '$q', '$http', '$location', '$timeout', 'TokenService'];
+UserService.$inject = ['$rootScope', '$q', '$http', '$location', '$timeout', 'LocalStorageService'];
 
-function UserService($rootScope, $q, $http, $location, $timeout, TokenService) {
+function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageService) {
   var userDeferred = $q.defer();
   var resolvedUsers = {};
   var myself = null;
@@ -49,7 +49,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, TokenService) {
       {headers: {"Content-Type": "application/x-www-form-urlencoded"}, ignoreAuthModule:true});
 
     promise.success(function(data) {
-      TokenService.setToken(data.token);
+      LocalStorageService.setToken(data.token);
       setUser(data.user);
 
       $rootScope.$broadcast('login', {user: data.user, token: data.token, isAdmin: amAdmin});
@@ -81,7 +81,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, TokenService) {
     .success(function(user) {
       setUser(user);
 
-      $rootScope.$broadcast('login', {user: user, token: TokenService.getToken(), isAdmin: amAdmin});
+      $rootScope.$broadcast('login', {user: user, token: LocalStorageService.getToken(), isAdmin: amAdmin});
 
       if (roles && !_.contains(roles, user.role.name)) {
         // TODO probably want to redirect to a unauthorized page.
@@ -99,7 +99,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, TokenService) {
 
   function updateMyself(user, success, error, progress) {
     saveUser(user, {
-      url: '/api/users/myself?access_token=' + TokenService.getToken(),
+      url: '/api/users/myself?access_token=' + LocalStorageService.getToken(),
       type: 'PUT'
     }, success, error, progress);
   }
@@ -152,14 +152,14 @@ function UserService($rootScope, $q, $http, $location, $timeout, TokenService) {
 
   function createUser(user, success, error, progress) {
     saveUser(user, {
-      url: '/api/users?access_token=' + TokenService.getToken(),
+      url: '/api/users?access_token=' + LocalStorageService.getToken(),
       type: 'POST'
     }, success, error, progress);
   };
 
   function updateUser(id, user, success, error, progress) {
     saveUser(user, {
-      url: '/api/users/' + id + '?access_token=' + TokenService.getToken(),
+      url: '/api/users/' + id + '?access_token=' + LocalStorageService.getToken(),
       type: 'PUT'
     }, success, error, progress);
   };

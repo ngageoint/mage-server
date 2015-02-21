@@ -2,10 +2,10 @@ angular
   .module('mage')
   .controller('AdminTeamsController', AdminTeamsController);
 
-AdminTeamsController.$inject = ['$scope', '$injector', 'TokenService', 'ObservationService', 'UserService', 'Team'];
+AdminTeamsController.$inject = ['$scope', '$injector', 'LocalStorageService', 'ObservationService', 'UserService', 'Team'];
 
-function AdminTeamsController($scope, $injector, TokenService, ObservationService, UserService, Team) {
-  $scope.token = TokenService.getToken();
+function AdminTeamsController($scope, $injector, LocalStorageService, ObservationService, UserService, Team) {
+  $scope.token = LocalStorageService.getToken();
   $scope.teams = [];
   $scope.page = 0;
   $scope.itemsPerPage = 10;

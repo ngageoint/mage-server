@@ -14,9 +14,9 @@ function exportDirective() {
   return directive;
 }
 
-ExportController.$inject = ['$scope', '$http', 'TokenService'];
+ExportController.$inject = ['$scope', '$http', 'LocalStorageService'];
 
-function ExportController($scope, $http, TokenService) {
+function ExportController($scope, $http, LocalStorageService) {
   var fileExport = angular.element('#file-export');
   fileExport.load(function() {
     alert('file download is complete');
@@ -81,7 +81,7 @@ function ExportController($scope, $http, TokenService) {
   }
 
   var params = {
-    access_token: TokenService.getToken()
+    access_token: LocalStorageService.getToken()
   };
 
   if (start) params.startDate = start;

@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('MageController', MageController);
 
-MageController.$inject = ['$scope', '$compile', '$timeout', 'FilterService', 'EventService', 'MapService', 'PollingService', 'TokenService', 'Layer', 'Observation'];
+MageController.$inject = ['$scope', '$compile', '$timeout', 'FilterService', 'EventService', 'MapService', 'PollingService', 'LocalStorageService', 'Layer', 'Observation'];
 
-function MageController($scope, $compile, $timeout, FilterService, EventService, MapService, PollingService, TokenService, Layer, Observation) {
+function MageController($scope, $compile, $timeout, FilterService, EventService, MapService, PollingService, LocalStorageService, Layer, Observation) {
 
   var observationsById = {};
   $scope.newsFeedObservations = [];
@@ -16,7 +16,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
       // Add token to the url of all private layers
       // TODO add watch for token change and reset the url for these layers
       if (layer.type === 'Imagery' && layer.url.indexOf('private') == 0) {
-        layer.url = layer.url + "?access_token=" + TokenService.getToken();
+        layer.url = layer.url + "?access_token=" + LocalStorageService.getToken();
       }
 
       if (layer.type === 'Imagery') {
@@ -463,7 +463,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
 
   // $rootScope.$on('event:auth-loginConfirmed', function() {
   //   _.each($scope.privateBaseLayers, function(layer) {
-  //     layer.url = layer.url.replace(/\?access_token=\w+/,"?access_token=" + TokenService.getToken());
+  //     layer.url = layer.url.replace(/\?access_token=\w+/,"?access_token=" + LocalStorageService.getToken());
   //   });
   //   _.each($scope.privateImageryLayers, function(layer) {
   //     layer.url = layer.url.replace(/\?access_token=\w+/,"?access_token=" + TokenSerice.getToken());

@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminLayersController', AdminLayersController);
 
-AdminLayersController.$inject = ['$scope', '$injector', 'TokenService', 'Layer'];
+AdminLayersController.$inject = ['$scope', '$injector', 'LocalStorageService', 'Layer'];
 
-function AdminLayersController($scope, $injector, TokenService, Layer) {
+function AdminLayersController($scope, $injector, LocalStorageService, Layer) {
   $scope.layerName = "";
   $scope.showLayerForm = false;
   $scope.wmsFormats = ['image/jpeg', 'image/png'];
@@ -37,7 +37,7 @@ function AdminLayersController($scope, $injector, TokenService, Layer) {
     var layer = $scope.layer;
     $scope.layer.$save({}, function(success) {
       $scope.fileUploadOptions = {
-        url: '/FeatureServer/' + $scope.layer.id + '/import?access_token=' + TokenService.getToken(),
+        url: '/FeatureServer/' + $scope.layer.id + '/import?access_token=' + LocalStorageService.getToken(),
         acceptFileTypes: /(\.|\/)(kml)$/i,
       };
     });
@@ -53,7 +53,7 @@ function AdminLayersController($scope, $injector, TokenService, Layer) {
     //$scope.fileUploadOptions.url = '/FeatureServer/'+layer.id+'/import';
     console.info('changing the file upload options');
     $scope.fileUploadOptions = {
-      url: '/FeatureServer/ '+ layer.id + '/import?access_token=' + TokenService.getToken(),
+      url: '/FeatureServer/ '+ layer.id + '/import?access_token=' + LocalStorageService.getToken(),
       acceptFileTypes: /(\.|\/)(kml)$/i,
     };
   }

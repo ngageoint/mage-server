@@ -2,10 +2,10 @@ angular
   .module('mage')
   .controller('AdminDevicesController', AdminDevicesController);
 
-AdminDevicesController.$inject = ['$scope', '$injector', '$filter', 'TokenService', 'DeviceService', 'UserService'];
+AdminDevicesController.$inject = ['$scope', '$injector', '$filter', 'LocalStorageService', 'DeviceService', 'UserService'];
 
-function AdminDevicesController($scope, $injector, $filter, TokenService, DeviceService, UserService) {
-  $scope.token = TokenService.getToken();
+function AdminDevicesController($scope, $injector, $filter, LocalStorageService, DeviceService, UserService) {
+  $scope.token = LocalStorageService.getToken();
   $scope.filter = "all"; // possible values all, registered, unregistered
   $scope.devices = [];
   $scope.page = 0;
