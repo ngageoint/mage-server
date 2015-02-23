@@ -70,14 +70,23 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   var observationsChangedListener = {
     onObservationsChanged: onObservationsChanged
   };
-
-  // Add an observations changed listener
   EventService.addObservationsChangedListener(observationsChangedListener);
+
+  var locationListener = {
+    onLocation: onLocation
+  };
+  MapService.addListener(locationListener);
 
   $scope.$on('$destroy', function() {
     EventService.removeObservationsChangedListener(observationsChangedListener);
+    MapService.removeListener(locationListener);
     PollingService.setPollingInterval(0); // stop polling
   });
+
+
+  function onLocation(location) {
+    console.log('location found', location);
+  }
 
   var selectedObservationId = null;
   function onObservationSelected(observation, options) {

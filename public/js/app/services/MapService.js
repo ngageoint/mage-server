@@ -22,7 +22,8 @@ function MapService($rootScope, Layer, EventService) {
     addFeatureToLayer: addFeatureToLayer,
     updateFeatureForLayer: updateFeatureForLayer,
     removeFeatureFromLayer: removeFeatureFromLayer,
-    selectFeatureInLayer: selectFeatureInLayer
+    selectFeatureInLayer: selectFeatureInLayer,
+    onLocation: onLocation
   };
 
   var baseLayer = null;
@@ -121,6 +122,14 @@ function MapService($rootScope, Layer, EventService) {
       name: layerId,
       feature: feature,
       options: options
+    });
+  }
+
+  function onLocation(location) {
+    _.each(listeners, function(listener) {
+      if (_.isFunction(listener.onLocation)) {
+        listener.onLocation(location);
+      }
     });
   }
 

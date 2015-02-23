@@ -19,6 +19,8 @@ LeafletController.$inject = ['$rootScope', '$scope', 'MapService', 'LocalStorage
 
 function LeafletController($rootScope, $scope, MapService, LocalStorageService) {
   var layers = {};
+  var currentLocation = null;
+  var locationLayer = L.locationMarker([0,0], {color: '#136AEC'});
   var map = L.map("map", {
     center: [0,0],
     zoom: 3,
@@ -34,7 +36,10 @@ function LeafletController($rootScope, $scope, MapService, LocalStorageService) 
       $scope.$emit('observation:create', latlng);
     }
   }));
-  map.addControl(new L.Control.MageUserLocation());
+  map.addControl(new L.Control.MageUserLocation({
+    onLocation: onLocation,
+    stopLocation: stopLocation
+  }));
   map.addControl(new L.Control.MageListTools({
     onClick: function() {
       sidebar.toggle();
@@ -59,6 +64,34 @@ function LeafletController($rootScope, $scope, MapService, LocalStorageService) 
     var layer = layers[name];
     MapService.removeOverlay(overlay.rasterLayer);
   });
+
+  function onLocation(location, broadcast) {
+    // no need to do anything if the location has not changed
+    if (currentLocation &&
+        (currentLocation.lat === location.latlng.lat &&
+         currentLocation.lng === location.latlng.lng &&
+         currentLocation.accuracy === location.accuracy)) {
+      return;
+    }
+    currentLocation = location;
+
+    map.fitBounds(location.bounds);
+    locationLayer.setLatLng(location.latlng).setAccuracy(location.accuracy);
+
+    if (!map.hasLayer(locationLayer)) {
+      map.addLayer(locationLayer);
+    }
+
+    if (broadcast) MapService.onLocation(location);
+  }
+
+  function stopLocation() {
+    if (map.hasLayer(locationLayer)) {
+      map.removeLayer(locationLayer);
+    }
+
+    currentLocation = null;
+  }
 
   // setup my listeners
   MapService.addListener({
