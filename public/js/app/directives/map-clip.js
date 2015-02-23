@@ -74,7 +74,8 @@ function MapClipController($rootScope, $scope, $element, MapService, LocalStorag
       maxZoom: 18,
       zoomControl: false,
       trackResize: true,
-      scrollWheelZoom: false
+      scrollWheelZoom: false,
+      attributionControl: false
     });
 
     var latLng = [0,0];

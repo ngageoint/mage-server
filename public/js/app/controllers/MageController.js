@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('MageController', MageController);
 
-MageController.$inject = ['$scope', '$compile', '$timeout', 'FilterService', 'EventService', 'MapService', 'PollingService', 'LocalStorageService', 'Layer', 'Observation'];
+MageController.$inject = ['$scope', '$compile', '$timeout', 'FilterService', 'EventService', 'MapService', 'PollingService', 'LocalStorageService', 'Layer', 'Observation', 'Location'];
 
-function MageController($scope, $compile, $timeout, FilterService, EventService, MapService, PollingService, LocalStorageService, Layer, Observation) {
+function MageController($scope, $compile, $timeout, FilterService, EventService, MapService, PollingService, LocalStorageService, Layer, Observation, Location) {
 
   var observationsById = {};
   $scope.newsFeedObservations = [];
@@ -84,8 +84,23 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   });
 
 
-  function onLocation(location) {
-    console.log('location found', location);
+  function onLocation(l) {
+    var event = FilterService.getEvent();
+    var location = Location.create({
+      eventId: event.id,
+      geometry: {
+        type: 'Point',
+        coordinates: [l.longitude, l.latitude]
+      },
+      properties: {
+        timestamp: l.timestamp,
+        accuracy: l.accuracy,
+        altitude: l.altitude,
+        altitudeAccuracy: l.altitudeAccuracy,
+        heading: l.heading,
+        speed: l.speed
+      }
+    });
   }
 
   var selectedObservationId = null;
@@ -106,6 +121,8 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   // TODO is there a better way to do this?
   // Need to hang onto popup scopes so that I can delete the scope if the observation
   // get deleted.  I.E. no observation, no popup so remove its scope
+  // Possible user of leaflet templates to accomplish this in leaflet
+  // rather than angular
   var popupScopes = {};
   var observationLayer = MapService.createVectorLayer({
     name: 'Observations',

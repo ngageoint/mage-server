@@ -43,6 +43,12 @@ exports.getTeamById = function(id, callback) {
   Team.findById(id).populate('userIds').exec(callback);
 }
 
+exports.getTeamsForUser = function(user, callback) {
+  Team.find({userIds: user._id}, function(err, teams) {
+    callback(err, teams);
+  });
+}
+
 exports.getTeams = function(callback) {
   var query = {};
   Team.find(query).populate('userIds').exec(function (err, teams) {
