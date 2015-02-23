@@ -2,6 +2,7 @@ module.exports = function(app, security) {
   var moment = require('moment')
     , Location = require('../models/location')
     , User = require('../models/user')
+    , Team = require('../models/team')
     , Token = require('../models/token')
     , Role = require('../models/role')
     , Team = require('../models/team')
@@ -40,6 +41,15 @@ module.exports = function(app, security) {
     next();
   }
 
+  var teamsForUser = function(req, res, next) {
+    Team.getTeamsForUser(req.user, function(err, teams) {
+      if (err) return next(err);
+
+      req.user.teamIds = teams.map(function(team) { return team._id; });
+      next();
+    });
+  }
+
   var validateLocations = function(req, res, next) {
     var locations = req.body;
 
@@ -58,8 +68,10 @@ module.exports = function(app, security) {
         return false;
       }
 
+      l.userId = req.user._id;
+      l.eventId = req.event._id;
+      l.teamIds = req.user.teamIds;
       l.properties.timestamp = moment.utc(l.properties.timestamp).toDate();
-      l.properties.user = req.user._id;
       l.properties.deviceId = req.provisionedDeviceId;
 
       l.type = "Feature";
@@ -77,7 +89,7 @@ module.exports = function(app, security) {
   // get locations and group by user
   // max of 100 locations per user
   app.get(
-    '/api/locations/users',
+    '/api/events/:eventId/locations/users',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_LOCATION'),
     parseQueryParams,
@@ -92,7 +104,7 @@ module.exports = function(app, security) {
   // Will only return locations for the teams that the user is a part of
   // TODO only one team for PDC, need to implement multiple teams later
   app.get(
-    '/api/locations',
+    '/api/events/:eventId/locations',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_LOCATION'),
     parseQueryParams,
@@ -103,11 +115,12 @@ module.exports = function(app, security) {
     }
   );
 
-  // create new location(s) for a specific user
+  // create new location(s) for a specific user and event
   app.post(
-    '/api/locations',
+    '/api/events/:eventId/locations',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('CREATE_LOCATION'),
+    teamsForUser,
     validateLocations,
     function(req, res) {
       var currentTimestamp = moment();
@@ -118,7 +131,7 @@ module.exports = function(app, security) {
         timestamp.diff(currentTimestamp, 'minutes') > 15 ? futureLocations.push(location) : validLocations.push(location);
       });
 
-      Location.createLocations(req.user, validLocations, function(err, locations) {
+      Location.createLocations(validLocations, function(err, locations) {
         if (err) {
           return res.send(400, err);
         }
@@ -136,7 +149,7 @@ module.exports = function(app, security) {
 
   // update time on a location
   app.put(
-    '/api/locations',
+    '/api/events/:eventId/locations',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('UPDATE_LOCATION'),
     function(req, res) {
