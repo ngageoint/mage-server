@@ -1,7 +1,7 @@
 module.exports = function(app, security) {
   var moment = require('moment')
     , Location = require('../models/location')
-    , User = require('../models/user')
+    , CappedLocation = require('../models/cappedLocation')
     , Team = require('../models/team')
     , Token = require('../models/token')
     , Role = require('../models/role')
@@ -139,9 +139,9 @@ module.exports = function(app, security) {
         res.json(locations);
       });
 
-      User.addLocationsForUser(req.user, {valid: validLocations, future: futureLocations}, function(err, location) {
+      CappedLocation.addLocations(req.user, req.event, {valid: validLocations, future: futureLocations}, function(err, location) {
         if (err) {
-          return res.send(400, err);
+          console.log('failed to store location in capped location collection');
         }
       });
     }

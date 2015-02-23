@@ -1,12 +1,8 @@
 var mongoose = require('mongoose')
   , async = require("async")
   , hasher = require('../utilities/pbkdf2')()
-  , config = require('../config')
   , Token = require('../models/token')
-  , Observation = require('../models/observation')
-  , Location = require('../models/location');
-
-var locationLimit = config.server.locationServices.userCollectionLocationLimit;
+  , Observation = require('../models/observation');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -18,21 +14,6 @@ var PhoneSchema = new Schema({
   versionKey: false,
   _id: false
 });
-
-// Creates the Schema for FFT Locations
-var LocationSchema = new Schema({
-  type: { type: String, required: true },
-  geometry: {
-    type: { type: String, required: true },
-    coordinates: { type: Array, required: true}
-  },
-  properties: Schema.Types.Mixed
-},{
-    versionKey: false
-});
-
-LocationSchema.index({geometry: "2dsphere"});
-LocationSchema.index({'properties.timestamp': 1});
 
 // Collection to hold users
 var UserSchema = new Schema({
@@ -55,11 +36,9 @@ var UserSchema = new Schema({
     active: { type: Boolean, required: true },
     role: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
     status: { type: String, required: false, index: 'sparse' },
-    locations: [LocationSchema],
-    futureLocations: [LocationSchema],
     recentEventIds: [{type: Number, ref: 'Event'}],
-    userAgent: {type: String, required: false },
-    mageVersion: {type: String, required: false }
+    userAgent: {type: String, required: false },  // TODO move this to device, store last 10 device ids here instead
+    mageVersion: {type: String, required: false } // TODO move this to device
   },{
     versionKey: false
   }
@@ -123,11 +102,6 @@ UserSchema.pre('remove', function(next) {
   var user = this;
 
   async.parallel({
-    location: function(done) {
-      Location.removeLocationsForUser(user, function(err) {
-        done(err);
-      });
-    },
     token: function(done) {
       Token.removeTokenForUser(user, function(err) {
         done(err);
@@ -150,7 +124,6 @@ var transform = function(user, ret, options) {
     delete ret._id;
 
     delete ret.p***REMOVED***word;
-    delete ret.locations;
     delete ret.avatar;
     delete ret.icon;
 
@@ -322,54 +295,6 @@ exports.removeTeamFromUsers = function(team, callback) {
     }
 
     callback(err, number);
-  });
-}
-
-exports.getLocations = function(options, callback) {
-  var limit = options.limit;
-  limit = limit <= locationLimit ? limit : locationLimit;
-
-  var query = User.find({}, {_id: 1, locations: {$slice: -1 * limit}});
-
-  var filter = options.filter;
-  if (filter.startDate) {
-    query.where('locations.properties.timestamp').gte(filter.startDate);
-  }
-
-  if (filter.endDate) {
-    query.where('locations.properties.timestamp').lt(filter.endDate);
-  }
-
-  query.lean().exec(function (err, users) {
-    if (err) {
-      console.log('Error getting locations.', err);
-    }
-    users = users.map(function(user) {
-      user.user = user._id;
-      delete user._id;
-      user.locations = user.locations ? user.locations.reverse() : [];
-
-      return user;
-    });
-
-    callback(err, users);
-  });
-}
-
-exports.addLocationsForUser = function(user, locations, callback) {
-  var update = {
-    $push: {
-      locations: {$each: locations.valid, $sort: {"properties.timestamp": 1}, $slice: -1 * locationLimit},
-      futureLocations: {$each: locations.future, $sort: {"properties.timestamp": 1}, $slice: -1 * locationLimit}
-    }
-  };
-
-  User.findByIdAndUpdate(user._id, update, {upsert: true}, function(err, user) {
-    if (err) {
-      console.log('Error add location for user.', err);
-    }
-
-    callback(err, user);
   });
 }
 
