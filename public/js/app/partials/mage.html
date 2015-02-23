@@ -1,36 +1,14 @@
-<div>
-  <!-- News Feed -->
-  <div id="side-bar" cl***REMOVED***="side-bar-holder">
-    <div cl***REMOVED***="news-feed-pane" news-feed news-feed-observations="newsFeedObservations" news-feed-observations-changed="newsFeedChangedObservations"/>
-  </div>
+<!-- News Feed -->
+<div id="side-bar" cl***REMOVED***="side-bar-holder">
+  <div cl***REMOVED***="news-feed-pane" news-feed news-feed-observations="newsFeedObservations" news-feed-observations-changed="newsFeedChangedObservations"/>
+</div>
 
-  <div cl***REMOVED***="map-filter" ng-hide="newsFeedEnabled">
+<!-- New observation form -->
+<div cl***REMOVED***="map-filter" ng-hide="newsFeedEnabled">
+  <div id="observation-form" cl***REMOVED***="feature-panel" ng-show="newObservationEnabled"></div>
+</div>
 
-    <!-- <div export/> -->
-    <div id="observation-form" cl***REMOVED***="feature-panel" ng-show="newObservationEnabled">
-    </div>
-  </div>
-
-  <!-- The leaflet directive -->
-  <div id="map" cl***REMOVED***="map-wrap">
-    <div leaflet></div>
-  </div>
-
-  <div id="user-location-toolbar" cl***REMOVED***="leaflet-bar">
-    <a
-      ng-cl***REMOVED***="{true: 'btn-inverse'}[locate]"
-      ng-click="toggleLocate()"
-      ngm-tap="toggleLocate()">
-      <i cl***REMOVED***="icon-target" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[locate]"></i>
-    </a>
-
-    <a
-      ng-cl***REMOVED***="{true: 'btn-inverse'}[broadcast]"
-      ng-hide="readOnlyMode"
-      ng-click="toggleBroadcast()"
-      ngm-tap="toggleBroadcast()">
-      <i cl***REMOVED***="icon-megaphone" ng-cl***REMOVED***="{true: 'icon-sage-inverse', false: 'icon-sage'}[broadcast]"></i>
-    </a>
-  </div>
-
+<!-- leaflet map -->
+<div id="map" cl***REMOVED***="map-wrap">
+  <div leaflet></div>
 </div>
