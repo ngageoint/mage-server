@@ -7,6 +7,7 @@ UserService.$inject = ['$rootScope', '$q', '$http', '$location', '$timeout', 'Lo
 function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageService) {
   var userDeferred = $q.defer();
   var resolvedUsers = {};
+  var resolveAllUsers = null;
   var myself = null;
   var amAdmin = null;
 
@@ -142,12 +143,19 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
     return resolvedUsers[id];
   }
 
-  function getAllUsers() {
-    return $http.get('/api/users').success(function(users) {
+  function getAllUsers(forceRefresh) {
+    if (forceRefresh) {
+        resolvedUsers = {};
+        resolveAllUsers = undefined;
+    }
+
+    resolveAllUsers = resolveAllUsers || $http.get('/api/users').success(function(users) {
       for (var i = 0; i < users.length; i++) {
-        resolvedUsers[users[i].id] = $q.when(users[i]);
+        resolvedUsers[users[i]._id] = $q.when(users[i]);
       }
     });
+
+    return resolveAllUsers;
   };
 
   function createUser(user, success, error, progress) {

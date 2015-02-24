@@ -498,3 +498,14 @@ a.news-feed-tab-active {
 	padding-top: 8px;
 	color: #345477;
 }
+
+.location-popup {
+	color: #345477;
+	width: 250px;
+}
+
+.location-popup-info i {
+	font-size: 18px;
+	padding-top: 20px;
+	color: #345477;
+}

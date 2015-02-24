@@ -2,9 +2,22 @@ angular
   .module('mage')
   .controller('MageController', MageController);
 
-MageController.$inject = ['$scope', '$compile', '$timeout', 'FilterService', 'EventService', 'MapService', 'PollingService', 'LocalStorageService', 'Layer', 'Observation', 'Location'];
+MageController.$inject = [
+  '$scope',
+  '$compile',
+  '$timeout',
+  'FilterService',
+  'EventService',
+  'MapService',
+  'PollingService',
+  'LocalStorageService',
+  'Layer',
+  'Observation',
+  'Location',
+  'LocationService'
+];
 
-function MageController($scope, $compile, $timeout, FilterService, EventService, MapService, PollingService, LocalStorageService, Layer, Observation, Location) {
+function MageController($scope, $compile, $timeout, FilterService, EventService, MapService, PollingService, LocalStorageService, Layer, Observation, Location, LocationService) {
 
   var observationsById = {};
   $scope.feedObservations = [];
@@ -13,6 +26,85 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   var usersById = {};
   $scope.feedUsers = [];
   $scope.feedChangedUsers = 0;
+
+  // TODO is there a better way to do this?
+  // Need to hang onto popup scopes so that I can delete the scope if the observation
+  // get deleted.  I.E. no observation, no popup so remove its scope
+  // Possible user of leaflet templates to accomplish this in leaflet
+  // rather than angular
+  var popupScopes = {};
+
+  var observationLayer = MapService.createVectorLayer({
+    name: 'Observations',
+    group: 'MAGE',
+    type: 'geojson',
+    options: {
+      selected: true,
+      cluster: true,
+      popup: {
+        html: function(observation) {
+          var el = angular.element('<div observation-popup="observation" observation-popup-info="onInfo(observation)"></div>');
+          var compiled = $compile(el);
+          var newScope = $scope.$new(true);
+          newScope.observation = observation;
+          newScope.onInfo = function(observation) {
+            $timeout(function() {
+              onObservationSelected(observation);
+            });
+          }
+          compiled(newScope);
+          popupScopes[observation.id] = newScope;
+
+          return el[0];
+        },
+        closeButton: false,
+        onClose: function(observation) {
+          $timeout(function() {
+            onObservationDeselected(observation);
+          });
+        }
+      }
+    }
+  });
+
+  var peopleLayer = MapService.createVectorLayer({
+    name: 'People',
+    group: 'MAGE',
+    type: 'geojson',
+    options: {
+      selected: true,
+      cluster: false,
+      temporal: {
+        property: 'timestamp',
+        colorBuckets: LocationService.colorBuckets
+      },
+      temporalProperty: 'timestamp',
+      popup: {
+        html: function(location) {
+          var user = usersById[location.id];
+          var el = angular.element('<div location-popup="user" user-popup-info="onInfo(user)"></div>');
+          var compiled = $compile(el);
+          var newScope = $scope.$new(true);
+          newScope.user = user;
+          newScope.onInfo = function(user) {
+            $timeout(function() {
+              onUserSelected(user);
+            });
+          }
+          compiled(newScope);
+          popupScopes[user.id] = newScope;
+
+          return el[0];
+        },
+        closeButton: false,
+        onClose: function(user) {
+          $timeout(function() {
+            onUserDeselected(user);
+          });
+        }
+      }
+    }
+  });
 
   Layer.query(function (layers) {
     var baseLayerFound = false;
@@ -89,7 +181,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     _.each(changed.added, function(added) {
       usersById[added.id] = added;
 
-      // MapService.addFeatureToLayer(added, 'People');
+      MapService.addFeatureToLayer(added.location, 'People');
     });
 
     _.each(changed.updated, function(updated) {
@@ -97,14 +189,14 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
       if (user) {
         user = updated;
 
-        // MapService.updateFeatureForLayer(user, 'People');
+        MapService.updateFeatureForLayer(user.location, 'People');
       }
     });
 
     _.each(changed.removed, function(removed) {
       delete usersById[removed.id];
 
-      // MapService.removeFeatureFromLayer(removed, 'People');
+      MapService.removeFeatureFromLayer(removed.location, 'People');
 
       var scope = popupScopes[removed.id];
       if (scope) {
@@ -160,7 +252,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     if (selectedUserId !== user.id) {
       selectedUserId = user.id;
       $scope.$broadcast('user:select', user);
-      // MapService.selectFeatureInLayer(user, 'People', options);
+      MapService.selectFeatureInLayer(user, 'People', options);
     }
   }
 
@@ -169,44 +261,6 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     $scope.$broadcast('user:deselect', user);
   }
 
-  // TODO is there a better way to do this?
-  // Need to hang onto popup scopes so that I can delete the scope if the observation
-  // get deleted.  I.E. no observation, no popup so remove its scope
-  // Possible user of leaflet templates to accomplish this in leaflet
-  // rather than angular
-  var popupScopes = {};
-  var observationLayer = MapService.createVectorLayer({
-    name: 'Observations',
-    group: 'MAGE',
-    type: 'geojson',
-    options: {
-      selected: true,
-      cluster: true,
-      popup: {
-        html: function(observation) {
-          var el = angular.element('<div observation-popup="observation" observation-popup-info="onInfo(observation)"></div>');
-          var compiled = $compile(el);
-          var newScope = $scope.$new(true);
-          newScope.observation = observation;
-          newScope.onInfo = function(observation) {
-            $timeout(function() {
-              onObservationSelected(observation);
-            });
-          }
-          compiled(newScope);
-          popupScopes[observation.id] = newScope;
-
-          return el[0];
-        },
-        closeButton: false,
-        onClose: function(observation) {
-          $timeout(function() {
-            onObservationDeselected(observation);
-          });
-        }
-      }
-    }
-  });
 
   $scope.$on('$destroy', function() {
     EventService.removeObservationsChangedListener(observationsChangedListener);

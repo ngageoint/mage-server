@@ -25,7 +25,7 @@ L.LocationMarker = L.Marker.extend({
     if (options.iconUrl) {
       this._iconMarker = L.marker(latlng, {
         clickable: true,
-        icon: L.icon({iconUrl: options.iconUrl + "?access_token=" + options.token, iconSize: [42, 42], iconAnchor: [21, 42]})
+        icon: L.icon({iconUrl: options.iconUrl, iconSize: [42, 42], iconAnchor: [21, 42]})
       });
 
       group.push(this._iconMarker);
@@ -68,6 +68,8 @@ L.LocationMarker = L.Marker.extend({
   },
 
   setColor: function(color) {
+    if (this._accuracyCircle.options.color == color) return this;
+
     this._accuracyCircle.options.color = color;
     this._accuracyCircle.options.fillColor = color;
     this._locationMarker.options.color = color;
