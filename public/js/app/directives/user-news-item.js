@@ -7,7 +7,7 @@ function userNewsItem() {
     restrict: "A",
     templateUrl:  "js/app/partials/user-news-item.html",
     scope: {
-      userNewsItem: '='
+      user: '=userNewsItem'
     },
     controller: UserNewsItemController,
     bindToController: true
@@ -16,19 +16,14 @@ function userNewsItem() {
   return directive;
 }
 
-UserNewsItemController.$inject = ['$scope', 'UserService', 'LocalStorageService'];
+UserNewsItemController.$inject = ['$scope', 'LocalStorageService'];
 
-function UserNewsItemController($scope, UserService, LocalStorageService) {
-  $scope.location = $scope.userNewsItem.location;
-  UserService.getUser($scope.userNewsItem.id).then(function(user) {
-    $scope.user = user.data || user;
-
-    if ($scope.user.avatarUrl) {
-      $scope.avatarUrl = $scope.user.avatarUrl + "?access_token=" + LocalStorageService.getToken();
-    } else {
-      $scope.avatarUrl = "img/missing_photo.png";
-    }
-  });
+function UserNewsItemController($scope, LocalStorageService) {
+  if ($scope.user.avatarUrl) {
+    $scope.avatarUrl = $scope.user.avatarUrl + "?access_token=" + LocalStorageService.getToken();
+  } else {
+    $scope.avatarUrl = "img/missing_photo.png";
+  }
 
   $scope.followUser = function(user) {
     $scope.$emit('followUser', user);

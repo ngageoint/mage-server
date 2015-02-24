@@ -165,6 +165,12 @@ function LeafletController($rootScope, $scope, MapService, LocalStorageService) 
     if (layer.options && layer.options.selected) baseLayer.addTo(map);
   }
 
+  function colorForFeature(feature, options) {
+    var age = Date.now() - moment(feature.properties[options.property]).valueOf();
+    var bucket = _.find(options.colorBuckets, function(bucket) { return age > bucket.min && age <= bucket.max; });
+    return bucket ? bucket.color : null;
+  }
+
   function createGeoJsonForLayer(json, layerInfo) {
     var popup = layerInfo.options.popup;
 
@@ -200,11 +206,19 @@ function LeafletController($rootScope, $scope, MapService, LocalStorageService) 
         layerInfo.featureIdToLayer[feature.id] = layer;
       },
       pointToLayer: function (feature, latlng) {
-        var marker =  new L.FixedWidthMarker(latlng, {
-          iconUrl: feature.iconUrl + '?access_token=' + LocalStorageService.getToken()
-        });
+        var marker
+        if (layerInfo.options.temporal) {
+          var options = {
+            color: colorForFeature(feature, layerInfo.options.temporal)
+          };
+          if (feature.iconUrl) options.iconUrl = feature.iconUrl + '?access_token=' + LocalStorageService.getToken();
 
-        return marker;
+          return L.locationMarker(latlng, options);
+        } else {
+          return L.fixedWidthMarker(latlng, {
+            iconUrl: feature.iconUrl + '?access_token=' + LocalStorageService.getToken()
+          });
+        }
       }
     });
 
@@ -297,6 +311,11 @@ function LeafletController($rootScope, $scope, MapService, LocalStorageService) 
             token: LocalStorageService.getToken()
           })
         );
+      }
+
+      if (featureLayer.options.temporal) {
+        var color = colorForFeature(feature, featureLayer.options.temporal);
+        layer.setColor(color);
       }
 
       // Set the lat/lng

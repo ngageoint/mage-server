@@ -124,29 +124,30 @@ function EventService($rootScope, $q, $timeout, Event, ObservationService, Locat
       var users = [];
       var usersById = eventsById[event.id].usersById;
       _.each(userLocations, function(userLocation) {
-        user = {
-          id: userLocation.id,
-          location: userLocation.locations[0]
-        }
-        users.push(user);
+        // Track each location feature by users id,
+        // so update the locations id to match the usersId
+        var location = userLocation.locations[0];
+        location.id = userLocation.id;
+        userLocation.location = location;
+        delete userLocation.locations;
 
         // Check if we already have this user, if so update, otherwise add
-        var localUser = usersById[user.id];
+        var localUser = usersById[userLocation.id];
         if (localUser) {
-          if (user.location.properties.timestamp !== localUser.location.properties.timestamp) updated.push(user);
+          if (userLocation.location.properties.timestamp !== localUser.location.properties.timestamp) updated.push(userLocation);
         } else {
-          added.push(user);
+          added.push(userLocation);
         }
 
         // remove from list of observations if it came back from server
         // remaining elements in this list will be removed
-        delete usersById[user.id];
+        delete usersById[userLocation.id];
       });
 
       // remaining elements were not pulled from the server, hence we should remove them
       removed = _.values(usersById);
 
-      eventsById[event.id].usersById = _.indexBy(users, 'id');
+      eventsById[event.id].usersById = _.indexBy(userLocations, 'id');
       usersChanged({added: added, updated: updated, removed: removed});
     });
   }
