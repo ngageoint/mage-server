@@ -3,17 +3,25 @@ mage.directive('newsFeed', function() {
     restrict: "A",
     templateUrl:  "js/app/partials/news-feed.html",
     scope: {
-      observations: '=newsFeedObservations',
-      observationsChanged: '=newsFeedObservationsChanged'
+      observations: '=feedObservations',
+      observationsChanged: '=feedObservationsChanged',
+      users: '=feedUsers'
     },
     controller: function ($rootScope, $scope, $element, $filter, $timeout, FilterService, EventService, Observation, ObservationService) {
       $scope.currentFeedPanel = 'observationsTab';
+
       $scope.currentObservationPage = 0;
       $scope.observationsChangedSeen = 0;
+      $scope.observationPages = null;
       var observationsPerPage = 25;
 
-      $scope.observationPages = null;
+      $scope.currentUserPage = 0;
+      $scope.usersChangedSeen = 0;
+      $scope.userPages = null;
+      var usersPerPage = 25;
+
       calculateObservationPages($scope.observations);
+      calculateUserPages($scope.users);
 
       $scope.$on('observation:new', function(e, newObservation) {
         if ($scope.newObservation) return;
@@ -50,7 +58,7 @@ mage.directive('newsFeed', function() {
       });
 
       $scope.onObservationClick = function(observation) {
-        $scope.$emit('observation:selected', observation, {zoomToLocation: true});
+        $scope.$emit('observation:selected', observation, {zoomToLocation: true});  // TODO rename to panToLocation
       }
 
       $scope.$on('observation:select', function(e, observation) {
@@ -81,9 +89,39 @@ mage.directive('newsFeed', function() {
         }
       });
 
-      $scope.$watch('observations', function(newObservations, oldObservations) {
-        calculateObservationPages(newObservations);
+      $scope.$on('user:select', function(e, user) {
+        $scope.selectedUser = user;
+
+        // locate the page this user is on
+        var page;
+        for (page = 0; page < $scope.userPages.length; page++) {
+          var last = _.last($scope.userPages[page]);
+          if (last.location.properties.timestamp <= user.location.properties.timestamp) {
+            break;
+          }
+        }
+
+        $scope.currentUserPage = page;
+        $scope.currentFeedPanel = 'peopleTab';
+
+        $timeout(function() {
+          // scroll to observation in that page
+          var feedElement = $($element.find(".news-items"));
+          feedElement.animate({scrollTop: $('#' + user.id).position().top});
+        });
       });
+
+      $scope.$watch('observations', function(observations) {
+        calculateObservationPages(observations);
+      });
+
+      $scope.$watch('users', function(users) {
+        calculateUserPages(users);
+      })
+
+      $scope.onUserClick = function (user) {
+        $scope.$emit('user:selected', user, {zoomToLocation: true}); // TODO rename to panToLocation
+      }
 
       function calculateObservationPages(observations) {
         if (!observations) return;
@@ -100,6 +138,23 @@ mage.directive('newsFeed', function() {
         }
 
         $scope.observationPages = pages;
+      }
+
+      function calculateUserPages(users) {
+        if (!users) return;
+
+        // sort the locations
+        users = $filter('orderBy')(users, function(user) {
+          return moment(user.location.properties.timestamp).valueOf() * -1;
+        });
+
+        // slice into pages
+        var pages = [];
+        for (var i = 0, j = users.length; i < j; i += usersPerPage) {
+          pages.push(users.slice(i, i + usersPerPage));
+        }
+
+        $scope.userPages = pages;
       }
     }
   };

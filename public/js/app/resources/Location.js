@@ -5,8 +5,9 @@ angular
 Location.$inject = ['$resource'];
 
 function Location($resource) {
-	var Location = $resource('/api/events/:eventId/locations', {
-		eventId: '@eventId'
+	var Location = $resource('/api/events/:eventId/locations/:groupBy', {
+		eventId: '@eventId',
+		groupBy: '@groupBy'
 	},{
     create: {
       method: 'POST',

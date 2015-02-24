@@ -1,0 +1,19 @@
+<div cl***REMOVED***="user-location-news-item">
+	<div cl***REMOVED***="row-fluid">
+		<div cl***REMOVED***="span12">
+			<span cl***REMOVED***="news-feed-item-support small-text pull-right">{{location.properties.timestamp | moment: 'fromNow'}}</span>
+			<div cl***REMOVED***="feed-avatar-img-container pull-left">
+				<img cl***REMOVED***="avatar-thumbnail img-rounded" ng-src="{{avatarUrl}}"/>
+			</div>
+			<div cl***REMOVED***="strong">{{user.username}}</div>
+			<div cl***REMOVED***="muted">{{user.firstname}} {{user.lastname}}</div>
+			<a cl***REMOVED***="news-feed-item-support small-text">{{location.geometry.coordinates[1] | number: 3}}, {{location.geometry.coordinates[0] | number: 3}}</a>
+
+			<div cl***REMOVED***="pull-right">
+				<button ng-cl***REMOVED***="ms.followedUser == user && 'active' || ''"cl***REMOVED***="btn btn-mini btn-primary" ng-click="followUser(user)">
+					<span ng-show="ms.followedUser == user">Following...</span><span ng-hide="ms.followedUser == user">Follow</span>
+				</button>
+			</div>
+		</div>
+	</div>
+</div>

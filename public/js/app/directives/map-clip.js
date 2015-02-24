@@ -6,7 +6,7 @@ function mapClip() {
   var directive = {
     restrict: 'A',
     scope: {
-      feature: '=mapClipFeature',
+      feature: '=mapClip',
     },
     controller: MapClipController,
     bindToController: true
