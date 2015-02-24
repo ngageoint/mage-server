@@ -2,26 +2,32 @@ angular
   .module('mage')
   .***REMOVED***('EventService', EventService);
 
-EventService.$inject = ['$rootScope', '$timeout', 'Event', 'ObservationService', 'FilterService', 'PollingService'];
+EventService.$inject = ['$rootScope', '$q', '$timeout', 'Event', 'ObservationService', 'LocationService', 'FilterService', 'PollingService'];
 
-function EventService($rootScope, $timeout, Event, ObservationService, FilterService, PollingService) {
+function EventService($rootScope, $q, $timeout, Event, ObservationService, LocationService, FilterService, PollingService) {
+  var observationsChangedListeners = [];
+  var usersChangedListeners = [];
+  var eventsById = {};
+
   var ***REMOVED*** = {};
 
   FilterService.addListener({
     onEventChanged: function(event) {
       _.each(event.added, function(added) {
-        fetchObservations(added, FilterService.getTimeInterval());
+        fetch(added, FilterService.getTimeInterval());
       });
 
       _.each(event.removed, function(removed) {
         observationsChanged({removed: _.values(eventsById[removed.id].observationsById)});
         delete eventsById[removed.id];
+
+        // TODO remove locations for event that was removed
       });
     },
     onTimeIntervalChanged: function(interval) {
       var event = FilterService.getEvent();
       if (event) {
-        fetchObservations(event, interval);
+        fetch(event, interval);
       }
     }
   });
@@ -37,10 +43,18 @@ function EventService($rootScope, $timeout, Event, ObservationService, FilterSer
     }
   });
 
-  var selectedEvent = null;
-  var eventsById = {};
+  function usersChanged(changed) {
+    _.each(usersChangedListeners, function(listener) {
+      changed.added = changed.added || [];
+      changed.updated = changed.updated || [];
+      changed.removed = changed.removed || [];
 
-  var observationsChangedListeners = [];
+      if (_.isFunction(listener.onUsersChanged)) {
+        listener.onUsersChanged(changed);
+      }
+    });
+  }
+
   function observationsChanged(changed) {
     _.each(observationsChangedListeners, function(listener) {
       changed.added = changed.added || [];
@@ -53,43 +67,87 @@ function EventService($rootScope, $timeout, Event, ObservationService, FilterSer
     });
   }
 
-  function fetchObservations(event, interval) {
+  function fetch(event, interval) {
+    if (!eventsById[event.id]) {
+      eventsById[event.id] = event;
+      eventsById[event.id].observationsById = {};
+      eventsById[event.id].usersById = {};
+    }
+
     var parameters = {};
     if (interval) {
       var time = FilterService.formatInterval(interval);
       parameters.interval = time;
     }
 
+    return $q.all([
+      fetchObservations(event, parameters),
+      fetchLocations(event, parameters)
+    ]);
+  }
+
+  function fetchObservations(event, parameters) {
     return ObservationService.getObservationsForEvent(event, parameters).then(function(observations) {
       var added = [];
       var updated = [];
       var removed = [];
 
-      if (!eventsById[event.id]) {
-        eventsById[event.id] = event;
-        added = observations;
-      } else {
-        var observationsById = eventsById[event.id].observationsById;
-        _.each(observations, function(observation) {
-          // Check if we already have this observation, if so update, otherwise add
-          var localObservation = observationsById[observation.id];
-          if (localObservation) {
-            if (localObservation.lastModified !== observation.lastModified) updated.push(observation);
-          } else {
-            added.push(observation);
-          }
+      var observationsById = eventsById[event.id].observationsById;
+      _.each(observations, function(observation) {
+        // Check if we already have this observation, if so update, otherwise add
+        var localObservation = observationsById[observation.id];
+        if (localObservation) {
+          if (localObservation.lastModified !== observation.lastModified) updated.push(observation);
+        } else {
+          added.push(observation);
+        }
 
-          // remove from list of observations if it came back from server
-          // remaining elements in this list will be removed
-          delete observationsById[observation.id];
-        });
+        // remove from list of observations if it came back from server
+        // remaining elements in this list will be removed
+        delete observationsById[observation.id];
+      });
 
-        // remaining elements were not pulled from the server, hence we should remove them
-        removed = _.values(observationsById);
-      }
+      // remaining elements were not pulled from the server, hence we should remove them
+      removed = _.values(observationsById);
 
       eventsById[event.id].observationsById = _.indexBy(observations, 'id');
       observationsChanged({added: added, updated: updated, removed: removed});
+    });
+  }
+
+  function fetchLocations(event, parameters) {
+    return LocationService.getUserLocationsForEvent(event, parameters).then(function(userLocations) {
+      var added = [];
+      var updated = [];
+      var removed = [];
+
+      var users = [];
+      var usersById = eventsById[event.id].usersById;
+      _.each(userLocations, function(userLocation) {
+        user = {
+          id: userLocation.id,
+          location: userLocation.locations[0]
+        }
+        users.push(user);
+
+        // Check if we already have this user, if so update, otherwise add
+        var localUser = usersById[user.id];
+        if (localUser) {
+          if (user.location.properties.timestamp !== localUser.location.properties.timestamp) updated.push(user);
+        } else {
+          added.push(user);
+        }
+
+        // remove from list of observations if it came back from server
+        // remaining elements in this list will be removed
+        delete usersById[user.id];
+      });
+
+      // remaining elements were not pulled from the server, hence we should remove them
+      removed = _.values(usersById);
+
+      eventsById[event.id].usersById = _.indexBy(users, 'id');
+      usersChanged({added: added, updated: updated, removed: removed});
     });
   }
 
@@ -97,7 +155,7 @@ function EventService($rootScope, $timeout, Event, ObservationService, FilterSer
   function poll(interval) {
     if (interval <= 0) return;
 
-    fetchObservations(FilterService.getEvent(), FilterService.getTimeInterval()).then(function() {
+    fetch(FilterService.getEvent(), FilterService.getTimeInterval()).then(function() {
       pollingTimeout = $timeout(function() {
         poll(interval);
       }, interval);
@@ -122,6 +180,22 @@ function EventService($rootScope, $timeout, Event, ObservationService, FilterSer
 
   ***REMOVED***.removeObservationsChangedListener = function(listener) {
     observationsChangedListeners = _.reject(observationsChangedListeners, function(l) {
+      return listener === l;
+    });
+  }
+
+  ***REMOVED***.addUsersChangedListener = function(listener) {
+    usersChangedListeners.push(listener);
+
+    if (_.isFunction(listener.onUsersChanged)) {
+      _.each(_.values(eventsById), function(event) {
+        listener.onUsersChanged({added: _.values(event.usersById)});
+      });
+    }
+  }
+
+  ***REMOVED***.removeUsersChangedListener = function(listener) {
+    usersChangedListeners = _.reject(usersChangedListeners, function(l) {
       return listener === l;
     });
   }

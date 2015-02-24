@@ -1,3 +1,4 @@
+// TODO is this used anywhere
 mage.directive('userId', function() {
   return {
     restrict: "A",

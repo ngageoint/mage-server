@@ -99,8 +99,8 @@ User.prototype.create = function(user, options, callback) {
 
         newUser.icon = {
           relativePath: icon.relativePath,
-          contentType: options.avatar.mimetype,
-          size: options.avatar.size
+          contentType: options.icon.mimetype,
+          size: options.icon.size
         };
 
         done(null, newUser);

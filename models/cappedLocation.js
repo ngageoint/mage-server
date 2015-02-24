@@ -36,10 +36,20 @@ exports.addLocations = function(user, event, locations, callback) {
 exports.getLocations = function(options, callback) {
   var limit = options.limit;
   limit = limit <= locationLimit ? limit : locationLimit;
-
-  var query = CappedLocation.find({}, {_id: 1, locations: {$slice: -1 * limit}});
-
   var filter = options.filter;
+
+  var parameters = {};
+  if (filter.event) {
+    parameters.eventId = event._id;
+  }
+
+  if (filter.user) {
+    parameters.userId = user._id;
+  }
+
+  var query = CappedLocation.find(parameters, {userId: 1, locations: {$slice: -1 * limit}});
+
+  // TODO take out where
   if (filter.startDate) {
     query.where('locations.properties.timestamp').gte(filter.startDate);
   }
@@ -53,7 +63,7 @@ exports.getLocations = function(options, callback) {
 
     users = users.map(function(user) {
       return {
-        userId: user._id,
+        id: user.userId,
         locations: user.locations ? user.locations.reverse() : []
       };
     });

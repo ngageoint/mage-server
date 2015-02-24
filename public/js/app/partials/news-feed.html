@@ -35,9 +35,18 @@
             </div>
           </div>
           <div ng-show="currentFeedPanel == 'peopleTab'">
-              <!-- <div ng-if="feedItem.locations">
-              <div user-location-news-item="feedItem"/>
-            </div> -->
+            <div cl***REMOVED***="row-fluid">
+              <div cl***REMOVED***="bucket-panel">
+                <select cl***REMOVED***="span12" style="margin-bottom: 0;" ng-model="currentUserPage" ng-options="userPages.indexOf(userPage) as userPage[0].location.properties.timestamp | moment: 'fromNow' for userPage in userPages">
+                </select>
+              </div>
+            </div>
+
+            <div cl***REMOVED***="news-feed-item pointer" id="{{user.id}}"
+              ng-cl***REMOVED***="(selectedUser.id == user.id) && 'active-news-feed-item'"
+              ng-repeat="user in userPages[currentUserPage] track by user.id">
+              <div user-news-item="user" container-element="side-bar" ng-click="onUserClick(user)"></div>
+            </div>
           </div>
 
         </div>

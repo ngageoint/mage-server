@@ -7,8 +7,12 @@ MageController.$inject = ['$scope', '$compile', '$timeout', 'FilterService', 'Ev
 function MageController($scope, $compile, $timeout, FilterService, EventService, MapService, PollingService, LocalStorageService, Layer, Observation, Location) {
 
   var observationsById = {};
-  $scope.newsFeedObservations = [];
-  $scope.newsFeedChangedObservations = 0;
+  $scope.feedObservations = [];
+  $scope.feedChangedObservations = 0;
+
+  var usersById = {};
+  $scope.feedUsers = [];
+  $scope.feedChangedUsers = 0;
 
   Layer.query(function (layers) {
     var baseLayerFound = false;
@@ -31,6 +35,20 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
       MapService.createRasterLayer(layer);
     });
   });
+
+  var observationsChangedListener = {
+    onObservationsChanged: onObservationsChanged
+  };
+  EventService.addObservationsChangedListener(observationsChangedListener);
+  var usersChangedListener = {
+    onUsersChanged: onUsersChanged
+  };
+  EventService.addUsersChangedListener(usersChangedListener);
+
+  var locationListener = {
+    onLocation: onLocation
+  };
+  MapService.addListener(locationListener);
 
   function onObservationsChanged(changed) {
     _.each(changed.added, function(added) {
@@ -61,28 +79,46 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     });
 
     // update the news feed observations
-    $scope.newsFeedObservations = _.values(observationsById);
+    $scope.feedObservations = _.values(observationsById);
 
-    if (changed.added) $scope.newsFeedChangedObservations += changed.added.length;
-    if (changed.updated) $scope.newsFeedChangedObservations += changed.updated.length;
+    if (changed.added) $scope.feedChangedObservations += changed.added.length;
+    if (changed.updated) $scope.feedChangedObservations += changed.updated.length;
   }
 
-  var observationsChangedListener = {
-    onObservationsChanged: onObservationsChanged
-  };
-  EventService.addObservationsChangedListener(observationsChangedListener);
+  function onUsersChanged(changed) {
+    _.each(changed.added, function(added) {
+      usersById[added.id] = added;
 
-  var locationListener = {
-    onLocation: onLocation
-  };
-  MapService.addListener(locationListener);
+      // MapService.addFeatureToLayer(added, 'People');
+    });
 
-  $scope.$on('$destroy', function() {
-    EventService.removeObservationsChangedListener(observationsChangedListener);
-    MapService.removeListener(locationListener);
-    PollingService.setPollingInterval(0); // stop polling
-  });
+    _.each(changed.updated, function(updated) {
+      var user = usersById[updated.id];
+      if (user) {
+        user = updated;
 
+        // MapService.updateFeatureForLayer(user, 'People');
+      }
+    });
+
+    _.each(changed.removed, function(removed) {
+      delete usersById[removed.id];
+
+      // MapService.removeFeatureFromLayer(removed, 'People');
+
+      var scope = popupScopes[removed.id];
+      if (scope) {
+        scope.$destroy();
+        delete popupScopes[removed.id];
+      }
+    });
+
+    // update the news feed observations
+    $scope.feedUsers = _.values(usersById);
+
+    if (changed.added) $scope.feedChangedUsers += changed.added.length;
+    if (changed.updated) $scope.feedChangedUsers += changed.updated.length;
+  }
 
   function onLocation(l) {
     var event = FilterService.getEvent();
@@ -93,7 +129,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
         coordinates: [l.longitude, l.latitude]
       },
       properties: {
-        timestamp: l.timestamp,
+        timestamp: new Date().valueOf(),
         accuracy: l.accuracy,
         altitude: l.altitude,
         altitudeAccuracy: l.altitudeAccuracy,
@@ -105,7 +141,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
 
   var selectedObservationId = null;
   function onObservationSelected(observation, options) {
-    // Prevent selected event for same observation
+    // Prevent selected event for already selected observation
     if (selectedObservationId !== observation.id) {
       selectedObservationId = observation.id;
       $scope.$broadcast('observation:select', observation);
@@ -116,6 +152,21 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   function onObservationDeselected(observation) {
     selectedObservationId = null;
     $scope.$broadcast('observation:deselect', observation);
+  }
+
+  var selectedUserId = null;
+  function onUserSelected(user, options) {
+    // Prevent selected event for already selected user
+    if (selectedUserId !== user.id) {
+      selectedUserId = user.id;
+      $scope.$broadcast('user:select', user);
+      // MapService.selectFeatureInLayer(user, 'People', options);
+    }
+  }
+
+  function onUserDeselected(user) {
+    selectedUserId = null;
+    $scope.$broadcast('user:deselect', user);
   }
 
   // TODO is there a better way to do this?
@@ -157,8 +208,19 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     }
   });
 
+  $scope.$on('$destroy', function() {
+    EventService.removeObservationsChangedListener(observationsChangedListener);
+    EventService.removeUsersChangedListener(usersChangedListener);
+    MapService.removeListener(locationListener);
+    PollingService.setPollingInterval(0); // stop polling
+  });
+
   $scope.$on('observation:selected', function(e, observation, options) {
     onObservationSelected(observation, options);
+  });
+
+  $scope.$on('user:selected', function(e, user, options) {
+    onUserSelected(user, options);
   });
 
   var newObservation = null;

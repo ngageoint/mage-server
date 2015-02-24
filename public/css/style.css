@@ -545,6 +545,18 @@ h4.image-delete {
 	height: 100%;
 }
 
+.feed-avatar-img-container {
+	width: 60px;
+	height: 60px;
+	overflow: hidden;
+	margin-right: 10px
+}
+
+.feed-avatar-img-container img {
+	width: 100%;
+	height: 100%;
+}
+
 .nav-link:focus {
 	outline: none;
 }
