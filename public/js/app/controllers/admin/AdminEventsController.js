@@ -203,7 +203,7 @@ function AdminEventsController($scope, $injector, $filter, $timeout, LocalStorag
 
     angular.forEach($scope.event.form.fields, function(field) {
       if (field.name == 'type') {
-          $scope.typeField = field;
+        $scope.typeField = field;
       }
     });
   });
@@ -224,10 +224,6 @@ function AdminEventsController($scope, $injector, $filter, $timeout, LocalStorag
       $scope.populateVariants();
       $scope.autoSave();
     }
-  }
-
-  $scope.filterArchived = function(field) {
-    return !field.archived;
   }
 
   $scope.variantFilter = function(field) {

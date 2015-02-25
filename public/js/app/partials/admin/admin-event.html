@@ -124,7 +124,7 @@
               <p ng-show="event.form.fields.length == 0">No fields added yet.</p>
               <div cl***REMOVED***="well">
                 <accordion close-others="accordion.oneAtATime">
-                  <accordion-group heading="{{field.title}}" ng-repeat="field in event.form.fields | filter:filterArchived track by field.id">
+                  <accordion-group heading="{{field.title}}" ng-repeat="field in event.form.fields | filter:{archived: '!true'} track by field.id">
                     <div cl***REMOVED***="accordion-edit">
                       <button ng-show="deletableField(field)" cl***REMOVED***="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i cl***REMOVED***="fa fa-trash icon-white"></i> Delete</button>
                       <div cl***REMOVED***="row-fluid">
@@ -247,10 +247,10 @@
                         Default Icon
                       </div>
                       <form enctype="multipart/form-data"
-                      simple-upload url="{{'/api/events/' + event.id + '/form/icons' + '?access_token=' + token}}"
-                      allow-upload="event.id"
-                      preview="true"
-                      upload-file-form-name="'icon'">
+                        simple-upload url="{{'/api/events/' + event.id + '/form/icons' + '?access_token=' + token}}"
+                        allow-upload="event.id"
+                        preview="true"
+                        upload-file-form-name="'icon'">
                     </form>
                   </div>
                 </div>
@@ -294,10 +294,10 @@
                           <div cl***REMOVED***="span12 strong">Default</div>
                         </div>
                         <form enctype="multipart/form-data"
-                        simple-upload url="{{'/api/events/' + event.id + '/form/icons/' + option.title + '?access_token=' + token + '&_dc=' + savedTime}}"
-                        allow-upload="event.id"
-                        preview="true"
-                        upload-file-form-name="'icon'">
+                          simple-upload url="{{'/api/events/' + event.id + '/form/icons/' + option.title + '?access_token=' + token + '&_dc=' + savedTime}}"
+                          allow-upload="event.id"
+                          preview="true"
+                          upload-file-form-name="'icon'">
                       </form>
                     </div>
                     <div cl***REMOVED***="span2" ng-repeat="variant in variants">
@@ -315,10 +315,10 @@
                         </div>
                       </div>
                       <form enctype="multipart/form-data"
-                      simple-upload url="{{'/api/events/' + event.id + '/form/icons/' + option.title + '/' + variant.title + '?access_token=' + token + '&_dc=' + savedTime}}"
-                      allow-upload="event.id"
-                      preview="true"
-                      upload-file-form-name="'icon'">
+                        simple-upload url="{{'/api/events/' + event.id + '/form/icons/' + option.title + '/' + variant.title + '?access_token=' + token + '&_dc=' + savedTime}}"
+                        allow-upload="event.id"
+                        preview="true"
+                        upload-file-form-name="'icon'">
                     </form>
                   </div>
                 </div>
@@ -328,7 +328,7 @@
 
           <div cl***REMOVED***="form-fields-preview well">
             <h3>Form Preview</h3>
-            <form-directive form="event.form" formPreview="true"></form-directive>
+            <form-directive form="event.form" form-preview="true"></form-directive>
           </div>
 
         </div>

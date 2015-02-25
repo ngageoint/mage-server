@@ -1,6 +1,6 @@
 <form name="observationForm" id="myForm" cl***REMOVED***="form" novalidate>
 
-    <div ng-repeat="field in form.fields | filter:filterArchived">
+    <div ng-repeat="field in form.fields | filter:{archived: '!true'}">
       <field-directive field="field" field-observation="observation"></field-directive>
     </div>
     <span>* required</span>

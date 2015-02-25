@@ -88,10 +88,6 @@ function FormDirectiveController($scope, EventService, Observation, UserService,
     delete $scope.attachmentUploads[id];
   }
 
-  $scope.filterArchived = function(field) {
-    return !field.archived;
-  }
-
   $scope.$on('uploadFile', function(e, id) {
     $scope.attachmentUploads[id] = true;
   });
