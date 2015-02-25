@@ -1,3 +1,4 @@
+// TODO need to rename this directive
 mage.directive('simpleUpload', function() {
   return {
     restrict: "A",
@@ -72,6 +73,7 @@ mage.directive('simpleUpload', function() {
 
       var uploadComplete = function(response) {
         $scope.$apply(function() {
+          $scope.file = null;
           $scope.uploadStatus = "Upload Complete";
           $scope.uploading = false;
           $scope.$emit('uploadComplete', $scope.url, response, $scope.uploadId);
@@ -80,6 +82,7 @@ mage.directive('simpleUpload', function() {
 
       var uploadFailed = function(response, status, error) {
         $scope.$apply(function() {
+          $scope.file = null;
           $scope.uploadStatus = "Upload Failed";
           $scope.uploading = false;
           $scope.$emit('uploadFailed', $scope.url, response, $scope.uploadId);
