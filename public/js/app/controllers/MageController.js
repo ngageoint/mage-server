@@ -25,7 +25,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
 
   var usersById = {};
   $scope.feedUsers = [];
-  $scope.feedChangedUsers = 0;
+  $scope.feedChangedUsers = {};
 
   // TODO is there a better way to do this?
   // Need to hang onto popup scopes so that I can delete the scope if the observation
@@ -182,6 +182,8 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
       usersById[added.id] = added;
 
       MapService.addFeatureToLayer(added.location, 'People');
+
+      $scope.feedChangedUsers[added.id] = true;
     });
 
     _.each(changed.updated, function(updated) {
@@ -191,6 +193,8 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
 
         MapService.updateFeatureForLayer(user.location, 'People');
       }
+
+      $scope.feedChangedUsers[updated.id] = true;
     });
 
     _.each(changed.removed, function(removed) {
@@ -208,8 +212,8 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     // update the news feed observations
     $scope.feedUsers = _.values(usersById);
 
-    if (changed.added) $scope.feedChangedUsers += changed.added.length;
-    if (changed.updated) $scope.feedChangedUsers += changed.updated.length;
+    // if (changed.added) $scope.feedChangedUsers += changed.added.length;
+    // if (changed.updated) $scope.feedChangedUsers += changed.updated.length;
   }
 
   function onLocation(l) {
