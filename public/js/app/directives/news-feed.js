@@ -5,7 +5,8 @@ mage.directive('newsFeed', function() {
     scope: {
       observations: '=feedObservations',
       observationsChanged: '=feedObservationsChanged',
-      users: '=feedUsers'
+      users: '=feedUsers',
+      feedUsersChanged: '=feedUsersChanged'
     },
     controller: function ($rootScope, $scope, $element, $filter, $timeout, FilterService, EventService, Observation, ObservationService) {
       $scope.currentFeedPanel = 'observationsTab';
@@ -16,7 +17,7 @@ mage.directive('newsFeed', function() {
       var observationsPerPage = 25;
 
       $scope.currentUserPage = 0;
-      $scope.usersChangedSeen = 0;
+      $scope.usersChanged = {};
       $scope.userPages = null;
       var usersPerPage = 25;
 
@@ -46,16 +47,29 @@ mage.directive('newsFeed', function() {
       $scope.tabSelected = function(tab) {
         $scope.currentFeedPanel = tab;
 
-        if ($scope.currentFeedPanel === 'observationsTab') $scope.observationsChangedSeen = $scope.observationsChanged;
+        if ($scope.currentFeedPanel === 'observationsTab') {
+          $scope.observationsChangedSeen = $scope.observationsChanged;
+        } else if ($scope.currentFeedPanel === 'peopleTab') {
+          $scope.feedUsersChanged = {};
+          $scope.usersChanged = 0;
+        }
       }
 
       $scope.$watch('observationsChanged', function(observationsChanged) {
         if (!observationsChanged) return;
 
         if ($scope.currentFeedPanel === 'observationsTab') {
-          $scope.observationsChangedSeen = $scope.observationsChanged;
+          $scope.observationsChangedSeen = observationsChanged;
         }
       });
+
+      $scope.$watch('feedUsersChanged', function(feedUsersChanged) {
+        if (!feedUsersChanged) return;
+
+        if ($scope.currentFeedPanel === 'observationsTab') {
+          $scope.usersChanged = _.keys(feedUsersChanged).length;
+        }
+      }, true);
 
       $scope.onObservationClick = function(observation) {
         $scope.$emit('observation:selected', observation, {zoomToLocation: true});  // TODO rename to panToLocation
