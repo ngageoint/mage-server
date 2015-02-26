@@ -19,6 +19,7 @@ mage.directive('newsFeed', function() {
       $scope.currentUserPage = 0;
       $scope.usersChanged = {};
       $scope.userPages = null;
+      $scope.followUserId = null;
       var usersPerPage = 25;
 
       calculateObservationPages($scope.observations);
@@ -72,7 +73,7 @@ mage.directive('newsFeed', function() {
       }, true);
 
       $scope.onObservationClick = function(observation) {
-        $scope.$emit('observation:selected', observation, {zoomToLocation: true});  // TODO rename to panToLocation
+        $scope.$emit('observation:selected', observation, {panToLocation: true});
       }
 
       $scope.$on('observation:select', function(e, observation) {
@@ -125,17 +126,17 @@ mage.directive('newsFeed', function() {
         });
       });
 
+      $scope.$on('user:follow', function(e, user) {
+        $scope.followUserId = $scope.followUserId == user.id ? null : user.id;
+      });
+
       $scope.$watch('observations', function(observations) {
         calculateObservationPages(observations);
       });
 
       $scope.$watch('users', function(users) {
         calculateUserPages(users);
-      })
-
-      $scope.onUserClick = function (user) {
-        $scope.$emit('user:selected', user, {zoomToLocation: true}); // TODO rename to panToLocation
-      }
+      });
 
       function calculateObservationPages(observations) {
         if (!observations) return;

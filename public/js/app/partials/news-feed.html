@@ -45,7 +45,7 @@
             <div cl***REMOVED***="news-feed-item pointer" id="{{user.id}}"
               ng-cl***REMOVED***="(selectedUser.id == user.id) && 'active-news-feed-item'"
               ng-repeat="user in userPages[currentUserPage] track by user.id">
-              <div user-news-item="user" container-element="side-bar" ng-click="onUserClick(user)"></div>
+              <div user-news-item="user" user-news-item-follow="followUserId" container-element="side-bar"></div>
             </div>
           </div>
 

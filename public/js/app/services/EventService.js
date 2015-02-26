@@ -19,9 +19,8 @@ function EventService($rootScope, $q, $timeout, Event, ObservationService, Locat
 
       _.each(event.removed, function(removed) {
         observationsChanged({removed: _.values(eventsById[removed.id].observationsById)});
+        usersChanged({removed: _.values(eventsById[removed.id].usersById)});
         delete eventsById[removed.id];
-
-        // TODO remove locations for event that was removed
       });
     },
     onTimeIntervalChanged: function(interval) {

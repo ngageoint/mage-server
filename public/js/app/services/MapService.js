@@ -11,8 +11,9 @@ function MapService($rootScope, Layer, EventService) {
     removeListener: removeListener,
     getRasterLayers: getRasterLayers,
     selectBaseLayer: selectBaseLayer,
-    addOverlay: addOverlay,
-    removeOverlay: removeOverlay,
+    overlayAdded: overlayAdded,
+    removeLayer: removeLayer,
+    destroy: destroy,
     getVectorLayers: getVectorLayers,
     createRasterLayer: createRasterLayer,
     createVectorLayer: createVectorLayer,
@@ -27,8 +28,8 @@ function MapService($rootScope, Layer, EventService) {
   };
 
   var baseLayer = null;
-  var rasterLayers = [];
-  var vectorLayers = [];
+  var rasterLayers = {};
+  var vectorLayers = {};
   var listeners = [];
 
   return ***REMOVED***;
@@ -37,7 +38,14 @@ function MapService($rootScope, Layer, EventService) {
     listeners.push(listener);
 
     if (_.isFunction(listener.onLayersChanged)) {
-      listener.onLayersChanged({added: rasterLayers.concat(vectorLayers)});
+      var layers = _.values(rasterLayers).concat(_.values(vectorLayers));
+      listener.onLayersChanged({added: layers});
+    }
+
+    if (_.isFunction(listener.onFeaturesChanged)) {
+      _.each(_.values(vectorLayers), function(vectorLayer) {
+        listener.onFeaturesChanged({name: vectorLayer.name, added: _.values(vectorLayer.featuresById)});
+      });
     }
 
     if (_.isFunction(listener.onBaseLayerSelected) && baseLayer) {
@@ -62,7 +70,7 @@ function MapService($rootScope, Layer, EventService) {
       added: [layer]
     });
 
-    rasterLayers.push(layer);
+    rasterLayers[layer.name] = layer;
   }
 
   function createVectorLayer(layer) {
@@ -70,7 +78,8 @@ function MapService($rootScope, Layer, EventService) {
       added: [layer]
     });
 
-    vectorLayers.push(layer);
+    layer.featuresById = {};
+    vectorLayers[layer.name] = layer;
   }
 
   function createMarker(marker, options) {
@@ -97,6 +106,9 @@ function MapService($rootScope, Layer, EventService) {
   }
 
   function addFeatureToLayer(feature, layerId) {
+    var vectorLayer = vectorLayers[layerId];
+    vectorLayer.featuresById[feature.id] = feature;
+
     featuresChanged({
       name: layerId,
       added: [feature]
@@ -111,6 +123,9 @@ function MapService($rootScope, Layer, EventService) {
   }
 
   function removeFeatureFromLayer(feature, layerId) {
+    var vectorLayer = vectorLayers[layerId];
+    delete vectorLayer.featuresById[feature.id];
+
     featuresChanged({
       name: layerId,
       removed: [feature]
@@ -173,19 +188,55 @@ function MapService($rootScope, Layer, EventService) {
     });
   }
 
-  function addOverlay(overlay) {
+  function overlayAdded(overlay) {
     _.each(listeners, function(listener) {
-      if (_.isFunction(listener.onOverlayRemoved)) {
+      if (_.isFunction(listener.onOverlayAdded)) {
         listener.onOverlayAdded(overlay);
       }
     });
   }
 
-  function removeOverlay(overlay) {
-    _.each(listeners, function(listener) {
-      if (_.isFunction(listener.onOverlayRemoved)) {
-        listener.onOverlayRemoved(overlay);
-      }
+  function destroy() {
+    _.each(_.values(vectorLayers), function(layerInfo) {
+      _.each(listeners, function(listener) {
+        if (_.isFunction(listener.onLayerRemoved)) {
+          listener.onLayerRemoved(layerInfo);
+        }
+      });
     });
+    vectorLayers = {};
+
+    _.each(_.values(rasterLayers), function(layerInfo) {
+      _.each(listeners, function(listener) {
+        if (_.isFunction(listener.onLayerRemoved)) {
+          listener.onLayerRemoved(layerInfo);
+        }
+      });
+    });
+    rasterLayers = {};
+  }
+
+  function removeLayer(layer) {
+    var vectorLayer = vectorLayers[layer.name];
+    if (vectorLayer) {
+      _.each(listeners, function(listener) {
+        if (_.isFunction(listener.onLayerRemoved)) {
+          listener.onLayerRemoved(vectorLayer);
+        }
+      });
+
+      delete vectorLayers[layer.name];
+    }
+
+    var rasterLayer = rasterLayers[layer.name];
+    if (rasterLayer) {
+      _.each(listeners, function(listener) {
+        if (_.isFunction(listener.onLayerRemoved)) {
+          listener.onLayerRemoved(rasterLayer);
+        }
+      });
+
+      delete rasterLayers[layer.name];
+    }
   }
 }
