@@ -111,6 +111,7 @@ module.exports = function(app, security) {
     access.authorize('READ_LOCATION'),
     parseQueryParams,
     function(req, res) {
+      filter.eventId = req.event._id;
       Location.getLocations({filter: req.parameters.filter, limit: req.parameters.limit}, function(err, locations) {
         res.json(locations);
       });

@@ -152,10 +152,9 @@ module.exports = function(app, security) {
     '/api/logout',
     isAuthenticated(authenticationStrategy),
     function(req, res, next) {
-      new api.User().logout(req.user, function(err) {
+      new api.User().logout(req.token, function(err) {
         if (err) return next(err);
-
-        res.send(200, 'successfully logged out');
+        res.status(200).send('successfully logged out');
       });
     }
   );
@@ -211,7 +210,6 @@ module.exports = function(app, security) {
           stream.pipe(res);
         });
         stream.on('error', function(err) {
-          console.log('error', err);
           res.send(404);
         });
       });
@@ -242,11 +240,11 @@ module.exports = function(app, security) {
       var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
       if (p***REMOVED***word && p***REMOVED***wordconfirm) {
         if (p***REMOVED***word != p***REMOVED***wordconfirm) {
-          return res.send(400, 'p***REMOVED***words do not match');
+          return res.status(400).send('p***REMOVED***words do not match');
         }
 
         if (p***REMOVED***word.length < p***REMOVED***wordLength) {
-          return res.send(400, 'p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
+          return res.status(400).send('p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
         }
 
         user.p***REMOVED***word = p***REMOVED***word;
@@ -280,7 +278,7 @@ module.exports = function(app, security) {
       req.newUser.active = true;
 
       new api.User().create(req.newUser, {avatar: req.files.avatar, icon: req.files.icon}, function(err, newUser) {
-        if (err) return res.send(400, err.message);
+        if (err) return next(err);
 
         newUser = userTransformer.transform(newUser, {path: req.getRoot()});
         res.json(newUser);
@@ -299,7 +297,7 @@ module.exports = function(app, security) {
       req.newUser.role = req.role._id;
 
       new api.User().create(req.newUser, {avatar: req.files.avatar}, function(err, newUser) {
-        if (err) return res.send(400, err.message);
+        if (err) return next(err);
 
         newUser = userTransformer.transform(newUser, {path: req.getRoot()});
         res.json(newUser);
@@ -313,7 +311,7 @@ module.exports = function(app, security) {
     p***REMOVED***port.authenticate(authenticationStrategy),
     function(req, res) {
       var status = req.param('status');
-      if (!status) return res.send(400, "Missing required parameter 'status'");
+      if (!status) return res.status(400).send("Missing required parameter 'status'");
 
       var update = {status: status};
 
@@ -366,11 +364,11 @@ module.exports = function(app, security) {
       var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
       if (p***REMOVED***word && p***REMOVED***wordconfirm) {
         if (p***REMOVED***word != p***REMOVED***wordconfirm) {
-          return res.send(400, 'p***REMOVED***words do not match');
+          return res.status(400).send('p***REMOVED***words do not match');
         }
 
         if (p***REMOVED***word.length < p***REMOVED***wordLength) {
-          return res.send(400, 'p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
+          return res.status(400).send('p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
         }
 
         user.p***REMOVED***word = p***REMOVED***word;
@@ -390,9 +388,9 @@ module.exports = function(app, security) {
     '/api/users/:userId',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('DELETE_USER'),
-    function(req, res) {
+    function(req, res, next) {
       new api.User().delete(req.userParam, function(err) {
-        if (err) return res.send(400, err);
+        if (err) return next(err);
 
         res.send(204);
       });
