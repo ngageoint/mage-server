@@ -11,7 +11,7 @@ function EventService($rootScope, $q, $timeout, Event, ObservationService, Locat
 
   var ***REMOVED*** = {};
 
-  FilterService.addListener({
+  var filterServiceListener = {
     onEventChanged: function(event) {
       _.each(event.added, function(added) {
         fetch(added, FilterService.getTimeInterval());
@@ -29,9 +29,10 @@ function EventService($rootScope, $q, $timeout, Event, ObservationService, Locat
         fetch(event, interval);
       }
     }
-  });
+  }
+  FilterService.addListener(filterServiceListener);
 
-  PollingService.addListener({
+  var pollingServiceListener = {
     onPollingIntervalChanged: function(interval) {
       if (pollingTimeout) {
         // cancel previous poll
@@ -40,7 +41,8 @@ function EventService($rootScope, $q, $timeout, Event, ObservationService, Locat
 
       poll(interval);
     }
-  });
+  }
+  PollingService.addListener(pollingServiceListener);
 
   function usersChanged(changed) {
     _.each(usersChangedListeners, function(listener) {
@@ -166,6 +168,9 @@ function EventService($rootScope, $q, $timeout, Event, ObservationService, Locat
     if (pollingTimeout) {
       $timeout.cancel(pollingTimeout);
     }
+
+    FilterService.removeListener(filterServiceListener);
+    PollingService.removeListener(pollingServiceListener);
   });
 
   ***REMOVED***.addObservationsChangedListener = function(listener) {

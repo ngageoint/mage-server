@@ -59,6 +59,10 @@ function FilterService($rootScope, UserService) {
     }
   }
 
+  function removeListener(listener) {
+    listeners = _.reject(listeners, function(l) { return l === listener });
+  }
+
   function setEvent(newEvent) {
     if (event && event.id === newEvent.id) return;
 
