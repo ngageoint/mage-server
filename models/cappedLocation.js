@@ -39,13 +39,8 @@ exports.getLocations = function(options, callback) {
   var filter = options.filter;
 
   var parameters = {};
-  if (filter.event) {
-    parameters.eventId = event._id;
-  }
-
-  if (filter.user) {
-    parameters.userId = user._id;
-  }
+  if (filter.eventId) parameters.eventId = filter.eventId;
+  if (filter.user) parameters.userId = user._id;
 
   var query = CappedLocation.find(parameters, {userId: 1, locations: {$slice: -1 * limit}});
 

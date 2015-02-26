@@ -6,7 +6,7 @@ var crypto = require('crypto')
 var tokenExpiration = config.server.token.expiration * 1000;
 
 // Creates a new Mongoose Schema object
-var Schema = mongoose.Schema; 
+var Schema = mongoose.Schema;
 
 // Collection to hold users
 var TokenSchema = new Schema({
@@ -14,8 +14,8 @@ var TokenSchema = new Schema({
     deviceId: { type: Schema.Types.ObjectId, ref: 'Device' },
     timestamp: { type: Date, required: true },
     token: { type: String, required: true }
-  },{ 
-    versionKey: false 
+  },{
+    versionKey: false
   }
 );
 
@@ -31,7 +31,7 @@ var deleteExpiredTokens = function(callback) {
     }
 
     callback(err, number);
-  }); 
+  });
 }
 
 exports.getToken = function(token, callback) {
@@ -73,9 +73,9 @@ exports.createToken = function(options, callback) {
   });
 }
 
-exports.removeTokenForUser = function(user, callback) {
-  Token.remove({user: user._id}, function(err, numberRemoved) {
-    callback(err, numberRemoved);
+exports.removeToken = function(token, callback) {
+  Token.findByIdAndRemove(token._id, function(err) {
+    callback(err);
   });
 }
 

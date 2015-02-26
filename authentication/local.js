@@ -13,6 +13,8 @@ module.exports = function(p***REMOVED***port) {
 
         if (!retrievedToken || !retrievedToken.user) { return done(null, false); }
 
+        req.token = retrievedToken;
+
         // add the provisionedDevice to the request if available
         if (retrievedToken.deviceId) {
           req.provisionedDeviceId = retrievedToken.deviceId;

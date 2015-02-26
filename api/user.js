@@ -40,10 +40,10 @@ User.prototype.login = function(user, device, options, callback) {
   });
 }
 
-User.prototype.logout = function(user, callback) {
-  if (!user) return callback();
+User.prototype.logout = function(token, callback) {
+  if (!token) return callback();
 
-  TokenModel.removeTokenForUser(user, function(err, token){
+  TokenModel.removeToken(token, function(err, token){
     callback(err);
   });
 }

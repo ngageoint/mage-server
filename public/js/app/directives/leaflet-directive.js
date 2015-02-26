@@ -70,7 +70,6 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
 
   adjustTemporalLayers();
   function adjustTemporalLayers() {
-    console.log('adjusting temporal layers');
     _.each(temporalLayers, function(temporalLayer) {
       _.each(temporalLayer.featureIdToLayer, function(layer) {
         var color = colorForFeature(layer.feature, temporalLayer.options.temporal);
