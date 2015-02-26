@@ -27,6 +27,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
 
   var usersById = {};
   var selectedUserId = null;
+  var followingUserId = null;
   $scope.feedUsers = [];
   $scope.feedChangedUsers = {};
 
@@ -37,7 +38,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   // rather than angular
   var popupScopes = {};
 
-  var observationLayer = MapService.createVectorLayer({
+  var observationLayer = {
     name: 'Observations',
     group: 'MAGE',
     type: 'geojson',
@@ -68,9 +69,10 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
         }
       }
     }
-  });
+  }
+  MapService.createVectorLayer(observationLayer);
 
-  var peopleLayer = MapService.createVectorLayer({
+  var peopleLayer = {
     name: 'People',
     group: 'MAGE',
     type: 'geojson',
@@ -107,7 +109,8 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
         }
       }
     }
-  });
+  }
+  MapService.createVectorLayer(peopleLayer);
 
   var observationsChangedListener = {
     onObservationsChanged: onObservationsChanged
@@ -195,6 +198,9 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
         user = updated;
 
         MapService.updateFeatureForLayer(user.location, 'People');
+
+        // pan/zoom map to user if this is the user we are following
+        if (user.id === followingUserId) MapService.selectFeatureInLayer(user, 'People', {panToLocation: true, zoomToLocation: true});
       }
 
       $scope.feedChangedUsers[updated.id] = true;
@@ -254,8 +260,9 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     if (selectedUserId !== user.id) {
       selectedUserId = user.id;
       $scope.$broadcast('user:select', user);
-      MapService.selectFeatureInLayer(user, 'People', options);
     }
+
+    MapService.selectFeatureInLayer(user, 'People', options);
   }
 
   function onUserDeselected(user) {
@@ -263,11 +270,11 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     $scope.$broadcast('user:deselect', user);
   }
 
-
   $scope.$on('$destroy', function() {
     EventService.removeObservationsChangedListener(observationsChangedListener);
     EventService.removeUsersChangedListener(usersChangedListener);
     MapService.removeListener(locationListener);
+    MapService.destroy();
     PollingService.setPollingInterval(0); // stop polling
   });
 
@@ -277,6 +284,15 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
 
   $scope.$on('user:selected', function(e, user, options) {
     onUserSelected(user, options);
+  });
+
+  $scope.$on('user:follow', function(e, user) {
+    if (user) {
+      followingUserId = user.id;
+      onUserSelected(user, {panToLocation: true, zoomToLocation: true});
+    } else {
+      followingUserId = null;
+    }
   });
 
   $scope.$on('observation:create', function(e, latlng) {

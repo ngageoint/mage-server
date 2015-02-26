@@ -6,7 +6,7 @@ function leaflet() {
   var directive = {
     restrict: "A",
     replace: true,
-    transclude: true,
+    // transclude: true,
     template: '<div cl***REMOVED***="map"></div>',
     controller: LeafletController,
     bindToController: true
@@ -49,21 +49,22 @@ function LeafletController($rootScope, $scope, MapService, LocalStorageService) 
   map.addControl(sidebar);
   sidebar.show();
 
-  var layerControl = L.control.groupedLayers();
+  var layerControl = L.control.layers();
+  // var layerControl = L.control.groupedLayers();
   layerControl.addTo(map);
   map.on('baselayerchange', function(baseLayer) {
     var layer = layers[baseLayer.name];
-    MapService.selectBaseLayer(layer.rasterLayer);
+    MapService.selectBaseLayer(layer);
   });
 
   map.on('overlayadd', function(overlay, name) {
-    var layer = layers[name];
-    MapService.addOverlay(overlay.rasterLayer);
+    var layer = layers[overlay.name];
+    MapService.overlayAdded(layer);
   });
 
   map.on('overlayremove', function(overlay, name) {
-    var layer = layers[name];
-    MapService.removeOverlay(overlay.rasterLayer);
+    var layer = layers[overlay.name];
+    MapService.removeLayer(layer);
   });
 
   function onLocation(location, broadcast) {
@@ -95,10 +96,16 @@ function LeafletController($rootScope, $scope, MapService, LocalStorageService) 
   }
 
   // setup my listeners
-  MapService.addListener({
+  var listener = {
+    onLayerRemoved: onLayerRemoved,
     onLayersChanged: onLayersChanged,
     onFeaturesChanged: onFeaturesChanged,
     onFeatureSelected: onFeatureSelected
+  };
+  MapService.addListener(listener);
+
+  $scope.$on('$destroy', function() {
+    MapService.removeListener(listener);
   });
 
   function createMarker(marker) {
@@ -142,28 +149,28 @@ function LeafletController($rootScope, $scope, MapService, LocalStorageService) 
   }
 
   // TODO move into leaflet ***REMOVED***, this and map clip both use it
-  function createRasterLayer(layer) {
+  function createRasterLayer(layerInfo) {
     var baseLayer = null;
     var options = {};
-    if (layer.format == 'XYZ' || layer.format == 'TMS') {
-      options = { tms: layer.format == 'TMS', maxZoom: 18}
-      baseLayer = new L.TileLayer(layer.url, options);
-    } else if (layer.format == 'WMS') {
+    if (layerInfo.format == 'XYZ' || layerInfo.format == 'TMS') {
+      options = { tms: layerInfo.format == 'TMS', maxZoom: 18}
+      layerInfo.layer = new L.TileLayer(layerInfo.url, options);
+    } else if (layerInfo.format == 'WMS') {
       options = {
-        layers: layer.wms.layers,
-        version: layer.wms.version,
-        format: layer.wms.format,
-        transparent: layer.wms.transparent
+        layers: layerInfo.wms.layers,
+        version: layerInfo.wms.version,
+        format: layerInfo.wms.format,
+        transparent: layerInfo.wms.transparent
       };
 
-      if (layer.wms.styles) options.styles = layer.wms.styles;
-      baseLayer = new L.TileLayer.WMS(layer.url, options);
+      if (layerInfo.wms.styles) options.styles = layerInfo.wms.styles;
+      layerInfo.layer = new L.TileLayer.WMS(layerInfo.url, options);
     }
 
-    layers[layer.name] = {type: 'tile', layer: baseLayer, rasterLayer: layer};
-    layerControl.addBaseLayer(baseLayer, layer.name);
+    layers[layerInfo.name] = layerInfo;
+    layerControl.addBaseLayer(layerInfo.layer, layerInfo.name);
 
-    if (layer.options && layer.options.selected) baseLayer.addTo(map);
+    if (layerInfo.options && layerInfo.options.selected) layerInfo.layer.addTo(map);
   }
 
   function colorForFeature(feature, options) {
@@ -245,10 +252,10 @@ function LeafletController($rootScope, $scope, MapService, LocalStorageService) 
       layerInfo.layer = geojson;
     }
 
+    layers[data.name] = layerInfo;
+
     layerControl.addOverlay(layerInfo.layer, data.name, data.group);
     if (data.options.selected) layerInfo.layer.addTo(map);
-
-    layers[data.name] = layerInfo;
   }
 
   function onLayersChanged(changed) {
@@ -333,8 +340,10 @@ function LeafletController($rootScope, $scope, MapService, LocalStorageService) 
 
   function openPopup(layer, options) {
     layer.openPopup();
-    if (options && options.zoomToLocation && map.hasLayer(layer)) {
-      map.panTo(layer.getLatLng());
+    if (options && map.hasLayer(layer)) {
+      if (options.panToLocation) {
+        map.setView(layer.getLatLng(), options.zoomToLocation ? 17 : map.getZoom());
+      }
     }
   }
 
@@ -366,7 +375,7 @@ function LeafletController($rootScope, $scope, MapService, LocalStorageService) 
           openPopup(layer, options);
         }
       } else {
-        if (options && options.zoomToLocation && map.hasLayer(cluster)) {
+        if (options && options.panToLocation && map.hasLayer(cluster)) {
           map.panTo(cluster.getLatLng());
           spiderfyState = { layer: layer, cluster: cluster };
           cluster.spiderfy();
@@ -374,6 +383,15 @@ function LeafletController($rootScope, $scope, MapService, LocalStorageService) 
       }
     } else {  // Not clustered
       openPopup(layer, options);
+    }
+  }
+
+  function onLayerRemoved(layer) {
+    var layerInfo = layers[layer.name];
+    if (layerInfo) {
+      map.removeLayer(layerInfo.layer);
+      layerControl.removeLayer(layerInfo.layer);
+      delete layers[layer.name];
     }
   }
 }
