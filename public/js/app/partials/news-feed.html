@@ -31,7 +31,7 @@
             <div cl***REMOVED***="news-feed-item pointer" id="{{observation.id}}"
               ng-cl***REMOVED***="(selectedObservation.id == observation.id) && 'active-news-feed-item'"
               ng-repeat="observation in observationPages[currentObservationPage] track by observation.id">
-              <div observation-news-item="observation" observation-form="event.form" container-element="side-bar" ng-click="onObservationClick(observation)"></div>
+              <div observation-news-item="observation" observation-form="event.form" container-element="side-bar"></div>
             </div>
           </div>
           <div ng-show="currentFeedPanel == 'peopleTab'">
