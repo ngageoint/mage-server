@@ -20,7 +20,7 @@
             <form-directive form="newObservationForm" form-observation="newObservation" cl***REMOVED***="row-fluid"></form-directive>
           </div>
 
-          <div ng-show="currentFeedPanel == 'observationsTab'">
+          <div ng-if="currentFeedPanel == 'observationsTab'">
             <div cl***REMOVED***="row-fluid">
               <div cl***REMOVED***="bucket-panel">
                 <select cl***REMOVED***="span12" style="margin-bottom: 0;" ng-model="currentObservationPage" ng-options="observationPages.indexOf(observationPage) as observationPage[0].properties.timestamp | moment: 'fromNow' for observationPage in observationPages">
@@ -34,7 +34,7 @@
               <div observation-news-item="observation" observation-form="event.form" container-element="side-bar"></div>
             </div>
           </div>
-          <div ng-show="currentFeedPanel == 'peopleTab'">
+          <div ng-if="currentFeedPanel == 'peopleTab'">
             <div cl***REMOVED***="row-fluid">
               <div cl***REMOVED***="bucket-panel">
                 <select cl***REMOVED***="span12" style="margin-bottom: 0;" ng-model="currentUserPage" ng-options="userPages.indexOf(userPage) as userPage[0].location.properties.timestamp | moment: 'fromNow' for userPage in userPages">

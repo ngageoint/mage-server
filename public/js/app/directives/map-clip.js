@@ -8,6 +8,8 @@ function mapClip() {
     scope: {
       feature: '=mapClip',
     },
+    replace: true,
+    template: '<div cl***REMOVED***="map"></div>',
     controller: MapClipController,
     bindToController: true
   };
