@@ -23,9 +23,7 @@ function PollingService() {
   }
 
   function removeListener(listener) {
-    observationsChangedListeners = _.filter(observationsChangedListeners, function(l) {
-      return listener !== l;
-    });
+    listeners = _.reject(listeners, function(l) { return listener === l; });
   }
 
   function setPollingInterval(interval) {
@@ -36,5 +34,4 @@ function PollingService() {
       }
     });
   }
-
 }

@@ -23,7 +23,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   var newObservation = null;
   var selectedObservationId = null;
   $scope.feedObservations = [];
-  $scope.feedChangedObservations = 0;
+  $scope.feedChangedObservations = {count: 0};
 
   var usersById = {};
   var selectedUserId = null;
@@ -116,6 +116,17 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     onObservationsChanged: onObservationsChanged
   };
   EventService.addObservationsChangedListener(observationsChangedListener);
+
+  var filterChangedListener = {
+    onEventChanged: function(changed) {
+      _.each(changed.removed, function(removed) {
+        $scope.feedChangedObservations = {count: 0};
+        $scope.feedChangedUsers = {};
+      });
+    }
+  };
+  FilterService.addListener(filterChangedListener);
+
   var usersChangedListener = {
     onUsersChanged: onUsersChanged
   };
@@ -179,8 +190,8 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     // update the news feed observations
     $scope.feedObservations = _.values(observationsById);
 
-    if (changed.added) $scope.feedChangedObservations += changed.added.length;
-    if (changed.updated) $scope.feedChangedObservations += changed.updated.length;
+    if (changed.added) $scope.feedChangedObservations.count += changed.added.length;
+    if (changed.updated) $scope.feedChangedObservations.count += changed.updated.length;
   }
 
   function onUsersChanged(changed) {
@@ -270,6 +281,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   }
 
   $scope.$on('$destroy', function() {
+    FilterService.removeListener(filterChangedListener);
     EventService.removeObservationsChangedListener(observationsChangedListener);
     EventService.removeUsersChangedListener(usersChangedListener);
     MapService.removeListener(locationListener);

@@ -4,20 +4,20 @@ mage.directive('newsFeed', function() {
     templateUrl:  "js/app/partials/news-feed.html",
     scope: {
       observations: '=feedObservations',
-      observationsChanged: '=feedObservationsChanged',
+      feedObservationsChanged: '=',
       users: '=feedUsers',
-      feedUsersChanged: '=feedUsersChanged'
+      feedUsersChanged: '='
     },
     controller: function ($rootScope, $scope, $element, $filter, $timeout, FilterService, EventService, Observation, ObservationService) {
       $scope.currentFeedPanel = 'observationsTab';
 
       $scope.currentObservationPage = 0;
-      $scope.observationsChangedSeen = 0;
+      $scope.observationsChanged = 0;
       $scope.observationPages = null;
       var observationsPerPage = 25;
 
       $scope.currentUserPage = 0;
-      $scope.usersChanged = {};
+      $scope.usersChanged = 0;
       $scope.userPages = null;
       $scope.followUserId = null;
       var usersPerPage = 25;
@@ -56,13 +56,13 @@ mage.directive('newsFeed', function() {
         }
       }
 
-      $scope.$watch('observationsChanged', function(observationsChanged) {
-        if (!observationsChanged) return;
+      $scope.$watch('feedObservationsChanged', function(feedObservationsChanged) {
+        if (!feedObservationsChanged) return;
 
-        if ($scope.currentFeedPanel === 'observationsTab') {
-          $scope.observationsChangedSeen = observationsChanged;
+        if ($scope.currentFeedPanel === 'peopleTab') {
+          $scope.observationsChanged = feedObservationsChanged.count;
         }
-      });
+      }, true);
 
       $scope.$watch('feedUsersChanged', function(feedUsersChanged) {
         if (!feedUsersChanged) return;
