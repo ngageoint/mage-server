@@ -1,6 +1,9 @@
 L.LocationMarker.include({
   openPopup: function () {
-    this._locationMarker.openPopup();
+    if (!this._map.hasLayer(this._locationMarker._popup)) {
+      this._locationMarker.openPopup();
+    }
+
     return this;
   },
 
@@ -22,6 +25,16 @@ L.LocationMarker.include({
     }
 
   	this._locationMarker.bindPopup(content, options);
+
+    this._locationMarker.on({
+      popupclose: function(e) {
+        this.fire(e.type, e.popup);
+      },
+      popupopen: function(e) {
+        this.fire(e.type, e.popup);
+      }
+    }, this);
+
 		return this;
 	},
 

@@ -260,9 +260,8 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     if (selectedUserId !== user.id) {
       selectedUserId = user.id;
       $scope.$broadcast('user:select', user);
+      MapService.selectFeatureInLayer(user, 'People', options);
     }
-
-    MapService.selectFeatureInLayer(user, 'People', options);
   }
 
   function onUserDeselected(user) {

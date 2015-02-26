@@ -15,12 +15,14 @@ function leaflet() {
   return directive;
 }
 
-LeafletController.$inject = ['$rootScope', '$scope', 'MapService', 'LocalStorageService'];
+LeafletController.$inject = ['$rootScope', '$scope', '$interval', 'MapService', 'LocalStorageService'];
 
-function LeafletController($rootScope, $scope, MapService, LocalStorageService) {
+function LeafletController($rootScope, $scope, $interval, MapService, LocalStorageService) {
   var layers = {};
+  var temporalLayers = [];
   var spiderfyState = null;
   var currentLocation = null;
+  var temporalTimeout = null;
   var locationLayer = L.locationMarker([0,0], {color: '#136AEC'});
   var map = L.map("map", {
     center: [0,0],
@@ -49,8 +51,7 @@ function LeafletController($rootScope, $scope, MapService, LocalStorageService) 
   map.addControl(sidebar);
   sidebar.show();
 
-  var layerControl = L.control.layers();
-  // var layerControl = L.control.groupedLayers();
+  var layerControl = L.control.groupedLayers();
   layerControl.addTo(map);
   map.on('baselayerchange', function(baseLayer) {
     var layer = layers[baseLayer.name];
@@ -66,6 +67,19 @@ function LeafletController($rootScope, $scope, MapService, LocalStorageService) 
     var layer = layers[overlay.name];
     MapService.removeLayer(layer);
   });
+
+  adjustTemporalLayers();
+  function adjustTemporalLayers() {
+    console.log('adjusting temporal layers');
+    _.each(temporalLayers, function(temporalLayer) {
+      _.each(temporalLayer.featureIdToLayer, function(layer) {
+        var color = colorForFeature(layer.feature, temporalLayer.options.temporal);
+        layer.setColor(color);
+      });
+    });
+
+    temporalTimeout = $interval(adjustTemporalLayers, 60000, 1);
+  }
 
   function onLocation(location, broadcast) {
     // no need to do anything if the location has not changed
@@ -106,6 +120,11 @@ function LeafletController($rootScope, $scope, MapService, LocalStorageService) 
 
   $scope.$on('$destroy', function() {
     MapService.removeListener(listener);
+
+    if (temporalTimeout) {
+      $interval.cancel(temporalTimeout);
+      temporalTimeout = null;
+    }
   });
 
   function createMarker(marker) {
@@ -253,6 +272,7 @@ function LeafletController($rootScope, $scope, MapService, LocalStorageService) 
     }
 
     layers[data.name] = layerInfo;
+    if (data.options.temporal) temporalLayers.push(layerInfo);
 
     layerControl.addOverlay(layerInfo.layer, data.name, data.group);
     if (data.options.selected) layerInfo.layer.addTo(map);

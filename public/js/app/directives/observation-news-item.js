@@ -36,6 +36,10 @@ function ObservationNewsItemController($scope, EventService, LocalStorageService
     $scope.editForm = angular.copy($scope.form);
   }
 
+  $scope.onObservationClick = function(observation) {
+    $scope.$emit('observation:selected', observation, {panToLocation: true});
+  }
+
   $scope.$on('observation:editDone', function() {
     $scope.edit = false;
     $scope.editForm = null;

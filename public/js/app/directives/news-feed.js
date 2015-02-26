@@ -72,10 +72,6 @@ mage.directive('newsFeed', function() {
         }
       }, true);
 
-      $scope.onObservationClick = function(observation) {
-        $scope.$emit('observation:selected', observation, {panToLocation: true});
-      }
-
       $scope.$on('observation:select', function(e, observation) {
         $scope.selectedObservation = observation;
 
@@ -124,6 +120,12 @@ mage.directive('newsFeed', function() {
           var feedElement = $($element.find(".news-items"));
           feedElement.animate({scrollTop: $('#' + user.id).position().top});
         });
+      });
+
+      $scope.$on('user:deselect', function(e, user) {
+        if ($scope.selectedUser && $scope.selectedUser.id == user.id) {
+          $scope.selectedUser = null;
+        }
       });
 
       $scope.$on('user:follow', function(e, user) {
