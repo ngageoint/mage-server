@@ -9,7 +9,7 @@ mage.directive('newsFeed', function() {
       feedUsersChanged: '='
     },
     controller: function ($rootScope, $scope, $element, $filter, $timeout, FilterService, EventService, Observation, ObservationService) {
-      $scope.currentFeedPanel = 'observationsTab';
+      $scope.currentFeedPanel = 'peopleTab';
 
       $scope.currentObservationPage = 0;
       $scope.observationsChanged = 0;
@@ -49,7 +49,9 @@ mage.directive('newsFeed', function() {
         $scope.currentFeedPanel = tab;
 
         if ($scope.currentFeedPanel === 'observationsTab') {
-          $scope.observationsChangedSeen = $scope.observationsChanged;
+          $scope.feedObservationsChanged = {};
+          $scope.observationsChanged = 0;
+          $scope.$broadcast('map:visible');
         } else if ($scope.currentFeedPanel === 'peopleTab') {
           $scope.feedUsersChanged = {};
           $scope.usersChanged = 0;

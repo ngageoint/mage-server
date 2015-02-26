@@ -6,7 +6,6 @@ function leaflet() {
   var directive = {
     restrict: "A",
     replace: true,
-    // transclude: true,
     template: '<div cl***REMOVED***="map"></div>',
     controller: LeafletController,
     bindToController: true
@@ -27,7 +26,6 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
   var map = L.map("map", {
     center: [0,0],
     zoom: 3,
-    trackResize: true,
     minZoom: 0,
     maxZoom: 18
   });
