@@ -5,8 +5,8 @@ module.exports = function(app, security) {
     , toGeoJson = require('../utilities/togeojson')
 
   var verifyLayer = function(req, res, next) {
-    if (req.layer.type !== 'External') {
-      return res.send(400, "Cannot import data, layer type is not 'Static'");
+    if (req.layer.type !== 'Feature') {
+      return res.status(400).send("Cannot import data, layer type is not 'Static'");
     }
 
     return next();
@@ -22,12 +22,11 @@ module.exports = function(app, security) {
   }
 
   app.post(
-    '/FeatureServer/:layerId/import',
+    '/api/layers/:layerId/kml',
     access.authorize('CREATE_FEATURE'),
     verifyLayer,
     readImportFile,
     function(req, res, next) {
-      // todo make sure layer is 'static' layer
       var features = toGeoJson.kml(req.importData);
       new api.Feature(req.layer).createFeatures(features, function(err, newFeatures) {
         if (err) return next(err);

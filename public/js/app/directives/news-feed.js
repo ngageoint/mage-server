@@ -9,7 +9,7 @@ mage.directive('newsFeed', function() {
       feedUsersChanged: '='
     },
     controller: function ($rootScope, $scope, $element, $filter, $timeout, FilterService, EventService, Observation, ObservationService) {
-      $scope.currentFeedPanel = 'peopleTab';
+      $scope.currentFeedPanel = 'observationsTab';
 
       $scope.currentObservationPage = 0;
       $scope.observationsChanged = 0;

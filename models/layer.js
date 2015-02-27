@@ -56,28 +56,15 @@ exports.getLayers = function(filter, callback) {
     filter = {};
   }
 
-  var query = {};
-  var type = filter.type;
-  if (type) query.type = type;
-
-  var ids = filter.ids;
-  if (ids) query.id = {$in: ids};
-
-  Layer.find(query, function (err, layers) {
-    if (err) {
-      console.log("Error finding layers in mongo: " + err);
-    }
-
+  var conditions = {};
+  if (filter.type) conditions.type = filter.type;
+  Layer.find(conditions, function (err, layers) {
     callback(err, layers);
   });
 }
 
 exports.getById = function(id, callback) {
   Layer.findOne({id: id}, function (err, layer) {
-    if (err) {
-      console.log("Error finding layer in mongo: " + err);
-    }
-
     callback(layer);
   });
 }
@@ -94,15 +81,13 @@ var createFeatureCollection = function(layer) {
   });
 }
 
-var dropFeatureCollection = function(layer) {
+var dropFeatureCollection = function(layer, callback) {
   console.log("Dropping collection: " + layer.collectionName);
   mongoose.connection.db.dropCollection(layer.collectionName, function(err, results) {
-    if (err) {
-      console.error(err);
-      return;
-    }
+    if (err) return callback(err);
 
     console.log('Dropped collection ' + layer.collectionName);
+    callback();
   });
 }
 
@@ -110,17 +95,15 @@ exports.create = function(layer, callback) {
   Counter.getNext('layer', function(id) {
     layer.id = id;
 
-    if (layer.type == 'Feature' || layer.type == 'External') {
+    if (layer.type == 'Feature') {
       layer.collectionName = 'features' + id;
     }
 
     Layer.create(layer, function(err, newLayer) {
-      if (err) {
-        console.log("Problem creating layer. " + err);
-      } else {
-        if (layer.type == 'Feature') {
-          createFeatureCollection(newLayer);
-        }
+      if (err) return callback(err);
+
+      if (layer.type == 'Feature') {
+        createFeatureCollection(newLayer);
       }
 
       callback(err, newLayer);
@@ -130,23 +113,16 @@ exports.create = function(layer, callback) {
 
 exports.update = function(id, layer, callback) {
   Layer.findOneAndUpdate({id: id}, layer, function(err, updatedLayer) {
-    if (err) {
-      console.log("Could not update layer: " + err);
-    }
-
     callback(err, updatedLayer);
   });
 }
 
 exports.remove = function(layer, callback) {
   layer.remove(function(err) {
-    if (err) {
-      console.error(err);
-    } else {
-      // TODO probably want to figure out how to archive this rather than drop the collection
-      dropFeatureCollection(layer);
-    }
+    if (err) return callback(err);
 
-    callback(err, layer);
+    dropFeatureCollection(layer, function(err) {
+      callback(err, layer);
+    });
   });
 }

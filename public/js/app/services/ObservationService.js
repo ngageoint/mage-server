@@ -80,7 +80,9 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
 
     _.each(observations, function(observation) {
       observation.eventId = event.id;
-      observation.iconUrl = "/api/events/" + event.id + "/form/icons/" + observation.properties.type + "/" + observation.properties[event.form.variantField];
+      observation.style = {
+        iconUrl: "/api/events/" + event.id + "/form/icons/" + observation.properties.type + "/" + observation.properties[event.form.variantField]
+      }
     });
   }
 }

@@ -51,12 +51,6 @@ Observation.prototype.create = function(observation, callback) {
   ObservationModel.createObservation(this._event, observation, callback);
 }
 
-// Observation.prototype.createFeatures = function(features, callback) {
-//   FeatureModel.createFeatures(this._layer, features, function(err, newFeatures) {
-//     callback(err, newFeatures);
-//   });
-// }
-
 Observation.prototype.update = function(observationId, observation, callback) {
   ObservationModel.updateObservation(this._event, observationId, observation, callback);
 }

@@ -44,7 +44,11 @@ function LocationService($q, Location, UserService) {
       Location.query(parameters, function(userLocations) {
         _.each(userLocations, function(userLocation) {
           var user = usersById[userLocation.id];
-          if (user && user.iconUrl) userLocation.locations[0].iconUrl = '/api/users/' + user.id + '/icon';
+          if (user && user.iconUrl) {
+            userLocation.locations[0].style = {
+              iconUrl: '/api/users/' + user.id + '/icon'
+            }
+          }
 
           _.extend(userLocation, user);
         });

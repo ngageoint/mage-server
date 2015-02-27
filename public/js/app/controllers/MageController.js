@@ -14,10 +14,11 @@ MageController.$inject = [
   'Layer',
   'Observation',
   'Location',
-  'LocationService'
+  'LocationService',
+  'FeatureService'
 ];
 
-function MageController($scope, $compile, $timeout, FilterService, EventService, MapService, PollingService, LocalStorageService, Layer, Observation, Location, LocationService) {
+function MageController($scope, $compile, $timeout, FilterService, EventService, MapService, PollingService, LocalStorageService, Layer, Observation, Location, LocationService, FeatureService) {
 
   var observationsById = {};
   var newObservation = null;
@@ -83,7 +84,6 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
         property: 'timestamp',
         colorBuckets: LocationService.colorBuckets
       },
-      temporalProperty: 'timestamp',
       popup: {
         html: function(location) {
           var user = usersById[location.id];
@@ -153,18 +153,42 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
           layer.options = {selected: true};
           baseLayerFound = true;
         }
-      }
 
-      MapService.createRasterLayer(layer);
+        MapService.createRasterLayer(layer);
+      } else if (layer.type === 'Feature') {
+        FeatureService.getFeatureCollection(layer).then(function(featureCollection) {
+          MapService.createVectorLayer({
+            name: layer.name, // TODO need to track by id as well not just names
+            group: 'Static',
+            type: 'geojson',
+            geojson: featureCollection,
+            options: {
+              popup: {
+                html: function(feature) {
+                  // TODO user leaflet template for this
+                  var content = "";
+                  if (feature.properties.name) {
+                    content += '<div><strong><u>' + feature.properties.name + '</u></strong></div>';
+                  }
+                  if (feature.properties.description) {
+                    content += '<div>' + feature.properties.description + '</div>';
+                  }
+
+                  return content;
+                }
+              }
+            }
+          });
+        });
+      }
     });
   });
 
   function onObservationsChanged(changed) {
     _.each(changed.added, function(added) {
       observationsById[added.id] = added;
-
-      MapService.addFeatureToLayer(added, 'Observations');
     });
+    if (changed.added) MapService.addFeaturesToLayer(changed.added, 'Observations');
 
     _.each(changed.updated, function(updated) {
       var observation = observationsById[updated.id];
@@ -198,7 +222,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     _.each(changed.added, function(added) {
       usersById[added.id] = added;
 
-      MapService.addFeatureToLayer(added.location, 'People');
+      MapService.addFeaturesToLayer([added.location], 'People');
 
       $scope.feedChangedUsers[added.id] = true;
     });

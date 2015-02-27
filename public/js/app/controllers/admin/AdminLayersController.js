@@ -37,7 +37,7 @@ function AdminLayersController($scope, $injector, LocalStorageService, Layer) {
     var layer = $scope.layer;
     $scope.layer.$save({}, function(success) {
       $scope.fileUploadOptions = {
-        url: '/FeatureServer/' + $scope.layer.id + '/import?access_token=' + LocalStorageService.getToken(),
+        url: '/api/layers/' + $scope.layer.id + '/kml?access_token=' + LocalStorageService.getToken(),
         acceptFileTypes: /(\.|\/)(kml)$/i,
       };
     });
@@ -50,12 +50,6 @@ function AdminLayersController($scope, $injector, LocalStorageService, Layer) {
   $scope.viewLayer = function (layer) {
     $scope.layer = layer;
     $scope.showLayerForm = true;
-    //$scope.fileUploadOptions.url = '/FeatureServer/'+layer.id+'/import';
-    console.info('changing the file upload options');
-    $scope.fileUploadOptions = {
-      url: '/FeatureServer/ '+ layer.id + '/import?access_token=' + LocalStorageService.getToken(),
-      acceptFileTypes: /(\.|\/)(kml)$/i,
-    };
   }
 
   $scope.confirmUpload = function() {

@@ -1,9 +1,11 @@
 L.FixedWidthMarker = L.Marker.extend({
 
   initialize: function(latlng, options) {
-    options.icon = L.fixedWidthIcon({
-      iconUrl: options.iconUrl
-    });
+    if (options.iconUrl) {
+      options.icon = L.fixedWidthIcon({
+        iconUrl: options.iconUrl
+      });
+    }
 
     L.Marker.prototype.initialize.call(this, latlng, options);
   },
