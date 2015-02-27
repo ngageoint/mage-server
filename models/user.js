@@ -91,7 +91,7 @@ UserSchema.pre('save', function(next) {
     return next();
   }
 
-  Token.removeTokenForUser(user, function(err) {
+  Token.removeTokensForUser(user, function(err) {
     if (err) return next(err);
 
     next();
@@ -103,7 +103,7 @@ UserSchema.pre('remove', function(next) {
 
   async.parallel({
     token: function(done) {
-      Token.removeTokenForUser(user, function(err) {
+      Token.removeTokensForUser(user, function(err) {
         done(err);
       });
     },

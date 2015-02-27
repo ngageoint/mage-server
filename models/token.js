@@ -79,6 +79,12 @@ exports.removeToken = function(token, callback) {
   });
 }
 
+exports.removeTokensForUser = function(user, callback) {
+  Token.remove({user: user._id}, function(err, numberRemoved) {
+    callback(err, numberRemoved);
+  });
+}
+
 exports.removeTokenForDevice = function(device, callback) {
   Token.remove({deviceId: device._id}, function(err, numberRemoved) {
     callback(err, numberRemoved);
