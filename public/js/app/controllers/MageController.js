@@ -80,6 +80,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     options: {
       selected: true,
       cluster: false,
+      showAccuracy: true,
       temporal: {
         property: 'timestamp',
         colorBuckets: LocationService.colorBuckets

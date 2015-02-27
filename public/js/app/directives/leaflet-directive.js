@@ -220,6 +220,16 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
           }
         }
 
+        if (layerInfo.options.showAccuracy) {
+          layer.on('popupopen', function() {
+            layer.setAccuracy(feature.properties.accuracy);
+          });
+
+          layer.on('popupclose', function() {
+            layer.setAccuracy(null);
+          });
+        }
+
         layer.on('popupclose', function() {
           if (spiderfyState && spiderfyState.layer == layer) {
             spiderfyState.cluster.unspiderfy();
