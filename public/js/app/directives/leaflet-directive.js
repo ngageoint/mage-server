@@ -368,19 +368,18 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
     });
   }
 
-  function openPopup(layer, options) {
-    layer.openPopup();
-    if (options && map.hasLayer(layer)) {
-      if (options.panToLocation) {
-        map.setView(layer.getLatLng(), options.zoomToLocation ? 17 : map.getZoom());
-      }
-    }
-  }
 
   function onFeatureSelected(selected) {
     var featureLayer = layers[selected.name];
     var layer = featureLayer.featureIdToLayer[selected.feature.id];
+    if (!map.hasLayer(featureLayer.layer)) return;
+
     var options = selected.options;
+    if (!options || !options.panToLocation) return;
+
+    // Pan first, so that marker/cluster is visible
+    // TODO need to check if map has this layer????
+    map.setView(layer.getLatLng());
 
     if (featureLayer.options.cluster) {
       var cluster = featureLayer.layer.getVisibleParent(layer);
@@ -394,25 +393,25 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
 
           if (childOfCluster) { // layer in cluster that is already unspiderfied
             spiderfyState.layer = layer;
-            openPopup(layer, options);
+            layer.openPopup();
           } else {
-            spiderfyState.cluster.unspiderfy();
+            spiderfyState.layer.closePopup();
+            // spiderfyState.cluster.unspiderfy();
             spiderfyState = null;
 
-            openPopup(layer, options);
+            layer.openPopup();
           }
         } else {
-          openPopup(layer, options);
+          layer.openPopup();
         }
       } else {
-        if (options && options.panToLocation && map.hasLayer(cluster)) {
-          map.panTo(cluster.getLatLng());
+        if (map.hasLayer(cluster)) {
           spiderfyState = { layer: layer, cluster: cluster };
           cluster.spiderfy();
         }
       }
     } else {  // Not clustered
-      openPopup(layer, options);
+      layer.openPopup();
     }
   }
 

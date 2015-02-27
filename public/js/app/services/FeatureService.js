@@ -40,7 +40,7 @@ function FeatureService($q, $http) {
         }
         if (style.polyStyle) {
           feature.style.fillColor = feature.properties.style.polyStyle.color.rgb;
-          feature.style.fillOpacity = feature.properties.style.polyStyle.color.opacity;
+          feature.style.fillOpacity = feature.properties.style.polyStyle.color.opacity / 255;
         }
       });
 

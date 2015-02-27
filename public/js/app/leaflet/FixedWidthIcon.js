@@ -5,15 +5,18 @@ L.FixedWidthIcon = L.DivIcon.extend({
   },
   createIcon: function() {
     var div = L.DivIcon.prototype.createIcon.call(this);
+    var self = this;
 
     var s = document.createElement('img');
-    s.cl***REMOVED***Name = "mage-icon-image";
-    s.src = this.options.iconUrl;
-    var self = this;
     $(s).load(function() {
       var height = $(this).height();
       $(div).css('margin-top', height * -1);
+      self.options.marker.fire('fixedwidthiconload', self);
     });
+
+    s.cl***REMOVED***Name = "mage-icon-image";
+    s.src = this.options.iconUrl;
+
     div.appendChild(s);
     return div;
   }
