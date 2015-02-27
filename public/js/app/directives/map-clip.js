@@ -85,7 +85,7 @@ function MapClipController($rootScope, $scope, $element, MapService, LocalStorag
       var geojson = L.geoJson($scope.feature, {
         pointToLayer: function (feature, latlng) {
           return L.fixedWidthMarker(latlng, {
-            iconUrl: feature.iconUrl + '?access_token=' + LocalStorageService.getToken()
+            iconUrl: feature.style.iconUrl + '?access_token=' + LocalStorageService.getToken()
           });
         }
       });

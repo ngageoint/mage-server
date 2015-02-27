@@ -20,7 +20,7 @@ function MapService($rootScope, Layer, EventService) {
     createMarker: createMarker,
     removeMarker: removeMarker,
     updateMarker: updateMarker,
-    addFeatureToLayer: addFeatureToLayer,
+    addFeaturesToLayer: addFeaturesToLayer,
     updateFeatureForLayer: updateFeatureForLayer,
     removeFeatureFromLayer: removeFeatureFromLayer,
     selectFeatureInLayer: selectFeatureInLayer,
@@ -105,13 +105,15 @@ function MapService($rootScope, Layer, EventService) {
     });
   }
 
-  function addFeatureToLayer(feature, layerId) {
+  function addFeaturesToLayer(features, layerId) {
     var vectorLayer = vectorLayers[layerId];
-    vectorLayer.featuresById[feature.id] = feature;
+    _.each(features, function(feature) {
+      vectorLayer.featuresById[feature.id] = feature;
+    });
 
     featuresChanged({
       name: layerId,
-      added: [feature]
+      added: [features]
     });
   }
 

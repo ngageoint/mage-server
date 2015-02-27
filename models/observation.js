@@ -168,29 +168,6 @@ exports.createObservation = function(event, observation, callback) {
   });
 }
 
-// exports.createFeatures = function(layer, features, callback) {
-//   features.forEach(function(feature) {
-//     feature.properties = feature.properties || {};
-//   });
-//
-//   featureModel(layer).create(features, function(err) {
-//     callback(err, features);
-//   });
-// }
-//
-// exports.createGeoJsonFeature = function(layer, feature, callback) {
-//   var properties = feature.properties ? feature.properties : {};
-//
-//   featureModel(layer).create(feature, function(err, newFeature) {
-//     if (err) {
-//       console.log('Error creating feature', err);
-//       console.log('feature is: ', feature);
-//     }
-//
-//     callback(err, newFeature);
-//   });
-// }
-
 exports.updateObservation = function(event, observationId, observation, callback) {
   observation.lastModified = moment.utc().toDate();
 

@@ -18,7 +18,7 @@ angular.module('mage').factory('Layer', ['$resource', '$http', function($resourc
 	});
 
 	Layer.prototype.$save = function(params, success, error) {
-		if (this.type == 'Feature'  || this.type == 'External') {
+		if (this.type == 'Feature') {
       delete this.base;
       delete this.format;
       delete this.wms;

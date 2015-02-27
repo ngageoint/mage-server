@@ -26,18 +26,10 @@
             </li>
           </ul>
         </div>
-        <h3>Feature Layers</h3>
-        <div>
-          <ul style="list-style: none;" cl***REMOVED***="top-gap pointer">
-            <li ng-repeat="layer in layers | filter:{type: 'Feature'}">
-              <a ng-click="viewLayer(layer)">{{layer.name}}</a>
-            </li>
-          </ul>
-        </div>
         <h3>Static Layers</h3>
         <div>
           <ul style="list-style: none;" cl***REMOVED***="top-gap pointer">
-            <li ng-repeat="layer in layers | filter:{type: 'External'}">
+            <li ng-repeat="layer in layers | filter:{type: 'Feature'}">
               <a ng-click="viewLayer(layer)">{{layer.name}}</a>
             </li>
           </ul>
@@ -46,7 +38,10 @@
     </div>
     <div cl***REMOVED***="span9" ng-show="showLayerForm">
       <form id="new-layer-form" cl***REMOVED***="form-horizontal">
-        <legend data-ng-hide="layer.id"><span data-ng-hide="layer.type == 'External'">{{layer.type}}</span><span data-ng-show="layer.type=='External'">Static</span> Layer</legend>
+        <legend data-ng-hide="layer.id">
+          <span data-ng-hide="layer.type == 'Feature'">{{layer.type}}</span>
+          <span data-ng-show="layer.type == 'Feature'">Static</span> Layer
+        </legend>
         <legend data-ng-show="layer.id">Edit {{layer.name}} Layer</legend>
         <div cl***REMOVED***="control-group" ng-show="layer.id == undefined">
           <label cl***REMOVED***="control-label">Layer type</label>
@@ -55,7 +50,7 @@
               <input type="radio" name="layer-type" value="Imagery" ng-model="layer.type"> Imagery
             </label>
             <label cl***REMOVED***="radio inline">
-              <input type="radio" name="layer-type" value="External" ng-model="layer.type"> Static
+              <input type="radio" name="layer-type" value="Feature" ng-model="layer.type"> Static
             </label>
           </div>
         </div>
@@ -148,7 +143,7 @@
         <button ng-click="saveLayer()" ngm-tap="saveLayer()" ng-hide="readOnlyMode && layer.type == 'Feature'" type="submit" cl***REMOVED***="btn pull-right">Save layer</button>
       </form>
 
-      <div ng-show="layer.type == 'External' && layer.id">
+      <div ng-show="layer.type == 'Feature' && layer.id">
         <div cl***REMOVED***="kml-upload-div" ng-repeat="upload in uploads">
           <form enctype="multipart/form-data" simple-upload url="{{fileUploadOptions.url}}" allow-upload="uploadConfirmed" upload-file-form-name="'file'">
           </form>

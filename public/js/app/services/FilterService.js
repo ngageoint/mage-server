@@ -39,6 +39,7 @@ function FilterService($rootScope, UserService) {
   var ***REMOVED*** = {
     intervals: intervals,
     addListener: addListener,
+    removeListener: removeListener,
     setEvent: setEvent,
     getEvent: getEvent,
     formatInterval: formatInterval,

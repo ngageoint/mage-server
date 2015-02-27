@@ -230,8 +230,8 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
         layerInfo.featureIdToLayer[feature.id] = layer;
       },
       pointToLayer: function (feature, latlng) {
-        var marker
         if (layerInfo.options.temporal) {
+          // TODO temporal layers should be fixed width as well, ie use fixedWidthMarker cl***REMOVED***
           var options = {
             color: colorForFeature(feature, layerInfo.options.temporal)
           };
@@ -239,10 +239,13 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
 
           return L.locationMarker(latlng, options);
         } else {
-          return L.fixedWidthMarker(latlng, {
-            iconUrl: feature.iconUrl + '?access_token=' + LocalStorageService.getToken()
-          });
+          var options = {};
+          if (feature.style && feature.style.iconUrl) options.iconUrl = feature.style.iconUrl + '?access_token=' + LocalStorageService.getToken()
+          return L.fixedWidthMarker(latlng, options);
         }
+      },
+      style: function(feature) {
+        return feature.style;
       }
     });
 

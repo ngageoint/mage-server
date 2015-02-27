@@ -1,6 +1,7 @@
 module.exports = function(app, security) {
   var Layer = require('../models/layer')
-    , access = require('../access');
+    , access = require('../access')
+    , api = require('../api');
 
   var p***REMOVED***port = security.authentication.p***REMOVED***port
     , authenticationStrategy = security.authentication.authenticationStrategy;
@@ -41,14 +42,14 @@ module.exports = function(app, security) {
 
   // get all layers
   app.get(
-    '/api/layers', 
+    '/api/layers',
     access.authorize('READ_LAYER'),
     parseQueryParams,
     function (req, res) {
       Layer.getLayers({type: req.parameters.type}, function (err, layers) {
         var path = getLayerResource(req);
         res.json(layers.map(function(layer) {
-          if (layer.type === 'External' || layer.type === 'Feature') layer.url = [path, layer.id].join("/"); 
+          if (layer.type === 'External' || layer.type === 'Feature') layer.url = [path, layer.id].join("/");
           return layer;
         }));
       });
@@ -57,10 +58,26 @@ module.exports = function(app, security) {
 
   // get layer
   app.get(
-    '/api/layers/:layerId', 
-    access.authorize('READ_LAYER'), 
+    '/api/layers/:layerId',
+    access.authorize('READ_LAYER'),
     function (req, res) {
-      res.json(req.team);
+      res.json(req.layer);
+    }
+  );
+
+  // get features for layer (must be a feature layer)
+  app.get(
+    '/api/layers/:layerId/features',
+    access.authorize('READ_LAYER'),
+    function (req, res) {
+      if (req.layer.type !== 'Feature') return res.status(400).send('cannot get features, layer type is not "Feature"');
+
+      new api.Feature(req.layer).getAll(function(err, features) {
+        res.json({
+          type: 'FeatureCollection',
+          features: features
+        });
+      });
     }
   );
 
