@@ -112,7 +112,7 @@ function AdminUsersController($scope, $injector, $filter, LocalStorageService, U
 
   $scope.deleteUser = function(user) {
     var modalInstance = $injector.get('$modal').open({
-      templateUrl: '/app/partials/admin/delete-user.html',
+      templateUrl: '/app/admin/users/user-delete.html',
       resolve: {
         user: function () {
           return user;

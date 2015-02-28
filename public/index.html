@@ -272,13 +272,12 @@
   <script type="text/javascript" src="app/controllers/SignupController.js"></script>
   <script type="text/javascript" src="app/controllers/UserController.js"></script>
 
-  <script type="text/javascript" src="app/controllers/admin/AdminController.js"></script>
-  <script type="text/javascript" src="app/controllers/admin/AdminDevicesController.js"></script>
-  <script type="text/javascript" src="app/controllers/admin/AdminEventsController.js"></script>
-  <script type="text/javascript" src="app/controllers/admin/AdminUsersController.js"></script>
-  <script type="text/javascript" src="app/controllers/admin/AdminTeamsController.js"></script>
-  <script type="text/javascript" src="app/controllers/admin/AdminLayersController.js"></script>
-
+  <script type="text/javascript" src="app/admin/admin.controller.js"></script>
+  <script type="text/javascript" src="app/admin/devices/devices.controller.js"></script>
+  <script type="text/javascript" src="app/admin/events/events.controller.js"></script>
+  <script type="text/javascript" src="app/admin/users/users.controller.js"></script>
+  <script type="text/javascript" src="app/admin/teams/teams.controller.js"></script>
+  <script type="text/javascript" src="app/admin/layers/layers.controller.js"></script>
 
   <script type="text/javascript" src="app/resources/Observation.js"></script>
   <script type="text/javascript" src="app/resources/Layer.js"></script>
@@ -295,6 +294,7 @@
   <!-- file download -->
   <script type="text/javascript" src="vendor/jQuery-File-Download/js/jquery.fileDownload.js"></script>
 
+<!-- TODO move to its own partial -->
     <script type="text/ng-template" id="myModalContent.html">
       <div cl***REMOVED***="modal-header">
           <h3>Token Expired, Please log in.</h3>
@@ -328,20 +328,6 @@
           Please check your username, UID, and p***REMOVED***word and try again.
         </div>
       </form>
-      </div>
-    </script>
-
-    <script type="text/ng-template" id="deleteLayer.html">
-      <div cl***REMOVED***="modal-header">
-        <h3>Please Confirm Delete '{{layer.name}}'</h3>
-      </div>
-      <div cl***REMOVED***="modal-body">
-        <div cl***REMOVED***="row-fluid"><h4>Layer '{{layer.name}}' will be deleted.  <strong>This cannot be undone<strong>.  All data will be unrecoverable.</h4></div>
-        <div cl***REMOVED***="row-fluid"><h4>Do you want to delete the layer '{{layer.name}}'?<h4></div>
-        <span>
-          <button cl***REMOVED***="btn btn-danger" ng-click="deleteLayer(layer, true)" ngm-tap="deleteLayer(layer, true)"><i cl***REMOVED***="icon-trash"> </i>Confirm Delete Layer</button>
-          <button cl***REMOVED***="btn pull-right" ng-click="cancel()" ngm-tap="cancel()">Cancel</button>
-        </span>
       </div>
     </script>
 

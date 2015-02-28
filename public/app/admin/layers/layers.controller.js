@@ -58,7 +58,7 @@ function AdminLayersController($scope, $injector, LocalStorageService, Layer) {
 
   $scope.deleteLayer = function(layer) {
     var modalInstance = $injector.get('$modal').open({
-      templateUrl: 'deleteLayer.html',
+      templateUrl: '/app/admin/layers/layer-delete.html',
       resolve: {
         layer: function () {
           return $scope.layer;
@@ -68,9 +68,7 @@ function AdminLayersController($scope, $injector, LocalStorageService, Layer) {
         $scope.layer = layer;
 
         $scope.deleteLayer = function(layer, force) {
-          console.info('delete layer');
           layer.$delete(function(success) {
-            console.info('layer delete success');
             $modalInstance.close(layer);
           });
         }
@@ -79,15 +77,12 @@ function AdminLayersController($scope, $injector, LocalStorageService, Layer) {
         };
       }
     });
+
     modalInstance.result.then(function (layer) {
-      console.info('success');
       $scope.layers = _.without($scope.layers, layer);
-      $scope.layer = undefined;
+      $scope.layer = null;
       $scope.showLayerForm = false;
-    }, function () {
-      console.info('failure');
     });
-    return;
   }
 
   $scope.setFiles = function (element) {

@@ -23,8 +23,6 @@ var mage = angular.module(
     $httpProvider.defaults.withCredentials = true;
     $httpProvider.defaults.headers.post  = {'Content-Type': 'application/x-www-form-urlencoded'};
 
-    //$httpProvider.interceptors.push('HttpAuthService');
-
     var resolveLogin = function(roles) {
       return {
         user: function(UserService) {
@@ -54,7 +52,7 @@ var mage = angular.module(
     });
     $routeProvider.when('/admin/:adminPanel?',
     {
-      templateUrl:    'app/partials/admin/admin.html',
+      templateUrl:    'app/admin/admin.html',
       controller:     "AdminController",
       resolve: resolveLogin(["ADMIN_ROLE"])
     });
