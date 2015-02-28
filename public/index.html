@@ -3,15 +3,10 @@
 <head>
   <title>MAGE</title>
 
-  <!-- Comment out the following line when running local -->
-  <!--<base href="/mage/" />-->
-
   <link rel="shortcut icon" href="favicon.ico"/>
   <meta id="view" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
-<!--
-  <link rel="stylesheet" href="vendor/jquery-ui/jquery-ui.css"/>
--->
+
   <link rel="stylesheet" href="vendor/jQuery-File-Upload/css/jquery.fileupload.css">
   <link rel="stylesheet" href="vendor/jQuery-File-Upload/css/jquery.fileupload-ui.css">
   <link rel="stylesheet" href="vendor/bootstrap/bootstrap.css" />
@@ -64,6 +59,7 @@
   <script type="text/javascript" src="vendor/angular/1.3.12/angular-sanitize.min.js"></script>
   <script type="text/javascript" src="vendor/angular/1.3.12/angular-route.min.js"></script>
 
+  <!-- TODO move into its own partial -->
   <header cl***REMOVED***="navbar navbar-fixed-top" ng-controller="NavController">
     <div cl***REMOVED***="navbar-inner">
       <div cl***REMOVED***="container" ng-show="myself">
@@ -198,9 +194,7 @@
     </div>
   </header>
 
-
   <div data-ng-view></div>
-
 
   <script type="text/javascript" src="vendor/leaflet/leaflet-src.js"></script>
   <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.awesomemarkers/leaflet.awesome-markers.min.js"></script>
@@ -216,60 +210,19 @@
   <script type="text/javascript" src="vendor/bootstrap-timepicker/js/bootstrap-timepicker.js"></script>
   <script type="text/javascript" src="vendor/angular-plugins/ngQuickDate/ng-quick-date.js"></script>
 
-
   <script type="text/javascript" src="vendor/angular-plugins/http-auth-interceptor.js"></script>
   <script type="text/javascript" src="vendor/bootstrap/bootstrap.js"></script>
   <script type="text/javascript" src="vendor/moment/moment.min.js"></script>
 
-  <script type="text/javascript" src="app/leaflet/LocationMarker.js"></script>
-  <script type="text/javascript" src="app/leaflet/LocationMarker.Popup.js"></script>
-  <script type="text/javascript" src="app/leaflet/NewIcon.js"></script>
-  <script type="text/javascript" src="app/leaflet/FixedWidthIcon.js"></script>
-  <script type="text/javascript" src="app/leaflet/FixedWidthMarker.js"></script>
-  <script type="text/javascript" src="app/leaflet/MageControls.js"></script>
+  <script type="text/javascript" src="vendor/jQuery-File-Download/js/jquery.fileDownload.js"></script>
 
   <script type="text/javascript" src="app/app.js"></script>
-  <script type="text/javascript" src="app/directives/leaflet-directive.js"></script>
-  <script type="text/javascript" src="app/directives/filter-navbar.js"></script>
-  <script type="text/javascript" src="app/directives/location-popup.js"></script>
-  <script type="text/javascript" src="app/directives/observation-popup.js"></script>
-  <script type="text/javascript" src="app/directives/device-id.js"></script>
-  <script type="text/javascript" src="app/directives/user-news-item.js"></script>
-  <script type="text/javascript" src="app/directives/observation-news-item.js"></script>
-  <script type="text/javascript" src="app/directives/attachment.js"></script>
-  <script type="text/javascript" src="app/directives/map-clip.js"></script>
-  <script type="text/javascript" src="app/directives/news-feed.js"></script>
-  <script type="text/javascript" src="app/directives/export.js"></script>
-  <script type="text/javascript" src="app/directives/filter.js"></script>
-  <script type="text/javascript" src="app/directives/simpleUpload.js"></script>
-  <script type="text/javascript" src="app/directives/form/field-directive.js"></script>
-  <script type="text/javascript" src="app/directives/form/form-directive.js"></script>
-  <script type="text/javascript" src="app/directives/form/import.js"></script>
-  <script type="text/javascript" src="app/directives/property/property-view.js"></script>
-  <script type="text/javascript" src="app/directives/user-avatar.js"></script>
-  <script type="text/javascript" src="app/directives/user-icon.js"></script>
-  <script type="text/javascript" src="app/directives/file-browser-directive.js"></script>
+  <script type="text/javascript" src="app/mage/mage.controller.js"></script>
+  <script type="text/javascript" src="app/mage/mage-nav.controller.js"></script>
+  <script type="text/javascript" src="app/mage/leaflet.directive.js"></script>
+  <script type="text/javascript" src="app/mage/feed.directive.js"></script>
 
-  <script type="text/javascript" src="app/***REMOVED***s/ObservationService.js"></script>
-  <script type="text/javascript" src="app/***REMOVED***s/FeatureService.js"></script>
-  <script type="text/javascript" src="app/***REMOVED***s/LocationService.js"></script>
-  <script type="text/javascript" src="app/***REMOVED***s/AboutService.js"></script>
-  <script type="text/javascript" src="app/***REMOVED***s/UserService.js"></script>
-  <script type="text/javascript" src="app/***REMOVED***s/DeviceService.js"></script>
-  <script type="text/javascript" src="app/***REMOVED***s/MapService.js"></script>
-  <script type="text/javascript" src="app/***REMOVED***s/FilterService.js"></script>
-  <script type="text/javascript" src="app/***REMOVED***s/PollingService.js"></script>
-  <script type="text/javascript" src="app/***REMOVED***s/TimerService.js"></script>
-  <script type="text/javascript" src="app/***REMOVED***s/HttpAuthService.js"></script>
-  <script type="text/javascript" src="app/***REMOVED***s/EventService.js"></script>
-  <script type="text/javascript" src="app/***REMOVED***s/LocalStorageService.js"></script>
-  <script type="text/javascript" src="app/controllers/AboutController.js"></script>
-  <script type="text/javascript" src="app/controllers/DebugController.js"></script>
-  <script type="text/javascript" src="app/controllers/MageController.js"></script>
-  <script type="text/javascript" src="app/controllers/NavController.js"></script>
-  <script type="text/javascript" src="app/controllers/SigninController.js"></script>
-  <script type="text/javascript" src="app/controllers/SignupController.js"></script>
-  <script type="text/javascript" src="app/controllers/UserController.js"></script>
+  <script type="text/javascript" src="app/about/about.controller.js"></script>
 
   <script type="text/javascript" src="app/admin/admin.controller.js"></script>
   <script type="text/javascript" src="app/admin/devices/devices.controller.js"></script>
@@ -279,19 +232,59 @@
   <script type="text/javascript" src="app/admin/teams/teams.controller.js"></script>
   <script type="text/javascript" src="app/admin/layers/layers.controller.js"></script>
 
-  <script type="text/javascript" src="app/resources/Observation.js"></script>
-  <script type="text/javascript" src="app/resources/Layer.js"></script>
-  <script type="text/javascript" src="app/resources/Event.js"></script>
-  <script type="text/javascript" src="app/resources/Team.js"></script>
-  <script type="text/javascript" src="app/resources/Location.js"></script>
+  <script type="text/javascript" src="app/signin/signin.controller.js"></script>
+  <script type="text/javascript" src="app/signup/signup.controller.js"></script>
 
-  <script type="text/javascript" src="app/filters/moment.js"></script>
-  <script type="text/javascript" src="app/filters/p***REMOVED***word.js"></script>
-  <script type="text/javascript" src="app/filters/user.js"></script>
-  <script type="text/javascript" src="app/filters/offset.js"></script>
+  <script type="text/javascript" src="app/observation/observation-feed.directive.js"></script>
+  <script type="text/javascript" src="app/observation/observation-attachment.directive.js"></script>
+  <script type="text/javascript" src="app/observation/observation-map-clip.directive.js"></script>
+  <script type="text/javascript" src="app/observation/observation-popup.directive.js"></script>
+  <script type="text/javascript" src="app/observation/form/form.directive.js"></script>
+  <script type="text/javascript" src="app/observation/form/field.directive.js"></script>
+  <script type="text/javascript" src="app/observation/property/property.directive.js"></script>
 
-  <!-- file download -->
-  <script type="text/javascript" src="vendor/jQuery-File-Download/js/jquery.fileDownload.js"></script>
+  <script type="text/javascript" src="app/user/user.controller.js"></script>
+  <script type="text/javascript" src="app/user/user-feed.directive.js"></script>
+  <script type="text/javascript" src="app/user/user-avatar.directive.js"></script>
+  <script type="text/javascript" src="app/user/user-icon.directive.js"></script>
+  <script type="text/javascript" src="app/user/user-popup.directive.js"></script>
+
+  <script type="text/javascript" src="app/leaflet-extensions/LocationMarker.js"></script>
+  <script type="text/javascript" src="app/leaflet-extensions/LocationMarker.Popup.js"></script>
+  <script type="text/javascript" src="app/leaflet-extensions/NewIcon.js"></script>
+  <script type="text/javascript" src="app/leaflet-extensions/FixedWidthIcon.js"></script>
+  <script type="text/javascript" src="app/leaflet-extensions/FixedWidthMarker.js"></script>
+  <script type="text/javascript" src="app/leaflet-extensions/MageControls.js"></script>
+
+  <script type="text/javascript" src="app/factories/about.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/device.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/event.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/feature.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/filter.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/local-storage.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/location.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/map.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/observation.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/polling.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/user.***REMOVED***.js"></script>
+
+  <script type="text/javascript" src="app/factories/observation.resource.js"></script>
+  <script type="text/javascript" src="app/factories/layer.resource.js"></script>
+  <script type="text/javascript" src="app/factories/event.resource.js"></script>
+  <script type="text/javascript" src="app/factories/team.resource.js"></script>
+  <script type="text/javascript" src="app/factories/location.resource.js"></script>
+
+  <script type="text/javascript" src="app/file-upload/file-browser.directive.js"></script>
+  <script type="text/javascript" src="app/file-upload/file-upload.directive.js"></script>
+
+  <script type="text/javascript" src="app/filters/moment.filter.js"></script>
+  <script type="text/javascript" src="app/filters/paging-offset.filter.js"></script>
+  <script type="text/javascript" src="app/filters/p***REMOVED***word.filter.js"></script>
+  <script type="text/javascript" src="app/filters/user.filter.js"></script>
+
+  <script type="text/javascript" src="app/export/export.directive.js"></script>
+
+  <script type="text/javascript" src="app/debug/debug.controller.js"></script>
 
 <!-- TODO move to its own partial -->
     <script type="text/ng-template" id="myModalContent.html">

@@ -1,0 +1,37 @@
+<div ng-if="attachment" ng-switch on="attachment.contentType">
+  <div ng-cl***REMOVED***="edit ? 'span6' : 'span12'" ng-cl***REMOVED***="{'image-delete': attachment.markedForDelete}">
+    <a ng-switch-when="image/jpg"  ng-href="{{attachment.url + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-cl***REMOVED***="{'image-delete': attachment.markedForDelete}" ng-src="{{attachment.url + '?access_token=' + token + '&size=220' + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
+    <a ng-switch-when="image/jpeg" ng-href="{{attachment.url + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-cl***REMOVED***="{'image-delete': attachment.markedForDelete}" ng-src="{{attachment.url + '?access_token=' + token + '&size=220' + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
+    <a ng-switch-when="image/png"  ng-href="{{attachment.url + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-cl***REMOVED***="{'image-delete': attachment.markedForDelete}" ng-src="{{attachment.url + '?access_token=' + token + '&size=220' + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
+    <a ng-switch-when="image/gif"  ng-href="{{attachment.url + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-cl***REMOVED***="{'image-delete': attachment.markedForDelete}" ng-src="{{attachment.url + '?access_token=' + token + '&size=220' + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
+    <div ng-switch-when="video/mp4">
+      <video controls="controls" cl***REMOVED***="news-feed-video" ng-cl***REMOVED***="{'image-delete': attachment.markedForDelete}">
+        <source ng-src="{{attachment.url + '?access_token=' + token}}" type="video/mp4">
+      </video>
+      <i cl***REMOVED***="icon-sage icon-facetime-video"></i><a target="_blank" ng-href="{{attachment.url + '?access_token=' + token}}"> Download video</a>
+    </div>
+
+    <div ng-switch-default>
+       <div ng-switch on="attachment.name.substr(attachment.name.lastIndexOf('.') + 1)">
+        <a ng-switch-when="jpg"  ng-href="{{attachment.url + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-cl***REMOVED***="{'image-delete': attachment.markedForDelete}" ng-src="{{attachment.url + '?access_token=' + token + '&size=220' + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
+        <a ng-switch-when="jpeg" ng-href="{{attachment.url + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-cl***REMOVED***="{'image-delete': attachment.markedForDelete}" ng-src="{{attachment.url + '?access_token=' + token + '&size=220' + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
+        <a ng-switch-when="png"  ng-href="{{attachment.url + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-cl***REMOVED***="{'image-delete': attachment.markedForDelete}" ng-src="{{attachment.url + '?access_token=' + token + '&size=220' + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
+        <a ng-switch-when="gif"  ng-href="{{attachment.url + '?access_token=' + token}}" target="_blank"><img cl***REMOVED***="news-feed-image center-block" ng-cl***REMOVED***="{'image-delete': attachment.markedForDelete}" ng-src="{{attachment.url + '?access_token=' + token + '&size=220' + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
+        <div ng-switch-when="mp4">
+          <video cl***REMOVED***="news-feed-video" controls="controls">
+            <source ng-src="{{attachment.url + '?access_token=' + token + '&synced=' + attachment.synced}}" type="video/mp4">
+          </video>
+          <i cl***REMOVED***="icon-sage icon-facetime-video"></i><a target="_blank" ng-href="{{attachment.url + '?access_token=' + token}}"> Download video</a>
+        </div>
+        <div ng-switch-default  ng-cl***REMOVED***="{'image-delete': attachment.markedForDelete}">
+          <i cl***REMOVED***="icon-sage fa fa-paperclip"></i><a target="_blank" ng-href="{{attachment.url + '?access_token=' + token}}">{{attachment.name}}</a>
+        </div>
+       </div>
+    </div>
+  </div>
+
+  <div cl***REMOVED***="span6" ng-show="edit && amAdmin">
+    <button cl***REMOVED***="btn btn-danger" ng-cl***REMOVED***="{'disabled': attachment.markedForDelete}" ng-click="deleteAttachment()"><span ng-show="attachment.markedForDelete">Marked for Delete</span><span ng-hide="attachment.markedForDelete">Delete</span></button>
+  </div>
+
+</div>
