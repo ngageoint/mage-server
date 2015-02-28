@@ -1,4 +1,10 @@
-angular.module('mage').filter('event', ['$parse', function($parse) {
+angular
+  .module('mage')
+  .filter('events', EventFilter);
+
+EventFilter.$inject = ['$parse'];
+
+function EventFilter($parse) {
   return function(events, search) {
     if (!search) return events;
 
@@ -13,4 +19,4 @@ angular.module('mage').filter('event', ['$parse', function($parse) {
       return match.test(element.name) || match.test(element.description);
     });
   }
-}]);
+}
