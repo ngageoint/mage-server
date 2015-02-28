@@ -16,12 +16,16 @@ function observationNewsItem() {
   return directive;
 }
 
-ObservationNewsItemController.$inject = ['$scope', 'EventService', 'LocalStorageService'];
+ObservationNewsItemController.$inject = ['$scope', 'EventService', 'UserService', 'LocalStorageService'];
 
-function ObservationNewsItemController($scope, EventService, LocalStorageService) {
+function ObservationNewsItemController($scope, EventService, UserService, LocalStorageService) {
   $scope.edit = false;
   $scope.attachmentUrl = '/FeatureServer/' + $scope.observation.layerId + '/features/';
   $scope.token = LocalStorageService.getToken();
+
+  UserService.getUser($scope.observation.userId).then(function(user) {
+    $scope.observationUser = user.data || user;
+  });
 
   $scope.filterHidden = function(field) {
     return !field.archived &&

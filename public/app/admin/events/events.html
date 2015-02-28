@@ -26,7 +26,7 @@
         </ul>
       </div>
 
-      <div ng-repeat="e in (filteredEvents = (events | filter:eventSearch)) | orderBy:'name' | offset: page*itemsPerPage | limitTo:itemsPerPage" cl***REMOVED***="row-fluid pointer bottom-gap-s" ng-click="editEvent(e)">
+      <div ng-repeat="e in (filteredEvents = (events | events:eventSearch)) | orderBy:'name' | offset: page*itemsPerPage | limitTo:itemsPerPage" cl***REMOVED***="row-fluid pointer bottom-gap-s" ng-click="editEvent(e)">
         <div ng-cl***REMOVED***="{'admin-active': event.id == e.id}" cl***REMOVED***="admin-row">
           <div cl***REMOVED***="strong">{{e.name}}</div>
           <div cl***REMOVED***="muted">{{e.description}}</div>
@@ -55,7 +55,7 @@
                   </div>
                   <div cl***REMOVED***="control-group" ng-hide="event.id">
                     <label cl***REMOVED***="control-label">Form</label>
-                    <div wtf-forms-file></div>
+                    <div file-browser></div>
                     <span cl***REMOVED***="help-block">Optionally import form.  If no form archive is picked your event will start with a default form</span>
                   </div>
                 </form>

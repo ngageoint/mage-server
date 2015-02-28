@@ -7,7 +7,9 @@
       </div>
   		<div cl***REMOVED***="span5">
   			<div cl***REMOVED***="row-fluid">
-  				<div cl***REMOVED***="pull-right news-feed-item-support small-text" user-id="observation.userId"></div>
+          <div cl***REMOVED***="pull-right news-feed-item-support small-text">
+            <span>{{observationUser.username}}</span>
+          </div>
   			</div>
         <div cl***REMOVED***="row-fluid">
           <span cl***REMOVED***="pull-right news-feed-item-support small-text">{{observation.properties.timestamp | moment: 'fromNow'}}</span>
