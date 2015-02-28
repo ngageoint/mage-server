@@ -5,7 +5,7 @@ angular
 function iconUser() {
   var directive = {
     restrict: "A",
-    templateUrl: '/js/app/partials/user-icon.html',
+    templateUrl: '/app/partials/user-icon.html',
     scope: {
       iconUser: '='
     },

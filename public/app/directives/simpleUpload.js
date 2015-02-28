@@ -2,7 +2,7 @@
 mage.directive('simpleUpload', function() {
   return {
     restrict: "A",
-    templateUrl: '/js/app/partials/simple-upload.html',
+    templateUrl: '/app/partials/simple-upload.html',
     scope: {
       url: '@',
       allowUpload: '=',

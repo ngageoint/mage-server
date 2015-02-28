@@ -5,7 +5,7 @@ angular
 function avatarUser() {
   var directive = {
     restrict: "A",
-    templateUrl: '/js/app/partials/user-avatar.html',
+    templateUrl: '/app/partials/user-avatar.html',
     scope: {
       avatarUser: '='
     },

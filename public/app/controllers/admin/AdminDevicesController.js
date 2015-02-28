@@ -94,7 +94,7 @@ function AdminDevicesController($scope, $injector, $filter, LocalStorageService,
 
   $scope.deleteDevice = function(device) {
     var modalInstance = $injector.get('$modal').open({
-      templateUrl: '/js/app/partials/admin/delete-device.html',
+      templateUrl: '/app/partials/admin/delete-device.html',
       resolve: {
         device: function () {
           return device;

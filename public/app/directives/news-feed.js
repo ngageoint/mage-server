@@ -1,7 +1,7 @@
 mage.directive('newsFeed', function() {
   return {
     restrict: "A",
-    templateUrl:  "js/app/partials/news-feed.html",
+    templateUrl:  "app/partials/news-feed.html",
     scope: {
       observations: '=feedObservations',
       feedObservationsChanged: '=',

@@ -4,7 +4,7 @@ angular
 
 function formDirective() {
   var directive = {
-    templateUrl: 'js/app/partials/form/form.html',
+    templateUrl: 'app/partials/form/form.html',
     restrict: 'E',
     transclude: true,
     scope: {

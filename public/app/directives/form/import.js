@@ -1,7 +1,7 @@
 mage.directive('formImport', function() {
   return {
     restrict: "A",
-    templateUrl: '/js/app/partials/form/import.html',
+    templateUrl: '/app/partials/form/import.html',
     scope: {
       url: '@',
       uploadFileFormName: '='

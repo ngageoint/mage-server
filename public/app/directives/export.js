@@ -5,7 +5,7 @@ angular
 function exportDirective() {
   var directive = {
     restrict: "A",
-    templateUrl:  "js/app/partials/export.html",
+    templateUrl:  "app/partials/export.html",
     scope: {},
     controller: ExportController,
     bindToController: true

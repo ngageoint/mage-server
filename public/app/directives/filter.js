@@ -2,7 +2,7 @@
 mage.directive('filter', function(FilterService) {
   return {
     restrict: "A",
-    templateUrl:  "js/app/partials/filter.html",
+    templateUrl:  "app/partials/filter.html",
     controller: function($scope) {
       $scope.updateInterval = function() {
         if ($scope.interval.filter === 'all') {
