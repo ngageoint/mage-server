@@ -24,6 +24,7 @@ function MapClipController($rootScope, $scope, $element, MapService, LocalStorag
   var map = null;
   var baseLayer = null;
   var zoomEnabled = false;
+  var zoomControlOn = false;
   var layers = {};
 
   initialize();
@@ -95,20 +96,16 @@ function MapClipController($rootScope, $scope, $element, MapService, LocalStorag
     }
 
     map.on('mouseover', function() {
-      map.addControl(zoomControl);
+      if (!zoomControlOn) {
+        zoomControlOn = true;
+        map.addControl(zoomControl);
+      }
     });
 
     map.on('mouseout', function() {
-      map.removeControl(zoomControl);
-    });
-
-    map.on('click', function() {
-      if (zoomEnabled) {
-        map.scrollWheelZoom.disable();
-        zoomEnabled = false;
-      } else {
-        map.scrollWheelZoom.enable();
-        zoomEnabled = true;
+      if (zoomControlOn) {
+        map.removeControl(zoomControl);
+        zoomControlOn = false;
       }
     });
   }
