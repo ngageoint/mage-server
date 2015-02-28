@@ -13,7 +13,6 @@ var mage = angular.module(
   [
     "$strap.directives",
     "ui.bootstrap",
-    "mage.httpAuthService",
     "ngSanitize",
     "ngRoute",
     'ngResource',
@@ -41,13 +40,13 @@ var mage = angular.module(
 
     $routeProvider.when('/signin',
     {
-      templateUrl:    'app/partials/signin.html',
+      templateUrl:    'app/signin/signin.html',
       controller:     "SigninController",
       resolve: checkLogin()
     });
     $routeProvider.when('/signup',
     {
-      templateUrl:    'app/partials/signup.html',
+      templateUrl:    'app/signup/signup.html',
       controller:     "SignupController"
     });
     $routeProvider.when('/admin/:adminPanel?',
@@ -58,25 +57,25 @@ var mage = angular.module(
     });
     $routeProvider.when('/debug-info',
     {
-      templateUrl:    'app/partials/debug.html',
+      templateUrl:    'app/debug/debug.html',
       controller:     "DebugController",
       resolve: resolveLogin(["ADMIN_ROLE"])
     });
     $routeProvider.when('/map',
     {
-      templateUrl:    'app/partials/mage.html',
+      templateUrl:    'app/mage/mage.html',
       controller:     "MageController",
       resolve: resolveLogin(["USER_ROLE", "ADMIN_ROLE"])
     });
     $routeProvider.when('/user',
     {
-      templateUrl:    "app/partials/user.html",
+      templateUrl:    "app/user/user.html",
       controller:      "UserController",
       resolve: resolveLogin(["USER_ROLE", "ADMIN_ROLE"])
     });
     $routeProvider.when('/about',
     {
-      templateUrl:    "/app/partials/about.html",
+      templateUrl:    "/app/about/about.html",
       controller:     "AboutController",
       resolve: resolveLogin(["USER_ROLE", "ADMIN_ROLE"])
     });
