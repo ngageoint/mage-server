@@ -94,13 +94,19 @@ function MapClipController($rootScope, $scope, $element, MapService, LocalStorag
       map.setView(L.GeoJSON.coordsToLatLng($scope.feature.geometry.coordinates), 15);
     }
 
-    $element.on('click', function() {
+    map.on('mouseover', function() {
+      map.addControl(zoomControl);
+    });
+
+    map.on('mouseout', function() {
+      map.removeControl(zoomControl);
+    });
+
+    map.on('click', function() {
       if (zoomEnabled) {
-        map.removeControl(zoomControl);
         map.scrollWheelZoom.disable();
         zoomEnabled = false;
       } else {
-        map.addControl(zoomControl);
         map.scrollWheelZoom.enable();
         zoomEnabled = true;
       }
