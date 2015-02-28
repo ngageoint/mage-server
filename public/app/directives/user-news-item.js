@@ -5,7 +5,7 @@ angular
 function userNewsItem() {
   var directive = {
     restrict: "A",
-    templateUrl:  "js/app/partials/user-news-item.html",
+    templateUrl:  "app/partials/user-news-item.html",
     scope: {
       user: '=userNewsItem',
       followUserId: '=userNewsItemFollow'

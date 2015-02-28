@@ -5,7 +5,7 @@ angular
 function locationPopup() {
   var directive = {
     restrict: "A",
-    templateUrl:  "js/app/partials/location-popup.html",
+    templateUrl:  "app/partials/location-popup.html",
     scope: {
       user: '=locationPopup',
       userInfo: '&userPopupInfo'

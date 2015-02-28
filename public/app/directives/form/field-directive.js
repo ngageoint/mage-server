@@ -7,34 +7,34 @@ angular.module('mage').directive('fieldDirective', function ($http) {
 
     switch(type) {
       case 'textfield':
-        templateUrl = 'js/app/partials/form/field/textfield.html';
+        templateUrl = 'app/partials/form/field/textfield.html';
         break;
       case 'email':
-        templateUrl = 'js/app/partials/form/field/email.html';
+        templateUrl = 'app/partials/form/field/email.html';
         break;
       case 'textarea':
-        templateUrl = 'js/app/partials/form/field/textarea.html';
+        templateUrl = 'app/partials/form/field/textarea.html';
         break;
       case 'checkbox':
-        templateUrl = 'js/app/partials/form/field/checkbox.html';
+        templateUrl = 'app/partials/form/field/checkbox.html';
         break;
       case 'date':
-        templateUrl = 'js/app/partials/form/field/date.html';
+        templateUrl = 'app/partials/form/field/date.html';
         break;
       case 'geometry':
-        templateUrl = 'js/app/partials/form/field/geometry.html';
+        templateUrl = 'app/partials/form/field/geometry.html';
         break;
       case 'dropdown':
-        templateUrl = 'js/app/partials/form/field/dropdown.html';
+        templateUrl = 'app/partials/form/field/dropdown.html';
         break;
       case 'hidden':
-        templateUrl = 'js/app/partials/form/field/hidden.html';
+        templateUrl = 'app/partials/form/field/hidden.html';
         break;
       case 'p***REMOVED***word':
-        templateUrl = 'js/app/partials/form/field/p***REMOVED***word.html';
+        templateUrl = 'app/partials/form/field/p***REMOVED***word.html';
         break;
       case 'radio':
-        templateUrl = 'js/app/partials/form/field/radio.html';
+        templateUrl = 'app/partials/form/field/radio.html';
         break;
     }
     return templateUrl;

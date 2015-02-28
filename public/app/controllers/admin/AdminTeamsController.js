@@ -80,7 +80,7 @@ function AdminTeamsController($scope, $injector, LocalStorageService, Observatio
 
   $scope.deleteTeam = function(team) {
     var modalInstance = $injector.get('$modal').open({
-      templateUrl: '/js/app/partials/admin/delete-team.html',
+      templateUrl: '/app/partials/admin/delete-team.html',
       resolve: {
         team: function () {
           return $scope.team;

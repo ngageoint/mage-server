@@ -294,7 +294,7 @@ function AdminEventsController($scope, $injector, $filter, $timeout, LocalStorag
 
   $scope.deleteEvent = function() {
     var modalInstance = $injector.get('$modal').open({
-      templateUrl: '/js/app/partials/admin/delete-event.html',
+      templateUrl: '/app/partials/admin/delete-event.html',
       resolve: {
         event: function () {
           return $scope.event;

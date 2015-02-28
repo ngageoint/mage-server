@@ -5,7 +5,7 @@ angular
 function attachment() {
   var directive = {
     restrict: "A",
-    templateUrl: '/js/app/partials/attachment.html',
+    templateUrl: '/app/partials/attachment.html',
     scope: {
       attachment: '=',
       attachmentObservation: '=',

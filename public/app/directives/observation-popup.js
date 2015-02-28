@@ -5,7 +5,7 @@ angular
 function observationPopup() {
   var directive = {
     restrict: "A",
-    templateUrl:  "js/app/partials/observation-popup.html",
+    templateUrl:  "app/partials/observation-popup.html",
     scope: {
       observation: '=observationPopup',
       observationInfo: '&observationPopupInfo'

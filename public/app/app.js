@@ -43,42 +43,42 @@ var mage = angular.module(
 
     $routeProvider.when('/signin',
     {
-      templateUrl:    'js/app/partials/signin.html',
+      templateUrl:    'app/partials/signin.html',
       controller:     "SigninController",
       resolve: checkLogin()
     });
     $routeProvider.when('/signup',
     {
-      templateUrl:    'js/app/partials/signup.html',
+      templateUrl:    'app/partials/signup.html',
       controller:     "SignupController"
     });
     $routeProvider.when('/admin/:adminPanel?',
     {
-      templateUrl:    'js/app/partials/admin/admin.html',
+      templateUrl:    'app/partials/admin/admin.html',
       controller:     "AdminController",
       resolve: resolveLogin(["ADMIN_ROLE"])
     });
     $routeProvider.when('/debug-info',
     {
-      templateUrl:    'js/app/partials/debug.html',
+      templateUrl:    'app/partials/debug.html',
       controller:     "DebugController",
       resolve: resolveLogin(["ADMIN_ROLE"])
     });
     $routeProvider.when('/map',
     {
-      templateUrl:    'js/app/partials/mage.html',
+      templateUrl:    'app/partials/mage.html',
       controller:     "MageController",
       resolve: resolveLogin(["USER_ROLE", "ADMIN_ROLE"])
     });
     $routeProvider.when('/user',
     {
-      templateUrl:    "js/app/partials/user.html",
+      templateUrl:    "app/partials/user.html",
       controller:      "UserController",
       resolve: resolveLogin(["USER_ROLE", "ADMIN_ROLE"])
     });
     $routeProvider.when('/about',
     {
-      templateUrl:    "/js/app/partials/about.html",
+      templateUrl:    "/app/partials/about.html",
       controller:     "AboutController",
       resolve: resolveLogin(["USER_ROLE", "ADMIN_ROLE"])
     });
