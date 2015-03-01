@@ -383,11 +383,8 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
     var options = selected.options;
     if (!options || !options.panToLocation) return;
 
-    // Pan first, so that marker/cluster is visible
-    // TODO need to check if map has this layer????
-    map.setView(layer.getLatLng());
+    // once pan is done determine how to show popup
     map.once('moveend', function() {
-      console.log('moveed, set view is done');
       if (featureLayer.options.cluster) {
         var cluster = featureLayer.layer.getVisibleParent(layer);
         // If layer is visible, ie not in cluster
@@ -421,6 +418,9 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
         openPopup(layer, selected.options);
       }
     });
+
+    // Pan first, so that marker/cluster is visible
+    map.setView(layer.getLatLng());
   }
 
   function onLayerRemoved(layer) {

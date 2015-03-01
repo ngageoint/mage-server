@@ -56,6 +56,21 @@ Icon.prototype.getIcon = function(callback) {
   });
 }
 
+Icon.prototype.setDefaultIcon = function(callback) {
+  var relativePath = createIconPath(this, 'default-icon.png');
+  var newIcon = {
+    eventId: this._eventId,
+    relativePath: relativePath
+  }
+
+  var iconPath = path.join(iconBase, relativePath);
+  fs.copy(path.join(appRoot, '/public/img/default-icon.png'), iconPath, function(err) {
+    if (err) callback(err);
+
+    IconModel.create(newIcon, callback);
+  });
+}
+
 Icon.prototype.getDefaultIcon = function(callback) {
   return callback(null, path.join(appRoot, '/public/img/default-icon.png'));
 }
@@ -68,8 +83,6 @@ Icon.prototype.create = function(icon, callback) {
     variant: this._variant,
     relativePath: relativePath
   }
-
-console.log('try to create this icon: ', JSON.stringify(newIcon));
 
   var iconPath = path.join(iconBase, relativePath);
   fs.mkdirp(path.dirname(iconPath), function(err) {
