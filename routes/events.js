@@ -113,7 +113,12 @@ module.exports = function(app, security) {
       Event.create(req.newEvent, function(err, event) {
         if (err) return next(err);
 
-        res.status(201).json(event);
+        //copy default icon into new event directory
+        new api.Icon(event.id).setDefaultIcon(function(err) {
+          if (err) return next(err);
+
+          res.status(201).json(event);
+        });
       });
     }
   );
