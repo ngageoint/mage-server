@@ -247,7 +247,7 @@
                         Default Icon
                       </div>
                       <form enctype="multipart/form-data"
-                        simple-upload url="{{'/api/events/' + event.id + '/form/icons' + '?access_token=' + token}}"
+                        file-upload url="{{'/api/events/' + event.id + '/form/icons' + '?access_token=' + token}}"
                         allow-upload="event.id"
                         preview="true"
                         upload-file-form-name="'icon'">
@@ -294,7 +294,7 @@
                           <div cl***REMOVED***="span12 strong">Default</div>
                         </div>
                         <form enctype="multipart/form-data"
-                          simple-upload url="{{'/api/events/' + event.id + '/form/icons/' + option.title + '?access_token=' + token + '&_dc=' + savedTime}}"
+                          file-upload url="{{'/api/events/' + event.id + '/form/icons/' + option.title + '?access_token=' + token + '&_dc=' + savedTime}}"
                           allow-upload="event.id"
                           preview="true"
                           upload-file-form-name="'icon'">
@@ -315,7 +315,7 @@
                         </div>
                       </div>
                       <form enctype="multipart/form-data"
-                        simple-upload url="{{'/api/events/' + event.id + '/form/icons/' + option.title + '/' + variant.title + '?access_token=' + token + '&_dc=' + savedTime}}"
+                        file-upload url="{{'/api/events/' + event.id + '/form/icons/' + option.title + '/' + variant.title + '?access_token=' + token + '&_dc=' + savedTime}}"
                         allow-upload="event.id"
                         preview="true"
                         upload-file-form-name="'icon'">

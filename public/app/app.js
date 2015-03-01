@@ -1,5 +1,3 @@
-'use strict';
-
 /* Fix for IE */
 if (!Date.now) { Date.now = function() { return +(new Date); }; }
 
@@ -8,9 +6,8 @@ $('#main-nav a').on('click', function(){
     $("#main-nav-collapse.btn-navbar:visible").click();
 });
 
-var mage = angular.module(
-  "mage",
-  [
+angular
+  .module("mage", [
     "$strap.directives",
     "ui.bootstrap",
     "ngSanitize",
@@ -38,56 +35,47 @@ var mage = angular.module(
       }
     }
 
-    $routeProvider.when('/signin',
-    {
+    $routeProvider.when('/signin', {
       templateUrl:    'app/signin/signin.html',
       controller:     "SigninController",
       resolve: checkLogin()
     });
-    $routeProvider.when('/signup',
-    {
+    $routeProvider.when('/signup', {
       templateUrl:    'app/signup/signup.html',
       controller:     "SignupController"
     });
-    $routeProvider.when('/admin/:adminPanel?',
-    {
+    $routeProvider.when('/admin/:adminPanel?', {
       templateUrl:    'app/admin/admin.html',
       controller:     "AdminController",
       resolve: resolveLogin(["ADMIN_ROLE"])
     });
-    $routeProvider.when('/debug-info',
-    {
+    $routeProvider.when('/debug-info', {
       templateUrl:    'app/debug/debug.html',
       controller:     "DebugController",
       resolve: resolveLogin(["ADMIN_ROLE"])
     });
-    $routeProvider.when('/map',
-    {
+    $routeProvider.when('/map', {
       templateUrl:    'app/mage/mage.html',
       controller:     "MageController",
       resolve: resolveLogin(["USER_ROLE", "ADMIN_ROLE"])
     });
-    $routeProvider.when('/user',
-    {
+    $routeProvider.when('/user', {
       templateUrl:    "app/user/user.html",
       controller:      "UserController",
       resolve: resolveLogin(["USER_ROLE", "ADMIN_ROLE"])
     });
-    $routeProvider.when('/about',
-    {
+    $routeProvider.when('/about', {
       templateUrl:    "/app/about/about.html",
       controller:     "AboutController",
       resolve: resolveLogin(["USER_ROLE", "ADMIN_ROLE"])
     });
-    $routeProvider.otherwise(
-    {
+    $routeProvider.otherwise({
       redirectTo:     '/signin',
       controller:     "SigninController",
     }
   );
 }).run(function($rootScope, $modal, UserService, $location, authService) {
   $rootScope.$on('event:auth-loginRequired', function() {
-
     if (!$rootScope.loginDialogPresented && $location.path() != '/' && $location.path() != '/signin' && $location.path() != '/signup') {
       $rootScope.loginDialogPresented = true;
       var modalInstance = $modal.open({
@@ -114,12 +102,14 @@ var mage = angular.module(
           };
         }
       });
+
       modalInstance.result.then(function () {
-      }, function () {
       });
     }
 
   });
+
   $rootScope.$on('event:auth-loginConfirmed', function() {
   });
+
 });
