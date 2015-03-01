@@ -286,43 +286,6 @@
 
   <script type="text/javascript" src="app/debug/debug.controller.js"></script>
 
-<!-- TODO move to its own partial -->
-    <script type="text/ng-template" id="myModalContent.html">
-      <div cl***REMOVED***="modal-header">
-          <h3>Token Expired, Please log in.</h3>
-      </div>
-      <div cl***REMOVED***="modal-body">
-          <h3 cl***REMOVED***="top-gap-l">Mobile Analytic GEOINT Environment</h3>
-      <form cl***REMOVED***="form">
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="username">Username</label>
-          <div cl***REMOVED***="controls">
-            <input ng-model="username" name="username" type="text" autocapitalize="off"/>
-          </div>
-        </div>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="uid">UID</label>
-          <div cl***REMOVED***="controls">
-            <input ng-model="uid" name="uid" type="text" autocapitalize="off"/>
-          </div>
-        </div>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="p***REMOVED***word">P***REMOVED***word</label>
-          <div cl***REMOVED***="controls">
-            <input ng-model="p***REMOVED***word" name="p***REMOVED***word" type="p***REMOVED***word"/>
-          </div>
-        </div>
-        <span>
-          <button cl***REMOVED***="btn" ng-click="login({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})" ngm-tap="login({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})">Login</button>
-        </span>
-        <div cl***REMOVED***="top-gap-s alert alert-block" ng-show="status > 399">
-          <h4>Failed login</h4>
-          Please check your username, UID, and p***REMOVED***word and try again.
-        </div>
-      </form>
-      </div>
-    </script>
-
 </body>
 
 </html>

@@ -92,7 +92,7 @@ var mage = angular.module(
       $rootScope.loginDialogPresented = true;
       var modalInstance = $modal.open({
         backdrop: 'static',
-        templateUrl: 'myModalContent.html',
+        templateUrl: 'app/signin/signin-modal.html',
         controller: function ($scope, $modalInstance, authService) {
           var oldUsername = UserService.myself && UserService.myself.username || undefined;
           $scope.login = function (data) {
