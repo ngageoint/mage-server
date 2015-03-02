@@ -52,7 +52,7 @@ L.Control.MageUserLocation = L.Control.extend({
 		this._broadcastLink = L.DomUtil.create('a', '', container);
 		this._broadcastIcon = L.DomUtil.create('i', 'icon-megaphone icon-sage', this._broadcastLink);
 		this._broadcastLink.href = '#';
-		this._broadcastLink.title = 'Locate Me';
+		this._broadcastLink.title = 'Report Location';
 		this._broadcast = false;
 
 		L.DomEvent

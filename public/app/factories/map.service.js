@@ -23,7 +23,6 @@ function MapService($rootScope, Layer, EventService) {
     addFeaturesToLayer: addFeaturesToLayer,
     updateFeatureForLayer: updateFeatureForLayer,
     removeFeatureFromLayer: removeFeatureFromLayer,
-    selectFeatureInLayer: selectFeatureInLayer,
     zoomToFeatureInLayer: zoomToFeatureInLayer,
     onLocation: onLocation
   };
@@ -132,18 +131,6 @@ function MapService($rootScope, Layer, EventService) {
     featuresChanged({
       name: layerId,
       removed: [feature]
-    });
-  }
-
-  function selectFeatureInLayer(feature, layerId, options) {
-    _.each(listeners, function(listener) {
-      if (_.isFunction(listener.onFeatureSelected)) {
-        listener.onFeatureSelected({
-          name: layerId,
-          feature: feature,
-          options: options
-        });
-      }
     });
   }
 

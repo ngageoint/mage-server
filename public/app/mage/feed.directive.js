@@ -60,16 +60,18 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Fil
 
   $scope.tabSelected = function(tab) {
     $scope.currentFeedPanel = tab;
+  }
 
-    if ($scope.currentFeedPanel === 'observationsTab') {
+  $scope.$watch('currentFeedPanel', function(currentFeedPanel) {
+    if (currentFeedPanel === 'observationsTab') {
       $scope.feedObservationsChanged = {};
       $scope.observationsChanged = 0;
       $scope.$broadcast('map:visible');
-    } else if ($scope.currentFeedPanel === 'peopleTab') {
+    } else if (currentFeedPanel === 'peopleTab') {
       $scope.feedUsersChanged = {};
       $scope.usersChanged = 0;
     }
-  }
+  });
 
   $scope.$watch('feedObservationsChanged', function(feedObservationsChanged) {
     if (!feedObservationsChanged) return;
@@ -87,8 +89,9 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Fil
     }
   }, true);
 
-  $scope.$on('observation:select', function(e, observation) {
+  $scope.$on('observation:select', function(e, observation, options) {
     $scope.selectedObservation = observation;
+    if (!options || !options.scrollTo) return;
 
     // locate the page this observation is on
     var page;
