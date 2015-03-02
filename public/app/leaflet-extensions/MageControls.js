@@ -37,7 +37,7 @@ L.Control.MageUserLocation = L.Control.extend({
 		var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
 
 		this._locateLink = L.DomUtil.create('a', '', container);
-		this._locateIcon = L.DomUtil.create('i', 'icon-target icon-sage', this._locateLink);
+		this._locateIcon = L.DomUtil.create('i', 'fa fa-location-arrow icon-sage', this._locateLink);
 		this._locateLink.href = '#';
 		this._locateLink.title = 'Locate Me';
 		this._locate = false;

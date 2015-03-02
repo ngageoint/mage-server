@@ -48,7 +48,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
       cluster: true,
       popup: {
         html: function(observation) {
-          var el = angular.element('<div observation-popup="observation" observation-popup-info="onInfo(observation)"></div>');
+          var el = angular.element('<div observation-popup="observation" observation-popup-info="onInfo(observation)" observation-zoom="onZoom(observation)"></div>');
           var compiled = $compile(el);
           var newScope = $scope.$new(true);
           newScope.observation = observation;
@@ -56,6 +56,9 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
             $timeout(function() {
               onObservationSelected(observation);
             });
+          }
+          newScope.onZoom = function(observation) {
+            MapService.zoomToFeatureInLayer(observation, 'Observations');
           }
           compiled(newScope);
           popupScopes[observation.id] = newScope;

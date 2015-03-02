@@ -24,6 +24,7 @@ function MapService($rootScope, Layer, EventService) {
     updateFeatureForLayer: updateFeatureForLayer,
     removeFeatureFromLayer: removeFeatureFromLayer,
     selectFeatureInLayer: selectFeatureInLayer,
+    zoomToFeatureInLayer: zoomToFeatureInLayer,
     onLocation: onLocation
   };
 
@@ -135,10 +136,25 @@ function MapService($rootScope, Layer, EventService) {
   }
 
   function selectFeatureInLayer(feature, layerId, options) {
-    featureSelected({
-      name: layerId,
-      feature: feature,
-      options: options
+    _.each(listeners, function(listener) {
+      if (_.isFunction(listener.onFeatureSelected)) {
+        listener.onFeatureSelected({
+          name: layerId,
+          feature: feature,
+          options: options
+        });
+      }
+    });
+  }
+
+  function zoomToFeatureInLayer(feature, layerId) {
+    _.each(listeners, function(listener) {
+      if (_.isFunction(listener.onFeatureZoom)) {
+        listener.onFeatureZoom({
+          name: layerId,
+          feature: feature
+        });
+      }
     });
   }
 
@@ -158,14 +174,6 @@ function MapService($rootScope, Layer, EventService) {
 
       if (_.isFunction(listener.onFeaturesChanged)) {
         listener.onFeaturesChanged(changed);
-      }
-    });
-  }
-
-  function featureSelected(selected) {
-    _.each(listeners, function(listener) {
-      if (_.isFunction(listener.onFeatureSelected)) {
-        listener.onFeatureSelected(selected);
       }
     });
   }
