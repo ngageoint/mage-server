@@ -3,11 +3,11 @@
 
   <div cl***REMOVED***="row-fluid news-feed-tabs">
     <div cl***REMOVED***="span5 offset2">
-      <span cl***REMOVED***="admin-tab"><a cl***REMOVED***="pointer" ng-click="tabSelected('observationsTab')" ng-cl***REMOVED***="{observationsTab:'admin-nav-active', peopleTab:'admin-nav-inactive'}[currentFeedPanel]">Observations</a></span>
+      <span cl***REMOVED***="admin-tab"><a cl***REMOVED***="pointer" ng-click="currentFeedPanel = 'observationsTab'" ng-cl***REMOVED***="{observationsTab:'admin-nav-active', peopleTab:'admin-nav-inactive'}[currentFeedPanel]">Observations</a></span>
       <span cl***REMOVED***="badge badge-success" ng-show="observationsChanged > 0">{{observationsChanged}}</span>
     </div>
     <div cl***REMOVED***="span5">
-      <span cl***REMOVED***="admin-tab"><a cl***REMOVED***="admin-tab pointer" ng-click="tabSelected('peopleTab')" ng-cl***REMOVED***="{peopleTab:'admin-nav-active', observationsTab:'admin-nav-inactive'}[currentFeedPanel]">People</a></span>
+      <span cl***REMOVED***="admin-tab"><a cl***REMOVED***="admin-tab pointer" ng-click="currentFeedPanel = 'peopleTab'" ng-cl***REMOVED***="{peopleTab:'admin-nav-active', observationsTab:'admin-nav-inactive'}[currentFeedPanel]">People</a></span>
       <span cl***REMOVED***="badge badge-success" ng-show="usersChanged > 0">{{usersChanged}}</span>
     </div>
   </div>
@@ -28,7 +28,7 @@
               </div>
             </div>
 
-            <div cl***REMOVED***="news-feed-item pointer" id="{{observation.id}}"
+            <div cl***REMOVED***="news-feed-item" id="{{observation.id}}"
               ng-cl***REMOVED***="(selectedObservation.id == observation.id) && 'active-news-feed-item'"
               ng-repeat="observation in observationPages[currentObservationPage] track by observation.id">
               <div observation-news-item="observation" observation-form="event.form" container-element="side-bar"></div>
@@ -42,7 +42,7 @@
               </div>
             </div>
 
-            <div cl***REMOVED***="news-feed-item pointer" id="{{user.id}}"
+            <div cl***REMOVED***="news-feed-item" id="{{user.id}}"
               ng-cl***REMOVED***="(selectedUser.id == user.id) && 'active-news-feed-item'"
               ng-repeat="user in userPages[currentUserPage] track by user.id">
               <div user-news-item="user" user-news-item-follow="followUserId" container-element="side-bar"></div>

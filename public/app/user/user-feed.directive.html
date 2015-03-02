@@ -1,20 +1,32 @@
-<div cl***REMOVED***="user-location-news-item" ng-click="onUserClick(user)">
-	<div cl***REMOVED***="row-fluid">
-		<div cl***REMOVED***="span12">
-			<span cl***REMOVED***="news-feed-item-support small-text pull-right">{{user.location.properties.timestamp | moment: 'fromNow'}}</span>
-			<div cl***REMOVED***="feed-avatar-img-container pull-left">
-				<img cl***REMOVED***="avatar-thumbnail img-rounded" ng-src="{{avatarUrl}}"/>
-			</div>
-			<div cl***REMOVED***="strong">{{user.username}}</div>
-			<div cl***REMOVED***="muted">{{user.firstname}} {{user.lastname}}</div>
-			<a cl***REMOVED***="news-feed-item-support small-text">{{user.location.geometry.coordinates[1] | number: 3}}, {{user.location.geometry.coordinates[0] | number: 3}}</a>
+<div cl***REMOVED***="row-fluid">
+	<div cl***REMOVED***="span7">
+		<div cl***REMOVED***="feed-avatar-img-container pull-left">
+			<img cl***REMOVED***="avatar-thumbnail img-rounded" ng-src="{{avatarUrl}}"/>
+		</div>
+		<div cl***REMOVED***="news-feed-item-support observation-type">{{user.username}}</div>
+		<div cl***REMOVED***="news-feed-item-support observation-variant">{{user.firstname}} {{user.lastname}}</div>
+	</div>
 
-			<div cl***REMOVED***="pull-right">
-				<button ng-cl***REMOVED***="{active: followUserId == user.id}" cl***REMOVED***="btn btn-mini btn-primary" data-toggle="button" ng-click="followUser($event, user)">
-					<span ng-show="followUserId == user.id">Following...</span>
-					<span ng-hide="followUserId == user.id">Follow</span>
-				</button>
+	<div cl***REMOVED***="span5">
+		<div cl***REMOVED***="row-fluid">
+			<div cl***REMOVED***="news-feed-item-support small-text pull-right">
+				{{user.location.properties.timestamp | moment: 'fromNow'}}
 			</div>
 		</div>
+		<div cl***REMOVED***="row-fluid">
+			<div cl***REMOVED***="pull-right">
+				<a href="javascript:void(0)" cl***REMOVED***="small-text" ng-click="onUserLocationClick(user)">
+					{{user.location.geometry.coordinates[1] | number: 3}}, {{user.location.geometry.coordinates[0] | number: 3}}
+				</a>
+			</div>
+		</div>
+
+		<div cl***REMOVED***="pull-right">
+			<button ng-cl***REMOVED***="{active: followUserId == user.id}" cl***REMOVED***="btn btn-mini btn-primary top-gap-s" data-toggle="button" ng-click="followUser($event, user)">
+				<span ng-show="followUserId == user.id">Following...</span>
+				<span ng-hide="followUserId == user.id">Follow</span>
+			</button>
+		</div>
+
 	</div>
 </div>

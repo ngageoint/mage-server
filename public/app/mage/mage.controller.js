@@ -22,12 +22,10 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
 
   var observationsById = {};
   var newObservation = null;
-  var selectedObservationId = null;
   $scope.feedObservations = [];
   $scope.feedChangedObservations = {count: 0};
 
   var usersById = {};
-  var selectedUserId = null;
   var followingUserId = null;
   $scope.feedUsers = [];
   $scope.feedChangedUsers = {};
@@ -54,7 +52,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
           newScope.observation = observation;
           newScope.onInfo = function(observation) {
             $timeout(function() {
-              onObservationSelected(observation);
+              onObservationSelected(observation, {scrollTo: true});
             });
           }
           newScope.onZoom = function(observation) {
@@ -91,14 +89,17 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
       popup: {
         html: function(location) {
           var user = usersById[location.id];
-          var el = angular.element('<div location-popup="user" user-popup-info="onInfo(user)"></div>');
+          var el = angular.element('<div location-popup="user" user-popup-info="onInfo(user)" user-zoom="onZoom(user)"></div>');
           var compiled = $compile(el);
           var newScope = $scope.$new(true);
           newScope.user = user;
           newScope.onInfo = function(user) {
             $timeout(function() {
-              onUserSelected(user);
+              onUserSelected(user, {scrollTo: true});
             });
+          }
+          newScope.onZoom = function(user) {
+            MapService.zoomToFeatureInLayer(user, 'People');
           }
           compiled(newScope);
           popupScopes[user.id] = newScope;
@@ -239,7 +240,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
         MapService.updateFeatureForLayer(user.location, 'People');
 
         // pan/zoom map to user if this is the user we are following
-        if (user.id === followingUserId) MapService.selectFeatureInLayer(user, 'People', {panToLocation: true, zoomToLocation: true});
+        if (user.id === followingUserId) MapService.zoomToFeatureInLayer(user, 'People');
       }
 
       $scope.feedChangedUsers[updated.id] = true;
@@ -281,33 +282,18 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   }
 
   function onObservationSelected(observation, options) {
-    // Prevent selected event for already selected observation
-    if (selectedObservationId !== observation.id) {
-      selectedObservationId = observation.id;
-      $scope.$broadcast('observation:select', observation);
-      MapService.selectFeatureInLayer(observation, 'Observations', options);
-    }
+    $scope.$broadcast('observation:select', observation, options);
   }
 
   function onObservationDeselected(observation) {
-    selectedObservationId = null;
     $scope.$broadcast('observation:deselect', observation);
   }
 
   function onUserSelected(user, options) {
-    // Prevent selected event for already selected user
-    if (selectedUserId !== user.id) {
-      selectedUserId = user.id;
-      $scope.$broadcast('user:select', user);
-    }
-
-    // User may already be selected when follow button is pressed
-    // make sure to still send this to the map as we will zoom
-    MapService.selectFeatureInLayer(user, 'People', options);
+    $scope.$broadcast('user:select', user);
   }
 
   function onUserDeselected(user) {
-    selectedUserId = null;
     $scope.$broadcast('user:deselect', user);
   }
 
@@ -324,14 +310,18 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     onObservationSelected(observation, options);
   });
 
-  $scope.$on('user:selected', function(e, user, options) {
-    onUserSelected(user, options);
+  $scope.$on('observation:zoom', function(e, observation) {
+    MapService.zoomToFeatureInLayer(observation, 'Observations');
+  });
+
+  $scope.$on('user:zoom', function(e, user, options) {
+    MapService.zoomToFeatureInLayer(user, 'People');
   });
 
   $scope.$on('user:follow', function(e, user) {
     if (user) {
       followingUserId = user.id;
-      onUserSelected(user, {panToLocation: true, zoomToLocation: true});
+      MapService.zoomToFeatureInLayer(user, 'People');
     } else {
       followingUserId = null;
     }

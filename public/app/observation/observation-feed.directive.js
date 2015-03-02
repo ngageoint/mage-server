@@ -16,12 +16,10 @@ function observationNewsItem() {
   return directive;
 }
 
-ObservationNewsItemController.$inject = ['$scope', 'EventService', 'UserService', 'LocalStorageService'];
+ObservationNewsItemController.$inject = ['$scope', 'EventService', 'UserService'];
 
-function ObservationNewsItemController($scope, EventService, UserService, LocalStorageService) {
+function ObservationNewsItemController($scope, EventService, UserService) {
   $scope.edit = false;
-  $scope.attachmentUrl = '/FeatureServer/' + $scope.observation.layerId + '/features/';
-  $scope.token = LocalStorageService.getToken();
 
   UserService.getUser($scope.observation.userId).then(function(user) {
     $scope.observationUser = user.data || user;
@@ -40,8 +38,8 @@ function ObservationNewsItemController($scope, EventService, UserService, LocalS
     $scope.editForm = angular.copy($scope.form);
   }
 
-  $scope.onObservationClick = function(observation) {
-    $scope.$emit('observation:selected', observation, {panToLocation: true});
+  $scope.onObservationLocationClick = function(observation) {
+    $scope.$emit('observation:zoom', observation, {panToLocation: true, zoomToLocation: true});
   }
 
   $scope.$on('observation:editDone', function() {

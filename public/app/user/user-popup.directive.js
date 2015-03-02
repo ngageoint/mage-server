@@ -8,7 +8,8 @@ function locationPopup() {
     templateUrl:  "app/user/user-popup.directive.html",
     scope: {
       user: '=locationPopup',
-      userInfo: '&userPopupInfo'
+      userPopupInfo: '&',
+      userZoom: '&'
     },
     controller: LocationPopupController,
     bindToController: true
@@ -29,6 +30,10 @@ function LocationPopupController($scope, LocalStorageService) {
   }
 
   $scope.onInfoClicked = function() {
-    $scope.userInfo({user: $scope.user});
+    $scope.userPopupInfo({user: $scope.user});
+  }
+
+  $scope.onZoomClicked = function() {
+    $scope.userZoom({user: $scope.user});
   }
 }

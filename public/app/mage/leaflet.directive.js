@@ -111,7 +111,6 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
     onLayerRemoved: onLayerRemoved,
     onLayersChanged: onLayersChanged,
     onFeaturesChanged: onFeaturesChanged,
-    onFeatureSelected: onFeatureSelected,
     onFeatureZoom: onFeatureZoom
   };
   MapService.addListener(listener);
@@ -230,13 +229,6 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
             layer.setAccuracy(null);
           });
         }
-
-        layer.on('popupclose', function() {
-          if (spiderfyState && spiderfyState.layer == layer) {
-            spiderfyState.cluster.unspiderfy();
-            spiderfyState = null;
-          }
-        });
 
         layerInfo.featureIdToLayer[feature.id] = layer;
       },
@@ -370,78 +362,14 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
   }
 
   function openPopup(layer, options) {
-    layer.openPopup();
     if (options) {
-      map.setView(layer.getLatLng(), options.zoomToLocation ? 17: map.getZoom());
-    }
-  }
-
-  function onFeatureSelected(selected) {
-    var featureLayer = layers[selected.name];
-    var layer = featureLayer.featureIdToLayer[selected.feature.id];
-    if (!map.hasLayer(featureLayer.layer)) return;
-
-    var options = selected.options;
-    if (!options || !options.panToLocation) return;
-
-    if (featureLayer.options.cluster) {
-      // unspiderfy any already spiderfied layer
-      if (spiderfyState) {
-        // spiderfyState.layer.closePopup();
-        spiderfyState.cluster.unspiderfy();
-        spiderfyState = null;
-      }
-
-      featureLayer.layer.panToShowLayer(layer, function(spiderfied) {
-        if (spiderfied) {
-          spiderfyState = { layer: layer, cluster: spiderfied.layer };
-          // spiderfyState = {spiderfiedLayer: spiderfied.layer, layer: layer};
-        }
-
-        openPopup(layer, selected.options);
+      map.once('moveend', function() {
+        layer.openPopup();
       });
-    } else {  // Not clustered
-      openPopup(layer, selected.options);
+      map.setView(layer.getLatLng(), options.zoomToLocation ? 17: map.getZoom());
+    } else {
+      layer.openPopup();
     }
-
-    // // once pan is done determine how to show popup
-    // map.once('moveend', function() {
-    //   if (featureLayer.options.cluster) {
-    //     // var cluster = featureLayer.layer.getVisibleParent(layer); // TODO this is the problem, not visible yet
-    //     var cluster = featureLayer.layer.getParentAtZoom(layer, map.getZoom());
-    //     // If layer is visible, ie not in cluster
-    //     if (layer == cluster) {
-    //       // TODO only do this if layer is not in spiderfied cluster
-    //       if (spiderfyState) {
-    //         var childOfCluster = _.find(spiderfyState.cluster.getAllChildMarkers(), function(child) {
-    //           return child.feature.id === layer.feature.id;
-    //         });
-    //
-    //         if (childOfCluster) { // layer in cluster that is already unspiderfied
-    //           spiderfyState.layer = layer;
-    //           openPopup(layer, selected.options);
-    //         } else {
-    //           spiderfyState.layer.closePopup();
-    //           // spiderfyState.cluster.unspiderfy();
-    //           spiderfyState = null;
-    //
-    //           openPopup(layer, selected.options);
-    //         }
-    //       } else {
-    //         openPopup(layer, selected.options);
-    //       }
-    //     } else {
-    //       spiderfyState = { layer: layer, cluster: cluster };
-    //       cluster.spiderfy();
-    //       openPopup(layer, selected.options);
-    //     }
-    //   } else {  // Not clustered
-    //     openPopup(layer, selected.options);
-    //   }
-    // });
-    //
-    // // Pan first, so that marker/cluster is visible
-    // map.setView(layer.getLatLng());
   }
 
   function onFeatureZoom(zoom) {
@@ -449,41 +377,12 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
     var layer = featureLayer.featureIdToLayer[zoom.feature.id];
     if (!map.hasLayer(featureLayer.layer)) return;
 
-    // if (spiderfyState) {
-    //   spiderfyState.layer.closePopup();
-    //   spiderfyState.spiderfiedLayer.unspiderfy();
-    //   spiderfyState = null;
-    // }
-
-    var move = function() {
-      map.once('moveend', function() {
-        var cluster = featureLayer.layer.getParentAtZoom(layer, map.getZoom());
-        if (cluster == layer) {
-          openPopup(layer);
-        } else {
-          featureLayer.layer.zoomToShowLayer(layer, function() {
-            spiderfyState = { layer: layer, cluster: cluster };
-            openPopup(layer);
-          });
-          // setTimeout(function() {
-            // spiderfyState = { layer: layer, cluster: cluster };
-            // cluster.spiderfy();
-            // openPopup(layer);
-          // }, 500);
-        }
+    if (featureLayer.options.cluster) {
+      featureLayer.layer.zoomToShowLayer(layer, function(spiderfied) {
+        openPopup(layer);
       });
-      map.setView(layer.getLatLng(), map.getZoom() < 17 ? 17 : map.getZoom());
-    }
-
-    if (spiderfyState) {
-      featureLayer.layer.once('unspiderfied', function() {
-        spiderfyState = null;
-        move();
-      });
-      spiderfyState.cluster.unspiderfy();
-      // spiderfyState.layer.closePopup();
     } else {
-      move();
+      openPopup(layer, {zoomToLocation: true});
     }
   }
 

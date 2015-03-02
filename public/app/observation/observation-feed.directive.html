@@ -1,4 +1,4 @@
-<div cl***REMOVED***="observation-news-item" ng-click="onObservationClick(observation)">
+<div cl***REMOVED***="observation-news-item">
   <div ng-if="edit === false">
   	<div cl***REMOVED***="row-fluid">
   		<div cl***REMOVED***="span7">
@@ -15,7 +15,9 @@
           <span cl***REMOVED***="pull-right news-feed-item-support small-text">{{observation.properties.timestamp | moment: 'fromNow'}}</span>
         </div>
         <div cl***REMOVED***="row-fluid">
-  				<a cl***REMOVED***="pull-right small-text">{{observation.geometry.coordinates[0] | number: 3}}, {{observation.geometry.coordinates[1] | number: 3}}</a>
+  				<a href="javascript:void(0)" cl***REMOVED***="pull-right small-text" ng-click="onObservationLocationClick(observation)">
+            {{observation.geometry.coordinates[0] | number: 3}}, {{observation.geometry.coordinates[1] | number: 3}}
+          </a>
   			</div>
   		</div>
   	</div>
