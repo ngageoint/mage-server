@@ -480,7 +480,7 @@ a.news-feed-tab-active {
 
 .observation-popup {
 	color: #345477;
-	width: 200px;
+	width: 275px;
 }
 
 .observation-popup-title {
@@ -493,10 +493,16 @@ a.news-feed-tab-active {
 	color: #999;
 }
 
-.observation-popup-info i {
+/*.observation-popup-info i {
 	font-size: 18px;
 	padding-top: 8px;
 	color: #345477;
+}*/
+
+.observation-popup-actions a {
+	/*font-size: 18px;*/
+	margin-top: 8px;
+	color: #FFF;
 }
 
 .location-popup {

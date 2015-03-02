@@ -8,7 +8,8 @@ function observationPopup() {
     templateUrl:  "/app/observation/observation-popup.directive.html",
     scope: {
       observation: '=observationPopup',
-      observationInfo: '&observationPopupInfo'
+      observationPopupInfo: '&',
+      observationZoom: '&'
     },
     controller: ObservationPopupDirective
   }
@@ -30,6 +31,10 @@ function ObservationPopupDirective($scope, EventService) {
   $scope.date = moment($scope.observation.properties.timestamp).format("YYYY-MM-DD HH:mm:ss");
 
   $scope.onInfoClicked = function() {
-    $scope.observationInfo({observation: $scope.observation});
+    $scope.observationPopupInfo({observation: $scope.observation});
+  }
+
+  $scope.onZoomClicked = function() {
+    $scope.observationZoom({observation: $scope.observation});
   }
 }
