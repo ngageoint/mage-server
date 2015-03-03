@@ -15,16 +15,16 @@ Access.prototype.authorize = function(permission) {
   return function(req, res, next) {
     if (!req.user) return next();
 
-    var role = req.user.role;
+    var role = req.user.roleId;
     if (!role) {
-      return res.send(403);
+      return res.sendStatus(403);
     }
 
-    var userPermissions = req.user.role.permissions;
+    var userPermissions = role.permissions;
 
     var ok = userPermissions.indexOf(permission) != -1;
 
-    if (!ok) return res.send(403);
+    if (!ok) return res.sendStatus(403);
 
     next();
   }
@@ -45,5 +45,5 @@ Access.prototype.hasPermission = function(user, permission, done) {
 
 /**
  * Expose `Access`.
- */ 
+ */
 module.exports = new Access();

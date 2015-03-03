@@ -10,7 +10,7 @@ var Schema = mongoose.Schema;
 
 // Collection to hold users
 var TokenSchema = new Schema({
-    user: { type: Schema.Types.ObjectId, ref: 'User' },
+    userId: { type: Schema.Types.ObjectId, ref: 'User' },
     deviceId: { type: Schema.Types.ObjectId, ref: 'Device' },
     timestamp: { type: Date, required: true },
     token: { type: String, required: true }
@@ -37,14 +37,13 @@ var deleteExpiredTokens = function(callback) {
 exports.getToken = function(token, callback) {
   deleteExpiredTokens(function(err) {
     var conditions = {token: token};
-    Token.findOne(conditions).populate('user').exec(function(err, token) {
-      var user = null;
+    Token.findOne(conditions).populate({path: 'userId', options: {lean: true}}).exec(function(err, token) {
 
-      if (!token || !token.user) {
+      if (!token || !token.userId) {
         return callback(null, null);
       }
 
-      token.user.populate('role', function(err, user) {
+      token.userId.populate('roleId', function(err, user) {
         return callback(err, {user: user, deviceId: token.deviceId});
       });
 
@@ -56,7 +55,7 @@ exports.createToken = function(options, callback) {
   var seed = crypto.randomBytes(20);
   var token = crypto.createHash('sha1').update(seed).digest('hex');
 
-  var query = {user: options.user._id};
+  var query = {userId: options.userId};
   if (options.device) {
     query.deviceId = options.device._id;
   }

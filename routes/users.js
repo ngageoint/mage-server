@@ -55,19 +55,19 @@ module.exports = function(app, security) {
 
     var username = req.param('username');
     if (!username) {
-      return res.send(400, invalidResponse('username'));
+      return res.status(400).send(invalidResponse('username'));
     }
     user.username = username;
 
     var firstname = req.param('firstname');
     if (!firstname) {
-      return res.send(400, invalidResponse('firstname'));
+      return res.status(400).send(invalidResponse('firstname'));
     }
     user.firstname = firstname;
 
     var lastname = req.param('lastname');
     if (!lastname) {
-      return res.send(400, invalidResponse('lastname'));
+      return res.status(400).send(invalidResponse('lastname'));
     }
     user.lastname = lastname;
 
@@ -75,7 +75,7 @@ module.exports = function(app, security) {
     if (email) {
       // validate they at least tried to enter a valid email
       if (!email.match(emailRegex)) {
-        return res.send(400, 'Please enter a valid email address');
+        return res.status(400).send('Please enter a valid email address');
       }
 
       user.email = email;
@@ -91,20 +91,20 @@ module.exports = function(app, security) {
 
     var p***REMOVED***word = req.param('p***REMOVED***word');
     if (!p***REMOVED***word) {
-      return res.send(400, invalidResponse('p***REMOVED***word'));
+      return res.status(400).send(invalidResponse('p***REMOVED***word'));
     }
 
     var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
     if (!p***REMOVED***wordconfirm) {
-      return res.send(400, invalidResponse('p***REMOVED***wordconfirm'));
+      return res.status(400).send(invalidResponse('p***REMOVED***wordconfirm'));
     }
 
     if (p***REMOVED***word != p***REMOVED***wordconfirm) {
-      return res.send(400, 'p***REMOVED***words do not match');
+      return res.status(400).send('p***REMOVED***words do not match');
     }
 
     if (p***REMOVED***word.length < p***REMOVED***wordLength) {
-      return res.send(400, 'p***REMOVED***word does not meet minimum length requirement of ' + p***REMOVED***wordLength + ' characters');
+      return res.status(400).send('p***REMOVED***word does not meet minimum length requirement of ' + p***REMOVED***wordLength + ' characters');
     }
 
     user.p***REMOVED***word = p***REMOVED***word;
@@ -117,7 +117,7 @@ module.exports = function(app, security) {
   var validateRoleParams = function(req, res, next) {
     var roleId = req.param('roleId');
     if (!roleId) {
-      return res.send(400, "Cannot set role, 'roleId' param not specified");
+      return res.status(400).send("Cannot set role, 'roleId' param not specified");
     }
 
     Role.getRoleById(roleId, function(err, role) {
@@ -125,7 +125,7 @@ module.exports = function(app, security) {
 
       if (!role) return next(new Error('Role ***REMOVED***ociated with roleId ' + roleId + ' does not exist'));
 
-      req.role = role._id;
+      req.role = role;
       next();
     });
   }
@@ -201,7 +201,7 @@ module.exports = function(app, security) {
       new api.User()[req.params.content](req.userParam, function(err, content) {
         if (err) return next(err);
 
-        if (!content) return res.send(404);
+        if (!content) return res.sendStatus(404);
 
         var stream = fs.createReadStream(content.path);
         stream.on('open', function() {
@@ -210,7 +210,7 @@ module.exports = function(app, security) {
           stream.pipe(res);
         });
         stream.on('error', function(err) {
-          res.send(404);
+          res.sendStatus(404);
         });
       });
     }
@@ -271,8 +271,8 @@ module.exports = function(app, security) {
       if (!req.user) return next();
 
       var role = req.param('role');
-      if (!role) return res.send(400, 'role is a required field');
-      req.newUser.role = role;
+      if (!role) return res.status(400).send('role is a required field');
+      req.newUser.roleId = role._id;
 
       // Authorized to update users, activate account by default
       req.newUser.active = true;
@@ -294,7 +294,7 @@ module.exports = function(app, security) {
     validateUser,
     function(req, res) {
       req.newUser.active = false;
-      req.newUser.role = req.role._id;
+      req.newUser.roleId = req.role._id;
 
       new api.User().create(req.newUser, {avatar: req.files.avatar}, function(err, newUser) {
         if (err) return next(err);
@@ -392,7 +392,7 @@ module.exports = function(app, security) {
       new api.User().delete(req.userParam, function(err) {
         if (err) return next(err);
 
-        res.send(204);
+        res.sendStatus(204);
       });
     }
   );

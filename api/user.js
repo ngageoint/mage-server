@@ -28,7 +28,7 @@ function User() {
 };
 
 User.prototype.login = function(user, device, options, callback) {
-  TokenModel.createToken({user: user, device: device}, function(err, token) {
+  TokenModel.createToken({userId: user._id, device: device}, function(err, token) {
     if (err) return callback(err);
 
     // set user-agent and mage version on user
