@@ -34,7 +34,7 @@ var UserSchema = new Schema({
       relativePath: { type: String, required: false }
     },
     active: { type: Boolean, required: true },
-    role: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
+    roleId: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
     status: { type: String, required: false, index: 'sparse' },
     recentEventIds: [{type: Number, ref: 'Event'}],
     userAgent: {type: String, required: false },  // TODO move this to device, store last 10 device ids here instead
@@ -127,6 +127,11 @@ var transform = function(user, ret, options) {
     delete ret.avatar;
     delete ret.icon;
 
+    if (user.populated('roleId')) {
+      ret.role = ret.roleId;
+      delete ret.roleId;
+    }
+
     if (user.avatar && user.avatar.relativePath) {
       // TODO, don't really like this, need a better way to set user resource, route
       ret.avatarUrl = [(options.path ? options.path : ""), "api", "users", user._id, "avatar"].join("/");
@@ -160,18 +165,15 @@ var encryptP***REMOVED***word = function(p***REMOVED***word, done) {
 }
 
 exports.getUserById = function(id, callback) {
-  User.findById(id).populate('role').exec(function(err, user) {
-    if (err) {
-      console.log("Error finding user: " + id + ', error: ' + err);
-    }
-
+  User.findById(id).populate('roleId').exec(function(err, user) {
     callback(err, user);
   });
 }
 
 exports.getUserByUsername = function(username, callback) {
-  var query = {username: username.toLowerCase()};
-  User.findOne(query).populate('role').exec(callback);
+  User.findOne({username: username.toLowerCase()}).populate('roleId').exec(function(err, user) {
+    callback(err, user);
+  });
 }
 
 exports.getUsers = function(callback) {
@@ -194,7 +196,7 @@ exports.createUser = function(user, callback) {
     phones: user.phones,
     p***REMOVED***word: user.p***REMOVED***word,
     active: user.active,
-    role: user.role,
+    roleId: user.roleId,
     avatar: user.avatar,
     icon: user.icon
   }

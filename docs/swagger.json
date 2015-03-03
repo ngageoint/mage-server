@@ -1450,11 +1450,18 @@
                 }
             }
         },
-        "/api/locations": {
+        "/api/events/{eventId}/locations": {
             "get": {
                 "description": "get all locations",
                 "operationId": "getLocations",
                 "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "id of event to get locations for",
+                        "required": true,
+                        "type": "number"
+                    },
                     {
                         "name": "startDate",
                         "in": "query",
@@ -1496,9 +1503,16 @@
                 }
             },
             "post": {
-                "description": "add new location for current user",
+                "description": "add new location for current user in the specified event",
                 "operationId": "addLocation",
                 "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "id of event to post location to",
+                        "required": true,
+                        "type": "number"
+                    },
                     {
                         "name": "body",
                         "in": "body",
@@ -1523,6 +1537,13 @@
                 "operationId": "updateLocation",
                 "parameters": [
                     {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "id of event to update location to",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
                         "name": "body",
                         "in": "body",
                         "description": "new location body",
@@ -1546,11 +1567,18 @@
                 }
             }
         },
-        "/api/locations/users": {
+        "/api/events/{eventId}/locations/users": {
             "get": {
                 "description": "get all locations grouped by user",
                 "operationId": "getLocationsByUser",
                 "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "id of event to update location to",
+                        "required": true,
+                        "type": "number"
+                    },
                     {
                         "name": "startDate",
                         "in": "query",
