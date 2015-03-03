@@ -270,9 +270,9 @@ module.exports = function(app, security) {
       // '/api/users' route which does not require authentication
       if (!req.user) return next();
 
-      var role = req.param('role');
-      if (!role) return res.status(400).send('role is a required field');
-      req.newUser.roleId = role._id;
+      var roleId = req.param('roleId');
+      if (!roleId) return res.status(400).send('roleId is a required field');
+      req.newUser.roleId = roleId;
 
       // Authorized to update users, activate account by default
       req.newUser.active = true;

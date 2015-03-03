@@ -33,10 +33,10 @@ Access.prototype.authorize = function(permission) {
 Access.prototype.hasPermission = function(user, permission, done) {
   if (!user) return done(null, false);
 
-  var role = user.role;
+  var role = user.roleId;
   if (!role) return done(null, false);
 
-  var userPermissions = user.role.permissions;
+  var userPermissions = role.permissions;
 
   var hasPermission = userPermissions.indexOf(permission) != -1;
 
