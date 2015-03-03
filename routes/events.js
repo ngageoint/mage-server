@@ -153,10 +153,10 @@ module.exports = function(app, security) {
     '/api/events/:eventId/form.zip',
     access.authorize('READ_EVENT'),
     function(req, res, next) {
-      new api.Form(req.event).export(req.form, function(err, file) {
+      new api.Form(req.event).export(function(err, file) {
         if (err) return next(err);
 
-        res.attachment(req.form.name + ".zip");
+        res.attachment(req.event.name + "-form.zip");
         file.pipe(res);
       });
     }

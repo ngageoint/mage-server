@@ -117,7 +117,15 @@
         </div>
 
         <div ng-if="event.id">
-            <h2 cl***REMOVED***="top-gap-xl">Form</h2>
+            <h2 cl***REMOVED***="top-gap-xl">Form
+              <a ng-href="{{'/api/events/' + event.id + '/form.zip?access_token=' + token}}">
+                <span cl***REMOVED***="fa-stack" style="font-size: 18px;">
+                  <i cl***REMOVED***="fa fa-square fa-stack-2x"></i>
+                  <i cl***REMOVED***="fa fa-download fa-stack-1x fa-inverse"></i>
+                </span>
+              </a>
+            </h2>
+            <span></span>
 
             <div cl***REMOVED***="form-fields">
               <h4>Fields</h4>

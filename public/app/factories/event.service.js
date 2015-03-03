@@ -2,14 +2,12 @@ angular
   .module('mage')
   .***REMOVED***('EventService', EventService);
 
-EventService.$inject = ['$rootScope', '$q', '$timeout', 'Event', 'ObservationService', 'LocationService', 'FilterService', 'PollingService'];
+EventService.$inject = ['$rootScope', '$q', '$timeout', '$http', 'Event', 'ObservationService', 'LocationService', 'FilterService', 'PollingService'];
 
-function EventService($rootScope, $q, $timeout, Event, ObservationService, LocationService, FilterService, PollingService) {
+function EventService($rootScope, $q, $timeout, $http, Event, ObservationService, LocationService, FilterService, PollingService) {
   var observationsChangedListeners = [];
   var usersChangedListeners = [];
   var eventsById = {};
-
-  var ***REMOVED*** = {};
 
   var filterServiceListener = {
     onEventChanged: function(event) {
@@ -43,6 +41,118 @@ function EventService($rootScope, $q, $timeout, Event, ObservationService, Locat
     }
   }
   PollingService.addListener(pollingServiceListener);
+
+  var ***REMOVED*** = {
+    addObservationsChangedListener: addObservationsChangedListener,
+    removeObservationsChangedListener: removeObservationsChangedListener,
+    addUsersChangedListener: addUsersChangedListener,
+    removeUsersChangedListener: removeUsersChangedListener,
+    saveObservation: saveObservation,
+    archiveObservation: archiveObservation,
+    addAttachmentToObservation: addAttachmentToObservation,
+    deleteAttachmentForObservation: deleteAttachmentForObservation,
+    getFormField: getFormField,
+    createForm: createForm,
+    exportForm: exportForm
+  }
+
+  return ***REMOVED***;
+
+  function addObservationsChangedListener(listener) {
+    observationsChangedListeners.push(listener);
+
+    if (_.isFunction(listener.onObservationsChanged)) {
+      _.each(_.values(eventsById), function(event) {
+        listener.onObservationsChanged({added: _.values(event.observationsById)});
+      });
+    }
+  }
+
+  function removeObservationsChangedListener(listener) {
+    observationsChangedListeners = _.reject(observationsChangedListeners, function(l) {
+      return listener === l;
+    });
+  }
+
+  function addUsersChangedListener(listener) {
+    usersChangedListeners.push(listener);
+
+    if (_.isFunction(listener.onUsersChanged)) {
+      _.each(_.values(eventsById), function(event) {
+        listener.onUsersChanged({added: _.values(event.usersById)});
+      });
+    }
+  }
+
+  function removeUsersChangedListener(listener) {
+    usersChangedListeners = _.reject(usersChangedListeners, function(l) {
+      return listener === l;
+    });
+  }
+
+  function saveObservation(observation) {
+    var event = eventsById[observation.eventId];
+    var isNewObservation = observation.id == null;
+    return ObservationService.saveObservationForEvent(event, observation).then(function(observation) {
+      event.observationsById[observation.id] = observation;
+      isNewObservation ? observationsChanged({added: [observation]}) : observationsChanged({updated: [observation]});
+    });
+  }
+
+  function archiveObservation(observation) {
+    var event = eventsById[observation.eventId];
+    return ObservationService.archiveObservationForEvent(event, observation).then(function(archivedObservation) {
+      delete event.observationsById[archivedObservation.id];
+      observationsChanged({removed: [archivedObservation]});
+    });
+  }
+
+  function addAttachmentToObservation(observation, attachment) {
+    var event = eventsById[observation.eventId];
+    ObservationService.addAttachmentToObservationForEvent(event, observation, attachment);
+    observationsChanged({updated: [observation]});
+  }
+
+  function deleteAttachmentForObservation(observation, attachment) {
+    var event = eventsById[observation.eventId];
+    return ObservationService.deleteAttachmentInObservationForEvent(event, observation, attachment).then(function(observation) {
+      observationsChanged({updated: [observation]});
+    });
+  }
+
+  function getFormField(form, fieldName) {
+    return _.find(form.fields, function(field) { return field.name == fieldName});
+  }
+
+  function createForm(observation, viewMode) {
+    var event = eventsById[observation.eventId];
+
+    var form = angular.copy(event.form);
+    ***REMOVED***.getFormField(form, "timestamp").value  = observation.properties.timestamp;
+    ***REMOVED***.getFormField(form, "geometry").value = {
+      x: observation.geometry.coordinates[0],
+      y: observation.geometry.coordinates[1]
+    }
+
+    var existingPropertyFields = [];
+    _.each(observation.properties, function(value, key) {
+      var field = ***REMOVED***.getFormField(form, key);
+      if (field) {
+        field.value = value;
+        existingPropertyFields.push(field);
+      }
+    });
+
+    if (viewMode) {
+      form.fields = _.intersection(form.fields, existingPropertyFields);
+    }
+
+    return form;
+  }
+
+  function exportForm(event) {
+    return $http.get('/api/events/' + event.id + '/form.zip');
+  }
 
   function usersChanged(changed) {
     _.each(usersChangedListeners, function(listener) {
@@ -172,98 +282,4 @@ function EventService($rootScope, $q, $timeout, Event, ObservationService, Locat
     FilterService.removeListener(filterServiceListener);
     PollingService.removeListener(pollingServiceListener);
   });
-
-  ***REMOVED***.addObservationsChangedListener = function(listener) {
-    observationsChangedListeners.push(listener);
-
-    if (_.isFunction(listener.onObservationsChanged)) {
-      _.each(_.values(eventsById), function(event) {
-        listener.onObservationsChanged({added: _.values(event.observationsById)});
-      });
-    }
-  }
-
-  ***REMOVED***.removeObservationsChangedListener = function(listener) {
-    observationsChangedListeners = _.reject(observationsChangedListeners, function(l) {
-      return listener === l;
-    });
-  }
-
-  ***REMOVED***.addUsersChangedListener = function(listener) {
-    usersChangedListeners.push(listener);
-
-    if (_.isFunction(listener.onUsersChanged)) {
-      _.each(_.values(eventsById), function(event) {
-        listener.onUsersChanged({added: _.values(event.usersById)});
-      });
-    }
-  }
-
-  ***REMOVED***.removeUsersChangedListener = function(listener) {
-    usersChangedListeners = _.reject(usersChangedListeners, function(l) {
-      return listener === l;
-    });
-  }
-
-  ***REMOVED***.saveObservation = function(observation) {
-    var event = eventsById[observation.eventId];
-    var isNewObservation = observation.id == null;
-    return ObservationService.saveObservationForEvent(event, observation).then(function(observation) {
-      event.observationsById[observation.id] = observation;
-      isNewObservation ? observationsChanged({added: [observation]}) : observationsChanged({updated: [observation]});
-    });
-  }
-
-  ***REMOVED***.archiveObservation = function(observation) {
-    var event = eventsById[observation.eventId];
-    return ObservationService.archiveObservationForEvent(event, observation).then(function(archivedObservation) {
-      delete event.observationsById[archivedObservation.id];
-      observationsChanged({removed: [archivedObservation]});
-    });
-  }
-
-  ***REMOVED***.addAttachmentToObservation = function(observation, attachment) {
-    var event = eventsById[observation.eventId];
-    ObservationService.addAttachmentToObservationForEvent(event, observation, attachment);
-    observationsChanged({updated: [observation]});
-  }
-
-  ***REMOVED***.deleteAttachmentForObservation = function(observation, attachment) {
-    var event = eventsById[observation.eventId];
-    return ObservationService.deleteAttachmentInObservationForEvent(event, observation, attachment).then(function(observation) {
-      observationsChanged({updated: [observation]});
-    });
-  }
-
-  ***REMOVED***.getFormField = function(form, fieldName) {
-    return _.find(form.fields, function(field) { return field.name == fieldName});
-  }
-
-  ***REMOVED***.createForm = function(observation, viewMode) {
-    var event = eventsById[observation.eventId];
-
-    var form = angular.copy(event.form);
-    ***REMOVED***.getFormField(form, "timestamp").value  = observation.properties.timestamp;
-    ***REMOVED***.getFormField(form, "geometry").value = {
-      x: observation.geometry.coordinates[0],
-      y: observation.geometry.coordinates[1]
-    }
-
-    var existingPropertyFields = [];
-    _.each(observation.properties, function(value, key) {
-      var field = ***REMOVED***.getFormField(form, key);
-      if (field) {
-        field.value = value;
-        existingPropertyFields.push(field);
-      }
-    });
-
-    if (viewMode) {
-      form.fields = _.intersection(form.fields, existingPropertyFields);
-    }
-
-    return form;
-  }
-
-  return ***REMOVED***;
 }
