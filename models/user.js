@@ -2,7 +2,9 @@ var mongoose = require('mongoose')
   , async = require("async")
   , hasher = require('../utilities/pbkdf2')()
   , Token = require('../models/token')
-  , Observation = require('../models/observation');
+  , Observation = require('../models/observation')
+  , Location = require('../models/location')
+  , CappedLocation = require('../models/cappedLocation');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -102,6 +104,16 @@ UserSchema.pre('remove', function(next) {
   var user = this;
 
   async.parallel({
+    location: function(done) {
+      Location.removeLocationsForUser(user, function(err) {
+        done(err);
+      });
+    },
+    cappedlocation: function(done) {
+      CappedLocation.removeLocationsForUser(user, function(err) {
+        done(err);
+      });
+    },
     token: function(done) {
       Token.removeTokensForUser(user, function(err) {
         done(err);
