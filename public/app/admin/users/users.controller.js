@@ -69,7 +69,7 @@ function AdminUsersController($scope, $injector, $filter, LocalStorageService, U
       phone: $scope.user.phone,
       p***REMOVED***word: this.user.p***REMOVED***word,
       p***REMOVED***wordconfirm: this.user.p***REMOVED***wordconfirm,
-      role: $scope.user.role,
+      roleId: $scope.user.roleId,
       avatar: $scope.user.avatar,
       icon: $scope.user.icon
     };
