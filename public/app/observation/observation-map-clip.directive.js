@@ -9,7 +9,7 @@ function mapClip() {
       feature: '=mapClip',
     },
     replace: true,
-    template: '<div cl***REMOVED***="map"></div>',
+    template: '<div id="map"></div>',
     controller: MapClipController,
     bindToController: true
   };
@@ -20,11 +20,13 @@ function mapClip() {
 MapClipController.$inject = ['$rootScope', '$scope', '$element', 'MapService', 'LocalStorageService'];
 
 function MapClipController($rootScope, $scope, $element, MapService, LocalStorageService) {
-  var zoomControl = new L.Control.Zoom();
+  var zoomControl = L.control.zoom();
+  var worldExtentControl = L.control.worldExtent();
+
   var map = null;
   var baseLayer = null;
   var zoomEnabled = false;
-  var zoomControlOn = false;
+  var controlsOn = false;
   var layers = {};
 
   initialize();
@@ -81,6 +83,7 @@ function MapClipController($rootScope, $scope, $element, MapService, LocalStorag
       attributionControl: false
     });
 
+
     var latLng = [0,0];
     if ($scope.feature && $scope.feature.geometry) {
       var geojson = L.geoJson($scope.feature, {
@@ -96,16 +99,18 @@ function MapClipController($rootScope, $scope, $element, MapService, LocalStorag
     }
 
     map.on('mouseover', function() {
-      if (!zoomControlOn) {
-        zoomControlOn = true;
+      if (!controlsOn) {
+        controlsOn = true;
         map.addControl(zoomControl);
+        map.addControl(worldExtentControl);
       }
     });
 
     map.on('mouseout', function() {
-      if (zoomControlOn) {
+      if (controlsOn) {
         map.removeControl(zoomControl);
-        zoomControlOn = false;
+        map.removeControl(worldExtentControl);
+        controlsOn = false;
       }
     });
   }

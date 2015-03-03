@@ -187,12 +187,10 @@ exports.removeUser = function(user, callback) {
   var update = { '$unset': { userId: true } };
   var options = { multi: true };
 
-
-
-  Layer.getLayers({type: 'Feature'}, function(err, layers) {
-    async.each(layers, function(layer, done) {
-      featureModel(layer).update(condition, update, options, function(err, numberAffected) {
-        console.log('Remove deleted user from ' + numberAffected + ' documents for layer ' + layer.name);
+  Event.getEvents({}, function(err, events) {
+    async.each(events, function(event, done) {
+      observationModel(event).update(condition, update, options, function(err, numberAffected) {
+        console.log('Remove deleted user from ' + numberAffected + ' documents for event ' + event.name);
         done();
       });
     },
