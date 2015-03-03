@@ -6,7 +6,7 @@ function leaflet() {
   var directive = {
     restrict: "A",
     replace: true,
-    template: '<div cl***REMOVED***="map"></div>',
+    template: '<div id="map"></div>',
     controller: LeafletController,
     bindToController: true
   };
