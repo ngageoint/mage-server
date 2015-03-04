@@ -119,7 +119,7 @@ module.exports = function(app, security) {
   app.param('layerId', function(req, res, next, layerId) {
     Layer.getById(layerId, function(layer) {
       if (!layer) {
-        return res.send(400, "Layer not found: ");
+        return res.send(404, "Layer not found: ");
       }
 
       req.layer = layer;
@@ -134,7 +134,7 @@ module.exports = function(app, security) {
       if (err) return next(err);
 
       if (!observation) {
-        return res.json(400, 'Observation (ID: ' + observationId + ') not found');
+        return res.json(404, 'Observation (ID: ' + observationId + ') not found');
       }
 
       req.observation = observation;

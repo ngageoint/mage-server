@@ -3,6 +3,7 @@ module.exports = function(app, security) {
     , Location = require('../models/location')
     , CappedLocation = require('../models/cappedLocation')
     , Team = require('../models/team')
+    , Event = require('../models/event')
     , Token = require('../models/token')
     , Role = require('../models/role')
     , Team = require('../models/team')
@@ -15,7 +16,20 @@ module.exports = function(app, security) {
 
   var locationLimit = config.server.locationServices.userCollectionLocationLimit;
 
-  var parseQueryParams = function(req, res, next) {
+  function generateAccess(req, res, next) {
+    if (access.userHasPermission(req.user, 'READ_LOCATION_ALL')) {
+      next();
+    } else if (access.userHasPermission(req.user, 'READ_LOCATION_EVENT')) {
+      // Make sure I am part of this event
+      Event.eventHasUser(req.event, req.user._id, function(err, eventHasUser) {
+        eventHasUser ? next() : res.sendStatus(403);
+      });
+    } else {
+      res.sendStatus(403);
+    }
+  }
+
+  function parseQueryParams(req, res, next) {
     var parameters = {filter: {}};
 
     var startDate = req.param('startDate');
@@ -41,7 +55,7 @@ module.exports = function(app, security) {
     next();
   }
 
-  var teamsForUser = function(req, res, next) {
+  function teamsForUser(req, res, next) {
     Team.getTeamsForUser(req.user, function(err, teams) {
       if (err) return next(err);
 
@@ -50,7 +64,7 @@ module.exports = function(app, security) {
     });
   }
 
-  var validateLocations = function(req, res, next) {
+  function validateLocations(req, res, next) {
     var locations = req.body;
 
     if (!Array.isArray(locations)) {
@@ -91,7 +105,7 @@ module.exports = function(app, security) {
   app.get(
     '/api/events/:eventId/locations/users',
     p***REMOVED***port.authenticate(authenticationStrategy),
-    access.authorize('READ_LOCATION'),
+    generateAccess,
     parseQueryParams,
     function(req, res) {
       var filter = req.parameters.filter;
@@ -108,7 +122,7 @@ module.exports = function(app, security) {
   app.get(
     '/api/events/:eventId/locations',
     p***REMOVED***port.authenticate(authenticationStrategy),
-    access.authorize('READ_LOCATION'),
+    generateAccess,
     parseQueryParams,
     function(req, res) {
       var filter = req.parameters.filter;
@@ -155,7 +169,7 @@ module.exports = function(app, security) {
   app.put(
     '/api/events/:eventId/locations',
     p***REMOVED***port.authenticate(authenticationStrategy),
-    access.authorize('UPDATE_LOCATION'),
+    generateAccess,
     function(req, res) {
       var data = req.body;
 

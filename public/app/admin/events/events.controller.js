@@ -12,7 +12,7 @@ function AdminEventsController($scope, $injector, $filter, $timeout, LocalStorag
 
   $scope.saveTime = 0;
 
-  Event.query(function(events) {
+  Event.query({populate: {teams: true}}, function(events) {
     $scope.events = events;
   });
 

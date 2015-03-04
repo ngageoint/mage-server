@@ -27,18 +27,6 @@ module.exports = function(app, security) {
     }
   }
 
-  var isAuthorized = function(permission) {
-    return function(req, res, next) {
-      access.hasPermission(req.user, permission, function(err, hasPermission) {
-        if (err) return next(err);
-
-        if (!hasPermission) req.user = null;
-
-        next();
-      });
-    }
-  }
-
   var getDefaultRole = function(req, res, next) {
     Role.getRole('USER_ROLE', function(err, role) {
       req.role = role;
@@ -263,12 +251,13 @@ module.exports = function(app, security) {
   app.post(
     '/api/users',
     isAuthenticated(authenticationStrategy),
-    isAuthorized('UPDATE_USER'),
     validateUser,
     function(req, res, next) {
       // If I did not authenticate a user go to the next route
       // '/api/users' route which does not require authentication
-      if (!req.user) return next();
+      if (!access.userHasPermission(req.user, 'CREATE_USER')) {
+        return next();
+      }
 
       var roleId = req.param('roleId');
       if (!roleId) return res.status(400).send('roleId is a required field');

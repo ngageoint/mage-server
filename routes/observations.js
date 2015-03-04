@@ -3,6 +3,7 @@ module.exports = function(app, auth) {
   var api = require('../api')
     , fs = require('fs-extra')
     , moment = require('moment')
+    , Event  = require('../models/event')
     , access = require('../access')
     , geometryFormat = require('../format/geoJsonFormat')
     , geojson = require('../transformers/geojson');
@@ -11,6 +12,19 @@ module.exports = function(app, auth) {
 
   var getObservationResource = function(req) {
     return req.getPath().match(/(.*observations)/)[0];
+  }
+
+  function generateAccess(req, res, next) {
+    if (access.userHasPermission(req.user, 'READ_OBSERVATION_ALL')) {
+      next();
+    } else if (access.userHasPermission(req.user, 'READ_OBSERVATION_EVENT')) {
+      // Make sure I am part of this event
+      Event.eventHasUser(req.event, req.user._id, function(err, eventHasUser) {
+        eventHasUser ? next() : res.sendStatus(403);
+      });
+    } else {
+      res.sendStatus(403);
+    }
   }
 
   var validateObservation = function(req, res, next) {
@@ -113,7 +127,7 @@ module.exports = function(app, auth) {
 
   app.get(
     '/api/events/:eventId/observations',
-    access.authorize('READ_FEATURE'),
+    generateAccess,
     parseQueryParams,
     function (req, res, next) {
       var options = {
@@ -121,6 +135,7 @@ module.exports = function(app, auth) {
         fields: req.parameters.fields,
         sort: req.parameters.sort
       };
+
       new api.Observation(req.event).getAll(options, function(err, observations) {
         if (err) return next(err);
 
@@ -132,7 +147,7 @@ module.exports = function(app, auth) {
 
   app.get(
     '/api/events/:eventId/observations/:id',
-    access.authorize('READ_FEATURE'),
+    generateAccess,
     parseQueryParams,
     function (req, res) {
       var options = {fields: req.parameters.fields};
@@ -147,7 +162,7 @@ module.exports = function(app, auth) {
 
   app.post(
     '/api/events/:eventId/observations',
-    access.authorize('CREATE_FEATURE'),
+    access.authorize('CREATE_OBSERVATION'),
     validateObservation,
     function (req, res, next) {
       new api.Observation(req.event).create(req.newObservation, function(err, newObservation) {
@@ -163,7 +178,7 @@ module.exports = function(app, auth) {
 
   app.put(
     '/api/events/:eventId/observations/:id',
-    access.authorize('UPDATE_FEATURE'),
+    generateAccess,
     function (req, res, next) {
 
       var observation = {};
@@ -198,7 +213,7 @@ module.exports = function(app, auth) {
 
   app.post(
     '/api/events/:eventId/observations/:id/states',
-    access.authorize('UPDATE_FEATURE'),
+    generateAccess,
     function(req, res, next) {
       var state = req.body;
       if (!state) return res.send(400);
@@ -223,7 +238,7 @@ module.exports = function(app, auth) {
 
   app.get(
     '/api/events/:eventId/observations/:id/attachments',
-    access.authorize('READ_FEATURE'),
+    generateAccess,
     function(req, res, next) {
       var fields = {attachments: true};
       var options = {fields: fields};
@@ -238,7 +253,7 @@ module.exports = function(app, auth) {
 
   app.get(
     '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
-    access.authorize('READ_FEATURE'),
+    generateAccess,
     function(req, res, next) {
       new api.Attachment(req.event, req.observation).getById(req.param('attachmentId'), {size: req.param('size')}, function(err, attachment) {
         if (err) return next(err);
@@ -280,7 +295,7 @@ module.exports = function(app, auth) {
 
   app.post(
     '/api/events/:eventId/observations/:observationId/attachments',
-    access.authorize('CREATE_FEATURE'),
+    access.authorize('CREATE_OBSERVATION'),
     function(req, res, next) {
       var attachment = req.files.attachment;
       if (!attachment) return res.status(400).send("no attachment");
@@ -297,7 +312,7 @@ module.exports = function(app, auth) {
 
   app.put(
     '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
-    access.authorize('UPDATE_FEATURE'),
+    generateAccess,
     function(req, res, next) {
       new api.Attachment(req.event, req.observation).update(req.observationId, req.files.attachment, function(err, attachment) {
         if (err) return next(err);
@@ -311,7 +326,7 @@ module.exports = function(app, auth) {
 
   app.delete(
     '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
-    access.authorize('DELETE_FEATURE'),
+    access.authorize('DELETE_OBSERVATION'),
     function(req, res, next) {
       new api.Attachment(req.event, req.observation).delete(req.param('attachmentId'), function(err) {
         if (err) return next(err);

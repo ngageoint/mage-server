@@ -9,7 +9,7 @@ var userPermissions = [
   'CREATE_USER',
   'READ_USER',
   'UPDATE_USER',
-  'DELETE_USER',
+  'DELETE_USER'
 ];
 
 var rolePermissions = [
@@ -20,8 +20,9 @@ var rolePermissions = [
 ];
 
 var eventPermissions = [
+  'READ_EVENT_ALL',
+  'READ_EVENT_USER',
   'CREATE_EVENT',
-  'READ_EVENT',
   'UPDATE_EVENT',
   'DELETE_EVENT'
 ]
@@ -33,17 +34,29 @@ var layerPermissions = [
   'DELETE_LAYER'
 ];
 
-var featurePermissions = [
-  'CREATE_FEATURE',
-  'READ_FEATURE',
-  'UPDATE_FEATURE',
-  'DELETE_FEATURE',
+var observationPermissions = [
+  'READ_OBSERVATION_ALL',
+  'READ_OBSERVATION_EVENT',
+  'READ_OBSERVATION_TEAM',
+  'READ_OBSERVATION_USER',
+  'UPDATE_OBSERVATION_ALL',
+  'UPDATE_OBSERVATION_EVENT',
+  'UPDATE_OBSERVATION_TEAM',
+  'UPDATE_OBSERVATION_USER',
+  'CREATE_OBSERVATION',
+  'DELETE_OBSERVATION'
 ];
 
 var locationPermissions = [
+  'READ_LOCATION_ALL',
+  'READ_LOCATION_EVENT',
+  'READ_LOCATION_TEAM',
+  'READ_LOCATION_USER',
+  'UPDATE_LOCATION_ALL',
+  'UPDATE_LOCATION_EVENT',
+  'UPDATE_LOCATION_TEAM',
+  'UPDATE_LOCATION_USER',
   'CREATE_LOCATION',
-  'READ_LOCATION',
-  'UPDATE_LOCATION',
   'DELETE_LOCATION'
 ];
 
@@ -60,7 +73,7 @@ var allPermissions = []
   .concat(rolePermissions)
   .concat(eventPermissions)
   .concat(layerPermissions)
-  .concat(featurePermissions)
+  .concat(observationPermissions)
   .concat(locationPermissions)
   .concat(teamPermissions);
 

@@ -23,7 +23,7 @@ module.exports = function(app, security) {
 
   app.post(
     '/api/layers/:layerId/kml',
-    access.authorize('CREATE_FEATURE'),
+    access.authorize('CREATE_LAYER'),
     verifyLayer,
     readImportFile,
     function(req, res, next) {

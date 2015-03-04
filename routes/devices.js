@@ -21,19 +21,6 @@ module.exports = function(app, security) {
     }
   }
 
-  var isAuthorized = function(permission) {
-    return function(req, res, next) {
-      access.hasPermission(req.user, permission, function(err, hasPermission) {
-        if (err) return next(err);
-
-        if (!hasPermission) req.user = null;
-
-        next();
-
-      });
-    }
-  }
-
   var parseDeviceParams = function(req, res, next) {
     req.newDevice = {
       uid: req.param('uid'),
@@ -54,19 +41,19 @@ module.exports = function(app, security) {
     next();
   }
 
-  // Create a new device (ADMIN)
+  // Create a new device, requires CREATE_DEVICE role
   app.post(
     '/api/devices',
     isAuthenticated(authenticationStrategy),
-    isAuthorized('CREATE_DEVICE'),
     parseDeviceParams,
     validateDeviceParams,
     function(req, res, next) {
 
       // If I did not authenticate a user go to the next route
       // '/api/devices' route which does not require authentication
-      if (!req.user) return next();
-
+      if (!access.userHasPermission(req.user, 'CREATE_DEVICE')) {
+        return next();
+      }
 
       // Automatically register any device created by an ADMIN
       req.newDevice.registered = true;
