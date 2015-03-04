@@ -24,7 +24,7 @@ function NavController($scope, $location, UserService, FilterService, PollingSer
 
     if ($location.path() !== '/map') return;
 
-    Event.query({userId: $scope.myself.id}, function(events) {
+    Event.query(function(events) {
       $scope.events = events;
 
       var recentEventId = UserService.getRecentEventId();
@@ -42,7 +42,6 @@ function NavController($scope, $location, UserService, FilterService, PollingSer
         // TODO welcome to mage, sorry you have no events
       }
     });
-
   });
 
   $scope.$on('logout', function() {

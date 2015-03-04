@@ -37,7 +37,9 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
         $timeout.cancel(pollingTimeout);
       }
 
-      poll(interval);
+      pollingTimeout = $timeout(function() {
+        poll(interval);
+      }, interval);
     }
   }
   PollingService.addListener(pollingServiceListener);
