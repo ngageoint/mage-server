@@ -11,7 +11,7 @@ module.exports = function(app, security) {
 
   app.all('/api/events*', p***REMOVED***port.authenticate(authenticationStrategy));
 
-  var validateEventParams = function(req, res, next) {
+  function validateEventParams(req, res, next) {
     var event = req.body;
 
     if (!event.name) {
@@ -22,16 +22,21 @@ module.exports = function(app, security) {
     next();
   }
 
-  var parseEventQueryParams = function(req, res, next) {
+  function parseEventQueryParams(req, res, next) {
     var parameters = {};
     parameters.userId = req.param('userId');
+
+    var populate = req.param('populate');
+    if (populate) {
+      parameters.populate = JSON.parse(populate);
+    }
 
     req.parameters = parameters;
 
     next();
   }
 
-  var validateFormParams = function(req, res, next) {
+  function validateFormParams(req, res, next) {
     var form = req.body.form;
 
     // check for required fields
@@ -60,20 +65,45 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/events',
-    access.authorize('READ_EVENT'),
     parseEventQueryParams,
     function (req, res) {
-      Event.getEvents({userId: req.parameters.userId}, function (err, events) {
-        res.json(events);
-      });
+      var filter = {};
+      if (req.parameters.userId) filter.userId = req.parameters.userId;
+      if (access.userHasPermission(req.user, 'READ_EVENT_ALL')) {
+        Event.getEvents({filter: filter, populate: req.parameters.populate}, function(err, events) {
+          if (err) return next(err);
+          res.json(events);
+        });
+      } else if (access.userHasPermission(req.user, 'READ_EVENT_USER')) {
+        Event.getEvents({access: {userId: req.user._id}, filter: filter, populate: req.parameters.populate}, function(err, events) {
+          if (err) return next(err);
+          res.json(events);
+        });
+      } else {
+        // No valid READ EVENT permission
+        res.sendStatus(403);
+      }
     }
   );
 
   app.get(
-    '/api/events/:eventId',
-    access.authorize('READ_EVENT'),
-    function (req, res) {
-      res.json(req.event);
+    '/api/events/:id',
+    function (req, res, next) {
+      if (access.userHasPermission(req.user, 'READ_EVENT_ALL')) {
+        Event.getById(req.params.id, {populate: req.populate}, function(err, event) {
+          if (err) return next(err);
+          res.json(event);
+        });
+      } else if (access.userHasPermission(req.user, 'READ_EVENT_USER')) {
+        Event.getById(req.params.id, {access: {userId: req.user._id}, populate: req.populate}, function(err, event) {
+          if (err) return next(err);
+          if (!event) return res.sendStatus(404);
+          res.json(event);
+        });
+      } else {
+        // No valid READ EVENT permission
+        res.sendStatus(403);
+      }
     }
   );
 
@@ -151,7 +181,7 @@ module.exports = function(app, security) {
   // export a zip of the form json and icons
   app.get(
     '/api/events/:eventId/form.zip',
-    access.authorize('READ_EVENT'),
+    access.authorize('READ_EVENT_ALL'),
     function(req, res, next) {
       new api.Form(req.event).export(function(err, file) {
         if (err) return next(err);
@@ -164,7 +194,7 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/events/:eventId/form/icons.zip',
-    access.authorize('READ_EVENT'),
+    access.authorize('READ_EVENT_ALL'),
     function(req, res, next) {
       var iconBasePath = new api.Icon(req.event._id).getBasePath();
       var archive = archiver('zip');
@@ -178,7 +208,7 @@ module.exports = function(app, security) {
   // get icon
   app.get(
     '/api/events/:eventId/form/icons/:type?/:variant?',
-    access.authorize('READ_EVENT'),
+    access.authorize('READ_EVENT_ALL'),
     function(req, res, next) {
       new api.Icon(req.event._id, req.params.type, req.params.variant).getIcon(function(err, iconPath) {
         if (err || !iconPath) return next();
@@ -190,7 +220,7 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/events/:eventId/form/icons*',
-    access.authorize('READ_EVENT'),
+    access.authorize('READ_EVENT_ALL'),
     function(req, res, next) {
       new api.Icon().getDefaultIcon(function(err, iconPath) {
         if (err) return next(err);

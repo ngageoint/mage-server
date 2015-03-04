@@ -30,17 +30,10 @@ Access.prototype.authorize = function(permission) {
   }
 }
 
-Access.prototype.hasPermission = function(user, permission, done) {
-  if (!user) return done(null, false);
+Access.prototype.userHasPermission = function(user, permission) {
+  if (!user || !user.roleId) return false;
 
-  var role = user.roleId;
-  if (!role) return done(null, false);
-
-  var userPermissions = role.permissions;
-
-  var hasPermission = userPermissions.indexOf(permission) != -1;
-
-  done(null, hasPermission);
+  return user.roleId.permissions.indexOf(permission) != -1;
 }
 
 /**

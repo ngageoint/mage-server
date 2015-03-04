@@ -1,4 +1,5 @@
 var mongoose = require('mongoose')
+, async = require('async')
 , Counter = require('./counter')
 , Team = require('./team')
 , api = require('../api');
@@ -42,14 +43,16 @@ var EventSchema = new Schema({
   versionKey: false
 });
 
-var transform = function(event, ret, options) {
+function transform(event, ret, options) {
   if ('function' != typeof event.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;
     delete ret.collectionName;
 
-    ret.teams = ret.teamIds;
-    delete ret.teamIds;
+    if (event.populated('teamIds')) {
+      ret.teams = ret.teamIds;
+      delete ret.teamIds;
+    }
   }
 }
 
@@ -61,40 +64,119 @@ EventSchema.set("toJSON", {
 var Event = mongoose.model('Event', EventSchema);
 exports.Model = Event;
 
-exports.getEvents = function(filter, callback) {
-  if (typeof filter == 'function') {
-    callback = filter;
-    filter = {};
+function filterEventsByUserId(events, userId, callback) {
+  Event.populate(events, 'teamIds', function(err, events) {
+    if (err) return callback(err);
+
+    var filteredEvents = events.filter(function(event) {
+      return event.teamIds.some(function(team) {
+        return team.userIds.indexOf(userId) !== -1;
+      });
+    });
+
+    callback(null, filteredEvents);
+  });
+}
+
+function eventHasUser(event, userId, callback) {
+  getTeamsForEvent(event, function(err, teams) {
+    if (err) return callback(err);
+
+    var userInEvent = teams.some(function(team) {
+      return team.userIds.indexOf(userId) !== -1;
+    });
+
+    callback(null, userInEvent);
+  });
+}
+
+function getTeamsForEvent(event, callback) {
+  if (event.populated('teamIds')) {
+    callback(null, event.teamIds);
+  } else {
+    Event.populate(event, 'teamIds', function(err, event) {
+      if (err) return callback(err);
+
+      callback(null, event.teamIds);
+    });
+  }
+}
+
+exports.getEvents = function(options, callback) {
+  if (typeof options == 'function') {
+    callback = options;
+    options = {};
   }
 
-  Event.find().populate('teamIds').exec(function (err, events) {
-    if (err) {
-      console.log("Error finding events in mongo: " + err);
-    }
+  Event.find({}, function (err, events) {
+    if (err) return callback(err);
 
-    if (filter.userId) {
-      var filteredEvents = events.filter(function(event) {
-        return event.teamIds.some(function(team) {
-          return team.userIds.indexOf(filter.userId) !== -1;
+    var filters = [];
+
+    // First filter out events user my not have access to
+    if (options.access && options.access.userId) {
+      filters.push(function(done) {
+        filterEventsByUserId(events, options.access.userId, function(err, filteredEvents) {
+          if (err) return done(err);
+
+          events = filteredEvents;
+          done();
         });
       });
-
-      return Event.populate(filteredEvents, {path: 'teamIds.userIds', model: 'User'}, callback);
     }
 
-    return Event.populate(events, {path: 'teamIds.userIds', model: 'User'}, callback);
+    // Filter again if filtering based on particular user
+    if (options.filter && options.filter.userId) {
+      filters.push(function(done) {
+        filterEventsByUserId(events, options.filter.userId, function(err, filteredEvents) {
+          if (err) return done(err);
+
+          events = filteredEvents;
+          done();
+        });
+      });
+    }
+
+    async.series(filters, function(err) {
+      if (err) return callback(err);
+
+      if (options.populate && options.populate.teams) {
+        Event.populate(events, 'teamIds', function(err, events) {
+          if (options.populate.teams.users) {
+            Event.populate(event, {path: 'teamIds.userIds', model: 'User'}, callback);
+          } else {
+            callback(err, events);
+          }
+        });
+      } else {
+        callback(null, events);
+      }
+    });
   });
 }
 
-exports.getById = function(id, callback) {
-  Event.findById(id).populate('teamIds').exec(function (err, event) {
-    if (err) {
-      console.log("Error finding event in mongo: " + err);
+exports.getById = function(id, options, callback) {
+  if (typeof options == 'function') {
+    callback = options;
+    options = {};
+  }
+
+  Event.findById(id, function (err, event) {
+    if (err) return callback(err);
+
+    // First filter out events user my not have access to
+    if (options.access && options.access.userId) {
+      events = filterEventsByUserId([event], options.access.userId);
+      event = events.length === 1 ? events[0] : null;
     }
 
-    Event.populate(event, {path: 'teamIds.userIds', model: 'User'}, callback);
+    callback(null, event);
   });
 }
+
+// TODO probably should live in event api
+exports.filterEventsByUserId = filterEventsByUserId;
+exports.eventHasUser = eventHasUser;
 
 var createObservationCollection = function(event) {
   console.log("Creating observation collection: " + event.collectionName + ' for event ' + event.name);
@@ -130,10 +212,7 @@ exports.create = function(event, callback) {
     }
 
     Event.create(event, function(err, newEvent) {
-      if (err) {
-        console.log("Problem creating event. " + err);
-        return callback(err);
-      }
+      if (err) return callback(err);
 
       createObservationCollection(newEvent);
       Event.populate(newEvent, {path: 'teamIds'}, function(err, event) {

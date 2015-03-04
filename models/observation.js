@@ -68,7 +68,7 @@ var Thumbnail = mongoose.model('Thumbnail', ThumbnailSchema);
 var State = mongoose.model('State', StateSchema);
 
 // return a string for each property
-var convertFieldForQuery = function(field, keys, fields) {
+function convertFieldForQuery(field, keys, fields) {
   keys = keys || [];
   fields = fields || {};
 
@@ -86,7 +86,7 @@ var convertFieldForQuery = function(field, keys, fields) {
   return fields;
 }
 
-var parseFields = function(fields) {
+function parseFields(fields) {
   if (fields) {
     var state = fields.state ? true : false;
     delete fields.state;
@@ -105,7 +105,7 @@ var parseFields = function(fields) {
   }
 }
 
-var observationModel = function(event) {
+function observationModel(event) {
   var name = event.collectionName;
   var model = models[name];
   if (!model) {
@@ -121,33 +121,36 @@ exports.observationModel = observationModel;
 
 exports.getObservations = function(event, o, callback) {
   var conditions = {};
-  var fields = parseFields(o.fields);
-
-  var query = observationModel(event).find(conditions, fields);
 
   var filter = o.filter || {};
   // Filter by geometry
   if (filter.geometry) {
-    query.where('geometry').intersects.geometry(filter.geometry);
+    conditions.geometry = {
+      $geoIntersects: {
+        $geometry: filter.geometry
+      }
+    };
   }
 
   if (filter.startDate) {
-    query.where('lastModified').gte(filter.startDate);
+    conditions.lastModified = {$gte: filter.startDate};
   }
 
   if (filter.endDate) {
-    query.where('lastModified').lt(filter.endDate);
+    conditions.lastModified = {$lt: filter.endDate};
   }
 
   if (filter.states) {
-    query.where('states.0.name').in(filter.states);
+    conditions['states.0.name'] = {$in: filter.states};
   }
 
+  var options = {}
   if (o.sort) {
-    query.sort(o.sort);
+    options.sort = o.sort;
   }
 
-  query.lean().exec(function (err, observations) {
+  var fields = parseFields(o.fields);
+  observationModel(event).find(conditions, fields, options).lean().exec(function (err, observations) {
     callback(err, observations);
   });
 }

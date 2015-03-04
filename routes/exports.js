@@ -124,7 +124,8 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/:exportType(geojson|kml|shapefile)',
-    access.authorize('READ_FEATURE'),
+    access.authorize('READ_OBSERVATION_ALL'),
+    access.authorize('READ_LOCATION_ALL'),
     parseQueryParams,
     getLayers,
     mapUsers,
