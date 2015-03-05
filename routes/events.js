@@ -22,6 +22,19 @@ module.exports = function(app, security) {
     next();
   }
 
+  function validateEventAccess(req, res, next) {
+    if (access.userHasPermission(req.user, 'READ_LOCATION_ALL')) {
+      next();
+    } else if (access.userHasPermission(req.user, 'READ_LOCATION_EVENT')) {
+      // Make sure I am part of this event
+      Event.eventHasUser(req.event, req.user._id, function(err, eventHasUser) {
+        eventHasUser ? next() : res.sendStatus(403);
+      });
+    } else {
+      res.sendStatus(403);
+    }
+  }
+
   function parseEventQueryParams(req, res, next) {
     var parameters = {};
     parameters.userId = req.param('userId');
@@ -181,7 +194,7 @@ module.exports = function(app, security) {
   // export a zip of the form json and icons
   app.get(
     '/api/events/:eventId/form.zip',
-    access.authorize('READ_EVENT_ALL'),
+    validateEventAccess,
     function(req, res, next) {
       new api.Form(req.event).export(function(err, file) {
         if (err) return next(err);
@@ -194,7 +207,7 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/events/:eventId/form/icons.zip',
-    access.authorize('READ_EVENT_ALL'),
+    validateEventAccess,
     function(req, res, next) {
       var iconBasePath = new api.Icon(req.event._id).getBasePath();
       var archive = archiver('zip');
@@ -208,7 +221,7 @@ module.exports = function(app, security) {
   // get icon
   app.get(
     '/api/events/:eventId/form/icons/:type?/:variant?',
-    access.authorize('READ_EVENT_ALL'),
+    validateEventAccess,
     function(req, res, next) {
       new api.Icon(req.event._id, req.params.type, req.params.variant).getIcon(function(err, iconPath) {
         if (err || !iconPath) return next();
@@ -220,7 +233,7 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/events/:eventId/form/icons*',
-    access.authorize('READ_EVENT_ALL'),
+    validateEventAccess,
     function(req, res, next) {
       new api.Icon().getDefaultIcon(function(err, iconPath) {
         if (err) return next(err);
