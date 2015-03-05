@@ -62,6 +62,52 @@ ObservationSchema.index({'attachments.oriented': 1});
 ObservationSchema.index({'attachments.contentType': 1});
 ObservationSchema.index({'attachments.thumbnails.minDimension': 1});
 
+function transformAttachment(attachment, observation) {
+  attachment.id = attachment._id;
+  delete attachment._id;
+  delete attachment.relativePath;
+  delete thumbnails;
+
+  attachment.url = [observation.url, "attachments", attachment.id].join("/");
+
+  return attachment;
+}
+
+function transformState(state, observation) {
+  state.id = state._id;
+  delete state._id;
+
+  state.url = [observation.url, "states", state.id].join("/");
+  return state;
+}
+
+var transform = function(observation, ret, options) {
+  if ('function' != typeof observation.ownerDocument) {
+    ret.id = ret._id;
+    delete ret._id;
+
+    ret.eventId = options.eventId;
+
+    var path = options.path ? options.path : "";
+    ret.url = [path, observation.id].join("/");
+
+    if (observation.attachments) {
+      ret.attachments = ret.attachments.map(function(attachment) {
+        return transformAttachment(attachment, ret);
+      });
+    }
+
+    if (observation.states) {
+      ret.state = transformState(ret.states[0], ret);
+      delete ret.states;
+    }
+  }
+}
+
+ObservationSchema.set("toJSON", {
+  transform: transform
+});
+
 var models = {};
 var Attachment = mongoose.model('Attachment', AttachmentSchema);
 var Thumbnail = mongoose.model('Thumbnail', ThumbnailSchema);
@@ -109,7 +155,7 @@ function observationModel(event) {
   var name = event.collectionName;
   var model = models[name];
   if (!model) {
-    // Creates the Model for the Features Schema
+    // Creates the Model for the Observation Schema
     var model = mongoose.model(name, ObservationSchema, name);
     models[name] = model;
   }
@@ -144,13 +190,13 @@ exports.getObservations = function(event, o, callback) {
     conditions['states.0.name'] = {$in: filter.states};
   }
 
-  var options = {}
+  var options = {};
   if (o.sort) {
     options.sort = o.sort;
   }
 
   var fields = parseFields(o.fields);
-  observationModel(event).find(conditions, fields, options).lean().exec(function (err, observations) {
+  observationModel(event).find(conditions, fields, options, function (err, observations) {
     callback(err, observations);
   });
 }

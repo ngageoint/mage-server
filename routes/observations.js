@@ -6,12 +6,15 @@ module.exports = function(app, auth) {
     , Event  = require('../models/event')
     , access = require('../access')
     , geometryFormat = require('../format/geoJsonFormat')
-    , geojson = require('../transformers/geojson');
+    , observationXform = require('../transformers/observation');
 
   var sortColumnWhitelist = ["lastModified"];
 
-  var getObservationResource = function(req) {
-    return req.getPath().match(/(.*observations)/)[0];
+  function transformOptions(req) {
+    return {
+      eventId: req.event._id,
+      path: req.getPath().match(/(.*observations)/)[0]
+    }
   }
 
   function generateAccess(req, res, next) {
@@ -139,7 +142,7 @@ module.exports = function(app, auth) {
       new api.Observation(req.event).getAll(options, function(err, observations) {
         if (err) return next(err);
 
-        var observations = geojson.transform(observations, {path: getObservationResource(req)});
+        var observations = observationXform.transform(observations, transformOptions(req));
         res.json(observations);
       });
     }
@@ -154,7 +157,7 @@ module.exports = function(app, auth) {
       new api.Observation(req.event).getById(req.param('id'), options, function(err, observation) {
         if (err) return next(err);
 
-        var response = geojson.transform(observation, {path: getObservationResource(req)});
+        var response = observationXform.transform(observation, transformOptions(req));
         res.json(response);
       });
     }
@@ -170,7 +173,7 @@ module.exports = function(app, auth) {
 
         if (!newObservation) return res.status(400).send();
 
-        var response = geojson.transform(newObservation, {path: getObservationResource(req)});
+        var response = observationXform.transform(newObservation, transformOptions(req));
         res.location(newObservation._id.toString()).json(response);
       }
     );
@@ -205,7 +208,7 @@ module.exports = function(app, auth) {
       new api.Observation(req.event).update(req.param('id'), observation, function(err, updatedObservation) {
         if (err) return next(err);
 
-        var response = geojson.transform(updatedObservation, {path: getObservationResource(req)});
+        var response = observationXform.transform(updatedObservation, transformOptions(req));
         res.json(response);
       }
     );
@@ -230,7 +233,7 @@ module.exports = function(app, auth) {
           return res.status(400).send('state is already ' + "'" + state.name + "'");
         }
 
-        var response = geojson.transform(observation, {path: getObservationResource(req)});
+        var response = observationXform.transform(observation, transformOptions(req));
         res.json(201, response);
       });
     }
@@ -245,7 +248,7 @@ module.exports = function(app, auth) {
       new api.Observation(req.event).getById(req.param('id'), options, function(err, observation) {
         if (err) return next(err);
 
-        var response = geojson.transform(observation, {path: getObservationResource(req)});
+        var response = observationXform.transform(observation, transformOptions(req));
         res.json(response.attachments);
       });
     }
@@ -305,7 +308,7 @@ module.exports = function(app, auth) {
 
         var observation = req.observation;
         observation.attachments = [attachment.toObject()];
-        return res.json(geojson.transform(observation, {path: getObservationResource(req)}).attachments[0]);
+        return res.json(observationXform.transform(observation, transformOptions(req)).attachments[0]);
       });
     }
   );
@@ -319,7 +322,7 @@ module.exports = function(app, auth) {
 
         var observation = req.observation;
         observation.attachments = [attachment.toObject()];
-        return res.json(geojson.transform(observation, {path: getObservationResource(req)}).attachments[0]);
+        return res.json(observationXform.transform(observation, transformOptions(req)).attachments[0]);
       });
     }
   );
