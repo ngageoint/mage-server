@@ -4,7 +4,6 @@ module.exports = function(app, security) {
     , CappedLocation = require('../models/cappedLocation')
     , Team = require('../models/team')
     , Event = require('../models/event')
-    , Token = require('../models/token')
     , Role = require('../models/role')
     , Team = require('../models/team')
     , access = require('../access')
