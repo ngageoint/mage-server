@@ -15,7 +15,7 @@ module.exports = function(app, security) {
 
   var locationLimit = config.server.locationServices.userCollectionLocationLimit;
 
-  function generateAccess(req, res, next) {
+  function validateEventAccess(req, res, next) {
     if (access.userHasPermission(req.user, 'READ_LOCATION_ALL')) {
       next();
     } else if (access.userHasPermission(req.user, 'READ_LOCATION_EVENT')) {
@@ -105,7 +105,7 @@ module.exports = function(app, security) {
   app.get(
     '/api/events/:eventId/locations/users',
     p***REMOVED***port.authenticate(authenticationStrategy),
-    generateAccess,
+    validateEventAccess,
     parseQueryParams,
     function(req, res) {
       var filter = req.parameters.filter;
@@ -122,7 +122,7 @@ module.exports = function(app, security) {
   app.get(
     '/api/events/:eventId/locations',
     p***REMOVED***port.authenticate(authenticationStrategy),
-    generateAccess,
+    validateEventAccess,
     parseQueryParams,
     function(req, res) {
       var filter = req.parameters.filter;
@@ -168,7 +168,7 @@ module.exports = function(app, security) {
   app.put(
     '/api/events/:eventId/locations',
     p***REMOVED***port.authenticate(authenticationStrategy),
-    generateAccess,
+    validateEventAccess,
     function(req, res) {
       var data = req.body;
 
