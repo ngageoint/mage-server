@@ -149,6 +149,10 @@ exports.getEvents = function(options, callback) {
           }
         });
       } else {
+        events = events.map(function(event) {
+          return event.toObject({depopulate: true});
+        });
+
         callback(null, events);
       }
     });
