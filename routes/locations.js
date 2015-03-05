@@ -54,15 +54,6 @@ module.exports = function(app, security) {
     next();
   }
 
-  function teamsForUser(req, res, next) {
-    Team.getTeamsForUser(req.user, function(err, teams) {
-      if (err) return next(err);
-
-      req.user.teamIds = teams.map(function(team) { return team._id; });
-      next();
-    });
-  }
-
   function validateLocations(req, res, next) {
     var locations = req.body;
 
@@ -70,33 +61,43 @@ module.exports = function(app, security) {
       locations = [locations];
     }
 
-    var valid = locations.every(function(l) {
-      if (!l.geometry) {
-        msg = "Missing required parameter 'geometry'.";
-        return false;
+    Team.teamsForUserInEvent(req.user, req.event, function(err, teams) {
+      if (err) return next(err);
+
+      if (teams.length === 0) {
+        return res.status(403).send('Cannot submit a location for an event that you are not part of.');
       }
 
-      if (!l.properties || !l.properties.timestamp) {
-        msg = "Missing required parameter 'properties.timestamp";
-        return false;
-      }
+      req.user.teamIds = teams.map(function(team) { return team._id; });
 
-      l.userId = req.user._id;
-      l.eventId = req.event._id;
-      l.teamIds = req.user.teamIds;
-      l.properties.timestamp = moment.utc(l.properties.timestamp).toDate();
-      l.properties.deviceId = req.provisionedDeviceId;
+      var valid = locations.every(function(l) {
+        if (!l.geometry) {
+          msg = "Missing required parameter 'geometry'.";
+          return false;
+        }
 
-      l.type = "Feature";
+        if (!l.properties || !l.properties.timestamp) {
+          msg = "Missing required parameter 'properties.timestamp";
+          return false;
+        }
 
-      return true;
+        l.userId = req.user._id;
+        l.eventId = req.event._id;
+        l.teamIds = req.user.teamIds;
+        l.properties.timestamp = moment.utc(l.properties.timestamp).toDate();
+        l.properties.deviceId = req.provisionedDeviceId;
+
+        l.type = "Feature";
+
+        return true;
+      });
+
+      if (!valid) return res.send(400, msg);
+
+      req.locations = locations;
+
+      next();
     });
-
-    if (!valid) return res.send(400, msg);
-
-    req.locations = locations;
-
-    next();
   }
 
   // get locations and group by user
@@ -137,7 +138,6 @@ module.exports = function(app, security) {
     '/api/events/:eventId/locations',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('CREATE_LOCATION'),
-    teamsForUser,
     validateLocations,
     function(req, res) {
       var currentTimestamp = moment();

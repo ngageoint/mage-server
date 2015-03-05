@@ -43,8 +43,12 @@ exports.getTeamById = function(id, callback) {
   Team.findById(id).populate('userIds').exec(callback);
 }
 
-exports.getTeamsForUser = function(user, callback) {
-  Team.find({userIds: user._id}, function(err, teams) {
+exports.teamsForUserInEvent = function(user, event, callback) {
+  var conditions = {
+    _id: {$in: event.teamIds},
+    userIds: user._id
+  }
+  Team.find(conditions, function(err, teams) {
     callback(err, teams);
   });
 }
