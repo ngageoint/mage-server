@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.6 (2014-08-23)
+
+- Added support for [bower.io](http://bower.io/search/) (#21)
+
+
+## v0.1.5 (2014-04-15)
+
+- Added support for [component.io](http://component.io/) (#17, thanks @zedd45)
+- Added `shown` and `hidden` events (#18)
+
+
 ## v0.1.4 (2014-02-16)
 
 - Adjusted CSS for touch devices (#12)

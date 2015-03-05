@@ -23,6 +23,6 @@
     "commit": "30c1d66475d315dea9446afa5ea73eb2c99e2b70"
   },
   "_source": "git://github.com/jdewit/bootstrap-timepicker.git",
-  "_target": "0.2.6",
+  "_target": ">= 0.2.2",
   "_originalSource": "bootstrap-timepicker"
 }

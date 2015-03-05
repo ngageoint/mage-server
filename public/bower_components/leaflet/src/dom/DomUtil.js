@@ -30,8 +30,7 @@ L.DomUtil = {
 		    el = element,
 		    docBody = document.body,
 		    docEl = document.documentElement,
-		    pos,
-		    ie7 = L.Browser.ie7;
+		    pos;
 
 		do {
 			top  += el.offsetTop  || 0;
@@ -78,19 +77,6 @@ L.DomUtil = {
 			top  -= el.scrollTop  || 0;
 			left -= el.scrollLeft || 0;
 
-			// webkit (and ie <= 7) handles RTL scrollLeft different to everyone else
-			// https://code.google.com/p/closure-library/source/browse/trunk/closure/goog/style/bidi.js
-			if (!L.DomUtil.documentIsLtr() && (L.Browser.webkit || ie7)) {
-				left += el.scrollWidth - el.clientWidth;
-
-				// ie7 shows the scrollbar by default and provides clientWidth counting it, so we
-				// need to add it back in if it is visible; scrollbar is on the left as we are RTL
-				if (ie7 && L.DomUtil.getStyle(el, 'overflow-y') !== 'hidden' &&
-				           L.DomUtil.getStyle(el, 'overflow') !== 'hidden') {
-					left += 17;
-				}
-			}
-
 			el = el.parentNode;
 		} while (el);
 
@@ -118,18 +104,44 @@ L.DomUtil = {
 	},
 
 	hasCl***REMOVED***: function (el, name) {
-		return (el.cl***REMOVED***Name.length > 0) &&
-		        new RegExp('(^|\\s)' + name + '(\\s|$)').test(el.cl***REMOVED***Name);
+		if (el.cl***REMOVED***List !== undefined) {
+			return el.cl***REMOVED***List.contains(name);
+		}
+		var cl***REMOVED***Name = L.DomUtil._getCl***REMOVED***(el);
+		return cl***REMOVED***Name.length > 0 && new RegExp('(^|\\s)' + name + '(\\s|$)').test(cl***REMOVED***Name);
 	},
 
 	addCl***REMOVED***: function (el, name) {
-		if (!L.DomUtil.hasCl***REMOVED***(el, name)) {
-			el.cl***REMOVED***Name += (el.cl***REMOVED***Name ? ' ' : '') + name;
+		if (el.cl***REMOVED***List !== undefined) {
+			var cl***REMOVED***es = L.Util.splitWords(name);
+			for (var i = 0, len = cl***REMOVED***es.length; i < len; i++) {
+				el.cl***REMOVED***List.add(cl***REMOVED***es[i]);
+			}
+		} else if (!L.DomUtil.hasCl***REMOVED***(el, name)) {
+			var cl***REMOVED***Name = L.DomUtil._getCl***REMOVED***(el);
+			L.DomUtil._setCl***REMOVED***(el, (cl***REMOVED***Name ? cl***REMOVED***Name + ' ' : '') + name);
 		}
 	},
 
 	removeCl***REMOVED***: function (el, name) {
-		el.cl***REMOVED***Name = L.Util.trim((' ' + el.cl***REMOVED***Name + ' ').replace(' ' + name + ' ', ' '));
+		if (el.cl***REMOVED***List !== undefined) {
+			el.cl***REMOVED***List.remove(name);
+		} else {
+			L.DomUtil._setCl***REMOVED***(el, L.Util.trim((' ' + L.DomUtil._getCl***REMOVED***(el) + ' ').replace(' ' + name + ' ', ' ')));
+		}
+	},
+
+	_setCl***REMOVED***: function (el, name) {
+		if (el.cl***REMOVED***Name.baseVal === undefined) {
+			el.cl***REMOVED***Name = name;
+		} else {
+			// in case of SVG element
+			el.cl***REMOVED***Name.baseVal = name;
+		}
+	},
+
+	_getCl***REMOVED***: function (el) {
+		return el.cl***REMOVED***Name.baseVal === undefined ? el.cl***REMOVED***Name : el.cl***REMOVED***Name.baseVal;
 	},
 
 	setOpacity: function (el, value) {
@@ -201,11 +213,6 @@ L.DomUtil = {
 
 		if (!disable3D && L.Browser.any3d) {
 			el.style[L.DomUtil.TRANSFORM] =  L.DomUtil.getTranslateString(point);
-
-			// workaround for Android 2/3 stability (https://github.com/CloudMade/Leaflet/issues/69)
-			if (L.Browser.mobileWebkit3d) {
-				el.style.WebkitBackfaceVisibility = 'hidden';
-			}
 		} else {
 			el.style.left = point.x + 'px';
 			el.style.top = point.y + 'px';
@@ -238,27 +245,39 @@ L.DomUtil.TRANSITION_END =
         L.DomUtil.TRANSITION + 'End' : 'transitionend';
 
 (function () {
-	var userSelectProperty = L.DomUtil.testProp(
-		['userSelect', 'WebkitUserSelect', 'OUserSelect', 'MozUserSelect', 'msUserSelect']);
+    if ('onselectstart' in document) {
+        L.extend(L.DomUtil, {
+            disableTextSelection: function () {
+                L.DomEvent.on(window, 'selectstart', L.DomEvent.preventDefault);
+            },
+
+            enableTextSelection: function () {
+                L.DomEvent.off(window, 'selectstart', L.DomEvent.preventDefault);
+            }
+        });
+    } else {
+        var userSelectProperty = L.DomUtil.testProp(
+            ['userSelect', 'WebkitUserSelect', 'OUserSelect', 'MozUserSelect', 'msUserSelect']);
+
+        L.extend(L.DomUtil, {
+            disableTextSelection: function () {
+                if (userSelectProperty) {
+                    var style = document.documentElement.style;
+                    this._userSelect = style[userSelectProperty];
+                    style[userSelectProperty] = 'none';
+                }
+            },
+
+            enableTextSelection: function () {
+                if (userSelectProperty) {
+                    document.documentElement.style[userSelectProperty] = this._userSelect;
+                    delete this._userSelect;
+                }
+            }
+        });
+    }
 
 	L.extend(L.DomUtil, {
-		disableTextSelection: function () {
-			L.DomEvent.on(window, 'selectstart', L.DomEvent.preventDefault);
-			if (userSelectProperty) {
-				var style = document.documentElement.style;
-				this._userSelect = style[userSelectProperty];
-				style[userSelectProperty] = 'none';
-			}
-		},
-
-		enableTextSelection: function () {
-			L.DomEvent.off(window, 'selectstart', L.DomEvent.preventDefault);
-			if (userSelectProperty) {
-				document.documentElement.style[userSelectProperty] = this._userSelect;
-				delete this._userSelect;
-			}
-		},
-
 		disableImageDrag: function () {
 			L.DomEvent.on(window, 'dragstart', L.DomEvent.preventDefault);
 		},

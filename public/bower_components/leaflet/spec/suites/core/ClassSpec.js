@@ -1,11 +1,11 @@
-describe("Cl***REMOVED***", function() {
+describe("Cl***REMOVED***", function () {
 
-	describe("#extend", function() {
+	describe("#extend", function () {
 		var Kl***REMOVED***,
 			constructor,
 			method;
 
-		beforeEach(function() {
+		beforeEach(function () {
 			constructor = sinon.spy();
 			method = sinon.spy();
 
@@ -19,7 +19,7 @@ describe("Cl***REMOVED***", function() {
 			});
 		});
 
-		it("creates a cl***REMOVED*** with the given constructor & properties", function() {
+		it("creates a cl***REMOVED*** with the given constructor & properties", function () {
 			var a = new Kl***REMOVED***();
 
 			expect(constructor.called).to.be.ok();
@@ -30,7 +30,7 @@ describe("Cl***REMOVED***", function() {
 			expect(method.called).to.be.ok();
 		});
 
-		it("inherits parent cl***REMOVED***es' constructor & properties", function() {
+		it("inherits parent cl***REMOVED***es' constructor & properties", function () {
 			var Kl***REMOVED***2 = Kl***REMOVED***.extend({baz: 2});
 
 			var b = new Kl***REMOVED***2();
@@ -46,28 +46,28 @@ describe("Cl***REMOVED***", function() {
 			expect(method.called).to.be.ok();
 		});
 
-		it("supports static properties", function() {
+		it("supports static properties", function () {
 			expect(Kl***REMOVED***.bla).to.eql(1);
 		});
 
-		it("inherits parent static properties", function() {
+		it("inherits parent static properties", function () {
 			var Kl***REMOVED***2 = Kl***REMOVED***.extend({});
 
 			expect(Kl***REMOVED***2.bla).to.eql(1);
 		});
 
-		it("overrides parent static properties", function() {
+		it("overrides parent static properties", function () {
 			var Kl***REMOVED***2 = Kl***REMOVED***.extend({statics: {bla: 2}});
 
 			expect(Kl***REMOVED***2.bla).to.eql(2);
 		});
 
-		it("includes the given mixin", function() {
+		it("includes the given mixin", function () {
 			var a = new Kl***REMOVED***();
 			expect(a.mixin).to.be.ok();
 		});
 
-		it("includes multiple mixins", function() {
+		it("includes multiple mixins", function () {
 			var Kl***REMOVED***2 = L.Cl***REMOVED***.extend({
 				includes: [{mixin: true}, {mixin2: true}]
 			});
@@ -77,14 +77,14 @@ describe("Cl***REMOVED***", function() {
 			expect(a.mixin2).to.be.ok();
 		});
 
-		it("grants the ability to include the given mixin", function() {
+		it("grants the ability to include the given mixin", function () {
 			Kl***REMOVED***.include({mixin2: true});
 
 			var a = new Kl***REMOVED***();
 			expect(a.mixin2).to.be.ok();
 		});
 
-		it("merges options instead of replacing them", function() {
+		it("merges options instead of replacing them", function () {
 			var Kl***REMOVED***WithOptions1 = L.Cl***REMOVED***.extend({
 				options: {
 					foo1: 1,
