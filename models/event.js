@@ -60,6 +60,10 @@ EventSchema.set("toJSON", {
   transform: transform
 });
 
+EventSchema.set("toObject", {
+  transform: transform
+});
+
 // Creates the Model for the Layer Schema
 var Event = mongoose.model('Event', EventSchema);
 exports.Model = Event;
@@ -150,7 +154,7 @@ exports.getEvents = function(options, callback) {
         });
       } else {
         events = events.map(function(event) {
-          return event.toObject({depopulate: true});
+          return event.toObject({depopulate: true, transform: true});
         });
 
         callback(null, events);
@@ -170,11 +174,14 @@ exports.getById = function(id, options, callback) {
 
     // First filter out events user my not have access to
     if (options.access && options.access.userId) {
-      events = filterEventsByUserId([event], options.access.userId);
-      event = events.length === 1 ? events[0] : null;
+      filterEventsByUserId([event], options.access.userId, function(err, events) {
+        if (err) return callback(err);
+        event = events.length === 1 ? events[0] : null;
+        callback(null, event);
+      });
+    } else {
+      callback(null, event);
     }
-
-    callback(null, event);
   });
 }
 
