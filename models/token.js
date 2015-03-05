@@ -12,15 +12,14 @@ var Schema = mongoose.Schema;
 var TokenSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
     deviceId: { type: Schema.Types.ObjectId, ref: 'Device' },
-    timestamp: { type: Date, required: true },
-    expireAt: { type: Date, required: true },
+    expirationDate: { type: Date, required: true },
     token: { type: String, required: true }
   },{
     versionKey: false
   }
 );
 
-TokenSchema.index({'expireAt': 1}, {expireAfterSeconds: 0});
+TokenSchema.index({'expirationDate': 1}, {expireAfterSeconds: 0});
 
 // Creates the Model for the User Schema
 var Token = mongoose.model('Token', TokenSchema);
@@ -49,13 +48,10 @@ exports.createToken = function(options, callback) {
   var now = Date.now();
   var update = {
     token: token,
-    timestamp: new Date(now),
-    expireAt: new Date(now + 60000)
+    expirationDate: new Date(now + tokenExpiration)
   };
   var options = {upsert: true};
   Token.findOneAndUpdate(query, update, options, function(err, newToken) {
-    newToken.expirationDate = new Date(newToken.timestamp.getTime() +  tokenExpiration);
-
     if (err) {
       console.log('Could not create token for user: ' + user.username);
     }
