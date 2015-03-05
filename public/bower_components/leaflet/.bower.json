@@ -1,14 +1,14 @@
 {
   "name": "leaflet",
   "homepage": "https://github.com/Leaflet/Leaflet",
-  "version": "0.6.4",
-  "_release": "0.6.4",
+  "version": "0.7.2",
+  "_release": "0.7.2",
   "_resolution": {
     "type": "version",
-    "tag": "v0.6.4",
-    "commit": "c5e0aac29c9df898fb233ee5666478ce60011ff9"
+    "tag": "v0.7.2",
+    "commit": "72fd4fc35786b571e0b324e7fe3c4501d2b1e043"
   },
   "_source": "git://github.com/Leaflet/Leaflet.git",
-  "_target": "0.6.4",
+  "_target": "0.7.2",
   "_originalSource": "leaflet"
 }

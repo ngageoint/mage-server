@@ -66,6 +66,12 @@ L.Control = L.Cl***REMOVED***.extend({
 		}
 
 		return this;
+	},
+
+	_refocusOnMap: function () {
+		if (this._map) {
+			this._map.getContainer().focus();
+		}
 	}
 });
 
