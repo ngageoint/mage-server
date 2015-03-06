@@ -157,6 +157,8 @@ module.exports = function(app, auth) {
       new api.Observation(req.event).getById(req.param('id'), options, function(err, observation) {
         if (err) return next(err);
 
+        if (!observation) return res.sendStatus(404);
+
         var response = observationXform.transform(observation, transformOptions(req));
         res.json(response);
       });

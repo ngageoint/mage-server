@@ -437,6 +437,11 @@ a.admin-nav-inactive {
 	border-radius: 5px;
 }
 
+.admin-table-delete-btn {
+	margin-right: 15px;
+	float: left;
+}
+
 .pointer {
     cursor: pointer; cursor: hand;
 }
@@ -565,4 +570,13 @@ h4.image-delete {
 .observation-variant {
 	font-size: 14px;
 	font-style: italic;
+}
+
+.select2-result-single {
+	margin-left: 0;
+}
+
+.select2-results ul.select2-result-sub {
+	margin-left: 5px;
+	padding-left: 0;
 }

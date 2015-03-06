@@ -10,6 +10,7 @@ angular
   .module("mage", [
     "$strap.directives",
     "ui.bootstrap",
+    "ui.select",
     "ngSanitize",
     "ngRoute",
     'ngResource',

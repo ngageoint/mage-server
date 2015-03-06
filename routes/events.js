@@ -79,7 +79,7 @@ module.exports = function(app, security) {
   app.get(
     '/api/events',
     parseEventQueryParams,
-    function (req, res) {
+    function (req, res, next) {
       var filter = {};
       if (req.parameters.userId) filter.userId = req.parameters.userId;
       if (access.userHasPermission(req.user, 'READ_EVENT_ALL')) {
@@ -127,9 +127,12 @@ module.exports = function(app, security) {
     function(req, res, next) {
       if (!req.is('multipart/form-data')) return next();
 
-      if (req.files.teams) {
-        var teams = fs.readFileSync(req.files.teams.path);
-        req.newEvent.teams = JSON.parse(teams);
+      if (req.newEvent.teamIds) {
+        req.newEvent.teamIds = req.newEvent.teamIds.split(",");
+      }
+
+      if (req.newEvent.layerIds) {
+        req.newEvent.layerIds = req.newEvent.layerIds.split(",");
       }
 
       Event.create(req.newEvent, function(err, event) {
