@@ -2,22 +2,29 @@ angular
   .module('mage')
   .controller('AdminEventsController', AdminEventsController);
 
-AdminEventsController.$inject = ['$scope', '$injector', '$filter', '$timeout', 'LocalStorageService', 'EventService', 'Event', 'Team'];
+AdminEventsController.$inject = ['$scope', '$injector', '$filter', '$timeout', '$q', 'LocalStorageService', 'EventService', 'Event', 'Team', 'Layer'];
 
-function AdminEventsController($scope, $injector, $filter, $timeout, LocalStorageService, EventService, Event, Team) {
+function AdminEventsController($scope, $injector, $filter, $timeout, $q, LocalStorageService, EventService, Event, Team, Layer) {
   $scope.token = LocalStorageService.getToken();
   $scope.events = [];
+  $scope.teams = [];
+  $scope.layers = [];
   $scope.page = 0;
   $scope.itemsPerPage = 10;
 
   $scope.saveTime = 0;
 
-  Event.query({populate: {teams: true}}, function(events) {
-    $scope.events = events;
-  });
+  var teamsById = {};
+  var layersById = {};
 
-  Team.query(function(teams) {
-    $scope.teams = teams;
+  $q.all({teams: Team.query().$promise, layers: Layer.query().$promise, events: Event.query({populate: false}).$promise}).then(function(result) {
+    $scope.teams = result.teams;
+    teamsById = _.indexBy(result.teams, 'id');
+
+    $scope.layers = result.layers;
+    layersById = _.indexBy(result.layers, 'id');
+
+    $scope.events = result.events;
   });
 
   $scope.fileUploadOptions = {};
@@ -70,9 +77,16 @@ function AdminEventsController($scope, $injector, $filter, $timeout, LocalStorag
     $scope.event = event;
     $scope.add = false;
 
-    $scope.teamsById = _.indexBy(event.teams, 'id');
+    $scope.team = {};
+    $scope.eventTeams = _.map(event.teamIds, function(teamId) { return teamsById[teamId] });
     $scope.nonTeams = _.filter($scope.teams, function(team) {
-      return $scope.teamsById[team.id] == null;
+      return event.teamIds.indexOf(team.id) === -1;
+    });
+
+    $scope.layer = {};
+    $scope.eventLayers = _.map(event.layerIds, function(layerId) { return layersById[layerId] });
+    $scope.nonLayers = _.filter($scope.layers, function(layer) {
+      return event.layerIds.indexOf(layer.id) === -1;
     });
 
     _.each($scope.event.form.fields, function(field) {
@@ -84,10 +98,17 @@ function AdminEventsController($scope, $injector, $filter, $timeout, LocalStorag
 
   $scope.newEvent = function() {
     $scope.event = new Event({
-      teams: []
+      teamIds: [],
+      layerIds: []
     });
 
+    $scope.team = {};
+    $scope.eventTeams = [];
     $scope.nonTeams = $scope.teams.slice();
+
+    $scope.layer = {};
+    $scope.eventLayers = [];
+    $scope.nonLayers = $scope.layers.slice();
   }
 
   $scope.createEvent = function() {
@@ -101,14 +122,33 @@ function AdminEventsController($scope, $injector, $filter, $timeout, LocalStorag
   }
 
   $scope.addTeam = function(team) {
-    $scope.event.teams.push(team);
-    $scope.nonTeams = _.reject($scope.nonTeams, function(t) { return t.id == team.id});
+    $scope.team = {};
+    $scope.event.teamIds.push(team.id);
+    $scope.eventTeams.push(team);
+    $scope.nonTeams = _.reject($scope.nonTeams, function(t) { return t.id == team.id; });
     $scope.autoSave();
   }
 
   $scope.removeTeam = function(team) {
+    $scope.event.teamIds = _.reject($scope.event.teamIds, function(teamId) {return teamId == team.id;});
+    $scope.eventTeams = _.reject($scope.eventTeams, function(t) { return t.id == team.id;});
     $scope.nonTeams.push(team);
-    $scope.event.teams = _.reject($scope.event.teams, function(t) { return t.id == team.id});
+    $scope.autoSave();
+  }
+
+  $scope.addLayer = function(layer) {
+    $scope.layer = {};
+    $scope.event.layerIds.push(layer.id);
+    $scope.eventLayers.push(layer);
+    $scope.nonLayers = _.reject($scope.nonLayers, function(l) { return l.id == layer.id; });
+    $scope.autoSave();
+  }
+
+  $scope.removeLayer = function(layer) {
+    $scope.team = {};
+    $scope.event.layerIds = _.reject($scope.event.layerIds, function(layerId) {return layerId == layer.id;});
+    $scope.eventLayers = _.reject($scope.eventLayers, function(l) { return l.id == layer.id;});
+    $scope.nonLayers.push(layer);
     $scope.autoSave();
   }
 
@@ -159,6 +199,10 @@ function AdminEventsController($scope, $injector, $filter, $timeout, LocalStorag
   $scope.$on('uploadComplete', function(event, args) {
     $scope.savedTime = Date.now();
   });
+
+  $scope.groupLayerByType = function (layer) {
+    return layer.type;
+  }
 
   $scope.autoSave = function() {
     debouncedAutoSave();

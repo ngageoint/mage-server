@@ -6,7 +6,7 @@ var Schema = mongoose.Schema;
 
 // Creates the Schema for the Attachments object
 var LayerSchema = new Schema({
-  id: { type: Number, required: true, unique: true },
+  _id: { type: Number, required: true, unique: true },
   type: { type: String, required: true },
   base: { type: Boolean, required: false },
   name: { type: String, required: true, unique: true },
@@ -27,6 +27,7 @@ var LayerSchema = new Schema({
 });
 
 var transform = function(layer, ret, options) {
+  ret.id = ret._id;
   delete ret._id;
   delete ret.collectionName;
 }
@@ -64,7 +65,7 @@ exports.getLayers = function(filter, callback) {
 }
 
 exports.getById = function(id, callback) {
-  Layer.findOne({id: id}, function (err, layer) {
+  Layer.findById(id, function (err, layer) {
     callback(layer);
   });
 }
@@ -93,7 +94,7 @@ var dropFeatureCollection = function(layer, callback) {
 
 exports.create = function(layer, callback) {
   Counter.getNext('layer', function(id) {
-    layer.id = id;
+    layer._id = id;
 
     if (layer.type == 'Feature') {
       layer.collectionName = 'features' + id;
@@ -112,7 +113,7 @@ exports.create = function(layer, callback) {
 }
 
 exports.update = function(id, layer, callback) {
-  Layer.findOneAndUpdate({id: id}, layer, function(err, updatedLayer) {
+  Layer.findByIdAndUpdate(id, layer, function(err, updatedLayer) {
     callback(err, updatedLayer);
   });
 }

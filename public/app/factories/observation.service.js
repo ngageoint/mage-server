@@ -79,7 +79,6 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
     if (!_.isArray(observations)) observations = [observations];
 
     _.each(observations, function(observation) {
-      observation.eventId = event.id;
       observation.style = {
         iconUrl: "/api/events/" + event.id + "/form/icons/" + observation.properties.type + "/" + observation.properties[event.form.variantField]
       }

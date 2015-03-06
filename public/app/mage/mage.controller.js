@@ -142,7 +142,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   };
   MapService.addListener(locationListener);
 
-  Layer.query(function (layers) {
+  Layer.query(function(layers) {
     var baseLayerFound = false;
     _.each(layers, function(layer) {
       // Add token to the url of all private layers

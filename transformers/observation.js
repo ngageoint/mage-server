@@ -8,6 +8,7 @@ var transformObservations = function(observations, options) {
 
 exports.transform = function(observations, options) {
   options = options || {};
+  console.log('observations', observations);
 
   return util.isArray(observations) ?
     transformObservations(observations, options) :

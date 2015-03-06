@@ -59,12 +59,7 @@ function Event($rootScope, $resource, $http, LocalStorageService, Observation) {
         formData.append('form', this.formArchiveFile);
         for (var key in this) {
           if (this.hasOwnProperty(key) && key != 'formArchiveFile' ) {
-            if (_.isObject(this[key]) || _.isArray(this[key])) {
-              var blob = new Blob([angular.toJson(this[key])], {type: 'application/json'});
-              formData.append(key, blob);
-            } else {
-              formData.append(key, this[key]);
-            }
+            formData.append(key, this[key]);
           }
         }
 

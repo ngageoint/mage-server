@@ -35,6 +35,7 @@ var EventSchema = new Schema({
   description: { type: String, required: false },
   collectionName: { type: String, required: true },
   teamIds: [{type: Schema.Types.ObjectId, ref: 'Team'}],
+  layerIds: [{type: Number, ref: 'Layer'}],
   form: {
     variantField: { type:String, required: false },
     fields: [FieldSchema]
@@ -52,6 +53,11 @@ function transform(event, ret, options) {
     if (event.populated('teamIds')) {
       ret.teams = ret.teamIds;
       delete ret.teamIds;
+    }
+
+    if (event.populated('layerIds')) {
+      ret.layers = ret.layerIds;
+      delete ret.layerIds;
     }
   }
 }
@@ -144,20 +150,12 @@ exports.getEvents = function(options, callback) {
     async.series(filters, function(err) {
       if (err) return callback(err);
 
-      if (options.populate && options.populate.teams) {
-        Event.populate(events, 'teamIds', function(err, events) {
-          if (options.populate.teams.users) {
-            Event.populate(event, {path: 'teamIds.userIds', model: 'User'}, callback);
-          } else {
-            callback(err, events);
-          }
-        });
-      } else {
-        events = events.map(function(event) {
-          return event.toObject({depopulate: true, transform: true});
-        });
-
+      if (options.populate === false) {
         callback(null, events);
+      } else {
+        Event.populate(events, [{path: 'teamIds'}, {path: 'layerIds'}], function(err, events) {
+          callback(err, events);
+        });
       }
     });
   });
@@ -172,16 +170,29 @@ exports.getById = function(id, options, callback) {
   Event.findById(id, function (err, event) {
     if (err) return callback(err);
 
+    var filters = [];
     // First filter out events user my not have access to
     if (options.access && options.access.userId) {
-      filterEventsByUserId([event], options.access.userId, function(err, events) {
-        if (err) return callback(err);
-        event = events.length === 1 ? events[0] : null;
-        callback(null, event);
+      filters.push(function(done) {
+        filterEventsByUserId([event], options.access.userId, function(err, events) {
+          if (err) return done(err);
+          event = events.length === 1 ? events[0] : null;
+          done();
+        });
       });
-    } else {
-      callback(null, event);
     }
+
+    async.series(filters, function(err) {
+      if (err) return callback(err);
+
+      if (options.populate === false) {
+        callback(null, event);
+      } else {
+        event.populate([{path: 'teamIds'}, {path: 'layerIds'}], function(err, events) {
+          callback(err, events);
+        });
+      }
+    });
   });
 }
 
@@ -218,10 +229,6 @@ exports.create = function(event, callback) {
     event._id = id;
     event.collectionName = 'observations' + id;
 
-    if (event.teams) {
-      event.teamIds = event.teams.map(function(team) { return mongoose.Types.ObjectId(team.id); });
-    }
-
     Event.create(event, function(err, newEvent) {
       if (err) return callback(err);
 
@@ -234,9 +241,16 @@ exports.create = function(event, callback) {
 }
 
 exports.update = function(id, event, callback) {
-  if (event.teams) {
-    event.teamIds = event.teams.map(function(team) { return mongoose.Types.ObjectId(team.id); });
-  }
+  // if (event.teams) {
+  //   event.teamIds = event.teams.map(function(team) { return mongoose.Types.ObjectId(team.id); });
+  // }
+  //
+  // if (event.layers) {
+  //   event.layerIds = event.layers.map(function(layer) { return mongoose.Types.ObjectId(layer.id); });
+  // }
+
+  console.log('trying to update event', event);
+
 
   Event.findByIdAndUpdate(id, event, function(err, updatedEvent) {
     if (err) {

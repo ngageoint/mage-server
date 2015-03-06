@@ -64,50 +64,88 @@
             <a cl***REMOVED***="btn right" ng-show="form.id" ng-href="{{'/api/events/' + event.id + '/form.zip?access_token=' + token}}"> <i cl***REMOVED***="fa fa-sign-out"></i> Export Form</a>
             <a cl***REMOVED***="btn btn-danger right" ng-show="event.id" ng-click="deleteEvent(event)"> <i cl***REMOVED***="fa fa-trash-o"></i> Delete Event</a>
 
-            <h2 cl***REMOVED***="top-gap">Teams</h2>
+            <h2 cl***REMOVED***="top-gap-l">Teams</h2>
+            <div cl***REMOVED***="bottom-gap">
+              <span>
+                <ui-select ng-model="team.selected" theme="select2" style="min-width: 300px;">
+                  <ui-select-match placeholder="Select a team to add to event">{{$select.selected.name}}</ui-select-match>
+                  <ui-select-choices repeat="team in nonTeams | orderBy: 'name' | filter: $select.search">
+                    <div ng-bind-html="team.name | highlight: $select.search"></div>
+                  </ui-select-choices>
+                </ui-select>
+              </span>
+              <span><button cl***REMOVED***="btn btn-small btn-success" ng-click="addTeam(team.selected)" ng-disabled="team.selected == null"><i cl***REMOVED***="fa fa-plus"></i> Add Team</button></span>
+            </div>
+
             <div cl***REMOVED***="navbar">
               <div cl***REMOVED***="navbar-inner admin-table-nav">
-                <a cl***REMOVED***="pull-left btn" ng-click="edit = !edit">Edit</a>
-                <a cl***REMOVED***="pull-right btn" ng-click="add = !add">Add</a>
-
-                <a cl***REMOVED***="brand" href="#">Teams ({{event.teams.length}})</a>
+                <a cl***REMOVED***="pull-left btn" ng-click="teamsEdit = !teamsEdit">Edit</a>
+                <a cl***REMOVED***="brand" href="#">Teams ({{eventTeams.length}})</a>
 
                 <form cl***REMOVED***="navbar-search">
                   <input type="text" cl***REMOVED***="search-query" placeholder="Filter Teams" ng-model="teamSearch">
                 </form>
-
-                <div ng-show="add || !event.id" style="padding: 10px;">
-                  <div cl***REMOVED***="row-fluid top-gap-xl">
-                    <form cl***REMOVED***="navbar-search">
-                      <input type="text" cl***REMOVED***="search-query" placeholder="Search Teams" ng-model="nonTeamSearch">
-                    </form>
+              </div>
+            </div>
+            <div cl***REMOVED***="pre-scrollable-large well well-small admin-table">
+              <div ng-repeat="team in eventTeams | filter:teamSearch | orderBy:'name'" cl***REMOVED***="row-fluid well-item">
+                <div cl***REMOVED***="span12">
+                  <span cl***REMOVED***="admin-table-delete-btn" ng-show="teamsEdit">
+                    <a cl***REMOVED***="btn btn-mini btn-danger" ng-click="removeTeam(team)"><i cl***REMOVED***="fa fa-minus"></i></a>
+                  </span>
+                  
+                  <div>
+                    <span cl***REMOVED***="strong">
+                      {{team.name}}
+                    </span>
                   </div>
-                  <div cl***REMOVED***="pre-scrollable-small well well-small admin-table top-gap-s">
-                    <div ng-repeat="nonTeam in nonTeams | filter:nonTeamSearch | orderBy:'name'" cl***REMOVED***="row-fluid well-item">
-                      <div cl***REMOVED***="span12">
-                        <span cl***REMOVED***="icon-spacer">
-                          <a cl***REMOVED***="btn btn-mini btn-success" ng-click="addTeam(nonTeam)"><i cl***REMOVED***="fa fa-plus"></i></a>
-                        </span>
-                        <span>
-                          {{nonTeam.name}}
-                        </span>
-                        <span cl***REMOVED***="muted"> {{nonTeam.description}}</span>
-                      </div>
-                    </div>
+                  <div>
+                    <span cl***REMOVED***="muted">{{team.description}}</span>
                   </div>
                 </div>
               </div>
             </div>
+
+            <h2 cl***REMOVED***="top-gap">Layers</h2>
+
+            <div cl***REMOVED***="bottom-gap">
+              <span>
+                <ui-select ng-model="layer.selected" theme="select2" style="min-width: 300px;">
+                  <ui-select-match placeholder="Select a layer to add to event">{{$select.selected.name}}</ui-select-match>
+                  <ui-select-choices group-by="groupLayerByType" repeat="layer in nonLayers | orderBy: 'name' | filter: $select.search">
+                    <div ng-bind-html="layer.name | highlight: $select.search"></div>
+                  </ui-select-choices>
+                </ui-select>
+              </span>
+              <span><button cl***REMOVED***="btn btn-small btn-success" ng-click="addLayer(layer.selected)" ng-disabled="layer.selected == null"><i cl***REMOVED***="fa fa-plus"></i> Add Layer</button></span>
+            </div>
+
+            <div cl***REMOVED***="navbar">
+              <div cl***REMOVED***="navbar-inner admin-table-nav">
+                <a cl***REMOVED***="pull-left btn" ng-click="layersEdit = !layersEdit">Edit</a>
+
+                <a cl***REMOVED***="brand" href="#">Layers ({{eventLayers.length}})</a>
+
+                <form cl***REMOVED***="navbar-search">
+                  <input type="text" cl***REMOVED***="search-query" placeholder="Filter Layers" ng-model="layerSearch">
+                </form>
+              </div>
+            </div>
             <div cl***REMOVED***="pre-scrollable-large well well-small admin-table">
-              <div ng-repeat="team in event.teams | filter:teamSearch | orderBy:'name'" cl***REMOVED***="row-fluid well-item">
+              <div ng-repeat="layer in eventLayers | filter:layerSearch | orderBy:'name'" cl***REMOVED***="row-fluid well-item">
                 <div cl***REMOVED***="span12">
-                  <span cl***REMOVED***="icon-spacer" ng-show="edit">
-                    <a cl***REMOVED***="btn btn-mini btn-danger" ng-click="removeTeam(team)"><i cl***REMOVED***="fa fa-minus"></i></a>
+                  <span cl***REMOVED***="admin-table-delete-btn" ng-show="layersEdit">
+                    <a cl***REMOVED***="btn btn-mini btn-danger" ng-click="removeLayer(layer)"><i cl***REMOVED***="fa fa-minus"></i></a>
                   </span>
-                  <span>
-                    {{team.name}}
-                  </span>
-                  <span cl***REMOVED***="muted"> {{team.description}}</span>
+                  <div>
+                    <span cl***REMOVED***="strong">
+                      {{layer.name}}
+                    </span>
+                    <i cl***REMOVED***="muted icon-spacer">{{layer.type}}</i>
+                  </div>
+                  <div>
+                    <span cl***REMOVED***="muted">{{layer.description}}</span>
+                  </div>
                 </div>
               </div>
             </div>

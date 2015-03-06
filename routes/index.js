@@ -62,7 +62,7 @@ module.exports = function(app, security) {
   // Grab the user for any endpoint that uses userId
   app.param('eventId', /^[0-9]+$/); //ensure eventId is a number
   app.param('eventId', function(req, res, next, eventId) {
-    Event.getById(eventId, function(err, event) {
+    Event.getById(eventId, {populate: false}, function(err, event) {
       if (!event) return res.send('Event not found', 404);
       req.event = event;
       next();
