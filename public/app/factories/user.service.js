@@ -180,6 +180,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
   function clearUser() {
     ***REMOVED***.myself = null;
     ***REMOVED***.amAdmin = null;
+    LocalStorageService.removeToken();
 
     $rootScope.$broadcast('logout');
   };
