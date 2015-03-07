@@ -188,6 +188,10 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
         });
       }
     });
+
+    _.each(changed.removed, function(layer) {
+      MapService.removeLayer(layer);
+    });
   }
 
   function onObservationsChanged(changed) {
