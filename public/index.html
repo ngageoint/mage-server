@@ -6,6 +6,7 @@
   <link rel="shortcut icon" href="favicon.ico"/>
   <meta id="view" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="css/font.css">
 
   <link rel="stylesheet" href="vendor/jQuery-File-Upload/css/jquery.fileupload.css">
   <link rel="stylesheet" href="vendor/jQuery-File-Upload/css/jquery.fileupload-ui.css">
@@ -66,7 +67,7 @@
   <!-- TODO possibly move this -->
   <header cl***REMOVED***="navbar navbar-fixed-top" ng-controller="NavController">
     <div cl***REMOVED***="navbar-inner">
-      <div cl***REMOVED***="container" ng-show="myself">
+      <div cl***REMOVED***="container">
 
         <a cl***REMOVED***="mage brand" href="#/map">
           <i cl***REMOVED***="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
@@ -78,8 +79,8 @@
           <span cl***REMOVED***="icon-bar"></span>
         </a>
 
-        <ul cl***REMOVED***="nav pull-right">
-          <li>
+        <ul cl***REMOVED***="nav pull-right" ng-cloak>
+          <li ng-show="myself">
             <a href="#/user" cl***REMOVED***="nav-link">
               <span>
                 <img cl***REMOVED***="avatar-img" ng-src="{{myself.avatarUrl ? myself.avatarUrl + '?access_token=' + token : '/img/missing_photo.png'}}"/>
@@ -104,7 +105,7 @@
           </li>
         </ul>
 
-        <div cl***REMOVED***="nav-collapse collapse" ng-show="location.path() === '/map'">
+        <div cl***REMOVED***="nav-collapse collapse" ng-show="location.path() === '/map'" ng-cloak>
           <ul id="main-nav" cl***REMOVED***="nav navbar-nav">
             <li ng-cl***REMOVED***="{'active':  filter}" cl***REMOVED***="dropdown">
               <a cl***REMOVED***="pointer dropdown-toggle" ng-click="filter = !filter">
