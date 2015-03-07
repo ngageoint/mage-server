@@ -9,7 +9,8 @@ function LocalStorageService() {
 
   var ***REMOVED*** = {
     getToken: getToken,
-    setToken: setToken
+    setToken: setToken,
+    removeToken: removeToken
   };
 
   return ***REMOVED***;
