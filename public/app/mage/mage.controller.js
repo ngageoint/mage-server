@@ -9,16 +9,14 @@ MageController.$inject = [
   'FilterService',
   'EventService',
   'MapService',
-  'PollingService',
   'LocalStorageService',
-  'Layer',
   'Observation',
   'Location',
   'LocationService',
   'FeatureService'
 ];
 
-function MageController($scope, $compile, $timeout, FilterService, EventService, MapService, PollingService, LocalStorageService, Layer, Observation, Location, LocationService, FeatureService) {
+function MageController($scope, $compile, $timeout, FilterService, EventService, MapService, LocalStorageService, Observation, Location, LocationService, FeatureService) {
 
   var observationsById = {};
   var newObservation = null;
@@ -122,6 +120,11 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   };
   EventService.addObservationsChangedListener(observationsChangedListener);
 
+  var layersChangedListener = {
+    onLayersChanged: onLayersChanged
+  }
+  EventService.addLayersChangedListener(layersChangedListener);
+
   var filterChangedListener = {
     onEventChanged: function(changed) {
       _.each(changed.removed, function(removed) {
@@ -142,9 +145,9 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   };
   MapService.addListener(locationListener);
 
-  Layer.query(function(layers) {
+  function onLayersChanged(changed, event) {
     var baseLayerFound = false;
-    _.each(layers, function(layer) {
+    _.each(changed.added, function(layer) {
       // Add token to the url of all private layers
       // TODO add watch for token change and reset the url for these layers
       if (layer.type === 'Imagery' && layer.url.indexOf('private') == 0) {
@@ -152,8 +155,6 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
       }
 
       if (layer.type === 'Imagery') {
-        layer.type = 'raster';
-
         if (layer.base && !baseLayerFound) {
           layer.options = {selected: true};
           baseLayerFound = true;
@@ -161,7 +162,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
 
         MapService.createRasterLayer(layer);
       } else if (layer.type === 'Feature') {
-        FeatureService.getFeatureCollection(layer).then(function(featureCollection) {
+        FeatureService.getFeatureCollection(event, layer).then(function(featureCollection) {
           MapService.createVectorLayer({
             name: layer.name, // TODO need to track by id as well not just names
             group: 'Static',
@@ -187,7 +188,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
         });
       }
     });
-  });
+  }
 
   function onObservationsChanged(changed) {
     _.each(changed.added, function(added) {
@@ -299,11 +300,10 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
 
   $scope.$on('$destroy', function() {
     FilterService.removeListener(filterChangedListener);
+    EventService.removeLayersChangedListener(layersChangedListener);
     EventService.removeObservationsChangedListener(observationsChangedListener);
     EventService.removeUsersChangedListener(usersChangedListener);
-    MapService.removeListener(locationListener);
     MapService.destroy();
-    PollingService.setPollingInterval(0); // stop polling
   });
 
   $scope.$on('observation:selected', function(e, observation, options) {

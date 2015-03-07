@@ -2,9 +2,9 @@ angular
   .module('mage')
   .factory('MapService', MapService);
 
-MapService.$inject = ['$q', 'Observation', 'ObservationAttachment', 'ObservationState'];
+MapService.$inject = [];
 
-function MapService($rootScope, Layer, EventService) {
+function MapService() {
 
   var ***REMOVED*** = {
     addListener: addListener,
@@ -211,6 +211,8 @@ function MapService($rootScope, Layer, EventService) {
       });
     });
     rasterLayers = {};
+
+    listeners = [];
   }
 
   function removeLayer(layer) {

@@ -17,7 +17,7 @@ module.exports = function(app, auth) {
     }
   }
 
-  function generateAccess(req, res, next) {
+  function validateEventAccess(req, res, next) {
     if (access.userHasPermission(req.user, 'READ_OBSERVATION_ALL')) {
       next();
     } else if (access.userHasPermission(req.user, 'READ_OBSERVATION_EVENT')) {
@@ -130,7 +130,7 @@ module.exports = function(app, auth) {
 
   app.get(
     '/api/events/:eventId/observations',
-    generateAccess,
+    validateEventAccess,
     parseQueryParams,
     function (req, res, next) {
       var options = {
@@ -150,7 +150,7 @@ module.exports = function(app, auth) {
 
   app.get(
     '/api/events/:eventId/observations/:id',
-    generateAccess,
+    validateEventAccess,
     parseQueryParams,
     function (req, res) {
       var options = {fields: req.parameters.fields};
@@ -183,7 +183,7 @@ module.exports = function(app, auth) {
 
   app.put(
     '/api/events/:eventId/observations/:id',
-    generateAccess,
+    validateEventAccess,
     function (req, res, next) {
 
       var observation = {};
@@ -218,7 +218,7 @@ module.exports = function(app, auth) {
 
   app.post(
     '/api/events/:eventId/observations/:id/states',
-    generateAccess,
+    validateEventAccess,
     function(req, res, next) {
       var state = req.body;
       if (!state) return res.send(400);
@@ -243,7 +243,7 @@ module.exports = function(app, auth) {
 
   app.get(
     '/api/events/:eventId/observations/:id/attachments',
-    generateAccess,
+    validateEventAccess,
     function(req, res, next) {
       var fields = {attachments: true};
       var options = {fields: fields};
@@ -258,7 +258,7 @@ module.exports = function(app, auth) {
 
   app.get(
     '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
-    generateAccess,
+    validateEventAccess,
     function(req, res, next) {
       new api.Attachment(req.event, req.observation).getById(req.param('attachmentId'), {size: req.param('size')}, function(err, attachment) {
         if (err) return next(err);
@@ -317,7 +317,7 @@ module.exports = function(app, auth) {
 
   app.put(
     '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
-    generateAccess,
+    validateEventAccess,
     function(req, res, next) {
       new api.Attachment(req.event, req.observation).update(req.observationId, req.files.attachment, function(err, attachment) {
         if (err) return next(err);

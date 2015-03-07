@@ -287,7 +287,7 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
         case 'Feature':
           createMarker(added);
           break;
-        case 'raster':
+        case 'Imagery':
           createRasterLayer(added);
           break;
         case 'geojson':

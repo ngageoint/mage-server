@@ -1,8 +1,13 @@
-angular.module('mage').factory('Layer', ['$resource', '$http', function($resource, $http) {
+angular
+	.module('mage')
+	.factory('Layer', Layer);
 
+Layer.$inject = ['$resource', '$http'];
+
+function Layer($resource, $http) {
 	var Layer = $resource('/api/layers/:id', {
 		id: '@id'
-	}, {
+	},{
 		create: {
 			method: 'POST',
 			headers: {
@@ -14,6 +19,11 @@ angular.module('mage').factory('Layer', ['$resource', '$http', function($resourc
 			headers: {
 				'Content-Type': 'application/json'
 			}
+		},
+		queryByEvent: {
+			method: 'GET',
+			isArray: true,
+			url: '/api/events/:eventId/layers'
 		}
 	});
 
@@ -37,4 +47,4 @@ angular.module('mage').factory('Layer', ['$resource', '$http', function($resourc
 
 	return Layer;
 
-}]);
+}
