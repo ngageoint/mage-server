@@ -109,6 +109,13 @@ function AdminEventsController($scope, $injector, $filter, $timeout, $q, LocalSt
     $scope.layer = {};
     $scope.eventLayers = [];
     $scope.nonLayers = $scope.layers.slice();
+
+    var baseLayer = _.find($scope.layers, function(l) { return l.base; });
+    if (baseLayer) {
+      $scope.eventLayers.push(baseLayer);
+      $scope.event.layerIds.push(baseLayer.id);
+      $scope.nonLayers = _.reject($scope.nonLayers, function(l) { return l.id == baseLayer.id; });
+    }
   }
 
   $scope.createEvent = function() {

@@ -241,17 +241,6 @@ exports.create = function(event, callback) {
 }
 
 exports.update = function(id, event, callback) {
-  // if (event.teams) {
-  //   event.teamIds = event.teams.map(function(team) { return mongoose.Types.ObjectId(team.id); });
-  // }
-  //
-  // if (event.layers) {
-  //   event.layerIds = event.layers.map(function(layer) { return mongoose.Types.ObjectId(layer.id); });
-  // }
-
-  console.log('trying to update event', event);
-
-
   Event.findByIdAndUpdate(id, event, function(err, updatedEvent) {
     if (err) {
       console.log("Could not update event: " + err);

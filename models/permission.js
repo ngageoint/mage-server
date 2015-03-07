@@ -28,9 +28,10 @@ var eventPermissions = [
 ]
 
 var layerPermissions = [
-  'CREATE_LAYER',
-  'READ_LAYER',
+  'READ_LAYER_ALL',
+  'READ_LAYER_EVENT',
   'UPDATE_LAYER',
+  'CREATE_LAYER',
   'DELETE_LAYER'
 ];
 

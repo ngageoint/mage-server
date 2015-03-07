@@ -2,7 +2,7 @@ angular
   .module('mage')
   .factory('FeatureService', FeatureService);
 
-  FeatureService.$inject = ['$q', '$http'];
+FeatureService.$inject = ['$q', '$http'];
 
 function FeatureService($q, $http) {
   var featureCollectionsByLayer = {};
@@ -13,14 +13,14 @@ function FeatureService($q, $http) {
 
   return ***REMOVED***;
 
-  function getFeatureCollection(layer) {
+  function getFeatureCollection(event, layer) {
     var deferred = $q.defer();
 
     if (featureCollectionsByLayer[layer.name]) {
-      deferred.resolve(featureCollectionsByLayer[layer.name].featureCollecion);
+      deferred.resolve(featureCollectionsByLayer[layer.name]);
     }
 
-    $http.get('/api/layers/' + layer.id + '/features', {
+    $http.get('/api/events/' + event.id + '/layers/' + layer.id + '/features', {
       headers: {"Content-Type": "application/json"}
     }).success(function(featureCollection) {
       featureCollectionsByLayer[layer.name] = featureCollection;

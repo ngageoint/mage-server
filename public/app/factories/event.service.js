@@ -2,22 +2,25 @@ angular
   .module('mage')
   .***REMOVED***('EventService', EventService);
 
-EventService.$inject = ['$rootScope', '$q', '$timeout', '$http', 'Event', 'ObservationService', 'LocationService', 'FilterService', 'PollingService'];
+EventService.$inject = ['$rootScope', '$q', '$timeout', '$http', 'Event', 'ObservationService', 'LocationService', 'LayerService', 'FilterService', 'PollingService'];
 
-function EventService($rootScope, $q, $timeout, $http, Event, ObservationService, LocationService, FilterService, PollingService) {
+function EventService($rootScope, $q, $timeout, $http, Event, ObservationService, LocationService, LayerService, FilterService, PollingService) {
   var observationsChangedListeners = [];
   var usersChangedListeners = [];
+  var layersChangedListeners = [];
   var eventsById = {};
 
   var filterServiceListener = {
     onEventChanged: function(event) {
       _.each(event.added, function(added) {
         fetch(added, FilterService.getTimeInterval());
+        fetchLayers(added);
       });
 
       _.each(event.removed, function(removed) {
         observationsChanged({removed: _.values(eventsById[removed.id].observationsById)});
         usersChanged({removed: _.values(eventsById[removed.id].usersById)});
+        layersChanged({removed: _.values(eventsById[removed.id].layersById)}, removed);
         delete eventsById[removed.id];
       });
     },
@@ -49,6 +52,8 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     removeObservationsChangedListener: removeObservationsChangedListener,
     addUsersChangedListener: addUsersChangedListener,
     removeUsersChangedListener: removeUsersChangedListener,
+    addLayersChangedListener: addLayersChangedListener,
+    removeLayersChangedListener: removeLayersChangedListener,
     saveObservation: saveObservation,
     archiveObservation: archiveObservation,
     addAttachmentToObservation: addAttachmentToObservation,
@@ -88,6 +93,22 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
 
   function removeUsersChangedListener(listener) {
     usersChangedListeners = _.reject(usersChangedListeners, function(l) {
+      return listener === l;
+    });
+  }
+
+  function addLayersChangedListener(listener) {
+    layersChangedListeners.push(listener);
+
+    if (_.isFunction(listener.onLayersChanged)) {
+      _.each(_.values(eventsById), function(event) {
+        listener.onLayersChanged({added: _.values(event.layersById)}, event); // TODO this could be old layers, admin panel might have changed layers
+      });
+    }
+  }
+
+  function removeLayersChangedListener(listener) {
+    layersChangedListeners = _.reject(layersChangedListeners, function(l) {
       return listener === l;
     });
   }
@@ -180,6 +201,18 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     });
   }
 
+  function layersChanged(changed, event) {
+    _.each(layersChangedListeners, function(listener) {
+      changed.added = changed.added || [];
+      changed.updated = changed.updated || [];
+      changed.removed = changed.removed || [];
+
+      if (_.isFunction(listener.onLayersChanged)) {
+        listener.onLayersChanged(changed, event);
+      }
+    });
+  }
+
   function fetch(event, interval) {
     if (!eventsById[event.id]) {
       eventsById[event.id] = event;
@@ -197,6 +230,13 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
       fetchObservations(event, parameters),
       fetchLocations(event, parameters)
     ]);
+  }
+
+  function fetchLayers(event) {
+    return LayerService.getLayersForEvent(event).then(function(layers) {
+      eventsById[event.id].layersById = _.indexBy(layers, 'id');
+      layersChanged({added: layers}, event);
+    });
   }
 
   function fetchObservations(event, parameters) {

@@ -1450,6 +1450,71 @@
                 }
             }
         },
+        "/api/events/{eventId}/layers": {
+            "get": {
+                "description": "get layers for the specified event",
+                "operationId": "getLayersForEvent",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "id of the event to get layers for",
+                        "required": true,
+                        "type": "number"
+                    }
+                ],
+                "tags": [
+                    "Layer"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "layer responses",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Layer"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/events/{eventId}/layers/{layerId}/features": {
+            "get": {
+                "description": "get features for specified layer in event",
+                "operationId": "getFeaturesForLayer",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "id of the event to get features for",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "layerId",
+                        "in": "path",
+                        "description": "id of the layer to get features for",
+                        "required": true,
+                        "type": "number"
+                    }
+                ],
+                "tags": [
+                    "Layer"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "feature responses",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Feature"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/events/{eventId}/locations": {
             "get": {
                 "description": "get all locations",

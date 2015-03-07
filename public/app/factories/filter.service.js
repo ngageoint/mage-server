@@ -2,9 +2,9 @@ angular
   .module('mage')
   .factory('FilterService', FilterService);
 
-FilterService.$inject = ['$rootScope', 'UserService'];
+FilterService.$inject = ['UserService'];
 
-function FilterService($rootScope, UserService) {
+function FilterService(UserService) {
   var event = null;
   var interval = null;
   var listeners = [];
@@ -65,17 +65,22 @@ function FilterService($rootScope, UserService) {
   }
 
   function setEvent(newEvent) {
-    if (event && event.id === newEvent.id) return;
+    if (newEvent == null && event != null) {
+      eventChanged({
+        added: [],
+        removed: [event]
+      })
+    } else if (newEvent && (!event || event.id !== newEvent.id)) {
+      eventChanged({
+        added: [newEvent],
+        removed: event ? [event] : []
+      });
 
-    eventChanged({
-      added: [newEvent],
-      removed: event ? [event] : []
-    });
+      // Tell server that user is using this event
+      UserService.addRecentEvent(newEvent);
+    }
 
     event = newEvent;
-
-    // Tell server that user is using this event
-    UserService.addRecentEvent(event);
   };
 
   function getEvent() {

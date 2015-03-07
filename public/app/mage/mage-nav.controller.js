@@ -17,37 +17,38 @@ function NavController($scope, $location, UserService, FilterService, PollingSer
 
   $scope.pollingInterval = 30000;
 
-  $scope.$on('login', function(event, login) {
-    $scope.myself = login.user;
-    $scope.amAdmin = login.isAdmin;
-    $scope.token = login.token;
-
-    if ($location.path() !== '/map') return;
-
-    Event.query(function(events) {
-      $scope.events = events;
-
-      var recentEventId = UserService.getRecentEventId();
-      var recentEvent = _.find($scope.events, function(event) { return event.id === recentEventId });
-      if (recentEvent) {
-        $scope.event = recentEvent;
-        FilterService.setEvent($scope.event);
-        PollingService.setPollingInterval($scope.pollingInterval);
-      } else if (events.length > 0) {
-        // TODO 'welcome to MAGE dialog'
-        $scope.event = events[0];
-        FilterService.setEvent($scope.event);
-        PollingService.setPollingInterval($scope.pollingInterval);
-      } else {
-        // TODO welcome to mage, sorry you have no events
-      }
-    });
-  });
-
   $scope.$on('logout', function() {
-    $scope.token = null;
     $scope.myself = null;
     $scope.amAdmin = null;
+  });
+
+  $scope.$on('$routeChangeSuccess', function() {
+    $scope.myself = UserService.myself;
+    $scope.amAdmin = UserService.amAdmin;
+
+    if ($location.path() === '/map') {
+      Event.query(function(events) {
+        $scope.events = events;
+
+        var recentEventId = UserService.getRecentEventId();
+        var recentEvent = _.find($scope.events, function(event) { return event.id === recentEventId });
+        if (recentEvent) {
+          $scope.event = recentEvent;
+          FilterService.setEvent($scope.event);
+          PollingService.setPollingInterval($scope.pollingInterval);
+        } else if (events.length > 0) {
+          // TODO 'welcome to MAGE dialog'
+          $scope.event = events[0];
+          FilterService.setEvent($scope.event);
+          PollingService.setPollingInterval($scope.pollingInterval);
+        } else {
+          // TODO welcome to mage, sorry you have no events
+        }
+      });
+    } else {
+      FilterService.setEvent(null);
+      PollingService.setPollingInterval(0);
+    }
   });
 
   $scope.logout = function() {

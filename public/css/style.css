@@ -580,3 +580,12 @@ h4.image-delete {
 	margin-left: 5px;
 	padding-left: 0;
 }
+
+.select2-container .select2-choice {
+	background-image: none;
+}
+
+.select2-container .select2-choice .select2-arrow {
+	background: #fff;
+	background-image: none;
+}
