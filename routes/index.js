@@ -63,7 +63,7 @@ module.exports = function(app, security) {
   app.param('eventId', /^[0-9]+$/); //ensure eventId is a number
   app.param('eventId', function(req, res, next, eventId) {
     Event.getById(eventId, {populate: false}, function(err, event) {
-      if (!event) return res.send('Event not found', 404);
+      if (!event) return res.status(404).send('Event not found');
       req.event = event;
       next();
     });
@@ -73,7 +73,7 @@ module.exports = function(app, security) {
   app.param('userId', /^[0-9a-f]{24}$/); //ensure userId is a mongo id
   app.param('userId', function(req, res, next, userId) {
     new api.User().getById(userId, function(err, user) {
-      if (!user) return res.send('User not found', 404);
+      if (!user) return res.status(404).send('User not found');
       req.userParam = user;
       next();
     });
@@ -82,7 +82,7 @@ module.exports = function(app, security) {
   // Grab the team for any endpoint that uses teamId
   app.param('teamId', function(req, res, next, teamId) {
     Team.getTeamById(teamId, function(err, team) {
-      if (!team) return res.send('Team not found', 404);
+      if (!team) return res.status(404).send('Team not found');
       req.team = team;
       next();
     });
@@ -91,7 +91,7 @@ module.exports = function(app, security) {
   // Grab the icon for any endpoint that uses iconId
   app.param('iconId', function(req, res, next, iconId) {
     Icon.getById(iconId, function(err, icon) {
-      if (!icon) return res.send('Icon not found', 404);
+      if (!icon) return res.status(404).send('Icon not found');
       req.icon = icon;
       next();
     });
@@ -100,7 +100,7 @@ module.exports = function(app, security) {
   // Grab the device for any endpoint that uses deviceId
   app.param('deviceId', function(req, res, next, deviceId) {
       Device.getDeviceById(deviceId, function(err, device) {
-        if (!device) return res.send('Device not found', 404);
+        if (!device) return res.status(404).send('Device not found');
         req.device = device;
         next();
       });
@@ -109,7 +109,7 @@ module.exports = function(app, security) {
   // Grab the role for any endpoint that uses roleId
   app.param('roleId', function(req, res, next, roleId) {
       Role.getRoleById(roleId, function(err, role) {
-        if (!role) return res.send('Role ' + roleId + ' not found', 404);
+        if (!role) return res.status(404).send('Role ' + roleId + ' not found');
         req.role = role;
         next();
       });
@@ -119,7 +119,7 @@ module.exports = function(app, security) {
   app.param('layerId', function(req, res, next, layerId) {
     Layer.getById(layerId, function(layer) {
       if (!layer) {
-        return res.send(404, "Layer not found: ");
+        return res.staus(404).send("Layer not found: ");
       }
 
       req.layer = layer;
@@ -133,9 +133,7 @@ module.exports = function(app, security) {
     new api.Observation(req.event).getById(observationId, function(err, observation) {
       if (err) return next(err);
 
-      if (!observation) {
-        return res.json(404, 'Observation (ID: ' + observationId + ') not found');
-      }
+      if (!observation) return res.status(404).send('Observation (ID: ' + observationId + ') not found');
 
       req.observation = observation;
       next();

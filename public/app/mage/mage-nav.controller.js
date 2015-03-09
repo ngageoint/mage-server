@@ -83,4 +83,14 @@ function NavController($scope, $location, UserService, FilterService, PollingSer
     PollingService.setPollingInterval(pollingInterval);
   }
 
+  $scope.onExportClick = function() {
+    $scope.export = !$scope.export;
+    if ($scope.filter) $scope.filter = false;
+  }
+
+  $scope.onFilterClick = function() {
+    $scope.filter = !$scope.filter;
+    if ($scope.export) $scope.export = false;
+  }
+
 }
