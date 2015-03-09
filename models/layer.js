@@ -30,6 +30,9 @@ var transform = function(layer, ret, options) {
   ret.id = ret._id;
   delete ret._id;
   delete ret.collectionName;
+
+  var path = options.path || "";
+  if (ret.type === 'Feature') ret.url = [path, ret.id].join("/");
 }
 
 LayerSchema.set("toObject", {

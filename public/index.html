@@ -6,7 +6,6 @@
   <link rel="shortcut icon" href="favicon.ico"/>
   <meta id="view" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <link rel="stylesheet" href="css/font.css">
 
   <link rel="stylesheet" href="vendor/jQuery-File-Upload/css/jquery.fileupload.css">
   <link rel="stylesheet" href="vendor/jQuery-File-Upload/css/jquery.fileupload-ui.css">
@@ -108,7 +107,7 @@
         <div cl***REMOVED***="nav-collapse collapse" ng-show="location.path() === '/map'" ng-cloak>
           <ul id="main-nav" cl***REMOVED***="nav navbar-nav">
             <li ng-cl***REMOVED***="{'active':  filter}" cl***REMOVED***="dropdown">
-              <a cl***REMOVED***="pointer dropdown-toggle" ng-click="filter = !filter">
+              <a cl***REMOVED***="pointer dropdown-toggle" ng-click="onFilterClick()">
                 <i cl***REMOVED***="fa fa-filter icon-spacer"></i> Filter
                 <b cl***REMOVED***="caret"></b>
               </a>
@@ -152,6 +151,12 @@
                 </li>
               </ul>
             </li>
+            <li ng-cl***REMOVED***="{'active':  export}" cl***REMOVED***="dropdown">
+              <a cl***REMOVED***="pointer dropdown-toggle" ng-click="onExportClick()">
+                <i cl***REMOVED***="fa fa-filter icon-spacer"></i> Export
+                <b cl***REMOVED***="caret"></b>
+              </a>
+            </li>
           </ul>
         </div>
 
@@ -161,7 +166,6 @@
 
 
       <div style="padding: 10px;" cl***REMOVED***="container" ng-show="filter" ng-cloak>
-
         <div cl***REMOVED***="control-group">
           <label cl***REMOVED***="control-label" for="type">Event</label>
           <div cl***REMOVED***="controls">
@@ -193,7 +197,50 @@
         </div>
 
         <button cl***REMOVED***="btn" ng-click="filter = false">Close</button>
+      </div>
 
+      <div style="padding: 10px;" cl***REMOVED***="container" ng-show="export" ng-cloak>
+        <div cl***REMOVED***="control-group">
+          <label cl***REMOVED***="control-label" for="type">Event</label>
+          <div cl***REMOVED***="controls">
+            <select ng-model="exportEvent" ng-options="event as event.name for event in events | orderBy:'name'"></select>
+          </div>
+
+          <div cl***REMOVED***="controls">
+            <label cl***REMOVED***="checkbox">
+              <input type="checkbox" ng-model="exportObservations">Field Observations
+            </label>
+
+            <label cl***REMOVED***="checkbox">
+              <input type="checkbox" ng-model="exportPeople">People
+            </label>
+          </div>
+        </div>
+
+        <div cl***REMOVED***="control-group">
+          <label cl***REMOVED***="control-label" for="type">Time</label>
+          <select ng-model="interval" ng-options="interval.label for interval in intervals" ng-change="onIntervalUpdate(interval)"></select>
+
+          <div ng-show="interval.filter == 'custom'">
+            <div>
+              <div cl***REMOVED***="control-group">
+                <label cl***REMOVED***="control-label">Start Date/Time</label>
+                <quick-datepicker ng-model='customStartDate' icon-cl***REMOVED***='fa fa-calendar' time-format="HH:mm:ss" ng-change="onCustomIntervalChanged(interval)"></quick-datepicker>
+                <button type="button" ng-click="localTime = !localTime" ngm-tap="localTime = !localTime" cl***REMOVED***="btn quickdate-button"><i cl***REMOVED***="fa fa-clock-o"></i><span ng-show="localTime"> Local (GMT {{localOffset}})</span><span ng-show="!localTime"> GMT (GMT +00:00)</span></button>
+              </div>
+            </div>
+
+            <div>
+              <div cl***REMOVED***="control-group">
+                <label cl***REMOVED***="control-label">End Date/Time</label>
+                <quick-datepicker ng-model='customEndDate' icon-cl***REMOVED***='fa fa-calendar' time-format="HH:mm:ss" ng-change="onCustomIntervalChanged(interval)"></quick-datepicker>
+                <button type="button" ng-click="localTime = !localTime" ngm-tap="localTime = !localTime" cl***REMOVED***="btn quickdate-button"><i cl***REMOVED***="fa fa-clock-o"></i><span ng-show="localTime"> Local (GMT {{localOffset}})</span><span ng-show="!localTime"> GMT (GMT +00:00)</span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button cl***REMOVED***="btn" ng-click="export = false">Close</button>
       </div>
 
     </div>

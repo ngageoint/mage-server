@@ -2,18 +2,13 @@ module.exports = function(app, security) {
   var Layer = require('../models/layer')
     , Event = require('../models/event')
     , access = require('../access')
-    , api = require('../api');
+    , api = require('../api')
+    , layerXform = require('../transformers/layer');
 
   var p***REMOVED***port = security.authentication.p***REMOVED***port
     , authenticationStrategy = security.authentication.authenticationStrategy;
 
   app.all('/api/layers*', p***REMOVED***port.authenticate(authenticationStrategy));
-
-  var getLayerResource = function(req) {
-    // TODO once this is event clean up, should not have a different
-    // route to get layers/events.  It should be the /api/<layers> or /api/<events>
-    return req.getPath() + '/FeatureServer';
-  }
 
   var validateLayerParams = function(req, res, next) {
     var layer = req.body;
@@ -61,11 +56,8 @@ module.exports = function(app, security) {
     parseQueryParams,
     function (req, res) {
       Layer.getLayers({type: req.parameters.type}, function (err, layers) {
-        var path = getLayerResource(req);
-        res.json(layers.map(function(layer) {
-          if (layer.type === 'External' || layer.type === 'Feature') layer.url = [path, layer.id].join("/");
-          return layer;
-        }));
+        var response = layerXform.transform(layers, {path: req.getPath()});
+        res.json(response);
       });
     }
   );
@@ -75,11 +67,8 @@ module.exports = function(app, security) {
     validateEventAccess,
     function(req, res, next) {
       Layer.getLayers({layerIds: req.event.layerIds}, function(err, layers) {
-        var path = getLayerResource(req);
-        res.json(layers.map(function(layer) {
-          if (layer.type === 'External' || layer.type === 'Feature') layer.url = [path, layer.id].join("/");
-          return layer;
-        }));
+        var response = layerXform.transform(layers, {path: req.getPath()});
+        res.json(response);
       });
     }
   );
@@ -89,7 +78,8 @@ module.exports = function(app, security) {
     '/api/layers/:layerId',
     access.authorize('READ_LAYER'),
     function (req, res) {
-      res.json(req.layer);
+      var response = layerXform.transform(req.layer, {path: req.getPath()});
+      res.json(response);
     }
   );
 
@@ -115,13 +105,12 @@ module.exports = function(app, security) {
     '/api/layers',
     access.authorize('CREATE_LAYER'),
     validateLayerParams,
-    function(req, res) {
+    function(req, res, next) {
       Layer.create(req.newLayer, function(err, layer) {
-        if (err) {
-          return res.send(400, err);
-        }
+        if (err) return next(err);
 
-        res.json(layer);
+        var response = observationXform.transform(layer, transformOptions(req));
+        res.location(layer._id.toString()).json(response);
       });
     }
   );
@@ -131,13 +120,12 @@ module.exports = function(app, security) {
     '/api/layers/:layerId',
     access.authorize('UPDATE_LAYER'),
     validateLayerParams,
-    function(req, res) {
+    function(req, res, next) {
       Layer.update(req.layer.id, req.newLayer, function(err, layer) {
-        if (err) {
-          return res.send(400, err);
-        }
+        if (err) return next(err);
 
-        res.json(layer);
+        var response = observationXform.transform(layer, transformOptions(req));
+        res.json(response);
       });
     }
   );
