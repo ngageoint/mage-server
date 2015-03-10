@@ -15,7 +15,8 @@ angular
     "ngRoute",
     'ngResource',
     'ngQuickDate',
-    "http-auth-interceptor"])
+    "http-auth-interceptor"
+    ])
   .config(function ($routeProvider, $locationProvider, $httpProvider) {
     $httpProvider.defaults.withCredentials = true;
     $httpProvider.defaults.headers.post  = {'Content-Type': 'application/x-www-form-urlencoded'};
