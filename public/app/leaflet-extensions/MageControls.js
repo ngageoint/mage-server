@@ -96,6 +96,8 @@ L.Control.MageUserLocation = L.Control.extend({
 			L.DomUtil.removeCl***REMOVED***(this._locateLink, 'btn-inverse');
 			L.DomUtil.addCl***REMOVED***(this._locateIcon, 'icon-sage');
 			L.DomUtil.removeCl***REMOVED***(this._locateIcon, 'icon-sage-inverse');
+			
+			if (this._broadcast) this._onBroadcastClick();
 		} else {
 			this._startLocate();
 			L.DomUtil.addCl***REMOVED***(this._locateLink, 'btn-inverse');

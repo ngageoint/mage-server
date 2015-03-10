@@ -44,13 +44,21 @@ exports.getLocations = function(options, callback) {
     limit = options.limit;
   }
 
-  var filter = options.filter || {};
+  var conditions = {};
 
-  var query = {};
+  var filter = options.filter || {};
+  if (filter.eventId) {
+    conditions.eventId = filter.eventId;
+  }
+
+  if (filter.userId) {
+    conditions.userId = filter.userId;
+  }
+
   if (filter.lastLocationId && (filter.startDate || filter.endDate)) {
-    query['$or'] = [{_id: {'$gt': filter.lastLocationId}}];
+    conditions['$or'] = [{_id: {'$gt': filter.lastLocationId}}];
     if (filter.startDate) {
-      query['$or'] = [{
+      conditions['$or'] = [{
         _id: {'$gt': filter.lastLocationId},
         'properties.timestamp': filter.startDate
       },{
@@ -58,22 +66,14 @@ exports.getLocations = function(options, callback) {
       }];
     }
 
-    if (filter.endDate) query['properties.timestamp'] = {'$lt': filter.endDate};
+    if (filter.endDate) conditions['properties.timestamp'] = {'$lt': filter.endDate};
   } else if (filter.startDate || filter.endDate) {
-    query['properties.timestamp'] = {};
-    if (filter.startDate) query['properties.timestamp']['$gte'] = filter.startDate;
-    if (filter.endDate) query['properties.timestamp']['$lt'] = filter.endDate;
+    conditions['properties.timestamp'] = {};
+    if (filter.startDate) conditions['properties.timestamp']['$gte'] = filter.startDate;
+    if (filter.endDate) conditions['properties.timestamp']['$lt'] = filter.endDate;
   }
 
-  if (filter.userId) {
-    query['userId'] = filter.userId;
-  }
-
-  Location.find(query, {}, {sort: {"properties.timestamp": 1, _id: 1}, limit: limit}, function (err, locations) {
-    if (err) {
-      console.log("Error finding locations", err);
-    }
-
+  Location.find(conditions, {}, {sort: {"properties.timestamp": 1, _id: 1}, limit: limit}, function (err, locations) {
     callback(err, locations);
   });
 }

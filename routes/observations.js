@@ -34,15 +34,15 @@ module.exports = function(app, auth) {
     var observation = req.body;
 
     if (!observation.type || observation.type != 'Feature' ) {
-      return res.send(400, "cannot create observation 'type' param not specified, or is not set to 'Feature'");
+      return res.status(400).send("cannot create observation 'type' param not specified, or is not set to 'Feature'");
     }
 
     if (!observation.geometry) {
-      return res.send(400, "cannot create observation 'geometry' param not specified");
+      return res.status(400).send("cannot create observation 'geometry' param not specified");
     }
 
     if (!observation.properties || !observation.properties.timestamp) {
-      return res.send(400, "cannot create observation 'properties.timestamp' param not specified");
+      return res.status(400).send("cannot create observation 'properties.timestamp' param not specified");
     }
 
     observation.properties.timestamp = moment(observation.properties.timestamp).toDate();

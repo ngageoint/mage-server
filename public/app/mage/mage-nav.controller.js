@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('NavController', NavController);
 
-NavController.$inject =  ['$scope', '$location', 'UserService', 'FilterService', 'PollingService', 'Event'];
+NavController.$inject =  ['$scope', '$location', '$modal', 'UserService', 'FilterService', 'PollingService', 'Event'];
 
-function NavController($scope, $location, UserService, FilterService, PollingService, Event) {
+function NavController($scope, $location, $modal, UserService, FilterService, PollingService, Event) {
   $scope.location = $location;
 
   $scope.filter = false;
@@ -34,12 +34,12 @@ function NavController($scope, $location, UserService, FilterService, PollingSer
         var recentEvent = _.find($scope.events, function(event) { return event.id === recentEventId });
         if (recentEvent) {
           $scope.event = recentEvent;
-          FilterService.setEvent($scope.event);
+          $scope.onEventChange($scope.event);
           PollingService.setPollingInterval($scope.pollingInterval);
         } else if (events.length > 0) {
           // TODO 'welcome to MAGE dialog'
           $scope.event = events[0];
-          FilterService.setEvent($scope.event);
+          $scope.onEventChange($scope.event);
           PollingService.setPollingInterval($scope.pollingInterval);
         } else {
           // TODO welcome to mage, sorry you have no events
@@ -57,6 +57,7 @@ function NavController($scope, $location, UserService, FilterService, PollingSer
 
   $scope.onEventChange = function(event) {
     FilterService.setEvent(event);
+    $scope.exportEvent = {selected: event};
   }
 
   $scope.onIntervalUpdate = function(interval) {
@@ -84,13 +85,20 @@ function NavController($scope, $location, UserService, FilterService, PollingSer
   }
 
   $scope.onExportClick = function() {
-    $scope.export = !$scope.export;
-    if ($scope.filter) $scope.filter = false;
+    var modalInstance = $modal.open({
+      templateUrl: '/app/export/export.html',
+      controller: 'ExportController'
+    });
+
+    modalInstance.result.then(function (selectedItem) {
+      $scope.selected = selectedItem;
+    }, function () {
+      $log.info('Modal dismissed at: ' + new Date());
+    });
   }
 
   $scope.onFilterClick = function() {
     $scope.filter = !$scope.filter;
-    if ($scope.export) $scope.export = false;
   }
 
 }
