@@ -29,6 +29,6 @@
     "commit": "8b10ed13b997d479a90b6cda608d0420e7014c5a"
   },
   "_source": "git://github.com/Turbo87/leaflet-sidebar.git",
-  "_target": "*",
+  "_target": "0.1.6",
   "_originalSource": "leaflet-sidebar"
 }

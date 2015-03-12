@@ -5,101 +5,119 @@
   http://leafletjs.com
   https://github.com/lvoogdt
 */
+
+/*global L*/
+
 (function (window, document, undefined) {
-/*
- * Leaflet.AwesomeMarkers ***REMOVED***umes that you have already included the Leaflet library.
- */
+    "use strict";
+    /*
+     * Leaflet.AwesomeMarkers ***REMOVED***umes that you have already included the Leaflet library.
+     */
 
-L.AwesomeMarkers = {};
+    L.AwesomeMarkers = {};
 
-L.AwesomeMarkers.version = '1.0';
+    L.AwesomeMarkers.version = '2.0.1';
 
-L.AwesomeMarkers.Icon = L.Icon.extend({
-  options: {
-    iconSize: [35, 45], 
-    iconAnchor:   [17, 42],
-    popupAnchor: [1, -32],
-    shadowAnchor: [10, 12],
-    shadowSize: [36, 16],
-    cl***REMOVED***Name: 'awesome-marker',
-    icon: 'home',
-    color: 'blue',
-    iconColor: 'white'
-  },
+    L.AwesomeMarkers.Icon = L.Icon.extend({
+        options: {
+            iconSize: [35, 45],
+            iconAnchor:   [17, 42],
+            popupAnchor: [1, -32],
+            shadowAnchor: [10, 12],
+            shadowSize: [36, 16],
+            cl***REMOVED***Name: 'awesome-marker',
+            prefix: 'glyphicon',
+            spinCl***REMOVED***: 'fa-spin',
+            extraCl***REMOVED***es: '',
+            icon: 'home',
+            markerColor: 'blue',
+            iconColor: 'white'
+        },
 
-  initialize: function (options) {
-    options = L.setOptions(this, options);
-  },
+        initialize: function (options) {
+            options = L.Util.setOptions(this, options);
+        },
 
-  createIcon: function () {
-    var div = document.createElement('div'),
-        options = this.options;
+        createIcon: function () {
+            var div = document.createElement('div'),
+                options = this.options;
 
-    if (options.icon) {
-      div.innerHTML = this._createInner();
-    }
+            if (options.icon) {
+                div.innerHTML = this._createInner();
+            }
 
-    if (options.bgPos) {
-      div.style.backgroundPosition =
-              (-options.bgPos.x) + 'px ' + (-options.bgPos.y) + 'px';
-    }
+            if (options.bgPos) {
+                div.style.backgroundPosition =
+                    (-options.bgPos.x) + 'px ' + (-options.bgPos.y) + 'px';
+            }
 
-    this._setIconStyles(div, 'icon-' + options.color);
-    return div;
-  },
+            this._setIconStyles(div, 'icon-' + options.markerColor);
+            return div;
+        },
 
-  _createInner: function() {
-    var iconCl***REMOVED***;
-    if(this.options.icon.slice(0,5)==="icon-"){
-      iconCl***REMOVED***=this.options.icon;
-    }else{
-      iconCl***REMOVED***="icon-"+this.options.icon;
-    }
-    return "<i cl***REMOVED***='" + iconCl***REMOVED*** 
-    + (this.options.spin ? " icon-spin" :"") 
-    + (this.options.iconColor ? " icon-" + this.options.iconColor :"") + "'></i>";
-  },
+        _createInner: function() {
+            var iconCl***REMOVED***, iconSpinCl***REMOVED*** = "", iconColorCl***REMOVED*** = "", iconColorStyle = "", options = this.options;
 
-  _setIconStyles: function (img, name) {
-    var options = this.options,
-        size = L.point(options[name == 'shadow' ? 'shadowSize' : 'iconSize']),
-        anchor;
+            if(options.icon.slice(0,options.prefix.length+1) === options.prefix + "-") {
+                iconCl***REMOVED*** = options.icon;
+            } else {
+                iconCl***REMOVED*** = options.prefix + "-" + options.icon;
+            }
 
-    if (name === 'shadow') {
-      anchor = L.point(options.shadowAnchor || options.iconAnchor);
-    } else {
-      anchor = L.point(options.iconAnchor);
-    }
+            if(options.spin && typeof options.spinCl***REMOVED*** === "string") {
+                iconSpinCl***REMOVED*** = options.spinCl***REMOVED***;
+            }
 
-    if (!anchor && size) {
-      anchor = size.divideBy(2, true);
-    }
+            if(options.iconColor) {
+                if(options.iconColor === 'white' || options.iconColor === 'black') {
+                    iconColorCl***REMOVED*** = "icon-" + options.iconColor;
+                } else {
+                    iconColorStyle = "style='color: " + options.iconColor + "' ";
+                }
+            }
 
-    img.cl***REMOVED***Name = 'awesome-marker-' + name + ' ' + options.cl***REMOVED***Name;
+            return "<i " + iconColorStyle + "cl***REMOVED***='" + options.extraCl***REMOVED***es + " " + options.prefix + " " + iconCl***REMOVED*** + " " + iconSpinCl***REMOVED*** + " " + iconColorCl***REMOVED*** + "'></i>";
+        },
 
-    if (anchor) {
-      img.style.marginLeft = (-anchor.x) + 'px';
-      img.style.marginTop  = (-anchor.y) + 'px';
-    }
+        _setIconStyles: function (img, name) {
+            var options = this.options,
+                size = L.point(options[name === 'shadow' ? 'shadowSize' : 'iconSize']),
+                anchor;
 
-    if (size) {
-      img.style.width  = size.x + 'px';
-      img.style.height = size.y + 'px';
-    }
-  },
+            if (name === 'shadow') {
+                anchor = L.point(options.shadowAnchor || options.iconAnchor);
+            } else {
+                anchor = L.point(options.iconAnchor);
+            }
 
-  createShadow: function () {
-    var div = document.createElement('div'),
-        options = this.options;
+            if (!anchor && size) {
+                anchor = size.divideBy(2, true);
+            }
 
-    this._setIconStyles(div, 'shadow');
-    return div;
-  }
-});
-    
-L.AwesomeMarkers.icon = function (options) {
-  return new L.AwesomeMarkers.Icon(options);
-};
+            img.cl***REMOVED***Name = 'awesome-marker-' + name + ' ' + options.cl***REMOVED***Name;
+
+            if (anchor) {
+                img.style.marginLeft = (-anchor.x) + 'px';
+                img.style.marginTop  = (-anchor.y) + 'px';
+            }
+
+            if (size) {
+                img.style.width  = size.x + 'px';
+                img.style.height = size.y + 'px';
+            }
+        },
+
+        createShadow: function () {
+            var div = document.createElement('div');
+
+            this._setIconStyles(div, 'shadow');
+            return div;
+      }
+    });
+        
+    L.AwesomeMarkers.icon = function (options) {
+        return new L.AwesomeMarkers.Icon(options);
+    };
 
 }(this, document));
 

@@ -7,23 +7,18 @@
   <meta id="view" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
 
-  <link rel="stylesheet" href="vendor/jQuery-File-Upload/css/jquery.fileupload.css">
-  <link rel="stylesheet" href="vendor/jQuery-File-Upload/css/jquery.fileupload-ui.css">
-
   <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css"/>
 
-  <link rel="stylesheet" href="vendor/jQuery-File-Upload/css/style.css">
-  <link rel="stylesheet" href="vendor/font-awesome/css/font-awesome.min.css"/>
+  <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css"/>
 
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
-  <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.awesomemarkers/leaflet.awesome-markers.css"/>
-  <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.markercluster/MarkerCluster.css"/>
-  <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.markercluster/MarkerCluster.Default.css"/>
-  <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.control.sidebar/L.Control.Sidebar.css"/>
-  <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.grouped.layer.control/leaflet.grouped.layer.control.css"/>
+  <link rel="stylesheet" href="bower_components/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="bower_components/Leaflet.awesome-markers/dist/leaflet.awesome-markers.css"/>
+  <link rel="stylesheet" href="bower_components/leaflet.markercluster/dist/MarkerCluster.css"/>
+  <link rel="stylesheet" href="bower_components/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
+  <link rel="stylesheet" href="bower_components/leaflet-sidebar/src/L.Control.Sidebar.css"/>
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.grouped.layer.control/leaflet.grouped.layer.control.css"/>
 
   <link rel="stylesheet" href="bower_components/angular-ui-select/dist/select.css"/>
-  <link rel="stylesheet" href="bower_components/select2/select2.css">
 
   <link rel="stylesheet" href="css/icomoon.css"/>
   <link rel="stylesheet" href="css/style.css"/>
@@ -52,9 +47,9 @@
 </head>
 <body>
 
-  <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
+  <script type="text/javascript" src="bower_components/jquery/jquery.min.js"></script>
 
-  <script type="text/javascript" src="vendor/underscore/underscore-min.js"></script>
+  <script type="text/javascript" src="bower_components/underscore/underscore-min.js"></script>
   <script type="text/javascript" src="bower_components/angular/angular.min.js"></script>
   <script type="text/javascript" src="bower_components/angular-resource/angular-resource.min.js"></script>
   <script type="text/javascript" src="bower_components/angular-sanitize/angular-sanitize.min.js"></script>
@@ -197,30 +192,26 @@
 
   <div data-ng-view style="height: 100%"></div>
 
-  <script type="text/javascript" src="vendor/leaflet/leaflet-src.js"></script>
-  <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.awesomemarkers/leaflet.awesome-markers.min.js"></script>
-  <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.markercluster/leaflet.markercluster-src.js"></script>
-  <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.control.sidebar/L.Control.Sidebar.js"></script>
-  <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.grouped.layer.control/leaflet.grouped.layer.control.js"></script>
-
+  <script type="text/javascript" src="bower_components/leaflet/dist/leaflet.js"></script>
+  <script type="text/javascript" src="bower_components/Leaflet.awesome-markers/dist/leaflet.awesome-markers.min.js"></script>
+  <script type="text/javascript" src="bower_components/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+  <script type="text/javascript" src="bower_components/leaflet-sidebar/src/L.Control.Sidebar.js"></script>
   <script type="text/javascript" src="bower_components/angular-bootstrap/ui-bootstrap.min.js"></script>
   <script type="text/javascript" src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
-
   <script type="text/javascript" src="bower_components/angular-ui-select/dist/select.min.js"></script>
-
-  <script type="text/javascript" src="vendor/angular-plugins/http-auth-interceptor.js"></script>
+  <script type="text/javascript" src="bower_components/moment/min/moment.min.js"></script>
+  <script type="text/javascript" src="bower_components/jquery-file-download/src/Scripts/jquery.fileDownload.js"></script>
 
   <script type="text/javascript" src="vendor/bootstrap/js/bootstrap.min.js"></script>
-
-  <script type="text/javascript" src="vendor/moment/moment.min.js"></script>
-
-  <script type="text/javascript" src="vendor/jQuery-File-Download/js/jquery.fileDownload.js"></script>
+  <script type="text/javascript" src="vendor/leaflet/leaflet.grouped.layer.control/leaflet.grouped.layer.control.js"></script>
 
   <script type="text/javascript" src="app/app.js"></script>
   <script type="text/javascript" src="app/mage/mage.controller.js"></script>
   <script type="text/javascript" src="app/mage/mage-nav.controller.js"></script>
   <script type="text/javascript" src="app/mage/leaflet.directive.js"></script>
   <script type="text/javascript" src="app/mage/feed.directive.js"></script>
+
+  <script type="text/javascript" src="app/auth/http-auth-interceptor.js"></script>
 
   <script type="text/javascript" src="app/about/about.controller.js"></script>
 
