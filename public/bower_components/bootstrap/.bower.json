@@ -1,21 +1,47 @@
 {
   "name": "bootstrap",
-  "version": "2.3.0",
+  "description": "The most popular front-end framework for developing responsive, mobile first projects on the web.",
+  "version": "3.3.2",
+  "keywords": [
+    "css",
+    "js",
+    "less",
+    "mobile-first",
+    "responsive",
+    "front-end",
+    "framework",
+    "web"
+  ],
+  "homepage": "http://getbootstrap.com",
   "main": [
-    "./docs/***REMOVED***ets/js/bootstrap.js",
-    "./docs/***REMOVED***ets/css/bootstrap.css"
+    "less/bootstrap.less",
+    "dist/css/bootstrap.css",
+    "dist/js/bootstrap.js",
+    "dist/fonts/glyphicons-halflings-regular.eot",
+    "dist/fonts/glyphicons-halflings-regular.svg",
+    "dist/fonts/glyphicons-halflings-regular.ttf",
+    "dist/fonts/glyphicons-halflings-regular.woff"
+  ],
+  "ignore": [
+    "/.*",
+    "_config.yml",
+    "CNAME",
+    "composer.json",
+    "CONTRIBUTING.md",
+    "docs",
+    "js/tests",
+    "test-infra"
   ],
   "dependencies": {
-    "jquery": "~1.8.0"
+    "jquery": ">= 1.9.1"
   },
-  "homepage": "https://github.com/twbs/bootstrap",
-  "_release": "2.3.0",
+  "_release": "3.3.2",
   "_resolution": {
     "type": "version",
-    "tag": "v2.3.0",
-    "commit": "af172e74e9e7215bd05087cfd89026afbf575e92"
+    "tag": "v3.3.2",
+    "commit": "bcf7dd38b5ab180256e2e4fb5da0369551b3f082"
   },
   "_source": "git://github.com/twbs/bootstrap.git",
-  "_target": "2.3.0",
+  "_target": "3.3.2",
   "_originalSource": "bootstrap"
 }

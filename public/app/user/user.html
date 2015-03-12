@@ -1,54 +1,59 @@
 <div cl***REMOVED***="container top-gap-xl">
   <div cl***REMOVED***="row">
-    <div cl***REMOVED***="span12">
+    <div cl***REMOVED***="col-md-12">
       <h2>Account Information</h2>
     </div>
   </div>
 
   <div cl***REMOVED***="row">
-    <div cl***REMOVED***="span6">
+    <div cl***REMOVED***="col-md-6">
       <form ng-submit="saveUser()" cl***REMOVED***="form-horizontal">
 
           <div avatar-user="user"/>
 
-          <div cl***REMOVED***="control-group top-gap-l">
-            <label cl***REMOVED***="control-label" for="type">Username</label>
-            <div cl***REMOVED***="controls">
-              <input type="text" placeholder="i.e. jappleseed" ng-model="user.username" name="username">
+          <div cl***REMOVED***="form-group">
+            <label cl***REMOVED***="control-label col-sm-4">Username</label>
+            <div cl***REMOVED***="col-sm-8">
+              <input type="text" placeholder="i.e. jappleseed" ng-model="user.username" autocapitalize="off" cl***REMOVED***="form-control"/>
             </div>
           </div>
-          <div cl***REMOVED***="control-group">
-            <label cl***REMOVED***="control-label" for="type">First Name</label>
-            <div cl***REMOVED***="controls">
-              <input type="text" placeholder="Johnny" ng-model="user.firstname" name="firstname">
+
+          <div cl***REMOVED***="form-group">
+            <label cl***REMOVED***="control-label col-sm-4">First Name</label>
+            <div cl***REMOVED***="col-sm-8">
+              <input type="text" placeholder="Johnny" ng-model="user.firstname" name="firstname" cl***REMOVED***="form-control">
             </div>
           </div>
-          <div cl***REMOVED***="control-group">
-            <label cl***REMOVED***="control-label" for="type">Last Name</label>
-            <div cl***REMOVED***="controls">
-              <input type="text" placeholder="Appleseed" ng-model="user.lastname" name="lastname">
+
+          <div cl***REMOVED***="form-group">
+            <label cl***REMOVED***="control-label col-sm-4" for="type">Last Name</label>
+            <div cl***REMOVED***="col-sm-8">
+              <input type="text" placeholder="Appleseed" ng-model="user.lastname" name="lastname" cl***REMOVED***="form-control">
             </div>
           </div>
-          <div cl***REMOVED***="control-group">
-            <label cl***REMOVED***="control-label" for="type">Email</label>
-            <div cl***REMOVED***="controls">
-              <input type="text" placeholder="johnny@appleseed.com" ng-model="user.email" name="email">
+
+          <div cl***REMOVED***="form-group">
+            <label cl***REMOVED***="control-label col-sm-4" for="type">Email</label>
+            <div cl***REMOVED***="col-sm-8">
+              <input type="text" placeholder="johnny@appleseed.com" ng-model="user.email" name="email" cl***REMOVED***="form-control">
             </div>
           </div>
-          <div cl***REMOVED***="control-group">
-            <label cl***REMOVED***="control-label" for="type">Phone</label>
-            <div cl***REMOVED***="controls">
-              <input type="text" placeholder="(xxx) xxx-xxxx" ng-model="user.phone" name="phone">
+
+          <div cl***REMOVED***="form-group">
+            <label cl***REMOVED***="control-label col-sm-4" for="type">Phone</label>
+            <div cl***REMOVED***="col-sm-8">
+              <input type="text" placeholder="(xxx) xxx-xxxx" ng-model="user.phone" name="phone" cl***REMOVED***="form-control">
             </div>
           </div>
-          <span>
-            <button type="button" cl***REMOVED***="btn btn-inverse" ng-click="cancel()" ngmtap="cancel()">Cancel</button>
-            <button type="submit" cl***REMOVED***="btn">Save</button>
+
+          <span cl***REMOVED***="pull-right">
+            <button type="button" cl***REMOVED***="btn btn-default btn-inverse" ng-click="cancel()" ngmtap="cancel()">Cancel</button>
+            <button type="submit" cl***REMOVED***="btn btn-primary">Save</button>
           </span>
       </form>
-
     </div>
-    <div cl***REMOVED***="span6" ng-show="showUserStatus">
+
+    <div cl***REMOVED***="col-md-6" ng-show="showUserStatus">
       <div cl***REMOVED***="alert alert-block" ng-cl***REMOVED***="statusLevel">
         <button type="button" cl***REMOVED***="close" ng-click="showUserStatus = false">&times;</button>
         <h4>{{statusTitle}}</h4>
@@ -58,34 +63,36 @@
   </div>
 
   <div cl***REMOVED***="row">
-    <div cl***REMOVED***="span12">
+    <div cl***REMOVED***="col-md-12">
       <h2>Update P***REMOVED***word</h2>
     </div>
   </div>
 
   <div cl***REMOVED***="row">
-    <div cl***REMOVED***="span12">
+    <div cl***REMOVED***="col-md-6">
+
       <form ng-submit="updateP***REMOVED***word()" cl***REMOVED***="form-horizontal">
-        <fieldset>
-          <div cl***REMOVED***="control-group" ng-cl***REMOVED***="{error: 'error', success: 'success'}[p***REMOVED***wordStatus.status]">
-            <label cl***REMOVED***="control-label" for="type">P***REMOVED***word</label>
-            <div cl***REMOVED***="controls">
-              <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***word" name="p***REMOVED***word">
-              <span cl***REMOVED***="help-inline" ng-show="p***REMOVED***wordStatus.status">{{p***REMOVED***wordStatus.msg}}</span>
-            </div>
+        <div cl***REMOVED***="form-group" ng-cl***REMOVED***="{error: 'has-error', success: 'hs-success'}[p***REMOVED***wordStatus.status]">
+          <label cl***REMOVED***="control-label col-sm-4">P***REMOVED***word</label>
+          <div cl***REMOVED***="col-sm-8">
+            <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***word" name="p***REMOVED***word" cl***REMOVED***="form-control">
+            <span cl***REMOVED***="help-inline" ng-show="p***REMOVED***wordStatus.status">{{p***REMOVED***wordStatus.msg}}</span>
           </div>
-          <div cl***REMOVED***="control-group" ng-cl***REMOVED***="{error: 'error', success: 'success'}[p***REMOVED***wordStatus.status]">
-            <label cl***REMOVED***="control-label" for="type">Confirm P***REMOVED***word</label>
-            <div cl***REMOVED***="controls">
-              <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***wordconfirm" name="p***REMOVED***wordconfirm">
-            </div>
+        </div>
+
+        <div cl***REMOVED***="form-group" ng-cl***REMOVED***="{error: 'has-error', success: 'has-success'}[p***REMOVED***wordStatus.status]">
+          <label cl***REMOVED***="control-label col-sm-4">Confirm P***REMOVED***word</label>
+          <div cl***REMOVED***="col-sm-8">
+            <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***wordconfirm" name="p***REMOVED***wordconfirm" cl***REMOVED***="form-control">
+            <span cl***REMOVED***="help-inline" ng-show="p***REMOVED***wordStatus.status">{{p***REMOVED***wordStatus.msg}}</span>
           </div>
-          <span>
-            <button type="submit" cl***REMOVED***="btn">Change p***REMOVED***word</button>
-          </span>
-        </fieldset>
+        </div>
+
+        <span cl***REMOVED***="pull-right">
+          <button type="submit" cl***REMOVED***="btn btn-primary">Change p***REMOVED***word</button>
+        </span>
       </form>
+
     </div>
   </div>
-
 </div>

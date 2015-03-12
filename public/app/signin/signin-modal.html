@@ -1,33 +1,33 @@
 <div cl***REMOVED***="modal-header">
-    <h3>Token Expired, Please log in.</h3>
+  <h3 cl***REMOVED***="modal-title">Token Expired, Please log in.</h3>
 </div>
+
 <div cl***REMOVED***="modal-body">
-    <h3 cl***REMOVED***="top-gap-l">Mobile Analytic GEOINT Environment</h3>
-<form cl***REMOVED***="form">
-  <div cl***REMOVED***="control-group">
-    <label cl***REMOVED***="control-label" for="username">Username</label>
-    <div cl***REMOVED***="controls">
-      <input ng-model="username" name="username" type="text" autocapitalize="off"/>
+  <form cl***REMOVED***="form">
+
+    <div cl***REMOVED***="form-group">
+      <label>Username</label>
+      <input ng-model="username" name="username" type="text" autocapitalize="off" cl***REMOVED***="form-control"/>
     </div>
-  </div>
-  <div cl***REMOVED***="control-group">
-    <label cl***REMOVED***="control-label" for="uid">UID</label>
-    <div cl***REMOVED***="controls">
-      <input ng-model="uid" name="uid" type="text" autocapitalize="off"/>
+
+    <div cl***REMOVED***="form-group">
+      <label>UID</label>
+      <input ng-model="uid" name="uid" type="text" autocapitalize="off" cl***REMOVED***="form-control"/>
     </div>
-  </div>
-  <div cl***REMOVED***="control-group">
-    <label cl***REMOVED***="control-label" for="p***REMOVED***word">P***REMOVED***word</label>
-    <div cl***REMOVED***="controls">
-      <input ng-model="p***REMOVED***word" name="p***REMOVED***word" type="p***REMOVED***word"/>
+
+    <div cl***REMOVED***="form-group">
+      <label>P***REMOVED***word</label>
+      <input ng-model="p***REMOVED***word" name="p***REMOVED***word" type="p***REMOVED***word" cl***REMOVED***="form-control"/>
     </div>
-  </div>
-  <span>
-    <button cl***REMOVED***="btn" ng-click="login({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})">Login</button>
-  </span>
-  <div cl***REMOVED***="top-gap-s alert alert-block" ng-show="status > 399">
-    <h4>Failed login</h4>
-    Please check your username, UID, and p***REMOVED***word and try again.
-  </div>
-</form>
+
+    <div cl***REMOVED***="top-gap-s alert alert-block" ng-show="status > 399">
+      <h4>Failed login</h4>
+      Please check your username, UID, and p***REMOVED***word and try again.
+    </div>
+
+  </form>
+</div>
+
+<div cl***REMOVED***="modal-footer">
+  <button cl***REMOVED***="btn btn-default" ng-click="login({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})">Login</button>
 </div>

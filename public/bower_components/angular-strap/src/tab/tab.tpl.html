@@ -1,0 +1,7 @@
+<ul cl***REMOVED***="nav" ng-cl***REMOVED***="$navCl***REMOVED***" role="tablist">
+  <li role="presentation" ng-repeat="$pane in $panes track by $index" ng-cl***REMOVED***="[ $index == $panes.$active ? $activeCl***REMOVED*** : '', $pane.disabled ? 'disabled' : '' ]">
+    <a role="tab" data-toggle="tab" ng-click="!$pane.disabled && $setActive($index)" data-index="{{ $index }}" ng-bind-html="$pane.title" aria-controls="$pane.title"></a>
+  </li>
+</ul>
+<div ng-transclude cl***REMOVED***="tab-content">
+</div>

@@ -50,6 +50,10 @@ function AdminLayersController($scope, $injector, LocalStorageService, Layer) {
   $scope.viewLayer = function (layer) {
     $scope.layer = layer;
     $scope.showLayerForm = true;
+    $scope.fileUploadOptions = {
+      url: '/api/layers/' + $scope.layer.id + '/kml?access_token=' + LocalStorageService.getToken(),
+      acceptFileTypes: /(\.|\/)(kml)$/i,
+    };
   }
 
   $scope.confirmUpload = function() {

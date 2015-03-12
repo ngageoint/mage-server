@@ -1,16 +1,20 @@
-<div cl***REMOVED***="control-group">
-    <label cl***REMOVED***="control-label">Map Icon</label>
-    <div cl***REMOVED***="controls">
+<div cl***REMOVED***="form-group">
+    <label cl***REMOVED***="control-label col-sm-4">Map Icon</label>
+    <div cl***REMOVED***="col-sm-8">
       <div cl***REMOVED***="clearfix">
         <div>
         <img cl***REMOVED***="avatar-image img-rounded" style="float: left" width="43" height="43" ng-src="{{iconUrl}}">
 
-        <div style="margin-left: 83px; line-height: 100%">
-          <label cl***REMOVED***="file">
-            <input type="file" id="file">
-            <span cl***REMOVED***="file-custom" data-filename="{{fileName}}"></span>
-          </label>
+
+        <div cl***REMOVED***="input-group" style="margin-left: 83px; line-height: 100%">
+          <input type="text" cl***REMOVED***="form-control" ng-value="fileName" readonly>
+          <span cl***REMOVED***="input-group-btn">
+            <span cl***REMOVED***="btn btn-default btn-file">
+                Browse&hellip; <input type="file" multiple>
+            </span>
+          </span>
         </div>
+
       </div>
     </div>
 </div>

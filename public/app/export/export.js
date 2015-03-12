@@ -49,8 +49,22 @@ function ExportController($scope, $modalInstance, $http, LocalStorageService, Ev
 
   $scope.exportEvent = {selected: event};
 
-  $scope.cancel = function () {
+  $scope.closeModal = function () {
     $modalInstance.dismiss('cancel');
+  };
+
+  $scope.openStartDate = function($event) {
+    $event.preventDefault();
+    $event.stopPropagation();
+
+    $scope.startDateOpened = true;
+  };
+
+  $scope.openEndDate = function($event) {
+    $event.preventDefault();
+    $event.stopPropagation();
+
+    $scope.endDateOpened = true;
   };
 
   $scope.exporting = {};

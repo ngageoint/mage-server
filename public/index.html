@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html ng-app="mage">
 <head>
   <title>MAGE</title>
@@ -9,26 +9,23 @@
 
   <link rel="stylesheet" href="vendor/jQuery-File-Upload/css/jquery.fileupload.css">
   <link rel="stylesheet" href="vendor/jQuery-File-Upload/css/jquery.fileupload-ui.css">
-  <link rel="stylesheet" href="vendor/bootstrap/bootstrap.css" />
-  <link rel="stylesheet" href="vendor/bootstrap/bootstrap-responsive.min.css"/>
+
+  <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css"/>
+
   <link rel="stylesheet" href="vendor/jQuery-File-Upload/css/style.css">
   <link rel="stylesheet" href="vendor/font-awesome/css/font-awesome.min.css"/>
-  <link rel="stylesheet" href="css/icomoon.css"/>
+
   <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
   <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.awesomemarkers/leaflet.awesome-markers.css"/>
   <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.markercluster/MarkerCluster.css"/>
   <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.markercluster/MarkerCluster.Default.css"/>
   <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.control.sidebar/L.Control.Sidebar.css"/>
   <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.grouped.layer.control/leaflet.grouped.layer.control.css"/>
-  <link rel="stylesheet" href="vendor/bootstrap-datepicker/css/datepicker.css"/>
-  <link rel="stylesheet" href="vendor/bootstrap-timepicker/css/bootstrap-timepicker.min.css"/>
-  <link rel="stylesheet" href="vendor/angular-plugins/ngQuickDate/ng-quick-date.css"/>
-  <link rel="stylesheet" href="vendor/angular-plugins/ngQuickDate/ng-quick-date-plus-default-theme.css"/>
 
   <link rel="stylesheet" href="bower_components/angular-ui-select/dist/select.css"/>
   <link rel="stylesheet" href="bower_components/select2/select2.css">
 
-  <link rel="stylesheet" href="css/wtf-forms.css"/>
+  <link rel="stylesheet" href="css/icomoon.css"/>
   <link rel="stylesheet" href="css/style.css"/>
   <link rel="stylesheet" href="css/map.css"/>
 
@@ -55,30 +52,32 @@
 </head>
 <body>
 
+  <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
 
-  <script type="text/javascript" src="vendor/jquery/jquery.js"></script>
   <script type="text/javascript" src="vendor/underscore/underscore-min.js"></script>
-  <script type="text/javascript" src="vendor/angular/1.3.12/angular.js"></script>
-  <script type="text/javascript" src="vendor/angular/1.3.12/angular-resource.js"></script>
-  <script type="text/javascript" src="vendor/angular/1.3.12/angular-sanitize.min.js"></script>
-  <script type="text/javascript" src="vendor/angular/1.3.12/angular-route.min.js"></script>
+  <script type="text/javascript" src="bower_components/angular/angular.min.js"></script>
+  <script type="text/javascript" src="bower_components/angular-resource/angular-resource.min.js"></script>
+  <script type="text/javascript" src="bower_components/angular-sanitize/angular-sanitize.min.js"></script>
+  <script type="text/javascript" src="bower_components/angular-route/angular-route.min.js"></script>
 
   <!-- TODO possibly move this -->
-  <header cl***REMOVED***="navbar navbar-fixed-top" ng-controller="NavController">
-    <div cl***REMOVED***="navbar-inner">
+  <nav cl***REMOVED***="navbar navbar-default navbar-fixed-top" ng-controller="NavController">
+      <!-- We use the fluid option here to avoid overriding the fixed width of a normal container within the narrow content columns. -->
       <div cl***REMOVED***="container">
+        <div cl***REMOVED***="navbar-header">
+          <button type="button" cl***REMOVED***="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-6">
+            <span cl***REMOVED***="sr-only">Toggle navigation</span>
+            <span cl***REMOVED***="icon-bar"></span>
+            <span cl***REMOVED***="icon-bar"></span>
+            <span cl***REMOVED***="icon-bar"></span>
+          </button>
 
-        <a cl***REMOVED***="mage brand" href="#/map">
-          <i cl***REMOVED***="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
-        </a>
+          <a cl***REMOVED***="navbar-brand" href="#/map">
+            <i cl***REMOVED***="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
+          </a>
+        </div>
 
-        <a cl***REMOVED***="btn btn-navbar" id="main-nav-collapse" data-toggle="collapse" data-target=".nav-collapse" ng-show="myself">
-          <span cl***REMOVED***="icon-bar" style="color: #fff"></span>
-          <span cl***REMOVED***="icon-bar" style="color: #000"></span>
-          <span cl***REMOVED***="icon-bar"></span>
-        </a>
-
-        <ul cl***REMOVED***="nav pull-right" ng-show="myself" ng-cloak>
+        <ul cl***REMOVED***="nav navbar-nav navbar-right" ng-show="myself" ng-cloak>
           <li ng-show="myself">
             <a href="#/user" cl***REMOVED***="nav-link">
               <span>
@@ -87,25 +86,25 @@
               <i cl***REMOVED***="fa fa-icon-info icon-spacer"></i> {{myself.username}}
             </a>
           </li>
-          <li ng-show="amAdmin" bs-tooltip="'Admin'" data-placement="bottom">
+          <li ng-show="amAdmin">
             <a ng-href="#/admin" cl***REMOVED***="nav-link">
               <i cl***REMOVED***="icon-cogs icon-spacer"></i>
             </a>
           </li>
           <li>
-            <a href="#/about" cl***REMOVED***="nav-link" bs-tooltip="'About'" data-placement="bottom">
+            <a href="#/about" cl***REMOVED***="nav-link">
               <i cl***REMOVED***="fa fa-info-circle icon-spacer"></i>
             </a>
           </li>
           <li>
-            <a ng-click="logout()" cl***REMOVED***="nav-link pointer" bs-tooltip="'Sign&nbsp;out'" data-html="true" data-placement="bottom">
+            <a ng-click="logout()" cl***REMOVED***="nav-link pointer">
               <i cl***REMOVED***="fa fa-sign-out icon-spacer"></i>
             </a>
           </li>
         </ul>
 
-        <div cl***REMOVED***="nav-collapse collapse" ng-show="location.path() === '/map'" ng-cloak>
-          <ul id="main-nav" cl***REMOVED***="nav navbar-nav">
+        <div cl***REMOVED***="collapse navbar-collapse" ng-if="location.path() === '/map'" ng-cloak>
+          <ul cl***REMOVED***="nav navbar-nav">
             <li ng-cl***REMOVED***="{'active':  filter}" cl***REMOVED***="dropdown">
               <a cl***REMOVED***="pointer dropdown-toggle" ng-click="onFilterClick()">
                 <i cl***REMOVED***="fa fa-filter icon-spacer"></i> Filter
@@ -153,17 +152,13 @@
             </li>
             <li ng-cl***REMOVED***="{'active':  export}" cl***REMOVED***="dropdown">
               <a cl***REMOVED***="pointer dropdown-toggle" ng-click="onExportClick()">
-                <i cl***REMOVED***="fa fa-filter icon-spacer"></i> Export
-                <b cl***REMOVED***="caret"></b>
+                <i cl***REMOVED***="fa fa-download icon-spacer"></i> Export
               </a>
             </li>
           </ul>
         </div>
 
-        <!-- <div export/> TODO implement export for teams/events-->
-
       </div>
-
 
       <div style="padding: 10px;" cl***REMOVED***="container" ng-show="filter" ng-cloak>
         <div cl***REMOVED***="control-group">
@@ -198,53 +193,7 @@
 
         <button cl***REMOVED***="btn" ng-click="filter = false">Close</button>
       </div>
-
-      <div style="padding: 10px;" cl***REMOVED***="container" ng-show="export" ng-cloak>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="type">Event</label>
-          <div cl***REMOVED***="controls">
-            <select ng-model="exportEvent" ng-options="event as event.name for event in events | orderBy:'name'"></select>
-          </div>
-
-          <div cl***REMOVED***="controls">
-            <label cl***REMOVED***="checkbox">
-              <input type="checkbox" ng-model="exportObservations">Field Observations
-            </label>
-
-            <label cl***REMOVED***="checkbox">
-              <input type="checkbox" ng-model="exportPeople">People
-            </label>
-          </div>
-        </div>
-
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="type">Time</label>
-          <select ng-model="interval" ng-options="interval.label for interval in intervals" ng-change="onIntervalUpdate(interval)"></select>
-
-          <div ng-show="interval.filter == 'custom'">
-            <div>
-              <div cl***REMOVED***="control-group">
-                <label cl***REMOVED***="control-label">Start Date/Time</label>
-                <quick-datepicker ng-model='customStartDate' icon-cl***REMOVED***='fa fa-calendar' time-format="HH:mm:ss" ng-change="onCustomIntervalChanged(interval)"></quick-datepicker>
-                <button type="button" ng-click="localTime = !localTime" ngm-tap="localTime = !localTime" cl***REMOVED***="btn quickdate-button"><i cl***REMOVED***="fa fa-clock-o"></i><span ng-show="localTime"> Local (GMT {{localOffset}})</span><span ng-show="!localTime"> GMT (GMT +00:00)</span></button>
-              </div>
-            </div>
-
-            <div>
-              <div cl***REMOVED***="control-group">
-                <label cl***REMOVED***="control-label">End Date/Time</label>
-                <quick-datepicker ng-model='customEndDate' icon-cl***REMOVED***='fa fa-calendar' time-format="HH:mm:ss" ng-change="onCustomIntervalChanged(interval)"></quick-datepicker>
-                <button type="button" ng-click="localTime = !localTime" ngm-tap="localTime = !localTime" cl***REMOVED***="btn quickdate-button"><i cl***REMOVED***="fa fa-clock-o"></i><span ng-show="localTime"> Local (GMT {{localOffset}})</span><span ng-show="!localTime"> GMT (GMT +00:00)</span></button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <button cl***REMOVED***="btn" ng-click="export = false">Close</button>
-      </div>
-
-    </div>
-  </header>
+    </nav>
 
   <div data-ng-view style="height: 100%"></div>
 
@@ -254,17 +203,15 @@
   <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.control.sidebar/L.Control.Sidebar.js"></script>
   <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.grouped.layer.control/leaflet.grouped.layer.control.js"></script>
 
-  <script type="text/javascript" src="vendor/ui-bootstrap/ui-bootstrap-0.6.0.js"></script>
-  <script type="text/javascript" src="vendor/ui-bootstrap/ui-bootstrap-tpls-0.6.0.js"></script>
+  <script type="text/javascript" src="bower_components/angular-bootstrap/ui-bootstrap.min.js"></script>
+  <script type="text/javascript" src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
 
-  <script type="text/javascript" src="vendor/angular-strap/js/angular-strap.js"></script>
-  <script type="text/javascript" src="vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
-  <script type="text/javascript" src="vendor/bootstrap-timepicker/js/bootstrap-timepicker.js"></script>
-  <script type="text/javascript" src="vendor/angular-plugins/ngQuickDate/ng-quick-date.js"></script>
   <script type="text/javascript" src="bower_components/angular-ui-select/dist/select.min.js"></script>
 
   <script type="text/javascript" src="vendor/angular-plugins/http-auth-interceptor.js"></script>
-  <script type="text/javascript" src="vendor/bootstrap/bootstrap.js"></script>
+
+  <script type="text/javascript" src="vendor/bootstrap/js/bootstrap.min.js"></script>
+
   <script type="text/javascript" src="vendor/moment/moment.min.js"></script>
 
   <script type="text/javascript" src="vendor/jQuery-File-Download/js/jquery.fileDownload.js"></script>
@@ -337,7 +284,7 @@
   <script type="text/javascript" src="app/filters/p***REMOVED***word.filter.js"></script>
   <script type="text/javascript" src="app/filters/user.filter.js"></script>
 
-  <script type="text/javascript" src="app/export/export.directive.js"></script>
+  <script type="text/javascript" src="app/export/export.js"></script>
 
   <script type="text/javascript" src="app/debug/debug.controller.js"></script>
 
