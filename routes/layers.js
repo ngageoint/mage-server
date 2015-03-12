@@ -109,7 +109,7 @@ module.exports = function(app, security) {
       Layer.create(req.newLayer, function(err, layer) {
         if (err) return next(err);
 
-        var response = observationXform.transform(layer, transformOptions(req));
+        var response = layerXform.transform(layer, {path: req.getPath()});
         res.location(layer._id.toString()).json(response);
       });
     }
@@ -124,7 +124,7 @@ module.exports = function(app, security) {
       Layer.update(req.layer.id, req.newLayer, function(err, layer) {
         if (err) return next(err);
 
-        var response = observationXform.transform(layer, transformOptions(req));
+        var response = layerXform.transform(layer, {path: req.getPath()});
         res.json(response);
       });
     }
