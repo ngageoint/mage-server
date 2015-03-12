@@ -378,9 +378,12 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
     if (!map.hasLayer(featureLayer.layer)) return;
 
     if (featureLayer.options.cluster) {
-      featureLayer.layer.zoomToShowLayer(layer, function(spiderfied) {
-        openPopup(layer);
+      map.once('zoomend', function() {
+        featureLayer.layer.zoomToShowLayer(layer, function() {
+          openPopup(layer);
+        });
       });
+      map.setZoom(map.getZoom() < 17 ? 17: map.getZoom());
     } else {
       openPopup(layer, {zoomToLocation: true});
     }

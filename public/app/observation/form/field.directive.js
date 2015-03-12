@@ -20,6 +20,7 @@ function fieldDirective() {
 FieldDirectiveController.$inject = ['$scope'];
 
 function FieldDirectiveController($scope) {
+  $scope.datePopup = {open: false};
   $scope.templatePath = getTemplateUrl($scope.field);
 
   $scope.onLatLngChange = function(field) {
@@ -27,6 +28,21 @@ function FieldDirectiveController($scope) {
       $scope.$emit('observation:move', $scope.observation, {lat: $scope.field.value.y, lng: $scope.field.value.x});
     }
   }
+
+  $scope.openDate = function($event) {
+    $event.preventDefault();
+    $event.stopPropagation();
+
+    $scope.datePopup.open = true;
+  }
+
+  $scope.today = function() {
+    $scope.field.value = new Date();
+  };
+
+  $scope.clear = function () {
+    $scope.field.value = null;
+  };
 
   function getTemplateUrl(field) {
     switch(field.type) {
