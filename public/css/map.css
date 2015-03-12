@@ -1,7 +1,7 @@
 body {
   margin: 0;
   padding-top: 50px;
-  height: calc(100% - 40px);
+  height: 100%;
 }
 
 html, #map {
@@ -104,59 +104,6 @@ a.news-feed-tab-active {
 	}
 }
 
-#settings {
-	position: absolute;
-	height: 50px;
-	width: 50px;
-	top: 50px;
-	right: 5px;
-	z-index: 999;
-}
-
-/* I switched the position for goto-address and new observation buttons for a better layout while
-	 we are waiting to get the rest of the buttons wired up so the UI doesnt look weird.
-*/
-#goto-address {
-	position: absolute;
-	height: 50px;
-	width: 50px;
-	bottom: 5px;
-	left: 263px; /*68px*/
-	z-index: 999;
-}
-
-.right-panel {
-	right: 5px;
-	top: 110px;
-	z-index: 1039;
-	overflow: auto;
-	background: #D0E7FF;
-	color: #5278A2;
-	position: absolute;
-	height: 90%;
-	width: 83%;
-	border: 2px solid #5278A2;
-}
-
-/* Panels and their contents */
-/*.panel {
-	left: 465px;
-	top: 7px;
-	z-index: 1039;
-	overflow: auto;
-	background: #D0E7FF;
-	background: rgba(208, 231, 255, 0.8);
-	color: #5278A2;
-	position: absolute;
-	height: 90%;
-	width: 83%;
-	border: 2px solid #5278A2;
-}*/
-
-.panel-content {
-	padding: 20px;
-}
-
 .news-feed-panel-content {
 	position: absolute;
 	width: 100%;
@@ -240,17 +187,6 @@ a.news-feed-tab-active {
 	position: relative;
 }
 
-.filter-panel {
-	padding: 5px;
-	border: 1px solid #EEE;
-	margin-bottom: 10px;
-	background: #D0E7FF;
-	background: rgba(208, 231, 255, 0.9);
-	border-radius: 3px;
-	box-shadow: 0 7px 7px rgba(0,0,0,0.65);
-	z-index: 10;
-}
-
 .bucket-panel {
 	padding: 5px;
 	border: 1px solid #EEE;
@@ -292,12 +228,6 @@ a.news-feed-tab-active {
 	font-size: 24px;
 }
 
-/*@media all and (min-width: 520px) {
-	.panel {
-		margin: 45px;
-	}
-}*/
-
 @-ms-viewport {
 	width: device-width;
 }
@@ -319,9 +249,6 @@ a.news-feed-tab-active {
 
 #observation-panel > form > span > button {
 	width: 130px;
-}
-
-.attachment {
 }
 
 .observation-icon {
@@ -416,11 +343,11 @@ a.news-feed-tab-active {
 }
 
 .uploaded {
-    padding: 0;
-    height: 14px;
-    border-radius: 10px;
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#66cc00), to(#4b9500));
-    border-image: initial;
+  padding: 0;
+  height: 14px;
+  border-radius: 10px;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#66cc00), to(#4b9500));
+  border-image: initial;
 }
 
 @media all and (max-width: 768px) {
