@@ -8,13 +8,11 @@ $('#main-nav a').on('click', function(){
 
 angular
   .module("mage", [
-    "$strap.directives",
     "ui.bootstrap",
     "ui.select",
     "ngSanitize",
     "ngRoute",
     'ngResource',
-    'ngQuickDate',
     "http-auth-interceptor"
     ])
   .config(function ($routeProvider, $locationProvider, $httpProvider) {

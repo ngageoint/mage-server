@@ -8,7 +8,7 @@ function AdminTeamsController($scope, $injector, LocalStorageService, Observatio
   $scope.token = LocalStorageService.getToken();
   $scope.teams = [];
   $scope.page = 0;
-  $scope.itemsPerPage = 10;
+  $scope.itemsPerPage = 15;
 
   UserService.getAllUsers(true).success(function(users) {
     $scope.users = users;
@@ -20,6 +20,7 @@ function AdminTeamsController($scope, $injector, LocalStorageService, Observatio
 
   $scope.newTeam = function() {
     $scope.team = new Team();
+    $scope.user = {};
     $scope.team.users = [];
     $scope.nonUsers = $scope.users.slice();
   }
@@ -28,6 +29,7 @@ function AdminTeamsController($scope, $injector, LocalStorageService, Observatio
     $scope.edit = false;
     $scope.add = false;
 
+    $scope.user = {};
     $scope.team = team;
     $scope.teamUsersById = _.indexBy($scope.team.users, 'id');
     $scope.nonUsers = _.filter($scope.users, function(user) {
@@ -36,6 +38,7 @@ function AdminTeamsController($scope, $injector, LocalStorageService, Observatio
   }
 
   $scope.addUser = function(user) {
+    $scope.user = {};
     $scope.team.users.push(user);
     $scope.nonUsers = _.reject($scope.nonUsers, function(u) { return user.id == u.id});
   }

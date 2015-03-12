@@ -1,14 +1,14 @@
 <div cl***REMOVED***="news-feed-panel-content">
   <div cl***REMOVED***="overview-map hide-on-ipad-landscape" map-clip="activeFeature.feature" style="width: 100%; height: 150px;"/>
 
-  <div cl***REMOVED***="row-fluid news-feed-tabs">
-    <div cl***REMOVED***="span5 offset2">
+  <div cl***REMOVED***="row news-feed-tabs">
+    <div cl***REMOVED***="col-md-5 col-md-offset-2">
       <span cl***REMOVED***="admin-tab"><a cl***REMOVED***="pointer" ng-click="currentFeedPanel = 'observationsTab'" ng-cl***REMOVED***="{observationsTab:'admin-nav-active', peopleTab:'admin-nav-inactive'}[currentFeedPanel]">Observations</a></span>
-      <span cl***REMOVED***="badge badge-success" ng-show="observationsChanged > 0">{{observationsChanged}}</span>
+      <span cl***REMOVED***="label label-primary label-as-badge" ng-show="observationsChanged > 0">{{observationsChanged}}</span>
     </div>
-    <div cl***REMOVED***="span5">
+    <div cl***REMOVED***="col-md-5">
       <span cl***REMOVED***="admin-tab"><a cl***REMOVED***="admin-tab pointer" ng-click="currentFeedPanel = 'peopleTab'" ng-cl***REMOVED***="{peopleTab:'admin-nav-active', observationsTab:'admin-nav-inactive'}[currentFeedPanel]">People</a></span>
-      <span cl***REMOVED***="badge badge-success" ng-show="usersChanged > 0">{{usersChanged}}</span>
+      <span cl***REMOVED***="label label-primary label-as-badge" ng-show="usersChanged > 0">{{usersChanged}}</span>
     </div>
   </div>
 
@@ -17,15 +17,17 @@
       <div cl***REMOVED***="news-items-list">
         <div cl***REMOVED***="the-news-items">
           <div cl***REMOVED***="feature-panel" ng-if="newObservation">
-            <form-directive form="newObservationForm" form-observation="newObservation" cl***REMOVED***="row-fluid"></form-directive>
+            <form-directive form="newObservationForm" form-observation="newObservation" cl***REMOVED***="row"></form-directive>
           </div>
 
           <div ng-if="currentFeedPanel == 'observationsTab'">
-            <div cl***REMOVED***="row-fluid">
-              <div cl***REMOVED***="bucket-panel">
-                <select cl***REMOVED***="span12" style="margin-bottom: 0;" ng-model="currentObservationPage" ng-options="observationPages.indexOf(observationPage) as observationPage[0].properties.timestamp | moment: 'fromNow' for observationPage in observationPages">
-                </select>
-              </div>
+            <div cl***REMOVED***="bucket-panel">
+              <select
+                cl***REMOVED***="form-control"
+                style="margin-bottom: 0;"
+                ng-model="currentObservationPage"
+                ng-options="observationPages.indexOf(observationPage) as observationPage[0].properties.timestamp | moment: 'fromNow' for observationPage in observationPages">
+              </select>
             </div>
 
             <div cl***REMOVED***="news-feed-item" id="{{observation.id}}"
@@ -35,11 +37,13 @@
             </div>
           </div>
           <div ng-if="currentFeedPanel == 'peopleTab'">
-            <div cl***REMOVED***="row-fluid">
-              <div cl***REMOVED***="bucket-panel">
-                <select cl***REMOVED***="span12" style="margin-bottom: 0;" ng-model="currentUserPage" ng-options="userPages.indexOf(userPage) as userPage[0].location.properties.timestamp | moment: 'fromNow' for userPage in userPages">
-                </select>
-              </div>
+            <div cl***REMOVED***="bucket-panel">
+              <select
+                cl***REMOVED***="form-control"
+                style="margin-bottom: 0;"
+                ng-model="currentUserPage"
+                ng-options="userPages.indexOf(userPage) as userPage[0].location.properties.timestamp | moment: 'fromNow' for userPage in userPages">
+              </select>
             </div>
 
             <div cl***REMOVED***="news-feed-item" id="{{user.id}}"

@@ -1,9 +1,4 @@
-<div cl***REMOVED***="field control-group">
-  <label cl***REMOVED***="control-label">{{field.title}}
-    <span cl***REMOVED***="required-error" ng-show="field.required && !field.value">*</span>
-  </label>
-  <div cl***REMOVED***="controls">
-    <select cl***REMOVED***="span12" ng-model="field.value" ng-options="option.title as option.title for option in field.choices"
-            ng-required="field.required"></select>
-  </div>
+<div cl***REMOVED***="field form-group">
+  <label>{{field.title}}</label> <span cl***REMOVED***="required-error" ng-show="field.required && !field.value">*</span>
+  <select cl***REMOVED***="form-control" ng-model="field.value" ng-options="option.title as option.title for option in field.choices" ng-required="field.required"></select>
 </div>

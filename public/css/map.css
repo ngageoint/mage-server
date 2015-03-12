@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  padding-top: 40px;
+  padding-top: 50px;
   height: calc(100% - 40px);
 }
 
@@ -34,6 +34,10 @@ header.navbar {
   color: #5278A2;
 }
 
+.leaflet-control-inverse, .leaflet-bar, a.leaflet-control-inverse {
+  background: #5278A2;
+}
+
 .news-feed-pane {
 	position: absolute;
 	top: 0;
@@ -45,7 +49,7 @@ header.navbar {
 .news-feed-tabs {
 	border-radius: 3px;
 	background-color: rgba(208, 231, 255, 0.8);
-	padding-top: 10px;
+	padding: 10px 0;
 }
 
 .news-feed-tab:hover {
@@ -135,7 +139,7 @@ a.news-feed-tab-active {
 }
 
 /* Panels and their contents */
-.panel {
+/*.panel {
 	left: 465px;
 	top: 7px;
 	z-index: 1039;
@@ -147,7 +151,7 @@ a.news-feed-tab-active {
 	height: 90%;
 	width: 83%;
 	border: 2px solid #5278A2;
-}
+}*/
 
 .panel-content {
 	padding: 20px;
@@ -288,11 +292,11 @@ a.news-feed-tab-active {
 	font-size: 24px;
 }
 
-@media all and (min-width: 520px) {
+/*@media all and (min-width: 520px) {
 	.panel {
 		margin: 45px;
 	}
-}
+}*/
 
 @-ms-viewport {
 	width: device-width;
@@ -411,17 +415,6 @@ a.news-feed-tab-active {
 	padding: 5px;
 }
 
-/* Progress bar stuff */
-.percent {
-    position: absolute; width: 300px; height: 14px; z-index: 1; text-align: center; font-size: 0.8em; color: white;
-}
-.progress-bar {
-    height: 14px;
-    border-radius: 10px;
-    border: 1px solid #CCC;
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#6666cc), to(#4b4b95));
-    border-image: initial;
-}
 .uploaded {
     padding: 0;
     height: 14px;

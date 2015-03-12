@@ -1,24 +1,31 @@
 <div cl***REMOVED***="observation-news-item">
   <div ng-if="edit === false">
-  	<div cl***REMOVED***="row-fluid">
-  		<div cl***REMOVED***="span7">
+  	<div cl***REMOVED***="row">
+  		<div cl***REMOVED***="col-md-7">
         <div cl***REMOVED***="news-feed-item-support observation-type">{{observation.properties.type}}</div>
         <div cl***REMOVED***="news-feed-item-support observation-variant" ng-if="observation.properties[form.variantField]">{{observation.properties[form.variantField]}}</div>
       </div>
-  		<div cl***REMOVED***="span5">
-  			<div cl***REMOVED***="row-fluid">
-          <div cl***REMOVED***="pull-right news-feed-item-support small-text">
-            <span>{{observationUser.username}}</span>
+  		<div cl***REMOVED***="col-md-5">
+  			<div cl***REMOVED***="row">
+          <div cl***REMOVED***="col-md-12">
+            <div cl***REMOVED***="pull-right news-feed-item-support small-text">
+              <span>{{observationUser.username}}</span>
+            </div>
           </div>
   			</div>
-        <div cl***REMOVED***="row-fluid">
-          <span cl***REMOVED***="pull-right news-feed-item-support small-text">{{observation.properties.timestamp | moment: 'fromNow'}}</span>
+        <div cl***REMOVED***="row">
+          <div cl***REMOVED***="col-md-12">
+            <span cl***REMOVED***="pull-right news-feed-item-support small-text">{{observation.properties.timestamp | moment: 'fromNow'}}</span>
+          </div>
         </div>
-        <div cl***REMOVED***="row-fluid">
-  				<a href="javascript:void(0)" cl***REMOVED***="pull-right small-text" ng-click="onObservationLocationClick(observation)">
-            {{observation.geometry.coordinates[0] | number: 3}}, {{observation.geometry.coordinates[1] | number: 3}}
-          </a>
-  			</div>
+
+        <div cl***REMOVED***="row">
+          <div cl***REMOVED***="col-md-12">
+    				<a href="javascript:void(0)" cl***REMOVED***="pull-right small-text" ng-click="onObservationLocationClick(observation)">
+              {{observation.geometry.coordinates[0] | number: 3}}, {{observation.geometry.coordinates[1] | number: 3}}
+            </a>
+    			</div>
+        </div>
   		</div>
   	</div>
 
@@ -26,7 +33,7 @@
       <div map-clip="observation"></div>
     </div>
 
-    <div cl***REMOVED***="row-fluid top-gap-s" ng-repeat="field in form.fields | filter:filterHidden">
+    <div cl***REMOVED***="row top-gap-s" ng-repeat="field in form.fields | filter:filterHidden">
       <property-view field="field">
     </div>
 
@@ -34,11 +41,11 @@
       <div cl***REMOVED***="attachment" ng-repeat="attachment in observation.attachments track by attachment.id">
         <span ng-switch on="$index % 2">
           <span ng-switch-when="0">
-            <div cl***REMOVED***="row-fluid">
-              <div cl***REMOVED***="span6">
+            <div cl***REMOVED***="row">
+              <div cl***REMOVED***="col-md-6">
                 <div attachment="observation.attachments[$index]" attachment-observation="observation" edit="false"></div>
               </div>
-              <div cl***REMOVED***="span6">
+              <div cl***REMOVED***="col-md-6">
                 <div attachment="observation.attachments[$index + 1]" attachment-observation="observation"  edit="false"></div>
               </div>
             </div>
@@ -47,13 +54,13 @@
       </div>
     </div>
 
-    <div style="height: 30px;">
-      <button cl***REMOVED***="btn pull-right" ng-click="editObservation()">Edit</button>
+    <div style="height: 35px;">
+      <button cl***REMOVED***="btn btn-sm btn-primary pull-right" ng-click="editObservation()">Edit</button>
     </div>
   </div>
 
   <div ng-if="edit === true">
-    <form-directive form="editForm" form-observation="observation" cl***REMOVED***="row-fluid"></form-directive>
+    <form-directive form="editForm" form-observation="observation" cl***REMOVED***="row"></form-directive>
   </div>
 
 </div>

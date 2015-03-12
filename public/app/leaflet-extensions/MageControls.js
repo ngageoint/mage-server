@@ -93,14 +93,14 @@ L.Control.MageUserLocation = L.Control.extend({
 	_onLocateClick: function() {
 		if (this._locate) {
 			this._stopLocate();
-			L.DomUtil.removeCl***REMOVED***(this._locateLink, 'btn-inverse');
+			L.DomUtil.removeCl***REMOVED***(this._locateLink, 'leaflet-control-inverse');
 			L.DomUtil.addCl***REMOVED***(this._locateIcon, 'icon-sage');
 			L.DomUtil.removeCl***REMOVED***(this._locateIcon, 'icon-sage-inverse');
-			
+
 			if (this._broadcast) this._onBroadcastClick();
 		} else {
 			this._startLocate();
-			L.DomUtil.addCl***REMOVED***(this._locateLink, 'btn-inverse');
+			L.DomUtil.addCl***REMOVED***(this._locateLink, 'leaflet-control-inverse');
 			L.DomUtil.addCl***REMOVED***(this._locateIcon, 'icon-sage-inverse');
 			L.DomUtil.removeCl***REMOVED***(this._locateIcon, 'icon-sage');
 		}
@@ -112,13 +112,13 @@ L.Control.MageUserLocation = L.Control.extend({
 		if (!this._locate) this._onLocateClick();
 
 		if (this._broadcast) {
-			L.DomUtil.removeCl***REMOVED***(this._broadcastLink, 'btn-inverse');
+			L.DomUtil.removeCl***REMOVED***(this._broadcastLink, 'leaflet-control-inverse');
 			L.DomUtil.addCl***REMOVED***(this._broadcastIcon, 'icon-sage');
 			L.DomUtil.removeCl***REMOVED***(this._broadcastIcon, 'icon-sage-inverse');
 		} else {
 			this._onLocation(this._location, true);
 
-			L.DomUtil.addCl***REMOVED***(this._broadcastLink, 'btn-inverse');
+			L.DomUtil.addCl***REMOVED***(this._broadcastLink, 'leaflet-control-inverse');
 			L.DomUtil.addCl***REMOVED***(this._broadcastIcon, 'icon-sage-inverse');
 			L.DomUtil.removeCl***REMOVED***(this._broadcastIcon, 'icon-sage');
 		}
@@ -140,7 +140,7 @@ L.Control.MageListTools = L.Control.extend({
 
 	onAdd: function (map) {
 		var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-		var linkCl***REMOVED*** = this.options.enabled ? 'btn-inverse' : '';
+		var linkCl***REMOVED*** = this.options.enabled ? 'leaflet-control-inverse' : '';
 		this._link = L.DomUtil.create('a', linkCl***REMOVED***, container);
 
 		var iconCl***REMOVED*** = this.options.enabled ? 'fa fa-bars icon-sage-inverse' : 'fa fa-bars icon-sage';
@@ -164,11 +164,11 @@ L.Control.MageListTools = L.Control.extend({
 	_toggle: function () {
 		var on = L.DomUtil.hasCl***REMOVED***(this._icon, 'icon-sage-inverse');
 		if (on) {
-			L.DomUtil.removeCl***REMOVED***(this._link, 'btn-inverse');
+			L.DomUtil.removeCl***REMOVED***(this._link, 'leaflet-control-inverse');
 			L.DomUtil.addCl***REMOVED***(this._icon, 'icon-sage');
 			L.DomUtil.removeCl***REMOVED***(this._icon, 'icon-sage-inverse');
 		} else {
-			L.DomUtil.addCl***REMOVED***(this._link, 'btn-inverse');
+			L.DomUtil.addCl***REMOVED***(this._link, 'leaflet-control-inverse');
 			L.DomUtil.addCl***REMOVED***(this._icon, 'icon-sage-inverse');
 			L.DomUtil.removeCl***REMOVED***(this._icon, 'icon-sage');
 		}

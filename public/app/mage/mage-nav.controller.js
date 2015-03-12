@@ -87,14 +87,15 @@ function NavController($scope, $location, $modal, UserService, FilterService, Po
   $scope.onExportClick = function() {
     var modalInstance = $modal.open({
       templateUrl: '/app/export/export.html',
-      controller: 'ExportController'
+      controller: 'ExportController',
+      backdrop: true
     });
 
-    modalInstance.result.then(function (selectedItem) {
-      $scope.selected = selectedItem;
-    }, function () {
-      $log.info('Modal dismissed at: ' + new Date());
-    });
+    // modalInstance.result.then(function (selectedItem) {
+    //   $scope.selected = selectedItem;
+    // }, function () {
+    //   console.log('Modal dismissed at: ' + new Date());
+    // });
   }
 
   $scope.onFilterClick = function() {

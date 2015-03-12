@@ -1,0 +1,91 @@
+// Framework grid generation
+//
+// Used only by Bootstrap to generate the correct number of grid cl***REMOVED***es given
+// any value of `@grid-columns`.
+
+.make-grid-columns() {
+  // Common styles for all sizes of grid columns, widths 1-12
+  .col(@index) { // initial
+    @item: ~".col-xs-@{index}, .col-sm-@{index}, .col-md-@{index}, .col-lg-@{index}";
+    .col((@index + 1), @item);
+  }
+  .col(@index, @list) when (@index =< @grid-columns) { // general; "=<" isn't a typo
+    @item: ~".col-xs-@{index}, .col-sm-@{index}, .col-md-@{index}, .col-lg-@{index}";
+    .col((@index + 1), ~"@{list}, @{item}");
+  }
+  .col(@index, @list) when (@index > @grid-columns) { // terminal
+    @{list} {
+      position: relative;
+      // Prevent columns from collapsing when empty
+      min-height: 1px;
+      // Inner gutter via padding
+      padding-left:  (@grid-gutter-width / 2);
+      padding-right: (@grid-gutter-width / 2);
+    }
+  }
+  .col(1); // kickstart it
+}
+
+.float-grid-columns(@cl***REMOVED***) {
+  .col(@index) { // initial
+    @item: ~".col-@{cl***REMOVED***}-@{index}";
+    .col((@index + 1), @item);
+  }
+  .col(@index, @list) when (@index =< @grid-columns) { // general
+    @item: ~".col-@{cl***REMOVED***}-@{index}";
+    .col((@index + 1), ~"@{list}, @{item}");
+  }
+  .col(@index, @list) when (@index > @grid-columns) { // terminal
+    @{list} {
+      float: left;
+    }
+  }
+  .col(1); // kickstart it
+}
+
+.calc-grid-column(@index, @cl***REMOVED***, @type) when (@type = width) and (@index > 0) {
+  .col-@{cl***REMOVED***}-@{index} {
+    width: percentage((@index / @grid-columns));
+  }
+}
+.calc-grid-column(@index, @cl***REMOVED***, @type) when (@type = push) and (@index > 0) {
+  .col-@{cl***REMOVED***}-push-@{index} {
+    left: percentage((@index / @grid-columns));
+  }
+}
+.calc-grid-column(@index, @cl***REMOVED***, @type) when (@type = push) and (@index = 0) {
+  .col-@{cl***REMOVED***}-push-0 {
+    left: auto;
+  }
+}
+.calc-grid-column(@index, @cl***REMOVED***, @type) when (@type = pull) and (@index > 0) {
+  .col-@{cl***REMOVED***}-pull-@{index} {
+    right: percentage((@index / @grid-columns));
+  }
+}
+.calc-grid-column(@index, @cl***REMOVED***, @type) when (@type = pull) and (@index = 0) {
+  .col-@{cl***REMOVED***}-pull-0 {
+    right: auto;
+  }
+}
+.calc-grid-column(@index, @cl***REMOVED***, @type) when (@type = offset) {
+  .col-@{cl***REMOVED***}-offset-@{index} {
+    margin-left: percentage((@index / @grid-columns));
+  }
+}
+
+// Basic looping in LESS
+.loop-grid-columns(@index, @cl***REMOVED***, @type) when (@index >= 0) {
+  .calc-grid-column(@index, @cl***REMOVED***, @type);
+  // next iteration
+  .loop-grid-columns((@index - 1), @cl***REMOVED***, @type);
+}
+
+// Create grid for specific cl***REMOVED***
+.make-grid(@cl***REMOVED***) {
+  .float-grid-columns(@cl***REMOVED***);
+  .loop-grid-columns(@grid-columns, @cl***REMOVED***, width);
+  .loop-grid-columns(@grid-columns, @cl***REMOVED***, pull);
+  .loop-grid-columns(@grid-columns, @cl***REMOVED***, push);
+  .loop-grid-columns(@grid-columns, @cl***REMOVED***, offset);
+}

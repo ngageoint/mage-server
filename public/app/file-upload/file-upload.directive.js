@@ -7,6 +7,7 @@ function fileUpload() {
     restrict: "A",
     templateUrl: '/app/file-upload/file-upload.directive.html',
     scope: {
+      type: '@',
       url: '@',
       allowUpload: '=',
       allowMultiple: '=',
@@ -25,6 +26,8 @@ function fileUpload() {
 FileUploadController.$inject = ['$scope', '$element'];
 
 function FileUploadController($scope, $element) {
+  if (!$scope.type) $scope.type = 'detail';
+
   $scope.uploadImageMissing = true;
   $element.find("img").error(function() {
     $scope.uploadImageMissing = true;
@@ -86,7 +89,6 @@ function FileUploadController($scope, $element) {
   var uploadComplete = function(response) {
     $scope.$apply(function() {
       $scope.file = null;
-      $scope.uploadStatus = "Upload Complete";
       $scope.uploading = false;
       $scope.$emit('uploadComplete', $scope.url, response, $scope.uploadId);
     });
@@ -95,7 +97,6 @@ function FileUploadController($scope, $element) {
   var uploadFailed = function(response, status, error) {
     $scope.$apply(function() {
       $scope.file = null;
-      $scope.uploadStatus = "Upload Failed";
       $scope.uploading = false;
       $scope.$emit('uploadFailed', $scope.url, response, $scope.uploadId);
     });

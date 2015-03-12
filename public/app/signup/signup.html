@@ -1,72 +1,78 @@
-<div>
-  <div cl***REMOVED***="container top-gap-xl">
-    <div cl***REMOVED***="row">
-      <div cl***REMOVED***="span6">
-        <h3>Mobile Analytic GEOINT Environment</h3>
-        <i cl***REMOVED***="fa fa-magic icon-brand-l"></i>
-      </div>
-      <div cl***REMOVED***="span6">
-        <h3>Sign up</h3>
-        <form ng-submit="signup()" id="new-user-form" cl***REMOVED***="form-horizontal">
+<div cl***REMOVED***="container top-gap-xl">
 
-          <div avatar-user="user"/>
+  <div cl***REMOVED***="row">
+    <div cl***REMOVED***="col-md-6">
+      <h3>Mobile Analytic GEOINT Environment</h3>
+      <i cl***REMOVED***="fa fa-magic icon-brand-l"></i>
+    </div>
 
-          <div cl***REMOVED***="control-group">
-            <label cl***REMOVED***="control-label" for="type">Username</label>
-            <div cl***REMOVED***="controls">
-              <input type="text" placeholder="i.e. jappleseed" ng-model="user.username" autocapitalize="off"/>
-            </div>
-          </div>
-          <div cl***REMOVED***="control-group">
-            <label cl***REMOVED***="control-label" for="type">First Name</label>
-            <div cl***REMOVED***="controls">
-              <input type="text" placeholder="Johnny" ng-model="user.firstname">
-            </div>
-          </div>
-          <div cl***REMOVED***="control-group">
-            <label cl***REMOVED***="control-label" for="type">Last Name</label>
-            <div cl***REMOVED***="controls">
-              <input type="text" placeholder="Appleseed" ng-model="user.lastname">
-            </div>
-          </div>
-          <div cl***REMOVED***="control-group">
-            <label cl***REMOVED***="control-label" for="type">Email</label>
-            <div cl***REMOVED***="controls">
-              <input type="text" placeholder="johnny@appleseed.com" ng-model="user.email" autocapitalize="off">
-            </div>
-          </div>
-          <div cl***REMOVED***="control-group">
-            <label cl***REMOVED***="control-label" for="type">P***REMOVED***word</label>
-            <div cl***REMOVED***="controls">
-              <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***word">
-            </div>
-          </div>
-          <div cl***REMOVED***="control-group">
-            <label cl***REMOVED***="control-label" for="type">Confirm P***REMOVED***word</label>
-            <div cl***REMOVED***="controls">
-              <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***wordconfirm">
-            </div>
-          </div>
-          <!--<div cl***REMOVED***="control-group">
-            <div cl***REMOVED***="controls">
-              <label cl***REMOVED***="checkbox">
-                <input type="checkbox"> GEOINT Online
-              </label>
-            </div>
-            <span cl***REMOVED***="help-block top-gap"><a href="https://geoint-online.nga.mil/_layouts/nga/go/logon/logon.aspx?ReturnUrl=%2f_layouts%2fAuthenticate.aspx%3fSource%3d%252f&Source=%2f">GEOINT Online Details (New Account, P***REMOVED***word Reset, etc.)</a></span>
-          </div>-->
-          <button type="submit" cl***REMOVED***="btn">Create my account</button>
-          <span cl***REMOVED***="help-block top-gap">Your account will have to be approved by an admin before it becomes active</span>
-        </form>
-        <!-- Status message area -->
-        <div cl***REMOVED***="row top-gap" ng-show="showStatus">
-          <div cl***REMOVED***="span5 alert alert-block" ng-cl***REMOVED***="statusLevel">
-            <button type="button" cl***REMOVED***="close" ng-click="setShowStatus(false)">&times;</button>
-            <h4>{{statusTitle}}</h4>
-            {{statusMessage}}
+    <div cl***REMOVED***="col-md-6">
+      <h3>Sign up</h3>
+      <form ng-submit="signup()" id="new-user-form" cl***REMOVED***="form-horizontal">
+
+        <div avatar-user="user"></div>
+
+        <div cl***REMOVED***="form-group">
+          <label cl***REMOVED***="control-label col-sm-4">Username</label>
+          <div cl***REMOVED***="col-sm-8">
+            <input type="text" placeholder="i.e. jappleseed" ng-model="user.username" autocapitalize="off" cl***REMOVED***="form-control"/>
           </div>
         </div>
+
+        <div cl***REMOVED***="form-group">
+          <label cl***REMOVED***="control-label col-sm-4" for="type">First Name</label>
+          <div cl***REMOVED***="col-sm-8">
+            <input type="text" placeholder="Johnny" ng-model="user.firstname" cl***REMOVED***="form-control">
+          </div>
+        </div>
+
+        <div cl***REMOVED***="form-group">
+          <label cl***REMOVED***="control-label col-sm-4" for="type">Last Name</label>
+          <div cl***REMOVED***="col-sm-8">
+            <input type="text" placeholder="Appleseed" ng-model="user.lastname" cl***REMOVED***="form-control">
+          </div>
+        </div>
+
+        <div cl***REMOVED***="form-group">
+          <label cl***REMOVED***="control-label col-sm-4" for="type">Email</label>
+          <div cl***REMOVED***="col-sm-8">
+            <input type="text" placeholder="johnny@appleseed.com" ng-model="user.email" autocapitalize="off" cl***REMOVED***="form-control">
+          </div>
+        </div>
+
+        <div cl***REMOVED***="form-group">
+          <label cl***REMOVED***="control-label col-sm-4" for="type">P***REMOVED***word</label>
+          <div cl***REMOVED***="col-sm-8">
+            <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***word" cl***REMOVED***="form-control">
+          </div>
+        </div>
+
+        <div cl***REMOVED***="form-group">
+          <label cl***REMOVED***="control-label col-sm-4" for="type">Confirm P***REMOVED***word</label>
+          <div cl***REMOVED***="col-sm-8">
+            <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***wordconfirm" cl***REMOVED***="form-control">
+          </div>
+        </div>
+
+
+        <div cl***REMOVED***="pull-right">
+          <button type="submit" cl***REMOVED***="btn btn-primary">Create my account</button>
+        </div>
+        <div cl***REMOVED***="help-block top-gap pull-right">Your account will have to be approved by an admin before it becomes active</div>
+
+      </form>
+
+      <!-- Status message area -->
+      <div cl***REMOVED***="row top-gap" ng-show="showStatus">
+        <div cl***REMOVED***="col-md-5 alert alert-block" ng-cl***REMOVED***="statusLevel">
+          <button type="button" cl***REMOVED***="close" ng-click="setShowStatus(false)">&times;</button>
+          <h4>{{statusTitle}}</h4>
+          {{statusMessage}}
+        </div>
       </div>
+
     </div>
+
   </div>
+
 </div>

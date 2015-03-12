@@ -8,21 +8,21 @@
     <div cl***REMOVED***="top-gap" ng-if="preview !== true">
       <h4 cl***REMOVED***="muted">Attachments</h4>
       <div cl***REMOVED***="attachment" ng-repeat="attachment in observation.attachments track by attachment.id">
-        <div cl***REMOVED***="row-fluid">
+        <div cl***REMOVED***="row">
           <div>
             <div attachment="attachment" attachment-observation="observation" edit="true"></div>
           </div>
         </div>
       </div>
 
-      <div ng-repeat="(id, file) in attachmentUploads" cl***REMOVED***="row-fluid">
-        <div cl***REMOVED***="span10" enctype="multipart/form-data" file-upload url="{{observation.url + '/attachments?access_token=' + getToken()}}" allow-upload="uploadAttachments" upload-file-form-name="'attachment'" preview="true" upload-id="id"></div>
+      <div ng-repeat="(id, file) in attachmentUploads" cl***REMOVED***="row">
+        <div cl***REMOVED***="col-md-10" enctype="multipart/form-data" file-upload url="{{observation.url + '/attachments?access_token=' + getToken()}}" allow-upload="uploadAttachments" upload-file-form-name="'attachment'" preview="true" upload-id="id"></div>
         <span>
           <button cl***REMOVED***="btn btn-danger btn-mini top-gap-s" ng-click="removeFileUpload(id)"><i cl***REMOVED***="fa fa-minus"></i></button>
         </span>
       </div>
 
-      <div cl***REMOVED***="row-fluid top-gap-s">
+      <div cl***REMOVED***="row top-gap-s">
         <button cl***REMOVED***="btn btn-primary" ng-click="addAttachment()" >Add Attachment</button>
       </div>
 

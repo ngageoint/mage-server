@@ -6,7 +6,7 @@ function fileBrowser() {
   var directive = {
     restrict: "A",
     scope: {},
-    template:'<label cl***REMOVED***="file"><input type="file" name="form"><span cl***REMOVED***="file-custom" data-filename="{{file.name}}"></span></label>',
+    templateUrl: '/app/file-upload/file-browser.directive.html',
     controller: FileBrowserController,
     bindToController: true
   }

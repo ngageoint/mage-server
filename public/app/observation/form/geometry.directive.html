@@ -1,10 +1,12 @@
-<div cl***REMOVED***="field control-group">
-  <label cl***REMOVED***="control-label">{{field.title}}
-    <span cl***REMOVED***="required-error" ng-show="field.required && !field.value">*</span>
-  </label>
-  <div cl***REMOVED***="controls row-fluid">
-    <input cl***REMOVED***="span5" type="number" ng-model="field.value.x" value="{{field.value.x}}" ng-required="field.required" ng-change="onLatLngChange(field)">,
-    <input cl***REMOVED***="span5" type="number" ng-model="field.value.y" value="{{field.value.y}}" ng-required="field.required" ng-change="onLatLngChange(field)">
-    (manual)
+<div cl***REMOVED***="field form-group">
+  <label>{{field.title}}</label> <span cl***REMOVED***="required-error" ng-show="field.required && !field.value">*</span>
+
+  <div cl***REMOVED***="row">
+    <div cl***REMOVED***="col-md-5">
+      <input cl***REMOVED***="form-control" type="number" ng-model="field.value.x" value="{{field.value.x}}" ng-required="field.required" ng-change="onLatLngChange(field)">
+    </div>
+    <div cl***REMOVED***="col-md-5">
+      <input cl***REMOVED***="form-control" type="number" ng-model="field.value.y" value="{{field.value.y}}" ng-required="field.required" ng-change="onLatLngChange(field)">
+    </div>
   </div>
 </div>

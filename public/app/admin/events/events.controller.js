@@ -10,7 +10,7 @@ function AdminEventsController($scope, $injector, $filter, $timeout, $q, LocalSt
   $scope.teams = [];
   $scope.layers = [];
   $scope.page = 0;
-  $scope.itemsPerPage = 10;
+  $scope.itemsPerPage = 15;
 
   $scope.saveTime = 0;
 
@@ -152,7 +152,6 @@ function AdminEventsController($scope, $injector, $filter, $timeout, $q, LocalSt
   }
 
   $scope.removeLayer = function(layer) {
-    $scope.team = {};
     $scope.event.layerIds = _.reject($scope.event.layerIds, function(layerId) {return layerId == layer.id;});
     $scope.eventLayers = _.reject($scope.eventLayers, function(l) { return l.id == layer.id;});
     $scope.nonLayers.push(layer);
