@@ -20,11 +20,13 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
 
   var observationsById = {};
   var newObservation = null;
+  var firstObservationChange = true;
   $scope.feedObservations = [];
   $scope.feedChangedObservations = {count: 0};
 
   var usersById = {};
   var followingUserId = null;
+  var firstUserChange = true;
   $scope.feedUsers = [];
   $scope.feedChangedUsers = {};
 
@@ -130,6 +132,9 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
       _.each(changed.removed, function(removed) {
         $scope.feedChangedObservations = {count: 0};
         $scope.feedChangedUsers = {};
+
+        firstUserChange = true;
+        firstObservationChange = true;
       });
     }
   };
@@ -224,8 +229,12 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     // update the news feed observations
     $scope.feedObservations = _.values(observationsById);
 
-    if (changed.added) $scope.feedChangedObservations.count += changed.added.length;
-    if (changed.updated) $scope.feedChangedObservations.count += changed.updated.length;
+    if (!firstObservationChange) {
+      if (changed.added) $scope.feedChangedObservations.count += changed.added.length;
+      if (changed.updated) $scope.feedChangedObservations.count += changed.updated.length;
+    }
+
+    firstObservationChange = false;
   }
 
   function onUsersChanged(changed) {
@@ -234,7 +243,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
 
       MapService.addFeaturesToLayer([added.location], 'People');
 
-      $scope.feedChangedUsers[added.id] = true;
+      if (!firstUserChange) $scope.feedChangedUsers[added.id] = true;
     });
 
     _.each(changed.updated, function(updated) {
@@ -248,7 +257,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
         if (user.id === followingUserId) MapService.zoomToFeatureInLayer(user, 'People');
       }
 
-      $scope.feedChangedUsers[updated.id] = true;
+      if (!firstUserChange) $scope.feedChangedUsers[updated.id] = true;
     });
 
     _.each(changed.removed, function(removed) {
@@ -265,6 +274,8 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
 
     // update the news feed observations
     $scope.feedUsers = _.values(usersById);
+
+    firstUserChange = false;
   }
 
   function onLocation(l) {
