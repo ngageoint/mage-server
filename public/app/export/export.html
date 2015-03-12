@@ -52,7 +52,6 @@
       </div>
     </div>
 
-
     <div ng-show="exportTime.custom">
       <div cl***REMOVED***="form-group">
 
@@ -60,7 +59,7 @@
           <div cl***REMOVED***="col-md-6">
             <label cl***REMOVED***="control-label">Start Date/Time</label>
             <p cl***REMOVED***="input-group">
-              <input type="text" cl***REMOVED***="form-control" datepicker-popup="MM/dd/yyyy 00:00:00" ng-model="startDate" is-open="startDateOpened" close-text="Close" />
+              <input type="text" cl***REMOVED***="form-control" datepicker-popup="MM/dd/yyyy 00:00:00" ng-model="startDate" popup-state="startPopup" close-text="Close" />
               <span cl***REMOVED***="input-group-btn">
                 <button type="button" cl***REMOVED***="btn btn-default" ng-click="openStartDate($event)"><i cl***REMOVED***="glyphicon glyphicon-calendar"></i></button>
               </span>
@@ -83,7 +82,7 @@
           <div cl***REMOVED***="col-md-6">
             <label cl***REMOVED***="control-label">End Date/Time</label>
             <p cl***REMOVED***="input-group">
-              <input type="text" cl***REMOVED***="form-control" datepicker-popup="MM/dd/yyyy 00:00:00" ng-model="endDate" is-open="endDateOpened" close-text="Close" />
+              <input type="text" cl***REMOVED***="form-control" datepicker-popup="MM/dd/yyyy 00:00:00" ng-model="endDate" popup-state="endPopup" close-text="Close" />
               <span cl***REMOVED***="input-group-btn">
                 <button type="button" cl***REMOVED***="btn btn-default" ng-click="openEndDate($event)"><i cl***REMOVED***="glyphicon glyphicon-calendar"></i></button>
               </span>
@@ -102,17 +101,7 @@
           </div>
         </div>
       </div>
-
-      <!-- <div>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label">End Date/Time</label>
-          <quick-datepicker ng-model='exportEndDate' icon-cl***REMOVED***='fa fa-calendar' time-format="HH:mm:ss"></quick-datepicker>
-          <button type="button" ng-click="exportLocalTime = !exportLocalTime" cl***REMOVED***="btn quickdate-button"><i cl***REMOVED***="fa fa-clock-o"></i><span ng-show="exportLocalTime"> Local (GMT {{localOffset}})</span><span ng-show="!exportLocalTime"> GMT (GMT +00:00)</span></button>
-        </div>
-      </div> -->
-
     </div>
-
 
   </form>
 </div>

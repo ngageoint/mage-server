@@ -2,7 +2,7 @@
  * angular-ui-bootstrap
  * http://angular-ui.github.io/bootstrap/
 
- * Version: 0.12.1 - 2015-02-20
+ * Version: 0.13.0-SNAPSHOT - 2015-03-12
  * License: MIT
  */
 angular.module("ui.bootstrap", ["ui.bootstrap.tpls", "ui.bootstrap.transition","ui.bootstrap.collapse","ui.bootstrap.accordion","ui.bootstrap.alert","ui.bootstrap.bindHtml","ui.bootstrap.buttons","ui.bootstrap.carousel","ui.bootstrap.dateparser","ui.bootstrap.position","ui.bootstrap.datepicker","ui.bootstrap.dropdown","ui.bootstrap.modal","ui.bootstrap.pagination","ui.bootstrap.tooltip","ui.bootstrap.popover","ui.bootstrap.progressbar","ui.bootstrap.rating","ui.bootstrap.tabs","ui.bootstrap.timepicker","ui.bootstrap.typeahead"]);
@@ -272,7 +272,7 @@ angular.module('ui.bootstrap.accordion', ['ui.bootstrap.collapse'])
       // P***REMOVED*** the heading to the accordion-group controller
       // so that it can be transcluded into the right place in the template
       // [The second parameter to transclude causes the elements to be cloned so that they work in ng-repeat]
-      accordionGroupCtrl.setHeading(transclude(scope, function() {}));
+      accordionGroupCtrl.setHeading(transclude(scope, angular.noop));
     }
   };
 })
@@ -1426,7 +1426,7 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
     restrict: 'EA',
     require: 'ngModel',
     scope: {
-      isOpen: '=',
+      popupState: '=?',
       currentText: '@',
       clearText: '@',
       closeText: '@',
@@ -1438,6 +1438,12 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
           appendToBody = angular.isDefined(attrs.datepickerAppendToBody) ? scope.$parent.$eval(attrs.datepickerAppendToBody) : datepickerPopupConfig.appendToBody;
 
       scope.showButtonBar = angular.isDefined(attrs.showButtonBar) ? scope.$parent.$eval(attrs.showButtonBar) : datepickerPopupConfig.showButtonBar;
+
+      if (!scope.popupState) {
+        scope.popupState = {
+          open: false
+        };
+      }
 
       scope.getText = function( key ) {
         return scope[key + 'Text'] || datepickerPopupConfig[key + 'Text'];
@@ -1514,6 +1520,10 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
       }
       ngModel.$parsers.unshift(parseDate);
 
+      ngModel.$formatters.push(function (value) {
+         return ngModel.$isEmpty(value) ? value : dateFilter(value, dateFormat);
+      });
+
       // Inner change
       scope.dateSelection = function(dt) {
         if (angular.isDefined(dt)) {
@@ -1523,7 +1533,7 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
         ngModel.$render();
 
         if ( closeOnDateSelection ) {
-          scope.isOpen.value = false;
+          scope.popupState.open = false;
           element[0].focus();
         }
       };
@@ -1534,17 +1544,17 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
         });
       });
 
-      // Outter change
+      // Outer change
       ngModel.$render = function() {
-        var date = ngModel.$viewValue ? dateFilter(ngModel.$viewValue, dateFormat) : '';
+        var date = ngModel.$viewValue ? dateFilter(parseDate(ngModel.$viewValue), dateFormat) : '';
         element.val(date);
         scope.date = parseDate( ngModel.$modelValue );
       };
 
       var documentClickBind = function(event) {
-        if (scope.isOpen.value && event.target !== element[0]) {
+        if (scope.popupState.open && event.target !== element[0]) {
           scope.$apply(function() {
-            scope.isOpen.value = false;
+            scope.popupState.open = false;
           });
         }
       };
@@ -1557,24 +1567,26 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
       scope.keydown = function(evt) {
         if (evt.which === 27) {
           evt.preventDefault();
-          evt.stopPropagation();
+          if (scope.popupState.open) {
+            evt.stopPropagation();
+          }
           scope.close();
-        } else if (evt.which === 40 && !scope.isOpen.value) {
-          scope.isOpen.value = true;
+        } else if (evt.which === 40 && !scope.popupState.open) {
+          scope.popupState.open = true;
         }
       };
 
-      scope.$watch('isOpen', function(value) {
-        if (value && value.value === true) {
+      scope.$watch('popupState', function(state) {
+        if (state && state.open) {
           scope.$broadcast('datepicker.focus');
           scope.position = appendToBody ? $position.offset(element) : $position.position(element);
           scope.position.top = scope.position.top + element.prop('offsetHeight');
 
           $document.bind('click', documentClickBind);
-        } else if (value && value.value === false) {
+        } else {
           $document.unbind('click', documentClickBind);
         }
-      }, true);
+      });
 
       scope.select = function( date ) {
         if (date === 'today') {
@@ -1590,7 +1602,7 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
       };
 
       scope.close = function() {
-        scope.isOpen.value = false;
+        scope.popupState.open = false;
         element[0].focus();
       };
 
@@ -3546,7 +3558,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //minimal no of characters that needs to be entered before typeahead kicks-in
       var minSearch = originalScope.$eval(attrs.typeaheadMinLength) || 1;
 
-      //minimal wait time after last character typed before typehead kicks-in
+      //minimal wait time after last character typed before typeahead kicks-in
       var waitTime = originalScope.$eval(attrs.typeaheadWaitMs) || 0;
 
       //should it restrict model values to the ones selected from the popup only?
@@ -3675,7 +3687,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //we need to propagate user's query so we can higlight matches
       scope.query = undefined;
 
-      //Declare the timeout promise var outside the function scope so that stacked calls can be cancelled later
+      //Declare the timeout promise var outside the function scope so that stacked calls can be cancelled later 
       var timeoutPromise;
 
       var scheduleSearchWithTimeout = function(inputValue) {
@@ -4015,7 +4027,7 @@ angular.module("template/datepicker/month.html", []).run(["$templateCache", func
 
 angular.module("template/datepicker/popup.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/datepicker/popup.html",
-    "<ul cl***REMOVED***=\"dropdown-menu\" ng-style=\"{display: (isOpen.value && 'block') || 'none', top: position.top+'px', left: position.left+'px'}\" ng-keydown=\"keydown($event)\">\n" +
+    "<ul cl***REMOVED***=\"dropdown-menu\" ng-style=\"{display: (popupState.open && 'block') || 'none', top: position.top+'px', left: position.left+'px'}\" ng-keydown=\"keydown($event)\">\n" +
     "	<li ng-transclude></li>\n" +
     "	<li ng-if=\"showButtonBar\" style=\"padding:10px 9px 2px\">\n" +
     "		<span cl***REMOVED***=\"btn-group pull-left\">\n" +

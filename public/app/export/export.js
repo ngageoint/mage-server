@@ -23,6 +23,9 @@ function ExportController($scope, $modalInstance, $http, LocalStorageService, Ev
   $scope.exportStartDate = moment().startOf('day').toDate();
   $scope.exportEndDate = moment().endOf('day').toDate();
 
+  $scope.startPopup = {open: false};
+  $scope.endPopup = {open: false};
+
   /* Export existing points to  */
   $scope.exportOptions = [{
     value: 300,
@@ -57,14 +60,14 @@ function ExportController($scope, $modalInstance, $http, LocalStorageService, Ev
     $event.preventDefault();
     $event.stopPropagation();
 
-    $scope.startDateOpened = true;
+    $scope.startPopup.open = true;
   };
 
   $scope.openEndDate = function($event) {
     $event.preventDefault();
     $event.stopPropagation();
 
-    $scope.endDateOpened = true;
+    $scope.endPopup.open = true;
   };
 
   $scope.exporting = {};

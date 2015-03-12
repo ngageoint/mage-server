@@ -1,9 +1,9 @@
-<div cl***REMOVED***="field control-group">
-
-  <label cl***REMOVED***="control-label">{{field.title}}
-    <span cl***REMOVED***="required-error" ng-show="field.required && !field.value">*</span>
-  </label>
-  <div cl***REMOVED***="controls">
-    <quick-datepicker icon-cl***REMOVED***="fa fa-pencil" ng-model='field.value' date-format='MM/dd/yyyy' time-format="HH:mm:ss"></quick-datepicker>
-  </div>
+<div cl***REMOVED***="field form-group">
+  <label>{{field.title}}</label>
+  <p cl***REMOVED***="input-group">
+    <input type="text" cl***REMOVED***="form-control" datepicker-popup="MM/dd/yyyy 00:00:00" ng-model="field.value" popup-state="datePopup" close-text="Close" />
+    <span cl***REMOVED***="input-group-btn">
+      <button type="button" cl***REMOVED***="btn btn-default" ng-click="openDate($event)"><i cl***REMOVED***="glyphicon glyphicon-calendar"></i></button>
+    </span>
+  </p>
 </div>
