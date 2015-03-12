@@ -323,7 +323,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   });
 
   $scope.$on('user:follow', function(e, user) {
-    if (user) {
+    if (user && user.id !== followingUserId) {
       followingUserId = user.id;
       MapService.zoomToFeatureInLayer(user, 'People');
     } else {
