@@ -60,7 +60,7 @@
             <p cl***REMOVED***="input-group">
               <input type="text" cl***REMOVED***="form-control" datepicker-popup="MM/dd/yyyy 00:00:00" ng-model="startDate" popup-state="startPopup" close-text="Close" />
               <span cl***REMOVED***="input-group-btn">
-                <button type="button" cl***REMOVED***="btn btn-default" ng-click="openStartDate($event)"><i cl***REMOVED***="glyphicon glyphicon-calendar"></i></button>
+                <button type="button" cl***REMOVED***="btn btn-default" ng-click="openStartDate($event)"><i cl***REMOVED***="fa fa-calendar"></i></button>
               </span>
             </p>
           </div>
@@ -83,7 +83,7 @@
             <p cl***REMOVED***="input-group">
               <input type="text" cl***REMOVED***="form-control" datepicker-popup="MM/dd/yyyy 00:00:00" ng-model="endDate" popup-state="endPopup" close-text="Close" />
               <span cl***REMOVED***="input-group-btn">
-                <button type="button" cl***REMOVED***="btn btn-default" ng-click="openEndDate($event)"><i cl***REMOVED***="glyphicon glyphicon-calendar"></i></button>
+                <button type="button" cl***REMOVED***="btn btn-default" ng-click="openEndDate($event)"><i cl***REMOVED***="fa fa-calendar"></i></button>
               </span>
             </p>
           </div>
@@ -107,12 +107,12 @@
 
 <div cl***REMOVED***="modal-footer ng-scope">
   <button cl***REMOVED***="btn btn-default" ng-disabled="exporting.kml" ng-click="exportData($event, 'kml')">
-    <i cl***REMOVED***="icon-sage" ng-cl***REMOVED***="exporting.kml && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.kml && "Exporting..." || "KML"}}
+    <i ng-cl***REMOVED***="exporting.kml && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.kml && "Exporting..." || "KML"}}
   </button>
   <button cl***REMOVED***="btn btn-default" ng-disabled="exporting.geojson" ng-click="exportData($event, 'geojson')">
-    <i cl***REMOVED***="icon-sage" ng-cl***REMOVED***="exporting.geojson && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.geojson && "Exporting..." || "GeoJSON"}}
+    <i ng-cl***REMOVED***="exporting.geojson && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.geojson && "Exporting..." || "GeoJSON"}}
   </button>
   <button cl***REMOVED***="btn btn-default" ng-disabled="exporting.shapefile" ng-click="exportData($event, 'shapefile')">
-    <i cl***REMOVED***="icon-sage" ng-cl***REMOVED***="exporting.shapefile && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.shapefile && "Exporting..." || "Shapefile"}}
+    <i ng-cl***REMOVED***="exporting.shapefile && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.shapefile && "Exporting..." || "Shapefile"}}
   </button>
 </div>

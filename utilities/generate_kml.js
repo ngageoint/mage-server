@@ -23,7 +23,7 @@ var generateKMLDocument = function() {
 var generateStyles = function(icons) {
   var styles = "";
   icons.forEach(function(icon) {
-    var style = [icon.formId];
+    var style = [icon.eventId];
     if (icon.type != null) {
       style.push(icon.type);
       if (icon.variant != null) {
@@ -41,7 +41,7 @@ var generateKMLFolderStart = function(name) {
   return "<Folder>" + "<name>" + name + "</name>";
 };
 
-var generatePlacemark = function(name, feature, form) {
+var generatePlacemark = function(name, feature, event) {
   var timestamp = "<TimeStamp>" +
     "<when>" + moment(feature.properties.timestamp).utc().format(timeFormat) + "Z</when>" +
     "</TimeStamp>";
@@ -100,12 +100,12 @@ var generatePlacemark = function(name, feature, form) {
   description += '</html>]]></description>';
 
   var style = [];
-  if (form) {
-    style.push(form._id.toString());
+  if (event) {
+    style.push(event._id.toString());
     if (feature.properties.type) {
       style.push(feature.properties.type);
-      if (feature.properties[form.variantField]) {
-        style.push(feature.properties[form.variantField]);
+      if (feature.properties[event.form.variantField]) {
+        style.push(feature.properties[event.form.variantField]);
       }
     }
   }

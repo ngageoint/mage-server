@@ -208,7 +208,7 @@ module.exports = function(app, security) {
             if (req.users[l.properties.user]) l.properties.user = req.users[l.properties.user].username;
             if (req.users[l.properties.deviceId]) l.properties.device = req.users[l.properties.deviceId].uid;
 
-            delete location.properties.deviceId;
+            delete l.properties.deviceId;
           });
 
           var first = locations.slice(1).pop();
@@ -288,7 +288,7 @@ module.exports = function(app, security) {
     }
 
     async.parallel({
-      layers: layersToShapefiles,
+      events: eventToShapefile,
       locations: locationsToShapefiles
     }, generateZip);
   }
@@ -301,13 +301,13 @@ module.exports = function(app, security) {
 
       var filter = req.parameters.filter;
       filter.states = ['active'];
-      new api.Observation(event).getAll(filter, function(err, observations) {
+      new api.Observation(event).getAll({filter: filter}, function(err, observations) {
         Icon.getAll({eventId: event._id}, function(err, icons) {
           kmlStream.write(generate_kml.generateStyles(icons));
           stream.write(generate_kml.generateKMLFolderStart(event.name, false));
 
           observations.forEach(function(o) {
-            stream.write(generate_kml.generatePlacemark(o.properties.type, o, event.form));
+            stream.write(generate_kml.generatePlacemark(o.properties.type, o, event));
           });
 
           stream.write(generate_kml.generateKMLFolderClose());
@@ -395,7 +395,7 @@ module.exports = function(app, security) {
           archive.bulk([{
             cwd: new api.Icon(event._id).getBasePath(),
             src: ['*/**'],
-            dest: 'mage-export/icons',
+            dest: 'mage-export/icons/' + event._id,
             expand: true,
             data: { date: new Date() } }
           ]);
