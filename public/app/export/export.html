@@ -9,7 +9,7 @@
   </div>
 </div>
 
-<div cl***REMOVED***="modal-body ng-scope">
+<div cl***REMOVED***="modal-body">
   <form>
     <div ng-show="showEventError" cl***REMOVED***="alert-error" bs-alert>
       <span>Please Select an Event</span>
@@ -19,7 +19,6 @@
       <div cl***REMOVED***="row">
         <div cl***REMOVED***="col-md-6">
           <label>Event</label>
-
           <ui-select ng-model="exportEvent.selected" theme="bootstrap">
             <ui-select-match placeholder="Select an event to export">{{$select.selected.name}}</ui-select-match>
             <ui-select-choices repeat="event in events | orderBy: 'name' | filter: $select.search">
