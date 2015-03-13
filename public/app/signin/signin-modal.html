@@ -5,25 +5,30 @@
 <div cl***REMOVED***="modal-body">
   <form cl***REMOVED***="form">
 
-    <div cl***REMOVED***="form-group">
-      <label>Username</label>
-      <input ng-model="username" name="username" type="text" autocapitalize="off" cl***REMOVED***="form-control"/>
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="col-md-6">
+        <div cl***REMOVED***="form-group">
+          <label>Username</label>
+          <input ng-model="username" name="username" type="text" autocapitalize="off" cl***REMOVED***="form-control"/>
+        </div>
+
+        <div cl***REMOVED***="form-group">
+          <label>UID</label>
+          <input ng-model="uid" name="uid" type="text" autocapitalize="off" cl***REMOVED***="form-control"/>
+        </div>
+
+        <div cl***REMOVED***="form-group">
+          <label>P***REMOVED***word</label>
+          <input ng-model="p***REMOVED***word" name="p***REMOVED***word" type="p***REMOVED***word" cl***REMOVED***="form-control"/>
+        </div>
+
+        <div cl***REMOVED***="top-gap-s alert alert-block" ng-show="status > 399">
+          <h4>Failed login</h4>
+          Please check your username, UID, and p***REMOVED***word and try again.
+        </div>
+      </div>
     </div>
 
-    <div cl***REMOVED***="form-group">
-      <label>UID</label>
-      <input ng-model="uid" name="uid" type="text" autocapitalize="off" cl***REMOVED***="form-control"/>
-    </div>
-
-    <div cl***REMOVED***="form-group">
-      <label>P***REMOVED***word</label>
-      <input ng-model="p***REMOVED***word" name="p***REMOVED***word" type="p***REMOVED***word" cl***REMOVED***="form-control"/>
-    </div>
-
-    <div cl***REMOVED***="top-gap-s alert alert-block" ng-show="status > 399">
-      <h4>Failed login</h4>
-      Please check your username, UID, and p***REMOVED***word and try again.
-    </div>
 
   </form>
 </div>
