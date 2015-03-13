@@ -65,8 +65,9 @@ module.exports = function(app, security) {
   app.get(
     '/api/events/:eventId/layers',
     validateEventAccess,
+    parseQueryParams,
     function(req, res, next) {
-      Layer.getLayers({layerIds: req.event.layerIds}, function(err, layers) {
+      Layer.getLayers({layerIds: req.event.layerIds, type: req.parameters.type}, function(err, layers) {
         var response = layerXform.transform(layers, {path: req.getPath()});
         res.json(response);
       });

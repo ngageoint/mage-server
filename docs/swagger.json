@@ -1334,6 +1334,15 @@
                 "tags": [
                     "Layer"
                 ],
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "type": "string",
+                        "description": "layer type filter, i.e. Imagery or Feature",
+                        "required": false
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "layer response",
@@ -1461,6 +1470,13 @@
                         "description": "id of the event to get layers for",
                         "required": true,
                         "type": "number"
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "type": "string",
+                        "description": "layer type filter, i.e. Imagery or Feature",
+                        "required": false
                     }
                 ],
                 "tags": [
