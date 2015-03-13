@@ -208,7 +208,7 @@ textarea {
 	left: 0;
 	margin-bottom: 0;
 	background-color: #E2E2E2;
-	z-index: 1030;
+	z-index: 1029;
 }
 
 a.admin-nav-active {
@@ -242,7 +242,6 @@ a.admin-nav-inactive {
 	font-weight: bold;
 	font-family: SansBetween, Arial, sans-serif;
 	line-height: 20px;
-	vertical-align:middle;
 }
 
 .admin-tab a {

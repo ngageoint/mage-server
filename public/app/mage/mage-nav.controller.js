@@ -53,6 +53,7 @@ function NavController($scope, $q, $location, $modal, UserService, FilterService
     var modalInstance = $modal.open({
       templateUrl: '/app/filter/filter.html',
       controller: 'FilterController',
+      backdrop: 'static',
       resolve: {
         events: function () {
           return events;
@@ -64,7 +65,8 @@ function NavController($scope, $q, $location, $modal, UserService, FilterService
   $scope.onExportClick = function() {
     var modalInstance = $modal.open({
       templateUrl: '/app/export/export.html',
-      controller: 'ExportController'
+      controller: 'ExportController',
+      backdrop: 'static'
     });
   }
 }
