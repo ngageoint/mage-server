@@ -215,7 +215,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
 
   function fetch(event, interval) {
     if (!eventsById[event.id]) {
-      eventsById[event.id] = event;
+      eventsById[event.id] = angular.copy(event);
       eventsById[event.id].observationsById = {};
       eventsById[event.id].usersById = {};
     }

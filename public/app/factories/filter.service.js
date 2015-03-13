@@ -43,7 +43,8 @@ function FilterService(UserService) {
     setEvent: setEvent,
     getEvent: getEvent,
     formatInterval: formatInterval,
-    getTimeInterval: getTimeInterval
+    getTimeInterval: getTimeInterval,
+    setTimeInterval: setTimeInterval
   };
 
   return ***REMOVED***;
