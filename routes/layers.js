@@ -77,7 +77,7 @@ module.exports = function(app, security) {
   // get layer
   app.get(
     '/api/layers/:layerId',
-    access.authorize('READ_LAYER'),
+    access.authorize('READ_LAYER_ALL'),
     function (req, res) {
       var response = layerXform.transform(req.layer, {path: req.getPath()});
       res.json(response);
