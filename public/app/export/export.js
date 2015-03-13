@@ -2,12 +2,11 @@ angular
   .module('mage')
   .controller('ExportController', ExportController);
 
-ExportController.$inject = ['$scope', '$modalInstance', '$http', 'LocalStorageService', 'Event'];
+ExportController.$inject = ['$scope', '$modalInstance', '$http', 'LocalStorageService', 'FilterService', 'events'];
 
-function ExportController($scope, $modalInstance, $http, LocalStorageService, Event) {
-  Event.query(function(events) {
-    $scope.events = events;
-  });
+function ExportController($scope, $modalInstance, $http, LocalStorageService, FilterService, events) {
+  $scope.exportEvent = {selected: FilterService.getEvent()};
+  $scope.events = events;
 
   var fileExport = angular.element('#file-export');
   fileExport.load(function() {
@@ -20,8 +19,8 @@ function ExportController($scope, $modalInstance, $http, LocalStorageService, Ev
   $scope.localOffset = moment().format('Z');
   $scope.localTime = true;
 
-  $scope.exportStartDate = moment().startOf('day').toDate();
-  $scope.exportEndDate = moment().endOf('day').toDate();
+  $scope.startDate = moment().startOf('day').toDate();
+  $scope.endDate = moment().add(1, 'days').toDate();
 
   $scope.startPopup = {open: false};
   $scope.endPopup = {open: false};
@@ -49,8 +48,6 @@ function ExportController($scope, $modalInstance, $http, LocalStorageService, Ev
     label: 'Custom (Choose your own start/end)'
   }];
   $scope.exportTime = $scope.exportOptions[0];
-
-  $scope.exportEvent = {selected: event};
 
   $scope.closeModal = function () {
     $modalInstance.dismiss('cancel');
@@ -81,20 +78,20 @@ function ExportController($scope, $modalInstance, $http, LocalStorageService, Ev
     $scope.showEventError = false;
     $scope.exporting[type] = true;
 
-    if ($scope.export.custom) {
-      var startDate = moment($scope.exportStartDate);
+    if ($scope.exportTime.custom) {
+      var startDate = moment($scope.startDate);
       if (startDate) {
         startDate = $scope.localTime ? startDate.utc() : startDate;
         var start = startDate.format("YYYY-MM-DD HH:mm:ss");
       }
 
-      var endDate = moment($scope.exportEndDate);
+      var endDate = moment($scope.endDate);
       if (endDate) {
         endDate = $scope.localTime ? endDate.utc() : endDate;
         var end = endDate.format("YYYY-MM-DD HH:mm:ss");
       }
-    } else if ($scope.export.value) {
-      var start = moment().subtract('seconds', $scope.export.value).utc().format("YYYY-MM-DD HH:mm:ss");
+    } else if ($scope.exportTime.value) {
+      var start = moment().subtract('seconds', $scope.exportTime.value).utc().format("YYYY-MM-DD HH:mm:ss");
     }
 
     var params = {

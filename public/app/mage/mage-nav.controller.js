@@ -66,7 +66,12 @@ function NavController($scope, $q, $location, $modal, UserService, FilterService
     var modalInstance = $modal.open({
       templateUrl: '/app/export/export.html',
       controller: 'ExportController',
-      backdrop: 'static'
+      backdrop: 'static',
+      resolve: {
+        events: function () {
+          return events;
+        }
+      }
     });
   }
 }
