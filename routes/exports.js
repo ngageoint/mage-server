@@ -71,16 +71,23 @@ module.exports = function(app, security) {
     }
   }
 
-  var getEvent = function(req, res, next) {
+  function getEvent(req, res, next) {
     //get layers for lookup
     Event.getById(req.parameters.filter.eventId, {}, function(err, event) {
       req.event = event;
+
+      // create a field by name map, I will need this later
+      var fieldNameToField = {};
+      event.form.fields.forEach(function(field) {
+        fieldNameToField[field.name] = field;
+      });
+      event.form.fieldNameToField = fieldNameToField;
 
       next(err);
     });
   }
 
-  var mapUsers = function(req, res, next) {
+  function mapUsers(req, res, next) {
     //get users for lookup
     User.getUsers(function (err, users) {
       var map = {};
@@ -93,7 +100,7 @@ module.exports = function(app, security) {
     });
   }
 
-  var mapDevices = function(req, res, next) {
+  function mapDevices(req, res, next) {
     //get users for lookup
     Device.getDevices(function (err, devices) {
       var map = {};
@@ -103,6 +110,34 @@ module.exports = function(app, security) {
       req.devices = map;
 
       next(err);
+    });
+  }
+
+  function mapObservationProperties(observation, form) {
+    observation.properties = observation.properties || {};
+    for (name in observation.properties){
+      if (name === 'type' || name === 'timestamp') continue;
+
+      var field = form.fieldNameToField[name];
+      if (field) {
+        observation.properties[field.title] = observation.properties[name];
+        delete observation.properties[name];
+      }
+    }
+  }
+
+  function mapObservations(observations, req) {
+    if (!Array.isArray(observations)) observations = [observations];
+
+    observations.forEach(function(o) {
+      // TODO map all observation generic field names to their titles
+      mapObservationProperties(o, req.event.form);
+
+      if (req.users[o.userId]) o.properties.user = req.users[o.userId].username;
+      if (req.devices[o.deviceId]) o.properties.device = req.devices[o.deviceId].uid;
+
+      delete o.deviceId;
+      delete o.userId;
     });
   }
 
@@ -169,13 +204,7 @@ module.exports = function(app, security) {
       new api.Observation(event).getAll(filter, function(err, observations){
         if (err) return done(err);
 
-        observations.forEach(function(o) {
-          if (req.users[o.userId]) o.properties.user = req.users[o.userId].username;
-          if (req.devices[o.deviceId]) o.properties.device = req.devices[o.deviceId].uid;
-
-          delete o.deviceId;
-          delete o.userId;
-        });
+        mapObservations(observations, req);
 
         var streams = {
           shp: fs.createWriteStream(req.directory + "/" + event.name + ".shp"),
@@ -303,10 +332,11 @@ module.exports = function(app, security) {
       filter.states = ['active'];
       new api.Observation(event).getAll({filter: filter}, function(err, observations) {
         Icon.getAll({eventId: event._id}, function(err, icons) {
-          kmlStream.write(generate_kml.generateStyles(icons));
+          kmlStream.write(generate_kml.generateStyles(event, icons));
           stream.write(generate_kml.generateKMLFolderStart(event.name, false));
 
           observations.forEach(function(o) {
+            mapObservations(o, req);
             stream.write(generate_kml.generatePlacemark(o.properties.type, o, event));
           });
 
@@ -391,10 +421,10 @@ module.exports = function(app, security) {
             data: { date: new Date() } }
           ]);
 
-          // throw in icons
+          // throw in icon
           archive.bulk([{
             cwd: new api.Icon(event._id).getBasePath(),
-            src: ['*/**'],
+            src: ['**'],
             dest: 'mage-export/icons/' + event._id,
             expand: true,
             data: { date: new Date() } }
@@ -434,6 +464,8 @@ module.exports = function(app, security) {
       var filter = req.parameters.filter;
       filter.states = ['active'];
       new api.Observation(event).getAll({filter: filter}, function(err, observations) {
+        mapObservations(observations, req);
+
         stream.write(JSON.stringify({
           type: 'FeatureCollection',
           features: geojson.transform(observations)

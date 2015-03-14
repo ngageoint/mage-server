@@ -1,12 +1,5 @@
 <div cl***REMOVED***="modal-header">
-  <div cl***REMOVED***="row">
-    <div cl***REMOVED***="col-xs-11">
-      <h3 cl***REMOVED***="modal-title">Export</h3>
-    </div>
-    <div cl***REMOVED***="col-xs-1">
-      <button ng-click="closeModal()" type="button" cl***REMOVED***="close pull-right" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    </div>
-  </div>
+  <h3 cl***REMOVED***="modal-title">Export</h3>
 </div>
 
 <div cl***REMOVED***="modal-body">
@@ -106,13 +99,15 @@
 </div>
 
 <div cl***REMOVED***="modal-footer ng-scope">
+  <button cl***REMOVED***="btn btn-default pull-left" ng-click="closeModal()">Close</button>
+
   <button cl***REMOVED***="btn btn-default" ng-disabled="exporting.kml" ng-click="exportData($event, 'kml')">
-    <i ng-cl***REMOVED***="exporting.kml && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.kml && "Exporting..." || "KML"}}
+    <i ng-cl***REMOVED***="exporting.kml && 'fa fa-spinner fa-pulse' || 'icon-download'"></i> {{exporting.kml && "Exporting..." || "KML"}}
   </button>
   <button cl***REMOVED***="btn btn-default" ng-disabled="exporting.geojson" ng-click="exportData($event, 'geojson')">
-    <i ng-cl***REMOVED***="exporting.geojson && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.geojson && "Exporting..." || "GeoJSON"}}
+    <i ng-cl***REMOVED***="exporting.geojson && 'fa fa-spinner fa-pulse' || 'icon-download'"></i> {{exporting.geojson && "Exporting..." || "GeoJSON"}}
   </button>
   <button cl***REMOVED***="btn btn-default" ng-disabled="exporting.shapefile" ng-click="exportData($event, 'shapefile')">
-    <i ng-cl***REMOVED***="exporting.shapefile && 'icon-spinner icon-spin' || 'icon-download'"></i> {{exporting.shapefile && "Exporting..." || "Shapefile"}}
+    <i ng-cl***REMOVED***="exporting.shapefile && 'fa fa-spinner fa-pulse' || 'icon-download'"></i> {{exporting.shapefile && "Exporting..." || "Shapefile"}}
   </button>
 </div>
