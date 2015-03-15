@@ -15,6 +15,9 @@ function FilterController($scope, $modalInstance, EventService, FilterService, E
   $scope.startDate = moment().startOf('day').toDate();
   $scope.endDate = moment().endOf('day').toDate();
 
+  $scope.startDatePopup = {open: false};
+  $scope.endDatePopup = {open: false};
+
   $scope.performFilter = function() {
     FilterService.setEvent($scope.filterEvent.selected);
 
@@ -38,13 +41,13 @@ function FilterController($scope, $modalInstance, EventService, FilterService, E
     $event.preventDefault();
     $event.stopPropagation();
 
-    $scope.startPopup.open = true;
+    $scope.startDatePopup.open = true;
   };
 
   $scope.openEndDate = function($event) {
     $event.preventDefault();
     $event.stopPropagation();
 
-    $scope.endPopup.open = true;
+    $scope.endDatePopup.open = true;
   };
 }

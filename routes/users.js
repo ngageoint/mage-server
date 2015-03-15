@@ -140,6 +140,7 @@ module.exports = function(app, security) {
     '/api/logout',
     isAuthenticated(authenticationStrategy),
     function(req, res, next) {
+      console.log('logout w/ token', req.token);
       new api.User().logout(req.token, function(err) {
         if (err) return next(err);
         res.status(200).send('successfully logged out');
