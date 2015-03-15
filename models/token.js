@@ -31,7 +31,7 @@ exports.getToken = function(token, callback) {
     }
 
     token.userId.populate('roleId', function(err, user) {
-      return callback(err, {user: user, deviceId: token.deviceId});
+      return callback(err, {user: user, deviceId: token.deviceId, token: token});
     });
   });
 }

@@ -1,38 +1,36 @@
-<div cl***REMOVED***="modal-header">
-  <h3 cl***REMOVED***="modal-title">Token Expired, Please log in.</h3>
-</div>
+<form cl***REMOVED***="form">
+  <div cl***REMOVED***="modal-header">
+    <h3 cl***REMOVED***="modal-title">Token Expired, Please log in.</h3>
+  </div>
 
-<div cl***REMOVED***="modal-body">
-  <form cl***REMOVED***="form">
-
+  <div cl***REMOVED***="modal-body">
     <div cl***REMOVED***="row">
       <div cl***REMOVED***="col-md-6">
-        <div cl***REMOVED***="form-group">
+        <div cl***REMOVED***="form-group" ng-cl***REMOVED***="{'has-error': status > 399}">
           <label>Username</label>
           <input ng-model="username" name="username" type="text" autocapitalize="off" cl***REMOVED***="form-control"/>
         </div>
 
-        <div cl***REMOVED***="form-group">
+        <div cl***REMOVED***="form-group" ng-cl***REMOVED***="{'has-error': status > 399}">
           <label>UID</label>
           <input ng-model="uid" name="uid" type="text" autocapitalize="off" cl***REMOVED***="form-control"/>
         </div>
 
-        <div cl***REMOVED***="form-group">
+        <div cl***REMOVED***="form-group" ng-cl***REMOVED***="{'has-error': status > 399}">
           <label>P***REMOVED***word</label>
           <input ng-model="p***REMOVED***word" name="p***REMOVED***word" type="p***REMOVED***word" cl***REMOVED***="form-control"/>
         </div>
-
-        <div cl***REMOVED***="top-gap-s alert alert-block" ng-show="status > 399">
-          <h4>Failed login</h4>
-          Please check your username, UID, and p***REMOVED***word and try again.
+      </div>
+      <div cl***REMOVED***="col-md-6">
+        <div cl***REMOVED***="top-gap-s alert alert-danger" ng-show="status > 399">
+          <strong>Failed login</strong>
+          <p>Please check your username, UID, and p***REMOVED***word and try again.</p>
         </div>
       </div>
     </div>
+  </div>
 
-
-  </form>
-</div>
-
-<div cl***REMOVED***="modal-footer">
-  <button cl***REMOVED***="btn btn-default" ng-click="login({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})">Login</button>
-</div>
+  <div cl***REMOVED***="modal-footer">
+    <button cl***REMOVED***="btn btn-default" type="submit" ng-click="login({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})">Login</button>
+  </div>
+</form>

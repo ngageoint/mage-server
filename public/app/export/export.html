@@ -51,7 +51,7 @@
           <div cl***REMOVED***="col-md-6">
             <label cl***REMOVED***="control-label">Start Date/Time</label>
             <p cl***REMOVED***="input-group">
-              <input type="text" cl***REMOVED***="form-control" datepicker-popup="MM/dd/yyyy 00:00:00" ng-model="startDate" popup-state="startPopup" close-text="Close" />
+              <input type="text" cl***REMOVED***="form-control" datepicker-popup="MM/dd/yyyy 00:00:00" ng-model="startDate" is-open="startDatePopup.open" close-text="Close" />
               <span cl***REMOVED***="input-group-btn">
                 <button type="button" cl***REMOVED***="btn btn-default" ng-click="openStartDate($event)"><i cl***REMOVED***="fa fa-calendar"></i></button>
               </span>
@@ -74,7 +74,7 @@
           <div cl***REMOVED***="col-md-6">
             <label cl***REMOVED***="control-label">End Date/Time</label>
             <p cl***REMOVED***="input-group">
-              <input type="text" cl***REMOVED***="form-control" datepicker-popup="MM/dd/yyyy 00:00:00" ng-model="endDate" popup-state="endPopup" close-text="Close" />
+              <input type="text" cl***REMOVED***="form-control" datepicker-popup="MM/dd/yyyy 00:00:00" ng-model="endDate" is-open="endDatePopup.open" close-text="Close" />
               <span cl***REMOVED***="input-group-btn">
                 <button type="button" cl***REMOVED***="btn btn-default" ng-click="openEndDate($event)"><i cl***REMOVED***="fa fa-calendar"></i></button>
               </span>
