@@ -283,7 +283,7 @@ exports.addState = function(event, id, state, callback) {
     }
   };
 
-  observationModel(event).collection.update(condition, update, {upsert: true}, function(err) {
+  observationModel(event).update(condition, update, {upsert: true}, function(err) {
     callback(err, state);
   });
 }

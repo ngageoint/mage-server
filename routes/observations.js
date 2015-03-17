@@ -3,7 +3,8 @@ module.exports = function(app, auth) {
   var api = require('../api')
     , fs = require('fs-extra')
     , moment = require('moment')
-    , Event  = require('../models/event')
+    , Event = require('../models/event')
+    , Team = require('../models/team')
     , access = require('../access')
     , geometryFormat = require('../format/geoJsonFormat')
     , observationXform = require('../transformers/observation');
@@ -45,26 +46,35 @@ module.exports = function(app, auth) {
       return res.status(400).send("cannot create observation 'properties.timestamp' param not specified");
     }
 
-    observation.properties.timestamp = moment(observation.properties.timestamp).toDate();
+    Team.teamsForUserInEvent(req.user, req.event, function(err, teams) {
+      if (err) return next(err);
 
-    var state = {name: 'active'};
-    if (userId) state.userId = userId;
-    observation.states = [state];
+      if (teams.length === 0) {
+        return res.status(403).send('Cannot submit an observation for an event that you are not part of.');
+      }
 
-    req.newObservation = {
-      type: observation.type,
-      geometry: observation.geometry,
-      properties: observation.properties,
-      states: [state]
-    };
+      observation.properties.timestamp = moment(observation.properties.timestamp).toDate();
 
-    var userId = req.user ? req.user._id : null;
-    if (userId) req.newObservation.userId = userId;
+      var state = {name: 'active'};
+      if (userId) state.userId = userId;
+      observation.states = [state];
 
-    var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
-    if (deviceId) req.newObservation.deviceId = deviceId;
+      req.newObservation = {
+        type: observation.type,
+        geometry: observation.geometry,
+        properties: observation.properties,
+        states: [state],
+        teamIds: teams.map(function(team) { return team._id; })
+      };
 
-    next();
+      var userId = req.user ? req.user._id : null;
+      if (userId) req.newObservation.userId = userId;
+
+      var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
+      if (deviceId) req.newObservation.deviceId = deviceId;
+
+      next();
+    });
   }
 
   var parseQueryParams = function(req, res, next) {
@@ -230,13 +240,12 @@ module.exports = function(app, auth) {
       state = { name: state.name };
       if (req.user) state.userId = req.user._id;
 
-      new api.Observation(req.event).addState(req.param('id'), state, function(err, observation) {
+      new api.Observation(req.event).addState(req.param('id'), state, function(err, state) {
         if (err) {
           return res.status(400).send('state is already ' + "'" + state.name + "'");
         }
 
-        var response = observationXform.transform(observation, transformOptions(req));
-        res.json(201, response);
+        res.status(201).json(state);
       });
     }
   );

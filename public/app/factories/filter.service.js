@@ -6,6 +6,7 @@ FilterService.$inject = ['UserService'];
 
 function FilterService(UserService) {
   var event = null;
+  var teamsById = {};
   var interval = null;
   var listeners = [];
 
@@ -34,17 +35,18 @@ function FilterService(UserService) {
     filter: 'custom',
     label: 'Custom'
   }];
-  setTimeInterval(intervals[0]);
+  setTimeInterval(intervals[1]);
 
   var ***REMOVED*** = {
     intervals: intervals,
     addListener: addListener,
     removeListener: removeListener,
-    setEvent: setEvent,
+    setFilter: setFilter,
     getEvent: getEvent,
+    getTeams: getTeams,
+    getTeamsById: getTeamsById,
     formatInterval: formatInterval,
-    getTimeInterval: getTimeInterval,
-    setTimeInterval: setTimeInterval
+    getTimeInterval: getTimeInterval
   };
 
   return ***REMOVED***;
@@ -65,27 +67,93 @@ function FilterService(UserService) {
     listeners = _.reject(listeners, function(l) { return l === listener });
   }
 
+  function setFilter(filter) {
+    eventChanged = null;
+    teamsChanged = null;
+    timeIntervalChanged = null;
+
+    if (filter.event && !filter.teams) {
+      eventChanged = setEvent(filter.event);
+      teamsChanged = setTeams([]);
+    }
+
+    if (filter.teams) {
+      teamsChanged = setTeams(filter.teams);
+    }
+
+    if (filter.timeInterval) {
+      timeIntervalChanged = setTimeInterval(filter.timeInterval.interval, filter.timeInterval.options);
+    }
+
+    var changed = {};
+    if (eventChanged) changed.event = eventChanged;
+    if (teamsChanged) changed.teams = teamsChanged;
+    if (timeIntervalChanged) changed.timeInterval = timeIntervalChanged;
+
+    filterChanged(changed);
+  }
+
   function setEvent(newEvent) {
     if (newEvent == null && event != null) {
-      eventChanged({
+      event = null;
+
+      return {
         added: [],
         removed: [event]
-      })
+      }
     } else if (newEvent && (!event || event.id !== newEvent.id)) {
-      eventChanged({
-        added: [newEvent],
-        removed: event ? [event] : []
-      });
+      var added = [newEvent];
+      var removed = event ? [event] : [];
+
+      event = newEvent;
 
       // Tell server that user is using this event
       UserService.addRecentEvent(newEvent);
-    }
 
-    event = newEvent;
+      return {
+        added: added,
+        removed: removed
+      }
+    } else {
+      return null;
+    }
   };
 
   function getEvent() {
     return event;
+  }
+
+  function setTeams(newTeams) {
+    var added = [];
+    var removed = [];
+
+    _.each(newTeams, function(team) {
+      if (!teamsById[team.id]) {
+        added.push(team);
+      }
+    });
+
+    newTeamsById = _.indexBy(newTeams, 'id');
+    _.each(teamsById, function(team) {
+      if (!newTeamsById[team.id]) {
+        removed.push(team);
+      }
+    });
+
+    teamsById = newTeamsById;
+
+    return {
+      added: added,
+      removed: removed
+    };
+  }
+
+  function getTeams() {
+    return _.values(teamsById);
+  }
+
+  function getTeamsById() {
+    return teamsById;
   }
 
   function formatInterval(interval) {
@@ -105,6 +173,8 @@ function FilterService(UserService) {
   };
 
   function setTimeInterval(newInterval, options) {
+    if (interval != null && interval === newInterval) return null;
+
     interval = newInterval;
 
     if (newInterval.filter === 'all') {
@@ -129,22 +199,38 @@ function FilterService(UserService) {
       timeInterval = { since: parseInt(newInterval.filter) }
     }
 
-    timeIntervalChanged(timeInterval);
+    return timeInterval;
   }
 
-  function eventChanged(event) {
+  function filterChanged(filter) {
     _.each(listeners, function(listener) {
-      if (_.isFunction(listener.onEventChanged)) {
-        listener.onEventChanged(event);
+      if (_.isFunction(listener.onFilterChanged)) {
+        listener.onFilterChanged(filter);
       }
     });
   }
 
-  function timeIntervalChanged(interval) {
-    _.each(listeners, function(listener) {
-      if (_.isFunction(listener.onTimeIntervalChanged)) {
-        listener.onTimeIntervalChanged(interval);
-      }
-    });
-  }
+  // function eventChanged(event) {
+  //   _.each(listeners, function(listener) {
+  //     if (_.isFunction(listener.onEventChanged)) {
+  //       listener.onEventChanged(event);
+  //     }
+  //   });
+  // }
+  //
+  // function teamsChanged(changed) {
+  //   _.each(listeners, function(listener) {
+  //     if (_.isFunction(listener.onTeamsChanged)) {
+  //       listener.onTeamsChanged(changed, event);
+  //     }
+  //   });
+  // }
+  //
+  // function timeIntervalChanged(interval) {
+  //   _.each(listeners, function(listener) {
+  //     if (_.isFunction(listener.onTimeIntervalChanged)) {
+  //       listener.onTimeIntervalChanged(interval);
+  //     }
+  //   });
+  // }
 }

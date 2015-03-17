@@ -24,18 +24,18 @@ function NavController($scope, $q, $location, $modal, UserService, FilterService
         var recentEventId = UserService.getRecentEventId();
         var recentEvent = _.find(events, function(event) { return event.id === recentEventId });
         if (recentEvent) {
-          FilterService.setEvent(recentEvent);
+          FilterService.setFilter({event: recentEvent});
           PollingService.setPollingInterval($scope.pollingInterval);
         } else if (events.length > 0) {
           // TODO 'welcome to MAGE dialog'
-          FilterService.setEvent(events[0]);
+          FilterService.setFilter({event: events[0]});
           PollingService.setPollingInterval($scope.pollingInterval);
         } else {
           // TODO welcome to mage, sorry you have no events
         }
       });
     } else {
-      FilterService.setEvent(null);
+      FilterService.setFilter({event: null});
       PollingService.setPollingInterval(0);
     }
   });

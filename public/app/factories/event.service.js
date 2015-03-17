@@ -9,29 +9,91 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
   var usersChangedListeners = [];
   var layersChangedListeners = [];
   var eventsById = {};
+  var teamsById = {};
 
   var filterServiceListener = {
-    onEventChanged: function(event) {
-      _.each(event.added, function(added) {
-        fetch(added, FilterService.getTimeInterval());
-        fetchLayers(added);
-      });
-
-      _.each(event.removed, function(removed) {
-        observationsChanged({removed: _.values(eventsById[removed.id].observationsById)});
-        usersChanged({removed: _.values(eventsById[removed.id].usersById)});
-        layersChanged({removed: _.values(eventsById[removed.id].layersById)}, removed);
-        delete eventsById[removed.id];
-      });
-    },
-    onTimeIntervalChanged: function(interval) {
-      var event = FilterService.getEvent();
-      if (event) {
-        fetch(event, interval);
+    onFilterChanged: function(filter) {
+      if (filter.event || filter.timeInterval) { // requires query to server
+        if (filter.event) {
+          onEventChanged(filter.event);
+        } else if (filter.timeInterval) {
+          onTimeIntervalChanged(filter.timeInterval);
+        }
+      } else if (filter.teams) { // filter in memory
+        onTeamsChanged(filter.teams, FilterService.getEvent());
       }
     }
   }
   FilterService.addListener(filterServiceListener);
+
+  function onEventChanged(event) {
+    _.each(event.added, function(added) {
+      fetch(added, FilterService.getTimeInterval());
+      fetchLayers(added);
+    });
+
+    _.each(event.removed, function(removed) {
+      observationsChanged({removed: _.values(eventsById[removed.id].filteredObservationsById)});
+      usersChanged({removed: _.values(eventsById[removed.id].filteredUsersById)});
+      layersChanged({removed: _.values(eventsById[removed.id].layersById)}, removed);
+      delete eventsById[removed.id];
+    });
+  }
+
+  function onTeamsChanged(teams, event) {
+    var teamsEvent = eventsById[event.id];
+    if (!teamsEvent) return;
+
+    // remove observations that are not part of filtered teams
+    var observationsRemoved = [];
+    _.each(teamsEvent.filteredObservationsById, function(observation) {
+      if (!areTeamsInFilter(observation.teamIds)) {
+        delete teamsEvent.filteredObservationsById[observation.id];
+        observationsRemoved.push(observation);
+      }
+    });
+
+    // remove users that are not part of filtered teams
+    var usersRemoved = [];
+    _.each(teamsEvent.filteredUsersById, function(user) {
+      if (!areTeamsInFilter(user.location.teamIds)) {
+        delete teamsEvent.filteredUsersById[user.id];
+        usersRemoved.push(user);
+      }
+    });
+
+    var observationsAdded = [];
+    var usersAdded = [];
+    var filterTeams = FilterService.getTeams();
+    var newTeams = filterTeams.length == 0 ? teamsEvent.teams : teams.added;
+    _.each(newTeams, function(added) {
+      // add any observations that are part of the filtered teams
+      _.each(teamsEvent.observationsById, function(observation) {
+        if (_.contains(observation.teamIds, added.id) && !teamsEvent.filteredObservationsById[observation.id]) {
+          observationsAdded.push(observation);
+          teamsEvent.filteredObservationsById[observation.id] = observation;
+        }
+      });
+
+      // add any users that are part of the filtered teams
+      _.each(teamsEvent.usersById, function(user) {
+        if (_.contains(user.location.teamIds, added.id) && !teamsEvent.filteredUsersById[user.id]) {
+          usersAdded.push(user);
+          teamsEvent.filteredUsersById[user.id] = user;
+        }
+      });
+    });
+
+    observationsChanged({added: observationsAdded, removed: observationsRemoved});
+    usersChanged({added: usersAdded, removed: usersRemoved});
+  }
+
+  function onTimeIntervalChanged(interval) {
+    var event = FilterService.getEvent();
+    if (event) {
+      fetch(event, interval);
+    }
+  }
 
   var pollingServiceListener = {
     onPollingIntervalChanged: function(interval) {
@@ -216,8 +278,10 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
   function fetch(event, interval) {
     if (!eventsById[event.id]) {
       eventsById[event.id] = angular.copy(event);
+      eventsById[event.id].filteredObservationsById = {};
       eventsById[event.id].observationsById = {};
       eventsById[event.id].usersById = {};
+      eventsById[event.id].filteredUsersById = {};
     }
 
     var parameters = {};
@@ -245,25 +309,33 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
       var updated = [];
       var removed = [];
 
-      var observationsById = eventsById[event.id].observationsById;
+      var observationsById = {};
+      var filteredObservationsById = eventsById[event.id].filteredObservationsById;
       _.each(observations, function(observation) {
-        // Check if we already have this observation, if so update, otherwise add
-        var localObservation = observationsById[observation.id];
-        if (localObservation) {
-          if (localObservation.lastModified !== observation.lastModified) updated.push(observation);
-        } else {
-          added.push(observation);
-        }
+        // Check if this observation p***REMOVED***es the team filter.
+        if (areTeamsInFilter(observation.teamIds)) {
+          // Check if we already have this observation, if so update, otherwise add
+          var localObservation = filteredObservationsById[observation.id];
+          if (localObservation) {
+            if (localObservation.lastModified !== observation.lastModified) updated.push(observation);
+          } else {
+            added.push(observation);
+          }
 
-        // remove from list of observations if it came back from server
-        // remaining elements in this list will be removed
-        delete observationsById[observation.id];
+          // remove from list of observations if it came back from server
+          // remaining elements in this list will be removed
+          delete filteredObservationsById[observation.id];
+
+          observationsById[observation.id] = observation;
+        }
       });
 
       // remaining elements were not pulled from the server, hence we should remove them
-      removed = _.values(observationsById);
+      removed = _.values(filteredObservationsById);
 
       eventsById[event.id].observationsById = _.indexBy(observations, 'id');
+      eventsById[event.id].filteredObservationsById = observationsById;
+
       observationsChanged({added: added, updated: updated, removed: removed});
     });
   }
@@ -275,7 +347,8 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
       var removed = [];
 
       var users = [];
-      var usersById = eventsById[event.id].usersById;
+      var usersById = {};
+      var filteredUsersById = eventsById[event.id].filteredUsersById;
       _.each(userLocations, function(userLocation) {
         // Track each location feature by users id,
         // so update the locations id to match the usersId
@@ -284,26 +357,45 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
         userLocation.location = location;
         delete userLocation.locations;
 
-        // Check if we already have this user, if so update, otherwise add
-        var localUser = usersById[userLocation.id];
-        if (localUser) {
-          if (userLocation.location.properties.timestamp !== localUser.location.properties.timestamp) updated.push(userLocation);
-        } else {
-          added.push(userLocation);
-        }
+        if (areTeamsInFilter(userLocation.location.teamIds)) {
+          // Check if we already have this user, if so update, otherwise add
+          var localUser = filteredUsersById[userLocation.id];
+          if (localUser) {
+            if (userLocation.location.properties.timestamp !== localUser.location.properties.timestamp) updated.push(userLocation);
+          } else {
+            added.push(userLocation);
+          }
 
-        // remove from list of observations if it came back from server
-        // remaining elements in this list will be removed
-        delete usersById[userLocation.id];
+          // remove from list of observations if it came back from server
+          // remaining elements in this list will be removed
+          delete filteredUsersById[userLocation.id];
+
+          usersById[userLocation.id] = userLocation;
+        }
       });
 
       // remaining elements were not pulled from the server, hence we should remove them
-      removed = _.values(usersById);
+      removed = _.values(filteredUsersById);
 
       eventsById[event.id].usersById = _.indexBy(userLocations, 'id');
+      eventsById[event.id].filteredUsersById = usersById;
+
       usersChanged({added: added, updated: updated, removed: removed});
     });
   }
+
+  function areTeamsInFilter(teamIds) {
+    var filteredTeams = FilterService.getTeamsById();
+    if (_.isEmpty(filteredTeams)) return true;
+
+    for (var i = 0; i < teamIds.length; i++) {
+      var teamId = teamIds[i];
+      if (filteredTeams[teamId]) return true;
+    }
+
+    return false;
+  }
+
 
   var pollingTimeout = null;
   function poll(interval) {

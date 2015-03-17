@@ -30,6 +30,9 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   $scope.feedUsers = [];
   $scope.feedChangedUsers = {};
 
+  $scope.filteredEvent = FilterService.getEvent();
+  $scope.filteredInterval = FilterService.getTimeInterval().label;
+
   // TODO is there a better way to do this?
   // Need to hang onto popup scopes so that I can delete the scope if the observation
   // get deleted.  I.E. no observation, no popup so remove its scope
@@ -128,15 +131,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   EventService.addLayersChangedListener(layersChangedListener);
 
   var filterChangedListener = {
-    onEventChanged: function(changed) {
-      _.each(changed.removed, function(removed) {
-        $scope.feedChangedObservations = {count: 0};
-        $scope.feedChangedUsers = {};
-
-        firstUserChange = true;
-        firstObservationChange = true;
-      });
-    }
+    onFilterChanged: onFilterChanged
   };
   FilterService.addListener(filterChangedListener);
 
@@ -149,6 +144,29 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     onLocation: onLocation
   };
   MapService.addListener(locationListener);
+
+  function onFilterChanged(filter) {
+    $scope.feedChangedObservations = {count: 0};
+    $scope.feedChangedUsers = {};
+
+    firstUserChange = true;
+    firstObservationChange = true;
+
+    if (filter.event) $scope.filteredEvent = FilterService.getEvent();
+    if (filter.teams) $scope.filteredTeams = _.map(FilterService.getTeams(), function(t) { return t.name; }).join(', ');
+    if (filter.timeInterval) {
+      var interval = FilterService.getTimeInterval();
+      if (interval.filter !== 'all') {
+        if (interval.filter === 'custom') {
+          $scope.filteredInterval = 'Custom time interval';        // TODO
+        } else {
+          $scope.filteredInterval = interval.label;
+        }
+      } else {
+        $scope.filteredInterval = null;
+      }
+    }
+  }
 
   function onLayersChanged(changed, event) {
     var baseLayerFound = false;
