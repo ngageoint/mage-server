@@ -19,10 +19,24 @@
        </div>
      </div>
 
-    <div cl***REMOVED***="form-group">
-      <label>Time</label>
-      <select ng-model="interval" ng-options="interval.label for interval in intervals" cl***REMOVED***="form-control"></select>
-    </div>
+     <div cl***REMOVED***="form-group">
+       <label>Teams</label>
+       <div cl***REMOVED***="row">
+         <div cl***REMOVED***="col-md-12">
+           <ui-select multiple ng-model="filterTeams.selected" theme="bootstrap">
+             <ui-select-match placeholder="No team filter set">{{$item.name}}</ui-select-match>
+             <ui-select-choices repeat="team in filterEvent.selected.teams | filter: $select.search">
+               <div ng-bind-html="team.name | highlight: $select.search"></div>
+             </ui-select-choices>
+           </ui-select>
+          </div>
+        </div>
+      </div>
+
+      <div cl***REMOVED***="form-group">
+        <label>Time</label>
+        <select ng-model="interval" ng-options="interval.label for interval in intervals" cl***REMOVED***="form-control"></select>
+      </div>
 
       <div ng-show="interval.filter == 'custom'">
         <div cl***REMOVED***="form-group">

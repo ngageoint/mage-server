@@ -5,8 +5,10 @@ angular
   FilterController.$inject = ['$scope', '$modalInstance', 'EventService', 'FilterService', 'Event', 'events'];
 
 function FilterController($scope, $modalInstance, EventService, FilterService, Event, events) {
-  $scope.filterEvent = {selected: FilterService.getEvent()};
   $scope.events = events;
+
+  $scope.filterEvent = {selected: FilterService.getEvent()};
+  $scope.filterTeams = {selected: FilterService.getTeams()};
 
   $scope.intervals = FilterService.intervals;
   $scope.interval = FilterService.getTimeInterval();
@@ -19,8 +21,6 @@ function FilterController($scope, $modalInstance, EventService, FilterService, E
   $scope.endDatePopup = {open: false};
 
   $scope.performFilter = function() {
-    FilterService.setEvent($scope.filterEvent.selected);
-
     var options = {};
     if ($scope.interval.filter === 'custom') {
       options.startDate = $scope.startDate;
@@ -28,7 +28,14 @@ function FilterController($scope, $modalInstance, EventService, FilterService, E
       options.localTime = $scope.localTime;
     }
 
-    FilterService.setTimeInterval($scope.interval, options);
+    FilterService.setFilter({
+      event: $scope.filterEvent.selected,
+      teams: $scope.filterTeams.selected,
+      timeInterval: {
+        interval: $scope.interval,
+        options: options
+      }
+    });
 
     $modalInstance.dismiss('filter');
   }

@@ -200,6 +200,34 @@ textarea {
   width: 250px;
 }
 
+.filter-nav {
+	color: #345477;
+	font-size: 18px;
+}
+
+.filter-event {
+	font-family: Roboto;
+	font-weight: 500;
+}
+
+.filter-teams {
+	font-family: Roboto;
+	font-weight: 300;
+	margin-left: 5px;
+}
+
+.filter-interval {
+	font-family: Roboto;
+	font-weight: 500;
+	padding-left: 35px;
+}
+
+@media(max-width:768px){
+  .filter-interval {
+    padding-left: 0;
+  }
+}
+
 /* User management page styles */
 .admin-nav {
 	height: 40px;
@@ -253,15 +281,6 @@ a.admin-nav-inactive {
 	background-color: white;
 	border: 1px solid #ccc
 }
-
-/*.admin-table-nav {
-	background-color: #E2E2E2;
-}
-
-.admin-table-nav .brand {
-	color: #345477;
-	margin-left: 0px;
-}*/
 
 .admin-tab:hover a {
 	border-bottom: 2px solid #345477;
