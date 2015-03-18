@@ -1425,7 +1425,7 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
     restrict: 'EA',
     require: 'ngModel',
     scope: {
-      isOpen: '=',
+      isOpen: '=?',
       currentText: '@',
       clearText: '@',
       closeText: '@',
@@ -1437,8 +1437,6 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
           appendToBody = angular.isDefined(attrs.datepickerAppendToBody) ? scope.$parent.$eval(attrs.datepickerAppendToBody) : datepickerPopupConfig.appendToBody;
 
       scope.showButtonBar = angular.isDefined(attrs.showButtonBar) ? scope.$parent.$eval(attrs.showButtonBar) : datepickerPopupConfig.showButtonBar;
-
-      if (!scope.isOpen) scope.isOpen = {value: false};
 
       scope.getText = function( key ) {
         return scope[key + 'Text'] || datepickerPopupConfig[key + 'Text'];
@@ -1524,7 +1522,7 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
         ngModel.$render();
 
         if ( closeOnDateSelection ) {
-          scope.isOpen.value = false;
+          scope.isOpen = false;
           element[0].focus();
         }
       };
@@ -1543,9 +1541,9 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
       };
 
       var documentClickBind = function(event) {
-        if (scope.isOpen && scope.isOpen.value && event.target !== element[0]) {
+        if (scope.isOpen && event.target !== element[0]) {
           scope.$apply(function() {
-            scope.isOpen.value = false;
+            scope.isOpen = false;
           });
         }
       };
@@ -1560,13 +1558,13 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
           evt.preventDefault();
           evt.stopPropagation();
           scope.close();
-        } else if (evt.which === 40 && (scope.isOpen && !scope.isOpen.value)) {
-          scope.isOpen.value = true;
+        } else if (evt.which === 40 && !scope.isOpen) {
+          scope.isOpen = true;
         }
       };
 
       scope.$watch('isOpen', function(value) {
-        if (value && value.value === true) {
+        if (value) {
           scope.$broadcast('datepicker.focus');
           scope.position = appendToBody ? $position.offset(element) : $position.position(element);
           scope.position.top = scope.position.top + element.prop('offsetHeight');
@@ -1591,7 +1589,7 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
       };
 
       scope.close = function() {
-        scope.isOpen.value = false;
+        scope.isOpen = false;
         element[0].focus();
       };
 
@@ -3676,7 +3674,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //we need to propagate user's query so we can higlight matches
       scope.query = undefined;
 
-      //Declare the timeout promise var outside the function scope so that stacked calls can be cancelled later
+      //Declare the timeout promise var outside the function scope so that stacked calls can be cancelled later 
       var timeoutPromise;
 
       var scheduleSearchWithTimeout = function(inputValue) {
