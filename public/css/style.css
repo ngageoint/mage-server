@@ -202,7 +202,12 @@ textarea {
 
 .filter-nav {
 	color: #345477;
+	background-color: #E2E2E2;
 	font-size: 18px;
+	z-index: 1029;
+	position: fixed;
+	right: 0;
+	left: 0;
 }
 
 .filter-event {
