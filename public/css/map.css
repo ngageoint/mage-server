@@ -38,6 +38,18 @@ header.navbar {
   background: #5278A2;
 }
 
+.mage-map {
+  padding-top: 23px;
+  height: 100%
+}
+
+@media(max-width: 768px) {
+	.mage-map {
+    padding-top: 46px;
+	}
+}
+
+
 .news-feed-pane {
 	position: absolute;
 	top: 0;
