@@ -20,7 +20,7 @@ function ExportController($scope, $modalInstance, $http, LocalStorageService, Fi
   $scope.localTime = true;
 
   $scope.startDate = moment().startOf('day').toDate();
-  $scope.endDate = moment().add(1, 'days').toDate();
+  $scope.endDate = moment().endOf('day').toDate();
 
   $scope.startDatePopup = {open: false};
   $scope.endDatePopup = {open: false};
