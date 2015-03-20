@@ -92,7 +92,7 @@ app.use(require('body-parser')({ keepExtensions: true}));
 app.use(require('method-override')());
 app.use(require('multer')());
 app.use(authentication.p***REMOVED***port.initialize());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, process.env.NODE_ENV === 'production' ? 'pubic/dist' : 'public')));
 app.use('/api/swagger', express.static('./public/vendor/swagger-ui/'));
 app.use('/private',
   authentication.p***REMOVED***port.authenticate(authentication.authenticationStrategy),
