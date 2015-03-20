@@ -9,7 +9,7 @@ angular
     "ngRoute",
     'ngResource',
     "http-auth-interceptor"
-  ]).config(config);
+  ]).config(config).run(run);
 
 config.$inject = ['$routeProvider', '$locationProvider', '$httpProvider'];
 
