@@ -82,7 +82,7 @@ function run($rootScope, $modal, UserService, $location, authService) {
       var modalInstance = $modal.open({
         backdrop: 'static',
         templateUrl: 'app/signin/signin-modal.html',
-        controller: function ($scope, $modalInstance, authService) {
+        controller: ['$scope', '$modalInstance', 'authService', function ($scope, $modalInstance, authService) {
           var oldUsername = UserService.myself && UserService.myself.username || undefined;
           $scope.login = function (data) {
             UserService.login(data).success(function(){
@@ -101,7 +101,7 @@ function run($rootScope, $modal, UserService, $location, authService) {
             $rootScope.loginDialogPresented = false;
             $modalInstance.dismiss('cancel');
           };
-        }
+        }]
       });
 
       modalInstance.result.then(function () {
