@@ -254,7 +254,7 @@ exports.removeDevice = function(device, callback) {
   var update = { '$unset': { deviceId: true } };
   var options = { multi: true };
 
-  Events.getEvents(function(err, events) {
+  Event.getEvents(function(err, events) {
     async.each(events, function(event, done) {
       observationModel(event).update(condition, update, options, function(err, numberAffected) {
         console.log('Remove deleted device from ' + numberAffected + ' documents for event ' + event.name);

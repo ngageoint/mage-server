@@ -118,7 +118,7 @@ function AdminUsersController($scope, $injector, $filter, LocalStorageService, U
           return user;
         }
       },
-      controller: function ($scope, $modalInstance, user) {
+      controller: ['$scope', '$modalInstance', 'user', function ($scope, $modalInstance, user) {
         $scope.user = user;
 
         $scope.deleteUser = function(user, force) {
@@ -129,7 +129,7 @@ function AdminUsersController($scope, $injector, $filter, LocalStorageService, U
         $scope.cancel = function () {
           $modalInstance.dismiss('cancel');
         };
-      }
+      }]
     });
 
     modalInstance.result.then(function(user) {

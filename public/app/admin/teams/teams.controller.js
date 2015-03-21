@@ -89,7 +89,7 @@ function AdminTeamsController($scope, $injector, LocalStorageService, Observatio
           return $scope.team;
         }
       },
-      controller: function ($scope, $modalInstance, team) {
+      controller: ['$scope', '$modalInstance', 'team', function ($scope, $modalInstance, team) {
         $scope.team = team;
 
         $scope.deleteTeam = function(team, force) {
@@ -100,7 +100,7 @@ function AdminTeamsController($scope, $injector, LocalStorageService, Observatio
         $scope.cancel = function () {
           $modalInstance.dismiss('cancel');
         };
-      }
+      }]
     });
 
     modalInstance.result.then(function (team) {
