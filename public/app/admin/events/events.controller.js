@@ -350,7 +350,7 @@ function AdminEventsController($scope, $injector, $filter, $timeout, $q, LocalSt
           return $scope.event;
         }
       },
-      controller: function ($scope, $modalInstance, event) {
+      controller: ['$scope', '$modalInstance', 'event', function ($scope, $modalInstance, event) {
         $scope.event = event;
 
         $scope.deleteEvent = function(event, force) {
@@ -363,7 +363,7 @@ function AdminEventsController($scope, $injector, $filter, $timeout, $q, LocalSt
         $scope.cancel = function () {
           $modalInstance.dismiss('cancel');
         };
-      }
+      }]
     });
 
     modalInstance.result.then(function (event) {

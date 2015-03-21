@@ -2,7 +2,7 @@ angular
   .module('mage')
   .controller('AboutController', AboutController);
 
-  AboutController.$inject = ['$scope', 'AboutService'];
+AboutController.$inject = ['$scope', 'AboutService'];
 
 function AboutController ($scope, AboutService) {
 

@@ -100,7 +100,7 @@ function AdminDevicesController($scope, $injector, $filter, LocalStorageService,
           return device;
         }
       },
-      controller: function ($scope, $modalInstance, device) {
+      controller: ['$scope', '$modalInstance', 'device', function ($scope, $modalInstance, device) {
         $scope.device = device;
 
         $scope.deleteDevice = function(device, force) {
@@ -111,7 +111,7 @@ function AdminDevicesController($scope, $injector, $filter, LocalStorageService,
         $scope.cancel = function () {
           $modalInstance.dismiss('cancel');
         };
-      }
+      }]
     });
 
     modalInstance.result.then(function(device) {

@@ -68,7 +68,7 @@ function AdminLayersController($scope, $injector, LocalStorageService, Layer) {
           return $scope.layer;
         }
       },
-      controller: function ($scope, $modalInstance, layer) {
+      controller: ['$scope', '$modalInstance', 'layer', function ($scope, $modalInstance, layer) {
         $scope.layer = layer;
 
         $scope.deleteLayer = function(layer, force) {
@@ -79,7 +79,7 @@ function AdminLayersController($scope, $injector, LocalStorageService, Layer) {
         $scope.cancel = function () {
           $modalInstance.dismiss('cancel');
         };
-      }
+      }]
     });
 
     modalInstance.result.then(function (layer) {
