@@ -19,7 +19,6 @@ module.exports = function(p***REMOVED***port) {
         if (credentials.deviceId) {
           req.provisionedDeviceId = credentials.deviceId;
         }
-
         return done(null, credentials.user, { scope: 'all' });
       });
     }

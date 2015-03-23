@@ -2,23 +2,26 @@ angular
   .module('mage')
   .controller('NavController', NavController);
 
-NavController.$inject =  ['$scope', '$q', '$location', '$modal', 'UserService', 'FilterService', 'PollingService', 'Event'];
+NavController.$inject =  ['$rootScope', '$scope', '$q', '$location', '$modal', 'UserService', 'FilterService', 'PollingService', 'Event'];
 
-function NavController($scope, $q, $location, $modal, UserService, FilterService, PollingService, Event) {
+function NavController($rootScope, $scope, $q, $location, $modal, UserService, FilterService, PollingService, Event) {
   var events = [];
   $scope.location = $location;
 
   $scope.pollingInterval = 30000;
 
-  $scope.$on('logout', function() {
+  $rootScope.$on('login', function(e, login) {
+    $scope.token = login.token;
+    $scope.myself = login.user;
+    $scope.amAdmin = login.isAdmin;
+  });
+
+  $rootScope.$on('logout', function() {
     $scope.myself = null;
     $scope.amAdmin = null;
   });
 
   $scope.$on('$routeChangeSuccess', function() {
-    $scope.myself = UserService.myself;
-    $scope.amAdmin = UserService.amAdmin;
-
     if ($location.path() === '/map') {
       events = Event.query(function(response) {
         var recentEventId = UserService.getRecentEventId();
