@@ -31,7 +31,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   $scope.feedChangedUsers = {};
 
   $scope.filteredEvent = FilterService.getEvent();
-  $scope.filteredInterval = FilterService.getTimeInterval().label;
+  $scope.filteredInterval = FilterService.getIntervalChoice().label;
 
   // TODO is there a better way to do this?
   // Need to hang onto popup scopes so that I can delete the scope if the observation
@@ -155,12 +155,12 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     if (filter.event) $scope.filteredEvent = FilterService.getEvent();
     if (filter.teams) $scope.filteredTeams = _.map(FilterService.getTeams(), function(t) { return t.name; }).join(', ');
     if (filter.timeInterval) {
-      var interval = FilterService.getTimeInterval();
-      if (interval.filter !== 'all') {
-        if (interval.filter === 'custom') {
+      var intervalChoice = FilterService.getIntervalChoice();
+      if (intervalChoice.filter !== 'all') {
+        if (intervalChoice.filter === 'custom') {
           $scope.filteredInterval = 'Custom time interval';        // TODO
         } else {
-          $scope.filteredInterval = interval.label;
+          $scope.filteredInterval = intervalChoice.label;
         }
       } else {
         $scope.filteredInterval = null;
