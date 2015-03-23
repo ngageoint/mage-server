@@ -2,6 +2,7 @@ var mongoose = require('mongoose')
   , async = require("async")
   , hasher = require('../utilities/pbkdf2')()
   , Token = require('../models/token')
+  , Login = require('../models/login')
   , Observation = require('../models/observation')
   , Location = require('../models/location')
   , CappedLocation = require('../models/cappedLocation');
@@ -113,6 +114,11 @@ UserSchema.pre('remove', function(next) {
     },
     token: function(done) {
       Token.removeTokensForUser(user, function(err) {
+        done(err);
+      });
+    },
+    login: function(done) {
+      Login.removeLoginsForUser(user, function(err) {
         done(err);
       });
     },
