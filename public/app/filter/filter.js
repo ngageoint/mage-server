@@ -10,8 +10,8 @@ function FilterController($scope, $modalInstance, EventService, FilterService, E
   $scope.filterEvent = {selected: FilterService.getEvent()};
   $scope.filterTeams = {selected: FilterService.getTeams()};
 
-  $scope.intervals = FilterService.intervals;
-  $scope.interval = FilterService.getTimeInterval();
+  $scope.intervalChoices = FilterService.intervals;
+  $scope.intervalChoice = FilterService.getIntervalChoice();
   $scope.localTime = true;
   $scope.localOffset = moment().format('Z');
   $scope.startDate = moment().startOf('day').toDate();
@@ -22,7 +22,7 @@ function FilterController($scope, $modalInstance, EventService, FilterService, E
 
   $scope.performFilter = function() {
     var options = {};
-    if ($scope.interval.filter === 'custom') {
+    if ($scope.intervalChoice.filter === 'custom') {
       options.startDate = $scope.startDate;
       options.endDate = $scope.endDate;
       options.localTime = $scope.localTime;
@@ -32,7 +32,7 @@ function FilterController($scope, $modalInstance, EventService, FilterService, E
       event: $scope.filterEvent.selected,
       teams: $scope.filterTeams.selected,
       timeInterval: {
-        interval: $scope.interval,
+        choice: $scope.intervalChoice,
         options: options
       }
     });

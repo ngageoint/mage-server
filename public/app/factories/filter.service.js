@@ -7,13 +7,12 @@ FilterService.$inject = ['UserService'];
 function FilterService(UserService) {
   var event = null;
   var teamsById = {};
-  var interval = null;
   var listeners = [];
 
-  var timeInterval = {};
+  var intervalChoice = {};
   var filterLocalOffset = moment().format('Z');
 
-  var intervals = [{
+  var intervalChoices = [{
     filter: 'all',
     label: 'All'
   },{
@@ -35,10 +34,11 @@ function FilterService(UserService) {
     filter: 'custom',
     label: 'Custom'
   }];
-  setTimeInterval(intervals[1]);
+  setIntervalChoice(intervalChoices[1]);
+  filterChanged({intervalChoice: intervalChoice});
 
   var ***REMOVED*** = {
-    intervals: intervals,
+    intervals: intervalChoices,
     addListener: addListener,
     removeListener: removeListener,
     setFilter: setFilter,
@@ -46,7 +46,7 @@ function FilterService(UserService) {
     getTeams: getTeams,
     getTeamsById: getTeamsById,
     formatInterval: formatInterval,
-    getTimeInterval: getTimeInterval
+    getIntervalChoice: getIntervalChoice
   };
 
   return ***REMOVED***;
@@ -54,12 +54,14 @@ function FilterService(UserService) {
   function addListener(listener) {
     listeners.push(listener);
 
-    if (event && _.isFunction(listener.onEventChanged)) {
-      listener.onEventChanged(event);
-    }
-
-    if (interval && _.isFunction(listener.onTimeIntervalChanged)) {
-      listener.onTimeIntervalChanged(interval);
+    if (_.isFunction(listener.onFilterChanged)) {
+      listener.onFilterChanged({
+        event: event,
+        teams: _.values(teamsById),
+        timeInterval: {
+          choice: intervalChoice
+        }
+      });
     }
   }
 
@@ -72,17 +74,22 @@ function FilterService(UserService) {
     teamsChanged = null;
     timeIntervalChanged = null;
 
-    if (filter.event && !filter.teams) {
-      eventChanged = setEvent(filter.event);
-      teamsChanged = setTeams([]);
-    }
-
     if (filter.teams) {
       teamsChanged = setTeams(filter.teams);
     }
 
-    if (filter.timeInterval) {
-      timeIntervalChanged = setTimeInterval(filter.timeInterval.interval, filter.timeInterval.options);
+    if (filter.event) {
+      eventChanged = setEvent(filter.event);
+
+      // if they changed the event, and didn't set teams filter
+      // then reset teams filter to empty array
+      if (!filter.teams) {
+        teamsChanged = setTeams([]);
+      }
+    }
+
+    if (filter.timeInterval && setIntervalChoice(filter.timeInterval.choice)) {
+      timeIntervalChanged = filter.timeInterval;
     }
 
     var changed = {};
@@ -156,32 +163,28 @@ function FilterService(UserService) {
     return teamsById;
   }
 
-  function formatInterval(interval) {
-    if (interval.since != null) {
-      return { start: moment().utc().subtract('seconds', interval.since).toISOString() };
-    } else if (interval.today) {
-      return { start: moment().startOf('day').toISOString() };
-    } else if (interval.start || interval.end) {
-      return { start: interval.start, end: interval.end };
-    } else {
-      return null;
-    }
-  }
-
-  function getTimeInterval() {
-    return interval;
+  function getIntervalChoice() {
+    return intervalChoice;
   };
 
-  function setTimeInterval(newInterval, options) {
-    if (interval != null && interval === newInterval) return null;
+  function setIntervalChoice(choice) {
+    if (intervalChoice === choice) return false;
 
-    interval = newInterval;
+    intervalChoice = choice;
+    return true;
+  }
 
-    if (newInterval.filter === 'all') {
-      timeInterval = null;
-    } else if (newInterval.filter == 'today') {
-      timeInterval = { today: true };
-    } else if (newInterval.filter == 'custom') {
+  function formatInterval(interval) {
+    if (!interval) return null;
+
+    var choice = interval.choice;
+    var options = interval.options;
+
+    if (choice.filter === 'all') {
+      return null;
+    } else if (choice.filter == 'today') {
+      return { start: moment().startOf('day').toISOString() };
+    } else if (choice.filter == 'custom') {
       var startDate = moment(options.startDate);
       if (startDate) {
         startDate = options.localTime ? startDate.utc() : startDate;
@@ -194,12 +197,10 @@ function FilterService(UserService) {
         var end = endDate.format("YYYY-MM-DD HH:mm:ss");
       }
 
-      timeInterval = {start: start, end: end};
+      return { start: start, end: end };
     } else {
-      timeInterval = { since: parseInt(newInterval.filter) }
+      return { start: moment().utc().subtract('seconds', parseInt(choice.filter)).toISOString() };
     }
-
-    return timeInterval;
   }
 
   function filterChanged(filter) {
@@ -209,28 +210,4 @@ function FilterService(UserService) {
       }
     });
   }
-
-  // function eventChanged(event) {
-  //   _.each(listeners, function(listener) {
-  //     if (_.isFunction(listener.onEventChanged)) {
-  //       listener.onEventChanged(event);
-  //     }
-  //   });
-  // }
-  //
-  // function teamsChanged(changed) {
-  //   _.each(listeners, function(listener) {
-  //     if (_.isFunction(listener.onTeamsChanged)) {
-  //       listener.onTeamsChanged(changed, event);
-  //     }
-  //   });
-  // }
-  //
-  // function timeIntervalChanged(interval) {
-  //   _.each(listeners, function(listener) {
-  //     if (_.isFunction(listener.onTimeIntervalChanged)) {
-  //       listener.onTimeIntervalChanged(interval);
-  //     }
-  //   });
-  // }
 }
