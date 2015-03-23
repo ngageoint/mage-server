@@ -1,5 +1,6 @@
 var UserModel = require('../models/user')
   , TokenModel = require('../models/token')
+  , DeviceModel = require('../models/device')
   , path = require('path')
   , fs = require('fs-extra')
   , async = require('async')
@@ -31,11 +32,15 @@ User.prototype.login = function(user, device, options, callback) {
   TokenModel.createToken({userId: user._id, device: device}, function(err, token) {
     if (err) return callback(err);
 
-    // set user-agent and mage version on user
-    user.userAgent = options.userAgent;
-    user.mageVersion = options.version;
-    UserModel.updateUser(user, function(err, updatedUser) {
-      callback(null, token, updatedUser);
+    callback(null, token);
+
+    var update = {
+      userId: user._id
+    };
+    if (options.userAgent) update.userAgent = options.userAgent;
+    if (options.appVersion) update.appVersion = options.appVersion;
+    DeviceModel.updateDevice(device._id, update, function(err, device) {
+      if (err) console.log('could not update device on login', err);
     });
   });
 }
