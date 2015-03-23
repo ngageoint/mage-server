@@ -188,6 +188,32 @@
                 }
             }
         },
+        "/api/users/{id}/logins": {
+            "get": {
+                "description": "Returns users logins",
+                "operationId": "getUserLogins",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of user",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "User"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "login response",
+                        "schema": {
+                            "$ref": "#/definitions/Login"
+                        }
+                    }
+                }
+            }
+        },
         "/api/users/{id}/avatar": {
             "get": {
                 "description": "Returns users avatar based on user id",
@@ -1927,6 +1953,20 @@
                 },
                 "avatarUrl": {
                     "type": "string"
+                }
+            }
+        },
+        "Login": {
+            "required": [
+                "timestamp",
+                "device"
+            ],
+            "properties": {
+                "timestamp": {
+                    "type": "string"
+                },
+                "device": {
+                    "$ref": "#/definitions/Device"
                 }
             }
         },

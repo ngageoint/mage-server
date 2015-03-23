@@ -11,8 +11,8 @@ var LoginSchema = new Schema({
 });
 
 var transform = function(login, ret, options) {
-  if ('function' != typeof user.ownerDocument) {
-    ret.timestamp = _id.getTimestamp();
+  if ('function' != typeof login.ownerDocument) {
+    ret.timestamp = ret._id.getTimestamp();
     delete ret._id;
   }
 }
@@ -31,11 +31,15 @@ exports.getLoginsForUser = function(user, options, callback) {
     userId: user._id
   };
 
-  // TODO sort newest to oldest
+  var o = {
+    limit: 10,
+    sort: {
+      _id: -1
+    }
+  };
+  if (options.limit) o.limit = options.limit;
 
-  // TODO set limit
-
-  Login.find(conditions, function (err, logins) {
+  Login.find(conditions, null, o, function (err, logins) {
     if (err) return callback(err);
 
     callback(err, logins);

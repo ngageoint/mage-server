@@ -419,4 +419,20 @@ module.exports = function(app, security) {
     }
   );
 
+  app.get(
+    '/api/users/:userId/logins',
+    p***REMOVED***port.authenticate(authenticationStrategy),
+    access.authorize('READ_USER'),
+    function(req, res, next) {
+      var options = {};
+      if (req.param('limit')) options.limit = req.param('limit');
+
+      new api.User().getLogins(req.user, options, function(err, logins) {
+        if (err) return next(err);
+
+        res.json(logins);
+      });
+    }
+  );
+
 }
