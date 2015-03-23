@@ -19,32 +19,31 @@ var PhoneSchema = new Schema({
 
 // Collection to hold users
 var UserSchema = new Schema({
-    username: { type: String, required: true, unique: true },
-    p***REMOVED***word: { type: String, required: true },
-    firstname: { type: String, required: true },
-    lastname: {type: String, required: true },
-    email: {type: String, required: false },
-    phones: [PhoneSchema],
-    avatar: {
-      contentType: { type: String, required: false },
-      size: { type: Number, required: false },
-      relativePath: { type: String, required: false }
-    },
-    icon: {
-      contentType: { type: String, required: false },
-      size: { type: Number, required: false },
-      relativePath: { type: String, required: false }
-    },
-    active: { type: Boolean, required: true },
-    roleId: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
-    status: { type: String, required: false, index: 'sparse' },
-    recentEventIds: [{type: Number, ref: 'Event'}],
-    userAgent: {type: String, required: false },  // TODO move this to device, store last 10 device ids here instead
-    mageVersion: {type: String, required: false } // TODO move this to device
-  },{
-    versionKey: false
-  }
-);
+  username: { type: String, required: true, unique: true },
+  p***REMOVED***word: { type: String, required: true },
+  firstname: { type: String, required: true },
+  lastname: {type: String, required: true },
+  email: {type: String, required: false },
+  phones: [PhoneSchema],
+  avatar: {
+    contentType: { type: String, required: false },
+    size: { type: Number, required: false },
+    relativePath: { type: String, required: false }
+  },
+  icon: {
+    contentType: { type: String, required: false },
+    size: { type: Number, required: false },
+    relativePath: { type: String, required: false }
+  },
+  active: { type: Boolean, required: true },
+  roleId: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
+  status: { type: String, required: false, index: 'sparse' },
+  recentEventIds: [{type: Number, ref: 'Event'}],
+  userAgent: {type: String, required: false },  // TODO move this to device, store last 10 device ids here instead
+  mageVersion: {type: String, required: false } // TODO move this to device
+},{
+  versionKey: false
+});
 
 UserSchema.method('validP***REMOVED***word', function(p***REMOVED***word, callback) {
   var user = this;
@@ -220,13 +219,11 @@ exports.createUser = function(user, callback) {
   });
 }
 
-exports.updateUser = function(user, callback) {
-  user.save(function(err) {
-    if (err) {
-      console.log('Could not update user ' + user.username + ' error ' + err);
-    }
+exports.updateUser = function(id, update, callback) {
+  User.findByIdAndUpdate(id, update, function(err, updatedUser) {
+    if (err) console.log('Could not update user', err);
 
-    callback(err, user)
+    callback(err, updatedUser)
   });
 }
 
