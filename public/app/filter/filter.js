@@ -20,6 +20,10 @@ function FilterController($scope, $modalInstance, EventService, FilterService, E
   $scope.startDatePopup = {open: false};
   $scope.endDatePopup = {open: false};
 
+  $scope.onEventChange = function() {
+    $scope.filterTeams = {};
+  }
+
   $scope.performFilter = function() {
     var options = {};
     if ($scope.intervalChoice.filter === 'custom') {

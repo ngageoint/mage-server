@@ -9,7 +9,7 @@
       <label>Event</label>
       <div cl***REMOVED***="row">
         <div cl***REMOVED***="col-md-12">
-          <ui-select ng-model="filterEvent.selected" theme="bootstrap">
+          <ui-select ng-model="filterEvent.selected" theme="bootstrap" ng-change="onEventChange()">
             <ui-select-match placeholder="Select an event">{{$select.selected.name}}</ui-select-match>
             <ui-select-choices repeat="event in events | orderBy: 'name' | filter: $select.search">
               <div ng-bind-html="event.name | highlight: $select.search"></div>
