@@ -11,10 +11,11 @@ var Schema = mongoose.Schema;
 // TODO cascade delete from userId when user is deleted.
 var DeviceSchema = new Schema({
     uid: { type: String, required: true, unique: true },
-    name: { type: String, required: false },
     description: { type: String, required: false },
     registered: { type: Boolean, required: true },
-    userId: Schema.Types.ObjectId,
+    userId: { type: Schema.Types.ObjectId, ref: 'User' },
+    userAgent: { type: String, required: false },
+    appVersion: { type: String, required: false }
   },{
     versionKey: false
   }
@@ -146,12 +147,7 @@ exports.createDevice = function(device, callback) {
 }
 
 exports.updateDevice = function(id, update, callback) {
-  console.log('update device: ' + JSON.stringify(update));
   Device.findByIdAndUpdate(id, update, function(err, updatedDevice) {
-    if (err) {
-      console.log('Could not update device ' + id + ' err: ' + err);
-    }
-
     callback(err, updatedDevice);
   });
 }

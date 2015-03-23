@@ -38,9 +38,7 @@ var UserSchema = new Schema({
   active: { type: Boolean, required: true },
   roleId: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
   status: { type: String, required: false, index: 'sparse' },
-  recentEventIds: [{type: Number, ref: 'Event'}],
-  userAgent: {type: String, required: false },  // TODO move this to device, store last 10 device ids here instead
-  mageVersion: {type: String, required: false } // TODO move this to device
+  recentEventIds: [{type: Number, ref: 'Event'}]
 },{
   versionKey: false
 });

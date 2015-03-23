@@ -42,6 +42,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
   function login(data) {
     userDeferred = $q.defer();
 
+    data.appVersion = 'Web Client';
     var promise = $http.post(
      '/api/login',
       $.param(data),

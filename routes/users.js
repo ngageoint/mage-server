@@ -123,8 +123,8 @@ module.exports = function(app, security) {
     p***REMOVED***port.authenticate(loginStrategy),
     provision.check(provisionStrategy),
     function(req, res) {
-      var options = {userAgent: req.headers['user-agent'], version: req.param('mageVersion')};
-      new api.User().login(req.user, req.provisionedDevice, options, function(err, token, user) {
+      var options = {userAgent: req.headers['user-agent'], appVersion: req.param('appVersion')};
+      new api.User().login(req.user, req.provisionedDevice, options, function(err, token) {
         res.json({
           token: token.token,
           expirationDate: token.expirationDate,
