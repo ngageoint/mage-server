@@ -1,6 +1,7 @@
 var UserModel = require('../models/user')
   , TokenModel = require('../models/token')
   , DeviceModel = require('../models/device')
+  , LoginModel = require('../models/login')
   , path = require('path')
   , fs = require('fs-extra')
   , async = require('async')
@@ -33,6 +34,10 @@ User.prototype.login = function(user, device, options, callback) {
     if (err) return callback(err);
 
     callback(null, token);
+
+    LoginModel.createLogin(user, device, function(err, login) {
+      if (err) console.log('could not add login', err);
+    });
 
     var update = {
       userId: user._id
