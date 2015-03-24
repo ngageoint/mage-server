@@ -9,7 +9,7 @@ function FilterService(UserService) {
   var teamsById = {};
   var listeners = [];
 
-  var intervalChoice = {};
+  var interval = {};
   var filterLocalOffset = moment().format('Z');
 
   var intervalChoices = [{
@@ -34,14 +34,16 @@ function FilterService(UserService) {
     filter: 'custom',
     label: 'Custom'
   }];
-  setIntervalChoice(intervalChoices[1]);
-  filterChanged({intervalChoice: intervalChoice});
+  setTimeInterval({choice: intervalChoices[1]});
+  filterChanged({intervalChoice: interval.choice});
 
   var ***REMOVED*** = {
     intervals: intervalChoices,
     addListener: addListener,
     removeListener: removeListener,
     setFilter: setFilter,
+    isContainedWithinFilter: isContainedWithinFilter,
+    areTeamsInFilter: areTeamsInFilter,
     getEvent: getEvent,
     getTeams: getTeams,
     getTeamsById: getTeamsById,
@@ -59,7 +61,7 @@ function FilterService(UserService) {
         event: event,
         teams: _.values(teamsById),
         timeInterval: {
-          choice: intervalChoice
+          choice: interval.choice
         }
       });
     }
@@ -88,7 +90,7 @@ function FilterService(UserService) {
       }
     }
 
-    if (filter.timeInterval && setIntervalChoice(filter.timeInterval.choice)) {
+    if (filter.timeInterval && setTimeInterval(filter.timeInterval)) {
       timeIntervalChanged = filter.timeInterval;
     }
 
@@ -164,14 +166,42 @@ function FilterService(UserService) {
   }
 
   function getIntervalChoice() {
-    return intervalChoice;
+    return interval.choice;
   };
 
-  function setIntervalChoice(choice) {
-    if (intervalChoice === choice) return false;
+  function setTimeInterval(newInterval) {
+    if (interval.choice === newInterval.choice) return false;
 
-    intervalChoice = choice;
+    interval = newInterval;
     return true;
+  }
+
+  function isContainedWithinFilter(o) {
+    if (!areTeamsInFilter(o.teamIds)) return false;
+
+    var time = formatInterval(interval);
+    if (time) {
+      if (time.start && time.end) {
+        if (!moment(o.timestamp).isBetween(time.start, time.end)) return false;
+      } else if (time.start) {
+        if (!moment(o.timestamp).isAfter(time.start)) return false;
+      } else if (time.end) {
+        if (!moment(o.timestamp).isBefore(time.start)) return false;
+      }
+    }
+
+    return true;
+  }
+
+  function areTeamsInFilter(teamIds) {
+    if (_.isEmpty(teamsById)) return true;
+
+    for (var i = 0; i < teamIds.length; i++) {
+      var teamId = teamIds[i];
+      if (teamsById[teamId]) return true;
+    }
+
+    return false;
   }
 
   function formatInterval(interval) {
