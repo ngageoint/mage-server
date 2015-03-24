@@ -282,7 +282,7 @@ module.exports = function(app, security) {
     '/api/users',
     getDefaultRole,
     validateUser,
-    function(req, res) {
+    function(req, res, next) {
       req.newUser.active = false;
       req.newUser.roleId = req.role._id;
 
@@ -333,18 +333,18 @@ module.exports = function(app, security) {
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('UPDATE_USER'),
     function(req, res, next) {
-      var user = req.userParam;
+      var update = {};
 
-      if (req.param('username')) user.username = req.param('username');
-      if (req.param('firstname')) user.firstname = req.param('firstname');
-      if (req.param('lastname')) user.lastname = req.param('lastname');
-      if (req.param('email')) user.email = req.param('email');
-      if (req.param('active')) user.active = req.param('active');
-      if (req.param('role')) user.role = req.param('role');
+      if (req.param('username')) update.username = req.param('username');
+      if (req.param('firstname')) update.firstname = req.param('firstname');
+      if (req.param('lastname')) update.lastname = req.param('lastname');
+      if (req.param('email')) update.email = req.param('email');
+      if (req.param('active')) update.active = req.param('active');
+      if (req.param('role')) update.role = req.param('role');
 
       var phone = req.param('phone');
       if (phone) {
-        user.phones = [{
+        update.phones = [{
           type: "Main",
           number: phone
         }];
@@ -361,10 +361,10 @@ module.exports = function(app, security) {
           return res.status(400).send('p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
         }
 
-        user.p***REMOVED***word = p***REMOVED***word;
+        update.p***REMOVED***word = p***REMOVED***word;
       }
 
-      new api.User().update(user, {avatar: req.files.avatar, icon: req.files.icon}, function(err, updatedUser) {
+      new api.User().update(req.userParam.id, update, {avatar: req.files.avatar, icon: req.files.icon}, function(err, updatedUser) {
         if (err) return next(err);
 
         updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});

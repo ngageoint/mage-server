@@ -49,7 +49,6 @@ header.navbar {
 	}
 }
 
-
 .news-feed-pane {
 	position: absolute;
 	top: 0;
@@ -142,12 +141,6 @@ a.news-feed-tab-active {
 	bottom: 0;
 	width: 100%;
 	/*z-index:6;*/
-}
-
-@media(max-width:767px){
-  .news-items-wrapper {
-    top: 200px !important;
-  }
 }
 
 .news-feed-item {

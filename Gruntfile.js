@@ -16,7 +16,8 @@ module.exports = function(grunt) {
       },
       images: {
         files: [{expand: true, cwd: 'public/', src: ['img/**/*'], dest: 'public/dist/'},
-                {expand: true, cwd: 'public/bower_components/leaflet/dist', src: ['images/**/*'], dest: 'public/dist/vendor/css'}]
+                {expand: true, cwd: 'public/bower_components/leaflet/dist', src: ['images/**/*'], dest: 'public/dist/vendor/css'},
+                {expand: true, cwd: 'public/bower_components/Leaflet.awesome-markers/dist', src: ['images/**/*'], dest: 'public/dist/vendor/css'}]
       },
       fonts: {
         files: [{expand: true, cwd: 'public/', src: ['fonts/**/*'], dest: 'public/dist/'},
