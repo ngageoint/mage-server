@@ -226,9 +226,9 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     _.each(changed.updated, function(updated) {
       var observation = observationsById[updated.id];
       if (observation) {
-        observation = updated;
+        observationsById[updated.id] = updated;
 
-        MapService.updateFeatureForLayer(observation, 'Observations');
+        MapService.updateFeatureForLayer(updated, 'Observations');
       }
     });
 

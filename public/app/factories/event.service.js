@@ -48,7 +48,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     // remove observations that are not part of filtered teams
     var observationsRemoved = [];
     _.each(teamsEvent.filteredObservationsById, function(observation) {
-      if (!areTeamsInFilter(observation.teamIds)) {
+      if (!FilterService.areTeamsInFilter(observation.teamIds)) {
         delete teamsEvent.filteredObservationsById[observation.id];
         observationsRemoved.push(observation);
       }
@@ -57,7 +57,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     // remove users that are not part of filtered teams
     var usersRemoved = [];
     _.each(teamsEvent.filteredUsersById, function(user) {
-      if (!areTeamsInFilter(user.location.teamIds)) {
+      if (!FilterService.areTeamsInFilter(user.location.teamIds)) {
         delete teamsEvent.filteredUsersById[user.id];
         usersRemoved.push(user);
       }
@@ -183,7 +183,12 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     var isNewObservation = observation.id == null;
     return ObservationService.saveObservationForEvent(event, observation).then(function(observation) {
       event.observationsById[observation.id] = observation;
-      isNewObservation ? observationsChanged({added: [observation]}) : observationsChanged({updated: [observation]});
+
+      // Check if this new observation p***REMOVED***es the current filter
+      if (FilterService.isContainedWithinFilter({teamIds: observation.teamIds, timestamp: observation.properties.timestamp})) {
+        event.filteredObservationsById[observation.id] = observation;
+        isNewObservation ? observationsChanged({added: [observation]}) : observationsChanged({updated: [observation]});
+      }
     });
   }
 
@@ -316,7 +321,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
       var filteredObservationsById = eventsById[event.id].filteredObservationsById;
       _.each(observations, function(observation) {
         // Check if this observation p***REMOVED***es the team filter.
-        if (areTeamsInFilter(observation.teamIds)) {
+        if (FilterService.areTeamsInFilter(observation.teamIds)) {
           // Check if we already have this observation, if so update, otherwise add
           var localObservation = filteredObservationsById[observation.id];
           if (localObservation) {
@@ -360,7 +365,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
         userLocation.location = location;
         delete userLocation.locations;
 
-        if (areTeamsInFilter(userLocation.location.teamIds)) {
+        if (FilterService.areTeamsInFilter(userLocation.location.teamIds)) {
           // Check if we already have this user, if so update, otherwise add
           var localUser = filteredUsersById[userLocation.id];
           if (localUser) {
@@ -387,18 +392,9 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     });
   }
 
-  function areTeamsInFilter(teamIds) {
-    var filteredTeams = FilterService.getTeamsById();
-    if (_.isEmpty(filteredTeams)) return true;
-
-    for (var i = 0; i < teamIds.length; i++) {
-      var teamId = teamIds[i];
-      if (filteredTeams[teamId]) return true;
-    }
-
-    return false;
+  function isObservationInFilter(observation) {
+    return FilterService.isContainedWithinFilter({teamIds: observation.teamIds, timestamp: observation.properties.timestamp});
   }
-
 
   var pollingTimeout = null;
   function poll(interval) {
