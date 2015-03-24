@@ -238,7 +238,7 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
           var options = {
             color: colorForFeature(feature, layerInfo.options.temporal)
           };
-          if (feature.iconUrl) options.iconUrl = feature.iconUrl + '?access_token=' + LocalStorageService.getToken();
+          if (feature.style && feature.style.iconUrl) options.iconUrl = feature.style.iconUrl + '?access_token=' + LocalStorageService.getToken();
 
           return L.locationMarker(latlng, options);
         } else {
@@ -378,12 +378,18 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
     if (!map.hasLayer(featureLayer.layer)) return;
 
     if (featureLayer.options.cluster) {
-      map.once('zoomend', function() {
+      if (map.getZoom() < 17) {
+        map.once('zoomend', function() {
+          featureLayer.layer.zoomToShowLayer(layer, function() {
+            openPopup(layer);
+          });
+        });
+        map.setZoom(map.getZoom());
+      } else {
         featureLayer.layer.zoomToShowLayer(layer, function() {
           openPopup(layer);
         });
-      });
-      map.setZoom(map.getZoom() < 17 ? 17: map.getZoom());
+      }
     } else {
       openPopup(layer, {zoomToLocation: true});
     }
