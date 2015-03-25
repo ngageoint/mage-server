@@ -1,36 +1,30 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html ng-app="mage">
 <head>
   <title>MAGE</title>
 
-  <!-- Comment out the following line when running local -->
-  <!--<base href="/mage/" />-->
-
   <link rel="shortcut icon" href="favicon.ico"/>
   <meta id="view" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
-<!--
-  <link rel="stylesheet" href="vendor/jquery-ui/jquery-ui.css"/>
--->
-  <link rel="stylesheet" href="vendor/jQuery-File-Upload/css/jquery.fileupload.css">
-  <link rel="stylesheet" href="vendor/jQuery-File-Upload/css/jquery.fileupload-ui.css">
-  <link rel="stylesheet" href="vendor/bootstrap/bootstrap.css" />
-  <link rel="stylesheet" href="vendor/bootstrap/bootstrap-responsive.min.css"/>
-  <link rel="stylesheet" href="vendor/jQuery-File-Upload/css/style.css">
-  <link rel="stylesheet" href="vendor/font-awesome/css/font-awesome.min.css"/>
+
+  <!-- build:css vendor/css/vendor.min.css -->
+  <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css"/>
+  <link rel="stylesheet" href="bower_components/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="bower_components/Leaflet.awesome-markers/dist/leaflet.awesome-markers.css"/>
+  <link rel="stylesheet" href="bower_components/leaflet.markercluster/dist/MarkerCluster.css"/>
+  <link rel="stylesheet" href="bower_components/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
+  <link rel="stylesheet" href="bower_components/leaflet-sidebar/src/L.Control.Sidebar.css"/>
+  <link rel="stylesheet" href="bower_components/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.css"/>
+  <link rel="stylesheet" href="bower_components/angular-ui-select/dist/select.min.css"/>
+  <!-- endbuild -->
+
+  <!-- build:css css/app.min.css -->
+  <link rel="stylesheet" href="css/roboto.css"/>
   <link rel="stylesheet" href="css/icomoon.css"/>
-  <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
-  <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.awesomemarkers/leaflet.awesome-markers.css"/>
-  <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.markercluster/MarkerCluster.css"/>
-  <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.markercluster/MarkerCluster.Default.css"/>
-  <link rel="stylesheet" href="vendor/leaflet/plugins/leaflet.control.sidebar/L.Control.Sidebar.css"/>
-  <link rel="stylesheet" href="vendor/bootstrap-datepicker/css/datepicker.css"/>
-  <link rel="stylesheet" href="vendor/bootstrap-timepicker/css/bootstrap-timepicker.min.css"/>
-  <link rel="stylesheet" href="vendor/angular-plugins/ngQuickDate/ng-quick-date.css"/>
-  <link rel="stylesheet" href="vendor/angular-plugins/ngQuickDate/ng-quick-date-plus-default-theme.css"/>
-  <link rel="stylesheet" href="css/wtf-forms.css"/>
   <link rel="stylesheet" href="css/style.css"/>
   <link rel="stylesheet" href="css/map.css"/>
+  <!-- endbuild -->
 
   <link rel="apple-touch-icon" href="img/touch-icon-iphone.png" />
   <link rel="apple-touch-icon" sizes="72x72" href="img/touch-icon-ipad.png" />
@@ -55,223 +49,226 @@
 </head>
 <body>
 
+  <!-- TODO possibly move this -->
+  <div cl***REMOVED***="navbar navbar-default navbar-fixed-top" ng-controller="NavController">
+      <!-- We use the fluid option here to avoid overriding the fixed width of a normal container within the narrow content columns. -->
+      <div cl***REMOVED***="container">
+        <div cl***REMOVED***="navbar-header">
+          <button type="button" cl***REMOVED***="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span cl***REMOVED***="icon-bar"></span>
+            <span cl***REMOVED***="icon-bar"></span>
+            <span cl***REMOVED***="icon-bar"></span>
+          </button>
 
-  <script type="text/javascript" src="vendor/jquery/jquery.min.js"></script>
-  <script type="text/javascript" src="vendor/underscore/underscore-min.js"></script>
-  <script type="text/javascript" src="vendor/angular/1.2.16/angular.js"></script>
-  <script type="text/javascript" src="vendor/angular/1.2.16/angular-resource.js"></script>
-  <script type="text/javascript" src="vendor/angular/1.2.16/angular-sanitize.min.js"></script>
-  <script type="text/javascript" src="vendor/angular/1.2.16/angular-route.min.js"></script>
+          <a cl***REMOVED***="navbar-brand visible-xs-block" href="#/map" data-toggle="collapse" data-target=".navbar-collapse">
+            <i cl***REMOVED***="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
+          </a>
+          <a cl***REMOVED***="navbar-brand hidden-xs" href="#/map">
+            <i cl***REMOVED***="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
+          </a>
+        </div>
 
-  <div cl***REMOVED***="navbar navbar-fixed-top" ng-controller="NavController">
-    <div cl***REMOVED***="navbar-inner">
-      <div cl***REMOVED***="container ng-cloak" ng-show="user">
-
-        <a cl***REMOVED***="brand" href="#/">
-          <i cl***REMOVED***="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
-        </a>
-        <ul cl***REMOVED***="nav pull-right" ng-show="user.myself">
-          <li cl***REMOVED***="dropdown">
-            <button data-toggle="dropdown" cl***REMOVED***="btn dropdown-toggle" href="#">
-              <i cl***REMOVED***="icon-user"></i>
-              {{user.myself.username}}
-              <b cl***REMOVED***="caret"></b>
-            </button>
-            <ul cl***REMOVED***="dropdown-menu">
-              <li>
-                <a href="#/user">
-                  <i cl***REMOVED***="icon-cog"></i>
-                  My Profile
-                </a>
-              </li>
-              <li>
-                <a ng-click="logout()">
-                  <i cl***REMOVED***="icon-off"></i>
-                  Sign Out
-                </a>
-              </li>
-            </ul>
-          </li>
-        </ul>
-
-        <a cl***REMOVED***="btn btn-navbar" id="main-nav-collapse" data-toggle="collapse" data-target=".nav-collapse" ng-show="user.myself">
-          <span cl***REMOVED***="icon-bar" style="color: #fff"></span>
-          <span cl***REMOVED***="icon-bar" style="color: #000"></span>
-          <span cl***REMOVED***="icon-bar"></span>
-        </a>
-
-        <div cl***REMOVED***="nav-collapse collapse">
-          <ul id="main-nav" cl***REMOVED***="nav navbar-nav" ng-show="showMapNav()">
-            <li ng-cl***REMOVED***="navCl***REMOVED***('map')">
-              <a href="#/map">
-                <i cl***REMOVED***="icon-map icon-spacer"></i> Map
+        <div cl***REMOVED***="collapse navbar-collapse" ng-cloak>
+          <ul cl***REMOVED***="nav navbar-nav" ng-if="location.path() === '/map'" ng-cloak>
+            <li cl***REMOVED***="dropdown">
+              <a cl***REMOVED***="pointer dropdown-toggle visible-xs-block" ng-click="onFilterClick()" data-toggle="collapse" data-target=".navbar-collapse">
+                <i cl***REMOVED***="fa fa-filter icon-spacer"></i> Filter
+              </a>
+              <a cl***REMOVED***="pointer dropdown-toggle hidden-xs" ng-click="onFilterClick()">
+                <i cl***REMOVED***="fa fa-filter icon-spacer"></i> Filter
               </a>
             </li>
-            <li ng-cl***REMOVED***="navCl***REMOVED***('layers')" ng-show="showLayerNav()">
-              <a href="#/layers">
-                <i cl***REMOVED***="icon-layers icon-spacer"></i> Layer Manager
+            <li cl***REMOVED***="dropdown">
+              <a href="javascript:void(0)" cl***REMOVED***="dropdown-toggle" data-toggle="dropdown">
+                <i style="margin-right: 3px;" ng-cl***REMOVED***="pollingInterval == 0 ? 'fa fa-square-o' : 'fa fa-check-square-o'"></i> Live Update
+                <b cl***REMOVED***="caret"></b>
+              </a>
+              <ul cl***REMOVED***="dropdown-menu">
+                <li role="presentation" cl***REMOVED***="dropdown-header">Poll Time</li>
+                <li>
+                  <a ng-click="onPollingIntervalChanged('5000')" cl***REMOVED***="pointer">
+                    <i ng-cl***REMOVED***="pollingInterval == 5000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
+                    5 Seconds
+                  </a>
+                </li>
+                <li>
+                  <a ng-click="onPollingIntervalChanged('30000')" cl***REMOVED***="pointer">
+                    <i ng-cl***REMOVED***="pollingInterval == 30000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
+                    30 Seconds
+                  </a>
+                </li>
+                <li>
+                  <a ng-click="onPollingIntervalChanged('120000')" cl***REMOVED***="pointer">
+                    <i ng-cl***REMOVED***="pollingInterval == 120000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
+                    2 Minutes
+                  </a>
+                </li>
+                <li>
+                  <a ng-click="onPollingIntervalChanged('300000')" cl***REMOVED***="pointer">
+                    <i ng-cl***REMOVED***="pollingInterval == 300000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
+                    5 Minutes
+                  </a>
+                </li>
+                <li>
+                  <a ng-click="onPollingIntervalChanged('0')" cl***REMOVED***="pointer">
+                    <i ng-cl***REMOVED***="pollingInterval == 0 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
+                    No Polling
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li cl***REMOVED***="dropdown">
+              <a cl***REMOVED***="pointer dropdown-toggle visible-xs-block" data-toggle="collapse" data-target=".navbar-collapse" ng-click="onExportClick()">
+                <i cl***REMOVED***="fa fa-download icon-spacer"></i> Export
+              </a>
+              <a cl***REMOVED***="pointer dropdown-toggle hidden-xs" ng-click="onExportClick()">
+                <i cl***REMOVED***="fa fa-download icon-spacer"></i> Export
               </a>
             </li>
-            <li ng-cl***REMOVED***="navCl***REMOVED***('admin')" ng-show="showAdminNav()">
-              <a href="#/admin">
-                <i cl***REMOVED***="icon-cogs icon-spacer"></i>  Admin Panel
+          </ul>
+          <ul cl***REMOVED***="nav navbar-nav navbar-right" ng-show="myself" ng-cloak>
+            <li ng-show="myself">
+              <a href="#/user" data-toggle="collapse" data-target=".navbar-collapse" cl***REMOVED***="nav-link visible-xs-block" style="padding-top: 14px; padding-bottom: 10px;">
+                <span>
+                  <img cl***REMOVED***="avatar-img" ng-src="{{myself.avatarUrl ? myself.avatarUrl + '?access_token=' + token : '/img/missing_photo.png'}}"/>
+                </span>
+                <i cl***REMOVED***="fa fa-icon-info icon-spacer"></i> {{myself.username}}
+              </a>
+              <a href="#/user" cl***REMOVED***="nav-link hidden-xs" style="padding-top: 14px; padding-bottom: 10px;" tooltip="My&nbsp;Profile" tooltip-placement="bottom">
+                <span>
+                  <img cl***REMOVED***="avatar-img" ng-src="{{myself.avatarUrl ? myself.avatarUrl + '?access_token=' + token : '/img/missing_photo.png'}}"/>
+                </span>
+                <i cl***REMOVED***="fa fa-icon-info icon-spacer"></i> {{myself.username}}
               </a>
             </li>
-            <li ng-cl***REMOVED***="navCl***REMOVED***('about')">
-              <a href="#/about">
-                <i cl***REMOVED***="icon-info icon-spacer"></i> About
+            <li ng-show="amAdmin">
+              <a ng-href="#/admin" data-toggle="collapse" data-target=".navbar-collapse" cl***REMOVED***="nav-link visible-xs-block">
+                <i cl***REMOVED***="icon-cogs icon-spacer"></i> Admin
+              </a>
+              <a ng-href="#/admin" cl***REMOVED***="nav-link hidden-xs" tooltip="Admin" tooltip-placement="bottom">
+                <i cl***REMOVED***="icon-cogs icon-spacer"></i>
+              </a>
+            </li>
+            <li>
+              <a href="#/about" data-toggle="collapse" data-target=".navbar-collapse" cl***REMOVED***="nav-link visible-xs-block">
+                <i cl***REMOVED***="fa fa-info-circle icon-spacer"></i> About MAGE
+              </a>
+              <a href="#/about" cl***REMOVED***="nav-link hidden-xs" tooltip="About&nbsp;MAGE" tooltip-placement="bottom">
+                <i cl***REMOVED***="fa fa-info-circle icon-spacer"></i>
+              </a>
+            </li>
+            <li>
+              <a ng-click="logout()" data-toggle="collapse" data-target=".navbar-collapse" cl***REMOVED***="nav-link pointer visible-xs-block">
+                <i cl***REMOVED***="fa fa-sign-out icon-spacer"></i> Sign out
+              </a>
+              <a ng-click="logout()" cl***REMOVED***="nav-link pointer hidden-xs" tooltip="Sign&nbsp;out" tooltip-placement="bottom">
+                <i cl***REMOVED***="fa fa-sign-out icon-spacer"></i>
               </a>
             </li>
           </ul>
         </div>
+
       </div>
     </div>
-  </div>
 
+  <div data-ng-view style="height: 100%"></div>
 
-  <div data-ng-view></div>
+  <!-- build:vendorjs vendor/js/vendor.js -->
+  <script type="text/javascript" src="bower_components/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="bower_components/underscore/underscore-min.js"></script>
+  <script type="text/javascript" src="bower_components/angular/angular.min.js"></script>
+  <script type="text/javascript" src="bower_components/angular-resource/angular-resource.min.js"></script>
+  <script type="text/javascript" src="bower_components/angular-sanitize/angular-sanitize.min.js"></script>
+  <script type="text/javascript" src="bower_components/angular-route/angular-route.min.js"></script>
+  <script type="text/javascript" src="bower_components/leaflet/dist/leaflet.js"></script>
+  <script type="text/javascript" src="bower_components/Leaflet.awesome-markers/dist/leaflet.awesome-markers.min.js"></script>
+  <script type="text/javascript" src="bower_components/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+  <script type="text/javascript" src="bower_components/leaflet-sidebar/src/L.Control.Sidebar.js"></script>
+  <script type="text/javascript" src="bower_components/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.js"></script>
+  <script type="text/javascript" src="bower_components/angular-ui-select/dist/select.min.js"></script>
+  <script type="text/javascript" src="bower_components/moment/min/moment.min.js"></script>
+  <script type="text/javascript" src="bower_components/jquery-file-download/src/Scripts/jquery.fileDownload.js"></script>
+  <script type="text/javascript" src="vendor/angular-bootstrap/ui-bootstrap-tpls-0.13.0-SNAPSHOT.min.js"></script>
+  <script type="text/javascript" src="vendor/bootstrap/js/bootstrap.min.js"></script>
+  <!-- endbuild -->
 
+  <!-- build:js app.min.js -->
+  <script type="text/javascript" src="app/app.js"></script>
 
-  <script type="text/javascript" src="vendor/leaflet/leaflet-src.js"></script>
-  <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.awesomemarkers/leaflet.awesome-markers.min.js"></script>
-  <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.markercluster/leaflet.markercluster-src.js"></script>
-  <script type="text/javascript" src="vendor/leaflet/plugins/leaflet.control.sidebar/L.Control.Sidebar.js"></script>
-  <script type="text/javascript" src="vendor/ui-bootstrap/ui-bootstrap-0.6.0.js"></script>
-  <script type="text/javascript" src="vendor/ui-bootstrap/ui-bootstrap-tpls-0.6.0.js"></script>
+  <script type="text/javascript" src="app/mage/mage.controller.js"></script>
+  <script type="text/javascript" src="app/mage/mage-nav.controller.js"></script>
+  <script type="text/javascript" src="app/mage/leaflet.directive.js"></script>
+  <script type="text/javascript" src="app/mage/feed.directive.js"></script>
 
-  <script type="text/javascript" src="vendor/angular-strap/js/angular-strap.js"></script>
-  <script type="text/javascript" src="vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
-  <script type="text/javascript" src="vendor/bootstrap-timepicker/js/bootstrap-timepicker.js"></script>
-  <script type="text/javascript" src="vendor/angular-plugins/ngQuickDate/ng-quick-date.js"></script>
+  <script type="text/javascript" src="app/export/export.js"></script>
+  <script type="text/javascript" src="app/filter/filter.js"></script>
 
+  <script type="text/javascript" src="app/auth/http-auth-interceptor.js"></script>
 
-  <script type="text/javascript" src="vendor/angular-plugins/http-auth-interceptor.js"></script>
-  <script type="text/javascript" src="vendor/bootstrap/bootstrap.min.js"></script>
-  <script type="text/javascript" src="vendor/moment/moment.min.js"></script>
-  <script type="text/javascript" src="js/app/leaflet/LocationMarker.js"></script>
-  <script type="text/javascript" src="js/app/leaflet/LocationMarker.Popup.js"></script>
-  <script type="text/javascript" src="js/app/leaflet/MageControls.js"></script>
-  <script type="text/javascript" src="js/app/leaflet/SelectableMarker.js"></script>
-  <script type="text/javascript" src="js/app/app.js"></script>
-  <script type="text/javascript" src="js/app/directives/leaflet-directive.js"></script>
-  <script type="text/javascript" src="js/app/directives/filter-navbar.js"></script>
-  <script type="text/javascript" src="js/app/directives/user-location.js"></script>
-  <script type="text/javascript" src="js/app/directives/user-id.js"></script>
-  <script type="text/javascript" src="js/app/directives/device-id.js"></script>
-  <script type="text/javascript" src="js/app/directives/user-location-news-item.js"></script>
-  <script type="text/javascript" src="js/app/directives/observation-news-item.js"></script>
-  <script type="text/javascript" src="js/app/directives/attachment.js"></script>
-  <script type="text/javascript" src="js/app/directives/map-clip.js"></script>
-  <script type="text/javascript" src="js/app/directives/news-feed.js"></script>
-  <script type="text/javascript" src="js/app/directives/export.js"></script>
-  <script type="text/javascript" src="js/app/directives/filter.js"></script>
-  <script type="text/javascript" src="js/app/directives/rotated-image.js"></script>
-  <script type="text/javascript" src="js/app/directives/simpleUpload.js"></script>
-  <script type="text/javascript" src="js/app/directives/form/field-directive.js"></script>
-  <script type="text/javascript" src="js/app/directives/form/form-directive.js"></script>
-  <script type="text/javascript" src="js/app/directives/form/import.js"></script>
-  <script type="text/javascript" src="js/app/directives/property/property-view.js"></script>
-  <script type="text/javascript" src="js/app/directives/user-avatar.js"></script>
-  <script type="text/javascript" src="js/app/directives/user-icon.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/ObservationService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/AboutService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/UserService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/DeviceService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/MapService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/FeatureService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/FilterService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/LocationService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/TimerService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/HttpAuthService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/mageLib.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/TimeBucketService.js"></script>
-  <script type="text/javascript" src="js/app/***REMOVED***s/FormService.js"></script>
-  <script type="text/javascript" src="js/app/controllers/AboutController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/AdminController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/DebugController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/MapController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/NavController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/LayerController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/FeatureController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/SigninController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/SignupController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/UserController.js"></script>
-  <script type="text/javascript" src="js/app/controllers/FormController.js"></script>
+  <script type="text/javascript" src="app/about/about.controller.js"></script>
 
-  <script type="text/javascript" src="js/app/resources/Feature.js"></script>
-  <script type="text/javascript" src="js/app/resources/Layer.js"></script>
-  <script type="text/javascript" src="js/app/resources/Form.js"></script>
-  <script type="text/javascript" src="js/app/filters/moment.js"></script>
-  <script type="text/javascript" src="js/app/filters/p***REMOVED***word.js"></script>
+  <script type="text/javascript" src="app/admin/admin.controller.js"></script>
+  <script type="text/javascript" src="app/admin/devices/devices.controller.js"></script>
+  <script type="text/javascript" src="app/admin/events/events.controller.js"></script>
+  <script type="text/javascript" src="app/admin/events/events.filter.js"></script>
+  <script type="text/javascript" src="app/admin/users/users.controller.js"></script>
+  <script type="text/javascript" src="app/admin/teams/teams.controller.js"></script>
+  <script type="text/javascript" src="app/admin/layers/layers.controller.js"></script>
 
+  <script type="text/javascript" src="app/signin/signin.controller.js"></script>
+  <script type="text/javascript" src="app/signup/signup.controller.js"></script>
 
-  <!-- file download -->
-  <script type="text/javascript" src="vendor/jQuery-File-Download/js/jquery.fileDownload.js"></script>
+  <script type="text/javascript" src="app/observation/observation-feed.directive.js"></script>
+  <script type="text/javascript" src="app/observation/observation-attachment.directive.js"></script>
+  <script type="text/javascript" src="app/observation/observation-map-clip.directive.js"></script>
+  <script type="text/javascript" src="app/observation/observation-popup.directive.js"></script>
+  <script type="text/javascript" src="app/observation/form/form.directive.js"></script>
+  <script type="text/javascript" src="app/observation/form/field.directive.js"></script>
+  <script type="text/javascript" src="app/observation/property/property.directive.js"></script>
 
-    <script type="text/ng-template" id="myModalContent.html">
-      <div cl***REMOVED***="modal-header">
-          <h3>Token Expired, Please log in.</h3>
-      </div>
-      <div cl***REMOVED***="modal-body">
-          <h3 cl***REMOVED***="top-gap-l">Mobile Analytic GEOINT Environment</h3>
-      <form cl***REMOVED***="form">
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="username">Username</label>
-          <div cl***REMOVED***="controls">
-            <input ng-model="username" name="username" type="text" autocapitalize="off"/>
-          </div>
-        </div>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="uid">UID</label>
-          <div cl***REMOVED***="controls">
-            <input ng-model="uid" name="uid" type="text" autocapitalize="off"/>
-          </div>
-        </div>
-        <div cl***REMOVED***="control-group">
-          <label cl***REMOVED***="control-label" for="p***REMOVED***word">P***REMOVED***word</label>
-          <div cl***REMOVED***="controls">
-            <input ng-model="p***REMOVED***word" name="p***REMOVED***word" type="p***REMOVED***word"/>
-          </div>
-        </div>
-        <span>
-          <button cl***REMOVED***="btn" ng-click="signin({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})" ngm-tap="signin({username: username, uid: uid, p***REMOVED***word: p***REMOVED***word})">Login</button>
-        </span>
-        <div cl***REMOVED***="top-gap-s alert alert-block" ng-show="status > 399">
-          <h4>Failed login</h4>
-          Please check your username, UID, and p***REMOVED***word and try again.
-        </div>
-      </form>
-      </div>
-    </script>
+  <script type="text/javascript" src="app/user/user.controller.js"></script>
+  <script type="text/javascript" src="app/user/user-feed.directive.js"></script>
+  <script type="text/javascript" src="app/user/user-avatar.directive.js"></script>
+  <script type="text/javascript" src="app/user/user-icon.directive.js"></script>
+  <script type="text/javascript" src="app/user/user-popup.directive.js"></script>
 
-    <script type="text/ng-template" id="deleteLayer.html">
-      <div cl***REMOVED***="modal-header">
-        <h3>Please Confirm Delete '{{layer.name}}'</h3>
-      </div>
-      <div cl***REMOVED***="modal-body">
-        <div cl***REMOVED***="row-fluid"><h4>Layer '{{layer.name}}' will be deleted.  <strong>This cannot be undone<strong>.  All data will be unrecoverable.</h4></div>
-        <div cl***REMOVED***="row-fluid"><h4>Do you want to delete the layer '{{layer.name}}'?<h4></div>
-        <span>
-          <button cl***REMOVED***="btn btn-danger" ng-click="deleteLayer(layer, true)" ngm-tap="deleteLayer(layer, true)"><i cl***REMOVED***="icon-trash"> </i>Confirm Delete Layer</button>
-          <button cl***REMOVED***="btn pull-right" ng-click="cancel()" ngm-tap="cancel()">Cancel</button>
-        </span>
-      </div>
-    </script>
+  <script type="text/javascript" src="app/leaflet-extensions/LocationMarker.js"></script>
+  <script type="text/javascript" src="app/leaflet-extensions/LocationMarker.Popup.js"></script>
+  <script type="text/javascript" src="app/leaflet-extensions/NewIcon.js"></script>
+  <script type="text/javascript" src="app/leaflet-extensions/FixedWidthIcon.js"></script>
+  <script type="text/javascript" src="app/leaflet-extensions/FixedWidthMarker.js"></script>
+  <script type="text/javascript" src="app/leaflet-extensions/MageControls.js"></script>
+  <script type="text/javascript" src="app/leaflet-extensions/WorldExtentControl.js"></script>
 
-    <script type="text/ng-template" id="deleteForm.html">
-      <div cl***REMOVED***="modal-header">
-        <h3>Please Confirm Delete '{{form.name}}'</h3>
-      </div>
-      <div cl***REMOVED***="modal-body">
-        <div cl***REMOVED***="row-fluid"><h4>Form '{{form.name}}' will be deleted.  <strong>This cannot be undone<strong>.  All data will be unrecoverable.</h4></div>
-        <div cl***REMOVED***="row-fluid"><h4>Do you want to delete the form '{{form.name}}'?<h4></div>
-        <span>
-          <button cl***REMOVED***="btn btn-danger" ng-click="deleteForm(form, true)" ngm-tap="deleteForm(form, true)"><i cl***REMOVED***="icon-trash"> </i>Confirm Delete Form</button>
-          <button cl***REMOVED***="btn pull-right" ng-click="cancel()" ngm-tap="cancel()">Cancel</button>
-        </span>
-      </div>
-    </script>
+  <script type="text/javascript" src="app/factories/about.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/device.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/event.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/feature.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/filter.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/layer.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/local-storage.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/location.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/map.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/observation.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/polling.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/user.***REMOVED***.js"></script>
+
+  <script type="text/javascript" src="app/factories/observation.resource.js"></script>
+  <script type="text/javascript" src="app/factories/layer.resource.js"></script>
+  <script type="text/javascript" src="app/factories/event.resource.js"></script>
+  <script type="text/javascript" src="app/factories/team.resource.js"></script>
+  <script type="text/javascript" src="app/factories/location.resource.js"></script>
+
+  <script type="text/javascript" src="app/file-upload/file-browser.directive.js"></script>
+  <script type="text/javascript" src="app/file-upload/file-upload.directive.js"></script>
+
+  <script type="text/javascript" src="app/filters/moment.filter.js"></script>
+  <script type="text/javascript" src="app/filters/paging-offset.filter.js"></script>
+  <script type="text/javascript" src="app/filters/p***REMOVED***word.filter.js"></script>
+  <script type="text/javascript" src="app/filters/user.filter.js"></script>
+
+  <script type="text/javascript" src="app/debug/debug.controller.js"></script>
+  <!-- endbuild -->
 
 </body>
 

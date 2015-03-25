@@ -1,14 +1,13 @@
 module.exports = function(app, security) {
   var fs = require('fs-extra')
     , api = require('../api')
+    , Event = require('../models/event')
     , Team = require('../models/team')
     , User = require('../models/user')
     , Role = require('../models/role')
     , Device = require('../models/device')
-    , Form = require('../models/form')
     , Layer = require('../models/layer')
-    , Feature = require('../models/feature')
-    , Form = require('../models/form')
+    , Observation = require('../models/observation')
     , Icon = require('../models/icon')
     , log = require('winston');
 
@@ -31,9 +30,6 @@ module.exports = function(app, security) {
   }
 
   app.set('resources', resources);
-
-  // Protect all FeatureServer routes with token authentication
-  app.all('/FeatureServer*', p***REMOVED***port.authenticate(authenticationStrategy, {session: false}));
 
   app.get('/api', function(req, res) {
     log.info('get api info');
@@ -63,12 +59,21 @@ module.exports = function(app, security) {
     }
   });
 
-  // Grab the team for any endpoint that uses teamId
-  app.param('userId', /^[0-9a-f]{24}$/); //ensure formId is a mongo id
+  // Grab the user for any endpoint that uses userId
+  app.param('eventId', /^[0-9]+$/); //ensure eventId is a number
+  app.param('eventId', function(req, res, next, eventId) {
+    Event.getById(eventId, {populate: false}, function(err, event) {
+      if (!event) return res.status(404).send('Event not found');
+      req.event = event;
+      next();
+    });
+  });
+
+  // Grab the user for any endpoint that uses userId
+  app.param('userId', /^[0-9a-f]{24}$/); //ensure userId is a mongo id
   app.param('userId', function(req, res, next, userId) {
-    console.log('user id: ' + userId);
     new api.User().getById(userId, function(err, user) {
-      if (!user) return res.send('User not found', 404);
+      if (!user) return res.status(404).send('User not found');
       req.userParam = user;
       next();
     });
@@ -77,26 +82,16 @@ module.exports = function(app, security) {
   // Grab the team for any endpoint that uses teamId
   app.param('teamId', function(req, res, next, teamId) {
     Team.getTeamById(teamId, function(err, team) {
-      if (!team) return res.send('Team not found', 404);
+      if (!team) return res.status(404).send('Team not found');
       req.team = team;
       next();
     });
   });
 
-  // Grab the form for any endpoint that uses formId
-  app.param('formId', /^[0-9a-f]{24}$/); //ensure formId is a mongo id
-  app.param('formId', function(req, res, next, formId) {
-    new api.Form().getById(formId, function(err, form) {
-      if (!form) return res.send('Form not found', 404);
-      req.form = form;
-      next();
-    });
-  });
-
-  // Grab the form for any endpoint that uses formId
+  // Grab the icon for any endpoint that uses iconId
   app.param('iconId', function(req, res, next, iconId) {
     Icon.getById(iconId, function(err, icon) {
-      if (!icon) return res.send('Form not found', 404);
+      if (!icon) return res.status(404).send('Icon not found');
       req.icon = icon;
       next();
     });
@@ -105,7 +100,7 @@ module.exports = function(app, security) {
   // Grab the device for any endpoint that uses deviceId
   app.param('deviceId', function(req, res, next, deviceId) {
       Device.getDeviceById(deviceId, function(err, device) {
-        if (!device) return res.send('Device not found', 404);
+        if (!device) return res.status(404).send('Device not found');
         req.device = device;
         next();
       });
@@ -114,17 +109,17 @@ module.exports = function(app, security) {
   // Grab the role for any endpoint that uses roleId
   app.param('roleId', function(req, res, next, roleId) {
       Role.getRoleById(roleId, function(err, role) {
-        if (!role) return res.send('Role ' + roleId + ' not found', 404);
+        if (!role) return res.status(404).send('Role ' + roleId + ' not found');
         req.role = role;
         next();
       });
   });
 
-  // Grab the feature layer for any endpoint that uses layerId
+  // Grab the layer for any endpoint that uses layerId
   app.param('layerId', function(req, res, next, layerId) {
     Layer.getById(layerId, function(layer) {
       if (!layer) {
-        return res.send(400, "Layer / Table not found: ");
+        return res.staus(404).send("Layer not found: ");
       }
 
       req.layer = layer;
@@ -132,15 +127,15 @@ module.exports = function(app, security) {
     });
   });
 
-  // Grab the feature for any endpoint that uses featureId
-  app.param('featureId', function(req, res, next, featureId) {
-    req.featureId = featureId;
-    new api.Feature(req.layer).getById(featureId, function(feature) {
-      if (!feature) {
-        return res.json(400, 'Feature (ID: ' + featureId + ') not found');
-      }
+  // Grab the feature for any endpoint that uses observationId
+  app.param('observationId', function(req, res, next, observationId) {
+    req.observationId = observationId;
+    new api.Observation(req.event).getById(observationId, function(err, observation) {
+      if (err) return next(err);
 
-      req.feature = feature;
+      if (!observation) return res.status(404).send('Observation (ID: ' + observationId + ') not found');
+
+      req.observation = observation;
       next();
     });
   });
