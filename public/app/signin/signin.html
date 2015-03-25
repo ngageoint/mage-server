@@ -1,0 +1,41 @@
+<div cl***REMOVED***="container top-gap-l">
+  <div cl***REMOVED***="row">
+    <div cl***REMOVED***="col-md-3">
+      <h3 cl***REMOVED***="top-gap-l">Mobile Analytic GEOINT Environment</h3>
+
+      <form cl***REMOVED***="form">
+        <div cl***REMOVED***="form-group" ng-cl***REMOVED***="{'has-error': status > 399}">
+          <label>Username</label>
+          <input ng-model="username" cl***REMOVED***="form-control" name="username" type="text" autocapitalize="off"/>
+        </div>
+
+        <div cl***REMOVED***="form-group" ng-cl***REMOVED***="{'has-error': status > 399}">
+          <label>UID</label>
+          <input ng-model="uid" cl***REMOVED***="form-control" name="uid" type="text" autocapitalize="off"/>
+        </div>
+
+        <div cl***REMOVED***="form-group" ng-cl***REMOVED***="{'has-error': status > 399}">
+          <label>P***REMOVED***word</label>
+          <input ng-model="p***REMOVED***word" cl***REMOVED***="form-control" name="p***REMOVED***word" type="p***REMOVED***word" autocapitalize="off"/>
+        </div>
+
+        <span>
+          <button cl***REMOVED***="btn btn-primary" ng-click="signin()" ngm-tap="signin()">Login</button>
+        </span>
+      </form>
+
+      <div cl***REMOVED***="top-gap">
+        <p>Don't have an account? <a href="/#/signup">Create one here.</a></p>
+
+        <div cl***REMOVED***="top-gap-s alert alert-danger" ng-show="status > 399">
+          <strong>Failed login</strong>
+          <p>Please check your username, UID, and p***REMOVED***word and try again.</p>
+        </div>
+      </div>
+
+    </div>
+    <div cl***REMOVED***="col-md-7 col-md-offset-2 top-gap-xl">
+      <i cl***REMOVED***="fa fa-magic icon-brand-l"></i>
+    </div>
+  </div>
+</div>

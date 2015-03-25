@@ -1,5 +1,7 @@
 var UserModel = require('../models/user')
   , TokenModel = require('../models/token')
+  , DeviceModel = require('../models/device')
+  , LoginModel = require('../models/login')
   , path = require('path')
   , fs = require('fs-extra')
   , async = require('async')
@@ -7,8 +9,8 @@ var UserModel = require('../models/user')
 
 var userBase = config.server.userBaseDirectory;
 
-function contentPath(user, content, type) {
-  var relativePath = path.join(user._id.toString(), type + path.extname(content.path));
+function contentPath(id, user, content, type) {
+  var relativePath = path.join(id.toString(), type + path.extname(content.path));
   var absolutePath = path.join(userBase, relativePath);
   return {
     relativePath: relativePath,
@@ -16,34 +18,42 @@ function contentPath(user, content, type) {
   };
 }
 
-function avatarPath(user, avatar) {
-  return contentPath(user, avatar, 'avatar');
+function avatarPath(id, user, avatar) {
+  return contentPath(id, user, avatar, 'avatar');
 }
 
-function iconPath(user, icon) {
-  return contentPath(user, icon, 'icon');
+function iconPath(id, user, icon) {
+  return contentPath(id, user, icon, 'icon');
 }
 
 function User() {
 };
 
 User.prototype.login = function(user, device, options, callback) {
-  TokenModel.createToken({user: user, device: device}, function(err, token) {
+  TokenModel.createToken({userId: user._id, device: device}, function(err, token) {
     if (err) return callback(err);
 
-    // set user-agent and mage version on user
-    user.userAgent = options.userAgent;
-    user.mageVersion = options.version;
-    UserModel.updateUser(user, function(err, updatedUser) {
-      callback(null, token, updatedUser);
+    callback(null, token);
+
+    LoginModel.createLogin(user, device, function(err, login) {
+      if (err) console.log('could not add login', err);
+    });
+
+    var update = {
+      userId: user._id
+    };
+    if (options.userAgent) update.userAgent = options.userAgent;
+    if (options.appVersion) update.appVersion = options.appVersion;
+    DeviceModel.updateDevice(device._id, update, function(err, device) {
+      if (err) console.log('could not update device on login', err);
     });
   });
 }
 
-User.prototype.logout = function(user, callback) {
-  if (!user) return callback();
+User.prototype.logout = function(token, callback) {
+  if (!token) return callback();
 
-  TokenModel.removeTokenForUser(user, function(err, token){
+  TokenModel.removeToken(token, function(err, token){
     callback(err);
   });
 }
@@ -70,7 +80,7 @@ User.prototype.create = function(user, options, callback) {
 
   if (options.avatar) {
     operations.push(function(newUser, done) {
-      var avatar = avatarPath(newUser, options.avatar);
+      var avatar = avatarPath(newUser._id, newUser, options.avatar);
       fs.move(options.avatar.path, avatar.absolutePath, function(err) {
         if (err) {
           console.log('Could not create user avatar');
@@ -90,7 +100,7 @@ User.prototype.create = function(user, options, callback) {
 
   if (options.icon) {
     operations.push(function(newUser, done) {
-      var icon = iconPath(newUser, options.icon);
+      var icon = iconPath(newUser._id, newUser, options.icon);
       fs.move(options.icon.path, icon.absolutePath, function(err) {
         if (err) {
           console.log('Could not create user icon');
@@ -99,8 +109,8 @@ User.prototype.create = function(user, options, callback) {
 
         newUser.icon = {
           relativePath: icon.relativePath,
-          contentType: options.avatar.mimetype,
-          size: options.avatar.size
+          contentType: options.icon.mimetype,
+          size: options.icon.size
         };
 
         done(null, newUser);
@@ -117,7 +127,7 @@ User.prototype.create = function(user, options, callback) {
   });
 }
 
-User.prototype.update = function(user, options, callback) {
+User.prototype.update = function(id, update, options, callback) {
   if (typeof options == 'function') {
     callback = options;
     options = {};
@@ -125,12 +135,12 @@ User.prototype.update = function(user, options, callback) {
 
   var operations = [];
   operations.push(function(done) {
-    done(null, user);
+    done(null, update);
   });
 
   if (options.avatar) {
     operations.push(function(updatedUser, done) {
-      var avatar = avatarPath(updatedUser, options.avatar);
+      var avatar = avatarPath(id, updatedUser, options.avatar);
       fs.move(options.avatar.path, avatar.absolutePath, {clobber: true}, function(err) {
         if (err) {
           console.log('Could not create user avatar', err);
@@ -150,7 +160,7 @@ User.prototype.update = function(user, options, callback) {
 
   if (options.icon) {
     operations.push(function(updatedUser, done) {
-      var icon = iconPath(updatedUser, options.icon);
+      var icon = iconPath(id, updatedUser, options.icon);
       fs.move(options.icon.path, icon.absolutePath, {clobber: true}, function(err) {
         if (err) {
           console.log('Could not create user icon', err);
@@ -171,7 +181,7 @@ User.prototype.update = function(user, options, callback) {
   async.waterfall(operations, function(err, updatedUser) {
     if (err) return callback(err);
 
-    UserModel.updateUser(updatedUser, callback);
+    UserModel.updateUser(id, updatedUser, callback);
   });
 }
 
@@ -199,5 +209,12 @@ User.prototype.icon = function(user, callback) {
   callback(null, icon);
 }
 
+User.prototype.addRecentEvent = function(user, event, callback) {
+  UserModel.addRecentEventForUser(user, event, callback);
+}
+
+User.prototype.getLogins = function(user, options, callback) {
+  LoginModel.getLoginsForUser(user, options, callback);
+}
 
 module.exports = User;

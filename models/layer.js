@@ -6,7 +6,7 @@ var Schema = mongoose.Schema;
 
 // Creates the Schema for the Attachments object
 var LayerSchema = new Schema({
-  id: { type: Number, required: true, unique: true },
+  _id: { type: Number, required: true, unique: true },
   type: { type: String, required: true },
   base: { type: Boolean, required: false },
   name: { type: String, required: true, unique: true },
@@ -27,8 +27,12 @@ var LayerSchema = new Schema({
 });
 
 var transform = function(layer, ret, options) {
+  ret.id = ret._id;
   delete ret._id;
   delete ret.collectionName;
+
+  var path = options.path || "";
+  if (ret.type === 'Feature') ret.url = [path, ret.id].join("/");
 }
 
 LayerSchema.set("toObject", {
@@ -56,28 +60,17 @@ exports.getLayers = function(filter, callback) {
     filter = {};
   }
 
-  var query = {};
-  var type = filter.type;
-  if (type) query.type = type;
+  var conditions = {};
+  if (filter.type) conditions.type = filter.type;
+  if (filter.layerIds) conditions._id = {$in: filter.layerIds};
 
-  var ids = filter.ids;
-  if (ids) query.id = {$in: ids};
-
-  Layer.find(query, function (err, layers) {
-    if (err) {
-      console.log("Error finding layers in mongo: " + err);
-    }
-
+  Layer.find(conditions, function (err, layers) {
     callback(err, layers);
   });
 }
 
 exports.getById = function(id, callback) {
-  Layer.findOne({id: id}, function (err, layer) {
-    if (err) {
-      console.log("Error finding layer in mongo: " + err);
-    }
-
+  Layer.findById(id, function (err, layer) {
     callback(layer);
   });
 }
@@ -94,33 +87,29 @@ var createFeatureCollection = function(layer) {
   });
 }
 
-var dropFeatureCollection = function(layer) {
+var dropFeatureCollection = function(layer, callback) {
   console.log("Dropping collection: " + layer.collectionName);
   mongoose.connection.db.dropCollection(layer.collectionName, function(err, results) {
-    if (err) {
-      console.error(err);
-      return;
-    }
+    if (err) return callback(err);
 
     console.log('Dropped collection ' + layer.collectionName);
+    callback();
   });
 }
 
 exports.create = function(layer, callback) {
   Counter.getNext('layer', function(id) {
-    layer.id = id;
+    layer._id = id;
 
-    if (layer.type == 'Feature' || layer.type == 'External') {
+    if (layer.type == 'Feature') {
       layer.collectionName = 'features' + id;
     }
 
     Layer.create(layer, function(err, newLayer) {
-      if (err) {
-        console.log("Problem creating layer. " + err);
-      } else {
-        if (layer.type == 'Feature') {
-          createFeatureCollection(newLayer);
-        }
+      if (err) return callback(err);
+
+      if (layer.type == 'Feature') {
+        createFeatureCollection(newLayer);
       }
 
       callback(err, newLayer);
@@ -129,24 +118,17 @@ exports.create = function(layer, callback) {
 }
 
 exports.update = function(id, layer, callback) {
-  Layer.findOneAndUpdate({id: id}, layer, function(err, updatedLayer) {
-    if (err) {
-      console.log("Could not update layer: " + err);
-    }
-
+  Layer.findByIdAndUpdate(id, layer, function(err, updatedLayer) {
     callback(err, updatedLayer);
   });
 }
 
 exports.remove = function(layer, callback) {
   layer.remove(function(err) {
-    if (err) {
-      console.error(err);
-    } else {
-      // TODO probably want to figure out how to archive this rather than drop the collection
-      dropFeatureCollection(layer);
-    }
+    if (err) return callback(err);
 
-    callback(err, layer);
+    dropFeatureCollection(layer, function(err) {
+      callback(err, layer);
+    });
   });
 }

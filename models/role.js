@@ -3,14 +3,14 @@ var mongoose = require('mongoose')
   , Permission = require('../models/permission');
 
 // Creates a new Mongoose Schema object
-var Schema = mongoose.Schema; 
+var Schema = mongoose.Schema;
 
 // Collection to hold roles
 var RoleSchema = new Schema({
     name: { type: String, required: true, unique: true },
     description: { type: String, required: false },
     permissions: [Schema.Types.String]
-  },{ 
+  },{
     versionKey: false
   }
 );
@@ -39,6 +39,17 @@ RoleSchema.pre('save', function(next) {
   });
 
   next();
+});
+
+var transform = function(user, ret, options) {
+  if ('function' != typeof user.ownerDocument) {
+    ret.id = ret._id;
+    delete ret._id;
+  }
+}
+
+RoleSchema.set("toJSON", {
+  transform: transform
 });
 
 // Creates the Model for the Role Schema

@@ -102,7 +102,7 @@
                     "200": {
                         "description": "user response",
                         "schema": {
-                            "$ref": "#/definitions/User"
+                            "$ref": "#/definitions/Users"
                         }
                     }
                 }
@@ -188,6 +188,32 @@
                 }
             }
         },
+        "/api/users/{id}/logins": {
+            "get": {
+                "description": "Returns users logins",
+                "operationId": "getUserLogins",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of user",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "User"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "login response",
+                        "schema": {
+                            "$ref": "#/definitions/Login"
+                        }
+                    }
+                }
+            }
+        },
         "/api/users/{id}/avatar": {
             "get": {
                 "description": "Returns users avatar based on user id",
@@ -240,6 +266,39 @@
                 "responses": {
                     "200": {
                         "description": "user icon response"
+                    }
+                }
+            }
+        },
+        "/api/users/{userId}/events/{eventId}/recent": {
+            "post": {
+                "description": "Adds event to top of recent list, capped at 5",
+                "operationId": "addRecentEventForUser",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "id of user to add recent event",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "id of recent event",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "User"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "user response",
+                        "schema": {
+                            "$ref": "#/definitions/User"
+                        }
                     }
                 }
             }
@@ -448,12 +507,867 @@
                 }
             }
         },
+        "/api/teams": {
+            "get": {
+                "description": "get all teams",
+                "operationId": "getTeams",
+                "tags": [
+                    "Team"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "team response",
+                        "schema": {
+                            "$ref": "#/definitions/Team"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "add new team",
+                "operationId": "addTeam",
+                "tags": [
+                    "Team"
+                ],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "new team body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/TeamCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "new team response",
+                        "schema": {
+                            "$ref": "#/definitions/Team"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/teams/{id}": {
+            "get": {
+                "description": "Returns a single team based on id",
+                "operationId": "getTeamById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of team to fetch",
+                        "required": true,
+                        "type": "number"
+                    }
+                ],
+                "tags": [
+                    "Team"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "team response",
+                        "schema": {
+                            "$ref": "#/definitions/Team"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "update a single team based on id",
+                "operationId": "updateTeamById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of team to update",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "team update body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/TeamCreate"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Team"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "team update response",
+                        "schema": {
+                            "$ref": "#/definitions/Team"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "deletes a single team based on id",
+                "operationId": "deleteTeam",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of team to delete",
+                        "required": true,
+                        "type": "number"
+                    }
+                ],
+                "tags": [
+                    "Team"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "team deleted"
+                    }
+                }
+            }
+        },
+        "/api/events": {
+            "get": {
+                "description": "get all events",
+                "operationId": "getEvents",
+                "tags": [
+                    "Event"
+                ],
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "query",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "event response",
+                        "schema": {
+                            "$ref": "#/definitions/Event"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "add new event",
+                "operationId": "addEvent",
+                "tags": [
+                    "Event"
+                ],
+                "parameters": [
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "new event body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/EventCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "new event response",
+                        "schema": {
+                            "$ref": "#/definitions/Event"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/events/{id}": {
+            "get": {
+                "description": "Returns a single event based on id",
+                "operationId": "getEventById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of event to fetch",
+                        "required": true,
+                        "type": "number"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "event response",
+                        "schema": {
+                            "$ref": "#/definitions/Event"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "update a single event based on id",
+                "operationId": "updateEventById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of event to update",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "event update body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/EventCreate"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "event update response",
+                        "schema": {
+                            "$ref": "#/definitions/Event"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "deletes a single event based on id",
+                "operationId": "deleteEvent",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of event to delete",
+                        "required": true,
+                        "type": "number"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "event deleted"
+                    }
+                }
+            }
+        },
+        "/api/events/{id}/form.zip": {
+            "get": {
+                "description": "Export a zip archive of the form .  Includes metadata and icon symbology",
+                "operationId": "getFormArchive",
+                "produces": [
+                    "application/zip"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of event to fetch",
+                        "required": true,
+                        "type": "number"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "form archive response"
+                    }
+                }
+            }
+        },
+        "/api/events/{eventId}/form/icons.zip": {
+            "get": {
+                "description": "get all icons",
+                "operationId": "getIcons",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "icon response"
+                    }
+                }
+            }
+        },
+        "/api/events/{eventId}/form/icons/{type}/{variant}": {
+            "get": {
+                "description": "Returns a single form based on id",
+                "operationId": "getIcon",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "icon type",
+                        "type": "string"
+                    },
+                    {
+                        "name": "variant",
+                        "in": "path",
+                        "description": "variant type",
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "form response"
+                    }
+                }
+            },
+            "post": {
+                "description": "add new icon",
+                "operationId": "addIcon",
+                "tags": [
+                    "Event"
+                ],
+                "consumes": [
+                    "mutipart/form-data"
+                ],
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "icon type",
+                        "type": "string"
+                    },
+                    {
+                        "name": "variant",
+                        "in": "path",
+                        "description": "variant type",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "new icon response"
+                    }
+                }
+            },
+            "delete": {
+                "description": "deletes a single icon",
+                "operationId": "deleteIcon",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "icon type",
+                        "type": "string"
+                    },
+                    {
+                        "name": "variant",
+                        "in": "path",
+                        "description": "variant type",
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "icon deleted"
+                    }
+                }
+            }
+        },
+        "/api/events/{eventId}/observations": {
+            "get": {
+                "description": "get all observations for event",
+                "operationId": "getObservations",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which to retrieve observations",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "fields",
+                        "in": "query",
+                        "description": "feature fields to project in response (JSON)",
+                        "type": "string"
+                    },
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "type": "string",
+                        "format": "dateTime"
+                    },
+                    {
+                        "name": "endDate",
+                        "in": "query",
+                        "type": "string",
+                        "format": "dateTime"
+                    },
+                    {
+                        "name": "bbox",
+                        "description": "bounding box array [minx,miny,maxx,maxy]",
+                        "in": "query",
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "states",
+                        "in": "query",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Observation"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "observation response",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Feature"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "add new observation",
+                "operationId": "addObservation",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId for which to create observation",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "observation request body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Feature"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Observation"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "observation response",
+                        "schema": {
+                            "$ref": "#/definitions/Feature"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/events/{eventId}/observations/{observationId}": {
+            "get": {
+                "description": "get observation for eventId",
+                "operationId": "getObservation",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which to retrieve observation",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "observationId",
+                        "in": "path",
+                        "description": "observationId for observation",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "fields",
+                        "in": "query",
+                        "description": "feature fields to project in response (JSON)",
+                        "type": "string"
+                    },
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "type": "string",
+                        "format": "dateTime"
+                    },
+                    {
+                        "name": "endDate",
+                        "in": "query",
+                        "type": "string",
+                        "format": "dateTime"
+                    },
+                    {
+                        "name": "bbox",
+                        "description": "bounding box array [minx,miny,maxx,maxy]",
+                        "in": "query",
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "states",
+                        "in": "query",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Observation"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "observation response",
+                        "schema": {
+                            "$ref": "#/definitions/Feature"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "update observation for eventId",
+                "operationId": "updateObservation",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which to update observation",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "observationId",
+                        "in": "path",
+                        "description": "observationId for observation",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "observation request body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Feature"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Observation"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "observation response",
+                        "schema": {
+                            "$ref": "#/definitions/Feature"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/events/{eventId}/observations/{observationId}/states": {
+            "post": {
+                "description": "update state on provided observation for provided event",
+                "operationId": "addObservationState",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which to update observation state",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "observationId",
+                        "in": "path",
+                        "description": "observationId for observation",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "state request body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/FeatureStateCreate"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Observation"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "observation response",
+                        "schema": {
+                            "$ref": "#/definitions/FeatureState"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/events/{eventId}/observations/{observationId}/attachments": {
+            "get": {
+                "description": "get attachments for observation in event",
+                "operationId": "getAttachments",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which to retrieve observation attachments",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "observationId",
+                        "in": "path",
+                        "description": "observationId for observation",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Observation"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "attachment response",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Attachment"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "add new attachment",
+                "operationId": "addAttachment",
+                "consumes": [
+                    "mulitpart/form-data"
+                ],
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which to create attachment",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "observationId",
+                        "in": "path",
+                        "description": "observationId in which to create attachment",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "attachment",
+                        "in": "formData",
+                        "type": "file",
+                        "description": "attachment",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Observation"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "attachment response"
+                    }
+                }
+            }
+        },
+        "/api/events/{eventId}/observations/{observationId}/attachments/{attachmentId}": {
+            "get": {
+                "description": "get attachment for observation in event",
+                "operationId": "getAttachment",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which to retrieve observation",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "observationId",
+                        "in": "path",
+                        "description": "observationId for observation",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "attachmentId",
+                        "in": "path",
+                        "description": "id of attachment to fetch",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Observation"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "attachment response"
+                    }
+                }
+            },
+            "put": {
+                "description": "update attachment for observation in event",
+                "operationId": "updateAttachment",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which to update observation attachment",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "observationId",
+                        "in": "path",
+                        "description": "observationId for observation",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "attachmentId",
+                        "in": "path",
+                        "description": "id of attachment to update",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "attachment",
+                        "in": "formData",
+                        "type": "file",
+                        "description": "attachment",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Observation"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "attachment response"
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete attachment for observation in event",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which to retrieve features",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "observationId",
+                        "in": "path",
+                        "description": "observationId for feature",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "attachmentId",
+                        "in": "path",
+                        "description": "id of attachment to update",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Observation"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "attachment delete"
+                    }
+                }
+            }
+        },
         "/api/layers": {
             "get": {
                 "description": "get all layers",
                 "operationId": "getLayers",
                 "tags": [
                     "Layer"
+                ],
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "type": "string",
+                        "description": "layer type filter, i.e. Imagery or Feature",
+                        "required": false
+                    }
                 ],
                 "responses": {
                     "200": {
@@ -571,347 +1485,68 @@
                 }
             }
         },
-        "/api/forms": {
+        "/api/events/{eventId}/layers": {
             "get": {
-                "description": "get all forms",
-                "operationId": "getForms",
-                "tags": [
-                    "Form"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "form response",
-                        "schema": {
-                            "$ref": "#/definitions/Form"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "add new form",
-                "operationId": "addForm",
-                "tags": [
-                    "Form"
-                ],
-                "consumes": [
-                    "application/json",
-                    "mutipart/form-data"
-                ],
+                "description": "get layers for the specified event",
+                "operationId": "getLayersForEvent",
                 "parameters": [
                     {
-                        "name": "body",
-                        "in": "body",
-                        "description": "new layer body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/FormCreate"
-                        }
-                    },
-                    {
-                        "name": "form",
-                        "in": "formData",
-                        "type": "file",
-                        "description": "form zip file",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "new form response",
-                        "schema": {
-                            "$ref": "#/definitions/Form"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/forms/{id}": {
-            "get": {
-                "description": "Returns a single form based on id",
-                "operationId": "getFormById",
-                "parameters": [
-                    {
-                        "name": "id",
+                        "name": "eventId",
                         "in": "path",
-                        "description": "id of form to fetch",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "tags": [
-                    "Form"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "form response",
-                        "schema": {
-                            "$ref": "#/definitions/Form"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/forms/{id}.zip": {
-            "get": {
-                "description": "Returns a zip file that includes form metadata(json) as well as all icons",
-                "operationId": "getFormArchiveById",
-                "produces": [
-                    "application/zip"
-                ],
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "id of form to fetch",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "tags": [
-                    "Form"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "form response"
-                    }
-                }
-            },
-            "put": {
-                "description": "update a single form based on id",
-                "operationId": "updateFormById",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "id of form to update",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "description": "form update body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/FormCreate"
-                        }
-                    }
-                ],
-                "tags": [
-                    "Form"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "layer update response",
-                        "schema": {
-                            "$ref": "#/definitions/Layer"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "deletes a single form based on id",
-                "operationId": "deleteForm",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "id of form to delete",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "tags": [
-                    "Form"
-                ],
-                "responses": {
-                    "204": {
-                        "description": "form deleted"
-                    }
-                }
-            }
-        },
-        "/api/icons/{formId}.zip": {
-            "get": {
-                "description": "get all icons",
-                "operationId": "getIcons",
-                "parameters": [
-                    {
-                        "name": "formId",
-                        "in": "path",
-                        "description": "formId in which icon resides",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "tags": [
-                    "Form"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "icon response"
-                    }
-                }
-            }
-        },
-        "/api/icons/{formId}/{type}/{variant}": {
-            "get": {
-                "description": "Returns a single form based on id",
-                "operationId": "getIcon",
-                "parameters": [
-                    {
-                        "name": "formId",
-                        "in": "path",
-                        "description": "formId in which icon resides",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "type",
-                        "in": "path",
-                        "description": "icon type",
-                        "type": "string"
-                    },
-                    {
-                        "name": "variant",
-                        "in": "path",
-                        "description": "variant type",
-                        "type": "string"
-                    }
-                ],
-                "tags": [
-                    "Form"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "form response"
-                    }
-                }
-            },
-            "post": {
-                "description": "add new icon",
-                "operationId": "addIcon",
-                "tags": [
-                    "Form"
-                ],
-                "consumes": [
-                    "mutipart/form-data"
-                ],
-                "parameters": [
-                    {
-                        "name": "formId",
-                        "in": "path",
-                        "description": "formId in which icon resides",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "type",
-                        "in": "path",
-                        "description": "icon type",
-                        "type": "string"
-                    },
-                    {
-                        "name": "variant",
-                        "in": "path",
-                        "description": "variant type",
-                        "type": "string"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "new icon response"
-                    }
-                }
-            },
-            "delete": {
-                "description": "deletes a single icon",
-                "operationId": "deleteIcon",
-                "parameters": [
-                    {
-                        "name": "formId",
-                        "in": "path",
-                        "description": "formId in which icon resides",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "type",
-                        "in": "path",
-                        "description": "icon type",
-                        "type": "string"
-                    },
-                    {
-                        "name": "variant",
-                        "in": "path",
-                        "description": "variant type",
-                        "type": "string"
-                    }
-                ],
-                "tags": [
-                    "Form"
-                ],
-                "responses": {
-                    "204": {
-                        "description": "icon deleted"
-                    }
-                }
-            }
-        },
-        "/FeatureServer/{layerId}/features": {
-            "get": {
-                "description": "get all features for layerId",
-                "operationId": "getFeatures",
-                "parameters": [
-                    {
-                        "name": "layerId",
-                        "in": "path",
-                        "description": "layerId in which to retrieve features",
+                        "description": "id of the event to get layers for",
                         "required": true,
                         "type": "number"
                     },
                     {
-                        "name": "fields",
-                        "in": "query",
-                        "description": "feature fields to project in response (JSON)",
-                        "type": "string"
-                    },
-                    {
-                        "name": "startDate",
+                        "name": "type",
                         "in": "query",
                         "type": "string",
-                        "format": "dateTime"
-                    },
-                    {
-                        "name": "endDate",
-                        "in": "query",
-                        "type": "string",
-                        "format": "dateTime"
-                    },
-                    {
-                        "name": "bbox",
-                        "description": "bounding box array [minx,miny,maxx,maxy]",
-                        "in": "query",
-                        "type": "array",
-                        "items": {
-                            "type": "number"
-                        }
-                    },
-                    {
-                        "name": "states",
-                        "in": "query",
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
+                        "description": "layer type filter, i.e. Imagery or Feature",
+                        "required": false
                     }
                 ],
                 "tags": [
-                    "Feature"
+                    "Layer"
                 ],
                 "responses": {
                     "200": {
-                        "description": "feature response",
+                        "description": "layer responses",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Layer"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/events/{eventId}/layers/{layerId}/features": {
+            "get": {
+                "description": "get features for specified layer in event",
+                "operationId": "getFeaturesForLayer",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "id of the event to get features for",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "layerId",
+                        "in": "path",
+                        "description": "id of the layer to get features for",
+                        "required": true,
+                        "type": "number"
+                    }
+                ],
+                "tags": [
+                    "Layer"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "feature responses",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -920,389 +1555,20 @@
                         }
                     }
                 }
-            },
-            "post": {
-                "description": "add new feature",
-                "operationId": "addFeature",
-                "parameters": [
-                    {
-                        "name": "layerId",
-                        "in": "path",
-                        "description": "layerId for which to create feature",
-                        "required": true,
-                        "type": "number"
-                    },
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "description": "faature request body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/Feature"
-                        }
-                    }
-                ],
-                "tags": [
-                    "Feature"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "feature response",
-                        "schema": {
-                            "$ref": "#/definitions/Feature"
-                        }
-                    }
-                }
             }
         },
-        "/FeatureServer/{layerId}/features/{featureId}": {
-            "get": {
-                "description": "get feature for layerId based on featureId",
-                "operationId": "getFeature",
-                "parameters": [
-                    {
-                        "name": "layerId",
-                        "in": "path",
-                        "description": "layerId in which to retrieve features",
-                        "required": true,
-                        "type": "number"
-                    },
-                    {
-                        "name": "featureId",
-                        "in": "path",
-                        "description": "featureId for feature",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "fields",
-                        "in": "query",
-                        "description": "feature fields to project in response (JSON)",
-                        "type": "string"
-                    },
-                    {
-                        "name": "startDate",
-                        "in": "query",
-                        "type": "string",
-                        "format": "dateTime"
-                    },
-                    {
-                        "name": "endDate",
-                        "in": "query",
-                        "type": "string",
-                        "format": "dateTime"
-                    },
-                    {
-                        "name": "bbox",
-                        "description": "bounding box array [minx,miny,maxx,maxy]",
-                        "in": "query",
-                        "type": "array",
-                        "items": {
-                            "type": "number"
-                        }
-                    },
-                    {
-                        "name": "states",
-                        "in": "query",
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "tags": [
-                    "Feature"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "feature response",
-                        "schema": {
-                            "$ref": "#/definitions/Feature"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "update feature for layerId based on featureId",
-                "operationId": "updateFeature",
-                "parameters": [
-                    {
-                        "name": "layerId",
-                        "in": "path",
-                        "description": "layerId in which to retrieve features",
-                        "required": true,
-                        "type": "number"
-                    },
-                    {
-                        "name": "featureId",
-                        "in": "path",
-                        "description": "featureId for feature",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "description": "feature request body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/Feature"
-                        }
-                    }
-                ],
-                "tags": [
-                    "Feature"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "feature response",
-                        "schema": {
-                            "$ref": "#/definitions/Feature"
-                        }
-                    }
-                }
-            }
-        },
-        "/FeatureServer/{layerId}/features/{featureId}/states": {
-            "post": {
-                "description": "update state on provided feature for provided layer",
-                "operationId": "addFeatureState",
-                "parameters": [
-                    {
-                        "name": "layerId",
-                        "in": "path",
-                        "description": "layerId in which to retrieve features",
-                        "required": true,
-                        "type": "number"
-                    },
-                    {
-                        "name": "featureId",
-                        "in": "path",
-                        "description": "featureId for feature",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "description": "state request body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/FeatureStateCreate"
-                        }
-                    }
-                ],
-                "tags": [
-                    "Feature"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "feature response",
-                        "schema": {
-                            "$ref": "#/definitions/FeatureState"
-                        }
-                    }
-                }
-            }
-        },
-        "/FeatureServer/{layerId}/features/{featureId}/attachments": {
-            "get": {
-                "description": "get attachments for feature in layer",
-                "operationId": "getAttachments",
-                "produces": [
-                    "application/octet-stream"
-                ],
-                "parameters": [
-                    {
-                        "name": "layerId",
-                        "in": "path",
-                        "description": "layerId in which to retrieve features",
-                        "required": true,
-                        "type": "number"
-                    },
-                    {
-                        "name": "featureId",
-                        "in": "path",
-                        "description": "featureId for feature",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "tags": [
-                    "Feature"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "attachment response",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/Attachment"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "add new attachment",
-                "operationId": "addAttachment",
-                "consumes": [
-                    "mulitpart/form-data"
-                ],
-                "parameters": [
-                    {
-                        "name": "layerId",
-                        "in": "path",
-                        "description": "layerId in which to create attachment",
-                        "required": true,
-                        "type": "number"
-                    },
-                    {
-                        "name": "featureId",
-                        "in": "path",
-                        "description": "featureId in which to create attachment",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "attachment",
-                        "in": "formData",
-                        "type": "file",
-                        "description": "attachment",
-                        "required": true
-                    }
-                ],
-                "tags": [
-                    "Feature"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "attachment response"
-                    }
-                }
-            }
-        },
-        "/FeatureServer/{layerId}/features/{featureId}/attachment/{attachmentId}": {
-            "get": {
-                "description": "get attachment for feature in layer",
-                "operationId": "getFeatureAttachment",
-                "produces": [
-                    "application/octet-stream"
-                ],
-                "parameters": [
-                    {
-                        "name": "layerId",
-                        "in": "path",
-                        "description": "layerId in which to retrieve features",
-                        "required": true,
-                        "type": "number"
-                    },
-                    {
-                        "name": "featureId",
-                        "in": "path",
-                        "description": "featureId for feature",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "attachmentId",
-                        "in": "path",
-                        "description": "id of attachment to fetch",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "tags": [
-                    "Feature"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "attachment response"
-                    }
-                }
-            },
-            "put": {
-                "description": "update attachment for feature in layer",
-                "operationId": "updateAttachment",
-                "parameters": [
-                    {
-                        "name": "layerId",
-                        "in": "path",
-                        "description": "layerId in which to retrieve features",
-                        "required": true,
-                        "type": "number"
-                    },
-                    {
-                        "name": "featureId",
-                        "in": "path",
-                        "description": "featureId for feature",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "attachmentId",
-                        "in": "path",
-                        "description": "id of attachment to update",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "attachment",
-                        "in": "formData",
-                        "type": "file",
-                        "description": "attachment",
-                        "required": true
-                    }
-                ],
-                "tags": [
-                    "Feature"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "attachment response"
-                    }
-                }
-            },
-            "delete": {
-                "description": "delete attachment for feature in layer",
-                "parameters": [
-                    {
-                        "name": "layerId",
-                        "in": "path",
-                        "description": "layerId in which to retrieve features",
-                        "required": true,
-                        "type": "number"
-                    },
-                    {
-                        "name": "featureId",
-                        "in": "path",
-                        "description": "featureId for feature",
-                        "required": true,
-                        "type": "string"
-                    },
-                    {
-                        "name": "attachmentId",
-                        "in": "path",
-                        "description": "id of attachment to update",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "tags": [
-                    "Feature"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "attachment delete"
-                    }
-                }
-            }
-        },
-        "/api/locations": {
+        "/api/events/{eventId}/locations": {
             "get": {
                 "description": "get all locations",
                 "operationId": "getLocations",
                 "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "id of event to get locations for",
+                        "required": true,
+                        "type": "number"
+                    },
                     {
                         "name": "startDate",
                         "in": "query",
@@ -1344,9 +1610,16 @@
                 }
             },
             "post": {
-                "description": "add new location for current user",
+                "description": "add new location for current user in the specified event",
                 "operationId": "addLocation",
                 "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "id of event to post location to",
+                        "required": true,
+                        "type": "number"
+                    },
                     {
                         "name": "body",
                         "in": "body",
@@ -1371,6 +1644,13 @@
                 "operationId": "updateLocation",
                 "parameters": [
                     {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "id of event to update location to",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
                         "name": "body",
                         "in": "body",
                         "description": "new location body",
@@ -1394,11 +1674,18 @@
                 }
             }
         },
-        "/api/locations/users": {
+        "/api/events/{eventId}/locations/users": {
             "get": {
                 "description": "get all locations grouped by user",
                 "operationId": "getLocationsByUser",
                 "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "id of event to update location to",
+                        "required": true,
+                        "type": "number"
+                    },
                     {
                         "name": "startDate",
                         "in": "query",
@@ -1535,13 +1822,13 @@
         },
         "Role": {
             "required": [
-                "_id",
+                "id",
                 "name",
                 "description",
                 "permissions"
             ],
             "properties": {
-                "_id": {
+                "id": {
                     "type": "string"
                 },
                 "name": {
@@ -1596,7 +1883,7 @@
         },
         "User": {
             "required": [
-                "_id",
+                "id",
                 "username",
                 "firstname",
                 "lastname",
@@ -1604,7 +1891,7 @@
                 "role"
             ],
             "properties": {
-                "_id": {
+                "id": {
                     "type": "string"
                 },
                 "username": {
@@ -1635,7 +1922,7 @@
         },
         "Users": {
             "required": [
-                "_id",
+                "id",
                 "username",
                 "firstname",
                 "lastname",
@@ -1643,7 +1930,7 @@
                 "role"
             ],
             "properties": {
-                "_id": {
+                "id": {
                     "type": "string"
                 },
                 "username": {
@@ -1669,6 +1956,20 @@
                 }
             }
         },
+        "Login": {
+            "required": [
+                "timestamp",
+                "device"
+            ],
+            "properties": {
+                "timestamp": {
+                    "type": "string"
+                },
+                "device": {
+                    "$ref": "#/definitions/Device"
+                }
+            }
+        },
         "DeviceCreate": {
             "properties": {
                 "uid": {
@@ -1691,13 +1992,13 @@
         },
         "Device": {
             "required": [
-                "_id",
+                "id",
                 "uid",
                 "name",
                 "description"
             ],
             "properties": {
-                "_id": {
+                "id": {
                     "type": "string"
                 },
                 "uid": {
@@ -1711,6 +2012,90 @@
                 },
                 "registered": {
                     "type": "boolean"
+                }
+            }
+        },
+        "TeamCreate": {
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "members": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/User"
+                    }
+                }
+            }
+        },
+        "Team": {
+            "required": [
+                "id",
+                "name"
+            ],
+            "properties": {
+                "id": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "members": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/User"
+                    }
+                }
+            }
+        },
+        "EventCreate": {
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "form": {
+                    "$ref": "#/definitions/FormCreate"
+                }
+            }
+        },
+        "Event": {
+            "required": [
+                "id",
+                "name"
+            ],
+            "properties": {
+                "id": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "form": {
+                    "$ref": "#/definitions/Form"
+                },
+                "teams": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Team"
+                    }
                 }
             }
         },

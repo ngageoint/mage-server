@@ -1,0 +1,30 @@
+<div cl***REMOVED***="location-popup">
+  <div cl***REMOVED***="row">
+    <div cl***REMOVED***="col-md-12">
+      <span cl***REMOVED***="pull-right">
+        <a href="javascript:void(0)" title="Show in feed" cl***REMOVED***="location-popup-info" ng-click="onInfoClicked()"><i cl***REMOVED***="fa fa-info-circle"></i></a>
+        <a href="javascript:void(0)" title="Zoom to" cl***REMOVED***="location-popup-info" ng-click="onZoomClicked()"><i cl***REMOVED***="fa fa-crosshairs"></i></a>
+      </span>
+
+      <div cl***REMOVED***="feed-avatar-img-container pull-left">
+        <img cl***REMOVED***="avatar-thumbnail img-rounded" ng-src="{{avatarUrl}}">
+      </div>
+
+      <div cl***REMOVED***="observation-popup-title">
+        <strong>{{user.username}}</strong>
+      </div>
+      <div cl***REMOVED***="observation-popup-subtitle">
+        <span cl***REMOVED***="muted">{{user.firstname}} {{user.lastname}} </span>
+      </div>
+      <div cl***REMOVED***="observation-popup-subtitle">
+        <span ng-if="date">{{date}}</span>
+      </div>
+      <div>
+        {{user.email}}
+      </div>
+      <div>
+        {{user.phones[0].number}}
+      </div>
+    </div>
+  </div>
+<div>

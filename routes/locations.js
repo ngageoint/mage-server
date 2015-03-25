@@ -1,8 +1,9 @@
 module.exports = function(app, security) {
   var moment = require('moment')
     , Location = require('../models/location')
-    , User = require('../models/user')
-    , Token = require('../models/token')
+    , CappedLocation = require('../models/cappedLocation')
+    , Team = require('../models/team')
+    , Event = require('../models/event')
     , Role = require('../models/role')
     , Team = require('../models/team')
     , access = require('../access')
@@ -14,7 +15,20 @@ module.exports = function(app, security) {
 
   var locationLimit = config.server.locationServices.userCollectionLocationLimit;
 
-  var parseQueryParams = function(req, res, next) {
+  function validateEventAccess(req, res, next) {
+    if (access.userHasPermission(req.user, 'READ_LOCATION_ALL')) {
+      next();
+    } else if (access.userHasPermission(req.user, 'READ_LOCATION_EVENT')) {
+      // Make sure I am part of this event
+      Event.eventHasUser(req.event, req.user._id, function(err, eventHasUser) {
+        eventHasUser ? next() : res.sendStatus(403);
+      });
+    } else {
+      res.sendStatus(403);
+    }
+  }
+
+  function parseQueryParams(req, res, next) {
     var parameters = {filter: {}};
 
     var startDate = req.param('startDate');
@@ -40,49 +54,63 @@ module.exports = function(app, security) {
     next();
   }
 
-  var validateLocations = function(req, res, next) {
+  function validateLocations(req, res, next) {
     var locations = req.body;
 
     if (!Array.isArray(locations)) {
       locations = [locations];
     }
 
-    var valid = locations.every(function(l) {
-      if (!l.geometry) {
-        msg = "Missing required parameter 'geometry'.";
-        return false;
+    Team.teamsForUserInEvent(req.user, req.event, function(err, teams) {
+      if (err) return next(err);
+
+      if (teams.length === 0) {
+        return res.status(403).send('Cannot submit a location for an event that you are not part of.');
       }
 
-      if (!l.properties || !l.properties.timestamp) {
-        msg = "Missing required parameter 'properties.timestamp";
-        return false;
-      }
+      req.user.teamIds = teams.map(function(team) { return team._id; });
 
-      l.properties.timestamp = moment.utc(l.properties.timestamp).toDate();
-      l.properties.user = req.user._id;
-      l.properties.deviceId = req.provisionedDeviceId;
+      var valid = locations.every(function(l) {
+        if (!l.geometry) {
+          msg = "Missing required parameter 'geometry'.";
+          return false;
+        }
 
-      l.type = "Feature";
+        if (!l.properties || !l.properties.timestamp) {
+          msg = "Missing required parameter 'properties.timestamp";
+          return false;
+        }
 
-      return true;
+        l.userId = req.user._id;
+        l.eventId = req.event._id;
+        l.teamIds = req.user.teamIds;
+        l.properties.timestamp = moment.utc(l.properties.timestamp).toDate();
+        l.properties.deviceId = req.provisionedDeviceId;
+
+        l.type = "Feature";
+
+        return true;
+      });
+
+      if (!valid) return res.send(400, msg);
+
+      req.locations = locations;
+
+      next();
     });
-
-    if (!valid) return res.send(400, msg);
-
-    req.locations = locations;
-
-    next();
   }
 
   // get locations and group by user
   // max of 100 locations per user
   app.get(
-    '/api/locations/users',
+    '/api/events/:eventId/locations/users',
     p***REMOVED***port.authenticate(authenticationStrategy),
-    access.authorize('READ_LOCATION'),
+    validateEventAccess,
     parseQueryParams,
     function(req, res) {
-      User.getLocations({filter: req.parameters.filter, limit: req.parameters.limit}, function(err, users) {
+      var filter = req.parameters.filter;
+      filter.eventId = req.event._id;
+      CappedLocation.getLocations({filter: filter, limit: req.parameters.limit}, function(err, users) {
         res.json(users);
       });
     }
@@ -92,20 +120,22 @@ module.exports = function(app, security) {
   // Will only return locations for the teams that the user is a part of
   // TODO only one team for PDC, need to implement multiple teams later
   app.get(
-    '/api/locations',
+    '/api/events/:eventId/locations',
     p***REMOVED***port.authenticate(authenticationStrategy),
-    access.authorize('READ_LOCATION'),
+    validateEventAccess,
     parseQueryParams,
     function(req, res) {
+      var filter = req.parameters.filter;
+      filter.eventId = req.event._id;
       Location.getLocations({filter: req.parameters.filter, limit: req.parameters.limit}, function(err, locations) {
         res.json(locations);
       });
     }
   );
 
-  // create new location(s) for a specific user
+  // create new location(s) for a specific user and event
   app.post(
-    '/api/locations',
+    '/api/events/:eventId/locations',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('CREATE_LOCATION'),
     validateLocations,
@@ -118,7 +148,7 @@ module.exports = function(app, security) {
         timestamp.diff(currentTimestamp, 'minutes') > 15 ? futureLocations.push(location) : validLocations.push(location);
       });
 
-      Location.createLocations(req.user, validLocations, function(err, locations) {
+      Location.createLocations(validLocations, function(err, locations) {
         if (err) {
           return res.send(400, err);
         }
@@ -126,9 +156,9 @@ module.exports = function(app, security) {
         res.json(locations);
       });
 
-      User.addLocationsForUser(req.user, {valid: validLocations, future: futureLocations}, function(err, location) {
+      CappedLocation.addLocations(req.user, req.event, {valid: validLocations, future: futureLocations}, function(err, location) {
         if (err) {
-          return res.send(400, err);
+          console.log('failed to store location in capped location collection');
         }
       });
     }
@@ -136,9 +166,9 @@ module.exports = function(app, security) {
 
   // update time on a location
   app.put(
-    '/api/locations',
+    '/api/events/:eventId/locations',
     p***REMOVED***port.authenticate(authenticationStrategy),
-    access.authorize('UPDATE_LOCATION'),
+    validateEventAccess,
     function(req, res) {
       var data = req.body;
 
