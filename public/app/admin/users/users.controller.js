@@ -140,7 +140,7 @@ function AdminUsersController($scope, $injector, $filter, LocalStorageService, U
 
   $scope.refresh = function() {
     $scope.users = [];
-    UserService.getAllUsers().success(function (users) {
+    UserService.getAllUsers(true).success(function (users) {
       $scope.users = users;
     });
   }
