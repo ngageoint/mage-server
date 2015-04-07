@@ -201,6 +201,12 @@ exports.getObservations = function(event, o, callback) {
   });
 }
 
+exports.getLatestObservation = function(event, callback) {
+  observationModel(event).findOne({}, {lastModified: true}, {sort: {"lastModified": -1}, limit: 1}, function(err, observation) {
+    callback(err, observation);
+  });
+}
+
 exports.getObservationById = function(event, observationId, options, callback) {
   var fields = parseFields(options.fields);
 
@@ -332,7 +338,7 @@ exports.addAttachment = function(event, id, file, callback) {
 }
 
 exports.updateAttachment = function(event, observationId, attachmentId, file, callback) {
-  var condition = {_id: featureId, 'attachments._id': attachmentId};
+  var condition = {_id: observationId, 'attachments._id': attachmentId};
   var set = {};
   if (file.name) set['attachments.$.name'] = file.name;
   if (file.type) set['attachments.$.type'] = file.type;

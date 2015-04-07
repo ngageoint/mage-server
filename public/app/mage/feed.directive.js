@@ -64,7 +64,7 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Fil
 
   $scope.$watch('currentFeedPanel', function(currentFeedPanel) {
     if (currentFeedPanel === 'observationsTab') {
-      $scope.feedObservationsChanged = {};
+      $scope.feedObservationsChanged = {count: 0};
       $scope.observationsChanged = 0;
       $scope.$broadcast('map:visible');
     } else if (currentFeedPanel === 'peopleTab') {

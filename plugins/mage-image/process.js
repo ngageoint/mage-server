@@ -4,8 +4,8 @@ var config = require('./config.json')
 	, path = require('path')
 	, fs = require('fs-extra')
 	, mongoose = require('mongoose')
-	, Layer = require('../../models/layer')
-	, Feature = require('../../models/feature')
+	, Event = require('../../models/event')
+	, Observation = require('../../models/observation')
 	, gm = require('gm');
 
 var attachmentBase = serverConfig.server.attachment.baseDirectory;
@@ -13,8 +13,8 @@ var thumbSizes = config.image.thumbSizes;
 
 var timeout = config.image.interval * 1000;
 
-var featureTimes = {};
-var lastFeatureTimes = {orient: {}, thumbnail: {}};
+var observationTimes = {};
+var lastObservationTimes = {orient: {}, thumbnail: {}};
 
 var mongodbConfig = config.mongodb;
 mongoose.connect(mongodbConfig.url, {server: {poolSize: mongodbConfig.poolSize}}, function(err) {
@@ -25,24 +25,24 @@ mongoose.connect(mongodbConfig.url, {server: {poolSize: mongodbConfig.poolSize}}
 });
 mongoose.set('debug', true);
 
-function processLayer(layer, callback) {
-	async.eachSeries(layer.features, function(feature, done) {
-		processAttachment(layer.layer, feature._id, feature.attachment, done);
+function processEvent(options, callback) {
+	async.eachSeries(options.observations, function(observation, done) {
+		processAttachment(options.event, observation._id, observation.attachment, done);
 	},
 	function(err) {
 		callback(err);
 	});
 }
 
-function processAttachment(layer, featureId, attachment, callback) {
+function processAttachment(event, observationId, attachment, callback) {
 	if (attachment.oriented) {
-		thumbnail(layer, featureId, attachment, callback);
+		thumbnail(event, observationId, attachment, callback);
 	} else {
-		orient(layer, featureId, attachment, callback);
+		orient(event, observationId, attachment, callback);
 	}
 }
 
-function orient(layer, featureId, attachment, callback) {
+function orient(event, observationId, attachment, callback) {
 	console.log('orient attachment ' + attachment.name);
 
 	var file = path.join(attachmentBase, attachment.relativePath);
@@ -62,7 +62,7 @@ function orient(layer, featureId, attachment, callback) {
 				attachment.width = size.width;
 				attachment.height = size.height;
 				attachment.oriented = true;
-				Feature.updateAttachment(layer, featureId, attachment._id, attachment, function(err, feature) {
+				Observation.updateAttachment(event, observationId, attachment._id, attachment, function(err, observation) {
 					callback(err);
 				});
 			});
@@ -70,7 +70,7 @@ function orient(layer, featureId, attachment, callback) {
 	});
 }
 
-function thumbnail(layer, featureId, attachment, callback) {
+function thumbnail(event, observationId, attachment, callback) {
 	var file = path.join(attachmentBase, attachment.relativePath);
 
 	async.eachSeries(thumbSizes, function(thumbSize, done) {
@@ -106,7 +106,7 @@ function thumbnail(layer, featureId, attachment, callback) {
 
 					var stat = fs.statSync(thumbPath);
 
-					Feature.addAttachmentThumbnail(layer, featureId, attachment._id, {
+					Observation.addAttachmentThumbnail(event, observationId, attachment._id, {
 						size: stat.size,
 						name: path.basename(attachment.name, path.extname(attachment.name)) + "_" + thumbSize + path.extname(attachment.name),
 						relativePath: path.join(path.dirname(attachment.relativePath), path.basename(attachment.relativePath, path.extname(attachment.relativePath))) + "_" + thumbSize + path.extname(attachment.relativePath),
@@ -135,33 +135,35 @@ function thumbnail(layer, featureId, attachment, callback) {
 }
 
 var processAttachments = function() {
-	console.log('processing attachments, starting from', lastFeatureTimes);
+	console.log('processing attachments, starting from', lastObservationTimes);
 
 	async.waterfall([
 		function(done) {
-			//get feature layers
-			Layer.getLayers({type: 'Feature'}, function(err, layers) {
-				async.each(layers, function(layer, done) {
-					Feature.featureModel(layer).findOne({}, {lastModified: true}, {sort: {"lastModified": -1}, limit: 1}, function(err, feature) {
-						if (feature) featureTimes[layer.collectionName] = feature.lastModified;
+			//get events
+			Event.getEvents(function(err, events) {
+				async.each(events, function(event, done) {
+					Observation.getLatestObservation(event, function(err, observation) {
+						if (err) return done(err);
+
+						if (observation) observationTimes[event.collectionName] = observation.lastModified;
 						done();
 					});
 				},
 				function(err) {
-					done(err, layers);
+					done(err, events);
 				});
 			});
 		},
-		function(layers, done) {
+		function(events, done) {
 			// aggregate results into array of attachments that have not been oriented, and orient
 			var results = [];
-			async.eachSeries(layers, function(layer, done) {
+			async.eachSeries(events, function(event, done) {
 				var match = {
 					"attachments.contentType": { "$regex": /^image/ },
 					"attachments.oriented": false
 				};
 
-				var lastTime = lastFeatureTimes.orient[layer.collectionName];
+				var lastTime = lastObservationTimes.orient[event.collectionName];
         if (lastTime) {
           match.lastModified = {"$gt": lastTime};
         }
@@ -169,39 +171,39 @@ var processAttachments = function() {
 				var sort = {"$sort": { "lastModified": 1 }};
 				var unwind = {"$unwind": "$attachments"};
 				var project = {"$project": {lastModified: 1, attachment: "$attachments"}};
-				Feature.featureModel(layer).aggregate({"$match": match}, sort, unwind, {"$match": match}, project, function(err, aggregate) {
-					results.push({layer: layer, features: aggregate});
+				Observation.observationModel(event).aggregate({"$match": match}, sort, unwind, {"$match": match}, project, function(err, aggregate) {
+					results.push({event: event, observations: aggregate});
 					done(err);
 				});
 			},
 			function(err) {
-				done(err, layers, results);
+				done(err, events, results);
 			});
 		},
-		function(layers, results, done) {
+		function(events, results, done) {
 			async.eachSeries(results, function(result, done) {
-				processLayer(result, function(err) {
+				processEvent(result, function(err) {
 					// Update time
-					lastFeatureTimes.orient[result.layer.collectionName] = featureTimes[result.layer.collectionName];
+					lastObservationTimes.orient[result.event.collectionName] = observationTimes[result.event.collectionName];
 					done(err);
 				});
 			},
 			function(err) {
-				done(err, layers);
+				done(err, events);
 			});
 		},
-		function(layers, done) {
+		function(events, done) {
 			// aggregate results into array of attachments that have been oriented
 			// but do no have all the nessecary thumbnails
 			var results = [];
-			async.eachSeries(layers, function(layer, done) {
+			async.eachSeries(events, function(event, done) {
 				var match =  {
 					"attachments.contentType": { "$regex": /^image/ },
 					"attachments.oriented": true,
 					"attachments.thumbnails.minDimension": { "$not": { "$all": thumbSizes } }
 				};
 
-				var lastTime = lastFeatureTimes.thumbnail[layer.collectionName];
+				var lastTime = lastObservationTimes.thumbnail[event.collectionName];
         if (lastTime) {
           match.lastModified = {"$gt": lastTime};
         }
@@ -209,25 +211,25 @@ var processAttachments = function() {
 				var sort = {"$sort": { "lastModified": 1 }};
 				var unwind = {"$unwind": "$attachments"};
 				var project = {"$project": {lastModified: 1, attachment: "$attachments"}};
-				Feature.featureModel(layer).aggregate({"$match": match}, sort, unwind, {"$match": match}, project, function(err, aggregate) {
-					results.push({layer: layer, features: aggregate});
+				Observation.observationModel(event).aggregate({"$match": match}, sort, unwind, {"$match": match}, project, function(err, aggregate) {
+					results.push({event: event, observations: aggregate});
 					done(err);
 				});
 			},
 			function(err) {
-				done(err, layers, results);
+				done(err, events, results);
 			});
 		},
-		function(layers, results, done) {
+		function(events, results, done) {
 			async.eachSeries(results, function(result, done) {
-				processLayer(result, function(err) {
+				processEvent(result, function(err) {
 					// Update time
-					lastFeatureTimes.thumbnail[result.layer.collectionName] = featureTimes[result.layer.collectionName];
+					lastObservationTimes.thumbnail[result.event.collectionName] = observationTimes[result.event.collectionName];
 					done();
 				});
 			},
 			function(err) {
-				done(err, layers);
+				done(err, events);
 			});
 		}
 	],

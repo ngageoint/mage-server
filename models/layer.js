@@ -1,5 +1,6 @@
 var mongoose = require('mongoose')
-  , Counter = require('./counter');
+  , Counter = require('./counter')
+  , Event = require('./event');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -48,6 +49,12 @@ LayerSchema.pre('save', function(next) {
   var layer = this;
   //TODO validate layer before save
   next();
+});
+
+LayerSchema.pre('remove', function(next) {
+  var layer = this;
+
+  Event.removeLayerFromEvents(layer, next);
 });
 
 // Creates the Model for the Layer Schema

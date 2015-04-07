@@ -338,10 +338,6 @@ function AdminEventsController($scope, $injector, $filter, $timeout, $q, LocalSt
     $scope.event.form.fields.splice(0, $scope.event.form.fields.length);
   }
 
-  $scope.saveEvent = function() {
-    $scope.event.$save();
-  }
-
   $scope.deleteEvent = function() {
     var modalInstance = $injector.get('$modal').open({
       templateUrl: '/app/admin/events/event-delete.html',

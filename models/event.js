@@ -252,6 +252,24 @@ exports.update = function(id, event, callback) {
   });
 }
 
+exports.removeLayerFromEvents = function(layer, callback) {
+  var update = {
+    $pull: {layerIds: layer._id}
+  };
+  Event.update({}, update, function(err, numberAffected) {
+    callback(err);
+  });
+}
+
+exports.removeTeamFromEvents = function(team, callback) {
+  var update = {
+    $pull: {teamIds: team._id}
+  };
+  Event.update({}, update, function(err, numberAffected) {
+    callback(err);
+  });
+}
+
 exports.remove = function(event, callback) {
   event.remove(function(err) {
     if (err) return callback(err);
