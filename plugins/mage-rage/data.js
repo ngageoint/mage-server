@@ -9,9 +9,10 @@ var config = require('./config.json')
   , moment = require('moment')
   , User = require('../../models/user')
   , Device = require('../../models/device')
-  , Layer = require('../../models/layer')
-  , Feature = require('../../models/feature')
-  , Location = require('../../models/location');
+  , Event = require('../../models/event')
+  , Observation = require('../../models/observation')
+  , Location = require('../../models/location')
+  , CappedLocation = require('../models/cappedLocation');
 
 // setup mongoose to talk to mongodb
 var mongodbConfig = config.mongodb;
@@ -106,49 +107,72 @@ var syncDevices = function(done) {
   });
 }
 
-var createFeatureCollection = function(layer, done) {
-  console.log("Creating collection: " + layer.collectionName + ' for layer ' + layer.name);
-  mongoose.connection.db.createCollection(layer.collectionName, function(err, collection) {
+// TODO test
+var syncTeams = function(done) {
+  var options = {
+    url: baseUrl + '/api/teams',
+    json: true,
+    headers: headers
+  };
+
+  request.get(options, function(err, res, teams) {
+    if (err) return done(err);
+
+    if (res.statusCode != 200) return done(new Error('Error getting teams, respose code: ' + res.statusCode));
+
+    console.log('syncing: ' + teams.length + ' teams');
+    async.each(teams,
+      function(team, done) {
+        var id = team._id;
+        delete team._id;
+        Team.TeamModel.findByIdAndUpdate(id, team, {upsert: true}, done);
+      },
+      function(err) {
+        done(err);
+      }
+    );
+  });
+}
+
+var createObservationCollection = function(event, done) {
+  console.log("Creating observation collection: " + event.collectionName + ' for event ' + event.name);
+  mongoose.connection.db.createCollection(event.collectionName, function(err, collection) {
     if (err) {
       console.error(err);
       return;
     }
 
-    console.log("Successfully created feature collection for layer " + layer.name);
+    console.log("Successfully created observation collection for event " + event.name);
     done();
   });
 }
 
-var layers;
-var syncLayers = function(done) {
+var events; // TODO need to pull down the form and import it
+var syncEvents = function(done) {
   var options = {
-    url: baseUrl + '/api/layers',
+    url: baseUrl + '/api/events',
     json: true,
     headers: headers
   };
 
-  request.get(options, function(err, res, body) {
+  request.get(options, function(err, res, allEvents) {
     if (err) return done(err);
 
-    if (res.statusCode != 200) return done(new Error('Error getting layers, respose code: ' + res.statusCode));
+    if (res.statusCode != 200) return done(new Error('Error getting events, respose code: ' + res.statusCode));
 
-    layers = [];
-    var featureLayers = body.filter(function(l) { return l.type === 'Feature' });
-    console.log('syncing: ' + featureLayers.length + ' feature layers');
-    async.each(featureLayers,
-      function(featureLayer, done) {
-        var layer =  {id: featureLayer.id, name: featureLayer.name, type: featureLayer.type, collectionName: 'features' + featureLayer.id};
+    console.log('syncing: ' + allEvents.length + ' events');
+    async.each(allEvents,
+      function(event, done) {
+        var update =  {id: event.id, name: event.name, collectionName: 'observations' + event.id};
 
-        Layer.Model.findOneAndUpdate({id: featureLayer.id}, layer, {upsert: true, new: false}, function(err, oldLayer) {
-          if (!oldLayer || !oldLayer.id) {
-            createFeatureCollection(layer, function() {
-              layer.id = featureLayer.id;
-              layers.push(layer);
+        Event.Model.findOneAndUpdate({id: event._id}, update, {upsert: true, new: false}, function(err, oldEvent) {
+          if (!oldEvent || !oldEvent.id) {
+            createObservationCollection(event, function() {
+              events.push(event);
               done(err);
             });
           } else {
-            layer.id = featureLayer.id;
-            layers.push(layer);
+            events.push(event);
             done();
           }
         });
@@ -160,78 +184,76 @@ var syncLayers = function(done) {
   });
 }
 
-var syncFeatures = function(done) {
-  console.log('syncing features for layers', layers);
+var syncObservations = function(done) {
+  console.log('syncing observations for events', events);
 
-  fs.readJson(__dirname + "/.data.json", function(err, lastFeatureTimes) {
-    lastFeatureTimes = lastFeatureTimes || {};
-    console.log('last', lastFeatureTimes);
+  fs.readJson(__dirname + "/.data.json", function(err, lastObservationTimes) {
+    lastObservationTimes = lastObservationTimes || {};
+    console.log('last', lastObservationTimes);
 
-    async.each(layers,
-      function(layer, done) {
-        var url = baseUrl + '/FeatureServer/' + layer.id + "/features";
-        var lastTime = lastFeatureTimes[layer.collectionName];
+    async.each(events,function(event, done) {
+      var url = baseUrl + '/api/events/' + event.id + "/observations";
+      var lastTime = lastObservationTimes[event.collectionName];
 
-        if (lastTime) {
-          url += '?startDate=' + moment(lastTime).add('ms', 1).toISOString();
-          lastTime = moment(lastTime);
-        }
-        console.log('feature url is', url);
-        var options = {
-          url: url,
-          json: true,
-          headers: headers
-        };
+      if (lastTime) {
+        url += '?startDate=' + moment(lastTime).add('ms', 1).toISOString();
+        lastTime = moment(lastTime);
+      }
+      console.log('observation url is', url);
+      var options = {
+        url: url,
+        json: true,
+        headers: headers
+      };
 
-        request.get(options, function(err, res, body) {
-          if (err) return done(err);
+      request.get(options, function(err, res, observations) {
+        if (err) return done(err);
 
-          if (res.statusCode != 200) return done(new Error('Error getting features, respose code: ' + res.statusCode));
+        if (res.statusCode != 200) return done(new Error('Error getting observations, respose code: ' + res.statusCode));
 
-          console.log('syncing: ' + body.features.length + ' features');
-          async.each(body.features,
-            function(feature, done) {
-              feature.properties = feature.properties || {};
-              if (feature.lastModified) {
-                var featureTime = moment(feature.lastModified);
-                if (!lastTime || featureTime.isAfter(lastTime)) {
-                  lastTime = featureTime;
-                }
+        console.log('syncing: ' + observations.length + ' observations');
+        async.each(observations,
+          function(observation, done) {
+            observation.properties = observation.properties || {};
+            if (observation.lastModified) {
+              var observationTime = moment(observation.lastModified);
+              if (!lastTime || observationTime.isAfter(lastTime)) {
+                lastTime = observationTime;
               }
-
-              var id = feature.id;
-              delete feature.id;
-              var state = feature.state;
-              delete feature.state;
-              if (feature.lastModified) feature.lastModified = moment(feature.lastModified).toDate();
-              if (feature.attachments) {
-                feature.attachments.forEach(function(attachment) {
-                  attachment._id = attachment.id;
-                  var id = mongoose.Types.ObjectId(attachment._id);
-                  attachment.id = id.getTimestamp().getTime();
-                });
-              }
-
-              feature['$push'] = {states: state};
-
-              Feature.featureModel(layer).update({_id: id}, feature, {upsert: true}, done);
-            },
-            function(err) {
-              lastFeatureTimes[layer.collectionName] = lastTime;
-              done(err);
             }
-          );
+
+            var id = observation.id;
+            delete observation.id;
+            var state = observation.state;
+            delete observation.state;
+            if (observation.lastModified) observation.lastModified = moment(observation.lastModified).toDate();
+            if (observation.attachments) {
+              observation.attachments.forEach(function(attachment) {
+                attachment._id = attachment.id;
+                var id = mongoose.Types.ObjectId(attachment._id);
+                attachment.id = id.getTimestamp().getTime();
+              });
+            }
+
+            observation['$push'] = {states: state};
+
+            Observation.observationModel(event).update({_id: id}, observation, {upsert: true}, done);
+          },
+          function(err) {
+            lastObservationTimes[event.collectionName] = lastTime;
+            done(err);
+          });
         });
       },
       function(err) {
-        fs.writeJson(__dirname + "/.data.json", lastFeatureTimes, done);
+        fs.writeJson(__dirname + "/.data.json", lastObservationTimes, done);
       }
     );
   });
 }
 
-function requestLocations(lastLocation, done) {
-  var url = baseUrl + '/api/locations?';
+function requestLocations(event, lastLocation, done) {
+  var url = baseUrl + '/api/events/' + event._id + 'locations?';
 
   var query = {limit: 2000};
   if (lastLocation) {
@@ -262,44 +284,50 @@ function requestLocations(lastLocation, done) {
 function syncLocations(done) {
   fs.readJson(__dirname + "/.locations.json", function(err, lastLocationTimes) {
     lastLocationTimes = lastLocationTimes || {};
-    var lastLocation = lastLocationTimes.location;
+
+    var lastLocation = lastLocationTimes[event.collectionName];
+    lastLocation = lastLocation ? lastLocation.location : null;
     var lastTime = lastLocation ? moment(lastLocation.timestamp) : null;
 
-    var locations = [];
-    async.doUntil(function(done) {
-      requestLocations(lastLocation, function(err, requestedLocations) {
-        if (err) return done(err);
-        locations = requestedLocations;
-
-        syncUserLocations(locations, function(err) {
+    async.each(events,function(event, done) {
+      var locations = [];
+      async.doUntil(function(done) {
+        requestLocations(event, lastLocation, function(err, requestedLocations) {
           if (err) return done(err);
-          console.log('Successfully synced ' + locations.length + ' locations to mage');
-          var last = locations.slice(-1).pop();
-          if (last) {
-            var locationTime = moment(last.properties.timestamp);
-            if (!lastTime || (lastTime.isBefore(locationTime) && locationTime.isBefore(Date.now()))) {
-              lastLocation = {_id: last._id, timestamp: last.properties.timestamp};
+          locations = requestedLocations;
+
+          syncUserLocations(event, locations, function(err) {
+            if (err) return done(err);
+            console.log('Successfully synced ' + locations.length + ' locations to mage');
+            var last = locations.slice(-1).pop();
+            if (last) {
+              var locationTime = moment(last.properties.timestamp);
+              if (!lastTime || (lastTime.isBefore(locationTime) && locationTime.isBefore(Date.now()))) {
+                lastLocation = {_id: last._id, timestamp: last.properties.timestamp};
+              }
             }
-          }
 
-          lastLocationTimes.location = lastLocation;
-          fs.writeJson(__dirname + "/.locations.json", lastLocationTimes, done);
+            lastLocationTimes.location = lastLocation;
+            fs.writeJson(__dirname + "/.locations.json", lastLocationTimes, done);
+          });
         });
-      });
-    },
-    function() {
-      return locations.length == 0;
-    },
-    function(err) {
-      if (err) return done(err);
+      },
+      function() {
+        return locations.length == 0;
+      },
+      function(err) {
+        if (err) return done(err);
 
-      lastLocationTimes.location = lastTime;
+        lastLocationTimes.location = lastTime;
+      });
+    }, function(err) {
+      done(err);
     });
   });
 }
 
-function syncUserLocations(locations, done) {
-  console.log('BILLY got locations: ' + locations.length);
+function syncUserLocations(event, locations, done) {
+  console.log('got locations: ' + locations.length);
 
   async.parallel({
     locationCollection: function(done) {
@@ -316,22 +344,21 @@ function syncUserLocations(locations, done) {
         done();
       });
     },
-    userCollection: function(done) {
+    cappedLocationCollection: function(done) {
       // Also need to update the user locations array
       // group all locations by user so I can do one insert per user
-      var users = {};
+      var locationsByUserId = {};
       locations.forEach(function(location) {
-        var user = users[location.properties.user];
+        var user = locationsByUserId[location.userId];
         if (user) {
           user.locations.push(location);
         } else {
-          users[location.properties.user] = { locations: [location] };
+          locationsByUserId[location.userId] = { locations: [location] };
         }
       });
 
-      async.each(Object.keys(users), function(userId, done) {
-        var user = users[userId];
-        User.addLocationsForUser({_id: userId}, user.locations, function(err) {
+      async.each(Object.keys(locationsByUserId), function(userId, done) {
+        CappedLocation.addLocations({_id: userId}, event, locationsByUserId[userId].locations, function(err) {
           done();
         });
       },
@@ -347,8 +374,8 @@ function syncUserLocations(locations, done) {
 
 var syncFeaturesAndLocations = function(done) {
   async.parallel({
-    features: syncFeatures
-    // locations: syncLocations
+    features: syncFeatures,
+    locations: syncLocations
   },
   function(err, results) {
     done(err);

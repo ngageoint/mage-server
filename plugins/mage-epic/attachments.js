@@ -7,8 +7,8 @@ var config = require('./config.json')
   , mongoose = require('mongoose')
   , moment = require('moment')
   , ArcGIS = require('terraformer-arcgis-parser')
-  , Layer = require('../../models/layer')
-  , Feature = require('../../models/feature');
+  , Event = require('../../models/event')
+  , Obsevation = require('../../models/observation');
 
 // setup mongoose to talk to mongodb
 var mongodbConfig = config.mongodb;
@@ -25,10 +25,10 @@ var timeout = config.esri.attachments.interval * 1000;
 var url = config.esri.url;
 var url = [url.host, url.site, url.restServices, url.folder, url.***REMOVED***Name, url.***REMOVED***Type, url.layerId].join("/");
 
-var layers;
-function getLayers(done) {
-  Layer.getLayers({type: 'Feature'}, function(err, featureLayers) {
-    layers = featureLayers;
+var events;
+function getEvents(done) {
+  Event.getEvents(function(err, allEvents) {
+    events = allEvents;
     done(err);
   });
 }
@@ -87,26 +87,26 @@ function pushAttachments(done) {
     lastAttachmentTimes = lastAttachmentTimes || {};
     console.log('last attachment times', lastAttachmentTimes);
 
-    async.each(layers,
-      function(layer, done) {
-        console.log('pushing attachments for layer ' + layer.name);
+    async.each(events,
+      function(event, done) {
+        console.log('pushing attachments for event ' + event.name);
 
-        var featureMatch = { esriId: {"$exists": true} };
-        var lastTime = lastAttachmentTimes[layer.collectionName];
+        var observationMatch = { esriId: {"$exists": true} };
+        var lastTime = lastAttachmentTimes[event.collectionName];
         if (lastTime) {
-          featureMatch['attachments.lastModified'] = {"$gt": moment(lastTime).toDate()}
+          observationMatch['attachments.lastModified'] = {"$gt": moment(lastTime).toDate()}
         }
 
         var project = {"$project": {esriId: true, lastModified: true, attachments: true}};
         var unwind = {"$unwind": "$attachments"};
         var sort = {"$sort": { "attachments.lastModified": 1 }};
-        Feature.featureModel(layer).aggregate({"$match": featureMatch}, project, sort, unwind, function(err, aggregate) {
+        Observation.observationModel(event).aggregate({"$match": observationMatch}, project, sort, unwind, function(err, aggregate) {
           if (err) return done(err);
           console.log(aggregate.length + ' have changed');
 
-          async.each(aggregate, function(feature, done) {
-            if (feature.attachments.esriId) {
-              updateEsriAttachment(feature.esriId, feature.attachments, function(err, esriAttachmentId) {
+          async.each(aggregate, function(observation, done) {
+            if (observation.attachments.esriId) {
+              updateEsriAttachment(observation.esriId, observation.attachments, function(err, esriAttachmentId) {
                 if (err) {
                   console.log('error updating ESRI attachment', err);
                 }
@@ -114,21 +114,21 @@ function pushAttachments(done) {
                 return done();
               });
             } else {
-              createEsriAttachment(feature.esriId, feature.attachments, function(err, esriAttachmentId) {
+              createEsriAttachment(observation.esriId, observation.attachments, function(err, esriAttachmentId) {
                 if (err) {
                   console.log('error creating ESRI attachment', err);
                   return done();
                 }
 
-                var condition = {_id: feature._id, 'attachments._id': feature.attachments._id};
+                var condition = {_id: observation._id, 'attachments._id': observation.attachments._id};
                 var update = { '$set': {'attachments.$.esriId': esriAttachmentId} };
-                Feature.featureModel(layer).update(condition, update, done);
+                Observation.observationModel(event).update(condition, update, done);
               });
             }
           },
           function(err) {
             if (aggregate.length > 0) {
-              lastAttachmentTimes[layer.collectionName] = aggregate[aggregate.length - 1].attachments.lastModified;
+              lastAttachmentTimes[event.collectionName] = aggregate[aggregate.length - 1].attachments.lastModified;
             }
 
             done(err);
@@ -149,8 +149,8 @@ function push() {
   console.log('pushing attachments to esri server ' + moment().toISOString());
 
   async.series({
-    layers: getLayers,
-    features: pushAttachments
+    events: getEvents,
+    observations: pushAttachments
   },
   function(err, results) {
     if (err) console.log('Error pushing attachments to esri server', err);
