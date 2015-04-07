@@ -306,8 +306,20 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
 
   function fetchLayers(event) {
     return LayerService.getLayersForEvent(event).then(function(layers) {
+      var added = _.filter(layers, function(l) {
+        return !_.some(eventsById[event.id].layersById, function(layer, layerId) {
+          return l.id == layerId
+        });
+      });
+
+      var removed = _.filter(eventsById[event.id].layersById, function(layer, layerId) {
+        return !_.some(layers, function(l) {
+          return l.id == layerId
+        });
+      });
+
       eventsById[event.id].layersById = _.indexBy(layers, 'id');
-      layersChanged({added: layers}, event);
+      layersChanged({added: added, removed: removed}, event);
     });
   }
 
@@ -325,7 +337,16 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
           // Check if we already have this observation, if so update, otherwise add
           var localObservation = filteredObservationsById[observation.id];
           if (localObservation) {
-            if (localObservation.lastModified !== observation.lastModified) updated.push(observation);
+            if (localObservation.lastModified !== observation.lastModified) {
+              updated.push(observation);
+            } else if (observation.attachments) {
+              var some = _.some(observation.attachments, function(attachment) {
+                var localAttachment = _.find(localObservation.attachments, function(a) {return a.id == attachment.id});
+                return !localAttachment || localAttachment.lastModified !== attachment.lastModified;
+              });
+
+              if (some) updated.push(observation);
+            }
           } else {
             added.push(observation);
           }

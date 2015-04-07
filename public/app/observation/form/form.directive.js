@@ -99,7 +99,7 @@ function FormDirectiveController($scope, EventService, Observation, UserService,
     if (_.keys($scope.attachmentUploads).length == 0) {
       $scope.attachmentUploads = {};
 
-      $scope.$emit('observation:editDone');
+      $scope.$emit('observation:editDone', $scope.observation);
       $scope.saving = false;
       $scope.uploadAttachments = false;
     }

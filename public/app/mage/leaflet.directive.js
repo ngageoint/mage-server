@@ -61,11 +61,6 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
     MapService.overlayAdded(layer);
   });
 
-  map.on('overlayremove', function(overlay, name) {
-    var layer = layers[overlay.name];
-    MapService.removeLayer(layer);
-  });
-
   adjustTemporalLayers();
   function adjustTemporalLayers() {
     _.each(temporalLayers, function(temporalLayer) {
@@ -184,7 +179,12 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
     }
 
     layers[layerInfo.name] = layerInfo;
-    layerControl.addBaseLayer(layerInfo.layer, layerInfo.name);
+
+    if (layerInfo.base) {
+      layerControl.addBaseLayer(layerInfo.layer, layerInfo.name);
+    } else {
+      layerControl.addOverlay(layerInfo.layer, layerInfo.name, 'Static Layers');
+    }
 
     if (layerInfo.options && layerInfo.options.selected) layerInfo.layer.addTo(map);
   }

@@ -1,6 +1,7 @@
-var mongoose = require('mongoose');
-
-var User = require('./user');
+var mongoose = require('mongoose')
+  , async = require('async')
+  , User = require('./user')
+  , Event = require('./event');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -18,8 +19,16 @@ var TeamSchema = new Schema({
 TeamSchema.pre('remove', function(next) {
   var team = this;
 
-  User.removeTeamFromUsers(team, function(err, number) {
-    next();
+  async.parallel({
+    user: function(done) {
+      User.removeTeamFromUsers(team, done);
+    },
+    teams: function(done) {
+      Event.removeTeamFromEvents(team, next);
+    }
+  },
+  function(err, results) {
+    next(err);
   });
 });
 

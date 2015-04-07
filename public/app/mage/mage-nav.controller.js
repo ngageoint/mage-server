@@ -38,7 +38,7 @@ function NavController($rootScope, $scope, $q, $location, $modal, UserService, F
         }
       });
     } else {
-      FilterService.setFilter({event: null});
+      FilterService.removeFilters();
       PollingService.setPollingInterval(0);
     }
   });

@@ -42,6 +42,7 @@ function FilterService(UserService) {
     addListener: addListener,
     removeListener: removeListener,
     setFilter: setFilter,
+    removeFilters: removeFilters,
     isContainedWithinFilter: isContainedWithinFilter,
     areTeamsInFilter: areTeamsInFilter,
     getEvent: getEvent,
@@ -102,6 +103,16 @@ function FilterService(UserService) {
     filterChanged(changed);
   }
 
+  function removeFilters() {
+    var changed = {};
+    if (event) {
+      changed.event = {removed: [event]};
+      event = null;
+    }
+
+    filterChanged(changed);
+  }
+
   function setEvent(newEvent) {
     if (newEvent == null && event != null) {
       event = null;
@@ -110,14 +121,14 @@ function FilterService(UserService) {
         added: [],
         removed: [event]
       }
-    } else if (newEvent && (!event || event.id !== newEvent.id)) {
+    } else if (newEvent && !event || event.id !== newEvent.id) {
       var added = [newEvent];
       var removed = event ? [event] : [];
 
-      event = newEvent;
-
       // Tell server that user is using this event
       UserService.addRecentEvent(newEvent);
+
+      event = newEvent;
 
       return {
         added: added,
