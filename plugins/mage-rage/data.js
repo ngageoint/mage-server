@@ -5,6 +5,7 @@ var config = require('./config.json')
   , crypto = require('crypto')
   , async = require('async')
   , request = require('request')
+  , unzip = require('unzip')
   , mongoose = require('mongoose')
   , moment = require('moment')
   , User = require('../../models/user')
@@ -32,6 +33,7 @@ var uid =  config.credentials.uid;
 
 var baseUrl = config.url;
 
+var token;
 var headers = {};
 var getToken = function(done) {
   console.log('getting token');
@@ -50,6 +52,7 @@ var getToken = function(done) {
 
     if (res.statusCode != 200) return done(new Error('Error hitting login api, respose code: ' + res.statusCode));
 
+    var token = body.token;
     headers['Authorization'] = 'Bearer ' + body.token;
     done();
   });
@@ -107,7 +110,6 @@ var syncDevices = function(done) {
   });
 }
 
-// TODO test
 var syncTeams = function(done) {
   var options = {
     url: baseUrl + '/api/teams',
@@ -147,7 +149,7 @@ var createObservationCollection = function(event, done) {
   });
 }
 
-var events; // TODO need to pull down the form and import it
+var events;
 var syncEvents = function(done) {
   var options = {
     url: baseUrl + '/api/events',
@@ -184,6 +186,18 @@ var syncEvents = function(done) {
   });
 }
 
+// TODO need to pull down the form and import it
+var syncForms = function(done) {
+  async.each(events,function(event, done) {
+    var url = baseUrl + '/api/events/' + event.id + '/form.zip?access_token=' + token;
+    request(url).pipe(unzip.Extract({path: ''}).on('end', function() {
+      done();
+    });
+  }, function(err) {
+    done(err);
+  });
+}
+
 var syncObservations = function(done) {
   console.log('syncing observations for events', events);
 
@@ -191,7 +205,7 @@ var syncObservations = function(done) {
     lastObservationTimes = lastObservationTimes || {};
     console.log('last', lastObservationTimes);
 
-    async.each(events,function(event, done) {
+    async.each(events, function(event, done) {
       var url = baseUrl + '/api/events/' + event.id + "/observations";
       var lastTime = lastObservationTimes[event.collectionName];
 
@@ -389,7 +403,8 @@ var sync = function() {
     token: getToken,
     users: syncUsers,
     devices: syncDevices,
-    layers: syncLayers,
+    teams: syncTeams,
+    events: syncEvents,
     featuresAndLocations: syncFeaturesAndLocations
   },
   function(err, results) {
