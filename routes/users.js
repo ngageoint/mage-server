@@ -340,7 +340,7 @@ module.exports = function(app, security) {
       if (req.param('lastname')) update.lastname = req.param('lastname');
       if (req.param('email')) update.email = req.param('email');
       if (req.param('active')) update.active = req.param('active');
-      if (req.param('role')) update.role = req.param('role');
+      if (req.param('roleId')) update.roleId = req.param('roleId');
 
       var phone = req.param('phone');
       if (phone) {
