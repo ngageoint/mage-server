@@ -4,11 +4,9 @@ module.exports = function(app, security) {
     , CappedLocation = require('../models/cappedLocation')
     , Team = require('../models/team')
     , Event = require('../models/event')
-    , Role = require('../models/role')
     , Team = require('../models/team')
     , access = require('../access')
-    , config = require('../config')
-    , generate_kml = require('../utilities/generate_kml');
+    , config = require('../config');
 
   var p***REMOVED***port = security.authentication.p***REMOVED***port
     , authenticationStrategy = security.authentication.authenticationStrategy;
