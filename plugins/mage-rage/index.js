@@ -3,58 +3,28 @@ var child = require('child_process')
 
 if (!config.enable) return;
 
-console.log('activating rage plugin');
+function start() {
+  console.log('activating rage plugin');
+  var rage = child.fork(__dirname + '/rage');
 
-function startData() {
-  var data = config.data;
-  if (data.enable) {
-    // start observations worker
-    var dataWorker = child.fork(__dirname + '/data');
+  rage.on('error', function(err) {
+    console.log('***************** rage error ******************************', err);
+    rage.kill();
+    start();
+  });
 
-    dataWorker.on('error', function(err) {
-      console.log('***************** rage observation error ******************************', err);
-      dataWorker.kill();
-      startData();
-    });
+  rage.on('exit', function(exitCode) {
+    console.log('***************** rage exit, code ************************', exitCode);
+    if (exitCode != 0) {
+      rage.kill();
+      start();
+    }
+  });
 
-    dataWorker.on('exit', function(exitCode) {
-      console.log('***************** rage observation  exit, code ************************', exitCode);
-      if (exitCode != 0) {
-        dataWorker.kill();
-        startData();
-      }
-    });
+  process.on('exit', function() {
+    console.log('***************** rage parent process exit, killing ********************', err);
+    rage.kill();
+  });
 
-    process.on('exit', function() {
-      console.log('***************** rage parent process exit, killing ********************', err);
-      dataWorker.kill();
-    });
-  }
 }
-startData();
-
-function startAttachments() {
-  var attachments = config.attachments;
-  if (attachments.enable) {
-    // start attachments worker
-    var attachmentsWorker = child.fork(__dirname + '/attachments');
-
-    attachmentsWorker.on('error', function(err) {
-      console.log('rage attachment error', err);
-      attachmentsWorker.kill();
-    });
-
-    attachmentsWorker.on('exit', function(exitCode) {
-      console.log('rage attachment  exit, code', exitCode);
-      if (exitCode != 0) {
-        attachmentsWorker.kill();
-        startAttachments();
-      }
-    });
-
-    process.on('exit', function() {
-      attachmentsWorker.kill();
-    });
-  }
-}
-startAttachments();
+start();
