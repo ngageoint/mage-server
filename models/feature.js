@@ -11,10 +11,22 @@ var FeatureSchema = new Schema({
   geometry: Schema.Types.Mixed,
   properties: Schema.Types.Mixed
 },{
-  strict: false
+  strict: false,
+  versionKey: false
 });
 
 FeatureSchema.index({geometry: "2dsphere"});
+
+var transform = function(feature, ret, options) {
+  if ('function' != typeof feature.ownerDocument) {
+    ret.id = ret._id;
+    delete ret._id;
+  }
+}
+
+FeatureSchema.set("toJSON", {
+  transform: transform
+});
 
 var models = {};
 
@@ -33,7 +45,7 @@ var featureModel = function(layer) {
 exports.featureModel = featureModel;
 
 exports.getFeatures = function(layer, callback) {
-  featureModel(layer).find({}, null, {lean: true}, function(err, features) {
+  featureModel(layer).find({}, function(err, features) {
     callback(err, features);
   });
 }

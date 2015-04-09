@@ -301,7 +301,7 @@ module.exports = function(app, auth) {
           stream.pipe(res);
         });
         stream.on('error', function(err) {
-          res.send(404);
+          console.log('error streaming attachment', err);
         });
       });
     }

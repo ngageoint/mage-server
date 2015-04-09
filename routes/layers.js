@@ -62,6 +62,24 @@ module.exports = function(app, security) {
     }
   );
 
+  // get features for layer (must be a feature layer)
+  app.get(
+    '/api/layers/:layerId/features',
+    access.authorize('READ_LAYER_ALL'),
+    function (req, res) {
+      if (req.layer.type !== 'Feature') return res.status(400).send('cannot get features, layer type is not "Feature"');
+
+      new api.Feature(req.layer).getAll(function(err, features) {
+        features = features.map(function(f) { return f.toJSON(); });
+        res.json({
+          type: 'FeatureCollection',
+          features: features
+        });
+      });
+    }
+  );
+
+
   app.get(
     '/api/events/:eventId/layers',
     validateEventAccess,
@@ -93,6 +111,7 @@ module.exports = function(app, security) {
       if (req.event.layerIds.indexOf(req.layer._id) === -1) return res.status(400).send('layer requested is not in event ' + req.event.name);
 
       new api.Feature(req.layer).getAll(function(err, features) {
+        features = features.map(function(f) { return f.toJSON(); });
         res.json({
           type: 'FeatureCollection',
           features: features

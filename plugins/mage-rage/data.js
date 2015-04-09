@@ -1,212 +1,260 @@
 var config = require('./config.json')
   , serverConfig = require('../../config.json')
   , querystring = require('querystring')
+  , os = require('os')
+  , path = require('path')
   , fs = require('fs-extra')
   , crypto = require('crypto')
   , async = require('async')
   , request = require('request')
-  , unzip = require('unzip')
+  , AdmZip = require('adm-zip')
   , mongoose = require('mongoose')
   , moment = require('moment')
+  , api = require('../../api')
   , User = require('../../models/user')
   , Device = require('../../models/device')
   , Event = require('../../models/event')
+  , Team = require('../../models/team')
+  , Layer = require('../../models/layer')
+  , Feature = require('../../models/feature')
   , Observation = require('../../models/observation')
   , Location = require('../../models/location')
-  , CappedLocation = require('../models/cappedLocation');
+  , CappedLocation = require('../../models/cappedLocation');
 
-// setup mongoose to talk to mongodb
-var mongodbConfig = config.mongodb;
-mongoose.connect(mongodbConfig.url, {server: {poolSize: mongodbConfig.poolSize}}, function(err) {
-  if (err) {
-    console.log('Error connecting to mongo database, please make sure mongodbConfig is running...');
-    throw err;
-  }
-});
-mongoose.set('debug', true);
+module.exports = {
+  sync: sync
+};
 
-var timeout = config.attachments.interval * 1000;
+function sync(token, callback) {
+  console.log('pulling data ' + moment().toISOString());
+  request = request.defaults({
+    json: true,
+    headers: {
+      'Authorization': 'Bearer ' + token
+    }
+  });
 
-var username = config.credentials.username;
-var p***REMOVED***word =  config.credentials.p***REMOVED***word;
-var uid =  config.credentials.uid;
+  async.series({
+    users: syncUsers,
+    devices: syncDevices,
+    events: syncEvents,
+    icons: syncIcons,
+    teams: syncTeams,
+    layers: syncLayers,
+    features: syncFeatures,
+    observationsAndLocations: function(done) {
+      async.parallel({
+        observations: syncObservations,
+        locations: syncLocations
+      },
+      function(err) {
+        done(err);
+      });
+    }
+  },
+  function(err) {
+    console.log('finished pulling all data ' + moment().toISOString());
+    callback(err);
+  });
+};
 
 var baseUrl = config.url;
 
-var token;
-var headers = {};
-var getToken = function(done) {
-  console.log('getting token');
-
-  var options = {
-    url: baseUrl + '/api/login',
-    json: {
-      username: username,
-      uid: uid,
-      p***REMOVED***word: p***REMOVED***word
-    }
-  };
-
-  request.post(options, function(err, res, body) {
-    if (err) return done(err);
-
-    if (res.statusCode != 200) return done(new Error('Error hitting login api, respose code: ' + res.statusCode));
-
-    var token = body.token;
-    headers['Authorization'] = 'Bearer ' + body.token;
-    done();
-  });
-}
-
-var syncUsers = function(done) {
-  var options = {
-    url: baseUrl + '/api/users',
-    json: true,
-    headers: headers
-  };
-
-  request.get(options, function(err, res, users) {
+function syncUsers(done) {
+  request.get(baseUrl + '/api/users', function(err, res, users) {
     if (err) return done(err);
 
     if (res.statusCode != 200) return done(new Error('Error getting users, respose code: ' + res.statusCode));
 
     console.log('syncing: ' + users.length + ' users');
-    async.each(users,
-      function(user, done) {
-        var id = user._id;
-        delete user._id;
-        User.Model.findByIdAndUpdate(id, user, {upsert: true}, done);
-      },
-      function(err) {
-        done(err);
-      }
-    );
+    async.each(users, function(user, done) {
+      user._id = user.id;
+      delete user.id;
+      User.Model.findByIdAndUpdate(user._id, user, {upsert: true}, done);
+    },
+    function(err) {
+      done(err);
+    });
   });
 }
 
-var syncDevices = function(done) {
-  var options = {
-    url: baseUrl + '/api/devices',
-    json: true,
-    headers: headers
-  };
-
-  request.get(options, function(err, res, devices) {
+function syncDevices(done) {
+  request.get(baseUrl + '/api/devices', function(err, res, devices) {
     if (err) return done(err);
 
     if (res.statusCode != 200) return done(new Error('Error getting devices, respose code: ' + res.statusCode));
 
     console.log('syncing: ' + devices.length + ' devices');
-    async.each(devices,
-      function(device, done) {
-        var id = device._id;
-        delete device._id;
-        Device.Model.findByIdAndUpdate(id, device, {upsert: true}, done);
-      },
-      function(err) {
-        done(err);
-      }
-    );
+    async.each(devices, function(device, done) {
+      device._id = device.id;
+      delete device.id;
+      Device.Model.findByIdAndUpdate(device._id, device, {upsert: true}, done);
+    },
+    function(err) {
+      done(err);
+    });
   });
 }
 
-var syncTeams = function(done) {
-  var options = {
-    url: baseUrl + '/api/teams',
-    json: true,
-    headers: headers
-  };
-
-  request.get(options, function(err, res, teams) {
+function syncTeams(done) {
+  request.get(baseUrl + '/api/teams', function(err, res, teams) {
     if (err) return done(err);
 
     if (res.statusCode != 200) return done(new Error('Error getting teams, respose code: ' + res.statusCode));
 
     console.log('syncing: ' + teams.length + ' teams');
-    async.each(teams,
-      function(team, done) {
-        var id = team._id;
-        delete team._id;
-        Team.TeamModel.findByIdAndUpdate(id, team, {upsert: true}, done);
-      },
-      function(err) {
-        done(err);
-      }
-    );
+    async.each(teams, function(team, done) {
+      team._id = team.id;
+      delete team.id;
+      team.userIds = team.users.map(function(user) { return user.id; });
+      Team.TeamModel.findByIdAndUpdate(team._id, team, {upsert: true}, done);
+    },
+    function(err) {
+      done(err);
+    });
   });
 }
 
-var createObservationCollection = function(event, done) {
-  console.log("Creating observation collection: " + event.collectionName + ' for event ' + event.name);
-  mongoose.connection.db.createCollection(event.collectionName, function(err, collection) {
+function createCollection(name, done) {
+  console.log("Creating collection: " + name);
+  mongoose.connection.db.createCollection(name, function(err) {
     if (err) {
-      console.error(err);
-      return;
+      console.log('err wtf', err);
+      return done(err);
     }
 
-    console.log("Successfully created observation collection for event " + event.name);
+    console.log("Successfully created collection " + name);
     done();
   });
 }
 
 var events;
-var syncEvents = function(done) {
-  var options = {
-    url: baseUrl + '/api/events',
-    json: true,
-    headers: headers
-  };
-
-  request.get(options, function(err, res, allEvents) {
+function syncEvents(done) {
+  events = [];
+  request.get(baseUrl + '/api/events', function(err, res, allEvents) {
     if (err) return done(err);
 
     if (res.statusCode != 200) return done(new Error('Error getting events, respose code: ' + res.statusCode));
 
     console.log('syncing: ' + allEvents.length + ' events');
-    async.each(allEvents,
-      function(event, done) {
-        var update =  {id: event.id, name: event.name, collectionName: 'observations' + event.id};
+    async.each(allEvents, function(event, done) {
+      event._id = event.id;
+      delete event.id;
+      event.collectionName = 'observations' + event._id;
+      event.teamIds = event.teams.map(function(team) { return mongoose.Types.ObjectId(team.id); });
+      event.layerIds = event.layers.map(function(layer) { return layer.id; });
+      Event.Model.findByIdAndUpdate(event._id, event, {upsert: true, new: false}, function(err, oldEvent) {
+        if (err) return done(err);
 
-        Event.Model.findOneAndUpdate({id: event._id}, update, {upsert: true, new: false}, function(err, oldEvent) {
-          if (!oldEvent || !oldEvent.id) {
-            createObservationCollection(event, function() {
-              events.push(event);
-              done(err);
-            });
-          } else {
+        if (!oldEvent || !oldEvent.id) {
+          console.log('calling create collection');
+          createCollection('observations' + event._id, function(err) {
+            if (err) return done(err);
+
             events.push(event);
             done();
-          }
-        });
-      },
-      function(err) {
-        done(err);
-      }
-    );
+          });
+        } else {
+          events.push(oldEvent);
+          done();
+        }
+      });
+    },
+    function(err) {
+      done(err);
+    });
   });
 }
 
-// TODO need to pull down the form and import it
-var syncForms = function(done) {
-  async.each(events,function(event, done) {
-    var url = baseUrl + '/api/events/' + event.id + '/form.zip?access_token=' + token;
-    request(url).pipe(unzip.Extract({path: ''}).on('end', function() {
-      done();
+function syncIcons(done) {
+  console.log('sync icons');
+
+  var iconsBaseDir = serverConfig.server.iconBaseDirectory;
+  async.each(events, function(event, done) {
+    var iconPath = path.join(iconsBaseDir, event._id.toString());
+    var zipFile = path.join(os.tmpdir(), 'icons' + event._id.toString() + ".zip");
+    var zipStream = fs.createWriteStream(zipFile);
+    zipStream.on('finish', function() {
+      console.log('got the zip file');
+      new api.Form(event).import({path: zipFile, mimetype: 'application/zip'}, done);
     });
+
+    var url = baseUrl + '/api/events/' + event._id + '/form.zip';
+    console.log('url is', url);
+    request.get(url).pipe(zipStream);
   }, function(err) {
     done(err);
   });
 }
 
-var syncObservations = function(done) {
-  console.log('syncing observations for events', events);
+var featureLayers;
+function syncLayers(done) {
+  featureLayers = [];
+  request.get(baseUrl + '/api/layers', function(err, res, layers) {
+    if (err) return done(err);
 
+    if (res.statusCode != 200) return done(new Error('Error getting layers, respose code: ' + res.statusCode));
+
+    console.log('syncing: ' + layers.length + ' layers');
+    async.each(layers, function(layer, done) {
+      layer._id = layer.id;
+      delete layer.id;
+      layer.collectionName = 'features' + layer._id;
+
+      Layer.Model.findByIdAndUpdate(layer._id, layer, {upsert: true, new: false}, function(err, oldLayer) {
+        if (err) return done(err);
+
+        if (layer.type !== 'Feature') return done();
+
+        if (!oldLayer || !oldLayer.id) {
+          createCollection('features' + layer._id, function() {
+            featureLayers.push(layer);
+            done();
+          });
+        } else {
+          featureLayers.push(oldLayer);
+          done();
+        }
+      });
+    },
+    function(err) {
+      done(err);
+    });
+  });
+}
+
+function syncFeatures(done) {
+  console.log('syncing features for layers', featureLayers);
+
+  async.each(featureLayers, function(layer, done) {
+    request.get(baseUrl + '/api/layers/' + layer._id + '/features', function(err, res, featureCollection) {
+      if (err) return done(err);
+
+      if (res.statusCode != 200) return done(new Error('Error getting features, respose code: ' + res.statusCode));
+
+      console.log('syncing: ' + featureCollection.features.length + ' features');
+      async.each(featureCollection.features, function(feature, done) {
+        feature._id = feature.id;
+        delete feature.id;
+        Feature.featureModel(layer).findByIdAndUpdate(feature._id, feature, {upsert: true}, done);
+      },
+      function(err) {
+        done(err);
+      });
+    });
+
+  }, function(err) {
+    done(err);
+  });
+}
+
+function syncObservations(done) {
   fs.readJson(__dirname + "/.data.json", function(err, lastObservationTimes) {
     lastObservationTimes = lastObservationTimes || {};
     console.log('last', lastObservationTimes);
 
     async.each(events, function(event, done) {
-      var url = baseUrl + '/api/events/' + event.id + "/observations";
+      var url = baseUrl + '/api/events/' + event._id + "/observations";
       var lastTime = lastObservationTimes[event.collectionName];
 
       if (lastTime) {
@@ -214,13 +262,7 @@ var syncObservations = function(done) {
         lastTime = moment(lastTime);
       }
       console.log('observation url is', url);
-      var options = {
-        url: url,
-        json: true,
-        headers: headers
-      };
-
-      request.get(options, function(err, res, observations) {
+      request.get(url, function(err, res, observations) {
         if (err) return done(err);
 
         if (res.statusCode != 200) return done(new Error('Error getting observations, respose code: ' + res.statusCode));
@@ -246,6 +288,7 @@ var syncObservations = function(done) {
                 attachment._id = attachment.id;
                 var id = mongoose.Types.ObjectId(attachment._id);
                 attachment.id = id.getTimestamp().getTime();
+                delete attachment.thumbnails;
               });
             }
 
@@ -267,7 +310,7 @@ var syncObservations = function(done) {
 }
 
 function requestLocations(event, lastLocation, done) {
-  var url = baseUrl + '/api/events/' + event._id + 'locations?';
+  var url = baseUrl + '/api/events/' + event._id + '/locations?';
 
   var query = {limit: 2000};
   if (lastLocation) {
@@ -278,13 +321,7 @@ function requestLocations(event, lastLocation, done) {
   url = url + querystring.stringify(query);
   console.log('RAGE requesting locations, location url is', url);
 
-  var options = {
-    url: url,
-    json: true,
-    headers: headers
-  };
-
-  request.get(options, function(err, res, locations) {
+  request.get(url, function(err, res, locations) {
     console.log('got locations from remote server', locations.length);
 
     if (err) return done(err);
@@ -299,11 +336,11 @@ function syncLocations(done) {
   fs.readJson(__dirname + "/.locations.json", function(err, lastLocationTimes) {
     lastLocationTimes = lastLocationTimes || {};
 
-    var lastLocation = lastLocationTimes[event.collectionName];
-    lastLocation = lastLocation ? lastLocation.location : null;
-    var lastTime = lastLocation ? moment(lastLocation.timestamp) : null;
-
     async.each(events,function(event, done) {
+      var lastLocation = lastLocationTimes[event.collectionName];
+      lastLocation = lastLocation ? lastLocation.location : null;
+      var lastTime = lastLocation ? moment(lastLocation.timestamp) : null;
+
       var locations = [];
       async.doUntil(function(done) {
         requestLocations(event, lastLocation, function(err, requestedLocations) {
@@ -321,7 +358,9 @@ function syncLocations(done) {
               }
             }
 
-            lastLocationTimes.location = lastLocation;
+            lastLocationTimes[event.collectionName] = {
+              location: lastLocation
+            }
             fs.writeJson(__dirname + "/.locations.json", lastLocationTimes, done);
           });
         });
@@ -333,6 +372,7 @@ function syncLocations(done) {
         if (err) return done(err);
 
         lastLocationTimes.location = lastTime;
+        done();
       });
     }, function(err) {
       done(err);
@@ -347,8 +387,6 @@ function syncUserLocations(event, locations, done) {
     locationCollection: function(done) {
       // throw all this users locations in the location collection
       async.each(locations, function(location, done) {
-        // var locationId = location._id;
-        // delete location._id;
         Location.Model.findByIdAndUpdate(location._id, location, {upsert: true}, function(err, location) {
           if (err) console.log('error inserting location into locations collection', err);
           done();
@@ -372,7 +410,7 @@ function syncUserLocations(event, locations, done) {
       });
 
       async.each(Object.keys(locationsByUserId), function(userId, done) {
-        CappedLocation.addLocations({_id: userId}, event, locationsByUserId[userId].locations, function(err) {
+        CappedLocation.addLocations({_id: userId}, event, {valid: locationsByUserId[userId].locations, future: []}, function(err) {
           done();
         });
       },
@@ -385,33 +423,3 @@ function syncUserLocations(event, locations, done) {
     done(err);
   });
 }
-
-var syncFeaturesAndLocations = function(done) {
-  async.parallel({
-    features: syncFeatures,
-    locations: syncLocations
-  },
-  function(err, results) {
-    done(err);
-  });
-}
-
-var sync = function() {
-  console.log('pulling data ' + moment().toISOString());
-
-  async.series({
-    token: getToken,
-    users: syncUsers,
-    devices: syncDevices,
-    teams: syncTeams,
-    events: syncEvents,
-    featuresAndLocations: syncFeaturesAndLocations
-  },
-  function(err, results) {
-    console.log('finished pulling all data ' + moment().toISOString());
-    console.log('err: ', err);
-    setTimeout(sync, timeout);
-  });
-};
-
-sync();

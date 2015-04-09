@@ -65,7 +65,6 @@ ObservationSchema.index({'attachments.thumbnails.minDimension': 1});
 function transformAttachment(attachment, observation) {
   attachment.id = attachment._id;
   delete attachment._id;
-  delete attachment.relativePath;
   delete thumbnails;
 
   attachment.url = [observation.url, "attachments", attachment.id].join("/");
