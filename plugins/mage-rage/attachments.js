@@ -76,7 +76,7 @@ function getObservationsSince(startTime, event, callback) {
       startDate: startTimePlusOne.toDate()
     };
   }
-  console.info('Getting observations for event ', event);
+  console.info('Getting observations for event ', event.name);
   new api.Observation(event).getAll(options, callback);
 }
 

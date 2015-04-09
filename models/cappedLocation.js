@@ -16,6 +16,10 @@ var CappedLocationSchema = new Schema({
     versionKey: false
 });
 
+CappedLocationSchema.index({'eventId': 1});
+CappedLocationSchema.index({'locations.properties.timestamp': 1});
+CappedLocationSchema.index({'locations.properties.timestamp': 1, 'eventId': 1});
+
 // Creates the Model for the User Schema
 var CappedLocation = mongoose.model('CappedLocation', CappedLocationSchema);
 exports.Model = CappedLocation;

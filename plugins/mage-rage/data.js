@@ -268,44 +268,47 @@ function syncObservations(done) {
         if (res.statusCode != 200) return done(new Error('Error getting observations, respose code: ' + res.statusCode));
 
         console.log('syncing: ' + observations.length + ' observations');
-        async.each(observations,
-          function(observation, done) {
-            observation.properties = observation.properties || {};
-            if (observation.lastModified) {
-              var observationTime = moment(observation.lastModified);
-              if (!lastTime || observationTime.isAfter(lastTime)) {
-                lastTime = observationTime;
-              }
+        async.each(observations, function(observation, done) {
+          observation.properties = observation.properties || {};
+          if (observation.lastModified) {
+            var observationTime = moment(observation.lastModified);
+            if (!lastTime || observationTime.isAfter(lastTime)) {
+              lastTime = observationTime;
             }
+          }
 
-            var id = observation.id;
-            delete observation.id;
-            var state = observation.state;
-            delete observation.state;
-            if (observation.lastModified) observation.lastModified = moment(observation.lastModified).toDate();
-            if (observation.attachments) {
-              observation.attachments.forEach(function(attachment) {
-                attachment._id = attachment.id;
-                var id = mongoose.Types.ObjectId(attachment._id);
-                attachment.id = id.getTimestamp().getTime();
-                delete attachment.thumbnails;
-              });
-            }
+          if (observation.properties.timestamp) {
+            observation.properties.timestamp = moment(observation.properties.timestamp).toDate();
+          }
 
-            observation['$push'] = {states: state};
+          var id = observation.id;
+          delete observation.id;
+          var state = observation.state;
+          delete observation.state;
+          if (observation.lastModified) observation.lastModified = moment(observation.lastModified).toDate();
+          if (observation.attachments) {
+            observation.attachments.forEach(function(attachment) {
+              attachment._id = attachment.id;
+              var id = mongoose.Types.ObjectId(attachment._id);
+              attachment.id = id.getTimestamp().getTime();
+              delete attachment.thumbnails;
+            });
+          }
 
-            Observation.observationModel(event).update({_id: id}, observation, {upsert: true}, done);
-          },
-          function(err) {
-            lastObservationTimes[event.collectionName] = lastTime;
-            done(err);
-          });
+          observation['$push'] = {states: state};
+
+          Observation.observationModel(event).update({_id: id}, observation, {upsert: true}, done);
+        },
+        function(err) {
+          lastObservationTimes[event.collectionName] = lastTime;
+          done(err);
         });
-      },
-      function(err) {
-        fs.writeJson(__dirname + "/.data.json", lastObservationTimes, done);
-      }
-    );
+
+      });
+    },
+    function(err) {
+      fs.writeJson(__dirname + "/.data.json", lastObservationTimes, done);
+    });
   });
 }
 
@@ -382,6 +385,12 @@ function syncLocations(done) {
 
 function syncUserLocations(event, locations, done) {
   console.log('got locations: ' + locations.length);
+  locations.forEach(function(location) {
+    location.properties = location.properties || {};
+    if (location.properties.timestamp) {
+      location.properties.timestamp = moment(location.properties.timestamp).toDate();
+    }
+  });
 
   async.parallel({
     locationCollection: function(done) {

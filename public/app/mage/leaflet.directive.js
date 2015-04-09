@@ -384,7 +384,7 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
             openPopup(layer);
           });
         });
-        map.setZoom(map.getZoom());
+        map.setZoom(17);
       } else {
         featureLayer.layer.zoomToShowLayer(layer, function() {
           openPopup(layer);
