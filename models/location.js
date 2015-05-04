@@ -34,6 +34,7 @@ exports.Model = Location;
 // create location
 exports.createLocations = function(locations, callback) {
   Location.create(locations, function(err) {
+    // TODO mongoose4
     callback(err, Array.prototype.slice.call(arguments, 1));
   });
 }
@@ -82,7 +83,7 @@ exports.getLocations = function(options, callback) {
 exports.updateLocation = function(user, timestamp, callback) {
   var conditions = {"userId": user._id};
   var update = {"properties.timestamp": timestamp};
-  var options = {sort: {"properties.timestamp": -1}};
+  var options = {sort: {"properties.timestamp": -1}, new: true};
   Location.findOneAndUpdate(conditions, update, options, function(err, location) {
     if (err) {
       console.log("Error updating date on latesest location for user : " + user.username + ". Error: " + err);

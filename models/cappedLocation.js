@@ -32,7 +32,7 @@ exports.addLocations = function(user, event, locations, callback) {
     }
   };
 
-  CappedLocation.findOneAndUpdate({userId: user._id, eventId: event._id}, update, {upsert: true}, function(err, user) {
+  CappedLocation.findOneAndUpdate({userId: user._id, eventId: event._id}, update, {upsert: true, new: true}, function(err, user) {
     callback(err, user);
   });
 }

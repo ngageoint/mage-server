@@ -10,6 +10,18 @@ var StateSchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User' }
 });
 
+var ThumbnailSchema = new Schema({
+  contentType: { type: String, required: false },
+  size: { type: Number, required: false },
+  name: { type: String, required: false },
+  relativePath: { type: String, required: true },
+  minDimension: { type: Number, required: true },
+  width: { type: Number, required: false },
+  height: { type: Number, required: false}
+},{
+  strict: false
+});
+
 var AttachmentSchema = new Schema({
   lastModified: {type: Date, required: false},
   contentType: { type: String, required: false },
@@ -20,18 +32,6 @@ var AttachmentSchema = new Schema({
   height: { type: Number, required: false },
   oriented: {type: Boolean, required: true, default: false },
   thumbnails: [ThumbnailSchema]
-},{
-  strict: false
-});
-
-var ThumbnailSchema = new Schema({
-  contentType: { type: String, required: false },
-  size: { type: Number, required: false },
-  name: { type: String, required: false },
-  relativePath: { type: String, required: true },
-  minDimension: { type: Number, required: true },
-  width: { type: Number, required: false },
-  height: { type: Number, required: false}
 },{
   strict: false
 });

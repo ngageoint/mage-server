@@ -23,6 +23,9 @@ module.exports = function(grunt) {
         files: [{expand: true, cwd: 'public/', src: ['fonts/**/*'], dest: 'public/dist/'},
                 {expand: true, cwd: 'public/vendor/bootstrap/', src: ['fonts/**/*'], dest: 'public/dist/vendor'},
                 {expand: true, cwd: 'public/bower_components/font-awesome/', src: ['fonts/**/*'], dest: 'public/dist/vendor'}]
+      },
+      apps: {
+        files: [{expand: true, cwd: 'public/', src: ['mobile-apps/**/*'], dest: 'public/dist/', filter: 'isFile'}]
       }
     },
     useminPrepare: {

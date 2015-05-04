@@ -210,16 +210,14 @@ module.exports = function(app, security) {
     '/api/users/myself',
     p***REMOVED***port.authenticate(authenticationStrategy),
     function(req, res, next) {
-
-      var update = {};
-      if (req.param('username')) update.username = req.param('username');
-      if (req.param('firstname')) update.firstname = req.param('firstname');
-      if (req.param('lastname')) update.lastname = req.param('lastname');
-      if (req.param('email')) update.email = req.param('email');
+      if (req.param('username')) req.user.username = req.param('username');
+      if (req.param('firstname')) req.user.firstname = req.param('firstname');
+      if (req.param('lastname')) req.user.lastname = req.param('lastname');
+      if (req.param('email')) req.user.email = req.param('email');
 
       var phone = req.param('phone');
       if (phone) {
-        update.phones = [{
+        req.user.phones = [{
           type: "Main",
           number: phone
         }];
@@ -236,10 +234,10 @@ module.exports = function(app, security) {
           return res.status(400).send('p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
         }
 
-        update.p***REMOVED***word = p***REMOVED***word;
+        req.user.p***REMOVED***word = p***REMOVED***word;
       }
 
-      new api.User().update(req.user._id, update, {avatar: req.files.avatar}, function(err, updatedUser) {
+      new api.User().update(req.user, {avatar: req.files.avatar}, function(err, updatedUser) {
         updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
         res.json(updatedUser);
       });
@@ -302,10 +300,9 @@ module.exports = function(app, security) {
     function(req, res) {
       var status = req.param('status');
       if (!status) return res.status(400).send("Missing required parameter 'status'");
+      req.user.status = status;
 
-      var update = {status: status};
-
-      new api.User().update(req.user._id, update, function(err, updatedUser) {
+      new api.User().update(req.user, function(err, updatedUser) {
         updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
         res.json(updatedUser);
       });
@@ -317,8 +314,6 @@ module.exports = function(app, security) {
     '/api/users/myself/status',
     p***REMOVED***port.authenticate(authenticationStrategy),
     function(req, res) {
-      var status = req.param.status;
-
       req.user.status = undefined;
       new api.User().update(req.user, function(err, updatedUser) {
         updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
@@ -333,18 +328,18 @@ module.exports = function(app, security) {
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('UPDATE_USER'),
     function(req, res, next) {
-      var update = {};
+      var user = req.userParam;
 
-      if (req.param('username')) update.username = req.param('username');
-      if (req.param('firstname')) update.firstname = req.param('firstname');
-      if (req.param('lastname')) update.lastname = req.param('lastname');
-      if (req.param('email')) update.email = req.param('email');
-      if (req.param('active')) update.active = req.param('active');
-      if (req.param('roleId')) update.roleId = req.param('roleId');
+      if (req.param('username')) user.username = req.param('username');
+      if (req.param('firstname')) user.firstname = req.param('firstname');
+      if (req.param('lastname')) user.lastname = req.param('lastname');
+      if (req.param('email')) user.email = req.param('email');
+      if (req.param('active')) user.active = req.param('active');
+      if (req.param('roleId')) user.roleId = req.param('roleId');
 
       var phone = req.param('phone');
       if (phone) {
-        update.phones = [{
+        user.phones = [{
           type: "Main",
           number: phone
         }];
@@ -361,10 +356,10 @@ module.exports = function(app, security) {
           return res.status(400).send('p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
         }
 
-        update.p***REMOVED***word = p***REMOVED***word;
+        user.p***REMOVED***word = p***REMOVED***word;
       }
 
-      new api.User().update(req.userParam.id, update, {avatar: req.files.avatar, icon: req.files.icon}, function(err, updatedUser) {
+      new api.User().update(user, {avatar: req.files.avatar, icon: req.files.icon}, function(err, updatedUser) {
         if (err) return next(err);
 
         updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
@@ -383,25 +378,6 @@ module.exports = function(app, security) {
         if (err) return next(err);
 
         res.sendStatus(204);
-      });
-    }
-  );
-
-  // set role for user
-  // TODO not sure used, remove in next version (teams/events)
-  app.post(
-    '/api/users/:userId/role',
-    p***REMOVED***port.authenticate(authenticationStrategy),
-    access.authorize('UPDATE_USER'),
-    validateRoleParams,
-    function(req, res) {
-      req.userParm.role = role;
-
-      new api.User().update(req.userParam, function(err, updatedUser) {
-        if (err) return next(err);
-
-        updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
-        res.json(updatedUser);
       });
     }
   );

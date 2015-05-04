@@ -25,7 +25,9 @@ TokenSchema.index({'expirationDate': 1}, {expireAfterSeconds: 0});
 var Token = mongoose.model('Token', TokenSchema);
 
 exports.getToken = function(token, callback) {
-  Token.findOne({token: token}).populate({path: 'userId', options: {lean: true}}).exec(function(err, token) {
+  Token.findOne({token: token}).populate('userId').exec(function(err, token) {
+    if (err) return callback(err);
+
     if (!token || !token.userId) {
       return callback(null, null);
     }
@@ -50,7 +52,7 @@ exports.createToken = function(options, callback) {
     token: token,
     expirationDate: new Date(now + tokenExpiration)
   };
-  var options = {upsert: true};
+  var options = {upsert: true, new: true};
   Token.findOneAndUpdate(query, update, options, function(err, newToken) {
     if (err) {
       console.log('Could not create token for user: ' + user.username);
@@ -67,7 +69,7 @@ exports.removeToken = function(token, callback) {
 }
 
 exports.removeTokensForUser = function(user, callback) {
-  Token.remove({user: user._id}, function(err, numberRemoved) {
+  Token.remove({userId: user._id}, function(err, numberRemoved) {
     callback(err, numberRemoved);
   });
 }

@@ -166,7 +166,7 @@ module.exports = function(app, security) {
   }
 
   app.get(
-    '/api/:exportType(geojson|kml|shapefile)',
+    '/api/:exportType(geojson|kml|shapefile,csv)',
     p***REMOVED***port.authenticate(authenticationStrategy),
     parseQueryParams,
     getEvent,
@@ -187,6 +187,10 @@ module.exports = function(app, security) {
         case 'geojson':
           console.log('exporting GeoJSON...');
           exportGeoJSON(req, res, next);
+          break;
+        case 'csv':
+          console.log('exporting CSV...');
+          exportCsv(req, res, next);
           break;
       }
     }
@@ -457,6 +461,132 @@ module.exports = function(app, security) {
   }
 
   var exportGeoJSON = function(req, res, next) {
+    var event = req.event;
+    var now = new Date();
+
+    var streamFeatures = function(stream, done) {
+      var filter = req.parameters.filter;
+      filter.states = ['active'];
+      new api.Observation(event).getAll({filter: filter}, function(err, observations) {
+        mapObservations(observations, req);
+
+        stream.write(JSON.stringify({
+          type: 'FeatureCollection',
+          features: geojson.transform(observations)
+        }));
+
+        done();
+      });
+    }
+
+    var streamLocations = function(stream, done) {
+      console.log('writing locations...');
+      var limit = 2000;
+
+      var startDate = req.parameters.filter.startDate ? moment(req.parameters.filter.startDate) : null;
+      var endDate = req.parameters.filter.endDate ? moment(req.parameters.filter.endDate) : null;
+      var lastLocationId = null;
+
+      stream.write('{"type": "FeatureCollection", "features": [');
+      var locations = [];
+      async.doUntil(function(done) {
+        requestLocations(event, {startDate: startDate, endDate: endDate, lastLocationId: lastLocationId, limit: limit}, function(err, requestedLocations) {
+          if (err) return done(err);
+          locations = requestedLocations;
+
+          if (locations.length) {
+            if (lastLocationId) stream.write(",");  // not first time through
+
+            var data = JSON.stringify(locations);
+            stream.write(data.substr(1, data.length - 2));
+          } else {
+            stream.write(']}');
+          }
+
+          console.log('Successfully wrote ' + locations.length + ' locations to GeoJSON');
+          var last = locations.slice(-1).pop();
+          if (last) {
+            var locationTime = moment(last.properties.timestamp);
+            lastLocationId = last._id;
+            if (!startDate || startDate.isBefore(locationTime)) {
+              startDate = locationTime;
+            }
+          }
+
+          done();
+        });
+      },
+      function() {
+        return locations.length == 0;
+      },
+      function(err) {
+        console.log('done writing locations');
+        done(err);
+      });
+    }
+
+    ////////////////////////////////////////////////////////////////////
+    //END DEFINE SERIES FUNCTIONS///////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+    res.type('application/zip');
+    res.attachment("mage-export-geojson.zip");
+    res.cookie("fileDownload", "true", {path: '/'});
+
+    var archive = archiver('zip');
+    archive.pipe(res);
+
+    async.parallel([
+      function(done) {
+        if (!req.parameters.filter.exportObservations) return done();
+
+        var observationStream = new stream.P***REMOVED***Through();
+        archive.append(observationStream, { name:'mage-export/observations.geojson' });
+        streamFeatures(observationStream, function(err) {
+          observationStream.end();
+
+          // throw in attachments
+          archive.bulk([{
+            cwd: path.join(config.server.attachment.baseDirectory, event.collectionName),
+            src: ['*/**'],
+            dest: 'mage-export/attachments',
+            expand: true,
+            data: { date: new Date() } }
+          ]);
+
+          // throw in icons
+          archive.bulk([{
+            cwd: new api.Icon(event._id).getBasePath(),
+            src: ['*/**'],
+            dest: 'mage-export/icons',
+            expand: true,
+            data: { date: new Date() } }
+          ]);
+
+          done();
+        });
+      },
+      function(done) {
+        if (!req.parameters.filter.exportLocations) return done();
+
+        var locationStream = new stream.P***REMOVED***Through();
+        archive.append(locationStream, {name: 'mage-export/locations.geojson'});
+        streamLocations(locationStream, function(err) {
+          locationStream.end();
+
+          done();
+        });
+      }
+    ],
+    function(err) {
+      if (err) {
+        console.log(err);
+      }
+
+      archive.finalize();
+    });
+  }
+
+  var exportCsv = function(req, res, next) {
     var event = req.event;
     var now = new Date();
 

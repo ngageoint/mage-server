@@ -59,7 +59,7 @@ module.exports = function(app, security) {
     }
   });
 
-  // Grab the user for any endpoint that uses userId
+  // Grab the user for any endpoint that uses eventId
   app.param('eventId', /^[0-9]+$/); //ensure eventId is a number
   app.param('eventId', function(req, res, next, eventId) {
     Event.getById(eventId, {populate: false}, function(err, event) {

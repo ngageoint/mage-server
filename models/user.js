@@ -223,11 +223,13 @@ exports.createUser = function(user, callback) {
   });
 }
 
-exports.updateUser = function(id, update, callback) {
-  User.findByIdAndUpdate(id, update, function(err, updatedUser) {
-    if (err) console.log('Could not update user', err);
+exports.updateUser = function(user, callback) {
+  user.save(function(err) {
+    if (err) {
+      console.log('Could not update user ' + user.username + ' error ',  err);
+    }
 
-    callback(err, updatedUser)
+    callback(err, user)
   });
 }
 
