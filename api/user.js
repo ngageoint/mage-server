@@ -123,11 +123,11 @@ User.prototype.create = function(user, options, callback) {
 
     if (!newUser.avatar && !newUser.icon) return callback(null, newUser);
 
-    UserModel.updateUser(newUser._id, newUser, callback);
+    UserModel.updateUser(newUser, callback);
   });
 }
 
-User.prototype.update = function(id, update, options, callback) {
+User.prototype.update = function(user, options, callback) {
   if (typeof options == 'function') {
     callback = options;
     options = {};
@@ -135,7 +135,7 @@ User.prototype.update = function(id, update, options, callback) {
 
   var operations = [];
   operations.push(function(done) {
-    done(null, update);
+    done(null, user);
   });
 
   if (options.avatar) {
@@ -181,7 +181,7 @@ User.prototype.update = function(id, update, options, callback) {
   async.waterfall(operations, function(err, updatedUser) {
     if (err) return callback(err);
 
-    UserModel.updateUser(id, updatedUser, callback);
+    UserModel.updateUser(updatedUser, callback);
   });
 }
 
