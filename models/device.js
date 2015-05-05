@@ -147,7 +147,7 @@ exports.createDevice = function(device, callback) {
 }
 
 exports.updateDevice = function(id, update, callback) {
-  Device.findByIdAndUpdate(id, update, function(err, updatedDevice) {
+  Device.findByIdAndUpdate(id, update, {new: true}, function(err, updatedDevice) {
     callback(err, updatedDevice);
   });
 }

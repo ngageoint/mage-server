@@ -166,7 +166,7 @@ function pushObservations(done) {
                   return done();
                 }
 
-                Observation.observationModel(event).findByIdAndUpdate(observation._id, {esriId: objectId}, done);
+                Observation.observationModel(event).findByIdAndUpdate(observation._id, {esriId: objectId}, {new: true}, done);
               });
             }
           },

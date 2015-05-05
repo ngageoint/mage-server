@@ -107,6 +107,9 @@
   <button cl***REMOVED***="btn btn-default" ng-disabled="exporting.geojson" ng-click="exportData($event, 'geojson')">
     <i ng-cl***REMOVED***="exporting.geojson && 'fa fa-spinner fa-pulse' || 'icon-download'"></i> {{exporting.geojson && "Exporting..." || "GeoJSON"}}
   </button>
+  <button cl***REMOVED***="btn btn-default" ng-disabled="exporting.csv" ng-click="exportData($event, 'csv')">
+    <i ng-cl***REMOVED***="exporting.csv && 'fa fa-spinner fa-pulse' || 'icon-download'"></i> {{exporting.csv && "Exporting..." || "CSV"}}
+  </button>
   <button cl***REMOVED***="btn btn-default" ng-disabled="exporting.shapefile" ng-click="exportData($event, 'shapefile')">
     <i ng-cl***REMOVED***="exporting.shapefile && 'fa fa-spinner fa-pulse' || 'icon-download'"></i> {{exporting.shapefile && "Exporting..." || "Shapefile"}}
   </button>

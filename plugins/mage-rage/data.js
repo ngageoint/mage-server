@@ -70,7 +70,7 @@ function syncUsers(done) {
     async.each(users, function(user, done) {
       user._id = user.id;
       delete user.id;
-      User.Model.findByIdAndUpdate(user._id, user, {upsert: true}, done);
+      User.Model.findByIdAndUpdate(user._id, user, {upsert: true, new: true}, done);
     },
     function(err) {
       done(err);
@@ -88,7 +88,7 @@ function syncDevices(done) {
     async.each(devices, function(device, done) {
       device._id = device.id;
       delete device.id;
-      Device.Model.findByIdAndUpdate(device._id, device, {upsert: true}, done);
+      Device.Model.findByIdAndUpdate(device._id, device, {upsert: true, new: true}, done);
     },
     function(err) {
       done(err);
@@ -107,7 +107,7 @@ function syncTeams(done) {
       team._id = team.id;
       delete team.id;
       team.userIds = team.users.map(function(user) { return user.id; });
-      Team.TeamModel.findByIdAndUpdate(team._id, team, {upsert: true}, done);
+      Team.TeamModel.findByIdAndUpdate(team._id, team, {upsert: true, new: true}, done);
     },
     function(err) {
       done(err);
@@ -236,7 +236,7 @@ function syncFeatures(done) {
       async.each(featureCollection.features, function(feature, done) {
         feature._id = feature.id;
         delete feature.id;
-        Feature.featureModel(layer).findByIdAndUpdate(feature._id, feature, {upsert: true}, done);
+        Feature.featureModel(layer).findByIdAndUpdate(feature._id, feature, {upsert: true, new: true}, done);
       },
       function(err) {
         done(err);
@@ -396,7 +396,7 @@ function syncUserLocations(event, locations, done) {
     locationCollection: function(done) {
       // throw all this users locations in the location collection
       async.each(locations, function(location, done) {
-        Location.Model.findByIdAndUpdate(location._id, location, {upsert: true}, function(err, location) {
+        Location.Model.findByIdAndUpdate(location._id, location, {upsert: true, new: true}, function(err, location) {
           if (err) console.log('error inserting location into locations collection', err);
           done();
         });

@@ -104,7 +104,7 @@ exports.createRole = function(role, callback) {
 }
 
 exports.updateRole = function(id, update, callback) {
-  Role.findByIdAndUpdate(id, update, function(err, role) {
+  Role.findByIdAndUpdate(id, update, {new: true}, function(err, role) {
     if (err) {
       console.log('error updating role: ' + id + ' err: ' + err);
     }
