@@ -125,7 +125,7 @@ exports.create = function(layer, callback) {
 }
 
 exports.update = function(id, layer, callback) {
-  Layer.findByIdAndUpdate(id, layer, function(err, updatedLayer) {
+  Layer.findByIdAndUpdate(id, layer, {new: true}, function(err, updatedLayer) {
     callback(err, updatedLayer);
   });
 }

@@ -16,6 +16,7 @@ module.exports = function(app, security) {
     , toGeoJson = require('../utilities/togeojson')
     , geojson = require('../transformers/geojson')
     , shp = require('../shp-write')
+    , json2csv = require('json2csv')
     , stream = require('stream')
     , archiver = require('archiver')
     , DOMParser = require('xmldom').DOMParser
@@ -166,7 +167,7 @@ module.exports = function(app, security) {
   }
 
   app.get(
-    '/api/:exportType(geojson|kml|shapefile,csv)',
+    '/api/:exportType(geojson|kml|shapefile|csv)',
     p***REMOVED***port.authenticate(authenticationStrategy),
     parseQueryParams,
     getEvent,
@@ -590,18 +591,44 @@ module.exports = function(app, security) {
     var event = req.event;
     var now = new Date();
 
+    // TODO read form to put together headers
+
+    var fields = ['user', 'device'];
+    var fieldNames = ['user', 'device'];
+
+    var flatten = function(observations, req) {
+      return observations.map(function(observation) {
+        mapObservationProperties(observation, req.event.form);
+
+        var properties = observation.properties;
+        if (req.users[observation.userId]) properties.user = req.users[observation.userId].username;
+        if (req.devices[observation.deviceId]) properties.device = req.devices[observation.deviceId].uid;
+
+        properties.longitude = observation.geometry.coordinates[0];
+        properties.latitude = observation.geometry.coordinates[1];
+
+        var attachmentLinks = "";
+        observation.attachments.forEach(function(attachment) {
+          attachmentLinks += " " + attachment.relativePath;
+        });
+        if (attachmentLinks) properties.attachmentLinks = attachmentLinks;
+
+        return properties;
+      });
+    }
+
     var streamFeatures = function(stream, done) {
       var filter = req.parameters.filter;
       filter.states = ['active'];
       new api.Observation(event).getAll({filter: filter}, function(err, observations) {
-        mapObservations(observations, req);
+        var data = flatten(observations, req);
 
-        stream.write(JSON.stringify({
-          type: 'FeatureCollection',
-          features: geojson.transform(observations)
-        }));
+        json2csv({data: data, fields: fields, fieldNames: fieldNames}, function(err, csv) {
+          if (err) return done(err);
 
-        done();
+          stream.write(csv);
+          done();
+        });
       });
     }
 
@@ -655,7 +682,7 @@ module.exports = function(app, security) {
     //END DEFINE SERIES FUNCTIONS///////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
     res.type('application/zip');
-    res.attachment("mage-export-geojson.zip");
+    res.attachment("mage-export-csv.zip");
     res.cookie("fileDownload", "true", {path: '/'});
 
     var archive = archiver('zip');
@@ -666,7 +693,7 @@ module.exports = function(app, security) {
         if (!req.parameters.filter.exportObservations) return done();
 
         var observationStream = new stream.P***REMOVED***Through();
-        archive.append(observationStream, { name:'mage-export/observations.geojson' });
+        archive.append(observationStream, { name:'mage-export/observations.csv' });
         streamFeatures(observationStream, function(err) {
           observationStream.end();
 
@@ -690,18 +717,18 @@ module.exports = function(app, security) {
 
           done();
         });
-      },
-      function(done) {
-        if (!req.parameters.filter.exportLocations) return done();
-
-        var locationStream = new stream.P***REMOVED***Through();
-        archive.append(locationStream, {name: 'mage-export/locations.geojson'});
-        streamLocations(locationStream, function(err) {
-          locationStream.end();
-
-          done();
-        });
       }
+      // function(done) {
+      //   if (!req.parameters.filter.exportLocations) return done();
+      //
+      //   var locationStream = new stream.P***REMOVED***Through();
+      //   archive.append(locationStream, {name: 'mage-export/locations.geojson'});
+      //   streamLocations(locationStream, function(err) {
+      //     locationStream.end();
+      //
+      //     done();
+      //   });
+      // }
     ],
     function(err) {
       if (err) {

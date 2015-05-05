@@ -97,7 +97,7 @@ exports.updateTeam = function(id, update, callback) {
     update.userIds = update.users.map(function(user) { return mongoose.Types.ObjectId(user.id); });
   }
 
-  Team.findByIdAndUpdate(id, update, function(err, team) {
+  Team.findByIdAndUpdate(id, update, {new: true}, function(err, team) {
     if (err) {
       console.log('error updating team: ' + id + 'err: ' + err);
     }
