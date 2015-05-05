@@ -1,0 +1,41 @@
+<form name="observationForm" id="myForm" cl***REMOVED***="form" novalidate>
+
+    <div ng-repeat="field in form.fields | filter:{archived: '!true'}">
+      <field-directive field="field" field-observation="observation"></field-directive>
+    </div>
+    <span>* required</span>
+
+    <div cl***REMOVED***="top-gap" ng-if="preview !== true">
+      <h4 cl***REMOVED***="muted">Attachments</h4>
+      <div cl***REMOVED***="attachment" ng-repeat="attachment in observation.attachments track by attachment.id">
+        <div cl***REMOVED***="row">
+          <div>
+            <div attachment="attachment" attachment-observation="observation" edit="true"></div>
+          </div>
+        </div>
+      </div>
+
+      <div ng-repeat="(id, file) in attachmentUploads" cl***REMOVED***="row bottom-gap">
+        <div cl***REMOVED***="col-md-10" enctype="multipart/form-data" file-upload url="{{observation.url + '/attachments?access_token=' + getToken()}}" allow-upload="uploadAttachments" upload-file-form-name="'attachment'" preview="true" upload-id="id"></div>
+        <span>
+          <button cl***REMOVED***="btn btn-danger btn-xs top-gap-s" ng-click="removeFileUpload(id)"><i cl***REMOVED***="fa fa-minus"></i></button>
+        </span>
+      </div>
+
+      <div cl***REMOVED***="row top-gap-s">
+        <div cl***REMOVED***="col-md-12">
+          <button cl***REMOVED***="btn btn-primary" ng-click="addAttachment()" >Add Attachment</button>
+        </div>
+      </div>
+
+      <div cl***REMOVED***="top-gap-l">
+        <span cl***REMOVED***="pull-right">
+          <button cl***REMOVED***="btn btn-default" ng-click="cancelEdit()">Cancel</button>
+          <button cl***REMOVED***="btn btn-primary" ng-click="save()" ng-disabled="observationForm.$invalid || saving"><i ng-cl***REMOVED***="{true: 'fa fa-spinner fa-spin', false: 'icon-save'}[saving]"></i> Save</button>
+        </span>
+        <span>
+          <button cl***REMOVED***="btn btn-danger pull-left" ng-show="observation.id && amAdmin" ng-click="deleteObservation(observation)"><i cl***REMOVED***="icon-trash"></i> Delete Observation</button>
+        </span>
+      </div>
+    </div>
+</form>

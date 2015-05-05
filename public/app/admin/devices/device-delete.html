@@ -1,0 +1,25 @@
+<div cl***REMOVED***="modal-header">
+  <h3 cl***REMOVED***="modal-title">Delete "{{device.uid}}"</h3>
+</div>
+
+<div cl***REMOVED***="modal-body">
+  <div cl***REMOVED***="row">
+    <div cl***REMOVED***="col-md-12">
+      <p>Device "{{device.uid}}" will be deleted.
+        <strong>This cannot be undone</strong>.
+      </p>
+    </div>
+  </div>
+
+  <div cl***REMOVED***="row">
+    <div cl***REMOVED***="col-md-12">
+      <p>Do you want to delete device "{{device.uid}}"?<p>
+    </div>
+  </div>
+
+</div>
+
+<div cl***REMOVED***="modal-footer">
+  <button cl***REMOVED***="btn btn-danger pull-left" ng-click="deleteDevice(device, true)" ngm-tap="deleteDevice(device, true)"><i cl***REMOVED***="icon-trash"> </i>Confirm Device Delete</button>
+  <button cl***REMOVED***="btn btn-default" ng-click="cancel()" ngm-tap="cancel()">Cancel</button>
+</div>

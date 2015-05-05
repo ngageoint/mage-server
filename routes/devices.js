@@ -21,26 +21,13 @@ module.exports = function(app, security) {
     }
   }
 
-  var isAuthorized = function(permission) {
-    return function(req, res, next) {
-      access.hasPermission(req.user, permission, function(err, hasPermission) {
-        if (err) return next(err);
-
-        if (!hasPermission) req.user = null;
-
-        next();
-
-      });
-    }
-  }
-
   var parseDeviceParams = function(req, res, next) {
     req.newDevice = {
-      uid: req.param('uid'), 
+      uid: req.param('uid'),
       name: req.param('name'),
       registered: req.param('registered'),
-      description: req.param('description'), 
-      poc: req.param('poc')
+      description: req.param('description'),
+      userId: req.param('userId')
     };
 
     next();
@@ -54,19 +41,19 @@ module.exports = function(app, security) {
     next();
   }
 
-  // Create a new device (ADMIN)
+  // Create a new device, requires CREATE_DEVICE role
   app.post(
     '/api/devices',
     isAuthenticated(authenticationStrategy),
-    isAuthorized('CREATE_DEVICE'),
     parseDeviceParams,
     validateDeviceParams,
     function(req, res, next) {
 
       // If I did not authenticate a user go to the next route
       // '/api/devices' route which does not require authentication
-      if (!req.user) return next();
-
+      if (!access.userHasPermission(req.user, 'CREATE_DEVICE')) {
+        return next();
+      }
 
       // Automatically register any device created by an ADMIN
       req.newDevice.registered = true;
@@ -82,7 +69,7 @@ module.exports = function(app, security) {
   );
 
   // Create a new device (Non-ADMIN)
-  // Any authenticated user can create a new device, the registered field 
+  // Any authenticated user can create a new device, the registered field
   // will be set to false.
   app.post(
     '/api/devices',
@@ -92,8 +79,8 @@ module.exports = function(app, security) {
     function(req, res) {
       if (!req.newDevice.uid) return res.send(401, "missing required param 'uid'");
 
-      // set poc to the user that is trying to create the device
-      req.newDevice.poc = req.user._id;
+      // set userId to the user that is trying to create the device
+      req.newDevice.userId = req.user.id;
 
       // Devices not created by ADMIN are not registered by default
       req.newDevice.registered = false;
@@ -141,14 +128,14 @@ module.exports = function(app, security) {
     '/api/devices/:id',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('UPDATE_DEVICE'),
-    parseDeviceParams, 
+    parseDeviceParams,
     function(req, res) {
       var update = {};
       if (req.newDevice.uid) update.uid = req.newDevice.uid;
       if (req.newDevice.name) update.name = req.newDevice.name;
       if (req.newDevice.description) update.description = req.newDevice.description;
       if (req.newDevice.registered) update.registered = req.newDevice.registered;
-      if (req.newDevice.poc) update.poc = req.newDevice.poc;
+      if (req.newDevice.userId) update.userId = req.newDevice.userId;
 
       Device.updateDevice(req.param('id'), update, function(err, device) {
         if (err) {

@@ -1,14 +1,14 @@
 var mongoose = require('mongoose');
 
 // Creates a new Mongoose Schema object
-var Schema = mongoose.Schema;  
+var Schema = mongoose.Schema;
 
 // Collection to hold counters/sequences for ids
-var CounterSchema = new Schema({  
-    _id: { type: String, required: true },  
+var CounterSchema = new Schema({
+    _id: { type: String, required: true },
     sequence: { type: Number, required: true }
-  },{ 
-    versionKey: false 
+  },{
+    versionKey: false
   }
 );
 
@@ -33,7 +33,7 @@ var getNext = function(collection, callback) {
 var getGroup = function(collection, amount, callback) {
   var query = {_id: collection};
   var update = {$inc: {sequence: amount}};
-  var options = {upsert: true};
+  var options = {upsert: true, new: true};
   Counter.findOneAndUpdate(query, update, options, function(err, counter) {
     if (err) {
       console.log(JSON.stringify(err));

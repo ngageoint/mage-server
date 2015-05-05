@@ -1,0 +1,9 @@
+<div cl***REMOVED***="field form-group">
+  <label cl***REMOVED***="control-label">{{field.title}}</label> <span cl***REMOVED***="required-error" ng-show="field.required && !field.value">*</span>
+  <div ng-repeat="option in field.choices" cl***REMOVED***="radio">
+    <label>
+        <input type="radio" value="{{option.title}}" ng-model="field.value" ng-required="field.required"/>
+        &nbsp;<span ng-bind="option.title"></span>
+    </label>
+  </div>
+</div>

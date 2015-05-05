@@ -20,28 +20,67 @@ var generateKMLDocument = function() {
 	          "<open>1</open>";
 };
 
-var generateStyles = function(icons) {
-  var styles = "";
-  icons.forEach(function(icon) {
-    var style = [icon.formId];
-    if (icon.type != null) {
-      style.push(icon.type);
-      if (icon.variant != null) {
-        style.push(icon.variant);
-      }
-    }
+var getFieldByName = function(form, name) {
+  for (var i = 0; i < form.fields.length; i++) {
+    if (form.fields[i].name === name) return form.fields[i];
+  }
 
-    styles += "<Style id='" + style.join("-") + "'><IconStyle><Icon><href>" + path.join("icons", icon.relativePath) + "</href></Icon></IconStyle></Style>";
+  return null;
+}
+
+var generateStyles = function(event, icons) {
+  var styles = [];
+
+  var defaultIcon = "";
+  var typePathMap = {};
+  var variantPathMap = {};
+  icons.forEach(function(icon) {
+    if (icon.variant) {
+      variantPathMap[icon.type] = {};
+      variantPathMap[icon.type][icon.variant] = icon.relativePath;
+    } else if (icon.type) {
+      typePathMap[icon.type] = icon.relativePath;
+    } else {
+      defaultIconPath = icon.relativePath;
+    }
   });
 
-  return styles;
+  // default icon style
+  styles.push("<Style id='" + event._id.toString() + "'><IconStyle><Icon><href>" + path.join("icons", defaultIconPath) + "</href></Icon></IconStyle></Style>");
+
+  var typeField = getFieldByName(event.form, 'type');
+  if (!typeField) return;
+  var variantField = getFieldByName(event.form, event.form.variantField);
+
+  typeField.choices.forEach(function(choice) {
+    // create style for choice (determine if choice is in map or pick default)
+    var iconPath = typePathMap[choice.title] ? typePathMap[choice.title] : defaultIconPath;
+    styles.push("<Style id='" + [event._id.toString(), choice.title].join("-") + "'><IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
+
+    // variant styles for each type
+    if (variantField) {
+      variantField.choices.forEach(function(variantChoice) {
+        if (variantPathMap[choice.title] && variantPathMap[choice.title][variantChoice.title]) {
+          iconPath = variantPathMap[choice.title][variantChoice.title];
+        } else if (typePathMap[choice.title]) {
+          iconPath = typePathMap[choice.title];
+        } else {
+          iconPath = defaultIconPath;
+        }
+
+        styles.push("<Style id='" + [event._id.toString(), choice.title, variantChoice.title].join("-") + "'><IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
+      });
+    }
+  });
+
+  return styles.join("");
 }
 
 var generateKMLFolderStart = function(name) {
   return "<Folder>" + "<name>" + name + "</name>";
 };
 
-var generatePlacemark = function(name, feature, form) {
+var generatePlacemark = function(name, feature, event) {
   var timestamp = "<TimeStamp>" +
     "<when>" + moment(feature.properties.timestamp).utc().format(timeFormat) + "Z</when>" +
     "</TimeStamp>";
@@ -100,12 +139,12 @@ var generatePlacemark = function(name, feature, form) {
   description += '</html>]]></description>';
 
   var style = [];
-  if (form) {
-    style.push(form._id.toString());
+  if (event) {
+    style.push(event._id.toString());
     if (feature.properties.type) {
       style.push(feature.properties.type);
-      if (feature.properties[form.variantField]) {
-        style.push(feature.properties[form.variantField]);
+      if (feature.properties[event.form.variantField]) {
+        style.push(feature.properties[event.form.variantField]);
       }
     }
   }

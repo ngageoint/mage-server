@@ -5,6 +5,9 @@ var Schema = mongoose.Schema;
 
 // Creates the Schema for FFT Locations
 var LocationSchema = new Schema({
+  userId: {type: Schema.Types.ObjectId, required: false, sparse: true, ref: 'User'},
+  eventId: {type: Number, required: false, sparse: true, ref:'Event'},
+  teamIds: [{type: Schema.Types.ObjectId}],
   type: { type: String, required: true },
   geometry: {
     type: { type: String, required: true },
@@ -16,10 +19,12 @@ var LocationSchema = new Schema({
 });
 
 // TODO when user is removed need to remove thier locations.
+// TODO ensure new queries are hitting indexes
 
 LocationSchema.index({geometry: "2dsphere"});
 LocationSchema.index({'properties.timestamp': 1});
 LocationSchema.index({'properties.timestamp': 1, _id: 1});
+LocationSchema.index({'userId': 1});
 LocationSchema.index({'properties.user': 1, 'properties.timestamp': 1});
 
 // Creates the Model for the User Schema
@@ -27,12 +32,9 @@ var Location = mongoose.model('Location', LocationSchema);
 exports.Model = Location;
 
 // create location
-exports.createLocations = function(user, locations, callback) {
+exports.createLocations = function(locations, callback) {
   Location.create(locations, function(err) {
-    if (err) {
-      console.log('Error creating new location for user: ' + user.username + '.  Err:' + err);
-    }
-
+    // TODO mongoose4
     callback(err, Array.prototype.slice.call(arguments, 1));
   });
 }
@@ -43,13 +45,21 @@ exports.getLocations = function(options, callback) {
     limit = options.limit;
   }
 
-  var filter = options.filter || {};
+  var conditions = {};
 
-  var query = {};
+  var filter = options.filter || {};
+  if (filter.eventId) {
+    conditions.eventId = filter.eventId;
+  }
+
+  if (filter.userId) {
+    conditions.userId = filter.userId;
+  }
+
   if (filter.lastLocationId && (filter.startDate || filter.endDate)) {
-    query['$or'] = [{_id: {'$gt': filter.lastLocationId}}];
+    conditions['$or'] = [{_id: {'$gt': filter.lastLocationId}}];
     if (filter.startDate) {
-      query['$or'] = [{
+      conditions['$or'] = [{
         _id: {'$gt': filter.lastLocationId},
         'properties.timestamp': filter.startDate
       },{
@@ -57,31 +67,23 @@ exports.getLocations = function(options, callback) {
       }];
     }
 
-    if (filter.endDate) query['properties.timestamp'] = {'$lt': filter.endDate};
+    if (filter.endDate) conditions['properties.timestamp'] = {'$lt': filter.endDate};
   } else if (filter.startDate || filter.endDate) {
-    query['properties.timestamp'] = {};
-    if (filter.startDate) query['properties.timestamp']['$gte'] = filter.startDate;
-    if (filter.endDate) query['properties.timestamp']['$lt'] = filter.endDate;
+    conditions['properties.timestamp'] = {};
+    if (filter.startDate) conditions['properties.timestamp']['$gte'] = filter.startDate;
+    if (filter.endDate) conditions['properties.timestamp']['$lt'] = filter.endDate;
   }
 
-  if (filter.userId) {
-    query['properties.user'] = filter.userId;
-  }
-
-  Location.find(query, {}, {sort: {"properties.timestamp": 1, _id: 1}, limit: limit}, function (err, locations) {
-    if (err) {
-      console.log("Error finding locations", err);
-    }
-
+  Location.find(conditions, {}, {sort: {"properties.timestamp": 1, _id: 1}, limit: limit}, function (err, locations) {
     callback(err, locations);
   });
 }
 
 // update latest location
 exports.updateLocation = function(user, timestamp, callback) {
-  var conditions = {"properties.user": user._id};
+  var conditions = {"userId": user._id};
   var update = {"properties.timestamp": timestamp};
-  var options = {sort: {"properties.timestamp": -1}};
+  var options = {sort: {"properties.timestamp": -1}, new: true};
   Location.findOneAndUpdate(conditions, update, options, function(err, location) {
     if (err) {
       console.log("Error updating date on latesest location for user : " + user.username + ". Error: " + err);
@@ -94,7 +96,7 @@ exports.updateLocation = function(user, timestamp, callback) {
 }
 
 exports.removeLocationsForUser = function(user, callback) {
-  var conditions = {"properties.user": user._id};
+  var conditions = {"userId": user._id};
   Location.remove(conditions, function(err, numberRemoved) {
     if (err) {
       console.log("Error removing locaitons for user: " + user.username);

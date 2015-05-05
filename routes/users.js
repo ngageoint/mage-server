@@ -27,18 +27,6 @@ module.exports = function(app, security) {
     }
   }
 
-  var isAuthorized = function(permission) {
-    return function(req, res, next) {
-      access.hasPermission(req.user, permission, function(err, hasPermission) {
-        if (err) return next(err);
-
-        if (!hasPermission) req.user = null;
-
-        next();
-      });
-    }
-  }
-
   var getDefaultRole = function(req, res, next) {
     Role.getRole('USER_ROLE', function(err, role) {
       req.role = role;
@@ -55,19 +43,19 @@ module.exports = function(app, security) {
 
     var username = req.param('username');
     if (!username) {
-      return res.send(400, invalidResponse('username'));
+      return res.status(400).send(invalidResponse('username'));
     }
     user.username = username;
 
     var firstname = req.param('firstname');
     if (!firstname) {
-      return res.send(400, invalidResponse('firstname'));
+      return res.status(400).send(invalidResponse('firstname'));
     }
     user.firstname = firstname;
 
     var lastname = req.param('lastname');
     if (!lastname) {
-      return res.send(400, invalidResponse('lastname'));
+      return res.status(400).send(invalidResponse('lastname'));
     }
     user.lastname = lastname;
 
@@ -75,7 +63,7 @@ module.exports = function(app, security) {
     if (email) {
       // validate they at least tried to enter a valid email
       if (!email.match(emailRegex)) {
-        return res.send(400, 'Please enter a valid email address');
+        return res.status(400).send('Please enter a valid email address');
       }
 
       user.email = email;
@@ -91,20 +79,20 @@ module.exports = function(app, security) {
 
     var p***REMOVED***word = req.param('p***REMOVED***word');
     if (!p***REMOVED***word) {
-      return res.send(400, invalidResponse('p***REMOVED***word'));
+      return res.status(400).send(invalidResponse('p***REMOVED***word'));
     }
 
     var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
     if (!p***REMOVED***wordconfirm) {
-      return res.send(400, invalidResponse('p***REMOVED***wordconfirm'));
+      return res.status(400).send(invalidResponse('p***REMOVED***wordconfirm'));
     }
 
     if (p***REMOVED***word != p***REMOVED***wordconfirm) {
-      return res.send(400, 'p***REMOVED***words do not match');
+      return res.status(400).send('p***REMOVED***words do not match');
     }
 
     if (p***REMOVED***word.length < p***REMOVED***wordLength) {
-      return res.send(400, 'p***REMOVED***word does not meet minimum length requirement of ' + p***REMOVED***wordLength + ' characters');
+      return res.status(400).send('p***REMOVED***word does not meet minimum length requirement of ' + p***REMOVED***wordLength + ' characters');
     }
 
     user.p***REMOVED***word = p***REMOVED***word;
@@ -117,7 +105,7 @@ module.exports = function(app, security) {
   var validateRoleParams = function(req, res, next) {
     var roleId = req.param('roleId');
     if (!roleId) {
-      return res.send(400, "Cannot set role, 'roleId' param not specified");
+      return res.status(400).send("Cannot set role, 'roleId' param not specified");
     }
 
     Role.getRoleById(roleId, function(err, role) {
@@ -125,7 +113,7 @@ module.exports = function(app, security) {
 
       if (!role) return next(new Error('Role ***REMOVED***ociated with roleId ' + roleId + ' does not exist'));
 
-      req.role = role._id;
+      req.role = role;
       next();
     });
   }
@@ -135,8 +123,8 @@ module.exports = function(app, security) {
     p***REMOVED***port.authenticate(loginStrategy),
     provision.check(provisionStrategy),
     function(req, res) {
-      var options = {userAgent: req.headers['user-agent'], version: req.param('mageVersion')};
-      new api.User().login(req.user, req.provisionedDevice, options, function(err, token, user) {
+      var options = {userAgent: req.headers['user-agent'], appVersion: req.param('appVersion')};
+      new api.User().login(req.user, req.provisionedDevice, options, function(err, token) {
         res.json({
           token: token.token,
           expirationDate: token.expirationDate,
@@ -152,10 +140,10 @@ module.exports = function(app, security) {
     '/api/logout',
     isAuthenticated(authenticationStrategy),
     function(req, res, next) {
-      new api.User().logout(req.user, function(err) {
+      console.log('logout w/ token', req.token);
+      new api.User().logout(req.token, function(err) {
         if (err) return next(err);
-
-        res.send(200, 'successfully logged out');
+        res.status(200).send('successfully logged out');
       });
     }
   );
@@ -202,7 +190,7 @@ module.exports = function(app, security) {
       new api.User()[req.params.content](req.userParam, function(err, content) {
         if (err) return next(err);
 
-        if (!content) return res.send(404);
+        if (!content) return res.sendStatus(404);
 
         var stream = fs.createReadStream(content.path);
         stream.on('open', function() {
@@ -211,8 +199,7 @@ module.exports = function(app, security) {
           stream.pipe(res);
         });
         stream.on('error', function(err) {
-          console.log('error', err);
-          res.send(404);
+          res.sendStatus(404);
         });
       });
     }
@@ -223,16 +210,14 @@ module.exports = function(app, security) {
     '/api/users/myself',
     p***REMOVED***port.authenticate(authenticationStrategy),
     function(req, res, next) {
-
-      var user = req.user;
-      if (req.param('username')) user.username = req.param('username');
-      if (req.param('firstname')) user.firstname = req.param('firstname');
-      if (req.param('lastname')) user.lastname = req.param('lastname');
-      if (req.param('email')) user.email = req.param('email');
+      if (req.param('username')) req.user.username = req.param('username');
+      if (req.param('firstname')) req.user.firstname = req.param('firstname');
+      if (req.param('lastname')) req.user.lastname = req.param('lastname');
+      if (req.param('email')) req.user.email = req.param('email');
 
       var phone = req.param('phone');
       if (phone) {
-        user.phones = [{
+        req.user.phones = [{
           type: "Main",
           number: phone
         }];
@@ -242,17 +227,17 @@ module.exports = function(app, security) {
       var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
       if (p***REMOVED***word && p***REMOVED***wordconfirm) {
         if (p***REMOVED***word != p***REMOVED***wordconfirm) {
-          return res.send(400, 'p***REMOVED***words do not match');
+          return res.status(400).send('p***REMOVED***words do not match');
         }
 
         if (p***REMOVED***word.length < p***REMOVED***wordLength) {
-          return res.send(400, 'p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
+          return res.status(400).send('p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
         }
 
-        user.p***REMOVED***word = p***REMOVED***word;
+        req.user.p***REMOVED***word = p***REMOVED***word;
       }
 
-      new api.User().update(user, {avatar: req.files.avatar}, function(err, updatedUser) {
+      new api.User().update(req.user, {avatar: req.files.avatar}, function(err, updatedUser) {
         updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
         res.json(updatedUser);
       });
@@ -265,22 +250,23 @@ module.exports = function(app, security) {
   app.post(
     '/api/users',
     isAuthenticated(authenticationStrategy),
-    isAuthorized('UPDATE_USER'),
     validateUser,
     function(req, res, next) {
       // If I did not authenticate a user go to the next route
       // '/api/users' route which does not require authentication
-      if (!req.user) return next();
+      if (!access.userHasPermission(req.user, 'CREATE_USER')) {
+        return next();
+      }
 
-      var role = req.param('role');
-      if (!role) return res.send(400, 'role is a required field');
-      req.newUser.role = role;
+      var roleId = req.param('roleId');
+      if (!roleId) return res.status(400).send('roleId is a required field');
+      req.newUser.roleId = roleId;
 
       // Authorized to update users, activate account by default
       req.newUser.active = true;
 
       new api.User().create(req.newUser, {avatar: req.files.avatar, icon: req.files.icon}, function(err, newUser) {
-        if (err) return res.send(400, err.message);
+        if (err) return next(err);
 
         newUser = userTransformer.transform(newUser, {path: req.getRoot()});
         res.json(newUser);
@@ -294,12 +280,12 @@ module.exports = function(app, security) {
     '/api/users',
     getDefaultRole,
     validateUser,
-    function(req, res) {
+    function(req, res, next) {
       req.newUser.active = false;
-      req.newUser.role = req.role._id;
+      req.newUser.roleId = req.role._id;
 
       new api.User().create(req.newUser, {avatar: req.files.avatar}, function(err, newUser) {
-        if (err) return res.send(400, err.message);
+        if (err) return next(err);
 
         newUser = userTransformer.transform(newUser, {path: req.getRoot()});
         res.json(newUser);
@@ -313,11 +299,10 @@ module.exports = function(app, security) {
     p***REMOVED***port.authenticate(authenticationStrategy),
     function(req, res) {
       var status = req.param('status');
-      if (!status) return res.send(400, "Missing required parameter 'status'");
+      if (!status) return res.status(400).send("Missing required parameter 'status'");
+      req.user.status = status;
 
-      var update = {status: status};
-
-      new api.User().update(req.user._id, update, function(err, updatedUser) {
+      new api.User().update(req.user, function(err, updatedUser) {
         updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
         res.json(updatedUser);
       });
@@ -329,8 +314,6 @@ module.exports = function(app, security) {
     '/api/users/myself/status',
     p***REMOVED***port.authenticate(authenticationStrategy),
     function(req, res) {
-      var status = req.param.status;
-
       req.user.status = undefined;
       new api.User().update(req.user, function(err, updatedUser) {
         updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
@@ -352,7 +335,7 @@ module.exports = function(app, security) {
       if (req.param('lastname')) user.lastname = req.param('lastname');
       if (req.param('email')) user.email = req.param('email');
       if (req.param('active')) user.active = req.param('active');
-      if (req.param('role')) user.role = req.param('role');
+      if (req.param('roleId')) user.roleId = req.param('roleId');
 
       var phone = req.param('phone');
       if (phone) {
@@ -366,11 +349,11 @@ module.exports = function(app, security) {
       var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
       if (p***REMOVED***word && p***REMOVED***wordconfirm) {
         if (p***REMOVED***word != p***REMOVED***wordconfirm) {
-          return res.send(400, 'p***REMOVED***words do not match');
+          return res.status(400).send('p***REMOVED***words do not match');
         }
 
         if (p***REMOVED***word.length < p***REMOVED***wordLength) {
-          return res.send(400, 'p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
+          return res.status(400).send('p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
         }
 
         user.p***REMOVED***word = p***REMOVED***word;
@@ -390,31 +373,42 @@ module.exports = function(app, security) {
     '/api/users/:userId',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('DELETE_USER'),
-    function(req, res) {
+    function(req, res, next) {
       new api.User().delete(req.userParam, function(err) {
-        if (err) return res.send(400, err);
-
-        res.send(204);
-      });
-    }
-  );
-
-  // set role for user
-  // TODO not sure used, remove in next version (teams/events)
-  app.post(
-    '/api/users/:userId/role',
-    p***REMOVED***port.authenticate(authenticationStrategy),
-    access.authorize('UPDATE_USER'),
-    validateRoleParams,
-    function(req, res) {
-      req.userParm.role = role;
-
-      new api.User().update(req.userParam, function(err, updatedUser) {
         if (err) return next(err);
 
-        updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
-        res.json(updatedUser);
+        res.sendStatus(204);
       });
     }
   );
+
+  app.post(
+    '/api/users/:userId/events/:eventId/recent',
+    p***REMOVED***port.authenticate(authenticationStrategy),
+    access.authorize('READ_USER'),
+    function(req, res, next) {
+      new api.User().addRecentEvent(req.user, req.event, function(err, user) {
+        if (err) return next(err);
+
+        res.json(user);
+      });
+    }
+  );
+
+  app.get(
+    '/api/users/:userId/logins',
+    p***REMOVED***port.authenticate(authenticationStrategy),
+    access.authorize('READ_USER'),
+    function(req, res, next) {
+      var options = {};
+      if (req.param('limit')) options.limit = req.param('limit');
+
+      new api.User().getLogins(req.user, options, function(err, logins) {
+        if (err) return next(err);
+
+        res.json(logins);
+      });
+    }
+  );
+
 }

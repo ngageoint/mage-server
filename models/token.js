@@ -6,48 +6,34 @@ var crypto = require('crypto')
 var tokenExpiration = config.server.token.expiration * 1000;
 
 // Creates a new Mongoose Schema object
-var Schema = mongoose.Schema; 
+var Schema = mongoose.Schema;
 
 // Collection to hold users
 var TokenSchema = new Schema({
-    user: { type: Schema.Types.ObjectId, ref: 'User' },
+    userId: { type: Schema.Types.ObjectId, ref: 'User' },
     deviceId: { type: Schema.Types.ObjectId, ref: 'Device' },
-    timestamp: { type: Date, required: true },
+    expirationDate: { type: Date, required: true },
     token: { type: String, required: true }
-  },{ 
-    versionKey: false 
+  },{
+    versionKey: false
   }
 );
+
+TokenSchema.index({'expirationDate': 1}, {expireAfterSeconds: 0});
 
 // Creates the Model for the User Schema
 var Token = mongoose.model('Token', TokenSchema);
 
-var deleteExpiredTokens = function(callback) {
-  var expired = new Date(Date.now() -  tokenExpiration);
-  var query = {timestamp: {$lt: expired}};
-  Token.remove(query, function(err, number) {
-    if (err) {
-      console.log('could not remove expired tokens: ' + err);
+exports.getToken = function(token, callback) {
+  Token.findOne({token: token}).populate('userId').exec(function(err, token) {
+    if (err) return callback(err);
+
+    if (!token || !token.userId) {
+      return callback(null, null);
     }
 
-    callback(err, number);
-  }); 
-}
-
-exports.getToken = function(token, callback) {
-  deleteExpiredTokens(function(err) {
-    var conditions = {token: token};
-    Token.findOne(conditions).populate('user').exec(function(err, token) {
-      var user = null;
-
-      if (!token || !token.user) {
-        return callback(null, null);
-      }
-
-      token.user.populate('role', function(err, user) {
-        return callback(err, {user: user, deviceId: token.deviceId});
-      });
-
+    token.userId.populate('roleId', function(err, user) {
+      return callback(err, {user: user, deviceId: token.deviceId, token: token});
     });
   });
 }
@@ -56,15 +42,18 @@ exports.createToken = function(options, callback) {
   var seed = crypto.randomBytes(20);
   var token = crypto.createHash('sha1').update(seed).digest('hex');
 
-  var query = {user: options.user._id};
+  var query = {userId: options.userId};
   if (options.device) {
     query.deviceId = options.device._id;
   }
-  var update = {token: token, timestamp: new Date()};
-  var options = {upsert: true};
-  Token.findOneAndUpdate(query, update, options, function(err, newToken) {
-    newToken.expirationDate = new Date(newToken.timestamp.getTime() +  tokenExpiration);
 
+  var now = Date.now();
+  var update = {
+    token: token,
+    expirationDate: new Date(now + tokenExpiration)
+  };
+  var options = {upsert: true, new: true};
+  Token.findOneAndUpdate(query, update, options, function(err, newToken) {
     if (err) {
       console.log('Could not create token for user: ' + user.username);
     }
@@ -73,8 +62,14 @@ exports.createToken = function(options, callback) {
   });
 }
 
-exports.removeTokenForUser = function(user, callback) {
-  Token.remove({user: user._id}, function(err, numberRemoved) {
+exports.removeToken = function(token, callback) {
+  Token.findByIdAndRemove(token._id, function(err) {
+    callback(err);
+  });
+}
+
+exports.removeTokensForUser = function(user, callback) {
+  Token.remove({userId: user._id}, function(err, numberRemoved) {
     callback(err, numberRemoved);
   });
 }
