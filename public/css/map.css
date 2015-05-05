@@ -1,9 +1,15 @@
+body {
+  margin: 0;
+  padding-top: 50px;
+  height: 100%;
+}
 
-html, body, div.leaflet-container {
-	height: 100%;
-	width: 100%;
-	margin: 0;
-	padding: 0;
+html, #map {
+  height: 100%;
+}
+
+header.navbar {
+  margin-bottom: 0px;
 }
 
 /* CLEAR FIX*/
@@ -16,16 +22,31 @@ html, body, div.leaflet-container {
 /* Hides from IE-mac \*/
 * html .clearfix { height: 1%;}
 .clearfix {display: block;}
+
+
 /* End hide from IE-mac */
 .navbar {
 	margin-bottom: 0;
 }
 
 /* Leaflet stuff */
-.map-wrap {
-  left: 0;
-  top: 0;
-  position: absolute;
+.leaflet-bar a, .leaflet-bar, a:hover {
+  color: #5278A2;
+}
+
+.leaflet-control-inverse, .leaflet-bar, a.leaflet-control-inverse {
+  background: #5278A2;
+}
+
+.mage-map {
+  padding-top: 23px;
+  height: 100%
+}
+
+@media(max-width: 768px) {
+	.mage-map {
+    padding-top: 46px;
+	}
 }
 
 .news-feed-pane {
@@ -34,6 +55,24 @@ html, body, div.leaflet-container {
 	bottom: 0;
 	left: 0;
 	width: 100%;
+}
+
+.news-feed-tabs {
+	border-radius: 3px;
+	background-color: rgba(208, 231, 255, 0.8);
+	padding: 10px 0;
+}
+
+.news-feed-tab:hover {
+	border-bottom: 2px solid #EEE;
+	text-decoration: none;
+	color: #EEE;
+}
+
+
+a.news-feed-tab-active {
+	border-bottom: 3px solid #EEE;
+	color: #EEE;
 }
 
 @media(max-width:1024px){
@@ -54,19 +93,13 @@ html, body, div.leaflet-container {
 	}
 }
 
-#map .leaflet-top {
-	top: 50px;
-}
-
 .leaflet-sidebar {
-	padding-top: 50px;
-    z-index: 1029;
+  z-index: 1029;
 }
 
 .leaflet-sidebar > .leaflet-control {
 	overflow: hidden;
-	padding: 0;
-	padding-left:10px;
+	padding-left: 10px;
 	background: transparent;
 }
 
@@ -76,91 +109,10 @@ html, body, div.leaflet-container {
 	right: 0px;
 }
 
-/*
-#map .leaflet-left {
-	left: 375px;
-}
-
-#map .leaflet-side {
-	margin-top: 58px;
-	bottom: 0px;
-}
-
-#map .leaflet-leftbar {
-	margin-left: 10px;
-}
-
-.side-bar-holder {
-	position: absolute;
-	z-index: 1039;
-	overflow: auto;
-	top: 58px;
-	left: 10px;
-	width: 360px;
-	bottom: 0px;
-}
-
-.side-panel {
-	overflow: auto;
-}
-*/
 @media (max-width: 979px) {
 	.navbar-fixed-top, .navbar-fixed-bottom {
 		position: absolute;
 	}
-}
-
-#settings {
-	position: absolute;
-	height: 50px;
-	width: 50px;
-	top: 50px;
-	right: 5px;
-	z-index: 999;
-}
-
-/* I switched the position for goto-address and new observation buttons for a better layout while
-	 we are waiting to get the rest of the buttons wired up so the UI doesnt look weird.
-*/
-#goto-address {
-	position: absolute;
-	height: 50px;
-	width: 50px;
-	bottom: 5px;
-	left: 263px; /*68px*/
-	z-index: 999;
-}
-
-.right-panel {
-	right: 5px;
-	top: 110px;
-	z-index: 1039;
-	overflow: auto;
-	background: #D0E7FF;
-	color: #5278A2;
-	position: absolute;
-	height: 90%;
-	width: 83%;
-	border: 2px solid #5278A2;
-}
-
-/* Panels and their contents */
-.panel {
-	left: 465px;
-	top: 7px;
-	z-index: 1039;
-	overflow: auto;
-	background: #D0E7FF;
-	background: rgba(208, 231, 255, 0.8);
-	color: #5278A2;
-	position: absolute;
-	height: 90%;
-	width: 83%;
-	border: 2px solid #5278A2;
-}
-
-.panel-content {
-	padding: 20px;
 }
 
 .news-feed-panel-content {
@@ -191,12 +143,6 @@ html, body, div.leaflet-container {
 	/*z-index:6;*/
 }
 
-@media(max-width:767px){
-  .news-items-wrapper {
-    top: 200px !important;
-  }
-}
-
 .news-feed-item {
 	padding: 5px;
 	border: 1px solid #EEE;
@@ -217,8 +163,12 @@ html, body, div.leaflet-container {
 }
 
 .active-news-feed-item {
-	border: 3px solid #7C22C7;
+	border: 2px solid #345477;
 	border-radius: 6px;
+}
+
+.inactive-news-feed-item {
+	opacity: .7;
 }
 
 .observation-news-item .news-feed-image {
@@ -242,17 +192,6 @@ html, body, div.leaflet-container {
 	position: relative;
 }
 
-.filter-panel {
-	padding: 5px;
-	border: 1px solid #EEE;
-	margin-bottom: 10px;
-	background: #D0E7FF;
-	background: rgba(208, 231, 255, 0.9);
-	border-radius: 3px;
-	box-shadow: 0 7px 7px rgba(0,0,0,0.65);
-	z-index: 10;
-}
-
 .bucket-panel {
 	padding: 5px;
 	border: 1px solid #EEE;
@@ -272,7 +211,7 @@ html, body, div.leaflet-container {
 	background: rgba(208, 231, 255, 0.9);
 	border-radius: 3px;
 	box-shadow: 0 7px 7px rgba(0,0,0,0.65);
-	z-index: 10;
+	z-index: 1100;
 }
 
 .map-filter {
@@ -292,12 +231,6 @@ html, body, div.leaflet-container {
 }
 .panel-close > i {
 	font-size: 24px;
-}
-
-@media all and (min-width: 520px) {
-	.panel {
-		margin: 45px;
-	}
 }
 
 @-ms-viewport {
@@ -321,9 +254,6 @@ html, body, div.leaflet-container {
 
 #observation-panel > form > span > button {
 	width: 130px;
-}
-
-.attachment {
 }
 
 .observation-icon {
@@ -417,23 +347,12 @@ html, body, div.leaflet-container {
 	padding: 5px;
 }
 
-/* Progress bar stuff */
-.percent {
-    position: absolute; width: 300px; height: 14px; z-index: 1; text-align: center; font-size: 0.8em; color: white;
-}
-.progress-bar {
-    height: 14px;
-    border-radius: 10px;
-    border: 1px solid #CCC;
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#6666cc), to(#4b4b95));
-    border-image: initial;
-}
 .uploaded {
-    padding: 0;
-    height: 14px;
-    border-radius: 10px;
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#66cc00), to(#4b9500));
-    border-image: initial;
+  padding: 0;
+  height: 14px;
+  border-radius: 10px;
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#66cc00), to(#4b9500));
+  border-image: initial;
 }
 
 @media all and (max-width: 768px) {
@@ -455,4 +374,42 @@ html, body, div.leaflet-container {
 
 .mage-icon-image {
 	width: 35px;
+}
+
+.observation-popup {
+	color: #345477;
+	width: 240px;
+}
+
+.observation-popup-title {
+	font-size: 14px;
+	padding-bottom: 2px;
+}
+
+.observation-popup-subtitle {
+	font-size: 12px;
+	color: #999;
+}
+
+.observation-popup-info i {
+	font-size: 17px;
+	padding: 10px 5px 0;
+	color: #345477;
+}
+
+.observation-popup-actions a {
+	/*font-size: 18px;*/
+	margin-top: 8px;
+	color: #FFF;
+}
+
+.location-popup {
+	color: #345477;
+	width: 265px;
+}
+
+.location-popup-info i {
+	font-size: 17px;
+	padding: 20px 5px 0;
+	color: #345477;
 }

@@ -7,8 +7,8 @@ var config = require('./config.json')
   , mongoose = require('mongoose')
   , moment = require('moment')
   , ArcGIS = require('terraformer-arcgis-parser')
-  , Layer = require('../../models/layer')
-  , Feature = require('../../models/feature');
+  , Event = require('../../models/event')
+  , Observation = require('../../models/observation');
 
 // setup mongoose to talk to mongodb
 var mongodbConfig = config.mongodb;
@@ -51,10 +51,10 @@ function getTypes(done) {
   });
 }
 
-var layers;
-function getLayers(done) {
-  Layer.getLayers({type: 'Feature'}, function(err, featureLayers) {
-    layers = featureLayers;
+var events;
+function getEvents(done) {
+  Event.getEvents(function(err, allEvents) {
+    events = allEvents;
     done(err);
   });
 }
@@ -78,16 +78,16 @@ function transform(field, value) {
   }
 }
 
-function createEsriObservation(feature, callback) {
-  console.log('creating new observation ' + feature._id);
+function createEsriObservation(event, observation, callback) {
+  console.log('creating new observation ' + observation._id);
   var properties = {};
-  fields.forEach(function(field) {
-    var value = feature.properties[field.mage];
+  fields[event._id.toString()].forEach(function(field) {
+    var value = observation.properties[field.mage];
     properties[field.esri] = transform(field, value);
   });
-  feature.properties = properties;
+  observation.properties = properties;
 
-  featureUrl = url + "/addFeatures?f=json&features=" + JSON.stringify([ArcGIS.convert(feature)]);
+  featureUrl = url + "/addFeatures?f=json&features=" + JSON.stringify([ArcGIS.convert(observation)]);
   console.log('sending', featureUrl);
   request.post({url: featureUrl}, function(err, res, body) {
     if (err) return done(err);
@@ -104,17 +104,17 @@ function createEsriObservation(feature, callback) {
   });
 }
 
-function updateEsriObservation(feature, callback) {
-  console.log('updating observation ' + feature._id);
+function updateEsriObservation(event, observation, callback) {
+  console.log('updating observation ' + observation._id);
   var properties = {};
-  fields.forEach(function(field) {
-    var value = feature.properties[field.mage];
+  fields[event_id.toString()].forEach(function(field) {
+    var value = observation.properties[field.mage];
     properties[field.esri] = transform(field, value);
   });
-  feature.properties = properties;
-  feature.properties.OBJECTID = feature.esriId;
+  observation.properties = properties;
+  observation.properties.OBJECTID = observation.esriId;
 
-  featureUrl = url + "/updateFeatures?f=json&features=" + JSON.stringify([ArcGIS.convert(feature)]);
+  featureUrl = url + "/updateFeatures?f=json&features=" + JSON.stringify([ArcGIS.convert(observation)]);
   console.log('sending', featureUrl);
   request.post({url: featureUrl}, function(err, res, body) {
     if (err) return done(err);
@@ -132,47 +132,47 @@ function updateEsriObservation(feature, callback) {
   });
 }
 
-function pushFeatures(done) {
-  fs.readJson(__dirname + "/.observations.json", function(err, lastFeatureTimes) {
-    lastFeatureTimes = lastFeatureTimes || {};
-    console.log('last feature times', lastFeatureTimes);
+function pushObservations(done) {
+  fs.readJson(__dirname + "/.observations.json", function(err, lastObservationTimes) {
+    lastObservationTimes = lastObservationTimes || {};
+    console.log('last observation times', lastObservationTimes);
 
-    async.each(layers,
-      function(layer, done) {
-        console.log('pushing features for layer ' + layer.name);
+    async.each(events,
+      function(event, done) {
+        console.log('pushing observations for event ' + event.name);
 
         var filter = {};
 
-        var lastTime = lastFeatureTimes[layer.collectionName];
+        var lastTime = lastObservationTimes[event.collectionName];
         if (lastTime) {
           filter.startDate = moment(lastTime).add('milliseconds', 1).toDate();
         }
 
-        Feature.getFeatures(layer, {filter: filter, sort: {lastModified: 1}}, function(features) {
-          if (!features) return done(new Error("Error getting features from mage"));
+        Observation.getObservations(event, {filter: filter, sort: {lastModified: 1}}, function(err, observations) {
+          if (!observations) return done(new Error("Error getting observations from mage"));
 
           // all these observations are new or updated and need to be pushed to ESRI server
-          console.log('pushing ' + features.length + ' to esri server');
-          async.each(features, function(feature, done) {
-            if (feature.esriId) {
-              updateEsriObservation(feature, function(err) {
+          console.log('pushing ' + observations.length + ' to esri server');
+          async.each(observations, function(observation, done) {
+            if (observation.esriId) {
+              updateEsriObservation(event, observation, function(err) {
                 if (err) console.log('error updating esri observation', err);
                 done();
               });
             } else {
-              createEsriObservation(feature, function(err, objectId) {
+              createEsriObservation(event, observation, function(err, objectId) {
                 if (err) {
                   console.log('error creating esri attachment', err);
                   return done();
                 }
 
-                Feature.featureModel(layer).findByIdAndUpdate(feature._id, {esriId: objectId}, done);
+                Observation.observationModel(event).findByIdAndUpdate(observation._id, {esriId: objectId}, done);
               });
             }
           },
           function(err) {
-            if (features.length > 0) {
-              lastFeatureTimes[layer.collectionName] = features[features.length - 1].lastModified;
+            if (observations.length > 0) {
+              lastObservationTimes[event.collectionName] = observations[observations.length - 1].lastModified;
             }
 
             done(err);
@@ -182,7 +182,7 @@ function pushFeatures(done) {
       function(err) {
         console.log('done with observation push', err);
         if (!err) {
-          fs.writeJson(__dirname + "/.observations.json", lastFeatureTimes, done);
+          fs.writeJson(__dirname + "/.observations.json", lastObservationTimes, done);
         }
       }
     );
@@ -194,8 +194,8 @@ function push() {
 
   async.series({
     types: getTypes,
-    layers: getLayers,
-    features: pushFeatures
+    events: getEvents,
+    observations: pushObservations
   },
   function(err, results) {
     if (err) console.log('Error pushing observations to esri server', err);

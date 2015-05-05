@@ -58,7 +58,7 @@ var mongodbConfig = config.server.mongodb;
 var mongoUri = "mongodb://" + mongodbConfig.host + "/" + mongodbConfig.db;
 mongoose.connect(mongoUri, {server: {poolSize: mongodbConfig.poolSize}}, function(err) {
   if (err) {
-    console.log('Error connecting to mongo database, please make sure mongodbConfig is running...');
+    console.log('Error connecting to mongo database, please make sure mongodb is running...');
     throw err;
   }
 });
@@ -92,12 +92,13 @@ app.use(require('body-parser')({ keepExtensions: true}));
 app.use(require('method-override')());
 app.use(require('multer')());
 app.use(authentication.p***REMOVED***port.initialize());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, process.env.NODE_ENV === 'production' ? 'public/dist' : 'public')));
 app.use('/api/swagger', express.static('./public/vendor/swagger-ui/'));
 app.use('/private',
   authentication.p***REMOVED***port.authenticate(authentication.authenticationStrategy),
   express.static(path.join(__dirname, 'private')));
 app.use(function(err, req, res, next) {
+  console.error(err.message);
   console.error(err.stack);
   res.send(500, 'Internal server error, please contact MAGE administrator.');
 });

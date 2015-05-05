@@ -16,7 +16,7 @@ exports.up = function(done) {
       p***REMOVED***word: 'admin',
       firstname: 'admin',
       lastname: 'admin',
-      role: role._id
+      roleId: role._id
     };
 
     User.createUser(adminUser, done);

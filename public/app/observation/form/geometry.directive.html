@@ -1,0 +1,12 @@
+<div cl***REMOVED***="field form-group">
+  <label>{{field.title}}</label> <span cl***REMOVED***="required-error" ng-show="field.required && !field.value">*</span>
+
+  <div cl***REMOVED***="row">
+    <div cl***REMOVED***="col-md-5">
+      <input cl***REMOVED***="form-control" type="number" ng-model="field.value.x" value="{{field.value.x}}" ng-required="field.required" ng-change="onLatLngChange(field)">
+    </div>
+    <div cl***REMOVED***="col-md-5">
+      <input cl***REMOVED***="form-control" type="number" ng-model="field.value.y" value="{{field.value.y}}" ng-required="field.required" ng-change="onLatLngChange(field)">
+    </div>
+  </div>
+</div>

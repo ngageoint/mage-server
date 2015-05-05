@@ -1,12 +1,11 @@
 var mongoose = require('mongoose')
   , async = require("async")
   , hasher = require('../utilities/pbkdf2')()
-  , config = require('../config')
   , Token = require('../models/token')
-  , Feature = require('../models/feature')
-  , Location = require('../models/location');
-
-var locationLimit = config.server.locationServices.userCollectionLocationLimit;
+  , Login = require('../models/login')
+  , Observation = require('../models/observation')
+  , Location = require('../models/location')
+  , CappedLocation = require('../models/cappedLocation');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -19,51 +18,31 @@ var PhoneSchema = new Schema({
   _id: false
 });
 
-// Creates the Schema for FFT Locations
-var LocationSchema = new Schema({
-  type: { type: String, required: true },
-  geometry: {
-    type: { type: String, required: true },
-    coordinates: { type: Array, required: true}
-  },
-  properties: Schema.Types.Mixed
-},{
-    versionKey: false
-});
-
-LocationSchema.index({geometry: "2dsphere"});
-LocationSchema.index({'properties.timestamp': 1});
-
 // Collection to hold users
 var UserSchema = new Schema({
-    username: { type: String, required: true, unique: true },
-    p***REMOVED***word: { type: String, required: true },
-    firstname: { type: String, required: true },
-    lastname: {type: String, required: true },
-    email: {type: String, required: false },
-    phones: [PhoneSchema],
-    avatar: {
-      contentType: { type: String, required: false },
-      size: { type: Number, required: false },
-      relativePath: { type: String, required: false }
-    },
-    icon: {
-      contentType: { type: String, required: false },
-      size: { type: Number, required: false },
-      relativePath: { type: String, required: false }
-    },
-    active: { type: Boolean, required: true },
-    role: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
-    teams: [Schema.Types.ObjectId],
-    status: { type: String, required: false, index: 'sparse' },
-    locations: [LocationSchema],
-    futureLocations: [LocationSchema],
-    userAgent: {type: String, required: false },
-    mageVersion: {type: String, required: false }
-  },{
-    versionKey: false
-  }
-);
+  username: { type: String, required: true, unique: true },
+  p***REMOVED***word: { type: String, required: true },
+  firstname: { type: String, required: true },
+  lastname: {type: String, required: true },
+  email: {type: String, required: false },
+  phones: [PhoneSchema],
+  avatar: {
+    contentType: { type: String, required: false },
+    size: { type: Number, required: false },
+    relativePath: { type: String, required: false }
+  },
+  icon: {
+    contentType: { type: String, required: false },
+    size: { type: Number, required: false },
+    relativePath: { type: String, required: false }
+  },
+  active: { type: Boolean, required: true },
+  roleId: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
+  status: { type: String, required: false, index: 'sparse' },
+  recentEventIds: [{type: Number, ref: 'Event'}]
+},{
+  versionKey: false
+});
 
 UserSchema.method('validP***REMOVED***word', function(p***REMOVED***word, callback) {
   var user = this;
@@ -112,7 +91,7 @@ UserSchema.pre('save', function(next) {
     return next();
   }
 
-  Token.removeTokenForUser(user, function(err) {
+  Token.removeTokensForUser(user, function(err) {
     if (err) return next(err);
 
     next();
@@ -128,13 +107,23 @@ UserSchema.pre('remove', function(next) {
         done(err);
       });
     },
-    token: function(done) {
-      Token.removeTokenForUser(user, function(err) {
+    cappedlocation: function(done) {
+      CappedLocation.removeLocationsForUser(user, function(err) {
         done(err);
       });
     },
-    feature: function(done) {
-      Feature.removeUser(user, function(err) {
+    token: function(done) {
+      Token.removeTokensForUser(user, function(err) {
+        done(err);
+      });
+    },
+    login: function(done) {
+      Login.removeLoginsForUser(user, function(err) {
+        done(err);
+      });
+    },
+    observation: function(done) {
+      Observation.removeUser(user, function(err) {
         done(err);
       });
     }
@@ -144,12 +133,19 @@ UserSchema.pre('remove', function(next) {
   });
 });
 
-var transformUser = function(user, ret, options) {
+var transform = function(user, ret, options) {
   if ('function' != typeof user.ownerDocument) {
+    ret.id = ret._id;
+    delete ret._id;
+
     delete ret.p***REMOVED***word;
-    delete ret.locations;
     delete ret.avatar;
     delete ret.icon;
+
+    if (user.populated('roleId')) {
+      ret.role = ret.roleId;
+      delete ret.roleId;
+    }
 
     if (user.avatar && user.avatar.relativePath) {
       // TODO, don't really like this, need a better way to set user resource, route
@@ -163,13 +159,11 @@ var transformUser = function(user, ret, options) {
   }
 }
 
-UserSchema.set("toObject", {
-  transform: transformUser
+UserSchema.set("toJSON", {
+  transform: transform
 });
 
-UserSchema.set("toJSON", {
-  transform: transformUser
-});
+exports.transform = transform;
 
 // Creates the Model for the User Schema
 var User = mongoose.model('User', UserSchema);
@@ -186,18 +180,15 @@ var encryptP***REMOVED***word = function(p***REMOVED***word, done) {
 }
 
 exports.getUserById = function(id, callback) {
-  User.findById(id).populate('role').exec(function(err, user) {
-    if (err) {
-      console.log("Error finding user: " + id + ', error: ' + err);
-    }
-
+  User.findById(id).populate('roleId').exec(function(err, user) {
     callback(err, user);
   });
 }
 
 exports.getUserByUsername = function(username, callback) {
-  var query = {username: username.toLowerCase()};
-  User.findOne(query).populate('role').exec(callback);
+  User.findOne({username: username.toLowerCase()}).populate('roleId').exec(function(err, user) {
+    callback(err, user);
+  });
 }
 
 exports.getUsers = function(callback) {
@@ -212,8 +203,6 @@ exports.getUsers = function(callback) {
 }
 
 exports.createUser = function(user, callback) {
-  console.log('trying to create user', user);
-
   var create = {
     username: user.username,
     firstname: user.firstname,
@@ -222,7 +211,7 @@ exports.createUser = function(user, callback) {
     phones: user.phones,
     p***REMOVED***word: user.p***REMOVED***word,
     active: user.active,
-    role: user.role,
+    roleId: user.roleId,
     avatar: user.avatar,
     icon: user.icon
   }
@@ -237,7 +226,7 @@ exports.createUser = function(user, callback) {
 exports.updateUser = function(user, callback) {
   user.save(function(err) {
     if (err) {
-      console.log('Could not update user ' + user.username + ' error ' + err);
+      console.log('Could not update user ' + user.username + ' error ',  err);
     }
 
     callback(err, user)
@@ -326,50 +315,24 @@ exports.removeTeamFromUsers = function(team, callback) {
   });
 }
 
-exports.getLocations = function(options, callback) {
-  var limit = options.limit;
-  limit = limit <= locationLimit ? limit : locationLimit;
+exports.addRecentEventForUser = function(user, event, callback) {
+  var eventIds = user.recentEventIds.slice();
 
-  var query = User.find({}, {_id: 1, locations: {$slice: -1 * limit}});
+  // push new event on from of list
+  eventIds.unshift(event._id);
 
-  var filter = options.filter;
-  if (filter.startDate) {
-    query.where('locations.properties.timestamp').gte(filter.startDate);
-  }
-
-  if (filter.endDate) {
-    query.where('locations.properties.timestamp').lt(filter.endDate);
-  }
-
-  query.lean().exec(function (err, users) {
-    if (err) {
-      console.log('Error getting locations.', err);
-    }
-    users = users.map(function(user) {
-      user.user = user._id;
-      delete user._id;
-      user.locations = user.locations ? user.locations.reverse() : [];
-
-      return user;
-    });
-
-    callback(err, users);
+  // remove dupes
+  eventIds = eventIds.filter(function(eventId, index) {
+    return eventIds.indexOf(eventId) == index;
   });
-}
 
-exports.addLocationsForUser = function(user, locations, callback) {
-  var update = {
-    $push: {
-      locations: {$each: locations.valid, $sort: {"properties.timestamp": 1}, $slice: -1 * locationLimit},
-      futureLocations: {$each: locations.future, $sort: {"properties.timestamp": 1}, $slice: -1 * locationLimit}
-    }
-  };
+  // limit to 5
+  if (eventIds.length > 5) {
+    eventIds = user.recentEventIds.slice(0, 4);
+  }
+  console.log('event ids', eventIds);
 
-  User.findByIdAndUpdate(user._id, update, {upsert: true}, function(err, user) {
-    if (err) {
-      console.log('Error add location for user.', err);
-    }
-
+  User.findByIdAndUpdate(user._id, {recentEventIds: eventIds}, function(err, user) {
     callback(err, user);
   });
 }

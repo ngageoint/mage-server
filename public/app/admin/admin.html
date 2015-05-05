@@ -1,0 +1,55 @@
+<div cl***REMOVED***="row admin-nav">
+  <div cl***REMOVED***="col-xs-2 visible-xs-block">
+    <h4 cl***REMOVED***="admin-tab"><a href="#/admin/user" ng-cl***REMOVED***="{'admin-nav-active': currentAdminPanel == 'user'}">Users</a></h4>
+  </div>
+  <div cl***REMOVED***="col-xs-2 col-xs-offset-2 hidden-xs">
+    <h4 cl***REMOVED***="admin-tab"><a href="#/admin/user" ng-cl***REMOVED***="{'admin-nav-active': currentAdminPanel == 'user'}">Users</a></h4>
+  </div>
+
+  <div cl***REMOVED***="col-xs-2">
+    <h4 cl***REMOVED***="admin-tab"><a href="#/admin/team" ng-cl***REMOVED***="{'admin-nav-active': currentAdminPanel == 'team'}">Teams</a></h4>
+  </div>
+  <div cl***REMOVED***="col-xs-2">
+    <h4 cl***REMOVED***="admin-tab"><a href="#/admin/event" ng-cl***REMOVED***="{'admin-nav-active': currentAdminPanel == 'event'}">Events</a></h4>
+  </div>
+  <div cl***REMOVED***="col-xs-2">
+    <h4 cl***REMOVED***="admin-tab"><a href="#/admin/layer" ng-cl***REMOVED***="{'admin-nav-active': currentAdminPanel == 'layer'}">Layers</a></h4>
+  </div>
+  <div cl***REMOVED***="col-xs-2">
+    <h4 cl***REMOVED***="admin-tab"><a href="#/admin/device" ng-cl***REMOVED***="{'admin-nav-active': currentAdminPanel == 'device'}">Devices</a></h4>
+  </div>
+</div>
+
+<div cl***REMOVED***="container-fluid">
+
+  <div cl***REMOVED***="row admin-nav-gap">
+    <div cl***REMOVED***="col-md-12">
+      <div cl***REMOVED***="row top-gap" ng-show="showStatus">
+        <div cl***REMOVED***="col-md-11 alert alert-block" ng-cl***REMOVED***="statusLevel">
+          <button type="button" cl***REMOVED***="close" ng-click="setShowStatus(false)">&times;</button>
+          <h4>{{statusTitle}}</h4>
+          {{statusMessage}}
+        </div>
+      </div>
+
+      <div ng-switch="currentAdminPanel">
+        <div ng-switch-when="user">
+          <div ng-include="'app/admin/users/users.html'"></div>
+        </div>
+        <div ng-switch-when="device">
+          <div ng-include="'app/admin/devices/devices.html'"></div>
+        </div>
+        <div ng-switch-when="event">
+          <div ng-include="'app/admin/events/events.html'"></div>
+        </div>
+        <div ng-switch-when="layer">
+          <div ng-include="'app/admin/layers/layers.html'"></div>
+        </div>
+        <div ng-switch-when="team">
+          <div ng-include="'app/admin/teams/teams.html'"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

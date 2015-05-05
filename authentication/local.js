@@ -8,24 +8,24 @@ module.exports = function(p***REMOVED***port) {
   p***REMOVED***port.use(new BearerStrategy(
     {p***REMOVED***ReqToCallback: true},
     function(req, token, done) {
-      Token.getToken(token, function(err, retrievedToken) {
+      Token.getToken(token, function(err, credentials) {
         if (err) { return done(err); }
 
-        if (!retrievedToken || !retrievedToken.user) { return done(null, false); }
+        if (!credentials || !credentials.user) { return done(null, false); }
+
+        req.token = credentials.token;
 
         // add the provisionedDevice to the request if available
-        if (retrievedToken.deviceId) {
-          req.provisionedDeviceId = retrievedToken.deviceId;
+        if (credentials.deviceId) {
+          req.provisionedDeviceId = credentials.deviceId;
         }
-
-        return done(null, retrievedToken.user, { scope: 'all' });
+        return done(null, credentials.user, { scope: 'all' });
       });
     }
   ));
 
   p***REMOVED***port.use(new LocalStrategy(
     function(username, p***REMOVED***word, done) {
-      console.log('Authenticating user: ' + username);
       User.getUserByUsername(username, function(err, user) {
         if (err) { return done(err); }
 
