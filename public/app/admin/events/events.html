@@ -215,7 +215,12 @@
               <p ng-show="event.form.fields.length == 0">No fields added yet.</p>
               <div cl***REMOVED***="well">
                 <accordion close-others="accordion.oneAtATime">
-                  <accordion-group heading="{{field.title}}" ng-repeat="field in event.form.fields | filter:{archived: '!true'} track by field.id">
+                  <accordion-group ng-repeat="field in event.form.fields | filter:{archived: '!true'} | orderBy: 'id'">
+                    <accordion-heading>
+                      {{field.title}}
+                      <i cl***REMOVED***="pull-right fa fa-arrow-up" ng-if="!$first" ng-click="moveFieldUp($event, field)"></i>
+                      <i cl***REMOVED***="pull-right fa fa-arrow-down" ng-if="!$last" ng-click="moveFieldDown($event, field)"></i>
+                    </accordion-heading>
                     <div cl***REMOVED***="accordion-edit">
                       <button ng-show="deletableField(field)" cl***REMOVED***="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i cl***REMOVED***="fa fa-trash icon-white"></i> Delete</button>
                         <form>
@@ -263,7 +268,7 @@
                                 <div cl***REMOVED***="form-group" ng-show="showAddOptions(field)">
                                   <label>Field Options</label>
 
-                                  <div ng-repeat="option in field.choices" cl***REMOVED***="row bottom-gap">
+                                  <div ng-repeat="option in field.choices | filter:{blank: '!true'}" cl***REMOVED***="row bottom-gap">
                                     <div cl***REMOVED***="col-sm-12">
                                       <span cl***REMOVED***="admin-table-delete-btn"><a cl***REMOVED***="btn btn-danger btn-xs pull-left" type="button" ng-click="deleteOption(field, option)"><i cl***REMOVED***="fa fa-minus icon-white"></i></a></span>
                                       {{option.title}}
@@ -284,7 +289,7 @@
 
                             <div cl***REMOVED***="checkbox" ng-show="field.name != 'timestamp' &amp;&amp; field.name != 'geometry' &amp;&amp; field.name != 'type'">
                               <label>
-                                <input type="checkbox" ng-model="field.required"  ng-change="autoSave()"> Required
+                                <input type="checkbox" ng-model="field.required"  ng-change="onRequiredChanged(field);autoSave()"> Required
                               </label>
                             </div>
 
@@ -346,7 +351,7 @@
                               <div cl***REMOVED***="form-group" ng-show="showAddOptions(newField)">
                                 <label>Field Options</label>
 
-                                <div ng-repeat="option in newField.choices" cl***REMOVED***="row bottom-gap">
+                                <div ng-repeat="option in newField.choices | filter:{blank: '!true'}" cl***REMOVED***="row bottom-gap">
                                   <div cl***REMOVED***="col-sm-12">
                                     <span cl***REMOVED***="admin-table-delete-btn"><a cl***REMOVED***="btn btn-danger btn-xs pull-left" type="button" ng-click="deleteOption(newField, option)"><i cl***REMOVED***="fa fa-minus icon-white"></i></a></span>
                                     {{option.title}}

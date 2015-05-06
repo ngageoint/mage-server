@@ -10,7 +10,8 @@ var Schema = mongoose.Schema;
 var OptionSchema = new Schema({
   id: { type: Number, required: true },
   title: { type: String, required: true },
-  value: { type: Number, required: true }
+  value: { type: Number, required: true },
+  blank: { type: Boolean, required: false }
 },{
   _id: false
 });
@@ -241,7 +242,7 @@ exports.create = function(event, callback) {
 }
 
 exports.update = function(id, event, callback) {
-  Event.findByIdAndUpdate(id, event, function(err, updatedEvent) {
+  Event.findByIdAndUpdate(id, event, {new: true}, function(err, updatedEvent) {
     if (err) {
       console.log("Could not update event: " + err);
     }

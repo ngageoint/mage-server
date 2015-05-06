@@ -170,6 +170,7 @@ function AdminEventsController($scope, $injector, $filter, $timeout, $q, LocalSt
 
     $scope.newField.id = id;
     $scope.newField.name = "field" + id;
+    $scope.onRequiredChanged($scope.newField);
     fields.push($scope.newField);
 
     $scope.newField = {
@@ -180,6 +181,60 @@ function AdminEventsController($scope, $injector, $filter, $timeout, $q, LocalSt
     };
 
     $scope.autoSave();
+  }
+
+  $scope.moveFieldUp = function(e, fieldToMoveUp) {
+    e.stopPropagation();
+
+    // find first non-archived field above me
+    // and switch our ids to re-order
+    var sortedFields = _.sortBy($scope.event.form.fields, function(field) {
+      return field.id;
+    });
+
+    var fieldToMoveDown = null;
+    for (var i = sortedFields.length - 1; i > 0; i--) {
+      var field = sortedFields[i];
+      if (field.id < fieldToMoveUp.id && !field.archived) {
+        fieldToMoveDown = field;
+        break;
+      }
+    }
+
+    if (fieldToMoveDown) {
+      var fieldToMoveDownId = fieldToMoveDown.id;
+      fieldToMoveDown.id = fieldToMoveUp.id;
+      fieldToMoveUp.id = fieldToMoveDownId;
+
+      $scope.autoSave();
+    }
+  }
+
+  $scope.moveFieldDown = function(e, fieldToMoveDown) {
+    e.stopPropagation();
+
+    // find the first non-archived field below me
+    // and switch our ids to re-order
+    var sortedFields = _.sortBy($scope.event.form.fields, function(field) {
+      return field.id;
+    });
+
+    var fieldToMoveUp = null;
+    for (var i = 0; i < sortedFields.length; i++) {
+      var field = sortedFields[i];
+      if (field.id > fieldToMoveDown.id && !field.archived) {
+        fieldToMoveUp = field;
+        break;
+      }
+    }
+
+    if (fieldToMoveUp) {
+      var fieldToMoveUpId = fieldToMoveUp.id;
+      fieldToMoveUp.id = fieldToMoveDown.id;
+      fieldToMoveDown.id = fieldToMoveUpId;
+
+      $scope.autoSave();
+    }
   }
 
   var debounceHideSave = _.debounce(function() {
@@ -280,18 +335,6 @@ function AdminEventsController($scope, $injector, $filter, $timeout, $q, LocalSt
     return (field.type == 'dropdown' || field.type == 'date') && field.name != 'type';
   }
 
-  // add new option to the field
-  $scope.addOption = function (field, optionTitle) {
-    field.choices = field.choices || new Array();
-    field.choices.push({
-      "id" : field.choices.length,
-      "title" : optionTitle,
-      "value" : field.choices.length
-    });
-    $scope.populateVariants();
-    $scope.autoSave();
-  }
-
   $scope.removeVariant = function(variant) {
     $scope.variantField.choices = _.without($scope.variantField.choices, variant);
     $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
@@ -316,16 +359,54 @@ function AdminEventsController($scope, $injector, $filter, $timeout, $q, LocalSt
     if ($scope.event.id) { $scope.event.$save(); }
   }
 
+  // add new option to the field
+  $scope.addOption = function (field, optionTitle) {
+    field.choices = field.choices || new Array();
+    field.choices.push({
+      "id" : field.choices.length,
+      "title" : optionTitle,
+      "value" : field.choices.length
+    });
+    $scope.populateVariants();
+    $scope.autoSave();
+  }
+
   // delete particular option
-  $scope.deleteOption = function (field, option){
-    for (var i = 0; i < field.choices.length; i++){
-      if(field.choices[i].id == option.id){
+  $scope.deleteOption = function (field, option) {
+    for (var i = 0; i < field.choices.length; i++) {
+      if(field.choices[i].id == option.id) {
         field.choices.splice(i, 1);
         break;
       }
     }
     $scope.populateVariants();
     $scope.autoSave();
+  }
+
+  $scope.onRequiredChanged = function(field) {
+    if (field.type == 'dropdown') {
+      if (field.required && field.choices.length && field.choices[0].blank) {
+        field.choices.shift();
+
+        _.each(field.choices, function(choice) {
+          choice.id = choice.id - 1;
+          choice.value = choice.value - 1;
+        });
+      } else if (!field.required && field.choices.length > 0  && !field.choices[0].blank) {
+        // add empty field
+        _.each(field.choices, function(choice) {
+          choice.id = choice.id + 1;
+          choice.value = choice.value + 1;
+        });
+
+        field.choices.unshift({
+          id: 0,
+          title: "",
+          value: 0,
+          blank: true
+        });
+      }
+    }
   }
 
   // decides whether field options block will be shown (true for dropdown and radio fields)
