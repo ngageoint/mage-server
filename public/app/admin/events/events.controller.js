@@ -183,6 +183,60 @@ function AdminEventsController($scope, $injector, $filter, $timeout, $q, LocalSt
     $scope.autoSave();
   }
 
+  $scope.moveFieldUp = function(e, fieldToMoveUp) {
+    e.stopPropagation();
+
+    // find first non-archived field above me
+    // and switch our ids to re-order
+    var sortedFields = _.sortBy($scope.event.form.fields, function(field) {
+      return field.id;
+    });
+
+    var fieldToMoveDown = null;
+    for (var i = sortedFields.length - 1; i > 0; i--) {
+      var field = sortedFields[i];
+      if (field.id < fieldToMoveUp.id && !field.archived) {
+        fieldToMoveDown = field;
+        break;
+      }
+    }
+
+    if (fieldToMoveDown) {
+      var fieldToMoveDownId = fieldToMoveDown.id;
+      fieldToMoveDown.id = fieldToMoveUp.id;
+      fieldToMoveUp.id = fieldToMoveDownId;
+
+      $scope.autoSave();
+    }
+  }
+
+  $scope.moveFieldDown = function(e, fieldToMoveDown) {
+    e.stopPropagation();
+
+    // find the first non-archived field below me
+    // and switch our ids to re-order
+    var sortedFields = _.sortBy($scope.event.form.fields, function(field) {
+      return field.id;
+    });
+
+    var fieldToMoveUp = null;
+    for (var i = 0; i < sortedFields.length; i++) {
+      var field = sortedFields[i];
+      if (field.id > fieldToMoveDown.id && !field.archived) {
+        fieldToMoveUp = field;
+        break;
+      }
+    }
+
+    if (fieldToMoveUp) {
+      var fieldToMoveUpId = fieldToMoveUp.id;
+      fieldToMoveUp.id = fieldToMoveDown.id;
+      fieldToMoveDown.id = fieldToMoveUpId;
+
+      $scope.autoSave();
+    }
+  }
+
   var debounceHideSave = _.debounce(function() {
     $scope.$apply(function() {
       $scope.saved = false;
