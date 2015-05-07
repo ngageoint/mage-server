@@ -33,10 +33,7 @@ exports.Model = Location;
 
 // create location
 exports.createLocations = function(locations, callback) {
-  Location.create(locations, function(err) {
-    // TODO mongoose4
-    callback(err, Array.prototype.slice.call(arguments, 1));
-  });
+  Location.create(locations, callback);
 }
 
 exports.getLocations = function(options, callback) {
