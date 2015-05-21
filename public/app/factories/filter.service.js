@@ -49,6 +49,7 @@ function FilterService(UserService) {
     getTeams: getTeams,
     getTeamsById: getTeamsById,
     formatInterval: formatInterval,
+    getInterval: getInterval,
     getIntervalChoice: getIntervalChoice
   };
 
@@ -180,8 +181,19 @@ function FilterService(UserService) {
     return interval.choice;
   };
 
+  function getInterval() {
+    return interval;
+  }
+
   function setTimeInterval(newInterval) {
-    if (interval.choice === newInterval.choice) return false;
+    if (newInterval.choice.filter == 'custom') {
+      if (interval.startDate && newInterval.options.startDate == interval.options.startDate &&
+          interval.endDate && newInterval.options.endDate == interval.options.endDate) {
+          return false;
+        }
+    } else if (interval.choice === newInterval.choice) {
+      return false;
+    }
 
     interval = newInterval;
     return true;
@@ -229,13 +241,13 @@ function FilterService(UserService) {
       var startDate = moment(options.startDate);
       if (startDate) {
         startDate = options.localTime ? startDate.utc() : startDate;
-        var start = startDate.format("YYYY-MM-DD HH:mm:ss");
+        var start = startDate.utc().toISOString();
       }
 
       var endDate = moment(options.endDate);
       if (endDate) {
         endDate = options.localTime ? endDate.utc() : endDate;
-        var end = endDate.format("YYYY-MM-DD HH:mm:ss");
+        var end = endDate.utc().toISOString();
       }
 
       return { start: start, end: end };
