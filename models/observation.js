@@ -177,8 +177,6 @@ exports.getObservations = function(event, o, callback) {
     };
   }
 
-  console.log('filter: ', filter);
-
   if (filter.startDate) {
     conditions.lastModified = conditions.lastModified || {};
     conditions.lastModified['$gte'] = filter.startDate;
