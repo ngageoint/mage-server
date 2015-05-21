@@ -177,12 +177,16 @@ exports.getObservations = function(event, o, callback) {
     };
   }
 
+  console.log('filter: ', filter);
+
   if (filter.startDate) {
-    conditions.lastModified = {$gte: filter.startDate};
+    conditions.lastModified = conditions.lastModified || {};
+    conditions.lastModified['$gte'] = filter.startDate;
   }
 
   if (filter.endDate) {
-    conditions.lastModified = {$lt: filter.endDate};
+    conditions.lastModified = conditions.lastModified || {};
+    conditions.lastModified['$lt'] = filter.endDate;
   }
 
   if (filter.states) {

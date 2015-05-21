@@ -9,13 +9,23 @@ function FilterController($scope, $modalInstance, EventService, FilterService, E
 
   $scope.filterEvent = {selected: FilterService.getEvent()};
   $scope.filterTeams = {selected: FilterService.getTeams()};
+  $scope.interval = FilterService.getInterval();
 
   $scope.intervalChoices = FilterService.intervals;
   $scope.intervalChoice = FilterService.getIntervalChoice();
   $scope.localTime = true;
   $scope.localOffset = moment().format('Z');
-  $scope.startDate = moment().startOf('day').toDate();
-  $scope.endDate = moment().endOf('day').toDate();
+
+  if ($scope.interval.options && $scope.interval.options.startDate) {
+    $scope.startDate = $scope.interval.options.startDate;
+  } else {
+    $scope.startDate = moment().startOf('day').toDate();
+  }
+  if ($scope.interval.options && $scope.interval.options.endDate) {
+    $scope.endDate = $scope.interval.options.endDate;
+  } else {
+    $scope.endDate = moment().endOf('day').toDate();
+  }
 
   $scope.startDatePopup = {open: false};
   $scope.endDatePopup = {open: false};
