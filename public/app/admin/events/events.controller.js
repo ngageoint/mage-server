@@ -246,7 +246,7 @@ function AdminEventsController($scope, $injector, $filter, $timeout, $q, LocalSt
   var debouncedAutoSave = _.debounce(function() {
     $scope.$apply(function() {
       if ($scope.event.id) {
-        $scope.event.$save({}, function() {
+        $scope.event.$save({populate: false}, function() {
           $scope.saved = true;
           $timeout(function() {
             debounceHideSave();
