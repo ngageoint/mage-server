@@ -225,7 +225,12 @@ var dropObservationCollection = function(event) {
   });
 }
 
-exports.create = function(event, callback) {
+exports.create = function(event, options, callback) {
+  if (typeof options == 'function') {
+    callback = options;
+    options = {};
+  }
+
   Counter.getNext('event', function(id) {
     event._id = id;
     event.collectionName = 'observations' + id;
@@ -234,22 +239,38 @@ exports.create = function(event, callback) {
       if (err) return callback(err);
 
       createObservationCollection(newEvent);
-      Event.populate(newEvent, {path: 'teamIds'}, function(err, event) {
-        Event.populate(event, {path: 'teamIds.userIds', model: 'User'}, callback);
-      });
+
+      if (options.populate) {
+        Event.populate(newEvent, {path: 'teamIds'}, function(err, event) {
+          Event.populate(event, {path: 'teamIds.userIds', model: 'User'}, callback);
+        });
+      } else {
+        callback(err, newEvent);
+      }
     });
   });
 }
 
-exports.update = function(id, event, callback) {
+exports.update = function(id, event, options, callback) {
+  if (typeof options == 'function') {
+    callback = options;
+    options = {};
+  }
+
+  console.log('update w/ options', options);
+
   Event.findByIdAndUpdate(id, event, {new: true}, function(err, updatedEvent) {
     if (err) {
       console.log("Could not update event: " + err);
     }
 
-    Event.populate(updatedEvent, {path: 'teamIds'}, function(err, event) {
-      Event.populate(event, {path: 'teamIds.userIds', model: 'User'}, callback);
-    });
+    if (options.populate) {
+      Event.populate(updatedEvent, {path: 'teamIds'}, function(err, event) {
+        Event.populate(event, {path: 'teamIds.userIds', model: 'User'}, callback);
+      });
+    } else {
+      callback(err, updatedEvent);
+    }
   });
 }
 
