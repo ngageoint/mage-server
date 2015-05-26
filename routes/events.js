@@ -39,11 +39,6 @@ module.exports = function(app, security) {
     var parameters = {};
     parameters.userId = req.param('userId');
 
-    var populate = req.param('populate');
-    if (populate) {
-      parameters.populate = JSON.parse(populate);
-    }
-
     req.parameters = parameters;
 
     next();
@@ -83,12 +78,12 @@ module.exports = function(app, security) {
       var filter = {};
       if (req.parameters.userId) filter.userId = req.parameters.userId;
       if (access.userHasPermission(req.user, 'READ_EVENT_ALL')) {
-        Event.getEvents({filter: filter, populate: req.parameters.populate}, function(err, events) {
+        Event.getEvents({filter: filter, populate: req.query.populate == 'true'}, function(err, events) {
           if (err) return next(err);
           res.json(events);
         });
       } else if (access.userHasPermission(req.user, 'READ_EVENT_USER')) {
-        Event.getEvents({access: {userId: req.user._id}, filter: filter, populate: req.parameters.populate}, function(err, events) {
+        Event.getEvents({access: {userId: req.user._id}, filter: filter, populate: req.query.populate == 'true'}, function(err, events) {
           if (err) return next(err);
           res.json(events);
         });
@@ -103,12 +98,12 @@ module.exports = function(app, security) {
     '/api/events/:id',
     function (req, res, next) {
       if (access.userHasPermission(req.user, 'READ_EVENT_ALL')) {
-        Event.getById(req.params.id, {populate: req.populate}, function(err, event) {
+        Event.getById(req.params.id, {populate: req.query.populate == 'true'}, function(err, event) {
           if (err) return next(err);
           res.json(event);
         });
       } else if (access.userHasPermission(req.user, 'READ_EVENT_USER')) {
-        Event.getById(req.params.id, {access: {userId: req.user._id}, populate: req.populate}, function(err, event) {
+        Event.getById(req.params.id, {access: {userId: req.user._id}, populate: req.query.populate == 'true'}, function(err, event) {
           if (err) return next(err);
           if (!event) return res.sendStatus(404);
           res.json(event);
@@ -175,7 +170,7 @@ module.exports = function(app, security) {
     access.authorize('UPDATE_EVENT'),
     validateEventParams,
     function(req, res, next) {
-      Event.update(req.event._id, req.newEvent, function(err, event) {
+      Event.update(req.event._id, req.newEvent, {populate: req.query.populate == 'true' }, function(err, event) {
         if (err) return next(err);
 
         res.json(event);
