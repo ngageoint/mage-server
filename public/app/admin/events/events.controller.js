@@ -419,6 +419,20 @@ function AdminEventsController($scope, $injector, $filter, $timeout, $q, LocalSt
     $scope.event.form.fields.splice(0, $scope.event.form.fields.length);
   }
 
+  $scope.refresh = function() {
+    $scope.events = [];
+
+    $q.all({teams: Team.query().$promise, layers: Layer.query().$promise, events: Event.query({populate: false}).$promise}).then(function(result) {
+      $scope.teams = result.teams;
+      teamsById = _.indexBy(result.teams, 'id');
+
+      $scope.layers = result.layers;
+      layersById = _.indexBy(result.layers, 'id');
+
+      $scope.events = result.events;
+    });
+  }
+
   $scope.deleteEvent = function() {
     var modalInstance = $injector.get('$modal').open({
       templateUrl: '/app/admin/events/event-delete.html',
