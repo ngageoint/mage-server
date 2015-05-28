@@ -46,7 +46,9 @@ Form.prototype.export = function(callback) {
 }
 
 Form.prototype.import = function(file, callback) {
-  if (file.mimetype != 'application/zip') return callback(new Error('File attachment must be of type "zip"'));
+  console.log('file is: ', file);
+
+  if (file.extension != 'zip') return callback(new Error('File attachment must be of type "zip"'));
 
   var event = this._event;
   var zip = new Zip(file.path);
