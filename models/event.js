@@ -151,12 +151,12 @@ exports.getEvents = function(options, callback) {
     async.series(filters, function(err) {
       if (err) return callback(err);
 
-      if (options.populate === false) {
-        callback(null, events);
-      } else {
+      if (options.populate) {
         Event.populate(events, [{path: 'teamIds'}, {path: 'layerIds'}], function(err, events) {
           callback(err, events);
         });
+      } else {
+        callback(null, events);
       }
     });
   });
@@ -186,12 +186,12 @@ exports.getById = function(id, options, callback) {
     async.series(filters, function(err) {
       if (err) return callback(err);
 
-      if (options.populate === false) {
-        callback(null, event);
-      } else {
+      if (options.populate) {
         event.populate([{path: 'teamIds'}, {path: 'layerIds'}], function(err, events) {
           callback(err, events);
         });
+      } else {
+        callback(null, event);
       }
     });
   });

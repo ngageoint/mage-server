@@ -39,6 +39,9 @@ module.exports = function(app, security) {
     var parameters = {};
     parameters.userId = req.param('userId');
 
+    parameters.populate = true;
+    if (req.query.populate === 'false') parameters.populate = false;
+
     req.parameters = parameters;
 
     next();
@@ -78,12 +81,12 @@ module.exports = function(app, security) {
       var filter = {};
       if (req.parameters.userId) filter.userId = req.parameters.userId;
       if (access.userHasPermission(req.user, 'READ_EVENT_ALL')) {
-        Event.getEvents({filter: filter, populate: req.query.populate == 'true'}, function(err, events) {
+        Event.getEvents({filter: filter, populate: req.parameters.populate}, function(err, events) {
           if (err) return next(err);
           res.json(events);
         });
       } else if (access.userHasPermission(req.user, 'READ_EVENT_USER')) {
-        Event.getEvents({access: {userId: req.user._id}, filter: filter, populate: req.query.populate == 'true'}, function(err, events) {
+        Event.getEvents({access: {userId: req.user._id}, filter: filter, populate: req.parameters.populate}, function(err, events) {
           if (err) return next(err);
           res.json(events);
         });
@@ -96,14 +99,15 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/events/:id',
+    parseEventQueryParams,
     function (req, res, next) {
       if (access.userHasPermission(req.user, 'READ_EVENT_ALL')) {
-        Event.getById(req.params.id, {populate: req.query.populate == 'true'}, function(err, event) {
+        Event.getById(req.params.id, {populate: req.parameters.populate}, function(err, event) {
           if (err) return next(err);
           res.json(event);
         });
       } else if (access.userHasPermission(req.user, 'READ_EVENT_USER')) {
-        Event.getById(req.params.id, {access: {userId: req.user._id}, populate: req.query.populate == 'true'}, function(err, event) {
+        Event.getById(req.params.id, {access: {userId: req.user._id}, populate: req.parameters.populate}, function(err, event) {
           if (err) return next(err);
           if (!event) return res.sendStatus(404);
           res.json(event);
@@ -118,6 +122,7 @@ module.exports = function(app, security) {
   app.post(
     '/api/events',
     access.authorize('CREATE_EVENT'),
+    parseEventQueryParams,
     validateEventParams,
     function(req, res, next) {
       if (!req.is('multipart/form-data')) return next();
@@ -135,7 +140,7 @@ module.exports = function(app, security) {
 
         new api.Form(event).import(req.files.form, function(err, form) {
           if (err) return next(err);
-          
+
           Event.update(event._id, {form: form}, function(err, event) {
             if (err) return next(err);
 
@@ -149,6 +154,7 @@ module.exports = function(app, security) {
   app.post(
     '/api/events',
     access.authorize('CREATE_EVENT'),
+    parseEventQueryParams,
     validateEventParams,
     validateFormParams,
     function(req, res, next) {
@@ -169,9 +175,10 @@ module.exports = function(app, security) {
   app.put(
     '/api/events/:eventId',
     access.authorize('UPDATE_EVENT'),
+    parseEventQueryParams,
     validateEventParams,
     function(req, res, next) {
-      Event.update(req.event._id, req.newEvent, {populate: req.query.populate == 'true' }, function(err, event) {
+      Event.update(req.event._id, req.newEvent, {populate: req.parameters.populate}, function(err, event) {
         if (err) return next(err);
 
         res.json(event);
