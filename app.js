@@ -31,6 +31,7 @@ var attachmentBase = config.server.attachment.baseDirectory;
 fs.mkdirp(attachmentBase, function(err) {
   if (err) {
     console.error("Could not create directory to store MAGE media attachments. "  + err);
+    throw err;
   } else {
     console.log("Using '" + attachmentBase + "' as base directory for feature attachments.");
   }
