@@ -65,7 +65,7 @@ Icon.prototype.setDefaultIcon = function(callback) {
 
   var iconPath = path.join(iconBase, relativePath);
   fs.copy(path.join(appRoot, '/public/img/default-icon.png'), iconPath, function(err) {
-    if (err) callback(err);
+    if (err) return callback(err);
 
     IconModel.create(newIcon, callback);
   });
