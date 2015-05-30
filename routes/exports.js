@@ -625,7 +625,7 @@ module.exports = function(app, security) {
         properties.latitude = observation.geometry.coordinates[1];
 
         if (observation.attachments.length > 0) {
-          properties.attachment = observation.attachments[0].relativePath;
+          properties.attachment = observation.attachments[0].name;
           properties.attachmentExcelLink = excelLink(observation.attachments[0]);
         }
 
@@ -634,7 +634,7 @@ module.exports = function(app, security) {
         for (var i = 1; i < observation.attachments.length; i++) {
           flattened.push({
             id: observation.id,
-            attachment: observation.attachments[i].relativePath
+            attachment: observation.attachments[i].name
           });
         }
       });
