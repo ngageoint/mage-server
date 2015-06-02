@@ -220,6 +220,8 @@ module.exports = function(app, auth) {
       new api.Observation(req.event).update(req.param('id'), observation, function(err, updatedObservation) {
         if (err) return next(err);
 
+        if (!updatedObservation) return res.status(400).send('Observation with id ' + req.params.id + " does not exist");
+
         var response = observationXform.transform(updatedObservation, transformOptions(req));
         res.json(response);
       }
