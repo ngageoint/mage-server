@@ -352,6 +352,7 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
       // Set the lat/lng
       if (feature.geometry.coordinates) {
         layer.setLatLng(L.GeoJSON.coordsToLatLng(feature.geometry.coordinates));
+        //TODO update accuracy circle
       }
     });
 
@@ -362,11 +363,14 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
   }
 
   function openPopup(layer, options) {
-    if (options) {
+    var zoom = options.zoomToLocation ? 17: map.getZoom();
+    var bounds = map.getBounds();
+    if (options && (!bounds.contains(layer.getLatLng()) || zoom != map.getZoom())) {
       map.once('moveend', function() {
         layer.openPopup();
       });
-      map.setView(layer.getLatLng(), options.zoomToLocation ? 17: map.getZoom());
+
+      map.setView(layer.getLatLng(), zoom);
     } else {
       layer.openPopup();
     }
