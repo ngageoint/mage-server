@@ -37,4 +37,8 @@ function ObservationPopupDirective($scope, EventService) {
   $scope.onZoomClicked = function() {
     $scope.observationZoom({observation: $scope.observation});
   }
+
+  $scope.$watch('observation', function(observation) {
+    $scope.date = moment($scope.observation.properties.timestamp).format("YYYY-MM-DD HH:mm:ss");
+  });
 }

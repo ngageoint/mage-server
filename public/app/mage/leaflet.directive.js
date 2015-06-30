@@ -222,7 +222,7 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
 
         if (layerInfo.options.showAccuracy) {
           layer.on('popupopen', function() {
-            layer.setAccuracy(feature.properties.accuracy);
+            layer.setAccuracy(layer.feature.properties.accuracy);
           });
 
           layer.on('popupclose', function() {
@@ -352,7 +352,9 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
       // Set the lat/lng
       if (feature.geometry.coordinates) {
         layer.setLatLng(L.GeoJSON.coordsToLatLng(feature.geometry.coordinates));
-        //TODO update accuracy circle
+        if (featureLayer.options.showAccuracy && layer.getAccuracy()) {
+          layer.setAccuracy(layer.feature.properties.accuracy);
+        }
       }
     });
 
