@@ -36,4 +36,8 @@ function LocationPopupController($scope, LocalStorageService) {
   $scope.onZoomClicked = function() {
     $scope.userZoom({user: $scope.user});
   }
+
+  $scope.$watch('user', function(user) {
+    $scope.date = moment($scope.user.location.properties.timestamp).format("YYYY-MM-DD HH:mm:ss");
+  });
 }

@@ -227,6 +227,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
       var observation = observationsById[updated.id];
       if (observation) {
         observationsById[updated.id] = updated;
+        popupScopes[updated.id].user = updated;
         MapService.updateFeatureForLayer(updated, 'Observations');
       }
     });
@@ -266,8 +267,8 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     _.each(changed.updated, function(updated) {
       var user = usersById[updated.id];
       if (user) {
-        user = updated;
-
+        usersById[updated.id] = updated;
+        popupScopes[updated.id].user = updated;
         MapService.updateFeatureForLayer(user.location, 'People');
 
         // pan/zoom map to user if this is the user we are following
