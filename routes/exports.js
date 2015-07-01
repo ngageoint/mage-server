@@ -17,6 +17,7 @@ module.exports = function(app, security) {
     , geojson = require('../transformers/geojson')
     , shp = require('../shp-write')
     , json2csv = require('json2csv')
+    , json2csvStream = require('json2csv-stream')
     , stream = require('stream')
     , archiver = require('archiver')
     , DOMParser = require('xmldom').DOMParser
@@ -116,8 +117,12 @@ module.exports = function(app, security) {
 
   function mapObservationProperties(observation, form) {
     observation.properties = observation.properties || {};
-    for (name in observation.properties){
-      if (name === 'type' || name === 'timestamp') continue;
+    for (name in observation.properties) {
+      if (name === 'type') continue;
+
+      if (name === 'timestamp') {
+        observation.properties.timestamp = moment(observation.properties.timestamp).toISOString();
+      }
 
       var field = form.fieldNameToField[name];
       if (field) {
@@ -125,6 +130,8 @@ module.exports = function(app, security) {
         delete observation.properties[name];
       }
     }
+
+    observation.properties.id = observation._id;
   }
 
   function mapObservations(observations, req) {
@@ -591,13 +598,23 @@ module.exports = function(app, security) {
     var event = req.event;
     var now = new Date();
 
-    // TODO read form to put together headers
+    var fields = ['id', 'user', 'device', 'latitude', 'longitude'];
 
-    var fields = ['user', 'device'];
-    var fieldNames = ['user', 'device'];
+    req.event.form.fields.forEach(function(field) {
+      if (field.title === 'Location') return;
+      fields.push(field.title);
+    });
+    fields.push('attachment');
+    fields.push('attachmentExcelLink');
+
+    var excelLink = function(attachment) {
+      return '=HYPERLINK(LEFT(CELL("filename"),FIND("[",CELL("filename"),1)-1) & "' + attachment.name + '")';
+    }
 
     var flatten = function(observations, req) {
-      return observations.map(function(observation) {
+      var flattened = [];
+
+      observations.forEach(function(observation) {
         mapObservationProperties(observation, req.event.form);
 
         var properties = observation.properties;
@@ -607,14 +624,22 @@ module.exports = function(app, security) {
         properties.longitude = observation.geometry.coordinates[0];
         properties.latitude = observation.geometry.coordinates[1];
 
-        var attachmentLinks = "";
-        observation.attachments.forEach(function(attachment) {
-          attachmentLinks += " " + attachment.relativePath;
-        });
-        if (attachmentLinks) properties.attachmentLinks = attachmentLinks;
+        if (observation.attachments.length > 0) {
+          properties.attachment = observation.attachments[0].name;
+          properties.attachmentExcelLink = excelLink(observation.attachments[0]);
+        }
 
-        return properties;
+        flattened.push(properties);
+
+        for (var i = 1; i < observation.attachments.length; i++) {
+          flattened.push({
+            id: observation.id,
+            attachment: observation.attachments[i].name
+          });
+        }
       });
+
+      return flattened;
     }
 
     var streamFeatures = function(stream, done) {
@@ -623,7 +648,7 @@ module.exports = function(app, security) {
       new api.Observation(event).getAll({filter: filter}, function(err, observations) {
         var data = flatten(observations, req);
 
-        json2csv({data: data, fields: fields, fieldNames: fieldNames}, function(err, csv) {
+        json2csv({data: data, fields: fields}, function(err, csv) {
           if (err) return done(err);
 
           stream.write(csv);
@@ -640,23 +665,39 @@ module.exports = function(app, security) {
       var endDate = req.parameters.filter.endDate ? moment(req.parameters.filter.endDate) : null;
       var lastLocationId = null;
 
-      stream.write('{"type": "FeatureCollection", "features": [');
       var locations = [];
+      stream.write('[');
+
+      var flatten = function(locations) {
+        return locations.map(function(location) {
+          var properties = location.properties;
+          if (req.users[location.userId]) properties.user = req.users[location.userId].username;
+          if (req.devices[properties.deviceId]) properties.device = req.devices[properties.deviceId].uid;
+
+          properties.longitude = location.geometry.coordinates[0];
+          properties.latitude = location.geometry.coordinates[1];
+
+          return properties;
+        });
+      }
+
       async.doUntil(function(done) {
         requestLocations(event, {startDate: startDate, endDate: endDate, lastLocationId: lastLocationId, limit: limit}, function(err, requestedLocations) {
           if (err) return done(err);
           locations = requestedLocations;
 
           if (locations.length) {
-            if (lastLocationId) stream.write(",");  // not first time through
+            if (lastLocationId) {
+              stream.write(",");  // not first time through
+            }
 
-            var data = JSON.stringify(locations);
+            var data = JSON.stringify(flatten(locations));
             stream.write(data.substr(1, data.length - 2));
           } else {
-            stream.write(']}');
+            stream.write(']');
           }
 
-          console.log('Successfully wrote ' + locations.length + ' locations to GeoJSON');
+          console.log('Successfully wrote ' + locations.length + ' locations to CSV');
           var last = locations.slice(-1).pop();
           if (last) {
             var locationTime = moment(last.properties.timestamp);
@@ -700,35 +741,30 @@ module.exports = function(app, security) {
           // throw in attachments
           archive.bulk([{
             cwd: path.join(config.server.attachment.baseDirectory, event.collectionName),
-            src: ['*/**'],
-            dest: 'mage-export/attachments',
+            src: ['**/*.*'],
+            dest: 'mage-export',
             expand: true,
-            data: { date: new Date() } }
-          ]);
-
-          // throw in icons
-          archive.bulk([{
-            cwd: new api.Icon(event._id).getBasePath(),
-            src: ['*/**'],
-            dest: 'mage-export/icons',
-            expand: true,
+            flatten: true,
             data: { date: new Date() } }
           ]);
 
           done();
         });
+      },
+      function(done) {
+        if (!req.parameters.filter.exportLocations) return done();
+
+        // var locationStream = new stream.P***REMOVED***Through();
+        var locationStream = new json2csvStream({
+          keys: ['user', 'device', 'timestamp', 'latitude', 'longitude', 'accuracy', 'bearing', 'speed', 'altitude']
+        });
+        archive.append(locationStream, {name: 'mage-export/locations.csv'});
+        streamLocations(locationStream, function(err) {
+          locationStream.end();
+
+          done();
+        });
       }
-      // function(done) {
-      //   if (!req.parameters.filter.exportLocations) return done();
-      //
-      //   var locationStream = new stream.P***REMOVED***Through();
-      //   archive.append(locationStream, {name: 'mage-export/locations.geojson'});
-      //   streamLocations(locationStream, function(err) {
-      //     locationStream.end();
-      //
-      //     done();
-      //   });
-      // }
     ],
     function(err) {
       if (err) {

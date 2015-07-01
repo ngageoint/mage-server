@@ -51,7 +51,7 @@ function FilterController($scope, $modalInstance, EventService, FilterService, E
       }
     });
 
-    $modalInstance.dismiss('filter');
+    $modalInstance.close('filter');
   }
 
   $scope.closeModal = function () {

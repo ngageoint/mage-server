@@ -58,6 +58,10 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Fil
     $scope.newObservation = null;
   });
 
+  $scope.$on('observation:cancel', function(e, observation) {
+    $scope.newObservation = null;
+  });
+
   $scope.tabSelected = function(tab) {
     $scope.currentFeedPanel = tab;
   }
