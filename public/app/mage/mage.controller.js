@@ -152,7 +152,13 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     firstUserChange = true;
     firstObservationChange = true;
 
-    if (filter.event) $scope.filteredEvent = FilterService.getEvent();
+    if (filter.event) {
+      $scope.filteredEvent = FilterService.getEvent();
+
+      // Close the new observation panel if its open
+      // If it was open it was open for a different event (Billy)
+      $scope.$broadcast('observation:cancel');
+    }
     if (filter.teams) $scope.filteredTeams = _.map(FilterService.getTeams(), function(t) { return t.name; }).join(', ');
     if (filter.timeInterval) {
       var intervalChoice = FilterService.getIntervalChoice();
