@@ -119,6 +119,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     removeUsersChangedListener: removeUsersChangedListener,
     addLayersChangedListener: addLayersChangedListener,
     removeLayersChangedListener: removeLayersChangedListener,
+    getEventById: getEventById,
     saveObservation: saveObservation,
     archiveObservation: archiveObservation,
     addAttachmentToObservation: addAttachmentToObservation,
@@ -176,6 +177,10 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     layersChangedListeners = _.reject(layersChangedListeners, function(l) {
       return listener === l;
     });
+  }
+
+  function getEventById(eventId) {
+    return eventsById[eventId];
   }
 
   function saveObservation(observation) {
