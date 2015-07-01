@@ -28,7 +28,7 @@ function start() {
     start();
   });
 
-  process.on('exit', function() {
+  process.on('exit', function(err) {
     console.log('***************** image plugin parent process exit, killing ********************', err);
     worker.kill();
   });

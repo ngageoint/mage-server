@@ -222,7 +222,7 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
 
         if (layerInfo.options.showAccuracy) {
           layer.on('popupopen', function() {
-            layer.setAccuracy(feature.properties.accuracy);
+            layer.setAccuracy(layer.feature.properties.accuracy);
           });
 
           layer.on('popupclose', function() {
@@ -352,6 +352,9 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
       // Set the lat/lng
       if (feature.geometry.coordinates) {
         layer.setLatLng(L.GeoJSON.coordsToLatLng(feature.geometry.coordinates));
+        if (featureLayer.options.showAccuracy && layer.getAccuracy()) {
+          layer.setAccuracy(layer.feature.properties.accuracy);
+        }
       }
     });
 
@@ -362,11 +365,15 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
   }
 
   function openPopup(layer, options) {
-    if (options) {
+    options = options || {};
+    var zoom = options.zoomToLocation ? 17: map.getZoom();
+    var bounds = map.getBounds();
+    if (options.zoomToLocation && (!bounds.contains(layer.getLatLng()) || zoom != map.getZoom())) {
       map.once('moveend', function() {
         layer.openPopup();
       });
-      map.setView(layer.getLatLng(), options.zoomToLocation ? 17: map.getZoom());
+
+      map.setView(layer.getLatLng(), zoom);
     } else {
       layer.openPopup();
     }

@@ -152,7 +152,13 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     firstUserChange = true;
     firstObservationChange = true;
 
-    if (filter.event) $scope.filteredEvent = FilterService.getEvent();
+    if (filter.event) {
+      $scope.filteredEvent = FilterService.getEvent();
+
+      // Close the new observation panel if its open
+      // If it was open it was open for a different event (Billy)
+      $scope.$broadcast('observation:cancel');
+    }
     if (filter.teams) $scope.filteredTeams = _.map(FilterService.getTeams(), function(t) { return t.name; }).join(', ');
     if (filter.timeInterval) {
       var intervalChoice = FilterService.getIntervalChoice();
@@ -227,6 +233,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
       var observation = observationsById[updated.id];
       if (observation) {
         observationsById[updated.id] = updated;
+        popupScopes[updated.id].user = updated;
         MapService.updateFeatureForLayer(updated, 'Observations');
       }
     });
@@ -266,8 +273,8 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     _.each(changed.updated, function(updated) {
       var user = usersById[updated.id];
       if (user) {
-        user = updated;
-
+        usersById[updated.id] = updated;
+        popupScopes[updated.id].user = updated;
         MapService.updateFeatureForLayer(user.location, 'People');
 
         // pan/zoom map to user if this is the user we are following
