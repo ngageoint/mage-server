@@ -28,6 +28,10 @@ L.LocationMarker = L.Marker.extend({
         icon: L.icon({iconUrl: options.iconUrl, iconSize: [42, 42], iconAnchor: [21, 42]})
       });
 
+      L.DomEvent.on(this._locationMarker, 'click', function() {
+        this._iconMarker.openPopup();
+      }, this);
+
       group.push(this._iconMarker);
     }
 
