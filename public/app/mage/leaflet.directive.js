@@ -21,7 +21,6 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
   var temporalLayers = [];
   var spiderfyState = null;
   var currentLocation = null;
-  var temporalTimeout = null;
   var locationLayer = L.locationMarker([0,0], {color: '#136AEC'});
   var map = L.map("map", {
     center: [0,0],
@@ -61,18 +60,6 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
     MapService.overlayAdded(layer);
   });
 
-  adjustTemporalLayers();
-  function adjustTemporalLayers() {
-    _.each(temporalLayers, function(temporalLayer) {
-      _.each(temporalLayer.featureIdToLayer, function(layer) {
-        var color = colorForFeature(layer.feature, temporalLayer.options.temporal);
-        layer.setColor(color);
-      });
-    });
-
-    temporalTimeout = $interval(adjustTemporalLayers, 60000, 1);
-  }
-
   function onLocation(location, broadcast) {
     // no need to do anything if the location has not changed
     if (currentLocation &&
@@ -106,17 +93,13 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
     onLayerRemoved: onLayerRemoved,
     onLayersChanged: onLayersChanged,
     onFeaturesChanged: onFeaturesChanged,
-    onFeatureZoom: onFeatureZoom
+    onFeatureZoom: onFeatureZoom,
+    onPoll: onPoll
   };
   MapService.addListener(listener);
 
   $scope.$on('$destroy', function() {
     MapService.removeListener(listener);
-
-    if (temporalTimeout) {
-      $interval.cancel(temporalTimeout);
-      temporalTimeout = null;
-    }
   });
 
   function createMarker(marker) {
@@ -400,6 +383,19 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
     } else {
       openPopup(layer, {zoomToLocation: true});
     }
+  }
+
+  function onPoll() {
+    adjustTemporalLayers();
+  }
+
+  function adjustTemporalLayers() {
+    _.each(temporalLayers, function(temporalLayer) {
+      _.each(temporalLayer.featureIdToLayer, function(layer) {
+        var color = colorForFeature(layer.feature, temporalLayer.options.temporal);
+        layer.setColor(color);
+      });
+    });
   }
 
   function onLayerRemoved(layer) {

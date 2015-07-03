@@ -8,6 +8,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
   var observationsChangedListeners = [];
   var usersChangedListeners = [];
   var layersChangedListeners = [];
+  var pollListeners = [];
   var eventsById = {};
   var teamsById = {};
   var intervalChoice = null;
@@ -118,6 +119,8 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     addUsersChangedListener: addUsersChangedListener,
     removeUsersChangedListener: removeUsersChangedListener,
     addLayersChangedListener: addLayersChangedListener,
+    addPollListener: addPollListener,
+    removePollListener: removePollListener,
     removeLayersChangedListener: removeLayersChangedListener,
     getEventById: getEventById,
     saveObservation: saveObservation,
@@ -171,6 +174,16 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
         listener.onLayersChanged({added: _.values(event.layersById)}, event); // TODO this could be old layers, admin panel might have changed layers
       });
     }
+  }
+
+  function addPollListener(listener) {
+    pollListeners.push(listener);
+  }
+
+  function removePollListener(listener) {
+    pollListeners = _.reject(pollListeners, function(l) {
+      return listener === l;
+    });
   }
 
   function removeLayersChangedListener(listener) {
@@ -427,6 +440,12 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     if (interval <= 0) return;
 
     fetch(FilterService.getEvent()).then(function() {
+      _.each(pollListeners, function(listener) {
+        if (_.isFunction(listener.onPoll)) {
+          listener.onPoll();
+        }
+      });
+
       pollingTimeout = $timeout(function() {
         poll(interval);
       }, interval);

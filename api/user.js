@@ -140,7 +140,7 @@ User.prototype.update = function(user, options, callback) {
 
   if (options.avatar) {
     operations.push(function(updatedUser, done) {
-      var avatar = avatarPath(id, updatedUser, options.avatar);
+      var avatar = avatarPath(updatedUser._id, updatedUser, options.avatar);
       fs.move(options.avatar.path, avatar.absolutePath, {clobber: true}, function(err) {
         if (err) {
           console.log('Could not create user avatar', err);
@@ -160,7 +160,7 @@ User.prototype.update = function(user, options, callback) {
 
   if (options.icon) {
     operations.push(function(updatedUser, done) {
-      var icon = iconPath(id, updatedUser, options.icon);
+      var icon = iconPath(updatedUser._id, updatedUser, options.icon);
       fs.move(options.icon.path, icon.absolutePath, {clobber: true}, function(err) {
         if (err) {
           console.log('Could not create user icon', err);
