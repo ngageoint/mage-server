@@ -24,7 +24,10 @@ FormDirectiveController.$inject = ['$scope', 'EventService', 'Observation', 'Use
 function FormDirectiveController($scope, EventService, Observation, UserService, LocalStorageService) {
   var uploadId = 0;
 
-  $scope.event = EventService.getEventById($scope.observation.eventId);
+  if ($scope.observation) {
+    $scope.event = EventService.getEventById($scope.observation.eventId);
+  }
+
   $scope.getToken = LocalStorageService.getToken;
   $scope.amAdmin = UserService.amAdmin;
   $scope.attachmentUploads = {};
