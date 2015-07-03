@@ -28,6 +28,10 @@ L.LocationMarker = L.Marker.extend({
         icon: L.icon({iconUrl: options.iconUrl, iconSize: [42, 42], iconAnchor: [21, 42]})
       });
 
+      L.DomEvent.on(this._locationMarker, 'click', function() {
+        this._iconMarker.openPopup();
+      }, this);
+
       group.push(this._iconMarker);
     }
 
@@ -74,10 +78,15 @@ L.LocationMarker = L.Marker.extend({
   setColor: function(color) {
     if (this._accuracyCircle.options.color == color) return this;
 
-    this._accuracyCircle.options.color = color;
-    this._accuracyCircle.options.fillColor = color;
-    this._locationMarker.options.color = color;
-    this._locationMarker.options.fillColor = color;
+    // this._accuracyCircle.options.color = color;
+    // this._accuracyCircle.options.fillColor = color;
+    // this._locationMarker.options.color = color;
+    // this._locationMarker.options.fillColor = color;
+
+    var style = {color: color, fillColor: color};
+    this._accuracyCircle.setStyle(style);
+    this._locationMarker.setStyle(style);
+
     return this;
   },
 

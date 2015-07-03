@@ -41,8 +41,8 @@ L.LocationMarker.include({
     var options = options || {};
     if (this._iconMarker) {
       options.offset = [0, -33];
-      this._popup = L.popup(options).setContent(content);
-      this._iconMarker.bindPopup(this._popup);
+      this._iconMarker.bindPopup(content, options);
+      this._popup = this._iconMarker._popup;
 
       this._iconMarker.on({
         popupclose: function(e) {
@@ -55,6 +55,7 @@ L.LocationMarker.include({
 
     } else {
       this._locationMarker.bindPopup(content, options);
+      this._popup = this._iconMarker._popup;
 
       this._locationMarker.on({
         popupclose: function(e) {
