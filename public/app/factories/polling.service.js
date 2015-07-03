@@ -21,7 +21,7 @@ function PollingService() {
       listener.onPollingIntervalChanged(pollingInterval);
     }
   }
-
+  
   function removeListener(listener) {
     listeners = _.reject(listeners, function(l) { return listener === l; });
   }

@@ -140,6 +140,11 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
   };
   EventService.addUsersChangedListener(usersChangedListener);
 
+  var pollListener = {
+    onPoll: onPoll
+  };
+  EventService.addPollListener(pollListener);
+
   var locationListener = {
     onLocation: onLocation
   };
@@ -227,7 +232,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     _.each(changed.added, function(added) {
       observationsById[added.id] = added;
     });
-    if (changed.added) MapService.addFeaturesToLayer(changed.added, 'Observations');
+    if (changed.added.length) MapService.addFeaturesToLayer(changed.added, 'Observations');
 
     _.each(changed.updated, function(updated) {
       var observation = observationsById[updated.id];
@@ -275,7 +280,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
       if (user) {
         usersById[updated.id] = updated;
         popupScopes[updated.id].user = updated;
-        MapService.updateFeatureForLayer(user.location, 'People');
+        MapService.updateFeatureForLayer(updated.location, 'People');
 
         // pan/zoom map to user if this is the user we are following
         if (user.id === followingUserId) MapService.zoomToFeatureInLayer(user, 'People');
@@ -321,6 +326,13 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     });
   }
 
+  function onPoll() {
+    // The event ***REMOVED*** just polled, lets update times and marker colors
+    $scope.$broadcast('observation:poll');
+    $scope.$broadcast('user:poll');
+    MapService.onPoll();
+  }
+
   function onObservationSelected(observation, options) {
     $scope.$broadcast('observation:select', observation, options);
   }
@@ -342,6 +354,7 @@ function MageController($scope, $compile, $timeout, FilterService, EventService,
     EventService.removeLayersChangedListener(layersChangedListener);
     EventService.removeObservationsChangedListener(observationsChangedListener);
     EventService.removeUsersChangedListener(usersChangedListener);
+    EventService.removePollListener(pollListener);
     MapService.destroy();
   });
 
