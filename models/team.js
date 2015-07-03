@@ -36,8 +36,10 @@ var transform = function(team, ret, options) {
   ret.id = ret._id;
   delete ret._id;
 
-  ret.users = ret.userIds;
-  delete ret.userIds;
+  if (team.populated('userIds')) {
+    ret.users = ret.userIds;
+    delete ret.userIds;
+  }
 }
 
 TeamSchema.set("toJSON", {
