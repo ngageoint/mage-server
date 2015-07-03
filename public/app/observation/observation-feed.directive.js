@@ -20,6 +20,7 @@ ObservationNewsItemController.$inject = ['$scope', 'EventService', 'UserService'
 
 function ObservationNewsItemController($scope, EventService, UserService) {
   $scope.edit = false;
+  $scope.fromNow = moment($scope.observation.timestamp).fromNow();
 
   UserService.getUser($scope.observation.userId).then(function(user) {
     $scope.observationUser = user.data || user;
@@ -45,6 +46,10 @@ function ObservationNewsItemController($scope, EventService, UserService) {
   $scope.$on('observation:editDone', function() {
     $scope.edit = false;
     $scope.editForm = null;
+  });
+
+  $scope.$on('observation:poll', function() {
+    $scope.fromNow = moment($scope.observation.timestamp).fromNow();
   });
 
   $scope.$watch('observation', function(observation) {

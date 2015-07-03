@@ -24,7 +24,8 @@ function MapService() {
     updateFeatureForLayer: updateFeatureForLayer,
     removeFeatureFromLayer: removeFeatureFromLayer,
     zoomToFeatureInLayer: zoomToFeatureInLayer,
-    onLocation: onLocation
+    onLocation: onLocation,
+    onPoll: onPoll
   };
 
   var baseLayer = null;
@@ -149,6 +150,14 @@ function MapService() {
     _.each(listeners, function(listener) {
       if (_.isFunction(listener.onLocation)) {
         listener.onLocation(location);
+      }
+    });
+  }
+
+  function onPoll() {
+    _.each(listeners, function(listener) {
+      if (_.isFunction(listener.onPoll)) {
+        listener.onPoll();
       }
     });
   }
