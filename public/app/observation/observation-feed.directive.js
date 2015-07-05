@@ -49,7 +49,7 @@ function ObservationNewsItemController($scope, EventService, UserService) {
   });
 
   $scope.$on('observation:poll', function() {
-    $scope.fromNow = moment($scope.observation.timestamp).fromNow();
+    $scope.fromNow = moment($scope.observation.properties.timestamp).fromNow();
   });
 
   $scope.$watch('observation', function(observation) {
