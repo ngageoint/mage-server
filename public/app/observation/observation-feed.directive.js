@@ -20,7 +20,7 @@ ObservationNewsItemController.$inject = ['$scope', 'EventService', 'UserService'
 
 function ObservationNewsItemController($scope, EventService, UserService) {
   $scope.edit = false;
-  $scope.fromNow = moment($scope.observation.timestamp).fromNow();
+  $scope.fromNow = moment($scope.observation.properties.timestamp).fromNow();
 
   UserService.getUser($scope.observation.userId).then(function(user) {
     $scope.observationUser = user.data || user;
