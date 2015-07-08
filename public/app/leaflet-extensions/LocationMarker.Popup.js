@@ -55,7 +55,7 @@ L.LocationMarker.include({
 
     } else {
       this._locationMarker.bindPopup(content, options);
-      this._popup = this._iconMarker._popup;
+      this._popup = this._locationMarker._popup;
 
       this._locationMarker.on({
         popupclose: function(e) {
