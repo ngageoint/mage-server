@@ -18,10 +18,8 @@ function banner() {
 BannerController.$inject = ['$scope', '$element', 'Settings'];
 
 function BannerController($scope, $element, Settings) {
-  $element.css('background-color', '#FF00FF');
-
   Settings.get({type: 'banner'}, function(banner) {
-    $scope.banner = banner.settings;
+    $scope.banner = banner.settings || {};
 
     if ($scope.type == 'header' && $scope.banner.showHeader) {
       if ($scope.banner.headerBackgroundColor) {

@@ -8,7 +8,7 @@ function AdminSettingsController($scope, Settings, LocalStorageService) {
   $scope.token = LocalStorageService.getToken();
   $scope.setting = "banner";
   $scope.settings = {};
-  $scope.settings.banner = {
+  var bannerDefaults = {
     headerTextColor: '#000000',
     headerBackgroundColor: 'FFFFFF',
     footerTextColor: '#000000',
@@ -18,9 +18,7 @@ function AdminSettingsController($scope, Settings, LocalStorageService) {
   Settings.query(function(settings) {
     $scope.settings = _.indexBy(settings, 'type');
 
-    if ($scope.settings.banner) {
-      $scope.banner = $scope.settings.banner.settings;
-    }
+    $scope.banner = $scope.settings.banner ? $scope.settings.banner.settings : bannerDefaults;
   });
 
   $scope.onBannerClick = function() {
@@ -31,6 +29,7 @@ function AdminSettingsController($scope, Settings, LocalStorageService) {
   }
 
   $scope.saveBanner = function () {
+    console.log('scope banner is:', $scope.banner);
 
     Settings.updateBanner($scope.banner, function(setting) {
       $scope.saved = true;
