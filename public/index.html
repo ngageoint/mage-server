@@ -9,6 +9,7 @@
 
   <!-- build:css vendor/css/vendor.min.css -->
   <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="bower_components/mjolnic-bootstrap-colorpicker/dist/css/bootstrap-colorpicker.min.css"/>
   <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css"/>
   <link rel="stylesheet" href="bower_components/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="bower_components/Leaflet.awesome-markers/dist/leaflet.awesome-markers.css"/>
@@ -47,10 +48,14 @@
   </script>
 
 </head>
+
+
 <body>
 
+  <div cl***REMOVED***="banner-flex" banner="header"></div>
+
   <!-- TODO possibly move this -->
-  <div cl***REMOVED***="navbar navbar-default navbar-fixed-top" ng-controller="NavController">
+  <div cl***REMOVED***="navbar navbar-default navbar-flex" ng-controller="NavController">
       <!-- We use the fluid option here to avoid overriding the fixed width of a normal container within the narrow content columns. -->
       <div cl***REMOVED***="container">
         <div cl***REMOVED***="navbar-header">
@@ -171,12 +176,17 @@
       </div>
     </div>
 
-  <div data-ng-view style="height: 100%"></div>
+  <div data-ng-view cl***REMOVED***="route-content"></div>
+
+  <div cl***REMOVED***="banner-flex">
+    <div  banner="footer"></div>
+  </div>
+
 
   <!-- build:vendorjs vendor/js/vendor.js -->
-  <script type="text/javascript" src="bower_components/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
   <script type="text/javascript" src="bower_components/underscore/underscore-min.js"></script>
-  <script type="text/javascript" src="bower_components/angular/angular.min.js"></script>
+  <script type="text/javascript" src="bower_components/angular/angular.js"></script>
   <script type="text/javascript" src="bower_components/angular-resource/angular-resource.min.js"></script>
   <script type="text/javascript" src="bower_components/angular-sanitize/angular-sanitize.min.js"></script>
   <script type="text/javascript" src="bower_components/angular-route/angular-route.min.js"></script>
@@ -188,6 +198,7 @@
   <script type="text/javascript" src="bower_components/angular-ui-select/dist/select.min.js"></script>
   <script type="text/javascript" src="bower_components/moment/min/moment.min.js"></script>
   <script type="text/javascript" src="bower_components/jquery-file-download/src/Scripts/jquery.fileDownload.js"></script>
+  <script type="text/javascript" src="bower_components/mjolnic-bootstrap-colorpicker/dist/js/bootstrap-colorpicker.js"></script>
   <script type="text/javascript" src="vendor/angular-bootstrap/ui-bootstrap-tpls-0.13.0-SNAPSHOT.min.js"></script>
   <script type="text/javascript" src="vendor/bootstrap/js/bootstrap.min.js"></script>
   <!-- endbuild -->
@@ -199,6 +210,8 @@
   <script type="text/javascript" src="app/mage/mage-nav.controller.js"></script>
   <script type="text/javascript" src="app/mage/leaflet.directive.js"></script>
   <script type="text/javascript" src="app/mage/feed.directive.js"></script>
+  <script type="text/javascript" src="app/mage/color.picker.directive.js"></script>
+  <script type="text/javascript" src="app/mage/banner.directive.js"></script>
 
   <script type="text/javascript" src="app/export/export.js"></script>
   <script type="text/javascript" src="app/filter/filter.js"></script>
@@ -208,6 +221,8 @@
   <script type="text/javascript" src="app/about/about.controller.js"></script>
 
   <script type="text/javascript" src="app/admin/admin.controller.js"></script>
+  <script type="text/javascript" src="app/admin/settings/settings.controller.js"></script>
+  <script type="text/javascript" src="app/admin/settings/settings.resource.js"></script>
   <script type="text/javascript" src="app/admin/devices/devices.controller.js"></script>
   <script type="text/javascript" src="app/admin/events/events.controller.js"></script>
   <script type="text/javascript" src="app/admin/events/events.filter.js"></script>
