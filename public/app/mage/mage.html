@@ -1,34 +1,40 @@
-<div cl***REMOVED***="visible-xs-block">
-  <div cl***REMOVED***="row filter-nav">
-    <div cl***REMOVED***="col-xs-12 text-center">
-      <span cl***REMOVED***="filter-event">{{filteredEvent.name}}</span>
-      <span ng-if="filteredTeams" cl***REMOVED***="filter-teams"><span> > {{filteredTeams}}</span></span>
+<div cl***REMOVED***="mage-map-filter">
+  <div cl***REMOVED***="container">
+    <div cl***REMOVED***="visible-xs-block">
+      <div cl***REMOVED***="row">
+        <div cl***REMOVED***="col-xs-12 text-center">
+          <span cl***REMOVED***="filter-event">{{filteredEvent.name}}</span>
+          <span ng-if="filteredTeams" cl***REMOVED***="filter-teams"><span> > {{filteredTeams}}</span></span>
+        </div>
+        <div cl***REMOVED***="col-xs-12 text-center">
+          <span ng-if="filteredInterval" cl***REMOVED***="filter-interval"> {{filteredInterval}}</span>
+        </div>
+      </div>
     </div>
-    <div cl***REMOVED***="col-xs-12 text-center">
-      <span ng-if="filteredInterval" cl***REMOVED***="filter-interval"> {{filteredInterval}}</span>
+    <div cl***REMOVED***="hidden-xs">
+      <div cl***REMOVED***="row">
+        <div cl***REMOVED***="col-xs-12 text-center">
+          <span cl***REMOVED***="filter-event">{{filteredEvent.name}}</span>
+          <span ng-if="filteredTeams" cl***REMOVED***="filter-teams"><span> > {{filteredTeams}}</span></span>
+          <span ng-if="filteredInterval" cl***REMOVED***="filter-interval"> {{filteredInterval}}</span>
+        </div>
+      </div>
     </div>
   </div>
 </div>
-<div cl***REMOVED***="hidden-xs">
-  <div cl***REMOVED***="row filter-nav">
-    <div cl***REMOVED***="col-xs-12 text-center">
-      <span cl***REMOVED***="filter-event">{{filteredEvent.name}}</span>
-      <span ng-if="filteredTeams" cl***REMOVED***="filter-teams"><span> > {{filteredTeams}}</span></span>
-      <span ng-if="filteredInterval" cl***REMOVED***="filter-interval"> {{filteredInterval}}</span>
+
+<div cl***REMOVED***="content-flex">
+  <div cl***REMOVED***="content-inner">
+
+    <div cl***REMOVED***="mage-map">
+      <div id="side-bar" cl***REMOVED***="side-bar-holder">
+        <div cl***REMOVED***="news-feed-pane"
+          news-feed feed-observations="feedObservations" feed-observations-changed="feedChangedObservations"
+          feed-users="feedUsers" feed-users-changed="feedChangedUsers"/>
+      </div>
+
+      <div leaflet></div>
     </div>
-  </div>
-</div>
 
-<div cl***REMOVED***="mage-map">
-  <div id="side-bar" cl***REMOVED***="side-bar-holder">
-    <div cl***REMOVED***="news-feed-pane"
-      news-feed feed-observations="feedObservations" feed-observations-changed="feedChangedObservations"
-      feed-users="feedUsers" feed-users-changed="feedChangedUsers"/>
   </div>
-
-  <div cl***REMOVED***="map-filter" ng-hide="newsFeedEnabled">
-    <div id="observation-form" cl***REMOVED***="feature-panel" ng-show="newObservationEnabled"></div>
-  </div>
-
-  <div leaflet></div>
 </div>

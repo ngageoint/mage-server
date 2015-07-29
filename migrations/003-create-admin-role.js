@@ -5,6 +5,7 @@ exports.id = 'create-initial-admin-role';
 exports.up = function(done) {
 
   var adminPermissions = [
+    'READ_SETTINGS', 'UPDATE_SETTINGS',
     'CREATE_DEVICE', 'READ_DEVICE', 'UPDATE_DEVICE', 'DELETE_DEVICE',
     'CREATE_USER', 'READ_USER', 'UPDATE_USER', 'DELETE_USER',
     'CREATE_ROLE', 'READ_ROLE', 'UPDATE_ROLE', 'DELETE_ROLE',
