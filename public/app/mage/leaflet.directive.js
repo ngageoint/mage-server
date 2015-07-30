@@ -349,14 +349,12 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
 
   function openPopup(layer, options) {
     options = options || {};
-    var zoom = options.zoomToLocation ? 17: map.getZoom();
-    var bounds = map.getBounds();
-    if (options.zoomToLocation && (!bounds.contains(layer.getLatLng()) || zoom != map.getZoom())) {
+    if (options.zoomToLocation) { // && (!bounds.contains(layer.getLatLng()) || zoom != map.getZoom())) {
       map.once('moveend', function() {
         layer.openPopup();
       });
 
-      map.setView(layer.getLatLng(), zoom);
+      map.setView(layer.getLatLng(),  options.zoomToLocation ? 17: map.getZoom());
     } else {
       layer.openPopup();
     }
