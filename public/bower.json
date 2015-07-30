@@ -31,8 +31,8 @@
     "leaflet.markercluster": "0.4.0",
     "leaflet-sidebar": "0.1.6",
     "leaflet-groupedlayercontrol": "0.3.0",
-    "mjolnic-bootstrap-colorpicker": "2.1.1",
     "moment": "2.9.0",
-    "underscore": "1.8.2"
+    "underscore": "1.8.2",
+    "angular-minicolors": "~0.0.5"
   }
 }

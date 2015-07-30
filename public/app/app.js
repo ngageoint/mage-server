@@ -5,9 +5,10 @@ angular
   .module("mage", [
     "ui.bootstrap",
     "ui.select",
+    "minicolors",
     "ngSanitize",
     "ngRoute",
-    'ngResource',
+    "ngResource",
     "http-auth-interceptor"
   ]).config(config).run(run);
 
