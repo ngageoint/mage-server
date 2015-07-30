@@ -6,9 +6,15 @@ angular
 
 function AdminSettingsController($scope, Settings, LocalStorageService) {
   $scope.token = LocalStorageService.getToken();
+
+  $scope.minicolorSettings = {
+    position: 'bottom right',
+    control: 'wheel'
+  }
+
   $scope.setting = "banner";
   $scope.settings = {};
-  var bannerDefaults = {
+  $scope.banner = {
     headerTextColor: '#000000',
     headerBackgroundColor: 'FFFFFF',
     footerTextColor: '#000000',
@@ -18,7 +24,9 @@ function AdminSettingsController($scope, Settings, LocalStorageService) {
   Settings.query(function(settings) {
     $scope.settings = _.indexBy(settings, 'type');
 
-    $scope.banner = $scope.settings.banner ? $scope.settings.banner.settings : bannerDefaults;
+    if ($scope.settings.banner) {
+      $scope.banner = $scope.settings.banner.settings;
+    }
   });
 
   $scope.onBannerClick = function() {
