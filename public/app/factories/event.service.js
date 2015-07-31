@@ -129,7 +129,8 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     deleteAttachmentForObservation: deleteAttachmentForObservation,
     getFormField: getFormField,
     createForm: createForm,
-    exportForm: exportForm
+    exportForm: exportForm,
+    isUserInEvent: isUserInEvent
   }
 
   return ***REMOVED***;
@@ -263,6 +264,12 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
 
   function exportForm(event) {
     return $http.get('/api/events/' + event.id + '/form.zip');
+  }
+
+  function isUserInEvent(user, event) {
+    return _.some(event.teams, function(team) {
+        return _.contains(team.userIds, user.id);
+    });
   }
 
   function usersChanged(changed) {

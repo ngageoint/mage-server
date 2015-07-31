@@ -36,10 +36,15 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
       $scope.$emit('observation:create', latlng);
     }
   }));
-  map.addControl(new L.Control.MageUserLocation({
+
+  var userLocationControl = new L.Control.MageUserLocation({
+    onBroadcastLocationClick: function(callback) {
+      MapService.onBroadcastLocation(callback);
+    },
     onLocation: onLocation,
     stopLocation: stopLocation
-  }));
+  });
+  map.addControl(userLocationControl);
   map.addControl(new L.Control.MageListTools({
     onClick: function() {
       sidebar.toggle();
@@ -94,7 +99,8 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
     onLayersChanged: onLayersChanged,
     onFeaturesChanged: onFeaturesChanged,
     onFeatureZoom: onFeatureZoom,
-    onPoll: onPoll
+    onPoll: onPoll,
+    onLocationStop: onLocationStop
   };
   MapService.addListener(listener);
 
@@ -385,6 +391,10 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
 
   function onPoll() {
     adjustTemporalLayers();
+  }
+
+  function onLocationStop() {
+    userLocationControl.stopBroadcast();
   }
 
   function adjustTemporalLayers() {
