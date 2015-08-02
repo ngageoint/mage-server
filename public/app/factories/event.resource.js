@@ -22,6 +22,13 @@ function Event($rootScope, $resource, $http, LocalStorageService, Observation) {
     },
     query: {
       isArray: true
+    },
+    count: {
+      method: 'GET',
+      url: '/api/events/count',
+      headers: {
+        'Content-Type': 'application/json'
+      }
     }
   });
 

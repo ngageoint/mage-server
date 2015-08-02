@@ -1,4 +1,125 @@
-<div cl***REMOVED***="admin-nav">
+<div cl***REMOVED***="content-flex">
+  <div cl***REMOVED***="content-inner admin-nav-gap">
+    <div cl***REMOVED***="container-fluid">
+
+      <ol cl***REMOVED***="breadcrumb">
+        <li cl***REMOVED***="active"><i cl***REMOVED***="fa fa-dashboard active"></i>&nbsp;&nbsp;Dashboard</li>
+      </ol>
+
+      <div cl***REMOVED***="row">
+        <div cl***REMOVED***="col-md-12">
+          <h3>MAGE Admin</h3>
+
+          <p cl***REMOVED***="muted">You can manage Users, Devices, Teams and other MAGE data and settings from here.</p>
+        </div>
+      </div>
+
+      <div cl***REMOVED***="top-gap-xl">
+        <div cl***REMOVED***="card-content">
+
+          <div cl***REMOVED***="row admin-dashboard-content">
+            <div cl***REMOVED***="col-md-2">
+              <div cl***REMOVED***="card">
+                <div cl***REMOVED***="card-content admin-card">
+                  <h4 ng-if="userCount == null">Users <i cl***REMOVED***="fa fa-spinner fa-spin"></i></h4>
+                  <h4 ng-if="userCount != null">Users ({{userCount}})</h4>
+
+                  <a href="#/admin/users">
+                    <div cl***REMOVED***="admin-dashboard-item"><i cl***REMOVED***="fa fa-user"></i></div>
+                  </a>
+
+                  <hr>
+                  <button cl***REMOVED***="btn btn-primary">New User</button>
+                </div>
+              </div>
+            </div>
+
+            <div cl***REMOVED***="col-md-2">
+              <div cl***REMOVED***="card">
+                <div cl***REMOVED***="card-content admin-card">
+                  <h4 ng-if="userCount == null">Teams <i cl***REMOVED***="fa fa-spinner fa-spin"></i></h4>
+                  <h4 ng-if="userCount != null">Teams ({{teamCount}})</h4>
+
+                  <a ng-href="#/admin/teams">
+                    <div cl***REMOVED***="admin-dashboard-item"><i cl***REMOVED***="fa fa-users"></i></div>
+                  </a>
+
+                  <hr>
+                  <button cl***REMOVED***="btn btn-primary">New Team</button>
+                </div>
+              </div>
+            </div>
+
+
+            <div cl***REMOVED***="col-md-2">
+              <div cl***REMOVED***="card">
+                <div cl***REMOVED***="card-content admin-card">
+                  <h4 ng-if="userCount == null">Events <i cl***REMOVED***="fa fa-spinner fa-spin"></i></h4>
+                  <h4 ng-if="userCount != null">Events ({{eventCount}})</h4>
+
+                  <a ng-href="#/admin/events">
+                    <div cl***REMOVED***="admin-dashboard-item"><i cl***REMOVED***="fa fa-calendar"></i></div>
+                  </a>
+
+                  <hr>
+                  <button cl***REMOVED***="btn btn-primary">New Event</button>
+                </div>
+              </div>
+            </div>
+
+            <div cl***REMOVED***="col-md-2">
+              <div cl***REMOVED***="card">
+                <div cl***REMOVED***="card-content admin-card">
+                  <h4 ng-if="userCount == null">Devices <i cl***REMOVED***="fa fa-spinner fa-spin"></i></h4>
+                  <h4 ng-if="userCount != null">Devices ({{deviceCount}})</h4>
+
+                  <a ng-href="#/admin/devices">
+                    <div cl***REMOVED***="admin-dashboard-item"><i cl***REMOVED***="fa fa-mobile-phone"></i></div>
+                  </a>
+
+                  <hr>
+                  <button cl***REMOVED***="btn btn-primary">New Device</button>
+                </div>
+              </div>
+            </div>
+
+            <div cl***REMOVED***="col-md-2">
+              <div cl***REMOVED***="card">
+                <div cl***REMOVED***="card-content admin-card">
+                  <h4 ng-if="userCount == null">Layers <i cl***REMOVED***="fa fa-spinner fa-spin"></i></h4>
+                  <h4 ng-if="userCount != null">Layers ({{layerCount}})</h4>
+
+                  <a ng-href="#/admin/layers">
+                    <div cl***REMOVED***="admin-dashboard-item"><i cl***REMOVED***="fa fa-map"></i></div>
+                  </a>
+
+                  <hr>
+                  <button cl***REMOVED***="btn btn-primary">New Layer</button>
+                </div>
+              </div>
+            </div>
+
+
+            <div cl***REMOVED***="col-md-2">
+              <div cl***REMOVED***="card">
+                <div cl***REMOVED***="card-content admin-card">
+                  <h4>Settings</h4>
+
+                  <a ng-href="#admin/settings">
+                    <div cl***REMOVED***="admin-dashboard-item"><i cl***REMOVED***="fa fa-wrench"></i></div>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- <div cl***REMOVED***="admin-nav">
   <div cl***REMOVED***="col-xs-2 text-center">
     <h4 cl***REMOVED***="admin-tab"><a href="#/admin/user" ng-cl***REMOVED***="{'admin-nav-active': currentAdminPanel == 'user'}">Users</a></h4>
   </div>
@@ -59,4 +180,4 @@
 
   </div>
 
-<div>
+<div> -->

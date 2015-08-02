@@ -21,6 +21,18 @@ module.exports = function(app, security) {
     next();
   }
 
+  app.get(
+    '/api/teams/count',
+    access.authorize('READ_TEAM'),
+    function(req, res, next) {
+      Team.count(function(err, count) {
+        if (err) return next(err);
+
+        res.json({count: count});
+      });
+    }
+  );
+
   // get all teams
   app.get(
     '/api/teams',

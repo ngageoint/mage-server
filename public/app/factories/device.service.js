@@ -8,6 +8,7 @@ function DeviceService($http) {
   var resolvedDevices = {};
 
   var ***REMOVED*** = {
+    count: count,
     getAllDevices: getAllDevices,
     getDevice: getDevice,
     createDevice: createDevice,
@@ -18,10 +19,13 @@ function DeviceService($http) {
 
   return ***REMOVED***;
 
+  function count() {
+    return $http.get('/api/devices/count');
+  }
+
   function getAllDevices() {
     return $http.get('/api/devices/');
   };
-
 
   function getDevice(id) {
     resolvedDevices[id] = resolvedDevices[id] || $http.get(

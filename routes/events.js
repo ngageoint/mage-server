@@ -98,6 +98,18 @@ module.exports = function(app, security) {
   );
 
   app.get(
+    '/api/events/count',
+    access.authorize('READ_EVENT_ALL'),
+    function(req, res, next) {
+      Event.count(function(err, count) {
+        if (err) return next(err);
+
+        return res.json({count: count});
+      });
+    }
+  );
+
+  app.get(
     '/api/events/:id',
     parseEventQueryParams,
     function (req, res, next) {

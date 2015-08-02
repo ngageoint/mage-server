@@ -10,7 +10,6 @@
 body {
   margin: 0;
   height: 100%;
-  background: #EEEEEE;
   color: #6389b3;
 
   display: flex;
@@ -56,11 +55,21 @@ header.navbar {
 }
 
 h1, h2, h3, h4, h5 {
-	color: #345477;
+	color: #365F8C;
 }
 
 a {
-	color: #345477;
+	color: #365F8C;
+}
+
+.card {
+  box-sizing: border-box;
+  margin: 8px;
+  box-shadow: 0 3px 1px -2px rgba(0,0,0,.14),0 2px 2px 0 rgba(0,0,0,.098),0 1px 5px 0 rgba(0,0,0,.084);
+}
+
+.card > .card-content {
+  padding: 16px;
 }
 
 .center-block {
@@ -280,6 +289,39 @@ textarea {
 }
 
 /* User management page styles */
+
+
+.admin-card {
+  height: 235px;
+  background-color: white;
+}
+
+.admin-card > h4 {
+  /*color: #FFD9C5;*/
+}
+
+.admin-dashboard-navbar {
+  background-color: #F5F5F5;
+  border-color: #F0F0F0;
+}
+
+.admin-dashboard-navbar > .container-fluid > .navbar-header > .navbar-brand {
+  color: #204976;
+}
+
+.admin-dashboard-content {
+  padding: 16px;
+}
+
+.admin-dashboard-item {
+  /*color: #FFD9C5;*/
+  line-height: 48px;
+  font-size: 36px;
+  padding: 20px;
+  text-align: center;
+  font-weight: normal;
+}
+
 .admin-nav {
   height: 40px;
   background-color: #E2E2E2;

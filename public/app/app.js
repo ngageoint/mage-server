@@ -43,11 +43,44 @@ function config($routeProvider, $locationProvider, $httpProvider) {
     templateUrl:    'app/signup/signup.html',
     controller:     "SignupController"
   });
-  $routeProvider.when('/admin/:adminPanel?', {
+
+  $routeProvider.when('/admin', {
     templateUrl:    'app/admin/admin.html',
     controller:     "AdminController",
     resolve: resolveLogin(["ADMIN_ROLE"])
   });
+  $routeProvider.when('/admin/users', {
+    templateUrl:    'app/admin/users/users.html',
+    controller:     "AdminUsersController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/teams', {
+    templateUrl:    'app/admin/teams/teams.html',
+    controller:     "AdminTeamsController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/events', {
+    templateUrl:    'app/admin/events/events.html',
+    controller:     "AdminEventsController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/devices', {
+    templateUrl:    'app/admin/devices/devices.html',
+    controller:     "AdminDevicesController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/layers', {
+    templateUrl:    'app/admin/layers/layers.html',
+    controller:     "AdminLayersController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/settings', {
+    templateUrl:    'app/admin/settings/settings.html',
+    controller:     "AdminSettingsController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+
+
   $routeProvider.when('/debug-info', {
     templateUrl:    'app/debug/debug.html',
     controller:     "DebugController",

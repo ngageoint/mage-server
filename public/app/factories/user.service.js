@@ -19,6 +19,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
     updateMyP***REMOVED***word: updateMyP***REMOVED***word,
     updateMyself: updateMyself,
     checkLoggedInUser: checkLoggedInUser,
+    getUserCount: getUserCount,
     getUser: getUser,
     getAllUsers: getAllUsers,
     createUser: createUser,
@@ -133,6 +134,10 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
     });
 
     return userDeferred.promise;
+  }
+
+  function getUserCount() {
+    return $http.get('/api/users/count');
   }
 
   function getUser(id) {
