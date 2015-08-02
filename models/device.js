@@ -126,6 +126,12 @@ exports.getDevices = function(callback) {
   });
 }
 
+exports.count = function(callback) {
+  Device.count({}, function(err, count) {
+    callback(err, count);
+  });
+}
+
 exports.createDevice = function(device, callback) {
   var create = {
     uid: device.uid,

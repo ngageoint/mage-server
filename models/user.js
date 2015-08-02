@@ -191,6 +191,12 @@ exports.getUserByUsername = function(username, callback) {
   });
 }
 
+exports.count = function(callback) {
+  User.count({}, function(err, count) {
+    callback(err, count);
+  });
+}
+
 exports.getUsers = function(callback) {
   var query = {};
   User.find(query, function (err, users) {

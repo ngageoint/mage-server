@@ -76,6 +76,12 @@ exports.getLayers = function(filter, callback) {
   });
 }
 
+exports.count = function(callback) {
+  Layer.count({}, function(err, count) {
+    callback(err, count);
+  });
+}
+
 exports.getById = function(id, callback) {
   Layer.findById(id, function (err, layer) {
     callback(layer);

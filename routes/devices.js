@@ -107,11 +107,27 @@ module.exports = function(app, security) {
     '/api/devices',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_DEVICE'),
-      function (req, res) {
+    function (req, res, next) {
       Device.getDevices(function (err, devices) {
+        if (err) return next(err);
+
         res.json(devices);
       });
-  });
+    }
+  );
+
+  app.get(
+    '/api/devices/count',
+    p***REMOVED***port.authenticate(authenticationStrategy),
+    access.authorize('READ_DEVICE'),
+    function (req, res, next) {
+      Device.count(function (err, count) {
+        if (err) return next(err);
+
+        res.json({count: count});
+      });
+    }
+  );
 
   // get device
   app.get(

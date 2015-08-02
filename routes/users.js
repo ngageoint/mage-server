@@ -148,6 +148,19 @@ module.exports = function(app, security) {
     }
   );
 
+  app.get(
+    '/api/users/count',
+    p***REMOVED***port.authenticate(authenticationStrategy),
+    access.authorize('READ_USER'),
+    function(req, res, next) {
+      new api.User().count(function(err, count) {
+        if (err) return next(err);
+
+        res.json({count: count});
+      });
+    }
+  );
+
   // get all uses
   app.get(
     '/api/users',
