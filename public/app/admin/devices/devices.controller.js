@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminDevicesController', AdminDevicesController);
 
-AdminDevicesController.$inject = ['$scope', '$injector', '$filter', 'LocalStorageService', 'DeviceService', 'UserService'];
+AdminDevicesController.$inject = ['$scope', '$injector', '$filter', '$location', 'LocalStorageService', 'DeviceService', 'UserService'];
 
-function AdminDevicesController($scope, $injector, $filter, LocalStorageService, DeviceService, UserService) {
+function AdminDevicesController($scope, $injector, $filter, $location, LocalStorageService, DeviceService, UserService) {
   $scope.token = LocalStorageService.getToken();
   $scope.filter = "all"; // possible values all, registered, unregistered
   $scope.devices = [];
@@ -48,51 +48,22 @@ function AdminDevicesController($scope, $injector, $filter, LocalStorageService,
   }
 
   $scope.newDevice = function() {
-    $scope.device = {};
+    $location.path('/admin/devices/new');
   }
 
-  $scope.editDevice = function(device) {
-    $scope.edit = false;
-    $scope.device = device;
+  $scope.gotoDevice = function(device) {
+    $location.path('/admin/devices/' + device.id);
   }
 
-  var debounceHideSave = _.debounce(function() {
-    $scope.$apply(function() {
-      $scope.saved = false;
-    });
-  }, 5000);
+  $scope.editDevice = function($event, device) {
+    $event.stopPropagation();
 
-  $scope.saveDevice = function () {
-    $scope.saving = true;
-    $scope.error = false;
-
-    var device = $scope.device;
-
-    if (device.id) {
-      DeviceService.updateDevice(device).success(function(data) {
-        $scope.saved = true;
-        $scope.saving = false;
-        debounceHideSave();
-      })
-      .error(function(response) {
-        $scope.saving = false;
-        $scope.error = response.responseText;
-      });
-    } else {
-      DeviceService.createDevice(device).success(function (data) {
-        $scope.saved = true;
-        $scope.saving = false;
-        debounceHideSave();
-        $scope.devices.push(data);
-      })
-      .error(function (response) {
-        $scope.saving = false;
-        $scope.error = response.responseText;
-      });
-    }
+    $location.path('/admin/devices/' + device.id + '/edit');
   }
 
-  $scope.deleteDevice = function(device) {
+  $scope.deleteDevice = function($event, device) {
+    $event.stopPropagation();
+
     var modalInstance = $injector.get('$modal').open({
       templateUrl: '/app/admin/devices/device-delete.html',
       resolve: {
@@ -120,18 +91,13 @@ function AdminDevicesController($scope, $injector, $filter, LocalStorageService,
     });
   }
 
-  $scope.refresh = function() {
-    $scope.devices = [];
-    DeviceService.getAllDevices().success(function (devices) {
-      $scope.devices = devices;
-    });
-  }
+  $scope.registerDevice = function ($event, device) {
+    $event.stopPropagation();
 
-  $scope.registerDevice = function (device) {
-    DeviceService.registerDevice(device).success(function(data) {
+    device.registered = true;
+    DeviceService.updateDevice(device).success(function(data) {
       angular.copy(data, device);
       $scope.saved = true;
-      debounceHideSave();
     }, function(response) {
       $scope.error = response.responseText;
     });

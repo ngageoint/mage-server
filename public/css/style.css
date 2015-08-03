@@ -124,6 +124,10 @@ a {
   color: #324962;
 }
 
+.right-gap-s {
+  margin-right: 10px;
+}
+
 .top-gap-s {
   margin-top: 5px;
 }
@@ -397,6 +401,10 @@ a.admin-nav-inactive {
 .admin-table-delete-btn {
 	margin-right: 15px;
 	float: left;
+}
+
+.admin-icon {
+  font-size: 40px;
 }
 
 .pointer {

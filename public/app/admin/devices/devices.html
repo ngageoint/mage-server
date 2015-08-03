@@ -1,121 +1,84 @@
 <div cl***REMOVED***="admin-nav-gap">
   <div cl***REMOVED***="container-fluid">
-
     <ol cl***REMOVED***="breadcrumb">
       <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
       <li cl***REMOVED***="active">Devices</li>
     </ol>
+  </div>
+
+  <div cl***REMOVED***="container">
 
     <div cl***REMOVED***="row top-gap-xl">
-      <div cl***REMOVED***="col-md-2">
-        <div cl***REMOVED***="row admin-header">
-          <div cl***REMOVED***="col-md-12">
-            <span ng-click="refresh()"><i cl***REMOVED***="fa fa-refresh icon-spacer pointer"></i></span>
-            <h3 style="display: inline">Devices ({{filteredDevices.length}})</h3>
-            <a cl***REMOVED***="btn btn-primary pull-right" ng-click="newDevice()"><i cl***REMOVED***="fa fa-plus"></i> New Device</a>
+      <div cl***REMOVED***="col-md-3">
+        <ul cl***REMOVED***="nav nav-pills nav-stacked">
+          <li ng-click="page = 0; filter='all'" ng-cl***REMOVED***="{active: filter=='all'}"><a href="javascript:void(0);">All <span cl***REMOVED***="badge pull-right">{{filteredDevices.length}}</span></a></li>
+          <li ng-click="page = 0; filter='registered'" ng-cl***REMOVED***="{active: filter=='registered'}"><a href="javascript:void(0);">Registered <span cl***REMOVED***="badge pull-right">{{(filteredDevices | filter:{registered: true}).length}}</span></a></li>
+          <li ng-click="page = 0; filter='unregistered'" ng-cl***REMOVED***="{active: filter=='unregistered'}"><a href="javascript:void(0);">Unregistered <span cl***REMOVED***="badge pull-right">{{(filteredDevices | filter:{registered: !true}).length}}</span></a></li>
+        </ul>
 
-            <hr>
+        <hr>
+        <form cl***REMOVED***="form">
+          <div cl***REMOVED***="form-group">
+            <label>Search</label>
+            <input type="text" cl***REMOVED***="form-control" placeholder="device, username, user" ng-model="deviceSearch" ng-change="page=0">
           </div>
-        </div>
+        </form>
+        <hr>
 
-        <div cl***REMOVED***="row bottom-gap">
-          <div cl***REMOVED***="btn-group col-md-12">
-            <label cl***REMOVED***="btn btn-default col-md-4" ng-model="filter" ng-change="page = 0" btn-radio="'all'" uncheckable>All</label>
-            <label cl***REMOVED***="btn btn-default col-md-4" ng-model="filter" ng-change="page = 0" btn-radio="'registered'" uncheckable>Registered</label>
-            <label cl***REMOVED***="btn btn-default col-md-4" ng-model="filter" ng-change="page = 0" btn-radio="'unregistered'" uncheckable>Unregistered</label>
-          </div>
-        </div>
-
-        <div cl***REMOVED***="form-horizontal">
-          <input type="text" cl***REMOVED***="search-query col-md-12 form-control" placeholder="Search devices" ng-model="deviceSearch" ng-change="page = 0">
-        </div>
-
-        <div cl***REMOVED***="row">
-          <div cl***REMOVED***="col-md-12">
-            <ul cl***REMOVED***="pager">
-              <li cl***REMOVED***="previous" ng-show="page != 0">
-                <a ng-click="page=page-1">&larr; Previous</a>
-              </li>
-              <li cl***REMOVED***="next" ng-show="page < (filteredDevices.length/itemsPerPage) - 1">
-                <a ng-click="page=page+1">Next &rarr;</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div cl***REMOVED***="pointer bottom-gap-s"
-          ng-cl***REMOVED***="{'admin-active': device.id == d.id}"
-          ng-click="editDevice(d)"
-          ng-repeat="d in (filteredDevices = (devices | filter:filterRegistered | filter:filterDevices)) | filter:filterRegistered | orderBy:'uid' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
-          <div cl***REMOVED***="admin-row row">
-
-            <div cl***REMOVED***="col-md-10">
-              <span cl***REMOVED***="strong">{{d.uid}}</span><span cl***REMOVED***="strong muted" ng-show="userIdMap[d.userId]"> ({{userIdMap[d.userId].username}})</span>
-              <div cl***REMOVED***="muted">{{d.name}}</div>
-            </div>
-            <div cl***REMOVED***="col-md-2" ng-hide="d.registered">
-              <a cl***REMOVED***="btn btn-mini btn-success pull-right" ng-click="registerDevice(d)">Register</a>
-            </div>
-          </div>
-        </div>
+        <button cl***REMOVED***="btn btn-default pull-right" ng-click="reset()">Reset</button>
       </div>
 
-      <div cl***REMOVED***="col-md-10" ng-show="device">
-        <div style="position: fixed; top: 84px; left: 35%" cl***REMOVED***="fade alert alert-success" ng-cl***REMOVED***="{'in': saved, 'out': !saved}">
-          Successfully Saved {{u.uid}}
-        </div>
-        <div style="position: fixed; top: 84px; left: 35%" cl***REMOVED***="fade alert alert-error" ng-cl***REMOVED***="{'in': error, 'out': !error}">
-          Error saving user: {{error}}
-        </div>
+      <div cl***REMOVED***="col-md-9">
+        <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
+          <div cl***REMOVED***="container-fluid">
+            <div cl***REMOVED***="navbar-header">
+              <a cl***REMOVED***="navbar-brand">Devices</a>
+            </div>
+
+            <form cl***REMOVED***="navbar-form navbar-right" role="search">
+              <button type="submit" cl***REMOVED***="btn btn-default" ng-click="newDevice()">New Device</button>
+            </form>
+          </div>
+        </nav>
 
         <div cl***REMOVED***="row">
-          <div cl***REMOVED***="col-md-4">
+          <div cl***REMOVED***="col-md-12">
+            <div cl***REMOVED***="admin-table">
+              <div cl***REMOVED***="well-item"
+                  ng-repeat="d in (filteredDevices = (devices | filter:filterRegistered | filter:filterDevices)) | filter:filterRegistered | orderBy:'uid' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
 
-            <form ng-submit="saveDevice()" id="device-form" cl***REMOVED***="form-horizontal">
+                  <div cl***REMOVED***="row pointer" ng-click="gotoDevice(d)">
+                    <div cl***REMOVED***="col-md-8">
+                      <div cl***REMOVED***="right-gap-s pull-left">
+                        <i cl***REMOVED***="fa fa-mobile admin-icon"></i>
+                      </div>
+                      <span cl***REMOVED***="strong">{{d.uid}}</span>
+                      <div cl***REMOVED***="muted" ng-if="userIdMap[d.userId]">{{userIdMap[d.userId].username}}</div>
+                      <div cl***REMOVED***="muted" ng-if="true">{{d.name}}</div>
 
-              <div cl***REMOVED***="form-group">
-                <label cl***REMOVED***="control-label col-sm-4" for="type">Device Identifier</label>
-                <div cl***REMOVED***="col-sm-8">
-                  <input type="text" placeholder="for example 01:02:03:04:05:06:08" ng-model="device.uid" cl***REMOVED***="form-control">
-                  <span cl***REMOVED***="help-block top-gap">MAC address, or some sort of unique identifier for your device.</span>
-                </div>
+                    </div>
+                    <div cl***REMOVED***="col-md-4">
+                      <button cl***REMOVED***="btn btn-sm btn-danger pull-right admin-user-button" ng-click="deleteDevice($event, d)">Delete</button>
+                      <button cl***REMOVED***="btn btn-sm btn-success pull-right admin-user-button" ng-if="!d.registered" ng-click="registerDevice($event, d)">Register</button>
+                      <button cl***REMOVED***="btn btn-sm btn-default pull-right" ng-click="editDevice($event, d)">Edit</button>
+                    </div>
+                  </div>
+
               </div>
+            </div>
 
-              <div cl***REMOVED***="form-group">
-                <label cl***REMOVED***="control-label col-sm-4" for="type">Description</label>
-                <div cl***REMOVED***="col-sm-8">
-                  <textarea type="text" placeholder="A bit about the device" ng-model="device.description" cl***REMOVED***="form-control"></textarea>
-                </div>
+            <div cl***REMOVED***="row">
+              <div cl***REMOVED***="col-md-12">
+                <ul cl***REMOVED***="pager">
+                  <li cl***REMOVED***="previous" ng-show="page != 0">
+                    <a ng-click="page=page-1">&larr; Previous</a>
+                  </li>
+                  <li cl***REMOVED***="next" ng-show="page < (filteredDevices.length/itemsPerPage) - 1">
+                    <a ng-click="page=page+1">Next &rarr;</a>
+                  </li>
+                </ul>
               </div>
-
-              <div cl***REMOVED***="form-group">
-                <label cl***REMOVED***="control-label col-sm-4" for="type">Point of Contact</label>
-                <div cl***REMOVED***="col-sm-8">
-                  <select ng-model="device.userId" ng-options="user.id as user.firstname + ' ' + user.lastname for user in users" cl***REMOVED***="form-control">
-                  </select>
-                </div>
-              </div>
-
-              <div cl***REMOVED***="form-group" ng-show="device.id">
-                <label cl***REMOVED***="control-label col-sm-4" for="type">App Version</label>
-                <div cl***REMOVED***="col-sm-8">
-                  <input type="text" ng-model="device.appVersion" cl***REMOVED***="form-control" readonly rows="5"></input>
-                </div>
-              </div>
-
-              <div cl***REMOVED***="form-group" ng-show="device.id">
-                <label cl***REMOVED***="control-label col-sm-4" for="type">User Agent</label>
-                <div cl***REMOVED***="col-sm-8">
-                  <textarea type="text" ng-model="device.userAgent" cl***REMOVED***="form-control" readonly rows="5"></textarea>
-                </div>
-              </div>
-
-              <span cl***REMOVED***="pull-right">
-                <a cl***REMOVED***="btn btn-danger" ng-show="device.id" ng-click="deleteDevice(device)"> <i cl***REMOVED***="fa fa-trash-o"></i> Delete Device</a>
-                <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-hide="device.id" ng-click="saveDevice(device)"> <i cl***REMOVED***="fa fa-check"></i> Create Device</a>
-                <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-show="device.id" ng-click="saveDevice(device)"> <i cl***REMOVED***="fa fa-check"></i> Save Device</a>
-              </span>
-            </form>
+            </div>
 
           </div>
         </div>
