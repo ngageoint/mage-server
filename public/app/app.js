@@ -49,11 +49,23 @@ function config($routeProvider, $locationProvider, $httpProvider) {
     controller:     "AdminController",
     resolve: resolveLogin(["ADMIN_ROLE"])
   });
+
   $routeProvider.when('/admin/users', {
     templateUrl:    'app/admin/users/users.html',
     controller:     "AdminUsersController",
     resolve: resolveLogin(["ADMIN_ROLE"])
   });
+  $routeProvider.when('/admin/users/:userId/', {
+    templateUrl:    'app/admin/users/user.html',
+    controller:     "AdminUserController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/users/:userId/edit', {
+    templateUrl:    'app/admin/users/user.edit.html',
+    controller:     "AdminUserEditController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+
   $routeProvider.when('/admin/teams', {
     templateUrl:    'app/admin/teams/teams.html',
     controller:     "AdminTeamsController",

@@ -1,143 +1,83 @@
 <div cl***REMOVED***="admin-nav-gap">
   <div cl***REMOVED***="container-fluid">
-
     <ol cl***REMOVED***="breadcrumb">
       <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
       <li cl***REMOVED***="active">Users</li>
     </ol>
+  </div>
+
+  <div cl***REMOVED***="container">
 
     <div cl***REMOVED***="row top-gap-xl">
-      <div cl***REMOVED***="col-md-2">
-        <div cl***REMOVED***="row admin-header">
-          <div cl***REMOVED***="col-md-12">
-            <span ng-click="refresh()"><i cl***REMOVED***="fa fa-refresh icon-spacer pointer"></i></span>
-            <h3 style="display: inline">Users ({{filteredUsers.length}})</h3>
-            <a cl***REMOVED***="btn btn-primary pull-right" ng-click="newUser()"><i cl***REMOVED***="fa fa-plus"></i> New User</a>
+      <div cl***REMOVED***="col-md-3">
+        <ul cl***REMOVED***="nav nav-pills nav-stacked">
+          <li ng-click="page = 0; filter='all'" ng-cl***REMOVED***="{active: filter=='all'}"><a href="javascript:void(0);">All <span cl***REMOVED***="badge pull-right">{{filteredUsers.length}}</span></a></li>
+          <li ng-click="page = 0; filter='active'" ng-cl***REMOVED***="{active: filter=='active'}"><a href="javascript:void(0);">Active <span cl***REMOVED***="badge pull-right">{{(filteredUsers | filter:{active: true}).length}}</span></a></li>
+          <li ng-click="page = 0; filter='inactive'" ng-cl***REMOVED***="{active: filter=='inactive'}"><a href="javascript:void(0);">Inactive <span cl***REMOVED***="badge pull-right">{{(filteredUsers | filter:{active: !true}).length}}</span></a></li>
+        </ul>
 
-            <hr>
+        <hr>
+        <form cl***REMOVED***="form">
+          <div cl***REMOVED***="form-group">
+            <label>Search</label>
+            <input type="text" cl***REMOVED***="form-control" placeholder="name, username, email" ng-model="userSearch" ng-change="page=0">
           </div>
-        </div>
-        <div cl***REMOVED***="row bottom-gap">
-          <div cl***REMOVED***="btn-group col-md-12">
-            <label cl***REMOVED***="btn btn-default col-md-4" ng-model="filter" ng-change="page = 0" btn-radio="'all'" uncheckable>All</label>
-            <label cl***REMOVED***="btn btn-default col-md-4" ng-model="filter" ng-change="page = 0" btn-radio="'active'" uncheckable>Active</label>
-            <label cl***REMOVED***="btn btn-default col-md-4" ng-model="filter" ng-change="page = 0" btn-radio="'inactive'" uncheckable>Inactive</label>
-          </div>
-        </div>
+        </form>
+        <hr>
 
-        <div cl***REMOVED***="form-horizontal">
-          <input type="text" cl***REMOVED***="search-query col-md-12 form-control" placeholder="Search users" ng-model="userSearch" ng-change="page=0">
-        </div>
-
-        <div cl***REMOVED***="row">
-          <div cl***REMOVED***="col-md-12">
-            <ul cl***REMOVED***="pager">
-              <li cl***REMOVED***="previous" ng-show="page != 0">
-                <a ng-click="page=page-1">&larr; Previous</a>
-              </li>
-              <li cl***REMOVED***="next" ng-show="page < (filteredUsers.length/itemsPerPage) - 1">
-                <a ng-click="page=page+1">Next &rarr;</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div cl***REMOVED***="pointer bottom-gap-s"
-            ng-cl***REMOVED***="{'admin-active': user.id == u.id}"
-            ng-click="editUser(u)"
-            ng-repeat="u in (filteredUsers = (users | user:['username','firstname','lastname','email']:userSearch | filter:filterActive)) | orderBy:'username' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
-          <div cl***REMOVED***="admin-row row">
-            <div cl***REMOVED***="col-md-10">
-              <div cl***REMOVED***="img-container pull-left">
-                <img cl***REMOVED***="avatar-thumbnail img-rounded" ng-src="{{u.avatarUrl ? u.avatarUrl + '?access_token=' + token : '/img/missing_photo.png'}}"/>
-              </div>
-              <div cl***REMOVED***="strong">{{u.username}}</div>
-              <div cl***REMOVED***="muted">{{u.firstname}} {{u.lastname}}</div>
-            </div>
-            <div cl***REMOVED***="col-md-2" ng-hide="u.active">
-              <a cl***REMOVED***="btn btn-mini btn-success pull-right" ng-click="activateUser(u)">Activate</a>
-            </div>
-          </div>
-        </div>
+        <button cl***REMOVED***="btn btn-default pull-right" ng-click="reset()">Reset</button>
       </div>
 
-      <div cl***REMOVED***="col-md-10" ng-show="user">
-        <div style="position: fixed; top: 84px; left: 35%" cl***REMOVED***="fade alert alert-success" ng-cl***REMOVED***="{'in': saved, 'out': !saved}">
-          Successfully Saved {{user.username}}
-        </div>
-        <div style="position: fixed; top: 84px; left: 35%" cl***REMOVED***="fade alert alert-error" ng-cl***REMOVED***="{'in': error, 'out': !error}">
-          Error saving user: {{error}}
-        </div>
+      <div cl***REMOVED***="col-md-9">
+        <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
+          <div cl***REMOVED***="container-fluid">
+            <div cl***REMOVED***="navbar-header">
+              <a cl***REMOVED***="navbar-brand">Users</a>
+            </div>
+
+            <form cl***REMOVED***="navbar-form navbar-right" role="search">
+              <button type="submit" cl***REMOVED***="btn btn-default" ng-click="newUser()">New User</button>
+            </form>
+          </div>
+        </nav>
 
         <div cl***REMOVED***="row">
-          <div cl***REMOVED***="col-md-5">
-            <form ng-submit="saveUser()" cl***REMOVED***="form-horizontal">
+          <div cl***REMOVED***="col-md-12">
+            <div cl***REMOVED***="admin-table">
+              <div cl***REMOVED***="well-item"
+                  ng-repeat="u in (filteredUsers = (users | user:['username','firstname','lastname','email']:userSearch | filter:filterActive)) | orderBy:'username' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
 
-              <div avatar-user="user"></div>
-              <div icon-user="user" cl***REMOVED***="top-gap-xl"></div>
+                  <div cl***REMOVED***="row pointer" ng-click="gotoUser(u)">
+                    <div cl***REMOVED***="col-md-8">
+                      <div cl***REMOVED***="img-container pull-left">
+                        <img cl***REMOVED***="avatar-thumbnail img-rounded" ng-src="{{u.avatarUrl ? u.avatarUrl + '?access_token=' + token : '/img/missing_photo.png'}}"/>
+                      </div>
+                      <div cl***REMOVED***="strong">{{u.username}}</div>
+                      <div cl***REMOVED***="muted">{{u.firstname}} {{u.lastname}}</div>
+                    </div>
+                    <div cl***REMOVED***="col-md-4">
+                      <button cl***REMOVED***="btn btn-sm btn-danger pull-right admin-user-button" ng-click="deleteUser($event, u)">Delete</button>
+                      <button cl***REMOVED***="btn btn-sm btn-success pull-right admin-user-button" ng-hide="u.active" ng-click="activateUser($event, u)">Activate</button>
+                      <button cl***REMOVED***="btn btn-sm btn-default pull-right" ng-click="editUser($event, u)">Edit</button>
+                    </div>
+                  </div>
 
-              <div cl***REMOVED***="top-gap-l form-group">
-                <label cl***REMOVED***="control-label col-sm-4" for="type">Username</label>
-                <div cl***REMOVED***="col-sm-8">
-                  <input type="text" placeholder="i.e. jappleseed" ng-model="user.username" name="username" cl***REMOVED***="form-control">
-                </div>
               </div>
+            </div>
 
-              <div cl***REMOVED***="form-group">
-                <label cl***REMOVED***="control-label col-sm-4" for="type">First Name</label>
-                <div cl***REMOVED***="col-sm-8">
-                  <input type="text" placeholder="Johnny" ng-model="user.firstname" name="firstname" cl***REMOVED***="form-control">
-                </div>
+            <div cl***REMOVED***="row">
+              <div cl***REMOVED***="col-md-12">
+                <ul cl***REMOVED***="pager">
+                  <li cl***REMOVED***="previous" ng-show="page != 0">
+                    <a ng-click="page=page-1">&larr; Previous</a>
+                  </li>
+                  <li cl***REMOVED***="next" ng-show="page < (filteredUsers.length/itemsPerPage) - 1">
+                    <a ng-click="page=page+1">Next &rarr;</a>
+                  </li>
+                </ul>
               </div>
+            </div>
 
-              <div cl***REMOVED***="form-group">
-                <label cl***REMOVED***="control-label col-sm-4" for="type">Last Name</label>
-                <div cl***REMOVED***="col-sm-8">
-                  <input type="text" placeholder="Appleseed" ng-model="user.lastname" name="lastname" cl***REMOVED***="form-control">
-                </div>
-              </div>
-
-              <div cl***REMOVED***="form-group">
-                <label cl***REMOVED***="control-label col-sm-4" for="type">Email</label>
-                <div cl***REMOVED***="col-sm-8">
-                  <input type="text" placeholder="johnny@appleseed.com" ng-model="user.email" name="email" cl***REMOVED***="form-control">
-                </div>
-              </div>
-
-              <div cl***REMOVED***="form-group">
-                <label cl***REMOVED***="control-label col-sm-4" for="type">Phone</label>
-                <div cl***REMOVED***="col-sm-8">
-                  <input type="text" placeholder="(xxx) xxx-xxxx" ng-model="user.phone" name="phone" cl***REMOVED***="form-control">
-                </div>
-              </div>
-
-              <div cl***REMOVED***="form-group">
-                <label cl***REMOVED***="control-label col-sm-4" for="type">P***REMOVED***word</label>
-                <div cl***REMOVED***="col-sm-8">
-                  <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***word" name="p***REMOVED***word" cl***REMOVED***="form-control">
-                </div>
-              </div>
-
-              <div cl***REMOVED***="form-group">
-                <label cl***REMOVED***="control-label col-sm-4" for="type">Confirm P***REMOVED***word</label>
-                <div cl***REMOVED***="col-sm-8">
-                  <input type="p***REMOVED***word" placeholder="14 characters, alphanumeric" ng-model="user.p***REMOVED***wordconfirm" name="p***REMOVED***wordconfirm" cl***REMOVED***="form-control">
-                </div>
-              </div>
-
-              <div cl***REMOVED***="form-group">
-                <label cl***REMOVED***="control-label col-sm-4" for="type">Role</label>
-                <div cl***REMOVED***="col-sm-8">
-                  <select cl***REMOVED***="form-control" ng-model="user.roleId" ng-options="role.id as role.name for role in roles"></select>
-                </div>
-              </div>
-
-              <span cl***REMOVED***="pull-right">
-                <a cl***REMOVED***="btn btn-danger" ng-show="user.id" ng-click="deleteUser(user)"> <i cl***REMOVED***="fa fa-trash-o"></i> Delete User</a>
-                <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-hide="user.id" ng-click="saveUser(user)"> <i cl***REMOVED***="fa fa-check"></i> Create User</a>
-                <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-show="user.id" ng-click="saveUser(user)"> <i cl***REMOVED***="fa fa-check"></i> Save User</a>
-              </span>
-            </form>
           </div>
         </div>
       </div>

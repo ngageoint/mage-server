@@ -372,7 +372,7 @@ a.admin-nav-inactive {
 .admin-table {
 	color: #555;
 	background-color: white;
-	border: 1px solid #ccc
+	border: 1px solid #F5F5F5
 }
 
 .admin-tab:hover a {
@@ -383,6 +383,10 @@ a.admin-nav-inactive {
 
 .admin-row {
 	padding: 7px;
+}
+
+.admin-user-button {
+  margin-left: 10px;
 }
 
 .admin-active {
@@ -445,14 +449,11 @@ h4.image-delete {
 }
 
 .well-item {
-	padding-bottom: 5px;
-	margin-bottom: 5px;
+	padding: 10px;
 	border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
 .well-item:last-child {
-	padding-bottom: 0;
-	margin-bottom: 0;
 	border-bottom: none;
 }
 
