@@ -141,10 +141,9 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
   }
 
   function getUser(id) {
-    resolvedUsers[id] = resolvedUsers[id] || $http.get(
+    return resolvedUsers[id] || $http.get(
       '/api/users/' + id
     );
-    return resolvedUsers[id];
   }
 
   function getAllUsers(forceRefresh) {
@@ -166,7 +165,10 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
     saveUser(user, {
       url: '/api/users?access_token=' + LocalStorageService.getToken(),
       type: 'POST'
-    }, success, error, progress);
+    }, function(data) {
+      resolvedUsers[users.id] = $q.when(data);
+      success(data);
+    }, error, progress);
   };
 
   function updateUser(id, user, success, error, progress) {
@@ -177,9 +179,12 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
   };
 
   function deleteUser(user) {
-    return $http.delete(
-      '/api/users/' + user.id
-    );
+    var promise = $http.delete('/api/users/' + user.id);
+    promise.success(function() {
+      delete resolvedUsers[user.id];
+    });
+
+    return promise;
   };
 
   // TODO is this really used in this ***REMOVED*** or just internal
@@ -228,7 +233,10 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
             }
             return myXhr;
         },
-        success: success,
+        success: function(data) {
+          resolvedUsers[user.id] = $q.when(data);
+          success(data);
+        },
         error: error,
         data: formData,
         cache: false,
