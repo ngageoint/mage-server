@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminController', AdminController);
 
-AdminController.$inject = ['$scope', '$routeParams', 'UserService', 'DeviceService', 'Team', 'Event', 'Layer'];
+AdminController.$inject = ['$scope', '$routeParams', '$location', 'UserService', 'DeviceService', 'Team', 'Event', 'Layer'];
 
-function AdminController($scope, $routeParams, UserService, DeviceService, Team, Event, Layer) {
+function AdminController($scope, $routeParams, $location, UserService, DeviceService, Team, Event, Layer) {
   $scope.currentAdminPanel = $routeParams.adminPanel || "";
 
   UserService.getUserCount().success(function (data) {
@@ -26,5 +26,13 @@ function AdminController($scope, $routeParams, UserService, DeviceService, Team,
   Layer.count(function (data) {
     $scope.layerCount = data.count;
   });
+
+  $scope.newUser = function() {
+    $location.path('/admin/users/new');
+  }
+
+  $scope.newDevice = function() {
+    $location.path('/admin/devices/new');
+  }
 
 }

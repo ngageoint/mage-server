@@ -45,7 +45,7 @@ function AdminUsersController($scope, $injector, $filter, $location, LocalStorag
   }
 
   $scope.newUser = function() {
-    // TODO goto a new user page
+    $location.path('/admin/users/new');
   }
 
   $scope.gotoUser = function(user) {
@@ -57,12 +57,6 @@ function AdminUsersController($scope, $injector, $filter, $location, LocalStorag
 
     $location.path('/admin/users/' + user.id + '/edit');
   }
-
-  var debounceHideSave = _.debounce(function() {
-    $scope.$apply(function() {
-      $scope.saved = false;
-    });
-  }, 5000);
 
   $scope.deleteUser = function($event, user) {
     $event.stopPropagation();
@@ -94,13 +88,6 @@ function AdminUsersController($scope, $injector, $filter, $location, LocalStorag
     });
   }
 
-  $scope.refresh = function() {
-    $scope.users = [];
-    UserService.getAllUsers(true).success(function (users) {
-      $scope.users = users;
-    });
-  }
-
   /* shortcut for giving a user the USER_ROLE */
   $scope.activateUser = function ($event, user) {
     $event.stopPropagation();
@@ -109,7 +96,6 @@ function AdminUsersController($scope, $injector, $filter, $location, LocalStorag
     UserService.updateUser(user.id, user, function(response) {
       $scope.$apply(function() {
         $scope.saved = true;
-        debounceHideSave();
       });
     }, function(response) {
       $scope.$apply(function() {

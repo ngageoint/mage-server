@@ -1,10 +1,15 @@
 <div cl***REMOVED***="admin-nav-gap">
   <div cl***REMOVED***="container-fluid">
-    <ol cl***REMOVED***="breadcrumb">
+    <ol cl***REMOVED***="breadcrumb" ng-if="user.id">
       <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
       <li><a href="#/admin/users">Users</a></li>
       <li><a ng-href="#/admin/users/{{user.id}}">{{user.username}}</a></li>
       <li cl***REMOVED***="active">Edit</li>
+    </ol>
+    <ol cl***REMOVED***="breadcrumb" ng-if="!user.id">
+      <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
+      <li><a href="#/admin/users">Users</a></li>
+      <li cl***REMOVED***="active">New</li>
     </ol>
   </div>
 
@@ -12,7 +17,8 @@
 
     <div cl***REMOVED***="row">
       <div cl***REMOVED***="col-md-12">
-        <h2>Edit user: {{user.username}}</h2>
+        <h2 ng-if="user.id">Edit user: {{user.username}}</h2>
+        <h2 ng-if="!user.id">New user</h2>
       </div>
     </div>
     <hr>

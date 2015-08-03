@@ -8,9 +8,13 @@ function AdminUserEditController($scope, $injector, $filter, $routeParams, $loca
   $scope.token = LocalStorageService.getToken();
   $scope.roles = [];
 
-  UserService.getUser($routeParams.userId).then(function(user) {
-    $scope.user = angular.copy(user.data);
-  });
+  if ($routeParams.userId) {
+    UserService.getUser($routeParams.userId).then(function(user) {
+      $scope.user = angular.copy(user.data);
+    });
+  } else {
+    $scope.user = {};
+  }
 
   UserService.getRoles().success(function (roles) {
     $scope.roles = roles;
@@ -68,9 +72,9 @@ function AdminUserEditController($scope, $injector, $filter, $routeParams, $loca
         });
       }, failure, progress);
     } else {
-      UserService.createUser(user, function(response) {
+      UserService.createUser(user, function(newUser) {
         $scope.$apply(function() {
-          $location.path('/admin/users/' + $scope.user.id);
+          $location.path('/admin/users/' + newUser.id);
         });
       }, failure, progress);
     }

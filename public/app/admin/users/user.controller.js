@@ -8,7 +8,7 @@ function AdminUserController($scope, $injector, $filter, $routeParams, $location
   $scope.token = LocalStorageService.getToken();
 
   UserService.getUser($routeParams.userId).then(function(user) {
-    $scope.user = user.data;
+    $scope.user = user.data || user;
     $scope.avatarUrl = avatarUrl($scope.user, LocalStorageService.getToken());
     $scope.iconUrl = iconUrl($scope.user, LocalStorageService.getToken());
   });

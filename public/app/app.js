@@ -55,6 +55,11 @@ function config($routeProvider, $locationProvider, $httpProvider) {
     controller:     "AdminUsersController",
     resolve: resolveLogin(["ADMIN_ROLE"])
   });
+  $routeProvider.when('/admin/users/new', {
+    templateUrl:    'app/admin/users/user.edit.html',
+    controller:     "AdminUserEditController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
   $routeProvider.when('/admin/users/:userId/', {
     templateUrl:    'app/admin/users/user.html',
     controller:     "AdminUserController",
@@ -76,11 +81,28 @@ function config($routeProvider, $locationProvider, $httpProvider) {
     controller:     "AdminEventsController",
     resolve: resolveLogin(["ADMIN_ROLE"])
   });
+
   $routeProvider.when('/admin/devices', {
     templateUrl:    'app/admin/devices/devices.html',
     controller:     "AdminDevicesController",
     resolve: resolveLogin(["ADMIN_ROLE"])
   });
+  $routeProvider.when('/admin/devices/new/', {
+    templateUrl:    'app/admin/devices/device.edit.html',
+    controller:     "AdminDeviceEditController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/devices/:deviceId/', {
+    templateUrl:    'app/admin/devices/device.html',
+    controller:     "AdminDeviceController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/devices/:deviceId/edit', {
+    templateUrl:    'app/admin/devices/device.edit.html',
+    controller:     "AdminDeviceEditController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+
   $routeProvider.when('/admin/layers', {
     templateUrl:    'app/admin/layers/layers.html',
     controller:     "AdminLayersController",
