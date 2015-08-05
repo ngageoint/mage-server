@@ -35,4 +35,8 @@ function AdminController($scope, $routeParams, $location, UserService, DeviceSer
     $location.path('/admin/devices/new');
   }
 
+  $scope.newLayer = function() {
+    $location.path('/admin/layers/new');
+  }
+
 }
