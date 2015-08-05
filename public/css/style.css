@@ -403,8 +403,13 @@ a.admin-nav-inactive {
 	float: left;
 }
 
-.admin-icon {
+.admin-device-icon {
   font-size: 40px;
+}
+
+.admin-layer-icon {
+  padding: 5px 0 5px;
+  font-size: 25px;
 }
 
 .pointer {

@@ -108,6 +108,23 @@ function config($routeProvider, $locationProvider, $httpProvider) {
     controller:     "AdminLayersController",
     resolve: resolveLogin(["ADMIN_ROLE"])
   });
+  $routeProvider.when('/admin/layers/new/', {
+    templateUrl:    'app/admin/layers/layer.edit.html',
+    controller:     "AdminLayerEditController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/layers/:layerId/', {
+    templateUrl:    'app/admin/layers/layer.html',
+    controller:     "AdminLayerController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/layers/:layerId/edit', {
+    templateUrl:    'app/admin/layers/layer.edit.html',
+    controller:     "AdminLayerEditController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+
+
   $routeProvider.when('/admin/settings', {
     templateUrl:    'app/admin/settings/settings.html',
     controller:     "AdminSettingsController",

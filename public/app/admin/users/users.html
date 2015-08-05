@@ -45,7 +45,7 @@
           <div cl***REMOVED***="col-md-12">
             <div cl***REMOVED***="admin-table">
               <div cl***REMOVED***="well-item"
-                  ng-repeat="u in (filteredUsers = (users | user:['username','firstname','lastname','email']:userSearch | filter:filterActive)) | orderBy:'username' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
+                  ng-repeat="u in (filteredUsers = (users | user:['username','firstname','lastname','email']:userSearch)) | filter:filterActive | orderBy:'username' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
 
                   <div cl***REMOVED***="row pointer" ng-click="gotoUser(u)">
                     <div cl***REMOVED***="col-md-8">

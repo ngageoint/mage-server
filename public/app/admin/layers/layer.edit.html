@@ -1,0 +1,112 @@
+<div cl***REMOVED***="admin-nav-gap">
+  <div cl***REMOVED***="container-fluid">
+    <ol cl***REMOVED***="breadcrumb" ng-if="layer.id">
+      <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
+      <li><a href="#/admin/layers">Layers</a></li>
+      <li><a ng-href="#/admin/layers/{{layer.name}}">{{layer.name}}</a></li>
+      <li cl***REMOVED***="active">Edit</li>
+    </ol>
+    <ol cl***REMOVED***="breadcrumb" ng-if="!layer.id">
+      <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
+      <li><a href="#/admin/layers">Layers</a></li>
+      <li cl***REMOVED***="active">New</li>
+    </ol>
+  </div>
+
+  <div cl***REMOVED***="container">
+
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="col-md-12">
+        <h2 ng-if="layer.id">Edit layer: {{layer.name}}</h2>
+        <h2 ng-if="!layer.id">New layer</h2>
+      </div>
+    </div>
+    <hr>
+
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="col-md-6" ng-show="layer">
+
+        <form ng-submit="saveLayer()" cl***REMOVED***="form">
+
+          <div cl***REMOVED***="form-group top-gap-l" ng-show="layer.id == undefined">
+            <label cl***REMOVED***="radio-inline">
+              <input type="radio" name="layer-type" value="Imagery" ng-model="layer.type"> Imagery
+            </label>
+            <label cl***REMOVED***="radio-inline">
+              <input type="radio" name="layer-type" value="Feature" ng-model="layer.type"> Static
+            </label>
+          </div>
+
+          <div cl***REMOVED***="form-group">
+            <label cl***REMOVED***="control-label">Layer name</label>
+            <input cl***REMOVED***="form-control" type="text" placeholder="i.e. HurricaneSandy" ng-model="layer.name"/>
+          </div>
+
+          <div cl***REMOVED***="form-group" ng-show="layer.type == 'Imagery'">
+            <label cl***REMOVED***="control-label">Layer URL</label>
+            <input cl***REMOVED***="form-control" type="text" cl***REMOVED***="input-xxlarge" placeholder="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" ng-model="layer.url"/>
+          </div>
+
+          <div cl***REMOVED***="form-group">
+            <label cl***REMOVED***="control-label">Description</label>
+            <textarea cl***REMOVED***="form-control" type="text" placeholder="Brief description of the layer." ng-model="layer.description"/>
+          </div>
+
+          <div cl***REMOVED***="form-group" ng-show="layer.type == 'Imagery'">
+           <div cl***REMOVED***="checkbox">
+             <label>
+               <input type="checkbox" name="layer-type" ng-model="layer.base"> Base Layer
+             </label>
+           </div>
+         </div>
+
+          <div cl***REMOVED***="form-group" ng-show="layer.type == 'Imagery'">
+            <label cl***REMOVED***="radio-inline">
+              <input type="radio" name="layer-format" value="XYZ" ng-model="layer.format"> XYZ
+            </label>
+            <label cl***REMOVED***="radio-inline">
+              <input type="radio" name="layer-format" value="TMS" ng-model="layer.format"> TMS
+            </label>
+            <label cl***REMOVED***="radio-inline">
+              <input type="radio" name="layer-format" value="WMS" ng-model="layer.format"> WMS
+            </label>
+          </div>
+
+          <div cl***REMOVED***="form-group" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+            <label cl***REMOVED***="control-label">Layers</label>
+            <input cl***REMOVED***="form-control" cl***REMOVED***="input-xlarge" type="text" placeholder="Comma seperated list of layer names" ng-model="layer.wms.layers"/>
+          </div>
+
+          <div cl***REMOVED***="form-group" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+            <label cl***REMOVED***="control-label">Styles</label>
+            <input cl***REMOVED***="form-control" cl***REMOVED***="input-xlarge" type="text" placeholder="Comma seperated list of layer styles" ng-model="layer.wms.styles"/>
+          </div>
+
+          <div cl***REMOVED***="form-group" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+            <label cl***REMOVED***="control-label" for="type">Format</label>
+            <select cl***REMOVED***="form-control" ng-model="layer.wms.format" ng-options="format for format in wmsFormats"></select>
+          </div>
+
+          <div cl***REMOVED***="form-group" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+           <div cl***REMOVED***="checkbox">
+             <label>
+               <input type="checkbox" name="layer-wms-transparency" ng-model="layer.wms.transparent"> Transparent
+             </label>
+           </div>
+         </div>
+
+          <div cl***REMOVED***="form-group" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+            <label cl***REMOVED***="control-label" for="type">Version</label>
+            <select cl***REMOVED***="form-control" ng-model="layer.wms.version" ng-options="version for version in wmsVersions"></select>
+          </div>
+
+          <span cl***REMOVED***="pull-right">
+            <a cl***REMOVED***="btn btn-default" ng-cl***REMOVED***="{'disabled': saving}" ng-click="cancel()">Cancel</a>
+            <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-click="saveLayer(layer)"><i cl***REMOVED***="fa fa-check"></i> Save</a>
+          </span>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

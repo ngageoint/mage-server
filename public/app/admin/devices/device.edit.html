@@ -17,7 +17,8 @@
 
     <div cl***REMOVED***="row">
       <div cl***REMOVED***="col-md-12">
-        <h2>Edit device: {{device.uid}}</h2>
+        <h2 ng-if="device.id">Edit device: {{device.uid}}</h2>
+        <h2 ng-if="!device.id">New device</h2>
       </div>
     </div>
     <hr>

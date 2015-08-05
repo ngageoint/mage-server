@@ -2,70 +2,65 @@ angular
   .module('mage')
   .controller('AdminLayersController', AdminLayersController);
 
-AdminLayersController.$inject = ['$scope', '$injector', 'LocalStorageService', 'Layer'];
+AdminLayersController.$inject = ['$scope', '$filter', '$injector', '$location', 'LocalStorageService', 'Layer'];
 
-function AdminLayersController($scope, $injector, LocalStorageService, Layer) {
-  $scope.layerName = "";
-  $scope.showLayerForm = false;
-  $scope.wmsFormats = ['image/jpeg', 'image/png'];
-  $scope.wmsVersions = ['1.1.1', '1.3.0'];
+function AdminLayersController($scope, $filter, $injector, $location, LocalStorageService, Layer) {
+  $scope.filter = "all";
+  $scope.layers = [];
+  $scope.page = 0;
+  $scope.itemsPerPage = 10;
 
-  $scope.fileUploadOptions = {
-    acceptFileTypes: /(\.|\/)(kml)$/i,
-  };
-  $scope.uploads = [{}];
+  Layer.query(function(layers) {
+    $scope.layers = layers;
+    console.log('layers', layers);
+  });
 
-  $scope.layers = Layer.query();
-
-  $scope.newLayer = function () {
-    $scope.layer = new Layer({
-      type: 'Feature',
-      format: 'XYZ',
-      base: false,
-      wms: {
-        format: 'image/png',
-        version: '1.1.1',
-        transparent: false
-      }
-    });
-
-    $scope.showLayerForm = true;
-    $scope.layers.push($scope.layer);
+  $scope.filterLayers = function(layer) {
+    var filteredLayers = $filter('filter')([layer], $scope.layerSearch);
+    if (filteredLayers && filteredLayers.length) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
-  $scope.saveLayer = function () {
-    var layer = $scope.layer;
-    $scope.layer.$save({}, function(success) {
-      $scope.fileUploadOptions = {
-        url: '/api/layers/' + $scope.layer.id + '/kml?access_token=' + LocalStorageService.getToken(),
-        acceptFileTypes: /(\.|\/)(kml)$/i,
-      };
-    });
+  $scope.filterType = function (layer) {
+    switch ($scope.filter) {
+      case 'all': return true;
+      case 'base': return layer.base && layer.type == 'Imagery';
+      case 'imagery': return !layer.base && layer.type == 'Imagery';
+      case 'feature': return !layer.base && layer.type == 'Feature';
+    }
   }
 
-  $scope.addAnotherFile = function() {
-    $scope.uploads.push({});
+  $scope.reset = function() {
+    $scope.page = 0;
+    $scope.filter = 'all';
+    $scope.layerSearch = '';
   }
 
-  $scope.viewLayer = function (layer) {
-    $scope.layer = layer;
-    $scope.showLayerForm = true;
-    $scope.fileUploadOptions = {
-      url: '/api/layers/' + $scope.layer.id + '/kml?access_token=' + LocalStorageService.getToken(),
-      acceptFileTypes: /(\.|\/)(kml)$/i,
-    };
+  $scope.newLayer = function() {
+    $location.path('/admin/layers/new');
   }
 
-  $scope.confirmUpload = function() {
-    $scope.uploadConfirmed = true;
+  $scope.gotoLayer = function(layer) {
+    $location.path('/admin/layers/' + layer.id);
   }
 
-  $scope.deleteLayer = function(layer) {
+  $scope.editLayer = function($event, layer) {
+    $event.stopPropagation();
+
+    $location.path('/admin/layers/' + layer.id + '/edit');
+  }
+
+  $scope.deleteLayer = function($event, layer) {
+    $event.stopPropagation();
+
     var modalInstance = $injector.get('$modal').open({
       templateUrl: '/app/admin/layers/layer-delete.html',
       resolve: {
         layer: function () {
-          return $scope.layer;
+          return layer;
         }
       },
       controller: ['$scope', '$modalInstance', 'layer', function ($scope, $modalInstance, layer) {
@@ -84,61 +79,6 @@ function AdminLayersController($scope, $injector, LocalStorageService, Layer) {
 
     modalInstance.result.then(function (layer) {
       $scope.layers = _.without($scope.layers, layer);
-      $scope.layer = null;
-      $scope.showLayerForm = false;
     });
-  }
-
-  $scope.setFiles = function (element) {
-    $scope.$apply(function(scope) {
-      console.log('files:', element.files);
-      // Turn the FileList object into an Array
-      $scope.files = []
-      for (var i = 0; i < element.files.length; i++) {
-        $scope.files.push(element.files[i])
-      }
-      $scope.progressVisible = false
-    });
-  }
-
-  $scope.uploadFile = function() {
-    var fd = new FormData()
-    for (var i in $scope.files) {
-      fd.append("attachment", $scope.files[i])
-    }
-    var xhr = new XMLHttpRequest()
-    xhr.upload.addEventListener("progress", uploadProgress, false)
-    xhr.addEventListener("load", uploadComplete, false)
-    xhr.addEventListener("error", uploadFailed, false)
-    xhr.addEventListener("abort", uploadCanceled, false)
-    xhr.open("POST", $scope.fileUploadUrl)
-    $scope.progressVisible = true
-    xhr.send(fd)
-  }
-
-  function uploadProgress(evt) {
-    $scope.$apply(function(){
-      if (evt.lengthComputable) {
-        $scope.progress = Math.round(evt.loaded * 100 / evt.total)
-      } else {
-        $scope.progress = 'unable to compute'
-      }
-    });
-  }
-
-  function uploadComplete(evt) {
-    $scope.files = [];
-    $scope.progressVisible = false
-  }
-
-  function uploadFailed(evt) {
-    alert("There was an error attempting to upload the file.")
-  }
-
-  function uploadCanceled(evt) {
-    $scope.$apply(function(){
-      $scope.progressVisible = false
-    })
-    alert("The upload has been canceled by the user or the browser dropped the connection.")
   }
 }
