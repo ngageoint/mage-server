@@ -47,6 +47,12 @@ function AdminDevicesController($scope, $injector, $filter, $location, LocalStor
     }
   }
 
+  $scope.reset = function() {
+    $scope.page = 0;
+    $scope.filter = 'all';
+    $scope.deviceSearch = '';
+  }
+
   $scope.newDevice = function() {
     $location.path('/admin/devices/new');
   }
@@ -86,7 +92,6 @@ function AdminDevicesController($scope, $injector, $filter, $location, LocalStor
     });
 
     modalInstance.result.then(function(device) {
-      $scope.device = null;
       $scope.devices = _.reject($scope.devices, function(d) { return d.id == device.id});
     });
   }
