@@ -76,6 +76,22 @@ function config($routeProvider, $locationProvider, $httpProvider) {
     controller:     "AdminTeamsController",
     resolve: resolveLogin(["ADMIN_ROLE"])
   });
+  $routeProvider.when('/admin/teams/new', {
+    templateUrl:    'app/admin/teams/team.edit.html',
+    controller:     "AdminTeamEditController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/teams/:teamId/', {
+    templateUrl:    'app/admin/teams/team.html',
+    controller:     "AdminTeamController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/teams/:teamId/edit', {
+    templateUrl:    'app/admin/teams/team.edit.html',
+    controller:     "AdminTeamEditController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+
   $routeProvider.when('/admin/events', {
     templateUrl:    'app/admin/events/events.html',
     controller:     "AdminEventsController",

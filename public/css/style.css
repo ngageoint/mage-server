@@ -125,6 +125,10 @@ a {
 }
 
 .right-gap-s {
+  margin-right: 5px;
+}
+
+.right-gap {
   margin-right: 10px;
 }
 
@@ -293,15 +297,9 @@ textarea {
 }
 
 /* User management page styles */
-
-
 .admin-card {
   height: 235px;
   background-color: white;
-}
-
-.admin-card > h4 {
-  /*color: #FFD9C5;*/
 }
 
 .admin-dashboard-navbar {
@@ -376,7 +374,7 @@ a.admin-nav-inactive {
 .admin-table {
 	color: #555;
 	background-color: white;
-	border: 1px solid #F5F5F5
+	border: 1px solid #F5F5F5;
 }
 
 .admin-tab:hover a {
@@ -413,7 +411,7 @@ a.admin-nav-inactive {
 }
 
 .pointer {
-    cursor: pointer; cursor: hand;
+  cursor: pointer; cursor: hand;
 }
 
 .awesome-marker i {
@@ -422,18 +420,18 @@ a.admin-nav-inactive {
 }
 
 div.image-button {
-    position: relative;
+  position: relative;
 }
 
 div.image-button:hover button {
-    display: block;
+  display: block;
 }
 
 div.image-button button {
-    position: absolute;
-    top: 0;
-    left: 0;
-    display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: none;
 }
 
 .image-delete {
@@ -452,13 +450,13 @@ h4.image-delete {
 }
 
 .feature-title {
-    border-bottom: 1px solid #F6F6F6;
-    margin-bottom: 10px;
-    padding-bottom: 5px;
+  border-bottom: 1px solid #F6F6F6;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
 }
 
 .small-text {
-    font-size: 0.8em;
+  font-size: 0.8em;
 }
 
 .well-item {
@@ -471,8 +469,8 @@ h4.image-delete {
 }
 
 .edit-well {
-    background: #43719F;
-    color: white;
+  background: #43719F;
+  color: white;
 }
 
 .muted {

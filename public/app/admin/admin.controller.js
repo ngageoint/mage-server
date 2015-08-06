@@ -31,6 +31,10 @@ function AdminController($scope, $routeParams, $location, UserService, DeviceSer
     $location.path('/admin/users/new');
   }
 
+  $scope.newTeam = function() {
+    $location.path('/admin/teams/new');
+  }
+
   $scope.newDevice = function() {
     $location.path('/admin/devices/new');
   }

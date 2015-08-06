@@ -1,144 +1,79 @@
 <div cl***REMOVED***="admin-nav-gap">
   <div cl***REMOVED***="container-fluid">
-
     <ol cl***REMOVED***="breadcrumb">
       <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
       <li cl***REMOVED***="active">Teams</li>
     </ol>
+  </div>
+
+  <div cl***REMOVED***="container">
 
     <div cl***REMOVED***="row top-gap-xl">
-      <div cl***REMOVED***="col-md-2">
-        <div cl***REMOVED***="row">
-          <div cl***REMOVED***="col-md-12 admin-header">
-            <span ng-click="refresh()"><i cl***REMOVED***="fa fa-refresh icon-spacer pointer"></i></span>
-            <h3 style="display: inline">Teams ({{filteredTeams.length}})</h3>
-            <a cl***REMOVED***="btn btn-primary pull-right" ng-click="newTeam()"><i cl***REMOVED***="fa fa-plus"></i> New Team</a>
+      <div cl***REMOVED***="col-md-3">
 
-            <hr>
+        <form cl***REMOVED***="form">
+          <div cl***REMOVED***="form-group">
+            <label>Search</label>
+            <input type="text" cl***REMOVED***="form-control" placeholder="team name, description" ng-model="teamSearch" ng-change="page=0">
           </div>
-        </div>
+        </form>
+        <hr>
 
-        <div cl***REMOVED***="row">
-          <div cl***REMOVED***="col-md-12">
-            <div cl***REMOVED***="form-horizontal">
-              <input type="text" cl***REMOVED***="search-query col-md-12 form-control" placeholder="Search teams" ng-model="teamSearch" ng-change="page=0">
+        <button cl***REMOVED***="btn btn-default pull-right" ng-click="reset()">Reset</button>
+      </div>
+
+      <div cl***REMOVED***="col-md-9">
+        <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
+          <div cl***REMOVED***="container-fluid">
+            <div cl***REMOVED***="navbar-header">
+              <a cl***REMOVED***="navbar-brand">Teams</a>
             </div>
+
+            <form cl***REMOVED***="navbar-form navbar-right" role="search">
+              <button type="submit" cl***REMOVED***="btn btn-default" ng-click="newTeam()">New Team</button>
+            </form>
           </div>
-        </div>
+        </nav>
 
         <div cl***REMOVED***="row">
           <div cl***REMOVED***="col-md-12">
-            <ul cl***REMOVED***="pager">
-              <li cl***REMOVED***="previous" ng-show="page != 0">
-                <a ng-click="page=page-1">&larr; Previous</a>
-              </li>
-              <li cl***REMOVED***="next" ng-show="page < (filteredTeams.length/itemsPerPage) - 1">
-                <a ng-click="page=page+1">Next &rarr;</a>
-              </li>
-            </ul>
-          </div>
-        </div>
+            <div cl***REMOVED***="admin-table">
+              <div cl***REMOVED***="well-item"
+                  ng-repeat="t in (filteredTeams = (teams | filter:filterTeams)) | orderBy:'name' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
 
-         <div cl***REMOVED***="pointer bottom-gap-s"
-             ng-cl***REMOVED***="{'admin-active': team.id == t.id}"
-             ng-click="editTeam(t)"
-             ng-repeat="t in (filteredTeams = (teams | filter:teamSearch)) | orderBy:'name' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
-           <div cl***REMOVED***="admin-row row">
-
-             <div cl***REMOVED***="col-md-10">
-               <div cl***REMOVED***="strong">{{t.name}}</div>
-               <div cl***REMOVED***="muted">{{t.description}}</div>
-             </div>
-           </div>
-         </div>
-
-     </div>
-
-     <div cl***REMOVED***="col-md-10" ng-show="team">
-       <div style="position: fixed; top: 84px; left: 35%" cl***REMOVED***="fade alert alert-success" ng-cl***REMOVED***="{'in': saved, 'out': !saved}">
-         Successfully Saved {{team.name}}
-       </div>
-       <div style="position: fixed; top: 84px; left: 35%" cl***REMOVED***="fade alert alert-error" ng-cl***REMOVED***="{'in': error, 'out': !error}">
-         Error saving team: {{error}}
-       </div>
-
-       <div cl***REMOVED***="row">
-         <div cl***REMOVED***="col-md-8">
-           <form cl***REMOVED***="form">
-             <div cl***REMOVED***="form-group">
-               <label cl***REMOVED***="control-label">Name</label>
-               <input cl***REMOVED***="form-control" type="text" placeholder="Team name" ng-model="team.name"/>
-             </div>
-             <div cl***REMOVED***="form-group">
-               <label cl***REMOVED***="control-label">Description</label>
-               <textarea cl***REMOVED***="form-control" type="text" placeholder="Brief description of the team." ng-model="team.description"/>
-             </div>
-           </form>
-
-           <h3 cl***REMOVED***="top-gap-l">Team Members</h3>
-           <div cl***REMOVED***="bottom-gap">
-             <div cl***REMOVED***="row">
-               <form cl***REMOVED***="form">
-                 <div cl***REMOVED***="col-sm-4">
-                   <ui-select ng-model="user.selected" theme="bootstrap">
-                     <ui-select-match placeholder="Select a user to add to team">{{$select.selected.username}}</ui-select-match>
-                     <ui-select-choices group-by="groupLayerByType" repeat="user in nonUsers | orderBy: 'name' | filter: $select.search">
-                       <div ng-bind-html="user.username | highlight: $select.search"></div>
-                       <small cl***REMOVED***="muted">
-                        <span ng-bind-html="''+user.firstname + ' ' + user.lastname | highlight: $select.search"></span>
-                      </small>
-                     </ui-select-choices>
-                   </ui-select>
+                  <div cl***REMOVED***="row pointer" ng-click="gotoTeam(t)">
+                    <div cl***REMOVED***="col-md-8">
+                      <div cl***REMOVED***="right-gap pull-left">
+                        <i cl***REMOVED***="fa fa-users admin-layer-icon"></i>
+                      </div>
+                      <div cl***REMOVED***="strong">{{t.name}}</div>
+                      <div cl***REMOVED***="muted">{{t.description}}</div>
+                    </div>
+                    <div cl***REMOVED***="col-md-4">
+                      <button cl***REMOVED***="btn btn-sm btn-danger pull-right admin-user-button" ng-click="deleteTeam($event, t)">Delete</button>
+                      <button cl***REMOVED***="btn btn-sm btn-default pull-right" ng-click="editTeam($event, t)">Edit</button>
+                    </div>
                   </div>
-                  <div cl***REMOVED***="col-sm-2 pull-left">
-                    <button cl***REMOVED***="btn btn-success" ng-click="addUser(user.selected)" ng-disabled="user.selected == null"><i cl***REMOVED***="fa fa-plus"></i> Add User</button>
-                  </div>
-               </form>
-             </div>
-           </div>
 
-           <div cl***REMOVED***="navbar navbar-default">
-             <div cl***REMOVED***="container-fluid">
-              <div cl***REMOVED***="">
-                <ul cl***REMOVED***="nav navbar-nav navbar-left">
-                  <li><button type="button" cl***REMOVED***="btn btn-default navbar-btn navbar-left" ng-click="edit = !edit">Edit</button></li>
-                </ul>
+              </div>
+            </div>
 
-                <ul cl***REMOVED***="nav navbar-nav">
-                  <li><a cl***REMOVED***="navbar-brand" style="margin-left: 5px;">Team Members ({{team.users.length}})</a></li>
-                  <li cl***REMOVED***="active">
-                    <form cl***REMOVED***="navbar-form">
-                      <input type="text" cl***REMOVED***="search-query form-control" placeholder="Filter Team Members" ng-model="memberSearch">
-                    </form>
+            <div cl***REMOVED***="row">
+              <div cl***REMOVED***="col-md-12">
+                <ul cl***REMOVED***="pager">
+                  <li cl***REMOVED***="previous" ng-show="page != 0">
+                    <a ng-click="page=page-1">&larr; Previous</a>
+                  </li>
+                  <li cl***REMOVED***="next" ng-show="page < (filteredUsers.length/itemsPerPage) - 1">
+                    <a ng-click="page=page+1">Next &rarr;</a>
                   </li>
                 </ul>
               </div>
             </div>
+
           </div>
-
-           <div cl***REMOVED***="pre-scrollable-large well well-small admin-table">
-             <div ng-repeat="user in team.users | user: ['username','firstname','lastname']:memberSearch" cl***REMOVED***="row well-item">
-               <div cl***REMOVED***="col-md-12">
-                 <span cl***REMOVED***="icon-spacer" ng-show="edit">
-                   <a cl***REMOVED***="btn btn-xs btn-danger" ng-click="removeUser(user)"><i cl***REMOVED***="fa fa-minus"></i></a>
-                 </span>
-                 <span>
-                   {{user.firstname}} {{user.lastname}}
-                 </span>
-                 <span cl***REMOVED***="muted"> ({{user.username}})</span>
-               </div>
-             </div>
-           </div>
-
-           <span cl***REMOVED***="pull-right">
-             <a cl***REMOVED***="btn btn-danger" ng-show="team.id" ng-click="deleteTeam(team)"> <i cl***REMOVED***="fa fa-trash-o"></i> Delete Team</a>
-             <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-hide="team.id" ng-click="createTeam(team)"> <i cl***REMOVED***="fa fa-check"></i> Create Team</a>
-             <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-show="team.id" ng-click="updateTeam(team)"> <i cl***REMOVED***="fa fa-check"></i> Save Team</a>
-           </span>
-
-         </div>
-       </div>
-     </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

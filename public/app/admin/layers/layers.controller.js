@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminLayersController', AdminLayersController);
 
-AdminLayersController.$inject = ['$scope', '$filter', '$injector', '$location', 'LocalStorageService', 'Layer'];
+AdminLayersController.$inject = ['$scope', '$filter', '$injector', '$location', 'Layer'];
 
-function AdminLayersController($scope, $filter, $injector, $location, LocalStorageService, Layer) {
+function AdminLayersController($scope, $filter, $injector, $location, Layer) {
   $scope.filter = "all";
   $scope.layers = [];
   $scope.page = 0;
@@ -12,7 +12,6 @@ function AdminLayersController($scope, $filter, $injector, $location, LocalStora
 
   Layer.query(function(layers) {
     $scope.layers = layers;
-    console.log('layers', layers);
   });
 
   $scope.filterLayers = function(layer) {
