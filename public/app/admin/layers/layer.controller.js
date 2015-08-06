@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminLayerController', AdminLayerController);
 
-AdminLayerController.$inject = ['$scope', '$injector', '$routeParams', '$location', 'LocalStorageService', 'Layer'];
+AdminLayerController.$inject = ['$scope', '$injector', '$routeParams', '$location', 'Layer'];
 
-function AdminLayerController($scope, $injector, $routeParams, $location, LocalStorageService, Layer) {
+function AdminLayerController($scope, $injector, $routeParams, $location, Layer) {
 
   Layer.get({id: $routeParams.layerId}, function(layer) {
     $scope.layer = layer;
