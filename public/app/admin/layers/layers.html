@@ -5,79 +5,85 @@
       <li cl***REMOVED***="active">Layers</li>
     </ol>
   </div>
+</div>
 
-  <div cl***REMOVED***="container">
+<div cl***REMOVED***="content-flex">
 
-    <div cl***REMOVED***="row top-gap-xl">
-      <div cl***REMOVED***="col-md-3">
-        <ul cl***REMOVED***="nav nav-pills nav-stacked">
-          <li ng-click="page = 0; filter='all'" ng-cl***REMOVED***="{active: filter=='all'}"><a href="javascript:void(0);">All Layers <span cl***REMOVED***="badge pull-right">{{filteredLayers.length}}</span></a></li>
-          <li ng-click="page = 0; filter='base'" ng-cl***REMOVED***="{active: filter=='base'}"><a href="javascript:void(0);">Base Layers <span cl***REMOVED***="badge pull-right">{{filteredLayers.length}}</span></a></li>
-          <li ng-click="page = 0; filter='imagery'" ng-cl***REMOVED***="{active: filter=='imagery'}"><a href="javascript:void(0);">Imagery Layers <span cl***REMOVED***="badge pull-right">{{(filteredLayers | filter:{active: true}).length}}</span></a></li>
-          <li ng-click="page = 0; filter='feature'" ng-cl***REMOVED***="{active: filter=='feature'}"><a href="javascript:void(0);">Feature Layers <span cl***REMOVED***="badge pull-right">{{(filteredLayers | filter:{active: !true}).length}}</span></a></li>
-        </ul>
+  <div cl***REMOVED***="content-inner">
 
-        <hr>
-        <form cl***REMOVED***="form">
-          <div cl***REMOVED***="form-group">
-            <label>Search</label>
-            <input type="text" cl***REMOVED***="form-control" placeholder="layer name, description" ng-model="layerSearch" ng-change="page=0">
-          </div>
-        </form>
-        <hr>
+    <div cl***REMOVED***="container">
 
-        <button cl***REMOVED***="btn btn-default pull-right" ng-click="reset()">Reset</button>
-      </div>
+      <div cl***REMOVED***="row">
+        <div cl***REMOVED***="col-md-3">
+          <ul cl***REMOVED***="nav nav-pills nav-stacked">
+            <li ng-click="page = 0; filter='all'" ng-cl***REMOVED***="{active: filter=='all'}"><a href="javascript:void(0);">All Layers <span cl***REMOVED***="badge pull-right">{{filteredLayers.length}}</span></a></li>
+            <li ng-click="page = 0; filter='base'" ng-cl***REMOVED***="{active: filter=='base'}"><a href="javascript:void(0);">Base Layers <span cl***REMOVED***="badge pull-right">{{filteredLayers.length}}</span></a></li>
+            <li ng-click="page = 0; filter='imagery'" ng-cl***REMOVED***="{active: filter=='imagery'}"><a href="javascript:void(0);">Imagery Layers <span cl***REMOVED***="badge pull-right">{{(filteredLayers | filter:{active: true}).length}}</span></a></li>
+            <li ng-click="page = 0; filter='feature'" ng-cl***REMOVED***="{active: filter=='feature'}"><a href="javascript:void(0);">Feature Layers <span cl***REMOVED***="badge pull-right">{{(filteredLayers | filter:{active: !true}).length}}</span></a></li>
+          </ul>
 
-      <div cl***REMOVED***="col-md-9">
-        <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
-          <div cl***REMOVED***="container-fluid">
-            <div cl***REMOVED***="navbar-header">
-              <a cl***REMOVED***="navbar-brand">Layers</a>
+          <hr>
+          <form cl***REMOVED***="form">
+            <div cl***REMOVED***="form-group">
+              <label>Search</label>
+              <input type="text" cl***REMOVED***="form-control" placeholder="layer name, description" ng-model="layerSearch" ng-change="page=0">
             </div>
+          </form>
+          <hr>
 
-            <form cl***REMOVED***="navbar-form navbar-right" role="search">
-              <button type="submit" cl***REMOVED***="btn btn-default" ng-click="newLayer()">New Layer</button>
-            </form>
-          </div>
-        </nav>
+          <button cl***REMOVED***="btn btn-default pull-right" ng-click="reset()">Reset</button>
+        </div>
 
-        <div cl***REMOVED***="row">
-          <div cl***REMOVED***="col-md-12">
-            <div cl***REMOVED***="admin-table">
-              <div cl***REMOVED***="well-item"
-                  ng-repeat="l in (filteredLayers = (layers | filter:filterLayers)) | filter:filterType | orderBy:'name' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
+        <div cl***REMOVED***="col-md-9">
+          <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
+            <div cl***REMOVED***="container-fluid">
+              <div cl***REMOVED***="navbar-header">
+                <a cl***REMOVED***="navbar-brand">Layers</a>
+              </div>
 
-                  <div cl***REMOVED***="row pointer" ng-click="gotoLayer(l)">
-                    <div cl***REMOVED***="col-md-8">
-                      <div cl***REMOVED***="right-gap pull-left">
-                        <i cl***REMOVED***="fa fa-map admin-layer-icon"></i>
+              <form cl***REMOVED***="navbar-form navbar-right" role="search">
+                <button type="submit" cl***REMOVED***="btn btn-default" ng-click="newLayer()">New Layer</button>
+              </form>
+            </div>
+          </nav>
+
+          <div cl***REMOVED***="row">
+            <div cl***REMOVED***="col-md-12">
+              <div cl***REMOVED***="admin-table">
+                <div cl***REMOVED***="well-item"
+                    ng-repeat="l in (filteredLayers = (layers | filter:filterLayers)) | filter:filterType | orderBy:'name' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
+
+                    <div cl***REMOVED***="row pointer" ng-click="gotoLayer(l)">
+                      <div cl***REMOVED***="col-md-8">
+                        <div cl***REMOVED***="right-gap pull-left">
+                          <i cl***REMOVED***="fa fa-map admin-layer-icon"></i>
+                        </div>
+                        <div cl***REMOVED***="strong">{{l.name}}</div>
+                        <div cl***REMOVED***="muted"><span cl***REMOVED***="right-gap">{{l.type}}</span><span>{{l.url}}</span></div>
                       </div>
-                      <div cl***REMOVED***="strong">{{l.name}}</div>
-                      <div cl***REMOVED***="muted"><span cl***REMOVED***="right-gap">{{l.type}}</span><span>{{l.url}}</span></div>
+                      <div cl***REMOVED***="col-md-4">
+                        <button cl***REMOVED***="btn btn-sm btn-danger pull-right admin-user-button" ng-click="deleteLayer($event, l)">Delete</button>
+                        <button cl***REMOVED***="btn btn-sm btn-default pull-right" ng-click="editLayer($event, l)">Edit</button>
+                      </div>
                     </div>
-                    <div cl***REMOVED***="col-md-4">
-                      <button cl***REMOVED***="btn btn-sm btn-danger pull-right admin-user-button" ng-click="deleteLayer($event, l)">Delete</button>
-                      <button cl***REMOVED***="btn btn-sm btn-default pull-right" ng-click="editLayer($event, l)">Edit</button>
-                    </div>
-                  </div>
 
+                </div>
               </div>
-            </div>
 
-            <div cl***REMOVED***="row">
-              <div cl***REMOVED***="col-md-12">
-                <ul cl***REMOVED***="pager">
-                  <li cl***REMOVED***="previous" ng-show="page != 0">
-                    <a ng-click="page=page-1">&larr; Previous</a>
-                  </li>
-                  <li cl***REMOVED***="next" ng-show="page < (filterLayers.length/itemsPerPage) - 1">
-                    <a ng-click="page=page+1">Next &rarr;</a>
-                  </li>
-                </ul>
+              <div cl***REMOVED***="row">
+                <div cl***REMOVED***="col-md-12">
+                  <ul cl***REMOVED***="pager">
+                    <li cl***REMOVED***="previous" ng-show="page != 0">
+                      <a ng-click="page=page-1">&larr; Previous</a>
+                    </li>
+                    <li cl***REMOVED***="next" ng-show="page < (filterLayers.length/itemsPerPage) - 1">
+                      <a ng-click="page=page+1">Next &rarr;</a>
+                    </li>
+                  </ul>
+                </div>
               </div>
-            </div>
 
+            </div>
           </div>
         </div>
       </div>
