@@ -377,6 +377,10 @@ a.admin-nav-inactive {
 	border: 1px solid #F5F5F5;
 }
 
+.admin-table-content {
+  padding: 15px;
+}
+
 .admin-tab:hover a {
 	border-bottom: 2px solid #345477;
 	text-decoration: none;
@@ -385,6 +389,10 @@ a.admin-nav-inactive {
 
 .admin-row {
 	padding: 7px;
+}
+
+.admin-u***REMOVED***ved {
+  margin-top: 5px;
 }
 
 .admin-user-button {

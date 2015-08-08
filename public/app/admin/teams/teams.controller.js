@@ -15,11 +15,7 @@ function AdminTeamsController($scope, $injector, $filter, $location, Team) {
 
   $scope.filterTeams = function(team) {
     var filteredTeams = $filter('filter')([team], $scope.teamSearch);
-    if (filteredTeams && filteredTeams.length) {
-      return true;
-    } else {
-      return false;
-    }
+    return filteredTeams && filteredTeams.length;
   }
 
   $scope.reset = function() {

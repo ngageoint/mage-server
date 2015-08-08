@@ -2,11 +2,9 @@ angular
   .module('mage')
   .controller('AdminTeamEditController', AdminTeamEditController);
 
-AdminTeamEditController.$inject = ['$scope', '$injector', '$location', '$routeParams', 'LocalStorageService', 'ObservationService', 'UserService', 'Team'];
+AdminTeamEditController.$inject = ['$scope', '$location', '$routeParams', 'Team'];
 
-function AdminTeamEditController($scope, $injector, $location, $routeParams, LocalStorageService, ObservationService, UserService, Team) {
-  $scope.token = LocalStorageService.getToken();
-
+function AdminTeamEditController($scope, $location, $routeParams, Team) {
   if ($routeParams.teamId) {
     Team.get({id: $routeParams.teamId}, function(team) {
       $scope.team = team;
@@ -26,5 +24,4 @@ function AdminTeamEditController($scope, $injector, $location, $routeParams, Loc
   $scope.cancel = function() {
     $location.path('/admin/teams/' + $scope.team.id);
   }
-
 }

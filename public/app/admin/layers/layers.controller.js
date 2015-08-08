@@ -16,11 +16,7 @@ function AdminLayersController($scope, $filter, $injector, $location, Layer) {
 
   $scope.filterLayers = function(layer) {
     var filteredLayers = $filter('filter')([layer], $scope.layerSearch);
-    if (filteredLayers && filteredLayers.length) {
-      return true;
-    } else {
-      return false;
-    }
+    return filteredLayers && filteredLayers.length;
   }
 
   $scope.filterType = function (layer) {

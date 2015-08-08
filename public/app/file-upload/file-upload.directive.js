@@ -10,7 +10,6 @@ function fileUpload() {
       type: '@',
       url: '@',
       allowUpload: '=',
-      allowMultiple: '=',
       preview: '=',
       uploadId: '=',
       uploadFileFormName: '=',
