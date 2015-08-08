@@ -1,5 +1,4 @@
 <div cl***REMOVED***="admin-nav-gap">
-
   <div cl***REMOVED***="container-fluid">
     <ol cl***REMOVED***="breadcrumb">
       <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
@@ -7,141 +6,147 @@
       <li cl***REMOVED***="active">{{layer.name}}</li>
     </ol>
   </div>
+</div>
 
-  <div cl***REMOVED***="container">
-    <div cl***REMOVED***="row">
-      <div cl***REMOVED***="col-md-12" ng-show="layer">
+<div cl***REMOVED***="content-flex">
 
-        <div cl***REMOVED***="row top-gap-xl">
-          <div cl***REMOVED***="col-md-10">
-            <h2>Layer: {{layer.name}}</h2>
+  <div cl***REMOVED***="content-inner">
+
+    <div cl***REMOVED***="container">
+      <div cl***REMOVED***="row">
+        <div cl***REMOVED***="col-md-12" ng-show="layer">
+
+          <div cl***REMOVED***="row">
+            <div cl***REMOVED***="col-md-10">
+              <h2>Layer: {{layer.name}}</h2>
+            </div>
+            <div cl***REMOVED***="col-md-2">
+              <h2>
+                <button cl***REMOVED***="btn btn-default pull-right" ng-click="editLayer(layer)"><i cl***REMOVED***="fa fa-edit"></i> Edit</button>
+              </h2>
+            </div>
           </div>
-          <div cl***REMOVED***="col-md-2">
-            <h2>
-              <button cl***REMOVED***="btn btn-default pull-right" ng-click="editLayer(layer)"><i cl***REMOVED***="fa fa-edit"></i> Edit</button>
-            </h2>
+          <hr>
+
+          <div cl***REMOVED***="row top-gap-l">
+            <div cl***REMOVED***="col-md-6">
+
+              <div cl***REMOVED***="row top-gap-l">
+                <div cl***REMOVED***="col-md-3">
+                  <span cl***REMOVED***="muted pull-right">Name:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-9">
+                  <span>{{layer.name}}</span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap-s">
+                <div cl***REMOVED***="col-md-3">
+                  <span cl***REMOVED***="muted pull-right">Type:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-9">
+                  <span>{{layer.type}}</span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap-s" ng-show="layer.type == 'Imagery'">
+                <div cl***REMOVED***="col-md-3">
+                  <span cl***REMOVED***="muted pull-right">Base Layer:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-9">
+                  <span>{{layer.base}}</span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap-s" ng-show="layer.type == 'Imagery'">
+                <div cl***REMOVED***="col-md-3">
+                  <span cl***REMOVED***="muted pull-right">Format:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-9">
+                  <span>{{layer.format}}</span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap-s" ng-show="layer.type == 'Imagery'">
+                <div cl***REMOVED***="col-md-3">
+                  <span cl***REMOVED***="muted pull-right">URL:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-9">
+                  <span>{{layer.url}}</span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+                <div cl***REMOVED***="col-md-3">
+                  <span cl***REMOVED***="muted pull-right">Layers:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-9">
+                  <span>{{layer.wms.layers}}</span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+                <div cl***REMOVED***="col-md-3">
+                  <span cl***REMOVED***="muted pull-right">Styles:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-9">
+                  <span>{{layer.wms.styles}}</span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+                <div cl***REMOVED***="col-md-3">
+                  <span cl***REMOVED***="muted pull-right">Format:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-9">
+                  <span>{{layer.wms.format}}</span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+                <div cl***REMOVED***="col-md-3">
+                  <span cl***REMOVED***="muted pull-right">Transparent:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-9">
+                  <span>{{layer.wms.transparent}}</span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+                <div cl***REMOVED***="col-md-3">
+                  <span cl***REMOVED***="muted pull-right">Version:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-9">
+                  <span>{{layer.wms.version}}</span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap-s">
+                <div cl***REMOVED***="col-md-3">
+                  <span cl***REMOVED***="muted pull-right">Description:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-9">
+                  <span>{{layer.description}}</span>
+                </div>
+              </div>
+            </div>
+
+            <div cl***REMOVED***="col-md-6">
+
+              <div cl***REMOVED***="row">
+                <div cl***REMOVED***="alert alert-danger">
+                  <strong>Delete layer</strong>
+                  <p>Deleting layer will remove all information. This cannot be undone, all layer data will be unrecoverable.</p>
+                  <button cl***REMOVED***="btn btn-danger top-gap" ng-click="deleteLayer(layer)"> <i cl***REMOVED***="fa fa-trash-o"></i> Delete</button>
+                </div>
+              </div>
+
+            </div>
           </div>
+
+          <hr>
+
         </div>
-        <hr>
-
-        <div cl***REMOVED***="row top-gap-l">
-          <div cl***REMOVED***="col-md-6">
-
-            <div cl***REMOVED***="row top-gap-l">
-              <div cl***REMOVED***="col-md-3">
-                <span cl***REMOVED***="muted pull-right">Name:&nbsp;</span>
-              </div>
-              <div cl***REMOVED***="col-md-9">
-                <span>{{layer.name}}</span>
-              </div>
-            </div>
-
-            <div cl***REMOVED***="row top-gap-s">
-              <div cl***REMOVED***="col-md-3">
-                <span cl***REMOVED***="muted pull-right">Type:&nbsp;</span>
-              </div>
-              <div cl***REMOVED***="col-md-9">
-                <span>{{layer.type}}</span>
-              </div>
-            </div>
-
-            <div cl***REMOVED***="row top-gap-s" ng-show="layer.type == 'Imagery'">
-              <div cl***REMOVED***="col-md-3">
-                <span cl***REMOVED***="muted pull-right">Base Layer:&nbsp;</span>
-              </div>
-              <div cl***REMOVED***="col-md-9">
-                <span>{{layer.base}}</span>
-              </div>
-            </div>
-
-            <div cl***REMOVED***="row top-gap-s" ng-show="layer.type == 'Imagery'">
-              <div cl***REMOVED***="col-md-3">
-                <span cl***REMOVED***="muted pull-right">Format:&nbsp;</span>
-              </div>
-              <div cl***REMOVED***="col-md-9">
-                <span>{{layer.format}}</span>
-              </div>
-            </div>
-
-            <div cl***REMOVED***="row top-gap-s" ng-show="layer.type == 'Imagery'">
-              <div cl***REMOVED***="col-md-3">
-                <span cl***REMOVED***="muted pull-right">URL:&nbsp;</span>
-              </div>
-              <div cl***REMOVED***="col-md-9">
-                <span>{{layer.url}}</span>
-              </div>
-            </div>
-
-            <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
-              <div cl***REMOVED***="col-md-3">
-                <span cl***REMOVED***="muted pull-right">Layers:&nbsp;</span>
-              </div>
-              <div cl***REMOVED***="col-md-9">
-                <span>{{layer.wms.layers}}</span>
-              </div>
-            </div>
-
-            <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
-              <div cl***REMOVED***="col-md-3">
-                <span cl***REMOVED***="muted pull-right">Styles:&nbsp;</span>
-              </div>
-              <div cl***REMOVED***="col-md-9">
-                <span>{{layer.wms.styles}}</span>
-              </div>
-            </div>
-
-            <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
-              <div cl***REMOVED***="col-md-3">
-                <span cl***REMOVED***="muted pull-right">Format:&nbsp;</span>
-              </div>
-              <div cl***REMOVED***="col-md-9">
-                <span>{{layer.wms.format}}</span>
-              </div>
-            </div>
-
-            <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
-              <div cl***REMOVED***="col-md-3">
-                <span cl***REMOVED***="muted pull-right">Transparent:&nbsp;</span>
-              </div>
-              <div cl***REMOVED***="col-md-9">
-                <span>{{layer.wms.transparent}}</span>
-              </div>
-            </div>
-
-            <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
-              <div cl***REMOVED***="col-md-3">
-                <span cl***REMOVED***="muted pull-right">Version:&nbsp;</span>
-              </div>
-              <div cl***REMOVED***="col-md-9">
-                <span>{{layer.wms.version}}</span>
-              </div>
-            </div>
-
-            <div cl***REMOVED***="row top-gap-s">
-              <div cl***REMOVED***="col-md-3">
-                <span cl***REMOVED***="muted pull-right">Description:&nbsp;</span>
-              </div>
-              <div cl***REMOVED***="col-md-9">
-                <span>{{layer.description}}</span>
-              </div>
-            </div>
-          </div>
-
-          <div cl***REMOVED***="col-md-6">
-
-            <div cl***REMOVED***="row">
-              <div cl***REMOVED***="alert alert-danger">
-                <strong>Delete layer</strong>
-                <p>Deleting layer will remove all information. This cannot be undone, all layer data will be unrecoverable.</p>
-                <button cl***REMOVED***="btn btn-danger top-gap" ng-click="deleteLayer(layer)"> <i cl***REMOVED***="fa fa-trash-o"></i> Delete</button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <hr>
-
       </div>
     </div>
   </div>
