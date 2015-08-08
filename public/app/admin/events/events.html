@@ -5,72 +5,78 @@
       <li cl***REMOVED***="active">Events</li>
     </ol>
   </div>
+</div>
 
-  <div cl***REMOVED***="container">
+<div cl***REMOVED***="content-flex">
 
-    <div cl***REMOVED***="row top-gap-xl">
-      <div cl***REMOVED***="col-md-3">
+  <div cl***REMOVED***="content-inner">
 
-        <form cl***REMOVED***="form">
-          <div cl***REMOVED***="form-group">
-            <label>Search</label>
-            <input type="text" cl***REMOVED***="form-control" placeholder="event name, description" ng-model="eventSearch" ng-change="page=0">
-          </div>
-        </form>
-        <hr>
+    <div cl***REMOVED***="container">
 
-        <button cl***REMOVED***="btn btn-default pull-right" ng-click="reset()">Reset</button>
-      </div>
+      <div cl***REMOVED***="row">
+        <div cl***REMOVED***="col-md-3">
 
-      <div cl***REMOVED***="col-md-9">
-        <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
-          <div cl***REMOVED***="container-fluid">
-            <div cl***REMOVED***="navbar-header">
-              <a cl***REMOVED***="navbar-brand">Events</a>
+          <form cl***REMOVED***="form">
+            <div cl***REMOVED***="form-group">
+              <label>Search</label>
+              <input type="text" cl***REMOVED***="form-control" placeholder="event name, description" ng-model="eventSearch" ng-change="page=0">
             </div>
+          </form>
+          <hr>
 
-            <form cl***REMOVED***="navbar-form navbar-right" role="search">
-              <button type="submit" cl***REMOVED***="btn btn-default" ng-click="newEvent()">New Event</button>
-            </form>
-          </div>
-        </nav>
+          <button cl***REMOVED***="btn btn-default pull-right" ng-click="reset()">Reset</button>
+        </div>
 
-        <div cl***REMOVED***="row">
-          <div cl***REMOVED***="col-md-12">
-            <div cl***REMOVED***="admin-table">
-              <div cl***REMOVED***="well-item"
-                  ng-repeat="e in (filteredEvents = (events | filter:filterEvents)) | orderBy:'name' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
+        <div cl***REMOVED***="col-md-9">
+          <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
+            <div cl***REMOVED***="container-fluid">
+              <div cl***REMOVED***="navbar-header">
+                <a cl***REMOVED***="navbar-brand">Events</a>
+              </div>
 
-                  <div cl***REMOVED***="row pointer" ng-click="gotoEvent(e)">
-                    <div cl***REMOVED***="col-md-8">
-                      <div cl***REMOVED***="right-gap pull-left">
-                        <i cl***REMOVED***="fa fa-calendar admin-layer-icon"></i>
+              <form cl***REMOVED***="navbar-form navbar-right" role="search">
+                <button type="submit" cl***REMOVED***="btn btn-default" ng-click="newEvent()">New Event</button>
+              </form>
+            </div>
+          </nav>
+
+          <div cl***REMOVED***="row">
+            <div cl***REMOVED***="col-md-12">
+              <div cl***REMOVED***="admin-table">
+                <div cl***REMOVED***="well-item"
+                    ng-repeat="e in (filteredEvents = (events | filter:filterEvents)) | orderBy:'name' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
+
+                    <div cl***REMOVED***="row pointer" ng-click="gotoEvent(e)">
+                      <div cl***REMOVED***="col-md-8">
+                        <div cl***REMOVED***="right-gap pull-left">
+                          <i cl***REMOVED***="fa fa-calendar admin-layer-icon"></i>
+                        </div>
+                        <div cl***REMOVED***="strong">{{e.name}}</div>
+                        <div cl***REMOVED***="muted">{{e.description}}</div>
                       </div>
-                      <div cl***REMOVED***="strong">{{e.name}}</div>
-                      <div cl***REMOVED***="muted">{{e.description}}</div>
+                      <div cl***REMOVED***="col-md-4">
+                        <button cl***REMOVED***="btn btn-sm btn-danger pull-right admin-user-button" ng-click="deleteEvent($event, e)">Delete</button>
+                        <button cl***REMOVED***="btn btn-sm btn-default pull-right" ng-click="editEvent($event, e)">Edit</button>
+                      </div>
                     </div>
-                    <div cl***REMOVED***="col-md-4">
-                      <button cl***REMOVED***="btn btn-sm btn-danger pull-right admin-user-button" ng-click="deleteEvent($event, e)">Delete</button>
-                      <button cl***REMOVED***="btn btn-sm btn-default pull-right" ng-click="editEvent($event, e)">Edit</button>
-                    </div>
-                  </div>
 
+                </div>
               </div>
-            </div>
 
-            <div cl***REMOVED***="row">
-              <div cl***REMOVED***="col-md-12">
-                <ul cl***REMOVED***="pager">
-                  <li cl***REMOVED***="previous" ng-show="page != 0">
-                    <a ng-click="page=page-1">&larr; Previous</a>
-                  </li>
-                  <li cl***REMOVED***="next" ng-show="page < (filteredEvents.length/itemsPerPage) - 1">
-                    <a ng-click="page=page+1">Next &rarr;</a>
-                  </li>
-                </ul>
+              <div cl***REMOVED***="row">
+                <div cl***REMOVED***="col-md-12">
+                  <ul cl***REMOVED***="pager">
+                    <li cl***REMOVED***="previous" ng-show="page != 0">
+                      <a ng-click="page=page-1">&larr; Previous</a>
+                    </li>
+                    <li cl***REMOVED***="next" ng-show="page < (filteredEvents.length/itemsPerPage) - 1">
+                      <a ng-click="page=page+1">Next &rarr;</a>
+                    </li>
+                  </ul>
+                </div>
               </div>
-            </div>
 
+            </div>
           </div>
         </div>
       </div>
