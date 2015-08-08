@@ -3,7 +3,7 @@
     <ol cl***REMOVED***="breadcrumb" ng-if="device.id">
       <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
       <li><a href="#/admin/devices">Devices</a></li>
-      <li><a ng-href="#/admin/devices/{{device.uid}}">{{device.uid}}</a></li>
+      <li><a ng-href="#/admin/devices/{{device.id}}">{{device.uid}}</a></li>
       <li cl***REMOVED***="active">Edit</li>
     </ol>
     <ol cl***REMOVED***="breadcrumb" ng-if="!device.id">
@@ -12,43 +12,49 @@
       <li cl***REMOVED***="active">New</li>
     </ol>
   </div>
+</div>
 
-  <div cl***REMOVED***="container">
+<div cl***REMOVED***="content-flex">
 
-    <div cl***REMOVED***="row">
-      <div cl***REMOVED***="col-md-12">
-        <h2 ng-if="device.id">Edit device: {{device.uid}}</h2>
-        <h2 ng-if="!device.id">New device</h2>
+  <div cl***REMOVED***="content-inner">
+
+    <div cl***REMOVED***="container bottom-gap-l">
+
+      <div cl***REMOVED***="row">
+        <div cl***REMOVED***="col-md-12">
+          <h2 ng-if="device.id">Edit device: {{device.uid}}</h2>
+          <h2 ng-if="!device.id">New device</h2>
+        </div>
       </div>
-    </div>
-    <hr>
+      <hr>
 
-    <div cl***REMOVED***="row">
-      <div cl***REMOVED***="col-md-6" ng-show="device">
+      <div cl***REMOVED***="row">
+        <div cl***REMOVED***="col-md-6" ng-show="device">
 
-        <form ng-submit="saveDevice()" cl***REMOVED***="form">
+          <form ng-submit="saveDevice()" cl***REMOVED***="form">
 
-          <div cl***REMOVED***="form-group top-gap-l">
-            <label cl***REMOVED***="control-label">Device Identifier</label>
-            <input type="text" placeholder="for example 01:02:03:04:05:06:08" ng-model="device.uid" cl***REMOVED***="form-control" ng-readonly="device.id">
-            <span cl***REMOVED***="help-block top-gap">MAC address, or some sort of unique identifier for your device.</span>
-          </div>
+            <div cl***REMOVED***="form-group">
+              <label cl***REMOVED***="control-label">Device Identifier</label>
+              <input type="text" placeholder="for example 01:02:03:04:05:06:08" ng-model="device.uid" cl***REMOVED***="form-control" ng-readonly="device.id">
+              <span cl***REMOVED***="help-block top-gap">MAC address, or some sort of unique identifier for your device.</span>
+            </div>
 
-          <div cl***REMOVED***="form-group">
-            <label cl***REMOVED***="control-label">Description</label>
-            <textarea type="text" placeholder="A bit about the device" ng-model="device.description" cl***REMOVED***="form-control"></textarea>
-          </div>
+            <div cl***REMOVED***="form-group">
+              <label cl***REMOVED***="control-label">Description</label>
+              <textarea type="text" placeholder="A bit about the device" ng-model="device.description" cl***REMOVED***="form-control"></textarea>
+            </div>
 
-          <div cl***REMOVED***="form-group">
-            <label cl***REMOVED***="control-label">Point of Contact</label>
-            <select ng-model="device.userId" ng-options="user.id as user.firstname + ' ' + user.lastname for user in users" cl***REMOVED***="form-control"></select>
-          </div>
+            <div cl***REMOVED***="form-group">
+              <label cl***REMOVED***="control-label">Point of Contact</label>
+              <select ng-model="device.userId" ng-options="user.id as user.firstname + ' ' + user.lastname for user in users" cl***REMOVED***="form-control"></select>
+            </div>
 
-          <span cl***REMOVED***="pull-right">
-            <a cl***REMOVED***="btn btn-default" ng-cl***REMOVED***="{'disabled': saving}" ng-click="cancel()">Cancel</a>
-            <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-click="saveDevice(device)"><i cl***REMOVED***="fa fa-check"></i> Save</a>
-          </span>
-        </form>
+            <span cl***REMOVED***="pull-right">
+              <a cl***REMOVED***="btn btn-default" ng-cl***REMOVED***="{'disabled': saving}" ng-click="cancel()">Cancel</a>
+              <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-click="saveDevice(device)"><i cl***REMOVED***="fa fa-check"></i> Save</a>
+            </span>
+          </form>
+        </div>
       </div>
     </div>
   </div>
