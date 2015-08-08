@@ -12,36 +12,42 @@
       <li cl***REMOVED***="active">New</li>
     </ol>
   </div>
+</div>
 
-  <div cl***REMOVED***="container">
+<div cl***REMOVED***="content-flex">
 
-    <div cl***REMOVED***="row">
-      <div cl***REMOVED***="col-md-12">
-        <h2 ng-if="event.id">Edit event: {{event.name}}</h2>
-        <h2 ng-if="!event.id">New event</h2>
+  <div cl***REMOVED***="content-inner">
+
+    <div cl***REMOVED***="container">
+
+      <div cl***REMOVED***="row">
+        <div cl***REMOVED***="col-md-12">
+          <h2 ng-if="event.id">Edit event: {{event.name}}</h2>
+          <h2 ng-if="!event.id">New event</h2>
+        </div>
       </div>
-    </div>
-    <hr>
+      <hr>
 
-    <div cl***REMOVED***="row">
-      <div cl***REMOVED***="col-md-12" ng-show="event">
+      <div cl***REMOVED***="row">
+        <div cl***REMOVED***="col-md-12" ng-show="event">
 
-        <form ng-submit="saveEvent()" cl***REMOVED***="form">
-          <div cl***REMOVED***="form-group">
-            <label cl***REMOVED***="control-label">Name</label>
-            <input cl***REMOVED***="form-control" type="text" placeholder="Event name" ng-model="event.name"/>
-          </div>
-          <div cl***REMOVED***="form-group">
-            <label cl***REMOVED***="control-label">Description</label>
-            <textarea cl***REMOVED***="form-control" type="text" placeholder="Brief description of the event." ng-model="event.description"/>
-          </div>
-        </form>
+          <form ng-submit="saveEvent()" cl***REMOVED***="form">
+            <div cl***REMOVED***="form-group">
+              <label cl***REMOVED***="control-label">Name</label>
+              <input cl***REMOVED***="form-control" type="text" placeholder="Event name" ng-model="event.name"/>
+            </div>
+            <div cl***REMOVED***="form-group">
+              <label cl***REMOVED***="control-label">Description</label>
+              <textarea cl***REMOVED***="form-control" type="text" placeholder="Brief description of the event." ng-model="event.description"/>
+            </div>
+          </form>
 
-        <span cl***REMOVED***="pull-right">
-          <a cl***REMOVED***="btn btn-default" ng-cl***REMOVED***="{'disabled': saving}" ng-click="cancel()">Cancel</a>
-          <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-click="saveEvent(event)"><i cl***REMOVED***="fa fa-check"></i> Save</a>
-        </span>
+          <span cl***REMOVED***="pull-right">
+            <a cl***REMOVED***="btn btn-default" ng-cl***REMOVED***="{'disabled': saving}" ng-click="cancel()">Cancel</a>
+            <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-click="saveEvent(event)"><i cl***REMOVED***="fa fa-check"></i> Save</a>
+          </span>
 
+        </div>
       </div>
     </div>
   </div>

@@ -22,6 +22,7 @@ function AdminEventEditController($scope, $location, $routeParams, Event) {
   }
 
   $scope.cancel = function() {
-    $location.path('/admin/events/' + $scope.event.id);
+    var path = $scope.event.id ? '/admin/events/' + $scope.event.id : '/admin/events';
+    $location.path(path);
   }
 }
