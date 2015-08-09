@@ -1,17 +1,3 @@
-body {
-  margin: 0;
-  padding-top: 50px;
-  height: 100%;
-}
-
-html, #map {
-  height: 100%;
-}
-
-header.navbar {
-  margin-bottom: 0px;
-}
-
 /* CLEAR FIX*/
 .clearfix:after {content: ".";
 	display: block;
@@ -39,14 +25,14 @@ header.navbar {
 }
 
 .mage-map {
-  padding-top: 23px;
   height: 100%
 }
 
-@media(max-width: 768px) {
-	.mage-map {
-    padding-top: 46px;
-	}
+.mage-map-filter {
+	color: #345477;
+	background-color: #E2E2E2;
+	font-size: 16px;
+	z-index: 1029;
 }
 
 .news-feed-pane {
@@ -212,13 +198,6 @@ a.news-feed-tab-active {
 	border-radius: 3px;
 	box-shadow: 0 7px 7px rgba(0,0,0,0.65);
 	z-index: 1100;
-}
-
-.map-filter {
-	position: absolute;
-	top: 58px;
-	left: 47px;
-	z-index: 6;
 }
 
 .news-feed-item-support {

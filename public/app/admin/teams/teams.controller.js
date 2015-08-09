@@ -2,91 +2,49 @@ angular
   .module('mage')
   .controller('AdminTeamsController', AdminTeamsController);
 
-AdminTeamsController.$inject = ['$scope', '$injector', 'LocalStorageService', 'ObservationService', 'UserService', 'Team'];
+AdminTeamsController.$inject = ['$scope', '$injector', '$filter', '$location', 'Team'];
 
-function AdminTeamsController($scope, $injector, LocalStorageService, ObservationService, UserService, Team) {
-  $scope.token = LocalStorageService.getToken();
+function AdminTeamsController($scope, $injector, $filter, $location, Team) {
   $scope.teams = [];
   $scope.page = 0;
   $scope.itemsPerPage = 15;
 
-  UserService.getAllUsers(true).success(function(users) {
-    $scope.users = users;
-    $scope.usersIdMap = _.indexBy(users, 'id');
-    Team.query(function(teams) {
-      $scope.teams = teams;
-    });
+  Team.query(function(teams) {
+    $scope.teams = teams;
   });
 
+  $scope.filterTeams = function(team) {
+    var filteredTeams = $filter('filter')([team], $scope.teamSearch);
+    return filteredTeams && filteredTeams.length;
+  }
+
+  $scope.reset = function() {
+    $scope.page = 0;
+    $scope.teamSearch = '';
+  }
+
   $scope.newTeam = function() {
-    $scope.team = new Team();
-    $scope.user = {};
-    $scope.team.users = [];
-    $scope.nonUsers = $scope.users.slice();
+    $location.path('/admin/teams/new');
   }
 
-  $scope.editTeam = function(team) {
-    $scope.edit = false;
-    $scope.add = false;
-
-    $scope.user = {};
-    $scope.team = team;
-    $scope.teamUsersById = _.indexBy($scope.team.users, 'id');
-    $scope.nonUsers = _.filter($scope.users, function(user) {
-      return $scope.teamUsersById[user.id] == null;
-    });
+  $scope.gotoTeam = function(team) {
+    $location.path('/admin/teams/' + team.id);
   }
 
-  $scope.addUser = function(user) {
-    $scope.user = {};
-    $scope.team.users.push(user);
-    $scope.nonUsers = _.reject($scope.nonUsers, function(u) { return user.id == u.id});
+  $scope.editTeam = function($event, team) {
+    $event.stopPropagation();
+
+    $location.path('/admin/teams/' + team.id + '/edit');
   }
 
-  $scope.removeUser = function(user) {
-    $scope.nonUsers.push(user);
-    $scope.team.users = _.reject($scope.team.users, function(u) { return user.id == u.id});
-  }
+  $scope.deleteTeam = function($event, team) {
+    $event.stopPropagation();
 
-  var debounceHideSave = _.debounce(function() {
-    $scope.$apply(function() {
-      $scope.saved = false;
-    });
-  }, 5000);
-
-  var saveTeam = function(team, success, failure) {
-    $scope.saving = true;
-    $scope.error = false;
-
-    $scope.team.$save(function() {
-      $scope.saved = true;
-      $scope.saving = false;
-
-      debounceHideSave();
-      if (success) success();
-    }, function(reponse) {
-      $scope.error = response.data;
-      $scope.saving = false;
-      if (failure) failure();
-    });
-  }
-
-  $scope.updateTeam = function(team) {
-    saveTeam(team);
-  }
-
-  $scope.createTeam = function(team) {
-    saveTeam(team, function() {
-      $scope.teams.push($scope.team);
-    });
-  }
-
-  $scope.deleteTeam = function(team) {
     var modalInstance = $injector.get('$modal').open({
       templateUrl: '/app/admin/teams/team-delete.html',
       resolve: {
         team: function () {
-          return $scope.team;
+          return team;
         }
       },
       controller: ['$scope', '$modalInstance', 'team', function ($scope, $modalInstance, team) {
@@ -104,25 +62,7 @@ function AdminTeamsController($scope, $injector, LocalStorageService, Observatio
     });
 
     modalInstance.result.then(function (team) {
-      $scope.team = null;
       $scope.teams = _.reject($scope.teams, function(t) { return t.id == team.id});
-    });
-  }
-
-  $scope.userFilterCl***REMOVED*** = function (filter) {
-    return filter === $scope.currentUserFilter ? 'active' : '';
-  }
-
-  $scope.refresh = function() {
-    $scope.users = [];
-    $scope.teams = [];
-
-    UserService.getAllUsers(true).success(function(users) {
-      $scope.users = users;
-      $scope.usersIdMap = _.indexBy(users, 'id');
-      Team.query(function(teams) {
-        $scope.teams = teams;
-      });
     });
   }
 }

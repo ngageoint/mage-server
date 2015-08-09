@@ -6,7 +6,7 @@ function leaflet() {
   var directive = {
     restrict: "A",
     replace: true,
-    template: '<div id="map"></div>',
+    template: '<div id="map" cl***REMOVED***="map"></div>',
     controller: LeafletController,
     bindToController: true
   };
@@ -36,10 +36,15 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
       $scope.$emit('observation:create', latlng);
     }
   }));
-  map.addControl(new L.Control.MageUserLocation({
+
+  var userLocationControl = new L.Control.MageUserLocation({
+    onBroadcastLocationClick: function(callback) {
+      MapService.onBroadcastLocation(callback);
+    },
     onLocation: onLocation,
     stopLocation: stopLocation
-  }));
+  });
+  map.addControl(userLocationControl);
   map.addControl(new L.Control.MageListTools({
     onClick: function() {
       sidebar.toggle();
@@ -94,7 +99,8 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
     onLayersChanged: onLayersChanged,
     onFeaturesChanged: onFeaturesChanged,
     onFeatureZoom: onFeatureZoom,
-    onPoll: onPoll
+    onPoll: onPoll,
+    onLocationStop: onLocationStop
   };
   MapService.addListener(listener);
 
@@ -185,7 +191,7 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
       onEachFeature: function (feature, layer) {
         if (popup) {
           if (_.isFunction(popup.html)) {
-            var options = {};
+            var options = {autoPan: false};
             if (popup.closeButton != null) options.closeButton = popup.closeButton;
             layer.bindPopup(popup.html(feature), options);
           }
@@ -349,14 +355,12 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
 
   function openPopup(layer, options) {
     options = options || {};
-    var zoom = options.zoomToLocation ? 17: map.getZoom();
-    var bounds = map.getBounds();
-    if (options.zoomToLocation && (!bounds.contains(layer.getLatLng()) || zoom != map.getZoom())) {
+    if (options.zoomToLocation) { // && (!bounds.contains(layer.getLatLng()) || zoom != map.getZoom())) {
       map.once('moveend', function() {
         layer.openPopup();
       });
 
-      map.setView(layer.getLatLng(), zoom);
+      map.setView(layer.getLatLng(),  options.zoomToLocation ? 17: map.getZoom());
     } else {
       layer.openPopup();
     }
@@ -387,6 +391,10 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
 
   function onPoll() {
     adjustTemporalLayers();
+  }
+
+  function onLocationStop() {
+    userLocationControl.stopBroadcast();
   }
 
   function adjustTemporalLayers() {

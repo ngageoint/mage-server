@@ -191,9 +191,24 @@ exports.getUserByUsername = function(username, callback) {
   });
 }
 
-exports.getUsers = function(callback) {
-  var query = {};
-  User.find(query, function (err, users) {
+exports.count = function(callback) {
+  User.count({}, function(err, count) {
+    callback(err, count);
+  });
+}
+
+exports.getUsers = function(filter, callback) {
+  var conditions = {};
+
+  if (filter.active === true) {
+    conditions.active = true;
+  }
+
+  if (filter.active === false) {
+    conditions.active = false;
+  }
+
+  User.find(conditions, function (err, users) {
     if (err) {
       console.log("Error finding users: " + err);
     }

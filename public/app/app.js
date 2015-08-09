@@ -5,9 +5,10 @@ angular
   .module("mage", [
     "ui.bootstrap",
     "ui.select",
+    "minicolors",
     "ngSanitize",
     "ngRoute",
-    'ngResource',
+    "ngResource",
     "http-auth-interceptor"
   ]).config(config).run(run);
 
@@ -42,11 +43,135 @@ function config($routeProvider, $locationProvider, $httpProvider) {
     templateUrl:    'app/signup/signup.html',
     controller:     "SignupController"
   });
-  $routeProvider.when('/admin/:adminPanel?', {
+
+  $routeProvider.when('/admin', {
     templateUrl:    'app/admin/admin.html',
     controller:     "AdminController",
     resolve: resolveLogin(["ADMIN_ROLE"])
   });
+
+  // Admin user routes
+  $routeProvider.when('/admin/users', {
+    templateUrl:    'app/admin/users/users.html',
+    controller:     "AdminUsersController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/users/new', {
+    templateUrl:    'app/admin/users/user.edit.html',
+    controller:     "AdminUserEditController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/users/:userId/', {
+    templateUrl:    'app/admin/users/user.html',
+    controller:     "AdminUserController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/users/:userId/edit', {
+    templateUrl:    'app/admin/users/user.edit.html',
+    controller:     "AdminUserEditController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+
+  // Admin team routes
+  $routeProvider.when('/admin/teams', {
+    templateUrl:    'app/admin/teams/teams.html',
+    controller:     "AdminTeamsController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/teams/new', {
+    templateUrl:    'app/admin/teams/team.edit.html',
+    controller:     "AdminTeamEditController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/teams/:teamId/', {
+    templateUrl:    'app/admin/teams/team.html',
+    controller:     "AdminTeamController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/teams/:teamId/edit', {
+    templateUrl:    'app/admin/teams/team.edit.html',
+    controller:     "AdminTeamEditController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+
+  // Admin event routes
+  $routeProvider.when('/admin/events', {
+    templateUrl:    'app/admin/events/events.html',
+    controller:     "AdminEventsController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/events/new', {
+    templateUrl:    'app/admin/events/event.edit.html',
+    controller:     "AdminEventEditController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/events/:eventId/', {
+    templateUrl:    'app/admin/events/event.html',
+    controller:     "AdminEventController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/events/:eventId/edit', {
+    templateUrl:    'app/admin/events/event.edit.html',
+    controller:     "AdminEventEditController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/events/:eventId/edit/form', {
+    templateUrl:    'app/admin/events/event.edit.form.html',
+    controller:     "AdminEventEditFormController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+
+  // Admin device routes
+  $routeProvider.when('/admin/devices', {
+    templateUrl:    'app/admin/devices/devices.html',
+    controller:     "AdminDevicesController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/devices/new/', {
+    templateUrl:    'app/admin/devices/device.edit.html',
+    controller:     "AdminDeviceEditController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/devices/:deviceId/', {
+    templateUrl:    'app/admin/devices/device.html',
+    controller:     "AdminDeviceController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/devices/:deviceId/edit', {
+    templateUrl:    'app/admin/devices/device.edit.html',
+    controller:     "AdminDeviceEditController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+
+  // Admin layer routes
+  $routeProvider.when('/admin/layers', {
+    templateUrl:    'app/admin/layers/layers.html',
+    controller:     "AdminLayersController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/layers/new/', {
+    templateUrl:    'app/admin/layers/layer.edit.html',
+    controller:     "AdminLayerEditController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/layers/:layerId/', {
+    templateUrl:    'app/admin/layers/layer.html',
+    controller:     "AdminLayerController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+  $routeProvider.when('/admin/layers/:layerId/edit', {
+    templateUrl:    'app/admin/layers/layer.edit.html',
+    controller:     "AdminLayerEditController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+
+  // Admin settings routes
+  $routeProvider.when('/admin/settings', {
+    templateUrl:    'app/admin/settings/settings.html',
+    controller:     "AdminSettingsController",
+    resolve: resolveLogin(["ADMIN_ROLE"])
+  });
+
   $routeProvider.when('/debug-info', {
     templateUrl:    'app/debug/debug.html',
     controller:     "DebugController",

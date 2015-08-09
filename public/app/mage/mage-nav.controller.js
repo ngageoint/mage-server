@@ -2,13 +2,17 @@ angular
   .module('mage')
   .controller('NavController', NavController);
 
-NavController.$inject =  ['$rootScope', '$scope', '$q', '$location', '$modal', 'UserService', 'FilterService', 'PollingService', 'Event'];
+NavController.$inject =  ['$rootScope', '$scope', '$q', '$location', '$modal', 'UserService', 'FilterService', 'PollingService', 'Event', 'Settings'];
 
-function NavController($rootScope, $scope, $q, $location, $modal, UserService, FilterService, PollingService, Event) {
+function NavController($rootScope, $scope, $q, $location, $modal, UserService, FilterService, PollingService, Event, Settings) {
   var events = [];
   $scope.location = $location;
 
   $scope.pollingInterval = 30000;
+
+  Settings.get({type: 'banner'}, function(banner) {
+    $scope.banner = banner.settings;
+  });
 
   $rootScope.$on('login', function(e, login) {
     $scope.token = login.token;

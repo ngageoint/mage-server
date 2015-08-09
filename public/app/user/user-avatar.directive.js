@@ -19,7 +19,7 @@ function avatarUser() {
 AvatarUserController.$inject = ['$scope', '$element', 'LocalStorageService'];
 
 function AvatarUserController($scope, $element, LocalStorageService) {
-  $scope.fileName = 'Choose an image...';
+  $scope.fileName = 'Choose an avatar image...';
   $scope.avatarUrl = avatarUrl($scope.avatarUser, LocalStorageService.getToken());
 
   $element.find(':file').change(function() {

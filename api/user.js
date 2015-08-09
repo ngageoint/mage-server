@@ -58,8 +58,19 @@ User.prototype.logout = function(token, callback) {
   });
 }
 
-User.prototype.getAll = function(callback) {
-  UserModel.getUsers(function (err, users) {
+User.prototype.count = function(callback) {
+  UserModel.count(function(err, count) {
+    callback(err, count);
+  });
+}
+
+User.prototype.getAll = function(filter, callback) {
+  if (typeof filter == 'function') {
+    callback = filter;
+    filter = {};
+  }
+
+  UserModel.getUsers(filter, function (err, users) {
     callback(err, users);
   });
 }

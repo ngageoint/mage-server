@@ -1,0 +1,138 @@
+<div cl***REMOVED***="admin-nav-gap">
+  <div cl***REMOVED***="container-fluid">
+    <ol cl***REMOVED***="breadcrumb">
+      <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
+      <li><a href="#/admin/users">Users</a></li>
+      <li cl***REMOVED***="active">{{user.username}}</li>
+    </ol>
+  </div>
+</div>
+
+<div cl***REMOVED***="content-flex">
+
+  <div cl***REMOVED***="content-inner">
+
+    <div cl***REMOVED***="container bottom-gap-l">
+      <div cl***REMOVED***="row">
+        <div cl***REMOVED***="col-md-12" ng-show="user">
+
+          <div cl***REMOVED***="row">
+            <div cl***REMOVED***="col-md-10">
+              <h2>User: {{user.username}}</h2>
+            </div>
+            <div cl***REMOVED***="col-md-2">
+              <h2>
+                <button cl***REMOVED***="btn btn-default pull-right" ng-click="editUser(user)"><i cl***REMOVED***="fa fa-edit"></i> Edit</button>
+              </h2>
+            </div>
+          </div>
+          <hr>
+
+          <div cl***REMOVED***="row top-gap-l">
+            <div cl***REMOVED***="col-md-6">
+
+              <div cl***REMOVED***="row">
+                <div cl***REMOVED***="col-md-2">
+                  <span cl***REMOVED***="muted pull-right">Avatar:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-10">
+                  <span>
+                    <img cl***REMOVED***="avatar-image img-rounded" width="73" height="73" ng-src="{{avatarUrl}}">
+                  </span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap">
+                <div cl***REMOVED***="col-md-2">
+                  <span cl***REMOVED***="muted pull-right">Map Icon:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-10">
+                  <span>
+                    <img cl***REMOVED***="avatar-image img-rounded" width="43" height="43" ng-src="{{iconUrl}}">
+                  </span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap-l">
+                <div cl***REMOVED***="col-md-2">
+                  <span cl***REMOVED***="muted pull-right">Username:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-10">
+                  <span>{{user.username}}</span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap-s">
+                <div cl***REMOVED***="col-md-2">
+                  <span cl***REMOVED***="muted pull-right">Name:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-10">
+                  <span>{{user.firstname}} {{user.lastname}}</span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap-s" ng-if="user.email">
+                <div cl***REMOVED***="col-md-2">
+                  <span cl***REMOVED***="muted pull-right">Email:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-10">
+                  <span>{{user.email}}</span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap-s" ng-if="users.phones[0]">
+                <div cl***REMOVED***="col-md-2">
+                  <span cl***REMOVED***="muted pull-right">Phone:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-10">
+                  <span>{{user.phones[0]}}</span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap-s">
+                <div cl***REMOVED***="col-md-2">
+                  <span cl***REMOVED***="muted pull-right">Role:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-10">
+                  <span>{{user.role.name}}</span>
+                </div>
+              </div>
+
+            </div>
+
+            <div cl***REMOVED***="col-md-6">
+
+              <div cl***REMOVED***="row" ng-if="!user.active">
+                <div cl***REMOVED***="alert alert-success">
+                  <strong>Activate user</strong>
+                  <p>Activating will allow user to access MAGE data. The user can be deactivated at any time.</p>
+                  <button cl***REMOVED***="btn btn-success top-gap" ng-click="activateUser(user)"> <i cl***REMOVED***="fa fa-check"></i> Activate</button>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row" ng-if="user.active" >
+                <div cl***REMOVED***="alert alert-warning">
+                  <strong>Deactivate user</strong>
+                  <p>Deactivating will deny user from accessing MAGE data. All user information will be retained and the user can be activated again at any time.</p>
+                  <button cl***REMOVED***="btn btn-warning top-gap" ng-click="deactivateUser(user)"> <i cl***REMOVED***="fa fa-ban"></i> Deactivate</button>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row">
+                <div cl***REMOVED***="alert alert-danger">
+                  <strong>Delete user</strong>
+                  <p>Deleting user will remove all user information including location data. This cannot be undone, all user data will be unrecoverable.</p>
+                  <button cl***REMOVED***="btn btn-danger top-gap" ng-click="deleteUser(user)"> <i cl***REMOVED***="fa fa-trash-o"></i> Delete</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <hr>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,337 @@
+<div cl***REMOVED***="admin-nav-gap">
+  <div cl***REMOVED***="container-fluid">
+    <ol cl***REMOVED***="breadcrumb">
+      <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
+      <li><a href="#/admin/events">Events</a></li>
+      <li><a ng-href="#/admin/events/{{event.id}}">{{event.name}}</a></li>
+      <li cl***REMOVED***="active">Form <span cl***REMOVED***="text-danger" ng-show="unSavedChanges"> (u***REMOVED***ved changes)</span></li>
+    </ol>
+  </div>
+</div>
+
+<div cl***REMOVED***="content-flex">
+
+  <div cl***REMOVED***="content-inner">
+
+    <div cl***REMOVED***="container" ng-if="event">
+
+      <div cl***REMOVED***="row">
+        <div cl***REMOVED***="col-md-12">
+          <a cl***REMOVED***="btn btn-default pull-right" ng-href="{{'/api/events/' + event.id + '/form.zip?access_token=' + token}}">
+            <i cl***REMOVED***="fa fa-download"></i> Export Form
+          </a>
+        </div>
+      </div>
+
+      <div cl***REMOVED***="row top-gap-l">
+        <div cl***REMOVED***="col-md-12">
+          <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
+            <div cl***REMOVED***="container-fluid">
+              <div cl***REMOVED***="navbar-header">
+                <a cl***REMOVED***="navbar-brand">Form Fields</a>
+              </div>
+            </div>
+          </nav>
+        </div>
+      </div>
+      <div cl***REMOVED***="row">
+        <div cl***REMOVED***="col-sm-12">
+          <div cl***REMOVED***="admin-table admin-table-content">
+            <accordion close-others="accordion.oneAtATime">
+              <accordion-group ng-repeat="field in event.form.fields | filter:{archived: '!true'} | orderBy: 'id'">
+                <accordion-heading>
+                  {{field.title}}
+                  <i cl***REMOVED***="pull-right fa fa-arrow-up" ng-if="!$first" ng-click="moveFieldUp($event, field)"></i>
+                  <i cl***REMOVED***="pull-right fa fa-arrow-down" ng-if="!$last" ng-click="moveFieldDown($event, field)"></i>
+                </accordion-heading>
+                <div cl***REMOVED***="accordion-edit">
+                  <button ng-show="deletableField(field)" cl***REMOVED***="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i cl***REMOVED***="fa fa-trash icon-white"></i> Delete</button>
+                  <form>
+                    <div cl***REMOVED***="row">
+                      <div cl***REMOVED***="col-md-2">
+                        <div cl***REMOVED***="form-group">
+                          <label>Type</label>
+                          <input type="text" value="{{field.type}}" cl***REMOVED***="form-control" disabled>
+                        </div>
+                      </div>
+                    </div>
+                    <div cl***REMOVED***="row">
+                      <div cl***REMOVED***="col-md-2">
+                        <div cl***REMOVED***="form-group">
+                          <label>Title</label>
+                          <input type="text" ng-change="autoSave()" ng-model="field.title" value="{{field.title}}" cl***REMOVED***="form-control">
+                        </div>
+                      </div>
+                    </div>
+                    <div cl***REMOVED***="row">
+                      <div cl***REMOVED***="col-md-2">
+                        <div cl***REMOVED***="form-group" ng-hide="showAddOptions(field)">
+                          <label>Default Value</label>
+                          <input ng-show="field.type=='checkbox'" ng-model="field.value" id="{{field.id}}" type="checkbox" ng-change="autoSave()" ng-checked="field.value == true" ng-required="field.required"/>
+                          <input ng-hide="field.type=='checkbox'" type="text" ng-change="autoSave()" ng-model="field.value" value="{{field.value}}" cl***REMOVED***="form-control">
+                        </div>
+                      </div>
+                    </div>
+                    <div cl***REMOVED***="row">
+                      <div cl***REMOVED***="col-md-2">
+                        <div cl***REMOVED***="form-group" ng-show="showAddOptions(field)">
+                          <label>Default Value</label>
+                          <select ng-model="field.value" ng-change="autoSave()" ng-options="choice.title as choice.title for choice in field.choices" cl***REMOVED***="form-control">
+                            <option value="">No Default</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <div cl***REMOVED***="row">
+                      <div cl***REMOVED***="col-md-2">
+                        <div cl***REMOVED***="form-group" ng-show="showAddOptions(field)">
+                          <label>Field Options</label>
+                          <div ng-repeat="option in field.choices | filter:{blank: '!true'}" cl***REMOVED***="row bottom-gap">
+                            <div cl***REMOVED***="col-sm-12">
+                              <span cl***REMOVED***="admin-table-delete-btn"><a cl***REMOVED***="btn btn-danger btn-xs pull-left" type="button" ng-click="deleteOption(field, option)"><i cl***REMOVED***="fa fa-minus icon-white"></i></a></span>
+                              {{option.title}}
+                            </div>
+                          </div>
+                          <div cl***REMOVED***="row">
+                            <div cl***REMOVED***="col-md-10">
+                              <input type="text" ng-model="newOptionTitle" cl***REMOVED***="form-control">
+                            </div>
+                            <div cl***REMOVED***="col-md-2">
+                              <button cl***REMOVED***="btn btn-primary" type="button" ng-click="addOption(field, newOptionTitle); newOptionTitle = '';"><i cl***REMOVED***="fa fa-plus"></i> Add Option</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div cl***REMOVED***="checkbox" ng-show="field.name != 'timestamp' &amp;&amp; field.name != 'geometry' &amp;&amp; field.name != 'type'">
+                      <label>
+                      <input type="checkbox" ng-model="field.required"  ng-change="onRequiredChanged(field);autoSave()"> Required
+                      </label>
+                    </div>
+                  </form>
+                </div>
+              </accordion-group>
+            </accordion>
+
+            <div cl***REMOVED***="row top-gap-l">
+              <div cl***REMOVED***="col-md-12">
+                <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
+                  <div cl***REMOVED***="container-fluid">
+                    <div cl***REMOVED***="navbar-header">
+                      <a cl***REMOVED***="navbar-brand">Add a new form field</a>
+                    </div>
+                  </div>
+                </nav>
+              </div>
+            </div>
+            <div cl***REMOVED***="admin-table admin-table-content">
+              <form>
+                <div cl***REMOVED***="row">
+                  <div cl***REMOVED***="col-md-2">
+                    <div cl***REMOVED***="form-group">
+                      <label>Type</label>
+                      <select ng-model="newField.type" ng-options="type.name as type.value for type in fieldTypes" cl***REMOVED***="form-control"></select>
+                    </div>
+                  </div>
+                </div>
+                <div cl***REMOVED***="row">
+                  <div cl***REMOVED***="col-md-2">
+                    <div cl***REMOVED***="form-group">
+                      <label>Title</label>
+                      <input type="text" ng-model="newField.title" value="{{newField.title}}" cl***REMOVED***="form-control">
+                    </div>
+                  </div>
+                </div>
+                <div cl***REMOVED***="row" ng-hide="newField.type=='checkbox'">
+                  <div cl***REMOVED***="col-md-2">
+                    <div cl***REMOVED***="form-group" ng-hide="showAddOptions(newField)">
+                      <label>Default Value</label>
+                      <input ng-hide="newField.type=='checkbox'" type="text" ng-model="newField.value" value="{{newField.value}}" cl***REMOVED***="form-control">
+                    </div>
+                  </div>
+                </div>
+                <div cl***REMOVED***="checkbox" ng-show="newField.type=='checkbox'">
+                  <label>
+                  <input ng-model="newField.value" type="checkbox" ng-checked="newField.value == true"/> Default Value
+                  </label>
+                </div>
+                <div cl***REMOVED***="row">
+                  <div cl***REMOVED***="col-md-2">
+                    <div cl***REMOVED***="form-group" ng-show="showAddOptions(newField)">
+                      <label>Default Value</label>
+                      <select ng-model="newField.value" ng-options="choice.title as choice.title for choice in newField.choices" cl***REMOVED***="form-control">
+                        <option value="">No Default</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div cl***REMOVED***="row">
+                  <div cl***REMOVED***="col-md-2">
+                    <div cl***REMOVED***="form-group" ng-show="showAddOptions(newField)">
+                      <label>Field Options</label>
+                      <div ng-repeat="option in newField.choices | filter:{blank: '!true'}" cl***REMOVED***="row bottom-gap">
+                        <div cl***REMOVED***="col-sm-12">
+                          <span cl***REMOVED***="admin-table-delete-btn"><a cl***REMOVED***="btn btn-danger btn-xs pull-left" type="button" ng-click="deleteOption(newField, option)"><i cl***REMOVED***="fa fa-minus icon-white"></i></a></span>
+                          {{option.title}}
+                        </div>
+                      </div>
+                      <div cl***REMOVED***="row">
+                        <div cl***REMOVED***="col-md-10">
+                          <input type="text" ng-model="newFieldNewOptionTitle" cl***REMOVED***="form-control">
+                        </div>
+                        <div cl***REMOVED***="col-md-2">
+                          <button cl***REMOVED***="btn btn-primary" type="button" ng-click="addOption(newField, newFieldNewOptionTitle); newFieldNewOptionTitle = '';"><i cl***REMOVED***="fa fa-plus"></i> Add Option</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div cl***REMOVED***="checkbox">
+                  <label>
+                  <input type="checkbox" ng-model="newField.required" ng-init="newField.required = true"> Required
+                  </label>
+                </div>
+              </form>
+
+              <hr>
+
+              <button type="submit" cl***REMOVED***="btn btn-primary" ng-click="addNewField()"><i cl***REMOVED***="fa fa-plus-square-o"></i> Add Field</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div cl***REMOVED***="row top-gap-l">
+        <div cl***REMOVED***="col-md-12">
+          <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
+            <div cl***REMOVED***="container-fluid">
+              <div cl***REMOVED***="navbar-header">
+                <a cl***REMOVED***="navbar-brand">Map Symbology</a>
+              </div>
+            </div>
+          </nav>
+        </div>
+      </div>
+      <div cl***REMOVED***="row">
+        <div cl***REMOVED***="col-sm-12">
+          <div cl***REMOVED***="admin-table admin-table-content">
+
+            <strong>Default Icon</strong>
+            <form
+              type="button"
+              enctype="multipart/form-data"
+              file-upload url="{{'/api/events/' + event.id + '/form/icons' + '?access_token=' + token}}"
+              allow-upload="uploadIcons"
+              preview="true"
+              upload-file-form-name="'icon'">
+            </form>
+
+            <hr>
+
+            <strong>Choose a field to be used for icon variants:</strong>
+            <div cl***REMOVED***="row bottom-gap">
+              <div cl***REMOVED***="col-md-2">
+                <select ng-model="event.form.variantField" ng-change="variantChanged()" ng-options="field.name as field.title for field in event.form.fields | filter: variantFilter" cl***REMOVED***="form-control">
+                  <option value="">No Variant</option>
+                </select>
+              </div>
+            </div>
+            <div ng-show="showNumberVariants" cl***REMOVED***="bottom-gap">
+              <h4>You have chosen a date field for your icon variants.  Please define the ranges for each variant.</h4>
+              <div ng-repeat="variant in variants" cl***REMOVED***="row bottom-gap">
+                <div cl***REMOVED***="col-md-12">
+                  <span cl***REMOVED***="strong">{{variant.title}}
+                  <span ng-show="variants[$index+1]">
+                  - {{variants[$index+1].title}}
+                  </span>
+                  <span ng-hide="variants[$index+1]">+</span>
+                  minutes old
+                  <button cl***REMOVED***="btn btn-sm btn-danger" ng-click="removeVariant(variant)">Remove Variant</button>
+                  </span>
+                </div>
+              </div>
+              <div cl***REMOVED***="row">
+                <div cl***REMOVED***="col-md-12">
+                  <form cl***REMOVED***="form-inline">
+                    <div cl***REMOVED***="form-group">
+                      <p cl***REMOVED***="form-control-static">More than</p>
+                    </div>
+                    <div cl***REMOVED***="form-group">
+                      <input type="number" ng-model="newVariantMin" cl***REMOVED***="form-control"/>
+                    </div>
+                    <div cl***REMOVED***="form-group">
+                      <p cl***REMOVED***="form-control-static">minutes old</p>
+                    </div>
+                    <button cl***REMOVED***="btn btn-sm btn-primary" ng-click="addVariantOption(newVariantMin)">Add Variant</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <hr>
+
+            <div ng-repeat="option in typeField.choices">
+              <div cl***REMOVED***="row bottom-gap-s">
+                <div cl***REMOVED***="col-md-12">
+                  <strong>{{option.title}}</strong>
+                </div>
+              </div>
+              <div cl***REMOVED***="row bottom-gap-l">
+                <div cl***REMOVED***="col-md-2">
+                  <div cl***REMOVED***="row">
+                    <div cl***REMOVED***="col-md-12">Default</div>
+                  </div>
+                  <form
+                    type="button"
+                    enctype="multipart/form-data"
+                    file-upload url="{{'/api/events/' + event.id + '/form/icons/' + option.title + '?access_token=' + token + '&_dc=' + savedTime}}"
+                    allow-upload="uploadIcons"
+                    preview="true"
+                    upload-file-form-name="'icon'">
+                  </form>
+                </div>
+                <div cl***REMOVED***="col-md-2" ng-repeat="variant in variants">
+                  <div cl***REMOVED***="row">
+                    <div cl***REMOVED***="col-md-12">
+                      <span>
+                      {{variant.title}}
+                      <span ng-show="variantField.type == 'date'">
+                      <span ng-show="variants[$index+1]">
+                      - {{variants[$index+1].title}}
+                      </span>
+                      <span ng-hide="variants[$index+1]">+</span>
+                      minutes old
+                      </span>
+                      </span>
+                    </div>
+                  </div>
+                  <form
+                    type="button"
+                    enctype="multipart/form-data"
+                    file-upload url="{{'/api/events/' + event.id + '/form/icons/' + option.title + '/' + variant.title + '?access_token=' + token + '&_dc=' + savedTime}}"
+                    allow-upload="uploadIcons"
+                    preview="true"
+                    upload-file-form-name="'icon'">
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div cl***REMOVED***="bottom-gap-l top-gap-xl">
+  <div cl***REMOVED***="container" ng-if="event">
+    <div cl***REMOVED***="row">
+      <div cl***REMOVED***="col-xs-12">
+        <button cl***REMOVED***="btn btn-success pull-right" ng-if="unSavedChanges && !saving" ng-click="saveForm(event)">Save Form</button>
+        <button cl***REMOVED***="btn btn-success pull-right" ng-if="!unSavedChanges && !saving" disabled="disabled">Save Form</button>
+        <button cl***REMOVED***="btn btn-success pull-right" ng-if="saving" disabled="disabled"><i cl***REMOVED***="fa fa-spinner fa-spin"></i> Saving Form</button>
+      </div>
+    </div>
+  </div>
+</div>

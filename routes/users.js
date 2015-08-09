@@ -148,13 +148,34 @@ module.exports = function(app, security) {
     }
   );
 
+  app.get(
+    '/api/users/count',
+    p***REMOVED***port.authenticate(authenticationStrategy),
+    access.authorize('READ_USER'),
+    function(req, res, next) {
+      new api.User().count(function(err, count) {
+        if (err) return next(err);
+
+        res.json({count: count});
+      });
+    }
+  );
+
   // get all uses
   app.get(
     '/api/users',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_USER'),
     function(req, res) {
-      new api.User().getAll(function (err, users) {
+      var filter = {};
+      console.log('query', req.query);
+      if (req.query.active === 'true') {
+        filter.active = true;
+      }
+      if (req.query.active === 'false') {
+        filter.active = false;
+      }
+      new api.User().getAll(filter, function (err, users) {
         users = userTransformer.transform(users, {path: req.getRoot()});
         res.json(users);
       });

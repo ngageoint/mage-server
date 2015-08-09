@@ -174,17 +174,18 @@ exports.getObservations = function(event, o, callback) {
       $geoIntersects: {
         $geometry: filter.geometry
       }
-    };
+    }
   }
 
-  if (filter.startDate) {
-    conditions.lastModified = conditions.lastModified || {};
-    conditions.lastModified['$gte'] = filter.startDate;
-  }
+  if (filter.startDate || filter.endDate) {
+    conditions['properties.timestamp'] = {};
+    if (filter.startDate) {
+      conditions['properties.timestamp'].$gte = filter.startDate;
+    }
 
-  if (filter.endDate) {
-    conditions.lastModified = conditions.lastModified || {};
-    conditions.lastModified['$lt'] = filter.endDate;
+    if (filter.endDate) {
+      conditions['properties.timestamp'].$lt = filter.endDate;
+    }
   }
 
   if (filter.states) {
@@ -196,6 +197,8 @@ exports.getObservations = function(event, o, callback) {
     options.sort = o.sort;
   }
 
+
+console.log('conditions are: ' + JSON.stringify(conditions));
   var fields = parseFields(o.fields);
   observationModel(event).find(conditions, fields, options, function (err, observations) {
     callback(err, observations);

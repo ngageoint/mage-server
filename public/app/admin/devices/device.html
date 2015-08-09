@@ -1,0 +1,116 @@
+<div cl***REMOVED***="admin-nav-gap">
+  <div cl***REMOVED***="container-fluid">
+    <ol cl***REMOVED***="breadcrumb">
+      <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
+      <li><a href="#/admin/devices">Devices</a></li>
+      <li cl***REMOVED***="active">{{device.uid}}</li>
+    </ol>
+  </div>
+</div>
+
+<div cl***REMOVED***="content-flex">
+
+  <div cl***REMOVED***="content-inner">
+
+    <div cl***REMOVED***="container">
+      <div cl***REMOVED***="row">
+        <div cl***REMOVED***="col-md-12" ng-show="device">
+
+          <div cl***REMOVED***="row">
+            <div cl***REMOVED***="col-md-10">
+              <h2>Device: {{device.uid}}</h2>
+            </div>
+            <div cl***REMOVED***="col-md-2">
+              <h2>
+                <button cl***REMOVED***="btn btn-default pull-right" ng-click="editDevice(device)"><i cl***REMOVED***="fa fa-edit"></i> Edit</button>
+              </h2>
+            </div>
+          </div>
+          <hr>
+
+          <div cl***REMOVED***="row top-gap-l">
+            <div cl***REMOVED***="col-md-6">
+
+              <div cl***REMOVED***="row top-gap-l">
+                <div cl***REMOVED***="col-md-3">
+                  <span cl***REMOVED***="muted pull-right">Device Id:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-9">
+                  <span>{{device.uid}}</span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap-s">
+                <div cl***REMOVED***="col-md-3">
+                  <span cl***REMOVED***="muted pull-right">Description:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-9">
+                  <span>{{device.description}}</span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap-s">
+                <div cl***REMOVED***="col-md-3">
+                  <span cl***REMOVED***="muted pull-right">POC:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-9">
+                  <span>{{userIdMap[device.userId].username}}</span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap-s">
+                <div cl***REMOVED***="col-md-3">
+                  <span cl***REMOVED***="muted pull-right">App Version:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-9">
+                  <span>{{device.appVersion}}</span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row top-gap-s">
+                <div cl***REMOVED***="col-md-3">
+                  <span cl***REMOVED***="muted pull-right">User Agent:&nbsp;</span>
+                </div>
+                <div cl***REMOVED***="col-md-9">
+                  <span>{{device.userAgent}}</span>
+                </div>
+              </div>
+
+            </div>
+
+            <div cl***REMOVED***="col-md-6">
+
+              <div cl***REMOVED***="row" ng-if="!device.registered">
+                <div cl***REMOVED***="alert alert-success">
+                  <strong>Register device</strong>
+                  <p>Registering will allow device to access MAGE data. The device can be deregistered at any time.</p>
+                  <button cl***REMOVED***="btn btn-success top-gap" ng-click="registerDevice(device)"> <i cl***REMOVED***="fa fa-check"></i> Register</button>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row" ng-if="device.registered" >
+                <div cl***REMOVED***="alert alert-warning">
+                  <strong>Unregister device</strong>
+                  <p>Unregistering will deny device from accessing MAGE data. All device information will be retained and the device can be registered again at any time.</p>
+                  <button cl***REMOVED***="btn btn-warning top-gap" ng-click="unregisterDevice(device)"> <i cl***REMOVED***="fa fa-ban"></i> Unregister</button>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row">
+                <div cl***REMOVED***="alert alert-danger">
+                  <strong>Delete device</strong>
+                  <p>Deleting device will remove all device information. This cannot be undone, all device data will be unrecoverable.</p>
+                  <button cl***REMOVED***="btn btn-danger top-gap" ng-click="deleteDevice(device)"> <i cl***REMOVED***="fa fa-trash-o"></i> Delete</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <hr>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

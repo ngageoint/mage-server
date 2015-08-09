@@ -14,6 +14,13 @@ angular.module('mage').factory('Team', ['$resource', '$http', function($resource
 			headers: {
 				'Content-Type': 'application/json'
 			}
+		},
+		count: {
+			method: 'GET',
+			url: '/api/teams/count',
+			headers: {
+				'Content-Type': 'application/json'
+			}
 		}
 	});
 

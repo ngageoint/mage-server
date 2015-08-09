@@ -7,17 +7,69 @@
   display: none !important;
 }
 
+body {
+  margin: 0;
+  height: 100%;
+  color: #6389b3;
+
+  display: flex;
+  flex-direction: column;
+}
+
+html, #map {
+  height: 100%;
+}
+
+header.navbar {
+  margin-bottom: 0px;
+}
+
+.banner-flex {
+  flex: none;
+  height: 20px;
+}
+
+.navbar-flex {
+  flex: none;
+  height: 50px;
+}
+
+.route-content {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-flex {
+  flex: 1;
+  position: relative;
+}
+
+.content-inner {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	overflow: auto;
+}
+
 h1, h2, h3, h4, h5 {
-	color: #345477;
+	color: #365F8C;
 }
 
 a {
-	color: #345477;
+	color: #365F8C;
 }
 
-body {
-	background: #EEEEEE;
-	color: #6389b3;
+.card {
+  box-sizing: border-box;
+  margin: 8px;
+  box-shadow: 0 3px 1px -2px rgba(0,0,0,.14),0 2px 2px 0 rgba(0,0,0,.098),0 1px 5px 0 rgba(0,0,0,.084);
+}
+
+.card > .card-content {
+  padding: 16px;
 }
 
 .center-block {
@@ -72,8 +124,12 @@ body {
   color: #324962;
 }
 
-.admin-nav-gap {
-	padding-top: 84px;
+.right-gap-s {
+  margin-right: 5px;
+}
+
+.right-gap {
+  margin-right: 10px;
 }
 
 .top-gap-s {
@@ -205,21 +261,11 @@ textarea {
   width: 250px;
 }
 
-@media(max-width: 768px) {
+/*@media(max-width: 768px) {
 	.filter-nav {
     height: 46px;
 	}
-}
-
-.filter-nav {
-	color: #345477;
-	background-color: #E2E2E2;
-	font-size: 16px;
-	z-index: 1029;
-	position: fixed;
-	right: 0;
-	left: 0;
-}
+}*/
 
 .filter-event {
 	font-family: Roboto;
@@ -244,15 +290,58 @@ textarea {
   }
 }
 
+@media (min-width: 768px) {
+  .navbar {
+    border-radius: 0;
+  }
+}
+
+.badge-accent {
+   background: #FFBF9C;
+}
+
+.badge-notif {
+   position: relative;
+   top: 4px;
+   left: -10px;
+}
+
 /* User management page styles */
+.admin-card {
+  height: 235px;
+  background-color: white;
+}
+
+.admin-dashboard-navbar {
+  background-color: #F5F5F5;
+  border-color: #F0F0F0;
+}
+
+.admin-dashboard-navbar > .container-fluid > .navbar-header > .navbar-brand {
+  color: #204976;
+}
+
+.admin-dashboard-content {
+  padding: 16px;
+}
+
+.admin-dashboard-item {
+  /*color: #FFD9C5;*/
+  line-height: 48px;
+  font-size: 36px;
+  padding: 20px;
+  text-align: center;
+  font-weight: normal;
+}
+
 .admin-nav {
-	height: 40px;
-	position: fixed;
-	right: 0;
-	left: 0;
-	margin-bottom: 0;
-	background-color: #E2E2E2;
-	z-index: 1029;
+  height: 40px;
+  background-color: #E2E2E2;
+}
+
+.admin-nav-gap {
+  padding: 20px 0 20px;
+
 }
 
 a.admin-nav-active {
@@ -295,7 +384,11 @@ a.admin-nav-inactive {
 .admin-table {
 	color: #555;
 	background-color: white;
-	border: 1px solid #ccc
+	border: 1px solid #F5F5F5;
+}
+
+.admin-table-content {
+  padding: 15px;
 }
 
 .admin-tab:hover a {
@@ -308,6 +401,14 @@ a.admin-nav-inactive {
 	padding: 7px;
 }
 
+.admin-u***REMOVED***ved {
+  margin-top: 5px;
+}
+
+.admin-user-button {
+  margin-left: 10px;
+}
+
 .admin-active {
 	background-color: #E2E2E2;
 	border-radius: 5px;
@@ -318,8 +419,17 @@ a.admin-nav-inactive {
 	float: left;
 }
 
+.admin-device-icon {
+  font-size: 40px;
+}
+
+.admin-layer-icon {
+  padding: 5px 0 5px;
+  font-size: 25px;
+}
+
 .pointer {
-    cursor: pointer; cursor: hand;
+  cursor: pointer; cursor: hand;
 }
 
 .awesome-marker i {
@@ -328,18 +438,18 @@ a.admin-nav-inactive {
 }
 
 div.image-button {
-    position: relative;
+  position: relative;
 }
 
 div.image-button:hover button {
-    display: block;
+  display: block;
 }
 
 div.image-button button {
-    position: absolute;
-    top: 0;
-    left: 0;
-    display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: none;
 }
 
 .image-delete {
@@ -358,30 +468,27 @@ h4.image-delete {
 }
 
 .feature-title {
-    border-bottom: 1px solid #F6F6F6;
-    margin-bottom: 10px;
-    padding-bottom: 5px;
+  border-bottom: 1px solid #F6F6F6;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
 }
 
 .small-text {
-    font-size: 0.8em;
+  font-size: 0.8em;
 }
 
 .well-item {
-	padding-bottom: 5px;
-	margin-bottom: 5px;
+	padding: 10px;
 	border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
 .well-item:last-child {
-	padding-bottom: 0;
-	margin-bottom: 0;
 	border-bottom: none;
 }
 
 .edit-well {
-    background: #43719F;
-    color: white;
+  background: #43719F;
+  color: white;
 }
 
 .muted {
@@ -464,4 +571,17 @@ h4.image-delete {
 .select2-container .select2-choice .select2-arrow {
 	background: #fff;
 	background-image: none;
+}
+
+.merged .input-group-addon {
+	background-color: #fff;
+  border-left: 0px;
+  padding: 6px 3px;
+}
+.merged input {
+    border-right: 0px;
+    padding: 6px;
+}
+.merged .input-group-addon + input {
+	border-left: 0px;
 }

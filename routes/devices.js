@@ -107,11 +107,44 @@ module.exports = function(app, security) {
     '/api/devices',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_DEVICE'),
-      function (req, res) {
-      Device.getDevices(function (err, devices) {
+    function (req, res, next) {
+      var filter = {};
+      if (req.query.registered === 'true') {
+        filter.registered = true;
+      }
+
+      if (req.query.registered === 'false') {
+        filter.registered = false;
+      }
+
+      var expand = {};
+      if (req.query.expand) {
+        var expandList = req.query.expand.split(",");
+        if (expandList.some(function(e) { return e === 'user'})) {
+          expand.user = true;
+        }
+      }
+
+      Device.getDevices({filter: filter, expand: expand}, function (err, devices) {
+        if (err) return next(err);
+
         res.json(devices);
       });
-  });
+    }
+  );
+
+  app.get(
+    '/api/devices/count',
+    p***REMOVED***port.authenticate(authenticationStrategy),
+    access.authorize('READ_DEVICE'),
+    function (req, res, next) {
+      Device.count(function (err, count) {
+        if (err) return next(err);
+
+        res.json({count: count});
+      });
+    }
+  );
 
   // get device
   app.get(

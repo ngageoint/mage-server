@@ -113,6 +113,12 @@ function getTeamsForEvent(event, callback) {
   }
 }
 
+exports.count = function(callback) {
+  Event.count({}, function(err, count) {
+    callback(err, count);
+  });
+}
+
 exports.getEvents = function(options, callback) {
   if (typeof options == 'function') {
     callback = options;

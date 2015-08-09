@@ -19,8 +19,10 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
     updateMyP***REMOVED***word: updateMyP***REMOVED***word,
     updateMyself: updateMyself,
     checkLoggedInUser: checkLoggedInUser,
+    getUserCount: getUserCount,
     getUser: getUser,
     getAllUsers: getAllUsers,
+    getInactiveUsers: getInactiveUsers,
     createUser: createUser,
     updateUser: updateUser,
     deleteUser: deleteUser,
@@ -43,10 +45,10 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
     userDeferred = $q.defer();
 
     data.appVersion = 'Web Client';
-    var promise = $http.post(
-     '/api/login',
-      $.param(data),
-      {headers: {"Content-Type": "application/x-www-form-urlencoded"}, ignoreAuthModule:true});
+    var promise = $http.post('/api/login', $.param(data), {
+      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+      ignoreAuthModule:true
+    });
 
     promise.success(function(data) {
       LocalStorageService.setToken(data.token);
@@ -75,9 +77,9 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
 
   function getMyself(roles) {
     var theDeferred = $q.defer();
-    $http.get(
-      '/api/users/myself',
-      {headers: {"Content-Type": "application/x-www-form-urlencoded"}})
+    $http.get('/api/users/myself',{
+      headers: {"Content-Type": "application/x-www-form-urlencoded"}
+    })
     .success(function(user) {
       setUser(user);
 
@@ -105,11 +107,9 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
   }
 
   function updateMyP***REMOVED***word(user) {
-    var promise = $http.put(
-      '/api/users/myself',
-      $.param(user),
-      {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
-    );
+    var promise = $http.put('/api/users/myself', $.param(user), {
+      headers: {"Content-Type": "application/x-www-form-urlencoded"}
+    });
 
     promise.success(function(user) {
       clearUser();
@@ -120,10 +120,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
 
   function checkLoggedInUser(roles) {
     console.info('check login');
-    $http.get(
-      '/api/users/myself',
-      {
-        ignoreAuthModule: true})
+    $http.get('/api/users/myself', {ignoreAuthModule: true})
     .success(function(user) {
       setUser(user);
       userDeferred.resolve(user);
@@ -135,11 +132,12 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
     return userDeferred.promise;
   }
 
+  function getUserCount() {
+    return $http.get('/api/users/count');
+  }
+
   function getUser(id) {
-    resolvedUsers[id] = resolvedUsers[id] || $http.get(
-      '/api/users/' + id
-    );
-    return resolvedUsers[id];
+    return resolvedUsers[id] || $http.get('/api/users/' + id, {});
   }
 
   function getAllUsers(forceRefresh) {
@@ -157,24 +155,37 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
     return resolveAllUsers;
   };
 
+  function getInactiveUsers() {
+    return $http.get('/api/users?active=false');
+  };
+
   function createUser(user, success, error, progress) {
     saveUser(user, {
       url: '/api/users?access_token=' + LocalStorageService.getToken(),
       type: 'POST'
-    }, success, error, progress);
+    }, function(data) {
+      resolvedUsers[data.id] = $q.when(data);
+      success(data);
+    }, error, progress);
   };
 
   function updateUser(id, user, success, error, progress) {
     saveUser(user, {
       url: '/api/users/' + id + '?access_token=' + LocalStorageService.getToken(),
       type: 'PUT'
-    }, success, error, progress);
+    }, function(data) {
+      resolvedUsers[data.id] = $q.when(data);
+      success(data);
+    }, error, progress);
   };
 
   function deleteUser(user) {
-    return $http.delete(
-      '/api/users/' + user.id
-    );
+    var promise = $http.delete('/api/users/' + user.id);
+    promise.success(function() {
+      delete resolvedUsers[user.id];
+    });
+
+    return promise;
   };
 
   // TODO is this really used in this ***REMOVED*** or just internal
@@ -223,7 +234,10 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
             }
             return myXhr;
         },
-        success: success,
+        success: function(data) {
+          resolvedUsers[user.id] = $q.when(data);
+          success(data);
+        },
         error: error,
         data: formData,
         cache: false,

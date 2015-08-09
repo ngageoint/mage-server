@@ -1,54 +1,240 @@
-<div cl***REMOVED***="row admin-nav">
-  <div cl***REMOVED***="col-xs-2 visible-xs-block">
-    <h4 cl***REMOVED***="admin-tab"><a href="#/admin/user" ng-cl***REMOVED***="{'admin-nav-active': currentAdminPanel == 'user'}">Users</a></h4>
-  </div>
-  <div cl***REMOVED***="col-xs-2 col-xs-offset-2 hidden-xs">
-    <h4 cl***REMOVED***="admin-tab"><a href="#/admin/user" ng-cl***REMOVED***="{'admin-nav-active': currentAdminPanel == 'user'}">Users</a></h4>
-  </div>
-
-  <div cl***REMOVED***="col-xs-2">
-    <h4 cl***REMOVED***="admin-tab"><a href="#/admin/team" ng-cl***REMOVED***="{'admin-nav-active': currentAdminPanel == 'team'}">Teams</a></h4>
-  </div>
-  <div cl***REMOVED***="col-xs-2">
-    <h4 cl***REMOVED***="admin-tab"><a href="#/admin/event" ng-cl***REMOVED***="{'admin-nav-active': currentAdminPanel == 'event'}">Events</a></h4>
-  </div>
-  <div cl***REMOVED***="col-xs-2">
-    <h4 cl***REMOVED***="admin-tab"><a href="#/admin/layer" ng-cl***REMOVED***="{'admin-nav-active': currentAdminPanel == 'layer'}">Layers</a></h4>
-  </div>
-  <div cl***REMOVED***="col-xs-2">
-    <h4 cl***REMOVED***="admin-tab"><a href="#/admin/device" ng-cl***REMOVED***="{'admin-nav-active': currentAdminPanel == 'device'}">Devices</a></h4>
+<div cl***REMOVED***="admin-nav-gap">
+  <div cl***REMOVED***="container-fluid">
+    <ol cl***REMOVED***="breadcrumb">
+      <li cl***REMOVED***="active"><i cl***REMOVED***="fa fa-dashboard active"></i>&nbsp;&nbsp;Dashboard</li>
+    </ol>
   </div>
 </div>
 
-<div cl***REMOVED***="container-fluid">
+<div cl***REMOVED***="content-flex">
+  <div cl***REMOVED***="content-inner">
+    <div cl***REMOVED***="container-fluid bottom-gap-l">
 
-  <div cl***REMOVED***="row admin-nav-gap">
-    <div cl***REMOVED***="col-md-12">
-      <div cl***REMOVED***="row top-gap" ng-show="showStatus">
-        <div cl***REMOVED***="col-md-11 alert alert-block" ng-cl***REMOVED***="statusLevel">
-          <button type="button" cl***REMOVED***="close" ng-click="setShowStatus(false)">&times;</button>
-          <h4>{{statusTitle}}</h4>
-          {{statusMessage}}
+      <div cl***REMOVED***="row">
+        <div cl***REMOVED***="col-md-12">
+          <h3>MAGE Admin</h3>
+
+          <p cl***REMOVED***="muted">You can manage Users, Devices, Teams and other MAGE data and settings from here.</p>
         </div>
       </div>
 
-      <div ng-switch="currentAdminPanel">
-        <div ng-switch-when="user">
-          <div ng-include="'app/admin/users/users.html'"></div>
-        </div>
-        <div ng-switch-when="device">
-          <div ng-include="'app/admin/devices/devices.html'"></div>
-        </div>
-        <div ng-switch-when="event">
-          <div ng-include="'app/admin/events/events.html'"></div>
-        </div>
-        <div ng-switch-when="layer">
-          <div ng-include="'app/admin/layers/layers.html'"></div>
-        </div>
-        <div ng-switch-when="team">
-          <div ng-include="'app/admin/teams/teams.html'"></div>
+      <div cl***REMOVED***="top-gap-xl">
+        <div cl***REMOVED***="card-content">
+
+          <div cl***REMOVED***="row admin-dashboard-content">
+            <div cl***REMOVED***="col-md-2">
+              <div cl***REMOVED***="card">
+                <div cl***REMOVED***="card-content admin-card">
+                  <h4 ng-if="userCount == null">Users <i cl***REMOVED***="fa fa-spinner fa-spin"></i></h4>
+                  <h4 ng-if="userCount != null">Users ({{userCount}})</h4>
+
+                  <a href="#/admin/users">
+                    <div cl***REMOVED***="admin-dashboard-item"><i cl***REMOVED***="fa fa-user"></i><span ng-if="inactiveUsers.length" cl***REMOVED***="badge badge-notif badge-accent">{{inactiveUsers.length}}</span></div>
+                  </a>
+
+                  <hr>
+                  <button cl***REMOVED***="btn btn-primary" ng-click="newUser()">New User</button>
+                </div>
+              </div>
+            </div>
+
+            <div cl***REMOVED***="col-md-2">
+              <div cl***REMOVED***="card">
+                <div cl***REMOVED***="card-content admin-card">
+                  <h4 ng-if="userCount == null">Teams <i cl***REMOVED***="fa fa-spinner fa-spin"></i></h4>
+                  <h4 ng-if="userCount != null">Teams ({{teamCount}})</h4>
+
+                  <a ng-href="#/admin/teams">
+                    <div cl***REMOVED***="admin-dashboard-item"><i cl***REMOVED***="fa fa-users"></i></div>
+                  </a>
+
+                  <hr>
+                  <button cl***REMOVED***="btn btn-primary" ng-click="newTeam()">New Team</button>
+                </div>
+              </div>
+            </div>
+
+            <div cl***REMOVED***="col-md-2">
+              <div cl***REMOVED***="card">
+                <div cl***REMOVED***="card-content admin-card">
+                  <h4 ng-if="userCount == null">Events <i cl***REMOVED***="fa fa-spinner fa-spin"></i></h4>
+                  <h4 ng-if="userCount != null">Events ({{eventCount}})</h4>
+
+                  <a ng-href="#/admin/events">
+                    <div cl***REMOVED***="admin-dashboard-item"><i cl***REMOVED***="fa fa-calendar"></i></div>
+                  </a>
+
+                  <hr>
+                  <button cl***REMOVED***="btn btn-primary" ng-click="newEvent()">New Event</button>
+                </div>
+              </div>
+            </div>
+
+            <div cl***REMOVED***="col-md-2">
+              <div cl***REMOVED***="card">
+                <div cl***REMOVED***="card-content admin-card">
+                  <h4 ng-if="userCount == null">Devices <i cl***REMOVED***="fa fa-spinner fa-spin"></i></h4>
+                  <h4 ng-if="userCount != null">Devices ({{deviceCount}})</h4>
+
+                  <a ng-href="#/admin/devices">
+                    <div cl***REMOVED***="admin-dashboard-item"><i cl***REMOVED***="fa fa-mobile-phone"></i><span ng-if="unregisteredDevices.length" cl***REMOVED***="badge badge-notif badge-accent">{{unregisteredDevices.length}}</span></div>
+                  </a>
+
+                  <hr>
+                  <button cl***REMOVED***="btn btn-primary" ng-click="newDevice()">New Device</button>
+                </div>
+              </div>
+            </div>
+
+            <div cl***REMOVED***="col-md-2">
+              <div cl***REMOVED***="card">
+                <div cl***REMOVED***="card-content admin-card">
+                  <h4 ng-if="userCount == null">Layers <i cl***REMOVED***="fa fa-spinner fa-spin"></i></h4>
+                  <h4 ng-if="userCount != null">Layers ({{layerCount}})</h4>
+
+                  <a ng-href="#/admin/layers">
+                    <div cl***REMOVED***="admin-dashboard-item"><i cl***REMOVED***="fa fa-map"></i></div>
+                  </a>
+
+                  <hr>
+                  <button cl***REMOVED***="btn btn-primary" ng-click="newLayer()">New Layer</button>
+                </div>
+              </div>
+            </div>
+
+
+            <div cl***REMOVED***="col-md-2">
+              <div cl***REMOVED***="card">
+                <div cl***REMOVED***="card-content admin-card">
+                  <h4>Settings</h4>
+
+                  <a ng-href="#admin/settings">
+                    <div cl***REMOVED***="admin-dashboard-item"><i cl***REMOVED***="fa fa-wrench"></i></div>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      <hr>
+
+      <h4 cl***REMOVED***="bottom-gap">User and Device access</h4>
+      <div cl***REMOVED***="row">
+        <div cl***REMOVED***="col-md-6">
+          <div cl***REMOVED***="row">
+            <div cl***REMOVED***="col-md-12">
+              <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
+                <div cl***REMOVED***="container-fluid">
+                  <div cl***REMOVED***="navbar-header">
+                    <a cl***REMOVED***="navbar-brand">Inactive users <sup><span cl***REMOVED***="badge badge-accent">{{inactiveUsers.length}}</span></sup></a>
+                  </div>
+
+                  <form cl***REMOVED***="navbar-form navbar-left">
+                    <div cl***REMOVED***="form-group">
+                      <input type="text" cl***REMOVED***="form-control" placeholder="Search" ng-model="userSearch">
+                    </div>
+                  </form>
+                </div>
+              </nav>
+            </div>
+          </div>
+
+          <div cl***REMOVED***="row">
+            <div cl***REMOVED***="col-sm-12">
+              <div cl***REMOVED***="admin-table">
+                <div cl***REMOVED***="well-item"
+                    ng-repeat="user in (filteredUsers = (inactiveUsers | user:['username','firstname','lastname','email']:userSearch)) | orderBy:'username' | offset: usersPage*usersPerPage | limitTo:usersPerPage" >
+                  <div cl***REMOVED***="row pointer" ng-click="gotoUser(user)">
+                    <div cl***REMOVED***="col-md-12">
+                      <div cl***REMOVED***="right-gap pull-left">
+                        <i cl***REMOVED***="fa fa-user"></i>
+                      </div>
+                      <span>
+                        {{user.firstname}} {{user.lastname}}
+                      </span>
+                      <span cl***REMOVED***="muted"> ({{user.username}})</span>
+
+                      <span cl***REMOVED***="pull-right">
+                        <a cl***REMOVED***="btn btn-xs btn-success" ng-click="activateUser($event, user)"><i cl***REMOVED***="fa fa-check"></i> Activate</a>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div cl***REMOVED***="row">
+            <div cl***REMOVED***="col-md-offset-8 col-md-4">
+              <ul cl***REMOVED***="pager">
+                <li cl***REMOVED***="previous" ng-show="usersPage != 0">
+                  <a ng-click="usersPage=usersPage-1">&larr; Previous User</a>
+                </li>
+                <li cl***REMOVED***="next" ng-show="usersPage < (filteredUsers.length/usersPerPage) - 1">
+                  <a ng-click="usersPage=usersPage+1">Next User&rarr;</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+        <div cl***REMOVED***="col-md-6">
+          <div cl***REMOVED***="row">
+            <div cl***REMOVED***="col-md-12">
+              <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
+                <div cl***REMOVED***="container-fluid">
+                  <div cl***REMOVED***="navbar-header">
+                    <a cl***REMOVED***="navbar-brand">Unregistered devices <sup><span cl***REMOVED***="badge badge-accent">{{unregisteredDevices.length}}</span></sup></a>
+                  </div>
+
+                  <form cl***REMOVED***="navbar-form navbar-left">
+                    <div cl***REMOVED***="form-group">
+                      <input type="text" cl***REMOVED***="form-control" placeholder="Search" ng-model="deviceSearch">
+                    </div>
+                  </form>
+                </div>
+              </nav>
+            </div>
+          </div>
+          <div cl***REMOVED***="row">
+            <div cl***REMOVED***="col-sm-12">
+              <div cl***REMOVED***="admin-table">
+                <div cl***REMOVED***="well-item"
+                    ng-repeat="d in (filteredDevices = (unregisteredDevices | filter:filterDevices)) | orderBy:'uid' | offset: devicesPage*devicesPerPage | limitTo:devicesPerPage" >
+                  <div cl***REMOVED***="row pointer" ng-click="gotoDevice(d)">
+                    <div cl***REMOVED***="col-md-12">
+                      <div cl***REMOVED***="right-gap pull-left">
+                        <i cl***REMOVED***="fa fa-mobile"></i>
+                      </div>
+                      <span cl***REMOVED***="strong">{{d.uid}}</span>
+                      <span cl***REMOVED***="muted" ng-if="d.user">({{d.user.username}})</span>
+                      <span cl***REMOVED***="pull-right">
+                        <a cl***REMOVED***="btn btn-xs btn-success" ng-click="registerDevice($event, d)"><i cl***REMOVED***="fa fa-check"></i> Register</a>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div cl***REMOVED***="row">
+            <div cl***REMOVED***="col-md-offset-8 col-md-4">
+              <ul cl***REMOVED***="pager">
+                <li cl***REMOVED***="previous" ng-show="devicesPage != 0">
+                  <a ng-click="devicesPage=devicesPage-1">&larr; Previous Device</a>
+                </li>
+                <li cl***REMOVED***="next" ng-show="devicesPage < (filteredDevices.length/devicesPerPage) - 1">
+                  <a ng-click="devicesPage=devicesPage+1">Next Device&rarr;</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <hr>
 
     </div>
   </div>
