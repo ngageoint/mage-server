@@ -72,9 +72,7 @@ function AdminUserController($scope, $injector, $filter, $routeParams, $location
   $scope.activateUser = function(user) {
     user.active = true;
     UserService.updateUser(user.id, user, function(response) {
-
     }, function(response) {
-
     });
   }
 

@@ -83,6 +83,11 @@ var transform = function(device, ret, options) {
   if ('function' != typeof device.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;
+
+    if (device.populated('userId')) {
+      ret.user = ret.userId;
+      delete ret.userId;
+    }
   }
 }
 
@@ -115,14 +120,30 @@ exports.getDeviceByUid = function(uid, callback) {
   });
 }
 
-exports.getDevices = function(callback) {
-  var query = {};
-  Device.find(query, function (err, devices) {
-    if (err) {
-      console.log("Error finding devices in mongo: " + err);
-    }
+exports.getDevices = function(options, callback) {
+  if (typeof options == 'function') {
+    callback = options;
+    options = {};
+  }
 
-    callback(err, devices);
+  var conditions = {};
+
+  var filter = options.filter || {};
+  if (filter.registered === true) {
+    conditions.registered = true;
+  }
+
+  if (filter.registered === false) {
+    conditions.registered = false;
+  }
+
+  Device.find(conditions, function (err, devices) {
+    var expand = options.expand || {};
+    if (expand.user === true) {
+      Device.populate(devices, 'userId', callback);
+    } else {
+      callback(err, devices);
+    }
   });
 }
 
