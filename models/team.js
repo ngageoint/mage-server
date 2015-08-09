@@ -64,6 +64,12 @@ exports.teamsForUserInEvent = function(user, event, callback) {
   });
 }
 
+exports.count = function(callback) {
+  Team.count({}, function(err, count) {
+    callback(err, count);
+  });
+}
+
 exports.getTeams = function(callback) {
   var query = {};
   Team.find(query).populate('userIds').exec(function (err, teams) {

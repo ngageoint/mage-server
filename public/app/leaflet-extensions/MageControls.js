@@ -63,73 +63,97 @@ L.Control.MageUserLocation = L.Control.extend({
     return container;
   },
 
-	_startLocate: function() {
+	startBroadcast: function() {
+		if (this._broadcast) return; // broadcast is already on
+
+		this._broadcast = true;
+		this._onLocation(this._location);
+		this.startLocate();
+
+		L.DomUtil.addCl***REMOVED***(this._broadcastLink, 'leaflet-control-inverse');
+		L.DomUtil.addCl***REMOVED***(this._broadcastIcon, 'icon-sage-inverse');
+		L.DomUtil.removeCl***REMOVED***(this._broadcastIcon, 'icon-sage');
+
+	},
+
+	stopBroadcast: function() {
+		if (!this._broadcast) return; // broadcast already off
+
+		L.DomUtil.removeCl***REMOVED***(this._broadcastLink, 'leaflet-control-inverse');
+		L.DomUtil.addCl***REMOVED***(this._broadcastIcon, 'icon-sage');
+		L.DomUtil.removeCl***REMOVED***(this._broadcastIcon, 'icon-sage-inverse');
+
+		this._broadcast = false;
+	},
+
+	startLocate: function() {
+		if (this._locate) return; // locate is already on
+
+		this._locate = true;
+
 		this._map.locate({
 			watch: true,
 			setView: false,
 		});
+
+		L.DomUtil.addCl***REMOVED***(this._locateLink, 'leaflet-control-inverse');
+		L.DomUtil.addCl***REMOVED***(this._locateIcon, 'icon-sage-inverse');
+		L.DomUtil.removeCl***REMOVED***(this._locateIcon, 'icon-sage');
 	},
 
-	_stopLocate: function() {
+	stopLocate: function() {
+		if (!this._locate) return;  // locate is already off
+
+		this._locate = false;
+
 		this._map.stopLocate();
 		this._location = null;
 
 		if (this.options.stopLocation) {
 			this.options.stopLocation();
 		}
+
+		L.DomUtil.removeCl***REMOVED***(this._locateLink, 'leaflet-control-inverse');
+		L.DomUtil.addCl***REMOVED***(this._locateIcon, 'icon-sage');
+		L.DomUtil.removeCl***REMOVED***(this._locateIcon, 'icon-sage-inverse');
+
+		this.stopBroadcast();
 	},
 
-	_onLocation: function(location, broadcast) {
+	_onLocation: function(location) {
 		if (!location) return;
-		broadcast = broadcast || this._broadcast;
 
 		this._location = location;
 
 		if (this.options.onLocation) {
-			this.options.onLocation(location, broadcast);
+			this.options.onLocation(location, this._broadcast);
 		}
 	},
 
 	_onLocateClick: function() {
 		if (this._locate) {
-			this._stopLocate();
-			L.DomUtil.removeCl***REMOVED***(this._locateLink, 'leaflet-control-inverse');
-			L.DomUtil.addCl***REMOVED***(this._locateIcon, 'icon-sage');
-			L.DomUtil.removeCl***REMOVED***(this._locateIcon, 'icon-sage-inverse');
-
-			if (this._broadcast) this._onBroadcastClick();
+			this.stopLocate();
 		} else {
-			this._startLocate();
-			L.DomUtil.addCl***REMOVED***(this._locateLink, 'leaflet-control-inverse');
-			L.DomUtil.addCl***REMOVED***(this._locateIcon, 'icon-sage-inverse');
-			L.DomUtil.removeCl***REMOVED***(this._locateIcon, 'icon-sage');
+			this.startLocate();
 		}
-
-		this._locate = !this._locate;
 	},
 
 	_onBroadcastClick: function() {
-		if (!this._locate) this._onLocateClick();
+		var self = this;
+		this.options.onBroadcastLocationClick(function(hasPermission) {
+			if (!hasPermission) return;
 
-		if (this._broadcast) {
-			L.DomUtil.removeCl***REMOVED***(this._broadcastLink, 'leaflet-control-inverse');
-			L.DomUtil.addCl***REMOVED***(this._broadcastIcon, 'icon-sage');
-			L.DomUtil.removeCl***REMOVED***(this._broadcastIcon, 'icon-sage-inverse');
-		} else {
-			this._onLocation(this._location, true);
-
-			L.DomUtil.addCl***REMOVED***(this._broadcastLink, 'leaflet-control-inverse');
-			L.DomUtil.addCl***REMOVED***(this._broadcastIcon, 'icon-sage-inverse');
-			L.DomUtil.removeCl***REMOVED***(this._broadcastIcon, 'icon-sage');
-		}
-
-		this._broadcast = !this._broadcast;
-	},
-
-	_broadcast: function() {
-		if (!this._location || !this.options.onBroadcast) return;
-		this.options.onBroadcast(this._location);
+				if (self._broadcast) {
+					self.stopBroadcast.apply(self);
+				} else {
+					self.startBroadcast.apply(self);
+				}
+		});
 	}
+	// _broadcast: function() {
+	// 	if (!this._location || !this.options.onBroadcast) return;
+	// 	this.options.onBroadcast(this._location);
+	// }
 });
 
 L.Control.MageListTools = L.Control.extend({

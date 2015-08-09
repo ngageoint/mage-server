@@ -11,18 +11,17 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
   var pollListeners = [];
   var eventsById = {};
   var teamsById = {};
-  var intervalChoice = null;
 
   var filterServiceListener = {
     onFilterChanged: function(filter) {
-      if (filter.event || filter.timeInterval) { // requires query to server
-        if (filter.event) {
-          onEventChanged(filter.event);
-        } else if (filter.timeInterval) {
-          onTimeIntervalChanged(filter.timeInterval);
-        }
+      if (filter.event) {
+        onEventChanged(filter.event);
+      }
+
+      if (filter.event || filter.timeInterval) { // requery server
+        fetch();
       } else if (filter.teams) { // filter in memory
-        onTeamsChanged(filter.teams, FilterService.getEvent());
+        onTeamsChanged(filter.teams);
       }
     }
   }
@@ -30,7 +29,6 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
 
   function onEventChanged(event) {
     _.each(event.added, function(added) {
-      fetch(added);
       fetchLayers(added);
     });
 
@@ -42,7 +40,10 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     });
   }
 
-  function onTeamsChanged(teams, event) {
+  function onTeamsChanged(teams) {
+    var event = FilterService.getEvent();
+    if (!event) return;
+
     var teamsEvent = eventsById[event.id];
     if (!teamsEvent) return;
 
@@ -90,15 +91,6 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     usersChanged({added: usersAdded, removed: usersRemoved});
   }
 
-  function onTimeIntervalChanged(changed) {
-    intervalChoice = changed;
-
-    var event = FilterService.getEvent();
-    if (event) {
-      fetch(event);
-    }
-  }
-
   var pollingServiceListener = {
     onPollingIntervalChanged: function(interval) {
       if (pollingTimeout) {
@@ -129,7 +121,8 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     deleteAttachmentForObservation: deleteAttachmentForObservation,
     getFormField: getFormField,
     createForm: createForm,
-    exportForm: exportForm
+    exportForm: exportForm,
+    isUserInEvent: isUserInEvent
   }
 
   return ***REMOVED***;
@@ -265,6 +258,12 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     return $http.get('/api/events/' + event.id + '/form.zip');
   }
 
+  function isUserInEvent(user, event) {
+    return _.some(event.teams, function(team) {
+        return _.contains(team.userIds, user.id);
+    });
+  }
+
   function usersChanged(changed) {
     _.each(usersChangedListeners, function(listener) {
       changed.added = changed.added || [];
@@ -301,7 +300,10 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     });
   }
 
-  function fetch(event) {
+  function fetch() {
+    var event = FilterService.getEvent();
+    if (!event) return;
+
     if (!eventsById[event.id]) {
       eventsById[event.id] = angular.copy(event);
       eventsById[event.id].filteredObservationsById = {};
@@ -311,8 +313,9 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     }
 
     var parameters = {};
-    if (intervalChoice) {
-      var time = FilterService.formatInterval(intervalChoice);
+    var interval = FilterService.getInterval();
+    if (interval) {
+      var time = FilterService.formatInterval(interval);
       parameters.interval = time;
     }
 
@@ -439,7 +442,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
   function poll(interval) {
     if (interval <= 0) return;
 
-    fetch(FilterService.getEvent()).then(function() {
+    fetch().then(function() {
       _.each(pollListeners, function(listener) {
         if (_.isFunction(listener.onPoll)) {
           listener.onPoll();

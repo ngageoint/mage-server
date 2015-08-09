@@ -25,6 +25,8 @@ function MapService() {
     removeFeatureFromLayer: removeFeatureFromLayer,
     zoomToFeatureInLayer: zoomToFeatureInLayer,
     onLocation: onLocation,
+    onLocationStop: onLocationStop,
+    onBroadcastLocation: onBroadcastLocation,
     onPoll: onPoll
   };
 
@@ -150,6 +152,22 @@ function MapService() {
     _.each(listeners, function(listener) {
       if (_.isFunction(listener.onLocation)) {
         listener.onLocation(location);
+      }
+    });
+  }
+
+  function onLocationStop() {
+    _.each(listeners, function(listener) {
+      if (_.isFunction(listener.onLocationStop)) {
+        listener.onLocationStop();
+      }
+    });
+  }
+
+  function onBroadcastLocation(callback) {
+    _.each(listeners, function(listener) {
+      if (_.isFunction(listener.onBroadcastLocation)) {
+        listener.onBroadcastLocation(callback);
       }
     });
   }

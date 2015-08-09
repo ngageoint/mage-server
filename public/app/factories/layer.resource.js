@@ -24,6 +24,13 @@ function Layer($resource, $http) {
 			method: 'GET',
 			isArray: true,
 			url: '/api/events/:eventId/layers'
+		},
+		count: {
+			method: 'GET',
+			url: '/api/layers/count',
+			headers: {
+				'Content-Type': 'application/json'
+			}
 		}
 	});
 

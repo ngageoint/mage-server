@@ -2,30 +2,28 @@ angular
   .module('mage')
   .controller('AdminUsersController', AdminUsersController);
 
-AdminUsersController.$inject = ['$scope', '$injector', '$filter', 'LocalStorageService', 'UserService'];
+AdminUsersController.$inject = ['$scope', '$injector', '$filter', '$location', 'LocalStorageService', 'UserService'];
 
-function AdminUsersController($scope, $injector, $filter, LocalStorageService, UserService) {
+function AdminUsersController($scope, $injector, $filter, $location, LocalStorageService, UserService) {
   $scope.token = LocalStorageService.getToken();
   $scope.filter = "all"; // possible values all, active, inactive
   $scope.users = [];
-  $scope.roles = [];
   $scope.page = 0;
   $scope.itemsPerPage = 10;
 
-  UserService.getRoles().success(function (roles) {
-    $scope.roles = roles;
-  });
-
   UserService.getAllUsers(true).success(function(users) {
     $scope.users = users;
+    $scope.allCount = $scope.users.length;
+    $scope.activeCount = _.filter($scope.users, function(u) {return u.active === true}).length;
+    $scope.inactiveCount = _.filter($scope.users, function(u) {return !u.active}).length;
   });
 
-  $scope.$on('userAvatar', function(event, userAvatar) {
-    $scope.user.avatar = userAvatar;
-  });
+  $scope.$watch('userSearch', function() {
+    if (!$scope.filteredUsers) return;
 
-  $scope.$on('userIcon', function(event, userIcon) {
-    $scope.user.icon = userIcon;
+    $scope.allCount = $scope.filteredUsers.length;
+    $scope.activeCount = _.filter($scope.filteredUsers, function(u) {return u.active === true}).length;
+    $scope.inactiveCount = _.filter($scope.filteredUsers, function(u) {return !u.active}).length;
   });
 
   $scope.filterActive = function (user) {
@@ -36,81 +34,33 @@ function AdminUsersController($scope, $injector, $filter, LocalStorageService, U
     }
   }
 
+  $scope.activeUsersCount = function(user) {
+    return user.active == true;
+  }
+
+  $scope.reset = function() {
+    $scope.page = 0;
+    $scope.filter = 'all';
+    $scope.userSearch = '';
+  }
+
   $scope.newUser = function() {
-    $scope.user = {};
+    $location.path('/admin/users/new');
   }
 
-  $scope.editUser = function(user) {
-    $scope.edit = false;
-
-    // TODO temp code to convert array of phones to one phone
-    if (user.phones && user.phones.length > 0) {
-      user.phone = user.phones[0].number;
-    }
-
-    $scope.user = user;
+  $scope.gotoUser = function(user) {
+    $location.path('/admin/users/' + user.id);
   }
 
-  var debounceHideSave = _.debounce(function() {
-    $scope.$apply(function() {
-      $scope.saved = false;
-    });
-  }, 5000);
+  $scope.editUser = function($event, user) {
+    $event.stopPropagation();
 
-  $scope.saveUser = function () {
-    $scope.saving = true;
-    $scope.error = false;
-
-    var user = {
-      username: $scope.user.username,
-      firstname: $scope.user.firstname,
-      lastname: $scope.user.lastname,
-      email: $scope.user.email,
-      phone: $scope.user.phone,
-      p***REMOVED***word: this.user.p***REMOVED***word,
-      p***REMOVED***wordconfirm: this.user.p***REMOVED***wordconfirm,
-      roleId: $scope.user.roleId,
-      avatar: $scope.user.avatar,
-      icon: $scope.user.icon
-    };
-
-    var failure = function(response) {
-      $scope.$apply(function() {
-        $scope.saving = false;
-        $scope.error = response.responseText;
-      });
-    }
-
-    var progress = function(e) {
-      if(e.lengthComputable){
-        $scope.$apply(function() {
-          $scope.uploading = true;
-          $scope.uploadProgress = (e.loaded/e.total) * 100;
-        });
-      }
-    }
-
-    if ($scope.user.id) {
-      UserService.updateUser($scope.user.id, user, function(response) {
-        $scope.$apply(function() {
-          $scope.saved = true;
-          $scope.saving = false;
-          debounceHideSave();
-        });
-      }, failure, progress);
-    } else {
-      UserService.createUser(user, function(response) {
-        $scope.$apply(function() {
-          $scope.saved = true;
-          $scope.saving = false;
-          debounceHideSave();
-          $scope.users.push(response);
-        });
-      }, failure, progress);
-    }
+    $location.path('/admin/users/' + user.id + '/edit');
   }
 
-  $scope.deleteUser = function(user) {
+  $scope.deleteUser = function($event, user) {
+    $event.stopPropagation();
+
     var modalInstance = $injector.get('$modal').open({
       templateUrl: '/app/admin/users/user-delete.html',
       resolve: {
@@ -138,20 +88,14 @@ function AdminUsersController($scope, $injector, $filter, LocalStorageService, U
     });
   }
 
-  $scope.refresh = function() {
-    $scope.users = [];
-    UserService.getAllUsers(true).success(function (users) {
-      $scope.users = users;
-    });
-  }
-
   /* shortcut for giving a user the USER_ROLE */
-  $scope.activateUser = function (user) {
+  $scope.activateUser = function ($event, user) {
+    $event.stopPropagation();
+
     user.active = true;
     UserService.updateUser(user.id, user, function(response) {
       $scope.$apply(function() {
         $scope.saved = true;
-        debounceHideSave();
       });
     }, function(response) {
       $scope.$apply(function() {

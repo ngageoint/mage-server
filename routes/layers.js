@@ -54,10 +54,24 @@ module.exports = function(app, security) {
     '/api/layers',
     access.authorize('READ_LAYER_ALL'),
     parseQueryParams,
-    function (req, res) {
+    function (req, res, next) {
       Layer.getLayers({type: req.parameters.type}, function (err, layers) {
+        if (err) return next(err);
+
         var response = layerXform.transform(layers, {path: req.getPath()});
         res.json(response);
+      });
+    }
+  );
+
+  app.get(
+    '/api/layers/count',
+    access.authorize('READ_LAYER_ALL'),
+    function (req, res, next) {
+      Layer.count(function (err, count) {
+        if (err) return next(err);
+
+        res.json({count: count});
       });
     }
   );

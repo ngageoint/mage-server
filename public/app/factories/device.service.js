@@ -8,55 +8,70 @@ function DeviceService($http) {
   var resolvedDevices = {};
 
   var ***REMOVED*** = {
+    count: count,
     getAllDevices: getAllDevices,
     getDevice: getDevice,
     createDevice: createDevice,
     updateDevice: updateDevice,
-    registerDevice: registerDevice,
     deleteDevice: deleteDevice
   };
 
   return ***REMOVED***;
 
-  function getAllDevices() {
-    return $http.get('/api/devices/');
+  function count() {
+    return $http.get('/api/devices/count');
+  }
+
+  function getAllDevices(options) {
+    var parameters = {};
+
+    options = options || {};
+    if (options.expand) {
+      parameters.expand = 'user';
+    }
+
+    if (options.registered === false) {
+      parameters.registered = false;
+    }
+
+    return $http.get('/api/devices?' + $.param(parameters));
   };
 
-
   function getDevice(id) {
-    resolvedDevices[id] = resolvedDevices[id] || $http.get(
-      '/api/devices/' + id
-    );
-    return resolvedDevices[id];
+    return resolvedDevices[id] || $http.get('/api/devices/' + id);
   }
 
   function createDevice(device) {
-    return $http.post(
-      '/api/devices',
-      $.param(device),
-      {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
-    );
+    var promise = $http.post('/api/devices', $.param(device),{
+      headers: {"Content-Type": "application/x-www-form-urlencoded"}
+    });
+
+    promise.then(function(data) {
+      resolvedDevices[device.id] = $.when(data);
+    });
+
+    return promise;
   };
 
   function updateDevice(device) {
-    return $http.put(
-      '/api/devices/' + device.id,
-      $.param(device),
-      {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
-    );
-  };
+    var promise = $http.put('/api/devices/' + device.id, $.param(device), {
+      headers: {"Content-Type": "application/x-www-form-urlencoded"}
+    });
 
-  function registerDevice(device) {
-    return $http.put(
-      '/api/devices/' + device.id,
-      $.param({registered: true}),
-      {headers: {"Content-Type": "application/x-www-form-urlencoded"}}
-    );
+    promise.then(function(data) {
+      resolvedDevices[device.id] = $.when(data);
+    });
+
+    return promise;
   };
 
   function deleteDevice(device) {
-    return $http.delete(
-    '/api/devices/' + device.id
-    );
+    var promise = $http.delete('/api/devices/' + device.id);
+
+    promise.then(function(data) {
+      delete resolvedDevices[device.id];
+    });
+
+    return promise;
   }
 }

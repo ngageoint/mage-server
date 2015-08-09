@@ -11,7 +11,7 @@ module.exports = function(p***REMOVED***port) {
       Token.getToken(token, function(err, credentials) {
         if (err) { return done(err); }
 
-        if (!credentials || !credentials.user) { return done(null, false); }
+        if (!credentials || !credentials.user || !credentials.user.active) { return done(null, false); }
 
         req.token = credentials.token;
 
