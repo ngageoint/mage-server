@@ -22,6 +22,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
     getUserCount: getUserCount,
     getUser: getUser,
     getAllUsers: getAllUsers,
+    getInactiveUsers: getInactiveUsers,
     createUser: createUser,
     updateUser: updateUser,
     deleteUser: deleteUser,
@@ -152,6 +153,10 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
     });
 
     return resolveAllUsers;
+  };
+
+  function getInactiveUsers() {
+    return $http.get('/api/users?active=false');
   };
 
   function createUser(user, success, error, progress) {

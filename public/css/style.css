@@ -296,6 +296,16 @@ textarea {
   }
 }
 
+.badge-accent {
+   background: #FFBF9C;
+}
+
+.badge-notif {
+   position: relative;
+   top: 4px;
+   left: -10px;
+}
+
 /* User management page styles */
 .admin-card {
   height: 235px;

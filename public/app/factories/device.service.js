@@ -22,8 +22,19 @@ function DeviceService($http) {
     return $http.get('/api/devices/count');
   }
 
-  function getAllDevices() {
-    return $http.get('/api/devices/');
+  function getAllDevices(options) {
+    var parameters = {};
+
+    options = options || {};
+    if (options.expand) {
+      parameters.expand = 'user';
+    }
+
+    if (options.registered === false) {
+      parameters.registered = false;
+    }
+
+    return $http.get('/api/devices?' + $.param(parameters));
   };
 
   function getDevice(id) {

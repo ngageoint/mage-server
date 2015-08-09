@@ -64,8 +64,13 @@ User.prototype.count = function(callback) {
   });
 }
 
-User.prototype.getAll = function(callback) {
-  UserModel.getUsers(function (err, users) {
+User.prototype.getAll = function(filter, callback) {
+  if (typeof filter == 'function') {
+    callback = filter;
+    filter = {};
+  }
+
+  UserModel.getUsers(filter, function (err, users) {
     callback(err, users);
   });
 }
