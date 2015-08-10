@@ -194,7 +194,7 @@
                   <div cl***REMOVED***="admin-table">
                     <div cl***REMOVED***="well-item"
                         ng-repeat="team in (filteredTeams = (userTeams | filter:filterTeams)) | orderBy:'name' | offset: teamsPage*teamsPerPage | limitTo:teamsPerPage" >
-                      <div cl***REMOVED***="row">
+                      <div cl***REMOVED***="row pointer" ng-click="gotoTeam(team)">
                         <div cl***REMOVED***="col-md-12">
                           <div cl***REMOVED***="right-gap pull-left">
                             <i cl***REMOVED***="fa fa-users"></i>
