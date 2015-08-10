@@ -37,8 +37,10 @@ module.exports = function(app, security) {
   app.get(
     '/api/teams',
     access.authorize('READ_TEAM'),
-      function (req, res) {
+      function (req, res, next) {
       Team.getTeams(function (err, teams) {
+        if (err) return next(err);
+
         res.json(teams);
       });
   });
@@ -57,7 +59,7 @@ module.exports = function(app, security) {
     '/api/teams',
     access.authorize('CREATE_TEAM'),
     validateTeamParams,
-    function(req, res) {
+    function(req, res, next) {
       Team.createTeam(req.teamParam, function(err, team) {
         if (err) return next(err);
 
@@ -71,7 +73,7 @@ module.exports = function(app, security) {
     '/api/teams/:teamId',
     access.authorize('UPDATE_TEAM'),
     validateTeamParams,
-    function(req, res) {
+    function(req, res, next) {
       var update = {};
       if (req.teamParam.name) update.name = req.teamParam.name;
       if (req.teamParam.description != null) update.description = req.teamParam.description;
@@ -91,6 +93,32 @@ module.exports = function(app, security) {
     access.authorize('DELETE_TEAM'),
     function(req, res, next) {
       Team.deleteTeam(req.team, function(err, team) {
+        if (err) return next(err);
+
+        res.json(team);
+      });
+    }
+  );
+
+  app.post(
+    '/api/teams/:teamId/users',
+    access.authorize('UPDATE_TEAM'),
+    function(req, res, next) {
+      Team.addUser(req.team, req.body, function(err, team) {
+        if (err) return next(err);
+
+        res.json(team);
+      });
+    }
+  );
+
+  app.delete(
+    '/api/teams/:teamId/users/:id',
+    access.authorize('UPDATE_TEAM'),
+    function(req, res, next) {
+      console.log('id', req.params.id);
+
+      Team.removeUser(req.team, {id: req.params.id}, function(err, team) {
         if (err) return next(err);
 
         res.json(team);

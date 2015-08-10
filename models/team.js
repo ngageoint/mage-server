@@ -123,3 +123,27 @@ exports.deleteTeam = function(team, callback) {
     callback(err, team);
   });
 }
+
+exports.addUser = function(team, user, callback) {
+  var update = {
+    $addToSet: {
+      userIds: mongoose.Types.ObjectId(user.id)
+    }
+  };
+
+  Team.findByIdAndUpdate(team._id, update, function(err, team) {
+    callback(err, team);
+  });
+}
+
+exports.removeUser = function(team, user, callback) {
+  var update = {
+    $pull: {
+      userIds: { $in: [mongoose.Types.ObjectId(user.id)] }
+    }
+  };
+
+  Team.findByIdAndUpdate(team._id, update, function(err, team) {
+    callback(err, team);
+  });
+}

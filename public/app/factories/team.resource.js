@@ -21,6 +21,20 @@ angular.module('mage').factory('Team', ['$resource', '$http', function($resource
 			headers: {
 				'Content-Type': 'application/json'
 			}
+		},
+		addUser: {
+			method: 'POST',
+			url: '/api/teams/:id/users',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		},
+		removeUser: {
+			method: 'DELETE',
+			url: '/api/teams/:id/users/:userId',
+			headers: {
+				'Content-Type': 'application/json'
+			}
 		}
 	});
 
