@@ -2,15 +2,34 @@ angular
   .module('mage')
   .controller('AdminUserController', AdminUserController);
 
-AdminUserController.$inject = ['$scope', '$injector', '$filter', '$routeParams', '$location', 'LocalStorageService', 'UserService'];
+AdminUserController.$inject = ['$scope', '$modal', '$filter', '$routeParams', '$location', '$q', 'LocalStorageService', 'UserService', 'Team'];
 
-function AdminUserController($scope, $injector, $filter, $routeParams, $location, LocalStorageService, UserService) {
-  $scope.token = LocalStorageService.getToken();
+function AdminUserController($scope, $modal, $filter, $routeParams, $location, $q, LocalStorageService, UserService, Team) {
+  $scope.userTeams = [];
+  $scope.nonTeams = [];
+  $scope.teamsPage = 0;
+  $scope.teamsPerPage = 1;
 
-  UserService.getUser($routeParams.userId).then(function(user) {
-    $scope.user = user.data || user;
+  $q.all({user: UserService.getUser($routeParams.userId), teams: Team.query({populate: false}).$promise}).then(function(result) {
+    $scope.user = result.user.data || result.user;
     $scope.avatarUrl = avatarUrl($scope.user, LocalStorageService.getToken());
     $scope.iconUrl = iconUrl($scope.user, LocalStorageService.getToken());
+
+    $scope.teams = result.teams;
+    teamsById = _.indexBy(result.teams, 'id');
+
+    $scope.team = {};
+    $scope.userTeams = _.filter($scope.teams, function(team) {
+      return _.some(team.users, function(user) {
+        return $scope.user.id == user.id;
+      });
+    });
+
+    $scope.nonTeams = _.reject($scope.teams, function(team) {
+      return _.some(team.users, function(user) {
+        return $scope.user.id == user.id;
+      });
+    });
   });
 
   $scope.$on('userAvatar', function(event, userAvatar) {
@@ -41,8 +60,20 @@ function AdminUserController($scope, $injector, $filter, $routeParams, $location
     }
   }
 
+  $scope.addUserToTeam = function(team) {
+    Team.addUser({id: team.id}, $scope.user, function(team) {
+      $scope.userTeams.push(team);
+    });
+  }
+
+  $scope.removeUserFromTeam = function(team) {
+    Team.removeUser({id: team.id, userId: $scope.user.id}, function(team) {
+      $scope.userTeams = _.reject($scope.userTeams, function(t) { return t.id == team.id; });
+    });
+  }
+
   $scope.deleteUser = function(user) {
-    var modalInstance = $injector.get('$modal').open({
+    var modalInstance = $modal.open({
       templateUrl: '/app/admin/users/user-delete.html',
       resolve: {
         user: function () {
