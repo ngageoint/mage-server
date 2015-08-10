@@ -8,7 +8,7 @@ function AdminUserController($scope, $modal, $filter, $routeParams, $location, $
   $scope.userTeams = [];
   $scope.nonTeams = [];
   $scope.teamsPage = 0;
-  $scope.teamsPerPage = 1;
+  $scope.teamsPerPage = 10;
 
   $q.all({user: UserService.getUser($routeParams.userId), teams: Team.query({populate: false}).$promise}).then(function(result) {
     $scope.user = result.user.data || result.user;
@@ -63,12 +63,18 @@ function AdminUserController($scope, $modal, $filter, $routeParams, $location, $
   $scope.addUserToTeam = function(team) {
     Team.addUser({id: team.id}, $scope.user, function(team) {
       $scope.userTeams.push(team);
+      $scope.nonTeams = _.reject($scope.nonTeams, function(t) { return t.id == team.id });
+
+      $scope.team = {};
     });
   }
 
-  $scope.removeUserFromTeam = function(team) {
+  $scope.removeUserFromTeam = function($event, team) {
+    $event.stopPropagation();
+
     Team.removeUser({id: team.id, userId: $scope.user.id}, function(team) {
       $scope.userTeams = _.reject($scope.userTeams, function(t) { return t.id == team.id; });
+      $scope.nonTeams.push(team);
     });
   }
 

@@ -280,6 +280,30 @@ exports.update = function(id, event, options, callback) {
   });
 }
 
+exports.addTeam = function(event, team, callback) {
+  var update = {
+    $addToSet: {
+      teamIds: mongoose.Types.ObjectId(team.id)
+    }
+  };
+
+  Event.findByIdAndUpdate(event._id, update, function(err, event) {
+    callback(err, event);
+  });
+}
+
+exports.removeTeam = function(event, team, callback) {
+  var update = {
+    $pull: {
+      teamIds: { $in: [mongoose.Types.ObjectId(team.id)] }
+    }
+  };
+
+  Event.findByIdAndUpdate(event._id, update, function(err, event) {
+    callback(err, event);
+  });
+}
+
 exports.removeLayerFromEvents = function(layer, callback) {
   var update = {
     $pull: {layerIds: layer._id}
