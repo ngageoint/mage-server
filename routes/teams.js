@@ -116,8 +116,6 @@ module.exports = function(app, security) {
     '/api/teams/:teamId/users/:id',
     access.authorize('UPDATE_TEAM'),
     function(req, res, next) {
-      console.log('id', req.params.id);
-
       Team.removeUser(req.team, {id: req.params.id}, function(err, team) {
         if (err) return next(err);
 

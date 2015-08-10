@@ -29,7 +29,21 @@ function Event($rootScope, $resource, $http, LocalStorageService, Observation) {
       headers: {
         'Content-Type': 'application/json'
       }
-    }
+    },
+		addTeam: {
+			method: 'POST',
+			url: '/api/events/:id/teams',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		},
+		removeTeam: {
+			method: 'DELETE',
+			url: '/api/events/:id/teams/:teamId',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		}
   });
 
   function defaultForm() {
