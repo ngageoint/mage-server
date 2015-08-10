@@ -115,4 +115,8 @@ function AdminUserController($scope, $modal, $filter, $routeParams, $location, $
 
     });
   }
+
+  $scope.gotoTeam = function(team) {
+    $location.path('/admin/teams/' + team.id);
+  }
 }
