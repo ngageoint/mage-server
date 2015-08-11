@@ -109,6 +109,94 @@
 
           <hr>
 
+          <div cl***REMOVED***="row top-gap-xl">
+            <div cl***REMOVED***="col-md-12">
+              <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
+                <div cl***REMOVED***="container-fluid">
+                  <div cl***REMOVED***="navbar-header">
+                    <a cl***REMOVED***="navbar-brand">Logins</a>
+                  </div>
+
+                  <form cl***REMOVED***="navbar-form navbar-left fixed-width-navbar">
+                    <div cl***REMOVED***="form-group">
+                      <ui-select ng-model="user.selected" theme="bootstrap" on-select="filterLogins()" style="width: 300px;">
+                        <ui-select-match allow-clear placeholder="Filter on user">{{$select.selected.username}}</ui-select-match>
+                        <ui-select-choices group-by="groupLayerByType" repeat="user in users | orderBy: 'name' | filter: $select.search">
+                          <div ng-bind-html="user.username | highlight: $select.search"></div>
+                          <small cl***REMOVED***="muted">
+                           <span ng-bind-html="''+user.firstname + ' ' + user.lastname | highlight: $select.search"></span>
+                         </small>
+                        </ui-select-choices>
+                      </ui-select>
+                    </div>
+                    <div cl***REMOVED***="form-group">
+                      <div cl***REMOVED***="input-group">
+                        <input type="text" placeholder="Start Date" cl***REMOVED***="form-control" datepicker-popup="MM-dd-yyyy" ng-model="login.startDate" is-open="login.startDateOpened" close-text="Close" />
+                        <span cl***REMOVED***="input-group-btn">
+                          <button type="button" cl***REMOVED***="btn btn-default" ng-click="openLoginStart($event)"><i cl***REMOVED***="glyphicon glyphicon-calendar"></i></button>
+                        </span>
+                      </div>
+                    </div>
+                    <div cl***REMOVED***="form-group">
+                      <span cl***REMOVED***="navbar-text-inverse">&nbsp;to&nbsp;</span>
+                    </div>
+                    <div cl***REMOVED***="form-group">
+                      <div cl***REMOVED***="input-group">
+                        <input type="text" placeholder="End Date" cl***REMOVED***="form-control" datepicker-popup="MM-dd-yyyy" ng-model="login.endDate" is-open="login.endDateOpened"  close-text="Close" />
+                        <span cl***REMOVED***="input-group-btn">
+                          <button type="button" cl***REMOVED***="btn btn-default" ng-click="openLoginEnd($event)"><i cl***REMOVED***="glyphicon glyphicon-calendar"></i></button>
+                        </span>
+                      </div>
+                    </div>
+                  </form>
+                  <form cl***REMOVED***="navbar-form navbar-right">
+                    <div cl***REMOVED***="form-group">
+                      <span cl***REMOVED***="navbar-text-inverse">Results per page: </span>
+                      <select cl***REMOVED***="form-control" ng-init="loginResultsLimit = 10" ng-model="loginResultsLimit" ng-change="loginResultsLimitChanged()" ng-options="o as o for o in [10, 25, 50, 100]"></select>
+                    </div>
+                  </form>
+
+                </div>
+              </nav>
+            </div>
+          </div>
+          <div cl***REMOVED***="row">
+            <div cl***REMOVED***="col-sm-12">
+              <div cl***REMOVED***="admin-table">
+                <div cl***REMOVED***="well-item" ng-repeat="login in loginPage.logins" >
+                  <div cl***REMOVED***="row">
+                    <div cl***REMOVED***="col-md-12">
+                      <div cl***REMOVED***="right-gap pull-left">
+                        <i cl***REMOVED***="fa fa-fw fa-sign-in"></i>
+                      </div>
+                      <strong cl***REMOVED***="right-gap"><a href="javascript:void(0);" ng-click="gotoUser(login.user)">{{login.user.username}}</a></strong>
+                    </div>
+                  </div>
+                  <div cl***REMOVED***="row">
+                    <div cl***REMOVED***="col-md-12">
+                      <div cl***REMOVED***="right-gap pull-left">
+                        <i cl***REMOVED***="fa fa-fw"></i>
+                      </div>
+                      <span>{{login.timestamp | moment:'fromNow'}} ({{login.timestamp | moment:'MMM D YYYY hh:mm:ss A'}})</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div cl***REMOVED***="row">
+            <div cl***REMOVED***="col-md-12">
+              <ul cl***REMOVED***="pager pull-right">
+                <li ng-cl***REMOVED***="{'disabled': !showPrevious}">
+                  <a href="javascript:void(0);" ng-click="pageLogin(loginPage.prev)">&larr; Previous</a>
+                </li>
+                <li ng-cl***REMOVED***="{'disabled': !showNext}">
+                  <a href="javascript:void(0);" ng-click="pageLogin(loginPage.next)">Next &rarr;</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
