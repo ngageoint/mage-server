@@ -159,14 +159,14 @@ function AdminController($scope, $routeParams, $location, $filter, UserService, 
     $scope.filterLogins();
   }
 
-  $scope.$watch('login.startDate', function(startDate) {
-    if (!startDate) return;
+  $scope.$watch('login.startDate', function(newDate, oldDate) {
+    if (!newDate && !oldDate) return;
 
     $scope.filterLogins();
   });
 
-  $scope.$watch('login.endDate', function(endDate) {
-    if (!endDate) return;
+  $scope.$watch('login.endDate', function(newDate, oldDate) {
+    if (!newDate && !oldDate) return;
 
     $scope.filterLogins();
   });

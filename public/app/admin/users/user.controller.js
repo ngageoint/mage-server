@@ -2,13 +2,25 @@ angular
   .module('mage')
   .controller('AdminUserController', AdminUserController);
 
-AdminUserController.$inject = ['$scope', '$modal', '$filter', '$routeParams', '$location', '$q', 'LocalStorageService', 'UserService', 'Team'];
+AdminUserController.$inject = ['$scope', '$modal', '$filter', '$routeParams', '$location', '$q', 'LocalStorageService', 'UserService', 'LoginService', 'DeviceService', 'Team'];
 
-function AdminUserController($scope, $modal, $filter, $routeParams, $location, $q, LocalStorageService, UserService, Team) {
+function AdminUserController($scope, $modal, $filter, $routeParams, $location, $q, LocalStorageService, UserService, LoginService, DeviceService, Team) {
   $scope.userTeams = [];
   $scope.nonTeams = [];
   $scope.teamsPage = 0;
   $scope.teamsPerPage = 10;
+
+  var filter = {
+    user: {id: $routeParams.userId}
+  }
+  $scope.device = {};
+  $scope.login = {
+    startDateOpened: false,
+    endDateOpened: false
+  };
+  var firstLogin = null;
+  $scope.showPrevious = false;
+  $scope.showNext = true;
 
   $q.all({user: UserService.getUser($routeParams.userId), teams: Team.query({populate: false}).$promise}).then(function(result) {
     $scope.user = result.user.data || result.user;
@@ -30,6 +42,17 @@ function AdminUserController($scope, $modal, $filter, $routeParams, $location, $
         return $scope.user.id == user.id;
       });
     });
+  });
+
+  LoginService.query({filter: filter, limit: $scope.loginResultsLimit}).success(function(loginPage) {
+    $scope.loginPage = loginPage;
+    if (loginPage.logins.length) {
+      firstLogin = loginPage.logins[0];
+    }
+  });
+
+  DeviceService.getAllDevices().success(function (devices) {
+    $scope.devices = devices;
   });
 
   $scope.$on('userAvatar', function(event, userAvatar) {
@@ -125,4 +148,63 @@ function AdminUserController($scope, $modal, $filter, $routeParams, $location, $
   $scope.gotoTeam = function(team) {
     $location.path('/admin/teams/' + team.id);
   }
+
+  $scope.gotoDevice = function(device) {
+    $location.path('/admin/devices/' + device.id)
+  }
+
+  $scope.pageLogin = function(url) {
+    LoginService.query({url: url, filter: filter, limit: $scope.loginResultsLimit}).success(function(loginPage) {
+
+      if (loginPage.logins.length) {
+        $scope.loginPage = loginPage;
+        $scope.showNext = loginPage.logins.length != 0;
+        $scope.showPrevious = loginPage.logins[0].id != firstLogin.id;
+      }
+    });
+  }
+
+  $scope.filterLogins = function() {
+    filter.device = $scope.device.selected;
+    filter.startDate = $scope.login.startDate;
+    if ($scope.login.endDate) {
+      filter.endDate = moment($scope.login.endDate).endOf('day').toDate();
+    }
+
+    LoginService.query({filter: filter, limit: $scope.loginResultsLimit}).success(function(loginPage) {
+      $scope.showNext = loginPage.logins.length != 0;
+      $scope.showPrevious = false;
+      $scope.loginPage = loginPage;
+    });
+  }
+
+  $scope.openLoginStart = function($event) {
+    $event.preventDefault();
+    $event.stopPropagation();
+
+    $scope.login.startDateOpened = true;
+  }
+
+  $scope.openLoginEnd = function($event) {
+    $event.preventDefault();
+    $event.stopPropagation();
+
+    $scope.login.endDateOpened = true;
+  }
+
+  $scope.loginResultsLimitChanged = function() {
+    $scope.filterLogins();
+  }
+
+  $scope.$watch('login.startDate', function(newDate, oldDate) {
+    if (!newDate && !oldDate) return;
+
+    $scope.filterLogins();
+  });
+
+  $scope.$watch('login.endDate', function(newDate, oldDate) {
+    if (!newDate && !oldDate) return;
+
+    $scope.filterLogins();
+  });
 }
