@@ -234,6 +234,30 @@ module.exports = function(app, security) {
     }
   );
 
+  app.post(
+    '/api/events/:eventId/layers',
+    access.authorize('UPDATE_EVENT'),
+    function(req, res, next) {
+      Event.addLayer(req.event, req.body, function(err, event) {
+        if (err) return next(err);
+
+        res.json(event);
+      });
+    }
+  );
+
+  app.delete(
+    '/api/events/:eventId/layers/:id',
+    access.authorize('UPDATE_EVENT'),
+    function(req, res, next) {
+      Event.removeLayer(req.event, {id: req.params.id}, function(err, event) {
+        if (err) return next(err);
+
+        res.json(event);
+      });
+    }
+  );
+
   // export a zip of the form json and icons
   app.get(
     '/api/events/:eventId/form.zip',
