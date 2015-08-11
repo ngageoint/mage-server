@@ -224,8 +224,4 @@ User.prototype.addRecentEvent = function(user, event, callback) {
   UserModel.addRecentEventForUser(user, event, callback);
 }
 
-User.prototype.getLogins = function(user, options, callback) {
-  LoginModel.getLoginsForUser(user, options, callback);
-}
-
 module.exports = User;
