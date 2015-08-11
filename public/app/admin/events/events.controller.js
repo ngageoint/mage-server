@@ -7,7 +7,7 @@ AdminEventsController.$inject = ['$scope', '$location', '$filter', '$modal', 'Ev
 function AdminEventsController($scope, $location, $filter, $modal, Event) {
   $scope.events = [];
   $scope.page = 0;
-  $scope.itemsPerPage = 15;
+  $scope.itemsPerPage = 10;
 
   Event.query({populate: false}, function(events) {
     $scope.events = events;
