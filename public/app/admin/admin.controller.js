@@ -2,10 +2,22 @@ angular
   .module('mage')
   .controller('AdminController', AdminController);
 
-AdminController.$inject = ['$scope', '$routeParams', '$location', '$filter', 'UserService', 'DeviceService', 'Team', 'Event', 'Layer'];
+AdminController.$inject = ['$scope', '$routeParams', '$location', '$filter', 'UserService', 'DeviceService', 'LoginService', 'Team', 'Event', 'Layer'];
 
-function AdminController($scope, $routeParams, $location, $filter, UserService, DeviceService, Team, Event, Layer) {
+function AdminController($scope, $routeParams, $location, $filter, UserService, DeviceService, LoginService, Team, Event, Layer) {
   $scope.currentAdminPanel = $routeParams.adminPanel || "";
+
+  var filter = {};
+  $scope.user = {};
+  $scope.device = {};
+  $scope.login = {
+    startDateOpened: false,
+    endDateOpened: false
+  };
+
+  var firstLogin = null;
+  $scope.showPrevious = false;
+  $scope.showNext = true;
 
   $scope.usersPerPage = 10;
   $scope.usersPage = 0;
@@ -15,16 +27,16 @@ function AdminController($scope, $routeParams, $location, $filter, UserService, 
   $scope.devicesPage = 0;
   $scope.unregisteredDevices = [];
 
-  UserService.getUserCount().success(function (data) {
-    $scope.userCount = data.count;
+  UserService.getAllUsers().then(function(users) {
+    $scope.users = users.data || users;
   });
 
   UserService.getInactiveUsers().success(function(data) {
     $scope.inactiveUsers = data;
   });
 
-  DeviceService.count().success(function (data) {
-    $scope.deviceCount = data.count;
+  DeviceService.getAllDevices().success(function (devices) {
+    $scope.devices = devices;
   });
 
   DeviceService.getAllDevices({expand: 'user', registered: false}).success(function(data) {
@@ -41,6 +53,13 @@ function AdminController($scope, $routeParams, $location, $filter, UserService, 
 
   Layer.count(function (data) {
     $scope.layerCount = data.count;
+  });
+
+  LoginService.query({limit: $scope.loginResultsLimit}).success(function(loginPage) {
+    $scope.loginPage = loginPage;
+    if (loginPage.logins.length) {
+      firstLogin = loginPage.logins[0];
+    }
   });
 
   $scope.newUser = function() {
@@ -93,7 +112,62 @@ function AdminController($scope, $routeParams, $location, $filter, UserService, 
   }
 
   $scope.newLayer = function() {
-    $location.path('/admin/layers/new');
+    $location.path('/admin/layers/new')
   }
 
+  $scope.pageLogin = function(url) {
+    LoginService.query({url: url, filter: filter, limit: $scope.loginResultsLimit}).success(function(loginPage) {
+
+      if (loginPage.logins.length) {
+        $scope.loginPage = loginPage;
+        $scope.showNext = loginPage.logins.length != 0;
+        $scope.showPrevious = loginPage.logins[0].id != firstLogin.id;
+      }
+    });
+  }
+
+  $scope.filterLogins = function() {
+    filter.user = $scope.user.selected;
+    filter.device = $scope.device.selected;
+    filter.startDate = $scope.login.startDate;
+    if ($scope.login.endDate) {
+      filter.endDate = moment($scope.login.endDate).endOf('day').toDate();
+    }
+
+    LoginService.query({filter: filter, limit: $scope.loginResultsLimit}).success(function(loginPage) {
+      $scope.showNext = loginPage.logins.length != 0;
+      $scope.showPrevious = false;
+      $scope.loginPage = loginPage;
+    });
+  }
+
+  $scope.openLoginStart = function($event) {
+    $event.preventDefault();
+    $event.stopPropagation();
+
+    $scope.login.startDateOpened = true;
+  }
+
+  $scope.openLoginEnd = function($event) {
+    $event.preventDefault();
+    $event.stopPropagation();
+
+    $scope.login.endDateOpened = true;
+  }
+
+  $scope.loginResultsLimitChanged = function() {
+    $scope.filterLogins();
+  }
+
+  $scope.$watch('login.startDate', function(newDate, oldDate) {
+    if (!newDate && !oldDate) return;
+
+    $scope.filterLogins();
+  });
+
+  $scope.$watch('login.endDate', function(newDate, oldDate) {
+    if (!newDate && !oldDate) return;
+
+    $scope.filterLogins();
+  });
 }

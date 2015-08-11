@@ -7,7 +7,7 @@ AdminTeamsController.$inject = ['$scope', '$injector', '$filter', '$location', '
 function AdminTeamsController($scope, $injector, $filter, $location, Team) {
   $scope.teams = [];
   $scope.page = 0;
-  $scope.itemsPerPage = 15;
+  $scope.itemsPerPage = 10;
 
   Team.query(function(teams) {
     $scope.teams = teams;

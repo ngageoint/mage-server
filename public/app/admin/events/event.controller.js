@@ -10,12 +10,12 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $mod
   $scope.editTeams = false;
   $scope.eventTeams = [];
   $scope.teamsPage = 0;
-  $scope.teamsPerPage = 15;
+  $scope.teamsPerPage = 10;
 
   $scope.editLayers = false;
   $scope.eventLayers = [];
   $scope.layersPage = 0;
-  $scope.layersPerPage = 15;
+  $scope.layersPerPage = 10;
 
   $scope.teams = [];
   $scope.layers = [];

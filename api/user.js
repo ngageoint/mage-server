@@ -38,15 +38,6 @@ User.prototype.login = function(user, device, options, callback) {
     LoginModel.createLogin(user, device, function(err, login) {
       if (err) console.log('could not add login', err);
     });
-
-    var update = {
-      userId: user._id
-    };
-    if (options.userAgent) update.userAgent = options.userAgent;
-    if (options.appVersion) update.appVersion = options.appVersion;
-    DeviceModel.updateDevice(device._id, update, function(err, device) {
-      if (err) console.log('could not update device on login', err);
-    });
   });
 }
 
@@ -222,10 +213,6 @@ User.prototype.icon = function(user, callback) {
 
 User.prototype.addRecentEvent = function(user, event, callback) {
   UserModel.addRecentEventForUser(user, event, callback);
-}
-
-User.prototype.getLogins = function(user, options, callback) {
-  LoginModel.getLoginsForUser(user, options, callback);
 }
 
 module.exports = User;

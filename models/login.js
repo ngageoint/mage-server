@@ -10,10 +10,26 @@ var LoginSchema = new Schema({
   versionKey: false
 });
 
+LoginSchema.index({userId: 1});
+LoginSchema.index({deviceId: 1});
+LoginSchema.index({userId: 1, deviceId: 1});
+LoginSchema.index({_id: 1, userId: 1, deviceId: 1});
+
 var transform = function(login, ret, options) {
   if ('function' != typeof login.ownerDocument) {
+    ret.id = ret._id;
     ret.timestamp = ret._id.getTimestamp();
     delete ret._id;
+
+    if (login.populated('userId')) {
+      ret.user = ret.userId;
+      delete ret.userId;
+    }
+
+    if (login.populated('deviceId')) {
+      ret.device = ret.deviceId;
+      delete ret.deviceId;
+    }
   }
 }
 
@@ -21,28 +37,51 @@ LoginSchema.set("toJSON", {
   transform: transform
 });
 
-exports.transform = transform;
+function objectIdForDate(date) {
+  return mongoose.Types.ObjectId(Math.floor(date/1000).toString(16) + "0000000000000000");
+}
 
 // Creates the Model for the User Schema
 var Login = mongoose.model('Login', LoginSchema);
 
-exports.getLoginsForUser = function(user, options, callback) {
-  var conditions = {
-    userId: user._id
-  };
+exports.getLogins = function(options, callback) {
+  var conditions = {};
+  var filter = options.filter || {};
+
+  if (filter.userId) {
+    conditions.userId = filter.userId;
+  }
+  if (filter.deviceId) {
+    conditions.deviceId = filter.deviceId;
+  }
+
+  if (filter.startDate) {
+    conditions._id = {$gte: objectIdForDate(filter.startDate)};
+  }
+  if (filter.endDate) {
+    conditions._id = conditions._id || {};
+    conditions._id.$lte = objectIdForDate(filter.endDate);
+  }
+
+  if (options.lastLoginId) {
+    conditions._id = conditions._id || {};
+    conditions._id.$lt = mongoose.Types.ObjectId(options.lastLoginId);
+  }
+
+  if (options.firstLoginId) {
+    conditions._id = conditions._id || {};
+    conditions._id.$gt = mongoose.Types.ObjectId(options.firstLoginId);
+  }
 
   var o = {
-    limit: 10,
+    limit: options.limit || 10,
     sort: {
-      _id: -1
+      _id: options.firstLoginId ? 1 : -1
     }
   };
-  if (options.limit) o.limit = options.limit;
 
-  Login.find(conditions, null, o, function (err, logins) {
-    if (err) return callback(err);
-
-    callback(err, logins);
+  Login.find(conditions, null, o).populate([{path: 'userId'}, {path: 'deviceId'}]).exec(function (err, logins) {
+    callback(err, options.firstLoginId ? logins.reverse() : logins);
   });
 }
 
