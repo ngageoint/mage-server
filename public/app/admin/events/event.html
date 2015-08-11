@@ -148,15 +148,14 @@
                   </div>
                 </div>
               </div>
-
               <div cl***REMOVED***="row">
                 <div cl***REMOVED***="col-md-12">
-                  <ul cl***REMOVED***="pager">
-                    <li cl***REMOVED***="previous" ng-show="teamsPage != 0">
-                      <a ng-click="teamsPage=teamsPage-1">&larr; Previous</a>
+                  <ul cl***REMOVED***="pager pull-right">
+                    <li ng-cl***REMOVED***="{'disabled': teamsPage == 0}">
+                      <a href="javascript:void(0);" ng-click="teamsPage == 0 || (teamsPage=teamsPage-1)">&larr; Previous</a>
                     </li>
-                    <li cl***REMOVED***="next" ng-show="teamsPage < (filteredTeams.length/teamsPerPage) - 1">
-                      <a ng-click="teamsPage=teamsPage+1">Next &rarr;</a>
+                    <li ng-cl***REMOVED***="{'disabled': teamsPage >= (filteredTeams.length/teamsPerPage) - 1}">
+                      <a href="javascript:void(0);" ng-click="teamsPage >= (filteredTeams.length/teamsPerPage) - 1 || (teamsPage=teamsPage+1)">Next&rarr;</a>
                     </li>
                   </ul>
                 </div>
@@ -246,15 +245,14 @@
                   </div>
                 </div>
               </div>
-
               <div cl***REMOVED***="row">
                 <div cl***REMOVED***="col-md-12">
-                  <ul cl***REMOVED***="pager">
-                    <li cl***REMOVED***="previous" ng-show="layersPage != 0">
-                      <a ng-click="layersPage=layersPage-1">&larr; Previous</a>
+                  <ul cl***REMOVED***="pager pull-right">
+                    <li ng-cl***REMOVED***="{'disabled': layersPage == 0}">
+                      <a href="javascript:void(0);" ng-click="layersPage == 0 || (layersPage=layersPage-1)">&larr; Previous</a>
                     </li>
-                    <li cl***REMOVED***="next" ng-show="layersPage < (filteredLayers.length/layersPerPage) - 1">
-                      <a ng-click="layersPage=layersPage+1">Next &rarr;</a>
+                    <li ng-cl***REMOVED***="{'disabled': layersPage >= (filteredLayers.length/layersPerPage) - 1}">
+                      <a href="javascript:void(0);" ng-click="layersPage >= (filteredLayers.length/layersPerPage) - 1 || (layersPage=layersPage+1)">Next&rarr;</a>
                     </li>
                   </ul>
                 </div>

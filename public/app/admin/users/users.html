@@ -69,20 +69,18 @@
 
                 </div>
               </div>
-
               <div cl***REMOVED***="row">
                 <div cl***REMOVED***="col-md-12">
-                  <ul cl***REMOVED***="pager">
-                    <li cl***REMOVED***="previous" ng-show="page != 0">
-                      <a ng-click="page=page-1">&larr; Previous</a>
+                  <ul cl***REMOVED***="pager pull-right">
+                    <li ng-cl***REMOVED***="{'disabled': page == 0}">
+                      <a href="javascript:void(0);" ng-click="page == 0 || (page=page-1)">&larr; Previous</a>
                     </li>
-                    <li cl***REMOVED***="next" ng-show="page < (filteredUsers.length/itemsPerPage) - 1">
-                      <a ng-click="page=page+1">Next &rarr;</a>
+                    <li ng-cl***REMOVED***="{'disabled': page >= (filteredUsers.length/itemsPerPage) - 1}">
+                      <a href="javascript:void(0);" ng-click="page >= (filteredUsers.length/itemsPerPage) - 1 || (page=page+1)">Next&rarr;</a>
                     </li>
                   </ul>
                 </div>
               </div>
-
             </div>
           </div>
         </div>

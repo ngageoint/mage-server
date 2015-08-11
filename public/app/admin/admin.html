@@ -166,18 +166,17 @@
             </div>
           </div>
           <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-md-offset-8 col-md-4">
-              <ul cl***REMOVED***="pager">
-                <li cl***REMOVED***="previous" ng-show="usersPage != 0">
-                  <a ng-click="usersPage=usersPage-1">&larr; Previous User</a>
+            <div cl***REMOVED***="col-md-12">
+              <ul cl***REMOVED***="pager pull-right">
+                <li ng-cl***REMOVED***="{'disabled': usersPage == 0}">
+                  <a href="javascript:void(0);" ng-click="usersPage == 0 || (usersPage=usersPage-1)">&larr; Previous User</a>
                 </li>
-                <li cl***REMOVED***="next" ng-show="usersPage < (filteredUsers.length/usersPerPage) - 1">
-                  <a ng-click="usersPage=usersPage+1">Next User&rarr;</a>
+                <li ng-cl***REMOVED***="{'disabled': usersPage >= (filteredUsers.length/usersPerPage) - 1}">
+                  <a href="javascript:void(0);" ng-click="usersPage >= (filteredUsers.length/usersPerPage) - 1 || (usersPage=usersPage+1)">Next User&rarr;</a>
                 </li>
               </ul>
             </div>
           </div>
-
         </div>
         <div cl***REMOVED***="col-md-6">
           <div cl***REMOVED***="row">
@@ -219,18 +218,17 @@
             </div>
           </div>
           <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-md-offset-8 col-md-4">
-              <ul cl***REMOVED***="pager">
-                <li cl***REMOVED***="previous" ng-show="devicesPage != 0">
-                  <a ng-click="devicesPage=devicesPage-1">&larr; Previous Device</a>
+            <div cl***REMOVED***="col-md-12">
+              <ul cl***REMOVED***="pager pull-right">
+                <li ng-cl***REMOVED***="{'disabled': devicesPage == 0}">
+                  <a href="javascript:void(0);" ng-click="devicesPage == 0 || (devicesPage=devicesPage-1)">&larr; Previous Device</a>
                 </li>
-                <li cl***REMOVED***="next" ng-show="devicesPage < (filteredDevices.length/devicesPerPage) - 1">
-                  <a ng-click="devicesPage=devicesPage+1">Next Device&rarr;</a>
+                <li ng-cl***REMOVED***="{'disabled': devicesPage >= (filteredDevices.length/devicesPerPage) - 1}">
+                  <a href="javascript:void(0);" ng-click="devicesPage >= (filteredDevices.length/devicesPerPage) - 1 || (devicesPage=devicesPage+1)">Next Device&rarr;</a>
                 </li>
               </ul>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -325,18 +323,17 @@
         </div>
       </div>
       <div cl***REMOVED***="row">
-        <div cl***REMOVED***="col-md-2 col-md-offset-10">
-          <ul cl***REMOVED***="pager">
-            <li cl***REMOVED***="previous" ng-show="showPrevious">
-              <a href="javascript:void(0);" ng-click="pageLogin(loginPage.prev)">&larr; Previous</a>
+        <div cl***REMOVED***="col-md-12">
+          <ul cl***REMOVED***="pager pull-right">
+            <li ng-cl***REMOVED***="{'disabled': !showPrevious}">
+              <a href="javascript:void(0);" ng-click="!showPrevious || pageLogin(loginPage.prev)">&larr; Previous</a>
             </li>
-            <li cl***REMOVED***="next" ng-show="showNext">
-              <a href="javascript:void(0);" ng-click="pageLogin(loginPage.next)">Next &rarr;</a>
+            <li ng-cl***REMOVED***="{'disabled': !showNext}">
+              <a href="javascript:void(0);" ng-click="!showNext || pageLogin(loginPage.next)">Next &rarr;</a>
             </li>
           </ul>
         </div>
       </div>
-
     </div>
   </div>
 </div>

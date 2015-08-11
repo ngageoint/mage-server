@@ -152,15 +152,14 @@
               </div>
             </div>
           </div>
-
           <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-md-5 col-md-7-offset">
-              <ul cl***REMOVED***="pager">
-                <li cl***REMOVED***="previous" ng-show="usersPage != 0">
-                  <a ng-click="usersPage=usersPage-1">&larr; Previous</a>
+            <div cl***REMOVED***="col-md-12">
+              <ul cl***REMOVED***="pager pull-right">
+                <li ng-cl***REMOVED***="{'disabled': usersPage == 0}">
+                  <a href="javascript:void(0);" ng-click="usersPage == 0 || (usersPage=usersPage-1)">&larr; Previous</a>
                 </li>
-                <li cl***REMOVED***="next" ng-show="usersPage < (filteredUsers.length/usersPerPage) - 1">
-                  <a ng-click="usersPage=usersPage+1">Next &rarr;</a>
+                <li ng-cl***REMOVED***="{'disabled': usersPage >= (filteredUsers.length/usersPerPage) - 1}">
+                  <a href="javascript:void(0);" ng-click="usersPage >= (filteredUsers.length/usersPerPage) - 1 || (usersPage=usersPage+1)">Next&rarr;</a>
                 </li>
               </ul>
             </div>
@@ -246,15 +245,14 @@
               </div>
             </div>
           </div>
-
           <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-md-5 col-md-offset-7">
-              <ul cl***REMOVED***="pager">
-                <li cl***REMOVED***="previous" ng-show="eventsPage != 0">
-                  <a ng-click="eventsPage=eventsPage-1">&larr; Previous</a>
+            <div cl***REMOVED***="col-md-12">
+              <ul cl***REMOVED***="pager pull-right">
+                <li ng-cl***REMOVED***="{'disabled': eventsPage == 0}">
+                  <a href="javascript:void(0);" ng-click="eventsPage == 0 || (eventsPage=eventsPage-1)">&larr; Previous</a>
                 </li>
-                <li cl***REMOVED***="next" ng-show="eventsPage < (filteredEvents.length/eventsPerPage) - 1">
-                  <a ng-click="eventsPage=eventsPage+1">Next &rarr;</a>
+                <li ng-cl***REMOVED***="{'disabled': eventsPage >= (filteredEvents.length/eventsPerPage) - 1}">
+                  <a href="javascript:void(0);" ng-click="eventsPage >= (filteredEvents.length/eventsPerPage) - 1 || (eventsPage=eventsPage+1)">Next&rarr;</a>
                 </li>
               </ul>
             </div>
