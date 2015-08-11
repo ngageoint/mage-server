@@ -29,6 +29,34 @@ function Event($rootScope, $resource, $http, LocalStorageService, Observation) {
       headers: {
         'Content-Type': 'application/json'
       }
+    },
+		addTeam: {
+			method: 'POST',
+			url: '/api/events/:id/teams',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		},
+		removeTeam: {
+			method: 'DELETE',
+			url: '/api/events/:id/teams/:teamId',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		},
+    addLayer: {
+      method: 'POST',
+      url: '/api/events/:id/layers',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    },
+    removeLayer: {
+      method: 'DELETE',
+      url: '/api/events/:id/layers/:layerId',
+      headers: {
+        'Content-Type': 'application/json'
+      }
     }
   });
 

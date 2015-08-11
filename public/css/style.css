@@ -261,12 +261,6 @@ textarea {
   width: 250px;
 }
 
-/*@media(max-width: 768px) {
-	.filter-nav {
-    height: 46px;
-	}
-}*/
-
 .filter-event {
 	font-family: Roboto;
 	font-weight: 500;
@@ -294,6 +288,22 @@ textarea {
   .navbar {
     border-radius: 0;
   }
+}
+
+@media (min-width: 768px) {
+  .fixed-width-navbar .form-control {
+      display: inline-block;
+      width: 100%;
+      vertical-align: middle;
+  }
+}
+
+.navbar-default .navbar-text-inverse {
+    color: #777;
+}
+
+.admin-dashboard-navbar .btn-link {
+    color: #777;
 }
 
 .badge-accent {

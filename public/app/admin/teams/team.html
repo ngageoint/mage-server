@@ -152,19 +152,113 @@
               </div>
             </div>
           </div>
-
           <div cl***REMOVED***="row">
             <div cl***REMOVED***="col-md-12">
-              <ul cl***REMOVED***="pager">
-                <li cl***REMOVED***="previous" ng-show="usersPage != 0">
-                  <a ng-click="usersPage=usersPage-1">&larr; Previous</a>
+              <ul cl***REMOVED***="pager pull-right">
+                <li ng-cl***REMOVED***="{'disabled': usersPage == 0}">
+                  <a href="javascript:void(0);" ng-click="usersPage == 0 || (usersPage=usersPage-1)">&larr; Previous</a>
                 </li>
-                <li cl***REMOVED***="next" ng-show="usersPage < (filteredUsers.length/usersPerPage) - 1">
-                  <a ng-click="usersPage=usersPage+1">Next &rarr;</a>
+                <li ng-cl***REMOVED***="{'disabled': usersPage >= (filteredUsers.length/usersPerPage) - 1}">
+                  <a href="javascript:void(0);" ng-click="usersPage >= (filteredUsers.length/usersPerPage) - 1 || (usersPage=usersPage+1)">Next&rarr;</a>
                 </li>
               </ul>
             </div>
           </div>
+        </div>
+
+        <div cl***REMOVED***="col-xs-6">
+          <div cl***REMOVED***="row">
+            <div cl***REMOVED***="col-xs-12">
+              <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
+                <div cl***REMOVED***="container-fluid">
+                  <div cl***REMOVED***="navbar-header">
+                    <a cl***REMOVED***="navbar-brand">Add team to an event</a>
+                  </div>
+                </div>
+              </nav>
+            </div>
+          </div>
+
+          <div cl***REMOVED***="admin-table">
+            <div cl***REMOVED***="well-item">
+              <div cl***REMOVED***="row">
+                <div cl***REMOVED***="col-xs-12">
+                  <ui-select ng-model="event.selected" theme="bootstrap">
+                    <ui-select-match placeholder="Select an event">{{$select.selected.name}}</ui-select-match>
+                    <ui-select-choices repeat="event in nonTeamEvents | orderBy: 'name' | filter: $select.search">
+                      <div ng-bind-html="event.name | highlight: $select.search"></div>
+                    </ui-select-choices>
+                  </ui-select>
+                </div>
+              </div>
+
+              <hr>
+
+              <div cl***REMOVED***="row">
+                 <div cl***REMOVED***="col-xs-12">
+                   <button cl***REMOVED***="btn btn-success" ng-click="addEventToTeam(event.selected)" ng-disabled="event.selected == null"><i cl***REMOVED***="fa fa-plus"></i> Add Event</button>
+                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div cl***REMOVED***="row top-gap-l">
+            <div cl***REMOVED***="col-md-12">
+              <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
+                <div cl***REMOVED***="container-fluid">
+                  <div cl***REMOVED***="navbar-header">
+                    <a cl***REMOVED***="navbar-brand">Events for {{team.name}}</a>
+                  </div>
+
+                  <form cl***REMOVED***="navbar-form navbar-left">
+                    <div cl***REMOVED***="form-group">
+                      <input type="text" cl***REMOVED***="form-control" placeholder="Search" ng-model="eventSearch">
+                    </div>
+                  </form>
+                  <div cl***REMOVED***="navbar-form navbar-right right-gap-s">
+                    <button cl***REMOVED***="btn btn-default navbar-right" ng-click="editEvent = !editEvent">Edit</button>
+                  </div>
+                </div>
+              </nav>
+            </div>
+          </div>
+
+          <div cl***REMOVED***="row">
+            <div cl***REMOVED***="col-sm-12">
+              <div cl***REMOVED***="admin-table">
+                <div cl***REMOVED***="well-item"
+                    ng-repeat="e in (filteredEvents = (teamEvents | filter:filterEvents)) | orderBy:'name' | offset: eventsPage*eventsPerPage | limitTo:eventsPerPage" >
+                  <div cl***REMOVED***="row pointer" ng-click="gotoEvent(e)">
+                    <div cl***REMOVED***="col-md-12">
+                      <span cl***REMOVED***="pull-right" ng-show="editEvent">
+                        <a cl***REMOVED***="btn btn-xs btn-danger" ng-click="removeEventFromTeam($event, e)"><i cl***REMOVED***="fa fa-minus"></i></a>
+                      </span>
+
+                      <div cl***REMOVED***="right-gap pull-left">
+                        <i cl***REMOVED***="fa fa-calendar admin-layer-icon"></i>
+                      </div>
+                      <div cl***REMOVED***="strong">{{e.name}}</div>
+                      <div cl***REMOVED***="muted">{{e.description}}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div cl***REMOVED***="row">
+            <div cl***REMOVED***="col-md-12">
+              <ul cl***REMOVED***="pager pull-right">
+                <li ng-cl***REMOVED***="{'disabled': eventsPage == 0}">
+                  <a href="javascript:void(0);" ng-click="eventsPage == 0 || (eventsPage=eventsPage-1)">&larr; Previous</a>
+                </li>
+                <li ng-cl***REMOVED***="{'disabled': eventsPage >= (filteredEvents.length/eventsPerPage) - 1}">
+                  <a href="javascript:void(0);" ng-click="eventsPage >= (filteredEvents.length/eventsPerPage) - 1 || (eventsPage=eventsPage+1)">Next&rarr;</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>

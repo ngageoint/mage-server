@@ -2,12 +2,18 @@ angular
   .module('mage')
   .controller('AdminTeamController', AdminTeamController);
 
-AdminTeamController.$inject = ['$scope', '$injector', '$location', '$routeParams', 'Team', 'UserService'];
+AdminTeamController.$inject = ['$scope', '$modal', '$filter', '$location', '$routeParams', 'Team', 'Event', 'UserService'];
 
-function AdminTeamController($scope, $injector, $location, $routeParams, Team, UserService) {
+function AdminTeamController($scope, $modal, $filter, $location, $routeParams, Team, Event, UserService) {
   $scope.edit = false;
   $scope.usersPage = 0;
   $scope.usersPerPage = 10;
+
+  $scope.teamEvents = [];
+  $scope.nonTeamEvents = [];
+  $scope.eventsPage = 0;
+  $scope.eventsPerPage = 10;
+
   $scope.team = {
     users: []
   }
@@ -22,6 +28,21 @@ function AdminTeamController($scope, $injector, $location, $routeParams, Team, U
       $scope.teamUsersById = _.indexBy($scope.team.users, 'id');
       $scope.nonUsers = _.filter($scope.users, function(user) {
         return $scope.teamUsersById[user.id] == null;
+      });
+    });
+
+    Event.query(function(events) {
+      $scope.event = {};
+      $scope.teamEvents = _.filter(events, function(event) {
+        return _.some(event.teams, function(team) {
+          return $scope.team.id == team.id;
+        });
+      });
+
+      $scope.nonTeamEvents = _.reject(events, function(event) {
+        return _.some(event.teams, function(team) {
+          return $scope.team.id == team.id;
+        });
       });
     });
   });
@@ -54,14 +75,41 @@ function AdminTeamController($scope, $injector, $location, $routeParams, Team, U
     }
   }
 
+  $scope.filterEvents = function(event) {
+    var filteredEvents = $filter('filter')([event], $scope.eventSearch);
+    return filteredEvents && filteredEvents.length;
+  }
+
   function saveTeam(team) {
     $scope.team.$save(function() {
     }, function(reponse) {
     });
   }
 
+  $scope.gotoEvent = function(event) {
+    $location.path('/admin/events/' + event.id);
+  }
+
+  $scope.addEventToTeam = function(event) {
+    Event.addTeam({id: event.id}, $scope.team, function(event) {
+      $scope.teamEvents.push(event);
+      $scope.nonTeamEvents = _.reject($scope.nonTeamEvents, function(e) { return e.id == event.id });
+
+      $scope.event = {};
+    });
+  }
+
+  $scope.removeEventFromTeam = function($event, event) {
+    $event.stopPropagation();
+
+    Event.removeTeam({id: event.id, teamId: $scope.team.id}, function(event) {
+      $scope.teamEvents = _.reject($scope.teamEvents, function(e) { return e.id == event.id; });
+      $scope.nonTeamEvents.push(event);
+    });
+  }
+
   $scope.deleteTeam = function(team) {
-    var modalInstance = $injector.get('$modal').open({
+    var modalInstance = $modal.open({
       templateUrl: '/app/admin/teams/team-delete.html',
       resolve: {
         team: function () {
