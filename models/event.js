@@ -304,6 +304,30 @@ exports.removeTeam = function(event, team, callback) {
   });
 }
 
+exports.addLayer = function(event, layer, callback) {
+  var update = {
+    $addToSet: {
+      layerIds: layer.id
+    }
+  };
+
+  Event.findByIdAndUpdate(event._id, update, function(err, event) {
+    callback(err, event);
+  });
+}
+
+exports.removeLayer = function(event, layer, callback) {
+  var update = {
+    $pull: {
+      layerIds: { $in: [layer.id] }
+    }
+  };
+
+  Event.findByIdAndUpdate(event._id, update, function(err, event) {
+    callback(err, event);
+  });
+}
+
 exports.removeLayerFromEvents = function(layer, callback) {
   var update = {
     $pull: {layerIds: layer._id}
