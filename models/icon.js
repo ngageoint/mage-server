@@ -43,10 +43,6 @@ exports.getIcon = function(options, callback) {
   }
 
   Icon.findOne(condition, {}, {sort: {type: -1, variant: -1}}, function (err, icon) {
-    if (err) {
-      console.log("Error finding icon in mongo: " + err);
-    }
-
     callback(err, icon);
   });
 }
@@ -58,10 +54,6 @@ exports.create = function(icon, callback) {
     variant: icon.variant
   };
   Icon.findOneAndUpdate(conditions, icon, {upsert: true, new: false}, function(err, oldIcon) {
-    if (err) {
-      console.log("Problem creating icon. " + err);
-    }
-
     callback(err, oldIcon);
   });
 }
@@ -75,10 +67,6 @@ exports.remove = function(options, callback) {
   if (options.variant) condition.variant = options.variant;
 
   Icon.remove(condition, function(err) {
-    if (err) {
-      console.log("Could not remove icons: " + err);
-    }
-
     callback(err);
   });
 }

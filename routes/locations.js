@@ -1,5 +1,6 @@
 module.exports = function(app, security) {
   var moment = require('moment')
+    , log = require('winston')
     , Location = require('../models/location')
     , CappedLocation = require('../models/cappedLocation')
     , Team = require('../models/team')
@@ -156,7 +157,7 @@ module.exports = function(app, security) {
 
       CappedLocation.addLocations(req.user, req.event, {valid: validLocations, future: futureLocations}, function(err, location) {
         if (err) {
-          console.log('failed to store location in capped location collection');
+          log.error('failed to store location in capped location collection');
         }
       });
     }

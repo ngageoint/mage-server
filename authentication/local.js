@@ -1,6 +1,7 @@
 module.exports = function(p***REMOVED***port) {
 
-  var LocalStrategy = require('p***REMOVED***port-local').Strategy
+  var log = require('winston')
+    , LocalStrategy = require('p***REMOVED***port-local').Strategy
     , BearerStrategy = require('p***REMOVED***port-http-bearer').Strategy
     , Token = require('../models/token')
     , User = require('../models/user');
@@ -30,12 +31,12 @@ module.exports = function(p***REMOVED***port) {
         if (err) { return done(err); }
 
         if (!user) {
-          console.log('Failed login attempt: User with username ' + username + ' not found');
+          log.warn('Failed login attempt: User with username ' + username + ' not found');
           return done(null, false, { message: "User with username '" + username + "' not found" });
         }
 
         if (!user.active) {
-          console.log('Failed user login attempt: User ' + user.username + ' is not active');
+          log.warn('Failed user login attempt: User ' + user.username + ' is not active');
           return done(null, false, { message: "User with username '" + username + "' not active" });
         }
 
@@ -45,7 +46,7 @@ module.exports = function(p***REMOVED***port) {
           }
 
           if (!isValid) {
-            console.log('Failed login attempt: User with username ' + username + ' provided an invalid p***REMOVED***word');
+            log.warn('Failed login attempt: User with username ' + username + ' provided an invalid p***REMOVED***word');
             return done(null, false);
           }
 

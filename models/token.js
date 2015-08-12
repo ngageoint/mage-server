@@ -54,10 +54,6 @@ exports.createToken = function(options, callback) {
   };
   var options = {upsert: true, new: true};
   Token.findOneAndUpdate(query, update, options, function(err, newToken) {
-    if (err) {
-      console.log('Could not create token for user: ' + user.username);
-    }
-
     callback(err, newToken);
   });
 }

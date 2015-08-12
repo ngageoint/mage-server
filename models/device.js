@@ -101,10 +101,6 @@ exports.Model = Device;
 
 exports.getDeviceById = function(id, callback) {
   Device.findById(id, function(err, device) {
-    if (err) {
-      console.log('Error finding device for id: ' + id + ' err: ' + err);
-    }
-
     callback(err, device);
   });
 }
@@ -112,10 +108,6 @@ exports.getDeviceById = function(id, callback) {
 exports.getDeviceByUid = function(uid, callback) {
   var conditions = {uid: uid.toLowerCase()};
   Device.findOne(conditions, function(err, device) {
-    if (err) {
-      console.log('Error finding device for id: ' + id + ' err: ' + err);
-    }
-
     callback(err, device);
   });
 }
@@ -165,10 +157,6 @@ exports.createDevice = function(device, callback) {
   if (device.registered) create.registered = device.registered;
 
   Device.create(create, function(err, newDevice) {
-    if (err) {
-      console.log('Error creating device: ' + JSON.stringify(create) + " err: " + err);
-    }
-
     callback(err, newDevice);
   });
 }
@@ -183,15 +171,10 @@ exports.deleteDevice = function(id, callback) {
   Device.findById(id, function(err, device) {
     if (!device) {
       var msg = "Device with id '" + id + "' not found and could not be deleted.";
-      console.log(msg + " Error: " + err);
       return callback(new Error(msg));
     }
 
     device.remove(function(err, removedDevice) {
-      if (err) {
-        console.log("Error removing device", err);
-      }
-
       callback(err, removedDevice);
     });
   });

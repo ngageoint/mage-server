@@ -1,4 +1,5 @@
 var IconModel = require('../models/icon')
+  , log = require('winston')
   , path = require('path')
   , util = require('util')
   , fs = require('fs-extra')
@@ -87,14 +88,14 @@ Icon.prototype.create = function(icon, callback) {
   var iconPath = path.join(iconBase, relativePath);
   fs.mkdirp(path.dirname(iconPath), function(err) {
     fs.rename(icon.path, iconPath, function(err) {
-      if (err) { console.log(err); return callback(err); }
+      if (err) { return callback(err); }
 
       IconModel.create(newIcon, function(err, oldIcon) {
         callback(err, newIcon);
 
         if (oldIcon && oldIcon.relativePath != newIcon.relativePath) {
           fs.remove(path.join(iconBase, oldIcon.relativePath), function(err) {
-            if (err) console.log('could not remove old icon from file system', err);
+            if (err) log.error('could not remove old icon from file system', err);
           });
         }
       });
@@ -145,10 +146,10 @@ Icon.prototype.delete = function(callback) {
         }
       }
 
-      console.log('removing icons: ', removePath);
+      log.info('removing icons: ', removePath);
       fs.remove(removePath, function(err) {
         if (err) {
-          console.error("Could not remove attachment file " + file + ". ", err);
+          log.error("Could not remove attachment file " + file + ". ", err);
         }
       });
     });

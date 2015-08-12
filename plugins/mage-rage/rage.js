@@ -1,4 +1,5 @@
 var async = require('async')
+  , log = require('../../logger')
   , request = require('request')
   , mongoose = require('mongoose')
   , moment = require('moment')
@@ -10,14 +11,18 @@ var async = require('async')
 var mongodbConfig = config.mongodb;
 mongoose.connect(mongodbConfig.url, {server: {poolSize: mongodbConfig.poolSize}}, function(err) {
   if (err) {
-    console.log('Error connecting to mongo database, please make sure mongodbConfig is running...');
+    log.info('Error connecting to mongo database, please make sure mongodbConfig is running...');
     throw err;
   }
 });
-mongoose.set('debug', false);
+
+var mongooseLogger = log.loggers.get('mongoose');
+mongoose.set('debug', function(collection, method, query, doc, options) {
+  mongooseLogger.log('mongoose', "%s.%s(%j, %j, %j)", collection, method, query, doc, options);
+});
 
 function getToken(done) {
-  console.log('getting token');
+  log.info('getting token');
 
   var options = {
     url: config.url + '/api/login',
@@ -36,10 +41,10 @@ function getToken(done) {
 }
 
 function sync() {
-  console.log('RAGEing....... ' + moment().toISOString());
+  log.info('RAGEing....... ' + moment().toISOString());
 
   getToken(function(err, token) {
-    if (err) console.log('error getting token', err);
+    if (err) log.error('error getting token', err);
 
     var series = [];
     if (token) {
@@ -54,8 +59,8 @@ function sync() {
     }
 
     async.series(series, function(err) {
-      if (err) console.log('RAGE error', err);
-      console.log('RAGE over........ ' + moment().toISOString());
+      if (err) log.error('RAGE error', err);
+      log.info('RAGE over........ ' + moment().toISOString());
       setTimeout(sync, config.interval * 1000);
     });
   });

@@ -1,5 +1,6 @@
 var xmldom = require('xmldom')
-  , xpath = require('xpath');
+  , xpath = require('xpath')
+  , log = require('winston');
 
 var DOMParser = xmldom.DOMParser
   , XMLSerializer = xmldom.XMLSerializer;
@@ -163,7 +164,7 @@ var kml = function(data, o) {
     // only ever get placemarks.
     // I.E. pull all placemarks regards of depth level
     var placemarks = xpath.select("//Placemark", doc);
-    console.log('Found ' + placemarks.length);
+    log.info('Found ' + placemarks.length);
     placemarks.forEach(function(placemark) {
       features = features.concat(getPlacemark(placemark));
     });

@@ -61,7 +61,6 @@ Form.prototype.import = function(file, callback) {
   var iconsEntry = zip.getEntry('form/icons/');
   if (iconsEntry) {
     var iconPath = new api.Icon(event._id).getBasePath() + path.sep;
-    console.log('extracting icons for imported zip to ', iconPath);
 
     zip.extractEntryTo(iconsEntry, iconPath, false, false);
 

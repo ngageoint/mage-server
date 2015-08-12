@@ -1,4 +1,5 @@
 var config = require('./config.json')
+  , log = require('winston')
   , serverConfig = require('../../config.json')
   , querystring = require('querystring')
   , os = require('os')
@@ -26,7 +27,7 @@ module.exports = {
 };
 
 function sync(token, callback) {
-  console.log('pulling data ' + moment().toISOString());
+  log.info('pulling data ' + moment().toISOString());
   request = request.defaults({
     json: true,
     headers: {
@@ -53,7 +54,7 @@ function sync(token, callback) {
     }
   },
   function(err) {
-    console.log('finished pulling all data ' + moment().toISOString());
+    log.info('finished pulling all data ' + moment().toISOString());
     callback(err);
   });
 };
@@ -66,7 +67,7 @@ function syncUsers(done) {
 
     if (res.statusCode != 200) return done(new Error('Error getting users, respose code: ' + res.statusCode));
 
-    console.log('syncing: ' + users.length + ' users');
+    log.info('syncing: ' + users.length + ' users');
     async.each(users, function(user, done) {
       user._id = user.id;
       delete user.id;
@@ -84,7 +85,7 @@ function syncDevices(done) {
 
     if (res.statusCode != 200) return done(new Error('Error getting devices, respose code: ' + res.statusCode));
 
-    console.log('syncing: ' + devices.length + ' devices');
+    log.info('syncing: ' + devices.length + ' devices');
     async.each(devices, function(device, done) {
       device._id = device.id;
       delete device.id;
@@ -102,7 +103,7 @@ function syncTeams(done) {
 
     if (res.statusCode != 200) return done(new Error('Error getting teams, respose code: ' + res.statusCode));
 
-    console.log('syncing: ' + teams.length + ' teams');
+    log.info('syncing: ' + teams.length + ' teams');
     async.each(teams, function(team, done) {
       team._id = team.id;
       delete team.id;
@@ -116,14 +117,11 @@ function syncTeams(done) {
 }
 
 function createCollection(name, done) {
-  console.log("Creating collection: " + name);
+  log.info("Creating collection: " + name);
   mongoose.connection.db.createCollection(name, function(err) {
-    if (err) {
-      console.log('err wtf', err);
-      return done(err);
-    }
+    if (err) return done(err);
 
-    console.log("Successfully created collection " + name);
+    log.info("Successfully created collection " + name);
     done();
   });
 }
@@ -136,7 +134,7 @@ function syncEvents(done) {
 
     if (res.statusCode != 200) return done(new Error('Error getting events, respose code: ' + res.statusCode));
 
-    console.log('syncing: ' + allEvents.length + ' events');
+    log.info('syncing: ' + allEvents.length + ' events');
     async.each(allEvents, function(event, done) {
       event._id = event.id;
       delete event.id;
@@ -147,7 +145,7 @@ function syncEvents(done) {
         if (err) return done(err);
 
         if (!oldEvent || !oldEvent.id) {
-          console.log('calling create collection');
+          log.info('calling create collection');
           createCollection('observations' + event._id, function(err) {
             if (err) return done(err);
 
@@ -167,7 +165,7 @@ function syncEvents(done) {
 }
 
 function syncIcons(done) {
-  console.log('sync icons');
+  log.info('sync icons');
 
   var iconsBaseDir = serverConfig.server.iconBaseDirectory;
   async.each(events, function(event, done) {
@@ -175,12 +173,12 @@ function syncIcons(done) {
     var zipFile = path.join(os.tmpdir(), 'icons' + event._id.toString() + ".zip");
     var zipStream = fs.createWriteStream(zipFile);
     zipStream.on('finish', function() {
-      console.log('got the zip file');
+      log.info('got the zip file');
       new api.Form(event).import({path: zipFile, mimetype: 'application/zip'}, done);
     });
 
     var url = baseUrl + '/api/events/' + event._id + '/form.zip';
-    console.log('url is', url);
+    log.info('url is', url);
     request.get(url).pipe(zipStream);
   }, function(err) {
     done(err);
@@ -195,7 +193,7 @@ function syncLayers(done) {
 
     if (res.statusCode != 200) return done(new Error('Error getting layers, respose code: ' + res.statusCode));
 
-    console.log('syncing: ' + layers.length + ' layers');
+    log.info('syncing: ' + layers.length + ' layers');
     async.each(layers, function(layer, done) {
       layer._id = layer.id;
       delete layer.id;
@@ -224,7 +222,7 @@ function syncLayers(done) {
 }
 
 function syncFeatures(done) {
-  console.log('syncing features for layers', featureLayers);
+  log.info('syncing features for layers', featureLayers);
 
   async.each(featureLayers, function(layer, done) {
     request.get(baseUrl + '/api/layers/' + layer._id + '/features', function(err, res, featureCollection) {
@@ -232,7 +230,7 @@ function syncFeatures(done) {
 
       if (res.statusCode != 200) return done(new Error('Error getting features, respose code: ' + res.statusCode));
 
-      console.log('syncing: ' + featureCollection.features.length + ' features');
+      log.info('syncing: ' + featureCollection.features.length + ' features');
       async.each(featureCollection.features, function(feature, done) {
         feature._id = feature.id;
         delete feature.id;
@@ -251,7 +249,7 @@ function syncFeatures(done) {
 function syncObservations(done) {
   fs.readJson(__dirname + "/.data.json", function(err, lastObservationTimes) {
     lastObservationTimes = lastObservationTimes || {};
-    console.log('last', lastObservationTimes);
+    log.info('last', lastObservationTimes);
 
     async.each(events, function(event, done) {
       var url = baseUrl + '/api/events/' + event._id + "/observations";
@@ -261,13 +259,13 @@ function syncObservations(done) {
         url += '?startDate=' + moment(lastTime).add('ms', 1).toISOString();
         lastTime = moment(lastTime);
       }
-      console.log('observation url is', url);
+      log.info('observation url is', url);
       request.get(url, function(err, res, observations) {
         if (err) return done(err);
 
         if (res.statusCode != 200) return done(new Error('Error getting observations, respose code: ' + res.statusCode));
 
-        console.log('syncing: ' + observations.length + ' observations');
+        log.info('syncing: ' + observations.length + ' observations');
         async.each(observations, function(observation, done) {
           observation.properties = observation.properties || {};
           if (observation.lastModified) {
@@ -322,10 +320,10 @@ function requestLocations(event, lastLocation, done) {
   }
 
   url = url + querystring.stringify(query);
-  console.log('RAGE requesting locations, location url is', url);
+  log.info('RAGE requesting locations, location url is', url);
 
   request.get(url, function(err, res, locations) {
-    console.log('got locations from remote server', locations.length);
+    log.info('got locations from remote server', locations.length);
 
     if (err) return done(err);
 
@@ -352,7 +350,7 @@ function syncLocations(done) {
 
           syncUserLocations(event, locations, function(err) {
             if (err) return done(err);
-            console.log('Successfully synced ' + locations.length + ' locations to mage');
+            log.info('Successfully synced ' + locations.length + ' locations to mage');
             var last = locations.slice(-1).pop();
             if (last) {
               var locationTime = moment(last.properties.timestamp);
@@ -384,7 +382,7 @@ function syncLocations(done) {
 }
 
 function syncUserLocations(event, locations, done) {
-  console.log('got locations: ' + locations.length);
+  log.info('got locations: ' + locations.length);
   locations.forEach(function(location) {
     location.properties = location.properties || {};
     if (location.properties.timestamp) {
@@ -397,7 +395,7 @@ function syncUserLocations(event, locations, done) {
       // throw all this users locations in the location collection
       async.each(locations, function(location, done) {
         Location.Model.findByIdAndUpdate(location._id, location, {upsert: true, new: true}, function(err, location) {
-          if (err) console.log('error inserting location into locations collection', err);
+          if (err) log.error('error inserting location into locations collection', err);
           done();
         });
       },
