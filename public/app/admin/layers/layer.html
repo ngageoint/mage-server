@@ -28,12 +28,12 @@
           </div>
           <hr>
 
-          <div cl***REMOVED***="row top-gap-l">
-            <div cl***REMOVED***="col-md-6">
+          <div cl***REMOVED***="row">
+            <div cl***REMOVED***="col-md-6 col-xs-12">
 
-              <div cl***REMOVED***="row top-gap-l">
+              <div cl***REMOVED***="row">
                 <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted pull-right">Name:&nbsp;</span>
+                  <span cl***REMOVED***="muted">Name:&nbsp;</span>
                 </div>
                 <div cl***REMOVED***="col-md-9">
                   <span>{{layer.name}}</span>
@@ -42,7 +42,7 @@
 
               <div cl***REMOVED***="row top-gap-s">
                 <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted pull-right">Type:&nbsp;</span>
+                  <span cl***REMOVED***="muted">Type:&nbsp;</span>
                 </div>
                 <div cl***REMOVED***="col-md-9">
                   <span>{{layer.type}}</span>
@@ -51,7 +51,7 @@
 
               <div cl***REMOVED***="row top-gap-s" ng-show="layer.type == 'Imagery'">
                 <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted pull-right">Base Layer:&nbsp;</span>
+                  <span cl***REMOVED***="muted">Base Layer:&nbsp;</span>
                 </div>
                 <div cl***REMOVED***="col-md-9">
                   <span>{{layer.base}}</span>
@@ -60,7 +60,7 @@
 
               <div cl***REMOVED***="row top-gap-s" ng-show="layer.type == 'Imagery'">
                 <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted pull-right">Format:&nbsp;</span>
+                  <span cl***REMOVED***="muted">Format:&nbsp;</span>
                 </div>
                 <div cl***REMOVED***="col-md-9">
                   <span>{{layer.format}}</span>
@@ -69,7 +69,7 @@
 
               <div cl***REMOVED***="row top-gap-s" ng-show="layer.type == 'Imagery'">
                 <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted pull-right">URL:&nbsp;</span>
+                  <span cl***REMOVED***="muted">URL:&nbsp;</span>
                 </div>
                 <div cl***REMOVED***="col-md-9">
                   <span>{{layer.url}}</span>
@@ -78,7 +78,7 @@
 
               <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
                 <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted pull-right">Layers:&nbsp;</span>
+                  <span cl***REMOVED***="muted">Layers:&nbsp;</span>
                 </div>
                 <div cl***REMOVED***="col-md-9">
                   <span>{{layer.wms.layers}}</span>
@@ -87,7 +87,7 @@
 
               <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
                 <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted pull-right">Styles:&nbsp;</span>
+                  <span cl***REMOVED***="muted">Styles:&nbsp;</span>
                 </div>
                 <div cl***REMOVED***="col-md-9">
                   <span>{{layer.wms.styles}}</span>
@@ -96,7 +96,7 @@
 
               <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
                 <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted pull-right">Format:&nbsp;</span>
+                  <span cl***REMOVED***="muted">Format:&nbsp;</span>
                 </div>
                 <div cl***REMOVED***="col-md-9">
                   <span>{{layer.wms.format}}</span>
@@ -105,7 +105,7 @@
 
               <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
                 <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted pull-right">Transparent:&nbsp;</span>
+                  <span cl***REMOVED***="muted">Transparent:&nbsp;</span>
                 </div>
                 <div cl***REMOVED***="col-md-9">
                   <span>{{layer.wms.transparent}}</span>
@@ -114,16 +114,16 @@
 
               <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
                 <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted pull-right">Version:&nbsp;</span>
+                  <span cl***REMOVED***="muted">Version:&nbsp;</span>
                 </div>
                 <div cl***REMOVED***="col-md-9">
                   <span>{{layer.wms.version}}</span>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row top-gap-s">
+              <div cl***REMOVED***="row top-gap-s bottom-gap">
                 <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted pull-right">Description:&nbsp;</span>
+                  <span cl***REMOVED***="muted">Description:&nbsp;</span>
                 </div>
                 <div cl***REMOVED***="col-md-9">
                   <span>{{layer.description}}</span>
@@ -147,9 +147,9 @@
           <hr>
 
           <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-xs-6">
+            <div cl***REMOVED***="col-md-6 col-xs-12">
               <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-xs-12">
+                <div cl***REMOVED***="col-md-12">
                   <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
                     <div cl***REMOVED***="container-fluid">
                       <div cl***REMOVED***="navbar-header">
@@ -163,7 +163,7 @@
               <div cl***REMOVED***="admin-table">
                 <div cl***REMOVED***="well-item">
                   <div cl***REMOVED***="row">
-                    <div cl***REMOVED***="col-xs-12">
+                    <div cl***REMOVED***="col-md-12">
                       <ui-select ng-model="event.selected" theme="bootstrap">
                         <ui-select-match placeholder="Select an event">{{$select.selected.name}}</ui-select-match>
                         <ui-select-choices repeat="event in nonLayerEvents | orderBy: 'name' | filter: $select.search">
@@ -176,7 +176,7 @@
                   <hr>
 
                   <div cl***REMOVED***="row">
-                     <div cl***REMOVED***="col-xs-12">
+                     <div cl***REMOVED***="col-md-12">
                        <button cl***REMOVED***="btn btn-success" ng-click="addEventToLayer(event.selected)" ng-disabled="event.selected == null"><i cl***REMOVED***="fa fa-plus"></i> Add Event</button>
                      </div>
                   </div>

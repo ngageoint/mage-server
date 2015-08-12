@@ -30,20 +30,20 @@
           <hr>
 
           <div cl***REMOVED***="row top-gap-l">
-            <div cl***REMOVED***="col-sm-6" >
+            <div cl***REMOVED***="col-sm-6 col-xs-12" >
 
               <div cl***REMOVED***="row top-gap-l">
                 <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted pull-right">Name:&nbsp;</span>
+                  <span cl***REMOVED***="muted">Name:&nbsp;</span>
                 </div>
                 <div cl***REMOVED***="col-md-9">
                   <span>{{team.name}}</span>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row top-gap-s">
+              <div cl***REMOVED***="row top-gap-s bottom-gap">
                 <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted pull-right">Description:&nbsp;</span>
+                  <span cl***REMOVED***="muted">Description:&nbsp;</span>
                 </div>
                 <div cl***REMOVED***="col-md-9">
                   <span>{{team.description}}</span>
@@ -68,9 +68,9 @@
       <hr>
 
       <div cl***REMOVED***="row">
-        <div cl***REMOVED***="col-xs-6">
+        <div cl***REMOVED***="col-md-6 col-xs-12">
           <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-xs-12">
+            <div cl***REMOVED***="col-md-12">
               <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
                 <div cl***REMOVED***="container-fluid">
                   <div cl***REMOVED***="navbar-header">
@@ -84,7 +84,7 @@
           <div cl***REMOVED***="admin-table">
             <div cl***REMOVED***="well-item">
               <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-xs-12">
+                <div cl***REMOVED***="col-md-12">
                   <ui-select ng-model="user.selected" theme="bootstrap">
                     <ui-select-match placeholder="Select a user to add to team">{{$select.selected.username}}</ui-select-match>
                     <ui-select-choices group-by="groupLayerByType" repeat="user in nonUsers | orderBy: 'name' | filter: $select.search">
@@ -100,7 +100,7 @@
               <hr>
 
               <div cl***REMOVED***="row">
-                 <div cl***REMOVED***="col-xs-12">
+                 <div cl***REMOVED***="col-md-12">
                    <button cl***REMOVED***="btn btn-success" ng-click="addUser(user.selected)" ng-disabled="user.selected == null"><i cl***REMOVED***="fa fa-plus"></i> Add User</button>
                  </div>
               </div>
@@ -166,9 +166,9 @@
           </div>
         </div>
 
-        <div cl***REMOVED***="col-xs-6">
+        <div cl***REMOVED***="col-md-6 col-xs-12">
           <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-xs-12">
+            <div cl***REMOVED***="col-md-12">
               <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
                 <div cl***REMOVED***="container-fluid">
                   <div cl***REMOVED***="navbar-header">
@@ -182,7 +182,7 @@
           <div cl***REMOVED***="admin-table">
             <div cl***REMOVED***="well-item">
               <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-xs-12">
+                <div cl***REMOVED***="col-md-12">
                   <ui-select ng-model="event.selected" theme="bootstrap">
                     <ui-select-match placeholder="Select an event">{{$select.selected.name}}</ui-select-match>
                     <ui-select-choices repeat="event in nonTeamEvents | orderBy: 'name' | filter: $select.search">
@@ -195,7 +195,7 @@
               <hr>
 
               <div cl***REMOVED***="row">
-                 <div cl***REMOVED***="col-xs-12">
+                 <div cl***REMOVED***="col-md-12">
                    <button cl***REMOVED***="btn btn-success" ng-click="addEventToTeam(event.selected)" ng-disabled="event.selected == null"><i cl***REMOVED***="fa fa-plus"></i> Add Event</button>
                  </div>
               </div>
