@@ -1,5 +1,6 @@
 module.exports = function(app, security) {
   var moment = require('moment')
+    , log = require('winston')
     , config = require('../config')
     , api = require('../api')
     , Location = require('../models/location')
@@ -185,19 +186,19 @@ module.exports = function(app, security) {
     function(req, res, next) {
       switch (req.params.exportType) {
         case 'shapefile':
-          console.log('exporting shapefiles...');
+          log.info('exporting shapefiles...');
           exportShapefile(req, res, next);
           break;
         case 'kml':
-          console.log('exporting KML...');
+          log.info('exporting KML...');
           exportKML(req, res, next);
           break;
         case 'geojson':
-          console.log('exporting GeoJSON...');
+          log.info('exporting GeoJSON...');
           exportGeoJSON(req, res, next);
           break;
         case 'csv':
-          console.log('exporting CSV...');
+          log.info('exporting CSV...');
           exportCsv(req, res, next);
           break;
       }
@@ -243,7 +244,7 @@ module.exports = function(app, security) {
           if (err) return done(err)
           locations = requestedLocations;
 
-          console.log('got some locations ' + locations.length);
+          log.info('got some locations ' + locations.length);
 
           locations.forEach(function(l) {
             if (req.users[l.properties.user]) l.properties.user = req.users[l.properties.user].username;
@@ -268,7 +269,7 @@ module.exports = function(app, security) {
             shp.writeGeoJson(streams, {features: JSON.parse(JSON.stringify(locations))}, function(err, files) {
               if (err) return done(err);
 
-              console.log('Successfully wrote ' + locations.length + ' locations to SHAPEFILE');
+              log.info('Successfully wrote ' + locations.length + ' locations to SHAPEFILE');
 
               var locationTime = moment(last.properties.timestamp);
               lastLocationId = last._id;
@@ -287,7 +288,7 @@ module.exports = function(app, security) {
         return locations.length == 0;
       },
       function(err) {
-        console.log('done writing all locations for to SHAPEFILE', err);
+        log.info('done writing all locations for to SHAPEFILE', err);
 
         done(err);
       });
@@ -298,7 +299,7 @@ module.exports = function(app, security) {
       var zipFile = '/tmp/mage-shapefile-export-' + now.getTime() + '.zip';
       exec("zip -r " + zipFile + " " + req.directory + "/",
         function (err, stdout, stderr) {
-          console.log('something bad happened', err);
+          log.info('something bad happened', err);
           if (err !== null) {
             return next(err);
           }
@@ -308,12 +309,12 @@ module.exports = function(app, security) {
           stream.on('end', function() {
             // remove dir
             fs.remove(req.directory, function(err) {
-              if (err) console.log('could not remove shapfile dir', req.directory);
+              if (err) log.info('could not remove shapfile dir', req.directory);
             });
 
             // remove zip file
             fs.remove(zipFile, function(err) {
-              if (err) console.log('could not remove shapfile zip', zipFile);
+              if (err) log.info('could not remove shapfile zip', zipFile);
             });
           });
 
@@ -360,7 +361,7 @@ module.exports = function(app, security) {
     }
 
     var streamUserLocations = function(stream, user, done) {
-      console.log('writing locations for user ' + user.username);
+      log.info('writing locations for user ' + user.username);
 
       var startDate = req.parameters.filter.startDate ? moment(req.parameters.filter.startDate) : null;
       var endDate = req.parameters.filter.endDate ? moment(req.parameters.filter.endDate) : null;
@@ -381,7 +382,7 @@ module.exports = function(app, security) {
             stream.write(generate_kml.generatePlacemark('FFT', location));
           });
 
-          console.log('Successfully wrote ' + locations.length + ' locations to KML for user ' + user.username);
+          log.info('Successfully wrote ' + locations.length + ' locations to KML for user ' + user.username);
           var last = locations.slice(-1).pop();
           if (last) {
             var locationTime = moment(last.properties.timestamp);
@@ -401,7 +402,7 @@ module.exports = function(app, security) {
         if (lastLocationId) { // if we got at least one location
           stream.write(generate_kml.generateKMLFolderClose());
         }
-        console.log('done writing all locations for ' + user.username);
+        log.info('done writing all locations for ' + user.username);
         done(err);
       });
     }
@@ -458,7 +459,7 @@ module.exports = function(app, security) {
     ],
     function(err) {
       if (err) {
-        console.log(err);
+        log.info(err);
       }
 
       kmlStream.write(generate_kml.generateKMLDocumentClose());
@@ -488,7 +489,7 @@ module.exports = function(app, security) {
     }
 
     var streamLocations = function(stream, done) {
-      console.log('writing locations...');
+      log.info('writing locations...');
       var limit = 2000;
 
       var startDate = req.parameters.filter.startDate ? moment(req.parameters.filter.startDate) : null;
@@ -511,7 +512,7 @@ module.exports = function(app, security) {
             stream.write(']}');
           }
 
-          console.log('Successfully wrote ' + locations.length + ' locations to GeoJSON');
+          log.info('Successfully wrote ' + locations.length + ' locations to GeoJSON');
           var last = locations.slice(-1).pop();
           if (last) {
             var locationTime = moment(last.properties.timestamp);
@@ -528,7 +529,7 @@ module.exports = function(app, security) {
         return locations.length == 0;
       },
       function(err) {
-        console.log('done writing locations');
+        log.info('done writing locations');
         done(err);
       });
     }
@@ -587,7 +588,7 @@ module.exports = function(app, security) {
     ],
     function(err) {
       if (err) {
-        console.log(err);
+        log.info(err);
       }
 
       archive.finalize();
@@ -658,7 +659,7 @@ module.exports = function(app, security) {
     }
 
     var streamLocations = function(stream, done) {
-      console.log('writing locations...');
+      log.info('writing locations...');
       var limit = 2000;
 
       var startDate = req.parameters.filter.startDate ? moment(req.parameters.filter.startDate) : null;
@@ -697,7 +698,7 @@ module.exports = function(app, security) {
             stream.write(']');
           }
 
-          console.log('Successfully wrote ' + locations.length + ' locations to CSV');
+          log.info('Successfully wrote ' + locations.length + ' locations to CSV');
           var last = locations.slice(-1).pop();
           if (last) {
             var locationTime = moment(last.properties.timestamp);
@@ -714,7 +715,7 @@ module.exports = function(app, security) {
         return locations.length == 0;
       },
       function(err) {
-        console.log('done writing locations');
+        log.info('done writing locations');
         done(err);
       });
     }
@@ -768,7 +769,7 @@ module.exports = function(app, security) {
     ],
     function(err) {
       if (err) {
-        console.log(err);
+        log.info(err);
       }
 
       archive.finalize();

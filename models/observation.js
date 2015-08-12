@@ -1,7 +1,8 @@
 var mongoose = require('mongoose')
   , async = require('async')
   , moment = require('moment')
-  , Event = require('../models/event');
+  , Event = require('../models/event')
+  , log = require('winston');
 
 var Schema = mongoose.Schema;
 
@@ -197,8 +198,6 @@ exports.getObservations = function(event, o, callback) {
     options.sort = o.sort;
   }
 
-
-console.log('conditions are: ' + JSON.stringify(conditions));
   var fields = parseFields(o.fields);
   observationModel(event).find(conditions, fields, options, function (err, observations) {
     callback(err, observations);
@@ -249,7 +248,7 @@ exports.removeUser = function(user, callback) {
   Event.getEvents({}, function(err, events) {
     async.each(events, function(event, done) {
       observationModel(event).update(condition, update, options, function(err, numberAffected) {
-        console.log('Remove deleted user from ' + numberAffected + ' documents for event ' + event.name);
+        log.info('Remove deleted user from ' + numberAffected + ' documents for event ' + event.name);
         done();
       });
     },
@@ -267,7 +266,7 @@ exports.removeDevice = function(device, callback) {
   Event.getEvents(function(err, events) {
     async.each(events, function(event, done) {
       observationModel(event).update(condition, update, options, function(err, numberAffected) {
-        console.log('Remove deleted device from ' + numberAffected + ' documents for event ' + event.name);
+        log.info('Remove deleted device from ' + numberAffected + ' documents for event ' + event.name);
         done();
       });
     },

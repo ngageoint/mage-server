@@ -209,10 +209,6 @@ exports.getUsers = function(filter, callback) {
   }
 
   User.find(conditions, function (err, users) {
-    if (err) {
-      console.log("Error finding users: " + err);
-    }
-
     callback(err, users);
   });
 }
@@ -240,17 +236,12 @@ exports.createUser = function(user, callback) {
 
 exports.updateUser = function(user, callback) {
   user.save(function(err) {
-    if (err) {
-      console.log('Could not update user ' + user.username + ' error ',  err);
-    }
-
     callback(err, user)
   });
 }
 
 exports.deleteUser = function(user, callback) {
   user.remove(function(err, removedUser) {
-    if (err) console.log("Error removing user: " + err);
     callback(err, removedUser);
   });
 }
@@ -258,10 +249,6 @@ exports.deleteUser = function(user, callback) {
 exports.setStatusForUser = function(user, status, callback) {
   var update = { status: status };
   User.findByIdAndUpdate(user._id, update, {new: true}, function(err, user) {
-    if (err) {
-      console.log('could not set status for user: ' + user.username);
-    }
-
     callback(err, user);
   });
 }
@@ -269,10 +256,6 @@ exports.setStatusForUser = function(user, status, callback) {
 exports.setRoleForUser = function(user, role, callback) {
   var update = { role: role };
   User.findByIdAndUpdate(user._id, update, {new: true}, function (err, user) {
-    if (err) {
-      console.log('could not set role ' + role + ' for user: ' + user.username);
-    }
-
     callback(err, user);
   });
 }
@@ -280,10 +263,6 @@ exports.setRoleForUser = function(user, role, callback) {
 exports.removeRolesForUser = function(user, callback) {
   var update = { roles: [] };
   User.findByIdAndUpdate(user._id, update, {new: true}, function (err, user) {
-    if (err) {
-      console.log('could not remove roles for user ' + user.username);
-    }
-
     callback(err, user);
   });
 }
@@ -291,10 +270,6 @@ exports.removeRolesForUser = function(user, callback) {
 exports.setTeamsForUser = function(user, teamIds, callback) {
   user.teams = teamIds;
   user.save(function (err, user) {
-    if (err) {
-      console.log('could not set teams ' + teams.toString() + ' for user: ' + user.username);
-    }
-
     callback(err, user);
   });
 }
@@ -302,30 +277,18 @@ exports.setTeamsForUser = function(user, teamIds, callback) {
 exports.removeTeamsForUser = function(user, callback) {
   var update = { teams: [] };
   User.findByIdAndUpdate(user._id, update, {new: true}, function (err, user) {
-    if (err) {
-      console.log('could not remove teams for user ' + user.username);
-    }
-
     callback(err, user);
   });
 }
 
 exports.removeRoleFromUsers = function(role, callback) {
   User.update({role: role._id}, {roles: undefined}, function(err, number, raw) {
-    if (err) {
-      console.log('Error pulling role: ' + role.name + ' from all users', err);
-    }
-
     callback(err, number);
   });
 }
 
 exports.removeTeamFromUsers = function(team, callback) {
   User.update({}, {'$pull': {teams: team._id}}, function(err, number, raw) {
-    if (err) {
-      console.log('Error pulling team: ' + team.name + ' from all users', err);
-    }
-
     callback(err, number);
   });
 }
@@ -345,7 +308,6 @@ exports.addRecentEventForUser = function(user, event, callback) {
   if (eventIds.length > 5) {
     eventIds = user.recentEventIds.slice(0, 4);
   }
-  console.log('event ids', eventIds);
 
   User.findByIdAndUpdate(user._id, {recentEventIds: eventIds}, {new: true}, function(err, user) {
     callback(err, user);

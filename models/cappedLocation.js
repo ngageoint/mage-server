@@ -74,10 +74,6 @@ exports.getLocations = function(options, callback) {
 exports.removeLocationsForUser = function(user, callback) {
   var conditions = {"userId": user._id};
   CappedLocation.remove(conditions, function(err, numberRemoved) {
-    if (err) {
-      console.log("Error removing locaitons for user: " + user.username);
-    }
-
     callback(err);
   });
 }

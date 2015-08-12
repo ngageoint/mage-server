@@ -1,6 +1,7 @@
 var mongoose = require('mongoose')
   , Counter = require('./counter')
-  , Event = require('./event');
+  , Event = require('./event')
+  , log = require('winston');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -89,23 +90,23 @@ exports.getById = function(id, callback) {
 }
 
 var createFeatureCollection = function(layer) {
-  console.log("Creating collection: " + layer.collectionName + ' for layer ' + layer.name);
+  log.info("Creating collection: " + layer.collectionName + ' for layer ' + layer.name);
   mongoose.connection.db.createCollection(layer.collectionName, function(err, collection) {
     if (err) {
-      console.error(err);
+      log.error(err);
       return;
     }
 
-    console.log("Successfully created feature collection for layer " + layer.name);
+    log.info("Successfully created feature collection for layer " + layer.name);
   });
 }
 
 var dropFeatureCollection = function(layer, callback) {
-  console.log("Dropping collection: " + layer.collectionName);
+  log.info("Dropping collection: " + layer.collectionName);
   mongoose.connection.db.dropCollection(layer.collectionName, function(err, results) {
     if (err) return callback(err);
 
-    console.log('Dropped collection ' + layer.collectionName);
+    log.info('Dropped collection ' + layer.collectionName);
     callback();
   });
 }
