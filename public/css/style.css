@@ -26,12 +26,10 @@ header.navbar {
 
 .banner-flex {
   flex: none;
-  height: 20px;
 }
 
 .navbar-flex {
   flex: none;
-  height: 50px;
 }
 
 .route-content {
@@ -298,12 +296,28 @@ textarea {
   }
 }
 
+.navbar-default .admin-navbar-toggle {
+  border-color: #ddd;
+}
+
+.navbar-default .admin-navbar-toggle .icon-bar {
+    background-color: #888;
+}
+
+.navbar-default .admin-navbar-toggle:focus, .navbar-default .admin-navbar-toggle:hover {
+    background-color: #ddd;
+}
+
 .navbar-default .navbar-text-inverse {
     color: #777;
 }
 
 .admin-dashboard-navbar .btn-link {
     color: #777;
+}
+
+.navbar-default .admin-navbar-collapse, .navbar-default .navbar-form {
+    border-color: #e7e7e7;
 }
 
 .badge-accent {
