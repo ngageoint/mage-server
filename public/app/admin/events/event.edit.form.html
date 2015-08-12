@@ -59,7 +59,7 @@
                       <div cl***REMOVED***="col-md-2">
                         <div cl***REMOVED***="form-group">
                           <label>Title</label>
-                          <input type="text" ng-change="autoSave()" ng-model="field.title" value="{{field.title}}" cl***REMOVED***="form-control">
+                          <input type="text" ng-model="field.title" value="{{field.title}}" cl***REMOVED***="form-control">
                         </div>
                       </div>
                     </div>
@@ -67,8 +67,8 @@
                       <div cl***REMOVED***="col-md-2">
                         <div cl***REMOVED***="form-group" ng-hide="showAddOptions(field)">
                           <label>Default Value</label>
-                          <input ng-show="field.type=='checkbox'" ng-model="field.value" id="{{field.id}}" type="checkbox" ng-change="autoSave()" ng-checked="field.value == true" ng-required="field.required"/>
-                          <input ng-hide="field.type=='checkbox'" type="text" ng-change="autoSave()" ng-model="field.value" value="{{field.value}}" cl***REMOVED***="form-control">
+                          <input ng-show="field.type=='checkbox'" ng-model="field.value" id="{{field.id}}" type="checkbox" ng-checked="field.value == true" ng-required="field.required"/>
+                          <input ng-hide="field.type=='checkbox'" type="text" ng-model="field.value" value="{{field.value}}" cl***REMOVED***="form-control">
                         </div>
                       </div>
                     </div>
@@ -76,7 +76,7 @@
                       <div cl***REMOVED***="col-md-2">
                         <div cl***REMOVED***="form-group" ng-show="showAddOptions(field)">
                           <label>Default Value</label>
-                          <select ng-model="field.value" ng-change="autoSave()" ng-options="choice.title as choice.title for choice in field.choices" cl***REMOVED***="form-control">
+                          <select ng-model="field.value" ng-options="choice.title as choice.title for choice in field.choices" cl***REMOVED***="form-control">
                             <option value="">No Default</option>
                           </select>
                         </div>
@@ -105,7 +105,7 @@
                     </div>
                     <div cl***REMOVED***="checkbox" ng-show="field.name != 'timestamp' &amp;&amp; field.name != 'geometry' &amp;&amp; field.name != 'type'">
                       <label>
-                      <input type="checkbox" ng-model="field.required"  ng-change="onRequiredChanged(field);autoSave()"> Required
+                      <input type="checkbox" ng-model="field.required"  ng-change="onRequiredChanged(field);"> Required
                       </label>
                     </div>
                   </form>
@@ -188,7 +188,7 @@
                 </div>
                 <div cl***REMOVED***="checkbox">
                   <label>
-                  <input type="checkbox" ng-model="newField.required" ng-init="newField.required = true"> Required
+                  <input type="checkbox" ng-model="newField.required"> Required
                   </label>
                 </div>
               </form>

@@ -75,12 +75,16 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     value : 'Hidden'
   }];
 
-  $scope.newField = {
-    "title" : "New field",
-    "type" : $scope.fieldTypes[0].name,
-    "value" : "",
-    "required" : true
-  };
+  $scope.newField = newField();
+
+  function newField() {
+    return {
+      "title" : "New field",
+      "type" : $scope.fieldTypes[0].name,
+      "value" : "",
+      "required" : false
+    };
+  }
 
   // accordion settings
   $scope.accordion = {}
@@ -102,12 +106,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     $scope.onRequiredChanged($scope.newField);
     fields.push($scope.newField);
 
-    $scope.newField = {
-      "title" : "New field",
-      "type" : $scope.fieldTypes[0].name,
-      "value" : "",
-      "required" : true
-    };
+    $scope.newField = newField();
   }
 
   $scope.moveFieldUp = function(e, fieldToMoveUp) {
