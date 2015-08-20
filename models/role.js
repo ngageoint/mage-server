@@ -57,10 +57,6 @@ var Role = mongoose.model('Role', RoleSchema);
 
 exports.getRoleById = function(id, callback) {
   Role.findById(id, function(err, role) {
-    if (err) {
-      console.log('error getting role ' + id + '. error: ' + err);
-    }
-
     callback(err, role);
   });
 }
@@ -68,10 +64,6 @@ exports.getRoleById = function(id, callback) {
 exports.getRole = function(name, callback) {
   query = {name: name};
   Role.findOne(query, function(err, role) {
-    if (err) {
-      console.log('error getting role ' + id + '. error: ' + err);
-    }
-
     callback(err, role);
   });
 }
@@ -79,10 +71,6 @@ exports.getRole = function(name, callback) {
 exports.getRoles = function(callback) {
   var query = {};
   Role.find(query, function (err, roles) {
-    if (err) {
-      console.log("Error finding roles in mongo: " + err);
-    }
-
     callback(err, roles);
   });
 }
@@ -95,30 +83,18 @@ exports.createRole = function(role, callback) {
   }
 
   Role.create(create, function(err, role) {
-    if (err) {
-      console.log('error creating new role: ' + err);
-    }
-
     callback(err, role);
   });
 }
 
 exports.updateRole = function(id, update, callback) {
   Role.findByIdAndUpdate(id, update, {new: true}, function(err, role) {
-    if (err) {
-      console.log('error updating role: ' + id + ' err: ' + err);
-    }
-
     callback(err, role);
   });
 }
 
 exports.deleteRole = function(role, callback) {
   role.remove(function(err) {
-    if (err) {
-      console.log('could not delete role: ' + role.name);
-    }
-
     callback(err, role);
   });
 }

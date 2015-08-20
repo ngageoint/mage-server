@@ -25,4 +25,8 @@ function AdminEventEditController($scope, $location, $routeParams, Event) {
     var path = $scope.event.id ? '/admin/events/' + $scope.event.id : '/admin/events';
     $location.path(path);
   }
+
+  $scope.$on('uploadFile', function(e, uploadFile) {
+    $scope.event.formArchiveFile = uploadFile;
+  });
 }

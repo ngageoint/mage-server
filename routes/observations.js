@@ -1,6 +1,7 @@
 module.exports = function(app, auth) {
 
   var api = require('../api')
+    , log = require('winston')
     , fs = require('fs-extra')
     , moment = require('moment')
     , Event = require('../models/event')
@@ -303,7 +304,7 @@ module.exports = function(app, auth) {
           stream.pipe(res);
         });
         stream.on('error', function(err) {
-          console.log('error streaming attachment', err);
+          log.error('error streaming attachment', err);
         });
       });
     }

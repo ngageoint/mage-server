@@ -1,8 +1,9 @@
 var mongoose = require('mongoose')
-, async = require('async')
-, Counter = require('./counter')
-, Team = require('./team')
-, api = require('../api');
+  , async = require('async')
+  , Counter = require('./counter')
+  , Team = require('./team')
+  , api = require('../api')
+  , log = require('winston');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -208,26 +209,26 @@ exports.filterEventsByUserId = filterEventsByUserId;
 exports.eventHasUser = eventHasUser;
 
 var createObservationCollection = function(event) {
-  console.log("Creating observation collection: " + event.collectionName + ' for event ' + event.name);
+  log.info("Creating observation collection: " + event.collectionName + ' for event ' + event.name);
   mongoose.connection.db.createCollection(event.collectionName, function(err, collection) {
     if (err) {
-      console.error(err);
+      log.error(err);
       return;
     }
 
-    console.log("Successfully created observation collection for event " + event.name);
+    log.info("Successfully created observation collection for event " + event.name);
   });
 }
 
 var dropObservationCollection = function(event) {
-  console.log("Dropping observation collection: " + event.collectionName);
+  log.info("Dropping observation collection: " + event.collectionName);
   mongoose.connection.db.dropCollection(event.collectionName, function(err, results) {
     if (err) {
-      console.error(err);
+      log.error(err);
       return;
     }
 
-    console.log('Dropped observation collection ' + event.collectionName);
+    log.info('Dropped observation collection ' + event.collectionName);
   });
 }
 
@@ -263,12 +264,8 @@ exports.update = function(id, event, options, callback) {
     options = {};
   }
 
-  console.log('update w/ options', options);
-
   Event.findByIdAndUpdate(id, event, {new: true}, function(err, updatedEvent) {
-    if (err) {
-      console.log("Could not update event: " + err);
-    }
+    if (err) return callback(err);
 
     if (options.populate) {
       Event.populate(updatedEvent, {path: 'teamIds'}, function(err, event) {

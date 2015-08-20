@@ -82,12 +82,6 @@ exports.updateLocation = function(user, timestamp, callback) {
   var update = {"properties.timestamp": timestamp};
   var options = {sort: {"properties.timestamp": -1}, new: true};
   Location.findOneAndUpdate(conditions, update, options, function(err, location) {
-    if (err) {
-      console.log("Error updating date on latesest location for user : " + user.username + ". Error: " + err);
-    }
-
-    console.log("updated location: " + JSON.stringify(location));
-
     callback(err, location);
   });
 }
@@ -95,10 +89,6 @@ exports.updateLocation = function(user, timestamp, callback) {
 exports.removeLocationsForUser = function(user, callback) {
   var conditions = {"userId": user._id};
   Location.remove(conditions, function(err, numberRemoved) {
-    if (err) {
-      console.log("Error removing locaitons for user: " + user.username);
-    }
-
     callback(err);
   });
 }

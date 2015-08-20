@@ -1,4 +1,5 @@
 var UserModel = require('../models/user')
+  , log = require('winston')
   , TokenModel = require('../models/token')
   , DeviceModel = require('../models/device')
   , LoginModel = require('../models/login')
@@ -36,7 +37,7 @@ User.prototype.login = function(user, device, options, callback) {
     callback(null, token);
 
     LoginModel.createLogin(user, device, function(err, login) {
-      if (err) console.log('could not add login', err);
+      if (err) log.error('could not add login', err);
     });
   });
 }
@@ -85,7 +86,6 @@ User.prototype.create = function(user, options, callback) {
       var avatar = avatarPath(newUser._id, newUser, options.avatar);
       fs.move(options.avatar.path, avatar.absolutePath, function(err) {
         if (err) {
-          console.log('Could not create user avatar');
           return done(err);
         }
 
@@ -105,7 +105,6 @@ User.prototype.create = function(user, options, callback) {
       var icon = iconPath(newUser._id, newUser, options.icon);
       fs.move(options.icon.path, icon.absolutePath, function(err) {
         if (err) {
-          console.log('Could not create user icon');
           return done(err);
         }
 
@@ -145,7 +144,6 @@ User.prototype.update = function(user, options, callback) {
       var avatar = avatarPath(updatedUser._id, updatedUser, options.avatar);
       fs.move(options.avatar.path, avatar.absolutePath, {clobber: true}, function(err) {
         if (err) {
-          console.log('Could not create user avatar', err);
           return done(err);
         }
 
@@ -165,7 +163,6 @@ User.prototype.update = function(user, options, callback) {
       var icon = iconPath(updatedUser._id, updatedUser, options.icon);
       fs.move(options.icon.path, icon.absolutePath, {clobber: true}, function(err) {
         if (err) {
-          console.log('Could not create user icon', err);
           return done(err);
         }
 

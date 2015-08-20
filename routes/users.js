@@ -1,5 +1,6 @@
 module.exports = function(app, security) {
   var api = require('../api')
+    , log = require('winston')
     , Role = require('../models/role')
     , access = require('../access')
     , config = require('../config.json')
@@ -140,7 +141,7 @@ module.exports = function(app, security) {
     '/api/logout',
     isAuthenticated(authenticationStrategy),
     function(req, res, next) {
-      console.log('logout w/ token', req.token);
+      log.info('logout w/ token', req.token);
       new api.User().logout(req.token, function(err) {
         if (err) return next(err);
         res.status(200).send('successfully logged out');
@@ -168,7 +169,6 @@ module.exports = function(app, security) {
     access.authorize('READ_USER'),
     function(req, res) {
       var filter = {};
-      console.log('query', req.query);
       if (req.query.active === 'true') {
         filter.active = true;
       }

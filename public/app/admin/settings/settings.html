@@ -17,19 +17,15 @@
       <div cl***REMOVED***="row" ng-controller="AdminSettingsController">
         <div cl***REMOVED***="col-md-3">
           <ul cl***REMOVED***="nav nav-pills nav-stacked">
-            <li cl***REMOVED***="active"><a href="javascript:void(0);">Banner</a></li>
+            <li ng-cl***REMOVED***="{active: pill == 'banner'}"><a ng-click="pill = 'banner'" href="javascript:void(0);">Banner</a></li>
+          </ul>
+          <ul cl***REMOVED***="nav nav-pills nav-stacked">
+            <li ng-cl***REMOVED***="{active: pill == 'disclaimer'}"><a ng-click="pill = 'disclaimer'" href="javascript:void(0);">Disclaimer</a></li>
           </ul>
         </div>
 
         <div cl***REMOVED***="col-md-9">
-          <div style="position: fixed; top: 84px; left: 35%" cl***REMOVED***="fade alert alert-success" ng-cl***REMOVED***="{'in': saved, 'out': !saved}">
-            Successfully Saved {{u.uid}}
-          </div>
-          <div style="position: fixed; top: 84px; left: 35%" cl***REMOVED***="fade alert alert-error" ng-cl***REMOVED***="{'in': error, 'out': !error}">
-            Error saving user: {{error}}
-          </div>
-
-          <div ng-show="setting == 'banner'">
+          <div ng-if="pill == 'banner'">
             <form ng-submit="saveBanner()" id="banner-form" cl***REMOVED***="form">
 
               <div cl***REMOVED***="row">
@@ -119,12 +115,70 @@
               </div>
 
               <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-sm-11 col-sm-offset-1">
+                <div cl***REMOVED***="col-sm-2 col-sm-offset-1">
                   <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-click="saveBanner()"> <i cl***REMOVED***="fa fa-check"></i> Save</a>
+                </div>
+                <div cl***REMOVED***="col-sm-9">
+                  <div cl***REMOVED***="fade alert alert-success" ng-cl***REMOVED***="{'in': saved, 'out': !saved}">{{saveStatus}}</div>
+                  <div cl***REMOVED***="fade alert alert-error" ng-cl***REMOVED***="{'in': error, 'out': !error}">{{saveStatus}}</div>
                 </div>
               </div>
             </form>
           </div>
+
+          <div ng-if="pill == 'disclaimer'">
+            <form ng-submit="saveBanner()" id="banner-form" cl***REMOVED***="form">
+
+              <div cl***REMOVED***="row">
+                <div cl***REMOVED***="col-sm-11 col-sm-offset-1">
+                  <span cl***REMOVED***="help-block">
+                    MAGE can present a disclaimer after login.  If the disclaimer is shown users will have to accept to continue into MAGE.  The disclaimer will be shown on all clients, i.e. Android, iOS, and the Web.
+                  </span>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row">
+                <div cl***REMOVED***="col-sm-11 col-sm-offset-1">
+                  <legend>Disclaimer</legend>
+
+                  <div cl***REMOVED***="checkbox">
+                    <label>
+                      <input type="checkbox" ng-model="disclaimer.show"> Show Disclaimer
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row">
+                <div cl***REMOVED***="col-sm-11 col-sm-offset-1">
+                  <label cl***REMOVED***="control-label" for="type">Disclaimer Title</label>
+                  <div cl***REMOVED***="form-group">
+                    <input type="text" placeholder="Disclaimer title" ng-model="disclaimer.title" cl***REMOVED***="form-control" ng-disabled="!disclaimer.show">
+                  </div>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row">
+                <div cl***REMOVED***="col-sm-11 col-sm-offset-1">
+                  <label cl***REMOVED***="control-label" for="type">Disclaimer Text</label>
+                  <div cl***REMOVED***="form-group">
+                    <textarea placeholder="Disclaimer text" ng-model="disclaimer.text" cl***REMOVED***="form-control" ng-disabled="!disclaimer.show"></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div cl***REMOVED***="row">
+                <div cl***REMOVED***="col-sm-2 col-sm-offset-1">
+                  <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-click="saveDisclaimer()"> <i cl***REMOVED***="fa fa-check"></i> Save</a>
+                </div>
+                <div cl***REMOVED***="col-sm-9">
+                  <div cl***REMOVED***="fade alert alert-success" ng-cl***REMOVED***="{'in': saved, 'out': !saved}">{{saveStatus}}</div>
+                  <div cl***REMOVED***="fade alert alert-error" ng-cl***REMOVED***="{'in': error, 'out': !error}">{{saveStatus}}</div>
+                </div>
+              </div>
+            </form>
+          </div>
+
         </div>
       </div>
     </div>

@@ -4,15 +4,14 @@ var express = require("express")
   , path = require('path')
   , mongoose = require('mongoose')
   , fs = require('fs-extra')
-  , log = require('winston')
   , config = require('./config.json')
+  , log = require('./logger')
   , provision = require('./provision');
 
-log.remove(log.transports.Console);
-log.add(log.transports.Console, {
-  timestamp: true,
-  level: 'debug',
-  colorize: true
+var mongooseLogger = log.loggers.get('mongoose');
+
+mongoose.set('debug', function(collection, method, query, doc, options) {
+  mongooseLogger.log('mongoose', "%s.%s(%j, %j, %j)", collection, method, query, doc, options);
 });
 
 mongoose.Error.messages.general.required = "{PATH} is required.";
@@ -30,27 +29,27 @@ if (argv.h || argv.help) return optimist.showHelp();
 var attachmentBase = config.server.attachment.baseDirectory;
 fs.mkdirp(attachmentBase, function(err) {
   if (err) {
-    console.error("Could not create directory to store MAGE media attachments. "  + err);
+    log.error("Could not create directory to store MAGE media attachments. "  + err);
     throw err;
   } else {
-    console.log("Using '" + attachmentBase + "' as base directory for feature attachments.");
+    log.info("Using '" + attachmentBase + "' as base directory for feature attachments.");
   }
 });
 
 var iconBase = config.server.iconBaseDirectory;
 fs.mkdirp(iconBase, function(err) {
   if (err) {
-    console.error("Could not create directory to store MAGE icons. "  + err);
+    log.error("Could not create directory to store MAGE icons. "  + err);
   } else {
-    console.log("Using '" + iconBase + "' as base directory for MAGE icons.");
+    log.info("Using '" + iconBase + "' as base directory for MAGE icons.");
   }
 });
 
 // Configure authentication
 var authentication = require('./authentication')(config.api.authentication.strategy);
 var provisioning = require('./provision/' + config.api.provision.strategy)(provision);
-console.log('Authentication: ' + authentication.loginStrategy);
-console.log('Provision: ' + provisioning.strategy);
+log.info('Authentication: ' + authentication.loginStrategy);
+log.info('Provision: ' + provisioning.strategy);
 
 // Configuration of the MAGE Express server
 var app = express();
@@ -59,14 +58,10 @@ var mongodbConfig = config.server.mongodb;
 var mongoUri = "mongodb://" + mongodbConfig.host + "/" + mongodbConfig.db;
 mongoose.connect(mongoUri, {server: {poolSize: mongodbConfig.poolSize}}, function(err) {
   if (err) {
-    console.log('Error connecting to mongo database, please make sure mongodb is running...');
+    log.error('Error connecting to mongo database, please make sure mongodb is running...');
     throw err;
   }
 });
-// mongoose.set('debug', function(collection, method, query, doc, options) {
-//   log.debug("(mongoose) %s.%s(%j, %j, %j)", collection, method, query, doc, options);
-// });
-mongoose.set('debug', true);
 
 app.use(function(req, res, next) {
   req.getRoot = function() {
@@ -99,11 +94,10 @@ app.use('/private',
   authentication.p***REMOVED***port.authenticate(authentication.authenticationStrategy),
   express.static(path.join(__dirname, 'private')));
 app.use(function(err, req, res, next) {
-  console.error(err.message);
-  console.error(err.stack);
+  log.error(err.message);
+  log.error(err.stack);
   res.send(500, 'Internal server error, please contact MAGE administrator.');
 });
-
 
 // Configure routes
 require('./routes')(app, {authentication: authentication, provisioning: provisioning});
@@ -111,7 +105,7 @@ require('./routes')(app, {authentication: authentication, provisioning: provisio
 // Launches the Node.js Express Server
 var port = argv.port;
 app.listen(port);
-console.log('MAGE Server: Started listening on port ' + port);
+log.info('MAGE Server: Started listening on port ' + port);
 
 // install all plugins
 require('./plugins');

@@ -40,6 +40,11 @@
               <label cl***REMOVED***="control-label">Description</label>
               <textarea cl***REMOVED***="form-control" type="text" placeholder="Brief description of the event." ng-model="event.description"/>
             </div>
+            <div cl***REMOVED***="form-group" ng-if="!event.id">
+              <label>Form</label>
+              <div file-browser></div>
+              <span cl***REMOVED***="help-block">Optionally import form.  If no form archive is picked your event will start with a default form</span>
+            </div>
           </form>
 
           <span cl***REMOVED***="pull-right">

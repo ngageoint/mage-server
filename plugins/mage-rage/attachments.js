@@ -1,4 +1,5 @@
 var config = require('./config.json')
+  , log = require('winston')
   , serverConfig = require('../../config.json')
   , async = require('async')
   , crypto = require('crypto')
@@ -19,7 +20,7 @@ module.exports = {
 };
 
 function sync(token, callback) {
-  console.log('pulling attachments ' + moment().toISOString());
+  log.info('pulling attachments ' + moment().toISOString());
   request = request.defaults({
     json: true,
     headers: {
@@ -33,7 +34,7 @@ function sync(token, callback) {
     attachments: syncAttachments
   },
   function(err) {
-    console.log('finished pulling attachments ' + moment().toISOString());
+    log.info('finished pulling attachments ' + moment().toISOString());
     writeLastSyncTime();
     callback(err);
   });
@@ -52,7 +53,7 @@ function getLastAttachmentSyncTime(done) {
   fs.readJson(__dirname + "/.attachment.json", function(err, readInLastAttachmentTime) {
     lastAttachmentTime = readInLastAttachmentTime || {};
     lastObservationTime = lastAttachmentTime;
-    console.log('last', lastAttachmentTime);
+    log.info('last', lastAttachmentTime);
     done();
   });
 
@@ -61,7 +62,7 @@ function getLastAttachmentSyncTime(done) {
 function getEvents(callback) {
   Event.getEvents(function (err, allEvents) {
     events = allEvents;
-    console.info('Syncing attachments for ' + events.length + ' events');
+    log.info('Syncing attachments for ' + events.length + ' events');
     callback();
   });
 }
@@ -76,7 +77,7 @@ function getObservationsSince(startTime, event, callback) {
       startDate: startTimePlusOne.toDate()
     };
   }
-  console.info('Getting observations for event ', event.name);
+  log.info('Getting observations for event ', event.name);
   new api.Observation(event).getAll(options, callback);
 }
 
@@ -117,8 +118,8 @@ function updateLastObservationTime(observation, event) {
 
 function sequentiallySyncAttachments(observations, event, done) {
 
-  console.info('syncing event ' + event.name);
-  console.info('Sequentially syncing for ' + observations.length + ' observations');
+  log.info('syncing event ' + event.name);
+  log.info('Sequentially syncing for ' + observations.length + ' observations');
 
   async.eachSeries(observations, function(observation, done) {
 
@@ -130,7 +131,7 @@ function sequentiallySyncAttachments(observations, event, done) {
     // sync each attachment
     pullAttachmentsCallbackWhenComplete(observation, event, attachments, function(err) {
       if (!err) {
-        console.info('successfully synced attachments for observation ' + observation.id + ' time is: ' + observation.properties.timestamp);
+        log.info('successfully synced attachments for observation ' + observation.id + ' time is: ' + observation.properties.timestamp);
         updateLastObservationTime(observation, event);
       }
       localDone(err);
@@ -142,17 +143,17 @@ function sequentiallySyncAttachments(observations, event, done) {
 }
 
 function pullAttachmentsCallbackWhenComplete(observation, event, attachments, callback) {
-  console.info("syncing " + attachments.length + " attachments");
+  log.info("syncing " + attachments.length + " attachments");
   async.eachSeries(observation.attachments, function(attachment, done) {
 
     var url = baseUrl + '/api/events/'+ event.id + '/observations/' + observation._id + '/attachments/' + attachment._id;
     var r = request(url);
     r.on('response', function (resp) {
-      console.info('attachment response status code is ' + resp.statusCode);
+      log.info('attachment response status code is ' + resp.statusCode);
       if (resp.statusCode == 200) {
         fs.mkdirsSync(path.dirname(attachmentBase + '/' + attachment.relativePath));
         r.pipe(fs.createWriteStream(attachmentBase + '/' + attachment.relativePath));
-        console.info('write the file for url ' + url + ' to ' + attachmentBase + '/' + attachment.relativePath);
+        log.info('write the file for url ' + url + ' to ' + attachmentBase + '/' + attachment.relativePath);
 
         Observation.observationModel(event).update({_id: observation._id, 'attachments._id': attachment._id}, {'attachments.$.synced': Date.now()}, function(err) {
             // who cares
@@ -161,7 +162,7 @@ function pullAttachmentsCallbackWhenComplete(observation, event, attachments, ca
         done();
       } else if (resp.statusCode == 404) {
         // uhhh no data, hmmm
-        console.info('no data for ' + url);
+        log.error('no data for ' + url);
         appendErrorFile(JSON.stringify({
           url:baseUrl + '/api/events/'+
           event.id + '/observations/' +
@@ -170,8 +171,8 @@ function pullAttachmentsCallbackWhenComplete(observation, event, attachments, ca
         }));
         done();
       } else {
-        console.info('failed to sync with error code ' + resp.statusCode + ' url is ' + url);
-        console.log('poop', resp);
+        log.error('failed to sync with error code ' + resp.statusCode + ' url is ' + url);
+        log.error('response was', resp);
         done(new Error('something bad happend'));
       }
     });
@@ -191,12 +192,12 @@ function syncAttachments(done) {
   // attachments for each observation
 
   async.eachSeries(events, function(event, done) {
-    console.log('syncing attachments since ' + lastAttachmentTime[event.collectionName]);
+    log.info('syncing attachments since ' + lastAttachmentTime[event.collectionName]);
     // use that time to get the observations since then
     var observationsToSync;
     getObservationsSince(lastAttachmentTime[event.collectionName], event, function(err, observations) {
       observationsToSync = observations;
-      console.log("observations to sync is " + observationsToSync.length);
+      log.info("observations to sync is " + observationsToSync.length);
       // sort the observations by timestamp
       observationsToSync = sortObservationsByTimestamp(observationsToSync);
 

@@ -34,7 +34,7 @@ module.exports = function(app, security) {
   );
 
   app.get(
-    '/api/settings/:type(banner)',
+    '/api/settings/:type(banner|disclaimer)',
     access.authorize('READ_SETTINGS'),
     function (req, res, next) {
       Setting.getSettingByType(req.params.type, function(err, settingType) {
@@ -44,7 +44,7 @@ module.exports = function(app, security) {
   );
 
   app.put(
-    '/api/settings/:type(banner)',
+    '/api/settings/:type(banner|disclaimer)',
     access.authorize('UPDATE_SETTINGS'),
     function(req, res, next) {
       Setting.updateSettingByType(req.params.type, {settings: req.body}, function(err, setting) {

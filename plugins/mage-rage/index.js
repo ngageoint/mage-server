@@ -1,20 +1,21 @@
 var child = require('child_process')
+  , log = require('winston')
   , config = require('./config.json')
 
 if (!config.enable) return;
 
 function start() {
-  console.log('activating rage plugin');
+  log.info('activating rage plugin');
   var rage = child.fork(__dirname + '/rage');
 
   rage.on('error', function(err) {
-    console.log('***************** rage error ******************************', err);
+    log.error('***************** rage error ******************************', err);
     rage.kill();
     start();
   });
 
   rage.on('exit', function(exitCode) {
-    console.log('***************** rage exit, code ************************', exitCode);
+    log.warn('***************** rage exit, code ************************', exitCode);
     if (exitCode != 0) {
       rage.kill();
       start();
@@ -22,7 +23,7 @@ function start() {
   });
 
   process.on('exit', function() {
-    console.log('***************** rage parent process exit, killing ********************', err);
+    log.warn('***************** rage parent process exit, killing ********************', err);
     rage.kill();
   });
 

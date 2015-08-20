@@ -1,4 +1,5 @@
 var ObservationModel = require('../models/observation')
+  , log = require('winston')
   , path = require('path')
   , fs = require('fs-extra')
   , async = require('async')
@@ -66,7 +67,7 @@ Observation.prototype.delete = function(observationId, callback) {
         var file = path.join(attachmentBase, attachment.relativePath);
         fs.remove(file, function(err) {
           if (err) {
-            console.error("Could not remove attachment file " + file + ". ", err);
+            log.error("Could not remove attachment file " + file + ". ", err);
           }
         });
       });
