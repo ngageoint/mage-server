@@ -1,4 +1,5 @@
 var config = require('./config.json')
+	, log = require('../../logger')
 	, serverConfig = require('../../config.json')
 	, async = require('async')
 	, path = require('path')
@@ -19,11 +20,15 @@ var lastObservationTimes = {orient: {}, thumbnail: {}};
 var mongodbConfig = config.mongodb;
 mongoose.connect(mongodbConfig.url, {server: {poolSize: mongodbConfig.poolSize}}, function(err) {
 	if (err) {
-		console.log('Error connecting to mongo database, please make sure mongodbConfig is running...');
+		log.error('Error connecting to mongo database, please make sure mongodbConfig is running...');
 		throw err;
 	}
 });
-mongoose.set('debug', true);
+
+var mongooseLogger = log.loggers.get('mongoose');
+mongoose.set('debug', function(collection, method, query, doc, options) {
+  mongooseLogger.log('mongoose', "%s.%s(%j, %j, %j)", collection, method, query, doc, options);
+});
 
 function processEvent(options, callback) {
 	async.eachSeries(options.observations, function(observation, done) {
@@ -43,16 +48,16 @@ function processAttachment(event, observationId, attachment, callback) {
 }
 
 function orient(event, observationId, attachment, callback) {
-	console.log('orient attachment ' + attachment.name);
+	log.info('orient attachment ' + attachment.name);
 
 	var file = path.join(attachmentBase, attachment.relativePath);
 	var outputFile =  file + "_orient";
-	console.log("file", file);
+	log.info("file", file);
 
 	var start = new Date().valueOf();
 	gm(file).autoOrient().write(outputFile, function(err) {
 		var end = new Date().valueOf();
-		console.log("orientation of attachment " + attachment.name + " complete in " + (end - start)/1000 + " seconds");
+		log.info("orientation of attachment " + attachment.name + " complete in " + (end - start)/1000 + " seconds");
 		fs.rename(outputFile, file, function(err) {
 			if (err) return callback(err);
 
@@ -89,20 +94,20 @@ function thumbnail(event, observationId, attachment, callback) {
 
 		if (thumbWidth > attachment.width || thumbHeight > attachment.height) return done();
 
-		console.log('thumbnailing attachment ' + attachment.name + ' for size ' + thumbSize);
+		log.info('thumbnailing attachment ' + attachment.name + ' for size ' + thumbSize);
 		var start = new Date().valueOf();
 		gm(file)
 			.in("-size").in(thumbWidth * 2 + "x" + thumbHeight * 2)
 			.resize(thumbWidth, thumbHeight)
 			.write(thumbPath, function(err) {
 				if (err) {
-					console.log('Error thumbnailing file to size: ' + thumbSize, err);
+					log.error('Error thumbnailing file to size: ' + thumbSize, err);
 					callback(err);
 					return;
 				} else {
 					// write to mongo
 					var end = new Date().valueOf();
-					console.log('Finished thumbnailing ' + thumbSize + " in " + (end - start)/1000 + " seconds");
+					log.info('Finished thumbnailing ' + thumbSize + " in " + (end - start)/1000 + " seconds");
 
 					var stat = fs.statSync(thumbPath);
 
@@ -116,9 +121,9 @@ function thumbnail(event, observationId, attachment, callback) {
 						width: thumbWidth
 					},
 					function(err) {
-						if (err) console.log('error writing thumb to db', err);
+						if (err) log.error('error writing thumb to db', err);
 
-						console.log('thumbnailing wrote thumb metadata to db');
+						log.info('thumbnailing wrote thumb metadata to db');
 
 						done(err);
 					});
@@ -126,16 +131,16 @@ function thumbnail(event, observationId, attachment, callback) {
 			});
 		}, function(err) {
 			if (err) {
-				console.log('error thumbnailing', err);
+				log.error('error thumbnailing', err);
 			} else {
-				console.log('Finished thumbnailing ' + attachment.name);
+				log.info('Finished thumbnailing ' + attachment.name);
 			}
 			callback(err);
 	});
 }
 
 var processAttachments = function() {
-	console.log('processing attachments, starting from', lastObservationTimes);
+	log.info('processing attachments, starting from', lastObservationTimes);
 
 	async.waterfall([
 		function(done) {
@@ -234,9 +239,9 @@ var processAttachments = function() {
 		}
 	],
 	function(err, result) {
-		if (err) console.log('error processing images', err);
+		if (err) log.error('error processing images', err);
 
-		console.log('done processing attachments');
+		log.info('done processing attachments');
 
 		setTimeout(processAttachments, timeout);
 	});

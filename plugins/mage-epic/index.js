@@ -1,9 +1,10 @@
 var child = require('child_process')
   , config = require('./config.json')
+  , log = require('winston')
 
 if (!config.enable) return;
 
-console.log('activating epic plugin');
+log.info('activating epic plugin');
 
 function startObservations() {
   var observations = config.esri.observations;
@@ -12,13 +13,13 @@ function startObservations() {
     var observationsWorker = child.fork(__dirname + '/observations');
 
     observationsWorker.on('error', function(err) {
-      console.log('***************** epic observation error ******************************', err);
+      log.error('***************** epic observation error ******************************', err);
       observationsWorker.kill();
       startObservations();
     });
 
     observationsWorker.on('exit', function(exitCode) {
-      console.log('***************** epic observation  exit, code ************************', exitCode);
+      log.warn('***************** epic observation  exit, code ************************', exitCode);
       if (exitCode != 0) {
         observationsWorker.kill();
         startObservations();
@@ -26,11 +27,11 @@ function startObservations() {
     });
 
     observationsWorker.on('uncaughtException', function (err) {
-      console.log('*****************  Observation worker uncaught exception: ***************** ' + err);
+      log.error('*****************  Observation worker uncaught exception: ***************** ' + err);
     });
 
     process.on('exit', function() {
-      console.log('***************** epic parent process exit, killing ********************', err);
+      log.warn('***************** epic parent process exit, killing ********************', err);
       observationsWorker.kill();
     });
   }
@@ -44,12 +45,12 @@ function startAttachments() {
     var attachmentsWorker = child.fork(__dirname + '/attachments');
 
     attachmentsWorker.on('error', function(err) {
-      console.log('epic attachment error', err);
+      log.error('epic attachment error', err);
       attachmentsWorker.kill();
     });
 
     attachmentsWorker.on('exit', function(exitCode) {
-      console.log('epic attachment  exit, code', exitCode);
+      log.warn('epic attachment  exit, code', exitCode);
       if (exitCode != 0) {
         attachmentsWorker.kill();
         startAttachments();
@@ -57,7 +58,7 @@ function startAttachments() {
     });
 
     attachmentsWorker.on('uncaughtException', function (err) {
-      console.log('*****************  Attachment worker uncaught exception: ***************** ' + err);
+      log.error('*****************  Attachment worker uncaught exception: ***************** ' + err);
     });
 
     process.on('exit', function() {

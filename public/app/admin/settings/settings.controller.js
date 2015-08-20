@@ -6,6 +6,7 @@ angular
 
 function AdminSettingsController($scope, Settings, LocalStorageService) {
   $scope.token = LocalStorageService.getToken();
+  $scope.pill = 'banner';
 
   $scope.minicolorSettings = {
     position: 'bottom right',
@@ -25,27 +26,35 @@ function AdminSettingsController($scope, Settings, LocalStorageService) {
     $scope.settings = _.indexBy(settings, 'type');
 
     if ($scope.settings.banner) {
-      $scope.banner = $scope.settings.banner.settings;
+      $scope.banner = $scope.settings.banner.settings || {};
+    }
+
+    if ($scope.settings.disclaimer) {
+      $scope.disclaimer = $scope.settings.disclaimer.settings || {};
     }
   });
 
-  $scope.onBannerClick = function() {
-    $scope.banner = 'banner';
-    if ($scope.settings.banner) {
-      $scope.banner = $scope.settings.banner.settings;
-    }
-  }
-
-  $scope.saveBanner = function () {
-    console.log('scope banner is:', $scope.banner);
-
-    Settings.updateBanner($scope.banner, function(setting) {
+  $scope.saveBanner = function() {
+    Settings.update({type: 'banner'}, $scope.banner, function(banner) {
       $scope.saved = true;
       $scope.saving = false;
+      $scope.saveStatus = 'Banner successfully saved';
       debounceHideSave();
-    }, function() {  // TODO not sure what parameters are here
+    }, function() {
       $scope.saving = false;
-      $scope.error = response.responseText;
+      $scope.saveStatus = 'Failed to save banner';
+    });
+  }
+
+  $scope.saveDisclaimer = function() {
+    Settings.update({type: 'disclaimer'}, $scope.disclaimer, function(disclaimer) {
+      $scope.saved = true;
+      $scope.saving = false;
+      $scope.saveStatus = 'Disclaimer successfully saved';
+      debounceHideSave();
+    }, function() {
+      $scope.saving = false;
+      $scope.saveStatus = 'Failed to save diclaimer';
     });
   }
 
@@ -53,6 +62,5 @@ function AdminSettingsController($scope, Settings, LocalStorageService) {
     $scope.$apply(function() {
       $scope.saved = false;
     });
-  }, 5000);
-
+  }, 3000);
 }

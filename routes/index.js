@@ -9,6 +9,7 @@ module.exports = function(app, security) {
     , Layer = require('../models/layer')
     , Observation = require('../models/observation')
     , Icon = require('../models/icon')
+    , Setting = require('../models/setting')
     , log = require('winston');
 
   var p***REMOVED***port = security.authentication.p***REMOVED***port
@@ -29,12 +30,17 @@ module.exports = function(app, security) {
     }
   }
 
+  var log = require('winston');
+  log.info('cmon man, this really should work');
+
   app.set('resources', resources);
 
   app.get('/api', function(req, res) {
-    log.info('get api info');
-    var config = app.get('config');
-    res.json(config.api);
+    Setting.getSetting('disclaimer', function(err, disclaimer) {
+      var api = app.get('config').api;
+      api.disclaimer = disclaimer.settings;
+      res.json(api);
+    });
   });
 
   // Dynamically import all routes

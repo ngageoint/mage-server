@@ -73,10 +73,6 @@ exports.count = function(callback) {
 exports.getTeams = function(callback) {
   var query = {};
   Team.find(query).populate('userIds').exec(function (err, teams) {
-    if (err) {
-      console.log("Error finding teams in mongo: " + err);
-    }
-
     callback(err, teams);
   });
 }
@@ -92,10 +88,6 @@ exports.createTeam = function(team, callback) {
   }
 
   Team.create(create, function(err, team) {
-    if (err) {
-      console.log('error creating new team: ' + err);
-    }
-
     Team.populate(team, {path: 'userIds'}, callback);
   });
 }
@@ -106,9 +98,6 @@ exports.updateTeam = function(id, update, callback) {
   }
 
   Team.findByIdAndUpdate(id, update, {new: true}, function(err, team) {
-    if (err) {
-      console.log('error updating team: ' + id + 'err: ' + err);
-    }
 
     Team.populate(team, {path: 'userIds'}, callback);
   });
@@ -116,10 +105,6 @@ exports.updateTeam = function(id, update, callback) {
 
 exports.deleteTeam = function(team, callback) {
   team.remove(function(err) {
-    if (err) {
-      console.log('could not delete team: ' + team.name);
-    }
-
     callback(err, team);
   });
 }

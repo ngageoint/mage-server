@@ -1,6 +1,7 @@
 var cluster = require('cluster')
   , http = require('http')
-  , os = require('os');
+  , os = require('os')
+  , log = require('winston');
 
 var cpus = os.cpus().length;
 
@@ -11,7 +12,7 @@ if (cluster.isMaster) {
   }
 
   cluster.on('exit', function(worker, code, signal) {
-    console.log('worker ' + worker.process.pid + ' died');
+    log.warn('worker ' + worker.process.pid + ' died');
   });
 } else {
   require('./mage');

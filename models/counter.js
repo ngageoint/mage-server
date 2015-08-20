@@ -1,4 +1,5 @@
-var mongoose = require('mongoose');
+var mongoose = require('mongoose')
+  , log = require('winston');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -36,7 +37,7 @@ var getGroup = function(collection, amount, callback) {
   var options = {upsert: true, new: true};
   Counter.findOneAndUpdate(query, update, options, function(err, counter) {
     if (err) {
-      console.log(JSON.stringify(err));
+      log.error(err);
     }
 
     var ids = range(counter.sequence, counter.sequence + amount);
