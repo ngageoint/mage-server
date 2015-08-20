@@ -44,6 +44,8 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
   function login(data) {
     userDeferred = $q.defer();
 
+    var oldUsername = ***REMOVED***.myself && ***REMOVED***.myself.username || null;
+
     data.appVersion = 'Web Client';
     var promise = $http.post('/api/login', $.param(data), {
       headers: {"Content-Type": "application/x-www-form-urlencoded"},
@@ -51,14 +53,9 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
     });
 
     promise.success(function(data) {
-      LocalStorageService.setToken(data.token);
       setUser(data.user);
-
-      $rootScope.$broadcast('login', {user: data.user, token: data.token, isAdmin: ***REMOVED***.amAdmin});
-
-      if ($location.path() == '/signin') {
-        $location.path('/map');
-      }
+      $rootScope.$broadcast('event:auth-login', {token: data.token, newUser: data.user.username !== oldUsername});
+      $rootScope.$broadcast('event:user', {user: data.user, token: data.token, isAdmin: ***REMOVED***.amAdmin});
     });
 
     return promise;
@@ -81,9 +78,11 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
     })
     .success(function(user) {
+      if (user.id !== ***REMOVED***.myself)
+
       setUser(user);
 
-      $rootScope.$broadcast('login', {user: user, token: LocalStorageService.getToken(), isAdmin: ***REMOVED***.amAdmin});
+      $rootScope.$broadcast('event:user', {user: user, token: LocalStorageService.getToken(), isAdmin: ***REMOVED***.amAdmin});
 
       if (roles && !_.contains(roles, user.role.name)) {
         // TODO probably want to redirect to a unauthorized page.

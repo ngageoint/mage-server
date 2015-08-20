@@ -14,7 +14,7 @@ function NavController($rootScope, $scope, $q, $location, $modal, UserService, F
     $scope.banner = banner.settings;
   });
 
-  $rootScope.$on('login', function(e, login) {
+  $rootScope.$on('event:user', function(e, login) {
     $scope.token = login.token;
     $scope.myself = login.user;
     $scope.amAdmin = login.isAdmin;
