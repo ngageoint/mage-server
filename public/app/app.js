@@ -198,15 +198,15 @@ function config($routeProvider, $locationProvider, $httpProvider) {
   });
 }
 
-run.$inject = ['$rootScope', '$modal', 'UserService', '$location', 'authService', 'LocalStorageService', 'UserService'];
+run.$inject = ['$rootScope', '$modal', 'UserService', '$location', 'authService', 'LocalStorageService', 'UserService', 'AboutService'];
 
-function run($rootScope, $modal, UserService, $location, authService, LocalStorageService, UserService) {
+function run($rootScope, $modal, UserService, $location, authService, LocalStorageService, UserService, AboutService) {
   $rootScope.$on('event:auth-loginRequired', function() {
     if (!$rootScope.loginDialogPresented && $location.path() != '/' && $location.path() != '/signin' && $location.path() != '/signup') {
       $rootScope.loginDialogPresented = true;
       var modalInstance = $modal.open({
         templateUrl: 'app/signin/signin-modal.html',
-        controller: ['$scope', '$modalInstance', 'authService', function ($scope, $modalInstance, authService) {
+        controller: ['$scope', '$modalInstance', function ($scope, $modalInstance) {
           var oldUsername = UserService.myself && UserService.myself.username || undefined;
           $scope.login = function (data) {
             UserService.login(data).success(function() {
@@ -234,20 +234,36 @@ function run($rootScope, $modal, UserService, $location, authService, LocalStora
   });
 
   $rootScope.$on('event:auth-login', function(event, data) {
-    var modalInstance = $modal.open({
-      templateUrl: 'app/disclaimer/disclaimer.html',
-      controller: 'DisclaimerController'
-    });
-
-    modalInstance.result.then(function () {
+    function confirmLogin() {
       authService.loginConfirmed(data);
 
       LocalStorageService.setToken(data.token);
       if ($location.path() == '/signin') {
         $location.path('/map');
       }
-    }, function() {
-      UserService.logout();
+    }
+
+    AboutService.about().success(function(api) {
+      if (!api.disclaimer.show) {
+        confirmLogin();
+        return;
+      }
+
+      var modalInstance = $modal.open({
+        templateUrl: 'app/disclaimer/disclaimer.html',
+        controller: 'DisclaimerController',
+        resolve: {
+          disclaimer: function() {
+            return api.disclaimer
+          }
+        }
+      });
+
+      modalInstance.result.then(function () {
+        confirmLogin();
+      }, function() {
+        UserService.logout();
+      });
     });
   });
 }
