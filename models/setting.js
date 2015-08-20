@@ -25,10 +25,15 @@ SettingSchema.set("toJSON", {
 // Creates the Model for the Setting Schema
 var Setting = mongoose.model('Setting', SettingSchema);
 
-
 exports.getSettings = function(callback) {
   Setting.find({}, function(err, settings) {
     callback(err, settings);
+  });
+}
+
+exports.getSetting = function(type, callback) {
+  Setting.findOne({type: type}, function(err, setting) {
+    callback(err, setting);
   });
 }
 
