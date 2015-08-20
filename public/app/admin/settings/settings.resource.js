@@ -13,14 +13,7 @@ function Settings($resource, $http) {
 			headers: {
 				'Content-Type': 'application/json'
 			}
-		},
-    updateBanner: {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      url: '/api/settings/banner'
-    }
+		}
 	});
 
 	return Settings;
