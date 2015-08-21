@@ -244,7 +244,8 @@ function run($rootScope, $modal, UserService, $location, authService, LocalStora
     }
 
     AboutService.about().success(function(api) {
-      if (!api.disclaimer.show) {
+      var disclaimer = api.disclaimer || {};
+      if (!disclaimer.show) {
         confirmLogin();
         return;
       }
