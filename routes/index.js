@@ -37,6 +37,8 @@ module.exports = function(app, security) {
 
   app.get('/api', function(req, res) {
     Setting.getSetting('disclaimer', function(err, disclaimer) {
+      disclaimer = disclaimer || {};
+
       var api = app.get('config').api;
       api.disclaimer = disclaimer.settings;
       res.json(api);
