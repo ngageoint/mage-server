@@ -20,8 +20,8 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
 
     var parameters = {eventId: event.id, states: 'active'};
     if (options.interval) {
-      parameters.startDate = options.interval.start;
-      parameters.endDate = options.interval.end;
+      parameters.observationStartDate = options.interval.start;
+      parameters.observationEndDate = options.interval.end;
     }
     Observation.query(parameters, function(observations) {
       transformObservations(observations, event);
