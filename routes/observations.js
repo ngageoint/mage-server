@@ -100,6 +100,17 @@ module.exports = function(app, auth) {
       parameters.filter.endDate = moment(endDate).utc().toDate();
     }
 
+    var observationStartDate = req.param('observationStartDate');
+    if (observationStartDate) {
+      parameters.filter.observationStartDate = moment(observationStartDate).utc().toDate();
+    }
+
+    var observationEndDate = req.param('observationEndDate');
+    if (observationEndDate) {
+      parameters.filter.observationEndDate = moment(observationEndDate).utc().toDate();
+    }
+
+
     var bbox = req.param('bbox');
     if (bbox) {
       parameters.filter.geometries = geometryFormat.parse('bbox', bbox);

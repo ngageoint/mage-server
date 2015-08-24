@@ -179,13 +179,24 @@ exports.getObservations = function(event, o, callback) {
   }
 
   if (filter.startDate || filter.endDate) {
-    conditions['properties.timestamp'] = {};
+    conditions.lastModified = {};
     if (filter.startDate) {
-      conditions['properties.timestamp'].$gte = filter.startDate;
+      conditions.lastModified.$gte = filter.startDate;
     }
 
     if (filter.endDate) {
-      conditions['properties.timestamp'].$lt = filter.endDate;
+      conditions.lastModified.$lt = filter.endDate;
+    }
+  }
+
+  if (filter.observationStartDate || filter.observationEndDate) {
+    conditions['properties.timestamp'] = {};
+    if (filter.observationStartDate) {
+      conditions['properties.timestamp'].$gte = filter.observationStartDate;
+    }
+
+    if (filter.observationEndDate) {
+      conditions['properties.timestamp'].$lt = filter.observationEndDate;
     }
   }
 
