@@ -76,13 +76,25 @@
               <select cl***REMOVED***="form-control" ng-model="user.role.id" ng-options="role.id as role.name for role in roles"></select>
             </div>
 
-            <span cl***REMOVED***="pull-right">
-              <a cl***REMOVED***="btn btn-default" ng-cl***REMOVED***="{'disabled': saving}" ng-click="cancel()">Cancel</a>
-              <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-click="saveUser(user)"><i cl***REMOVED***="fa fa-check"></i> Save</a>
-            </span>
+            <div>
+              <span cl***REMOVED***="pull-right">
+                <a cl***REMOVED***="btn btn-default" ng-cl***REMOVED***="{'disabled': saving}" ng-click="cancel()">Cancel</a>
+                <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-click="saveUser(user)"><i cl***REMOVED***="fa fa-check"></i> Save</a>
+              </span>
+            </div>
           </form>
         </div>
       </div>
+
+      <div cl***REMOVED***="row top-gap" ng-if="error">
+        <div cl***REMOVED***="col-md-6">
+          <div cl***REMOVED***="alert alert-danger">
+            <strong>Error Saving User</strong>
+            <span>{{error}}</span>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
