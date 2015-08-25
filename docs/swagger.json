@@ -2,7 +2,7 @@
     "swagger": "2.0",
     "info": {
         "version": "1.0.0",
-        "title": "MAGE (Mobile Analytic GEOINT Environment)",
+        "title": "MAGE (Mobile Awareness GEOINT Environment)",
         "description": "MAGE API",
         "contact": {
             "name": "Benjamin Tuttle",
