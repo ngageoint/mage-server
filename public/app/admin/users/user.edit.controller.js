@@ -10,7 +10,7 @@ function AdminUserEditController($scope, $injector, $filter, $routeParams, $loca
 
   if ($routeParams.userId) {
     UserService.getUser($routeParams.userId).then(function(user) {
-      $scope.user = angular.copy(user.data);
+      $scope.user = angular.copy(user.data || user);
     });
   } else {
     $scope.user = {};
