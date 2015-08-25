@@ -68,6 +68,11 @@ var teamPermissions = [
   'DELETE_TEAM'
 ];
 
+var settingPermissions = [
+  'READ_SETTINGS',
+  'UPDATE_SETTINGS'
+];
+
 var allPermissions = []
   .concat(devicePermissions)
   .concat(userPermissions)
@@ -76,7 +81,8 @@ var allPermissions = []
   .concat(layerPermissions)
   .concat(observationPermissions)
   .concat(locationPermissions)
-  .concat(teamPermissions);
+  .concat(teamPermissions)
+  .concat(settingPermissions);
 
 exports.getPermissions = function() {
   return allPermissions;
