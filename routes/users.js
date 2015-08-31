@@ -167,7 +167,7 @@ module.exports = function(app, security) {
     '/api/users',
     p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_USER'),
-    function(req, res) {
+    function(req, res, next) {
       var filter = {};
       if (req.query.active === 'true') {
         filter.active = true;
@@ -175,7 +175,15 @@ module.exports = function(app, security) {
       if (req.query.active === 'false') {
         filter.active = false;
       }
-      new api.User().getAll(filter, function (err, users) {
+
+      var populate = null;
+      if (req.query.populate) {
+        populate = req.query.populate.split(",");
+      }
+
+      new api.User().getAll({filter: filter, populate: populate}, function (err, users) {
+        if (err) return next(err);
+
         users = userTransformer.transform(users, {path: req.getRoot()});
         res.json(users);
       });

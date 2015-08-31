@@ -139,13 +139,20 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
     return resolvedUsers[id] || $http.get('/api/users/' + id, {});
   }
 
-  function getAllUsers(forceRefresh) {
-    if (forceRefresh) {
+  function getAllUsers(options) {
+    var options = options || {};
+
+    if (options.forceRefresh) {
         resolvedUsers = {};
         resolveAllUsers = undefined;
     }
 
-    resolveAllUsers = resolveAllUsers || $http.get('/api/users').success(function(users) {
+    var parameters = {};
+    if (options.populate) {
+      parameters.populate = options.populate;
+    }
+
+    resolveAllUsers = resolveAllUsers || $http.get('/api/users', {params: parameters}).success(function(users) {
       for (var i = 0; i < users.length; i++) {
         resolvedUsers[users[i]._id] = $q.when(users[i]);
       }
