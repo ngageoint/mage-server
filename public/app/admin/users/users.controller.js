@@ -11,7 +11,7 @@ function AdminUsersController($scope, $injector, $filter, $location, LocalStorag
   $scope.page = 0;
   $scope.itemsPerPage = 10;
 
-  UserService.getAllUsers(true).success(function(users) {
+  UserService.getAllUsers({forceRefresh: true, populate: 'roleId'}).success(function(users) {
     $scope.users = users;
     $scope.allCount = $scope.users.length;
     $scope.activeCount = _.filter($scope.users, function(u) {return u.active === true}).length;

@@ -18,7 +18,7 @@ function AdminTeamController($scope, $modal, $filter, $location, $routeParams, T
     users: []
   }
 
-  UserService.getAllUsers(true).success(function(users) {
+  UserService.getAllUsers({forceRefresh: true}).success(function(users) {
     $scope.users = users;
     $scope.usersIdMap = _.indexBy(users, 'id');
 

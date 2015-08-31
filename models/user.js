@@ -143,6 +143,9 @@ var transform = function(user, ret, options) {
     delete ret.icon;
 
     if (user.populated('roleId')) {
+      console.log('roleId was populated', user);
+      console.log('populated', user.populated('roleId'));
+
       ret.role = ret.roleId;
       delete ret.roleId;
     }
@@ -197,8 +200,10 @@ exports.count = function(callback) {
   });
 }
 
-exports.getUsers = function(filter, callback) {
+exports.getUsers = function(options, callback) {
   var conditions = {};
+  var options = options ||{};
+  var filter = options.filter || {};
 
   if (filter.active === true) {
     conditions.active = true;
@@ -208,7 +213,20 @@ exports.getUsers = function(filter, callback) {
     conditions.active = false;
   }
 
-  User.find(conditions, function (err, users) {
+  var populate = [];
+  if (options.populate) {
+    console.log('pop', options.populate);
+    if (options.populate.indexOf('roleId') != -1) {
+      populate.push({path: 'roleId'});
+    }
+  }
+
+  var query = User.find(conditions);
+  if (populate.length) {
+    query = query.populate(populate);
+  }
+
+  query.exec(function(err, users) {
     callback(err, users);
   });
 }
@@ -230,13 +248,19 @@ exports.createUser = function(user, callback) {
   User.create(create, function(err, user) {
     if (err) return callback(err);
 
-    callback(null, user);
+    user.populate('roleId', function(err, user) {
+      callback(err, user);
+    });
   });
 }
 
 exports.updateUser = function(user, callback) {
-  user.save(function(err) {
-    callback(err, user)
+  user.save(function(err, user) {
+    if (err) return callback(err);
+
+    user.populate('roleId', function(err, user) {
+      callback(err, user);
+    });
   });
 }
 
