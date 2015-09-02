@@ -201,8 +201,13 @@ exports.count = function(callback) {
 }
 
 exports.getUsers = function(options, callback) {
+  if (typeof options == 'function') {
+    callback = options;
+    options = {};
+  }
+
   var conditions = {};
-  var options = options ||{};
+  var options = options || {};
   var filter = options.filter || {};
 
   if (filter.active === true) {
