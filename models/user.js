@@ -220,7 +220,6 @@ exports.getUsers = function(options, callback) {
 
   var populate = [];
   if (options.populate) {
-    console.log('pop', options.populate);
     if (options.populate.indexOf('roleId') != -1) {
       populate.push({path: 'roleId'});
     }
