@@ -37,7 +37,6 @@ function AdminUserEditController($scope, $injector, $filter, $routeParams, $loca
     $scope.error = false;
 
     var user = {
-      username: $scope.user.username,
       displayName: $scope.user.displayName,
       email: $scope.user.email,
       phone: $scope.user.phone,
