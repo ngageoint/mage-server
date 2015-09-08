@@ -22,8 +22,7 @@ var PhoneSchema = new Schema({
 var UserSchema = new Schema({
   username: { type: String, required: true, unique: true },
   p***REMOVED***word: { type: String, required: true },
-  firstname: { type: String, required: true },
-  lastname: {type: String, required: true },
+  displayName: { type: String, required: true },
   email: {type: String, required: false },
   phones: [PhoneSchema],
   avatar: {
@@ -239,8 +238,7 @@ exports.getUsers = function(options, callback) {
 exports.createUser = function(user, callback) {
   var create = {
     username: user.username,
-    firstname: user.firstname,
-    lastname: user.lastname,
+    displayName: user.displayName,
     email: user.email,
     phones: user.phones,
     p***REMOVED***word: user.p***REMOVED***word,

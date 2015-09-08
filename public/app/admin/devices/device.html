@@ -128,10 +128,7 @@
                         <ui-select ng-model="user.selected" theme="bootstrap" on-select="filterLogins()" style="width: 300px;">
                           <ui-select-match allow-clear placeholder="Filter on user">{{$select.selected.username}}</ui-select-match>
                           <ui-select-choices group-by="groupLayerByType" repeat="user in users | orderBy: 'name' | filter: $select.search">
-                            <div ng-bind-html="user.username | highlight: $select.search"></div>
-                            <small cl***REMOVED***="muted">
-                             <span ng-bind-html="''+user.firstname + ' ' + user.lastname | highlight: $select.search"></span>
-                           </small>
+                            <div ng-bind-html="user.displayName | highlight: $select.search"></div>
                           </ui-select-choices>
                         </ui-select>
                       </div>
