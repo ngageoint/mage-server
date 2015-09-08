@@ -3,7 +3,7 @@
     <ol cl***REMOVED***="breadcrumb">
       <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
       <li><a href="#/admin/users">Users</a></li>
-      <li cl***REMOVED***="active">{{user.username}}</li>
+      <li cl***REMOVED***="active">{{user.displayName}}</li>
     </ol>
   </div>
 </div>
@@ -18,7 +18,7 @@
 
           <div cl***REMOVED***="row">
             <div cl***REMOVED***="col-md-10">
-              <h2>User: {{user.username}}</h2>
+              <h2>User: {{user.displayName}}</h2>
             </div>
             <div cl***REMOVED***="col-md-2">
               <h2>
@@ -53,7 +53,7 @@
                 </div>
               </div>
 
-              <div cl***REMOVED***="row top-gap-l">
+              <div cl***REMOVED***="row top-gap-l" ng-if="user.authentication.local">
                 <div cl***REMOVED***="col-md-2">
                   <span cl***REMOVED***="muted">Username:&nbsp;</span>
                 </div>
@@ -64,7 +64,7 @@
 
               <div cl***REMOVED***="row top-gap-s">
                 <div cl***REMOVED***="col-md-2">
-                  <span cl***REMOVED***="muted">Name:&nbsp;</span>
+                  <span cl***REMOVED***="muted">Display Name:&nbsp;</span>
                 </div>
                 <div cl***REMOVED***="col-md-10">
                   <span>{{user.displayName}}</span>

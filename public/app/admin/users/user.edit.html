@@ -3,7 +3,7 @@
     <ol cl***REMOVED***="breadcrumb" ng-if="user.id">
       <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
       <li><a href="#/admin/users">Users</a></li>
-      <li><a ng-href="#/admin/users/{{user.id}}">{{user.username}}</a></li>
+      <li><a ng-href="#/admin/users/{{user.id}}">{{user.displayName}}</a></li>
       <li cl***REMOVED***="active">Edit</li>
     </ol>
     <ol cl***REMOVED***="breadcrumb" ng-if="!user.id">
@@ -22,7 +22,7 @@
 
       <div cl***REMOVED***="row">
         <div cl***REMOVED***="col-md-12">
-          <h2 ng-if="user.id">Edit user: {{user.username}}</h2>
+          <h2 ng-if="user.id">Edit user: {{user.displayName}}</h2>
           <h2 ng-if="!user.id">New user</h2>
         </div>
       </div>
@@ -35,11 +35,6 @@
 
             <div avatar-user="user"></div>
             <div icon-user="user"></div>
-
-            <div cl***REMOVED***="form-group top-gap-l">
-              <label >Username</label>
-              <input type="text" placeholder="i.e. jappleseed" ng-model="user.username" name="username" cl***REMOVED***="form-control">
-            </div>
 
             <div cl***REMOVED***="form-group">
               <label cl***REMOVED***="control-label">Display Name</label>

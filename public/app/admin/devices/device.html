@@ -54,7 +54,7 @@
                   <span cl***REMOVED***="muted">POC:&nbsp;</span>
                 </div>
                 <div cl***REMOVED***="col-md-9">
-                  <span>{{userIdMap[device.userId].username}}</span>
+                  <span>{{userIdMap[device.userId].displayName}}</span>
                 </div>
               </div>
 
@@ -126,7 +126,7 @@
                     <form cl***REMOVED***="navbar-form navbar-left fixed-width-navbar">
                       <div cl***REMOVED***="form-group">
                         <ui-select ng-model="user.selected" theme="bootstrap" on-select="filterLogins()" style="width: 300px;">
-                          <ui-select-match allow-clear placeholder="Filter on user">{{$select.selected.username}}</ui-select-match>
+                          <ui-select-match allow-clear placeholder="Filter on user">{{$select.selected.displayName}}</ui-select-match>
                           <ui-select-choices group-by="groupLayerByType" repeat="user in users | orderBy: 'name' | filter: $select.search">
                             <div ng-bind-html="user.displayName | highlight: $select.search"></div>
                           </ui-select-choices>
@@ -172,7 +172,7 @@
                       <div cl***REMOVED***="right-gap pull-left">
                         <i cl***REMOVED***="fa fa-fw fa-sign-in"></i>
                       </div>
-                      <strong cl***REMOVED***="right-gap"><a href="javascript:void(0);" ng-click="gotoUser(login.user)">{{login.user.username}}</a></strong>
+                      <strong cl***REMOVED***="right-gap"><a href="javascript:void(0);" ng-click="gotoUser(login.user)">{{login.user.displayName}}</a></strong>
                     </div>
                   </div>
                   <div cl***REMOVED***="row">

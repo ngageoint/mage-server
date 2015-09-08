@@ -33,7 +33,7 @@ function AdminDevicesController($scope, $injector, $filter, $location, LocalStor
     if (filteredDevices && filteredDevices.length) return true;
 
     var filteredDeviceIdMap = _.indexBy(filteredDevices, 'id');
-    var filteredUsers = $filter('user')($scope.users, ['username', 'displayName'], $scope.deviceSearch);
+    var filteredUsers = $filter('user')($scope.users, ['displayName', 'email'], $scope.deviceSearch);
     return _.some(filteredUsers, function(filteredUser) {
       if (device.userId === filteredUser.id) return true;
     });
