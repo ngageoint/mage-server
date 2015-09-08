@@ -14,8 +14,7 @@ exports.up = function(done) {
       active: 'true',
       username: 'admin',
       p***REMOVED***word: 'admin',
-      firstname: 'admin',
-      lastname: 'admin',
+      displayName: 'admin admin',
       roleId: role._id
     };
 

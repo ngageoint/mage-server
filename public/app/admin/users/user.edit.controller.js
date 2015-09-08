@@ -38,8 +38,7 @@ function AdminUserEditController($scope, $injector, $filter, $routeParams, $loca
 
     var user = {
       username: $scope.user.username,
-      firstname: $scope.user.firstname,
-      lastname: $scope.user.lastname,
+      displayName: $scope.user.displayName,
       email: $scope.user.email,
       phone: $scope.user.phone,
       p***REMOVED***word: $scope.user.p***REMOVED***word,

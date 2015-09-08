@@ -48,17 +48,11 @@ module.exports = function(app, security) {
     }
     user.username = username;
 
-    var firstname = req.param('firstname');
-    if (!firstname) {
-      return res.status(400).send(invalidResponse('firstname'));
+    var displayName = req.param('displayName');
+    if (!displayName) {
+      return res.status(400).send(invalidResponse('displayName'));
     }
-    user.firstname = firstname;
-
-    var lastname = req.param('lastname');
-    if (!lastname) {
-      return res.status(400).send(invalidResponse('lastname'));
-    }
-    user.lastname = lastname;
+    user.displayName = displayName;
 
     var email = req.param('email');
     if (email) {
@@ -240,8 +234,7 @@ module.exports = function(app, security) {
     p***REMOVED***port.authenticate(authenticationStrategy),
     function(req, res, next) {
       if (req.param('username')) req.user.username = req.param('username');
-      if (req.param('firstname')) req.user.firstname = req.param('firstname');
-      if (req.param('lastname')) req.user.lastname = req.param('lastname');
+      if (req.param('displayName')) req.user.displayName = req.param('displayName');
       if (req.param('email')) req.user.email = req.param('email');
 
       var phone = req.param('phone');
@@ -360,8 +353,7 @@ module.exports = function(app, security) {
       var user = req.userParam;
 
       if (req.param('username')) user.username = req.param('username');
-      if (req.param('firstname')) user.firstname = req.param('firstname');
-      if (req.param('lastname')) user.lastname = req.param('lastname');
+      if (req.param('displayName')) user.displayName = req.param('displayName');
       if (req.param('email')) user.email = req.param('email');
       if (req.param('active')) user.active = req.param('active');
       if (req.param('roleId')) user.roleId = req.param('roleId');

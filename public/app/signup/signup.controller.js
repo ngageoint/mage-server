@@ -13,8 +13,7 @@ function SignupController($scope, UserService) {
   $scope.signup = function () {
     var user = {
       username: this.user.username,
-      firstname: this.user.firstname,
-      lastname: this.user.lastname,
+      displayName: this.user.displayName,
       email: this.user.email,
       phone: this.user.phone,
       p***REMOVED***word: this.user.p***REMOVED***word,
