@@ -1,29 +1,10 @@
-module.exports = function(p***REMOVED***port) {
+module.exports = function(app, p***REMOVED***port, localStrategy) {
 
   var log = require('winston')
     , LocalStrategy = require('p***REMOVED***port-local').Strategy
-    , BearerStrategy = require('p***REMOVED***port-http-bearer').Strategy
-    , Token = require('../models/token')
-    , User = require('../models/user');
-
-  p***REMOVED***port.use(new BearerStrategy(
-    {p***REMOVED***ReqToCallback: true},
-    function(req, token, done) {
-      Token.getToken(token, function(err, credentials) {
-        if (err) { return done(err); }
-
-        if (!credentials || !credentials.user || !credentials.user.active) { return done(null, false); }
-
-        req.token = credentials.token;
-
-        // add the provisionedDevice to the request if available
-        if (credentials.deviceId) {
-          req.provisionedDeviceId = credentials.deviceId;
-        }
-        return done(null, credentials.user, { scope: 'all' });
-      });
-    }
-  ));
+    , User = require('../models/user')
+    , api = require('../api')
+    , userTransformer = require('../transformers/user');
 
   p***REMOVED***port.use(new LocalStrategy(
     function(username, p***REMOVED***word, done) {
@@ -56,9 +37,18 @@ module.exports = function(p***REMOVED***port) {
     }
   ));
 
-  return {
-    p***REMOVED***port: p***REMOVED***port,
-    loginStrategy: 'local',
-    authenticationStrategy: 'bearer'
-  }
+  app.post(
+    '/api/login',
+    p***REMOVED***port.authenticate('local'),
+    function(req, res) {
+      var options = {userAgent: req.headers['user-agent'], appVersion: req.param('appVersion')};
+      new api.User().login(req.user, options, function(err, token) {
+        res.json({
+          token: token.token,
+          expirationDate: token.expirationDate,
+          user: userTransformer.transform(req.user, {path: req.getRoot()})
+        });
+      });
+    }
+  );
 }

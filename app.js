@@ -1,4 +1,5 @@
 var express = require("express")
+  , p***REMOVED***port = require('p***REMOVED***port')
   , bodyParser = require('body-parser')
   , multer = require('multer')
   , path = require('path')
@@ -45,11 +46,8 @@ fs.mkdirp(iconBase, function(err) {
   }
 });
 
-// Configure authentication
-var authentication = require('./authentication')(config.api.authentication.strategy);
-var provisioning = require('./provision/' + config.api.provision.strategy)(provision);
-log.info('Authentication: ' + authentication.loginStrategy);
-log.info('Provision: ' + provisioning.strategy);
+
+
 
 // Configuration of the MAGE Express server
 var app = express();
@@ -78,6 +76,8 @@ app.use(function(req, res, next) {
 app.set('config', config);
 app.enable('trust proxy');
 
+app.set('view engine', 'jade');
+
 app.use(function(req, res, next) {
   req.getRoot = function() {
     return req.protocol + "://" + req.get('host');
@@ -91,13 +91,17 @@ app.use(authentication.p***REMOVED***port.initialize());
 app.use(express.static(path.join(__dirname, process.env.NODE_ENV === 'production' ? 'public/dist' : 'public')));
 app.use('/api/swagger', express.static('./public/vendor/swagger-ui/'));
 app.use('/private',
-  authentication.p***REMOVED***port.authenticate(authentication.authenticationStrategy),
+  p***REMOVED***port.authenticate('bearer'),
   express.static(path.join(__dirname, 'private')));
 app.use(function(err, req, res, next) {
   log.error(err.message);
   log.error(err.stack);
   res.send(500, 'Internal server error, please contact MAGE administrator.');
 });
+
+// Configure authentication
+var authentication = require('./authentication')(app, p***REMOVED***port, config.api.authenticationStrategies);
+var provisioning = require('./provision/' + config.api.provision.strategy)(provision);
 
 // Configure routes
 require('./routes')(app, {authentication: authentication, provisioning: provisioning});
