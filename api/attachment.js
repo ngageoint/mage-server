@@ -101,7 +101,7 @@ Attachment.prototype.update = function(id, attachment, callback) {
 Attachment.prototype.delete = function(id, callback) {
   var event = this._event;
   var observation = this._observation;
-    if (id !== Object(id)) {
+  if (id !== Object(id)) {
     id = {id: id, field: '_id'};
   }
 
@@ -126,6 +126,19 @@ Attachment.prototype.delete = function(id, callback) {
     }
 
     callback();
+  });
+}
+
+Attachment.prototype.deleteAllForEvent = function (callback) {
+  var directoryPath = path.join(attachmentBase, this._event.collectionName);
+  log.info('removing attachments directory ' + directoryPath);
+
+  fs.remove(directoryPath, function(err) {
+    if (err) {
+      log.warn("Could not remove attachments for event at path '" + directoryPath + "''", err);
+    }
+
+    callback(err);
   });
 }
 

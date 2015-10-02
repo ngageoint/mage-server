@@ -143,9 +143,6 @@ var transform = function(user, ret, options) {
     delete ret.icon;
 
     if (user.populated('roleId')) {
-      console.log('roleId was populated', user);
-      console.log('populated', user.populated('roleId'));
-
       ret.role = ret.roleId;
       delete ret.roleId;
     }
