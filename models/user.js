@@ -341,3 +341,13 @@ exports.addRecentEventForUser = function(user, event, callback) {
     callback(err, user);
   });
 }
+
+exports.removerRecentEventForUsers = function(event, callback) {
+  var update = {
+    $pull: { recentEventIds: event._id }
+  };
+
+  User.update({}, update, {multi: true}, function(err) {
+    callback(err);
+  });
+}
