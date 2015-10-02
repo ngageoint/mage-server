@@ -4,25 +4,4 @@
       <h2>MAGE Debug</h2>
     </div>
   </div>
-  <div cl***REMOVED***="row">
-    <div cl***REMOVED***="col-md-12">
-      <h4>Future Locations</h4>
-    </div>
-  </div>
-  <div cl***REMOVED***="row">
-    <div cl***REMOVED***="col-md-12">
-      <div cl***REMOVED***="top-gap" ng-repeat="u in usersInFuture">
-        <div cl***REMOVED***="row">
-          <div cl***REMOVED***="col-md-12">
-            <strong>{{u.username}}</strong>
-              <div ng-repeat="l in u.futureLocations | orderBy:'properties.timestamp' : true" cl***REMOVED***="row">
-                <div cl***REMOVED***="col-md-offset-1 col-md-11">
-                  {{l.properties.timestamp}}
-                </div>
-              </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
