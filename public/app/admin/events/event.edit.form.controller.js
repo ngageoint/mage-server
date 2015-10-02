@@ -79,10 +79,11 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
 
   function newField() {
     return {
-      "title" : "New field",
-      "type" : $scope.fieldTypes[0].name,
-      "value" : "",
-      "required" : false
+      title : "New field",
+      type : $scope.fieldTypes[0].name,
+      value : "",
+      required : false,
+      choices: []
     };
   }
 

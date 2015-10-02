@@ -40,7 +40,7 @@ function SignupController($scope, UserService) {
 
     var failed = function(data) {
       $scope.$apply(function() {
-        $scope.showStatusMessage("There was a problem creating your account", data, "alert-error")
+        $scope.showStatusMessage("There was a problem creating your account", data.responseText, "alert-danger")
       });
     }
 

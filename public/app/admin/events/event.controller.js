@@ -103,6 +103,14 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $mod
     $location.path('/admin/events/' + event.id + '/edit/form');
   }
 
+  $scope.gotoTeam = function(team) {
+    $location.path('/admin/teams/' + team.id);
+  }
+
+  $scope.gotoLayer = function(layer) {
+    $location.path('/admin/layers/' + layer.id);
+  }
+
   $scope.deleteEvent = function() {
     var modalInstance = $modal.open({
       templateUrl: '/app/admin/events/event-delete.html',
