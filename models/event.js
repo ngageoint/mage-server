@@ -56,19 +56,15 @@ EventSchema.pre('remove', function(next) {
     },
     icons: function(done) {
       new api.Icon(event._id).delete(function(err) {
-        console.log('done deleting icons');
         done(err);
       });
     },
     recentEventIds: function(done) {
       User.removerRecentEventForUsers(event, function(err) {
-        console.log('done deleting recent events');
         done(err);
       });
     },
     attachments: function(done) {
-      console.log('start deleting attachments for event');
-
       new api.Attachment(event).deleteAllForEvent(function(err) {
         console.log('done deleting attachments for event');
         done(err);
