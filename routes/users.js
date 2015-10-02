@@ -295,7 +295,9 @@ module.exports = function(app, security) {
       req.newUser.active = true;
 
       new api.User().create(req.newUser, {avatar: req.files.avatar, icon: req.files.icon}, function(err, newUser) {
-        if (err) return next(err);
+        if (err) {
+          return res.status(400).send(error.message);
+        }
 
         newUser = userTransformer.transform(newUser, {path: req.getRoot()});
         res.json(newUser);
@@ -314,7 +316,9 @@ module.exports = function(app, security) {
       req.newUser.roleId = req.role._id;
 
       new api.User().create(req.newUser, {avatar: req.files.avatar}, function(err, newUser) {
-        if (err) return next(err);
+        if (err) {
+          return res.status(400).send(err.message);
+        }
 
         newUser = userTransformer.transform(newUser, {path: req.getRoot()});
         res.json(newUser);

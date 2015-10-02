@@ -417,7 +417,7 @@ function syncUserLocations(event, locations, done) {
       });
 
       async.each(Object.keys(locationsByUserId), function(userId, done) {
-        CappedLocation.addLocations({_id: userId}, event, {valid: locationsByUserId[userId].locations, future: []}, function(err) {
+        CappedLocation.addLocations({_id: userId}, event, locationsByUserId[userId].locations, function(err) {
           done();
         });
       },
