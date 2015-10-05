@@ -38,11 +38,15 @@ function FieldDirectiveController($scope) {
 
   $scope.today = function() {
     $scope.field.value = new Date();
-  };
+  }
 
   $scope.clear = function () {
     $scope.field.value = null;
-  };
+  }
+
+  if ($scope.field.type == 'dropdown' && !$scope.field.required) {
+    $scope.field.value = "";
+  }
 
   function getTemplateUrl(field) {
     switch(field.type) {
