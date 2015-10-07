@@ -338,7 +338,7 @@ module.exports = function(app, security) {
   var exportKML = function(req, res, next) {
     var event = req.event;
 
-    var streamObservations = function(stream, done) {
+    var streamObservations = function(stream, archive, done) {
       if (!req.parameters.filter.exportObservations) return done(null, []);
 
       var filter = req.parameters.filter;
@@ -352,6 +352,10 @@ module.exports = function(app, security) {
             var variant = o.properties[event.form.variantField];
             mapObservations(o, req);
             stream.write(generate_kml.generatePlacemark(o.properties.type, o, event, variant));
+
+            o.attachments.forEach(function(attachment) {
+              archive.file(path.join(config.server.attachment.baseDirectory, attachment.relativePath), {name: path.join('attachments', attachment.relativePath)});
+            });
           });
 
           stream.write(generate_kml.generateKMLFolderClose());
@@ -417,7 +421,7 @@ module.exports = function(app, security) {
     var archive = archiver('zip');
     archive.pipe(res);
     var kmlStream = new stream.P***REMOVED***Through();
-    archive.append(kmlStream, { name:'mage-export/mage-export.kml' });
+    archive.append(kmlStream, { name:'mage-export.kml' });
 
     kmlStream.write(generate_kml.generateKMLHeader());
     kmlStream.write(generate_kml.generateKMLDocument());
@@ -425,21 +429,12 @@ module.exports = function(app, security) {
       function(done) {
         if (!req.parameters.filter.exportObservations) return done();
 
-        streamObservations(kmlStream, function(err) {
-          // throw in attachments
-          archive.bulk([{
-            cwd: path.join(config.server.attachment.baseDirectory, event.collectionName),
-            src: ['*/**'],
-            dest: 'mage-export/attachments/' + event.collectionName,
-            expand: true,
-            data: { date: new Date() } }
-          ]);
-
-          // throw in icon
+        streamObservations(kmlStream, archive, function(err) {
+          // throw in icons
           archive.bulk([{
             cwd: new api.Icon(event._id).getBasePath(),
             src: ['**'],
-            dest: 'mage-export/icons/' + event._id,
+            dest: 'icons/' + event._id,
             expand: true,
             data: { date: new Date() } }
           ]);
