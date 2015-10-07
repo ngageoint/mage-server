@@ -36,7 +36,7 @@ var generateStyles = function(event, icons) {
   var variantPathMap = {};
   icons.forEach(function(icon) {
     if (icon.variant) {
-      variantPathMap[icon.type] = {};
+      variantPathMap[icon.type] = variantPathMap[icon.type] || {};
       variantPathMap[icon.type][icon.variant] = icon.relativePath;
     } else if (icon.type) {
       typePathMap[icon.type] = icon.relativePath;
@@ -67,7 +67,6 @@ var generateStyles = function(event, icons) {
         } else {
           iconPath = defaultIconPath;
         }
-
         styles.push("<Style id='" + [event._id.toString(), choice.title, variantChoice.title].join("-") + "'><IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
       });
     }
@@ -80,7 +79,7 @@ var generateKMLFolderStart = function(name) {
   return "<Folder>" + "<name>" + name + "</name>";
 };
 
-var generatePlacemark = function(name, feature, event) {
+var generatePlacemark = function(name, feature, event, variant) {
   var timestamp = "<TimeStamp>" +
     "<when>" + moment(feature.properties.timestamp).utc().format(timeFormat) + "Z</when>" +
     "</TimeStamp>";
@@ -143,8 +142,8 @@ var generatePlacemark = function(name, feature, event) {
     style.push(event._id.toString());
     if (feature.properties.type) {
       style.push(feature.properties.type);
-      if (feature.properties[event.form.variantField]) {
-        style.push(feature.properties[event.form.variantField]);
+      if (variant) {
+        style.push(variant);
       }
     }
   }
@@ -166,7 +165,7 @@ var generatePlacemark = function(name, feature, event) {
   //build the actual placemark
   var placemark =
     "<Placemark>" +
-      "<name>" + name + " " + feature.properties.timestamp + "</name>" +
+      "<name>" + name + "</name>" +
       "<visibility>0</visibility>" +
       "<styleUrl>#" + style.join("-") + "</styleUrl>" +
       coordinates +
