@@ -92,7 +92,10 @@ module.exports = function(app, security) {
       return res.status(400).send('p***REMOVED***word does not meet minimum length requirement of ' + p***REMOVED***wordLength + ' characters');
     }
 
-    user.p***REMOVED***word = p***REMOVED***word;
+    user.authentication = {
+      type: 'local',
+      p***REMOVED***word: p***REMOVED***word
+    }
 
     req.newUser = user;
 

@@ -49,7 +49,7 @@ module.exports = function(app, p***REMOVED***port, provision, googleStrategy) {
             }
 
             User.createUser(user, function(err, newUser) {
-              return done(null, newUser);
+              return done(err, newUser);
             });
           });
 
