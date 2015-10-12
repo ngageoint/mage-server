@@ -15,7 +15,11 @@ exports.up = function(done) {
       username: 'admin',
       p***REMOVED***word: 'admin',
       displayName: 'admin admin',
-      roleId: role._id
+      roleId: role._id,
+      authentication: {
+        type: 'local',
+        p***REMOVED***word: 'admin'
+      }
     };
 
     User.createUser(adminUser, done);

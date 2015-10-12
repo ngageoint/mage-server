@@ -21,7 +21,6 @@ var PhoneSchema = new Schema({
 // Collection to hold users
 var UserSchema = new Schema({
   username: { type: String, required: true, unique: true },
-  p***REMOVED***word: { type: String, required: true },
   displayName: { type: String, required: true },
   email: {type: String, required: false },
   phones: [PhoneSchema],
@@ -41,7 +40,8 @@ var UserSchema = new Schema({
   recentEventIds: [{type: Number, ref: 'Event'}],
   authentication: {
     type: { type: String, required: false },
-    id: { type: String, required: false }
+    id: { type: String, required: false },
+    p***REMOVED***word: { type: String, required: false }
   }
 },{
   versionKey: false
@@ -49,6 +49,8 @@ var UserSchema = new Schema({
 
 UserSchema.method('validP***REMOVED***word', function(p***REMOVED***word, callback) {
   var user = this;
+  if (user.authentication.type !== 'local') return callback(null, true);
+
   hasher.validP***REMOVED***word(p***REMOVED***word, user.p***REMOVED***word, callback);
 });
 
@@ -73,7 +75,7 @@ UserSchema.pre('save', function(next) {
   var user = this;
 
   // only hash the p***REMOVED***word if it has been modified (or is new)
-  if (!user.isModified('p***REMOVED***word')) {
+  if (user.authentication.type !== 'local' &&!user.isModified('authentication.p***REMOVED***word')) {
     return next();
   }
 
@@ -248,11 +250,11 @@ exports.createUser = function(user, callback) {
     displayName: user.displayName,
     email: user.email,
     phones: user.phones,
-    p***REMOVED***word: user.p***REMOVED***word,
     active: user.active,
     roleId: user.roleId,
     avatar: user.avatar,
-    icon: user.icon
+    icon: user.icon,
+    authentication: user.authentication
   }
 
   User.create(create, function(err, user) {
