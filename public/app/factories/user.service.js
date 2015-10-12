@@ -2,9 +2,9 @@ angular
   .module('mage')
   .factory('UserService', UserService);
 
-UserService.$inject = ['$rootScope', '$q', '$http', '$location', '$timeout', 'LocalStorageService'];
+UserService.$inject = ['$rootScope', '$q', '$http', '$location', '$timeout', '$window', 'LocalStorageService'];
 
-function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageService) {
+function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalStorageService) {
   var userDeferred = $q.defer();
   var resolvedUsers = {};
   var resolveAllUsers = null;
