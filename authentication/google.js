@@ -19,7 +19,7 @@ module.exports = function(app, p***REMOVED***port, provision, googleStrategy) {
     function(req, accessToken, refreshToken, profile, done) {
       req.googleToken = accessToken;
 
-      User.getByAuthenticationId('google', profile.id, function(err, user) {
+      User.getUserByAuthenticationId('google', profile.id, function(err, user) {
         if (err) return done(err);
 
         if (req.query.state === 'signup') {
