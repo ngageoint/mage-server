@@ -75,11 +75,11 @@ UserSchema.pre('save', function(next) {
   var user = this;
 
   // only hash the p***REMOVED***word if it has been modified (or is new)
-  if (user.authentication.type !== 'local' &&!user.isModified('authentication.p***REMOVED***word')) {
+  if (user.authentication.type !== 'local' && !user.isModified('authentication.p***REMOVED***word')) {
     return next();
   }
 
-  hasher.encryptP***REMOVED***word(user.p***REMOVED***word, function(err, encryptedP***REMOVED***word) {
+  hasher.encryptP***REMOVED***word(user.authentication.p***REMOVED***word, function(err, encryptedP***REMOVED***word) {
     if (err) return next(err);
 
     user.p***REMOVED***word = encryptedP***REMOVED***word;
