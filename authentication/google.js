@@ -129,7 +129,7 @@ module.exports = function(app, p***REMOVED***port, provision, googleStrategy) {
 
         req.user = user;
 
-        if (config.provision.strategy === 'uid' && req.query.state === 'device' && !info.device.registered) {
+        if (config.api.provision.strategy === 'uid' && req.query.state === 'device' && !info.device.registered) {
           return res.render('authentication', { host: req.getRoot(), success: true, login: {}});
         }
 
