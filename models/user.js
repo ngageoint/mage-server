@@ -38,7 +38,11 @@ var UserSchema = new Schema({
   active: { type: Boolean, required: true },
   roleId: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
   status: { type: String, required: false, index: 'sparse' },
-  recentEventIds: [{type: Number, ref: 'Event'}]
+  recentEventIds: [{type: Number, ref: 'Event'}],
+  authentication: {
+    type: { type: String, required: false },
+    id: { type: String, required: false }
+  }
 },{
   versionKey: false
 });
@@ -186,6 +190,12 @@ exports.getUserById = function(id, callback) {
 
 exports.getUserByUsername = function(username, callback) {
   User.findOne({username: username.toLowerCase()}).populate('roleId').exec(function(err, user) {
+    callback(err, user);
+  });
+}
+
+exports.getUserByAuthenticationId = function(authenticationType, id, callback) {
+  User.findOne({'authentication.type': authenticationType, 'authentication.id': id}).populate('roleId').exec(function(err, user) {
     callback(err, user);
   });
 }
