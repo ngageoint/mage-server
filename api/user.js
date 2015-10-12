@@ -30,7 +30,7 @@ function iconPath(id, user, icon) {
 function User() {
 };
 
-User.prototype.login = function(user, device, options, callback) {
+User.prototype.login = function(user, device, callback) {
   TokenModel.createToken({userId: user._id, device: device}, function(err, token) {
     if (err) return callback(err);
 
