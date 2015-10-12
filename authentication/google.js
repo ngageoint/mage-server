@@ -129,11 +129,17 @@ module.exports = function(app, p***REMOVED***port, provision, googleStrategy) {
 
         req.user = user;
 
-        if (config.api.provision.strategy === 'uid' && req.query.state === 'device' && !info.device.registered) {
-          return res.render('authentication', { host: req.getRoot(), success: true, login: {}});
+        if (config.api.provision.strategy === 'uid') {
+          if (req.query.state === 'device' && !info.device.registered) {
+            return res.render('authentication', { host: req.getRoot(), success: true, login: {}});
+          }
+
+          if (req.query.state === 'signin' && !info.device.registered) {
+            return res.render('authentication', { host: req.getRoot(), success: false, login: {}});
+          }
         }
 
-        new api.User().login(user, function(err, token) {
+        new api.User().login(user, info.device, function(err, token) {
           if (err) return next(err);
 
           res.render('authentication', { host: req.getRoot(), success: true, login: {user: user, token: token.token}});

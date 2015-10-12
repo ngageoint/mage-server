@@ -43,8 +43,7 @@ module.exports = function(app, p***REMOVED***port, provisioning, localStrategy) 
     p***REMOVED***port.authenticate('local'),
     provisioning.provision.check(provisioning.strategy),
     function(req, res) {
-      var options = {userAgent: req.headers['user-agent'], appVersion: req.param('appVersion')};
-      new api.User().login(req.user,  req.provisionedDevice, options, function(err, token) {
+      new api.User().login(req.user,  req.provisionedDevice, function(err, token) {
         res.json({
           token: token.token,
           expirationDate: token.expirationDate,
