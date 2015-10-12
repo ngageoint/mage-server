@@ -24,8 +24,7 @@ module.exports = function(app, security) {
     , DOMParser = require('xmldom').DOMParser
     , spawn = require('child_process').spawn
     , exec = require('child_process').exec
-    , p***REMOVED***port = security.authentication.p***REMOVED***port
-    , authenticationStrategy = security.authentication.authenticationStrategy;
+    , p***REMOVED***port = security.authentication.p***REMOVED***port;
 
   var parseQueryParams = function(req, res, next) {
     var parameters = {filter: {}};
@@ -176,7 +175,7 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/:exportType(geojson|kml|shapefile|csv)',
-    p***REMOVED***port.authenticate(authenticationStrategy),
+    p***REMOVED***port.authenticate('bearer'),
     parseQueryParams,
     getEvent,
     validateEventAccess,

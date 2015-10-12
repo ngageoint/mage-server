@@ -1,4 +1,4 @@
-module.exports = function(strategy) {
+module.exports = function(app, p***REMOVED***port, provision, strategies) {
 
   var BearerStrategy = require('p***REMOVED***port-http-bearer').Strategy
     , User = require('../models/user')
@@ -18,6 +18,7 @@ module.exports = function(strategy) {
     p***REMOVED***ReqToCallback: true
   },
   function(req, token, done) {
+    console.log('validate token%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%', token);
     Token.getToken(token, function(err, credentials) {
       if (err) { return done(err); }
 
@@ -25,13 +26,15 @@ module.exports = function(strategy) {
 
       req.token = credentials.token;
 
+      console.log('got credentials%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%', credentials);
+
       return done(null, credentials.user, { scope: 'all' });
     });
   }));
 
   Object.keys(strategies).forEach(function(name) {
     // setup p***REMOVED***port authentication for this strategy
-    require('./' + name)(app, p***REMOVED***port, strategies[name]);
+    require('./' + name)(app, p***REMOVED***port, provision, strategies[name]);
   });
 
   return {

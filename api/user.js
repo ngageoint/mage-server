@@ -34,7 +34,7 @@ User.prototype.login = function(user, device, options, callback) {
   TokenModel.createToken({userId: user._id, device: device}, function(err, token) {
     if (err) return callback(err);
 
-    callback(null, token);
+    callback(err, token);
 
     LoginModel.createLogin(user, device, function(err, login) {
       if (err) log.error('could not add login', err);
@@ -45,7 +45,7 @@ User.prototype.login = function(user, device, options, callback) {
 User.prototype.logout = function(token, callback) {
   if (!token) return callback();
 
-  TokenModel.removeToken(token, function(err, token){
+  TokenModel.removeToken(token, function(err, token) {
     callback(err);
   });
 }

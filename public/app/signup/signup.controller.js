@@ -2,13 +2,22 @@ angular
   .module('mage')
   .controller('SignupController', SignupController);
 
-SignupController.$inject = ['$scope', 'UserService'];
+SignupController.$inject = ['$scope', '$location', 'UserService', 'ApiService'];
 
-function SignupController($scope, UserService) {
+function SignupController($scope, $location, UserService, ApiService) {
   $scope.user = {};
   $scope.showStatus = false;
   $scope.statusTitle = '';
   $scope.statusMessage = '';
+
+  ApiService.get(function(api) {
+    $scope.thirdPartyStrategies = _.map(_.omit(api.authenticationStrategies, localStrategyFilter), function(strategy, name) {
+      strategy.name = name;
+      return strategy;
+    });
+
+    $scope.localAuthenticationStrategy = api.authenticationStrategies.local;
+  });
 
   $scope.signup = function () {
     var user = {
@@ -17,8 +26,7 @@ function SignupController($scope, UserService) {
       email: this.user.email,
       phone: this.user.phone,
       p***REMOVED***word: this.user.p***REMOVED***word,
-      p***REMOVED***wordconfirm: this.user.p***REMOVED***wordconfirm,
-      avatar: $scope.avatar
+      p***REMOVED***wordconfirm: this.user.p***REMOVED***wordconfirm
     }
 
     // TODO throw in progress
@@ -53,7 +61,21 @@ function SignupController($scope, UserService) {
     $scope.showStatus = true;
   }
 
-  $scope.$on('userAvatar', function(event, userAvatar) {
-    $scope.avatar = userAvatar;
-  });
+  $scope.signup = function(strategy) {
+    UserService.oauthSignup(strategy).then(function(data) {
+      $scope.showStatus = true;
+      $scope.statusTitle = 'Account successfully created';
+      $scope.statusMessage = 'Your account has been created.  You will be able to login once and administrator approves your account';
+      $scope.statusLevel = 'alert-success';
+    }, function(data) {
+      $scope.showStatus = true;
+      $scope.statusTitle = 'Error signing up';
+      $scope.statusMessage = data.errorMessage;
+      $scope.statusLevel = 'alert-danger';
+    });
+  }
+
+  function localStrategyFilter(strategy, name) {
+    return name === 'local';
+  }
 }
