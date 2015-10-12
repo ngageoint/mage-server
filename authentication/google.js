@@ -133,7 +133,7 @@ module.exports = function(app, p***REMOVED***port, provision, googleStrategy) {
           return res.render('authentication', { host: req.getRoot(), success: true, login: {}});
         }
 
-        new api.User().loginWithToken(user, req.googleToken, function(err, token) {
+        new api.User().login(user, function(err, token) {
           if (err) return next(err);
 
           res.render('authentication', { host: req.getRoot(), success: true, login: {user: user, token: token.token}});
