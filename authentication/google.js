@@ -128,7 +128,7 @@ module.exports = function(app, p***REMOVED***port, provision, googleStrategy) {
         }
 
         req.user = user;
-
+        var info = info || {};
         var device = info.device || {};
         if (config.api.provision.strategy === 'uid') {
           if (req.query.state === 'device' && !device.registered) {
