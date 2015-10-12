@@ -176,6 +176,11 @@ a {
 	color: #324962;
 }
 
+.icon-brand-m {
+	font-size: 125px;
+  color: #365F8C;
+}
+
 .icon-brand-l {
 	font-size: 300px;
 	color: #324962;
@@ -608,4 +613,37 @@ h4.image-delete {
 }
 .merged .input-group-addon + input {
 	border-left: 0px;
+}
+
+.or-container {
+    text-align: center;
+    margin-top: 20px;
+    color: #808080;
+    font-variant: small-caps;
+}
+
+.or-hr {
+    margin-bottom: -20px;
+    height: 0;
+    border: 0;
+    border-top: 1px solid #e6e6e6;
+}
+
+#or {
+    display: inline-block;
+    position: relative;
+    padding: 10px;
+    background-color: #fff;
+}
+
+.btn-google {
+  color: #FFFFFF;
+  background-color: #DC4E41;
+  border-color: #DC4E41;
+}
+
+.btn-google.active, .btn-google.focus, .btn-google:active, .btn-google:focus, .btn-google:hover, .open>.dropdown-toggle.btn-google {
+    color: #FFFFFF;
+    background-color: #DC4E41;
+    border-color: #DC4E41;
 }

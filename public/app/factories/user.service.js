@@ -13,6 +13,8 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
     myself: null,
     amAdmin: false,
     signup: signup,
+    oauthSignin: oauthSignin,
+    oauthSignup: oauthSignup,
     login: login,
     logout: logout,
     getMyself: getMyself,
@@ -39,6 +41,63 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
       url: '/api/users',
       type: 'POST'
     }, success, error, progress);
+  }
+
+  function oauthSignin(strategy) {
+    var deferred = $q.defer();
+
+    windowLeft = window.screenLeft ? window.screenLeft : window.screenX;
+    windowTop = window.screenTop ? window.screenTop : window.screenY;
+
+    var left = windowLeft + (window.innerWidth / 2) - (300);
+    var top = windowTop + (window.innerHeight / 2) - (300);
+    var strWindowFeatures = 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=600, height=600, top=' + top + ',left=' + left;
+
+    var authWindow = $window.open("/auth/" +  strategy + "/signin", "", strWindowFeatures);
+    $window.addEventListener('message', function(event) {
+      if (event.origin !== $location.protocol() + "://" + $location.host()) {
+        return;
+      }
+
+      var data = event.data;
+      if (data.token) {
+        LocalStorageService.setToken(event.data.token);
+        setUser(event.data.user);
+        deferred.resolve({user: event.data.user, token: LocalStorageService.getToken(), isAdmin: ***REMOVED***.amAdmin});
+      } else {
+        deferred.reject(data);
+      }
+
+      authWindow.close();
+    }, false);
+
+    return deferred.promise;
+  }
+
+  function oauthSignup(strategy) {
+    var deferred = $q.defer();
+
+    windowLeft = window.screenLeft ? window.screenLeft : window.screenX;
+    windowTop = window.screenTop ? window.screenTop : window.screenY;
+
+    var left = windowLeft + (window.innerWidth / 2) - (300);
+    var top = windowTop + (window.innerHeight / 2) - (300);
+    var strWindowFeatures = 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=600, height=600, top=' + top + ',left=' + left;
+
+    var authWindow = $window.open("/auth/" +  strategy + "/signup", "", strWindowFeatures);
+    $window.addEventListener('message', function(event) {
+      var data = event.data;
+      if (data.user) {
+        setUser(event.data.user);
+        deferred.resolve({user: event.data.user});
+      } else {
+        deferred.reject(data);
+      }
+
+      authWindow.close();
+    }, false);
+
+    return deferred.promise;
   }
 
   function login(data) {

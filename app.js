@@ -46,9 +46,6 @@ fs.mkdirp(iconBase, function(err) {
   }
 });
 
-
-
-
 // Configuration of the MAGE Express server
 var app = express();
 var mongodbConfig = config.server.mongodb;
@@ -87,7 +84,7 @@ app.use(function(req, res, next) {
 app.use(require('body-parser')({ keepExtensions: true}));
 app.use(require('method-override')());
 app.use(require('multer')());
-app.use(authentication.p***REMOVED***port.initialize());
+app.use(p***REMOVED***port.initialize());
 app.use(express.static(path.join(__dirname, process.env.NODE_ENV === 'production' ? 'public/dist' : 'public')));
 app.use('/api/swagger', express.static('./public/vendor/swagger-ui/'));
 app.use('/private',
@@ -100,8 +97,8 @@ app.use(function(err, req, res, next) {
 });
 
 // Configure authentication
-var authentication = require('./authentication')(app, p***REMOVED***port, config.api.authenticationStrategies);
 var provisioning = require('./provision/' + config.api.provision.strategy)(provision);
+var authentication = require('./authentication')(app, p***REMOVED***port, provisioning, config.api.authenticationStrategies);
 
 // Configure routes
 require('./routes')(app, {authentication: authentication, provisioning: provisioning});

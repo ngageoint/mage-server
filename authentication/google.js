@@ -1,8 +1,9 @@
-module.exports = function(app, p***REMOVED***port, googleStrategy) {
+module.exports = function(app, p***REMOVED***port, provision, googleStrategy) {
 
   var GoogleStrategy = require('p***REMOVED***port-google-oauth').OAuth2Strategy
     , Token = require('../models/token')
     , User = require('../models/user')
+    , Device = require('../models/device')
     , Role = require('../models/role')
     , api = require('../api')
     , config = require('../config.json');
@@ -13,24 +14,15 @@ module.exports = function(app, p***REMOVED***port, googleStrategy) {
       p***REMOVED***ReqToCallback: true,
       clientID: googleStrategy.clientID,
       clientSecret: googleStrategy.clientSecret,
-      callbackURL: "https://login.geointapps.org/auth/google/callback"
+      callbackURL: googleStrategy.callbackURL
     },
     function(req, accessToken, refreshToken, profile, done) {
       req.googleToken = accessToken;
 
-      var signup = null;
-      if (req.query.state === 'signup') {
-        signup = true;
-      } else if (req.query.state === 'signin') {
-        signup = false;
-      } else {
-        return done(new Error("Unrecognized oauth state"));
-      }
-
       User.getByAuthenticationId('google', profile.id, function(err, user) {
         if (err) return done(err);
 
-        if (signup) {
+        if (req.query.state === 'signup') {
           if (user) return done(null, false, { message: "User already exists" });
 
           Role.getRole('USER_ROLE', function(err, role) {
@@ -61,16 +53,42 @@ module.exports = function(app, p***REMOVED***port, googleStrategy) {
             });
           });
 
-        } else {
+        } else  if (req.query.state === 'signin') {
           if (!user) return  done(null, false, { message: "User does not exist, please create an account first"} );
 
           return done(null, user);
+        } else if (req.query.state === 'device') {
+          if (!user) return  done(null, false, { message: "User does not exist, please create an account first"} );
+
+          var newDevice = {
+            uid: req.param('uid'),
+            name: req.param('name'),
+            registered: false,
+            description: req.param('description'),
+            userId: req.user.id
+          };
+
+          if (!newDevice.uid) return res.send(401, "missing required param 'uid'");
+
+          Device.getDeviceByUid(newDevice.uid, function(err, device) {
+            if (device) {
+              // already exists, do not register
+              return done(err, user, { device: device });
+            }
+
+            Device.createDevice(newDevice, function(err, newDevice) {
+              done(err, user, { device: newDevice });
+            });
+          });
+        } else {
+          return done(new Error("Unrecognized oauth state"));
         }
       });
     }
   ));
 
-  app.get('/auth/google/signup',
+  app.get(
+    '/auth/google/signup',
     p***REMOVED***port.authorize('google', { scope : ['profile', 'email'], state: 'signup', prompt: 'select_account' }),
     function(req, res, next) {
       // The request will be redirected to Google for authentication, so this
@@ -78,7 +96,8 @@ module.exports = function(app, p***REMOVED***port, googleStrategy) {
     }
   );
 
-  app.get('/auth/google/signin',
+  app.get(
+    '/auth/google/signin',
     p***REMOVED***port.authenticate('google', { scope: 'https://www.googleapis.com/auth/plus.login', state: 'signin', prompt: 'select_account'}),
     function(req, res, next) {
       // The request will be redirected to Google for authentication, so this
@@ -86,7 +105,20 @@ module.exports = function(app, p***REMOVED***port, googleStrategy) {
     }
   );
 
-  app.get('/auth/google/callback',
+  // Create a new device
+  // Any authenticated user can create a new device, the registered field
+  // will be set to false.
+  app.post(
+    '/auth/google/device',
+    p***REMOVED***port.authenticate('google', { scope: 'https://www.googleapis.com/auth/plus.login', state: 'device', prompt: 'select_account'}),
+    function(req, res, next) {
+      // The request will be redirected to Google for authentication, so this
+      // function will not be called.
+    }
+  );
+
+  app.get(
+    '/auth/google/callback',
     function(req, res, next) {
       p***REMOVED***port.authenticate('google', function(err, user, info) {
         if (err) return next(err);
@@ -96,6 +128,10 @@ module.exports = function(app, p***REMOVED***port, googleStrategy) {
         }
 
         req.user = user;
+
+        if (config.provision.strategy === 'uid' && req.query.state === 'device' && !info.device.registered) {
+          return res.render('authentication', { host: req.getRoot(), success: true, login: {}});
+        }
 
         new api.User().loginWithToken(user, req.googleToken, function(err, token) {
           if (err) return next(err);

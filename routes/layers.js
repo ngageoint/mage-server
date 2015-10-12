@@ -5,10 +5,8 @@ module.exports = function(app, security) {
     , api = require('../api')
     , layerXform = require('../transformers/layer');
 
-  var p***REMOVED***port = security.authentication.p***REMOVED***port
-    , authenticationStrategy = security.authentication.authenticationStrategy;
-
-  app.all('/api/layers*', p***REMOVED***port.authenticate(authenticationStrategy));
+  var p***REMOVED***port = security.authentication.p***REMOVED***port;
+  app.all('/api/layers*', p***REMOVED***port.authenticate('bearer'));
 
   var validateLayerParams = function(req, res, next) {
     var layer = req.body;
