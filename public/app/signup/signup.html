@@ -39,7 +39,7 @@
 
         <div cl***REMOVED***="row">
           <div cl***REMOVED***="col-md-12">
-            <form ng-submit="signup()" id="new-user-form" cl***REMOVED***="form-horizontal">
+            <form id="new-user-form" cl***REMOVED***="form-horizontal">
 
               <div cl***REMOVED***="form-group">
                 <label cl***REMOVED***="control-label col-sm-4">Avatar</label>
@@ -47,7 +47,7 @@
                   <div avatar-user="user"/>
                 </div>
               </div>
-              
+
               <div cl***REMOVED***="form-group">
                 <label cl***REMOVED***="control-label col-sm-4">Username</label>
                 <div cl***REMOVED***="col-sm-8">
@@ -84,7 +84,7 @@
               </div>
 
               <div cl***REMOVED***="pull-right">
-                <button type="submit" cl***REMOVED***="btn btn-default">Create my account</button>
+                <button type="submit" cl***REMOVED***="btn btn-default" ng-click="signup('local')">Create my account</button>
               </div>
               <div cl***REMOVED***="help-block top-gap pull-right">Your account will have to be approved by an admin before it becomes active</div>
 

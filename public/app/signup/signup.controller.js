@@ -19,14 +19,39 @@ function SignupController($scope, $location, UserService, ApiService) {
     $scope.localAuthenticationStrategy = api.authenticationStrategies.local;
   });
 
-  $scope.signup = function () {
+  $scope.showStatusMessage = function (title, message, statusLevel) {
+    $scope.statusTitle = title;
+    $scope.statusMessage = message;
+    $scope.statusLevel = statusLevel;
+    $scope.showStatus = true;
+  }
+
+  $scope.signup = function(strategy) {
+    strategy == 'local' ? localSignup() : oauthSignup(strategy);
+  }
+
+  function oauthSignup(strategy) {
+    UserService.oauthSignup(strategy).then(function(data) {
+      $scope.showStatus = true;
+      $scope.statusTitle = 'Account successfully created';
+      $scope.statusMessage = 'Your account has been created.  You will be able to login once and administrator approves your account';
+      $scope.statusLevel = 'alert-success';
+    }, function(data) {
+      $scope.showStatus = true;
+      $scope.statusTitle = 'Error signing up';
+      $scope.statusMessage = data.errorMessage;
+      $scope.statusLevel = 'alert-danger';
+    });
+  }
+
+  function localSignup() {
     var user = {
-      username: this.user.username,
-      displayName: this.user.displayName,
-      email: this.user.email,
-      phone: this.user.phone,
-      p***REMOVED***word: this.user.p***REMOVED***word,
-      p***REMOVED***wordconfirm: this.user.p***REMOVED***wordconfirm
+      username: $scope.user.username,
+      displayName: $scope.user.displayName,
+      email: $scope.user.email,
+      phone: $scope.user.phone,
+      p***REMOVED***word: $scope.user.p***REMOVED***word,
+      p***REMOVED***wordconfirm: $scope.user.p***REMOVED***wordconfirm
     }
 
     // TODO throw in progress
@@ -52,27 +77,6 @@ function SignupController($scope, $location, UserService, ApiService) {
     }
 
     UserService.signup(user, complete, failed, progress);
-  }
-
-  $scope.showStatusMessage = function (title, message, statusLevel) {
-    $scope.statusTitle = title;
-    $scope.statusMessage = message;
-    $scope.statusLevel = statusLevel;
-    $scope.showStatus = true;
-  }
-
-  $scope.signup = function(strategy) {
-    UserService.oauthSignup(strategy).then(function(data) {
-      $scope.showStatus = true;
-      $scope.statusTitle = 'Account successfully created';
-      $scope.statusMessage = 'Your account has been created.  You will be able to login once and administrator approves your account';
-      $scope.statusLevel = 'alert-success';
-    }, function(data) {
-      $scope.showStatus = true;
-      $scope.statusTitle = 'Error signing up';
-      $scope.statusMessage = data.errorMessage;
-      $scope.statusLevel = 'alert-danger';
-    });
   }
 
   function localStrategyFilter(strategy, name) {

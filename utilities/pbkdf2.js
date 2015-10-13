@@ -68,8 +68,8 @@ var encryptP***REMOVED***word = function (p***REMOVED***word, callback) {
 
   encryptedP***REMOVED***word = deserializeP***REMOVED***word(encryptedP***REMOVED***word);
 
-  if (!encryptedP***REMOVED***word.salt || !encryptedP***REMOVED***word.derivedKey || !encryptedP***REMOVED***word.iterations || !encryptedP***REMOVED***word.derivedKeyLength) { 
-    return callback("encryptedP***REMOVED***word doesn't have the right format"); 
+  if (!encryptedP***REMOVED***word.salt || !encryptedP***REMOVED***word.derivedKey || !encryptedP***REMOVED***word.iterations || !encryptedP***REMOVED***word.derivedKeyLength) {
+    return callback("encryptedP***REMOVED***word doesn't have the right format");
   }
 
   // Use the encrypted p***REMOVED***word's parameter to hash the candidate p***REMOVED***word
