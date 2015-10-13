@@ -116,7 +116,7 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
         type: 'signin'
       };
       if (config.api.provision.strategy === 'uid') {
-        state.uid = req.uid;
+        state.uid = req.query.uid;
       }
 
       p***REMOVED***port.authenticate('google', {
