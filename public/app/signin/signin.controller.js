@@ -22,7 +22,7 @@ function SigninController($scope, $rootScope, UserService, ApiService) {
   $scope.signin = function () {
     UserService.login({username: this.username, uid: this.uid, p***REMOVED***word: this.p***REMOVED***word})
       .then(function (data) {
-        $rootScope.$broadcast('login', data);
+        console.log('successfull signin');
       },
       function (data) {
         $scope.status = data.status;
@@ -32,7 +32,6 @@ function SigninController($scope, $rootScope, UserService, ApiService) {
   $scope.googleSignin = function() {
     UserService.oauthSignin('google', {uid: this.uid}).then(function(data) {
       console.log('successfull oauth');
-      $rootScope.$broadcast('login', data);
     }, function(data) {
       $scope.showStatus = true;
       $scope.statusTitle = 'Error signing in';

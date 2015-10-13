@@ -46,6 +46,8 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
   function oauthSignin(strategy, data) {
     var deferred = $q.defer();
 
+    var oldUsername = ***REMOVED***.myself && ***REMOVED***.myself.username || null;
+
     windowLeft = window.screenLeft ? window.screenLeft : window.screenX;
     windowTop = window.screenTop ? window.screenTop : window.screenY;
 
@@ -62,9 +64,11 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
 
       var data = event.data;
       if (data.token) {
-        LocalStorageService.setToken(event.data.token);
-        setUser(event.data.user);
-        deferred.resolve({user: event.data.user, token: LocalStorageService.getToken(), isAdmin: ***REMOVED***.amAdmin});
+        LocalStorageService.setToken(data.token);
+        setUser(data.user);
+        $rootScope.$broadcast('event:auth-login', {token: data.token, newUser: data.user.username !== oldUsername});
+        $rootScope.$broadcast('event:user', {user: data.user, token: data.token, isAdmin: ***REMOVED***.amAdmin});
+        deferred.resolve({user: event.data.user, token: data.token, isAdmin: ***REMOVED***.amAdmin});
       } else {
         deferred.reject(data);
       }
