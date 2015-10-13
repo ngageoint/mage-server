@@ -123,7 +123,7 @@ module.exports = function(app, security) {
     '/api/logout',
     isAuthenticated('bearer'),
     function(req, res, next) {
-      log.info('logout w/ token', req.token);
+      log.info('logout w/ user', req.token.userId);
       new api.User().logout(req.token, function(err) {
         if (err) return next(err);
         res.status(200).send('successfully logged out');
