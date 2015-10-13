@@ -20,7 +20,7 @@ Strategy.prototype.check = function(req, options, done) {
   var uid = options.uid || req.param(this.uidField);
 
   if (!uid) {
-    return this.fail(new Error(options.badRequestMessage || 'Missing uid'));
+    return done(new Error(options.badRequestMessage || 'Missing uid'));
   }
 
   this.verify(uid, done);
