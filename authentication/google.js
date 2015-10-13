@@ -143,7 +143,7 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
         if (err) return next(err);
         info = info || {};
 
-        if (!user) {
+        if (!user || !user.registered) {
           return res.render('authentication', { host: req.getRoot(), success: false, login: {errorMessage: info.message} });
         }
 

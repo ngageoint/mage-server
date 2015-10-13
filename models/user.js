@@ -51,7 +51,7 @@ UserSchema.method('validP***REMOVED***word', function(p***REMOVED***word, callba
   var user = this;
   if (user.authentication.type !== 'local') return callback(null, true);
 
-  hasher.validP***REMOVED***word(p***REMOVED***word, user.p***REMOVED***word, callback);
+  hasher.validP***REMOVED***word(p***REMOVED***word, user.authentication.p***REMOVED***word, callback);
 });
 
 // Lowercase the username we store, this will allow for case insensitive usernames
