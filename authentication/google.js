@@ -12,7 +12,12 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
 
   function validateDevice(req, res, next) {
     var state = JSON.parse(req.query.state);
-    provisioning.provision.check(provisioning.strategy, {uid: state.uid})(req, res, next);
+
+    if (state.type === 'signin') {
+      provisioning.provision.check(provisioning.strategy, {uid: state.uid})(req, res, next);
+    } else {
+      return next();
+    }
   }
 
   p***REMOVED***port.use('google', new GoogleStrategy({
