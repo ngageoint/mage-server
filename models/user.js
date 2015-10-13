@@ -82,7 +82,7 @@ UserSchema.pre('save', function(next) {
   hasher.encryptP***REMOVED***word(user.authentication.p***REMOVED***word, function(err, encryptedP***REMOVED***word) {
     if (err) return next(err);
 
-    user.p***REMOVED***word = encryptedP***REMOVED***word;
+    user.authentication.p***REMOVED***word = encryptedP***REMOVED***word;
     next();
   });
 });
