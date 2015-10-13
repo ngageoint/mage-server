@@ -149,10 +149,12 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
 
         req.user = user;
         var state = JSON.parse(req.query.state);
-        if (config.api.provision.strategy === 'uid') {
-          if (state.type === 'register') {
+        if (state.type === 'register') {
+          if (config.api.provision.strategy === 'uid') {
             return res.render('authentication', { host: req.getRoot(), success: true, login: {user: user, device: info.device}});
           }
+        } else if (state.type === 'signup') {
+          return res.render('authentication', { host: req.getRoot(), success: true, login: {user: user}});
         }
 
         new api.User().login(user, req.provisionedDevice, function(err, token) {
