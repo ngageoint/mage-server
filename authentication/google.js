@@ -12,14 +12,7 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
 
   function validateDevice(req, res, next) {
     var state = JSON.parse(req.query.state);
-    provisioning.provision.check(provisioning.strategy, {uid: state.uid}, function(err, device) {
-      if (err) return next(err);
-
-      if (device) req.device = deivce;
-
-      next();
-
-    })(req, res, next);
+    provisioning.provision.check(provisioning.strategy, {uid: state.uid})(req, res, next);
   }
 
   p***REMOVED***port.use('google', new GoogleStrategy({
@@ -157,7 +150,7 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
           }
         }
 
-        new api.User().login(user, device, function(err, token) {
+        new api.User().login(user, req.provisionedDevice, function(err, token) {
           if (err) return next(err);
 
           res.render('authentication', { host: req.getRoot(), success: true, login: {user: user, token: token.token}});
