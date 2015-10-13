@@ -43,7 +43,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     }, success, error, progress);
   }
 
-  function oauthSignin(strategy) {
+  function oauthSignin(strategy, data) {
     var deferred = $q.defer();
 
     windowLeft = window.screenLeft ? window.screenLeft : window.screenX;
@@ -53,7 +53,8 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     var top = windowTop + (window.innerHeight / 2) - (300);
     var strWindowFeatures = 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=600, height=600, top=' + top + ',left=' + left;
 
-    var authWindow = $window.open("/auth/" +  strategy + "/signin", "", strWindowFeatures);
+    var url = "/auth/" + strategy + "/signin?" + $.param({uid: data.uid});
+    var authWindow = $window.open(url, "", strWindowFeatures);
     $window.addEventListener('message', function(event) {
       if (event.origin !== $location.protocol() + "://" + $location.host()) {
         return;
