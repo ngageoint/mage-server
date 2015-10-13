@@ -30,7 +30,7 @@ function SigninController($scope, $rootScope, UserService, ApiService) {
   }
 
   $scope.googleSignin = function() {
-    UserService.oauthSignin('google').then(function(data) {
+    UserService.oauthSignin('google', {uid: this.uid}).then(function(data) {
       console.log('successfull oauth');
       $rootScope.$broadcast('login', data);
     }, function(data) {
