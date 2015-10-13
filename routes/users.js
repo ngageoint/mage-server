@@ -21,9 +21,7 @@ module.exports = function(app, security) {
     return function(req, res, next) {
       p***REMOVED***port.authenticate(strategy, function(err, user, info) {
         if (err) return next(err);
-
         if (user) req.user = user;
-
         next();
 
       })(req, res, next);
@@ -123,7 +121,7 @@ module.exports = function(app, security) {
     '/api/logout',
     isAuthenticated('bearer'),
     function(req, res, next) {
-      log.info('logout w/ user', req.token.userId);
+      log.info('logout w/ user', req.user._id.toString());
       new api.User().logout(req.token, function(err) {
         if (err) return next(err);
         res.status(200).send('successfully logged out');
@@ -233,18 +231,20 @@ module.exports = function(app, security) {
         }];
       }
 
-      var p***REMOVED***word = req.param('p***REMOVED***word');
-      var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
-      if (p***REMOVED***word && p***REMOVED***wordconfirm) {
-        if (p***REMOVED***word != p***REMOVED***wordconfirm) {
-          return res.status(400).send('p***REMOVED***words do not match');
-        }
+      if (req.user.authentication.type === 'local') {
+        var p***REMOVED***word = req.param('p***REMOVED***word');
+        var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
+        if (p***REMOVED***word && p***REMOVED***wordconfirm) {
+          if (p***REMOVED***word != p***REMOVED***wordconfirm) {
+            return res.status(400).send('p***REMOVED***words do not match');
+          }
 
-        if (p***REMOVED***word.length < p***REMOVED***wordLength) {
-          return res.status(400).send('p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
-        }
+          if (p***REMOVED***word.length < p***REMOVED***wordLength) {
+            return res.status(400).send('p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
+          }
 
-        req.user.p***REMOVED***word = p***REMOVED***word;
+          req.user.authentication.p***REMOVED***word = p***REMOVED***word;
+        }
       }
 
       new api.User().update(req.user, {avatar: req.files.avatar}, function(err, updatedUser) {
@@ -354,18 +354,20 @@ module.exports = function(app, security) {
         }];
       }
 
-      var p***REMOVED***word = req.param('p***REMOVED***word');
-      var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
-      if (p***REMOVED***word && p***REMOVED***wordconfirm) {
-        if (p***REMOVED***word != p***REMOVED***wordconfirm) {
-          return res.status(400).send('p***REMOVED***words do not match');
-        }
+      if (user.authentication.type === 'local') {
+        var p***REMOVED***word = req.param('p***REMOVED***word');
+        var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
+        if (p***REMOVED***word && p***REMOVED***wordconfirm) {
+          if (p***REMOVED***word != p***REMOVED***wordconfirm) {
+            return res.status(400).send('p***REMOVED***words do not match');
+          }
 
-        if (p***REMOVED***word.length < p***REMOVED***wordLength) {
-          return res.status(400).send('p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
-        }
+          if (p***REMOVED***word.length < p***REMOVED***wordLength) {
+            return res.status(400).send('p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
+          }
 
-        user.p***REMOVED***word = p***REMOVED***word;
+          user.authentication.p***REMOVED***word = p***REMOVED***word;
+        }
       }
 
       new api.User().update(user, {avatar: req.files.avatar, icon: req.files.icon}, function(err, updatedUser) {
