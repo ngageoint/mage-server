@@ -1,4 +1,4 @@
-module.exports = function(app, p***REMOVED***port, provision, googleStrategy) {
+module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy) {
 
   var GoogleStrategy = require('p***REMOVED***port-google-oauth').OAuth2Strategy
     , Token = require('../models/token')
@@ -11,17 +11,15 @@ module.exports = function(app, p***REMOVED***port, provision, googleStrategy) {
   console.log('configuring google authentication');
 
   function validateDevice(req, res, next) {
-    if (provision) {
-      var state = JSON.parse(req.query.state);
-      provision.check(provision.strategy, function(err, device) {
-        if (err) return next(err);
+    var state = JSON.parse(req.query.state);
+    provisioning.provision.check(provisioning.strategy, {uid: state.uid}, function(err, device) {
+      if (err) return next(err);
 
-        if (device) req.device = deivce;
+      if (device) req.device = deivce;
 
-        next();
+      next();
 
-      })(req, res, next);
-    }
+    })(req, res, next);
   }
 
   p***REMOVED***port.use('google', new GoogleStrategy({
