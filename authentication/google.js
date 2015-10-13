@@ -67,9 +67,11 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
         } else  if (state.type === 'signin') {
           if (!user) return  done(null, false, { message: "User does not exist, please create an account first"} );
 
+          if (!user.registered) return done(null, false, { message: ""} );
+
           return done(null, user);
         } else if (state.type === 'register') {
-          if (!user) return  done(null, false, { message: "User does not exist, please create an account first"} );
+          if (!user) return  done(null, false, { message: "User is not approved, please contact your MAGE administrator"} );
 
           var newDevice = {
             uid: req.param('uid'),
@@ -143,7 +145,7 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
         if (err) return next(err);
         info = info || {};
 
-        if (!user || !user.registered) {
+        if (!user) {
           return res.render('authentication', { host: req.getRoot(), success: false, login: {errorMessage: info.message} });
         }
 
