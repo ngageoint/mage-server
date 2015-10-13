@@ -13,18 +13,19 @@ Provision.prototype.use = function(name, strategy) {
     name = strategy.name;
   }
   if (!name) throw new Error('provisioning strategies must have a name');
-  
+
   this.strategies[name] = strategy;
   return this;
 };
 
-Provision.prototype.check = function(strategy) {
+Provision.prototype.check = function(strategy, options) {
+  options = options || {};
   var provision = this.strategies[strategy];
 
   return function(req, res, next) {
     if (!provision) next(new Error("No registered provisioning strategy '" + strategy + "'"));
 
-    provision.check(req, function(err, device) {
+    provision.check(req, options, function(err, device) {
       if (err) return next(err);
 
       if (!device) return res.send(401);
@@ -37,5 +38,5 @@ Provision.prototype.check = function(strategy) {
 
 /**
  * Expose `Provision`.
- */ 
+ */
 module.exports = new Provision();
