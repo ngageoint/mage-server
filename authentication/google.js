@@ -135,7 +135,7 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
       new api.User().login(req.user, req.device, function(err, token) {
         if (err) return next(err);
 
-        res.render('authentication', { host: req.getRoot(), success: true, login: {user: user, token: token.token}});
+        res.render('authentication', { host: req.getRoot(), success: true, login: {user: req.user, token: token.token}});
       });
     }
   );
