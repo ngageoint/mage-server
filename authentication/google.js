@@ -38,6 +38,7 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
         }
 
         Device.createDevice(device, function(err, newDevice) {
+          var msg = 'Your device needs to be registered, please contact your MAGE administrator.';
           return res.render('authentication', { host: req.getRoot(), success: true, login: {user: req.user, device: newDevice}});
         });
       } else {

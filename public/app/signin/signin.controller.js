@@ -34,9 +34,16 @@ function SigninController($scope, $rootScope, UserService, ApiService) {
       console.log('successfull oauth');
     }, function(data) {
       $scope.showStatus = true;
-      $scope.statusTitle = 'Error signing in';
-      $scope.statusMessage = data.errorMessage;
-      $scope.statusLevel = 'alert-danger';
+
+      if (data.device && !data.device.registered) {
+        $scope.statusTitle = 'Device Pending Registration';
+        $scope.statusMessage = data.errorMessage;
+        $scope.statusLevel = 'alert-warning';
+      } else {
+        $scope.statusTitle = 'Error signing in';
+        $scope.statusMessage = data.errorMessage;
+        $scope.statusLevel = 'alert-danger';
+      }
     });
   }
 
