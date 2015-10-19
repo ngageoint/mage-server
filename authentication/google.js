@@ -108,7 +108,7 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
     '/auth/google/signup',
     p***REMOVED***port.authenticate('google', {
       scope : ['profile', 'email'],
-      state: JSON.stringify({type: 'signup'}), 
+      state: JSON.stringify({type: 'signup'}),
       prompt: 'select_account'
     })
   );
@@ -132,7 +132,7 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
         return res.render('authentication', { host: req.getRoot(), success: true, login: {user: user}});
       }
 
-      new api.User().login(user, req.device, function(err, token) {
+      new api.User().login(req.user, req.device, function(err, token) {
         if (err) return next(err);
 
         res.render('authentication', { host: req.getRoot(), success: true, login: {user: user, token: token.token}});
