@@ -34,11 +34,11 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
         var device = {
           uid: state.uid,
           registered: false,
-          userId: user._id
+          userId: req.user._id
         }
 
         Device.createDevice(device, function(err, newDevice) {
-          return res.render('authentication', { host: req.getRoot(), success: true, login: {user: user, device: newDevice}});
+          return res.render('authentication', { host: req.getRoot(), success: true, login: {user: req.user, device: newDevice}});
         });
       } else {
         req.device = device;
