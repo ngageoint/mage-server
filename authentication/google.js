@@ -127,7 +127,7 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
     function(req, res, next) {
       var state = JSON.parse(req.query.state);
       if (state.type === 'signup') {
-        return res.render('authentication', { host: req.getRoot(), success: true, login: {user: user}});
+        return res.render('authentication', { host: req.getRoot(), success: true, login: {user: req.user}});
       }
 
       new api.User().login(req.user, req.device, function(err, token) {
