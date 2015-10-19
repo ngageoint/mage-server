@@ -26,6 +26,9 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
 
   function provisionDevice(req, res, next) {
     var state = JSON.parse(req.query.state);
+    if (state.type === 'signup') {
+      return next();
+    }
 
     provisioning.provision.check(provisioning.strategy, {uid: state.uid}, function(err, device) {
       if (err) return next(err);
