@@ -12,7 +12,7 @@ var Schema = mongoose.Schema;
 var DeviceSchema = new Schema({
     uid: { type: String, required: true, unique: true },
     description: { type: String, required: false },
-    registered: { type: Boolean, required: true },
+    registered: { type: Boolean, required: true, default: false },
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
     userAgent: { type: String, required: false },
     appVersion: { type: String, required: false }
