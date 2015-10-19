@@ -57,7 +57,10 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
 
     var url = "/auth/" + strategy + "/signin?" + $.param({uid: data.uid});
     var authWindow = $window.open(url, "", strWindowFeatures);
-    $window.addEventListener('message', function(event) {
+
+    function onMessage(event) {
+      $window.removeEventListener('message', onMessage, false);
+
       if (event.origin !== $location.protocol() + "://" + $location.host()) {
         return;
       }
@@ -74,7 +77,9 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
       }
 
       authWindow.close();
-    }, false);
+    }
+
+    $window.addEventListener('message', onMessage, false);
 
     return deferred.promise;
   }
