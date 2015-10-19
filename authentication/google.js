@@ -31,13 +31,7 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
       if (err) return next(err);
 
       if (provisioning.strategy === 'uid' && !device) {
-        var device = {
-          uid: state.uid,
-          registered: false,
-          userId: req.user._id
-        }
-
-        Device.createDevice(device, function(err, newDevice) {
+        Device.updateDevice(state.uid, {userId: req.user._id}, function(err, newDevice) {
           var msg = 'Your device needs to be registered, please contact your MAGE administrator.';
           return res.render('authentication', { host: req.getRoot(), success: true, login: {user: req.user, device: newDevice, errorMessage: msg}});
         });
