@@ -10,14 +10,41 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
 
   console.log('configuring google authentication');
 
-  function validateDevice(req, res, next) {
+  function authenticate(req, res, next) {
+    p***REMOVED***port.authenticate('google', function(err, user, info) {
+      if (err) return next(err);
+      info = info || {};
+
+      if (!user) {
+        return res.render('authentication', { host: req.getRoot(), success: false, login: {errorMessage: info.message} });
+      }
+
+      req.user = user;
+      next();
+    })(req, res, next);
+  }
+
+  function provisionDevice(req, res, next) {
     var state = JSON.parse(req.query.state);
 
-    if (state.type === 'signin') {
-      provisioning.provision.check(provisioning.strategy, {uid: state.uid})(req, res, next);
-    } else {
-      return next();
-    }
+    provisioning.provision.check(provisioning.strategy, {uid: state.uid}, function(err, device) {
+      if (err) return next(err);
+
+      if (provisioning.strategy === 'uid' && !device) {
+        var device = {
+          uid: state.uid,
+          registered: false,
+          userId: user._id
+        }
+
+        Device.createDevice(device, function(err, newDevice) {
+          return res.render('authentication', { host: req.getRoot(), success: true, login: {user: user, device: newDevice}});
+        });
+      } else {
+        req.device = device;
+        next();
+      }
+    })(req, res, next);
   }
 
   p***REMOVED***port.use('google', new GoogleStrategy({
@@ -48,13 +75,13 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
 
             // create an account for the user
             var user = {
-              username: profile.provider + profile.id,
+              username: 'google' + profile.id,
               displayName: profile.name.givenName + ' ' + profile.name.familyName,
               email: email,
               active: false,
               roleId: role._id,
               authentication: {
-                type: profile.provider,
+                type: 'google',
                 id: profile.id
               }
             }
@@ -70,29 +97,6 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
           if (!user.active) return done(null, false, { message: "User is not approved, please contact your MAGE administrator"} );
 
           return done(null, user);
-        } else if (state.type === 'register') {
-          if (!user) return  done(null, false, { message: "User does not exist, please create an account first"} );
-
-          var newDevice = {
-            uid: req.param('uid'),
-            name: req.param('name'),
-            registered: false,
-            description: req.param('description'),
-            userId: req.user.id
-          };
-
-          if (!newDevice.uid) return res.send(401, "missing required param 'uid'");
-
-          Device.getDeviceByUid(newDevice.uid, function(err, device) {
-            if (device) {
-              // already exists, do not register
-              return done(err, user, { device: device });
-            }
-
-            Device.createDevice(newDevice, function(err, newDevice) {
-              done(err, user, { device: newDevice });
-            });
-          });
         } else {
           return done(new Error("Unrecognized oauth state"));
         }
@@ -102,69 +106,37 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
 
   app.get(
     '/auth/google/signup',
-    p***REMOVED***port.authorize('google', { scope : ['profile', 'email'], state: JSON.stringify({type: 'signup'}), prompt: 'select_account' }),
-    function(req, res, next) {
-      // The request will be redirected to Google for authentication, so this
-      // function will not be called.
-    }
+    p***REMOVED***port.authenticate('google', {
+      scope : ['profile', 'email'],
+      state: JSON.stringify({type: 'signup'}), 
+      prompt: 'select_account'
+    })
   );
 
   app.get(
     '/auth/google/signin',
     function(req, res, next) {
-      var state = {
-        type: 'signin'
-      };
-      if (config.api.provision.strategy === 'uid') {
-        state.uid = req.query.uid;
-      }
-
       p***REMOVED***port.authenticate('google', {
-        scope: 'https://www.googleapis.com/auth/plus.login', state: JSON.stringify(state), prompt: 'select_account'
+        scope: 'https://www.googleapis.com/auth/plus.login', state: JSON.stringify({type: 'signin', uid: req.param('uid')}), prompt: 'select_account'
       })(req, res, next);
-    }
-  );
-
-  // Create a new device
-  // Any authenticated user can create a new device, the registered field
-  // will be set to false.
-  app.post(
-    '/auth/google/device',
-    p***REMOVED***port.authenticate('google', { scope: 'https://www.googleapis.com/auth/plus.login', state: JSON.stringify({type: 'register'}), prompt: 'select_account'}),
-    function(req, res, next) {
-      // The request will be redirected to Google for authentication, so this
-      // function will not be called.
     }
   );
 
   app.get(
     '/auth/google/callback',
-    validateDevice,
+    authenticate,
+    provisionDevice,
     function(req, res, next) {
-      p***REMOVED***port.authenticate('google', function(err, user, info) {
+      var state = JSON.parse(req.query.state);
+      if (state.type === 'signup') {
+        return res.render('authentication', { host: req.getRoot(), success: true, login: {user: user}});
+      }
+
+      new api.User().login(user, req.device, function(err, token) {
         if (err) return next(err);
-        info = info || {};
 
-        if (!user) {
-          return res.render('authentication', { host: req.getRoot(), success: false, login: {errorMessage: info.message} });
-        }
-
-        req.user = user;
-        var state = JSON.parse(req.query.state);
-        if (state.type === 'register') {
-          if (config.api.provision.strategy === 'uid') {
-            return res.render('authentication', { host: req.getRoot(), success: true, login: {user: user, device: info.device}});
-          }
-        } else if (state.type === 'signup') {
-          return res.render('authentication', { host: req.getRoot(), success: true, login: {user: user}});
-        }
-
-        new api.User().login(user, req.provisionedDevice, function(err, token) {
-          if (err) return next(err);
-
-          res.render('authentication', { host: req.getRoot(), success: true, login: {user: user, token: token.token}});
-        });
-      })(req, res, next);
+        res.render('authentication', { host: req.getRoot(), success: true, login: {user: user, token: token.token}});
+      });
     }
   );
 
