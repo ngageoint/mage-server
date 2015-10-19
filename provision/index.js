@@ -39,7 +39,7 @@ Provision.prototype.check = function(strategy, options, callback) {
         return callback(null, device);
       }
 
-      if (!device) return res.sendStatus(401);
+      if (!device || !device.registered) return res.sendStatus(401);
 
       next();
     });
