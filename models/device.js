@@ -154,7 +154,7 @@ exports.createDevice = function(device, callback) {
 
   if (device.registered) update.registered = device.registered;
 
-  Device.findOneAndUpdate({uid: device.uid}, update, {new: true, upsert: true}, function(err, newDevice) {
+  Device.findOneAndUpdate({uid: device.uid}, update, {new: true, upsert: true, setDefaultsOnInsert: true}, function(err, newDevice) {
     callback(err, newDevice);
   });
 }
