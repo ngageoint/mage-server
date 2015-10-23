@@ -348,8 +348,9 @@ module.exports = function(app, security) {
           stream.write(generate_kml.generateKMLFolderStart(event.name, false));
 
           observations.forEach(function(o) {
+            var variant = o.properties[event.form.variantField];
             mapObservations(o, req);
-            stream.write(generate_kml.generatePlacemark(o.properties.type, o, event));
+            stream.write(generate_kml.generatePlacemark(o.properties.type, o, event, variant));
           });
 
           stream.write(generate_kml.generateKMLFolderClose());

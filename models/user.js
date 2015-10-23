@@ -228,7 +228,6 @@ exports.getUsers = function(options, callback) {
 
   var populate = [];
   if (options.populate) {
-    console.log('pop', options.populate);
     if (options.populate.indexOf('roleId') != -1) {
       populate.push({path: 'roleId'});
     }
@@ -347,5 +346,15 @@ exports.addRecentEventForUser = function(user, event, callback) {
 
   User.findByIdAndUpdate(user._id, {recentEventIds: eventIds}, {new: true}, function(err, user) {
     callback(err, user);
+  });
+}
+
+exports.removerRecentEventForUsers = function(event, callback) {
+  var update = {
+    $pull: { recentEventIds: event._id }
+  };
+
+  User.update({}, update, {multi: true}, function(err) {
+    callback(err);
   });
 }

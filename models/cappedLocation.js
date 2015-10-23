@@ -10,8 +10,7 @@ var locationLimit = config.server.locationServices.userCollectionLocationLimit;
 var CappedLocationSchema = new Schema({
   userId: {type: Schema.Types.ObjectId, required: false, sparse: true, ref: 'User'},
   eventId: {type: Number, required: false, sparse: true, ref:'Event'},
-  locations: [LocationSchema],
-  futureLocations: [LocationSchema]
+  locations: [LocationSchema]
 },{
     versionKey: false
 });
@@ -27,8 +26,7 @@ exports.Model = CappedLocation;
 exports.addLocations = function(user, event, locations, callback) {
   var update = {
     $push: {
-      locations: {$each: locations.valid, $sort: {"properties.timestamp": 1}, $slice: -1 * locationLimit},
-      futureLocations: {$each: locations.future, $sort: {"properties.timestamp": 1}, $slice: -1 * locationLimit}
+      locations: {$each: locations, $sort: {"properties.timestamp": 1}, $slice: -1 * locationLimit}
     }
   };
 

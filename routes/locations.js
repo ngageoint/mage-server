@@ -137,15 +137,7 @@ module.exports = function(app, security) {
     access.authorize('CREATE_LOCATION'),
     validateLocations,
     function(req, res) {
-      var currentTimestamp = moment();
-      var validLocations = [];
-      var futureLocations = [];
-      req.locations.forEach(function(location) {
-        var timestamp = moment(location.properties.timestamp);
-        timestamp.diff(currentTimestamp, 'minutes') > 15 ? futureLocations.push(location) : validLocations.push(location);
-      });
-
-      Location.createLocations(validLocations, function(err, locations) {
+      Location.createLocations(req.locations, function(err, locations) {
         if (err) {
           return res.send(400, err);
         }
@@ -153,7 +145,7 @@ module.exports = function(app, security) {
         res.json(locations);
       });
 
-      CappedLocation.addLocations(req.user, req.event, {valid: validLocations, future: futureLocations}, function(err, location) {
+      CappedLocation.addLocations(req.user, req.event, req.locations, function(err, location) {
         if (err) {
           log.error('failed to store location in capped location collection');
         }
