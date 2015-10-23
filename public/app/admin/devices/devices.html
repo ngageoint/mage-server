@@ -25,7 +25,7 @@
           <form cl***REMOVED***="form">
             <div cl***REMOVED***="form-group">
               <label>Search</label>
-              <input type="text" cl***REMOVED***="form-control" placeholder="device, username, user" ng-model="deviceSearch" ng-change="page=0">
+              <input type="text" cl***REMOVED***="form-control" placeholder="device, user" ng-model="deviceSearch" ng-change="page=0">
             </div>
           </form>
           <hr>
@@ -58,7 +58,7 @@
                           <i cl***REMOVED***="fa fa-mobile admin-device-icon"></i>
                         </div>
                         <span cl***REMOVED***="strong">{{d.uid}}</span>
-                        <div cl***REMOVED***="muted" ng-if="userIdMap[d.userId]">{{userIdMap[d.userId].username}}</div>
+                        <div cl***REMOVED***="muted" ng-if="userIdMap[d.userId]">{{userIdMap[d.userId].displayName}}</div>
                         <div cl***REMOVED***="muted" ng-if="true">{{d.name}}</div>
 
                       </div>

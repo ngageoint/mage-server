@@ -1,29 +1,11 @@
-module.exports = function(p***REMOVED***port) {
+module.exports = function(app, p***REMOVED***port, provisioning, localStrategy) {
 
   var log = require('winston')
     , LocalStrategy = require('p***REMOVED***port-local').Strategy
-    , BearerStrategy = require('p***REMOVED***port-http-bearer').Strategy
-    , Token = require('../models/token')
-    , User = require('../models/user');
-
-  p***REMOVED***port.use(new BearerStrategy(
-    {p***REMOVED***ReqToCallback: true},
-    function(req, token, done) {
-      Token.getToken(token, function(err, credentials) {
-        if (err) { return done(err); }
-
-        if (!credentials || !credentials.user || !credentials.user.active) { return done(null, false); }
-
-        req.token = credentials.token;
-
-        // add the provisionedDevice to the request if available
-        if (credentials.deviceId) {
-          req.provisionedDeviceId = credentials.deviceId;
-        }
-        return done(null, credentials.user, { scope: 'all' });
-      });
-    }
-  ));
+    , User = require('../models/user')
+    , Device = require('../models/device')
+    , api = require('../api')
+    , userTransformer = require('../transformers/user');
 
   p***REMOVED***port.use(new LocalStrategy(
     function(username, p***REMOVED***word, done) {
@@ -56,9 +38,53 @@ module.exports = function(p***REMOVED***port) {
     }
   ));
 
-  return {
-    p***REMOVED***port: p***REMOVED***port,
-    loginStrategy: 'local',
-    authenticationStrategy: 'bearer'
-  }
+  app.post(
+    '/api/login',
+    p***REMOVED***port.authenticate('local'),
+    provisioning.provision.check(provisioning.strategy),
+    function(req, res) {
+      new api.User().login(req.user,  req.provisionedDevice, function(err, token) {
+        res.json({
+          token: token.token,
+          expirationDate: token.expirationDate,
+          user: userTransformer.transform(req.user, {path: req.getRoot()})
+        });
+      });
+    }
+  );
+
+
+  // Create a new device
+  // Any authenticated user can create a new device, the registered field
+  // will be set to false.
+  app.post(
+    '/api/devices',
+    p***REMOVED***port.authenticate('local'),
+    function(req, res) {
+      var newDevice = {
+        uid: req.param('uid'),
+        name: req.param('name'),
+        registered: false,
+        description: req.param('description'),
+        userId: req.user.id
+      };
+
+      if (!newDevice.uid) return res.send(401, "missing required param 'uid'");
+
+      Device.getDeviceByUid(newDevice.uid, function(err, device) {
+        if (device) {
+          // already exists, do not register
+          return res.json(device);
+        }
+
+        Device.createDevice(newDevice, function(err, newDevice) {
+          if (err) {
+            return res.send(400, err);
+          }
+
+          res.json(newDevice);
+        });
+      });
+    }
+  );
 }
