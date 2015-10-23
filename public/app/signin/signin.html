@@ -1,41 +1,90 @@
 <div cl***REMOVED***="container top-gap-l">
   <div cl***REMOVED***="row">
-    <div cl***REMOVED***="col-md-3">
-      <h3 cl***REMOVED***="top-gap-l">Mobile Awareness GEOINT Environment</h3>
+    <div cl***REMOVED***="col-md-6 col-md-offset-3">
 
-      <form cl***REMOVED***="form">
-        <div cl***REMOVED***="form-group" ng-cl***REMOVED***="{'has-error': status > 399}">
-          <label>Username</label>
-          <input ng-model="username" cl***REMOVED***="form-control" name="username" type="text" autocapitalize="off"/>
-        </div>
-
-        <div cl***REMOVED***="form-group" ng-cl***REMOVED***="{'has-error': status > 399}">
-          <label>UID</label>
-          <input ng-model="uid" cl***REMOVED***="form-control" name="uid" type="text" autocapitalize="off"/>
-        </div>
-
-        <div cl***REMOVED***="form-group" ng-cl***REMOVED***="{'has-error': status > 399}">
-          <label>P***REMOVED***word</label>
-          <input ng-model="p***REMOVED***word" cl***REMOVED***="form-control" name="p***REMOVED***word" type="p***REMOVED***word" autocapitalize="off"/>
-        </div>
-
-        <span>
-          <button cl***REMOVED***="btn btn-primary" ng-click="signin()" ngm-tap="signin()">Login</button>
-        </span>
-      </form>
-
-      <div cl***REMOVED***="top-gap">
-        <p>Don't have an account? <a href="/#/signup">Create one here.</a></p>
-
-        <div cl***REMOVED***="top-gap-s alert alert-danger" ng-show="status > 399">
-          <strong>Failed login</strong>
-          <p>Please check your username, UID, and p***REMOVED***word and try again.</p>
+      <div cl***REMOVED***="row">
+        <div cl***REMOVED***="col-md-12 top-gap-xl">
+          <h3 cl***REMOVED***="text-center">MAGE</h3>
+          <div cl***REMOVED***="text-center">
+            <i cl***REMOVED***="fa fa-magic icon-brand-m"></i>
+          </div>
         </div>
       </div>
 
-    </div>
-    <div cl***REMOVED***="col-md-7 col-md-offset-2 top-gap-xl">
-      <i cl***REMOVED***="fa fa-magic icon-brand-l"></i>
+      <div cl***REMOVED***="row">
+        <div cl***REMOVED***="col-md-12 top-gap-xl">
+          <h5 cl***REMOVED***="text-center">Log in to continue to MAGE</h5>
+        </div>
+      </div>
+
+      <hr>
+
+      <div ng-repeat="strategy in thirdPartyStrategies">
+        <div cl***REMOVED***="row">
+          <div cl***REMOVED***="col-md-12">
+            <div cl***REMOVED***="form-group" ng-cl***REMOVED***="{'has-error': status > 399}">
+              <label>UID</label>
+              <input ng-model="uid" cl***REMOVED***="form-control" name="uid" type="text" autocapitalize="off"/>
+            </div>
+          </div>
+        </div>
+
+        <div cl***REMOVED***="row" ng-if="strategy.name == 'google'">
+          <div cl***REMOVED***="col-md-12 text-center">
+            <button cl***REMOVED***="btn btn-google" ng-click="googleSignin()" ng-disabled="!uid">
+              <i cl***REMOVED***="fa fa-google-plus right-gap"></i> Google
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div ng-if="localAuthenticationStrategy">
+        <div ng-if="thirdPartyStrategies.length" cl***REMOVED***="top-gap">
+          <div cl***REMOVED***="or-container">
+            <hr cl***REMOVED***="or-hr">
+            <div id="or">or</div>
+          </div>
+        </div>
+
+        <div cl***REMOVED***="row">
+          <div cl***REMOVED***="col-md-12">
+            <form cl***REMOVED***="form">
+              <div cl***REMOVED***="form-group" ng-cl***REMOVED***="{'has-error': status > 399}">
+                <label>Username</label>
+                <input ng-model="username" cl***REMOVED***="form-control" name="username" type="text" autocapitalize="off"/>
+              </div>
+
+              <div cl***REMOVED***="form-group" ng-cl***REMOVED***="{'has-error': status > 399}">
+                <label>UID</label>
+                <input ng-model="uid" cl***REMOVED***="form-control" name="uid" type="text" autocapitalize="off"/>
+              </div>
+
+              <div cl***REMOVED***="form-group" ng-cl***REMOVED***="{'has-error': status > 399}">
+                <label>P***REMOVED***word</label>
+                <input ng-model="p***REMOVED***word" cl***REMOVED***="form-control" name="p***REMOVED***word" type="p***REMOVED***word" autocapitalize="off"/>
+              </div>
+
+              <span>
+                <button cl***REMOVED***="btn btn-default pull-right" ng-click="signin()" ngm-tap="signin()">Login</button>
+              </span>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div cl***REMOVED***="top-gap-l">
+        <p>Don't have an account? <a href="/#/signup">Create one here.</a></p>
+      </div>
+
+      <!-- Status message area -->
+      <div cl***REMOVED***="row top-gap" ng-show="showStatus">
+        <div cl***REMOVED***="col-md-12 alert" ng-cl***REMOVED***="statusLevel">
+          <button type="button" cl***REMOVED***="close" ng-click="setShowStatus(false)">&times;</button>
+          <h4>{{statusTitle}}</h4>
+          {{statusMessage}}
+        </div>
+      </div>
+
     </div>
   </div>
 </div>

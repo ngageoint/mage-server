@@ -6,10 +6,9 @@ module.exports = function(app, security) {
   , fs = require('fs-extra')
   , Zip = require('adm-zip');
 
-  var p***REMOVED***port = security.authentication.p***REMOVED***port
-  , authenticationStrategy = security.authentication.authenticationStrategy;
+  var p***REMOVED***port = security.authentication.p***REMOVED***port;
 
-  app.all('/api/events*', p***REMOVED***port.authenticate(authenticationStrategy));
+  app.all('/api/events*', p***REMOVED***port.authenticate('bearer'));
 
   function validateEventParams(req, res, next) {
     var event = req.body;
