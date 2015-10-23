@@ -1,0 +1,10 @@
+html
+  head
+    script.
+      var login = !{JSON.stringify(login)};
+      window.opener.postMessage(login, '#{host}');
+  body
+    if (success)
+      p Successful authentication
+    else
+      p Authentication error

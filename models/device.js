@@ -12,7 +12,7 @@ var Schema = mongoose.Schema;
 var DeviceSchema = new Schema({
     uid: { type: String, required: true, unique: true },
     description: { type: String, required: false },
-    registered: { type: Boolean, required: true },
+    registered: { type: Boolean, required: true, default: false },
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
     userAgent: { type: String, required: false },
     appVersion: { type: String, required: false }
@@ -146,17 +146,15 @@ exports.count = function(callback) {
 }
 
 exports.createDevice = function(device, callback) {
-  var create = {
-    uid: device.uid,
+  var update = {
     name: device.name,
     description: device.description,
-    registered: device.registered,
     userId: device.userId
   }
 
-  if (device.registered) create.registered = device.registered;
+  if (device.registered) update.registered = device.registered;
 
-  Device.create(create, function(err, newDevice) {
+  Device.findOneAndUpdate({uid: device.uid}, update, {new: true, upsert: true, setDefaultsOnInsert: true}, function(err, newDevice) {
     callback(err, newDevice);
   });
 }
