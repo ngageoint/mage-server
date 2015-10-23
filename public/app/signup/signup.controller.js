@@ -2,24 +2,56 @@ angular
   .module('mage')
   .controller('SignupController', SignupController);
 
-SignupController.$inject = ['$scope', 'UserService'];
+SignupController.$inject = ['$scope', '$location', 'UserService', 'ApiService'];
 
-function SignupController($scope, UserService) {
+function SignupController($scope, $location, UserService, ApiService) {
   $scope.user = {};
   $scope.showStatus = false;
   $scope.statusTitle = '';
   $scope.statusMessage = '';
 
-  $scope.signup = function () {
+  ApiService.get(function(api) {
+    $scope.thirdPartyStrategies = _.map(_.omit(api.authenticationStrategies, localStrategyFilter), function(strategy, name) {
+      strategy.name = name;
+      return strategy;
+    });
+
+    $scope.localAuthenticationStrategy = api.authenticationStrategies.local;
+  });
+
+  $scope.showStatusMessage = function (title, message, statusLevel) {
+    $scope.statusTitle = title;
+    $scope.statusMessage = message;
+    $scope.statusLevel = statusLevel;
+    $scope.showStatus = true;
+  }
+
+  $scope.signup = function(strategy) {
+    strategy == 'local' ? localSignup() : oauthSignup(strategy);
+  }
+
+  function oauthSignup(strategy) {
+    UserService.oauthSignup(strategy).then(function(data) {
+      $scope.showStatus = true;
+      $scope.statusTitle = 'Account successfully created';
+      $scope.statusMessage = 'Your account has been created.  You will be able to login once and administrator approves your account';
+      $scope.statusLevel = 'alert-success';
+    }, function(data) {
+      $scope.showStatus = true;
+      $scope.statusTitle = 'Error signing up';
+      $scope.statusMessage = data.errorMessage;
+      $scope.statusLevel = 'alert-danger';
+    });
+  }
+
+  function localSignup() {
     var user = {
-      username: this.user.username,
-      firstname: this.user.firstname,
-      lastname: this.user.lastname,
-      email: this.user.email,
-      phone: this.user.phone,
-      p***REMOVED***word: this.user.p***REMOVED***word,
-      p***REMOVED***wordconfirm: this.user.p***REMOVED***wordconfirm,
-      avatar: $scope.avatar
+      username: $scope.user.username,
+      displayName: $scope.user.displayName,
+      email: $scope.user.email,
+      phone: $scope.user.phone,
+      p***REMOVED***word: $scope.user.p***REMOVED***word,
+      p***REMOVED***wordconfirm: $scope.user.p***REMOVED***wordconfirm
     }
 
     // TODO throw in progress
@@ -47,14 +79,7 @@ function SignupController($scope, UserService) {
     UserService.signup(user, complete, failed, progress);
   }
 
-  $scope.showStatusMessage = function (title, message, statusLevel) {
-    $scope.statusTitle = title;
-    $scope.statusMessage = message;
-    $scope.statusLevel = statusLevel;
-    $scope.showStatus = true;
+  function localStrategyFilter(strategy, name) {
+    return name === 'local';
   }
-
-  $scope.$on('userAvatar', function(event, userAvatar) {
-    $scope.avatar = userAvatar;
-  });
 }

@@ -2,9 +2,9 @@ angular
   .module('mage')
   .factory('UserService', UserService);
 
-UserService.$inject = ['$rootScope', '$q', '$http', '$location', '$timeout', 'LocalStorageService'];
+UserService.$inject = ['$rootScope', '$q', '$http', '$location', '$timeout', '$window', 'LocalStorageService'];
 
-function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageService) {
+function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalStorageService) {
   var userDeferred = $q.defer();
   var resolvedUsers = {};
   var resolveAllUsers = null;
@@ -13,6 +13,8 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
     myself: null,
     amAdmin: false,
     signup: signup,
+    oauthSignin: oauthSignin,
+    oauthSignup: oauthSignup,
     login: login,
     logout: logout,
     getMyself: getMyself,
@@ -39,6 +41,73 @@ function UserService($rootScope, $q, $http, $location, $timeout, LocalStorageSer
       url: '/api/users',
       type: 'POST'
     }, success, error, progress);
+  }
+
+  function oauthSignin(strategy, data) {
+    var deferred = $q.defer();
+
+    var oldUsername = ***REMOVED***.myself && ***REMOVED***.myself.username || null;
+
+    windowLeft = window.screenLeft ? window.screenLeft : window.screenX;
+    windowTop = window.screenTop ? window.screenTop : window.screenY;
+
+    var left = windowLeft + (window.innerWidth / 2) - (300);
+    var top = windowTop + (window.innerHeight / 2) - (300);
+    var strWindowFeatures = 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=600, height=600, top=' + top + ',left=' + left;
+
+    var url = "/auth/" + strategy + "/signin?" + $.param({uid: data.uid});
+    var authWindow = $window.open(url, "", strWindowFeatures);
+
+    function onMessage(event) {
+      $window.removeEventListener('message', onMessage, false);
+
+      if (event.origin !== $location.protocol() + "://" + $location.host()) {
+        return;
+      }
+
+      var data = event.data;
+      if (data.token) {
+        LocalStorageService.setToken(data.token);
+        setUser(data.user);
+        $rootScope.$broadcast('event:auth-login', {token: data.token, newUser: data.user.username !== oldUsername});
+        $rootScope.$broadcast('event:user', {user: data.user, token: data.token, isAdmin: ***REMOVED***.amAdmin});
+        deferred.resolve({user: event.data.user, token: data.token, isAdmin: ***REMOVED***.amAdmin});
+      } else {
+        deferred.reject(data);
+      }
+
+      authWindow.close();
+    }
+
+    $window.addEventListener('message', onMessage, false);
+
+    return deferred.promise;
+  }
+
+  function oauthSignup(strategy) {
+    var deferred = $q.defer();
+
+    windowLeft = window.screenLeft ? window.screenLeft : window.screenX;
+    windowTop = window.screenTop ? window.screenTop : window.screenY;
+
+    var left = windowLeft + (window.innerWidth / 2) - (300);
+    var top = windowTop + (window.innerHeight / 2) - (300);
+    var strWindowFeatures = 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=600, height=600, top=' + top + ',left=' + left;
+
+    var authWindow = $window.open("/auth/" +  strategy + "/signup", "", strWindowFeatures);
+    $window.addEventListener('message', function(event) {
+      var data = event.data;
+      if (data.user) {
+        setUser(event.data.user);
+        deferred.resolve({user: event.data.user});
+      } else {
+        deferred.reject(data);
+      }
+
+      authWindow.close();
+    }, false);
+
+    return deferred.promise;
   }
 
   function login(data) {
