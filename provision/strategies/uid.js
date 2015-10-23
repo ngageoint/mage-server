@@ -4,9 +4,9 @@ function Strategy(options, verify) {
     options = {};
   }
   if (!verify) throw new Error('uid provisioning strategy requires a verify function');
-  
-  this.uidField = options.usernameField || 'uid';
-  
+
+  this.uidField = options.uidField || 'uid';
+
   this.name = 'uid';
   this.verify = verify;
 }
@@ -17,16 +17,16 @@ Strategy.prototype.check = function(req, options, done) {
     options = {};
   }
 
-  var uid = req.param(this.uidField);
-  
+  var uid = options.uid || req.param(this.uidField);
+
   if (!uid) {
-    return this.fail(new Error(options.badRequestMessage || 'Missing uid'));
+    return done(new Error(options.badRequestMessage || 'Missing uid'));
   }
-  
+
   this.verify(uid, done);
 }
 
 /**
  * Expose `Strategy`.
- */ 
+ */
  exports.Strategy = Strategy;

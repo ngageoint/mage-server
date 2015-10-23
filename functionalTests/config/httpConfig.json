@@ -1,0 +1,10 @@
+{
+  "httpServer":{
+    "name": "mageDemo",
+    "location": "https://magedemo.geointapps.org/api"
+  },
+  "localServer":{
+    "name": "local MAGE server",
+    "location": "http://localhost:4242/api"
+  }
+}

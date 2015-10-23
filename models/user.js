@@ -21,9 +21,7 @@ var PhoneSchema = new Schema({
 // Collection to hold users
 var UserSchema = new Schema({
   username: { type: String, required: true, unique: true },
-  p***REMOVED***word: { type: String, required: true },
-  firstname: { type: String, required: true },
-  lastname: {type: String, required: true },
+  displayName: { type: String, required: true },
   email: {type: String, required: false },
   phones: [PhoneSchema],
   avatar: {
@@ -39,14 +37,21 @@ var UserSchema = new Schema({
   active: { type: Boolean, required: true },
   roleId: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
   status: { type: String, required: false, index: 'sparse' },
-  recentEventIds: [{type: Number, ref: 'Event'}]
+  recentEventIds: [{type: Number, ref: 'Event'}],
+  authentication: {
+    type: { type: String, required: false },
+    id: { type: String, required: false },
+    p***REMOVED***word: { type: String, required: false }
+  }
 },{
   versionKey: false
 });
 
 UserSchema.method('validP***REMOVED***word', function(p***REMOVED***word, callback) {
   var user = this;
-  hasher.validP***REMOVED***word(p***REMOVED***word, user.p***REMOVED***word, callback);
+  if (user.authentication.type !== 'local') return callback(null, true);
+
+  hasher.validP***REMOVED***word(p***REMOVED***word, user.authentication.p***REMOVED***word, callback);
 });
 
 // Lowercase the username we store, this will allow for case insensitive usernames
@@ -70,14 +75,14 @@ UserSchema.pre('save', function(next) {
   var user = this;
 
   // only hash the p***REMOVED***word if it has been modified (or is new)
-  if (!user.isModified('p***REMOVED***word')) {
+  if (user.authentication.type !== 'local' && !user.isModified('authentication.p***REMOVED***word')) {
     return next();
   }
 
-  hasher.encryptP***REMOVED***word(user.p***REMOVED***word, function(err, encryptedP***REMOVED***word) {
+  hasher.encryptP***REMOVED***word(user.authentication.p***REMOVED***word, function(err, encryptedP***REMOVED***word) {
     if (err) return next(err);
 
-    user.p***REMOVED***word = encryptedP***REMOVED***word;
+    user.authentication.p***REMOVED***word = encryptedP***REMOVED***word;
     next();
   });
 });
@@ -191,6 +196,12 @@ exports.getUserByUsername = function(username, callback) {
   });
 }
 
+exports.getUserByAuthenticationId = function(authenticationType, id, callback) {
+  User.findOne({'authentication.type': authenticationType, 'authentication.id': id}).populate('roleId').exec(function(err, user) {
+    callback(err, user);
+  });
+}
+
 exports.count = function(callback) {
   User.count({}, function(err, count) {
     callback(err, count);
@@ -235,15 +246,14 @@ exports.getUsers = function(options, callback) {
 exports.createUser = function(user, callback) {
   var create = {
     username: user.username,
-    firstname: user.firstname,
-    lastname: user.lastname,
+    displayName: user.displayName,
     email: user.email,
     phones: user.phones,
-    p***REMOVED***word: user.p***REMOVED***word,
     active: user.active,
     roleId: user.roleId,
     avatar: user.avatar,
-    icon: user.icon
+    icon: user.icon,
+    authentication: user.authentication
   }
 
   User.create(create, function(err, user) {

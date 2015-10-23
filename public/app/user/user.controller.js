@@ -14,8 +14,7 @@ function UserController($scope, $location, $timeout, UserService, user) {
   $scope.saveUser = function() {
     var user = {
       username: this.user.username,
-      firstname: this.user.firstname,
-      lastname: this.user.lastname,
+      displayName: this.user.displayName,
       email: this.user.email,
       phone: this.user.phone,
       avatar: $scope.avatar
