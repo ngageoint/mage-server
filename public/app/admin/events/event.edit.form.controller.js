@@ -100,7 +100,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
   $scope.addNewField = function() {
     // put newField into fields array
     var fields = $scope.event.form.fields;
-    var id = fields[fields.length - 1].id + 1;
+    var id = _.max(fields, function(field) { return field.id; }).id + 1;
 
     $scope.newField.id = id;
     $scope.newField.name = "field" + id;
