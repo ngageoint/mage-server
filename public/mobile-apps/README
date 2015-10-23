@@ -1,5 +1,1 @@
-mage.ipa/mage.apk is the file that is downloaded by users and a copy of it with the version number in the file name should always in the apks/ipas folder.  I.E. ipas/AppStore-1-1-9.ipa. When dropping in a new ipa/apk please do the following to ensure we save old versions:
-
-1. Pull in new versioned ipa/apk and place it in the apks/ipas folder with the version # in the file name, i.e. mage-1.2.apk
-2. Copy the new verision of ipa/apk to this fodler as mage.ipa/mage.apk
-3. svn add both files , i.e. 'svn add apk/mage-1.2.apk' 'svn add ./mage.apk'
+This folder can contain the mobile version of MAGE Android that can be downloaded from the about page, 'mage.apk'.
