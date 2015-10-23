@@ -1,0 +1,46 @@
+{
+  "api": {
+    "name": "MAGE (Mobile Awareness GEOINT Environment)",
+    "version": {
+      "major": 3,
+      "minor": 1,
+      "micro": 0
+    },
+    "authentication": {
+      "strategy": "local",
+      "p***REMOVED***wordMinLength": 14
+    },
+    "provision": {
+      "strategy": "uid"
+    },
+    "locationServices": true,
+    "apk": {
+      "version": "4.0.0",
+      "supportedVersions": [
+        "4.0",
+        "5.1"
+      ]
+    }
+  },
+  "server": {
+    "type": "PDC",
+    "userBaseDirectory": "/var/lib/mage/users",
+    "iconBaseDirectory": "/var/lib/mage/icons",
+    "token": {
+      "expiration": 28800
+    },
+    "mongodb": {
+      "host": "localhost",
+      "port": 27017,
+      "db": "magedb",
+      "poolSize": 5
+    },
+    "locationServices": {
+      "enabled": true,
+      "userCollectionLocationLimit": 100
+    },
+    "attachment": {
+      "baseDirectory": "/var/lib/mage/attachments"
+    }
+  }
+}

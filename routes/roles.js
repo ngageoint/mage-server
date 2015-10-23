@@ -1,11 +1,9 @@
 module.exports = function(app, security) {
   var access = require('../access')
     , Role = require('../models/role')
-    , p***REMOVED***port = security.authentication.p***REMOVED***port
-    , authenticationStrategy = security.authentication.authenticationStrategy;
+    , p***REMOVED***port = security.authentication.p***REMOVED***port;
 
-
-  app.all('/api/roles*', p***REMOVED***port.authenticate(authenticationStrategy));
+  app.all('/api/roles*', p***REMOVED***port.authenticate('bearer'));
 
   var validateRoleParams = function(req, res, next) {
     var name = req.param('name');
@@ -25,7 +23,7 @@ module.exports = function(app, security) {
 
   // get all roles
   app.get(
-    '/api/roles', 
+    '/api/roles',
     access.authorize('READ_ROLE'),
     function (req, res) {
       Role.getRoles(function(err, roles) {
@@ -36,8 +34,8 @@ module.exports = function(app, security) {
 
   // get role
   app.get(
-    '/api/roles/:roleId', 
-    access.authorize('READ_ROLE'), 
+    '/api/roles/:roleId',
+    access.authorize('READ_ROLE'),
     function (req, res) {
       res.json(req.role);
     }
@@ -62,7 +60,7 @@ module.exports = function(app, security) {
   // Update a role
   app.put(
     '/api/roles/:roleId',
-    access.authorize('UPDATE_ROLE'), 
+    access.authorize('UPDATE_ROLE'),
     function(req, res) {
       var update = {};
       if (req.roleParam.name) update.name = req.roleParam.name;
@@ -83,7 +81,7 @@ module.exports = function(app, security) {
 
   // Delete a role
   app.delete(
-    '/api/roles/:roleId', 
+    '/api/roles/:roleId',
     access.authorize('DELETE_ROLE'),
     function(req, res) {
       Role.deleteRole(req.role, function(err, role) {
