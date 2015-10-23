@@ -53,6 +53,7 @@ exports.createToken = function(options, callback) {
     expirationDate: new Date(now + tokenExpiration)
   };
   var options = {upsert: true, new: true};
+
   Token.findOneAndUpdate(query, update, options, function(err, newToken) {
     callback(err, newToken);
   });

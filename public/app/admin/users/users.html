@@ -25,7 +25,7 @@
           <form cl***REMOVED***="form">
             <div cl***REMOVED***="form-group">
               <label>Search</label>
-              <input type="text" cl***REMOVED***="form-control" placeholder="name, username, email" ng-model="userSearch" ng-change="page=0">
+              <input type="text" cl***REMOVED***="form-control" placeholder="name, email" ng-model="userSearch" ng-change="page=0">
             </div>
           </form>
           <hr>
@@ -50,15 +50,15 @@
             <div cl***REMOVED***="col-md-12">
               <div cl***REMOVED***="admin-table">
                 <div cl***REMOVED***="well-item"
-                    ng-repeat="u in (filteredUsers = (users | user:['username','firstname','lastname','email']:userSearch)) | filter:filterActive | orderBy:'username' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
+                    ng-repeat="u in (filteredUsers = (users | user:['displayName','email']:userSearch)) | filter:filterActive | orderBy:'displayName' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
 
                     <div cl***REMOVED***="row pointer" ng-click="gotoUser(u)">
                       <div cl***REMOVED***="col-md-8">
                         <div cl***REMOVED***="img-container pull-left">
                           <img cl***REMOVED***="avatar-thumbnail img-rounded" ng-src="{{u.avatarUrl ? u.avatarUrl + '?access_token=' + token : '/img/missing_photo.png'}}"/>
                         </div>
-                        <div cl***REMOVED***="strong">{{u.username}}</div>
-                        <div cl***REMOVED***="muted">{{u.firstname}} {{u.lastname}}</div>
+                        <div cl***REMOVED***="strong">{{u.displayName}}</div>
+                        <div cl***REMOVED***="muted">{{u.email}}</div>
                       </div>
                       <div cl***REMOVED***="col-md-4">
                         <button cl***REMOVED***="btn btn-sm btn-danger pull-right admin-user-button" ng-click="deleteUser($event, u)">Delete</button>
