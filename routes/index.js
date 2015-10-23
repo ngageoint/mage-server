@@ -12,9 +12,6 @@ module.exports = function(app, security) {
     , Setting = require('../models/setting')
     , log = require('winston');
 
-  var p***REMOVED***port = security.authentication.p***REMOVED***port
-    , authenticationStrategy = security.authentication.authenticationStrategy;
-
   var resources = {
     layerResource: {
       location: '/FeatureServer',
