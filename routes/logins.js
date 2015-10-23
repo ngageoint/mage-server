@@ -2,10 +2,9 @@ module.exports = function(app, security) {
   var access = require('../access')
     , moment = require('moment')
     , Login = require('../models/login')
-    , p***REMOVED***port = security.authentication.p***REMOVED***port
-    , authenticationStrategy = security.authentication.authenticationStrategy;
+    , p***REMOVED***port = security.authentication.p***REMOVED***port;
 
-  app.all('/api/logins*', p***REMOVED***port.authenticate(authenticationStrategy));
+  app.all('/api/logins*', p***REMOVED***port.authenticate('bearer'));
 
   function generateParameters(options) {
     var partial = "";
@@ -35,7 +34,6 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/logins',
-    p***REMOVED***port.authenticate(authenticationStrategy),
     access.authorize('READ_USER'),
     function(req, res, next) {
       var options = {};

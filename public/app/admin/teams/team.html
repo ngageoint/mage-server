@@ -86,12 +86,9 @@
               <div cl***REMOVED***="row">
                 <div cl***REMOVED***="col-md-12">
                   <ui-select ng-model="user.selected" theme="bootstrap">
-                    <ui-select-match placeholder="Select a user to add to team">{{$select.selected.username}}</ui-select-match>
+                    <ui-select-match placeholder="Select a user to add to team">{{$select.selected.displayName}}</ui-select-match>
                     <ui-select-choices group-by="groupLayerByType" repeat="user in nonUsers | orderBy: 'name' | filter: $select.search">
-                      <div ng-bind-html="user.username | highlight: $select.search"></div>
-                      <small cl***REMOVED***="muted">
-                       <span ng-bind-html="''+user.firstname + ' ' + user.lastname | highlight: $select.search"></span>
-                     </small>
+                      <div ng-bind-html="user.displayName | highlight: $select.search"></div>
                     </ui-select-choices>
                   </ui-select>
                 </div>
@@ -132,16 +129,15 @@
             <div cl***REMOVED***="col-sm-12">
               <div cl***REMOVED***="admin-table">
                 <div cl***REMOVED***="well-item"
-                    ng-repeat="user in (filteredUsers = (team.users | user:['username','firstname','lastname','email']:memberSearch)) | orderBy:'username' | offset: usersPage*usersPerPage | limitTo:usersPerPage" >
-                  <div cl***REMOVED***="row pointer" ng-click="gotoUser(user)">
+                    ng-repeat="user in (filteredUsers = (team.users | user:['displayName','email']:memberSearch)) | orderBy:'displayName' | offset: usersPage*usersPerPage | limitTo:usersPerPage" >
+                  <div cl***REMOVED***="row">
                     <div cl***REMOVED***="col-md-12">
                       <div cl***REMOVED***="right-gap pull-left">
                         <i cl***REMOVED***="fa fa-user"></i>
                       </div>
                       <span>
-                        {{user.firstname}} {{user.lastname}}
+                        {{user.displayName}}
                       </span>
-                      <span cl***REMOVED***="muted"> ({{user.username}})</span>
 
                       <span cl***REMOVED***="pull-right" ng-show="edit">
                         <a cl***REMOVED***="btn btn-xs btn-danger" ng-click="removeUser(user)"><i cl***REMOVED***="fa fa-minus"></i></a>
