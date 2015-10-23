@@ -90,6 +90,10 @@ function AdminTeamController($scope, $modal, $filter, $location, $routeParams, T
     $location.path('/admin/events/' + event.id);
   }
 
+  $scope.gotoUser = function(user) {
+    $location.path('/admin/users/' + user.id);
+  }
+
   $scope.addEventToTeam = function(event) {
     Event.addTeam({id: event.id}, $scope.team, function(event) {
       $scope.teamEvents.push(event);

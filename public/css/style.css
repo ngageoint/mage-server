@@ -70,6 +70,10 @@ a {
   padding: 16px;
 }
 
+.dropdown-menu {
+  z-index: 1031;
+}
+
 .center-block {
   display: block;
   margin-left: auto;

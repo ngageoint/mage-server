@@ -2,6 +2,7 @@ var mongoose = require('mongoose')
   , async = require('async')
   , Counter = require('./counter')
   , Team = require('./team')
+  , User = require('./user')
   , api = require('../api')
   , log = require('winston');
 
@@ -44,6 +45,35 @@ var EventSchema = new Schema({
   }
 },{
   versionKey: false
+});
+
+EventSchema.pre('remove', function(next) {
+  var event = this;
+
+  async.parallel({
+    collection: function(done) {
+      dropObservationCollection(event, done);
+    },
+    icons: function(done) {
+      new api.Icon(event._id).delete(function(err) {
+        done(err);
+      });
+    },
+    recentEventIds: function(done) {
+      User.removerRecentEventForUsers(event, function(err) {
+        done(err);
+      });
+    },
+    attachments: function(done) {
+      new api.Attachment(event).deleteAllForEvent(function(err) {
+        console.log('done deleting attachments for event');
+        done(err);
+      });
+    }
+  },
+  function(err, results) {
+    next(err);
+  });
 });
 
 function transform(event, ret, options) {
@@ -208,7 +238,7 @@ exports.getById = function(id, options, callback) {
 exports.filterEventsByUserId = filterEventsByUserId;
 exports.eventHasUser = eventHasUser;
 
-var createObservationCollection = function(event) {
+function createObservationCollection(event) {
   log.info("Creating observation collection: " + event.collectionName + ' for event ' + event.name);
   mongoose.connection.db.createCollection(event.collectionName, function(err, collection) {
     if (err) {
@@ -220,15 +250,14 @@ var createObservationCollection = function(event) {
   });
 }
 
-var dropObservationCollection = function(event) {
+function dropObservationCollection(event, callback) {
   log.info("Dropping observation collection: " + event.collectionName);
   mongoose.connection.db.dropCollection(event.collectionName, function(err, results) {
-    if (err) {
-      log.error(err);
-      return;
+    if (!err) {
+      log.info('Dropped observation collection ' + event.collectionName);
     }
 
-    log.info('Dropped observation collection ' + event.collectionName);
+    callback(err);
   });
 }
 
@@ -345,14 +374,6 @@ exports.removeTeamFromEvents = function(team, callback) {
 
 exports.remove = function(event, callback) {
   event.remove(function(err) {
-    if (err) return callback(err);
-
-    dropObservationCollection(event);
-
-    new api.Icon(event._id).delete(function(err) {
-      if (err) return callback(err);
-
-      callback(err, event);
-    });
+    return callback(err);
   });
 }

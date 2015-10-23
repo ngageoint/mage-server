@@ -18,9 +18,6 @@ var LocationSchema = new Schema({
     versionKey: false
 });
 
-// TODO when user is removed need to remove thier locations.
-// TODO ensure new queries are hitting indexes
-
 LocationSchema.index({geometry: "2dsphere"});
 LocationSchema.index({'properties.timestamp': 1});
 LocationSchema.index({'properties.timestamp': 1, _id: 1});
