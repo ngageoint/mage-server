@@ -26,7 +26,7 @@ If you want to explore the interactive documentation there is a link from the Ab
 Want to use the API to build your own client?  Swagger has many tools to generate method stubs based on the api.  [Swagger Codegen](https://github.com/swagger-api/swagger-codegen/blob/master/README.md) is a good place to start.
 
 #### iOS and/or Android
-Thinking about your own iOS or Android application based on the MAGE API.  We have an [Android SDK](https://github.com/ngageoint/mage-android-sdk) and [iOS SDK](https://github.com/ngageoint/mage-ios-sdk) project built around the MAGE API.
+Thinking about your own iOS or Android application based on the MAGE API.  We have [Android SDK](https://github.com/ngageoint/mage-android-sdk) and [iOS SDK](https://github.com/ngageoint/mage-ios-sdk) projects built around the MAGE API.
 
 ## Setup and installation
 Currently MAGE runs on most linux flavors such as OSX, CentOS and Ubuntu.  Windows is not currently supported, but with a little work (mainly paths) and testing this is possible.
