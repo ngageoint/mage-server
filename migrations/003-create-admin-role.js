@@ -3,6 +3,7 @@ var  Role = require('../models/role');
 exports.id = 'create-initial-admin-role';
 
 exports.up = function(done) {
+  console.log('\nCreating admin role...');
 
   var adminPermissions = [
     'READ_SETTINGS', 'UPDATE_SETTINGS',
