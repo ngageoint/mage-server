@@ -19,12 +19,13 @@ The mage-image plugin will ensure that all image attachments uploaded to the MAG
 
 Configuration:
 * image
-** orient - flag to turn orientation on/off
-** thumbSizes - array of image thumbnail sizes to create.
-** interval - frequency (seconds) at which the plugin will check for new images to rotate.
+ * orient - flag to turn orientation on/off
+ * thumbSizes - array of image thumbnail sizes to create.
+ * interval - frequency (seconds) at which the plugin will check for new images to rotate.
 * mongodb
-** url - url scheme for the mongodb database.  This should be the same mongodb schema as used in your main MAGE configuration.
-** poolSize - mongodb connection pool size for this plugin
+ * url - url scheme for the mongodb database.  This should be the same mongodb schema as used in your main MAGE configuration.
+ * poolSize - mongodb connection pool size for this plugin
+
 ```json
 {
   "enable": false,
