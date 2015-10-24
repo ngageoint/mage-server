@@ -18,13 +18,11 @@ MAGE is built using the MEAN stack.  The components of the MEAN stack are as fol
 
 ## API Documentation
 
-The MAGE RESTful API is documented using [Swagger](http://swagger.io/).
+The MAGE RESTful API is documented using [Swagger](http://swagger.io/). MAGE swagger API docs are servered out from /api/api-docs.
 
 If you want to explore the interactive documentation there is a link from the About page.  Your API token is automatically inserted into interactive docs.  Have fun and remember that the documentation is hitting the server's API, so be careful with modifing requests such as POST/PUT/DELETE.
 
 Want to use the API to build your own client?  Swagger has many tools to generate method stubs based on the api.  [Swagger Codegen](https://github.com/swagger-api/swagger-codegen/blob/master/README.md) is a good place to start.
-
-MAGE swagger API docs are servered out from /api/api-docs.
 
 ## Setup and installation
 Currently MAGE runs on most linux flavors such as OSX, CentOS and Ubuntu.  Windows is not currently supported, but with a little work (mainly paths) and testing this is possible.
