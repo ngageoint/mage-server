@@ -8,7 +8,7 @@
     },
     "authentication": {
       "strategy": "local",
-      "p***REMOVED***wordMinLength": 14
+      "passwordMinLength": 14
     },
     "provision": {
       "strategy": "uid"

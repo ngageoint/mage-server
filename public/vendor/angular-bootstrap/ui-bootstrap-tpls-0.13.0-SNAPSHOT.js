@@ -6,14 +6,14 @@
  * License: MIT
  */
 angular.module("ui.bootstrap", ["ui.bootstrap.tpls", "ui.bootstrap.transition","ui.bootstrap.collapse","ui.bootstrap.accordion","ui.bootstrap.alert","ui.bootstrap.bindHtml","ui.bootstrap.buttons","ui.bootstrap.carousel","ui.bootstrap.dateparser","ui.bootstrap.position","ui.bootstrap.datepicker","ui.bootstrap.dropdown","ui.bootstrap.modal","ui.bootstrap.pagination","ui.bootstrap.tooltip","ui.bootstrap.popover","ui.bootstrap.progressbar","ui.bootstrap.rating","ui.bootstrap.tabs","ui.bootstrap.timepicker","ui.bootstrap.typeahead"]);
-angular.module("ui.bootstrap.tpls", ["template/accordion/accordion-group.html","template/accordion/accordion.html","template/alert/alert.html","template/carousel/carousel.html","template/carousel/slide.html","template/datepicker/datepicker.html","template/datepicker/day.html","template/datepicker/month.html","template/datepicker/popup.html","template/datepicker/year.html","template/modal/backdrop.html","template/modal/window.html","template/pagination/pager.html","template/pagination/pagination.html","template/tooltip/tooltip-html-u***REMOVED***fe-popup.html","template/tooltip/tooltip-popup.html","template/popover/popover.html","template/progressbar/bar.html","template/progressbar/progress.html","template/progressbar/progressbar.html","template/rating/rating.html","template/tabs/tab.html","template/tabs/tabset.html","template/timepicker/timepicker.html","template/typeahead/typeahead-match.html","template/typeahead/typeahead-popup.html"]);
+angular.module("ui.bootstrap.tpls", ["template/accordion/accordion-group.html","template/accordion/accordion.html","template/alert/alert.html","template/carousel/carousel.html","template/carousel/slide.html","template/datepicker/datepicker.html","template/datepicker/day.html","template/datepicker/month.html","template/datepicker/popup.html","template/datepicker/year.html","template/modal/backdrop.html","template/modal/window.html","template/pagination/pager.html","template/pagination/pagination.html","template/tooltip/tooltip-html-unsafe-popup.html","template/tooltip/tooltip-popup.html","template/popover/popover.html","template/progressbar/bar.html","template/progressbar/progress.html","template/progressbar/progressbar.html","template/rating/rating.html","template/tabs/tab.html","template/tabs/tabset.html","template/timepicker/timepicker.html","template/typeahead/typeahead-match.html","template/typeahead/typeahead-popup.html"]);
 angular.module('ui.bootstrap.transition', [])
 
 /**
- * $transition ***REMOVED*** provides a consistent interface to trigger CSS 3 transitions and to be informed when they complete.
+ * $transition service provides a consistent interface to trigger CSS 3 transitions and to be informed when they complete.
  * @param  {DOMElement} element  The DOMElement that will be animated.
  * @param  {string|object|function} trigger  The thing that will cause the transition to start:
- *   - As a string, it represents the css cl***REMOVED*** to be added to the element.
+ *   - As a string, it represents the css class to be added to the element.
  *   - As an object, it represents a hash of style attributes to be applied to the element.
  *   - As a function, it represents a function to be called that will cause the transition to occur.
  * @return {Promise}  A promise that is resolved when the transition finishes.
@@ -39,7 +39,7 @@ angular.module('ui.bootstrap.transition', [])
     // Wrap in a timeout to allow the browser time to update the DOM before the transition is to occur
     $timeout(function() {
       if ( angular.isString(trigger) ) {
-        element.addCl***REMOVED***(trigger);
+        element.addClass(trigger);
       } else if ( angular.isFunction(trigger) ) {
         trigger(element);
       } else if ( angular.isObject(trigger) ) {
@@ -122,14 +122,14 @@ angular.module('ui.bootstrap.collapse', ['ui.bootstrap.transition'])
             initialAnimSkip = false;
             expandDone();
           } else {
-            element.removeCl***REMOVED***('collapse').addCl***REMOVED***('collapsing');
+            element.removeClass('collapse').addClass('collapsing');
             doTransition({ height: element[0].scrollHeight + 'px' }).then(expandDone);
           }
         }
 
         function expandDone() {
-          element.removeCl***REMOVED***('collapsing');
-          element.addCl***REMOVED***('collapse in');
+          element.removeClass('collapsing');
+          element.addClass('collapse in');
           element.css({height: 'auto'});
         }
 
@@ -144,15 +144,15 @@ angular.module('ui.bootstrap.collapse', ['ui.bootstrap.transition'])
             //trigger reflow so a browser realizes that height was updated from auto to a specific value
             var x = element[0].offsetWidth;
 
-            element.removeCl***REMOVED***('collapse in').addCl***REMOVED***('collapsing');
+            element.removeClass('collapse in').addClass('collapsing');
 
             doTransition({ height: 0 }).then(collapseDone);
           }
         }
 
         function collapseDone() {
-          element.removeCl***REMOVED***('collapsing');
-          element.addCl***REMOVED***('collapse');
+          element.removeClass('collapsing');
+          element.addClass('collapse');
         }
 
         scope.$watch(attrs.collapse, function (shouldCollapse) {
@@ -210,7 +210,7 @@ angular.module('ui.bootstrap.accordion', ['ui.bootstrap.collapse'])
 }])
 
 // The accordion directive simply sets up the directive controller
-// and adds an accordion CSS cl***REMOVED*** to itself element.
+// and adds an accordion CSS class to itself element.
 .directive('accordion', function () {
   return {
     restrict:'EA',
@@ -269,7 +269,7 @@ angular.module('ui.bootstrap.accordion', ['ui.bootstrap.collapse'])
     replace: true,
     require: '^accordionGroup',
     link: function(scope, element, attr, accordionGroupCtrl, transclude) {
-      // P***REMOVED*** the heading to the accordion-group controller
+      // Pass the heading to the accordion-group controller
       // so that it can be transcluded into the right place in the template
       // [The second parameter to transclude causes the elements to be cloned so that they work in ng-repeat]
       accordionGroupCtrl.setHeading(transclude(scope, angular.noop));
@@ -279,8 +279,8 @@ angular.module('ui.bootstrap.accordion', ['ui.bootstrap.collapse'])
 
 // Use in the accordion-group template to indicate where you want the heading to be transcluded
 // You must provide the property on the accordion-group controller that will hold the transcluded element
-// <div cl***REMOVED***="accordion-group">
-//   <div cl***REMOVED***="accordion-heading" ><a ... accordion-transclude="heading">...</a></div>
+// <div class="accordion-group">
+//   <div class="accordion-heading" ><a ... accordion-transclude="heading">...</a></div>
 //   ...
 // </div>
 .directive('accordionTransclude', function() {
@@ -331,10 +331,10 @@ angular.module('ui.bootstrap.alert', [])
 
 angular.module('ui.bootstrap.bindHtml', [])
 
-  .directive('bindHtmlU***REMOVED***fe', function () {
+  .directive('bindHtmlUnsafe', function () {
     return function (scope, element, attr) {
-      element.addCl***REMOVED***('ng-binding').data('$binding', attr.bindHtmlU***REMOVED***fe);
-      scope.$watch(attr.bindHtmlU***REMOVED***fe, function bindHtmlU***REMOVED***feWatchAction(value) {
+      element.addClass('ng-binding').data('$binding', attr.bindHtmlUnsafe);
+      scope.$watch(attr.bindHtmlUnsafe, function bindHtmlUnsafeWatchAction(value) {
         element.html(value || '');
       });
     };
@@ -342,12 +342,12 @@ angular.module('ui.bootstrap.bindHtml', [])
 angular.module('ui.bootstrap.buttons', [])
 
 .constant('buttonConfig', {
-  activeCl***REMOVED***: 'active',
+  activeClass: 'active',
   toggleEvent: 'click'
 })
 
 .controller('ButtonsController', ['buttonConfig', function(buttonConfig) {
-  this.activeCl***REMOVED*** = buttonConfig.activeCl***REMOVED*** || 'active';
+  this.activeClass = buttonConfig.activeClass || 'active';
   this.toggleEvent = buttonConfig.toggleEvent || 'click';
 }])
 
@@ -360,12 +360,12 @@ angular.module('ui.bootstrap.buttons', [])
 
       //model -> UI
       ngModelCtrl.$render = function () {
-        element.toggleCl***REMOVED***(buttonsCtrl.activeCl***REMOVED***, angular.equals(ngModelCtrl.$modelValue, scope.$eval(attrs.btnRadio)));
+        element.toggleClass(buttonsCtrl.activeClass, angular.equals(ngModelCtrl.$modelValue, scope.$eval(attrs.btnRadio)));
       };
 
       //ui->model
       element.bind(buttonsCtrl.toggleEvent, function () {
-        var isActive = element.hasCl***REMOVED***(buttonsCtrl.activeCl***REMOVED***);
+        var isActive = element.hasClass(buttonsCtrl.activeClass);
 
         if (!isActive || angular.isDefined(attrs.uncheckable)) {
           scope.$apply(function () {
@@ -400,13 +400,13 @@ angular.module('ui.bootstrap.buttons', [])
 
       //model -> UI
       ngModelCtrl.$render = function () {
-        element.toggleCl***REMOVED***(buttonsCtrl.activeCl***REMOVED***, angular.equals(ngModelCtrl.$modelValue, getTrueValue()));
+        element.toggleClass(buttonsCtrl.activeClass, angular.equals(ngModelCtrl.$modelValue, getTrueValue()));
       };
 
       //ui->model
       element.bind(buttonsCtrl.toggleEvent, function () {
         scope.$apply(function () {
-          ngModelCtrl.$setViewValue(element.hasCl***REMOVED***(buttonsCtrl.activeCl***REMOVED***) ? getFalseValue() : getTrueValue());
+          ngModelCtrl.$setViewValue(element.hasClass(buttonsCtrl.activeClass) ? getFalseValue() : getTrueValue());
           ngModelCtrl.$render();
         });
       });
@@ -441,7 +441,7 @@ angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
     if (nextSlide && nextSlide !== self.currentSlide) {
       if ($scope.$currentTransition) {
         $scope.$currentTransition.cancel();
-        //Timeout so ng-cl***REMOVED*** in template has time to fix cl***REMOVED***es for finished slide
+        //Timeout so ng-class in template has time to fix classes for finished slide
         $timeout(goNext);
       } else {
         goNext();
@@ -452,8 +452,8 @@ angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
       if (destroyed) { return; }
       //If we have a slide to transition from and we have a transition type and we're allowed, go
       if (self.currentSlide && angular.isString(direction) && !$scope.noTransition && nextSlide.$element) {
-        //We shouldn't do cl***REMOVED*** manip in here, but it's the same weird thing bootstrap does. need to fix sometime
-        nextSlide.$element.addCl***REMOVED***(direction);
+        //We shouldn't do class manip in here, but it's the same weird thing bootstrap does. need to fix sometime
+        nextSlide.$element.addClass(direction);
         var reflow = nextSlide.$element[0].offsetWidth; //force reflow
 
         //Set all other slides to stop doing their stuff for the new transition
@@ -605,13 +605,13 @@ angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
     <carousel>
       <slide>
         <img src="http://placekitten.com/150/150" style="margin:auto;">
-        <div cl***REMOVED***="carousel-caption">
+        <div class="carousel-caption">
           <p>Beautiful!</p>
         </div>
       </slide>
       <slide>
         <img src="http://placekitten.com/100/150" style="margin:auto;">
-        <div cl***REMOVED***="carousel-caption">
+        <div class="carousel-caption">
           <p>D'aww!</p>
         </div>
       </slide>
@@ -658,7 +658,7 @@ angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
   <carousel>
     <slide ng-repeat="slide in slides" active="slide.active">
       <img ng-src="{{slide.image}}" style="margin:auto;">
-      <div cl***REMOVED***="carousel-caption">
+      <div class="carousel-caption">
         <h4>Slide {{$index}}</h4>
         <p>{{slide.text}}</p>
       </div>
@@ -710,7 +710,7 @@ function CarouselDemoCtrl($scope) {
 
 angular.module('ui.bootstrap.dateparser', [])
 
-.***REMOVED***('dateParser', ['$locale', 'orderByFilter', function($locale, orderByFilter) {
+.service('dateParser', ['$locale', 'orderByFilter', function($locale, orderByFilter) {
 
   this.parsers = {};
 
@@ -1478,7 +1478,7 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
 
           // Propagate changes from datepicker to outside
           if ( key === 'datepickerMode' ) {
-            var setAttribute = getAttribute.***REMOVED***ign;
+            var setAttribute = getAttribute.assign;
             scope.$watch('watchData.' + key, function(value, oldvalue) {
               if ( value !== oldvalue ) {
                 setAttribute(scope.$parent, value);
@@ -1637,10 +1637,10 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
 angular.module('ui.bootstrap.dropdown', [])
 
 .constant('dropdownConfig', {
-  openCl***REMOVED***: 'open'
+  openClass: 'open'
 })
 
-.***REMOVED***('dropdownService', ['$document', function($document) {
+.service('dropdownService', ['$document', function($document) {
   var openScope = null;
 
   this.open = function( dropdownScope ) {
@@ -1690,7 +1690,7 @@ angular.module('ui.bootstrap.dropdown', [])
 .controller('DropdownController', ['$scope', '$attrs', '$parse', 'dropdownConfig', 'dropdownService', '$animate', function($scope, $attrs, $parse, dropdownConfig, dropdownService, $animate) {
   var self = this,
       scope = $scope.$new(), // create a child scope so we are not polluting original one
-      openCl***REMOVED*** = dropdownConfig.openCl***REMOVED***,
+      openClass = dropdownConfig.openClass,
       getIsOpen,
       setIsOpen = angular.noop,
       toggleInvoker = $attrs.onToggle ? $parse($attrs.onToggle) : angular.noop;
@@ -1700,7 +1700,7 @@ angular.module('ui.bootstrap.dropdown', [])
 
     if ( $attrs.isOpen ) {
       getIsOpen = $parse($attrs.isOpen);
-      setIsOpen = getIsOpen.***REMOVED***ign;
+      setIsOpen = getIsOpen.assign;
 
       $scope.$watch(getIsOpen, function(value) {
         scope.isOpen = !!value;
@@ -1728,7 +1728,7 @@ angular.module('ui.bootstrap.dropdown', [])
   };
 
   scope.$watch('isOpen', function( isOpen, wasOpen ) {
-    $animate[isOpen ? 'addCl***REMOVED***' : 'removeCl***REMOVED***'](self.$element, openCl***REMOVED***);
+    $animate[isOpen ? 'addClass' : 'removeClass'](self.$element, openClass);
 
     if ( isOpen ) {
       scope.focusToggleElement();
@@ -1774,7 +1774,7 @@ angular.module('ui.bootstrap.dropdown', [])
       var toggleDropdown = function(event) {
         event.preventDefault();
 
-        if ( !element.hasCl***REMOVED***('disabled') && !attrs.disabled ) {
+        if ( !element.hasClass('disabled') && !attrs.disabled ) {
           scope.$apply(function() {
             dropdownCtrl.toggle();
           });
@@ -1853,7 +1853,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
   })
 
 /**
- * A helper directive for the $modal ***REMOVED***. It creates a backdrop element.
+ * A helper directive for the $modal service. It creates a backdrop element.
  */
   .directive('modalBackdrop', ['$timeout', function ($timeout) {
     return {
@@ -1861,7 +1861,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
       replace: true,
       templateUrl: 'template/modal/backdrop.html',
       link: function (scope, element, attrs) {
-        scope.backdropCl***REMOVED*** = attrs.backdropCl***REMOVED*** || '';
+        scope.backdropClass = attrs.backdropClass || '';
 
         scope.animate = false;
 
@@ -1886,7 +1886,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
         return tAttrs.templateUrl || 'template/modal/window.html';
       },
       link: function (scope, element, attrs) {
-        element.addCl***REMOVED***(attrs.windowCl***REMOVED*** || '');
+        element.addClass(attrs.windowClass || '');
         scope.size = attrs.size;
 
         scope.close = function (evt) {
@@ -1899,7 +1899,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
         };
 
         // This property is only added to the scope for the purpose of detecting when this directive is rendered.
-        // We can detect that by using this property in the template ***REMOVED***ociated with this directive and then use
+        // We can detect that by using this property in the template associated with this directive and then use
         // {@link Attribute#$observe} on it. For more details please see {@link TableColumnResize}.
         scope.$isRendered = true;
 
@@ -1987,7 +1987,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
         //remove window DOM element
         removeAfterAnimate(modalWindow.modalDomEl, modalWindow.modalScope, 300, function() {
           modalWindow.modalScope.$destroy();
-          body.toggleCl***REMOVED***(OPENED_MODAL_CLASS, openedWindows.length() > 0);
+          body.toggleClass(OPENED_MODAL_CLASS, openedWindows.length() > 0);
           checkRemoveBackdrop();
         });
       }
@@ -2068,7 +2068,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
           backdropScope = $rootScope.$new(true);
           backdropScope.index = currBackdropIndex;
           var angularBackgroundDomEl = angular.element('<div modal-backdrop></div>');
-          angularBackgroundDomEl.attr('backdrop-cl***REMOVED***', modal.backdropCl***REMOVED***);
+          angularBackgroundDomEl.attr('backdrop-class', modal.backdropClass);
           backdropDomEl = $compile(angularBackgroundDomEl)(backdropScope);
           body.append(backdropDomEl);
         }
@@ -2076,7 +2076,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
         var angularDomEl = angular.element('<div modal-window></div>');
         angularDomEl.attr({
           'template-url': modal.windowTemplateUrl,
-          'window-cl***REMOVED***': modal.windowCl***REMOVED***,
+          'window-class': modal.windowClass,
           'size': modal.size,
           'index': openedWindows.length() - 1,
           'animate': 'animate'
@@ -2085,7 +2085,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
         var modalDomEl = $compile(angularDomEl)(modal.scope);
         openedWindows.top().value.modalDomEl = modalDomEl;
         body.append(modalDomEl);
-        body.addCl***REMOVED***(OPENED_MODAL_CLASS);
+        body.addClass(OPENED_MODAL_CLASS);
       };
 
       function broadcastClosing(modalWindow, resultOrReason, closing) {
@@ -2225,8 +2225,8 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
                 content: tplAndVars[0],
                 backdrop: modalOptions.backdrop,
                 keyboard: modalOptions.keyboard,
-                backdropCl***REMOVED***: modalOptions.backdropCl***REMOVED***,
-                windowCl***REMOVED***: modalOptions.windowCl***REMOVED***,
+                backdropClass: modalOptions.backdropClass,
+                windowClass: modalOptions.windowClass,
                 windowTemplateUrl: modalOptions.windowTemplateUrl,
                 size: modalOptions.size
               });
@@ -2256,7 +2256,7 @@ angular.module('ui.bootstrap.pagination', [])
 .controller('PaginationController', ['$scope', '$attrs', '$parse', function ($scope, $attrs, $parse) {
   var self = this,
       ngModelCtrl = { $setViewValue: angular.noop }, // nullModelCtrl
-      setNumPages = $attrs.numPages ? $parse($attrs.numPages).***REMOVED***ign : angular.noop;
+      setNumPages = $attrs.numPages ? $parse($attrs.numPages).assign : angular.noop;
 
   this.init = function(ngModelCtrl_, config) {
     ngModelCtrl = ngModelCtrl_;
@@ -2474,7 +2474,7 @@ angular.module('ui.bootstrap.pagination', [])
 angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap.bindHtml' ] )
 
 /**
- * The $tooltip ***REMOVED*** creates tooltip- and popover-like directives as well as
+ * The $tooltip service creates tooltip- and popover-like directives as well as
  * houses global options for them.
  */
 .provider( '$tooltip', function () {
@@ -2529,7 +2529,7 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
   }
 
   /**
-   * Returns the actual instance of the $tooltip ***REMOVED***.
+   * Returns the actual instance of the $tooltip service.
    * TODO support multiple triggers
    */
   this.$get = [ '$window', '$compile', '$timeout', '$document', '$position', '$interpolate', function ( $window, $compile, $timeout, $document, $position, $interpolate ) {
@@ -2541,12 +2541,12 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
        *
        * If a trigger is supplied,
        * it is used to show the tooltip; otherwise, it will use the `trigger`
-       * option p***REMOVED***ed to the `$tooltipProvider.options` method; else it will
+       * option passed to the `$tooltipProvider.options` method; else it will
        * default to the trigger supplied to this directive factory.
        *
        * The hide trigger is based on the show trigger. If the `trigger` option
-       * was p***REMOVED***ed to the `$tooltipProvider.options` method, it will use the
-       * mapped trigger from `triggerMap` or the p***REMOVED***ed trigger if the map is
+       * was passed to the `$tooltipProvider.options` method, it will use the
+       * mapped trigger from `triggerMap` or the passed trigger if the map is
        * undefined; otherwise, it uses the `triggerMap` value of the show
        * trigger; else it will just use the show trigger.
        */
@@ -2820,17 +2820,17 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
   return $tooltip( 'tooltip', 'tooltip', 'mouseenter' );
 }])
 
-.directive( 'tooltipHtmlU***REMOVED***fePopup', function () {
+.directive( 'tooltipHtmlUnsafePopup', function () {
   return {
     restrict: 'EA',
     replace: true,
     scope: { content: '@', placement: '@', animation: '&', isOpen: '&' },
-    templateUrl: 'template/tooltip/tooltip-html-u***REMOVED***fe-popup.html'
+    templateUrl: 'template/tooltip/tooltip-html-unsafe-popup.html'
   };
 })
 
-.directive( 'tooltipHtmlU***REMOVED***fe', [ '$tooltip', function ( $tooltip ) {
-  return $tooltip( 'tooltipHtmlU***REMOVED***fe', 'tooltip', 'mouseenter' );
+.directive( 'tooltipHtmlUnsafe', [ '$tooltip', function ( $tooltip ) {
+  return $tooltip( 'tooltipHtmlUnsafe', 'tooltip', 'mouseenter' );
 }]);
 
 /**
@@ -3138,17 +3138,17 @@ angular.module('ui.bootstrap.tabs', [])
 <example module="ui.bootstrap">
   <file name="index.html">
     <div ng-controller="TabsDemoCtrl">
-      <button cl***REMOVED***="btn btn-small" ng-click="items[0].active = true">
+      <button class="btn btn-small" ng-click="items[0].active = true">
         Select item 1, using active binding
       </button>
-      <button cl***REMOVED***="btn btn-small" ng-click="items[1].disabled = !items[1].disabled">
+      <button class="btn btn-small" ng-click="items[1].disabled = !items[1].disabled">
         Enable/disable item 2, using disabled binding
       </button>
       <br />
       <tabset>
         <tab heading="Tab 1">First Tab</tab>
         <tab select="alertMe()">
-          <tab-heading><i cl***REMOVED***="icon-bell"></i> Alert me!</tab-heading>
+          <tab-heading><i class="icon-bell"></i> Alert me!</tab-heading>
           Second Tab, with alert callback and html heading!
         </tab>
         <tab ng-repeat="item in items"
@@ -3194,7 +3194,7 @@ angular.module('ui.bootstrap.tabs', [])
         And some content, too!
       </tab>
       <tab>
-        <tab-heading><i cl***REMOVED***="icon-heart"></i> Icon heading?!?</tab-heading>
+        <tab-heading><i class="icon-heart"></i> Icon heading?!?</tab-heading>
         That's right.
       </tab>
     </tabset>
@@ -3558,8 +3558,8 @@ angular.module('ui.bootstrap.timepicker', [])
 angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap.bindHtml'])
 
 /**
- * A helper ***REMOVED*** that can parse typeahead's syntax (string provided by users)
- * Extracted to a separate ***REMOVED*** for ease of unit testing
+ * A helper service that can parse typeahead's syntax (string provided by users)
+ * Extracted to a separate service for ease of unit testing
  */
   .factory('typeaheadParser', ['$parse', function ($parse) {
 
@@ -3607,7 +3607,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       var isEditable = originalScope.$eval(attrs.typeaheadEditable) !== false;
 
       //binding to a variable that indicates if matches are being retrieved asynchronously
-      var isLoadingSetter = $parse(attrs.typeaheadLoading).***REMOVED***ign || angular.noop;
+      var isLoadingSetter = $parse(attrs.typeaheadLoading).assign || angular.noop;
 
       //a callback executed when a match is selected
       var onSelectCallback = $parse(attrs.typeaheadOnSelect);
@@ -3621,7 +3621,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //INTERNAL VARIABLES
 
       //model setter executed upon match selection
-      var $setModelValue = $parse(attrs.ngModel).***REMOVED***ign;
+      var $setModelValue = $parse(attrs.ngModel).assign;
 
       //expressions used by typeahead
       var parserResult = typeaheadParser.parse(attrs.typeahead);
@@ -3959,14 +3959,14 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
 
 angular.module("template/accordion/accordion-group.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/accordion/accordion-group.html",
-    "<div cl***REMOVED***=\"panel panel-default\">\n" +
-    "  <div cl***REMOVED***=\"panel-heading\">\n" +
-    "    <h4 cl***REMOVED***=\"panel-title\">\n" +
-    "      <a href=\"javascript:void(0)\" tabindex=\"0\" cl***REMOVED***=\"accordion-toggle\" ng-click=\"toggleOpen()\" accordion-transclude=\"heading\"><span ng-cl***REMOVED***=\"{'text-muted': isDisabled}\">{{heading}}</span></a>\n" +
+    "<div class=\"panel panel-default\">\n" +
+    "  <div class=\"panel-heading\">\n" +
+    "    <h4 class=\"panel-title\">\n" +
+    "      <a href=\"javascript:void(0)\" tabindex=\"0\" class=\"accordion-toggle\" ng-click=\"toggleOpen()\" accordion-transclude=\"heading\"><span ng-class=\"{'text-muted': isDisabled}\">{{heading}}</span></a>\n" +
     "    </h4>\n" +
     "  </div>\n" +
-    "  <div cl***REMOVED***=\"panel-collapse\" collapse=\"!isOpen\">\n" +
-    "	  <div cl***REMOVED***=\"panel-body\" ng-transclude></div>\n" +
+    "  <div class=\"panel-collapse\" collapse=\"!isOpen\">\n" +
+    "	  <div class=\"panel-body\" ng-transclude></div>\n" +
     "  </div>\n" +
     "</div>\n" +
     "");
@@ -3974,15 +3974,15 @@ angular.module("template/accordion/accordion-group.html", []).run(["$templateCac
 
 angular.module("template/accordion/accordion.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/accordion/accordion.html",
-    "<div cl***REMOVED***=\"panel-group\" ng-transclude></div>");
+    "<div class=\"panel-group\" ng-transclude></div>");
 }]);
 
 angular.module("template/alert/alert.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/alert/alert.html",
-    "<div cl***REMOVED***=\"alert\" ng-cl***REMOVED***=\"['alert-' + (type || 'warning'), closeable ? 'alert-dismissable' : null]\" role=\"alert\">\n" +
-    "    <button ng-show=\"closeable\" type=\"button\" cl***REMOVED***=\"close\" ng-click=\"close()\">\n" +
+    "<div class=\"alert\" ng-class=\"['alert-' + (type || 'warning'), closeable ? 'alert-dismissable' : null]\" role=\"alert\">\n" +
+    "    <button ng-show=\"closeable\" type=\"button\" class=\"close\" ng-click=\"close()\">\n" +
     "        <span aria-hidden=\"true\">&times;</span>\n" +
-    "        <span cl***REMOVED***=\"sr-only\">Close</span>\n" +
+    "        <span class=\"sr-only\">Close</span>\n" +
     "    </button>\n" +
     "    <div ng-transclude></div>\n" +
     "</div>\n" +
@@ -3991,26 +3991,26 @@ angular.module("template/alert/alert.html", []).run(["$templateCache", function(
 
 angular.module("template/carousel/carousel.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/carousel/carousel.html",
-    "<div ng-mouseenter=\"pause()\" ng-mouseleave=\"play()\" cl***REMOVED***=\"carousel\" ng-swipe-right=\"prev()\" ng-swipe-left=\"next()\">\n" +
-    "    <ol cl***REMOVED***=\"carousel-indicators\" ng-show=\"slides.length > 1\">\n" +
-    "        <li ng-repeat=\"slide in slides track by $index\" ng-cl***REMOVED***=\"{active: isActive(slide)}\" ng-click=\"select(slide)\"></li>\n" +
+    "<div ng-mouseenter=\"pause()\" ng-mouseleave=\"play()\" class=\"carousel\" ng-swipe-right=\"prev()\" ng-swipe-left=\"next()\">\n" +
+    "    <ol class=\"carousel-indicators\" ng-show=\"slides.length > 1\">\n" +
+    "        <li ng-repeat=\"slide in slides track by $index\" ng-class=\"{active: isActive(slide)}\" ng-click=\"select(slide)\"></li>\n" +
     "    </ol>\n" +
-    "    <div cl***REMOVED***=\"carousel-inner\" ng-transclude></div>\n" +
-    "    <a cl***REMOVED***=\"left carousel-control\" ng-click=\"prev()\" ng-show=\"slides.length > 1\"><span cl***REMOVED***=\"glyphicon glyphicon-chevron-left\"></span></a>\n" +
-    "    <a cl***REMOVED***=\"right carousel-control\" ng-click=\"next()\" ng-show=\"slides.length > 1\"><span cl***REMOVED***=\"glyphicon glyphicon-chevron-right\"></span></a>\n" +
+    "    <div class=\"carousel-inner\" ng-transclude></div>\n" +
+    "    <a class=\"left carousel-control\" ng-click=\"prev()\" ng-show=\"slides.length > 1\"><span class=\"glyphicon glyphicon-chevron-left\"></span></a>\n" +
+    "    <a class=\"right carousel-control\" ng-click=\"next()\" ng-show=\"slides.length > 1\"><span class=\"glyphicon glyphicon-chevron-right\"></span></a>\n" +
     "</div>\n" +
     "");
 }]);
 
 angular.module("template/carousel/slide.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/carousel/slide.html",
-    "<div ng-cl***REMOVED***=\"{\n" +
+    "<div ng-class=\"{\n" +
     "    'active': leaving || (active && !entering),\n" +
     "    'prev': (next || active) && direction=='prev',\n" +
     "    'next': (next || active) && direction=='next',\n" +
     "    'right': direction=='prev',\n" +
     "    'left': direction=='next'\n" +
-    "  }\" cl***REMOVED***=\"item text-center\" ng-transclude></div>\n" +
+    "  }\" class=\"item text-center\" ng-transclude></div>\n" +
     "");
 }]);
 
@@ -4028,20 +4028,20 @@ angular.module("template/datepicker/day.html", []).run(["$templateCache", functi
     "<table role=\"grid\" aria-labelledby=\"{{uniqueId}}-title\" aria-activedescendant=\"{{activeDateId}}\">\n" +
     "  <thead>\n" +
     "    <tr>\n" +
-    "      <th><button type=\"button\" cl***REMOVED***=\"btn btn-default btn-sm pull-left\" ng-click=\"move(-1)\" tabindex=\"-1\"><i cl***REMOVED***=\"glyphicon glyphicon-chevron-left\"></i></button></th>\n" +
-    "      <th colspan=\"{{5 + showWeeks}}\"><button id=\"{{uniqueId}}-title\" role=\"heading\" aria-live=\"***REMOVED***ertive\" aria-atomic=\"true\" type=\"button\" cl***REMOVED***=\"btn btn-default btn-sm\" ng-click=\"toggleMode()\" tabindex=\"-1\" style=\"width:100%;\"><strong>{{title}}</strong></button></th>\n" +
-    "      <th><button type=\"button\" cl***REMOVED***=\"btn btn-default btn-sm pull-right\" ng-click=\"move(1)\" tabindex=\"-1\"><i cl***REMOVED***=\"glyphicon glyphicon-chevron-right\"></i></button></th>\n" +
+    "      <th><button type=\"button\" class=\"btn btn-default btn-sm pull-left\" ng-click=\"move(-1)\" tabindex=\"-1\"><i class=\"glyphicon glyphicon-chevron-left\"></i></button></th>\n" +
+    "      <th colspan=\"{{5 + showWeeks}}\"><button id=\"{{uniqueId}}-title\" role=\"heading\" aria-live=\"assertive\" aria-atomic=\"true\" type=\"button\" class=\"btn btn-default btn-sm\" ng-click=\"toggleMode()\" tabindex=\"-1\" style=\"width:100%;\"><strong>{{title}}</strong></button></th>\n" +
+    "      <th><button type=\"button\" class=\"btn btn-default btn-sm pull-right\" ng-click=\"move(1)\" tabindex=\"-1\"><i class=\"glyphicon glyphicon-chevron-right\"></i></button></th>\n" +
     "    </tr>\n" +
     "    <tr>\n" +
-    "      <th ng-show=\"showWeeks\" cl***REMOVED***=\"text-center\"></th>\n" +
-    "      <th ng-repeat=\"label in labels track by $index\" cl***REMOVED***=\"text-center\"><small aria-label=\"{{label.full}}\">{{label.abbr}}</small></th>\n" +
+    "      <th ng-show=\"showWeeks\" class=\"text-center\"></th>\n" +
+    "      <th ng-repeat=\"label in labels track by $index\" class=\"text-center\"><small aria-label=\"{{label.full}}\">{{label.abbr}}</small></th>\n" +
     "    </tr>\n" +
     "  </thead>\n" +
     "  <tbody>\n" +
     "    <tr ng-repeat=\"row in rows track by $index\">\n" +
-    "      <td ng-show=\"showWeeks\" cl***REMOVED***=\"text-center h6\"><em>{{ weekNumbers[$index] }}</em></td>\n" +
-    "      <td ng-repeat=\"dt in row track by dt.date\" cl***REMOVED***=\"text-center\" role=\"gridcell\" id=\"{{dt.uid}}\" aria-disabled=\"{{!!dt.disabled}}\">\n" +
-    "        <button type=\"button\" style=\"width:100%;\" cl***REMOVED***=\"btn btn-default btn-sm\" ng-cl***REMOVED***=\"{'btn-info': dt.selected, active: isActive(dt)}\" ng-click=\"select(dt.date)\" ng-disabled=\"dt.disabled\" tabindex=\"-1\"><span ng-cl***REMOVED***=\"{'text-muted': dt.secondary, 'text-info': dt.current}\">{{dt.label}}</span></button>\n" +
+    "      <td ng-show=\"showWeeks\" class=\"text-center h6\"><em>{{ weekNumbers[$index] }}</em></td>\n" +
+    "      <td ng-repeat=\"dt in row track by dt.date\" class=\"text-center\" role=\"gridcell\" id=\"{{dt.uid}}\" aria-disabled=\"{{!!dt.disabled}}\">\n" +
+    "        <button type=\"button\" style=\"width:100%;\" class=\"btn btn-default btn-sm\" ng-class=\"{'btn-info': dt.selected, active: isActive(dt)}\" ng-click=\"select(dt.date)\" ng-disabled=\"dt.disabled\" tabindex=\"-1\"><span ng-class=\"{'text-muted': dt.secondary, 'text-info': dt.current}\">{{dt.label}}</span></button>\n" +
     "      </td>\n" +
     "    </tr>\n" +
     "  </tbody>\n" +
@@ -4054,15 +4054,15 @@ angular.module("template/datepicker/month.html", []).run(["$templateCache", func
     "<table role=\"grid\" aria-labelledby=\"{{uniqueId}}-title\" aria-activedescendant=\"{{activeDateId}}\">\n" +
     "  <thead>\n" +
     "    <tr>\n" +
-    "      <th><button type=\"button\" cl***REMOVED***=\"btn btn-default btn-sm pull-left\" ng-click=\"move(-1)\" tabindex=\"-1\"><i cl***REMOVED***=\"glyphicon glyphicon-chevron-left\"></i></button></th>\n" +
-    "      <th><button id=\"{{uniqueId}}-title\" role=\"heading\" aria-live=\"***REMOVED***ertive\" aria-atomic=\"true\" type=\"button\" cl***REMOVED***=\"btn btn-default btn-sm\" ng-click=\"toggleMode()\" tabindex=\"-1\" style=\"width:100%;\"><strong>{{title}}</strong></button></th>\n" +
-    "      <th><button type=\"button\" cl***REMOVED***=\"btn btn-default btn-sm pull-right\" ng-click=\"move(1)\" tabindex=\"-1\"><i cl***REMOVED***=\"glyphicon glyphicon-chevron-right\"></i></button></th>\n" +
+    "      <th><button type=\"button\" class=\"btn btn-default btn-sm pull-left\" ng-click=\"move(-1)\" tabindex=\"-1\"><i class=\"glyphicon glyphicon-chevron-left\"></i></button></th>\n" +
+    "      <th><button id=\"{{uniqueId}}-title\" role=\"heading\" aria-live=\"assertive\" aria-atomic=\"true\" type=\"button\" class=\"btn btn-default btn-sm\" ng-click=\"toggleMode()\" tabindex=\"-1\" style=\"width:100%;\"><strong>{{title}}</strong></button></th>\n" +
+    "      <th><button type=\"button\" class=\"btn btn-default btn-sm pull-right\" ng-click=\"move(1)\" tabindex=\"-1\"><i class=\"glyphicon glyphicon-chevron-right\"></i></button></th>\n" +
     "    </tr>\n" +
     "  </thead>\n" +
     "  <tbody>\n" +
     "    <tr ng-repeat=\"row in rows track by $index\">\n" +
-    "      <td ng-repeat=\"dt in row track by dt.date\" cl***REMOVED***=\"text-center\" role=\"gridcell\" id=\"{{dt.uid}}\" aria-disabled=\"{{!!dt.disabled}}\">\n" +
-    "        <button type=\"button\" style=\"width:100%;\" cl***REMOVED***=\"btn btn-default\" ng-cl***REMOVED***=\"{'btn-info': dt.selected, active: isActive(dt)}\" ng-click=\"select(dt.date)\" ng-disabled=\"dt.disabled\" tabindex=\"-1\"><span ng-cl***REMOVED***=\"{'text-info': dt.current}\">{{dt.label}}</span></button>\n" +
+    "      <td ng-repeat=\"dt in row track by dt.date\" class=\"text-center\" role=\"gridcell\" id=\"{{dt.uid}}\" aria-disabled=\"{{!!dt.disabled}}\">\n" +
+    "        <button type=\"button\" style=\"width:100%;\" class=\"btn btn-default\" ng-class=\"{'btn-info': dt.selected, active: isActive(dt)}\" ng-click=\"select(dt.date)\" ng-disabled=\"dt.disabled\" tabindex=\"-1\"><span ng-class=\"{'text-info': dt.current}\">{{dt.label}}</span></button>\n" +
     "      </td>\n" +
     "    </tr>\n" +
     "  </tbody>\n" +
@@ -4072,14 +4072,14 @@ angular.module("template/datepicker/month.html", []).run(["$templateCache", func
 
 angular.module("template/datepicker/popup.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/datepicker/popup.html",
-    "<ul cl***REMOVED***=\"dropdown-menu\" ng-style=\"{display: (isOpen && 'block') || 'none', top: position.top+'px', left: position.left+'px'}\" ng-keydown=\"keydown($event)\">\n" +
+    "<ul class=\"dropdown-menu\" ng-style=\"{display: (isOpen && 'block') || 'none', top: position.top+'px', left: position.left+'px'}\" ng-keydown=\"keydown($event)\">\n" +
     "	<li ng-transclude></li>\n" +
     "	<li ng-if=\"showButtonBar\" style=\"padding:10px 9px 2px\">\n" +
-    "		<span cl***REMOVED***=\"btn-group pull-left\">\n" +
-    "			<button type=\"button\" cl***REMOVED***=\"btn btn-sm btn-info\" ng-click=\"select('today')\">{{ getText('current') }}</button>\n" +
-    "			<button type=\"button\" cl***REMOVED***=\"btn btn-sm btn-danger\" ng-click=\"select(null)\">{{ getText('clear') }}</button>\n" +
+    "		<span class=\"btn-group pull-left\">\n" +
+    "			<button type=\"button\" class=\"btn btn-sm btn-info\" ng-click=\"select('today')\">{{ getText('current') }}</button>\n" +
+    "			<button type=\"button\" class=\"btn btn-sm btn-danger\" ng-click=\"select(null)\">{{ getText('clear') }}</button>\n" +
     "		</span>\n" +
-    "		<button type=\"button\" cl***REMOVED***=\"btn btn-sm btn-success pull-right\" ng-click=\"close()\">{{ getText('close') }}</button>\n" +
+    "		<button type=\"button\" class=\"btn btn-sm btn-success pull-right\" ng-click=\"close()\">{{ getText('close') }}</button>\n" +
     "	</li>\n" +
     "</ul>\n" +
     "");
@@ -4090,15 +4090,15 @@ angular.module("template/datepicker/year.html", []).run(["$templateCache", funct
     "<table role=\"grid\" aria-labelledby=\"{{uniqueId}}-title\" aria-activedescendant=\"{{activeDateId}}\">\n" +
     "  <thead>\n" +
     "    <tr>\n" +
-    "      <th><button type=\"button\" cl***REMOVED***=\"btn btn-default btn-sm pull-left\" ng-click=\"move(-1)\" tabindex=\"-1\"><i cl***REMOVED***=\"glyphicon glyphicon-chevron-left\"></i></button></th>\n" +
-    "      <th colspan=\"3\"><button id=\"{{uniqueId}}-title\" role=\"heading\" aria-live=\"***REMOVED***ertive\" aria-atomic=\"true\" type=\"button\" cl***REMOVED***=\"btn btn-default btn-sm\" ng-click=\"toggleMode()\" tabindex=\"-1\" style=\"width:100%;\"><strong>{{title}}</strong></button></th>\n" +
-    "      <th><button type=\"button\" cl***REMOVED***=\"btn btn-default btn-sm pull-right\" ng-click=\"move(1)\" tabindex=\"-1\"><i cl***REMOVED***=\"glyphicon glyphicon-chevron-right\"></i></button></th>\n" +
+    "      <th><button type=\"button\" class=\"btn btn-default btn-sm pull-left\" ng-click=\"move(-1)\" tabindex=\"-1\"><i class=\"glyphicon glyphicon-chevron-left\"></i></button></th>\n" +
+    "      <th colspan=\"3\"><button id=\"{{uniqueId}}-title\" role=\"heading\" aria-live=\"assertive\" aria-atomic=\"true\" type=\"button\" class=\"btn btn-default btn-sm\" ng-click=\"toggleMode()\" tabindex=\"-1\" style=\"width:100%;\"><strong>{{title}}</strong></button></th>\n" +
+    "      <th><button type=\"button\" class=\"btn btn-default btn-sm pull-right\" ng-click=\"move(1)\" tabindex=\"-1\"><i class=\"glyphicon glyphicon-chevron-right\"></i></button></th>\n" +
     "    </tr>\n" +
     "  </thead>\n" +
     "  <tbody>\n" +
     "    <tr ng-repeat=\"row in rows track by $index\">\n" +
-    "      <td ng-repeat=\"dt in row track by dt.date\" cl***REMOVED***=\"text-center\" role=\"gridcell\" id=\"{{dt.uid}}\" aria-disabled=\"{{!!dt.disabled}}\">\n" +
-    "        <button type=\"button\" style=\"width:100%;\" cl***REMOVED***=\"btn btn-default\" ng-cl***REMOVED***=\"{'btn-info': dt.selected, active: isActive(dt)}\" ng-click=\"select(dt.date)\" ng-disabled=\"dt.disabled\" tabindex=\"-1\"><span ng-cl***REMOVED***=\"{'text-info': dt.current}\">{{dt.label}}</span></button>\n" +
+    "      <td ng-repeat=\"dt in row track by dt.date\" class=\"text-center\" role=\"gridcell\" id=\"{{dt.uid}}\" aria-disabled=\"{{!!dt.disabled}}\">\n" +
+    "        <button type=\"button\" style=\"width:100%;\" class=\"btn btn-default\" ng-class=\"{'btn-info': dt.selected, active: isActive(dt)}\" ng-click=\"select(dt.date)\" ng-disabled=\"dt.disabled\" tabindex=\"-1\"><span ng-class=\"{'text-info': dt.current}\">{{dt.label}}</span></button>\n" +
     "      </td>\n" +
     "    </tr>\n" +
     "  </tbody>\n" +
@@ -4108,8 +4108,8 @@ angular.module("template/datepicker/year.html", []).run(["$templateCache", funct
 
 angular.module("template/modal/backdrop.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/modal/backdrop.html",
-    "<div cl***REMOVED***=\"modal-backdrop fade {{ backdropCl***REMOVED*** }}\"\n" +
-    "     ng-cl***REMOVED***=\"{in: animate}\"\n" +
+    "<div class=\"modal-backdrop fade {{ backdropClass }}\"\n" +
+    "     ng-class=\"{in: animate}\"\n" +
     "     ng-style=\"{'z-index': 1040 + (index && 1 || 0) + index*10}\"\n" +
     "></div>\n" +
     "");
@@ -4117,57 +4117,57 @@ angular.module("template/modal/backdrop.html", []).run(["$templateCache", functi
 
 angular.module("template/modal/window.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/modal/window.html",
-    "<div modal-render=\"{{$isRendered}}\" tabindex=\"-1\" role=\"dialog\" cl***REMOVED***=\"modal fade\" ng-cl***REMOVED***=\"{in: animate}\" ng-style=\"{'z-index': 1050 + index*10, display: 'block'}\" ng-click=\"close($event)\">\n" +
-    "    <div cl***REMOVED***=\"modal-dialog\" ng-cl***REMOVED***=\"{'modal-sm': size == 'sm', 'modal-lg': size == 'lg'}\"><div cl***REMOVED***=\"modal-content\" modal-transclude></div></div>\n" +
+    "<div modal-render=\"{{$isRendered}}\" tabindex=\"-1\" role=\"dialog\" class=\"modal fade\" ng-class=\"{in: animate}\" ng-style=\"{'z-index': 1050 + index*10, display: 'block'}\" ng-click=\"close($event)\">\n" +
+    "    <div class=\"modal-dialog\" ng-class=\"{'modal-sm': size == 'sm', 'modal-lg': size == 'lg'}\"><div class=\"modal-content\" modal-transclude></div></div>\n" +
     "</div>\n" +
     "");
 }]);
 
 angular.module("template/pagination/pager.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/pagination/pager.html",
-    "<ul cl***REMOVED***=\"pager\">\n" +
-    "  <li ng-cl***REMOVED***=\"{disabled: noPrevious(), previous: align}\"><a href ng-click=\"selectPage(page - 1)\">{{getText('previous')}}</a></li>\n" +
-    "  <li ng-cl***REMOVED***=\"{disabled: noNext(), next: align}\"><a href ng-click=\"selectPage(page + 1)\">{{getText('next')}}</a></li>\n" +
+    "<ul class=\"pager\">\n" +
+    "  <li ng-class=\"{disabled: noPrevious(), previous: align}\"><a href ng-click=\"selectPage(page - 1)\">{{getText('previous')}}</a></li>\n" +
+    "  <li ng-class=\"{disabled: noNext(), next: align}\"><a href ng-click=\"selectPage(page + 1)\">{{getText('next')}}</a></li>\n" +
     "</ul>");
 }]);
 
 angular.module("template/pagination/pagination.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/pagination/pagination.html",
-    "<ul cl***REMOVED***=\"pagination\">\n" +
-    "  <li ng-if=\"boundaryLinks\" ng-cl***REMOVED***=\"{disabled: noPrevious()}\"><a href ng-click=\"selectPage(1)\">{{getText('first')}}</a></li>\n" +
-    "  <li ng-if=\"directionLinks\" ng-cl***REMOVED***=\"{disabled: noPrevious()}\"><a href ng-click=\"selectPage(page - 1)\">{{getText('previous')}}</a></li>\n" +
-    "  <li ng-repeat=\"page in pages track by $index\" ng-cl***REMOVED***=\"{active: page.active}\"><a href ng-click=\"selectPage(page.number)\">{{page.text}}</a></li>\n" +
-    "  <li ng-if=\"directionLinks\" ng-cl***REMOVED***=\"{disabled: noNext()}\"><a href ng-click=\"selectPage(page + 1)\">{{getText('next')}}</a></li>\n" +
-    "  <li ng-if=\"boundaryLinks\" ng-cl***REMOVED***=\"{disabled: noNext()}\"><a href ng-click=\"selectPage(totalPages)\">{{getText('last')}}</a></li>\n" +
+    "<ul class=\"pagination\">\n" +
+    "  <li ng-if=\"boundaryLinks\" ng-class=\"{disabled: noPrevious()}\"><a href ng-click=\"selectPage(1)\">{{getText('first')}}</a></li>\n" +
+    "  <li ng-if=\"directionLinks\" ng-class=\"{disabled: noPrevious()}\"><a href ng-click=\"selectPage(page - 1)\">{{getText('previous')}}</a></li>\n" +
+    "  <li ng-repeat=\"page in pages track by $index\" ng-class=\"{active: page.active}\"><a href ng-click=\"selectPage(page.number)\">{{page.text}}</a></li>\n" +
+    "  <li ng-if=\"directionLinks\" ng-class=\"{disabled: noNext()}\"><a href ng-click=\"selectPage(page + 1)\">{{getText('next')}}</a></li>\n" +
+    "  <li ng-if=\"boundaryLinks\" ng-class=\"{disabled: noNext()}\"><a href ng-click=\"selectPage(totalPages)\">{{getText('last')}}</a></li>\n" +
     "</ul>");
 }]);
 
-angular.module("template/tooltip/tooltip-html-u***REMOVED***fe-popup.html", []).run(["$templateCache", function($templateCache) {
-  $templateCache.put("template/tooltip/tooltip-html-u***REMOVED***fe-popup.html",
-    "<div cl***REMOVED***=\"tooltip {{placement}}\" ng-cl***REMOVED***=\"{ in: isOpen(), fade: animation() }\">\n" +
-    "  <div cl***REMOVED***=\"tooltip-arrow\"></div>\n" +
-    "  <div cl***REMOVED***=\"tooltip-inner\" bind-html-u***REMOVED***fe=\"content\"></div>\n" +
+angular.module("template/tooltip/tooltip-html-unsafe-popup.html", []).run(["$templateCache", function($templateCache) {
+  $templateCache.put("template/tooltip/tooltip-html-unsafe-popup.html",
+    "<div class=\"tooltip {{placement}}\" ng-class=\"{ in: isOpen(), fade: animation() }\">\n" +
+    "  <div class=\"tooltip-arrow\"></div>\n" +
+    "  <div class=\"tooltip-inner\" bind-html-unsafe=\"content\"></div>\n" +
     "</div>\n" +
     "");
 }]);
 
 angular.module("template/tooltip/tooltip-popup.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/tooltip/tooltip-popup.html",
-    "<div cl***REMOVED***=\"tooltip {{placement}}\" ng-cl***REMOVED***=\"{ in: isOpen(), fade: animation() }\">\n" +
-    "  <div cl***REMOVED***=\"tooltip-arrow\"></div>\n" +
-    "  <div cl***REMOVED***=\"tooltip-inner\" ng-bind=\"content\"></div>\n" +
+    "<div class=\"tooltip {{placement}}\" ng-class=\"{ in: isOpen(), fade: animation() }\">\n" +
+    "  <div class=\"tooltip-arrow\"></div>\n" +
+    "  <div class=\"tooltip-inner\" ng-bind=\"content\"></div>\n" +
     "</div>\n" +
     "");
 }]);
 
 angular.module("template/popover/popover.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/popover/popover.html",
-    "<div cl***REMOVED***=\"popover {{placement}}\" ng-cl***REMOVED***=\"{ in: isOpen(), fade: animation() }\">\n" +
-    "  <div cl***REMOVED***=\"arrow\"></div>\n" +
+    "<div class=\"popover {{placement}}\" ng-class=\"{ in: isOpen(), fade: animation() }\">\n" +
+    "  <div class=\"arrow\"></div>\n" +
     "\n" +
-    "  <div cl***REMOVED***=\"popover-inner\">\n" +
-    "      <h3 cl***REMOVED***=\"popover-title\" ng-bind=\"title\" ng-show=\"title\"></h3>\n" +
-    "      <div cl***REMOVED***=\"popover-content\" ng-bind=\"content\"></div>\n" +
+    "  <div class=\"popover-inner\">\n" +
+    "      <h3 class=\"popover-title\" ng-bind=\"title\" ng-show=\"title\"></h3>\n" +
+    "      <div class=\"popover-content\" ng-bind=\"content\"></div>\n" +
     "  </div>\n" +
     "</div>\n" +
     "");
@@ -4175,33 +4175,33 @@ angular.module("template/popover/popover.html", []).run(["$templateCache", funct
 
 angular.module("template/progressbar/bar.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/progressbar/bar.html",
-    "<div cl***REMOVED***=\"progress-bar\" ng-cl***REMOVED***=\"type && 'progress-bar-' + type\" role=\"progressbar\" aria-valuenow=\"{{value}}\" aria-valuemin=\"0\" aria-valuemax=\"{{max}}\" ng-style=\"{width: percent + '%'}\" aria-valuetext=\"{{percent | number:0}}%\" ng-transclude></div>");
+    "<div class=\"progress-bar\" ng-class=\"type && 'progress-bar-' + type\" role=\"progressbar\" aria-valuenow=\"{{value}}\" aria-valuemin=\"0\" aria-valuemax=\"{{max}}\" ng-style=\"{width: percent + '%'}\" aria-valuetext=\"{{percent | number:0}}%\" ng-transclude></div>");
 }]);
 
 angular.module("template/progressbar/progress.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/progressbar/progress.html",
-    "<div cl***REMOVED***=\"progress\" ng-transclude></div>");
+    "<div class=\"progress\" ng-transclude></div>");
 }]);
 
 angular.module("template/progressbar/progressbar.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/progressbar/progressbar.html",
-    "<div cl***REMOVED***=\"progress\">\n" +
-    "  <div cl***REMOVED***=\"progress-bar\" ng-cl***REMOVED***=\"type && 'progress-bar-' + type\" role=\"progressbar\" aria-valuenow=\"{{value}}\" aria-valuemin=\"0\" aria-valuemax=\"{{max}}\" ng-style=\"{width: percent + '%'}\" aria-valuetext=\"{{percent | number:0}}%\" ng-transclude></div>\n" +
+    "<div class=\"progress\">\n" +
+    "  <div class=\"progress-bar\" ng-class=\"type && 'progress-bar-' + type\" role=\"progressbar\" aria-valuenow=\"{{value}}\" aria-valuemin=\"0\" aria-valuemax=\"{{max}}\" ng-style=\"{width: percent + '%'}\" aria-valuetext=\"{{percent | number:0}}%\" ng-transclude></div>\n" +
     "</div>");
 }]);
 
 angular.module("template/rating/rating.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/rating/rating.html",
     "<span ng-mouseleave=\"reset()\" ng-keydown=\"onKeydown($event)\" tabindex=\"0\" role=\"slider\" aria-valuemin=\"0\" aria-valuemax=\"{{range.length}}\" aria-valuenow=\"{{value}}\">\n" +
-    "    <i ng-repeat=\"r in range track by $index\" ng-mouseenter=\"enter($index + 1)\" ng-click=\"rate($index + 1)\" cl***REMOVED***=\"glyphicon\" ng-cl***REMOVED***=\"$index < value && (r.stateOn || 'glyphicon-star') || (r.stateOff || 'glyphicon-star-empty')\">\n" +
-    "        <span cl***REMOVED***=\"sr-only\">({{ $index < value ? '*' : ' ' }})</span>\n" +
+    "    <i ng-repeat=\"r in range track by $index\" ng-mouseenter=\"enter($index + 1)\" ng-click=\"rate($index + 1)\" class=\"glyphicon\" ng-class=\"$index < value && (r.stateOn || 'glyphicon-star') || (r.stateOff || 'glyphicon-star-empty')\">\n" +
+    "        <span class=\"sr-only\">({{ $index < value ? '*' : ' ' }})</span>\n" +
     "    </i>\n" +
     "</span>");
 }]);
 
 angular.module("template/tabs/tab.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/tabs/tab.html",
-    "<li ng-cl***REMOVED***=\"{active: active, disabled: disabled}\">\n" +
+    "<li ng-class=\"{active: active, disabled: disabled}\">\n" +
     "  <a href ng-click=\"select()\" tab-heading-transclude>{{heading}}</a>\n" +
     "</li>\n" +
     "");
@@ -4210,11 +4210,11 @@ angular.module("template/tabs/tab.html", []).run(["$templateCache", function($te
 angular.module("template/tabs/tabset.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/tabs/tabset.html",
     "<div>\n" +
-    "  <ul cl***REMOVED***=\"nav nav-{{type || 'tabs'}}\" ng-cl***REMOVED***=\"{'nav-stacked': vertical, 'nav-justified': justified}\" ng-transclude></ul>\n" +
-    "  <div cl***REMOVED***=\"tab-content\">\n" +
-    "    <div cl***REMOVED***=\"tab-pane\" \n" +
+    "  <ul class=\"nav nav-{{type || 'tabs'}}\" ng-class=\"{'nav-stacked': vertical, 'nav-justified': justified}\" ng-transclude></ul>\n" +
+    "  <div class=\"tab-content\">\n" +
+    "    <div class=\"tab-pane\" \n" +
     "         ng-repeat=\"tab in tabs\" \n" +
-    "         ng-cl***REMOVED***=\"{active: tab.active}\"\n" +
+    "         ng-class=\"{active: tab.active}\"\n" +
     "         tab-content-transclude=\"tab\">\n" +
     "    </div>\n" +
     "  </div>\n" +
@@ -4226,26 +4226,26 @@ angular.module("template/timepicker/timepicker.html", []).run(["$templateCache",
   $templateCache.put("template/timepicker/timepicker.html",
     "<table>\n" +
     "	<tbody>\n" +
-    "		<tr cl***REMOVED***=\"text-center\">\n" +
-    "			<td><a ng-click=\"incrementHours()\" cl***REMOVED***=\"btn btn-link\"><span cl***REMOVED***=\"glyphicon glyphicon-chevron-up\"></span></a></td>\n" +
+    "		<tr class=\"text-center\">\n" +
+    "			<td><a ng-click=\"incrementHours()\" class=\"btn btn-link\"><span class=\"glyphicon glyphicon-chevron-up\"></span></a></td>\n" +
     "			<td>&nbsp;</td>\n" +
-    "			<td><a ng-click=\"incrementMinutes()\" cl***REMOVED***=\"btn btn-link\"><span cl***REMOVED***=\"glyphicon glyphicon-chevron-up\"></span></a></td>\n" +
+    "			<td><a ng-click=\"incrementMinutes()\" class=\"btn btn-link\"><span class=\"glyphicon glyphicon-chevron-up\"></span></a></td>\n" +
     "			<td ng-show=\"showMeridian\"></td>\n" +
     "		</tr>\n" +
     "		<tr>\n" +
-    "			<td style=\"width:50px;\" cl***REMOVED***=\"form-group\" ng-cl***REMOVED***=\"{'has-error': invalidHours}\">\n" +
-    "				<input type=\"text\" ng-model=\"hours\" ng-change=\"updateHours()\" cl***REMOVED***=\"form-control text-center\" ng-mousewheel=\"incrementHours()\" ng-readonly=\"readonlyInput\" maxlength=\"2\">\n" +
+    "			<td style=\"width:50px;\" class=\"form-group\" ng-class=\"{'has-error': invalidHours}\">\n" +
+    "				<input type=\"text\" ng-model=\"hours\" ng-change=\"updateHours()\" class=\"form-control text-center\" ng-mousewheel=\"incrementHours()\" ng-readonly=\"readonlyInput\" maxlength=\"2\">\n" +
     "			</td>\n" +
     "			<td>:</td>\n" +
-    "			<td style=\"width:50px;\" cl***REMOVED***=\"form-group\" ng-cl***REMOVED***=\"{'has-error': invalidMinutes}\">\n" +
-    "				<input type=\"text\" ng-model=\"minutes\" ng-change=\"updateMinutes()\" cl***REMOVED***=\"form-control text-center\" ng-readonly=\"readonlyInput\" maxlength=\"2\">\n" +
+    "			<td style=\"width:50px;\" class=\"form-group\" ng-class=\"{'has-error': invalidMinutes}\">\n" +
+    "				<input type=\"text\" ng-model=\"minutes\" ng-change=\"updateMinutes()\" class=\"form-control text-center\" ng-readonly=\"readonlyInput\" maxlength=\"2\">\n" +
     "			</td>\n" +
-    "			<td ng-show=\"showMeridian\"><button type=\"button\" cl***REMOVED***=\"btn btn-default text-center\" ng-click=\"toggleMeridian()\">{{meridian}}</button></td>\n" +
+    "			<td ng-show=\"showMeridian\"><button type=\"button\" class=\"btn btn-default text-center\" ng-click=\"toggleMeridian()\">{{meridian}}</button></td>\n" +
     "		</tr>\n" +
-    "		<tr cl***REMOVED***=\"text-center\">\n" +
-    "			<td><a ng-click=\"decrementHours()\" cl***REMOVED***=\"btn btn-link\"><span cl***REMOVED***=\"glyphicon glyphicon-chevron-down\"></span></a></td>\n" +
+    "		<tr class=\"text-center\">\n" +
+    "			<td><a ng-click=\"decrementHours()\" class=\"btn btn-link\"><span class=\"glyphicon glyphicon-chevron-down\"></span></a></td>\n" +
     "			<td>&nbsp;</td>\n" +
-    "			<td><a ng-click=\"decrementMinutes()\" cl***REMOVED***=\"btn btn-link\"><span cl***REMOVED***=\"glyphicon glyphicon-chevron-down\"></span></a></td>\n" +
+    "			<td><a ng-click=\"decrementMinutes()\" class=\"btn btn-link\"><span class=\"glyphicon glyphicon-chevron-down\"></span></a></td>\n" +
     "			<td ng-show=\"showMeridian\"></td>\n" +
     "		</tr>\n" +
     "	</tbody>\n" +
@@ -4255,13 +4255,13 @@ angular.module("template/timepicker/timepicker.html", []).run(["$templateCache",
 
 angular.module("template/typeahead/typeahead-match.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/typeahead/typeahead-match.html",
-    "<a tabindex=\"-1\" bind-html-u***REMOVED***fe=\"match.label | typeaheadHighlight:query\"></a>");
+    "<a tabindex=\"-1\" bind-html-unsafe=\"match.label | typeaheadHighlight:query\"></a>");
 }]);
 
 angular.module("template/typeahead/typeahead-popup.html", []).run(["$templateCache", function($templateCache) {
   $templateCache.put("template/typeahead/typeahead-popup.html",
-    "<ul cl***REMOVED***=\"dropdown-menu\" ng-show=\"isOpen()\" ng-style=\"{top: position.top+'px', left: position.left+'px'}\" style=\"display: block;\" role=\"listbox\" aria-hidden=\"{{!isOpen()}}\">\n" +
-    "    <li ng-repeat=\"match in matches track by $index\" ng-cl***REMOVED***=\"{active: isActive($index) }\" ng-mouseenter=\"selectActive($index)\" ng-click=\"selectMatch($index)\" role=\"option\" id=\"{{match.id}}\">\n" +
+    "<ul class=\"dropdown-menu\" ng-show=\"isOpen()\" ng-style=\"{top: position.top+'px', left: position.left+'px'}\" style=\"display: block;\" role=\"listbox\" aria-hidden=\"{{!isOpen()}}\">\n" +
+    "    <li ng-repeat=\"match in matches track by $index\" ng-class=\"{active: isActive($index) }\" ng-mouseenter=\"selectActive($index)\" ng-click=\"selectMatch($index)\" role=\"option\" id=\"{{match.id}}\">\n" +
     "        <div typeahead-match index=\"$index\" match=\"match\" query=\"query\" template-url=\"templateUrl\"></div>\n" +
     "    </li>\n" +
     "</ul>\n" +

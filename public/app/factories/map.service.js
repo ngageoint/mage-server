@@ -6,7 +6,7 @@ MapService.$inject = [];
 
 function MapService() {
 
-  var ***REMOVED*** = {
+  var service = {
     addListener: addListener,
     removeListener: removeListener,
     getRasterLayers: getRasterLayers,
@@ -35,7 +35,7 @@ function MapService() {
   var vectorLayers = {};
   var listeners = [];
 
-  return ***REMOVED***;
+  return service;
 
   function addListener(listener) {
     listeners.push(listener);

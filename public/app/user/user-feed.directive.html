@@ -1,31 +1,31 @@
-<div cl***REMOVED***="row">
-	<div cl***REMOVED***="col-md-7">
-		<div cl***REMOVED***="feed-avatar-img-container pull-left">
-			<img cl***REMOVED***="avatar-thumbnail img-rounded" ng-src="{{avatarUrl}}"/>
+<div class="row">
+	<div class="col-md-7">
+		<div class="feed-avatar-img-container pull-left">
+			<img class="avatar-thumbnail img-rounded" ng-src="{{avatarUrl}}"/>
 		</div>
-		<div cl***REMOVED***="news-feed-item-support observation-type">{{user.displayName}}</div>
-		<div cl***REMOVED***="news-feed-item-support observation-variant">{{user.email}}</div>
+		<div class="news-feed-item-support observation-type">{{user.displayName}}</div>
+		<div class="news-feed-item-support observation-variant">{{user.email}}</div>
 	</div>
 
-	<div cl***REMOVED***="col-md-5">
-		<div cl***REMOVED***="row">
-			<div cl***REMOVED***="col-md-12">
-				<div cl***REMOVED***="news-feed-item-support small-text pull-right">{{fromNow}}</div>
+	<div class="col-md-5">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="news-feed-item-support small-text pull-right">{{fromNow}}</div>
 			</div>
 		</div>
 
-		<div cl***REMOVED***="row">
-			<div cl***REMOVED***="col-md-12">
-				<div cl***REMOVED***="pull-right">
-					<a href="javascript:void(0)" cl***REMOVED***="small-text" ng-click="onUserLocationClick(user)">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="pull-right">
+					<a href="javascript:void(0)" class="small-text" ng-click="onUserLocationClick(user)">
 						{{user.location.geometry.coordinates[1] | number: 3}}, {{user.location.geometry.coordinates[0] | number: 3}}
 					</a>
 				</div>
 			</div>
 		</div>
 
-		<div cl***REMOVED***="pull-right">
-			<button ng-cl***REMOVED***="{active: followUserId == user.id}" cl***REMOVED***="btn btn-xs btn-primary top-gap-s" data-toggle="button" ng-click="followUser($event, user)">
+		<div class="pull-right">
+			<button ng-class="{active: followUserId == user.id}" class="btn btn-xs btn-primary top-gap-s" data-toggle="button" ng-click="followUser($event, user)">
 				<span ng-show="followUserId == user.id">Following...</span>
 				<span ng-hide="followUserId == user.id">Follow</span>
 			</button>

@@ -1,50 +1,50 @@
-<div cl***REMOVED***="admin-nav-gap">
-  <div cl***REMOVED***="container-fluid">
-    <ol cl***REMOVED***="breadcrumb" ng-if="team.id">
-      <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
+<div class="admin-nav-gap">
+  <div class="container-fluid">
+    <ol class="breadcrumb" ng-if="team.id">
+      <li><i class="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
       <li><a href="#/admin/teams">Teams</a></li>
       <li><a ng-href="#/admin/teams/{{team.id}}">{{team.name}}</a></li>
-      <li cl***REMOVED***="active">Edit</li>
+      <li class="active">Edit</li>
     </ol>
-    <ol cl***REMOVED***="breadcrumb" ng-if="!team.id">
-      <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
+    <ol class="breadcrumb" ng-if="!team.id">
+      <li><i class="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
       <li><a href="#/admin/teams">Teams</a></li>
-      <li cl***REMOVED***="active">New</li>
+      <li class="active">New</li>
     </ol>
   </div>
 </div>
 
-<div cl***REMOVED***="content-flex">
+<div class="content-flex">
 
-  <div cl***REMOVED***="content-inner">
+  <div class="content-inner">
 
-    <div cl***REMOVED***="container bottom-gap-l">
+    <div class="container bottom-gap-l">
 
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="col-md-12">
+      <div class="row">
+        <div class="col-md-12">
           <h2 ng-if="team.id">Edit team: {{team.name}}</h2>
           <h2 ng-if="!team.id">New team</h2>
         </div>
       </div>
       <hr>
 
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="col-md-12" ng-show="team">
+      <div class="row">
+        <div class="col-md-12" ng-show="team">
 
-          <form ng-submit="saveTeam()" cl***REMOVED***="form">
-            <div cl***REMOVED***="form-group">
-              <label cl***REMOVED***="control-label">Name</label>
-              <input cl***REMOVED***="form-control" type="text" placeholder="Team name" ng-model="team.name"/>
+          <form ng-submit="saveTeam()" class="form">
+            <div class="form-group">
+              <label class="control-label">Name</label>
+              <input class="form-control" type="text" placeholder="Team name" ng-model="team.name"/>
             </div>
-            <div cl***REMOVED***="form-group">
-              <label cl***REMOVED***="control-label">Description</label>
-              <textarea cl***REMOVED***="form-control" type="text" placeholder="Brief description of the team." ng-model="team.description"/>
+            <div class="form-group">
+              <label class="control-label">Description</label>
+              <textarea class="form-control" type="text" placeholder="Brief description of the team." ng-model="team.description"/>
             </div>
           </form>
 
-          <span cl***REMOVED***="pull-right">
-            <a cl***REMOVED***="btn btn-default" ng-cl***REMOVED***="{'disabled': saving}" ng-click="cancel()">Cancel</a>
-            <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-click="saveTeam(team)"><i cl***REMOVED***="fa fa-check"></i> Save</a>
+          <span class="pull-right">
+            <a class="btn btn-default" ng-class="{'disabled': saving}" ng-click="cancel()">Cancel</a>
+            <a class="btn btn-success" ng-class="{'disabled': saving}" ng-click="saveTeam(team)"><i class="fa fa-check"></i> Save</a>
           </span>
 
         </div>

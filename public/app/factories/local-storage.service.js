@@ -7,13 +7,13 @@ LocalStorageService.$inject = [];
 function LocalStorageService() {
   var tokenKey = 'token';
 
-  var ***REMOVED*** = {
+  var service = {
     getToken: getToken,
     setToken: setToken,
     removeToken: removeToken
   };
 
-  return ***REMOVED***;
+  return service;
 
   function getToken() {
     return getLocalItem(tokenKey);

@@ -66,8 +66,8 @@ function FieldDirectiveController($scope) {
         return 'app/observation/form/dropdown.directive.html';
       case 'hidden':
         return 'app/observation/form/hidden.directive.html';
-      case 'p***REMOVED***word':
-        return 'app/observation/form/p***REMOVED***word.directive.html';
+      case 'password':
+        return 'app/observation/form/password.directive.html';
       case 'radio':
         return 'app/observation/form/radio.directive.html';
     }
