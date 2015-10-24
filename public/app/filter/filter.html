@@ -1,14 +1,14 @@
-<div cl***REMOVED***="modal-header">
-  <h3 cl***REMOVED***="modal-title">Filter</h3>
+<div class="modal-header">
+  <h3 class="modal-title">Filter</h3>
 </div>
 
-<div cl***REMOVED***="modal-body">
+<div class="modal-body">
   <form>
 
-    <div cl***REMOVED***="form-group">
+    <div class="form-group">
       <label>Event</label>
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="col-md-12">
+      <div class="row">
+        <div class="col-md-12">
           <ui-select ng-model="filterEvent.selected" theme="bootstrap" ng-change="onEventChange()">
             <ui-select-match placeholder="Select an event">{{$select.selected.name}}</ui-select-match>
             <ui-select-choices repeat="event in events | orderBy: 'name' | filter: $select.search">
@@ -19,10 +19,10 @@
        </div>
      </div>
 
-     <div cl***REMOVED***="form-group">
+     <div class="form-group">
        <label>Teams</label>
-       <div cl***REMOVED***="row">
-         <div cl***REMOVED***="col-md-12">
+       <div class="row">
+         <div class="col-md-12">
            <ui-select multiple ng-model="filterTeams.selected" theme="bootstrap">
              <ui-select-match placeholder="No team filter set">{{$item.name}}</ui-select-match>
              <ui-select-choices repeat="team in filterEvent.selected.teams | filter: $select.search">
@@ -33,29 +33,29 @@
         </div>
       </div>
 
-      <div cl***REMOVED***="form-group">
+      <div class="form-group">
         <label>Time</label>
-        <select ng-model="intervalChoice" ng-options="intervalChoice.label for intervalChoice in intervalChoices" cl***REMOVED***="form-control"></select>
+        <select ng-model="intervalChoice" ng-options="intervalChoice.label for intervalChoice in intervalChoices" class="form-control"></select>
       </div>
 
       <div ng-show="intervalChoice.filter == 'custom'">
-        <div cl***REMOVED***="form-group">
-          <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-md-6">
+        <div class="form-group">
+          <div class="row">
+            <div class="col-md-6">
               <label>Start Date/Time</label>
-              <p cl***REMOVED***="input-group">
-                <input type="text" cl***REMOVED***="form-control" datepicker-popup="MM/dd/yyyy HH:mm:ss" ng-model="startDate" is-open="startDatePopup.open" close-text="Close" />
-                <span cl***REMOVED***="input-group-btn">
-                  <button type="button" cl***REMOVED***="btn btn-default" ng-click="openStartDate($event)"><i cl***REMOVED***="fa fa-calendar"></i></button>
+              <p class="input-group">
+                <input type="text" class="form-control" datepicker-popup="MM/dd/yyyy HH:mm:ss" ng-model="startDate" is-open="startDatePopup.open" close-text="Close" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default" ng-click="openStartDate($event)"><i class="fa fa-calendar"></i></button>
                 </span>
               </p>
             </div>
-            <div cl***REMOVED***="col-md-6">
-              <label cl***REMOVED***="control-label">&nbsp;</label>
+            <div class="col-md-6">
+              <label class="control-label">&nbsp;</label>
 
-              <p cl***REMOVED***="input-group">
-                <button type="button" ng-click="localTime = !localTime" cl***REMOVED***="btn btn-default">
-                  <i cl***REMOVED***="fa fa-clock-o"></i>
+              <p class="input-group">
+                <button type="button" ng-click="localTime = !localTime" class="btn btn-default">
+                  <i class="fa fa-clock-o"></i>
                   <span ng-show="localTime"> Local (GMT {{localOffset}})</span>
                   <span ng-show="!localTime"> GMT (GMT +00:00)</span>
                 </button>
@@ -63,23 +63,23 @@
             </div>
           </div>
         </div>
-        <div cl***REMOVED***="form-group">
-          <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-md-6">
+        <div class="form-group">
+          <div class="row">
+            <div class="col-md-6">
               <label>End Date/Time</label>
-              <p cl***REMOVED***="input-group">
-                <input type="text" cl***REMOVED***="form-control" datepicker-popup="MM/dd/yyyy HH:mm:ss" ng-model="endDate" is-open="endDatePopup.open" close-text="Close" />
-                <span cl***REMOVED***="input-group-btn">
-                  <button type="button" cl***REMOVED***="btn btn-default" ng-click="openEndDate($event)"><i cl***REMOVED***="fa fa-calendar"></i></button>
+              <p class="input-group">
+                <input type="text" class="form-control" datepicker-popup="MM/dd/yyyy HH:mm:ss" ng-model="endDate" is-open="endDatePopup.open" close-text="Close" />
+                <span class="input-group-btn">
+                  <button type="button" class="btn btn-default" ng-click="openEndDate($event)"><i class="fa fa-calendar"></i></button>
                 </span>
               </p>
             </div>
-            <div cl***REMOVED***="col-md-6">
-              <label cl***REMOVED***="control-label">&nbsp;</label>
+            <div class="col-md-6">
+              <label class="control-label">&nbsp;</label>
 
-              <p cl***REMOVED***="input-group">
-                <button type="button" ng-click="localTime = !localTime" cl***REMOVED***="btn btn-default">
-                  <i cl***REMOVED***="fa fa-clock-o"></i>
+              <p class="input-group">
+                <button type="button" ng-click="localTime = !localTime" class="btn btn-default">
+                  <i class="fa fa-clock-o"></i>
                   <span ng-show="localTime"> Local (GMT {{localOffset}})</span>
                   <span ng-show="!localTime"> GMT (GMT +00:00)</span>
                 </button>
@@ -93,7 +93,7 @@
   </form>
 </div>
 
-<div cl***REMOVED***="modal-footer ng-scope">
-  <button cl***REMOVED***="btn btn-default pull-left" ng-click="closeModal()">Cancel</button>
-  <button cl***REMOVED***="btn btn-default" ng-click="performFilter()"><i cl***REMOVED***="fa fa-filter"></i> Filter</button>
+<div class="modal-footer ng-scope">
+  <button class="btn btn-default pull-left" ng-click="closeModal()">Cancel</button>
+  <button class="btn btn-default" ng-click="performFilter()"><i class="fa fa-filter"></i> Filter</button>
 </div>

@@ -6,12 +6,12 @@ module.exports = function(app, security) {
     , config = require('../config.json')
     , fs = require('fs-extra')
     , userTransformer = require('../transformers/user')
-    , p***REMOVED***port = security.authentication.p***REMOVED***port
+    , passport = security.authentication.passport
 
-  var p***REMOVED***wordLength = null;
+  var passwordLength = null;
   Object.keys(security.authentication.strategies).forEach(function(name) {
-    if (security.authentication.strategies[name].p***REMOVED***wordLength) {
-      p***REMOVED***wordLength = strategy.p***REMOVED***wordMinLength
+    if (security.authentication.strategies[name].passwordLength) {
+      passwordLength = strategy.passwordMinLength
     }
   });
 
@@ -19,7 +19,7 @@ module.exports = function(app, security) {
 
   var isAuthenticated = function(strategy) {
     return function(req, res, next) {
-      p***REMOVED***port.authenticate(strategy, function(err, user, info) {
+      passport.authenticate(strategy, function(err, user, info) {
         if (err) return next(err);
         if (user) req.user = user;
         next();
@@ -72,27 +72,27 @@ module.exports = function(app, security) {
       }];
     }
 
-    var p***REMOVED***word = req.param('p***REMOVED***word');
-    if (!p***REMOVED***word) {
-      return res.status(400).send(invalidResponse('p***REMOVED***word'));
+    var password = req.param('password');
+    if (!password) {
+      return res.status(400).send(invalidResponse('password'));
     }
 
-    var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
-    if (!p***REMOVED***wordconfirm) {
-      return res.status(400).send(invalidResponse('p***REMOVED***wordconfirm'));
+    var passwordconfirm = req.param('passwordconfirm');
+    if (!passwordconfirm) {
+      return res.status(400).send(invalidResponse('passwordconfirm'));
     }
 
-    if (p***REMOVED***word != p***REMOVED***wordconfirm) {
-      return res.status(400).send('p***REMOVED***words do not match');
+    if (password != passwordconfirm) {
+      return res.status(400).send('passwords do not match');
     }
 
-    if (p***REMOVED***word.length < p***REMOVED***wordLength) {
-      return res.status(400).send('p***REMOVED***word does not meet minimum length requirement of ' + p***REMOVED***wordLength + ' characters');
+    if (password.length < passwordLength) {
+      return res.status(400).send('password does not meet minimum length requirement of ' + passwordLength + ' characters');
     }
 
     user.authentication = {
       type: 'local',
-      p***REMOVED***word: p***REMOVED***word
+      password: password
     }
 
     req.newUser = user;
@@ -109,7 +109,7 @@ module.exports = function(app, security) {
     Role.getRoleById(roleId, function(err, role) {
       if (err) return next(err);
 
-      if (!role) return next(new Error('Role ***REMOVED***ociated with roleId ' + roleId + ' does not exist'));
+      if (!role) return next(new Error('Role associated with roleId ' + roleId + ' does not exist'));
 
       req.role = role;
       next();
@@ -136,7 +136,7 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/users/count',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     access.authorize('READ_USER'),
     function(req, res, next) {
       new api.User().count(function(err, count) {
@@ -150,7 +150,7 @@ module.exports = function(app, security) {
   // get all uses
   app.get(
     '/api/users',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     access.authorize('READ_USER'),
     function(req, res, next) {
       var filter = {};
@@ -177,7 +177,7 @@ module.exports = function(app, security) {
   // get info for the user bearing a token, i.e get info for myself
   app.get(
     '/api/users/myself',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     function(req, res) {
       var user = userTransformer.transform(req.user, {path: req.getRoot()});
       res.json(user);
@@ -187,7 +187,7 @@ module.exports = function(app, security) {
   // get user by id
   app.get(
     '/api/users/:userId',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     access.authorize('READ_USER'),
     function(req, res) {
       user = userTransformer.transform(req.userParam, {path: req.getRoot()});
@@ -198,7 +198,7 @@ module.exports = function(app, security) {
   // get user avatar/icon by id
   app.get(
     '/api/users/:userId/:content(avatar|icon)',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     access.authorize('READ_USER'),
     function(req, res) {
       new api.User()[req.params.content](req.userParam, function(err, content) {
@@ -222,7 +222,7 @@ module.exports = function(app, security) {
   // update myself
   app.put(
     '/api/users/myself',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     function(req, res, next) {
       if (req.param('username')) req.user.username = req.param('username');
       if (req.param('displayName')) req.user.displayName = req.param('displayName');
@@ -237,18 +237,18 @@ module.exports = function(app, security) {
       }
 
       if (req.user.authentication.type === 'local') {
-        var p***REMOVED***word = req.param('p***REMOVED***word');
-        var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
-        if (p***REMOVED***word && p***REMOVED***wordconfirm) {
-          if (p***REMOVED***word != p***REMOVED***wordconfirm) {
-            return res.status(400).send('p***REMOVED***words do not match');
+        var password = req.param('password');
+        var passwordconfirm = req.param('passwordconfirm');
+        if (password && passwordconfirm) {
+          if (password != passwordconfirm) {
+            return res.status(400).send('passwords do not match');
           }
 
-          if (p***REMOVED***word.length < p***REMOVED***wordLength) {
-            return res.status(400).send('p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
+          if (password.length < passwordLength) {
+            return res.status(400).send('password does not meet minimum length requirment of ' + passwordLength + ' characters');
           }
 
-          req.user.authentication.p***REMOVED***word = p***REMOVED***word;
+          req.user.authentication.password = password;
         }
       }
 
@@ -315,7 +315,7 @@ module.exports = function(app, security) {
   // update status for myself
   app.put(
     '/api/users/myself/status',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     function(req, res) {
       var status = req.param('status');
       if (!status) return res.status(400).send("Missing required parameter 'status'");
@@ -331,7 +331,7 @@ module.exports = function(app, security) {
   // remove status for myself
   app.delete(
     '/api/users/myself/status',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     function(req, res) {
       req.user.status = undefined;
       new api.User().update(req.user, function(err, updatedUser) {
@@ -344,7 +344,7 @@ module.exports = function(app, security) {
   // Update a specific user
   app.put(
     '/api/users/:userId',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     access.authorize('UPDATE_USER'),
     function(req, res, next) {
       var user = req.userParam;
@@ -364,18 +364,18 @@ module.exports = function(app, security) {
       }
 
       if (user.authentication.type === 'local') {
-        var p***REMOVED***word = req.param('p***REMOVED***word');
-        var p***REMOVED***wordconfirm = req.param('p***REMOVED***wordconfirm');
-        if (p***REMOVED***word && p***REMOVED***wordconfirm) {
-          if (p***REMOVED***word != p***REMOVED***wordconfirm) {
-            return res.status(400).send('p***REMOVED***words do not match');
+        var password = req.param('password');
+        var passwordconfirm = req.param('passwordconfirm');
+        if (password && passwordconfirm) {
+          if (password != passwordconfirm) {
+            return res.status(400).send('passwords do not match');
           }
 
-          if (p***REMOVED***word.length < p***REMOVED***wordLength) {
-            return res.status(400).send('p***REMOVED***word does not meet minimum length requirment of ' + p***REMOVED***wordLength + ' characters');
+          if (password.length < passwordLength) {
+            return res.status(400).send('password does not meet minimum length requirment of ' + passwordLength + ' characters');
           }
 
-          user.authentication.p***REMOVED***word = p***REMOVED***word;
+          user.authentication.password = password;
         }
       }
 
@@ -391,7 +391,7 @@ module.exports = function(app, security) {
   // Delete a specific user
   app.delete(
     '/api/users/:userId',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     access.authorize('DELETE_USER'),
     function(req, res, next) {
       new api.User().delete(req.userParam, function(err) {
@@ -404,7 +404,7 @@ module.exports = function(app, security) {
 
   app.post(
     '/api/users/:userId/events/:eventId/recent',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     access.authorize('READ_USER'),
     function(req, res, next) {
       new api.User().addRecentEvent(req.user, req.event, function(err, user) {
@@ -417,7 +417,7 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/users/:userId/logins',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     access.authorize('READ_USER'),
     function(req, res, next) {
       var options = {};

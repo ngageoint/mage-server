@@ -50,8 +50,8 @@ function SignupController($scope, $location, UserService, ApiService) {
       displayName: $scope.user.displayName,
       email: $scope.user.email,
       phone: $scope.user.phone,
-      p***REMOVED***word: $scope.user.p***REMOVED***word,
-      p***REMOVED***wordconfirm: $scope.user.p***REMOVED***wordconfirm
+      password: $scope.user.password,
+      passwordconfirm: $scope.user.passwordconfirm
     }
 
     // TODO throw in progress

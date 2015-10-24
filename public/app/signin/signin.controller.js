@@ -20,7 +20,7 @@ function SigninController($scope, $rootScope, UserService, ApiService) {
   });
 
   $scope.signin = function () {
-    UserService.login({username: this.username, uid: this.uid, p***REMOVED***word: this.p***REMOVED***word})
+    UserService.login({username: this.username, uid: this.uid, password: this.password})
       .then(function (data) {
         console.log('successfull signin');
       },

@@ -1,27 +1,27 @@
-<div cl***REMOVED***="observation-news-item">
+<div class="observation-news-item">
   <div ng-if="edit === false">
-  	<div cl***REMOVED***="row">
-  		<div cl***REMOVED***="col-md-7">
-        <div cl***REMOVED***="news-feed-item-support observation-type">{{observation.properties.type}}</div>
-        <div cl***REMOVED***="news-feed-item-support observation-variant" ng-if="observation.properties[form.variantField]">{{observation.properties[form.variantField]}}</div>
+  	<div class="row">
+  		<div class="col-md-7">
+        <div class="news-feed-item-support observation-type">{{observation.properties.type}}</div>
+        <div class="news-feed-item-support observation-variant" ng-if="observation.properties[form.variantField]">{{observation.properties[form.variantField]}}</div>
       </div>
-  		<div cl***REMOVED***="col-md-5">
-  			<div cl***REMOVED***="row">
-          <div cl***REMOVED***="col-md-12">
-            <div cl***REMOVED***="pull-right news-feed-item-support small-text">
+  		<div class="col-md-5">
+  			<div class="row">
+          <div class="col-md-12">
+            <div class="pull-right news-feed-item-support small-text">
               <span>{{observationUser.displayName}}</span>
             </div>
           </div>
   			</div>
-        <div cl***REMOVED***="row">
-          <div cl***REMOVED***="col-md-12">
-            <span cl***REMOVED***="pull-right news-feed-item-support small-text">{{fromNow}}</span>
+        <div class="row">
+          <div class="col-md-12">
+            <span class="pull-right news-feed-item-support small-text">{{fromNow}}</span>
           </div>
         </div>
 
-        <div cl***REMOVED***="row">
-          <div cl***REMOVED***="col-md-12">
-    				<a href="javascript:void(0)" cl***REMOVED***="pull-right small-text" ng-click="onObservationLocationClick(observation)">
+        <div class="row">
+          <div class="col-md-12">
+    				<a href="javascript:void(0)" class="pull-right small-text" ng-click="onObservationLocationClick(observation)">
               {{observation.geometry.coordinates[0] | number: 3}}, {{observation.geometry.coordinates[1] | number: 3}}
             </a>
     			</div>
@@ -29,23 +29,23 @@
   		</div>
   	</div>
 
-    <div cl***REMOVED***="top-gap-s" style="width: 100%; height: 150px;">
+    <div class="top-gap-s" style="width: 100%; height: 150px;">
       <div map-clip="observation"></div>
     </div>
 
-    <div cl***REMOVED***="row top-gap-s" ng-repeat="field in form.fields | filter:filterHidden | orderBy: 'id'">
+    <div class="row top-gap-s" ng-repeat="field in form.fields | filter:filterHidden | orderBy: 'id'">
       <property-view field="field">
     </div>
 
-    <div cl***REMOVED***="top-gap-s bottom-gap-s">
-      <div cl***REMOVED***="attachment" ng-repeat="attachment in observation.attachments track by attachment.id">
+    <div class="top-gap-s bottom-gap-s">
+      <div class="attachment" ng-repeat="attachment in observation.attachments track by attachment.id">
         <span ng-switch on="$index % 2">
           <span ng-switch-when="0">
-            <div cl***REMOVED***="row">
-              <div cl***REMOVED***="col-md-6">
+            <div class="row">
+              <div class="col-md-6">
                 <div attachment="observation.attachments[$index]" attachment-observation="observation" edit="false"></div>
               </div>
-              <div cl***REMOVED***="col-md-6">
+              <div class="col-md-6">
                 <div attachment="observation.attachments[$index + 1]" attachment-observation="observation"  edit="false"></div>
               </div>
             </div>
@@ -55,12 +55,12 @@
     </div>
 
     <div style="height: 35px;">
-      <button cl***REMOVED***="btn btn-sm btn-primary pull-right" ng-click="editObservation()">Edit</button>
+      <button class="btn btn-sm btn-primary pull-right" ng-click="editObservation()">Edit</button>
     </div>
   </div>
 
   <div ng-if="edit === true">
-    <form-directive form="editForm" form-observation="observation" cl***REMOVED***="row"></form-directive>
+    <form-directive form="editForm" form-observation="observation" class="row"></form-directive>
   </div>
 
 </div>

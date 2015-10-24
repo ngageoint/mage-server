@@ -1,7 +1,7 @@
 var expect = require("chai").expect
  , request = require("request")
  , http = require('http')
- , ***REMOVED***ert = require('***REMOVED***ert')
+ , assert = require('assert')
  , express  = require('express')
  , token = require('../models/token')
  , api = require('../api')
@@ -70,7 +70,7 @@ describe("MAGE-server API JSON test", function(){
 // Another way to make HTTP requests
   //it("Verify JSON data is correct", function(done){
   //  http.get('http://localhost:4242/api', function (res) {
-  //    ***REMOVED***ert.equal(200, res.statusCode);
+  //    assert.equal(200, res.statusCode);
   //    done();
   //  });
   //});

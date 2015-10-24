@@ -27,7 +27,7 @@ mongoose.set('debug', function(collection, method, query, doc, options) {
 
 var timeout = config.esri.observations.interval * 1000;
 var url = config.esri.url;
-var url = [url.host, url.site, url.restServices, url.folder, url.***REMOVED***Name, url.***REMOVED***Type, url.layerId].join("/");
+var url = [url.host, url.site, url.restServices, url.folder, url.serviceName, url.serviceType, url.layerId].join("/");
 var fields = config.esri.observations.fields;
 
 var defaultType = "UNKNOWN";

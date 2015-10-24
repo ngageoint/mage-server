@@ -1,14 +1,14 @@
-module.exports = function(app, p***REMOVED***port, provisioning, localStrategy) {
+module.exports = function(app, passport, provisioning, localStrategy) {
 
   var log = require('winston')
-    , LocalStrategy = require('p***REMOVED***port-local').Strategy
+    , LocalStrategy = require('passport-local').Strategy
     , User = require('../models/user')
     , Device = require('../models/device')
     , api = require('../api')
     , userTransformer = require('../transformers/user');
 
-  p***REMOVED***port.use(new LocalStrategy(
-    function(username, p***REMOVED***word, done) {
+  passport.use(new LocalStrategy(
+    function(username, password, done) {
       User.getUserByUsername(username, function(err, user) {
         if (err) { return done(err); }
 
@@ -22,13 +22,13 @@ module.exports = function(app, p***REMOVED***port, provisioning, localStrategy) 
           return done(null, false, { message: "User with username '" + username + "' not active" });
         }
 
-        user.validP***REMOVED***word(p***REMOVED***word, function(err, isValid) {
+        user.validPassword(password, function(err, isValid) {
           if (err) {
             return done(err);
           }
 
           if (!isValid) {
-            log.warn('Failed login attempt: User with username ' + username + ' provided an invalid p***REMOVED***word');
+            log.warn('Failed login attempt: User with username ' + username + ' provided an invalid password');
             return done(null, false);
           }
 
@@ -40,7 +40,7 @@ module.exports = function(app, p***REMOVED***port, provisioning, localStrategy) 
 
   app.post(
     '/api/login',
-    p***REMOVED***port.authenticate('local'),
+    passport.authenticate('local'),
     provisioning.provision.check(provisioning.strategy),
     function(req, res) {
       new api.User().login(req.user,  req.provisionedDevice, function(err, token) {
@@ -59,7 +59,7 @@ module.exports = function(app, p***REMOVED***port, provisioning, localStrategy) 
   // will be set to false.
   app.post(
     '/api/devices',
-    p***REMOVED***port.authenticate('local'),
+    passport.authenticate('local'),
     function(req, res) {
       var newDevice = {
         uid: req.param('uid'),
