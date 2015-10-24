@@ -71,7 +71,7 @@ $ mongo --version
 
 For more information check out the mongo CentOS/RHEL install page <https://docs.mongodb.org/manual/tutorial/install-mongodb-on-red-hat/>
 
-### GraphicsMagick setup (optional)
+### GraphicsMagick setup
 GraphicsMagick is used to rotate and thumbnail images.  This is optional but recommended. Non-rotated images do not always orient correctly on many web browsers. In addition the mobile clients will request smaller images (thumbnails) based on screen resolution which greatly speeds up image download times.
 
 #### GraphicsMagick install w/ homebrew
@@ -113,6 +113,35 @@ $ ./node_modules/.bin/mm
 ```
 
 The /etc/mongod.conf file can be modified for your particular deployment as you see fit.  For starters, the provided defaults will get you up and running.
+
+### Running the server
+
+At this point you should be able to fire up your MAGE node server
+```bash
+$ node app.js
+```
+
+By default the node server runs on port 4242.  You can hit that port directly in a browser [MAGE local] (http://localhost:4242)
+
+### Running With Forever
+
+The best way to handle critical errors in NodeJS is to let the node server crash immediately.  Upon crash the server should be restarted.  There are many tools to monitor your node process to ensure its running.  We are currently using a simple node script called [forever](https://github.com/foreverjs/forever) to accomplish this.
+
+We will use npm (Node Package Manager) to install forever. The -g option will install globally in the /usr/bin directory.
+```bash
+$ npm install -g forever
+```
+
+To start forever run:
+```bash
+$ forever start app.js
+```
+
+For a full list of forever commands please refer to the [forever docs](https://github.com/foreverjs/forever/blob/master/README.md)
+
+## Plugins
+
+MAGE plugins are seperate node scripts located in the plugins folder.  For more information about MAGE plugins please see the [MAGE Plugins README](plugins/README.md)
 
 ## Pull Requests
 
