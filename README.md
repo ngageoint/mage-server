@@ -169,7 +169,7 @@ Configuration:
       "port": 27017,
       "db": "magedb",
       "poolSize": 5
-    },
+    }
   }
 }
 ```
@@ -226,6 +226,10 @@ For a full list of forever commands please refer to the [forever docs](https://g
 ## Plugins
 
 MAGE plugins are seperate node scripts located in the plugins folder.  For more information about MAGE plugins please see the [MAGE Plugins README](plugins/README.md)
+
+## Web application
+
+The MAGE web application is built using AngularJS.  The application resides in the public directory, for more information about the [MAGE Web Application](public/README.md).
 
 ## Pull Requests
 
