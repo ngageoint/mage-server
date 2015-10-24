@@ -56,13 +56,14 @@ Configure mongo yum repository
 $ vi /etc/yum.repos.d/10gen-mongodb.repo
 ```
 With contents:
-<pre>
+
+```bash
 [mongodb-org-3.0]
 name=MongoDB Repository
 baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/3.0/x86_64/
 gpgcheck=0
 enabled=1
-</pre>
+```
 
 Verify install:
 ```bash
