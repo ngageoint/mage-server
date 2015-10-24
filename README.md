@@ -1,16 +1,12 @@
-MAGE Web/Server
-
-10/23/2015
-
-This is the MAGE server and web client.  Supports [MAGE Android](https://github.com/ngageoint/mage-android) and [MAGE iOS](https://github.com/ngageoint/mage-ios).
-
-## About
+## MAGE Web/Server
 
 The Mobile Awareness GEOINT Environment, or MAGE, provides mobile situational awareness capabilities. The MAGE web app can be accessed over the internet and is optimized for desktop and mobile browsers.  The MAGE web app allows you to create geotagged field reports that contain media such as photos, videos, and voice recordings and share them instantly with who you want. Using the HTML Geolocation API, MAGE can also track users locations in real time. Your locations can be automatically shared with the other members of your team.
 
 MAGE is very customizable and can be tailored for you situation, such as custom forms, avatars and icons.
 
 MAGE Web/Server was developed at the National Geospatial-Intelligence Agency (NGA) in collaboration with BIT Systems. The government has "unlimited rights" and is releasing this software to increase the impact of government investments by providing developers with the opportunity to take things in new directions. The software use, modification, and distribution rights are stipulated within the Apache license.
+
+This is the MAGE server supports [MAGE Android](https://github.com/ngageoint/mage-android) and [MAGE iOS](https://github.com/ngageoint/mage-ios).
 
 ## Architecture
 
