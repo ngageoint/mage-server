@@ -2011,17 +2011,13 @@
         "UserCreate": {
             "required": [
                 "username",
-                "firstname",
-                "lastname"
+                "displayName"
             ],
             "properties": {
                 "username": {
                     "type": "string"
                 },
-                "firstname": {
-                    "type": "string"
-                },
-                "lastname": {
+                "displayName": {
                     "type": "string"
                 },
                 "email": {
@@ -2048,8 +2044,7 @@
             "required": [
                 "id",
                 "username",
-                "firstname",
-                "lastname",
+                "displayName",
                 "active",
                 "role"
             ],
@@ -2060,10 +2055,7 @@
                 "username": {
                     "type": "string"
                 },
-                "firstname": {
-                    "type": "string"
-                },
-                "lastname": {
+                "displayName": {
                     "type": "string"
                 },
                 "email": {
@@ -2087,8 +2079,7 @@
             "required": [
                 "id",
                 "username",
-                "firstname",
-                "lastname",
+                "displayName",
                 "active",
                 "role"
             ],
@@ -2099,10 +2090,7 @@
                 "username": {
                     "type": "string"
                 },
-                "firstname": {
-                    "type": "string"
-                },
-                "lastname": {
+                "displayName": {
                     "type": "string"
                 },
                 "email": {
