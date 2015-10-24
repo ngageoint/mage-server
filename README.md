@@ -90,6 +90,15 @@ $ gm version
 
 ## Running MAGE
 
+### Install dependencies
+
+You can install all MAGE (server and web) dependencies by using npm:
+```bash
+$ npm install
+```
+
+NPM install will install all node (server) dependencies in the node_modules folder.  There is a postinstall section in the package.json file that will also install all bower (web) dependencies to the bower_components directory.
+
 ### Configure MAGE
 
 MAGE configuration lies within the config.json file located at the servers root directory.
