@@ -3,6 +3,7 @@ var Role = require('../models/role');
 exports.id = 'create-initial-user-role';
 
 exports.up = function(done) {
+  console.log('\nCreating user role...');
 
   var userPermissions = [
     'READ_DEVICE',
