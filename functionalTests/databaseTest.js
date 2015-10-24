@@ -1,7 +1,7 @@
 var expect = require("chai").expect
  , request = require("request")
  , http = require('http')
- , ***REMOVED***ert = require('***REMOVED***ert')
+ , assert = require('assert')
  , express  = require('express')
  , role = require('../models/role')
  , user = require('../models/user')
@@ -30,7 +30,7 @@ describe("Direct database tests", function(){
         "lastname": "user",
         "email": "test@caci.com",
         "phones": [],
-        "p***REMOVED***word": "p***REMOVED***word",
+        "password": "password",
         "active": true,
         "roleId": role.id,
         "avatar": null,

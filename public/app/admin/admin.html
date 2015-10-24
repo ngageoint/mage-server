@@ -1,115 +1,115 @@
-<div cl***REMOVED***="admin-nav-gap">
-  <div cl***REMOVED***="container-fluid">
-    <ol cl***REMOVED***="breadcrumb">
-      <li cl***REMOVED***="active"><i cl***REMOVED***="fa fa-dashboard active"></i>&nbsp;&nbsp;Dashboard</li>
+<div class="admin-nav-gap">
+  <div class="container-fluid">
+    <ol class="breadcrumb">
+      <li class="active"><i class="fa fa-dashboard active"></i>&nbsp;&nbsp;Dashboard</li>
     </ol>
   </div>
 </div>
 
-<div cl***REMOVED***="content-flex">
-  <div cl***REMOVED***="content-inner">
-    <div cl***REMOVED***="container-fluid bottom-gap-l">
+<div class="content-flex">
+  <div class="content-inner">
+    <div class="container-fluid bottom-gap-l">
 
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="col-md-12">
+      <div class="row">
+        <div class="col-md-12">
           <h3>MAGE Admin</h3>
 
-          <p cl***REMOVED***="muted">You can manage Users, Devices, Teams and other MAGE data and settings from here.</p>
+          <p class="muted">You can manage Users, Devices, Teams and other MAGE data and settings from here.</p>
         </div>
       </div>
 
-      <div cl***REMOVED***="top-gap-xl">
-        <div cl***REMOVED***="card-content">
+      <div class="top-gap-xl">
+        <div class="card-content">
 
-          <div cl***REMOVED***="row admin-dashboard-content">
-            <div cl***REMOVED***="col-md-2">
-              <div cl***REMOVED***="card">
-                <div cl***REMOVED***="card-content admin-card">
-                  <h4 ng-if="!users">Users <i cl***REMOVED***="fa fa-spinner fa-spin"></i></h4>
+          <div class="row admin-dashboard-content">
+            <div class="col-md-2">
+              <div class="card">
+                <div class="card-content admin-card">
+                  <h4 ng-if="!users">Users <i class="fa fa-spinner fa-spin"></i></h4>
                   <h4 ng-if="users">Users ({{users.length}})</h4>
 
                   <a href="#/admin/users">
-                    <div cl***REMOVED***="admin-dashboard-item"><i cl***REMOVED***="fa fa-user"></i><span ng-if="inactiveUsers.length" cl***REMOVED***="badge badge-notif badge-accent">{{inactiveUsers.length}}</span></div>
+                    <div class="admin-dashboard-item"><i class="fa fa-user"></i><span ng-if="inactiveUsers.length" class="badge badge-notif badge-accent">{{inactiveUsers.length}}</span></div>
                   </a>
 
                   <hr>
-                  <button cl***REMOVED***="btn btn-primary" ng-click="newUser()">New User</button>
+                  <button class="btn btn-primary" ng-click="newUser()">New User</button>
                 </div>
               </div>
             </div>
 
-            <div cl***REMOVED***="col-md-2">
-              <div cl***REMOVED***="card">
-                <div cl***REMOVED***="card-content admin-card">
-                  <h4 ng-if="teamCount == null">Teams <i cl***REMOVED***="fa fa-spinner fa-spin"></i></h4>
+            <div class="col-md-2">
+              <div class="card">
+                <div class="card-content admin-card">
+                  <h4 ng-if="teamCount == null">Teams <i class="fa fa-spinner fa-spin"></i></h4>
                   <h4 ng-if="teamCount != null">Teams ({{teamCount}})</h4>
 
                   <a ng-href="#/admin/teams">
-                    <div cl***REMOVED***="admin-dashboard-item"><i cl***REMOVED***="fa fa-users"></i></div>
+                    <div class="admin-dashboard-item"><i class="fa fa-users"></i></div>
                   </a>
 
                   <hr>
-                  <button cl***REMOVED***="btn btn-primary" ng-click="newTeam()">New Team</button>
+                  <button class="btn btn-primary" ng-click="newTeam()">New Team</button>
                 </div>
               </div>
             </div>
 
-            <div cl***REMOVED***="col-md-2">
-              <div cl***REMOVED***="card">
-                <div cl***REMOVED***="card-content admin-card">
-                  <h4 ng-if="eventCount == null">Events <i cl***REMOVED***="fa fa-spinner fa-spin"></i></h4>
+            <div class="col-md-2">
+              <div class="card">
+                <div class="card-content admin-card">
+                  <h4 ng-if="eventCount == null">Events <i class="fa fa-spinner fa-spin"></i></h4>
                   <h4 ng-if="eventCount != null">Events ({{eventCount}})</h4>
 
                   <a ng-href="#/admin/events">
-                    <div cl***REMOVED***="admin-dashboard-item"><i cl***REMOVED***="fa fa-calendar"></i></div>
+                    <div class="admin-dashboard-item"><i class="fa fa-calendar"></i></div>
                   </a>
 
                   <hr>
-                  <button cl***REMOVED***="btn btn-primary" ng-click="newEvent()">New Event</button>
+                  <button class="btn btn-primary" ng-click="newEvent()">New Event</button>
                 </div>
               </div>
             </div>
 
-            <div cl***REMOVED***="col-md-2">
-              <div cl***REMOVED***="card">
-                <div cl***REMOVED***="card-content admin-card">
-                  <h4 ng-if="!devices">Devices <i cl***REMOVED***="fa fa-spinner fa-spin"></i></h4>
+            <div class="col-md-2">
+              <div class="card">
+                <div class="card-content admin-card">
+                  <h4 ng-if="!devices">Devices <i class="fa fa-spinner fa-spin"></i></h4>
                   <h4 ng-if="devices">Devices ({{devices.length}})</h4>
 
                   <a ng-href="#/admin/devices">
-                    <div cl***REMOVED***="admin-dashboard-item"><i cl***REMOVED***="fa fa-mobile-phone"></i><span ng-if="unregisteredDevices.length" cl***REMOVED***="badge badge-notif badge-accent">{{unregisteredDevices.length}}</span></div>
+                    <div class="admin-dashboard-item"><i class="fa fa-mobile-phone"></i><span ng-if="unregisteredDevices.length" class="badge badge-notif badge-accent">{{unregisteredDevices.length}}</span></div>
                   </a>
 
                   <hr>
-                  <button cl***REMOVED***="btn btn-primary" ng-click="newDevice()">New Device</button>
+                  <button class="btn btn-primary" ng-click="newDevice()">New Device</button>
                 </div>
               </div>
             </div>
 
-            <div cl***REMOVED***="col-md-2">
-              <div cl***REMOVED***="card">
-                <div cl***REMOVED***="card-content admin-card">
-                  <h4 ng-if="layerCount == null">Layers <i cl***REMOVED***="fa fa-spinner fa-spin"></i></h4>
+            <div class="col-md-2">
+              <div class="card">
+                <div class="card-content admin-card">
+                  <h4 ng-if="layerCount == null">Layers <i class="fa fa-spinner fa-spin"></i></h4>
                   <h4 ng-if="layerCount != null">Layers ({{layerCount}})</h4>
 
                   <a ng-href="#/admin/layers">
-                    <div cl***REMOVED***="admin-dashboard-item"><i cl***REMOVED***="fa fa-map"></i></div>
+                    <div class="admin-dashboard-item"><i class="fa fa-map"></i></div>
                   </a>
 
                   <hr>
-                  <button cl***REMOVED***="btn btn-primary" ng-click="newLayer()">New Layer</button>
+                  <button class="btn btn-primary" ng-click="newLayer()">New Layer</button>
                 </div>
               </div>
             </div>
 
 
-            <div cl***REMOVED***="col-md-2">
-              <div cl***REMOVED***="card">
-                <div cl***REMOVED***="card-content admin-card">
+            <div class="col-md-2">
+              <div class="card">
+                <div class="card-content admin-card">
                   <h4>Settings</h4>
 
                   <a ng-href="#admin/settings">
-                    <div cl***REMOVED***="admin-dashboard-item"><i cl***REMOVED***="fa fa-wrench"></i></div>
+                    <div class="admin-dashboard-item"><i class="fa fa-wrench"></i></div>
                   </a>
                 </div>
               </div>
@@ -120,20 +120,20 @@
 
       <hr>
 
-      <h4 cl***REMOVED***="bottom-gap">MAGE Access</h4>
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="col-md-6">
-          <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-md-12">
-              <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
-                <div cl***REMOVED***="container-fluid">
-                  <div cl***REMOVED***="navbar-header">
-                    <a cl***REMOVED***="navbar-brand">Inactive users <sup><span cl***REMOVED***="badge badge-accent">{{inactiveUsers.length}}</span></sup></a>
+      <h4 class="bottom-gap">MAGE Access</h4>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="row">
+            <div class="col-md-12">
+              <nav class="navbar navbar-default admin-dashboard-navbar">
+                <div class="container-fluid">
+                  <div class="navbar-header">
+                    <a class="navbar-brand">Inactive users <sup><span class="badge badge-accent">{{inactiveUsers.length}}</span></sup></a>
                   </div>
 
-                  <form cl***REMOVED***="navbar-form navbar-left">
-                    <div cl***REMOVED***="form-group">
-                      <input type="text" cl***REMOVED***="form-control" placeholder="Search" ng-model="userSearch">
+                  <form class="navbar-form navbar-left">
+                    <div class="form-group">
+                      <input type="text" class="form-control" placeholder="Search" ng-model="userSearch">
                     </div>
                   </form>
                 </div>
@@ -141,22 +141,22 @@
             </div>
           </div>
 
-          <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-sm-12">
-              <div cl***REMOVED***="admin-table">
-                <div cl***REMOVED***="well-item"
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="admin-table">
+                <div class="well-item"
                     ng-repeat="user in (filteredUsers = (inactiveUsers | user:['displayName','email']:userSearch)) | orderBy:'displayName' | offset: usersPage*usersPerPage | limitTo:usersPerPage" >
-                  <div cl***REMOVED***="row pointer" ng-click="gotoUser(user)">
-                    <div cl***REMOVED***="col-md-12">
-                      <div cl***REMOVED***="right-gap pull-left">
-                        <i cl***REMOVED***="fa fa-user"></i>
+                  <div class="row pointer" ng-click="gotoUser(user)">
+                    <div class="col-md-12">
+                      <div class="right-gap pull-left">
+                        <i class="fa fa-user"></i>
                       </div>
                       <span>
                         {{user.displayName}}
                       </span>
 
-                      <span cl***REMOVED***="pull-right">
-                        <a cl***REMOVED***="btn btn-xs btn-success" ng-click="activateUser($event, user)"><i cl***REMOVED***="fa fa-check"></i> Activate</a>
+                      <span class="pull-right">
+                        <a class="btn btn-xs btn-success" ng-click="activateUser($event, user)"><i class="fa fa-check"></i> Activate</a>
                       </span>
                     </div>
                   </div>
@@ -164,51 +164,51 @@
               </div>
             </div>
           </div>
-          <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-md-12">
-              <ul cl***REMOVED***="pager pull-right">
-                <li ng-cl***REMOVED***="{'disabled': usersPage == 0}">
+          <div class="row">
+            <div class="col-md-12">
+              <ul class="pager pull-right">
+                <li ng-class="{'disabled': usersPage == 0}">
                   <a href="javascript:void(0);" ng-click="usersPage == 0 || (usersPage=usersPage-1)">&larr; Previous User</a>
                 </li>
-                <li ng-cl***REMOVED***="{'disabled': usersPage >= (filteredUsers.length/usersPerPage) - 1}">
+                <li ng-class="{'disabled': usersPage >= (filteredUsers.length/usersPerPage) - 1}">
                   <a href="javascript:void(0);" ng-click="usersPage >= (filteredUsers.length/usersPerPage) - 1 || (usersPage=usersPage+1)">Next User&rarr;</a>
                 </li>
               </ul>
             </div>
           </div>
         </div>
-        <div cl***REMOVED***="col-md-6">
-          <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-md-12">
-              <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
-                <div cl***REMOVED***="container-fluid">
-                  <div cl***REMOVED***="navbar-header">
-                    <a cl***REMOVED***="navbar-brand">Unregistered devices <sup><span cl***REMOVED***="badge badge-accent">{{unregisteredDevices.length}}</span></sup></a>
+        <div class="col-md-6">
+          <div class="row">
+            <div class="col-md-12">
+              <nav class="navbar navbar-default admin-dashboard-navbar">
+                <div class="container-fluid">
+                  <div class="navbar-header">
+                    <a class="navbar-brand">Unregistered devices <sup><span class="badge badge-accent">{{unregisteredDevices.length}}</span></sup></a>
                   </div>
 
-                  <form cl***REMOVED***="navbar-form navbar-left">
-                    <div cl***REMOVED***="form-group">
-                      <input type="text" cl***REMOVED***="form-control" placeholder="Search" ng-model="deviceSearch">
+                  <form class="navbar-form navbar-left">
+                    <div class="form-group">
+                      <input type="text" class="form-control" placeholder="Search" ng-model="deviceSearch">
                     </div>
                   </form>
                 </div>
               </nav>
             </div>
           </div>
-          <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-sm-12">
-              <div cl***REMOVED***="admin-table">
-                <div cl***REMOVED***="well-item"
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="admin-table">
+                <div class="well-item"
                     ng-repeat="d in (filteredDevices = (unregisteredDevices | filter:filterDevices)) | orderBy:'uid' | offset: devicesPage*devicesPerPage | limitTo:devicesPerPage" >
-                  <div cl***REMOVED***="row pointer" ng-click="gotoDevice(d)">
-                    <div cl***REMOVED***="col-md-12">
-                      <div cl***REMOVED***="right-gap pull-left">
-                        <i cl***REMOVED***="fa fa-mobile"></i>
+                  <div class="row pointer" ng-click="gotoDevice(d)">
+                    <div class="col-md-12">
+                      <div class="right-gap pull-left">
+                        <i class="fa fa-mobile"></i>
                       </div>
-                      <span cl***REMOVED***="strong">{{d.uid}}</span>
-                      <span cl***REMOVED***="muted" ng-if="d.user">({{d.user.displayName}})</span>
-                      <span cl***REMOVED***="pull-right">
-                        <a cl***REMOVED***="btn btn-xs btn-success" ng-click="registerDevice($event, d)"><i cl***REMOVED***="fa fa-check"></i> Register</a>
+                      <span class="strong">{{d.uid}}</span>
+                      <span class="muted" ng-if="d.user">({{d.user.displayName}})</span>
+                      <span class="pull-right">
+                        <a class="btn btn-xs btn-success" ng-click="registerDevice($event, d)"><i class="fa fa-check"></i> Register</a>
                       </span>
                     </div>
                   </div>
@@ -216,13 +216,13 @@
               </div>
             </div>
           </div>
-          <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-md-12">
-              <ul cl***REMOVED***="pager pull-right">
-                <li ng-cl***REMOVED***="{'disabled': devicesPage == 0}">
+          <div class="row">
+            <div class="col-md-12">
+              <ul class="pager pull-right">
+                <li ng-class="{'disabled': devicesPage == 0}">
                   <a href="javascript:void(0);" ng-click="devicesPage == 0 || (devicesPage=devicesPage-1)">&larr; Previous Device</a>
                 </li>
-                <li ng-cl***REMOVED***="{'disabled': devicesPage >= (filteredDevices.length/devicesPerPage) - 1}">
+                <li ng-class="{'disabled': devicesPage >= (filteredDevices.length/devicesPerPage) - 1}">
                   <a href="javascript:void(0);" ng-click="devicesPage >= (filteredDevices.length/devicesPerPage) - 1 || (devicesPage=devicesPage+1)">Next Device&rarr;</a>
                 </li>
               </ul>
@@ -233,23 +233,23 @@
 
       <hr>
 
-      <div cl***REMOVED***="row top-gap-xl">
-        <div cl***REMOVED***="col-md-12">
-          <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
-            <div cl***REMOVED***="container-fluid">
-              <div cl***REMOVED***="navbar-header">
-                <button type="button" cl***REMOVED***="admin-navbar-toggle navbar-toggle collapsed" data-toggle="collapse" data-target="#login-nav" aria-expanded="false">
-                  <span cl***REMOVED***="sr-only">Toggle navigation</span>
-                  <span cl***REMOVED***="icon-bar"></span>
-                  <span cl***REMOVED***="icon-bar"></span>
-                  <span cl***REMOVED***="icon-bar"></span>
+      <div class="row top-gap-xl">
+        <div class="col-md-12">
+          <nav class="navbar navbar-default admin-dashboard-navbar">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <button type="button" class="admin-navbar-toggle navbar-toggle collapsed" data-toggle="collapse" data-target="#login-nav" aria-expanded="false">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
                 </button>
-                <a cl***REMOVED***="navbar-brand">Logins</a>
+                <a class="navbar-brand">Logins</a>
               </div>
 
-              <div cl***REMOVED***="collapse navbar-collapse admin-navbar-collapse" id="login-nav">
-                <form cl***REMOVED***="navbar-form navbar-left fixed-width-navbar" id="login-nav">
-                  <div cl***REMOVED***="form-group">
+              <div class="collapse navbar-collapse admin-navbar-collapse" id="login-nav">
+                <form class="navbar-form navbar-left fixed-width-navbar" id="login-nav">
+                  <div class="form-group">
                     <ui-select ng-model="user.selected" theme="bootstrap" on-select="filterLogins()" style="width: 300px;">
                       <ui-select-match allow-clear placeholder="Filter on user">{{$select.selected.displayName}}</ui-select-match>
                       <ui-select-choices group-by="groupLayerByType" repeat="user in users | orderBy: 'name' | filter: $select.search">
@@ -258,41 +258,41 @@
                     </ui-select>
                   </div>
 
-                  <div cl***REMOVED***="form-group">
+                  <div class="form-group">
                     <ui-select ng-model="device.selected" theme="bootstrap" on-select="filterLogins()" style="width: 330px;">
                       <ui-select-match allow-clear placeholder="Filter on device">{{$select.selected.uid}}</ui-select-match>
                       <ui-select-choices group-by="groupLayerByType" repeat="device in devices | orderBy: 'uid' | filter: $select.search">
                         <div ng-bind-html="device.uid | highlight: $select.search"></div>
-                        <small cl***REMOVED***="muted">
+                        <small class="muted">
                          <span ng-bind-html="''+device.uid | highlight: $select.search"></span>
                        </small>
                       </ui-select-choices>
                     </ui-select>
                   </div>
-                  <div cl***REMOVED***="form-group">
-                    <div cl***REMOVED***="input-group">
-                      <input type="text" placeholder="Start Date" cl***REMOVED***="form-control" datepicker-popup="MM-dd-yyyy" ng-model="login.startDate" is-open="login.startDateOpened" close-text="Close" />
-                      <span cl***REMOVED***="input-group-btn">
-                        <button type="button" cl***REMOVED***="btn btn-default" ng-click="openLoginStart($event)"><i cl***REMOVED***="glyphicon glyphicon-calendar"></i></button>
+                  <div class="form-group">
+                    <div class="input-group">
+                      <input type="text" placeholder="Start Date" class="form-control" datepicker-popup="MM-dd-yyyy" ng-model="login.startDate" is-open="login.startDateOpened" close-text="Close" />
+                      <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" ng-click="openLoginStart($event)"><i class="glyphicon glyphicon-calendar"></i></button>
                       </span>
                     </div>
                   </div>
-                  <div cl***REMOVED***="form-group">
-                    <span cl***REMOVED***="navbar-text-inverse">&nbsp;to&nbsp;</span>
+                  <div class="form-group">
+                    <span class="navbar-text-inverse">&nbsp;to&nbsp;</span>
                   </div>
-                  <div cl***REMOVED***="form-group">
-                    <div cl***REMOVED***="input-group">
-                      <input type="text" placeholder="End Date" cl***REMOVED***="form-control" datepicker-popup="MM-dd-yyyy" ng-model="login.endDate" is-open="login.endDateOpened"  close-text="Close" />
-                      <span cl***REMOVED***="input-group-btn">
-                        <button type="button" cl***REMOVED***="btn btn-default" ng-click="openLoginEnd($event)"><i cl***REMOVED***="glyphicon glyphicon-calendar"></i></button>
+                  <div class="form-group">
+                    <div class="input-group">
+                      <input type="text" placeholder="End Date" class="form-control" datepicker-popup="MM-dd-yyyy" ng-model="login.endDate" is-open="login.endDateOpened"  close-text="Close" />
+                      <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" ng-click="openLoginEnd($event)"><i class="glyphicon glyphicon-calendar"></i></button>
                       </span>
                     </div>
                   </div>
                 </form>
-                <form cl***REMOVED***="navbar-form navbar-right">
-                  <div cl***REMOVED***="form-group">
-                    <span cl***REMOVED***="navbar-text-inverse">Results: </span>
-                    <select cl***REMOVED***="form-control" ng-init="loginResultsLimit = 10" ng-model="loginResultsLimit" ng-change="loginResultsLimitChanged()" ng-options="o as o for o in [10, 25, 50, 100]"></select>
+                <form class="navbar-form navbar-right">
+                  <div class="form-group">
+                    <span class="navbar-text-inverse">Results: </span>
+                    <select class="form-control" ng-init="loginResultsLimit = 10" ng-model="loginResultsLimit" ng-change="loginResultsLimitChanged()" ng-options="o as o for o in [10, 25, 50, 100]"></select>
                   </div>
                 </form>
               </div>
@@ -301,23 +301,23 @@
           </nav>
         </div>
       </div>
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="col-sm-12">
-          <div cl***REMOVED***="admin-table">
-            <div cl***REMOVED***="well-item" ng-repeat="login in loginPage.logins" >
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-md-12">
-                  <div cl***REMOVED***="right-gap pull-left">
-                    <i cl***REMOVED***="fa fa-fw fa-sign-in"></i>
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="admin-table">
+            <div class="well-item" ng-repeat="login in loginPage.logins" >
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="right-gap pull-left">
+                    <i class="fa fa-fw fa-sign-in"></i>
                   </div>
-                  <strong cl***REMOVED***="right-gap"><a href="javascript:void(0);" ng-click="gotoUser(login.user)">{{login.user.displayName}}</a></strong>
-                  <span cl***REMOVED***="muted"><a href="javascript:void(0);" ng-click="gotoDevice(login.device)"><i cl***REMOVED***="fa fa-mobile-phone"></i> {{login.device.uid}}</a></span>
+                  <strong class="right-gap"><a href="javascript:void(0);" ng-click="gotoUser(login.user)">{{login.user.displayName}}</a></strong>
+                  <span class="muted"><a href="javascript:void(0);" ng-click="gotoDevice(login.device)"><i class="fa fa-mobile-phone"></i> {{login.device.uid}}</a></span>
                 </div>
               </div>
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-md-12">
-                  <div cl***REMOVED***="right-gap pull-left">
-                    <i cl***REMOVED***="fa fa-fw"></i>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="right-gap pull-left">
+                    <i class="fa fa-fw"></i>
                   </div>
                   <span>{{login.timestamp | moment:'fromNow'}} ({{login.timestamp | moment:'MMM D YYYY hh:mm:ss A'}})</span>
                 </div>
@@ -326,13 +326,13 @@
           </div>
         </div>
       </div>
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="col-md-12">
-          <ul cl***REMOVED***="pager pull-right">
-            <li ng-cl***REMOVED***="{'disabled': !showPrevious}">
+      <div class="row">
+        <div class="col-md-12">
+          <ul class="pager pull-right">
+            <li ng-class="{'disabled': !showPrevious}">
               <a href="javascript:void(0);" ng-click="!showPrevious || pageLogin(loginPage.prev)">&larr; Previous</a>
             </li>
-            <li ng-cl***REMOVED***="{'disabled': !showNext}">
+            <li ng-class="{'disabled': !showNext}">
               <a href="javascript:void(0);" ng-click="!showNext || pageLogin(loginPage.next)">Next &rarr;</a>
             </li>
           </ul>

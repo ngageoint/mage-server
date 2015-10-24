@@ -3,7 +3,7 @@
 Copyright (C) 2011 by Yehuda Katz
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and ***REMOVED***ociated documentation files (the "Software"), to deal
+of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
@@ -669,7 +669,7 @@ Handlebars.Parser = handlebars;
 
 Handlebars.parse = function(input) {
 
-  // Just return if an already-compile AST was p***REMOVED***ed in.
+  // Just return if an already-compile AST was passed in.
   if(input.constructor === Handlebars.AST.ProgramNode) { return input; }
 
   Handlebars.Parser.yy = Handlebars.AST;
@@ -704,7 +704,7 @@ Handlebars.AST.MustacheNode = function(rawParams, hash, unescaped) {
 
   // if a mustache is an eligible helper but not a definite
   // helper, it is ambiguous, and will be resolved in a later
-  // p***REMOVED*** or at runtime.
+  // pass or at runtime.
 };
 
 Handlebars.AST.PartialNode = function(partialName, context) {
@@ -896,7 +896,7 @@ var JavaScriptCompiler = Handlebars.JavaScriptCompiler = function() {};
 Compiler.prototype = {
   compiler: Compiler,
 
-  dis***REMOVED***emble: function() {
+  disassemble: function() {
     var opcodes = this.opcodes, opcode, out = [], params, param;
 
     for (var i=0, l=opcodes.length; i<l; i++) {
@@ -1030,7 +1030,7 @@ Compiler.prototype = {
       inverse = this.compileProgram(inverse);
     }
 
-    var type = this.cl***REMOVED***ifyMustache(mustache);
+    var type = this.classifyMustache(mustache);
 
     if (type === "helper") {
       this.helperMustache(mustache, program, inverse);
@@ -1076,7 +1076,7 @@ Compiler.prototype = {
         this.accept(val);
       }
 
-      this.opcode('***REMOVED***ignToHash', pair[0]);
+      this.opcode('assignToHash', pair[0]);
     }
     this.opcode('popHash');
   },
@@ -1101,7 +1101,7 @@ Compiler.prototype = {
 
   mustache: function(mustache) {
     var options = this.options;
-    var type = this.cl***REMOVED***ifyMustache(mustache);
+    var type = this.classifyMustache(mustache);
 
     if (type === "simple") {
       this.simpleMustache(mustache);
@@ -1223,7 +1223,7 @@ Compiler.prototype = {
     }
   },
 
-  cl***REMOVED***ifyMustache: function(mustache) {
+  classifyMustache: function(mustache) {
     var isHelper   = mustache.isHelper;
     var isEligible = mustache.eligibleHelper;
     var options    = this.options;
@@ -1299,7 +1299,7 @@ var Literal = function(value) {
 };
 
 JavaScriptCompiler.prototype = {
-  // PUBLIC API: You can override these methods in a subcl***REMOVED*** to provide
+  // PUBLIC API: You can override these methods in a subclass to provide
   // alternative compiled forms for name lookup and buffering semantics
   nameLookup: function(parent, name /* , type*/) {
     if (/^[0-9]+$/.test(name)) {
@@ -1335,7 +1335,7 @@ JavaScriptCompiler.prototype = {
     this.environment = environment;
     this.options = options || {};
 
-    Handlebars.log(Handlebars.logger.DEBUG, this.environment.dis***REMOVED***emble() + "\n\n");
+    Handlebars.log(Handlebars.logger.DEBUG, this.environment.disassemble() + "\n\n");
 
     this.name = this.environment.name;
     this.isChild = !!context;
@@ -1442,7 +1442,7 @@ JavaScriptCompiler.prototype = {
       params.push("depth" + this.environment.depths.list[i]);
     }
 
-    // Perform a second p***REMOVED*** over the output to merge content when possible
+    // Perform a second pass over the output to merge content when possible
     var source = this.mergeSource();
 
     if (!this.isChild) {
@@ -1777,7 +1777,7 @@ JavaScriptCompiler.prototype = {
   // is a helper or a path.
   //
   // This operation emits more code than the other options,
-  // and can be avoided by p***REMOVED***ing the `knownHelpers` and
+  // and can be avoided by passing the `knownHelpers` and
   // `knownHelpersOnly` flags at compile-time.
   invokeAmbiguous: function(name, helperCall) {
     this.context.aliases.functionType = '"function"';
@@ -1812,14 +1812,14 @@ JavaScriptCompiler.prototype = {
     this.push("self.invokePartial(" + params.join(", ") + ")");
   },
 
-  // [***REMOVED***ignToHash]
+  // [assignToHash]
   //
   // On stack, before: value, hash, ...
   // On stack, after: hash, ...
   //
-  // Pops a value and hash off the stack, ***REMOVED***igns `hash[key] = value`
+  // Pops a value and hash off the stack, assigns `hash[key] = value`
   // and pushes the hash back onto the stack.
-  ***REMOVED***ignToHash: function(key) {
+  assignToHash: function(key) {
     var value = this.popStack(),
         context,
         type;
@@ -2043,7 +2043,7 @@ JavaScriptCompiler.prototype = {
     };
   },
 
-  // the params and contexts arguments are p***REMOVED***ed in arrays
+  // the params and contexts arguments are passed in arrays
   // to fill in
   setupParams: function(paramSize, params, useRegister) {
     var options = [], contexts = [], types = [], param, inverse, program;
@@ -2114,7 +2114,7 @@ var reservedWords = (
   " boolean export interface static" +
   " byte extends long super" +
   " char final native synchronized" +
-  " cl***REMOVED*** float package throws" +
+  " class float package throws" +
   " const goto private transient" +
   " debugger implements protected volatile" +
   " double import public let yield"
@@ -2135,7 +2135,7 @@ JavaScriptCompiler.isValidJavaScriptVariableName = function(name) {
 
 Handlebars.precompile = function(input, options) {
   if (input == null || (typeof input !== 'string' && input.constructor !== Handlebars.AST.ProgramNode)) {
-    throw new Handlebars.Exception("You must p***REMOVED*** a string or Handlebars AST to Handlebars.precompile. You p***REMOVED***ed " + input);
+    throw new Handlebars.Exception("You must pass a string or Handlebars AST to Handlebars.precompile. You passed " + input);
   }
 
   options = options || {};
@@ -2149,7 +2149,7 @@ Handlebars.precompile = function(input, options) {
 
 Handlebars.compile = function(input, options) {
   if (input == null || (typeof input !== 'string' && input.constructor !== Handlebars.AST.ProgramNode)) {
-    throw new Handlebars.Exception("You must p***REMOVED*** a string or Handlebars AST to Handlebars.compile. You p***REMOVED***ed " + input);
+    throw new Handlebars.Exception("You must pass a string or Handlebars AST to Handlebars.compile. You passed " + input);
   }
 
   options = options || {};

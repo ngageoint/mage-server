@@ -1,5 +1,5 @@
 var express = require("express")
-  , p***REMOVED***port = require('p***REMOVED***port')
+  , passport = require('passport')
   , bodyParser = require('body-parser')
   , multer = require('multer')
   , path = require('path')
@@ -84,11 +84,11 @@ app.use(function(req, res, next) {
 app.use(require('body-parser')({ keepExtensions: true}));
 app.use(require('method-override')());
 app.use(require('multer')());
-app.use(p***REMOVED***port.initialize());
+app.use(passport.initialize());
 app.use(express.static(path.join(__dirname, process.env.NODE_ENV === 'production' ? 'public/dist' : 'public')));
 app.use('/api/swagger', express.static('./public/vendor/swagger-ui/'));
 app.use('/private',
-  p***REMOVED***port.authenticate('bearer'),
+  passport.authenticate('bearer'),
   express.static(path.join(__dirname, 'private')));
 app.use(function(err, req, res, next) {
   log.error(err.message);
@@ -98,7 +98,7 @@ app.use(function(err, req, res, next) {
 
 // Configure authentication
 var provisioning = require('./provision/' + config.api.provision.strategy)(provision);
-var authentication = require('./authentication')(app, p***REMOVED***port, provisioning, config.api.authenticationStrategies);
+var authentication = require('./authentication')(app, passport, provisioning, config.api.authenticationStrategies);
 
 // Configure routes
 require('./routes')(app, {authentication: authentication, provisioning: provisioning});

@@ -70,18 +70,18 @@ L.Control.MageUserLocation = L.Control.extend({
 		this._onLocation(this._location);
 		this.startLocate();
 
-		L.DomUtil.addCl***REMOVED***(this._broadcastLink, 'leaflet-control-inverse');
-		L.DomUtil.addCl***REMOVED***(this._broadcastIcon, 'icon-sage-inverse');
-		L.DomUtil.removeCl***REMOVED***(this._broadcastIcon, 'icon-sage');
+		L.DomUtil.addClass(this._broadcastLink, 'leaflet-control-inverse');
+		L.DomUtil.addClass(this._broadcastIcon, 'icon-sage-inverse');
+		L.DomUtil.removeClass(this._broadcastIcon, 'icon-sage');
 
 	},
 
 	stopBroadcast: function() {
 		if (!this._broadcast) return; // broadcast already off
 
-		L.DomUtil.removeCl***REMOVED***(this._broadcastLink, 'leaflet-control-inverse');
-		L.DomUtil.addCl***REMOVED***(this._broadcastIcon, 'icon-sage');
-		L.DomUtil.removeCl***REMOVED***(this._broadcastIcon, 'icon-sage-inverse');
+		L.DomUtil.removeClass(this._broadcastLink, 'leaflet-control-inverse');
+		L.DomUtil.addClass(this._broadcastIcon, 'icon-sage');
+		L.DomUtil.removeClass(this._broadcastIcon, 'icon-sage-inverse');
 
 		this._broadcast = false;
 	},
@@ -96,9 +96,9 @@ L.Control.MageUserLocation = L.Control.extend({
 			setView: false,
 		});
 
-		L.DomUtil.addCl***REMOVED***(this._locateLink, 'leaflet-control-inverse');
-		L.DomUtil.addCl***REMOVED***(this._locateIcon, 'icon-sage-inverse');
-		L.DomUtil.removeCl***REMOVED***(this._locateIcon, 'icon-sage');
+		L.DomUtil.addClass(this._locateLink, 'leaflet-control-inverse');
+		L.DomUtil.addClass(this._locateIcon, 'icon-sage-inverse');
+		L.DomUtil.removeClass(this._locateIcon, 'icon-sage');
 	},
 
 	stopLocate: function() {
@@ -113,9 +113,9 @@ L.Control.MageUserLocation = L.Control.extend({
 			this.options.stopLocation();
 		}
 
-		L.DomUtil.removeCl***REMOVED***(this._locateLink, 'leaflet-control-inverse');
-		L.DomUtil.addCl***REMOVED***(this._locateIcon, 'icon-sage');
-		L.DomUtil.removeCl***REMOVED***(this._locateIcon, 'icon-sage-inverse');
+		L.DomUtil.removeClass(this._locateLink, 'leaflet-control-inverse');
+		L.DomUtil.addClass(this._locateIcon, 'icon-sage');
+		L.DomUtil.removeClass(this._locateIcon, 'icon-sage-inverse');
 
 		this.stopBroadcast();
 	},
@@ -164,11 +164,11 @@ L.Control.MageListTools = L.Control.extend({
 
 	onAdd: function (map) {
 		var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-		var linkCl***REMOVED*** = this.options.enabled ? 'leaflet-control-inverse' : '';
-		this._link = L.DomUtil.create('a', linkCl***REMOVED***, container);
+		var linkClass = this.options.enabled ? 'leaflet-control-inverse' : '';
+		this._link = L.DomUtil.create('a', linkClass, container);
 
-		var iconCl***REMOVED*** = this.options.enabled ? 'fa fa-bars icon-sage-inverse' : 'fa fa-bars icon-sage';
-		this._icon = L.DomUtil.create('i', iconCl***REMOVED***, this._link);
+		var iconClass = this.options.enabled ? 'fa fa-bars icon-sage-inverse' : 'fa fa-bars icon-sage';
+		this._icon = L.DomUtil.create('i', iconClass, this._link);
 
 		this._link.href = '#';
 		this._link.title = 'Feed';
@@ -186,15 +186,15 @@ L.Control.MageListTools = L.Control.extend({
   },
 
 	_toggle: function () {
-		var on = L.DomUtil.hasCl***REMOVED***(this._icon, 'icon-sage-inverse');
+		var on = L.DomUtil.hasClass(this._icon, 'icon-sage-inverse');
 		if (on) {
-			L.DomUtil.removeCl***REMOVED***(this._link, 'leaflet-control-inverse');
-			L.DomUtil.addCl***REMOVED***(this._icon, 'icon-sage');
-			L.DomUtil.removeCl***REMOVED***(this._icon, 'icon-sage-inverse');
+			L.DomUtil.removeClass(this._link, 'leaflet-control-inverse');
+			L.DomUtil.addClass(this._icon, 'icon-sage');
+			L.DomUtil.removeClass(this._icon, 'icon-sage-inverse');
 		} else {
-			L.DomUtil.addCl***REMOVED***(this._link, 'leaflet-control-inverse');
-			L.DomUtil.addCl***REMOVED***(this._icon, 'icon-sage-inverse');
-			L.DomUtil.removeCl***REMOVED***(this._icon, 'icon-sage');
+			L.DomUtil.addClass(this._link, 'leaflet-control-inverse');
+			L.DomUtil.addClass(this._icon, 'icon-sage-inverse');
+			L.DomUtil.removeClass(this._icon, 'icon-sage');
 		}
 	}
 });

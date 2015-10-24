@@ -41,17 +41,17 @@ var UserSchema = new Schema({
   authentication: {
     type: { type: String, required: false },
     id: { type: String, required: false },
-    p***REMOVED***word: { type: String, required: false }
+    password: { type: String, required: false }
   }
 },{
   versionKey: false
 });
 
-UserSchema.method('validP***REMOVED***word', function(p***REMOVED***word, callback) {
+UserSchema.method('validPassword', function(password, callback) {
   var user = this;
   if (user.authentication.type !== 'local') return callback(null, true);
 
-  hasher.validP***REMOVED***word(p***REMOVED***word, user.authentication.p***REMOVED***word, callback);
+  hasher.validPassword(password, user.authentication.password, callback);
 });
 
 // Lowercase the username we store, this will allow for case insensitive usernames
@@ -70,29 +70,29 @@ UserSchema.pre('save', function(next) {
   });
 });
 
-// Encrypt p***REMOVED***word before save
+// Encrypt password before save
 UserSchema.pre('save', function(next) {
   var user = this;
 
-  // only hash the p***REMOVED***word if it has been modified (or is new)
-  if (user.authentication.type !== 'local' && !user.isModified('authentication.p***REMOVED***word')) {
+  // only hash the password if it has been modified (or is new)
+  if (user.authentication.type !== 'local' && !user.isModified('authentication.password')) {
     return next();
   }
 
-  hasher.encryptP***REMOVED***word(user.authentication.p***REMOVED***word, function(err, encryptedP***REMOVED***word) {
+  hasher.encryptPassword(user.authentication.password, function(err, encryptedPassword) {
     if (err) return next(err);
 
-    user.authentication.p***REMOVED***word = encryptedP***REMOVED***word;
+    user.authentication.password = encryptedPassword;
     next();
   });
 });
 
-// Remove Token if p***REMOVED***word changed
+// Remove Token if password changed
 UserSchema.pre('save', function(next) {
   var user = this;
 
-  // only hash the p***REMOVED***word if it has been modified (or is new)
-  if (!user.isModified('p***REMOVED***word')) {
+  // only hash the password if it has been modified (or is new)
+  if (!user.isModified('password')) {
     return next();
   }
 
@@ -143,7 +143,7 @@ var transform = function(user, ret, options) {
     ret.id = ret._id;
     delete ret._id;
 
-    delete ret.p***REMOVED***word;
+    delete ret.password;
     delete ret.avatar;
     delete ret.icon;
 
@@ -174,13 +174,13 @@ exports.transform = transform;
 var User = mongoose.model('User', UserSchema);
 exports.Model = User;
 
-var encryptP***REMOVED***word = function(p***REMOVED***word, done) {
-  if (!p***REMOVED***word) return done(null, null);
+var encryptPassword = function(password, done) {
+  if (!password) return done(null, null);
 
-  hasher.encryptP***REMOVED***word(p***REMOVED***word, function(err, encryptedP***REMOVED***word) {
+  hasher.encryptPassword(password, function(err, encryptedPassword) {
     if (err) return done(err);
 
-    done(null, encryptedP***REMOVED***word);
+    done(null, encryptedPassword);
   });
 }
 

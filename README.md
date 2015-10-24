@@ -124,22 +124,22 @@ Configuration:
         * minor - Minor server version. Updated when significant feature changes are added that do not break backwards compatibility.
         * micro - Micro server version. Updated for bug fixes.
     * authenticationStrategies - hash of all authentication strategies accepted by this server.
-        * local - local (username/p***REMOVED***word) authentication.  Usernames and p***REMOVED***words stored and managed localy by this MAGE server
-            * p***REMOVED***wordMinLength - minimum p***REMOVED***word length
+        * local - local (username/password) authentication.  Usernames and passwords stored and managed localy by this MAGE server
+            * passwordMinLength - minimum password length
         * google - google oauth2 authentication strategy.
             * callbackURL - google callback URL
             * clientID - google client ID
-            * clientSecret - google client ***REMOVED***
+            * clientSecret - google client secret
     * provison - device provisioning strategy
         * strategy - provision strategy name.  Provisioning strategy name maps to file name in provisioning directory
-    * locationServices - turn on/off location ***REMOVED***s
+    * locationServices - turn on/off location services
 * server - Server based configuration.  Not exposed to client
     * userBaseDirectory - root directory in which to store user avatar media
     * iconBaseDirectory - root directory in which to store user map icon media
     * token - client token information.  MAGE api is token based, upon authentication users will be issued a token.  Token must be present in all subsequent api requests.
         * expiration - token expiration in seconds.  Time at which token will expire.
     * locationServices
-        * enabled - flag to turn on/off location ***REMOVED***s
+        * enabled - flag to turn on/off location services
         * userCollectionLocationLimit - user locations are stored in 2 different collections.  This is the limit for the capped locations.
     * attachment
         * baseDirectory - root directory in which to store attachment media, i.e. images, videos and voice
@@ -160,7 +160,7 @@ Configuration:
     },
     "authenticationStrategies": {
       "local": {
-        "p***REMOVED***wordMinLength": 14
+        "passwordMinLength": 14
       },
       "google": {
         "callbackURL": " ",

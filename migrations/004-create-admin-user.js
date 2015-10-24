@@ -32,20 +32,20 @@ exports.up = function(done) {
           }
         );
       },
-      p***REMOVED***word: function(done) {
-        var p***REMOVED***word = null;
+      password: function(done) {
+        var password = null;
         async.whilst(
           function() {
-            return !p***REMOVED***word;
+            return !password;
           },
           function (done) {
-            rl.question('Please enter a p***REMOVED***word: ', function(answer) {
-              p***REMOVED***word = answer
-              done(null, p***REMOVED***word);
+            rl.question('Please enter a password: ', function(answer) {
+              password = answer
+              done(null, password);
             });
           },
           function (err) {
-            done(err, p***REMOVED***word);
+            done(err, password);
           }
         );
       },
@@ -58,13 +58,13 @@ exports.up = function(done) {
 
       var adminUser = {
         username: results.username,
-        p***REMOVED***word: results.p***REMOVED***word,
+        password: results.password,
         displayName: results.username,
         roleId: role._id,
         active: 'true',
         authentication: {
           type: 'local',
-          p***REMOVED***word: 'admin'
+          password: 'admin'
         }
       };
 
