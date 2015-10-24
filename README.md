@@ -90,6 +90,90 @@ $ gm version
 
 ## Running MAGE
 
+### Configure MAGE
+
+MAGE configuration lies within the config.json file located at the servers root directory.
+
+Configuration:
+* api - configuration parsed by clients for information about this MAGE server, exposed in /api call
+    * name - Human readable MAGE server name
+    * version - Used by MAGE clients to determine compatibility
+        * major - Major server version. Updated when backwards breaking changes are implemented.
+        * minor - Minor server version. Updated when significant feature changes are added that do not break backwards compatibility.
+        * micro - Micro server version. Updated for bug fixes.
+    * authenticationStrategies - hash of all authentication strategies accepted by this server.
+        * local - local (username/p***REMOVED***word) authentication.  Usernames and p***REMOVED***words stored and managed localy by this MAGE server
+            * p***REMOVED***wordMinLength - minimum p***REMOVED***word length
+        * google - google oauth2 authentication strategy.
+            * callbackURL - google callback URL
+            * clientID - google client ID
+            * clientSecret - google client ***REMOVED***
+    * provison - device provisioning strategy
+        * strategy - provision strategy name.  Provisioning strategy name maps to file name in provisioning directory
+    * locationServices - turn on/off location ***REMOVED***s
+* server - Server based configuration.  Not exposed to client
+    * userBaseDirectory - root directory in which to store user avatar media
+    * iconBaseDirectory - root directory in which to store user map icon media
+    * token - client token information.  MAGE api is token based, upon authentication users will be issued a token.  Token must be present in all subsequent api requests.
+        * expiration - token expiration in seconds.  Time at which token will expire.
+    * locationServices
+        * enabled - flag to turn on/off location ***REMOVED***s
+        * userCollectionLocationLimit - user locations are stored in 2 different collections.  This is the limit for the capped locations.
+    * attachment
+        * baseDirectory - root directory in which to store attachment media, i.e. images, videos and voice
+    * mongodb
+        * host - host in which mongodb is running
+        * port - port in which mongodb is running
+        * db - mongodb database name in which to store MAGE data
+        * poolSize - mongodb connection pool size for this plugin
+
+```json
+{
+  "api": {
+    "name": "MAGE (Mobile Awareness GEOINT Environment)",
+    "version": {
+      "major": 4,
+      "minor": 0,
+      "micro": 0
+    },
+    "authenticationStrategies": {
+      "local": {
+        "p***REMOVED***wordMinLength": 14
+      },
+      "google": {
+        "callbackURL": " ",
+        "clientID": " ",
+        "clientSecret": " "
+      }
+    },
+    "provision": {
+      "strategy": "uid"
+    },
+    "locationServices": true
+  },
+  "server": {
+    "userBaseDirectory": "/var/lib/mage/users",
+    "iconBaseDirectory": "/var/lib/mage/icons",
+    "token": {
+      "expiration": 28800
+    },
+    "locationServices": {
+      "enabled": true,
+      "userCollectionLocationLimit": 100
+    },
+    "attachment": {
+      "baseDirectory": "/var/lib/mage/attachments"
+    },
+    "mongodb": {
+      "host": "localhost",
+      "port": 27017,
+      "db": "magedb",
+      "poolSize": 5
+    },
+  }
+}
+```
+
 ### Starting Mongodb
 To start mongo type the following:
 ```bash
