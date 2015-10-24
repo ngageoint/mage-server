@@ -28,7 +28,6 @@ module.exports = function(app, security) {
   }
 
   var log = require('winston');
-  log.info('cmon man, this really should work');
 
   app.set('resources', resources);
 
