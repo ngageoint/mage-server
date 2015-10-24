@@ -3,6 +3,8 @@ var Layer = require('../models/layer');
 exports.id = 'create-initial-osm-layer';
 
 exports.up = function(done) {
+  console.log('\nCreating open street map layer...');
+
   var osm = {
     name: "Open Street Map",
     type: "Imagery",
