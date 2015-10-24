@@ -88,6 +88,32 @@ $ yum install GraphicMagick
 $ gm version
 ```
 
+## Running MAGE
+
+### Starting Mongodb
+To start mongo type the following:
+```bash
+$ mongod -f <configuration_file>
+```
+
+Your configuation file will live in a different place depending on how you installed mongodb.
+
+homebrew: /usr/local/etc/mongod.conf
+yum: /etc/mongod.conf
+
+Feel free to play with the settings in the configuation file, but know that MAGE will run with the provided defaults.
+
+### Initial Database setup
+
+The  migration patches live in the migrations folders.  MAGE uses [mongodb-migrations](https://github.com/emirotin/mongodb-migrations) to support applying migrations.  On intial setup you will have to run the migrations to create the initial user and device used to log into the web.
+
+To run the migrations:
+``` bash
+$ ./node_modules/.bin/mm
+```
+
+The /etc/mongod.conf file can be modified for your particular deployment as you see fit.  For starters, the provided defaults will get you up and running.
+
 ## Pull Requests
 
 If you'd like to contribute to this project, please make a pull request. We'll review the pull request and discuss the changes. All pull request contributions to this project will be released under the Apache license.
