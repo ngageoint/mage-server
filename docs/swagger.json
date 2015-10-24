@@ -809,6 +809,163 @@
                 }
             }
         },
+        "/api/events/{eventId}/form/icons": {
+            "get": {
+                "description": "Returns the default icon for this form",
+                "operationId": "getDefaultIcon",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "form response"
+                    }
+                }
+            },
+            "post": {
+                "description": "add new default icon",
+                "operationId": "addDefaultIcon",
+                "tags": [
+                    "Event"
+                ],
+                "consumes": [
+                    "mutipart/form-data"
+                ],
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "new icon response"
+                    }
+                }
+            },
+            "delete": {
+                "description": "deletes the default icon",
+                "operationId": "deleteDefaultIcon",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "icon deleted"
+                    }
+                }
+            }
+        },
+        "/api/events/{eventId}/form/icons/{type}": {
+            "get": {
+                "description": "Returns a icon based on type",
+                "operationId": "getTypeIcon",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "icon type",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "form response"
+                    }
+                }
+            },
+            "post": {
+                "description": "add new type icon",
+                "operationId": "addTypeIcon",
+                "tags": [
+                    "Event"
+                ],
+                "consumes": [
+                    "mutipart/form-data"
+                ],
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "icon type",
+                        "type": "string",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "new icon response"
+                    }
+                }
+            },
+            "delete": {
+                "description": "deletes a type icon",
+                "operationId": "deleteTypeIcon",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "icon type",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "icon deleted"
+                    }
+                }
+            }
+        },
         "/api/events/{eventId}/form/icons/{type}/{variant}": {
             "get": {
                 "description": "Returns a single form based on id",
@@ -825,12 +982,14 @@
                         "name": "type",
                         "in": "path",
                         "description": "icon type",
+                        "required": true,
                         "type": "string"
                     },
                     {
                         "name": "variant",
                         "in": "path",
                         "description": "variant type",
+                        "required": true,
                         "type": "string"
                     }
                 ],
@@ -864,13 +1023,15 @@
                         "name": "type",
                         "in": "path",
                         "description": "icon type",
-                        "type": "string"
+                        "type": "string",
+                        "required": true
                     },
                     {
                         "name": "variant",
                         "in": "path",
                         "description": "variant type",
-                        "type": "string"
+                        "type": "string",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -894,12 +1055,14 @@
                         "name": "type",
                         "in": "path",
                         "description": "icon type",
+                        "required": true,
                         "type": "string"
                     },
                     {
                         "name": "variant",
                         "in": "path",
                         "description": "variant type",
+                        "required": true,
                         "type": "string"
                     }
                 ],
