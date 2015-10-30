@@ -3,11 +3,11 @@ module.exports = function(app, security) {
     , User = require('../models/user')
     , access = require('../access');
 
-  var p***REMOVED***port = security.authentication.p***REMOVED***port;
+  var passport = security.authentication.passport;
 
   var isAuthenticated = function(strategy) {
     return function(req, res, next) {
-      p***REMOVED***port.authenticate(strategy, function(err, user, info) {
+      passport.authenticate(strategy, function(err, user, info) {
         if (err) return next(err);
 
         if (user) req.user = user;
@@ -68,7 +68,7 @@ module.exports = function(app, security) {
   // get all devices
   app.get(
     '/api/devices',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     access.authorize('READ_DEVICE'),
     function (req, res, next) {
       var filter = {};
@@ -98,7 +98,7 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/devices/count',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     access.authorize('READ_DEVICE'),
     function (req, res, next) {
       Device.count(function (err, count) {
@@ -112,7 +112,7 @@ module.exports = function(app, security) {
   // get device
   app.get(
     '/api/devices/:deviceId',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     access.authorize('READ_DEVICE'),
     function (req, res) {
       res.json(req.device);
@@ -122,7 +122,7 @@ module.exports = function(app, security) {
   // Update a device
   app.put(
     '/api/devices/:id',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     access.authorize('UPDATE_DEVICE'),
     parseDeviceParams,
     function(req, res) {
@@ -146,7 +146,7 @@ module.exports = function(app, security) {
   // Delete a device
   app.delete(
     '/api/devices/:id',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     access.authorize('DELETE_DEVICE'),
     function(req, res) {
       Device.deleteDevice(req.param('id'), function(err, device) {

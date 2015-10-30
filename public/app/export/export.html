@@ -1,16 +1,16 @@
-<div cl***REMOVED***="modal-header">
-  <h3 cl***REMOVED***="modal-title">Export</h3>
+<div class="modal-header">
+  <h3 class="modal-title">Export</h3>
 </div>
 
-<div cl***REMOVED***="modal-body">
+<div class="modal-body">
   <form>
-    <div ng-show="showEventError" cl***REMOVED***="alert-error" bs-alert>
+    <div ng-show="showEventError" class="alert-error" bs-alert>
       <span>Please Select an Event</span>
     </div>
 
-    <div cl***REMOVED***="form-group">
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="col-md-6">
+    <div class="form-group">
+      <div class="row">
+        <div class="col-md-6">
           <label>Event</label>
           <ui-select ng-model="exportEvent.selected" theme="bootstrap">
             <ui-select-match placeholder="Select an event to export">{{$select.selected.name}}</ui-select-match>
@@ -22,47 +22,47 @@
       </div>
     </div>
 
-    <div cl***REMOVED***="checkbox">
+    <div class="checkbox">
       <label>
         <input type="checkbox" ng-model="exportObservations.value">Observations
       </label>
     </div>
 
-    <div cl***REMOVED***="checkbox">
+    <div class="checkbox">
       <label>
         <input type="checkbox" ng-model="exportLocations.value">Locations
       </label>
     </div>
 
-    <div cl***REMOVED***="form-group">
+    <div class="form-group">
 
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="col-md-6">
+      <div class="row">
+        <div class="col-md-6">
           <label>Time Interval</label>
-          <select cl***REMOVED***="form-control" ng-model="exportTime" ng-options="o.label for o in exportOptions"></select>
+          <select class="form-control" ng-model="exportTime" ng-options="o.label for o in exportOptions"></select>
         </div>
       </div>
     </div>
 
     <div ng-show="exportTime.custom">
-      <div cl***REMOVED***="form-group">
+      <div class="form-group">
 
-        <div cl***REMOVED***="row">
-          <div cl***REMOVED***="col-md-6">
-            <label cl***REMOVED***="control-label">Start Date/Time</label>
-            <p cl***REMOVED***="input-group">
-              <input type="text" cl***REMOVED***="form-control" datepicker-popup="MM/dd/yyyy HH:mm:ss" ng-model="startDate" is-open="startDatePopup.open" close-text="Close" />
-              <span cl***REMOVED***="input-group-btn">
-                <button type="button" cl***REMOVED***="btn btn-default" ng-click="openStartDate($event)"><i cl***REMOVED***="fa fa-calendar"></i></button>
+        <div class="row">
+          <div class="col-md-6">
+            <label class="control-label">Start Date/Time</label>
+            <p class="input-group">
+              <input type="text" class="form-control" datepicker-popup="MM/dd/yyyy HH:mm:ss" ng-model="startDate" is-open="startDatePopup.open" close-text="Close" />
+              <span class="input-group-btn">
+                <button type="button" class="btn btn-default" ng-click="openStartDate($event)"><i class="fa fa-calendar"></i></button>
               </span>
             </p>
           </div>
-          <div cl***REMOVED***="col-md-6">
-            <label cl***REMOVED***="control-label">&nbsp;</label>
+          <div class="col-md-6">
+            <label class="control-label">&nbsp;</label>
 
-            <p cl***REMOVED***="input-group">
-              <button type="button" ng-click="exportLocalTime = !exportLocalTime" cl***REMOVED***="btn btn-default">
-                <i cl***REMOVED***="fa fa-clock-o"></i>
+            <p class="input-group">
+              <button type="button" ng-click="exportLocalTime = !exportLocalTime" class="btn btn-default">
+                <i class="fa fa-clock-o"></i>
                 <span ng-show="exportLocalTime"> Local (GMT {{localOffset}})</span>
                 <span ng-show="!exportLocalTime"> GMT (GMT +00:00)</span>
               </button>
@@ -70,22 +70,22 @@
           </div>
         </div>
 
-        <div cl***REMOVED***="row">
-          <div cl***REMOVED***="col-md-6">
-            <label cl***REMOVED***="control-label">End Date/Time</label>
-            <p cl***REMOVED***="input-group">
-              <input type="text" cl***REMOVED***="form-control" datepicker-popup="MM/dd/yyyy HH:mm:ss" ng-model="endDate" is-open="endDatePopup.open" close-text="Close" />
-              <span cl***REMOVED***="input-group-btn">
-                <button type="button" cl***REMOVED***="btn btn-default" ng-click="openEndDate($event)"><i cl***REMOVED***="fa fa-calendar"></i></button>
+        <div class="row">
+          <div class="col-md-6">
+            <label class="control-label">End Date/Time</label>
+            <p class="input-group">
+              <input type="text" class="form-control" datepicker-popup="MM/dd/yyyy HH:mm:ss" ng-model="endDate" is-open="endDatePopup.open" close-text="Close" />
+              <span class="input-group-btn">
+                <button type="button" class="btn btn-default" ng-click="openEndDate($event)"><i class="fa fa-calendar"></i></button>
               </span>
             </p>
           </div>
-          <div cl***REMOVED***="col-md-6">
-            <label cl***REMOVED***="control-label">&nbsp;</label>
+          <div class="col-md-6">
+            <label class="control-label">&nbsp;</label>
 
-            <p cl***REMOVED***="input-group">
-              <button type="button" ng-click="exportLocalTime = !exportLocalTime" cl***REMOVED***="btn btn-default">
-                <i cl***REMOVED***="fa fa-clock-o"></i>
+            <p class="input-group">
+              <button type="button" ng-click="exportLocalTime = !exportLocalTime" class="btn btn-default">
+                <i class="fa fa-clock-o"></i>
                 <span ng-show="exportLocalTime"> Local (GMT {{localOffset}})</span>
                 <span ng-show="!exportLocalTime"> GMT (GMT +00:00)</span>
               </button>
@@ -98,19 +98,19 @@
   </form>
 </div>
 
-<div cl***REMOVED***="modal-footer ng-scope">
-  <button cl***REMOVED***="btn btn-default pull-left" ng-click="closeModal()">Close</button>
+<div class="modal-footer ng-scope">
+  <button class="btn btn-default pull-left" ng-click="closeModal()">Close</button>
 
-  <button cl***REMOVED***="btn btn-default" ng-disabled="exporting.kml" ng-click="exportData($event, 'kml')">
-    <i ng-cl***REMOVED***="exporting.kml && 'fa fa-spinner fa-pulse' || 'icon-download'"></i> {{exporting.kml && "Exporting..." || "KML"}}
+  <button class="btn btn-default" ng-disabled="exporting.kml" ng-click="exportData($event, 'kml')">
+    <i ng-class="exporting.kml && 'fa fa-spinner fa-pulse' || 'icon-download'"></i> {{exporting.kml && "Exporting..." || "KML"}}
   </button>
-  <button cl***REMOVED***="btn btn-default" ng-disabled="exporting.geojson" ng-click="exportData($event, 'geojson')">
-    <i ng-cl***REMOVED***="exporting.geojson && 'fa fa-spinner fa-pulse' || 'icon-download'"></i> {{exporting.geojson && "Exporting..." || "GeoJSON"}}
+  <button class="btn btn-default" ng-disabled="exporting.geojson" ng-click="exportData($event, 'geojson')">
+    <i ng-class="exporting.geojson && 'fa fa-spinner fa-pulse' || 'icon-download'"></i> {{exporting.geojson && "Exporting..." || "GeoJSON"}}
   </button>
-  <button cl***REMOVED***="btn btn-default" ng-disabled="exporting.csv" ng-click="exportData($event, 'csv')">
-    <i ng-cl***REMOVED***="exporting.csv && 'fa fa-spinner fa-pulse' || 'icon-download'"></i> {{exporting.csv && "Exporting..." || "CSV"}}
+  <button class="btn btn-default" ng-disabled="exporting.csv" ng-click="exportData($event, 'csv')">
+    <i ng-class="exporting.csv && 'fa fa-spinner fa-pulse' || 'icon-download'"></i> {{exporting.csv && "Exporting..." || "CSV"}}
   </button>
-  <button cl***REMOVED***="btn btn-default" ng-disabled="exporting.shapefile" ng-click="exportData($event, 'shapefile')">
-    <i ng-cl***REMOVED***="exporting.shapefile && 'fa fa-spinner fa-pulse' || 'icon-download'"></i> {{exporting.shapefile && "Exporting..." || "Shapefile"}}
+  <button class="btn btn-default" ng-disabled="exporting.shapefile" ng-click="exportData($event, 'shapefile')">
+    <i ng-class="exporting.shapefile && 'fa fa-spinner fa-pulse' || 'icon-download'"></i> {{exporting.shapefile && "Exporting..." || "Shapefile"}}
   </button>
 </div>

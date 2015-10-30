@@ -13,7 +13,7 @@ require.modules = {};
 require.extensions = [".js",".coffee"];
 
 require._core = {
-    '***REMOVED***ert': true,
+    'assert': true,
     'events': true,
     'fs': true,
     'path': true,
@@ -365,13 +365,13 @@ var Shred = function(options) {
   this.logCurl = options.logCurl || false;
 };
 
-// Most of the real work is done in the request and reponse cl***REMOVED***es.
+// Most of the real work is done in the request and reponse classes.
  
 Shred.Request = require("./shred/request");
 Shred.Response = require("./shred/response");
 
 // The `request` method kicks off a new request, instantiating a new `Request`
-// object and p***REMOVED***ing along whatever default options we were given.
+// object and passing along whatever default options we were given.
 
 Shred.prototype = {
   request: function(options) {
@@ -1037,12 +1037,12 @@ Request.prototype.format_headers = function () {
   return array.join("\n");
 };
 
-// Allow chainable 'on's:  shred.get({ ... }).on( ... ).  You can p***REMOVED*** in a
+// Allow chainable 'on's:  shred.get({ ... }).on( ... ).  You can pass in a
 // single function, a pair (event, function), or a hash:
 // { event: function, event: function }
 Request.prototype.on = function (eventOrHash, listener) {
   var emitter = this.emitter;
-  // P***REMOVED*** in a single argument as a function then make it the default response handler
+  // Pass in a single argument as a function then make it the default response handler
   if (arguments.length === 1 && typeof(eventOrHash) === 'function') {
     emitter.on('response', eventOrHash);
   } else if (arguments.length === 1 && typeof(eventOrHash) === 'object') {
@@ -1062,7 +1062,7 @@ Request.prototype.on = function (eventOrHash, listener) {
 HeaderMixins.gettersAndSetters(Request);
 
 // `processOptions` is called from the constructor to handle all the work
-// ***REMOVED***ociated with making sure we do our best to ensure we have a valid request.
+// associated with making sure we do our best to ensure we have a valid request.
 
 var processOptions = function(request,options) {
 
@@ -1323,7 +1323,7 @@ function parseUri (str) {
 
 parseUri.options = {
   strictMode: false,
-  key: ["source","protocol","authority","userInfo","user","p***REMOVED***word","host","port","relative","path","directory","file","query","anchor"],
+  key: ["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"],
   q:   {
     name:   "queryKey",
     parser: /(?:^|&)([^&=]*)=?([^&]*)/g
@@ -1735,7 +1735,7 @@ try {
 }
 
 // Construct a `Response` object. You should never have to do this directly. The
-// `Request` object handles this, getting the raw response object and p***REMOVED***ing it
+// `Request` object handles this, getting the raw response object and passing it
 // in here, along with the request. The callback allows us to stream the response
 // and then use the callback to let the request know when it's ready.
 var Response = function(raw, request, callback) { 
@@ -1923,12 +1923,12 @@ require.define("/shred/content.js", function (require, module, exports, __dirnam
     
 // The purpose of the `Content` object is to abstract away the data conversions
 // to and from raw content entities as strings. For example, you want to be able
-// to p***REMOVED*** in a Javascript object and have it be automatically converted into a
+// to pass in a Javascript object and have it be automatically converted into a
 // JSON string if the `content-type` is set to a JSON-based media type.
 // Conversely, you want to be able to transparently get back a Javascript object
 // in the response if the `content-type` is a JSON-based media-type.
 
-// One limitation of the current implementation is that it [***REMOVED***umes the `charset` is UTF-8](https://github.com/spire-io/shred/issues/5).
+// One limitation of the current implementation is that it [assumes the `charset` is UTF-8](https://github.com/spire-io/shred/issues/5).
 
 // The `Content` constructor takes an options object, which *must* have either a
 // `body` or `data` property and *may* have a `type` property indicating the
@@ -1952,7 +1952,7 @@ Content.prototype = {
 Object.defineProperties(Content.prototype,{
   
 // - **type**. Typically accessed as `content.type`, reflects the `content-type`
-//   header ***REMOVED***ociated with the request or response. If not p***REMOVED***ed as an options
+//   header associated with the request or response. If not passed as an options
 //   to the constructor or set explicitly, it will infer the type the `data`
 //   attribute, if possible, and, failing that, will default to `text/plain`.
   type: {
@@ -2065,14 +2065,14 @@ Content.processors = {};
 //   raw content entity.
 Content.registerProcessor = function(types,processor) {
   
-// You can p***REMOVED*** an array of types that will trigger this processor, or just one.
+// You can pass an array of types that will trigger this processor, or just one.
 // We determine the array via duck-typing here.
   if (types.forEach) {
     types.forEach(function(type) {
       Content.processors[type] = processor;
     });
   } else {
-    // If you didn't p***REMOVED*** an array, we just use what you p***REMOVED*** in.
+    // If you didn't pass an array, we just use what you pass in.
     Content.processors[types] = processor;
   }
 };
@@ -2728,7 +2728,7 @@ Response.prototype.write = function () {
 
 require.define("/node_modules/http-browserify/lib/isSafeHeader.js", function (require, module, exports, __dirname, __filename) {
     // Taken from http://dxr.mozilla.org/mozilla/mozilla-central/content/base/src/nsXMLHttpRequest.cpp.html
-var u***REMOVED***feHeaders = [
+var unsafeHeaders = [
     "accept-charset",
     "accept-encoding",
     "access-control-request-headers",
@@ -2755,7 +2755,7 @@ var u***REMOVED***feHeaders = [
 
 module.exports = function (headerName) {
     if (!headerName) return false;
-    return (u***REMOVED***feHeaders.indexOf(headerName.toLowerCase()) === -1)
+    return (unsafeHeaders.indexOf(headerName.toLowerCase()) === -1)
 };
 
 });

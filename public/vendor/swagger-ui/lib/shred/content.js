@@ -1,12 +1,12 @@
 
 // The purpose of the `Content` object is to abstract away the data conversions
 // to and from raw content entities as strings. For example, you want to be able
-// to p***REMOVED*** in a Javascript object and have it be automatically converted into a
+// to pass in a Javascript object and have it be automatically converted into a
 // JSON string if the `content-type` is set to a JSON-based media type.
 // Conversely, you want to be able to transparently get back a Javascript object
 // in the response if the `content-type` is a JSON-based media-type.
 
-// One limitation of the current implementation is that it [***REMOVED***umes the `charset` is UTF-8](https://github.com/spire-io/shred/issues/5).
+// One limitation of the current implementation is that it [assumes the `charset` is UTF-8](https://github.com/spire-io/shred/issues/5).
 
 // The `Content` constructor takes an options object, which *must* have either a
 // `body` or `data` property and *may* have a `type` property indicating the
@@ -30,7 +30,7 @@ Content.prototype = {
 Object.defineProperties(Content.prototype,{
   
 // - **type**. Typically accessed as `content.type`, reflects the `content-type`
-//   header ***REMOVED***ociated with the request or response. If not p***REMOVED***ed as an options
+//   header associated with the request or response. If not passed as an options
 //   to the constructor or set explicitly, it will infer the type the `data`
 //   attribute, if possible, and, failing that, will default to `text/plain`.
   type: {
@@ -143,14 +143,14 @@ Content.processors = {};
 //   raw content entity.
 Content.registerProcessor = function(types,processor) {
   
-// You can p***REMOVED*** an array of types that will trigger this processor, or just one.
+// You can pass an array of types that will trigger this processor, or just one.
 // We determine the array via duck-typing here.
   if (types.forEach) {
     types.forEach(function(type) {
       Content.processors[type] = processor;
     });
   } else {
-    // If you didn't p***REMOVED*** an array, we just use what you p***REMOVED*** in.
+    // If you didn't pass an array, we just use what you pass in.
     Content.processors[types] = processor;
   }
 };

@@ -9,10 +9,10 @@ angular.module("ui.bootstrap", ["ui.bootstrap.transition","ui.bootstrap.collapse
 angular.module('ui.bootstrap.transition', [])
 
 /**
- * $transition ***REMOVED*** provides a consistent interface to trigger CSS 3 transitions and to be informed when they complete.
+ * $transition service provides a consistent interface to trigger CSS 3 transitions and to be informed when they complete.
  * @param  {DOMElement} element  The DOMElement that will be animated.
  * @param  {string|object|function} trigger  The thing that will cause the transition to start:
- *   - As a string, it represents the css cl***REMOVED*** to be added to the element.
+ *   - As a string, it represents the css class to be added to the element.
  *   - As an object, it represents a hash of style attributes to be applied to the element.
  *   - As a function, it represents a function to be called that will cause the transition to occur.
  * @return {Promise}  A promise that is resolved when the transition finishes.
@@ -38,7 +38,7 @@ angular.module('ui.bootstrap.transition', [])
     // Wrap in a timeout to allow the browser time to update the DOM before the transition is to occur
     $timeout(function() {
       if ( angular.isString(trigger) ) {
-        element.addCl***REMOVED***(trigger);
+        element.addClass(trigger);
       } else if ( angular.isFunction(trigger) ) {
         trigger(element);
       } else if ( angular.isObject(trigger) ) {
@@ -121,14 +121,14 @@ angular.module('ui.bootstrap.collapse', ['ui.bootstrap.transition'])
             initialAnimSkip = false;
             expandDone();
           } else {
-            element.removeCl***REMOVED***('collapse').addCl***REMOVED***('collapsing');
+            element.removeClass('collapse').addClass('collapsing');
             doTransition({ height: element[0].scrollHeight + 'px' }).then(expandDone);
           }
         }
 
         function expandDone() {
-          element.removeCl***REMOVED***('collapsing');
-          element.addCl***REMOVED***('collapse in');
+          element.removeClass('collapsing');
+          element.addClass('collapse in');
           element.css({height: 'auto'});
         }
 
@@ -143,15 +143,15 @@ angular.module('ui.bootstrap.collapse', ['ui.bootstrap.transition'])
             //trigger reflow so a browser realizes that height was updated from auto to a specific value
             var x = element[0].offsetWidth;
 
-            element.removeCl***REMOVED***('collapse in').addCl***REMOVED***('collapsing');
+            element.removeClass('collapse in').addClass('collapsing');
 
             doTransition({ height: 0 }).then(collapseDone);
           }
         }
 
         function collapseDone() {
-          element.removeCl***REMOVED***('collapsing');
-          element.addCl***REMOVED***('collapse');
+          element.removeClass('collapsing');
+          element.addClass('collapse');
         }
 
         scope.$watch(attrs.collapse, function (shouldCollapse) {
@@ -209,7 +209,7 @@ angular.module('ui.bootstrap.accordion', ['ui.bootstrap.collapse'])
 }])
 
 // The accordion directive simply sets up the directive controller
-// and adds an accordion CSS cl***REMOVED*** to itself element.
+// and adds an accordion CSS class to itself element.
 .directive('accordion', function () {
   return {
     restrict:'EA',
@@ -268,7 +268,7 @@ angular.module('ui.bootstrap.accordion', ['ui.bootstrap.collapse'])
     replace: true,
     require: '^accordionGroup',
     link: function(scope, element, attr, accordionGroupCtrl, transclude) {
-      // P***REMOVED*** the heading to the accordion-group controller
+      // Pass the heading to the accordion-group controller
       // so that it can be transcluded into the right place in the template
       // [The second parameter to transclude causes the elements to be cloned so that they work in ng-repeat]
       accordionGroupCtrl.setHeading(transclude(scope, angular.noop));
@@ -278,8 +278,8 @@ angular.module('ui.bootstrap.accordion', ['ui.bootstrap.collapse'])
 
 // Use in the accordion-group template to indicate where you want the heading to be transcluded
 // You must provide the property on the accordion-group controller that will hold the transcluded element
-// <div cl***REMOVED***="accordion-group">
-//   <div cl***REMOVED***="accordion-heading" ><a ... accordion-transclude="heading">...</a></div>
+// <div class="accordion-group">
+//   <div class="accordion-heading" ><a ... accordion-transclude="heading">...</a></div>
 //   ...
 // </div>
 .directive('accordionTransclude', function() {
@@ -330,10 +330,10 @@ angular.module('ui.bootstrap.alert', [])
 
 angular.module('ui.bootstrap.bindHtml', [])
 
-  .directive('bindHtmlU***REMOVED***fe', function () {
+  .directive('bindHtmlUnsafe', function () {
     return function (scope, element, attr) {
-      element.addCl***REMOVED***('ng-binding').data('$binding', attr.bindHtmlU***REMOVED***fe);
-      scope.$watch(attr.bindHtmlU***REMOVED***fe, function bindHtmlU***REMOVED***feWatchAction(value) {
+      element.addClass('ng-binding').data('$binding', attr.bindHtmlUnsafe);
+      scope.$watch(attr.bindHtmlUnsafe, function bindHtmlUnsafeWatchAction(value) {
         element.html(value || '');
       });
     };
@@ -341,12 +341,12 @@ angular.module('ui.bootstrap.bindHtml', [])
 angular.module('ui.bootstrap.buttons', [])
 
 .constant('buttonConfig', {
-  activeCl***REMOVED***: 'active',
+  activeClass: 'active',
   toggleEvent: 'click'
 })
 
 .controller('ButtonsController', ['buttonConfig', function(buttonConfig) {
-  this.activeCl***REMOVED*** = buttonConfig.activeCl***REMOVED*** || 'active';
+  this.activeClass = buttonConfig.activeClass || 'active';
   this.toggleEvent = buttonConfig.toggleEvent || 'click';
 }])
 
@@ -359,12 +359,12 @@ angular.module('ui.bootstrap.buttons', [])
 
       //model -> UI
       ngModelCtrl.$render = function () {
-        element.toggleCl***REMOVED***(buttonsCtrl.activeCl***REMOVED***, angular.equals(ngModelCtrl.$modelValue, scope.$eval(attrs.btnRadio)));
+        element.toggleClass(buttonsCtrl.activeClass, angular.equals(ngModelCtrl.$modelValue, scope.$eval(attrs.btnRadio)));
       };
 
       //ui->model
       element.bind(buttonsCtrl.toggleEvent, function () {
-        var isActive = element.hasCl***REMOVED***(buttonsCtrl.activeCl***REMOVED***);
+        var isActive = element.hasClass(buttonsCtrl.activeClass);
 
         if (!isActive || angular.isDefined(attrs.uncheckable)) {
           scope.$apply(function () {
@@ -399,13 +399,13 @@ angular.module('ui.bootstrap.buttons', [])
 
       //model -> UI
       ngModelCtrl.$render = function () {
-        element.toggleCl***REMOVED***(buttonsCtrl.activeCl***REMOVED***, angular.equals(ngModelCtrl.$modelValue, getTrueValue()));
+        element.toggleClass(buttonsCtrl.activeClass, angular.equals(ngModelCtrl.$modelValue, getTrueValue()));
       };
 
       //ui->model
       element.bind(buttonsCtrl.toggleEvent, function () {
         scope.$apply(function () {
-          ngModelCtrl.$setViewValue(element.hasCl***REMOVED***(buttonsCtrl.activeCl***REMOVED***) ? getFalseValue() : getTrueValue());
+          ngModelCtrl.$setViewValue(element.hasClass(buttonsCtrl.activeClass) ? getFalseValue() : getTrueValue());
           ngModelCtrl.$render();
         });
       });
@@ -440,7 +440,7 @@ angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
     if (nextSlide && nextSlide !== self.currentSlide) {
       if ($scope.$currentTransition) {
         $scope.$currentTransition.cancel();
-        //Timeout so ng-cl***REMOVED*** in template has time to fix cl***REMOVED***es for finished slide
+        //Timeout so ng-class in template has time to fix classes for finished slide
         $timeout(goNext);
       } else {
         goNext();
@@ -451,8 +451,8 @@ angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
       if (destroyed) { return; }
       //If we have a slide to transition from and we have a transition type and we're allowed, go
       if (self.currentSlide && angular.isString(direction) && !$scope.noTransition && nextSlide.$element) {
-        //We shouldn't do cl***REMOVED*** manip in here, but it's the same weird thing bootstrap does. need to fix sometime
-        nextSlide.$element.addCl***REMOVED***(direction);
+        //We shouldn't do class manip in here, but it's the same weird thing bootstrap does. need to fix sometime
+        nextSlide.$element.addClass(direction);
         var reflow = nextSlide.$element[0].offsetWidth; //force reflow
 
         //Set all other slides to stop doing their stuff for the new transition
@@ -604,13 +604,13 @@ angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
     <carousel>
       <slide>
         <img src="http://placekitten.com/150/150" style="margin:auto;">
-        <div cl***REMOVED***="carousel-caption">
+        <div class="carousel-caption">
           <p>Beautiful!</p>
         </div>
       </slide>
       <slide>
         <img src="http://placekitten.com/100/150" style="margin:auto;">
-        <div cl***REMOVED***="carousel-caption">
+        <div class="carousel-caption">
           <p>D'aww!</p>
         </div>
       </slide>
@@ -657,7 +657,7 @@ angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
   <carousel>
     <slide ng-repeat="slide in slides" active="slide.active">
       <img ng-src="{{slide.image}}" style="margin:auto;">
-      <div cl***REMOVED***="carousel-caption">
+      <div class="carousel-caption">
         <h4>Slide {{$index}}</h4>
         <p>{{slide.text}}</p>
       </div>
@@ -709,7 +709,7 @@ function CarouselDemoCtrl($scope) {
 
 angular.module('ui.bootstrap.dateparser', [])
 
-.***REMOVED***('dateParser', ['$locale', 'orderByFilter', function($locale, orderByFilter) {
+.service('dateParser', ['$locale', 'orderByFilter', function($locale, orderByFilter) {
 
   this.parsers = {};
 
@@ -1477,7 +1477,7 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
 
           // Propagate changes from datepicker to outside
           if ( key === 'datepickerMode' ) {
-            var setAttribute = getAttribute.***REMOVED***ign;
+            var setAttribute = getAttribute.assign;
             scope.$watch('watchData.' + key, function(value, oldvalue) {
               if ( value !== oldvalue ) {
                 setAttribute(scope.$parent, value);
@@ -1636,10 +1636,10 @@ function ($compile, $parse, $document, $position, dateFilter, dateParser, datepi
 angular.module('ui.bootstrap.dropdown', [])
 
 .constant('dropdownConfig', {
-  openCl***REMOVED***: 'open'
+  openClass: 'open'
 })
 
-.***REMOVED***('dropdownService', ['$document', function($document) {
+.service('dropdownService', ['$document', function($document) {
   var openScope = null;
 
   this.open = function( dropdownScope ) {
@@ -1689,7 +1689,7 @@ angular.module('ui.bootstrap.dropdown', [])
 .controller('DropdownController', ['$scope', '$attrs', '$parse', 'dropdownConfig', 'dropdownService', '$animate', function($scope, $attrs, $parse, dropdownConfig, dropdownService, $animate) {
   var self = this,
       scope = $scope.$new(), // create a child scope so we are not polluting original one
-      openCl***REMOVED*** = dropdownConfig.openCl***REMOVED***,
+      openClass = dropdownConfig.openClass,
       getIsOpen,
       setIsOpen = angular.noop,
       toggleInvoker = $attrs.onToggle ? $parse($attrs.onToggle) : angular.noop;
@@ -1699,7 +1699,7 @@ angular.module('ui.bootstrap.dropdown', [])
 
     if ( $attrs.isOpen ) {
       getIsOpen = $parse($attrs.isOpen);
-      setIsOpen = getIsOpen.***REMOVED***ign;
+      setIsOpen = getIsOpen.assign;
 
       $scope.$watch(getIsOpen, function(value) {
         scope.isOpen = !!value;
@@ -1727,7 +1727,7 @@ angular.module('ui.bootstrap.dropdown', [])
   };
 
   scope.$watch('isOpen', function( isOpen, wasOpen ) {
-    $animate[isOpen ? 'addCl***REMOVED***' : 'removeCl***REMOVED***'](self.$element, openCl***REMOVED***);
+    $animate[isOpen ? 'addClass' : 'removeClass'](self.$element, openClass);
 
     if ( isOpen ) {
       scope.focusToggleElement();
@@ -1773,7 +1773,7 @@ angular.module('ui.bootstrap.dropdown', [])
       var toggleDropdown = function(event) {
         event.preventDefault();
 
-        if ( !element.hasCl***REMOVED***('disabled') && !attrs.disabled ) {
+        if ( !element.hasClass('disabled') && !attrs.disabled ) {
           scope.$apply(function() {
             dropdownCtrl.toggle();
           });
@@ -1852,7 +1852,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
   })
 
 /**
- * A helper directive for the $modal ***REMOVED***. It creates a backdrop element.
+ * A helper directive for the $modal service. It creates a backdrop element.
  */
   .directive('modalBackdrop', ['$timeout', function ($timeout) {
     return {
@@ -1860,7 +1860,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
       replace: true,
       templateUrl: 'template/modal/backdrop.html',
       link: function (scope, element, attrs) {
-        scope.backdropCl***REMOVED*** = attrs.backdropCl***REMOVED*** || '';
+        scope.backdropClass = attrs.backdropClass || '';
 
         scope.animate = false;
 
@@ -1885,7 +1885,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
         return tAttrs.templateUrl || 'template/modal/window.html';
       },
       link: function (scope, element, attrs) {
-        element.addCl***REMOVED***(attrs.windowCl***REMOVED*** || '');
+        element.addClass(attrs.windowClass || '');
         scope.size = attrs.size;
 
         scope.close = function (evt) {
@@ -1898,7 +1898,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
         };
 
         // This property is only added to the scope for the purpose of detecting when this directive is rendered.
-        // We can detect that by using this property in the template ***REMOVED***ociated with this directive and then use
+        // We can detect that by using this property in the template associated with this directive and then use
         // {@link Attribute#$observe} on it. For more details please see {@link TableColumnResize}.
         scope.$isRendered = true;
 
@@ -1986,7 +1986,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
         //remove window DOM element
         removeAfterAnimate(modalWindow.modalDomEl, modalWindow.modalScope, 300, function() {
           modalWindow.modalScope.$destroy();
-          body.toggleCl***REMOVED***(OPENED_MODAL_CLASS, openedWindows.length() > 0);
+          body.toggleClass(OPENED_MODAL_CLASS, openedWindows.length() > 0);
           checkRemoveBackdrop();
         });
       }
@@ -2067,7 +2067,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
           backdropScope = $rootScope.$new(true);
           backdropScope.index = currBackdropIndex;
           var angularBackgroundDomEl = angular.element('<div modal-backdrop></div>');
-          angularBackgroundDomEl.attr('backdrop-cl***REMOVED***', modal.backdropCl***REMOVED***);
+          angularBackgroundDomEl.attr('backdrop-class', modal.backdropClass);
           backdropDomEl = $compile(angularBackgroundDomEl)(backdropScope);
           body.append(backdropDomEl);
         }
@@ -2075,7 +2075,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
         var angularDomEl = angular.element('<div modal-window></div>');
         angularDomEl.attr({
           'template-url': modal.windowTemplateUrl,
-          'window-cl***REMOVED***': modal.windowCl***REMOVED***,
+          'window-class': modal.windowClass,
           'size': modal.size,
           'index': openedWindows.length() - 1,
           'animate': 'animate'
@@ -2084,7 +2084,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
         var modalDomEl = $compile(angularDomEl)(modal.scope);
         openedWindows.top().value.modalDomEl = modalDomEl;
         body.append(modalDomEl);
-        body.addCl***REMOVED***(OPENED_MODAL_CLASS);
+        body.addClass(OPENED_MODAL_CLASS);
       };
 
       function broadcastClosing(modalWindow, resultOrReason, closing) {
@@ -2224,8 +2224,8 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
                 content: tplAndVars[0],
                 backdrop: modalOptions.backdrop,
                 keyboard: modalOptions.keyboard,
-                backdropCl***REMOVED***: modalOptions.backdropCl***REMOVED***,
-                windowCl***REMOVED***: modalOptions.windowCl***REMOVED***,
+                backdropClass: modalOptions.backdropClass,
+                windowClass: modalOptions.windowClass,
                 windowTemplateUrl: modalOptions.windowTemplateUrl,
                 size: modalOptions.size
               });
@@ -2255,7 +2255,7 @@ angular.module('ui.bootstrap.pagination', [])
 .controller('PaginationController', ['$scope', '$attrs', '$parse', function ($scope, $attrs, $parse) {
   var self = this,
       ngModelCtrl = { $setViewValue: angular.noop }, // nullModelCtrl
-      setNumPages = $attrs.numPages ? $parse($attrs.numPages).***REMOVED***ign : angular.noop;
+      setNumPages = $attrs.numPages ? $parse($attrs.numPages).assign : angular.noop;
 
   this.init = function(ngModelCtrl_, config) {
     ngModelCtrl = ngModelCtrl_;
@@ -2473,7 +2473,7 @@ angular.module('ui.bootstrap.pagination', [])
 angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap.bindHtml' ] )
 
 /**
- * The $tooltip ***REMOVED*** creates tooltip- and popover-like directives as well as
+ * The $tooltip service creates tooltip- and popover-like directives as well as
  * houses global options for them.
  */
 .provider( '$tooltip', function () {
@@ -2528,7 +2528,7 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
   }
 
   /**
-   * Returns the actual instance of the $tooltip ***REMOVED***.
+   * Returns the actual instance of the $tooltip service.
    * TODO support multiple triggers
    */
   this.$get = [ '$window', '$compile', '$timeout', '$document', '$position', '$interpolate', function ( $window, $compile, $timeout, $document, $position, $interpolate ) {
@@ -2540,12 +2540,12 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
        *
        * If a trigger is supplied,
        * it is used to show the tooltip; otherwise, it will use the `trigger`
-       * option p***REMOVED***ed to the `$tooltipProvider.options` method; else it will
+       * option passed to the `$tooltipProvider.options` method; else it will
        * default to the trigger supplied to this directive factory.
        *
        * The hide trigger is based on the show trigger. If the `trigger` option
-       * was p***REMOVED***ed to the `$tooltipProvider.options` method, it will use the
-       * mapped trigger from `triggerMap` or the p***REMOVED***ed trigger if the map is
+       * was passed to the `$tooltipProvider.options` method, it will use the
+       * mapped trigger from `triggerMap` or the passed trigger if the map is
        * undefined; otherwise, it uses the `triggerMap` value of the show
        * trigger; else it will just use the show trigger.
        */
@@ -2819,17 +2819,17 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
   return $tooltip( 'tooltip', 'tooltip', 'mouseenter' );
 }])
 
-.directive( 'tooltipHtmlU***REMOVED***fePopup', function () {
+.directive( 'tooltipHtmlUnsafePopup', function () {
   return {
     restrict: 'EA',
     replace: true,
     scope: { content: '@', placement: '@', animation: '&', isOpen: '&' },
-    templateUrl: 'template/tooltip/tooltip-html-u***REMOVED***fe-popup.html'
+    templateUrl: 'template/tooltip/tooltip-html-unsafe-popup.html'
   };
 })
 
-.directive( 'tooltipHtmlU***REMOVED***fe', [ '$tooltip', function ( $tooltip ) {
-  return $tooltip( 'tooltipHtmlU***REMOVED***fe', 'tooltip', 'mouseenter' );
+.directive( 'tooltipHtmlUnsafe', [ '$tooltip', function ( $tooltip ) {
+  return $tooltip( 'tooltipHtmlUnsafe', 'tooltip', 'mouseenter' );
 }]);
 
 /**
@@ -3137,17 +3137,17 @@ angular.module('ui.bootstrap.tabs', [])
 <example module="ui.bootstrap">
   <file name="index.html">
     <div ng-controller="TabsDemoCtrl">
-      <button cl***REMOVED***="btn btn-small" ng-click="items[0].active = true">
+      <button class="btn btn-small" ng-click="items[0].active = true">
         Select item 1, using active binding
       </button>
-      <button cl***REMOVED***="btn btn-small" ng-click="items[1].disabled = !items[1].disabled">
+      <button class="btn btn-small" ng-click="items[1].disabled = !items[1].disabled">
         Enable/disable item 2, using disabled binding
       </button>
       <br />
       <tabset>
         <tab heading="Tab 1">First Tab</tab>
         <tab select="alertMe()">
-          <tab-heading><i cl***REMOVED***="icon-bell"></i> Alert me!</tab-heading>
+          <tab-heading><i class="icon-bell"></i> Alert me!</tab-heading>
           Second Tab, with alert callback and html heading!
         </tab>
         <tab ng-repeat="item in items"
@@ -3193,7 +3193,7 @@ angular.module('ui.bootstrap.tabs', [])
         And some content, too!
       </tab>
       <tab>
-        <tab-heading><i cl***REMOVED***="icon-heart"></i> Icon heading?!?</tab-heading>
+        <tab-heading><i class="icon-heart"></i> Icon heading?!?</tab-heading>
         That's right.
       </tab>
     </tabset>
@@ -3557,8 +3557,8 @@ angular.module('ui.bootstrap.timepicker', [])
 angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap.bindHtml'])
 
 /**
- * A helper ***REMOVED*** that can parse typeahead's syntax (string provided by users)
- * Extracted to a separate ***REMOVED*** for ease of unit testing
+ * A helper service that can parse typeahead's syntax (string provided by users)
+ * Extracted to a separate service for ease of unit testing
  */
   .factory('typeaheadParser', ['$parse', function ($parse) {
 
@@ -3606,7 +3606,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       var isEditable = originalScope.$eval(attrs.typeaheadEditable) !== false;
 
       //binding to a variable that indicates if matches are being retrieved asynchronously
-      var isLoadingSetter = $parse(attrs.typeaheadLoading).***REMOVED***ign || angular.noop;
+      var isLoadingSetter = $parse(attrs.typeaheadLoading).assign || angular.noop;
 
       //a callback executed when a match is selected
       var onSelectCallback = $parse(attrs.typeaheadOnSelect);
@@ -3620,7 +3620,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //INTERNAL VARIABLES
 
       //model setter executed upon match selection
-      var $setModelValue = $parse(attrs.ngModel).***REMOVED***ign;
+      var $setModelValue = $parse(attrs.ngModel).assign;
 
       //expressions used by typeahead
       var parserResult = typeaheadParser.parse(attrs.typeahead);

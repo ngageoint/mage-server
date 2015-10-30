@@ -5,11 +5,11 @@ angular
 LayerService.$inject = ['$q', 'Layer'];
 
 function LayerService($q, Layer) {
-  var ***REMOVED*** = {
+  var service = {
     getLayersForEvent: getLayersForEvent
   };
 
-  return ***REMOVED***;
+  return service;
 
   function getLayersForEvent(event) {
     var deferred = $q.defer();

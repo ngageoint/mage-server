@@ -55,119 +55,119 @@
   <div banner="header"></div>
 
   <!-- TODO possibly move this -->
-  <div cl***REMOVED***="navbar navbar-default navbar-flex" ng-controller="NavController">
+  <div class="navbar navbar-default navbar-flex" ng-controller="NavController">
       <!-- We use the fluid option here to avoid overriding the fixed width of a normal container within the narrow content columns. -->
-      <div cl***REMOVED***="container">
-        <div cl***REMOVED***="navbar-header">
-          <button type="button" cl***REMOVED***="navbar-toggle collapsed" data-toggle="collapse" data-target=".main-navbar-collapse">
-            <span cl***REMOVED***="icon-bar"></span>
-            <span cl***REMOVED***="icon-bar"></span>
-            <span cl***REMOVED***="icon-bar"></span>
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".main-navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
           </button>
 
-          <a cl***REMOVED***="navbar-brand visible-xs-block" href="#/map" data-toggle="collapse" data-target=".main-navbar-collapse">
-            <i cl***REMOVED***="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
+          <a class="navbar-brand visible-xs-block" href="#/map" data-toggle="collapse" data-target=".main-navbar-collapse">
+            <i class="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
           </a>
-          <a cl***REMOVED***="navbar-brand hidden-xs" href="#/map">
-            <i cl***REMOVED***="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
+          <a class="navbar-brand hidden-xs" href="#/map">
+            <i class="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
           </a>
         </div>
 
-        <div cl***REMOVED***="collapse navbar-collapse main-navbar-collapse" ng-cloak>
-          <ul cl***REMOVED***="nav navbar-nav" ng-if="location.path() === '/map'" ng-cloak>
-            <li cl***REMOVED***="dropdown">
-              <a cl***REMOVED***="pointer dropdown-toggle visible-xs-block" ng-click="onFilterClick()" data-toggle="collapse" data-target=".main-navbar-collapse">
-                <i cl***REMOVED***="fa fa-filter icon-spacer"></i> Filter
+        <div class="collapse navbar-collapse main-navbar-collapse" ng-cloak>
+          <ul class="nav navbar-nav" ng-if="location.path() === '/map'" ng-cloak>
+            <li class="dropdown">
+              <a class="pointer dropdown-toggle visible-xs-block" ng-click="onFilterClick()" data-toggle="collapse" data-target=".main-navbar-collapse">
+                <i class="fa fa-filter icon-spacer"></i> Filter
               </a>
-              <a cl***REMOVED***="pointer dropdown-toggle hidden-xs" ng-click="onFilterClick()">
-                <i cl***REMOVED***="fa fa-filter icon-spacer"></i> Filter
+              <a class="pointer dropdown-toggle hidden-xs" ng-click="onFilterClick()">
+                <i class="fa fa-filter icon-spacer"></i> Filter
               </a>
             </li>
-            <li cl***REMOVED***="dropdown">
-              <a href="javascript:void(0)" cl***REMOVED***="dropdown-toggle" data-toggle="dropdown">
-                <i style="margin-right: 3px;" ng-cl***REMOVED***="pollingInterval == 0 ? 'fa fa-square-o' : 'fa fa-check-square-o'"></i> Live Update
-                <b cl***REMOVED***="caret"></b>
+            <li class="dropdown">
+              <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown">
+                <i style="margin-right: 3px;" ng-class="pollingInterval == 0 ? 'fa fa-square-o' : 'fa fa-check-square-o'"></i> Live Update
+                <b class="caret"></b>
               </a>
-              <ul cl***REMOVED***="dropdown-menu">
-                <li role="presentation" cl***REMOVED***="dropdown-header">Poll Time</li>
+              <ul class="dropdown-menu">
+                <li role="presentation" class="dropdown-header">Poll Time</li>
                 <li>
-                  <a ng-click="onPollingIntervalChanged('5000')" cl***REMOVED***="pointer">
-                    <i ng-cl***REMOVED***="pollingInterval == 5000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
+                  <a ng-click="onPollingIntervalChanged('5000')" class="pointer">
+                    <i ng-class="pollingInterval == 5000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
                     5 Seconds
                   </a>
                 </li>
                 <li>
-                  <a ng-click="onPollingIntervalChanged('30000')" cl***REMOVED***="pointer">
-                    <i ng-cl***REMOVED***="pollingInterval == 30000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
+                  <a ng-click="onPollingIntervalChanged('30000')" class="pointer">
+                    <i ng-class="pollingInterval == 30000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
                     30 Seconds
                   </a>
                 </li>
                 <li>
-                  <a ng-click="onPollingIntervalChanged('120000')" cl***REMOVED***="pointer">
-                    <i ng-cl***REMOVED***="pollingInterval == 120000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
+                  <a ng-click="onPollingIntervalChanged('120000')" class="pointer">
+                    <i ng-class="pollingInterval == 120000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
                     2 Minutes
                   </a>
                 </li>
                 <li>
-                  <a ng-click="onPollingIntervalChanged('300000')" cl***REMOVED***="pointer">
-                    <i ng-cl***REMOVED***="pollingInterval == 300000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
+                  <a ng-click="onPollingIntervalChanged('300000')" class="pointer">
+                    <i ng-class="pollingInterval == 300000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
                     5 Minutes
                   </a>
                 </li>
                 <li>
-                  <a ng-click="onPollingIntervalChanged('0')" cl***REMOVED***="pointer">
-                    <i ng-cl***REMOVED***="pollingInterval == 0 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
+                  <a ng-click="onPollingIntervalChanged('0')" class="pointer">
+                    <i ng-class="pollingInterval == 0 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
                     No Polling
                   </a>
                 </li>
               </ul>
             </li>
-            <li cl***REMOVED***="dropdown">
-              <a cl***REMOVED***="pointer dropdown-toggle visible-xs-block" data-toggle="collapse" data-target=".main-navbar-collapse" ng-click="onExportClick()">
-                <i cl***REMOVED***="fa fa-download icon-spacer"></i> Export
+            <li class="dropdown">
+              <a class="pointer dropdown-toggle visible-xs-block" data-toggle="collapse" data-target=".main-navbar-collapse" ng-click="onExportClick()">
+                <i class="fa fa-download icon-spacer"></i> Export
               </a>
-              <a cl***REMOVED***="pointer dropdown-toggle hidden-xs" ng-click="onExportClick()">
-                <i cl***REMOVED***="fa fa-download icon-spacer"></i> Export
+              <a class="pointer dropdown-toggle hidden-xs" ng-click="onExportClick()">
+                <i class="fa fa-download icon-spacer"></i> Export
               </a>
             </li>
           </ul>
-          <ul cl***REMOVED***="nav navbar-nav navbar-right" ng-show="myself" ng-cloak>
+          <ul class="nav navbar-nav navbar-right" ng-show="myself" ng-cloak>
             <li ng-show="myself">
-              <a href="#/user" data-toggle="collapse" data-target=".main-navbar-collapse" cl***REMOVED***="nav-link visible-xs-block" style="padding-top: 14px; padding-bottom: 10px;">
+              <a href="#/user" data-toggle="collapse" data-target=".main-navbar-collapse" class="nav-link visible-xs-block" style="padding-top: 14px; padding-bottom: 10px;">
                 <span>
-                  <img cl***REMOVED***="avatar-img" ng-src="{{myself.avatarUrl ? myself.avatarUrl + '?access_token=' + token : '/img/missing_photo.png'}}"/>
+                  <img class="avatar-img" ng-src="{{myself.avatarUrl ? myself.avatarUrl + '?access_token=' + token : '/img/missing_photo.png'}}"/>
                 </span>
-                <i cl***REMOVED***="fa fa-icon-info icon-spacer"></i> {{myself.displayName}}
+                <i class="fa fa-icon-info icon-spacer"></i> {{myself.displayName}}
               </a>
-              <a href="#/user" cl***REMOVED***="nav-link hidden-xs" style="padding-top: 14px; padding-bottom: 10px;" tooltip="My&nbsp;Profile" tooltip-placement="bottom">
+              <a href="#/user" class="nav-link hidden-xs" style="padding-top: 14px; padding-bottom: 10px;" tooltip="My&nbsp;Profile" tooltip-placement="bottom">
                 <span>
-                  <img cl***REMOVED***="avatar-img" ng-src="{{myself.avatarUrl ? myself.avatarUrl + '?access_token=' + token : '/img/missing_photo.png'}}"/>
+                  <img class="avatar-img" ng-src="{{myself.avatarUrl ? myself.avatarUrl + '?access_token=' + token : '/img/missing_photo.png'}}"/>
                 </span>
-                <i cl***REMOVED***="fa fa-icon-info icon-spacer"></i> {{myself.displayName}}
+                <i class="fa fa-icon-info icon-spacer"></i> {{myself.displayName}}
               </a>
             </li>
             <li ng-show="amAdmin">
-              <a ng-href="#/admin" data-toggle="collapse" data-target=".main-navbar-collapse" cl***REMOVED***="nav-link visible-xs-block">
-                <i cl***REMOVED***="icon-cogs icon-spacer"></i> Admin
+              <a ng-href="#/admin" data-toggle="collapse" data-target=".main-navbar-collapse" class="nav-link visible-xs-block">
+                <i class="icon-cogs icon-spacer"></i> Admin
               </a>
-              <a ng-href="#/admin" cl***REMOVED***="nav-link hidden-xs" tooltip="Admin" tooltip-placement="bottom">
-                <i cl***REMOVED***="icon-cogs icon-spacer"></i>
-              </a>
-            </li>
-            <li>
-              <a href="#/about" data-toggle="collapse" data-target=".main-navbar-collapse" cl***REMOVED***="nav-link visible-xs-block">
-                <i cl***REMOVED***="fa fa-info-circle icon-spacer"></i> About MAGE
-              </a>
-              <a href="#/about" cl***REMOVED***="nav-link hidden-xs" tooltip="About&nbsp;MAGE" tooltip-placement="bottom">
-                <i cl***REMOVED***="fa fa-info-circle icon-spacer"></i>
+              <a ng-href="#/admin" class="nav-link hidden-xs" tooltip="Admin" tooltip-placement="bottom">
+                <i class="icon-cogs icon-spacer"></i>
               </a>
             </li>
             <li>
-              <a ng-click="logout()" data-toggle="collapse" data-target=".main-navbar-collapse" cl***REMOVED***="nav-link pointer visible-xs-block">
-                <i cl***REMOVED***="fa fa-sign-out icon-spacer"></i> Sign out
+              <a href="#/about" data-toggle="collapse" data-target=".main-navbar-collapse" class="nav-link visible-xs-block">
+                <i class="fa fa-info-circle icon-spacer"></i> About MAGE
               </a>
-              <a ng-click="logout()" cl***REMOVED***="nav-link pointer hidden-xs" tooltip="Sign&nbsp;out" tooltip-placement="bottom">
-                <i cl***REMOVED***="fa fa-sign-out icon-spacer"></i>
+              <a href="#/about" class="nav-link hidden-xs" tooltip="About&nbsp;MAGE" tooltip-placement="bottom">
+                <i class="fa fa-info-circle icon-spacer"></i>
+              </a>
+            </li>
+            <li>
+              <a ng-click="logout()" data-toggle="collapse" data-target=".main-navbar-collapse" class="nav-link pointer visible-xs-block">
+                <i class="fa fa-sign-out icon-spacer"></i> Sign out
+              </a>
+              <a ng-click="logout()" class="nav-link pointer hidden-xs" tooltip="Sign&nbsp;out" tooltip-placement="bottom">
+                <i class="fa fa-sign-out icon-spacer"></i>
               </a>
             </li>
           </ul>
@@ -176,7 +176,7 @@
       </div>
     </div>
 
-  <div data-ng-view cl***REMOVED***="route-content"></div>
+  <div data-ng-view class="route-content"></div>
 
   <div banner="footer"></div>
 
@@ -269,20 +269,20 @@
   <script type="text/javascript" src="app/leaflet-extensions/MageControls.js"></script>
   <script type="text/javascript" src="app/leaflet-extensions/WorldExtentControl.js"></script>
 
-  <script type="text/javascript" src="app/factories/api.***REMOVED***.js"></script>
-  <script type="text/javascript" src="app/factories/about.***REMOVED***.js"></script>
-  <script type="text/javascript" src="app/factories/device.***REMOVED***.js"></script>
-  <script type="text/javascript" src="app/factories/event.***REMOVED***.js"></script>
-  <script type="text/javascript" src="app/factories/feature.***REMOVED***.js"></script>
-  <script type="text/javascript" src="app/factories/filter.***REMOVED***.js"></script>
-  <script type="text/javascript" src="app/factories/layer.***REMOVED***.js"></script>
-  <script type="text/javascript" src="app/factories/local-storage.***REMOVED***.js"></script>
-  <script type="text/javascript" src="app/factories/location.***REMOVED***.js"></script>
-  <script type="text/javascript" src="app/factories/map.***REMOVED***.js"></script>
-  <script type="text/javascript" src="app/factories/observation.***REMOVED***.js"></script>
-  <script type="text/javascript" src="app/factories/polling.***REMOVED***.js"></script>
-  <script type="text/javascript" src="app/factories/user.***REMOVED***.js"></script>
-  <script type="text/javascript" src="app/factories/login.***REMOVED***.js"></script>
+  <script type="text/javascript" src="app/factories/api.service.js"></script>
+  <script type="text/javascript" src="app/factories/about.service.js"></script>
+  <script type="text/javascript" src="app/factories/device.service.js"></script>
+  <script type="text/javascript" src="app/factories/event.service.js"></script>
+  <script type="text/javascript" src="app/factories/feature.service.js"></script>
+  <script type="text/javascript" src="app/factories/filter.service.js"></script>
+  <script type="text/javascript" src="app/factories/layer.service.js"></script>
+  <script type="text/javascript" src="app/factories/local-storage.service.js"></script>
+  <script type="text/javascript" src="app/factories/location.service.js"></script>
+  <script type="text/javascript" src="app/factories/map.service.js"></script>
+  <script type="text/javascript" src="app/factories/observation.service.js"></script>
+  <script type="text/javascript" src="app/factories/polling.service.js"></script>
+  <script type="text/javascript" src="app/factories/user.service.js"></script>
+  <script type="text/javascript" src="app/factories/login.service.js"></script>
 
   <script type="text/javascript" src="app/factories/observation.resource.js"></script>
   <script type="text/javascript" src="app/factories/layer.resource.js"></script>
@@ -295,7 +295,7 @@
 
   <script type="text/javascript" src="app/filters/moment.filter.js"></script>
   <script type="text/javascript" src="app/filters/paging-offset.filter.js"></script>
-  <script type="text/javascript" src="app/filters/p***REMOVED***word.filter.js"></script>
+  <script type="text/javascript" src="app/filters/password.filter.js"></script>
   <script type="text/javascript" src="app/filters/user.filter.js"></script>
 
   <script type="text/javascript" src="app/debug/debug.controller.js"></script>

@@ -1,6 +1,6 @@
-module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy) {
+module.exports = function(app, passport, provisioning, googleStrategy) {
 
-  var GoogleStrategy = require('p***REMOVED***port-google-oauth').OAuth2Strategy
+  var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy
     , Token = require('../models/token')
     , User = require('../models/user')
     , Device = require('../models/device')
@@ -11,7 +11,7 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
   console.log('configuring google authentication');
 
   function authenticate(req, res, next) {
-    p***REMOVED***port.authenticate('google', function(err, user, info) {
+    passport.authenticate('google', function(err, user, info) {
       if (err) return next(err);
       info = info || {};
 
@@ -45,8 +45,8 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
     })(req, res, next);
   }
 
-  p***REMOVED***port.use('google', new GoogleStrategy({
-      p***REMOVED***ReqToCallback: true,
+  passport.use('google', new GoogleStrategy({
+      passReqToCallback: true,
       clientID: googleStrategy.clientID,
       clientSecret: googleStrategy.clientSecret,
       callbackURL: googleStrategy.callbackURL
@@ -104,7 +104,7 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
 
   app.get(
     '/auth/google/signup',
-    p***REMOVED***port.authenticate('google', {
+    passport.authenticate('google', {
       scope : ['profile', 'email'],
       state: JSON.stringify({type: 'signup'}),
       prompt: 'select_account'
@@ -114,7 +114,7 @@ module.exports = function(app, p***REMOVED***port, provisioning, googleStrategy)
   app.get(
     '/auth/google/signin',
     function(req, res, next) {
-      p***REMOVED***port.authenticate('google', {
+      passport.authenticate('google', {
         scope: 'https://www.googleapis.com/auth/plus.login', state: JSON.stringify({type: 'signin', uid: req.param('uid')}), prompt: 'select_account'
       })(req, res, next);
     }

@@ -1,18 +1,18 @@
 angular
   .module('mage')
-  .***REMOVED***('PollingService', PollingService);
+  .service('PollingService', PollingService);
 
 function PollingService() {
   var listeners = [];
   var pollingInterval = 0;
 
-  var ***REMOVED*** = {
+  var service = {
     addListener: addListener,
     removeListener: removeListener,
     setPollingInterval: setPollingInterval
   };
 
-  return ***REMOVED***;
+  return service;
 
   function addListener(listener) {
     listeners.push(listener);

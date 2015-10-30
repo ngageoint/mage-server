@@ -37,7 +37,7 @@ function FilterService(UserService) {
   setTimeInterval({choice: intervalChoices[1]});
   filterChanged({intervalChoice: interval.choice});
 
-  var ***REMOVED*** = {
+  var service = {
     intervals: intervalChoices,
     addListener: addListener,
     removeListener: removeListener,
@@ -53,7 +53,7 @@ function FilterService(UserService) {
     getIntervalChoice: getIntervalChoice
   };
 
-  return ***REMOVED***;
+  return service;
 
   function addListener(listener) {
     listeners.push(listener);

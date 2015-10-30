@@ -4,7 +4,7 @@ var fs = require('fs'),
     prj = require('./prj'),
     ext = require('./extent'),
     getFields = require('./fields'),
-    ***REMOVED***ert = require('***REMOVED***ert'),
+    assert = require('assert'),
     pointWriter = require('./points'),
     polyWriter = require('./poly');
 

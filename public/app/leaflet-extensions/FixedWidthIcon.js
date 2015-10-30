@@ -1,6 +1,6 @@
 L.FixedWidthIcon = L.DivIcon.extend({
   options: {
-    cl***REMOVED***Name: 'mage-icon',
+    className: 'mage-icon',
     iconSize: null
   },
 
@@ -9,7 +9,7 @@ L.FixedWidthIcon = L.DivIcon.extend({
 
     var self = this;
     var s = document.createElement('img');
-    s.cl***REMOVED***Name = "mage-icon-image";
+    s.className = "mage-icon-image";
     s.src = this.options.iconUrl;
     $(s).load(function() {
       var height = $(this).height();

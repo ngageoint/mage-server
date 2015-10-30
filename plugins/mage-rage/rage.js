@@ -29,7 +29,7 @@ function getToken(done) {
     json: {
       username: config.credentials.username,
       uid: config.credentials.uid,
-      p***REMOVED***word: config.credentials.p***REMOVED***word
+      password: config.credentials.password
     }
   };
 

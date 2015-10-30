@@ -7,11 +7,11 @@ FeatureService.$inject = ['$q', '$http'];
 function FeatureService($q, $http) {
   var featureCollectionsByLayer = {};
 
-  var ***REMOVED*** = {
+  var service = {
     getFeatureCollection: getFeatureCollection
   };
 
-  return ***REMOVED***;
+  return service;
 
   function getFeatureCollection(event, layer) {
     var deferred = $q.defer();
