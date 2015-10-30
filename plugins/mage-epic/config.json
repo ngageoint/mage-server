@@ -1,0 +1,49 @@
+{
+  "enable": false,
+  "esri": {
+    "url": {
+      "host": "",
+      "site": "",
+      "restServices": "",
+      "folder": "",
+      "serviceName": "",
+      "serviceType": "",
+      "layerId": ""
+    },
+  	"observations": {
+      "7": {
+    		"enable": true,
+    		"interval": 30,
+        "fields": [{
+          "type": "Date",
+          "mage": "timestamp",
+          "esri": "EVENTDATE"
+        },{
+          "type": "Type",
+          "mage": "type",
+          "esri": "TYPE"
+        },{
+          "type": "String",
+          "mage": "EVENTLEVEL",
+          "esri": "EVENTLEVEL"
+        },{
+          "type": "String",
+          "mage": "TEAM",
+          "esri": "TEAM"
+        },{
+          "type": "String",
+          "mage": "DESCRIPTION",
+          "esri": "DESCRIPTION"
+        }]
+  	  }
+    },
+  	"attachments": {
+  		"enable":true,
+  		"interval": 60
+    }
+  },
+  "mongodb": {
+	  "url": "mongodb://localhost/magedb",
+	  "poolSize": 1
+	}
+}

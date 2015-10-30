@@ -1,0 +1,14 @@
+{
+	"enable": false,
+	"url": "",
+	"credentials": {
+		"username": "",
+		"uid": "",
+		"password": ""
+	},
+	"interval": 60,
+  "mongodb": {
+	  "url": "mongodb://localhost/magedb",
+	  "poolSize": 1
+	}
+}
