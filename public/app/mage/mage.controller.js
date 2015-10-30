@@ -353,7 +353,7 @@ function MageController($scope, $compile, $timeout, $modal, UserService, FilterS
   }
 
   function onPoll() {
-    // The event ***REMOVED*** just polled, lets update times and marker colors
+    // The event service just polled, lets update times and marker colors
     $scope.$broadcast('observation:poll');
     $scope.$broadcast('user:poll');
     MapService.onPoll();

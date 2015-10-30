@@ -9,7 +9,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
   $scope.token = LocalStorageService.getToken();
 
   var formSaved = false;
-  var u***REMOVED***vedIcons = 0;
+  var unsavedIcons = 0;
   $scope.uploadIcons = false;
 
   $scope.saveTime = 0;
@@ -33,11 +33,11 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
   $scope.$on('uploadFile', function() {
     $scope.unSavedChanges = true;
 
-    u***REMOVED***vedIcons++;
+    unsavedIcons++;
   });
 
   $scope.$on('uploadComplete', function(url, response, uploadId) {
-    u***REMOVED***vedIcons--;
+    unsavedIcons--;
     completeSave();
   });
 
@@ -50,8 +50,8 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     name : 'email',
     value : 'E-mail'
   },{
-    name : 'p***REMOVED***word',
-    value : 'P***REMOVED***word'
+    name : 'password',
+    value : 'Password'
   },{
     name : 'radio',
     value : 'Radio Buttons'
@@ -186,7 +186,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
   }
 
   function completeSave() {
-     if (u***REMOVED***vedIcons == 0 && formSaved) {
+     if (unsavedIcons == 0 && formSaved) {
        $scope.saving = false;
        $scope.unSavedChanges = false;
        $scope.uploadIcons = false;
@@ -335,7 +335,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
       event.preventDefault();
 
       var modalInstance = $modal.open({
-        templateUrl: '/app/admin/events/event.edit.form.u***REMOVED***ved.html'
+        templateUrl: '/app/admin/events/event.edit.form.unsaved.html'
       });
 
       modalInstance.result.then(function(result) {

@@ -1,74 +1,74 @@
-<div cl***REMOVED***="admin-nav-gap">
-  <div cl***REMOVED***="container-fluid">
-    <ol cl***REMOVED***="breadcrumb">
-      <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
-      <li cl***REMOVED***="active">Events</li>
+<div class="admin-nav-gap">
+  <div class="container-fluid">
+    <ol class="breadcrumb">
+      <li><i class="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
+      <li class="active">Events</li>
     </ol>
   </div>
 </div>
 
-<div cl***REMOVED***="content-flex">
+<div class="content-flex">
 
-  <div cl***REMOVED***="content-inner">
+  <div class="content-inner">
 
-    <div cl***REMOVED***="container">
+    <div class="container">
 
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="col-md-3">
+      <div class="row">
+        <div class="col-md-3">
 
-          <form cl***REMOVED***="form">
-            <div cl***REMOVED***="form-group">
+          <form class="form">
+            <div class="form-group">
               <label>Search</label>
-              <input type="text" cl***REMOVED***="form-control" placeholder="event name, description" ng-model="eventSearch" ng-change="page=0">
+              <input type="text" class="form-control" placeholder="event name, description" ng-model="eventSearch" ng-change="page=0">
             </div>
           </form>
           <hr>
 
-          <button cl***REMOVED***="btn btn-default pull-right" ng-click="reset()">Reset</button>
+          <button class="btn btn-default pull-right" ng-click="reset()">Reset</button>
         </div>
 
-        <div cl***REMOVED***="col-md-9">
-          <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
-            <div cl***REMOVED***="container-fluid">
-              <div cl***REMOVED***="navbar-header">
-                <a cl***REMOVED***="navbar-brand">Events</a>
+        <div class="col-md-9">
+          <nav class="navbar navbar-default admin-dashboard-navbar">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <a class="navbar-brand">Events</a>
               </div>
 
-              <form cl***REMOVED***="navbar-form navbar-right" role="search">
-                <button type="submit" cl***REMOVED***="btn btn-default" ng-click="newEvent()">New Event</button>
+              <form class="navbar-form navbar-right" role="search">
+                <button type="submit" class="btn btn-default" ng-click="newEvent()">New Event</button>
               </form>
             </div>
           </nav>
 
-          <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-md-12">
-              <div cl***REMOVED***="admin-table">
-                <div cl***REMOVED***="well-item"
+          <div class="row">
+            <div class="col-md-12">
+              <div class="admin-table">
+                <div class="well-item"
                     ng-repeat="e in (filteredEvents = (events | filter:filterEvents)) | orderBy:'name' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
 
-                    <div cl***REMOVED***="row pointer" ng-click="gotoEvent(e)">
-                      <div cl***REMOVED***="col-md-8">
-                        <div cl***REMOVED***="right-gap pull-left">
-                          <i cl***REMOVED***="fa fa-calendar admin-layer-icon"></i>
+                    <div class="row pointer" ng-click="gotoEvent(e)">
+                      <div class="col-md-8">
+                        <div class="right-gap pull-left">
+                          <i class="fa fa-calendar admin-layer-icon"></i>
                         </div>
-                        <div cl***REMOVED***="strong">{{e.name}}</div>
-                        <div cl***REMOVED***="muted">{{e.description}}</div>
+                        <div class="strong">{{e.name}}</div>
+                        <div class="muted">{{e.description}}</div>
                       </div>
-                      <div cl***REMOVED***="col-md-4">
-                        <button cl***REMOVED***="btn btn-sm btn-danger pull-right admin-user-button" ng-click="deleteEvent($event, e)">Delete</button>
-                        <button cl***REMOVED***="btn btn-sm btn-default pull-right" ng-click="editEvent($event, e)">Edit</button>
+                      <div class="col-md-4">
+                        <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-click="deleteEvent($event, e)">Delete</button>
+                        <button class="btn btn-sm btn-default pull-right" ng-click="editEvent($event, e)">Edit</button>
                       </div>
                     </div>
 
                 </div>
               </div>
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-md-12">
-                  <ul cl***REMOVED***="pager pull-right">
-                    <li ng-cl***REMOVED***="{'disabled': page == 0}">
+              <div class="row">
+                <div class="col-md-12">
+                  <ul class="pager pull-right">
+                    <li ng-class="{'disabled': page == 0}">
                       <a href="javascript:void(0);" ng-click="page == 0 || (page=page-1)">&larr; Previous</a>
                     </li>
-                    <li ng-cl***REMOVED***="{'disabled': page >= (filteredEvents.length/itemsPerPage) - 1}">
+                    <li ng-class="{'disabled': page >= (filteredEvents.length/itemsPerPage) - 1}">
                       <a href="javascript:void(0);" ng-click="page >= (filteredEvents.length/itemsPerPage) - 1 || (page=page+1)">Next&rarr;</a>
                     </li>
                   </ul>

@@ -6,7 +6,7 @@ function leaflet() {
   var directive = {
     restrict: "A",
     replace: true,
-    template: '<div id="map" cl***REMOVED***="map"></div>',
+    template: '<div id="map" class="map"></div>',
     controller: LeafletController,
     bindToController: true
   };
@@ -148,7 +148,7 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
     }
   }
 
-  // TODO move into leaflet ***REMOVED***, this and map clip both use it
+  // TODO move into leaflet service, this and map clip both use it
   function createRasterLayer(layerInfo) {
     var baseLayer = null;
     var options = {};
@@ -223,7 +223,7 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
       },
       pointToLayer: function (feature, latlng) {
         if (layerInfo.options.temporal) {
-          // TODO temporal layers should be fixed width as well, ie use fixedWidthMarker cl***REMOVED***
+          // TODO temporal layers should be fixed width as well, ie use fixedWidthMarker class
           var options = {
             color: colorForFeature(feature, layerInfo.options.temporal)
           };

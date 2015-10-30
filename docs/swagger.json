@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "version": "1.0.0",
+        "version": "4.0.0",
         "title": "MAGE (Mobile Awareness GEOINT Environment)",
         "description": "MAGE API",
         "contact": {
@@ -9,8 +9,8 @@
             "email": "benjamin.t.tuttle@nga.mil"
         },
         "license": {
-            "name": "MIT",
-            "url": "http://opensource.org/licenses/MIT"
+            "name": "Apache2",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0"
         }
     },
     "consumes": [
@@ -630,6 +630,71 @@
                 }
             }
         },
+        "/api/teams/{id}/user": {
+            "post": {
+                "description": "Add new user to this team",
+                "operationId": "addUserToTeam",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of team to fetch",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "team body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/User"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Team"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "team response",
+                        "schema": {
+                            "$ref": "#/definitions/Team"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/teams/{id}/user/{userId}": {
+            "delete": {
+                "description": "removes a user from the team",
+                "operationId": "removeUserFromTeam",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of team",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "id of user to delete from team",
+                        "required": true,
+                        "type": "number"
+                    }
+                ],
+                "tags": [
+                    "Team"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "team deleted"
+                    }
+                }
+            }
+        },
         "/api/events": {
             "get": {
                 "description": "get all events",
@@ -760,6 +825,136 @@
                 }
             }
         },
+        "/api/events/{id}/teams": {
+            "post": {
+                "description": "add a team to an event",
+                "operationId": "addTeamToEvent",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of event to update",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "team body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Team"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "event update response",
+                        "schema": {
+                            "$ref": "#/definitions/Event"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/events/{id}/teams/{teamId}": {
+            "delete": {
+                "description": "removes a team from the event",
+                "operationId": "removeTeamFromEvent",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of event",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "id of the team to remove from event",
+                        "required": true,
+                        "type": "number"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "event deleted"
+                    }
+                }
+            }
+        },
+        "/api/events/{id}/layers": {
+            "post": {
+                "description": "add a layer to an event",
+                "operationId": "addLayerToEvent",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of event to update",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "layer body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Layer"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "event update response",
+                        "schema": {
+                            "$ref": "#/definitions/Event"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/events/{id}/layers/{layerId}": {
+            "delete": {
+                "description": "removes a layer from the event",
+                "operationId": "removeLayerFromEvent",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of event",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "layerId",
+                        "in": "path",
+                        "description": "id of the layer to remove from event",
+                        "required": true,
+                        "type": "number"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "event deleted"
+                    }
+                }
+            }
+        },
         "/api/events/{id}/form.zip": {
             "get": {
                 "description": "Export a zip archive of the form .  Includes metadata and icon symbology",
@@ -809,6 +1004,163 @@
                 }
             }
         },
+        "/api/events/{eventId}/form/icons": {
+            "get": {
+                "description": "Returns the default icon for this form",
+                "operationId": "getDefaultIcon",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "form response"
+                    }
+                }
+            },
+            "post": {
+                "description": "add new default icon",
+                "operationId": "addDefaultIcon",
+                "tags": [
+                    "Event"
+                ],
+                "consumes": [
+                    "mutipart/form-data"
+                ],
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "new icon response"
+                    }
+                }
+            },
+            "delete": {
+                "description": "deletes the default icon",
+                "operationId": "deleteDefaultIcon",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "icon deleted"
+                    }
+                }
+            }
+        },
+        "/api/events/{eventId}/form/icons/{type}": {
+            "get": {
+                "description": "Returns a icon based on type",
+                "operationId": "getTypeIcon",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "icon type",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "form response"
+                    }
+                }
+            },
+            "post": {
+                "description": "add new type icon",
+                "operationId": "addTypeIcon",
+                "tags": [
+                    "Event"
+                ],
+                "consumes": [
+                    "mutipart/form-data"
+                ],
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "icon type",
+                        "type": "string",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "new icon response"
+                    }
+                }
+            },
+            "delete": {
+                "description": "deletes a type icon",
+                "operationId": "deleteTypeIcon",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which icon resides",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "icon type",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "icon deleted"
+                    }
+                }
+            }
+        },
         "/api/events/{eventId}/form/icons/{type}/{variant}": {
             "get": {
                 "description": "Returns a single form based on id",
@@ -825,12 +1177,14 @@
                         "name": "type",
                         "in": "path",
                         "description": "icon type",
+                        "required": true,
                         "type": "string"
                     },
                     {
                         "name": "variant",
                         "in": "path",
                         "description": "variant type",
+                        "required": true,
                         "type": "string"
                     }
                 ],
@@ -864,13 +1218,15 @@
                         "name": "type",
                         "in": "path",
                         "description": "icon type",
-                        "type": "string"
+                        "type": "string",
+                        "required": true
                     },
                     {
                         "name": "variant",
                         "in": "path",
                         "description": "variant type",
-                        "type": "string"
+                        "type": "string",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -894,12 +1250,14 @@
                         "name": "type",
                         "in": "path",
                         "description": "icon type",
+                        "required": true,
                         "type": "string"
                     },
                     {
                         "name": "variant",
                         "in": "path",
                         "description": "variant type",
+                        "required": true,
                         "type": "string"
                     }
                 ],
@@ -1790,7 +2148,7 @@
             "required": [
                 "username",
                 "uid",
-                "p***REMOVED***word"
+                "password"
             ],
             "properties": {
                 "username": {
@@ -1799,7 +2157,7 @@
                 "uid": {
                     "type": "string"
                 },
-                "p***REMOVED***word": {
+                "password": {
                     "type": "string"
                 }
             }
@@ -1848,17 +2206,13 @@
         "UserCreate": {
             "required": [
                 "username",
-                "firstname",
-                "lastname"
+                "displayName"
             ],
             "properties": {
                 "username": {
                     "type": "string"
                 },
-                "firstname": {
-                    "type": "string"
-                },
-                "lastname": {
+                "displayName": {
                     "type": "string"
                 },
                 "email": {
@@ -1873,10 +2227,10 @@
                 "role": {
                     "type": "string"
                 },
-                "p***REMOVED***word": {
+                "password": {
                     "type": "string"
                 },
-                "p***REMOVED***wordConfirm": {
+                "passwordConfirm": {
                     "type": "string"
                 }
             }
@@ -1885,8 +2239,7 @@
             "required": [
                 "id",
                 "username",
-                "firstname",
-                "lastname",
+                "displayName",
                 "active",
                 "role"
             ],
@@ -1897,10 +2250,7 @@
                 "username": {
                     "type": "string"
                 },
-                "firstname": {
-                    "type": "string"
-                },
-                "lastname": {
+                "displayName": {
                     "type": "string"
                 },
                 "email": {
@@ -1924,8 +2274,7 @@
             "required": [
                 "id",
                 "username",
-                "firstname",
-                "lastname",
+                "displayName",
                 "active",
                 "role"
             ],
@@ -1936,10 +2285,7 @@
                 "username": {
                     "type": "string"
                 },
-                "firstname": {
-                    "type": "string"
-                },
-                "lastname": {
+                "displayName": {
                     "type": "string"
                 },
                 "email": {

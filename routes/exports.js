@@ -24,7 +24,7 @@ module.exports = function(app, security) {
     , DOMParser = require('xmldom').DOMParser
     , spawn = require('child_process').spawn
     , exec = require('child_process').exec
-    , p***REMOVED***port = security.authentication.p***REMOVED***port;
+    , passport = security.authentication.passport;
 
   var parseQueryParams = function(req, res, next) {
     var parameters = {filter: {}};
@@ -175,7 +175,7 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/:exportType(geojson|kml|shapefile|csv)',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     parseQueryParams,
     getEvent,
     validateEventAccess,
@@ -419,7 +419,7 @@ module.exports = function(app, security) {
     //it as a zip file for now.
     var archive = archiver('zip');
     archive.pipe(res);
-    var kmlStream = new stream.P***REMOVED***Through();
+    var kmlStream = new stream.PassThrough();
     archive.append(kmlStream, { name:'mage-export.kml' });
 
     kmlStream.write(generate_kml.generateKMLHeader());
@@ -543,7 +543,7 @@ module.exports = function(app, security) {
       function(done) {
         if (!req.parameters.filter.exportObservations) return done();
 
-        var observationStream = new stream.P***REMOVED***Through();
+        var observationStream = new stream.PassThrough();
         archive.append(observationStream, { name:'mage-export/observations.geojson' });
         streamFeatures(observationStream, function(err) {
           observationStream.end();
@@ -572,7 +572,7 @@ module.exports = function(app, security) {
       function(done) {
         if (!req.parameters.filter.exportLocations) return done();
 
-        var locationStream = new stream.P***REMOVED***Through();
+        var locationStream = new stream.PassThrough();
         archive.append(locationStream, {name: 'mage-export/locations.geojson'});
         streamLocations(locationStream, function(err) {
           locationStream.end();
@@ -729,7 +729,7 @@ module.exports = function(app, security) {
       function(done) {
         if (!req.parameters.filter.exportObservations) return done();
 
-        var observationStream = new stream.P***REMOVED***Through();
+        var observationStream = new stream.PassThrough();
         archive.append(observationStream, { name:'mage-export/observations.csv' });
         streamFeatures(observationStream, function(err) {
           observationStream.end();
@@ -750,7 +750,7 @@ module.exports = function(app, security) {
       function(done) {
         if (!req.parameters.filter.exportLocations) return done();
 
-        // var locationStream = new stream.P***REMOVED***Through();
+        // var locationStream = new stream.PassThrough();
         var locationStream = new json2csvStream({
           keys: ['user', 'device', 'timestamp', 'latitude', 'longitude', 'accuracy', 'bearing', 'speed', 'altitude']
         });

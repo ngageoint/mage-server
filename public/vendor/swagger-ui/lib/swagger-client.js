@@ -140,12 +140,12 @@ CookieAuthorization.prototype.apply = function(obj, authorizations) {
 }
 
 /**
- * P***REMOVED***word Authorization is a basic auth implementation
+ * Password Authorization is a basic auth implementation
  */
-var P***REMOVED***wordAuthorization = function(name, username, p***REMOVED***word) {
+var PasswordAuthorization = function(name, username, password) {
   this.name = name;
   this.username = username;
-  this.p***REMOVED***word = p***REMOVED***word;
+  this.password = password;
   this._btoa = null;
   if (typeof window !== 'undefined')
     this._btoa = btoa;
@@ -153,9 +153,9 @@ var P***REMOVED***wordAuthorization = function(name, username, p***REMOVED***wor
     this._btoa = require("btoa");
 };
 
-P***REMOVED***wordAuthorization.prototype.apply = function(obj, authorizations) {
+PasswordAuthorization.prototype.apply = function(obj, authorizations) {
   var base64encoder = this._btoa;
-  obj.headers["Authorization"] = "Basic " + base64encoder(this.username + ":" + this.p***REMOVED***word);
+  obj.headers["Authorization"] = "Basic " + base64encoder(this.username + ":" + this.password);
   return true;
 };var __bind = function(fn, me){
   return function(){
@@ -269,12 +269,12 @@ PrimitiveModel.prototype.getMockSignature = function(modelsToIgnore) {
     propertiesStr.push(prop.toString());
   }
 
-  var strong = '<span cl***REMOVED***="strong">';
-  var stronger = '<span cl***REMOVED***="stronger">';
+  var strong = '<span class="strong">';
+  var stronger = '<span class="stronger">';
   var strongClose = '</span>';
-  var cl***REMOVED***Open = strong + this.name + ' {' + strongClose;
-  var cl***REMOVED***Close = strong + '}' + strongClose;
-  var returnVal = cl***REMOVED***Open + '<div>' + propertiesStr.join(',</div><div>') + '</div>' + cl***REMOVED***Close;
+  var classOpen = strong + this.name + ' {' + strongClose;
+  var classClose = strong + '}' + strongClose;
+  var returnVal = classOpen + '<div>' + propertiesStr.join(',</div><div>') + '</div>' + classClose;
 
   if (!modelsToIgnore)
     modelsToIgnore = {};
@@ -586,7 +586,7 @@ var Operation = function(parent, operationId, httpMethod, path, args, definition
     }
     param.signature = this.getSignature(innerType, models);
     param.sampleJSON = this.getSampleJSON(innerType, models);
-    param.responseCl***REMOVED***Signature = param.signature;
+    param.responseClassSignature = param.signature;
   }
 
   var response;
@@ -631,7 +631,7 @@ var Operation = function(parent, operationId, httpMethod, path, args, definition
     if(resolvedModel) {
       this.type = resolvedModel.name;
       this.responseSampleJSON = JSON.stringify(resolvedModel.getSampleValue(), null, 2);
-      this.responseCl***REMOVED***Signature = resolvedModel.getMockSignature();
+      this.responseClassSignature = resolvedModel.getMockSignature();
       delete responses[defaultResponseCode];
     }
     else {
@@ -1078,12 +1078,12 @@ Model.prototype.getMockSignature = function(modelsToIgnore) {
     propertiesStr.push(prop.toString());
   }
 
-  var strong = '<span cl***REMOVED***="strong">';
-  var stronger = '<span cl***REMOVED***="stronger">';
+  var strong = '<span class="strong">';
+  var stronger = '<span class="stronger">';
   var strongClose = '</span>';
-  var cl***REMOVED***Open = strong + this.name + ' {' + strongClose;
-  var cl***REMOVED***Close = strong + '}' + strongClose;
-  var returnVal = cl***REMOVED***Open + '<div>' + propertiesStr.join(',</div><div>') + '</div>' + cl***REMOVED***Close;
+  var classOpen = strong + this.name + ' {' + strongClose;
+  var classClose = strong + '}' + strongClose;
+  var returnVal = classOpen + '<div>' + propertiesStr.join(',</div><div>') + '</div>' + classClose;
   if (!modelsToIgnore)
     modelsToIgnore = {};
 
@@ -1217,9 +1217,9 @@ simpleRef = function(name) {
 Property.prototype.toString = function() {
   var str = getStringSignature(this.obj);
   if(str !== '') {
-    str = '<span cl***REMOVED***="propName ' + this.required + '">' + this.name + '</span> (<span cl***REMOVED***="propType">' + str + '</span>';
+    str = '<span class="propName ' + this.required + '">' + this.name + '</span> (<span class="propType">' + str + '</span>';
     if(!this.required)
-      str += ', <span cl***REMOVED***="propOptKey">optional</span>';
+      str += ', <span class="propOptKey">optional</span>';
     str += ')';
   }
   else 
@@ -1264,7 +1264,7 @@ var models = {};
 
 e.authorizations = new SwaggerAuthorizations();
 e.ApiKeyAuthorization = ApiKeyAuthorization;
-e.P***REMOVED***wordAuthorization = P***REMOVED***wordAuthorization;
+e.PasswordAuthorization = PasswordAuthorization;
 e.CookieAuthorization = CookieAuthorization;
 e.SwaggerClient = SwaggerClient;
 

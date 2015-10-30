@@ -1,6 +1,6 @@
 angular
   .module('mage')
-  .***REMOVED***('EventService', EventService);
+  .service('EventService', EventService);
 
 EventService.$inject = ['$rootScope', '$q', '$timeout', '$http', 'Event', 'ObservationService', 'LocationService', 'LayerService', 'FilterService', 'PollingService'];
 
@@ -105,7 +105,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
   }
   PollingService.addListener(pollingServiceListener);
 
-  var ***REMOVED*** = {
+  var service = {
     addObservationsChangedListener: addObservationsChangedListener,
     removeObservationsChangedListener: removeObservationsChangedListener,
     addUsersChangedListener: addUsersChangedListener,
@@ -125,7 +125,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     isUserInEvent: isUserInEvent
   }
 
-  return ***REMOVED***;
+  return service;
 
   function addObservationsChangedListener(listener) {
     observationsChangedListeners.push(listener);
@@ -195,7 +195,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     return ObservationService.saveObservationForEvent(event, observation).then(function(observation) {
       event.observationsById[observation.id] = observation;
 
-      // Check if this new observation p***REMOVED***es the current filter
+      // Check if this new observation passes the current filter
       if (FilterService.isContainedWithinFilter({teamIds: observation.teamIds, timestamp: observation.properties.timestamp})) {
         event.filteredObservationsById[observation.id] = observation;
         isNewObservation ? observationsChanged({added: [observation]}) : observationsChanged({updated: [observation]});
@@ -232,15 +232,15 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     var event = eventsById[observation.eventId];
 
     var form = angular.copy(event.form);
-    ***REMOVED***.getFormField(form, "timestamp").value  = observation.properties.timestamp;
-    ***REMOVED***.getFormField(form, "geometry").value = {
+    service.getFormField(form, "timestamp").value  = observation.properties.timestamp;
+    service.getFormField(form, "geometry").value = {
       x: observation.geometry.coordinates[0],
       y: observation.geometry.coordinates[1]
     }
 
     var existingPropertyFields = [];
     _.each(observation.properties, function(value, key) {
-      var field = ***REMOVED***.getFormField(form, key);
+      var field = service.getFormField(form, key);
       if (field) {
         field.value = value;
         existingPropertyFields.push(field);
@@ -353,7 +353,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
       var observationsById = {};
       var filteredObservationsById = eventsById[event.id].filteredObservationsById;
       _.each(observations, function(observation) {
-        // Check if this observation p***REMOVED***es the team filter.
+        // Check if this observation passes the team filter.
         if (FilterService.areTeamsInFilter(observation.teamIds)) {
           // Check if we already have this observation, if so update, otherwise add
           var localObservation = filteredObservationsById[observation.id];

@@ -9,7 +9,7 @@ module.exports = function(app, security) {
     , access = require('../access')
     , config = require('../config');
 
-  var p***REMOVED***port = security.authentication.p***REMOVED***port;
+  var passport = security.authentication.passport;
   var locationLimit = config.server.locationServices.userCollectionLocationLimit;
 
   function validateEventAccess(req, res, next) {
@@ -101,7 +101,7 @@ module.exports = function(app, security) {
   // max of 100 locations per user
   app.get(
     '/api/events/:eventId/locations/users',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     validateEventAccess,
     parseQueryParams,
     function(req, res) {
@@ -118,7 +118,7 @@ module.exports = function(app, security) {
   // TODO only one team for PDC, need to implement multiple teams later
   app.get(
     '/api/events/:eventId/locations',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     validateEventAccess,
     parseQueryParams,
     function(req, res) {
@@ -133,7 +133,7 @@ module.exports = function(app, security) {
   // create new location(s) for a specific user and event
   app.post(
     '/api/events/:eventId/locations',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     access.authorize('CREATE_LOCATION'),
     validateLocations,
     function(req, res) {
@@ -156,7 +156,7 @@ module.exports = function(app, security) {
   // update time on a location
   app.put(
     '/api/events/:eventId/locations',
-    p***REMOVED***port.authenticate('bearer'),
+    passport.authenticate('bearer'),
     validateEventAccess,
     function(req, res) {
       var data = req.body;

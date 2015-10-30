@@ -7,7 +7,7 @@ UserController.$inject =  ['$scope', '$location', '$timeout', 'UserService', 'us
 function UserController($scope, $location, $timeout, UserService, user) {
   $scope.user = user;
   $scope.originalUser = angular.copy(user);
-  $scope.p***REMOVED***wordStatus = {};
+  $scope.passwordStatus = {};
   $scope.showUserStatus = false;
   $scope.avatar = null;
 
@@ -49,34 +49,34 @@ function UserController($scope, $location, $timeout, UserService, user) {
     $scope.user = angular.copy($scope.originalUser);
   }
 
-  $scope.updateP***REMOVED***word = function() {
-    if (!this.user.p***REMOVED***word) {
-      $scope.p***REMOVED***wordStatus = {status: "error", msg: "p***REMOVED***word cannot be blank"};
+  $scope.updatePassword = function() {
+    if (!this.user.password) {
+      $scope.passwordStatus = {status: "error", msg: "password cannot be blank"};
       return;
     }
 
-    if (this.user.p***REMOVED***word != this.user.p***REMOVED***wordconfirm) {
-      $scope.p***REMOVED***wordStatus = {status: "error", msg: "p***REMOVED***words do not match"};
+    if (this.user.password != this.user.passwordconfirm) {
+      $scope.passwordStatus = {status: "error", msg: "passwords do not match"};
       return;
     }
 
     var user = {
-      p***REMOVED***word: this.user.p***REMOVED***word,
-      p***REMOVED***wordconfirm: this.user.p***REMOVED***wordconfirm
+      password: this.user.password,
+      passwordconfirm: this.user.passwordconfirm
     }
 
-    UserService.updateMyP***REMOVED***word(user)
+    UserService.updateMyPassword(user)
       .success(function(user) {
-        $scope.user.p***REMOVED***word = "";
-        $scope.user.p***REMOVED***wordconfirm = "";
-        $scope.p***REMOVED***wordStatus = {status: "success", msg: "p***REMOVED***word successfully updated, redirecting to the login page"};
+        $scope.user.password = "";
+        $scope.user.passwordconfirm = "";
+        $scope.passwordStatus = {status: "success", msg: "password successfully updated, redirecting to the login page"};
 
         $timeout(function() {
           $location.path('/signin');
         }, 5000);
       })
       .error(function(data, status) {
-        $scope.p***REMOVED***wordStatus = {status: "error", msg: data};
+        $scope.passwordStatus = {status: "error", msg: data};
       });
   }
 

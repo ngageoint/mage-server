@@ -28,7 +28,7 @@ mongoose.set('debug', function(collection, method, query, doc, options) {
 var attachmentBase = serverConfig.server.attachment.baseDirectory;
 var timeout = config.esri.attachments.interval * 1000;
 var url = config.esri.url;
-var url = [url.host, url.site, url.restServices, url.folder, url.***REMOVED***Name, url.***REMOVED***Type, url.layerId].join("/");
+var url = [url.host, url.site, url.restServices, url.folder, url.serviceName, url.serviceType, url.layerId].join("/");
 
 var events;
 function getEvents(done) {

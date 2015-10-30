@@ -1,8 +1,8 @@
 angular
   .module('mage')
-  .filter('p***REMOVED***word', p***REMOVED***wordFilter);
+  .filter('password', passwordFilter);
 
-function p***REMOVED***wordFilter() {
+function passwordFilter() {
   return function(text) {
     if (!text) return null;
 

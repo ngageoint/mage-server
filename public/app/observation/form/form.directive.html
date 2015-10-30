@@ -1,7 +1,7 @@
-<div cl***REMOVED***="row">
-  <div cl***REMOVED***="col-md-12">
-    <form name="observationForm" id="myForm" cl***REMOVED***="form" novalidate>
-        <h4 cl***REMOVED***="text-center">
+<div class="row">
+  <div class="col-md-12">
+    <form name="observationForm" id="myForm" class="form" novalidate>
+        <h4 class="text-center">
           <strong>{{event.name}}</strong>
         </h4>
 
@@ -10,36 +10,36 @@
         </div>
         <span>* required</span>
 
-        <div cl***REMOVED***="top-gap" ng-if="preview !== true">
-          <h4 cl***REMOVED***="muted">Attachments</h4>
-          <div cl***REMOVED***="attachment" ng-repeat="attachment in observation.attachments track by attachment.id">
-            <div cl***REMOVED***="row">
+        <div class="top-gap" ng-if="preview !== true">
+          <h4 class="muted">Attachments</h4>
+          <div class="attachment" ng-repeat="attachment in observation.attachments track by attachment.id">
+            <div class="row">
               <div>
                 <div attachment="attachment" attachment-observation="observation" edit="true"></div>
               </div>
             </div>
           </div>
 
-          <div ng-repeat="(id, file) in attachmentUploads" cl***REMOVED***="row bottom-gap">
-            <div cl***REMOVED***="col-md-10" enctype="multipart/form-data" file-upload url="{{observation.url + '/attachments?access_token=' + getToken()}}" allow-upload="uploadAttachments" upload-file-form-name="'attachment'" preview="true" upload-id="id"></div>
+          <div ng-repeat="(id, file) in attachmentUploads" class="row bottom-gap">
+            <div class="col-md-10" enctype="multipart/form-data" file-upload url="{{observation.url + '/attachments?access_token=' + getToken()}}" allow-upload="uploadAttachments" upload-file-form-name="'attachment'" preview="true" upload-id="id"></div>
             <span>
-              <button cl***REMOVED***="btn btn-danger btn-xs top-gap-s" ng-click="removeFileUpload(id)"><i cl***REMOVED***="fa fa-minus"></i></button>
+              <button class="btn btn-danger btn-xs top-gap-s" ng-click="removeFileUpload(id)"><i class="fa fa-minus"></i></button>
             </span>
           </div>
 
-          <div cl***REMOVED***="row top-gap-s">
-            <div cl***REMOVED***="col-md-12">
-              <button cl***REMOVED***="btn btn-primary" ng-click="addAttachment()" >Add Attachment</button>
+          <div class="row top-gap-s">
+            <div class="col-md-12">
+              <button class="btn btn-primary" ng-click="addAttachment()" >Add Attachment</button>
             </div>
           </div>
 
-          <div cl***REMOVED***="top-gap-l">
-            <span cl***REMOVED***="pull-right">
-              <button cl***REMOVED***="btn btn-default" ng-click="cancelEdit()">Cancel</button>
-              <button cl***REMOVED***="btn btn-primary" ng-click="save()" ng-disabled="observationForm.$invalid || saving"><i ng-cl***REMOVED***="{true: 'fa fa-spinner fa-spin', false: 'icon-save'}[saving]"></i> Save</button>
+          <div class="top-gap-l">
+            <span class="pull-right">
+              <button class="btn btn-default" ng-click="cancelEdit()">Cancel</button>
+              <button class="btn btn-primary" ng-click="save()" ng-disabled="observationForm.$invalid || saving"><i ng-class="{true: 'fa fa-spinner fa-spin', false: 'icon-save'}[saving]"></i> Save</button>
             </span>
             <span>
-              <button cl***REMOVED***="btn btn-danger pull-left" ng-show="observation.id && amAdmin" ng-click="deleteObservation(observation)"><i cl***REMOVED***="icon-trash"></i> Delete Observation</button>
+              <button class="btn btn-danger pull-left" ng-show="observation.id && amAdmin" ng-click="deleteObservation(observation)"><i class="icon-trash"></i> Delete Observation</button>
             </span>
           </div>
         </div>

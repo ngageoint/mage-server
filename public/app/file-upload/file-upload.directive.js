@@ -57,7 +57,7 @@ function FileUploadController($scope, $element) {
     if (!url) return;
 
     $scope.uploadImageMissing = false;
-    $element.find('.preview').html(['<img cl***REMOVED***="preview-image" src="',$scope.url,'"/>'].join(''));
+    $element.find('.preview').html(['<img class="preview-image" src="',$scope.url,'"/>'].join(''));
   });
 
   var previewFile = function(file, element) {
@@ -68,7 +68,7 @@ function FileUploadController($scope, $element) {
         return function(e) {
           $scope.uploadImageMissing = false;
           $scope.$apply();
-          element.find('.preview').html(['<img cl***REMOVED***="preview-image" src="', e.target.result,'" title="', theFile.name, '"/>'].join(''));
+          element.find('.preview').html(['<img class="preview-image" src="', e.target.result,'" title="', theFile.name, '"/>'].join(''));
         };
       })(file);
 
