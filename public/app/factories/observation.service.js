@@ -5,7 +5,7 @@ angular
 ObservationService.$inject = ['$q', 'Observation', 'ObservationAttachment', 'ObservationState'];
 
 function ObservationService($q, Observation, ObservationAttachment, ObservationState) {
-  var ***REMOVED*** = {
+  var service = {
     getObservationsForEvent: getObservationsForEvent,
     saveObservationForEvent: saveObservationForEvent,
     archiveObservationForEvent: archiveObservationForEvent,
@@ -13,7 +13,7 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
     deleteAttachmentInObservationForEvent: deleteAttachmentInObservationForEvent
   };
 
-  return ***REMOVED***;
+  return service;
 
   function getObservationsForEvent(event, options) {
     var deferred = $q.defer();

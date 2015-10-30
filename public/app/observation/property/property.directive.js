@@ -39,8 +39,8 @@ function PropertyViewController($scope) {
         return 'app/observation/property/dropdown.directive.html';
       case 'hidden':
         return 'app/observation/property/hidden.directive.html';
-      case 'p***REMOVED***word':
-        return 'app/observation/property/p***REMOVED***word.directive.html';
+      case 'password':
+        return 'app/observation/property/password.directive.html';
       case 'radio':
         return 'app/observation/property/radio.directive.html';
     }

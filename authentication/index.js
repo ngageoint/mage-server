@@ -1,21 +1,21 @@
-module.exports = function(app, p***REMOVED***port, provision, strategies) {
+module.exports = function(app, passport, provision, strategies) {
 
-  var BearerStrategy = require('p***REMOVED***port-http-bearer').Strategy
+  var BearerStrategy = require('passport-http-bearer').Strategy
     , User = require('../models/user')
     , Token = require('../models/token');
 
-  p***REMOVED***port.serializeUser(function(user, done) {
+  passport.serializeUser(function(user, done) {
     done(null, user._id);
   });
 
-  p***REMOVED***port.deserializeUser(function(id, done) {
+  passport.deserializeUser(function(id, done) {
     User.getUserById(id, function(err, user) {
       done(err, user);
     });
   });
 
-  p***REMOVED***port.use(new BearerStrategy({
-    p***REMOVED***ReqToCallback: true
+  passport.use(new BearerStrategy({
+    passReqToCallback: true
   },
   function(req, token, done) {
     Token.getToken(token, function(err, credentials) {
@@ -30,12 +30,12 @@ module.exports = function(app, p***REMOVED***port, provision, strategies) {
   }));
 
   Object.keys(strategies).forEach(function(name) {
-    // setup p***REMOVED***port authentication for this strategy
-    require('./' + name)(app, p***REMOVED***port, provision, strategies[name]);
+    // setup passport authentication for this strategy
+    require('./' + name)(app, passport, provision, strategies[name]);
   });
 
   return {
-    p***REMOVED***port: p***REMOVED***port,
+    passport: passport,
     strategies: strategies
   };
 }

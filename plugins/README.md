@@ -51,10 +51,10 @@ Configuration:
   * url - ESRI url
       * host - ESRI root url
       * site - ESRI site partial url
-      * restServices - ESRI rest ***REMOVED***s partial url
+      * restServices - ESRI rest services partial url
       * folder - ESRI folder partial url
-      * ***REMOVED***Name - ESRI ***REMOVED*** name partial url
-      * ***REMOVED***Type - ESRI ***REMOVED*** type partial url
+      * serviceName - ESRI service name partial url
+      * serviceType - ESRI service type partial url
       * layerId - ESRI layerId partial url
   * observations - MAGE observation mapping.  Add one for each event id (i.e. 7 maps MAGE fields from eventId 7)
       * enable - turn on/off sync'ing of this event
@@ -77,10 +77,10 @@ Configuration:
     "url": {
       "host": "<root ERSI server>",
       "site": "<site partial>",
-      "restServices": "<rest ***REMOVED***s partial>",
+      "restServices": "<rest services partial>",
       "folder": "<folder partial>",
-      "***REMOVED***Name": "<***REMOVED*** name partial>",
-      "***REMOVED***Type": "<***REMOVED*** type partial>",
+      "serviceName": "<service name partial>",
+      "serviceType": "<service type partial>",
       "layerId": "<layer id partial>"
     },
   	"observations": {
@@ -132,7 +132,7 @@ Configuration:
 * credentials - MAGE replication server credentials used for authentication.
  * username - username on MAGE replication server
  * uid - device uid
- * p***REMOVED***word - p***REMOVED***word
+ * password - password
 * interval - frequency (seconds) at which the plugin will sync data to the replication server.
 * mongodb
  * url - url scheme for the mongodb database.  This should be the same mongodb schema as used in your main MAGE configuration.
@@ -145,7 +145,7 @@ Configuration:
 	"credentials": {
 		"username": "",
 		"uid": "",
-		"p***REMOVED***word": ""
+		"password": ""
 	},
 	"interval": 60,
   "mongodb": {

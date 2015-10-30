@@ -473,7 +473,7 @@
           produces = o.produces;
         else
           produces = this.produces;
-        var type = (o.type || o.responseCl***REMOVED***);
+        var type = (o.type || o.responseClass);
 
         if (type === "array") {
           ref = null;
@@ -571,12 +571,12 @@
       propertiesStr.push(prop.toString());
     }
 
-    var strong = '<span cl***REMOVED***="strong">';
-    var stronger = '<span cl***REMOVED***="stronger">';
+    var strong = '<span class="strong">';
+    var stronger = '<span class="stronger">';
     var strongClose = '</span>';
-    var cl***REMOVED***Open = strong + this.name + ' {' + strongClose;
-    var cl***REMOVED***Close = strong + '}' + strongClose;
-    var returnVal = cl***REMOVED***Open + '<div>' + propertiesStr.join(',</div><div>') + '</div>' + cl***REMOVED***Close;
+    var classOpen = strong + this.name + ' {' + strongClose;
+    var classClose = strong + '}' + strongClose;
+    var returnVal = classOpen + '<div>' + propertiesStr.join(',</div><div>') + '</div>' + classClose;
     if (!modelsToIgnore)
       modelsToIgnore = [];
     modelsToIgnore.push(this.name);
@@ -677,16 +677,16 @@
 
   SwaggerModelProperty.prototype.toString = function () {
     var req = this.required ? 'propReq' : 'propOpt';
-    var str = '<span cl***REMOVED***="propName ' + req + '">' + this.name + '</span> (<span cl***REMOVED***="propType">' + this.dataTypeWithRef + '</span>';
+    var str = '<span class="propName ' + req + '">' + this.name + '</span> (<span class="propType">' + this.dataTypeWithRef + '</span>';
     if (!this.required) {
-      str += ', <span cl***REMOVED***="propOptKey">optional</span>';
+      str += ', <span class="propOptKey">optional</span>';
     }
     str += ')';
     if (this.values != null) {
-      str += " = <span cl***REMOVED***='propVals'>['" + this.values.join("' or '") + "']</span>";
+      str += " = <span class='propVals'>['" + this.values.join("' or '") + "']</span>";
     }
     if (this.descr != null) {
-      str += ': <span cl***REMOVED***="propDesc">' + this.descr + '</span>';
+      str += ': <span class="propDesc">' + this.descr + '</span>';
     }
     return str;
   };
@@ -723,7 +723,7 @@
     if (typeof this.type !== 'undefined' && this.type === 'void')
       this.type = null;
     else {
-      this.responseCl***REMOVED***Signature = this.getSignature(this.type, this.resource.models);
+      this.responseClassSignature = this.getSignature(this.type, this.resource.models);
       this.responseSampleJSON = this.getSampleJSON(this.type, this.resource.models);
     }
 
@@ -1633,12 +1633,12 @@
   }
 
   /**
-   * P***REMOVED***word Authorization is a basic auth implementation
+   * Password Authorization is a basic auth implementation
    */
-  var P***REMOVED***wordAuthorization = function (name, username, p***REMOVED***word) {
+  var PasswordAuthorization = function (name, username, password) {
     this.name = name;
     this.username = username;
-    this.p***REMOVED***word = p***REMOVED***word;
+    this.password = password;
     this._btoa = null;
     if (typeof window !== 'undefined')
       this._btoa = btoa;
@@ -1646,9 +1646,9 @@
       this._btoa = require("btoa");
   };
 
-  P***REMOVED***wordAuthorization.prototype.apply = function (obj, authorizations) {
+  PasswordAuthorization.prototype.apply = function (obj, authorizations) {
     var base64encoder = this._btoa;
-    obj.headers["Authorization"] = "Basic " + base64encoder(this.username + ":" + this.p***REMOVED***word);
+    obj.headers["Authorization"] = "Basic " + base64encoder(this.username + ":" + this.password);
     return true;
   };
 
@@ -1664,7 +1664,7 @@
   e.SwaggerRequest = SwaggerRequest;
   e.authorizations = new SwaggerAuthorizations();
   e.ApiKeyAuthorization = ApiKeyAuthorization;
-  e.P***REMOVED***wordAuthorization = P***REMOVED***wordAuthorization;
+  e.PasswordAuthorization = PasswordAuthorization;
   e.CookieAuthorization = CookieAuthorization;
   e.JQueryHttpClient = JQueryHttpClient;
   e.ShredHttpClient = ShredHttpClient;

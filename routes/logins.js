@@ -2,9 +2,9 @@ module.exports = function(app, security) {
   var access = require('../access')
     , moment = require('moment')
     , Login = require('../models/login')
-    , p***REMOVED***port = security.authentication.p***REMOVED***port;
+    , passport = security.authentication.passport;
 
-  app.all('/api/logins*', p***REMOVED***port.authenticate('bearer'));
+  app.all('/api/logins*', passport.authenticate('bearer'));
 
   function generateParameters(options) {
     var partial = "";

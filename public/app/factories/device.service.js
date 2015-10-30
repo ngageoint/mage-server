@@ -7,7 +7,7 @@ DeviceService.$inject = ['$http'];
 function DeviceService($http) {
   var resolvedDevices = {};
 
-  var ***REMOVED*** = {
+  var service = {
     count: count,
     getAllDevices: getAllDevices,
     getDevice: getDevice,
@@ -16,7 +16,7 @@ function DeviceService($http) {
     deleteDevice: deleteDevice
   };
 
-  return ***REMOVED***;
+  return service;
 
   function count() {
     return $http.get('/api/devices/count');

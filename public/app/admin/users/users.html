@@ -1,81 +1,81 @@
-<div cl***REMOVED***="admin-nav-gap">
-  <div cl***REMOVED***="container-fluid">
-    <ol cl***REMOVED***="breadcrumb">
-      <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
-      <li cl***REMOVED***="active">Users</li>
+<div class="admin-nav-gap">
+  <div class="container-fluid">
+    <ol class="breadcrumb">
+      <li><i class="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
+      <li class="active">Users</li>
     </ol>
   </div>
 </div>
 
-<div cl***REMOVED***="content-flex">
+<div class="content-flex">
 
-  <div cl***REMOVED***="content-inner">
+  <div class="content-inner">
 
-    <div cl***REMOVED***="container">
+    <div class="container">
 
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="col-md-3">
-          <ul cl***REMOVED***="nav nav-pills nav-stacked">
-            <li ng-click="page = 0; filter='all'" ng-cl***REMOVED***="{active: filter=='all'}"><a href="javascript:void(0);">All <span cl***REMOVED***="badge pull-right">{{filteredUsers.length}}</span></a></li>
-            <li ng-click="page = 0; filter='active'" ng-cl***REMOVED***="{active: filter=='active'}"><a href="javascript:void(0);">Active <span cl***REMOVED***="badge pull-right">{{(filteredUsers | filter:{active: true}).length}}</span></a></li>
-            <li ng-click="page = 0; filter='inactive'" ng-cl***REMOVED***="{active: filter=='inactive'}"><a href="javascript:void(0);">Inactive <span cl***REMOVED***="badge pull-right">{{(filteredUsers | filter:{active: !true}).length}}</span></a></li>
+      <div class="row">
+        <div class="col-md-3">
+          <ul class="nav nav-pills nav-stacked">
+            <li ng-click="page = 0; filter='all'" ng-class="{active: filter=='all'}"><a href="javascript:void(0);">All <span class="badge pull-right">{{filteredUsers.length}}</span></a></li>
+            <li ng-click="page = 0; filter='active'" ng-class="{active: filter=='active'}"><a href="javascript:void(0);">Active <span class="badge pull-right">{{(filteredUsers | filter:{active: true}).length}}</span></a></li>
+            <li ng-click="page = 0; filter='inactive'" ng-class="{active: filter=='inactive'}"><a href="javascript:void(0);">Inactive <span class="badge pull-right">{{(filteredUsers | filter:{active: !true}).length}}</span></a></li>
           </ul>
 
           <hr>
-          <form cl***REMOVED***="form">
-            <div cl***REMOVED***="form-group">
+          <form class="form">
+            <div class="form-group">
               <label>Search</label>
-              <input type="text" cl***REMOVED***="form-control" placeholder="name, email" ng-model="userSearch" ng-change="page=0">
+              <input type="text" class="form-control" placeholder="name, email" ng-model="userSearch" ng-change="page=0">
             </div>
           </form>
           <hr>
 
-          <button cl***REMOVED***="btn btn-default pull-right" ng-click="reset()">Reset</button>
+          <button class="btn btn-default pull-right" ng-click="reset()">Reset</button>
         </div>
 
-        <div cl***REMOVED***="col-md-9">
-          <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
-            <div cl***REMOVED***="container-fluid">
-              <div cl***REMOVED***="navbar-header">
-                <a cl***REMOVED***="navbar-brand">Users</a>
+        <div class="col-md-9">
+          <nav class="navbar navbar-default admin-dashboard-navbar">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <a class="navbar-brand">Users</a>
               </div>
 
-              <form cl***REMOVED***="navbar-form navbar-right" role="search">
-                <button type="submit" cl***REMOVED***="btn btn-default" ng-click="newUser()">New User</button>
+              <form class="navbar-form navbar-right" role="search">
+                <button type="submit" class="btn btn-default" ng-click="newUser()">New User</button>
               </form>
             </div>
           </nav>
 
-          <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-md-12">
-              <div cl***REMOVED***="admin-table">
-                <div cl***REMOVED***="well-item"
+          <div class="row">
+            <div class="col-md-12">
+              <div class="admin-table">
+                <div class="well-item"
                     ng-repeat="u in (filteredUsers = (users | user:['displayName','email']:userSearch)) | filter:filterActive | orderBy:'displayName' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
 
-                    <div cl***REMOVED***="row pointer" ng-click="gotoUser(u)">
-                      <div cl***REMOVED***="col-md-8">
-                        <div cl***REMOVED***="img-container pull-left">
-                          <img cl***REMOVED***="avatar-thumbnail img-rounded" ng-src="{{u.avatarUrl ? u.avatarUrl + '?access_token=' + token : '/img/missing_photo.png'}}"/>
+                    <div class="row pointer" ng-click="gotoUser(u)">
+                      <div class="col-md-8">
+                        <div class="img-container pull-left">
+                          <img class="avatar-thumbnail img-rounded" ng-src="{{u.avatarUrl ? u.avatarUrl + '?access_token=' + token : '/img/missing_photo.png'}}"/>
                         </div>
-                        <div cl***REMOVED***="strong">{{u.displayName}}</div>
-                        <div cl***REMOVED***="muted">{{u.email}}</div>
+                        <div class="strong">{{u.displayName}}</div>
+                        <div class="muted">{{u.email}}</div>
                       </div>
-                      <div cl***REMOVED***="col-md-4">
-                        <button cl***REMOVED***="btn btn-sm btn-danger pull-right admin-user-button" ng-click="deleteUser($event, u)">Delete</button>
-                        <button cl***REMOVED***="btn btn-sm btn-success pull-right admin-user-button" ng-hide="u.active" ng-click="activateUser($event, u)">Activate</button>
-                        <button cl***REMOVED***="btn btn-sm btn-default pull-right" ng-click="editUser($event, u)">Edit</button>
+                      <div class="col-md-4">
+                        <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-click="deleteUser($event, u)">Delete</button>
+                        <button class="btn btn-sm btn-success pull-right admin-user-button" ng-hide="u.active" ng-click="activateUser($event, u)">Activate</button>
+                        <button class="btn btn-sm btn-default pull-right" ng-click="editUser($event, u)">Edit</button>
                       </div>
                     </div>
 
                 </div>
               </div>
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-md-12">
-                  <ul cl***REMOVED***="pager pull-right">
-                    <li ng-cl***REMOVED***="{'disabled': page == 0}">
+              <div class="row">
+                <div class="col-md-12">
+                  <ul class="pager pull-right">
+                    <li ng-class="{'disabled': page == 0}">
                       <a href="javascript:void(0);" ng-click="page == 0 || (page=page-1)">&larr; Previous</a>
                     </li>
-                    <li ng-cl***REMOVED***="{'disabled': page >= (filteredUsers.length/itemsPerPage) - 1}">
+                    <li ng-class="{'disabled': page >= (filteredUsers.length/itemsPerPage) - 1}">
                       <a href="javascript:void(0);" ng-click="page >= (filteredUsers.length/itemsPerPage) - 1 || (page=page+1)">Next&rarr;</a>
                     </li>
                   </ul>

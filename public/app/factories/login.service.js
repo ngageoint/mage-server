@@ -6,11 +6,11 @@ LoginService.$inject = ['$http'];
 
 function LoginService($http) {
 
-	var ***REMOVED*** = {
+	var service = {
     query: query
   };
 
-	return ***REMOVED***;
+	return service;
 
 	function query(options) {
 		var options = options || {};

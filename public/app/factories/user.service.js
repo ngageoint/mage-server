@@ -9,7 +9,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
   var resolvedUsers = {};
   var resolveAllUsers = null;
 
-  var ***REMOVED*** = {
+  var service = {
     myself: null,
     amAdmin: false,
     signup: signup,
@@ -18,7 +18,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     login: login,
     logout: logout,
     getMyself: getMyself,
-    updateMyP***REMOVED***word: updateMyP***REMOVED***word,
+    updateMyPassword: updateMyPassword,
     updateMyself: updateMyself,
     checkLoggedInUser: checkLoggedInUser,
     getUserCount: getUserCount,
@@ -34,7 +34,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     getRecentEventId: getRecentEventId
   };
 
-  return ***REMOVED***;
+  return service;
 
   function signup(user, success, error, progress) {
     saveUser(user, {
@@ -46,7 +46,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
   function oauthSignin(strategy, data) {
     var deferred = $q.defer();
 
-    var oldUsername = ***REMOVED***.myself && ***REMOVED***.myself.username || null;
+    var oldUsername = service.myself && service.myself.username || null;
 
     windowLeft = window.screenLeft ? window.screenLeft : window.screenX;
     windowTop = window.screenTop ? window.screenTop : window.screenY;
@@ -70,8 +70,8 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
         LocalStorageService.setToken(data.token);
         setUser(data.user);
         $rootScope.$broadcast('event:auth-login', {token: data.token, newUser: data.user.username !== oldUsername});
-        $rootScope.$broadcast('event:user', {user: data.user, token: data.token, isAdmin: ***REMOVED***.amAdmin});
-        deferred.resolve({user: event.data.user, token: data.token, isAdmin: ***REMOVED***.amAdmin});
+        $rootScope.$broadcast('event:user', {user: data.user, token: data.token, isAdmin: service.amAdmin});
+        deferred.resolve({user: event.data.user, token: data.token, isAdmin: service.amAdmin});
       } else {
         deferred.reject(data);
       }
@@ -113,7 +113,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
   function login(data) {
     userDeferred = $q.defer();
 
-    var oldUsername = ***REMOVED***.myself && ***REMOVED***.myself.username || null;
+    var oldUsername = service.myself && service.myself.username || null;
 
     data.appVersion = 'Web Client';
     var promise = $http.post('/api/login', $.param(data), {
@@ -124,7 +124,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     promise.success(function(data) {
       setUser(data.user);
       $rootScope.$broadcast('event:auth-login', {token: data.token, newUser: data.user.username !== oldUsername});
-      $rootScope.$broadcast('event:user', {user: data.user, token: data.token, isAdmin: ***REMOVED***.amAdmin});
+      $rootScope.$broadcast('event:user', {user: data.user, token: data.token, isAdmin: service.amAdmin});
     });
 
     return promise;
@@ -147,11 +147,11 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
     })
     .success(function(user) {
-      if (user.id !== ***REMOVED***.myself)
+      if (user.id !== service.myself)
 
       setUser(user);
 
-      $rootScope.$broadcast('event:user', {user: user, token: LocalStorageService.getToken(), isAdmin: ***REMOVED***.amAdmin});
+      $rootScope.$broadcast('event:user', {user: user, token: LocalStorageService.getToken(), isAdmin: service.amAdmin});
 
       if (roles && !_.contains(roles, user.role.name)) {
         // TODO probably want to redirect to a unauthorized page.
@@ -174,7 +174,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     }, success, error, progress);
   }
 
-  function updateMyP***REMOVED***word(user) {
+  function updateMyPassword(user) {
     var promise = $http.put('/api/users/myself', $.param(user), {
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
     });
@@ -263,33 +263,33 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     return promise;
   };
 
-  // TODO is this really used in this ***REMOVED*** or just internal
+  // TODO is this really used in this service or just internal
   function clearUser() {
-    ***REMOVED***.myself = null;
-    ***REMOVED***.amAdmin = null;
+    service.myself = null;
+    service.amAdmin = null;
     LocalStorageService.removeToken();
 
     $rootScope.$broadcast('logout');
   };
 
-  // TODO should this go in Roles ***REMOVED***/resource
+  // TODO should this go in Roles service/resource
   function getRoles() {
     return $http.get('/api/roles');
   };
 
   // TODO possibly name this addRecentEventForMyself
   function addRecentEvent(event) {
-    return $http.post('/api/users/' + ***REMOVED***.myself.id + '/events/' + event.id + '/recent');
+    return $http.post('/api/users/' + service.myself.id + '/events/' + event.id + '/recent');
   }
 
   function getRecentEventId() {
-    var recentEventIds = ***REMOVED***.myself.recentEventIds;
+    var recentEventIds = service.myself.recentEventIds;
     return recentEventIds.length > 0 ? recentEventIds[0]: null;
   }
 
   function setUser(user) {
-    ***REMOVED***.myself = user;
-    ***REMOVED***.amAdmin = ***REMOVED***.myself && ***REMOVED***.myself.role && (***REMOVED***.myself.role.name == "ADMIN_ROLE");
+    service.myself = user;
+    service.amAdmin = service.myself && service.myself.role && (service.myself.role.name == "ADMIN_ROLE");
   };
 
   function saveUser(user, options, success, error, progress) {

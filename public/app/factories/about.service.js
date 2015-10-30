@@ -5,11 +5,11 @@ angular
 AboutService.$inject = ['$http'];
 
 function AboutService($http) {
-  var ***REMOVED*** = {
+  var service = {
     about: about
   };
 
-  return ***REMOVED***;
+  return service;
 
   function about() {
     return $http.get('/api/');

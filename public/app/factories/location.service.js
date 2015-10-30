@@ -21,12 +21,12 @@ function LocationService($q, Location, UserService) {
     color: '#FF5721' // orange
   }];
 
-  var ***REMOVED*** = {
+  var service = {
     getUserLocationsForEvent: getUserLocationsForEvent,
     colorBuckets: colorBuckets
   };
 
-  return ***REMOVED***;
+  return service;
 
   function getUserLocationsForEvent(event, options) {
     var deferred = $q.defer();

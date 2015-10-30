@@ -1,143 +1,143 @@
-<div cl***REMOVED***="admin-nav-gap">
-  <div cl***REMOVED***="container-fluid">
-    <ol cl***REMOVED***="breadcrumb">
-      <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
+<div class="admin-nav-gap">
+  <div class="container-fluid">
+    <ol class="breadcrumb">
+      <li><i class="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
       <li><a href="#/admin/layers">Layers</a></li>
-      <li cl***REMOVED***="active">{{layer.name}}</li>
+      <li class="active">{{layer.name}}</li>
     </ol>
   </div>
 </div>
 
-<div cl***REMOVED***="content-flex">
+<div class="content-flex">
 
-  <div cl***REMOVED***="content-inner">
+  <div class="content-inner">
 
-    <div cl***REMOVED***="container">
-      <div cl***REMOVED***="row">
-        <div cl***REMOVED***="col-md-12" ng-show="layer">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12" ng-show="layer">
 
-          <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-md-10">
+          <div class="row">
+            <div class="col-md-10">
               <h2>Layer: {{layer.name}}</h2>
             </div>
-            <div cl***REMOVED***="col-md-2">
+            <div class="col-md-2">
               <h2>
-                <button cl***REMOVED***="btn btn-default pull-right" ng-click="editLayer(layer)"><i cl***REMOVED***="fa fa-edit"></i> Edit</button>
+                <button class="btn btn-default pull-right" ng-click="editLayer(layer)"><i class="fa fa-edit"></i> Edit</button>
               </h2>
             </div>
           </div>
           <hr>
 
-          <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-md-6 col-xs-12">
+          <div class="row">
+            <div class="col-md-6 col-xs-12">
 
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted">Name:&nbsp;</span>
+              <div class="row">
+                <div class="col-md-3">
+                  <span class="muted">Name:&nbsp;</span>
                 </div>
-                <div cl***REMOVED***="col-md-9">
+                <div class="col-md-9">
                   <span>{{layer.name}}</span>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row top-gap-s">
-                <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted">Type:&nbsp;</span>
+              <div class="row top-gap-s">
+                <div class="col-md-3">
+                  <span class="muted">Type:&nbsp;</span>
                 </div>
-                <div cl***REMOVED***="col-md-9">
+                <div class="col-md-9">
                   <span>{{layer.type}}</span>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row top-gap-s" ng-show="layer.type == 'Imagery'">
-                <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted">Base Layer:&nbsp;</span>
+              <div class="row top-gap-s" ng-show="layer.type == 'Imagery'">
+                <div class="col-md-3">
+                  <span class="muted">Base Layer:&nbsp;</span>
                 </div>
-                <div cl***REMOVED***="col-md-9">
+                <div class="col-md-9">
                   <span>{{layer.base}}</span>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row top-gap-s" ng-show="layer.type == 'Imagery'">
-                <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted">Format:&nbsp;</span>
+              <div class="row top-gap-s" ng-show="layer.type == 'Imagery'">
+                <div class="col-md-3">
+                  <span class="muted">Format:&nbsp;</span>
                 </div>
-                <div cl***REMOVED***="col-md-9">
+                <div class="col-md-9">
                   <span>{{layer.format}}</span>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row top-gap-s" ng-show="layer.type == 'Imagery'">
-                <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted">URL:&nbsp;</span>
+              <div class="row top-gap-s" ng-show="layer.type == 'Imagery'">
+                <div class="col-md-3">
+                  <span class="muted">URL:&nbsp;</span>
                 </div>
-                <div cl***REMOVED***="col-md-9">
+                <div class="col-md-9">
                   <span>{{layer.url}}</span>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
-                <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted">Layers:&nbsp;</span>
+              <div class="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+                <div class="col-md-3">
+                  <span class="muted">Layers:&nbsp;</span>
                 </div>
-                <div cl***REMOVED***="col-md-9">
+                <div class="col-md-9">
                   <span>{{layer.wms.layers}}</span>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
-                <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted">Styles:&nbsp;</span>
+              <div class="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+                <div class="col-md-3">
+                  <span class="muted">Styles:&nbsp;</span>
                 </div>
-                <div cl***REMOVED***="col-md-9">
+                <div class="col-md-9">
                   <span>{{layer.wms.styles}}</span>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
-                <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted">Format:&nbsp;</span>
+              <div class="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+                <div class="col-md-3">
+                  <span class="muted">Format:&nbsp;</span>
                 </div>
-                <div cl***REMOVED***="col-md-9">
+                <div class="col-md-9">
                   <span>{{layer.wms.format}}</span>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
-                <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted">Transparent:&nbsp;</span>
+              <div class="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+                <div class="col-md-3">
+                  <span class="muted">Transparent:&nbsp;</span>
                 </div>
-                <div cl***REMOVED***="col-md-9">
+                <div class="col-md-9">
                   <span>{{layer.wms.transparent}}</span>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
-                <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted">Version:&nbsp;</span>
+              <div class="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+                <div class="col-md-3">
+                  <span class="muted">Version:&nbsp;</span>
                 </div>
-                <div cl***REMOVED***="col-md-9">
+                <div class="col-md-9">
                   <span>{{layer.wms.version}}</span>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row top-gap-s bottom-gap">
-                <div cl***REMOVED***="col-md-3">
-                  <span cl***REMOVED***="muted">Description:&nbsp;</span>
+              <div class="row top-gap-s bottom-gap">
+                <div class="col-md-3">
+                  <span class="muted">Description:&nbsp;</span>
                 </div>
-                <div cl***REMOVED***="col-md-9">
+                <div class="col-md-9">
                   <span>{{layer.description}}</span>
                 </div>
               </div>
             </div>
 
-            <div cl***REMOVED***="col-md-6">
+            <div class="col-md-6">
 
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="alert alert-danger">
+              <div class="row">
+                <div class="alert alert-danger">
                   <strong>Delete layer</strong>
                   <p>Deleting layer will remove all information. This cannot be undone, all layer data will be unrecoverable.</p>
-                  <button cl***REMOVED***="btn btn-danger top-gap" ng-click="deleteLayer(layer)"> <i cl***REMOVED***="fa fa-trash-o"></i> Delete</button>
+                  <button class="btn btn-danger top-gap" ng-click="deleteLayer(layer)"> <i class="fa fa-trash-o"></i> Delete</button>
                 </div>
               </div>
 
@@ -146,24 +146,24 @@
 
           <hr>
 
-          <div cl***REMOVED***="row">
-            <div cl***REMOVED***="col-md-6 col-xs-12">
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-md-12">
-                  <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
-                    <div cl***REMOVED***="container-fluid">
-                      <div cl***REMOVED***="navbar-header">
-                        <a cl***REMOVED***="navbar-brand">Add layer to an event</a>
+          <div class="row">
+            <div class="col-md-6 col-xs-12">
+              <div class="row">
+                <div class="col-md-12">
+                  <nav class="navbar navbar-default admin-dashboard-navbar">
+                    <div class="container-fluid">
+                      <div class="navbar-header">
+                        <a class="navbar-brand">Add layer to an event</a>
                       </div>
                     </div>
                   </nav>
                 </div>
               </div>
 
-              <div cl***REMOVED***="admin-table">
-                <div cl***REMOVED***="well-item">
-                  <div cl***REMOVED***="row">
-                    <div cl***REMOVED***="col-md-12">
+              <div class="admin-table">
+                <div class="well-item">
+                  <div class="row">
+                    <div class="col-md-12">
                       <ui-select ng-model="event.selected" theme="bootstrap">
                         <ui-select-match placeholder="Select an event">{{$select.selected.name}}</ui-select-match>
                         <ui-select-choices repeat="event in nonLayerEvents | orderBy: 'name' | filter: $select.search">
@@ -175,64 +175,64 @@
 
                   <hr>
 
-                  <div cl***REMOVED***="row">
-                     <div cl***REMOVED***="col-md-12">
-                       <button cl***REMOVED***="btn btn-success" ng-click="addEventToLayer(event.selected)" ng-disabled="event.selected == null"><i cl***REMOVED***="fa fa-plus"></i> Add Event</button>
+                  <div class="row">
+                     <div class="col-md-12">
+                       <button class="btn btn-success" ng-click="addEventToLayer(event.selected)" ng-disabled="event.selected == null"><i class="fa fa-plus"></i> Add Event</button>
                      </div>
                   </div>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row top-gap-l">
-                <div cl***REMOVED***="col-md-12">
-                  <nav cl***REMOVED***="navbar navbar-default admin-dashboard-navbar">
-                    <div cl***REMOVED***="container-fluid">
-                      <div cl***REMOVED***="navbar-header">
-                        <a cl***REMOVED***="navbar-brand">Events for {{layer.name}}</a>
+              <div class="row top-gap-l">
+                <div class="col-md-12">
+                  <nav class="navbar navbar-default admin-dashboard-navbar">
+                    <div class="container-fluid">
+                      <div class="navbar-header">
+                        <a class="navbar-brand">Events for {{layer.name}}</a>
                       </div>
 
-                      <form cl***REMOVED***="navbar-form navbar-left">
-                        <div cl***REMOVED***="form-group">
-                          <input type="text" cl***REMOVED***="form-control" placeholder="Search" ng-model="eventSearch">
+                      <form class="navbar-form navbar-left">
+                        <div class="form-group">
+                          <input type="text" class="form-control" placeholder="Search" ng-model="eventSearch">
                         </div>
                       </form>
-                      <div cl***REMOVED***="navbar-form navbar-right right-gap-s">
-                        <button cl***REMOVED***="btn btn-default navbar-right" ng-click="editEvent = !editEvent">Edit</button>
+                      <div class="navbar-form navbar-right right-gap-s">
+                        <button class="btn btn-default navbar-right" ng-click="editEvent = !editEvent">Edit</button>
                       </div>
                     </div>
                   </nav>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-sm-12">
-                  <div cl***REMOVED***="admin-table">
-                    <div cl***REMOVED***="well-item"
+              <div class="row">
+                <div class="col-sm-12">
+                  <div class="admin-table">
+                    <div class="well-item"
                         ng-repeat="e in (filteredEvents = (layerEvents | filter:filterEvents)) | orderBy:'name' | offset: eventsPage*eventsPerPage | limitTo:eventsPerPage" >
-                      <div cl***REMOVED***="row pointer" ng-click="gotoEvent(e)">
-                        <div cl***REMOVED***="col-md-12">
-                          <span cl***REMOVED***="pull-right" ng-show="editEvent">
-                            <a cl***REMOVED***="btn btn-xs btn-danger" ng-click="removeEventFromLayer($event, e)"><i cl***REMOVED***="fa fa-minus"></i></a>
+                      <div class="row pointer" ng-click="gotoEvent(e)">
+                        <div class="col-md-12">
+                          <span class="pull-right" ng-show="editEvent">
+                            <a class="btn btn-xs btn-danger" ng-click="removeEventFromLayer($event, e)"><i class="fa fa-minus"></i></a>
                           </span>
 
-                          <div cl***REMOVED***="right-gap pull-left">
-                            <i cl***REMOVED***="fa fa-calendar admin-layer-icon"></i>
+                          <div class="right-gap pull-left">
+                            <i class="fa fa-calendar admin-layer-icon"></i>
                           </div>
-                          <div cl***REMOVED***="strong">{{e.name}}</div>
-                          <div cl***REMOVED***="muted">{{e.description}}</div>
+                          <div class="strong">{{e.name}}</div>
+                          <div class="muted">{{e.description}}</div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-md-12">
-                  <ul cl***REMOVED***="pager pull-right">
-                    <li ng-cl***REMOVED***="{'disabled': eventsPage == 0}">
+              <div class="row">
+                <div class="col-md-12">
+                  <ul class="pager pull-right">
+                    <li ng-class="{'disabled': eventsPage == 0}">
                       <a href="javascript:void(0);" ng-click="eventsPage == 0 || (eventsPage=eventsPage-1)">&larr; Previous</a>
                     </li>
-                    <li ng-cl***REMOVED***="{'disabled': eventsPage >= (filteredEvents.length/eventsPerPage) - 1}">
+                    <li ng-class="{'disabled': eventsPage >= (filteredEvents.length/eventsPerPage) - 1}">
                       <a href="javascript:void(0);" ng-click="eventsPage >= (filteredEvents.length/eventsPerPage) - 1 || (eventsPage=eventsPage+1)">Next&rarr;</a>
                     </li>
                   </ul>

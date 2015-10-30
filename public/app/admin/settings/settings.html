@@ -1,46 +1,46 @@
-<div cl***REMOVED***="admin-nav-gap">
-  <div cl***REMOVED***="container-fluid">
-    <ol cl***REMOVED***="breadcrumb">
-      <li><i cl***REMOVED***="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
-      <li cl***REMOVED***="active">Settings</li>
+<div class="admin-nav-gap">
+  <div class="container-fluid">
+    <ol class="breadcrumb">
+      <li><i class="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
+      <li class="active">Settings</li>
     </ol>
   </div>
 </div>
 
 
-<div cl***REMOVED***="content-flex">
+<div class="content-flex">
 
-  <div cl***REMOVED***="content-inner">
+  <div class="content-inner">
 
-    <div cl***REMOVED***="container bottom-gap-l">
+    <div class="container bottom-gap-l">
 
-      <div cl***REMOVED***="row" ng-controller="AdminSettingsController">
-        <div cl***REMOVED***="col-md-3">
-          <ul cl***REMOVED***="nav nav-pills nav-stacked">
-            <li ng-cl***REMOVED***="{active: pill == 'banner'}"><a ng-click="pill = 'banner'" href="javascript:void(0);">Banner</a></li>
+      <div class="row" ng-controller="AdminSettingsController">
+        <div class="col-md-3">
+          <ul class="nav nav-pills nav-stacked">
+            <li ng-class="{active: pill == 'banner'}"><a ng-click="pill = 'banner'" href="javascript:void(0);">Banner</a></li>
           </ul>
-          <ul cl***REMOVED***="nav nav-pills nav-stacked">
-            <li ng-cl***REMOVED***="{active: pill == 'disclaimer'}"><a ng-click="pill = 'disclaimer'" href="javascript:void(0);">Disclaimer</a></li>
+          <ul class="nav nav-pills nav-stacked">
+            <li ng-class="{active: pill == 'disclaimer'}"><a ng-click="pill = 'disclaimer'" href="javascript:void(0);">Disclaimer</a></li>
           </ul>
         </div>
 
-        <div cl***REMOVED***="col-md-9">
+        <div class="col-md-9">
           <div ng-if="pill == 'banner'">
-            <form ng-submit="saveBanner()" id="banner-form" cl***REMOVED***="form">
+            <form ng-submit="saveBanner()" id="banner-form" class="form">
 
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-sm-11 col-sm-offset-1">
-                  <span cl***REMOVED***="help-block">
+              <div class="row">
+                <div class="col-sm-11 col-sm-offset-1">
+                  <span class="help-block">
                     MAGE can add a header and footer to all views.  Below you can specify wheter or not you want a header and/or footer, text, text color and background color cann all be specified.
                   </span>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-sm-11 col-sm-offset-1">
+              <div class="row">
+                <div class="col-sm-11 col-sm-offset-1">
                   <legend>Header</legend>
 
-                  <div cl***REMOVED***="checkbox">
+                  <div class="checkbox">
                     <label>
                       <input type="checkbox" ng-model="banner.showHeader"> Show Header
                     </label>
@@ -48,38 +48,38 @@
                 </div>
               </div>
 
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-sm-11 col-sm-offset-1">
-                  <label cl***REMOVED***="control-label" for="type">Header Text</label>
-                  <div cl***REMOVED***="form-group">
-                    <input type="text" placeholder="Header text" ng-model="banner.headerText" cl***REMOVED***="form-control" ng-disabled="!banner.showHeader">
+              <div class="row">
+                <div class="col-sm-11 col-sm-offset-1">
+                  <label class="control-label" for="type">Header Text</label>
+                  <div class="form-group">
+                    <input type="text" placeholder="Header text" ng-model="banner.headerText" class="form-control" ng-disabled="!banner.showHeader">
                   </div>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-sm-4 col-sm-offset-1">
+              <div class="row">
+                <div class="col-sm-4 col-sm-offset-1">
                   <label>Header Text Color</label>
-                  <div cl***REMOVED***="form-group">
-                    <div><input minicolors="minicolorSettings" cl***REMOVED***="form-control" type="text" ng-model="banner.headerTextColor"></div>
+                  <div class="form-group">
+                    <div><input minicolors="minicolorSettings" class="form-control" type="text" ng-model="banner.headerTextColor"></div>
                   </div>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-sm-4 col-sm-offset-1">
+              <div class="row">
+                <div class="col-sm-4 col-sm-offset-1">
                   <label>Header Background Color</label>
-                  <div cl***REMOVED***="form-group">
-                    <div><input minicolors="minicolorSettings" cl***REMOVED***="form-control" type="text" ng-model="banner.headerBackgroundColor"></div>
+                  <div class="form-group">
+                    <div><input minicolors="minicolorSettings" class="form-control" type="text" ng-model="banner.headerBackgroundColor"></div>
                   </div>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-sm-11 col-sm-offset-1">
+              <div class="row">
+                <div class="col-sm-11 col-sm-offset-1">
                   <legend>Footer</legend>
 
-                  <div cl***REMOVED***="checkbox">
+                  <div class="checkbox">
                     <label>
                       <input type="checkbox" ng-model="banner.showFooter"> Show Footer
                     </label>
@@ -87,61 +87,61 @@
                 </div>
               </div>
 
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-sm-11 col-sm-offset-1">
-                  <label cl***REMOVED***="control-label" for="type">Footer Text</label>
-                  <div cl***REMOVED***="form-group">
-                    <input type="text" placeholder="Footer text" ng-model="banner.footerText" cl***REMOVED***="form-control" ng-disabled="!banner.showFooter">
+              <div class="row">
+                <div class="col-sm-11 col-sm-offset-1">
+                  <label class="control-label" for="type">Footer Text</label>
+                  <div class="form-group">
+                    <input type="text" placeholder="Footer text" ng-model="banner.footerText" class="form-control" ng-disabled="!banner.showFooter">
                   </div>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-sm-4 col-sm-offset-1">
-                  <label cl***REMOVED***="control-label" for="poop">Footer Text Color</label>
-                  <div cl***REMOVED***="form-group">
-                    <div><input id="poop" minicolors="minicolorSettings" cl***REMOVED***="form-control" type="text" ng-model="banner.footerTextColor"></div>
+              <div class="row">
+                <div class="col-sm-4 col-sm-offset-1">
+                  <label class="control-label" for="poop">Footer Text Color</label>
+                  <div class="form-group">
+                    <div><input id="poop" minicolors="minicolorSettings" class="form-control" type="text" ng-model="banner.footerTextColor"></div>
                   </div>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-sm-4 col-sm-offset-1">
+              <div class="row">
+                <div class="col-sm-4 col-sm-offset-1">
                   <label>Footer Background Color</label>
-                  <div cl***REMOVED***="form-group">
-                    <div><input minicolors="minicolorSettings" cl***REMOVED***="form-control" type="text" ng-model="banner.footerBackgroundColor"></div>
+                  <div class="form-group">
+                    <div><input minicolors="minicolorSettings" class="form-control" type="text" ng-model="banner.footerBackgroundColor"></div>
                   </div>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-sm-2 col-sm-offset-1">
-                  <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-click="saveBanner()"> <i cl***REMOVED***="fa fa-check"></i> Save</a>
+              <div class="row">
+                <div class="col-sm-2 col-sm-offset-1">
+                  <a class="btn btn-success" ng-class="{'disabled': saving}" ng-click="saveBanner()"> <i class="fa fa-check"></i> Save</a>
                 </div>
-                <div cl***REMOVED***="col-sm-9">
-                  <div cl***REMOVED***="fade alert alert-success" ng-cl***REMOVED***="{'in': saved, 'out': !saved}">{{saveStatus}}</div>
-                  <div cl***REMOVED***="fade alert alert-error" ng-cl***REMOVED***="{'in': error, 'out': !error}">{{saveStatus}}</div>
+                <div class="col-sm-9">
+                  <div class="fade alert alert-success" ng-class="{'in': saved, 'out': !saved}">{{saveStatus}}</div>
+                  <div class="fade alert alert-error" ng-class="{'in': error, 'out': !error}">{{saveStatus}}</div>
                 </div>
               </div>
             </form>
           </div>
 
           <div ng-if="pill == 'disclaimer'">
-            <form ng-submit="saveBanner()" id="banner-form" cl***REMOVED***="form">
+            <form ng-submit="saveBanner()" id="banner-form" class="form">
 
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-sm-11 col-sm-offset-1">
-                  <span cl***REMOVED***="help-block">
+              <div class="row">
+                <div class="col-sm-11 col-sm-offset-1">
+                  <span class="help-block">
                     MAGE can present a disclaimer after login.  If the disclaimer is shown users will have to accept to continue into MAGE.  The disclaimer will be shown on all clients, i.e. Android, iOS, and the Web.
                   </span>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-sm-11 col-sm-offset-1">
+              <div class="row">
+                <div class="col-sm-11 col-sm-offset-1">
                   <legend>Disclaimer</legend>
 
-                  <div cl***REMOVED***="checkbox">
+                  <div class="checkbox">
                     <label>
                       <input type="checkbox" ng-model="disclaimer.show"> Show Disclaimer
                     </label>
@@ -149,31 +149,31 @@
                 </div>
               </div>
 
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-sm-11 col-sm-offset-1">
-                  <label cl***REMOVED***="control-label" for="type">Disclaimer Title</label>
-                  <div cl***REMOVED***="form-group">
-                    <input type="text" placeholder="Disclaimer title" ng-model="disclaimer.title" cl***REMOVED***="form-control" ng-disabled="!disclaimer.show">
+              <div class="row">
+                <div class="col-sm-11 col-sm-offset-1">
+                  <label class="control-label" for="type">Disclaimer Title</label>
+                  <div class="form-group">
+                    <input type="text" placeholder="Disclaimer title" ng-model="disclaimer.title" class="form-control" ng-disabled="!disclaimer.show">
                   </div>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-sm-11 col-sm-offset-1">
-                  <label cl***REMOVED***="control-label" for="type">Disclaimer Text</label>
-                  <div cl***REMOVED***="form-group">
-                    <textarea placeholder="Disclaimer text" ng-model="disclaimer.text" cl***REMOVED***="form-control" ng-disabled="!disclaimer.show"></textarea>
+              <div class="row">
+                <div class="col-sm-11 col-sm-offset-1">
+                  <label class="control-label" for="type">Disclaimer Text</label>
+                  <div class="form-group">
+                    <textarea placeholder="Disclaimer text" ng-model="disclaimer.text" class="form-control" ng-disabled="!disclaimer.show"></textarea>
                   </div>
                 </div>
               </div>
 
-              <div cl***REMOVED***="row">
-                <div cl***REMOVED***="col-sm-2 col-sm-offset-1">
-                  <a cl***REMOVED***="btn btn-success" ng-cl***REMOVED***="{'disabled': saving}" ng-click="saveDisclaimer()"> <i cl***REMOVED***="fa fa-check"></i> Save</a>
+              <div class="row">
+                <div class="col-sm-2 col-sm-offset-1">
+                  <a class="btn btn-success" ng-class="{'disabled': saving}" ng-click="saveDisclaimer()"> <i class="fa fa-check"></i> Save</a>
                 </div>
-                <div cl***REMOVED***="col-sm-9">
-                  <div cl***REMOVED***="fade alert alert-success" ng-cl***REMOVED***="{'in': saved, 'out': !saved}">{{saveStatus}}</div>
-                  <div cl***REMOVED***="fade alert alert-error" ng-cl***REMOVED***="{'in': error, 'out': !error}">{{saveStatus}}</div>
+                <div class="col-sm-9">
+                  <div class="fade alert alert-success" ng-class="{'in': saved, 'out': !saved}">{{saveStatus}}</div>
+                  <div class="fade alert alert-error" ng-class="{'in': error, 'out': !error}">{{saveStatus}}</div>
                 </div>
               </div>
             </form>
