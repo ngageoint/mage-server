@@ -890,13 +890,13 @@
                 }
             }
         },
-        "/api/events/{id}/layers": {
+        "/api/events/{eventId}/layers": {
             "post": {
                 "description": "add a layer to an event",
                 "operationId": "addLayerToEvent",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "eventId",
                         "in": "path",
                         "description": "id of event to update",
                         "required": true,
@@ -920,6 +920,40 @@
                         "description": "event update response",
                         "schema": {
                             "$ref": "#/definitions/Event"
+                        }
+                    }
+                }
+            },
+            "get": {
+                "description": "get layers for the specified event",
+                "operationId": "getLayersForEvent",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "id of the event to get layers for",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "type": "string",
+                        "description": "layer type filter, i.e. Imagery or Feature",
+                        "required": false
+                    }
+                ],
+                "tags": [
+                    "Layer"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "layer responses",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Layer"
+                            }
                         }
                     }
                 }
@@ -1843,42 +1877,6 @@
                 }
             }
         },
-        "/api/events/{eventId}/layers": {
-            "get": {
-                "description": "get layers for the specified event",
-                "operationId": "getLayersForEvent",
-                "parameters": [
-                    {
-                        "name": "eventId",
-                        "in": "path",
-                        "description": "id of the event to get layers for",
-                        "required": true,
-                        "type": "number"
-                    },
-                    {
-                        "name": "type",
-                        "in": "query",
-                        "type": "string",
-                        "description": "layer type filter, i.e. Imagery or Feature",
-                        "required": false
-                    }
-                ],
-                "tags": [
-                    "Layer"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "layer responses",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/Layer"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/api/events/{eventId}/layers/{layerId}/features": {
             "get": {
                 "description": "get features for specified layer in event",
@@ -2081,6 +2079,72 @@
                                 "$ref": "#/definitions/Feature"
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/api/settings": {
+            "get": {
+                "description": "get settings",
+                "operationId": "getSettings",
+                "tags": [
+                    "Settings"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "export response"
+                    }
+                }
+            }
+        },
+        "/api/settings/{type}": {
+            "get": {
+                "description": "get settings by type",
+                "operationId": "getSettingByType",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "type name to update",
+                        "required": true,
+                        "type": "string",
+                        "enum": [
+                            "banner",
+                            "disclaimer"
+                        ]
+                    }
+                ],
+                "tags": [
+                    "Settings"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "settings response"
+                    }
+                }
+            },
+            "put": {
+                "description": "update settings by type",
+                "operationId": "updateSettingByType",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "type name to update",
+                        "required": true,
+                        "type": "string",
+                        "enum": [
+                            "banner",
+                            "disclaimer"
+                        ]
+                    }
+                ],
+                "tags": [
+                    "Settings"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "settings response"
                     }
                 }
             }
