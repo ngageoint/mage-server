@@ -1,7 +1,11 @@
-var fs = require('fs-extra');
+var fs = require('fs-extra')
+  , path = require('path');
 
 // install all plugins
-fs.readdirSync(__dirname).forEach(function(plugin) {
-  if (plugin[0] == '.' || plugin === 'index.js') return;
-  require('./' + plugin);
+fs.readdirSync(__dirname).map(function(file) {
+  return path.join(__dirname, file);
+}).filter(function(file) {
+  return fs.statSync(file).isDirectory();
+}).forEach(function(file) {
+  require('./' + path.extname(file));
 });
