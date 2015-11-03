@@ -5,6 +5,7 @@ var express = require("express")
   , path = require('path')
   , mongoose = require('mongoose')
   , fs = require('fs-extra')
+  , util = require('util')
   , config = require('./config.json')
   , log = require('./logger')
   , provision = require('./provision');
@@ -109,7 +110,7 @@ require('./routes')(app, {authentication: authentication, provisioning: provisio
 var port = argv.port;
 var address = argv.address;
 app.listen(port, address);
-log.info('MAGE Server: Started listening on port ' + port);
+log.info(util.format('MAGE Server: Started listening at address %s on port %s', address, port));
 
 // install all plugins
 require('./plugins');
