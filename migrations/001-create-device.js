@@ -12,7 +12,7 @@ var defaultDescription = 'Initial device for web console';
 exports.id = 'create-initial-device';
 
 exports.up = function(done) {
-  console.log('\nCreating intial device uid...');
+  console.log('\nCreating initial device uid...');
 
   async.series({
       uid: function(done) {
