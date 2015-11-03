@@ -2,7 +2,7 @@
 
 The **M**obile **A**wareness **G**EOINT **E**nvironment, or MAGE, provides mobile situational awareness capabilities. The MAGE web client can be accessed over the internet and is optimized for desktop and mobile web browsers.  The MAGE web client allows you to create geotagged field reports that contain media such as photos, videos, and voice recordings and share them instantly with who you want. Using the HTML Geolocation API, MAGE can also track users locations in real time. Your locations can be automatically shared with the other members of your team.
 
-MAGE is very customizable and can be tailored for you situation, including as custom forms, avatars, and icons.
+MAGE is very customizable and can be tailored for you situation, including custom forms, avatars, and icons.
 
 MAGE was developed at the National Geospatial-Intelligence Agency (NGA) in collaboration with BIT Systems. The government has "unlimited rights" and is releasing this software to increase the impact of government investments by providing developers with the opportunity to take things in new directions. The software use, modification, and distribution rights are stipulated within the Apache license.
 
