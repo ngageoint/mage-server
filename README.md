@@ -272,7 +272,7 @@ MAGE plugins are seperate node scripts located in the plugins folder.  For more 
 
 ## Web Application
 
-The MAGE web application is built using AngularJS.  The application resides in the public directory, for more information about the [MAGE Web Application](public/README.md).
+The MAGE web application is built using AngularJS.  The application resides in the public directory.  See the [MAGE Web Application README](public/README.md) for more information.
 
 ## Pull Requests
 
