@@ -3,8 +3,18 @@
     "name": "mageDemo",
     "location": "https://magedemo.geointapps.org/api"
   },
+  "functionalServer":{
+    "name": "functionalServer",
+    "location": "http://52.3.252.226:4242/api"
+  },
   "localServer":{
     "name": "local MAGE server",
     "location": "http://localhost:4242/api"
+  },
+  "httpTestUser":{
+    "username": "admin",
+    "userId": "5632845c653ada826dd5583f",
+    "password": "admin",
+    "uid": "admin"
   }
 }

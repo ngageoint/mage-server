@@ -67,8 +67,11 @@
     "grunt-usemin": "^3.0.0",
     "http": "0.0.0",
     "mocha": "^2.3.3",
+    "nock": "^2.15.0",
     "sinon": "^1.17.1",
-    "sinon-chai": "^2.8.0"
+    "sinon-chai": "^2.8.0",
+    "superagent": "^1.4.0",
+    "supertest": "^1.1.0"
   },
   "scripts": {
     "postinstall": "node_modules/.bin/bower install --config.cwd=public --config.interactive=false && node_modules/.bin/grunt build",
