@@ -75,7 +75,7 @@ var expect = require("chai").expect
     //  user1.post('http://localhost:4000')
     //  request(userApp)
     //   .get('/api/users/count')
-    //   .auth('jclark', 'shifty')
+    //   .auth('jclark', '')
     //   .expect(200, done);
     done();
    });
