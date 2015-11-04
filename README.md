@@ -18,7 +18,7 @@ MAGE is built using the [MEAN stack](https://en.wikipedia.org/wiki/MEAN_(softwar
 
 ## API & Documentation
 
-The MAGE RESTful API is documented using [Swagger](http://swagger.io/). MAGE swagger API docs are servered out from /api/api-docs.
+The MAGE RESTful API is documented using [Swagger](http://swagger.io/). MAGE [swagger API docs](docs/swagger.json) are servered out from [*/api/api-docs*](http://localhost:4242/api/api-docs).
 
 If you want to explore the interactive documentation there is a link from the About page in the MAGE web client.  Your API token is automatically inserted into interactive docs.  Have fun and remember that the documentation is hitting the server's API, so be careful with modifing requests such as POST/PUT/DELETE.
 
@@ -40,7 +40,7 @@ MAGE depends the following software:
 * [GraphicsMagick](http://www.graphicsmagick.org/) (recommended for image rotation and tumbnails) >= 1.3
 
 ### Node.js Setup
-Install [Node.js](https://nodejs.org/) using your favorite package manager.
+Install [Node.js](https://nodejs.org/) using your favorite package manager, such as [homebrew](http://brew.sh/), [yum](http://yum.baseurl.org/), or [apt](https://wiki.debian.org/Apt).
 
 #### OSX install with homebrew
 ```bash
@@ -222,26 +222,24 @@ Configuration:
 ### Starting MongoDB
 To start the mongo daemon type the following:
 ```bash
-$ mongod -f <configuration_file>
+$ mongod --config <filename>
 ```
 
-Your configuation file will live in a different place depending on how you installed mongodb.
+The mongodb configuation file will live in a different place depending on your system:
+* homebrew: /usr/local/etc/mongod.conf
+* yum: /etc/mongod.conf
+* apt: /etc/mongodb.conf
 
-homebrew: /usr/local/etc/mongod.conf
-yum: /etc/mongod.conf
-
-Feel free to play with the settings in the configuation file, but know that MAGE will run with the provided defaults.
+MAGE will run with the provided configuration defaults, but feel free to modified these settings for your particular deployment.
 
 ### Initial Database Setup
 
-The migration patches live in the migrations folders.  MAGE uses [mongodb-migrations](https://github.com/emirotin/mongodb-migrations) to support applying migrations.  On intial setup, you will have to run the migrations to create the initial user and device used to log into the web.
+The migration patches live in the [migrations folder](migrations).  MAGE uses [mongodb-migrations](https://github.com/emirotin/mongodb-migrations) to support applying migrations.  On intial setup, you will have to run the migrations to create the initial user and device used to log into the web.
 
 To run the migrations:
 ``` bash
 $ ./node_modules/.bin/mm
 ```
-
-The /etc/mongod.conf file can be modified for your particular deployment as you see fit.  The defaults will get you up and running.
 
 ### Running the Server
 
@@ -250,7 +248,7 @@ At this point you should be able to fire up your MAGE node server
 $ node app.js
 ```
 
-By default, the node server runs on port 4242.  You can access that port directly in a browser [MAGE localhost] (http://localhost:4242).
+The node MAGE server runs on port 4242 by default.  You can access MAGE on port 4242 in your web browser [localhost:4242] (http://localhost:4242).
 
 ### Running with Forever
 
