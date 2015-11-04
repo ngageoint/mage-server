@@ -57,7 +57,8 @@ $ node --version
 #### Ubuntu install with apt
 ```bash
 $ sudo apt-get install nodejs npm
-$ nodejs --version && npm --version
+$ sudo ln -s /usr/bin/nodejs /usr/bin/node
+$ node --version && npm --version
 ```
 
 ### MongoDB Setup
