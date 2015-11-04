@@ -133,7 +133,7 @@ You can install all server and web dependencies by using npm from the mage-serve
 $ npm install
 ```
 
-NPM install will install all node (server) dependencies in the node_modules folder.  There is a postinstall section in the package.json file that will also install all bower (web) dependencies to the bower_components directory.
+NPM install will install all node (server) dependencies in the node_modules folder.  There is a postinstall section in the [package.json](package.json) file that will also install all bower (web) dependencies to the public/bower_components directory.
 
 ### Configuring and Customizing MAGE
 
