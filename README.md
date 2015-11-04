@@ -1,4 +1,4 @@
-## MAGE Server & Web Client
+# MAGE Server & Web Client
 
 The **M**obile **A**wareness **G**EOINT **E**nvironment, or MAGE, provides mobile situational awareness capabilities. The MAGE web client can be accessed over the internet and is optimized for desktop and mobile web browsers.  The MAGE web client allows you to create geotagged field reports that contain media such as photos, videos, and voice recordings and share them instantly with who you want. Using the HTML Geolocation API, MAGE can also track users locations in real time. Your locations can be automatically shared with the other members of your team.
 
@@ -54,6 +54,12 @@ $ yum install nodejs npm --enablerepo=epel
 $ node --version
 ```
 
+#### Ubuntu install with apt
+```bash
+$ sudo apt-get install nodejs npm
+$ nodejs --version && npm --version
+```
+
 ### MongoDB Setup
 Install [MongoDB](https://www.mongodb.org/) using your favorite package manager.
 
@@ -84,6 +90,12 @@ Verify install:
 $ mongo --version
 ```
 
+#### Ubuntu install with apt
+```bash
+$ sudo apt-get install mongodb
+$ mongo --version && mongod --version
+```
+
 For more information check out the mongo CentOS/RHEL install page <https://docs.mongodb.org/manual/tutorial/install-mongodb-on-red-hat/>
 
 ### GraphicsMagick Setup
@@ -102,6 +114,12 @@ $ gm version
 
 ```bash
 $ yum install GraphicMagick
+$ gm version
+```
+
+#### Ubuntu install with apt
+```bash
+$ sudo apt-get install graphicsmagick
 $ gm version
 ```
 
