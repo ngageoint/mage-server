@@ -2,13 +2,21 @@ var expect = require("chai").expect
  , chai = require('chai')
  , user = require('../models/user')
  , sinon = require('sinon')
- , sinonChai = require('sinon-chai');
+ , sinonChai = require('sinon-chai')
+ , userApp = require('../routes/users')
+ , request = require('supertest');
 
 // Tests the models/User.js model
+// Before: set up supertest to listen for requests
 // BeforeEach: creates stub methods so we don't call the real user methods
 // AfterEach: restores original funcitonality to those stubbed methods
 // Then tests all exported methods
  describe("User model functions", function(){
+
+   before(function(done){
+
+     done();
+   });
 
    var countStub, getByIdStub;
    beforeEach(function(done){
@@ -61,15 +69,15 @@ var expect = require("chai").expect
      done();
    });
 
+   // ----- Test app calls
+   it("Test http request: /api/users/count ", function(done){
+    //  var user1 = request.agent();
+    //  user1.post('http://localhost:4000')
+    //  request(userApp)
+    //   .get('/api/users/count')
+    //   .auth('jclark', '')
+    //   .expect(200, done);
+    done();
+   });
 
-
-
-// *** Transform test
-  //  it("transform null test", function(done){
-  //    var transformed = transformUser.transform(null, null);
-  //    expect(transformed).to.be.null;
-  //    done();
-  //  });
-
-
- });
+});

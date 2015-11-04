@@ -14,9 +14,9 @@ var expect = require("chai").expect
      done();
    });
 
-   it("transformObservation null test", function(done){
-     var transformed = transformObservation.transform(null, null);
-     expect(transformed).to.be.null;
-     done();
-   });
+  // it("transformObservation null test", function(done){
+    // var transformed = transformObservation.transform(null, null);
+    // expect(transformed).to.be.null;
+    // done();
+   //});
  });

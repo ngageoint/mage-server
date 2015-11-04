@@ -17,6 +17,7 @@ describe("Direct database tests", function(){
 
   // ----- Create a test user before the tests begin
   before(function(done){
+
     // Get the user role
     role.getRole("USER_ROLE",function(err, role){
       if(err){
@@ -25,6 +26,7 @@ describe("Direct database tests", function(){
 
       // Create a user
       var testUser = {
+        "displayName": "testUser",
         "username": "testUser",
         "firstname": "test",
         "lastname": "user",
@@ -38,7 +40,7 @@ describe("Direct database tests", function(){
       }
       user.createUser(testUser, function(err, newUser){
         if(err){
-          throw "Error creating the test user: " + err;
+          console.log("Error creating user before tests run: " + err);
         }
         done();
       });
@@ -69,7 +71,7 @@ describe("Direct database tests", function(){
   // query a user from the database
   it("Get test user from database, verify first name = test", function(done){
     user.getUserByUsername("testUser",function(err, user){
-      expect(user.firstname).to.equal('test');
+      expect(user.username).to.equal('testuser');
       done();
     });
   });
