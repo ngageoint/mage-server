@@ -75,16 +75,16 @@ UserSchema.pre('save', function(next) {
   var user = this;
 
   // only hash the password if it has been modified (or is new)
-  if (user.authentication.type !== 'local' && !user.isModified('authentication.password')) {
-    return next();
-  }
+  if (user.authentication.type === 'local' && user.isModified('authentication.password')) {
+    hasher.encryptPassword(user.authentication.password, function(err, encryptedPassword) {
+      if (err) return next(err);
 
-  hasher.encryptPassword(user.authentication.password, function(err, encryptedPassword) {
-    if (err) return next(err);
-
-    user.authentication.password = encryptedPassword;
+      user.authentication.password = encryptedPassword;
+      next();
+    });
+  } else {
     next();
-  });
+  }
 });
 
 // Remove Token if password changed

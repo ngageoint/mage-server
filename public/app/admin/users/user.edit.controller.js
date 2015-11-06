@@ -37,9 +37,12 @@ function AdminUserEditController($scope, $injector, $filter, $routeParams, $loca
     $scope.error = false;
 
     var user = {
+      username: $scope.user.username,
       displayName: $scope.user.displayName,
       email: $scope.user.email,
       phone: $scope.user.phone,
+      password: $scope.user.password,
+      passwordconfirm: $scope.user.passwordconfirm,
       roleId: $scope.user.role.id,
       avatar: $scope.user.avatar,
       icon: $scope.user.icon

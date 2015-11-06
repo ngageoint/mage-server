@@ -25,7 +25,10 @@ function SigninController($scope, $rootScope, UserService, ApiService) {
         console.log('successfull signin');
       },
       function (data) {
-        $scope.status = data.status;
+        $scope.showStatus = true;
+        $scope.statusTitle = 'Failed login';
+        $scope.statusMessage = 'Please check your username, UID, and password and try again.';
+        $scope.statusLevel = 'alert-danger';
       });
   }
 

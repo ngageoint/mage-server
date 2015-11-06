@@ -76,7 +76,6 @@ var encryptPassword = function (password, callback) {
   crypto.pbkdf2(password, encryptedPassword.salt, encryptedPassword.iterations, encryptedPassword.derivedKeyLength, function (err, derivedKey) {
     if (err) { return callback(err); }
 
-
     callback(null, derivedKey.toString('base64') === encryptedPassword.derivedKey)
   });
  };

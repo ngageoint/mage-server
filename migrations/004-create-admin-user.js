@@ -58,13 +58,12 @@ exports.up = function(done) {
 
       var adminUser = {
         username: results.username,
-        password: results.password,
         displayName: results.username,
         roleId: role._id,
         active: 'true',
         authentication: {
           type: 'local',
-          password: 'admin'
+          password: results.password
         }
       };
 
