@@ -125,7 +125,7 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     access.authorize('UPDATE_DEVICE'),
     parseDeviceParams,
-    function(req, res) {
+    function(req, res, next) {
       var update = {};
       if (req.newDevice.uid) update.uid = req.newDevice.uid;
       if (req.newDevice.name) update.name = req.newDevice.name;
@@ -134,9 +134,7 @@ module.exports = function(app, security) {
       if (req.newDevice.userId) update.userId = req.newDevice.userId;
 
       Device.updateDevice(req.param('id'), update, function(err, device) {
-        if (err) {
-          return res.send(400, err);
-        }
+        if (err) return next(err);
 
         res.json(device);
       });
@@ -148,11 +146,9 @@ module.exports = function(app, security) {
     '/api/devices/:id',
     passport.authenticate('bearer'),
     access.authorize('DELETE_DEVICE'),
-    function(req, res) {
+    function(req, res, next) {
       Device.deleteDevice(req.param('id'), function(err, device) {
-        if (err) {
-          return res.send(400, err);
-        }
+        if (err) return next(err);
 
         res.json(device);
       });

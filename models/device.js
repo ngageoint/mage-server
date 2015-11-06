@@ -7,10 +7,14 @@ var mongoose = require('mongoose')
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
 
+function toLowerCase(field) {
+  return field.toLowerCase();
+}
+
 // Collection to hold users
 // TODO cascade delete from userId when user is deleted.
 var DeviceSchema = new Schema({
-    uid: { type: String, required: true, unique: true },
+    uid: { type: String, required: true, unique: true, set: toLowerCase },
     description: { type: String, required: false },
     registered: { type: Boolean, required: true, default: false },
     userId: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -21,43 +25,15 @@ var DeviceSchema = new Schema({
   }
 );
 
-//Validate that uid is non-null and unique
-DeviceSchema.pre('save', function(next) {
-  var device = this;
-
-  if (!device.uid) {
-    return next(new Error("uid cannot be null"));
-  }
-
-  device.uid = device.uid.toLowerCase();
-  Device.findOne({uid: device.uid}, function(err, device) {
-    if (err) return next(err);
-
-    if (device) return next(new Error("uid already exists"));
-
-    next();
-  });
-});
-
-// Validate that userId is unique
-DeviceSchema.pre('save', function(next) {
-  var device = this;
-
-  // only validate userId if it has been modified (or is new)
-  if (!device.userId || !device.isModified('userId')) return next();
-
-  User.getUserById(device.userId, function(err, user) {
-    if (err) {
-      return next(err);
+DeviceSchema.path('userId').validate(function(userId, done) {
+  User.getUserById(userId, function(err, user) {
+    if (err || !user)  {
+      done(false);
+    } else {
+      done(true);
     }
-
-    if (!user) {
-      return next(new Error('invlaid POC user, userId does not exist'));
-    }
-
-    next();
   });
-});
+}, 'Invalid POC user, user does not exist');
 
 DeviceSchema.pre('remove', function(next) {
   var device = this;
@@ -146,6 +122,11 @@ exports.count = function(callback) {
 }
 
 exports.createDevice = function(device, callback) {
+  // TODO there is a ticket in mongooose that is currently open
+  // to add support for running setters on findOneAndUpdate
+  // once that happens there is no need to do this
+  device.uid = device.uid.toLowerCase();
+
   var update = {
     name: device.name,
     description: device.description,
@@ -154,13 +135,18 @@ exports.createDevice = function(device, callback) {
 
   if (device.registered) update.registered = device.registered;
 
-  Device.findOneAndUpdate({uid: device.uid}, update, {new: true, upsert: true, setDefaultsOnInsert: true}, function(err, newDevice) {
+  Device.findOneAndUpdate({uid: device.uid}, update, {new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true}, function(err, newDevice) {
     callback(err, newDevice);
   });
 }
 
 exports.updateDevice = function(id, update, callback) {
-  Device.findByIdAndUpdate(id, update, {new: true}, function(err, updatedDevice) {
+  // TODO there is a ticket in mongooose that is currently open
+  // to add support for running setters on findOneAndUpdate
+  // once that happens there is no need to do this
+  if (update.uid) update.uid = update.uid.toLowerCase();
+
+  Device.findByIdAndUpdate(id, update, {new: true, setDefaultsOnInsert: true, runValidators: true}, function(err, updatedDevice) {
     callback(err, updatedDevice);
   });
 }

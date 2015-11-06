@@ -79,7 +79,7 @@ module.exports = function(app, passport, provisioning, localStrategy) {
 
         Device.createDevice(newDevice, function(err, newDevice) {
           if (err) {
-            return res.send(400, err);
+            return res.status(400);
           }
 
           res.json(newDevice);
