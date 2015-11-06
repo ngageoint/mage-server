@@ -1,16 +1,16 @@
-## MAGE Web/Server
+# MAGE Server & Web Client
 
-The Mobile Awareness GEOINT Environment, or MAGE, provides mobile situational awareness capabilities. The MAGE web app can be accessed over the internet and is optimized for desktop and mobile browsers.  The MAGE web app allows you to create geotagged field reports that contain media such as photos, videos, and voice recordings and share them instantly with who you want. Using the HTML Geolocation API, MAGE can also track users locations in real time. Your locations can be automatically shared with the other members of your team.
+The **M**obile **A**wareness **G**EOINT **E**nvironment, or MAGE, provides mobile situational awareness capabilities. The MAGE web client can be accessed over the internet and is optimized for desktop and mobile web browsers.  The MAGE web client allows you to create geotagged field reports that contain media such as photos, videos, and voice recordings and share them instantly with who you want. Using the HTML Geolocation API, MAGE can also track users locations in real time. Your locations can be automatically shared with the other members of your team.
 
-MAGE is very customizable and can be tailored for you situation, such as custom forms, avatars and icons.
+MAGE is very customizable and can be tailored for you situation, including custom forms, avatars, and icons.
 
-MAGE Web/Server was developed at the National Geospatial-Intelligence Agency (NGA) in collaboration with BIT Systems. The government has "unlimited rights" and is releasing this software to increase the impact of government investments by providing developers with the opportunity to take things in new directions. The software use, modification, and distribution rights are stipulated within the Apache license.
+MAGE was developed at the National Geospatial-Intelligence Agency (NGA) in collaboration with BIT Systems. The government has "unlimited rights" and is releasing this software to increase the impact of government investments by providing developers with the opportunity to take things in new directions. The software use, modification, and distribution rights are stipulated within the Apache license.
 
-This is the MAGE server supports [MAGE Android](https://github.com/ngageoint/mage-android) and [MAGE iOS](https://github.com/ngageoint/mage-ios).
+The server supports the [MAGE Android](https://github.com/ngageoint/mage-android) and [MAGE iOS](https://github.com/ngageoint/mage-ios) mobile clients.
 
 ## Architecture
 
-MAGE is built using the MEAN stack.  The components of the MEAN stack are as follows:
+MAGE is built using the [MEAN stack](https://en.wikipedia.org/wiki/MEAN_(software_bundle)).  The components of the MEAN stack are as follows:
 * [MongoDB](https://www.mongodb.com/), a NoSQL database;
 * [Express.js](http://expressjs.com/), a web applications framework;
 * [Angular JS](https://angularjs.org/), a JavaScript MVC framework for web apps;
@@ -18,50 +18,59 @@ MAGE is built using the MEAN stack.  The components of the MEAN stack are as fol
 
 ## API & Documentation
 
-The MAGE RESTful API is documented using [Swagger](http://swagger.io/). MAGE swagger API docs are servered out from /api/api-docs.
+The MAGE RESTful API is documented using [Swagger](http://swagger.io/). MAGE [swagger API docs](docs/swagger.json) are servered out from [*/api/api-docs*](http://localhost:4242/api/api-docs).
 
-If you want to explore the interactive documentation there is a link from the About page.  Your API token is automatically inserted into interactive docs.  Have fun and remember that the documentation is hitting the server's API, so be careful with modifing requests such as POST/PUT/DELETE.
+If you want to explore the interactive documentation there is a link from the About page in the MAGE web client.  Your API token is automatically inserted into interactive docs.  Have fun and remember that the documentation is hitting the server's API, so be careful with modifing requests such as POST/PUT/DELETE.
 
-### Code generation
+### Code Generation
 Want to use the API to build your own client?  Swagger has many tools to generate method stubs based on the api.  [Swagger Codegen](https://github.com/swagger-api/swagger-codegen/blob/master/README.md) is a good place to start.
 
-#### iOS and/or Android
-Thinking about your own iOS or Android application based on the MAGE API.  We have [Android SDK](https://github.com/ngageoint/mage-android-sdk) and [iOS SDK](https://github.com/ngageoint/mage-ios-sdk) projects built around the MAGE API.
+#### Android & iOS
+Opensource MAGE [Android](https://github.com/ngageoint/mage-android) and [iOS](https://github.com/ngageoint/mage-ios) clients are available under the Apache License for anyone to use.  Check them out if you are considering mobile platforms.
 
-## Setup and installation
-Currently MAGE runs on most linux flavors such as OSX, CentOS and Ubuntu.  Windows is not currently supported, but with a little work (mainly paths) and testing this is possible.
+If you are considering building your own iOS or Android application based on the MAGE API, the [Android SDK](https://github.com/ngageoint/mage-android-sdk) and [iOS SDK](https://github.com/ngageoint/mage-ios-sdk) are already built and tested around the MAGE API.
 
-MAGE requires the following software:
-* Node.js >= 0.10.0
-* MongoDB >= 2.6.0
-* Apache >= 2.2.15
-* GraphicsMagick (optional, used for image rotation) >= 1.3
+## Setup & Installation
+MAGE runs on most *nix operating systems, such as OSX, CentOS, and Ubuntu.  Although not currently supported, MAGE will run on Windows systems with some minor configuration (mainly paths) work.
 
-### Node.js setup
-Install Node.js using your favorite package manager.
+MAGE depends the following software:
+* [Node.js](https://nodejs.org/) >= 0.10.0
+* [MongoDB](https://www.mongodb.org/) >= 2.6.0
+* [Apache HTTP Server](https://httpd.apache.org/) >= 2.2.15
+* [GraphicsMagick](http://www.graphicsmagick.org/) (recommended for image rotation and tumbnails) >= 1.3
 
-#### OSX example w/ homebrew
+### Node.js Setup
+Install [Node.js](https://nodejs.org/) using your favorite package manager, such as [homebrew](http://brew.sh/), [yum](http://yum.baseurl.org/), or [apt](https://wiki.debian.org/Apt).
+
+#### OSX install with homebrew
 ```bash
 $ brew install node
 $ node --version
 ```
 
-#### CentOS example w/ yum
+#### CentOS install with yum
 ```bash
 $ yum install nodejs npm --enablerepo=epel
 $ node --version
 ```
 
-### MongoDB setup
-Install MongoDB using your favorite package manager.
+#### Ubuntu install with apt
+```bash
+$ sudo apt-get install nodejs npm
+$ sudo ln -s /usr/bin/nodejs /usr/bin/node
+$ node --version && npm --version
+```
 
-#### OSX install w/ homebrew
+### MongoDB Setup
+Install [MongoDB](https://www.mongodb.org/) using your favorite package manager.
+
+#### OSX install with homebrew
 ```bash
 $ brew install mongo
 $ mongo --version
 ```
 
-#### CentOS install w/ yum
+#### CentOS install with yum
 Configure mongo yum repository
 
 ```bash
@@ -82,37 +91,51 @@ Verify install:
 $ mongo --version
 ```
 
+#### Ubuntu install with apt
+```bash
+$ sudo apt-get install mongodb
+$ mongo --version && mongod --version
+```
+
 For more information check out the mongo CentOS/RHEL install page <https://docs.mongodb.org/manual/tutorial/install-mongodb-on-red-hat/>
 
-### GraphicsMagick setup
-GraphicsMagick is used to rotate and thumbnail images.  This is optional but recommended. Non-rotated images do not always orient correctly on many web browsers. In addition the mobile clients will request smaller images (thumbnails) based on screen resolution which greatly speeds up image download times.
+### GraphicsMagick Setup
+The optional, but recommended, [GraphicsMagick](http://www.graphicsmagick.org/) suite is used to rotate and thumbnail images on the MAGE server.  Many web browsers and mobile devices will not render rotated images based on their exif data.  By thumbnailing images, mobile clients can request smaller images, significantly increasing performance.
 
-#### GraphicsMagick install w/ homebrew
+Install GraphicsMagick using your favorite package manager.
+
+#### GraphicsMagick install with homebrew
+
+```bash
+$ brew install graphicsmagick
+$ gm version
+```
+
+#### GraphicsMagick install with yum
 
 ```bash
 $ yum install GraphicMagick
 $ gm version
 ```
 
-#### GraphicsMagick install w/ yum
-
+#### Ubuntu install with apt
 ```bash
-$ yum install GraphicMagick
+$ sudo apt-get install graphicsmagick
 $ gm version
 ```
 
 ## Running MAGE
 
-### Install dependencies
+### Installing Dependencies
 
-You can install all MAGE (server and web) dependencies by using npm:
+You can install all server and web dependencies by using npm from the mage-server directory:
 ```bash
 $ npm install
 ```
 
-NPM install will install all node (server) dependencies in the node_modules folder.  There is a postinstall section in the package.json file that will also install all bower (web) dependencies to the bower_components directory.
+NPM install will install all node (server) dependencies in the node_modules folder.  There is a postinstall section in the [package.json](package.json) file that will also install all bower (web) dependencies to the public/bower_components directory.
 
-### Configure MAGE
+### Configuring and Customizing MAGE
 
 MAGE configuration lies within the config.json file located at the servers root directory.
 
@@ -196,40 +219,38 @@ Configuration:
 }
 ```
 
-### Starting Mongodb
-To start mongo type the following:
+### Starting MongoDB
+To start the mongo daemon type the following:
 ```bash
-$ mongod -f <configuration_file>
+$ mongod --config <filename>
 ```
 
-Your configuation file will live in a different place depending on how you installed mongodb.
+The mongodb configuation file will live in a different place depending on your system:
+* homebrew: /usr/local/etc/mongod.conf
+* yum: /etc/mongod.conf
+* apt: /etc/mongodb.conf
 
-homebrew: /usr/local/etc/mongod.conf
-yum: /etc/mongod.conf
+MAGE will run with the provided configuration defaults, but feel free to modified these settings for your particular deployment.
 
-Feel free to play with the settings in the configuation file, but know that MAGE will run with the provided defaults.
+### Initial Database Setup
 
-### Initial Database setup
-
-The  migration patches live in the migrations folders.  MAGE uses [mongodb-migrations](https://github.com/emirotin/mongodb-migrations) to support applying migrations.  On intial setup you will have to run the migrations to create the initial user and device used to log into the web.
+The migration patches live in the [migrations folder](migrations).  MAGE uses [mongodb-migrations](https://github.com/emirotin/mongodb-migrations) to support applying migrations.  On intial setup, you will have to run the migrations to create the initial user and device used to log into the web.
 
 To run the migrations:
 ``` bash
 $ ./node_modules/.bin/mm
 ```
 
-The /etc/mongod.conf file can be modified for your particular deployment as you see fit.  For starters, the provided defaults will get you up and running.
-
-### Running the server
+### Running the Server
 
 At this point you should be able to fire up your MAGE node server
 ```bash
 $ node app.js
 ```
 
-By default the node server runs on port 4242.  You can hit that port directly in a browser [MAGE local] (http://localhost:4242)
+The node MAGE server runs on port 4242 by default.  You can access MAGE on port 4242 in your web browser [localhost:4242] (http://localhost:4242).
 
-### Running With Forever
+### Running with Forever
 
 The best way to handle critical errors in NodeJS is to let the node server crash immediately.  Upon crash the server should be restarted.  There are many tools to monitor your node process to ensure its running.  We are currently using a simple node script called [forever](https://github.com/foreverjs/forever) to accomplish this.
 
@@ -243,15 +264,15 @@ To start forever run:
 $ forever start app.js
 ```
 
-For a full list of forever commands please refer to the [forever docs](https://github.com/foreverjs/forever/blob/master/README.md)
+For a full list of forever commands please refer to the [forever docs](https://github.com/foreverjs/forever/blob/master/README.md).
 
 ## Plugins
 
-MAGE plugins are seperate node scripts located in the plugins folder.  For more information about MAGE plugins please see the [MAGE Plugins README](plugins/README.md)
+MAGE plugins are seperate node scripts located in the plugins folder.  For more information about MAGE plugins please see the [MAGE Plugins README](plugins/README.md).
 
-## Web application
+## Web Application
 
-The MAGE web application is built using AngularJS.  The application resides in the public directory, for more information about the [MAGE Web Application](public/README.md).
+The MAGE web application is built using AngularJS.  The application resides in the public directory.  See the [MAGE Web Application README](public/README.md) for more information.
 
 ## Pull Requests
 

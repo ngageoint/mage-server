@@ -5,6 +5,7 @@ var express = require("express")
   , path = require('path')
   , mongoose = require('mongoose')
   , fs = require('fs-extra')
+  , util = require('util')
   , config = require('./config.json')
   , log = require('./logger')
   , provision = require('./provision');
@@ -20,9 +21,11 @@ mongoose.Error.messages.general.required = "{PATH} is required.";
 log.info('Starting mage');
 
 var optimist = require("optimist")
-  .usage("Usage: $0 --port [number]")
+  .usage("Usage: $0 --port [number] --address [string]")
   .describe('port', 'Port number that MAGE node server will run on.')
-  .default('port', 4242);
+  .describe('address', 'Address / network interface to listen on')
+  .default('port', 4242)
+  .default('address', '0.0.0.0');
 var argv = optimist.argv;
 if (argv.h || argv.help) return optimist.showHelp();
 
@@ -105,8 +108,9 @@ require('./routes')(app, {authentication: authentication, provisioning: provisio
 
 // Launches the Node.js Express Server
 var port = argv.port;
-app.listen(port);
-log.info('MAGE Server: Started listening on port ' + port);
+var address = argv.address;
+app.listen(port, address);
+log.info(util.format('MAGE Server: Started listening at address %s on port %s', address, port));
 
 // install all plugins
 require('./plugins');
