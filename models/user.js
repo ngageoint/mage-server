@@ -143,7 +143,10 @@ var transform = function(user, ret, options) {
     ret.id = ret._id;
     delete ret._id;
 
-    delete ret.password;
+    if (ret.authentication) {
+      delete ret.authentication.password;
+    }
+
     delete ret.avatar;
     delete ret.icon;
 
