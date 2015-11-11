@@ -198,16 +198,54 @@ function config($routeProvider, $locationProvider, $httpProvider) {
   });
 }
 
-run.$inject = ['$rootScope', '$modal', 'UserService', '$location', 'authService', 'LocalStorageService', 'UserService', 'AboutService'];
+run.$inject = ['$rootScope', '$modal', 'UserService', '$location', 'authService', 'LocalStorageService', 'UserService', 'AboutService', 'ApiService'];
 
-function run($rootScope, $modal, UserService, $location, authService, LocalStorageService, UserService, AboutService) {
+function run($rootScope, $modal, UserService, $location, authService, LocalStorageService, UserService, AboutService, ApiService) {
   $rootScope.$on('event:auth-loginRequired', function() {
     if (!$rootScope.loginDialogPresented && $location.path() != '/' && $location.path() != '/signin' && $location.path() != '/signup') {
       $rootScope.loginDialogPresented = true;
       var modalInstance = $modal.open({
         templateUrl: 'app/signin/signin-modal.html',
         controller: ['$scope', '$modalInstance', function ($scope, $modalInstance) {
+          ApiService.get(function(api) {
+            function localStrategyFilter(strategy, name) {
+              return name === 'local';
+            }
+
+            $scope.thirdPartyStrategies = _.map(_.omit(api.authenticationStrategies, localStrategyFilter), function(strategy, name) {
+              strategy.name = name;
+              return strategy;
+            });
+
+            $scope.localAuthenticationStrategy = api.authenticationStrategies.local;
+          });
+
           var oldUsername = UserService.myself && UserService.myself.username || undefined;
+
+          $scope.googleSignin = function() {
+            UserService.oauthSignin('google', {uid: this.uid}).then(function(data) {
+              console.log('successfull oauth');
+              if (data.username != oldUsername) {
+                data.newUser = true;
+              }
+
+              $rootScope.loginDialogPresented = false;
+              $modalInstance.close($scope);
+            }, function(data) {
+              $scope.showStatus = true;
+
+              if (data.device && !data.device.registered) {
+                $scope.statusTitle = 'Device Pending Registration';
+                $scope.statusMessage = data.errorMessage;
+                $scope.statusLevel = 'alert-warning';
+              } else {
+                $scope.statusTitle = 'Error signing in';
+                $scope.statusMessage = data.errorMessage;
+                $scope.statusLevel = 'alert-danger';
+              }
+            });
+          }
+
           $scope.login = function (data) {
             UserService.login(data).success(function() {
               if (data.username != oldUsername) {

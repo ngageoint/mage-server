@@ -5,7 +5,37 @@
 
   <div class="modal-body">
     <div class="row">
-      <div class="col-md-6">
+      <div ng-repeat="strategy in thirdPartyStrategies">
+        <div class="row">
+          <div class="col-md-10 col-md-offset-1">
+            <div class="form-group" ng-class="{'has-error': status > 399}">
+              <label>UID</label>
+              <input ng-model="uid" class="form-control" name="uid" type="text" autocapitalize="off"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="row" ng-if="strategy.name == 'google'">
+          <div class="col-md-12 text-center">
+            <button class="btn btn-google" ng-click="googleSignin()" ng-disabled="!uid">
+              <i class="fa fa-google-plus right-gap"></i> Google
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div ng-if="thirdPartyStrategies.length" class="top-gap col-md-10 col-md-offset-1">
+        <div class="or-container">
+          <hr class="or-hr">
+          <div id="or">or</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
         <div class="form-group" ng-class="{'has-error': status > 399}">
           <label>Username</label>
           <input ng-model="username" name="username" type="text" autocapitalize="off" class="form-control"/>
@@ -21,7 +51,7 @@
           <input ng-model="password" name="password" type="password" class="form-control"/>
         </div>
       </div>
-      <div class="col-md-6">
+      <div class="col-md-10 col-md-offset-1">
         <div class="top-gap-s alert alert-danger" ng-show="status > 399">
           <strong>Failed login</strong>
           <p>Please check your username, UID, and password and try again.</p>
