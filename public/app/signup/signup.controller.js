@@ -66,6 +66,7 @@ function SignupController($scope, $location, UserService, ApiService) {
 
     var complete = function(response) {
       $scope.$apply(function() {
+        $scope.user = {};
         $scope.showStatusMessage("Success", "Account created, contact an administrator to activate your account.", "alert-success")
       });
     }
