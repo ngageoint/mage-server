@@ -1,4 +1,4 @@
-var config = require('./config.json')
+var config = require('./config.js')
   , mongoose = require('mongoose')
   , log = require('winston');
 

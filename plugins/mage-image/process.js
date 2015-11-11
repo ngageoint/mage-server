@@ -1,6 +1,6 @@
-var config = require('./config.json')
+var config = require('./config.js')
 	, log = require('../../logger')
-	, serverConfig = require('../../config.json')
+	, serverConfig = require('../../config.js')
 	, async = require('async')
 	, path = require('path')
 	, fs = require('fs-extra')

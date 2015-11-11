@@ -1,6 +1,6 @@
-var config = require('./config.json')
+var config = require('./config.js')
   , log = require('winston')
-  , serverConfig = require('../../config.json')
+  , serverConfig = require('../../config.js')
   , async = require('async')
   , crypto = require('crypto')
   , async = require('async')

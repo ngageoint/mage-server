@@ -6,7 +6,7 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
     , Device = require('../models/device')
     , Role = require('../models/role')
     , api = require('../api')
-    , config = require('../config.json');
+    , config = require('../config.js');
 
   console.log('configuring google authentication');
 

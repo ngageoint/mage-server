@@ -6,7 +6,7 @@ var IconModel = require('../models/icon')
   , async = require('async')
   , moment = require('moment')
   , access = require('../access')
-  , config = require('../config.json');
+  , config = require('../config.js');
 
 var appRoot = path.dirname(require.main.filename);
 var iconBase = config.server.iconBaseDirectory;

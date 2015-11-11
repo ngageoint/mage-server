@@ -1,6 +1,6 @@
 ## MAGE Plugins
 
-All plugins are seperate node scripts located in the plugins folder.  Each script is configured with the config.json file located in each specific plugins directory.
+All plugins are seperate node scripts located in the plugins folder.  Each script is configured with the config.js file located in each specific plugins directory.
 
 ### Common config
 

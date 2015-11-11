@@ -6,7 +6,7 @@ var express = require("express")
   , mongoose = require('mongoose')
   , fs = require('fs-extra')
   , util = require('util')
-  , config = require('./config.json')
+  , config = require('./config.js')
   , log = require('./logger')
   , provision = require('./provision');
 

@@ -1,5 +1,5 @@
-{
-  "api": {
+module.exports = {
+  api: {
     "name": "MAGE (Mobile Awareness GEOINT Environment)",
     "version": {
       "major": 4,
@@ -10,12 +10,12 @@
       "local": {
         "passwordMinLength": 14
       },
-      "google": {
-        "url": " ",
-        "callbackURL": " ",
-        "clientID": " ",
-        "clientSecret": " "
-      }
+      // "google": {
+      //   "url": " ",
+      //   "callbackURL": " ",
+      //   "clientID": " ",
+      //   "clientSecret": " "
+      // }
     },
     "provision": {
       "strategy": "uid"
@@ -29,7 +29,7 @@
       ]
     }
   },
-  "server": {
+  server: {
     "userBaseDirectory": "/var/lib/mage/users",
     "iconBaseDirectory": "/var/lib/mage/icons",
     "token": {

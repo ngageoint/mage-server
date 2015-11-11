@@ -1,6 +1,6 @@
 var crypto = require('crypto')
   , mongoose = require('mongoose')
-  , config = require('../config.json');
+  , config = require('../config.js');
 
 // Token expiration in msecs
 var tokenExpiration = config.server.token.expiration * 1000;

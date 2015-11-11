@@ -2,7 +2,7 @@ module.exports = function(options) {
 
 var moment = require('moment')
   , path = require('path')
-  , config = require('../config.json');
+  , config = require('../config.js');
 
 var timeFormat = "YYYY-MM-DDTHH:mm:ss";
 

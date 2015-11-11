@@ -1,6 +1,6 @@
-var config = require('./config.json')
+var config = require('./config.js')
   , log = require('winston')
-  , serverConfig = require('../../config.json')
+  , serverConfig = require('../../config.js')
   , querystring = require('querystring')
   , os = require('os')
   , path = require('path')

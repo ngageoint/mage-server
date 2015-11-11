@@ -2,7 +2,7 @@ var FeatureModel = require('../models/feature')
   , path = require('path')
   , fs = require('fs-extra')
   , async = require('async')
-  , config = require('../config.json');
+  , config = require('../config.js');
 
 var attachmentBase = config.server.attachment.baseDirectory;
 

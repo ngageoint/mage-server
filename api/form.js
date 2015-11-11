@@ -10,7 +10,7 @@ var Event = require('../models/event')
   , async = require('async')
   , moment = require('moment')
   , access = require('../access')
-  , config = require('../config.json');
+  , config = require('../config.js');
 
 var iconBase = config.server.iconBaseDirectory;
 

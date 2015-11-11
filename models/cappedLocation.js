@@ -1,5 +1,5 @@
 var mongoose = require('mongoose')
-  , config = require('../config.json');
+  , config = require('../config.js');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;

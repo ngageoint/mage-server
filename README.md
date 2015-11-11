@@ -137,7 +137,7 @@ NPM install will install all node (server) dependencies in the node_modules fold
 
 ### Configuring and Customizing MAGE
 
-MAGE configuration lies within the config.json file located at the servers root directory.
+MAGE configuration lies within the config.js file located at the servers root directory.
 
 Configuration:
 * api - configuration parsed by clients for information about this MAGE server, exposed in /api call

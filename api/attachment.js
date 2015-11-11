@@ -6,7 +6,7 @@ var ObservationModel = require('../models/observation')
   , async = require('async')
   , moment = require('moment')
   , access = require('../access')
-  , config = require('../config.json')
+  , config = require('../config.js')
   , geometryFormat = require('../format/geoJsonFormat');
 
 var attachmentConfig = config.server.attachment;
