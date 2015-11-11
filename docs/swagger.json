@@ -188,32 +188,6 @@
                 }
             }
         },
-        "/api/users/{id}/logins": {
-            "get": {
-                "description": "Returns users logins",
-                "operationId": "getUserLogins",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "id of user",
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "tags": [
-                    "User"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "login response",
-                        "schema": {
-                            "$ref": "#/definitions/Login"
-                        }
-                    }
-                }
-            }
-        },
         "/api/users/{id}/avatar": {
             "get": {
                 "description": "Returns users avatar based on user id",
@@ -330,6 +304,52 @@
                         "description": "user update response",
                         "schema": {
                             "$ref": "#/definitions/User"
+                        }
+                    }
+                }
+            }
+        },
+
+        "/api/logins": {
+            "get": {
+                "description": "Returns user logins",
+                "operationId": "getUserLogins",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "query",
+                        "description": "id of user to filter on",
+                        "type": "string"
+                    },
+                    {
+                        "name": "deviceId",
+                        "in": "query",
+                        "description": "id of device to filter on",
+                        "type": "string"
+                    },
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "description": "iso8601 start date to filter (inclusive)",
+                        "type": "string",
+                        "format": "dateTime"
+                    },
+                    {
+                        "name": "endDate",
+                        "in": "query",
+                        "description": "iso8601 end date filter (exclusive)",
+                        "type": "string",
+                        "format": "dateTime"
+                    }
+                ],
+                "tags": [
+                    "User"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "login response",
+                        "schema": {
+                            "$ref": "#/definitions/Login"
                         }
                     }
                 }
