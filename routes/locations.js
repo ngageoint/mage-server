@@ -89,7 +89,7 @@ module.exports = function(app, security) {
         return true;
       });
 
-      if (!valid) return res.send(400, msg);
+      if (!valid) return res.status(400).send(msg);
 
       req.locations = locations;
 

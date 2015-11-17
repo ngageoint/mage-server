@@ -3,6 +3,7 @@ var UserModel = require('../models/user')
   , TokenModel = require('../models/token')
   , DeviceModel = require('../models/device')
   , LoginModel = require('../models/login')
+  , EventModel = require('../models/event')
   , path = require('path')
   , fs = require('fs-extra')
   , async = require('async')
@@ -209,7 +210,17 @@ User.prototype.icon = function(user, callback) {
 }
 
 User.prototype.addRecentEvent = function(user, event, callback) {
-  UserModel.addRecentEventForUser(user, event, callback);
+  // Ensure user is part of the event
+  EventModel.eventHasUser(event, user._id, function(err, userInEvent) {
+    if (err) return callback(err);
+
+    if (!userInEvent) {
+      return callback(new Error("User is not part of event '" + event.name + "'."));
+    }
+
+    UserModel.addRecentEventForUser(user, event, callback);
+  });
+
 }
 
 module.exports = User;
