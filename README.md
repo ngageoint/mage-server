@@ -86,6 +86,12 @@ gpgcheck=0
 enabled=1
 ```
 
+Install from newly created repo:
+
+```bash
+sudo yum install -y mongodb-org
+```
+
 Verify install:
 ```bash
 $ mongo --version
