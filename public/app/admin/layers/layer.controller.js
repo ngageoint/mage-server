@@ -2,14 +2,21 @@ angular
   .module('mage')
   .controller('AdminLayerController', AdminLayerController);
 
-AdminLayerController.$inject = ['$scope', '$modal', '$routeParams', '$location', '$filter', 'Layer', 'Event'];
+AdminLayerController.$inject = ['$scope', '$modal', '$routeParams', '$location', '$filter', 'Layer', 'Event', 'LocalStorageService'];
 
-function AdminLayerController($scope, $modal, $routeParams, $location, $filter, Layer, Event) {
+function AdminLayerController($scope, $modal, $routeParams, $location, $filter, Layer, Event, LocalStorageService) {
 
   $scope.layerEvents = [];
   $scope.nonTeamEvents = [];
   $scope.eventsPage = 0;
   $scope.eventsPerPage = 10;
+
+  $scope.fileUploadOptions = {
+    acceptFileTypes: /(\.|\/)(kml)$/i,
+    url: '/api/layers/' + $routeParams.layerId + '/kml?access_token=' + LocalStorageService.getToken(),
+  };
+  $scope.uploads = [{}];
+  $scope.uploadConfirmed = false;
 
   Layer.get({id: $routeParams.layerId}, function(layer) {
     $scope.layer = layer;
@@ -86,5 +93,13 @@ function AdminLayerController($scope, $modal, $routeParams, $location, $filter, 
     modalInstance.result.then(function(layer) {
       $location.path('/admin/layers');
     });
+  }
+
+  $scope.addUploadFile = function() {
+    $scope.uploads.push({});
+  }
+
+  $scope.confirmUpload = function() {
+    $scope.uploadConfirmed = true;
   }
 }

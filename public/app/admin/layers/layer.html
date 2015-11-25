@@ -239,6 +239,42 @@
                 </div>
               </div>
             </div>
+
+            <div class="col-md-6 col-xs-12">
+              <div class="row">
+                <div class="col-md-12">
+                  <nav class="navbar navbar-default admin-dashboard-navbar">
+                    <div class="container-fluid">
+                      <div class="navbar-header">
+                        <a class="navbar-brand">Add KML data</a>
+                      </div>
+                    </div>
+                  </nav>
+                </div>
+              </div>
+
+              <div class="admin-table">
+                <div class="well-item">
+                  <div ng-show="layer.type == 'Feature'">
+                    <div ng-repeat="upload in uploads" class="bottom-gap">
+                      <form enctype="multipart/form-data" file-upload url="{{fileUploadOptions.url}}" allow-upload="uploadConfirmed" upload-file-form-name="'file'">
+                      </form>
+                    </div>
+                  </div>
+
+                  <hr>
+
+                  <div class="row">
+                    <div class="col-md-12">
+                      <button class="btn btn-primary" ng-click="addUploadFile()">Add KML File</button>
+                      <button class="btn btn-success" ng-click="confirmUpload()">Upload File(s)</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
           </div>
 
         </div>

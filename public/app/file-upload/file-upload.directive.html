@@ -7,15 +7,6 @@
     </div>
   </div>
 
-  <div class="row" ng-show="uploading || uploadStatus">
-    <div class="col-md-12">
-      <div class="progress" ng-show="uploading">
-        <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar" style="width: {{uploadProgress}}%;">
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="row">
     <div class="col-md-12">
       <span class="file-input btn btn-default btn-file" ng-show="type == 'button'">
@@ -29,6 +20,15 @@
               Browse&hellip; <input type="file" multiple>
           </span>
         </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="row top-gap-s" ng-show="uploading || uploadStatus">
+    <div class="col-md-12">
+      <div class="progress" ng-show="uploading">
+        <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar" style="width: {{uploadProgress}}%;">
+        </div>
       </div>
     </div>
   </div>
