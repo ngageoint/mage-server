@@ -63,7 +63,7 @@ Attachment.prototype.create = function(observationId, attachment, callback) {
     attachment.relativePath = path.join(relativePath, fileName);
     var file = path.join(attachmentBase, attachment.relativePath);
 
-    fs.rename(attachment.path, file, function(err) {
+    fs.move(attachment.path, file, function(err) {
       if (err) return callback(err);
 
       ObservationModel.addAttachment(event, observationId, attachment, function(err, newAttachment) {
@@ -86,7 +86,7 @@ Attachment.prototype.update = function(id, attachment, callback) {
     var fileName = path.basename(attachment.path);
     attachment.relativePath = path.join(relativePath, fileName);
     var file = path.join(attachmentBase, attachment.relativePath);
-    fs.rename(attachment.path, file, function(err) {
+    fs.move(attachment.path, file, function(err) {
       if (err) return callback(err);
 
       ObservationModel.updateAttachment(event, id, attachment, function(err) {
