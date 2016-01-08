@@ -5,7 +5,7 @@ var ObservationModel = require('../models/observation')
   , async = require('async')
   , config = require('../config.js');
 
-var attachmentBase = config.server.attachment.baseDirectory;
+var attachmentBase = path.resolve(config.server.attachment.baseDirectory);
 
 function Observation(event) {
   this._event = event;

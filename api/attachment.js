@@ -10,7 +10,7 @@ var ObservationModel = require('../models/observation')
   , geometryFormat = require('../format/geoJsonFormat');
 
 var attachmentConfig = config.server.attachment;
-var attachmentBase = attachmentConfig.baseDirectory;
+var attachmentBase = path.resolve(attachmentConfig.baseDirectory);
 
 var createAttachmentPath = function(event) {
   var now = new Date();
