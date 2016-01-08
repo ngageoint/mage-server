@@ -1,83 +1,134 @@
-var expect = require("chai").expect
- , chai = require('chai')
- , user = require('../models/user')
- , sinon = require('sinon')
- , sinonChai = require('sinon-chai')
- , userApp = require('../routes/users')
- , request = require('supertest');
+var request = require('supertest')
+  , sinon = require('sinon')
+  , should = require('chai').should()
+  , app = require('../express')
+  , mongoose = require('mongoose')
+  , Token = require('../models/token')
+  , TokenModel = mongoose.model('Token')
+  , User = require('../models/user')
+  , UserModel = mongoose.model('User')
+  , access = require('../access');
 
-// Tests the models/User.js model
-// Before: set up supertest to listen for requests
-// BeforeEach: creates stub methods so we don't call the real user methods
-// AfterEach: restores original funcitonality to those stubbed methods
-// Then tests all exported methods
- describe("User model functions", function(){
+require('sinon-mongoose');
 
-   before(function(done){
+var expects = require('chai').expect;
 
-     done();
-   });
+describe("user tests", function() {
 
-   var countStub, getByIdStub;
-   beforeEach(function(done){
-     // Stub the count method
-     countStub = sinon.stub(user, 'count');
-     countStub.returns(3)
-     // Stub the getUserById method
-     getByIdStub = sinon.stub(user, 'getUserById');
-     getByIdStub.returns({
-       username: "testUser",
-       firstname: "test",
-       lastname: "User"
-     })
-     done();
-   });
+  var sandbox;
+  before(function() {
+    sandbox = sinon.sandbox.create();
+  });
 
-   // Restore functionality to all stubbed methods
-   afterEach(function(done){
-     countStub.restore();
-     getByIdStub.restore();
-     done();
-   });
+  beforeEach(function() {
+    var token = {
+      _id: '1',
+      token: '12345',
+      userId: {
+        populate: function(field, callback) {
+          callback(null, {
+            _id: '1',
+            username: 'test',
+            roleId: {
+              permissions: ['READ_USER']
+            }
+          });
+        }
+      }
+    }
 
-   // ----- Begin real tests -----
-   // ----- Count()
-   it("User.count test", function(done){
-     var myCount = user.count(function(err, count){
-     });
-     expect(user.count).to.have.been.calledOnce;
-     expect(myCount).to.equal(3);
-     done();
-   });
+    sandbox.mock(TokenModel)
+      .expects('findOne')
+      .withArgs({token: "12345"})
+      .chain('populate', 'userId')
+      .chain('exec')
+      .yields(null, token);
+  });
 
-   // ------ getUserById()
-   it("User.getUserById test", function(done){
-     var id = "id123";
-     var myUser = user.getUserById(id, function(err, count){
-     });
-     expect(user.getUserById).to.have.been.calledOnce;
-     expect(myUser.firstname).to.equal("test");
-     expect(myUser.username).to.equal("testUser");
+  afterEach(function() {
+    sandbox.restore();
+  });
 
-     done();
-   });
+  it("should logout without token", function(done) {
+    sandbox.mock(TokenModel)
+      .expects('findByIdAndRemove')
+      .withArgs("1")
+      .yields(null);
 
+    request(app)
+      .post('/api/logout')
+      .set('Accept', 'application/json')
+      .expect(200)
+      .expect('Content-Type', /text\/plain/)
+      .expect(function(res) {
+        console.log('res body', res.body);
+      })
+      .end(done)
+  });
 
-   // ----- Verify funcitons exist
-   it("Verify User functions exist", function(done){
-     expect(user.createUser).to.be.a('function');
-     done();
-   });
+  it("should logout with token", function(done) {
+    sandbox.mock(TokenModel)
+      .expects('findByIdAndRemove')
+      .withArgs("1")
+      .yields(null);
 
-   // ----- Test app calls
-   it("Test http request: /api/users/count ", function(done){
-    //  var user1 = request.agent();
-    //  user1.post('http://localhost:4000')
-    //  request(userApp)
-    //   .get('/api/users/count')
-    //   .auth('jclark', '')
-    //   .expect(200, done);
-    done();
-   });
+    request(app)
+      .post('/api/logout')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect('Content-Type', /text\/html/)
+      .expect(function(res) {
+        res.text.should.equal('successfully logged out')
+      })
+      .end(done)
+  });
+
+  it('should count users', function(done) {
+    sandbox.mock(UserModel)
+      .expects('count')
+      .yields(null, 5);
+
+    request(app)
+      .get('/api/users/count')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(function(res) {
+        should.exist(res.body);
+        res.body.should.have.property('count');
+        res.body.count.should.equal(5);
+      })
+      .end(done)
+  });
+
+  it('get all users', function(done) {
+    var mockUsers = [{
+      username: 'test1'
+    },{
+      username: 'test2'
+    }];
+
+    sandbox.mock(UserModel)
+      .expects('find')
+      .chain('exec')
+      .yields(null, mockUsers);
+
+    request(app)
+      .get('/api/users')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(function(res) {
+        var users = res.body;
+        should.exist(users);
+        users.should.be.an('array');
+        users.should.have.length.of(2);
+        users.should.deep.include.members(mockUsers);
+      })
+      .end(done)
+  });
 
 });
