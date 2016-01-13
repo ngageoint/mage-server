@@ -1,0 +1,13 @@
+---
+applications:
+ - name: MAGE
+   memory: 512M
+   instances: 1
+   domain: dev.geointservices.io
+   services:
+     - MongoInstance
+   env:
+     S3_MOUNTPOINT: mage
+     S3_BUCKET: 
+     S3_USER: 
+     S3_PASS: 

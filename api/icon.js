@@ -9,7 +9,7 @@ var IconModel = require('../models/icon')
   , config = require('../config.js');
 
 var appRoot = path.dirname(require.main.filename);
-var iconBase = config.server.iconBaseDirectory;
+var iconBase = path.resolve(config.server.iconBaseDirectory);
 
 function Icon(eventId, type, variant) {
   this._eventId = eventId || null;

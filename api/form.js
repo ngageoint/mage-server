@@ -12,7 +12,7 @@ var Event = require('../models/event')
   , access = require('../access')
   , config = require('../config.js');
 
-var iconBase = config.server.iconBaseDirectory;
+var iconBase = path.resolve(config.server.iconBaseDirectory);
 
 function Form(event) {
   this._event = event;
