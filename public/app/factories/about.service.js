@@ -12,6 +12,6 @@ function AboutService($http) {
   return service;
 
   function about() {
-    return $http.get('/api/');
+    return $http.get('/api/', {cache: false});
   };
 }

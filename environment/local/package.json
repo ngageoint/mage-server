@@ -1,0 +1,23 @@
+{
+  "name": "local-environment",
+  "version": "0.0.1",
+  "description": "MAGE local environment.  Typically used when deploying mage to a bare metal",
+  "keywords": [
+    "NGA",
+    "mage"
+  ],
+  "author": {
+    "name": "NGA"
+  },
+  "contributors": {
+    "name": "Billy Newman",
+    "email": "newmanw@bit-sys.com"
+  },
+  "homepage": "https://www1.nga.mil",
+  "engines": {
+    "node": ">= 0.8.0",
+    "npm": ">= 2.0.0"
+  },
+  "private": true,
+  "main": "env.js"
+}

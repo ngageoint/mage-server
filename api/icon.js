@@ -6,10 +6,10 @@ var IconModel = require('../models/icon')
   , async = require('async')
   , moment = require('moment')
   , access = require('../access')
-  , config = require('../config.js');
+  , environment = require('environment');
 
 var appRoot = path.dirname(require.main.filename);
-var iconBase = path.resolve(config.server.iconBaseDirectory);
+var iconBase = environment.iconBaseDirectory;
 
 function Icon(eventId, type, variant) {
   this._eventId = eventId || null;

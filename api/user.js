@@ -7,9 +7,9 @@ var UserModel = require('../models/user')
   , path = require('path')
   , fs = require('fs-extra')
   , async = require('async')
-  , config = require('../config.js');
+  , environment = require('environment');
 
-var userBase = path.resolve(config.server.userBaseDirectory);
+var userBase = environment.userBaseDirectory;
 
 function contentPath(id, user, content, type) {
   var relativePath = path.join(id.toString(), type + path.extname(content.path));

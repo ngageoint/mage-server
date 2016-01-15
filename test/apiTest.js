@@ -3,15 +3,26 @@ var request = require('supertest')
   , app = require('../express')
   , mongoose = require('mongoose')
   , Setting = require('../models/setting')
-  , SettingModel = mongoose.model('Setting');
+  , SettingModel = mongoose.model('Setting')
+  , User = require('../models/user')
+  , UserModel = mongoose.model('User');
 
 require('sinon-mongoose');
 require('chai').should();
 
 describe("api route tests", function() {
 
+  var sandbox;
+  before(function() {
+    sandbox = sinon.sandbox.create();
+  });
+
+  afterEach(function() {
+    sandbox.restore();
+  });
+
   it("api should return configuration", function(done) {
-    sinon.mock(SettingModel)
+    sandbox.mock(SettingModel)
       .expects('findOne')
       .withArgs({type: 'disclaimer'})
       .yields(null, {
@@ -27,6 +38,11 @@ describe("api route tests", function() {
       		headerTextColor : "#000000"
       	}
       });
+
+    sandbox.mock(UserModel)
+      .expects('count')
+      .withArgs({})
+      .yields(null, 1);
 
     request(app)
       .get('/api')

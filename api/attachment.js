@@ -6,11 +6,10 @@ var ObservationModel = require('../models/observation')
   , async = require('async')
   , moment = require('moment')
   , access = require('../access')
-  , config = require('../config.js')
+  , environment = require('environment')
   , geometryFormat = require('../format/geoJsonFormat');
 
-var attachmentConfig = config.server.attachment;
-var attachmentBase = path.resolve(attachmentConfig.baseDirectory);
+var attachmentBase = environment.attachmentBaseDirectory;
 
 var createAttachmentPath = function(event) {
   var now = new Date();

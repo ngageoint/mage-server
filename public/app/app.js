@@ -9,12 +9,13 @@ angular
     "ngSanitize",
     "ngRoute",
     "ngResource",
+    "ngMessages",
     "http-auth-interceptor"
   ]).config(config).run(run);
 
-config.$inject = ['$routeProvider', '$locationProvider', '$httpProvider'];
+config.$inject = ['$provide', '$httpProvider', '$routeProvider'];
 
-function config($routeProvider, $locationProvider, $httpProvider) {
+function config($provide, $httpProvider, $routeProvider) {
   $httpProvider.defaults.withCredentials = true;
   $httpProvider.defaults.headers.post  = {'Content-Type': 'application/x-www-form-urlencoded'};
 
@@ -33,6 +34,32 @@ function config($routeProvider, $locationProvider, $httpProvider) {
       }]
     }
   }
+
+  $routeProvider.when('/', {
+    resolve: {
+      api: ['$location', 'AboutService', function($location, AboutService) {
+        AboutService.about().success(function(api) {
+          if (api.initial) {
+            $location.path('/setup');
+          } else {
+            $location.path('signin')
+          }
+        });
+      }]
+    }
+  });
+
+  $routeProvider.when('/setup', {
+    templateUrl: 'app/setup/setup.html',
+    controller: 'SetupController',
+    resolve: {
+      api: ['ApiService', function(ApiService) {
+        return ApiService.get(function(api) {
+          return api;
+        });
+      }]
+    }
+  });
 
   $routeProvider.when('/signin', {
     templateUrl:    'app/signin/signin.html',
@@ -192,15 +219,11 @@ function config($routeProvider, $locationProvider, $httpProvider) {
     controller:     "AboutController",
     resolve: resolveLogin(["USER_ROLE", "ADMIN_ROLE"])
   });
-  $routeProvider.otherwise({
-    redirectTo:     '/signin',
-    controller:     "SigninController",
-  });
 }
 
-run.$inject = ['$rootScope', '$modal', 'UserService', '$location', 'authService', 'LocalStorageService', 'UserService', 'AboutService', 'ApiService'];
+run.$inject = ['$rootScope', '$route', '$modal', 'UserService', '$location', 'authService', 'LocalStorageService', 'UserService', 'AboutService', 'ApiService'];
 
-function run($rootScope, $modal, UserService, $location, authService, LocalStorageService, UserService, AboutService, ApiService) {
+function run($rootScope, $route, $modal, UserService, $location, authService, LocalStorageService, UserService, AboutService, ApiService) {
   $rootScope.$on('event:auth-loginRequired', function() {
     if (!$rootScope.loginDialogPresented && $location.path() != '/' && $location.path() != '/signin' && $location.path() != '/signup') {
       $rootScope.loginDialogPresented = true;
@@ -276,7 +299,7 @@ function run($rootScope, $modal, UserService, $location, authService, LocalStora
       authService.loginConfirmed(data);
 
       LocalStorageService.setToken(data.token);
-      if ($location.path() == '/signin') {
+      if ($location.path() == '/signin' || $location.path() == '/setup') {
         $location.path('/map');
       }
     }

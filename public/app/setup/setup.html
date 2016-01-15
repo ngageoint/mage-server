@@ -1,0 +1,89 @@
+<div class="container top-gap-l">
+  <div class="row">
+    <div class="col-md-12">
+
+      <div class="row">
+        <div class="col-md-12 top-gap-xl">
+          <h2 class="text-center">Welcome to MAGE</h2>
+          <div class="text-center">
+            <i class="fa fa-magic icon-brand-s"></i>
+          </div>
+        </div>
+      </div>
+
+      <hr>
+
+      <div ng-if="page == 'account'">
+        <div class="row">
+          <div class="col-md-12 top-gap-xl text-center">
+            <h4>You will need to create an initial account to access and administer MAGE.</h4>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 col-md-offset-3 top-gap-l">
+            <form name="form.account" class="form" novalidate>
+              <div class="form-group" ng-class="{'has-error': form.account.$submitted && form.account.username.$invalid}">
+                <label class="control-label">Username</label>
+                <input type="text" ng-model="account.username" name="username" class="form-control" required>
+                <div class="help-block" ng-messages="form.account.username.$error" ng-if="form.account.$submitted && form.account.username.$invalid">
+                  <div ng-message="required">Username is required</div>
+                </div>
+              </div>
+
+              <div class="form-group" ng-class="{'has-error': form.account.$submitted && form.account.password.$invalid}">
+                <label class="control-label">Password</label>
+                <input type="password" ng-model="account.password" name="password" class="form-control" ng-minlength="{{passwordRequirements.minLength}}" required>
+                <div class="help-block" ng-messages="form.account.password.$error" ng-if="form.account.$submitted && form.account.password.$invalid">
+                  <p ng-message="required">Password is required</p>
+                  <p ng-message="minlength">Password does not meet minimum length requirement</p>
+                </div>
+              </div>
+
+              <div class="form-group" ng-class="{'has-error': form.account.$submitted && form.account.passwordconfirm.$invalid}">
+                <label class="control-label">Confirm Password</label>
+                <input type="password" ng-model="account.passwordconfirm" name="passwordconfirm" class="form-control" equals="{{account.password}}" ng-minlength="{{passwordRequirements.minLength}}" required>
+                <div class="help-block" ng-messages="form.account.passwordconfirm.$error" ng-if="form.account.$submitted && form.account.passwordconfirm.$invalid">
+                  <p ng-message="required">Password Confirm is required</p>
+                  <p ng-message="minlength">Password does not meet minimum length requirement</p>
+                  <p ng-message="equals">Passwords do not match</p>
+                </div>
+              </div>
+
+              <span class="pull-right">
+                <button type="submit" class="btn btn-primary" ng-click="next()">Next</button>
+              </span>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div ng-if="page == 'device'">
+        <div class="row">
+          <div class="col-md-12 top-gap-xl text-center">
+            <h4>You will need to create an initial device ID to access and administer MAGE.</h4>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 col-md-offset-3 top-gap-l">
+            <form name="form.device" class="form" novalidate>
+              <div class="form-group" ng-class="{'has-error': form.device.$submitted && form.device.uid.$invalid}">
+                <label class="control-label">Device ID</label>
+                <input type="text" ng-model="account.uid" name="uid" class="form-control" required>
+                <div class="help-block" ng-messages="form.device.uid.$error" ng-if="form.device.$submitted && form.device.uid.$invalid">
+                  <div ng-message="required">Device ID is required</div>
+                </div>
+              </div>
+
+              <span class="pull-right">
+                <button class="btn btn-primary" ng-click="next()">Next</button>
+              </span>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

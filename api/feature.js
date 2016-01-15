@@ -1,10 +1,4 @@
-var FeatureModel = require('../models/feature')
-  , path = require('path')
-  , fs = require('fs-extra')
-  , async = require('async')
-  , config = require('../config.js');
-
-var attachmentBase = config.server.attachment.baseDirectory;
+var FeatureModel = require('../models/feature');
 
 function Feature(layer) {
   this._layer = layer;

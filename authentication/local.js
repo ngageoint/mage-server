@@ -1,9 +1,11 @@
 module.exports = function(app, passport, provisioning, localStrategy) {
 
   var log = require('winston')
+    , mongoose = require('mongoose')
     , LocalStrategy = require('passport-local').Strategy
     , User = require('../models/user')
     , Device = require('../models/device')
+    , access = require('../access')
     , api = require('../api')
     , userTransformer = require('../transformers/user');
 
@@ -53,7 +55,34 @@ module.exports = function(app, passport, provisioning, localStrategy) {
     }
   );
 
+  app.put(
+    '/api/users/myself/password',
+    passport.authenticate('local'),
+    function(req, res, next) {
+      var password = req.param('newPassword');
+      var passwordconfirm = req.param('newPasswordconfirm');
+      if (password && passwordconfirm) {
+        if (password != passwordconfirm) {
+          return res.status(400).send('passwords do not match');
+        }
 
+        if (password.length < passwordLength) {
+          return res.status(400).send('password does not meet minimum length requirment of ' + passwordLength + ' characters');
+        }
+
+        req.user.authentication.password = password;
+        req.user.authentication.forcePasswordReset = false;
+        new api.User().update(req.user, function(err, updatedUser) {
+          updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
+          res.json(updatedUser);
+        });
+      } else {
+        return res.status(400).send('newPassword and newPasswordconfirm are required');
+      }
+
+    }
+  );
+  
   // Create a new device
   // Any authenticated user can create a new device, the registered field
   // will be set to false.

@@ -3,8 +3,6 @@ module.exports = function(app, security) {
     , Setting = require('../models/setting')
     , passport = security.authentication.passport;
 
-  app.all('/api/settings*', passport.authenticate('bearer'));
-
   var validateRoleParams = function(req, res, next) {
     var name = req.param('name');
     if (!name) {
@@ -23,6 +21,7 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/settings',
+    passport.authenticate('bearer'),
     access.authorize('READ_SETTINGS'),
     function (req, res, next) {
       Setting.getSettings(function(err, settings) {
@@ -33,7 +32,6 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/settings/:type(banner|disclaimer)',
-    access.authorize('READ_SETTINGS'),
     function (req, res, next) {
       Setting.getSettingByType(req.params.type, function(err, settingType) {
         return res.json(settingType);
@@ -43,6 +41,7 @@ module.exports = function(app, security) {
 
   app.put(
     '/api/settings/:type(banner|disclaimer)',
+    passport.authenticate('bearer'),
     access.authorize('UPDATE_SETTINGS'),
     function(req, res, next) {
       Setting.updateSettingByType(req.params.type, {settings: req.body}, function(err, setting) {

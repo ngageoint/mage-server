@@ -3,9 +3,9 @@ var ObservationModel = require('../models/observation')
   , path = require('path')
   , fs = require('fs-extra')
   , async = require('async')
-  , config = require('../config.js');
+  , environment = require('environment');
 
-var attachmentBase = path.resolve(config.server.attachment.baseDirectory);
+var attachmentBase = environment.attachmentBaseDirectory;
 
 function Observation(event) {
   this._event = event;

@@ -1,5 +1,6 @@
 module.exports = function(app, security) {
   var fs = require('fs-extra')
+    , async = require('async')
     , api = require('../api')
     , Event = require('../models/event')
     , Team = require('../models/team')
@@ -31,12 +32,25 @@ module.exports = function(app, security) {
 
   app.set('resources', resources);
 
-  app.get('/api', function(req, res) {
-    Setting.getSetting('disclaimer', function(err, disclaimer) {
-      disclaimer = disclaimer || {};
+  app.get('/api', function(req, res, next) {
+    async.parallel({
+      initial: function(done) {
+        User.count(function(err, count) {
+          done(err, count === 0);
+        });
+      },
+      disclaimer: function(done) {
+        Setting.getSetting('disclaimer', function(err, disclaimer) {
+          done(err, disclaimer || {});
+        });
+      }
+    }, function(err, results) {
+      if (err) return next(err);
 
       var api = app.get('config').api;
-      api.disclaimer = disclaimer.settings;
+      api.disclaimer = results.disclaimer.settings;
+      api.initial = results.initial;
+
       res.json(api);
     });
   });

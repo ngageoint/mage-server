@@ -10,9 +10,9 @@ var Event = require('../models/event')
   , async = require('async')
   , moment = require('moment')
   , access = require('../access')
-  , config = require('../config.js');
+  , environment = require('environment');
 
-var iconBase = path.resolve(config.server.iconBaseDirectory);
+var iconBase = environment.iconBaseDirectory;
 
 function Form(event) {
   this._event = event;
