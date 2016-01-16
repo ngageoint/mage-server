@@ -54,8 +54,6 @@ describe("api route tests", function() {
         config.should.have.property('version');
         config.should.have.property('authenticationStrategies');
         config.should.have.property('provision');
-        config.should.have.property('locationServices');
-        config.should.have.property('apk');
         config.should.have.property('disclaimer');
       })
       .end(done)

@@ -16,8 +16,8 @@
     <div class="col-md-6">
       <table class="table">
         <p><strong>Version:</strong> {{serverVersion.major}}.{{serverVersion.minor}}.{{serverVersion.micro}}</p>
-        <p>Device Provisioning:<strong> {{deviceProvisioning}}</strong></p>
-        <p>LocationServices:<strong> {{locationServices}}</strong></p>
+        <p>Device Provisioning:<strong> enabled</strong></p>
+        <p>LocationServices:<strong> enabled</strong></p>
       </table>
     </div>
   </div>
@@ -63,10 +63,6 @@
           <li>Automatically uses Map Cache (download below) for offline map data.</li>
         </ul>
       </div>
-    </div>
-    <div class="col-md-3">
-      <p><strong>Version</strong> {{apk.version}}</p>
-      <p><strong>Supported Android OS versions:</strong> {{apk.supportedVersions[0]}}, {{apk.supportedVersions[1]}}</p>
     </div>
   </div>
 
