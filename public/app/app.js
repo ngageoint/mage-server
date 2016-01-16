@@ -27,22 +27,18 @@ function config($provide, $httpProvider, $routeProvider) {
     }
   }
 
-  function checkLogin(roles) {
-    return {
-      user: ['UserService', function(UserService) {
-        return UserService.checkLoggedInUser(roles);
-      }]
-    }
-  }
+  $routeProvider.otherwise({
+    redirectTo: '/'
+  });
 
   $routeProvider.when('/', {
     resolve: {
-      api: ['$location', 'AboutService', function($location, AboutService) {
-        AboutService.about().success(function(api) {
+      api: ['$location', 'ApiService', function($location, ApiService) {
+        ApiService.get(function(api) {
           if (api.initial) {
             $location.path('/setup');
           } else {
-            $location.path('signin')
+            $location.path('/signin')
           }
         });
       }]
@@ -53,10 +49,17 @@ function config($provide, $httpProvider, $routeProvider) {
     templateUrl: 'app/setup/setup.html',
     controller: 'SetupController',
     resolve: {
-      api: ['ApiService', function(ApiService) {
-        return ApiService.get(function(api) {
-          return api;
+      api: ['$q', '$location', 'ApiService', function($q, $location, ApiService) {
+        var deferred = $q.defer();
+        ApiService.get(function(api) {
+          if (!api.initial) {
+            $location.path('/');
+          } else {
+            deferred.resolve(api);
+          }
         });
+
+        return deferred.promise;
       }]
     }
   });
@@ -64,11 +67,39 @@ function config($provide, $httpProvider, $routeProvider) {
   $routeProvider.when('/signin', {
     templateUrl:    'app/signin/signin.html',
     controller:     "SigninController",
-    resolve: checkLogin()
+    resolve: {
+      api: ['$q', '$location', 'ApiService', function($q, $location, ApiService) {
+        var deferred = $q.defer();
+        ApiService.get(function(api) {
+          if (api.initial) {
+            $location.path('/setup');
+          } else {
+            deferred.resolve(api);
+          }
+        });
+
+        return deferred.promise;
+      }]
+    }
   });
+
   $routeProvider.when('/signup', {
     templateUrl:    'app/signup/signup.html',
-    controller:     "SignupController"
+    controller:     "SignupController",
+    resolve: {
+      api: ['$q', '$location', 'ApiService', function($q, $location, ApiService) {
+        var deferred = $q.defer();
+        ApiService.get(function(api) {
+          if (api.initial) {
+            $location.path('/setup');
+          } else {
+            deferred.resolve(api);
+          }
+        });
+
+        return deferred.promise;
+      }]
+    }
   });
 
   $routeProvider.when('/admin', {
@@ -221,9 +252,22 @@ function config($provide, $httpProvider, $routeProvider) {
   });
 }
 
-run.$inject = ['$rootScope', '$route', '$modal', 'UserService', '$location', 'authService', 'LocalStorageService', 'UserService', 'AboutService', 'ApiService'];
+run.$inject = ['$rootScope', '$route', '$modal', 'UserService', '$location', 'authService', 'LocalStorageService', 'UserService', 'ApiService'];
 
-function run($rootScope, $route, $modal, UserService, $location, authService, LocalStorageService, UserService, AboutService, ApiService) {
+function run($rootScope, $route, $modal, UserService, $location, authService, LocalStorageService, UserService, ApiService) {
+  var api;
+  ApiService.get(function(apiData) {
+    api = apiData;
+  });
+
+  $rootScope.$on( "$locationChangeStart", function(event, next, current) {
+    console.log('locationChangeStart')
+    // if (api.initial && next !== '/setup') {
+      // event.preventDefault;
+    // }
+  });
+
+
   $rootScope.$on('event:auth-loginRequired', function() {
     if (!$rootScope.loginDialogPresented && $location.path() != '/' && $location.path() != '/signin' && $location.path() != '/signup') {
       $rootScope.loginDialogPresented = true;
@@ -304,7 +348,7 @@ function run($rootScope, $route, $modal, UserService, $location, authService, Lo
       }
     }
 
-    AboutService.about().success(function(api) {
+    ApiService.get(function(api) {
       var disclaimer = api.disclaimer || {};
       if (!disclaimer.show) {
         confirmLogin();

@@ -36,6 +36,7 @@ module.exports = function(app, security) {
     async.parallel({
       initial: function(done) {
         User.count(function(err, count) {
+          console.log('users in mongo', count);
           done(err, count === 0);
         });
       },
@@ -49,8 +50,12 @@ module.exports = function(app, security) {
 
       var api = app.get('config').api;
       api.disclaimer = results.disclaimer.settings;
-      api.initial = results.initial;
 
+      if (results.initial) {
+        api.initial = true;
+      }
+
+      console.log('returning api', api);
       res.json(api);
     });
   });

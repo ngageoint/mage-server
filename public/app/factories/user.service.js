@@ -161,7 +161,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
       theDeferred.resolve(user);
     })
     .error(function(data, status) {
-      theDeferred.resolve({});
+      theDeferred.reject();
     });
 
     return theDeferred.promise;
@@ -187,8 +187,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
   }
 
   function checkLoggedInUser(roles) {
-    console.info('check login');
-    $http.get('/api/users/myself', {ignoreAuthModule: true})
+    $http.get('/api/users/myself')
     .success(function(user) {
       setUser(user);
       userDeferred.resolve(user);
