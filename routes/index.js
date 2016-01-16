@@ -1,6 +1,8 @@
 module.exports = function(app, security) {
   var fs = require('fs-extra')
+    , extend = require('util')._extend
     , async = require('async')
+    , config = require('../config')
     , api = require('../api')
     , Event = require('../models/event')
     , Team = require('../models/team')
@@ -13,31 +15,11 @@ module.exports = function(app, security) {
     , Setting = require('../models/setting')
     , log = require('winston');
 
-  var resources = {
-    layerResource: {
-      location: '/FeatureServer',
-      featureResource: {
-        location: '/features',
-        attachmentResource: {
-          location: '/attachments'
-        },
-        stateResource: {
-          location: '/states'
-        }
-      }
-    }
-  }
-
-  var log = require('winston');
-
-  app.set('resources', resources);
-
   app.get('/api', function(req, res, next) {
     async.parallel({
       initial: function(done) {
         User.count(function(err, count) {
-          console.log('users in mongo', count);
-          done(err, count === 0);
+          done(err, count == 0);
         });
       },
       disclaimer: function(done) {
@@ -48,14 +30,13 @@ module.exports = function(app, security) {
     }, function(err, results) {
       if (err) return next(err);
 
-      var api = app.get('config').api;
+      var api = extend({}, config.api);
       api.disclaimer = results.disclaimer.settings;
 
       if (results.initial) {
         api.initial = true;
       }
 
-      console.log('returning api', api);
       res.json(api);
     });
   });

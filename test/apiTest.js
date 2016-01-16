@@ -61,4 +61,50 @@ describe("api route tests", function() {
       .end(done)
   });
 
+  it("api should return initial", function(done) {
+    sandbox.mock(SettingModel)
+      .expects('findOne')
+      .withArgs({type: 'disclaimer'})
+      .yields(null, {});
+
+    sandbox.mock(UserModel)
+      .expects('count')
+      .withArgs({})
+      .yields(null, 0);
+
+    request(app)
+      .get('/api')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .expect(function(res) {
+        var config = res.body;
+        config.should.have.property('initial').that.is.true;
+      })
+      .end(done)
+  });
+
+  it("api should not return initial", function(done) {
+    sandbox.mock(SettingModel)
+      .expects('findOne')
+      .withArgs({type: 'disclaimer'})
+      .yields(null, {});
+
+    sandbox.mock(UserModel)
+      .expects('count')
+      .withArgs({})
+      .yields(null, 2);
+
+    request(app)
+      .get('/api')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .expect(function(res) {
+        var config = res.body;
+        config.should.not.have.property('initial');
+      })
+      .end(done)
+  });
+
 });
