@@ -35,4 +35,9 @@ describe("local environment tests", function() {
     mongo.should.have.property('db');
     mongo.should.have.property('poolSize');
   });
+
+  it("environment should provide token expiration", function() {
+    environment.should.have.property('tokenExpiration');
+  });
+  
 });

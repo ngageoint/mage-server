@@ -1,11 +1,27 @@
-var sinon = require('sinon')
-  , proxyquire = require('proxyquire')
-  , should = require('chai').should();
+var should = require('chai').should()
+  , proxyquire = require('proxyquire');
 
 describe("cloud foundry environment tests", function() {
 
   process.env['CLOUDFOUNDRY'] = "cf";
-  var environment = require('../env');
+
+  var environment = proxyquire('../env', { 'cfenv': {
+      getAppEnv: function() {
+        return {
+          getServiceCreds: function() {
+            return {
+              uri: 'mongodb://127.0.0.1:2727/magedb',
+              scheme: 'mongodb',
+              host: '127.0.0.1',
+              port: 2727,
+              db: 'magedb',
+              poolSize: 5
+            }
+          }
+        }
+      }
+    }
+  });
 
   it("environment should provide port", function() {
     environment.should.have.property('port').that.is.not.null;
@@ -27,7 +43,7 @@ describe("cloud foundry environment tests", function() {
     environment.should.have.property('userBaseDirectory');
   });
 
-  xit("environment should provide mongo", function() {
+  it("environment should provide mongo", function() {
     var mongo = environment.mongo;
     should.exist(mongo);
     mongo.should.have.property('uri');
@@ -36,6 +52,10 @@ describe("cloud foundry environment tests", function() {
     mongo.should.have.property('port');
     mongo.should.have.property('db');
     mongo.should.have.property('poolSize');
+  });
+
+  it("environment should provide token expiration", function() {
+    environment.should.have.property('tokenExpiration');
   });
 
 });
