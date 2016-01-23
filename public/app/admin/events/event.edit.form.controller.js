@@ -120,7 +120,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     });
 
     var fieldToMoveDown = null;
-    for (var i = sortedFields.length - 1; i > 0; i--) {
+    for (var i = sortedFields.length - 1; i >= 0; i--) {
       var field = sortedFields[i];
       if (field.id < fieldToMoveUp.id && !field.archived) {
         fieldToMoveDown = field;
