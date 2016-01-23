@@ -62,7 +62,6 @@ a {
 
 .card {
   box-sizing: border-box;
-  margin: 8px;
   box-shadow: 0 3px 1px -2px rgba(0,0,0,.14),0 2px 2px 0 rgba(0,0,0,.098),0 1px 5px 0 rgba(0,0,0,.084);
 }
 
@@ -100,8 +99,8 @@ a {
 }
 
 .modal-footer {
-	background: #5278A2;
-  color: #91BDEE;
+  background: #FFF;
+  color: #6389b3;
 }
 
 .label-as-badge {
@@ -177,7 +176,7 @@ a {
 
 .icon-brand-s {
 	font-size: 75px;
-	color: #324962;
+	color: #365F8C;
 }
 
 .icon-brand-m {
@@ -187,7 +186,7 @@ a {
 
 .icon-brand-l {
 	font-size: 300px;
-	color: #324962;
+	color: #365F8C;
 }
 
 /* Overrides */
