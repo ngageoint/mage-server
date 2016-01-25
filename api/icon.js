@@ -1,11 +1,7 @@
 var IconModel = require('../models/icon')
   , log = require('winston')
   , path = require('path')
-  , util = require('util')
   , fs = require('fs-extra')
-  , async = require('async')
-  , moment = require('moment')
-  , access = require('../access')
   , config = require('../config.js');
 
 var appRoot = path.dirname(require.main.filename);
@@ -22,14 +18,14 @@ function Icon(eventId, type, variant) {
       this._variant = number;
     }
   }
-};
+}
 
 function createIconPath(icon, name) {
   var ext = path.extname(name);
   var iconPath = icon._eventId.toString();
-  if (icon._type != null) {
+  if (icon._type !== null) {
     iconPath = path.join(iconPath, icon._type);
-    if (icon._variant != null) {
+    if (icon._variant !== null) {
       iconPath = path.join(iconPath, icon._variant);
     }
   }
@@ -41,7 +37,7 @@ function createIconPath(icon, name) {
 
 Icon.prototype.getBasePath = function() {
   return path.join(iconBase, this._eventId.toString());
-}
+};
 
 Icon.prototype.getIcon = function(callback) {
   var options = {
@@ -55,14 +51,14 @@ Icon.prototype.getIcon = function(callback) {
 
     callback(null, path.join(iconBase, icon.relativePath));
   });
-}
+};
 
 Icon.prototype.setDefaultIcon = function(callback) {
   var relativePath = createIconPath(this, 'default-icon.png');
   var newIcon = {
     eventId: this._eventId,
     relativePath: relativePath
-  }
+  };
 
   var iconPath = path.join(iconBase, relativePath);
   fs.copy(path.join(appRoot, '/public/img/default-icon.png'), iconPath, function(err) {
@@ -70,11 +66,11 @@ Icon.prototype.setDefaultIcon = function(callback) {
 
     IconModel.create(newIcon, callback);
   });
-}
+};
 
 Icon.prototype.getDefaultIcon = function(callback) {
   return callback(null, path.join(appRoot, '/public/img/default-icon.png'));
-}
+};
 
 Icon.prototype.create = function(icon, callback) {
   var relativePath = createIconPath(this, icon.name);
@@ -83,17 +79,19 @@ Icon.prototype.create = function(icon, callback) {
     type: this._type,
     variant: this._variant,
     relativePath: relativePath
-  }
+  };
 
   var iconPath = path.join(iconBase, relativePath);
   fs.mkdirp(path.dirname(iconPath), function(err) {
+    if (err) return callback(err);
+
     fs.rename(icon.path, iconPath, function(err) {
-      if (err) { return callback(err); }
+      if (err) return callback(err);
 
       IconModel.create(newIcon, function(err, oldIcon) {
         callback(err, newIcon);
 
-        if (oldIcon && oldIcon.relativePath != newIcon.relativePath) {
+        if (oldIcon && oldIcon.relativePath !== newIcon.relativePath) {
           fs.remove(path.join(iconBase, oldIcon.relativePath), function(err) {
             if (err) log.error('could not remove old icon from file system', err);
           });
@@ -101,7 +99,7 @@ Icon.prototype.create = function(icon, callback) {
       });
     });
   });
-}
+};
 
 Icon.prototype.add = function(icon, callback) {
   var relativePath = createIconPath(this, icon.name);
@@ -110,12 +108,12 @@ Icon.prototype.add = function(icon, callback) {
     type: this._type,
     variant: this._variant,
     relativePath: relativePath
-  }
+  };
 
-  IconModel.create(newIcon, function(err, oldIcon) {
+  IconModel.create(newIcon, function(err) {
     callback(err, newIcon);
   });
-}
+};
 
 Icon.prototype.delete = function(callback) {
   var self = this;
@@ -125,7 +123,7 @@ Icon.prototype.delete = function(callback) {
     variant: this._variant
   };
 
-  IconModel.getIcon(conditions, function(err, icon) {
+  IconModel.getIcon(conditions, function(err) {
     if (err) return callback(err);
 
     var remove = {eventId: self._eventId};
@@ -149,11 +147,11 @@ Icon.prototype.delete = function(callback) {
       log.info('removing icons: ', removePath);
       fs.remove(removePath, function(err) {
         if (err) {
-          log.error("Could not remove attachment file " + file + ". ", err);
+          log.error("Could not remove attachment file " + removePath + ". ", err);
         }
       });
     });
   });
-}
+};
 
 module.exports = Icon;

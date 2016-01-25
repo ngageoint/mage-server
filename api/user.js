@@ -1,7 +1,6 @@
 var UserModel = require('../models/user')
   , log = require('winston')
   , TokenModel = require('../models/token')
-  , DeviceModel = require('../models/device')
   , LoginModel = require('../models/login')
   , EventModel = require('../models/event')
   , path = require('path')
@@ -29,7 +28,7 @@ function iconPath(id, user, icon) {
 }
 
 function User() {
-};
+}
 
 User.prototype.login = function(user, device, callback) {
   TokenModel.createToken({userId: user._id, device: device}, function(err, token) {
@@ -37,28 +36,28 @@ User.prototype.login = function(user, device, callback) {
 
     callback(err, token);
 
-    LoginModel.createLogin(user, device, function(err, login) {
+    LoginModel.createLogin(user, device, function(err) {
       if (err) log.error('could not add login', err);
     });
   });
-}
+};
 
 User.prototype.logout = function(token, callback) {
   if (!token) return callback();
 
-  TokenModel.removeToken(token, function(err, token) {
+  TokenModel.removeToken(token, function(err) {
     callback(err);
   });
-}
+};
 
 User.prototype.count = function(callback) {
   UserModel.count(function(err, count) {
     callback(err, count);
   });
-}
+};
 
 User.prototype.getAll = function(filter, callback) {
-  if (typeof filter == 'function') {
+  if (typeof filter === 'function') {
     callback = filter;
     filter = {};
   }
@@ -66,13 +65,13 @@ User.prototype.getAll = function(filter, callback) {
   UserModel.getUsers(filter, function (err, users) {
     callback(err, users);
   });
-}
+};
 
 User.prototype.getById = function(id, callback) {
   UserModel.getUserById(id, function(err, user) {
     callback(err, user);
   });
-}
+};
 
 User.prototype.create = function(user, options, callback) {
   var operations = [];
@@ -127,10 +126,10 @@ User.prototype.create = function(user, options, callback) {
 
     UserModel.updateUser(newUser, callback);
   });
-}
+};
 
 User.prototype.update = function(user, options, callback) {
-  if (typeof options == 'function') {
+  if (typeof options === 'function') {
     callback = options;
     options = {};
   }
@@ -183,13 +182,13 @@ User.prototype.update = function(user, options, callback) {
 
     UserModel.updateUser(updatedUser, callback);
   });
-}
+};
 
 User.prototype.delete = function(user, callback) {
   UserModel.deleteUser(user, function(err) {
     callback(err);
   });
-}
+};
 
 User.prototype.avatar = function(user, callback) {
   if (!user.avatar.relativePath) return callback();
@@ -198,7 +197,7 @@ User.prototype.avatar = function(user, callback) {
   avatar.path = path.join(userBase, user.avatar.relativePath);
 
   callback(null, avatar);
-}
+};
 
 User.prototype.icon = function(user, callback) {
   if (!user.icon.relativePath) return callback();
@@ -207,7 +206,7 @@ User.prototype.icon = function(user, callback) {
   icon.path = path.join(userBase, user.icon.relativePath);
 
   callback(null, icon);
-}
+};
 
 User.prototype.addRecentEvent = function(user, event, callback) {
   // Ensure user is part of the event
@@ -221,6 +220,6 @@ User.prototype.addRecentEvent = function(user, event, callback) {
     UserModel.addRecentEventForUser(user, event, callback);
   });
 
-}
+};
 
 module.exports = User;

@@ -49,4 +49,4 @@ module.exports = {
       "baseDirectory": "/var/lib/mage/attachments"
     }
   }
-}
+};

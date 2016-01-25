@@ -1,4 +1,4 @@
-module.exports = function(app, passport, provisioning, localStrategy) {
+module.exports = function(app, passport, provisioning) {
 
   var log = require('winston')
     , LocalStrategy = require('passport-local').Strategy
@@ -87,4 +87,4 @@ module.exports = function(app, passport, provisioning, localStrategy) {
       });
     }
   );
-}
+};

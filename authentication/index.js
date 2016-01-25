@@ -38,4 +38,4 @@ module.exports = function(app, passport, provision, strategies) {
     passport: passport,
     strategies: strategies
   };
-}
+};

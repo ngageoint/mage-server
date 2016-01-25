@@ -1,12 +1,10 @@
 module.exports = function(app, passport, provisioning, googleStrategy) {
 
   var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy
-    , Token = require('../models/token')
     , User = require('../models/user')
     , Device = require('../models/device')
     , Role = require('../models/role')
-    , api = require('../api')
-    , config = require('../config.js');
+    , api = require('../api');
 
   console.log('configuring google authentication');
 
@@ -82,7 +80,7 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
                 type: 'google',
                 id: profile.id
               }
-            }
+            };
 
             User.createUser(user, function(err, newUser) {
               return done(err, newUser);
@@ -138,4 +136,4 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
     }
   );
 
-}
+};

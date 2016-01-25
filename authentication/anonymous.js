@@ -7,5 +7,5 @@ module.exports = function(passport) {
   	loginStrategy: 'anonymous',
   	authenticationStrategy: 'anonymous',
   	passport: passport
-  }
-}
+  };
+};

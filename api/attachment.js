@@ -1,13 +1,8 @@
 var ObservationModel = require('../models/observation')
   , log = require('winston')
   , path = require('path')
-  , util = require('util')
   , fs = require('fs-extra')
-  , async = require('async')
-  , moment = require('moment')
-  , access = require('../access')
-  , config = require('../config.js')
-  , geometryFormat = require('../format/geoJsonFormat');
+  , config = require('../config.js');
 
 var attachmentConfig = config.server.attachment;
 var attachmentBase = attachmentConfig.baseDirectory;
@@ -20,12 +15,12 @@ var createAttachmentPath = function(event) {
     (now.getMonth() + 1).toString(),
     now.getDate().toString()
   );
-}
+};
 
 function Attachment(event, observation) {
   this._event = event;
   this._observation = observation;
-};
+}
 
 Attachment.prototype.getById = function(attachmentId, options, callback) {
   var size = options.size ? Number(options.size) : null;
@@ -35,9 +30,9 @@ Attachment.prototype.getById = function(attachmentId, options, callback) {
 
     if (size) {
       attachment.thumbnails.forEach(function(thumbnail) {
-        if ((thumbnail.minDimension < attachment.height || !attachment.height)
-          && (thumbnail.minDimension < attachment.width || !attachment.width)
-          && (thumbnail.minDimension >= size)) {
+        if ((thumbnail.minDimension < attachment.height || !attachment.height) &&
+          (thumbnail.minDimension < attachment.width || !attachment.width) &&
+          (thumbnail.minDimension >= size)) {
             attachment = thumbnail;
         }
       });
@@ -47,11 +42,10 @@ Attachment.prototype.getById = function(attachmentId, options, callback) {
 
     callback(null, attachment);
   });
-}
+};
 
 Attachment.prototype.create = function(observationId, attachment, callback) {
   var event = this._event;
-  var observation = this._observation;
 
   var relativePath = createAttachmentPath(event);
   // move file upload to its new home
@@ -71,11 +65,10 @@ Attachment.prototype.create = function(observationId, attachment, callback) {
       });
     });
   });
-}
+};
 
 Attachment.prototype.update = function(id, attachment, callback) {
   var event = this._event;
-  var observation = this._observation;
 
   var relativePath = createAttachmentPath(event, attachment);
   var dir = path.join(attachmentBase, relativePath);
@@ -96,10 +89,9 @@ Attachment.prototype.update = function(id, attachment, callback) {
       });
     });
   });
-}
+};
 
 Attachment.prototype.delete = function(id, callback) {
-  var event = this._event;
   var observation = this._observation;
   if (id !== Object(id)) {
     id = {id: id, field: '_id'};
@@ -110,7 +102,7 @@ Attachment.prototype.delete = function(id, callback) {
 
     var attachment = null;
     observation.attachments.forEach(function(a) {
-      if (a[id.field] == id.id) {
+      if (a[id.field] === id.id) {
         attachment = a;
         return false; //found attachment stop iterating
       }
@@ -127,7 +119,7 @@ Attachment.prototype.delete = function(id, callback) {
 
     callback();
   });
-}
+};
 
 Attachment.prototype.deleteAllForEvent = function (callback) {
   var directoryPath = path.join(attachmentBase, this._event.collectionName);
@@ -140,6 +132,6 @@ Attachment.prototype.deleteAllForEvent = function (callback) {
 
     callback(err);
   });
-}
+};
 
 module.exports = Attachment;

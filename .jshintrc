@@ -1,0 +1,21 @@
+{
+  "globals"   : {
+    "describe"   : false,
+    "it"         : false,
+    "before"     : false,
+    "beforeEach" : false,
+    "after"      : false,
+    "afterEach"  : false
+  },
+  "maxcomplexity": 10,
+  "camelcase": true,
+  "curly": false,
+  "eqeqeq": true,
+  "freeze": true,
+  "latedef": true,
+  "laxcomma": true,
+  "node": true,
+  "trailing": true,
+  "unused": true,
+  "undef": true
+}

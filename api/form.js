@@ -1,38 +1,11 @@
-var Event = require('../models/event')
-  , api = require('../api')
+var api = require('../api')
   , Zip = require('adm-zip')
   , archiver = require('archiver')
   , walk = require('walk')
-  , path = require('path')
-  , util = require('util')
-  , fs = require('fs-extra')
-  , os = require('os')
-  , async = require('async')
-  , moment = require('moment')
-  , access = require('../access')
-  , config = require('../config.js');
-
-var iconBase = config.server.iconBaseDirectory;
+  , path = require('path');
 
 function Form(event) {
   this._event = event;
-};
-
-function createIconPath(icon, name) {
-  var ext = path.extname(name);
-  var iconPath = icon._form._id.toString();
-  if (icon._type != null) {
-    iconPath = path.join(iconPath, icon._type);
-    if (icon._variant != null) {
-      iconPath = path.join(iconPath, icon._variant + ext);
-    } else {
-      iconPath = path.join(iconPath, "default" + ext);
-    }
-  } else {
-    iconPath = path.join(iconPath, "default" + ext);
-  }
-
-  return iconPath;
 }
 
 Form.prototype.export = function(callback) {
@@ -43,10 +16,10 @@ Form.prototype.export = function(callback) {
   archive.finalize();
 
   callback(null, archive);
-}
+};
 
 Form.prototype.import = function(file, callback) {
-  if (file.extension != 'zip') return callback(new Error('File attachment must be of type "zip"'));
+  if (file.extension !== 'zip') return callback(new Error('File attachment must be of type "zip"'));
 
   var event = this._event;
   var zip = new Zip(file.path);
@@ -77,7 +50,7 @@ Form.prototype.import = function(file, callback) {
         variant = variants.shift();
       }
 
-      new api.Icon(event._id, type, variant).add({name: stat.name}, function(err, addedIcon) {
+      new api.Icon(event._id, type, variant).add({name: stat.name}, function(err) {
         next(err);
       });
     });
@@ -85,6 +58,6 @@ Form.prototype.import = function(file, callback) {
       callback(null, form);
     });
   }
-}
+};
 
 module.exports = Form;
