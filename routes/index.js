@@ -3,14 +3,11 @@ module.exports = function(app, security) {
     , api = require('../api')
     , Event = require('../models/event')
     , Team = require('../models/team')
-    , User = require('../models/user')
     , Role = require('../models/role')
     , Device = require('../models/device')
     , Layer = require('../models/layer')
-    , Observation = require('../models/observation')
     , Icon = require('../models/icon')
-    , Setting = require('../models/setting')
-    , log = require('winston');
+    , Setting = require('../models/setting');
 
   var resources = {
     layerResource: {
@@ -25,9 +22,7 @@ module.exports = function(app, security) {
         }
       }
     }
-  }
-
-  var log = require('winston');
+  };
 
   app.set('resources', resources);
 
@@ -43,7 +38,7 @@ module.exports = function(app, security) {
 
   // Dynamically import all routes
   fs.readdirSync(__dirname).forEach(function(file) {
-    if (file[0] == '.' || file === 'index.js') return;
+    if (file[0] === '.' || file === 'index.js') return;
     var route = file.substr(0, file.indexOf('.'));
     require('./' + route)(app, security);
   });
@@ -59,7 +54,7 @@ module.exports = function(app, security) {
         } else {
           next('route');
         }
-      }
+      };
     }
   });
 
@@ -143,4 +138,4 @@ module.exports = function(app, security) {
       next();
     });
   });
-}
+};

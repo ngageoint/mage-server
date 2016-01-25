@@ -8,7 +8,7 @@ module.exports = function(app, security) {
   var passport = security.authentication.passport;
   app.all('/api/layers*', passport.authenticate('bearer'));
 
-  var validateLayerParams = function(req, res, next) {
+  function validateLayerParams(req, res, next) {
     var layer = req.body;
 
     if (!layer.type) {
@@ -31,14 +31,18 @@ module.exports = function(app, security) {
     } else if (access.userHasPermission(req.user, 'READ_LAYER_EVENT')) {
       // Make sure I am part of this event
       Event.eventHasUser(req.event, req.user._id, function(err, eventHasUser) {
-        eventHasUser ? next() : res.sendStatus(403);
+        if (eventHasUser) {
+          return next();
+        } else {
+          return res.sendStatus(403);
+        }
       });
     } else {
       res.sendStatus(403);
     }
   }
 
-  var parseQueryParams = function(req, res, next) {
+  function parseQueryParams(req, res, next) {
     var parameters = {};
     parameters.type = req.param('type');
 
@@ -98,6 +102,8 @@ module.exports = function(app, security) {
     parseQueryParams,
     function(req, res, next) {
       Layer.getLayers({layerIds: req.event.layerIds, type: req.parameters.type}, function(err, layers) {
+        if (err) return next(err);
+
         var response = layerXform.transform(layers, {path: req.getPath()});
         res.json(response);
       });
@@ -170,17 +176,17 @@ module.exports = function(app, security) {
       var layer = req.layer;
 
       Layer.remove(layer, function(err, layer) {
-        response = {};
+        var response = {};
         if (err) {
           response.success = false;
           response.message = err;
         } else {
           response.succes = true;
-          response.message = 'Layer ' + layer.name + ' has been removed.'
+          response.message = 'Layer ' + layer.name + ' has been removed.';
         }
 
         res.json(response);
       });
     }
   );
-}
+};

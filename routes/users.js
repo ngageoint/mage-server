@@ -3,40 +3,39 @@ module.exports = function(app, security) {
     , log = require('winston')
     , Role = require('../models/role')
     , access = require('../access')
-    , config = require('../config.js')
     , fs = require('fs-extra')
     , userTransformer = require('../transformers/user')
-    , passport = security.authentication.passport
+    , passport = security.authentication.passport;
 
   var passwordLength = null;
   Object.keys(security.authentication.strategies).forEach(function(name) {
     if (security.authentication.strategies[name].passwordLength) {
-      passwordLength = strategy.passwordMinLength
+      passwordLength = security.authentication.strategies[name].passwordLength;
     }
   });
 
   var emailRegex = /^[^\s@]+@[^\s@]+\./;
 
-  var isAuthenticated = function(strategy) {
+  function isAuthenticated(strategy) {
     return function(req, res, next) {
-      passport.authenticate(strategy, function(err, user, info) {
+      passport.authenticate(strategy, function(err, user) {
         if (err) return next(err);
         if (user) req.user = user;
         next();
 
       })(req, res, next);
-    }
+    };
   }
 
-  var getDefaultRole = function(req, res, next) {
+  function getDefaultRole(req, res, next) {
     Role.getRole('USER_ROLE', function(err, role) {
       req.role = role;
       next();
     });
   }
 
-  var validateUser = function(req, res, next) {
-    var invalidResponse = function(param) {
+  function validateUser(req, res, next) {
+    function invalidResponse(param) {
       return "Cannot create user, invalid parameters.  '" + param + "' parameter is required";
     }
 
@@ -82,7 +81,7 @@ module.exports = function(app, security) {
       return res.status(400).send(invalidResponse('passwordconfirm'));
     }
 
-    if (password != passwordconfirm) {
+    if (password !== passwordconfirm) {
       return res.status(400).send('passwords do not match');
     }
 
@@ -93,27 +92,11 @@ module.exports = function(app, security) {
     user.authentication = {
       type: 'local',
       password: password
-    }
+    };
 
     req.newUser = user;
 
     next();
-  }
-
-  var validateRoleParams = function(req, res, next) {
-    var roleId = req.param('roleId');
-    if (!roleId) {
-      return res.status(400).send("Cannot set role, 'roleId' param not specified");
-    }
-
-    Role.getRoleById(roleId, function(err, role) {
-      if (err) return next(err);
-
-      if (!role) return next(new Error('Role associated with roleId ' + roleId + ' does not exist'));
-
-      req.role = role;
-      next();
-    });
   }
 
   // logout
@@ -190,7 +173,7 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     access.authorize('READ_USER'),
     function(req, res) {
-      user = userTransformer.transform(req.userParam, {path: req.getRoot()});
+      var user = userTransformer.transform(req.userParam, {path: req.getRoot()});
       res.json(user);
     }
   );
@@ -200,7 +183,7 @@ module.exports = function(app, security) {
     '/api/users/:userId/:content(avatar|icon)',
     passport.authenticate('bearer'),
     access.authorize('READ_USER'),
-    function(req, res) {
+    function(req, res, next) {
       new api.User()[req.params.content](req.userParam, function(err, content) {
         if (err) return next(err);
 
@@ -212,7 +195,7 @@ module.exports = function(app, security) {
           res.header('Content-Length', content.size);
           stream.pipe(res);
         });
-        stream.on('error', function(err) {
+        stream.on('error', function() {
           res.sendStatus(404);
         });
       });
@@ -223,7 +206,7 @@ module.exports = function(app, security) {
   app.put(
     '/api/users/myself',
     passport.authenticate('bearer'),
-    function(req, res, next) {
+    function(req, res) {
       if (req.param('username')) req.user.username = req.param('username');
       if (req.param('displayName')) req.user.displayName = req.param('displayName');
       if (req.param('email')) req.user.email = req.param('email');
@@ -240,7 +223,7 @@ module.exports = function(app, security) {
         var password = req.param('password');
         var passwordconfirm = req.param('passwordconfirm');
         if (password && passwordconfirm) {
-          if (password != passwordconfirm) {
+          if (password !== passwordconfirm) {
             return res.status(400).send('passwords do not match');
           }
 
@@ -282,7 +265,7 @@ module.exports = function(app, security) {
 
       new api.User().create(req.newUser, {avatar: req.files.avatar, icon: req.files.icon}, function(err, newUser) {
         if (err) {
-          return res.status(400).send(error.message);
+          return res.status(400).send(err.message);
         }
 
         newUser = userTransformer.transform(newUser, {path: req.getRoot()});
@@ -297,7 +280,7 @@ module.exports = function(app, security) {
     '/api/users',
     getDefaultRole,
     validateUser,
-    function(req, res, next) {
+    function(req, res) {
       req.newUser.active = false;
       req.newUser.roleId = req.role._id;
 
@@ -363,20 +346,16 @@ module.exports = function(app, security) {
         }];
       }
 
-      if (user.authentication.type === 'local') {
-        var password = req.param('password');
-        var passwordconfirm = req.param('passwordconfirm');
-        if (password && passwordconfirm) {
-          if (password != passwordconfirm) {
-            return res.status(400).send('passwords do not match');
-          }
-
-          if (password.length < passwordLength) {
-            return res.status(400).send('password does not meet minimum length requirment of ' + passwordLength + ' characters');
-          }
-
-          user.authentication.password = password;
+      var password = req.param('password');
+      var passwordconfirm = req.param('passwordconfirm');
+      if (user.authentication.type === 'local' && password && passwordconfirm)  {
+        if (password !== passwordconfirm) {
+          return res.status(400).send('passwords do not match');
+        } else if (password.length < passwordLength) {
+          return res.status(400).send('password does not meet minimum length requirment of ' + passwordLength + ' characters');
         }
+
+        user.authentication.password = password;
       }
 
       new api.User().update(user, {avatar: req.files.avatar, icon: req.files.icon}, function(err, updatedUser) {
@@ -414,5 +393,5 @@ module.exports = function(app, security) {
       });
     }
   );
-  
-}
+
+};

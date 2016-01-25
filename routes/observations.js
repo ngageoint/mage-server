@@ -1,4 +1,4 @@
-module.exports = function(app, auth) {
+module.exports = function(app) {
 
   var api = require('../api')
     , log = require('winston')
@@ -16,7 +16,7 @@ module.exports = function(app, auth) {
     return {
       eventId: req.event._id,
       path: req.getPath().match(/(.*observations)/)[0]
-    }
+    };
   }
 
   function validateEventAccess(req, res, next) {
@@ -25,17 +25,21 @@ module.exports = function(app, auth) {
     } else if (access.userHasPermission(req.user, 'READ_OBSERVATION_EVENT')) {
       // Make sure I am part of this event
       Event.eventHasUser(req.event, req.user._id, function(err, eventHasUser) {
-        eventHasUser ? next() : res.sendStatus(403);
+        if (eventHasUser) {
+          return next();
+        } else {
+          return res.sendStatus(403);
+        }
       });
     } else {
       res.sendStatus(403);
     }
   }
 
-  var validateObservation = function(req, res, next) {
+  function validateObservation(req, res, next) {
     var observation = req.body;
 
-    if (!observation.type || observation.type != 'Feature' ) {
+    if (!observation.type || observation.type !== 'Feature' ) {
       return res.status(400).send("cannot create observation 'type' param not specified, or is not set to 'Feature'");
     }
 
@@ -56,6 +60,7 @@ module.exports = function(app, auth) {
 
       observation.properties.timestamp = moment(observation.properties.timestamp).toDate();
 
+      var userId = req.user ? req.user._id : null;
       var state = {name: 'active'};
       if (userId) state.userId = userId;
       observation.states = [state];
@@ -68,7 +73,6 @@ module.exports = function(app, auth) {
         teamIds: teams.map(function(team) { return team._id; })
       };
 
-      var userId = req.user ? req.user._id : null;
       if (userId) req.newObservation.userId = userId;
 
       var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
@@ -78,7 +82,7 @@ module.exports = function(app, auth) {
     });
   }
 
-  var parseQueryParams = function(req, res, next) {
+  function parseQueryParams(req, res, next) {
     // setup defaults
     var parameters = {
       filter: {
@@ -132,11 +136,11 @@ module.exports = function(app, auth) {
       sort.split(',').forEach(function(column) {
         var sortParams = column.split('+');
         // Check sort column is in whitelist
-        if (sortColumnWhitelist.indexOf(sortParams[0]) == -1) return res.send("Cannot sort on column '" + sortParams[0] + "'");
+        if (sortColumnWhitelist.indexOf(sortParams[0]) === -1) return res.send("Cannot sort on column '" + sortParams[0] + "'");
 
         // Order can be nothing (ASC by default) or ASC, DESC
         var direction = 1; //ASC
-        if (sortParams.length > 1 && sortParams[1] == 'DESC') {
+        if (sortParams.length > 1 && sortParams[1] === 'DESC') {
           direction = -1; // DESC
         }
 
@@ -164,8 +168,7 @@ module.exports = function(app, auth) {
       new api.Observation(req.event).getAll(options, function(err, observations) {
         if (err) return next(err);
 
-        var observations = observationXform.transform(observations, transformOptions(req));
-        res.json(observations);
+        res.json(observationXform.transform(observations, transformOptions(req)));
       });
     }
   );
@@ -174,7 +177,7 @@ module.exports = function(app, auth) {
     '/api/events/:eventId/observations/:id',
     validateEventAccess,
     parseQueryParams,
-    function (req, res) {
+    function (req, res, next) {
       var options = {fields: req.parameters.fields};
       new api.Observation(req.event).getById(req.param('id'), options, function(err, observation) {
         if (err) return next(err);
@@ -243,11 +246,11 @@ module.exports = function(app, auth) {
   app.post(
     '/api/events/:eventId/observations/:id/states',
     validateEventAccess,
-    function(req, res, next) {
+    function(req, res) {
       var state = req.body;
       if (!state) return res.send(400);
       if (!state.name) return res.send(400, 'name required');
-      if (state.name != 'active' && state.name != 'complete' && state.name != 'archive') {
+      if (state.name !== 'active' && state.name !== 'complete' && state.name !== 'archive') {
         return res.send(400, "state name must be one of 'active', 'complete', 'archive'");
       }
 
@@ -363,4 +366,4 @@ module.exports = function(app, auth) {
       });
     }
   );
-}
+};

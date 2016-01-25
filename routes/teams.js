@@ -5,7 +5,7 @@ module.exports = function(app, security) {
 
   app.all('/api/teams*', passport.authenticate('bearer'));
 
-  var validateTeamParams = function(req, res, next) {
+  function validateTeamParams(req, res, next) {
     var name = req.param('name');
     if (!name) {
       return res.status(400).send("cannot create team 'name' param not specified");
@@ -75,7 +75,7 @@ module.exports = function(app, security) {
     function(req, res, next) {
       var update = {};
       if (req.teamParam.name) update.name = req.teamParam.name;
-      if (req.teamParam.description != null) update.description = req.teamParam.description;
+      if (req.teamParam.description !== null) update.description = req.teamParam.description;
       if (req.teamParam.users) update.users = req.teamParam.users;
 
       Team.updateTeam(req.team._id, update, function(err, team) {
@@ -122,4 +122,4 @@ module.exports = function(app, security) {
       });
     }
   );
-}
+};

@@ -5,27 +5,13 @@ module.exports = function(app, security) {
 
   app.all('/api/settings*', passport.authenticate('bearer'));
 
-  var validateRoleParams = function(req, res, next) {
-    var name = req.param('name');
-    if (!name) {
-      return res.send(400, "cannot create role 'name' param not specified");
-    }
-
-    var description = req.param('description');
-    var permissions = req.param('permissions');
-    if (permissions) {
-      permissions = permissions.split(',');
-    }
-
-    req.roleParam = {name: name, description: description, permissions: permissions};
-    next();
-  }
-
   app.get(
     '/api/settings',
     access.authorize('READ_SETTINGS'),
     function (req, res, next) {
       Setting.getSettings(function(err, settings) {
+        if (err) return next(err);
+
         return res.json(settings);
       });
     }
@@ -36,6 +22,8 @@ module.exports = function(app, security) {
     access.authorize('READ_SETTINGS'),
     function (req, res, next) {
       Setting.getSettingByType(req.params.type, function(err, settingType) {
+        if (err) return next(err);
+
         return res.json(settingType);
       });
     }
@@ -52,4 +40,4 @@ module.exports = function(app, security) {
       });
     }
   );
-}
+};

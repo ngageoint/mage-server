@@ -5,12 +5,9 @@ module.exports = function(app, security) {
     , CappedLocation = require('../models/cappedLocation')
     , Team = require('../models/team')
     , Event = require('../models/event')
-    , Team = require('../models/team')
-    , access = require('../access')
-    , config = require('../config');
+    , access = require('../access');
 
   var passport = security.authentication.passport;
-  var locationLimit = config.server.locationServices.userCollectionLocationLimit;
 
   function validateEventAccess(req, res, next) {
     if (access.userHasPermission(req.user, 'READ_LOCATION_ALL')) {
@@ -18,7 +15,11 @@ module.exports = function(app, security) {
     } else if (access.userHasPermission(req.user, 'READ_LOCATION_EVENT')) {
       // Make sure I am part of this event
       Event.eventHasUser(req.event, req.user._id, function(err, eventHasUser) {
-        eventHasUser ? next() : res.sendStatus(403);
+        if (eventHasUser) {
+          return next();
+        } else {
+          return res.sendStatus(403);
+        }
       });
     } else {
       res.sendStatus(403);
@@ -67,6 +68,7 @@ module.exports = function(app, security) {
 
       req.user.teamIds = teams.map(function(team) { return team._id; });
 
+      var msg = "";
       var valid = locations.every(function(l) {
         if (!l.geometry) {
           msg = "Missing required parameter 'geometry'.";
@@ -145,7 +147,7 @@ module.exports = function(app, security) {
         res.json(locations);
       });
 
-      CappedLocation.addLocations(req.user, req.event, req.locations, function(err, location) {
+      CappedLocation.addLocations(req.user, req.event, req.locations, function(err) {
         if (err) {
           log.error('failed to store location in capped location collection');
         }
@@ -171,4 +173,4 @@ module.exports = function(app, security) {
       });
     }
   );
-}
+};

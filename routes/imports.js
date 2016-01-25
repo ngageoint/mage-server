@@ -2,9 +2,11 @@ module.exports = function(app, security) {
   var api = require('../api')
     , access = require('../access')
     , fs = require('fs-extra')
-    , toGeoJson = require('../utilities/togeojson')
+    , toGeoJson = require('../utilities/togeojson');
 
-  var verifyLayer = function(req, res, next) {
+  var passport = security.authentication.passport;
+
+  function verifyLayer(req, res, next) {
     if (req.layer.type !== 'Feature') {
       return res.status(400).send("Cannot import data, layer type is not 'Static'");
     }
@@ -12,7 +14,7 @@ module.exports = function(app, security) {
     return next();
   }
 
-  var readImportFile = function(req, res, next) {
+  function readImportFile(req, res, next) {
     // TODO at some point open file and determine type (KML, shapefile, geojson, csv)
 
     fs.readFile(req.files.file.path, 'utf8', function(err, data) {
@@ -23,6 +25,7 @@ module.exports = function(app, security) {
 
   app.post(
     '/api/layers/:layerId/kml',
+    passport.authenticate('bearer'),
     access.authorize('CREATE_LAYER'),
     verifyLayer,
     readImportFile,
@@ -37,10 +40,10 @@ module.exports = function(app, security) {
             size: req.files.file.size,
             features: newFeatures.length
           }]
-        }
+        };
 
         res.json(response);
       });
     }
   );
-}
+};

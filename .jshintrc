@@ -12,7 +12,7 @@
   "curly": false,
   "eqeqeq": true,
   "freeze": true,
-  "latedef": true,
+  "latedef": "nofunc",
   "laxcomma": true,
   "node": true,
   "trailing": true,
