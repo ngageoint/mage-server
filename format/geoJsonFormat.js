@@ -1,8 +1,8 @@
 var jsol = require('./jsol');
 
 var parseEnvelope = function(text) {
-  bbox = jsol.parseJSOL(text);
-  if (bbox.length != 4) {
+  var bbox = jsol.parseJSOL(text);
+  if (bbox.length !== 4) {
     throw new Error("Invalid geometry: " + text);
   }
 
@@ -22,38 +22,38 @@ var parseEnvelope = function(text) {
 
   // TODO hack until mongo fixes queries for more than
   // 180 degrees longitude.  Create 2 geometries if we cross
-  // the prime meridian 
+  // the prime meridian
   if (bbox.xmax > 0 && bbox.xmin < 0) {
      geometries.push({
       type: 'Polygon',
-      coordinates: [ [ 
-        [bbox.xmin, bbox.ymin], 
-        [0, bbox.ymin], 
-        [0, bbox.ymax], 
-        [bbox.xmin, bbox.ymax], 
-        [bbox.xmin, bbox.ymin] 
+      coordinates: [ [
+        [bbox.xmin, bbox.ymin],
+        [0, bbox.ymin],
+        [0, bbox.ymax],
+        [bbox.xmin, bbox.ymax],
+        [bbox.xmin, bbox.ymin]
       ] ]
     });
 
     geometries.push({
       type: 'Polygon',
-      coordinates: [ [ 
-        [0, bbox.ymin], 
-        [bbox.xmax, bbox.ymin], 
-        [bbox.xmax, bbox.ymax], 
-        [0, bbox.ymax], 
-        [0, bbox.ymin] 
+      coordinates: [ [
+        [0, bbox.ymin],
+        [bbox.xmax, bbox.ymin],
+        [bbox.xmax, bbox.ymax],
+        [0, bbox.ymax],
+        [0, bbox.ymin]
       ] ]
     });
   } else {
     geometries.push({
       type: 'Polygon',
-      coordinates: [ [ 
-        [bbox.xmin, bbox.ymin], 
-        [bbox.xmax, bbox.ymin], 
-        [bbox.xmax, bbox.ymax], 
-        [bbox.xmin, bbox.ymax], 
-        [bbox.xmin, bbox.ymin] 
+      coordinates: [ [
+        [bbox.xmin, bbox.ymin],
+        [bbox.xmax, bbox.ymin],
+        [bbox.xmax, bbox.ymax],
+        [bbox.xmin, bbox.ymax],
+        [bbox.xmin, bbox.ymin]
       ] ]
     });
   }

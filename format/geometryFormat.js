@@ -2,12 +2,12 @@ module.exports = function() {
 
   var jsol = require('./jsol');
 
-  var parsePoint = function(text) {
-    point = jsol.parseJSOL(text);
+  function parsePoint(text) {
+    var point = jsol.parseJSOL(text);
     if (!point.x && !point.y) {
       // see if its comma separated bouding box
       var xy = text.split(",");
-      if (xy.length != 2) {
+      if (xy.length !== 2) {
         throw new Error("Invalid geometry: " + text);
       }
 
@@ -20,13 +20,13 @@ module.exports = function() {
     }];
   }
 
-  var parseEnvelope = function(text) {
-    envelope = jsol.parseJSOL(text);
+  function parseEnvelope(text) {
+    var envelope = jsol.parseJSOL(text);
 
     if (!envelope.xmin && !envelope.xmax && !envelope.ymin && !envelope.ymax) {
       // Check if it a comma seperated bbox
       var bbox = text.split(",");
-      if (bbox.length != 4) {
+      if (bbox.length !== 4) {
         throw new Error("Invalid geometry: " + text);
       }
 
@@ -47,49 +47,49 @@ module.exports = function() {
 
     // TODO hack until mongo fixes queries for more than
     // 180 degrees longitude.  Create 2 geometries if we cross
-    // the prime meridian 
+    // the prime meridian
     if (envelope.xmax > 0 && envelope.xmin < 0) {
        geometries.push({
         type: 'Polygon',
-        coordinates: [ [ 
-          [envelope.xmin, envelope.ymin], 
-          [0, envelope.ymin], 
-          [0, envelope.ymax], 
-          [envelope.xmin, envelope.ymax], 
-          [envelope.xmin, envelope.ymin] 
+        coordinates: [ [
+          [envelope.xmin, envelope.ymin],
+          [0, envelope.ymin],
+          [0, envelope.ymax],
+          [envelope.xmin, envelope.ymax],
+          [envelope.xmin, envelope.ymin]
         ] ]
       });
 
       geometries.push({
         type: 'Polygon',
-        coordinates: [ [ 
-          [0, envelope.ymin], 
-          [envelope.xmax, envelope.ymin], 
-          [envelope.xmax, envelope.ymax], 
-          [0, envelope.ymax], 
-          [0, envelope.ymin] 
+        coordinates: [ [
+          [0, envelope.ymin],
+          [envelope.xmax, envelope.ymin],
+          [envelope.xmax, envelope.ymax],
+          [0, envelope.ymax],
+          [0, envelope.ymin]
         ] ]
       });
     } else {
       geometries.push({
         type: 'Polygon',
-        coordinates: [ [ 
-          [envelope.xmin, envelope.ymin], 
-          [envelope.xmax, envelope.ymin], 
-          [envelope.xmax, envelope.ymax], 
-          [envelope.xmin, envelope.ymax], 
-          [envelope.xmin, envelope.ymin] 
+        coordinates: [ [
+          [envelope.xmin, envelope.ymin],
+          [envelope.xmax, envelope.ymin],
+          [envelope.xmax, envelope.ymax],
+          [envelope.xmin, envelope.ymax],
+          [envelope.xmin, envelope.ymin]
         ] ]
       });
     }
 
     return geometries;
-  };
+  }
 
-  var parsePolygon = function(text) {
+  function parsePolygon(text) {
     try {
       // See if its vaild json
-      polygon = jsol.parseJSOL(text);
+      var polygon = jsol.parseJSOL(text);
 
       return [{
         type: 'Polygon',
@@ -113,24 +113,24 @@ module.exports = function() {
     }
   };
 
-  var formatPoint = function(geometry) {
+  function formatPoint(geometry) {
     return {
       x: geometry.coordinates[0],
       y: geometry.coordinates[1]
     };
   }
 
-  var formatGeometry = function(geometry) {
+  function formatGeometry(geometry) {
     switch (geometry.type) {
       case 'Point':
         return formatPoint(geometry);
       default:
-        throw("Unsupported geometry type: " + type);
+        throw("Unsupported geometry type: " + geometry.type);
     }
   }
 
   return {
     parse: parseGeometry,
     format: formatGeometry
-  }
-}()
+  };
+}();

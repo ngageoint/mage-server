@@ -1,5 +1,5 @@
 /*
-JSOL stands for JavaScript Object Literal which is a string representing 
+JSOL stands for JavaScript Object Literal which is a string representing
 an object in JavaScript syntax.
 
 For example:
@@ -12,7 +12,7 @@ module.exports = function() {
   var trim = /^(\s|\u00A0)+|(\s|\u00A0)+$/g;
 
 
-  var parseJSON = function(text) {
+  function parseJSON(text) {
    try {
       return JSON.parse(text);
     } catch(e) {
@@ -20,7 +20,7 @@ module.exports = function() {
     }
   }
 
-  var parseJSOL = function(text) {
+  function parseJSOL(text) {
     // lets try and parse with JSON library
     var obj = parseJSON(text);
     if (obj) return obj;
@@ -32,10 +32,6 @@ module.exports = function() {
 
     // Make sure leading/trailing whitespace is removed
     text = text.replace(trim, "");
-
-    var one = text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, "@");
-    var two = one.replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, "]");
-    var three = two.replace(/\w*\s*\:/g, ":");
 
     // Make sure the incoming text is actual JSOL (or Javascript Object Literal)
     // Logic borrowed from http://json.org/json2.js
@@ -49,9 +45,9 @@ module.exports = function() {
     } else {
       throw("Invalid JSOL: " + text);
     }
-  };
+  }
 
   return {
     parseJSOL: parseJSOL
-  }
+  };
 }();
