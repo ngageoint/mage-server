@@ -19,24 +19,24 @@ function multi(features) {
 
 function inherit(a, b) {
   for (var i in b) { a[i] = b[i]; }
-    return a;
-  }
+  return a;
+}
 
-  function obj(_) {
-    var fields = {}, o = [];
-    for (var p in _) fields[p] = typeof _[p];
-    for (var n in fields) {
-      var t = types[fields[n]];
-      o.push({
-        name: n,
-        type: t,
-        size: fieldSize[t]
-      });
-    }
-    return o;
+function obj(_) {
+  var fields = {}, o = [];
+  for (var p in _) fields[p] = typeof _[p];
+  for (var n in fields) {
+    var t = types[fields[n]];
+    o.push({
+      name: n,
+      type: t,
+      size: fieldSize[t]
+    });
   }
+  return o;
+}
 
-  function bytesPer(fields) {
-    // deleted flag
-    return fields.reduce(function(memo, f) { return memo + f.size; }, 1);
-  } 
+function bytesPer(fields) {
+  // deleted flag
+  return fields.reduce(function(memo, f) { return memo + f.size; }, 1);
+}

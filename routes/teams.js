@@ -36,13 +36,14 @@ module.exports = function(app, security) {
   app.get(
     '/api/teams',
     access.authorize('READ_TEAM'),
-      function (req, res, next) {
+    function (req, res, next) {
       Team.getTeams(function (err, teams) {
         if (err) return next(err);
 
         res.json(teams);
       });
-  });
+    }
+  );
 
   // get team
   app.get(

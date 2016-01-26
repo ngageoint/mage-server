@@ -1,6 +1,4 @@
-var mongoose = require('mongoose')
-  , path = require('path')
-  , url = require('url');
+var mongoose = require('mongoose');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -25,7 +23,7 @@ exports.getAll = function(options, callback) {
   Icon.find(conditions, function(err, icons) {
     callback(err, icons);
   });
-}
+};
 
 exports.getIcon = function(options, callback) {
   var type = options.type;
@@ -33,7 +31,7 @@ exports.getIcon = function(options, callback) {
 
   var condition = {
     eventId: options.eventId,
-    type: {"$in": [type, null]},
+    type: {"$in": [type, null]}
   };
 
   if (isNaN(variant)) {
@@ -45,7 +43,7 @@ exports.getIcon = function(options, callback) {
   Icon.findOne(condition, {}, {sort: {type: -1, variant: -1}}, function (err, icon) {
     callback(err, icon);
   });
-}
+};
 
 exports.create = function(icon, callback) {
   var conditions = {
@@ -56,7 +54,7 @@ exports.create = function(icon, callback) {
   Icon.findOneAndUpdate(conditions, icon, {upsert: true, new: false}, function(err, oldIcon) {
     callback(err, oldIcon);
   });
-}
+};
 
 exports.remove = function(options, callback) {
   var condition = {
@@ -69,4 +67,4 @@ exports.remove = function(options, callback) {
   Icon.remove(condition, function(err) {
     callback(err);
   });
-}
+};

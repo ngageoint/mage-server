@@ -98,20 +98,20 @@ module.exports = function(app, security) {
 
   // Grab the device for any endpoint that uses deviceId
   app.param('deviceId', function(req, res, next, deviceId) {
-      Device.getDeviceById(deviceId, function(err, device) {
-        if (!device) return res.status(404).send('Device not found');
-        req.device = device;
-        next();
-      });
+    Device.getDeviceById(deviceId, function(err, device) {
+      if (!device) return res.status(404).send('Device not found');
+      req.device = device;
+      next();
+    });
   });
 
   // Grab the role for any endpoint that uses roleId
   app.param('roleId', function(req, res, next, roleId) {
-      Role.getRoleById(roleId, function(err, role) {
-        if (!role) return res.status(404).send('Role ' + roleId + ' not found');
-        req.role = role;
-        next();
-      });
+    Role.getRoleById(roleId, function(err, role) {
+      if (!role) return res.status(404).send('Role ' + roleId + ' not found');
+      req.role = role;
+      next();
+    });
   });
 
   // Grab the layer for any endpoint that uses layerId

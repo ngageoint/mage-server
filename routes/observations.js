@@ -202,9 +202,9 @@ module.exports = function(app) {
 
         var response = observationXform.transform(newObservation, transformOptions(req));
         res.location(newObservation._id.toString()).json(response);
-      }
-    );
-  });
+      });
+    }
+  );
 
   app.put(
     '/api/events/:eventId/observations/:id',
@@ -239,9 +239,9 @@ module.exports = function(app) {
 
         var response = observationXform.transform(updatedObservation, transformOptions(req));
         res.json(response);
-      }
-    );
-  });
+      });
+    }
+  );
 
   app.post(
     '/api/events/:eventId/observations/:id/states',

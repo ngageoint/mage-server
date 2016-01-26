@@ -13,7 +13,7 @@ module.exports = function() {
 
 
   function parseJSON(text) {
-   try {
+    try {
       return JSON.parse(text);
     } catch(e) {
       return null;

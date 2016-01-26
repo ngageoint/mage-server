@@ -4,8 +4,8 @@ module.exports = function(passport) {
   passport.use(new AnonymousStrategy());
 
   return {
-  	loginStrategy: 'anonymous',
-  	authenticationStrategy: 'anonymous',
-  	passport: passport
+    loginStrategy: 'anonymous',
+    authenticationStrategy: 'anonymous',
+    passport: passport
   };
 };

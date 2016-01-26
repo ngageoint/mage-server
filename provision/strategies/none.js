@@ -7,11 +7,11 @@ Strategy.prototype.check = function(req, options, done) {
     done = options;
     options = {};
   }
-  
+
   done(null, 'none');
-}
+};
 
 /**
  * Expose `Strategy`.
- */ 
- exports.Strategy = Strategy;
+ */
+exports.Strategy = Strategy;

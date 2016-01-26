@@ -7,18 +7,17 @@ var Schema = mongoose.Schema;
 
 // Collection to hold roles
 var RoleSchema = new Schema({
-    name: { type: String, required: true, unique: true },
-    description: { type: String, required: false },
-    permissions: [Schema.Types.String]
-  },{
-    versionKey: false
-  }
-);
+  name: { type: String, required: true, unique: true },
+  description: { type: String, required: false },
+  permissions: [Schema.Types.String]
+},{
+  versionKey: false
+});
 
 RoleSchema.pre('remove', function(next) {
   var role = this;
 
-  User.removeRoleFromUsers(role, function(err, number) {
+  User.removeRoleFromUsers(role, function(err) {
     next(err);
   });
 });
@@ -41,7 +40,7 @@ RoleSchema.pre('save', function(next) {
   next();
 });
 
-var transform = function(user, ret, options) {
+function transform(user, ret) {
   if ('function' != typeof user.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;
@@ -59,42 +58,41 @@ exports.getRoleById = function(id, callback) {
   Role.findById(id, function(err, role) {
     callback(err, role);
   });
-}
+};
 
 exports.getRole = function(name, callback) {
-  query = {name: name};
-  Role.findOne(query, function(err, role) {
+  Role.findOne({name: name}, function(err, role) {
     callback(err, role);
   });
-}
+};
 
 exports.getRoles = function(callback) {
   var query = {};
   Role.find(query, function (err, roles) {
     callback(err, roles);
   });
-}
+};
 
 exports.createRole = function(role, callback) {
   var create = {
     name: role.name,
     description: role.description,
     permissions: role.permissions
-  }
+  };
 
   Role.create(create, function(err, role) {
     callback(err, role);
   });
-}
+};
 
 exports.updateRole = function(id, update, callback) {
   Role.findByIdAndUpdate(id, update, {new: true}, function(err, role) {
     callback(err, role);
   });
-}
+};
 
 exports.deleteRole = function(role, callback) {
   role.remove(function(err) {
     callback(err, role);
   });
-}
+};

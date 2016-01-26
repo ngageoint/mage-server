@@ -44,61 +44,60 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
   }
 
   passport.use('google', new GoogleStrategy({
-      passReqToCallback: true,
-      clientID: googleStrategy.clientID,
-      clientSecret: googleStrategy.clientSecret,
-      callbackURL: googleStrategy.callbackURL
-    },
-    function(req, accessToken, refreshToken, profile, done) {
-      req.googleToken = accessToken;
+    passReqToCallback: true,
+    clientID: googleStrategy.clientID,
+    clientSecret: googleStrategy.clientSecret,
+    callbackURL: googleStrategy.callbackURL
+  },
+  function(req, accessToken, refreshToken, profile, done) {
+    req.googleToken = accessToken;
 
-      var state = JSON.parse(req.query.state);
-      User.getUserByAuthenticationId('google', profile.id, function(err, user) {
-        if (err) return done(err);
+    var state = JSON.parse(req.query.state);
+    User.getUserByAuthenticationId('google', profile.id, function(err, user) {
+      if (err) return done(err);
 
-        if (state.type === 'signup') {
-          if (user) return done(null, false, { message: "User already exists" });
+      if (state.type === 'signup') {
+        if (user) return done(null, false, { message: "User already exists" });
 
-          Role.getRole('USER_ROLE', function(err, role) {
-            if (err) return done(err);
+        Role.getRole('USER_ROLE', function(err, role) {
+          if (err) return done(err);
 
-            var email = null;
-            profile.emails.forEach(function(e) {
-              if (e.type === 'account') {
-                email = e.value;
-              }
-            });
-
-            // create an account for the user
-            var user = {
-              username: 'google' + profile.id,
-              displayName: profile.name.givenName + ' ' + profile.name.familyName,
-              email: email,
-              active: false,
-              roleId: role._id,
-              authentication: {
-                type: 'google',
-                id: profile.id
-              }
-            };
-
-            User.createUser(user, function(err, newUser) {
-              return done(err, newUser);
-            });
+          var email = null;
+          profile.emails.forEach(function(e) {
+            if (e.type === 'account') {
+              email = e.value;
+            }
           });
 
-        } else  if (state.type === 'signin') {
-          if (!user) return  done(null, false, { message: "User does not exist, please create an account first"} );
+          // create an account for the user
+          var user = {
+            username: 'google' + profile.id,
+            displayName: profile.name.givenName + ' ' + profile.name.familyName,
+            email: email,
+            active: false,
+            roleId: role._id,
+            authentication: {
+              type: 'google',
+              id: profile.id
+            }
+          };
 
-          if (!user.active) return done(null, false, { message: "User is not approved, please contact your MAGE administrator"} );
+          User.createUser(user, function(err, newUser) {
+            return done(err, newUser);
+          });
+        });
 
-          return done(null, user);
-        } else {
-          return done(new Error("Unrecognized oauth state"));
-        }
-      });
-    }
-  ));
+      } else  if (state.type === 'signin') {
+        if (!user) return  done(null, false, { message: "User does not exist, please create an account first"} );
+
+        if (!user.active) return done(null, false, { message: "User is not approved, please contact your MAGE administrator"} );
+
+        return done(null, user);
+      } else {
+        return done(new Error("Unrecognized oauth state"));
+      }
+    });
+  }));
 
   app.get(
     '/auth/google/signup',

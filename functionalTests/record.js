@@ -22,21 +22,21 @@ module.exports = function (name, options) {
     // starts recording, or ensure the fixtures exist
     before: function () {
       if (!hasFixtures) try {
-        console.log("Has Fixtures: testRecordings should exist");
+        console.log('Has Fixtures: testRecordings should exist');
         require('../' + fp);
         hasFixtures = true;
       } catch (e) {
-        console.log("Caught error loading fixtures, recording");
+        console.log('Caught error loading fixtures, recording');
         nock.recorder.rec({
-          use_separator: false, // jshint ignore:line
-          dont_print: true // jshint ignore:line
+          use_separator: false, // eslint-disable-line camelcase
+          dont_print: true // eslint-disable-line camelcase
         });
       } else {
-        console.log("Doesn't have Fixtures");
+        console.log('Doesn\'t have Fixtures');
         hasFixtures = false;
         nock.recorder.rec({
-          use_separator: false, // jshint ignore:line
-          dont_print: true // jshint ignore:line
+          use_separator: false, // eslint-disable-line camelcase
+          dont_print: true // eslint-disable-line camelcase
         });
       }
     },

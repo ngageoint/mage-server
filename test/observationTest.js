@@ -1,17 +1,9 @@
-var request = require('supertest')
-  , sinon = require('sinon')
-  , should = require('chai').should()
-  , app = require('../express')
+var sinon = require('sinon')
   , mongoose = require('mongoose')
-  , Token = require('../models/token')
-  , TokenModel = mongoose.model('Token')
-  , User = require('../models/user')
-  , UserModel = mongoose.model('User')
-  , access = require('../access');
+  , TokenModel = mongoose.model('Token');
 
 require('sinon-mongoose');
 
-var expects = require('chai').expect;
 
 describe("observation tests", function() {
 
@@ -35,7 +27,7 @@ describe("observation tests", function() {
           });
         }
       }
-    }
+    };
 
     sandbox.mock(TokenModel)
       .expects('findOne')

@@ -25,7 +25,7 @@ var eventPermissions = [
   'CREATE_EVENT',
   'UPDATE_EVENT',
   'DELETE_EVENT'
-]
+];
 
 var layerPermissions = [
   'READ_LAYER_ALL',
@@ -86,4 +86,4 @@ var allPermissions = []
 
 exports.getPermissions = function() {
   return allPermissions;
-}
+};

@@ -1,14 +1,8 @@
-var express = require("express")
-  , passport = require('passport')
-  , bodyParser = require('body-parser')
-  , multer = require('multer')
-  , path = require('path')
-  , mongoose = require('mongoose')
+var mongoose = require('mongoose')
   , fs = require('fs-extra')
   , util = require('util')
   , config = require('./config.js')
-  , log = require('./logger')
-  , provision = require('./provision');
+  , log = require('./logger');
 
 var mongooseLogger = log.loggers.get('mongoose');
 

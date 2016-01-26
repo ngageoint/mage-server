@@ -155,7 +155,8 @@ module.exports = function(app, security) {
         users = userTransformer.transform(users, {path: req.getRoot()});
         res.json(users);
       });
-  });
+    }
+  );
 
   // get info for the user bearing a token, i.e get info for myself
   app.get(

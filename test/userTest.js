@@ -2,16 +2,15 @@ var request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , app = require('../express')
-  , mongoose = require('mongoose')
-  , Token = require('../models/token')
-  , TokenModel = mongoose.model('Token')
-  , User = require('../models/user')
-  , UserModel = mongoose.model('User')
-  , access = require('../access');
+  , mongoose = require('mongoose');
+
+require('../models/token');
+var TokenModel = mongoose.model('Token');
+
+require('../models/user');
+var UserModel = mongoose.model('User');
 
 require('sinon-mongoose');
-
-var expects = require('chai').expect;
 
 describe("user tests", function() {
 
@@ -35,7 +34,7 @@ describe("user tests", function() {
           });
         }
       }
-    }
+    };
 
     sandbox.mock(TokenModel)
       .expects('findOne')
@@ -63,7 +62,7 @@ describe("user tests", function() {
       .expect(function(res) {
         console.log('res body', res.body);
       })
-      .end(done)
+      .end(done);
   });
 
   it("should logout with token", function(done) {
@@ -79,9 +78,9 @@ describe("user tests", function() {
       .expect(200)
       .expect('Content-Type', /text\/html/)
       .expect(function(res) {
-        res.text.should.equal('successfully logged out')
+        res.text.should.equal('successfully logged out');
       })
-      .end(done)
+      .end(done);
   });
 
   it('should count users', function(done) {
@@ -100,7 +99,7 @@ describe("user tests", function() {
         res.body.should.have.property('count');
         res.body.count.should.equal(5);
       })
-      .end(done)
+      .end(done);
   });
 
   it('get all users', function(done) {
@@ -128,7 +127,7 @@ describe("user tests", function() {
         users.should.have.length.of(2);
         users.should.deep.include.members(mockUsers);
       })
-      .end(done)
+      .end(done);
   });
 
 });

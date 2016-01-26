@@ -15,7 +15,7 @@ LoginSchema.index({deviceId: 1});
 LoginSchema.index({userId: 1, deviceId: 1});
 LoginSchema.index({_id: 1, userId: 1, deviceId: 1});
 
-var transform = function(login, ret, options) {
+function transform(login, ret) {
   if ('function' != typeof login.ownerDocument) {
     ret.id = ret._id;
     ret.timestamp = ret._id.getTimestamp();
@@ -83,23 +83,23 @@ exports.getLogins = function(options, callback) {
   Login.find(conditions, null, o).populate([{path: 'userId'}, {path: 'deviceId'}]).exec(function (err, logins) {
     callback(err, options.firstLoginId ? logins.reverse() : logins);
   });
-}
+};
 
 exports.createLogin = function(user, device, callback) {
   var create = {
     userId: user._id,
     deviceId: device._id
-  }
+  };
 
   Login.create(create, function(err, login) {
     if (err) return callback(err);
 
     callback(null, login);
   });
-}
+};
 
 exports.removeLoginsForUser = function(user, callback) {
   Login.remove({userId: user._id}, function(err) {
     callback(err);
   });
-}
+};

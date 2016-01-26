@@ -3,7 +3,7 @@
  *
  * @api public
  */
-function Provision(strategy) {
+function Provision() {
   this.strategies = {};
 }
 
@@ -28,9 +28,9 @@ Provision.prototype.check = function(strategy, options, callback) {
   var provision = this.strategies[strategy];
 
   return function(req, res, next) {
-    if (!provision) next(new Error("No registered provisioning strategy '" + strategy + "'"));
+    if (!provision) next(new Error('No registered provisioning strategy "' + strategy + '"'));
 
-    provision.check(req, options, function(err, device, info) {
+    provision.check(req, options, function(err, device) {
       if (err) return next(err);
 
       req.provisionedDevice = device;
@@ -43,8 +43,8 @@ Provision.prototype.check = function(strategy, options, callback) {
 
       next();
     });
-  }
-}
+  };
+};
 
 /**
  * Expose `Provision`.

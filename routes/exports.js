@@ -187,22 +187,22 @@ module.exports = function(app, security) {
     createTmpDirectory,
     function(req, res, next) {
       switch (req.params.exportType) {
-        case 'shapefile':
-          log.info('exporting shapefiles...');
-          exportShapefile(req, res, next);
-          break;
-        case 'kml':
-          log.info('exporting KML...');
-          exportKML(req, res, next);
-          break;
-        case 'geojson':
-          log.info('exporting GeoJSON...');
-          exportGeoJSON(req, res, next);
-          break;
-        case 'csv':
-          log.info('exporting CSV...');
-          exportCsv(req, res, next);
-          break;
+      case 'shapefile':
+        log.info('exporting shapefiles...');
+        exportShapefile(req, res, next);
+        break;
+      case 'kml':
+        log.info('exporting KML...');
+        exportKML(req, res, next);
+        break;
+      case 'geojson':
+        log.info('exporting GeoJSON...');
+        exportGeoJSON(req, res, next);
+        break;
+      case 'csv':
+        log.info('exporting CSV...');
+        exportCsv(req, res, next);
+        break;
       }
     }
   );

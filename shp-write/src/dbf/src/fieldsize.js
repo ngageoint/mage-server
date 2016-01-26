@@ -12,5 +12,5 @@ module.exports = {
   // number, float
   F: 18,
   // number
-  B: 8,
+  B: 8
 };

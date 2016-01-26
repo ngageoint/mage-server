@@ -25,10 +25,10 @@ var LayerSchema = new Schema({
   },
   collectionName: { type: String, required: false }
 },{
-    versionKey: false
+  versionKey: false
 });
 
-var transform = function(layer, ret, options) {
+function transform(layer, ret, options) {
   ret.id = ret._id;
   delete ret._id;
   delete ret.collectionName;
@@ -47,7 +47,6 @@ LayerSchema.set("toJSON", {
 
 // Validate the layer before save
 LayerSchema.pre('save', function(next) {
-  var layer = this;
   //TODO validate layer before save
   next();
 });
@@ -75,23 +74,23 @@ exports.getLayers = function(filter, callback) {
   Layer.find(conditions, function (err, layers) {
     callback(err, layers);
   });
-}
+};
 
 exports.count = function(callback) {
   Layer.count({}, function(err, count) {
     callback(err, count);
   });
-}
+};
 
 exports.getById = function(id, callback) {
   Layer.findById(id, function (err, layer) {
     callback(layer);
   });
-}
+};
 
 var createFeatureCollection = function(layer) {
   log.info("Creating collection: " + layer.collectionName + ' for layer ' + layer.name);
-  mongoose.connection.db.createCollection(layer.collectionName, function(err, collection) {
+  mongoose.connection.db.createCollection(layer.collectionName, function(err) {
     if (err) {
       log.error(err);
       return;
@@ -99,17 +98,17 @@ var createFeatureCollection = function(layer) {
 
     log.info("Successfully created feature collection for layer " + layer.name);
   });
-}
+};
 
 var dropFeatureCollection = function(layer, callback) {
   log.info("Dropping collection: " + layer.collectionName);
-  mongoose.connection.db.dropCollection(layer.collectionName, function(err, results) {
+  mongoose.connection.db.dropCollection(layer.collectionName, function(err) {
     if (err) return callback(err);
 
     log.info('Dropped collection ' + layer.collectionName);
     callback();
   });
-}
+};
 
 exports.create = function(layer, callback) {
   Counter.getNext('layer', function(id) {
@@ -129,13 +128,13 @@ exports.create = function(layer, callback) {
       callback(err, newLayer);
     });
   });
-}
+};
 
 exports.update = function(id, layer, callback) {
   Layer.findByIdAndUpdate(id, layer, {new: true}, function(err, updatedLayer) {
     callback(err, updatedLayer);
   });
-}
+};
 
 exports.remove = function(layer, callback) {
   layer.remove(function(err) {
@@ -145,4 +144,4 @@ exports.remove = function(layer, callback) {
       callback(err, layer);
     });
   });
-}
+};

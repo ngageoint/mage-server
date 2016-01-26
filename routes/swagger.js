@@ -4,7 +4,7 @@ module.exports = function(app) {
   app.get(
     '/api/api-docs',
     function(req, res) {
-        res.json(doc);
+      res.json(doc);
     }
   );
 };

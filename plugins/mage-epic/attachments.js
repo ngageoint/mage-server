@@ -7,9 +7,8 @@ var log = require('../../logger')
   , fs = require('fs-extra')
   , mongoose = require('mongoose')
   , moment = require('moment')
-  , ArcGIS = require('terraformer-arcgis-parser')
   , Event = require('../../models/event')
-  , Obsevation = require('../../models/observation');
+  , Observation = require('../../models/observation');
 
 // setup mongoose to talk to mongodb
 var mongodbConfig = config.mongodb;
@@ -27,7 +26,6 @@ mongoose.set('debug', function(collection, method, query, doc, options) {
 
 var attachmentBase = serverConfig.server.attachment.baseDirectory;
 var timeout = config.esri.attachments.interval * 1000;
-var url = config.esri.url;
 var url = [url.host, url.site, url.restServices, url.folder, url.serviceName, url.serviceType, url.layerId].join("/");
 
 var events;
@@ -39,12 +37,13 @@ function getEvents(done) {
 }
 
 function createEsriAttachment(esriId, attachment, callback) {
-  log.info('creating new attachment ' + esriId)
+  log.info('creating new attachment ' + esriId);
 
-  attachmentUrl = [url, esriId, "addAttachment"].join("/") + "?f=json";
+  var attachmentUrl = [url, esriId, "addAttachment"].join("/") + "?f=json";
   log.info('sending', attachmentUrl);
   var r = request.post({url: attachmentUrl}, function(err, res, body) {
-    if (err) return done(err);
+    if (err) return callback(err);
+
     var json = JSON.parse(body);
     log.info('ESRI observation add response', json);
 
@@ -63,12 +62,13 @@ function createEsriAttachment(esriId, attachment, callback) {
 }
 
 function updateEsriAttachment(esriId, attachment, callback) {
-  log.info('updating attachment ' + esriId)
+  log.info('updating attachment ' + esriId);
 
-  attachmentUrl = [url, esriId, "updateAttachment"].join("/") + "?f=json";
+  var attachmentUrl = [url, esriId, "updateAttachment"].join("/") + "?f=json";
   log.info('sending attachment to ESRI', attachmentUrl);
   var r = request.post({url: attachmentUrl}, function(err, res, body) {
-    if (err) return done(err);
+    if (err) return callback(err);
+
     var json = JSON.parse(body);
     log.info('ESRI observation update response', json);
 
@@ -99,7 +99,7 @@ function pushAttachments(done) {
         var observationMatch = { esriId: {"$exists": true} };
         var lastTime = lastAttachmentTimes[event.collectionName];
         if (lastTime) {
-          observationMatch['attachments.lastModified'] = {"$gt": moment(lastTime).toDate()}
+          observationMatch['attachments.lastModified'] = {"$gt": moment(lastTime).toDate()};
         }
 
         var project = {"$project": {esriId: true, lastModified: true, attachments: true}};
@@ -111,7 +111,7 @@ function pushAttachments(done) {
 
           async.each(aggregate, function(observation, done) {
             if (observation.attachments.esriId) {
-              updateEsriAttachment(observation.esriId, observation.attachments, function(err, esriAttachmentId) {
+              updateEsriAttachment(observation.esriId, observation.attachments, function(err) {
                 if (err) {
                   log.error('error updating ESRI attachment', err);
                 }
@@ -157,12 +157,12 @@ function push() {
     events: getEvents,
     observations: pushAttachments
   },
-  function(err, results) {
+  function(err) {
     if (err) log.info('Error pushing attachments to esri server', err);
 
     log.info('finished pushing all attachments to esri server ' + moment().toISOString());
     setTimeout(push, timeout);
   });
-};
+}
 
 push();

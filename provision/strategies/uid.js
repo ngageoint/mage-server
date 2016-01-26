@@ -24,9 +24,9 @@ Strategy.prototype.check = function(req, options, done) {
   }
 
   this.verify(uid, done);
-}
+};
 
 /**
  * Expose `Strategy`.
  */
- exports.Strategy = Strategy;
+exports.Strategy = Strategy;

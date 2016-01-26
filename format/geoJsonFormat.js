@@ -24,7 +24,7 @@ var parseEnvelope = function(text) {
   // 180 degrees longitude.  Create 2 geometries if we cross
   // the prime meridian
   if (bbox.xmax > 0 && bbox.xmin < 0) {
-     geometries.push({
+    geometries.push({
       type: 'Polygon',
       coordinates: [ [
         [bbox.xmin, bbox.ymin],
@@ -63,10 +63,10 @@ var parseEnvelope = function(text) {
 
 var parseGeometry = function(type, text) {
   switch (type) {
-    case 'bbox':
-      return parseEnvelope(text);
-    default:
-      return [jsol.parseJSOL(text)];
+  case 'bbox':
+    return parseEnvelope(text);
+  default:
+    return [jsol.parseJSOL(text)];
   }
 };
 

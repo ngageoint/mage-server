@@ -5,7 +5,7 @@ module.exports = function(provision) {
   provision.use(new NoneStrategy());
 
   return {
-  	strategy: 'none',
-  	provision: provision
-  }
-}
+    strategy: 'none',
+    provision: provision
+  };
+};

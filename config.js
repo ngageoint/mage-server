@@ -9,7 +9,7 @@ module.exports = {
     "authenticationStrategies": {
       "local": {
         "passwordMinLength": 14
-      },
+      }
       // "google": {
       //   "url": " ",
       //   "callbackURL": " ",

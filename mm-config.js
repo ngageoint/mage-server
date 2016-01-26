@@ -8,7 +8,7 @@ var migrateConfig = {
   db: config.server.mongodb.db,
   collection: "migrations",
   directory: "migrations"
-}
+};
 
 var mongoUri = "mongodb://" + migrateConfig.host + "/" + migrateConfig.db;
 mongoose.connect(mongoUri, function(err) {

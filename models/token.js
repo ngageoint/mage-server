@@ -10,14 +10,13 @@ var Schema = mongoose.Schema;
 
 // Collection to hold users
 var TokenSchema = new Schema({
-    userId: { type: Schema.Types.ObjectId, ref: 'User' },
-    deviceId: { type: Schema.Types.ObjectId, ref: 'Device' },
-    expirationDate: { type: Date, required: true },
-    token: { type: String, required: true }
-  },{
-    versionKey: false
-  }
-);
+  userId: { type: Schema.Types.ObjectId, ref: 'User' },
+  deviceId: { type: Schema.Types.ObjectId, ref: 'Device' },
+  expirationDate: { type: Date, required: true },
+  token: { type: String, required: true }
+},{
+  versionKey: false
+});
 
 TokenSchema.index({'expirationDate': 1}, {expireAfterSeconds: 0});
 
@@ -36,7 +35,7 @@ exports.getToken = function(token, callback) {
       return callback(err, {user: user, deviceId: token.deviceId, token: token});
     });
   });
-}
+};
 
 exports.createToken = function(options, callback) {
   var seed = crypto.randomBytes(20);
@@ -52,27 +51,25 @@ exports.createToken = function(options, callback) {
     token: token,
     expirationDate: new Date(now + tokenExpiration)
   };
-  var options = {upsert: true, new: true};
-
-  Token.findOneAndUpdate(query, update, options, function(err, newToken) {
+  Token.findOneAndUpdate(query, update, {upsert: true, new: true}, function(err, newToken) {
     callback(err, newToken);
   });
-}
+};
 
 exports.removeToken = function(token, callback) {
   Token.findByIdAndRemove(token._id, function(err) {
     callback(err);
   });
-}
+};
 
 exports.removeTokensForUser = function(user, callback) {
   Token.remove({userId: user._id}, function(err, numberRemoved) {
     callback(err, numberRemoved);
   });
-}
+};
 
 exports.removeTokenForDevice = function(device, callback) {
   Token.remove({deviceId: device._id}, function(err, numberRemoved) {
     callback(err, numberRemoved);
   });
-}
+};

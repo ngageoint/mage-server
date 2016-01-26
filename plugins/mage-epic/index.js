@@ -1,6 +1,6 @@
 var child = require('child_process')
   , config = require('./config.js')
-  , log = require('winston')
+  , log = require('winston');
 
 if (!config.enable) return;
 
@@ -26,11 +26,11 @@ function startObservations() {
       }
     });
 
-    observationsWorker.on('uncaughtException', function (err) {
+    observationsWorker.on('uncaughtException', function(err) {
       log.error('*****************  Observation worker uncaught exception: ***************** ' + err);
     });
 
-    process.on('exit', function() {
+    process.on('exit', function(err) {
       log.warn('***************** epic parent process exit, killing ********************', err);
       observationsWorker.kill();
     });

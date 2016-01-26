@@ -49,7 +49,7 @@ module.exports = function() {
     // 180 degrees longitude.  Create 2 geometries if we cross
     // the prime meridian
     if (envelope.xmax > 0 && envelope.xmin < 0) {
-       geometries.push({
+      geometries.push({
         type: 'Polygon',
         coordinates: [ [
           [envelope.xmin, envelope.ymin],
@@ -102,14 +102,14 @@ module.exports = function() {
 
   var parseGeometry = function(type, text) {
     switch (type) {
-      case 'esriGeometryPoint':
-        return parsePoint(text);
-      case 'esriGeometryEnvelope':
-        return parseEnvelope(text);
-      case 'esriGeometryPolygon':
-        return parsePolygon(text);
-      default:
-        throw("Unsupported geometry type: " + type);
+    case 'esriGeometryPoint':
+      return parsePoint(text);
+    case 'esriGeometryEnvelope':
+      return parseEnvelope(text);
+    case 'esriGeometryPolygon':
+      return parsePolygon(text);
+    default:
+      throw("Unsupported geometry type: " + type);
     }
   };
 
@@ -122,10 +122,10 @@ module.exports = function() {
 
   function formatGeometry(geometry) {
     switch (geometry.type) {
-      case 'Point':
-        return formatPoint(geometry);
-      default:
-        throw("Unsupported geometry type: " + geometry.type);
+    case 'Point':
+      return formatPoint(geometry);
+    default:
+      throw("Unsupported geometry type: " + geometry.type);
     }
   }
 

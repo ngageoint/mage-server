@@ -33,7 +33,7 @@ Attachment.prototype.getById = function(attachmentId, options, callback) {
         if ((thumbnail.minDimension < attachment.height || !attachment.height) &&
           (thumbnail.minDimension < attachment.width || !attachment.width) &&
           (thumbnail.minDimension >= size)) {
-            attachment = thumbnail;
+          attachment = thumbnail;
         }
       });
     }
@@ -112,7 +112,7 @@ Attachment.prototype.delete = function(id, callback) {
       var file = path.join(attachmentBase, attachment.relativePath);
       fs.remove(file, function(err) {
         if (err) {
-          log.error("Could not remove attachment file " + file + ". ", err);
+          log.error('Could not remove attachment file ' + file + '.', err);
         }
       });
     }
@@ -127,7 +127,7 @@ Attachment.prototype.deleteAllForEvent = function (callback) {
 
   fs.remove(directoryPath, function(err) {
     if (err) {
-      log.warn("Could not remove attachments for event at path '" + directoryPath + "''", err);
+      log.warn('Could not remove attachments for event at path "' + directoryPath + '"', err);
     }
 
     callback(err);
