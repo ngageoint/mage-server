@@ -1,5 +1,5 @@
 function Strategy(options, verify) {
-  if (typeof options == 'function') {
+  if (typeof options === 'function') {
     verify = options;
     options = {};
   }
@@ -12,7 +12,7 @@ function Strategy(options, verify) {
 }
 
 Strategy.prototype.check = function(req, options, done) {
-  if (typeof options == 'function') {
+  if (typeof options === 'function') {
     done = options;
     options = {};
   }

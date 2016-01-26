@@ -46,7 +46,7 @@ module.exports = function structure(data, stream) {
     // field length
     buffer.writeUInt8(f.size, 32 + i * 32 + 16);
 
-    if (f.type == 'N') buffer.writeUInt8(0, 32 + i * 32 + 17);
+    if (f.type === 'N') buffer.writeUInt8(0, 32 + i * 32 + 17);
   });
 
 

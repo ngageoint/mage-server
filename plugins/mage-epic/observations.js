@@ -36,7 +36,7 @@ function getTypes(done) {
     if (err) return done(err);
     var json = JSON.parse(body);
 
-    if (res.statusCode != 200) return done(new Error('Error getting ESRI types ' + res.statusCode));
+    if (res.statusCode !== 200) return done(new Error('Error getting ESRI types ' + res.statusCode));
 
     if (json.types) {
       json.types.forEach(function(type) {
@@ -88,7 +88,7 @@ function createEsriObservation(event, observation, callback) {
     var json = JSON.parse(body);
     log.info('ESRI attachment add response', json);
 
-    if (res.statusCode != 200) return callback(new Error('Error sending ESRI json ' + res.statusCode));
+    if (res.statusCode !== 200) return callback(new Error('Error sending ESRI json ' + res.statusCode));
     var result = json.addResults[0];
     if (!result.success) {
       return callback(new Error('Error sending ESRI json ', result[0].error));
@@ -116,7 +116,7 @@ function updateEsriObservation(event, observation, callback) {
     var json = JSON.parse(body);
     log.info('ESRI attachment update response', json);
 
-    if (res.statusCode != 200) return callback(new Error('Error sending ESRI json ' + res.statusCode));
+    if (res.statusCode !== 200) return callback(new Error('Error sending ESRI json ' + res.statusCode));
     var result = json.updateResults[0];
     if (!result.success) {
       log.error('error updating observation', JSON.stringify(result.error));

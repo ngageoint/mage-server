@@ -32,7 +32,7 @@ RoleSchema.pre('save', function(next) {
 
   var validPermissions = Permission.getPermissions();
   role.permissions.forEach(function(permission) {
-    if (validPermissions.indexOf(permission) == -1) {
+    if (validPermissions.indexOf(permission) === -1) {
       return next(new Error("Permission '" + permission + "' is not a valid permission"));
     }
   });
@@ -41,7 +41,7 @@ RoleSchema.pre('save', function(next) {
 });
 
 function transform(user, ret) {
-  if ('function' != typeof user.ownerDocument) {
+  if ('function' !== typeof user.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;
   }

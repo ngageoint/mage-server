@@ -46,13 +46,13 @@ function writeGeoJson(streams, gj, callback) {
         if (err) return callback(err);
         result[l.type] = files;
 
-        if (i == all.length) {
+        if (i === all.length) {
           callback(null, result);
         }
       });
     } else {
       i++;
-      if (i == all.length) {
+      if (i === all.length) {
         callback(null, result);
       }
     }

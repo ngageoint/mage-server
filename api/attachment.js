@@ -70,7 +70,7 @@ Attachment.prototype.create = function(observationId, attachment, callback) {
 Attachment.prototype.update = function(id, attachment, callback) {
   var event = this._event;
 
-  var relativePath = createAttachmentPath(event, attachment);
+  var relativePath = createAttachmentPath(event);
   var dir = path.join(attachmentBase, relativePath);
   // move file upload to its new home
   fs.mkdirp(dir, function(err) {

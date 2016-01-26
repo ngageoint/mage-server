@@ -356,7 +356,7 @@ module.exports = function(app, security) {
     kmlStream.write(generateKml.generateKMLDocument());
 
     function streamObservations(stream, archive, done) {
-      if (!req.parameters.filter.exportObservations) return done(null, []);
+      if (!req.parameters.filter.exportObservations) return done(null);
 
       var filter = req.parameters.filter;
       filter.states = ['active'];

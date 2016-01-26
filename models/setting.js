@@ -11,7 +11,7 @@ var SettingSchema = new Schema({
 });
 
 function transform(setting, ret) {
-  if ('function' != typeof setting.ownerDocument) {
+  if ('function' !== typeof setting.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;
   }

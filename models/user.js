@@ -139,7 +139,7 @@ UserSchema.pre('remove', function(next) {
 });
 
 var transform = function(user, ret, options) {
-  if ('function' != typeof user.ownerDocument) {
+  if ('function' !== typeof user.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;
 
@@ -202,7 +202,7 @@ exports.count = function(callback) {
 };
 
 exports.getUsers = function(options, callback) {
-  if (typeof options == 'function') {
+  if (typeof options === 'function') {
     callback = options;
     options = {};
   }
@@ -221,7 +221,7 @@ exports.getUsers = function(options, callback) {
 
   var populate = [];
   if (options.populate) {
-    if (options.populate.indexOf('roleId') != -1) {
+    if (options.populate.indexOf('roleId') !== -1) {
       populate.push({path: 'roleId'});
     }
   }
@@ -329,7 +329,7 @@ exports.addRecentEventForUser = function(user, event, callback) {
 
   // remove dupes
   eventIds = eventIds.filter(function(eventId, index) {
-    return eventIds.indexOf(eventId) == index;
+    return eventIds.indexOf(eventId) === index;
   });
 
   // limit to 5

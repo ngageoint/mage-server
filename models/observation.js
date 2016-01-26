@@ -82,7 +82,7 @@ function transformState(state, observation) {
 }
 
 function transform(observation, ret, options) {
-  if ('function' != typeof observation.ownerDocument) {
+  if ('function' !== typeof observation.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;
 

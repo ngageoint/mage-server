@@ -62,7 +62,7 @@ var Layer = mongoose.model('Layer', LayerSchema);
 exports.Model = Layer;
 
 exports.getLayers = function(filter, callback) {
-  if (typeof filter == 'function') {
+  if (typeof filter === 'function') {
     callback = filter;
     filter = {};
   }
@@ -114,14 +114,14 @@ exports.create = function(layer, callback) {
   Counter.getNext('layer', function(id) {
     layer._id = id;
 
-    if (layer.type == 'Feature') {
+    if (layer.type === 'Feature') {
       layer.collectionName = 'features' + id;
     }
 
     Layer.create(layer, function(err, newLayer) {
       if (err) return callback(err);
 
-      if (layer.type == 'Feature') {
+      if (layer.type === 'Feature') {
         createFeatureCollection(newLayer);
       }
 

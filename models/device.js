@@ -55,7 +55,7 @@ DeviceSchema.pre('remove', function(next) {
 });
 
 function transform(device, ret) {
-  if ('function' != typeof device.ownerDocument) {
+  if ('function' !== typeof device.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;
 
@@ -88,7 +88,7 @@ exports.getDeviceByUid = function(uid, callback) {
 };
 
 exports.getDevices = function(options, callback) {
-  if (typeof options == 'function') {
+  if (typeof options === 'function') {
     callback = options;
     options = {};
   }

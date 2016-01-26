@@ -82,7 +82,7 @@ function thumbnail(event, observationId, attachment, callback) {
 
   async.eachSeries(thumbSizes, function(thumbSize, done) {
     var containsThumbnail = attachment.thumbnails.some(function(thumbnail) {
-      return thumbnail.minDimension == thumbSize;
+      return thumbnail.minDimension === thumbSize;
     });
     if (containsThumbnail) return done();
 

@@ -76,7 +76,7 @@ EventSchema.pre('remove', function(next) {
 });
 
 function transform(event, ret) {
-  if ('function' != typeof event.ownerDocument) {
+  if ('function' !== typeof event.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;
     delete ret.collectionName;
@@ -150,7 +150,7 @@ exports.count = function(callback) {
 };
 
 exports.getEvents = function(options, callback) {
-  if (typeof options == 'function') {
+  if (typeof options === 'function') {
     callback = options;
     options = {};
   }
@@ -199,7 +199,7 @@ exports.getEvents = function(options, callback) {
 };
 
 exports.getById = function(id, options, callback) {
-  if (typeof options == 'function') {
+  if (typeof options === 'function') {
     callback = options;
     options = {};
   }
@@ -261,7 +261,7 @@ function dropObservationCollection(event, callback) {
 }
 
 exports.create = function(event, options, callback) {
-  if (typeof options == 'function') {
+  if (typeof options === 'function') {
     callback = options;
     options = {};
   }
@@ -287,7 +287,7 @@ exports.create = function(event, options, callback) {
 };
 
 exports.update = function(id, event, options, callback) {
-  if (typeof options == 'function') {
+  if (typeof options === 'function') {
     callback = options;
     options = {};
   }

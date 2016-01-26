@@ -1,6 +1,6 @@
 var child = require('child_process')
   , log = require('winston')
-  , config = require('./config.js')
+  , config = require('./config.js');
 
 if (!config.enable) return;
 
@@ -16,13 +16,13 @@ function start() {
 
   rage.on('exit', function(exitCode) {
     log.warn('***************** rage exit, code ************************', exitCode);
-    if (exitCode != 0) {
+    if (exitCode !== 0) {
       rage.kill();
       start();
     }
   });
 
-  process.on('exit', function() {
+  process.on('exit', function(err) {
     log.warn('***************** rage parent process exit, killing ********************', err);
     rage.kill();
   });

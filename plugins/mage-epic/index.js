@@ -20,7 +20,7 @@ function startObservations() {
 
     observationsWorker.on('exit', function(exitCode) {
       log.warn('***************** epic observation  exit, code ************************', exitCode);
-      if (exitCode != 0) {
+      if (exitCode !== 0) {
         observationsWorker.kill();
         startObservations();
       }
@@ -51,7 +51,7 @@ function startAttachments() {
 
     attachmentsWorker.on('exit', function(exitCode) {
       log.warn('epic attachment  exit, code', exitCode);
-      if (exitCode != 0) {
+      if (exitCode !== 0) {
         attachmentsWorker.kill();
         startAttachments();
       }

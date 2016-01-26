@@ -17,7 +17,7 @@ function write(streams, rows, geometryType, geometries, callback) {
   var complete = 3;
   var finish = function() {
     counter++;
-    if (counter == complete) {
+    if (counter === complete) {
       return callback(null);
     }
   };

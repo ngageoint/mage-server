@@ -47,7 +47,7 @@ function createEsriAttachment(esriId, attachment, callback) {
     var json = JSON.parse(body);
     log.info('ESRI observation add response', json);
 
-    if (res.code != 200) return callback(new Error('Error sending ESRI json ' + res.statusCode));
+    if (res.code !== 200) return callback(new Error('Error sending ESRI json ' + res.statusCode));
     var result = json.addAttachmentResult;
     if (!result.success) {
       return callback(new Error('Error sending ESRI json ', result.error));
@@ -72,7 +72,7 @@ function updateEsriAttachment(esriId, attachment, callback) {
     var json = JSON.parse(body);
     log.info('ESRI observation update response', json);
 
-    if (res.statusCode != 200) return callback(new Error('Error sending ESRI json ' + res.statusCode));
+    if (res.statusCode !== 200) return callback(new Error('Error sending ESRI json ' + res.statusCode));
     var result = json.updateAttachmentResult;
     if (!result.success) {
       return callback(new Error('Error sending ESRI json ', result.error));

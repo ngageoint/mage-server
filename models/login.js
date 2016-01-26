@@ -16,7 +16,7 @@ LoginSchema.index({userId: 1, deviceId: 1});
 LoginSchema.index({_id: 1, userId: 1, deviceId: 1});
 
 function transform(login, ret) {
-  if ('function' != typeof login.ownerDocument) {
+  if ('function' !== typeof login.ownerDocument) {
     ret.id = ret._id;
     ret.timestamp = ret._id.getTimestamp();
     delete ret._id;
