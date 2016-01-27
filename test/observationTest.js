@@ -23,15 +23,12 @@ describe("observation tests", function() {
     sandbox = sinon.sandbox.create();
   });
 
-  beforeEach(function() {
-  });
-
   afterEach(function() {
     sandbox.restore();
   });
 
-  it("should create an observation for an event", function(done) {
-    var token = {
+  function mockTokenWithPermission(permission) {
+    var token =  {
       _id: '1',
       token: '12345',
       userId: {
@@ -40,7 +37,7 @@ describe("observation tests", function() {
             _id: mongoose.Types.ObjectId(),
             username: 'test',
             roleId: {
-              permissions: ['CREATE_OBSERVATION']
+              permissions: [permission]
             }
           });
         }
@@ -53,41 +50,34 @@ describe("observation tests", function() {
       .chain('populate', 'userId')
       .chain('exec')
       .yields(null, token);
+  }
 
-    sandbox.mock(TeamModel)
-      .expects('find')
-      .yields(null, [{ name: 'Team 1' }]);
-
-    var mockEvent = {
-      _id: 1,
-      name: 'Event 1',
-      collectionName: 'observations1'
-    };
-    sandbox.mock(EventModel)
-      .expects('findById')
-      .yields(null, mockEvent);
-
-    var ObservationModel = observationModel(mockEvent);
-    var mockObservation = new ObservationModel({
-      _id: mongoose.Types.ObjectId(),
-      type: 'Feature',
-      geometry: {
-        type: "Point",
-        coordinates: [0, 0]
-      },
-      properties: {
-        timestamp: Date.now()
-      }
+  describe("create tests", function() {
+    beforeEach(function() {
+      var mockEvent = {
+        _id: 1,
+        name: 'Event 1',
+        collectionName: 'observations1'
+      };
+      sandbox.mock(EventModel)
+        .expects('findById')
+        .yields(null, mockEvent);
     });
-    sandbox.mock(ObservationModel)
-      .expects('create')
-      .yields(null, mockObservation);
 
-    request(app)
-      .post('/api/events/1/observations')
-      .set('Accept', 'application/json')
-      .set('Authorization', 'Bearer 12345')
-      .send({
+    it("should create an observation for an event", function(done) {
+      mockTokenWithPermission('CREATE_OBSERVATION');
+
+      sandbox.mock(TeamModel)
+        .expects('find')
+        .yields(null, [{ name: 'Team 1' }]);
+
+      var ObservationModel = observationModel({
+        _id: 1,
+        name: 'Event 1',
+        collectionName: 'observations1'
+      });
+      var mockObservation = new ObservationModel({
+        _id: mongoose.Types.ObjectId(),
         type: 'Feature',
         geometry: {
           type: "Point",
@@ -96,31 +86,196 @@ describe("observation tests", function() {
         properties: {
           timestamp: Date.now()
         }
-      })
-      .expect(200)
-      .expect('Content-Type', /json/)
-      .expect(function(res) {
-        var observation = res.body;
-        should.exist(observation);
-        res.body.should.have.property('id');
-        res.body.should.have.property('url');
-      })
-      .end(done);
-  });
+      });
+      sandbox.mock(ObservationModel)
+        .expects('create')
+        .yields(null, mockObservation);
 
-  xit("should reject new observation w/o type", function(done) {
+      request(app)
+        .post('/api/events/1/observations')
+        .set('Accept', 'application/json')
+        .set('Authorization', 'Bearer 12345')
+        .send({
+          type: 'Feature',
+          geometry: {
+            type: "Point",
+            coordinates: [0, 0]
+          },
+          properties: {
+            timestamp: Date.now()
+          }
+        })
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .expect(function(res) {
+          var observation = res.body;
+          should.exist(observation);
+          res.body.should.have.property('id');
+          res.body.should.have.property('url');
+        })
+        .end(done);
+    });
 
-  });
+    it("should reject new observation for invalid permission", function(done) {
+      mockTokenWithPermission('READ_OBSERVATION');
 
-  xit("should reject new observation w/o properties", function(done) {
+      sandbox.mock(TeamModel)
+        .expects('find')
+        .yields(null, []);
 
-  });
+      request(app)
+        .post('/api/events/1/observations')
+        .set('Accept', 'application/json')
+        .set('Authorization', 'Bearer 12345')
+        .send({
+          type: 'Feature',
+          geometry: {
+            type: "Point",
+            coordinates: [0, 0]
+          },
+          properties: {
+            timestamp: Date.now()
+          }
+        })
+        .expect(403)
+        .expect(function(res) {
+          console.log('res', res.text);
+          res.text.should.equal("Forbidden");
+        })
+        .end(done);
+    });
 
-  xit("should reject new observation w/o timestamp", function(done) {
+    it("should reject new observation w/o type", function(done) {
+      mockTokenWithPermission('CREATE_OBSERVATION');
 
-  });
+      sandbox.mock(TeamModel)
+        .expects('find')
+        .yields(null, [{ name: 'Team 1' }]);
 
-  xit("should reject new observation for event you are not part of", function(done) {
+      request(app)
+        .post('/api/events/1/observations')
+        .set('Accept', 'application/json')
+        .set('Authorization', 'Bearer 12345')
+        .send({
+          geometry: {
+            type: "Point",
+            coordinates: [0, 0]
+          },
+          properties: {
+            timestamp: Date.now()
+          }
+        })
+        .expect(400)
+        .expect(function(res) {
+          res.text.should.equal("cannot create observation 'type' param not specified, or is not set to 'Feature'");
+        })
+        .end(done);
+    });
+
+    it("should reject new observation w/o geometry", function(done) {
+      mockTokenWithPermission('CREATE_OBSERVATION');
+
+      sandbox.mock(TeamModel)
+        .expects('find')
+        .yields(null, [{ name: 'Team 1' }]);
+
+      request(app)
+        .post('/api/events/1/observations')
+        .set('Accept', 'application/json')
+        .set('Authorization', 'Bearer 12345')
+        .send({
+          type: 'Feature',
+          properties: {
+            timestamp: Date.now()
+          }
+        })
+        .expect(400)
+        .expect(function(res) {
+          res.text.should.equal("cannot create observation 'geometry' param not specified");
+        })
+        .end(done);
+    });
+
+    it("should reject new observation w/o properties", function(done) {
+      mockTokenWithPermission('CREATE_OBSERVATION');
+
+      sandbox.mock(TeamModel)
+        .expects('find')
+        .yields(null, [{ name: 'Team 1' }]);
+
+      request(app)
+        .post('/api/events/1/observations')
+        .set('Accept', 'application/json')
+        .set('Authorization', 'Bearer 12345')
+        .send({
+          type: 'Feature',
+          geometry: {
+            type: "Point",
+            coordinates: [0, 0]
+          }
+        })
+        .expect(400)
+        .expect(function(res) {
+          res.text.should.equal("cannot create observation 'properties.timestamp' param not specified");
+        })
+        .end(done);
+    });
+
+    it("should reject new observation w/o timestamp", function(done) {
+      mockTokenWithPermission('CREATE_OBSERVATION');
+
+      sandbox.mock(TeamModel)
+        .expects('find')
+        .yields(null, [{ name: 'Team 1' }]);
+
+      request(app)
+        .post('/api/events/1/observations')
+        .set('Accept', 'application/json')
+        .set('Authorization', 'Bearer 12345')
+        .send({
+          type: 'Feature',
+          geometry: {
+            type: "Point",
+            coordinates: [0, 0]
+          },
+          properties: {
+          }
+        })
+        .expect(400)
+        .expect(function(res) {
+          res.text.should.equal("cannot create observation 'properties.timestamp' param not specified");
+        })
+        .end(done);
+    });
+
+    it("should reject new observation for event you are not part of", function(done) {
+      mockTokenWithPermission('CREATE_OBSERVATION');
+
+      sandbox.mock(TeamModel)
+        .expects('find')
+        .yields(null, []);
+
+      request(app)
+        .post('/api/events/1/observations')
+        .set('Accept', 'application/json')
+        .set('Authorization', 'Bearer 12345')
+        .send({
+          type: 'Feature',
+          geometry: {
+            type: "Point",
+            coordinates: [0, 0]
+          },
+          properties: {
+            timestamp: Date.now()
+          }
+        })
+        .expect(403)
+        .expect(function(res) {
+          console.log('res', res.text);
+          res.text.should.equal("Cannot submit an observation for an event that you are not part of.");
+        })
+        .end(done);
+    });
 
   });
 
