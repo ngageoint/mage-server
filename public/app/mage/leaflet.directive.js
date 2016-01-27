@@ -223,15 +223,16 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
       pointToLayer: function (feature, latlng) {
         if (layerInfo.options.temporal) {
           // TODO temporal layers should be fixed width as well, ie use fixedWidthMarker class
-          var options = {
+          var temporalOptions = {
             color: colorForFeature(feature, layerInfo.options.temporal)
           };
           if (feature.style && feature.style.iconUrl) options.iconUrl = feature.style.iconUrl + '?access_token=' + LocalStorageService.getToken();
 
-          return L.locationMarker(latlng, options);
+          return L.locationMarker(latlng, temporalOptions);
         } else {
+          var options = {};
           if (feature.style && feature.style.iconUrl) options.iconUrl = feature.style.iconUrl + '?access_token=' + LocalStorageService.getToken();
-          return L.fixedWidthMarker(latlng, {});
+          return L.fixedWidthMarker(latlng, options);
         }
       },
       style: function(feature) {
