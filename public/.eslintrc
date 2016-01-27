@@ -1,0 +1,14 @@
+{
+    "globals": {
+      "_": true,
+      "angular": true,
+      "moment": true
+    },
+    "rules": {
+      "no-console": [1]
+    },
+    "env": {
+      "node": false,
+      "browser": true
+    }
+}
