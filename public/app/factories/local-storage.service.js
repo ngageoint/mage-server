@@ -17,7 +17,7 @@ function LocalStorageService() {
 
   function getToken() {
     return getLocalItem(tokenKey);
-  };
+  }
 
   function setToken(token) {
     return setLocalItem(tokenKey, token);

@@ -36,7 +36,7 @@ function FeatureService($q, $http) {
         }
 
         if (style.lineStyle) {
-          feature.style.color = feature.properties.style.lineStyle.color.rgb
+          feature.style.color = feature.properties.style.lineStyle.color.rgb;
         }
         if (style.polyStyle) {
           feature.style.fillColor = feature.properties.style.polyStyle.color.rgb;

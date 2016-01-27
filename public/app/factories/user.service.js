@@ -48,8 +48,8 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
 
     var oldUsername = service.myself && service.myself.username || null;
 
-    windowLeft = window.screenLeft ? window.screenLeft : window.screenX;
-    windowTop = window.screenTop ? window.screenTop : window.screenY;
+    var windowLeft = window.screenLeft ? window.screenLeft : window.screenX;
+    var windowTop = window.screenTop ? window.screenTop : window.screenY;
 
     var left = windowLeft + (window.innerWidth / 2) - (300);
     var top = windowTop + (window.innerHeight / 2) - (300);
@@ -87,8 +87,8 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
   function oauthSignup(strategy) {
     var deferred = $q.defer();
 
-    windowLeft = window.screenLeft ? window.screenLeft : window.screenX;
-    windowTop = window.screenTop ? window.screenTop : window.screenY;
+    var windowLeft = window.screenLeft ? window.screenLeft : window.screenX;
+    var windowTop = window.screenTop ? window.screenTop : window.screenY;
 
     var left = windowLeft + (window.innerWidth / 2) - (300);
     var top = windowTop + (window.innerHeight / 2) - (300);
@@ -147,8 +147,6 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
     })
     .success(function(user) {
-      if (user.id !== service.myself)
-
       setUser(user);
 
       $rootScope.$broadcast('event:user', {user: user, token: LocalStorageService.getToken(), isAdmin: service.amAdmin});
@@ -160,7 +158,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
 
       theDeferred.resolve(user);
     })
-    .error(function(data, status) {
+    .error(function() {
       theDeferred.resolve({});
     });
 
@@ -179,21 +177,20 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
     });
 
-    promise.success(function(user) {
+    promise.success(function() {
       clearUser();
     });
 
     return promise;
   }
 
-  function checkLoggedInUser(roles) {
-    console.info('check login');
+  function checkLoggedInUser() {
     $http.get('/api/users/myself', {ignoreAuthModule: true})
     .success(function(user) {
       setUser(user);
       userDeferred.resolve(user);
     })
-    .error(function(data, status) {
+    .error(function() {
       userDeferred.resolve({});
     });
 
@@ -209,11 +206,11 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
   }
 
   function getAllUsers(options) {
-    var options = options || {};
+    options = options || {};
 
     if (options.forceRefresh) {
-        resolvedUsers = {};
-        resolveAllUsers = undefined;
+      resolvedUsers = {};
+      resolveAllUsers = undefined;
     }
 
     var parameters = {};
@@ -228,11 +225,11 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     });
 
     return resolveAllUsers;
-  };
+  }
 
   function getInactiveUsers() {
     return $http.get('/api/users?active=false');
-  };
+  }
 
   function createUser(user, success, error, progress) {
     saveUser(user, {
@@ -242,7 +239,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
       resolvedUsers[data.id] = $q.when(data);
       success(data);
     }, error, progress);
-  };
+  }
 
   function updateUser(id, user, success, error, progress) {
     saveUser(user, {
@@ -261,7 +258,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     });
 
     return promise;
-  };
+  }
 
   // TODO is this really used in this service or just internal
   function clearUser() {
@@ -270,12 +267,12 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     LocalStorageService.removeToken();
 
     $rootScope.$broadcast('logout');
-  };
+  }
 
   // TODO should this go in Roles service/resource
   function getRoles() {
     return $http.get('/api/roles');
-  };
+  }
 
   // TODO possibly name this addRecentEventForMyself
   function addRecentEvent(event) {
@@ -289,35 +286,36 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
 
   function setUser(user) {
     service.myself = user;
-    service.amAdmin = service.myself && service.myself.role && (service.myself.role.name == "ADMIN_ROLE");
-  };
+    service.amAdmin = service.myself && service.myself.role && (service.myself.role.name === "ADMIN_ROLE");
+  }
 
   function saveUser(user, options, success, error, progress) {
     var formData = new FormData();
     for (var property in user) {
-      if (user[property] != null)
+      if (user[property]) {
         formData.append(property, user[property]);
+      }
     }
 
     $.ajax({
-        url: options.url,
-        type: options.type,
-        xhr: function() {
-            var myXhr = $.ajaxSettings.xhr();
-            if(myXhr.upload){
-                myXhr.upload.addEventListener('progress', progress, false);
-            }
-            return myXhr;
-        },
-        success: function(data) {
-          resolvedUsers[user.id] = $q.when(data);
-          success(data);
-        },
-        error: error,
-        data: formData,
-        cache: false,
-        contentType: false,
-        processData: false
+      url: options.url,
+      type: options.type,
+      xhr: function() {
+        var myXhr = $.ajaxSettings.xhr();
+        if(myXhr.upload){
+          myXhr.upload.addEventListener('progress', progress, false);
+        }
+        return myXhr;
+      },
+      success: function(data) {
+        resolvedUsers[user.id] = $q.when(data);
+        success(data);
+      },
+      error: error,
+      data: formData,
+      cache: false,
+      contentType: false,
+      processData: false
     });
   }
 }

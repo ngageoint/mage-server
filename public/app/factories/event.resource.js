@@ -2,9 +2,9 @@ angular
   .module('mage')
   .factory('Event', Event);
 
-Event.$inject = ['$rootScope', '$resource', '$http', 'LocalStorageService', 'Observation'];
+Event.$inject = ['$rootScope', '$resource', '$http', 'LocalStorageService'];
 
-function Event($rootScope, $resource, $http, LocalStorageService, Observation) {
+function Event($rootScope, $resource, $http, LocalStorageService) {
   var Event = $resource('/api/events/:id', {
     id: '@id'
   },{
@@ -30,20 +30,20 @@ function Event($rootScope, $resource, $http, LocalStorageService, Observation) {
         'Content-Type': 'application/json'
       }
     },
-		addTeam: {
-			method: 'POST',
-			url: '/api/events/:id/teams',
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		},
-		removeTeam: {
-			method: 'DELETE',
-			url: '/api/events/:id/teams/:teamId',
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		},
+    addTeam: {
+      method: 'POST',
+      url: '/api/events/:id/teams',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    },
+    removeTeam: {
+      method: 'DELETE',
+      url: '/api/events/:id/teams/:teamId',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    },
     addLayer: {
       method: 'POST',
       url: '/api/events/:id/layers',
@@ -93,7 +93,7 @@ function Event($rootScope, $resource, $http, LocalStorageService, Observation) {
         var formData = new FormData();
         formData.append('form', this.formArchiveFile);
         for (var key in this) {
-          if (this.hasOwnProperty(key) && key != 'formArchiveFile' ) {
+          if (this.hasOwnProperty(key) && key !== 'formArchiveFile' ) {
             formData.append(key, this[key]);
           }
         }

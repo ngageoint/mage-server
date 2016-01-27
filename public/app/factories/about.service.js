@@ -13,5 +13,5 @@ function AboutService($http) {
 
   function about() {
     return $http.get('/api/');
-  };
+  }
 }

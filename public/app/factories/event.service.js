@@ -10,7 +10,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
   var layersChangedListeners = [];
   var pollListeners = [];
   var eventsById = {};
-  var teamsById = {};
+  var pollingTimeout = null;
 
   var filterServiceListener = {
     onFilterChanged: function(filter) {
@@ -24,7 +24,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
         onTeamsChanged(filter.teams);
       }
     }
-  }
+  };
   FilterService.addListener(filterServiceListener);
 
   function onEventChanged(event) {
@@ -68,7 +68,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     var observationsAdded = [];
     var usersAdded = [];
     var filterTeams = FilterService.getTeams();
-    var newTeams = filterTeams.length == 0 ? teamsEvent.teams : teams.added;
+    var newTeams = filterTeams.length === 0 ? teamsEvent.teams : teams.added;
     _.each(newTeams, function(added) {
       // add any observations that are part of the filtered teams
       _.each(teamsEvent.observationsById, function(observation) {
@@ -102,8 +102,17 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
         poll(interval);
       }, interval);
     }
-  }
+  };
   PollingService.addListener(pollingServiceListener);
+
+  $rootScope.$on('$destory', function() {
+    if (pollingTimeout) {
+      $timeout.cancel(pollingTimeout);
+    }
+
+    FilterService.removeListener(filterServiceListener);
+    PollingService.removeListener(pollingServiceListener);
+  });
 
   var service = {
     addObservationsChangedListener: addObservationsChangedListener,
@@ -123,7 +132,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     createForm: createForm,
     exportForm: exportForm,
     isUserInEvent: isUserInEvent
-  }
+  };
 
   return service;
 
@@ -191,7 +200,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
 
   function saveObservation(observation) {
     var event = eventsById[observation.eventId];
-    var isNewObservation = observation.id == null;
+    var isNewObservation = !observation.id;
     return ObservationService.saveObservationForEvent(event, observation).then(function(observation) {
       event.observationsById[observation.id] = observation;
 
@@ -225,7 +234,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
   }
 
   function getFormField(form, fieldName) {
-    return _.find(form.fields, function(field) { return field.name == fieldName});
+    return _.find(form.fields, function(field) { return field.name === fieldName; });
   }
 
   function createForm(observation, viewMode) {
@@ -236,7 +245,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     service.getFormField(form, "geometry").value = {
       x: observation.geometry.coordinates[0],
       y: observation.geometry.coordinates[1]
-    }
+    };
 
     var existingPropertyFields = [];
     _.each(observation.properties, function(value, key) {
@@ -260,7 +269,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
 
   function isUserInEvent(user, event) {
     return _.some(event.teams, function(team) {
-        return _.contains(team.userIds, user.id);
+      return _.contains(team.userIds, user.id);
     });
   }
 
@@ -329,13 +338,13 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     return LayerService.getLayersForEvent(event).then(function(layers) {
       var added = _.filter(layers, function(l) {
         return !_.some(eventsById[event.id].layersById, function(layer, layerId) {
-          return l.id == layerId
+          return l.id === layerId;
         });
       });
 
       var removed = _.filter(eventsById[event.id].layersById, function(layer, layerId) {
         return !_.some(layers, function(l) {
-          return l.id == layerId
+          return l.id === layerId;
         });
       });
 
@@ -362,7 +371,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
               updated.push(observation);
             } else if (observation.attachments) {
               var some = _.some(observation.attachments, function(attachment) {
-                var localAttachment = _.find(localObservation.attachments, function(a) {return a.id == attachment.id});
+                var localAttachment = _.find(localObservation.attachments, function(a) { return a.id === attachment.id; });
                 return !localAttachment || localAttachment.lastModified !== attachment.lastModified;
               });
 
@@ -396,7 +405,6 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
       var updated = [];
       var removed = [];
 
-      var users = [];
       var usersById = {};
       var filteredUsersById = eventsById[event.id].filteredUsersById;
       _.each(userLocations, function(userLocation) {
@@ -434,11 +442,6 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     });
   }
 
-  function isObservationInFilter(observation) {
-    return FilterService.isContainedWithinFilter({teamIds: observation.teamIds, timestamp: observation.properties.timestamp});
-  }
-
-  var pollingTimeout = null;
   function poll(interval) {
     if (interval <= 0) return;
 
@@ -454,13 +457,4 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
       }, interval);
     });
   }
-
-  $rootScope.$on('$destory', function() {
-    if (pollingTimeout) {
-      $timeout.cancel(pollingTimeout);
-    }
-
-    FilterService.removeListener(filterServiceListener);
-    PollingService.removeListener(pollingServiceListener);
-  });
 }

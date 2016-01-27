@@ -1,4 +1,4 @@
-angular.module('mage').factory('Observation', ['$resource', '$http', function($resource, $http) {
+angular.module('mage').factory('Observation', ['$resource', function($resource) {
 
   var Observation = $resource('/api/events/:eventId/observations/:id', {
     id: '@id',
@@ -31,7 +31,7 @@ angular.module('mage').factory('Observation', ['$resource', '$http', function($r
 
   return Observation;
 }])
-.factory('ObservationState', ['$resource', '$http', function($resource, $http) {
+.factory('ObservationState', ['$resource', function($resource) {
 
   var ObservationState = $resource('/api/events/:eventId/observations/:observationId/states/:id', {
     id: '@id',
@@ -54,7 +54,7 @@ angular.module('mage').factory('Observation', ['$resource', '$http', function($r
 
   return ObservationState;
 }])
-.factory('ObservationAttachment', ['$resource', '$http', function($resource, $http) {
+.factory('ObservationAttachment', ['$resource', function($resource) {
   var ObservationAttachment = $resource('/api/events/:eventId/observations/:observationId/attachments/:id', {
 
   }, {
