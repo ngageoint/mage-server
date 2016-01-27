@@ -97,7 +97,7 @@ function transform(observation, ret, options) {
       });
     }
 
-    if (observation.states) {
+    if (observation.states && observation.states.length) {
       ret.state = transformState(ret.states[0], ret);
       delete ret.states;
     }
