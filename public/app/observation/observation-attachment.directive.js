@@ -26,5 +26,5 @@ function AttachmentController($scope, UserService, LocalStorageService) {
 
   $scope.deleteAttachment = function () {
     $scope.attachment.markedForDelete = true;
-  }
+  };
 }

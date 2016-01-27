@@ -2,9 +2,9 @@ angular
   .module('mage')
   .filter('user', userFilter);
 
-userFilter.$inject = ['$parse'];
+userFilter.$inject = [];
 
-function userFilter($parse) {
+function userFilter() {
   return function(collection, properties, search) {
     if (!search) return collection;
 
@@ -17,8 +17,8 @@ function userFilter($parse) {
     var match = new RegExp(search, 'i');
     return collection.filter(function(element) {
       return properties.some(function(property) {
-        return match.test(element[property])
+        return match.test(element[property]);
       });
     });
-  }
+  };
 }

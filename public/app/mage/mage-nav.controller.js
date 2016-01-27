@@ -27,9 +27,9 @@ function NavController($rootScope, $scope, $q, $location, $modal, UserService, F
 
   $scope.$on('$routeChangeSuccess', function() {
     if ($location.path() === '/map') {
-      events = Event.query(function(response) {
+      events = Event.query(function() {
         var recentEventId = UserService.getRecentEventId();
-        var recentEvent = _.find(events, function(event) { return event.id === recentEventId });
+        var recentEvent = _.find(events, function(event) { return event.id === recentEventId; });
         if (recentEvent) {
           FilterService.setFilter({event: recentEvent});
           PollingService.setPollingInterval($scope.pollingInterval);
@@ -49,15 +49,15 @@ function NavController($rootScope, $scope, $q, $location, $modal, UserService, F
 
   $scope.logout = function() {
     UserService.logout();
-  }
+  };
 
   $scope.onPollingIntervalChanged = function(pollingInterval) {
     $scope.pollingInterval = pollingInterval;
     PollingService.setPollingInterval(pollingInterval);
-  }
+  };
 
   $scope.onFilterClick = function() {
-    var modalInstance = $modal.open({
+    $modal.open({
       templateUrl: '/app/filter/filter.html',
       controller: 'FilterController',
       backdrop: 'static',
@@ -67,10 +67,10 @@ function NavController($rootScope, $scope, $q, $location, $modal, UserService, F
         }
       }
     });
-  }
+  };
 
   $scope.onExportClick = function() {
-    var modalInstance = $modal.open({
+    $modal.open({
       templateUrl: '/app/export/export.html',
       controller: 'ExportController',
       backdrop: 'static',
@@ -80,5 +80,5 @@ function NavController($rootScope, $scope, $q, $location, $modal, UserService, F
         }
       }
     });
-  }
+  };
 }

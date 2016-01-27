@@ -12,7 +12,7 @@ function fieldDirective() {
     },
     controller: FieldDirectiveController,
     bindToController: true
-  }
+  };
 
   return directive;
 }
@@ -20,56 +20,45 @@ function fieldDirective() {
 FieldDirectiveController.$inject = ['$scope'];
 
 function FieldDirectiveController($scope) {
+  var types = {
+    textfield: 'app/observation/form/textfield.directive.html',
+    email: 'app/observation/form/email.directive.html',
+    textarea: 'app/observation/form/textarea.directive.html',
+    checkbox: 'app/observation/form/checkbox.directive.html',
+    date: 'app/observation/form/date.directive.html',
+    geometry: 'app/observation/form/geometry.directive.html',
+    dropdown: 'app/observation/form/dropdown.directive.html',
+    hidden: 'app/observation/form/hidden.directive.html',
+    password: 'app/observation/form/password.directive.html',
+    radio: 'app/observation/form/radio.directive.html'
+  };
+
   $scope.datePopup = {open: false};
-  $scope.templatePath = getTemplateUrl($scope.field);
+  $scope.templatePath = types[$scope.field.type];
 
   $scope.onLatLngChange = function(field) {
     if (field.name === 'geometry') {
       $scope.$emit('observation:move', $scope.observation, {lat: $scope.field.value.y, lng: $scope.field.value.x});
     }
-  }
+  };
 
   $scope.openDate = function($event) {
     $event.preventDefault();
     $event.stopPropagation();
 
     $scope.datePopup.open = true;
-  }
+  };
 
   $scope.today = function() {
     $scope.field.value = new Date();
-  }
+  };
 
   $scope.clear = function () {
     $scope.field.value = null;
-  }
+  };
 
-  if ($scope.field.type == 'dropdown' && !$scope.field.required) {
+  if ($scope.field.type === 'dropdown' && !$scope.field.required) {
     $scope.field.value = "";
   }
 
-  function getTemplateUrl(field) {
-    switch(field.type) {
-      case 'textfield':
-        return 'app/observation/form/textfield.directive.html';
-      case 'email':
-        return 'app/observation/form/email.directive.html';
-      case 'textarea':
-        return 'app/observation/form/textarea.directive.html';
-      case 'checkbox':
-        return 'app/observation/form/checkbox.directive.html';
-      case 'date':
-        return 'app/observation/form/date.directive.html';
-      case 'geometry':
-        return 'app/observation/form/geometry.directive.html';
-      case 'dropdown':
-        return 'app/observation/form/dropdown.directive.html';
-      case 'hidden':
-        return 'app/observation/form/hidden.directive.html';
-      case 'password':
-        return 'app/observation/form/password.directive.html';
-      case 'radio':
-        return 'app/observation/form/radio.directive.html';
-    }
-  }
 }

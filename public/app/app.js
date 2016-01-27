@@ -21,9 +21,9 @@ function config($routeProvider, $locationProvider, $httpProvider) {
   function resolveLogin(roles) {
     return {
       user: ['UserService', function(UserService) {
-       return UserService.getMyself(roles);
-     }]
-    }
+        return UserService.getMyself(roles);
+      }]
+    };
   }
 
   function checkLogin(roles) {
@@ -31,7 +31,7 @@ function config($routeProvider, $locationProvider, $httpProvider) {
       user: ['UserService', function(UserService) {
         return UserService.checkLoggedInUser(roles);
       }]
-    }
+    };
   }
 
   $routeProvider.when('/signin', {
@@ -194,15 +194,15 @@ function config($routeProvider, $locationProvider, $httpProvider) {
   });
   $routeProvider.otherwise({
     redirectTo:     '/signin',
-    controller:     "SigninController",
+    controller:     "SigninController"
   });
 }
 
-run.$inject = ['$rootScope', '$modal', 'UserService', '$location', 'authService', 'LocalStorageService', 'UserService', 'AboutService', 'ApiService'];
+run.$inject = ['$rootScope', '$modal', 'UserService', '$location', 'authService', 'LocalStorageService', 'AboutService', 'ApiService'];
 
-function run($rootScope, $modal, UserService, $location, authService, LocalStorageService, UserService, AboutService, ApiService) {
+function run($rootScope, $modal, UserService, $location, authService, LocalStorageService, AboutService, ApiService) {
   $rootScope.$on('event:auth-loginRequired', function() {
-    if (!$rootScope.loginDialogPresented && $location.path() != '/' && $location.path() != '/signin' && $location.path() != '/signup') {
+    if (!$rootScope.loginDialogPresented && $location.path() !== '/' && $location.path() !== '/signin' && $location.path() !== '/signup') {
       $rootScope.loginDialogPresented = true;
       var modalInstance = $modal.open({
         templateUrl: 'app/signin/signin-modal.html',
@@ -224,8 +224,7 @@ function run($rootScope, $modal, UserService, $location, authService, LocalStora
 
           $scope.googleSignin = function() {
             UserService.oauthSignin('google', {uid: this.uid}).then(function(data) {
-              console.log('successfull oauth');
-              if (data.username != oldUsername) {
+              if (data.username !== oldUsername) {
                 data.newUser = true;
               }
 
@@ -244,16 +243,16 @@ function run($rootScope, $modal, UserService, $location, authService, LocalStora
                 $scope.statusLevel = 'alert-danger';
               }
             });
-          }
+          };
 
           $scope.login = function (data) {
             UserService.login(data).success(function() {
-              if (data.username != oldUsername) {
+              if (data.username !== oldUsername) {
                 data.newUser = true;
               }
               $rootScope.loginDialogPresented = false;
               $modalInstance.close($scope);
-            }).error(function (data, status, headers, config) {
+            }).error(function (data, status) {
               $scope.status = status;
             });
           };
@@ -276,7 +275,7 @@ function run($rootScope, $modal, UserService, $location, authService, LocalStora
       authService.loginConfirmed(data);
 
       LocalStorageService.setToken(data.token);
-      if ($location.path() == '/signin') {
+      if ($location.path() === '/signin') {
         $location.path('/map');
       }
     }
@@ -293,7 +292,7 @@ function run($rootScope, $modal, UserService, $location, authService, LocalStora
         controller: 'DisclaimerController',
         resolve: {
           disclaimer: function() {
-            return api.disclaimer
+            return api.disclaimer;
           }
         }
       });

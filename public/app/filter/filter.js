@@ -2,7 +2,7 @@ angular
   .module('mage')
   .controller('FilterController', FilterController);
 
-  FilterController.$inject = ['$scope', '$modalInstance', 'EventService', 'FilterService', 'Event', 'events'];
+FilterController.$inject = ['$scope', '$modalInstance', 'EventService', 'FilterService', 'Event', 'events'];
 
 function FilterController($scope, $modalInstance, EventService, FilterService, Event, events) {
   $scope.events = events;
@@ -32,7 +32,7 @@ function FilterController($scope, $modalInstance, EventService, FilterService, E
 
   $scope.onEventChange = function() {
     $scope.filterTeams = {};
-  }
+  };
 
   $scope.performFilter = function() {
     var options = {};
@@ -52,7 +52,7 @@ function FilterController($scope, $modalInstance, EventService, FilterService, E
     });
 
     $modalInstance.close('filter');
-  }
+  };
 
   $scope.closeModal = function () {
     $modalInstance.dismiss('cancel');

@@ -14,14 +14,14 @@ function newsFeed() {
     },
     controller: NewsFeedController,
     bindToController: true
-  }
+  };
 
   return directive;
 }
 
-NewsFeedController.$inject = ['$rootScope', '$scope', '$element', '$filter', '$timeout', 'FilterService', 'EventService', 'Observation', 'ObservationService'];
+NewsFeedController.$inject = ['$rootScope', '$scope', '$element', '$filter', '$timeout', 'FilterService', 'EventService'];
 
-function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, FilterService, EventService, Observation, ObservationService) {
+function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, FilterService, EventService) {
   $scope.currentFeedPanel = 'observationsTab';
 
   $scope.currentObservationPage = 0;
@@ -54,17 +54,17 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Fil
     geometryField.value = {x: latlng.lng, y: latlng.lat};
   });
 
-  $scope.$on('observation:editDone', function(e, observation) {
+  $scope.$on('observation:editDone', function() {
     $scope.newObservation = null;
   });
 
-  $scope.$on('observation:cancel', function(e, observation) {
+  $scope.$on('observation:cancel', function() {
     $scope.newObservation = null;
   });
 
   $scope.tabSelected = function(tab) {
     $scope.currentFeedPanel = tab;
-  }
+  };
 
   $scope.$watch('currentFeedPanel', function(currentFeedPanel) {
     if (currentFeedPanel === 'observationsTab') {
@@ -117,7 +117,7 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Fil
   });
 
   $scope.$on('observation:deselect', function(e, observation) {
-    if ($scope.selectedObservation && $scope.selectedObservation.id == observation.id) {
+    if ($scope.selectedObservation && $scope.selectedObservation.id === observation.id) {
       $scope.selectedObservation = null;
     }
   });
@@ -145,13 +145,13 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Fil
   });
 
   $scope.$on('user:deselect', function(e, user) {
-    if ($scope.selectedUser && $scope.selectedUser.id == user.id) {
+    if ($scope.selectedUser && $scope.selectedUser.id === user.id) {
       $scope.selectedUser = null;
     }
   });
 
   $scope.$on('user:follow', function(e, user) {
-    $scope.followUserId = $scope.followUserId == user.id ? null : user.id;
+    $scope.followUserId = $scope.followUserId === user.id ? null : user.id;
   });
 
   $scope.$watch('observations', function(observations) {

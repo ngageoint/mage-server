@@ -24,14 +24,14 @@ function SignupController($scope, $location, UserService, ApiService) {
     $scope.statusMessage = message;
     $scope.statusLevel = statusLevel;
     $scope.showStatus = true;
-  }
+  };
 
   $scope.signup = function(strategy) {
-    strategy == 'local' ? localSignup() : oauthSignup(strategy);
-  }
+    strategy === 'local' ? localSignup() : oauthSignup(strategy);
+  };
 
   function oauthSignup(strategy) {
-    UserService.oauthSignup(strategy).then(function(data) {
+    UserService.oauthSignup(strategy).then(function() {
       $scope.showStatus = true;
       $scope.statusTitle = 'Account successfully created';
       $scope.statusMessage = 'Your account has been created.  You will be able to login once and administrator approves your account';
@@ -52,7 +52,7 @@ function SignupController($scope, $location, UserService, ApiService) {
       phone: $scope.user.phone,
       password: $scope.user.password,
       passwordconfirm: $scope.user.passwordconfirm
-    }
+    };
 
     // TODO throw in progress
     var progress = function(e) {
@@ -62,20 +62,20 @@ function SignupController($scope, $location, UserService, ApiService) {
           $scope.uploadProgress = (e.loaded/e.total) * 100;
         });
       }
-    }
+    };
 
-    var complete = function(response) {
+    var complete = function() {
       $scope.$apply(function() {
         $scope.user = {};
-        $scope.showStatusMessage("Success", "Account created, contact an administrator to activate your account.", "alert-success")
+        $scope.showStatusMessage("Success", "Account created, contact an administrator to activate your account.", "alert-success");
       });
-    }
+    };
 
     var failed = function(data) {
       $scope.$apply(function() {
-        $scope.showStatusMessage("There was a problem creating your account", data.responseText, "alert-danger")
+        $scope.showStatusMessage("There was a problem creating your account", data.responseText, "alert-danger");
       });
-    }
+    };
 
     UserService.signup(user, complete, failed, progress);
   }

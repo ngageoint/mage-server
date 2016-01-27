@@ -2,6 +2,7 @@
     "globals": {
       "$": true,
       "_": true,
+      "L": true,
       "angular": true,
       "moment": true
     },

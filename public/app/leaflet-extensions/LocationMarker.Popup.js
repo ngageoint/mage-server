@@ -3,7 +3,7 @@ L.LocationMarker.include({
     if (this._iconMarker) {
       this._iconMarker.openPopup();
     } else {
-        this._locationMarker.openPopup();
+      this._locationMarker.openPopup();
     }
 
     return this;
@@ -37,8 +37,8 @@ L.LocationMarker.include({
     }
   },
 
-	bindPopup: function (content, options) {
-    var options = options || {};
+  bindPopup: function (content, options) {
+    options = options || {};
     if (this._iconMarker) {
       options.offset = [0, -33];
       this._iconMarker.bindPopup(content, options);
@@ -67,13 +67,13 @@ L.LocationMarker.include({
       }, this);
     }
 
-		return this;
-	},
+    return this;
+  },
 
-	unbindPopup: function () {
-  	this._locationMarker.unbindPopup();
+  unbindPopup: function () {
+    this._locationMarker.unbindPopup();
     this._iconMarker.unbindPopup();
 
-		return this;
-	}
+    return this;
+  }
 });

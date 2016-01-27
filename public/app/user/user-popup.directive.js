@@ -13,7 +13,7 @@ function locationPopup() {
     },
     controller: LocationPopupController,
     bindToController: true
-  }
+  };
 
   return directive;
 }
@@ -31,13 +31,13 @@ function LocationPopupController($scope, LocalStorageService) {
 
   $scope.onInfoClicked = function() {
     $scope.userPopupInfo({user: $scope.user});
-  }
+  };
 
   $scope.onZoomClicked = function() {
     $scope.userZoom({user: $scope.user});
-  }
+  };
 
-  $scope.$watch('user', function(user) {
+  $scope.$watch('user', function() {
     $scope.date = moment($scope.user.location.properties.timestamp).format("YYYY-MM-DD HH:mm:ss");
   });
 }

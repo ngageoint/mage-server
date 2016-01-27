@@ -18,7 +18,7 @@ function UserController($scope, $location, $timeout, UserService, user) {
       email: this.user.email,
       phone: this.user.phone,
       avatar: $scope.avatar
-    }
+    };
 
     // TODO throw in progress
     var progress = function(e) {
@@ -28,26 +28,26 @@ function UserController($scope, $location, $timeout, UserService, user) {
           $scope.uploadProgress = (e.loaded/e.total) * 100;
         });
       }
-    }
+    };
 
-    var complete = function(response) {
+    var complete = function() {
       $scope.$apply(function() {
         $scope.status("Success", "Your account information has been updated.", "alert-success");
       });
-    }
+    };
 
     var failed = function(data) {
       $scope.$apply(function() {
         $scope.status("Error", data, "alert-danger");
       });
-    }
+    };
 
     UserService.updateMyself(user, complete, failed, progress);
-  }
+  };
 
   $scope.cancel = function() {
     $scope.user = angular.copy($scope.originalUser);
-  }
+  };
 
   $scope.updatePassword = function() {
     if (!this.user.password) {
@@ -55,7 +55,7 @@ function UserController($scope, $location, $timeout, UserService, user) {
       return;
     }
 
-    if (this.user.password != this.user.passwordconfirm) {
+    if (this.user.password !== this.user.passwordconfirm) {
       $scope.passwordStatus = {status: "error", msg: "passwords do not match"};
       return;
     }
@@ -63,10 +63,10 @@ function UserController($scope, $location, $timeout, UserService, user) {
     var user = {
       password: this.user.password,
       passwordconfirm: this.user.passwordconfirm
-    }
+    };
 
     UserService.updateMyPassword(user)
-      .success(function(user) {
+      .success(function() {
         $scope.user.password = "";
         $scope.user.passwordconfirm = "";
         $scope.passwordStatus = {status: "success", msg: "password successfully updated, redirecting to the login page"};
@@ -75,17 +75,17 @@ function UserController($scope, $location, $timeout, UserService, user) {
           $location.path('/signin');
         }, 5000);
       })
-      .error(function(data, status) {
+      .error(function(data) {
         $scope.passwordStatus = {status: "error", msg: data};
       });
-  }
+  };
 
   $scope.status = function (statusTitle, statusMessage, statusLevel) {
     $scope.statusTitle = statusTitle;
     $scope.statusMessage = statusMessage;
     $scope.statusLevel = statusLevel;
     $scope.showUserStatus = true;
-  }
+  };
 
   $scope.$on('userAvatar', function(event, userAvatar) {
     $scope.avatar = userAvatar;

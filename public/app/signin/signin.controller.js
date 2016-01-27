@@ -21,20 +21,20 @@ function SigninController($scope, $rootScope, UserService, ApiService) {
 
   $scope.signin = function () {
     UserService.login({username: this.username, uid: this.uid, password: this.password})
-      .then(function (data) {
-        console.log('successfull signin');
+      .then(function () {
+        // success
       },
-      function (data) {
+      function () {
         $scope.showStatus = true;
         $scope.statusTitle = 'Failed login';
         $scope.statusMessage = 'Please check your username, UID, and password and try again.';
         $scope.statusLevel = 'alert-danger';
       });
-  }
+  };
 
   $scope.googleSignin = function() {
-    UserService.oauthSignin('google', {uid: this.uid}).then(function(data) {
-      console.log('successfull oauth');
+    UserService.oauthSignin('google', {uid: this.uid}).then(function() {
+      //success
     }, function(data) {
       $scope.showStatus = true;
 
@@ -48,7 +48,7 @@ function SigninController($scope, $rootScope, UserService, ApiService) {
         $scope.statusLevel = 'alert-danger';
       }
     });
-  }
+  };
 
   function localStrategyFilter(strategy, name) {
     return name === 'local';

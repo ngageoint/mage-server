@@ -19,14 +19,14 @@ ColorPickerController.$inject = ['$scope', '$element'];
 function ColorPickerController($scope, $element) {
   $scope.$watch('colorPicker', initialize);
 
-    function initialize() {
-      if (!$scope.colorPicker) return;
-      $element.colorpicker({color: $scope.colorPicker}).on('changeColor.colorpicker', function(event){
-        $scope.$apply(function() {
-          $scope.colorPicker = event.color.toHex();
-        });
+  function initialize() {
+    if (!$scope.colorPicker) return;
+    $element.colorpicker({color: $scope.colorPicker}).on('changeColor.colorpicker', function(event){
+      $scope.$apply(function() {
+        $scope.colorPicker = event.color.toHex();
       });
-    }
+    });
+  }
 
-    initialize();
+  initialize();
 }
