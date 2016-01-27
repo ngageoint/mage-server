@@ -250,9 +250,9 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
       type: 'PUT'
     }, function(data) {
       resolvedUsers[data.id] = $q.when(data);
-      success(data);
+      if (_.isFunction(success)) success(data);
     }, error, progress);
-  };
+  }
 
   function deleteUser(user) {
     var promise = $http.delete('/api/users/' + user.id);

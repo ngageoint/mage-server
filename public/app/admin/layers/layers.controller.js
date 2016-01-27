@@ -17,36 +17,36 @@ function AdminLayersController($scope, $filter, $injector, $location, Layer) {
   $scope.filterLayers = function(layer) {
     var filteredLayers = $filter('filter')([layer], $scope.layerSearch);
     return filteredLayers && filteredLayers.length;
-  }
+  };
 
   $scope.filterType = function (layer) {
     switch ($scope.filter) {
-      case 'all': return true;
-      case 'base': return layer.base && layer.type == 'Imagery';
-      case 'imagery': return !layer.base && layer.type == 'Imagery';
-      case 'feature': return !layer.base && layer.type == 'Feature';
+    case 'all': return true;
+    case 'base': return layer.base && layer.type === 'Imagery';
+    case 'imagery': return !layer.base && layer.type === 'Imagery';
+    case 'feature': return !layer.base && layer.type === 'Feature';
     }
-  }
+  };
 
   $scope.reset = function() {
     $scope.page = 0;
     $scope.filter = 'all';
     $scope.layerSearch = '';
-  }
+  };
 
   $scope.newLayer = function() {
     $location.path('/admin/layers/new');
-  }
+  };
 
   $scope.gotoLayer = function(layer) {
     $location.path('/admin/layers/' + layer.id);
-  }
+  };
 
   $scope.editLayer = function($event, layer) {
     $event.stopPropagation();
 
     $location.path('/admin/layers/' + layer.id + '/edit');
-  }
+  };
 
   $scope.deleteLayer = function($event, layer) {
     $event.stopPropagation();
@@ -61,11 +61,12 @@ function AdminLayersController($scope, $filter, $injector, $location, Layer) {
       controller: ['$scope', '$modalInstance', 'layer', function ($scope, $modalInstance, layer) {
         $scope.layer = layer;
 
-        $scope.deleteLayer = function(layer, force) {
-          layer.$delete(function(success) {
+        $scope.deleteLayer = function(layer) {
+          layer.$delete(function() {
             $modalInstance.close(layer);
           });
-        }
+        };
+
         $scope.cancel = function () {
           $modalInstance.dismiss('cancel');
         };
@@ -75,5 +76,5 @@ function AdminLayersController($scope, $filter, $injector, $location, Layer) {
     modalInstance.result.then(function (layer) {
       $scope.layers = _.without($scope.layers, layer);
     });
-  }
+  };
 }

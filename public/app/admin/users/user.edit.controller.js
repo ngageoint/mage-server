@@ -30,7 +30,7 @@ function AdminUserEditController($scope, $injector, $filter, $routeParams, $loca
 
   $scope.cancel = function() {
     $location.path('/admin/users/' + $scope.user.id);
-  }
+  };
 
   $scope.saveUser = function () {
     $scope.saving = true;
@@ -53,7 +53,7 @@ function AdminUserEditController($scope, $injector, $filter, $routeParams, $loca
         $scope.saving = false;
         $scope.error = response.responseText;
       });
-    }
+    };
 
     var progress = function(e) {
       if(e.lengthComputable){
@@ -62,10 +62,10 @@ function AdminUserEditController($scope, $injector, $filter, $routeParams, $loca
           $scope.uploadProgress = (e.loaded/e.total) * 100;
         });
       }
-    }
+    };
 
     if ($scope.user.id) {
-      UserService.updateUser($scope.user.id, user, function(response) {
+      UserService.updateUser($scope.user.id, user, function() {
         $scope.$apply(function() {
           $location.path('/admin/users/' + $scope.user.id);
         });
@@ -77,7 +77,7 @@ function AdminUserEditController($scope, $injector, $filter, $routeParams, $loca
         });
       }, failure, progress);
     }
-  }
+  };
 
   $scope.updatePassword = function() {
     if (!$scope.user.password) {
@@ -85,7 +85,7 @@ function AdminUserEditController($scope, $injector, $filter, $routeParams, $loca
       return;
     }
 
-    if ($scope.user.password != $scope.user.passwordconfirm) {
+    if ($scope.user.password !== $scope.user.passwordconfirm) {
       $scope.passwordStatus = {status: "error", msg: "passwords do not match"};
       return;
     }
@@ -93,13 +93,13 @@ function AdminUserEditController($scope, $injector, $filter, $routeParams, $loca
     var user = {
       password: $scope.user.password,
       passwordconfirm: $scope.user.passwordconfirm
-    }
+    };
 
-    UserService.updateUser($scope.user.id, user, function(response) {
+    UserService.updateUser($scope.user.id, user, function() {
       $location.path('/admin/users/' + $scope.user.id);
     })
-    .error(function(data, status) {
+    .error(function(data) {
       $scope.passwordStatus = {status: "error", msg: data};
     });
-  }
+  };
 }

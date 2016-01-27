@@ -26,7 +26,7 @@ function AdminDeviceEditController($scope, $injector, $filter, $routeParams, $lo
 
   $scope.cancel = function() {
     $location.path('/admin/devices/' + $scope.device.id);
-  }
+  };
 
   $scope.saveDevice = function () {
     $scope.saving = true;
@@ -35,7 +35,7 @@ function AdminDeviceEditController($scope, $injector, $filter, $routeParams, $lo
     var device = $scope.device;
 
     if (device.id) {
-      DeviceService.updateDevice(device).success(function(data) {
+      DeviceService.updateDevice(device).success(function() {
         $location.path('/admin/devices/' + $scope.device.id);
       })
       .error(function(response) {
@@ -43,7 +43,7 @@ function AdminDeviceEditController($scope, $injector, $filter, $routeParams, $lo
         $scope.error = response.responseText;
       });
     } else {
-      DeviceService.createDevice(device).success(function (data) {
+      DeviceService.createDevice(device).success(function () {
         $location.path('/admin/devices/' + $scope.device.id);
       })
       .error(function (response) {
@@ -51,5 +51,5 @@ function AdminDeviceEditController($scope, $injector, $filter, $routeParams, $lo
         $scope.error = response.responseText;
       });
     }
-  }
+  };
 }

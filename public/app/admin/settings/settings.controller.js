@@ -2,7 +2,7 @@ angular
   .module('mage')
   .controller('AdminSettingsController', AdminSettingsController);
 
-  AdminSettingsController.$inject = ['$scope', 'Settings', 'LocalStorageService'];
+AdminSettingsController.$inject = ['$scope', 'Settings', 'LocalStorageService'];
 
 function AdminSettingsController($scope, Settings, LocalStorageService) {
   $scope.token = LocalStorageService.getToken();
@@ -11,7 +11,7 @@ function AdminSettingsController($scope, Settings, LocalStorageService) {
   $scope.minicolorSettings = {
     position: 'bottom right',
     control: 'wheel'
-  }
+  };
 
   $scope.setting = "banner";
   $scope.settings = {};
@@ -35,7 +35,7 @@ function AdminSettingsController($scope, Settings, LocalStorageService) {
   });
 
   $scope.saveBanner = function() {
-    Settings.update({type: 'banner'}, $scope.banner, function(banner) {
+    Settings.update({type: 'banner'}, $scope.banner, function() {
       $scope.saved = true;
       $scope.saving = false;
       $scope.saveStatus = 'Banner successfully saved';
@@ -44,10 +44,10 @@ function AdminSettingsController($scope, Settings, LocalStorageService) {
       $scope.saving = false;
       $scope.saveStatus = 'Failed to save banner';
     });
-  }
+  };
 
   $scope.saveDisclaimer = function() {
-    Settings.update({type: 'disclaimer'}, $scope.disclaimer, function(disclaimer) {
+    Settings.update({type: 'disclaimer'}, $scope.disclaimer, function() {
       $scope.saved = true;
       $scope.saving = false;
       $scope.saveStatus = 'Disclaimer successfully saved';
@@ -56,7 +56,7 @@ function AdminSettingsController($scope, Settings, LocalStorageService) {
       $scope.saving = false;
       $scope.saveStatus = 'Failed to save diclaimer';
     });
-  }
+  };
 
   var debounceHideSave = _.debounce(function() {
     $scope.$apply(function() {

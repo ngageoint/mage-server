@@ -16,15 +16,13 @@ function AdminEventEditController($scope, $location, $routeParams, Event) {
   $scope.saveEvent = function(event) {
     event.$save(function() {
       $location.path('/admin/events/' + event.id);
-    }, function(reponse) {
-
     });
-  }
+  };
 
   $scope.cancel = function() {
     var path = $scope.event.id ? '/admin/events/' + $scope.event.id : '/admin/events';
     $location.path(path);
-  }
+  };
 
   $scope.$on('uploadFile', function(e, uploadFile) {
     $scope.event.formArchiveFile = uploadFile;

@@ -9,12 +9,14 @@ function AdminDeviceController($scope, $injector, $filter, $routeParams, $locati
 
   var filter = {
     device: {id: $routeParams.deviceId}
-  }
+  };
+
   $scope.user = {};
   $scope.login = {
     startDateOpened: false,
     endDateOpened: false
   };
+
   var firstLogin = null;
   $scope.showPrevious = false;
   $scope.showNext = true;
@@ -41,11 +43,11 @@ function AdminDeviceController($scope, $injector, $filter, $routeParams, $locati
 
   $scope.editDevice = function(device) {
     $location.path('/admin/devices/' + device.id + '/edit');
-  }
+  };
 
   $scope.gotoUser = function(user) {
     $location.path('/admin/users/' + user.id);
-  }
+  };
 
   $scope.deleteDevice = function(device) {
     var modalInstance = $injector.get('$modal').open({
@@ -58,46 +60,43 @@ function AdminDeviceController($scope, $injector, $filter, $routeParams, $locati
       controller: ['$scope', '$modalInstance', 'device', function ($scope, $modalInstance, device) {
         $scope.device = device;
 
-        $scope.deleteDevice = function(device, force) {
+        $scope.deleteDevice = function(device) {
           DeviceService.deleteDevice(device).success(function() {
             $modalInstance.close(device);
           });
-        }
+        };
+
         $scope.cancel = function () {
           $modalInstance.dismiss('cancel');
         };
       }]
     });
 
-    modalInstance.result.then(function(device) {
+    modalInstance.result.then(function() {
       $location.path('/admin/devices');
     });
-  }
+  };
 
   $scope.registerDevice = function (device) {
     device.registered = true;
-    DeviceService.updateDevice(device).success(function(data) {
-    }, function(response) {
-    });
-  }
+    DeviceService.updateDevice(device);
+  };
 
   $scope.unregisterDevice = function (device) {
     device.registered = false;
-    DeviceService.updateDevice(device).success(function(data) {
-    }, function(response) {
-    });
-  }
+    DeviceService.updateDevice(device);
+  };
 
   $scope.pageLogin = function(url) {
     LoginService.query({url: url, filter: filter, limit: $scope.loginResultsLimit}).success(function(loginPage) {
 
       if (loginPage.logins.length) {
         $scope.loginPage = loginPage;
-        $scope.showNext = loginPage.logins.length != 0;
-        $scope.showPrevious = loginPage.logins[0].id != firstLogin.id;
+        $scope.showNext = loginPage.logins.length !== 0;
+        $scope.showPrevious = loginPage.logins[0].id !== firstLogin.id;
       }
     });
-  }
+  };
 
   $scope.filterLogins = function() {
     filter.user = $scope.user.selected;
@@ -107,29 +106,29 @@ function AdminDeviceController($scope, $injector, $filter, $routeParams, $locati
     }
 
     LoginService.query({filter: filter, limit: $scope.loginResultsLimit}).success(function(loginPage) {
-      $scope.showNext = loginPage.logins.length != 0;
+      $scope.showNext = loginPage.logins.length !== 0;
       $scope.showPrevious = false;
       $scope.loginPage = loginPage;
     });
-  }
+  };
 
   $scope.openLoginStart = function($event) {
     $event.preventDefault();
     $event.stopPropagation();
 
     $scope.login.startDateOpened = true;
-  }
+  };
 
   $scope.openLoginEnd = function($event) {
     $event.preventDefault();
     $event.stopPropagation();
 
     $scope.login.endDateOpened = true;
-  }
+  };
 
   $scope.loginResultsLimitChanged = function() {
     $scope.filterLogins();
-  }
+  };
 
   $scope.$watch('login.startDate', function(newDate, oldDate) {
     if (!newDate && !oldDate) return;
