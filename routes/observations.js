@@ -19,7 +19,7 @@ module.exports = function(app) {
     };
   }
 
-  function validateEventAccess(req, res, next) {
+  function validateObservationReadAccess(req, res, next) {
     if (access.userHasPermission(req.user, 'READ_OBSERVATION_ALL')) {
       next();
     } else if (access.userHasPermission(req.user, 'READ_OBSERVATION_EVENT')) {
@@ -36,8 +36,24 @@ module.exports = function(app) {
     }
   }
 
+  function validateObservationUpdateAccess(req, res, next) {
+    if (access.userHasPermission(req.user, 'UPDATE_OBSERVATION_EVENT')) {
+      // Make sure I am part of this event
+      Event.eventHasUser(req.event, req.user._id, function(err, eventHasUser) {
+        if (eventHasUser) {
+          return next();
+        } else {
+          return res.sendStatus(403);
+        }
+      });
+    } else {
+      res.sendStatus(403);
+    }
+  }
+
   function validateObservation(req, res, next) {
     var observation = req.body;
+    observation.properties = observation.properties || {};
 
     if (!observation.type || observation.type !== 'Feature' ) {
       return res.status(400).send("cannot create observation 'type' param not specified, or is not set to 'Feature'");
@@ -47,8 +63,12 @@ module.exports = function(app) {
       return res.status(400).send("cannot create observation 'geometry' param not specified");
     }
 
-    if (!observation.properties || !observation.properties.timestamp) {
+    if (!observation.properties.timestamp) {
       return res.status(400).send("cannot create observation 'properties.timestamp' param not specified");
+    }
+
+    if (!observation.properties.type) {
+      return res.status(400).send("cannot create observation 'properties.type' param not specified");
     }
 
     Team.teamsForUserInEvent(req.user, req.event, function(err, teams) {
@@ -156,7 +176,7 @@ module.exports = function(app) {
 
   app.get(
     '/api/events/:eventId/observations',
-    validateEventAccess,
+    validateObservationReadAccess,
     parseQueryParams,
     function (req, res, next) {
       var options = {
@@ -175,7 +195,7 @@ module.exports = function(app) {
 
   app.get(
     '/api/events/:eventId/observations/:id',
-    validateEventAccess,
+    validateObservationReadAccess,
     parseQueryParams,
     function (req, res, next) {
       var options = {fields: req.parameters.fields};
@@ -208,7 +228,7 @@ module.exports = function(app) {
 
   app.put(
     '/api/events/:eventId/observations/:id',
-    validateEventAccess,
+    validateObservationUpdateAccess,
     function (req, res, next) {
 
       var observation = {};
@@ -216,11 +236,11 @@ module.exports = function(app) {
       if (req.body.properties) {
         observation.properties = req.body.properties;
         if (!observation.properties.type) {
-          return res.send(400, "cannot create observation 'properties.type' param not specified");
+          return res.status(400).send("cannot update observation 'properties.type' param not specified");
         }
 
         if (!observation.properties.timestamp) {
-          return res.send(400, "cannot create observation 'properties.timestamp' param not specified");
+          return res.status(400).send("cannot update observation 'properties.type' param not specified");
         }
 
         observation.properties.timestamp = moment(observation.properties.timestamp).toDate();
@@ -245,13 +265,13 @@ module.exports = function(app) {
 
   app.post(
     '/api/events/:eventId/observations/:id/states',
-    validateEventAccess,
+    access.authorize('DELETE_OBSERVATION'),
     function(req, res) {
       var state = req.body;
       if (!state) return res.send(400);
-      if (!state.name) return res.send(400, 'name required');
+      if (!state.name) return res.status(400).send('name required');
       if (state.name !== 'active' && state.name !== 'complete' && state.name !== 'archive') {
-        return res.send(400, "state name must be one of 'active', 'complete', 'archive'");
+        return res.status(400).send("state name must be one of 'active', 'complete', 'archive'");
       }
 
       state = { name: state.name };
@@ -269,7 +289,7 @@ module.exports = function(app) {
 
   app.get(
     '/api/events/:eventId/observations/:id/attachments',
-    validateEventAccess,
+    validateObservationReadAccess,
     function(req, res, next) {
       var fields = {attachments: true};
       var options = {fields: fields};
@@ -284,7 +304,7 @@ module.exports = function(app) {
 
   app.get(
     '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
-    validateEventAccess,
+    validateObservationReadAccess,
     function(req, res, next) {
       new api.Attachment(req.event, req.observation).getById(req.param('attachmentId'), {size: req.param('size')}, function(err, attachment) {
         if (err) return next(err);
@@ -343,7 +363,7 @@ module.exports = function(app) {
 
   app.put(
     '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
-    validateEventAccess,
+    validateObservationUpdateAccess,
     function(req, res, next) {
       new api.Attachment(req.event, req.observation).update(req.observationId, req.files.attachment, function(err, attachment) {
         if (err) return next(err);
