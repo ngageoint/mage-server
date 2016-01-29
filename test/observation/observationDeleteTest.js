@@ -151,4 +151,57 @@ describe("observation delete tests", function() {
       })
       .end(done);
   });
+
+  it("should not update observation state if name did not change", function(done) {
+    mockTokenWithPermission('DELETE_OBSERVATION');
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, {
+        name: 'Event 1',
+        teamIds: [{
+          name: 'Team 1',
+          userIds: [mongoose.Types.ObjectId()]
+        }]
+      });
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+    var observationId = mongoose.Types.ObjectId();
+    var mockObservation = new ObservationModel({
+      _id: observationId,
+      type: 'Feature',
+      geometry: {
+        type: "Point",
+        coordinates: [0, 0]
+      },
+      properties: {
+        timestamp: Date.now()
+      }
+    });
+    sandbox.mock(ObservationModel)
+      .expects('update')
+      .yields(new Error("some mock error"), null);
+
+    request(app)
+      .post('/api/events/1/observations/' + observationId.toString() + '/states')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        name: 'archive'
+      })
+      .expect(400)
+      .expect(function(res) {
+        console.log(res.text);
+        res.text.should.equal("state is already 'archive'");
+      })
+      .end(done);
+  });
 });

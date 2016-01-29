@@ -128,6 +128,123 @@ describe("observation update tests", function() {
       .end(done);
   });
 
+  it("should deny update observation for id w/o type", function(done) {
+    mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
+
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, {
+        name: 'Event 1',
+        teamIds: [{
+          name: 'Team 1',
+          userIds: [userId]
+        }]
+      });
+
+    request(app)
+      .put('/api/events/1/observations/123')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        type: 'Feature',
+        geometry: {
+          type: "Point",
+          coordinates: [0, 0]
+        },
+        properties: {
+          timestamp: Date.now()
+        }
+      })
+      .expect(400)
+      .expect(function(res) {
+        res.text.should.equal("cannot update observation 'properties.type' param not specified");
+      })
+      .end(done);
+  });
+
+  it("should deny update observation for id w/o timestamp", function(done) {
+    mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
+
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, {
+        name: 'Event 1',
+        teamIds: [{
+          name: 'Team 1',
+          userIds: [userId]
+        }]
+      });
+
+    request(app)
+      .put('/api/events/1/observations/123')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        type: 'Feature',
+        geometry: {
+          type: "Point",
+          coordinates: [0, 0]
+        },
+        properties: {
+          type: 'type'
+        }
+      })
+      .expect(400)
+      .expect(function(res) {
+        res.text.should.equal("cannot update observation 'properties.timestamp' param not specified");
+      })
+      .end(done);
+  });
+
+  it("should deny update observation for id that does not exist", function(done) {
+    mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, {
+        name: 'Event 1',
+        teamIds: [{
+          name: 'Team 1',
+          userIds: [userId]
+        }]
+      });
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findByIdAndUpdate')
+      .yields(null, null);
+
+    request(app)
+      .put('/api/events/1/observations/123')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        type: 'Feature',
+        geometry: {
+          type: "Point",
+          coordinates: [0, 0]
+        },
+        properties: {
+          type: 'type',
+          timestamp: Date.now()
+        }
+      })
+      .expect(404)
+      .expect(function(res) {
+        res.text.should.equal('Observation with id 123 does not exist');
+      })
+      .end(done);
+  });
+
   it("should deny update observation for event I am not part of", function(done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 

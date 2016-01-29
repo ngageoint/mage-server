@@ -1,7 +1,6 @@
 module.exports = function(app) {
 
   var api = require('../api')
-    , log = require('winston')
     , fs = require('fs-extra')
     , moment = require('moment')
     , Event = require('../models/event')
@@ -247,7 +246,7 @@ module.exports = function(app) {
         }
 
         if (!observation.properties.timestamp) {
-          return res.status(400).send("cannot update observation 'properties.type' param not specified");
+          return res.status(400).send("cannot update observation 'properties.timestamp' param not specified");
         }
 
         observation.properties.timestamp = moment(observation.properties.timestamp).toDate();
@@ -262,7 +261,7 @@ module.exports = function(app) {
       new api.Observation(req.event).update(req.param('id'), observation, function(err, updatedObservation) {
         if (err) return next(err);
 
-        if (!updatedObservation) return res.status(400).send('Observation with id ' + req.params.id + " does not exist");
+        if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.id + " does not exist");
 
         var response = observationXform.transform(updatedObservation, transformOptions(req));
         res.json(response);
@@ -318,7 +317,6 @@ module.exports = function(app) {
 
         if (!attachment) return res.send(404);
 
-        var stream;
         if (req.headers.range) {
           var range = req.headers.range;
           var rangeParts = range.replace(/bytes=/, "").split("-");
@@ -332,21 +330,14 @@ module.exports = function(app) {
             'Content-Length': contentLength,
             'Content-Type': attachment.contentType
           });
-          stream = fs.createReadStream(attachment.path, {start: rangeStart, end: rangeEnd});
+          fs.createReadStream(attachment.path, {start: rangeStart, end: rangeEnd}).pipe(res);
         } else {
           res.writeHead(200, {
             'Content-Length': attachment.size,
             'Content-Type': attachment.contentType
           });
-          stream = fs.createReadStream(attachment.path);
+          fs.createReadStream(attachment.path).pipe(res);
         }
-
-        stream.on('open', function() {
-          stream.pipe(res);
-        });
-        stream.on('error', function(err) {
-          log.error('error streaming attachment', err);
-        });
       });
     }
   );
