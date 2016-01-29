@@ -151,12 +151,17 @@ module.exports = function(app) {
     }
 
     var sort = req.param('sort');
+
     if (sort) {
       var columns = {};
-      sort.split(',').forEach(function(column) {
+      var err = null;
+      sort.split(',').every(function(column) {
         var sortParams = column.split('+');
         // Check sort column is in whitelist
-        if (sortColumnWhitelist.indexOf(sortParams[0]) === -1) return res.send("Cannot sort on column '" + sortParams[0] + "'");
+        if (sortColumnWhitelist.indexOf(sortParams[0]) === -1) {
+          err = "Cannot sort on column '" + sortParams[0] + "'";
+          return false; // break
+        }
 
         // Order can be nothing (ASC by default) or ASC, DESC
         var direction = 1; //ASC
@@ -166,6 +171,9 @@ module.exports = function(app) {
 
         columns[sortParams[0]] = direction;
       });
+
+      if (err) return res.status(400).send(err);
+
       parameters.sort = columns;
     }
 
@@ -187,7 +195,6 @@ module.exports = function(app) {
 
       new api.Observation(req.event).getAll(options, function(err, observations) {
         if (err) return next(err);
-
         res.json(observationXform.transform(observations, transformOptions(req)));
       });
     }

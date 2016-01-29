@@ -1,7 +1,5 @@
-var jsol = require('./jsol');
-
 var parseEnvelope = function(text) {
-  var bbox = jsol.parseJSOL(text);
+  var bbox = JSON.parse(text);
   if (bbox.length !== 4) {
     throw new Error("Invalid geometry: " + text);
   }
@@ -66,7 +64,7 @@ var parseGeometry = function(type, text) {
   case 'bbox':
     return parseEnvelope(text);
   default:
-    return [jsol.parseJSOL(text)];
+    return [JSON.parse(text)];
   }
 };
 
