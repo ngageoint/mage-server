@@ -1,9 +1,7 @@
 var request = require('supertest')
   , sinon = require('sinon')
-  , should = require('chai').should()
   , mongoose = require('mongoose')
-  , moment = require('moment')
-  , fs = require('fs-extra')
+  , fs = require('fs')
   , stream = require('stream')
   , app = require('../../express')
   , TokenModel = mongoose.model('Token');
@@ -19,7 +17,7 @@ var EventModel = mongoose.model('Event');
 var Observation = require('../../models/observation');
 var observationModel = Observation.observationModel;
 
-describe("attachment read tests", function() {
+describe("attachment create tests", function() {
 
   var sandbox;
   before(function() {
@@ -68,8 +66,8 @@ describe("attachment read tests", function() {
       .yields(null, token);
   }
 
-  it("should get attachments for event I am a part of", function(done) {
-    mockTokenWithPermission('READ_OBSERVATION_EVENT');
+  it("should create attachment for event I am a part of", function(done) {
+    mockTokenWithPermission('CREATE_OBSERVATION');
 
     sandbox.mock(TeamModel)
       .expects('find')
@@ -100,65 +98,7 @@ describe("attachment read tests", function() {
       },
       properties: {
         timestamp: Date.now()
-      },
-      attachments: [{
-        size: 200,
-        contentType: 'image/jpeg',
-        relativePath: 'some/relative/path'
-      },{
-        size: 4096,
-        contentType: 'image/jpeg',
-        relativePath: 'some/relative/path'
-      }]
-    });
-
-    sandbox.mock(ObservationModel)
-      .expects('findById')
-      .withArgs(observationId.toString())
-      .yields(null, mockObservation);
-
-    request(app)
-      .get('/api/events/1/observations/' + observationId + '/attachments')
-      .set('Accept', 'application/json')
-      .set('Authorization', 'Bearer 12345')
-      .expect(200)
-      .expect(function(res) {
-        var attachments = res.body;
-        should.exist(attachments);
-        attachments.should.be.an('array');
-        attachments.should.have.length(2);
-      })
-      .end(done);
-  });
-
-  it("should get attachment for any event", function(done) {
-    mockTokenWithPermission('READ_OBSERVATION_ALL');
-
-    sandbox.mock(TeamModel)
-      .expects('find')
-      .yields(null, [{ name: 'Team 1' }]);
-
-    var ObservationModel = observationModel({
-      _id: 1,
-      name: 'Event 1',
-      collectionName: 'observations1'
-    });
-    var observationId = mongoose.Types.ObjectId();
-    var mockObservation = new ObservationModel({
-      _id: observationId,
-      type: 'Feature',
-      geometry: {
-        type: "Point",
-        coordinates: [0, 0]
-      },
-      properties: {
-        timestamp: Date.now()
-      },
-      attachments: [{
-        size: 4096,
-        contentType: 'image/jpeg',
-        relativePath: 'some/relative/path'
-      }]
+      }
     });
 
     sandbox.mock(ObservationModel)
@@ -167,14 +107,14 @@ describe("attachment read tests", function() {
       .yields(null, mockObservation);
 
     sandbox.mock(ObservationModel)
-      .expects('findOne')
-      .withArgs({_id: observationId})
+      .expects('update')
       .yields(null, mockObservation);
 
     var mockedStream = new stream.Readable();
     mockedStream._read = function noop() {
-      this.push('mock');
+      this.push(new Buffer([1,2,3,4,5]), 'binary');
       this.push(null);
+      this.emit('close');
     };
 
     sandbox.mock(fs)
@@ -182,12 +122,10 @@ describe("attachment read tests", function() {
       .returns(mockedStream);
 
     request(app)
-      .get('/api/events/1/observations/' + observationId + '/attachments/456')
-      .set('Accept', 'application/json')
+      .post('/api/events/1/observations/' + observationId + '/attachments')
+      .attach('attachment', 'mock/path/attachment.jpeg')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
-      .expect('Content-Type', 'image/jpeg')
-      .expect('Content-Length', 4096)
       .end(done);
   });
 });

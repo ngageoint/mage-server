@@ -380,7 +380,7 @@ module.exports = function(app) {
       new api.Attachment(req.event, req.observation).delete(req.param('attachmentId'), function(err) {
         if (err) return next(err);
 
-        res.send(200);
+        res.sendStatus(200);
       });
     }
   );
