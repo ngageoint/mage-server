@@ -2,6 +2,7 @@ var request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , mongoose = require('mongoose')
+  , MockToken = require('../mockToken')
   , app = require('../../express')
   , TokenModel = mongoose.model('Token');
 
@@ -40,29 +41,12 @@ describe("observation update tests", function() {
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    var token =  {
-      _id: '1',
-      token: '12345',
-      deviceId: '123',
-      userId: {
-        populate: function(field, callback) {
-          callback(null, {
-            _id: userId,
-            username: 'test',
-            roleId: {
-              permissions: [permission]
-            }
-          });
-        }
-      }
-    };
-
     sandbox.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
       .chain('exec')
-      .yields(null, token);
+      .yields(null, MockToken(userId, [permission]));
   }
 
   it("should update observation for id", function(done) {

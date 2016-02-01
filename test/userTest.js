@@ -1,6 +1,7 @@
 var request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
+  , MockToken = require('./mockToken')
   , app = require('../express')
   , mongoose = require('mongoose');
 
@@ -20,28 +21,12 @@ describe("user tests", function() {
   });
 
   beforeEach(function() {
-    var token = {
-      _id: '1',
-      token: '12345',
-      userId: {
-        populate: function(field, callback) {
-          callback(null, {
-            _id: '1',
-            username: 'test',
-            roleId: {
-              permissions: ['READ_USER']
-            }
-          });
-        }
-      }
-    };
-
     sandbox.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
       .chain('exec')
-      .yields(null, token);
+      .yields(null, MockToken(mongoose.Types.ObjectId(), ['READ_USER']));
   });
 
   afterEach(function() {

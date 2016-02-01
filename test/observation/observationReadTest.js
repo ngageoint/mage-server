@@ -3,6 +3,7 @@ var request = require('supertest')
   , should = require('chai').should()
   , mongoose = require('mongoose')
   , moment = require('moment')
+  , MockToken = require('../mockToken')
   , app = require('../../express')
   , TokenModel = mongoose.model('Token');
 
@@ -41,29 +42,12 @@ describe("observation read tests", function() {
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    var token =  {
-      _id: '1',
-      token: '12345',
-      deviceId: '123',
-      userId: {
-        populate: function(field, callback) {
-          callback(null, {
-            _id: userId,
-            username: 'test',
-            roleId: {
-              permissions: [permission]
-            }
-          });
-        }
-      }
-    };
-
     sandbox.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
       .chain('exec')
-      .yields(null, token);
+      .yields(null, MockToken(userId, [permission]));
   }
 
   it("should get observations for any event", function(done) {

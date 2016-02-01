@@ -3,6 +3,7 @@ var request = require('supertest')
   , mongoose = require('mongoose')
   , mockfs = require('mock-fs')
   , os = require('os')
+  , MockToken = require('../mockToken')
   , app = require('../../express')
   , TokenModel = mongoose.model('Token');
 
@@ -41,29 +42,12 @@ describe("attachment create tests", function() {
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    var token =  {
-      _id: '1',
-      token: '12345',
-      deviceId: '123',
-      userId: {
-        populate: function(field, callback) {
-          callback(null, {
-            _id: userId,
-            username: 'test',
-            roleId: {
-              permissions: [permission]
-            }
-          });
-        }
-      }
-    };
-
     sandbox.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
       .chain('exec')
-      .yields(null, token);
+      .yields(null, MockToken(userId, [permission]));
   }
 
   it("should create attachment for event I am a part of", function(done) {

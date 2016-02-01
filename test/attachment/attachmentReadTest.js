@@ -2,7 +2,7 @@ var request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , mongoose = require('mongoose')
-  , moment = require('moment')
+  , MockToken = require('../mockToken')
   , fs = require('fs-extra')
   , stream = require('stream')
   , app = require('../../express')
@@ -43,29 +43,12 @@ describe("attachment read tests", function() {
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    var token =  {
-      _id: '1',
-      token: '12345',
-      deviceId: '123',
-      userId: {
-        populate: function(field, callback) {
-          callback(null, {
-            _id: userId,
-            username: 'test',
-            roleId: {
-              permissions: [permission]
-            }
-          });
-        }
-      }
-    };
-
     sandbox.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
       .chain('exec')
-      .yields(null, token);
+      .yields(null, MockToken(userId, [permission]));
   }
 
   it("should get attachments for event I am a part of", function(done) {
