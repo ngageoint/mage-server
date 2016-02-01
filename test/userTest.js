@@ -44,9 +44,6 @@ describe("user tests", function() {
       .set('Accept', 'application/json')
       .expect(200)
       .expect('Content-Type', /text\/plain/)
-      .expect(function(res) {
-        console.log('res body', res.body);
-      })
       .end(done);
   });
 
