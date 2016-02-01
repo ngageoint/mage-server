@@ -44,7 +44,6 @@
     "passport-http-bearer": "0.2.x",
     "passport-local": "1.0.0",
     "request": "2.51.x",
-    "shp-write": "~0.1.5",
     "terraformer": "1.0.4",
     "terraformer-arcgis-parser": "1.0.4",
     "togeojson": "~0.3.0",
@@ -71,7 +70,7 @@
     "nock": "2.15.0",
     "sinon": "1.17.1",
     "sinon-chai": "2.8.0",
-    "sinon-mongoose": "^1.2.1",
+    "sinon-mongoose": "1.2.1",
     "superagent": "1.4.0",
     "supertest": "1.1.0"
   },
