@@ -363,7 +363,7 @@ module.exports = function(app) {
     '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
     validateObservationUpdateAccess,
     function(req, res, next) {
-      new api.Attachment(req.event, req.observation).update(req.observationId, req.files.attachment, function(err, attachment) {
+      new api.Attachment(req.event, req.observation).update(req.params.attachmentId, req.files.attachment, function(err, attachment) {
         if (err) return next(err);
 
         var observation = req.observation;

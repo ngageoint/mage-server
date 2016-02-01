@@ -364,8 +364,17 @@ exports.updateAttachment = function(event, observationId, attachmentId, file, ca
   set['attachments.$.lastModified'] = new Date();
 
   var update = { '$set': set };
-  observationModel(event).update(condition, update, function(err) {
-    callback(err);
+  observationModel(event).update(condition, update, function(err, observation) {
+    var attachments = observation.attachments.filter(function(attachment) {
+      return attachment._id.toString() === attachmentId;
+    });
+
+    var attachment = null;
+    if (attachments.length) {
+      attachment = attachments[0];
+    }
+
+    callback(err, attachment);
   });
 };
 
