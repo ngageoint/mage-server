@@ -1,7 +1,7 @@
 var request = require('supertest')
   , sinon = require('sinon')
   , mongoose = require('mongoose')
-  , MockToken = require('../MockToken')
+  , MockToken = require('../mockToken')
   , app = require('../../express')
   , TokenModel = mongoose.model('Token');
 
