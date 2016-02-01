@@ -1,8 +1,8 @@
 var request = require('supertest')
   , sinon = require('sinon')
   , mongoose = require('mongoose')
-  , fs = require('fs')
-  , stream = require('stream')
+  , mockfs = require('mock-fs')
+  , os = require('os')
   , app = require('../../express')
   , TokenModel = mongoose.model('Token');
 
@@ -69,6 +69,14 @@ describe("attachment create tests", function() {
   it("should create attachment for event I am a part of", function(done) {
     mockTokenWithPermission('CREATE_OBSERVATION');
 
+    var tmp = os.tmpdir();
+    var fs = {
+      'mock/path/attachment.jpeg': new Buffer([8, 6, 7, 5, 3, 0, 9]),
+      'var/lib/mage': {}
+    };
+    fs[tmp] = {};
+    mockfs(fs);
+
     sandbox.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
@@ -110,22 +118,14 @@ describe("attachment create tests", function() {
       .expects('update')
       .yields(null, mockObservation);
 
-    var mockedStream = new stream.Readable();
-    mockedStream._read = function noop() {
-      this.push(new Buffer([1,2,3,4,5]), 'binary');
-      this.push(null);
-      this.emit('close');
-    };
-
-    sandbox.mock(fs)
-      .expects('createReadStream')
-      .returns(mockedStream);
-
     request(app)
       .post('/api/events/1/observations/' + observationId + '/attachments')
       .attach('attachment', 'mock/path/attachment.jpeg')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
-      .end(done);
+      .end(function() {
+        mockfs.restore();
+        done();
+      });
   });
 });
