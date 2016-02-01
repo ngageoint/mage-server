@@ -1,15 +1,8 @@
-var express = require("express")
-  , passport = require('passport')
-  , bodyParser = require('body-parser')
-  , multer = require('multer')
-  , path = require('path')
-  , mongoose = require('mongoose')
+var mongoose = require('mongoose')
   , fs = require('fs-extra')
   , util = require('util')
-  , config = require('./config')
   , environment = require('environment')
-  , log = require('./logger')
-  , provision = require('./provision');
+  , log = require('./logger');
 
 var mongooseLogger = log.loggers.get('mongoose');
 
@@ -41,8 +34,6 @@ fs.mkdirp(iconBase, function(err) {
   }
 });
 
-var mongodbConfig = config.server.mongodb;
-
 var mongo = environment.mongo;
 log.info('using mongodb connection from: ' + mongo.uri);
 mongoose.connect(mongo.uri, {server: {poolSize: mongo.poolSize}}, function(err) {
@@ -56,7 +47,7 @@ var app = require('./express.js');
 
 // Launches the Node.js Express Server
 app.listen(environment.port, environment.address, function() {
-    log.info(util.format('MAGE Server: Started listening at address %s on port %s', environment.address, environment.port));
+  log.info(util.format('MAGE Server: Started listening at address %s on port %s', environment.address, environment.port));
 });
 
 // install all plugins

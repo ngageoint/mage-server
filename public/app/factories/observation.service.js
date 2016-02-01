@@ -34,7 +34,6 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
   function saveObservationForEvent(event, observation) {
     var deferred = $q.defer();
 
-    var observationId = observation.id;
     observation.$save({}, function(updatedObservation) {
       transformObservations(updatedObservation, event);
 
@@ -64,10 +63,8 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
   function deleteAttachmentInObservationForEvent(event, observation, attachment) {
     var deferred = $q.defer();
 
-    var eventId = observation.eventId;
-    var observationId = observation.id;
-    ObservationAttachment.delete({eventId: event.id, observationId: observation.id, id: attachment.id}, function(success) {
-      observation.attachments = _.reject(observation.attachments, function(a) { return attachment.id === a.id});
+    ObservationAttachment.delete({eventId: event.id, observationId: observation.id, id: attachment.id}, function() {
+      observation.attachments = _.reject(observation.attachments, function(a) { return attachment.id === a.id; });
 
       deferred.resolve(observation);
     });
@@ -81,7 +78,7 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
     _.each(observations, function(observation) {
       observation.style = {
         iconUrl: "/api/events/" + event.id + "/form/icons/" + observation.properties.type + "/" + observation.properties[event.form.variantField]
-      }
+      };
     });
   }
 }

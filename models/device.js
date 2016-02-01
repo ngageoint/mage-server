@@ -14,16 +14,15 @@ function toLowerCase(field) {
 // Collection to hold users
 // TODO cascade delete from userId when user is deleted.
 var DeviceSchema = new Schema({
-    uid: { type: String, required: true, unique: true, set: toLowerCase },
-    description: { type: String, required: false },
-    registered: { type: Boolean, required: true, default: false },
-    userId: { type: Schema.Types.ObjectId, ref: 'User' },
-    userAgent: { type: String, required: false },
-    appVersion: { type: String, required: false }
-  },{
-    versionKey: false
-  }
-);
+  uid: { type: String, required: true, unique: true, set: toLowerCase },
+  description: { type: String, required: false },
+  registered: { type: Boolean, required: true, default: false },
+  userId: { type: Schema.Types.ObjectId, ref: 'User' },
+  userAgent: { type: String, required: false },
+  appVersion: { type: String, required: false }
+},{
+  versionKey: false
+});
 
 DeviceSchema.path('userId').validate(function(userId, done) {
   User.getUserById(userId, function(err, user) {
@@ -50,13 +49,13 @@ DeviceSchema.pre('remove', function(next) {
       });
     }
   },
-  function(err, results) {
+  function(err) {
     next(err);
   });
 });
 
-var transform = function(device, ret, options) {
-  if ('function' != typeof device.ownerDocument) {
+function transform(device, ret) {
+  if ('function' !== typeof device.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;
 
@@ -79,17 +78,17 @@ exports.getDeviceById = function(id, callback) {
   Device.findById(id, function(err, device) {
     callback(err, device);
   });
-}
+};
 
 exports.getDeviceByUid = function(uid, callback) {
   var conditions = {uid: uid.toLowerCase()};
   Device.findOne(conditions, function(err, device) {
     callback(err, device);
   });
-}
+};
 
 exports.getDevices = function(options, callback) {
-  if (typeof options == 'function') {
+  if (typeof options === 'function') {
     callback = options;
     options = {};
   }
@@ -113,13 +112,13 @@ exports.getDevices = function(options, callback) {
       callback(err, devices);
     }
   });
-}
+};
 
 exports.count = function(callback) {
   Device.count({}, function(err, count) {
     callback(err, count);
   });
-}
+};
 
 exports.createDevice = function(device, callback) {
   // TODO there is a ticket in mongooose that is currently open
@@ -131,14 +130,14 @@ exports.createDevice = function(device, callback) {
     name: device.name,
     description: device.description,
     userId: device.userId
-  }
+  };
 
   if (device.registered) update.registered = device.registered;
 
   Device.findOneAndUpdate({uid: device.uid}, update, {new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true}, function(err, newDevice) {
     callback(err, newDevice);
   });
-}
+};
 
 exports.updateDevice = function(id, update, callback) {
   // TODO there is a ticket in mongooose that is currently open
@@ -149,7 +148,7 @@ exports.updateDevice = function(id, update, callback) {
   Device.findByIdAndUpdate(id, update, {new: true, setDefaultsOnInsert: true, runValidators: true}, function(err, updatedDevice) {
     callback(err, updatedDevice);
   });
-}
+};
 
 exports.deleteDevice = function(id, callback) {
   Device.findById(id, function(err, device) {
@@ -162,4 +161,4 @@ exports.deleteDevice = function(id, callback) {
       callback(err, removedDevice);
     });
   });
-}
+};

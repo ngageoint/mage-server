@@ -6,14 +6,14 @@ LoginService.$inject = ['$http'];
 
 function LoginService($http) {
 
-	var service = {
+  var service = {
     query: query
   };
 
-	return service;
+  return service;
 
-	function query(options) {
-		var options = options || {};
+  function query(options) {
+    options = options || {};
     var filter = options.filter || {};
 
     var parameters = {};
@@ -34,6 +34,6 @@ function LoginService($http) {
     }
 
 
-		return $http.get(options.url || '/api/logins?' + $.param(parameters));
-	}
+    return $http.get(options.url || '/api/logins?' + $.param(parameters));
+  }
 }

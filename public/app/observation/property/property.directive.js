@@ -11,7 +11,7 @@ function propertyView() {
     },
     controller: PropertyViewController,
     bindToController: true
-  }
+  };
 
   return directive;
 }
@@ -19,30 +19,18 @@ function propertyView() {
 PropertyViewController.$inject = ['$scope'];
 
 function PropertyViewController($scope) {
-  $scope.templatePath = getTemplateUrl($scope.field);
+  var types = {
+    textfield: 'app/observation/property/textfield.directive.html',
+    email: 'app/observation/property/email.directive.html',
+    textarea: 'app/observation/property/textarea.directive.html',
+    checkbox: 'app/observation/property/checkbox.directive.html',
+    date: 'app/observation/property/date.directive.html',
+    geometry: 'app/observation/property/geometry.directive.html',
+    dropdown: 'app/observation/property/dropdown.directive.html',
+    hidden: 'app/observation/property/hidden.directive.html',
+    password: 'app/observation/property/password.directive.html',
+    radio: 'app/observation/property/radio.directive.html'
+  };
 
-  function getTemplateUrl(field) {
-    switch(field.type) {
-      case 'textfield':
-        return 'app/observation/property/textfield.directive.html';
-      case 'email':
-        return 'app/observation/property/email.directive.html';
-      case 'textarea':
-        return 'app/observation/property/textarea.directive.html';
-      case 'checkbox':
-        return 'app/observation/property/checkbox.directive.html';
-      case 'date':
-        return 'app/observation/property/date.directive.html';
-      case 'geometry':
-        return 'app/observation/property/geometry.directive.html';
-      case 'dropdown':
-        return 'app/observation/property/dropdown.directive.html';
-      case 'hidden':
-        return 'app/observation/property/hidden.directive.html';
-      case 'password':
-        return 'app/observation/property/password.directive.html';
-      case 'radio':
-        return 'app/observation/property/radio.directive.html';
-    }
-  }
+  $scope.templatePath = types[$scope.field.type];
 }

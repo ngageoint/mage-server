@@ -3,15 +3,15 @@ function Strategy() {
 }
 
 Strategy.prototype.check = function(req, options, done) {
-  if (typeof options == 'function') {
+  if (typeof options === 'function') {
     done = options;
     options = {};
   }
-  
+
   done(null, 'none');
-}
+};
 
 /**
  * Expose `Strategy`.
- */ 
- exports.Strategy = Strategy;
+ */
+exports.Strategy = Strategy;

@@ -1,10 +1,5 @@
 var expect = require("chai").expect
  , request = require("request")
- , http = require('http')
- , assert = require('assert')
- , express  = require('express')
- , token = require('../models/token')
- , api = require('../api')
  , record = require('./record')
  , config = require('./config/httpconfig.js');
 
@@ -18,8 +13,6 @@ var expect = require("chai").expect
 
 
 // Set the connection URL
-var localUrl = config.localServer.location;
-var httpUrl = config.httpServer.location;
 var functionalServer = config.functionalServer.location;
 // To switch between localhost and remote host, change conUrl to one of the above.  Configure those values in config/httpconfig.js
 var conUrl = functionalServer;
@@ -53,7 +46,7 @@ describe("MAGE-server API JSON test", function(){
         'uid': testUser.uid,
         'password': testUser.password
       }
-    }
+    };
     request(tokenOptions, function(error, response, body){
       if(error){
         console.log("Error getting token: " + error);
@@ -81,7 +74,7 @@ describe("MAGE-server API JSON test", function(){
     request(conUrl, function(error, response, body){
       expect(response.statusCode).to.equal(200);
       var jsonObj = JSON.parse(body);
-      var appName = jsonObj['name'].substring(0,4);
+      var appName = jsonObj.name.substring(0,4);
       expect(appName).to.equal('MAGE');
       done();
     });
@@ -92,8 +85,8 @@ describe("MAGE-server API JSON test", function(){
     var tokenOptions = {
       url: conUrl + "/users/" + testUser.userId,
       method: 'GET'
-    }
-    request(tokenOptions, function(error, response, body){
+    };
+    request(tokenOptions, function(error, response){
       expect(response.statusCode).to.equal(401);
       if(error){
         console.log("Error from /api/users/{id}: " + error);
@@ -108,11 +101,11 @@ describe("MAGE-server API JSON test", function(){
       url: conUrl + "/users/" + testUser.userId,
       method: 'GET',
       headers: {'Authorization': 'Bearer ' + myToken}
-    }
+    };
     console.log("AUTH: " + myToken);
     request(tokenOptions, function(error, response, body){
       var jsonObj = JSON.parse(body);
-      var username = jsonObj['username'];
+      var username = jsonObj.username;
       expect(username).to.equal(testUser.username);
       if(error){
         console.log("Error from /api/users/{id}: " + error);

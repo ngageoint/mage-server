@@ -1,14 +1,9 @@
 var ObservationModel = require('../models/observation')
   , log = require('winston')
   , path = require('path')
-  , util = require('util')
   , fs = require('fs-extra')
-  , async = require('async')
-  , moment = require('moment')
-  , access = require('../access')
-  , environment = require('environment')
-  , geometryFormat = require('../format/geoJsonFormat');
-
+  , environment = require('environment');
+  
 var attachmentBase = environment.attachmentBaseDirectory;
 
 var createAttachmentPath = function(event) {
@@ -19,12 +14,12 @@ var createAttachmentPath = function(event) {
     (now.getMonth() + 1).toString(),
     now.getDate().toString()
   );
-}
+};
 
 function Attachment(event, observation) {
   this._event = event;
   this._observation = observation;
-};
+}
 
 Attachment.prototype.getById = function(attachmentId, options, callback) {
   var size = options.size ? Number(options.size) : null;
@@ -34,10 +29,10 @@ Attachment.prototype.getById = function(attachmentId, options, callback) {
 
     if (size) {
       attachment.thumbnails.forEach(function(thumbnail) {
-        if ((thumbnail.minDimension < attachment.height || !attachment.height)
-          && (thumbnail.minDimension < attachment.width || !attachment.width)
-          && (thumbnail.minDimension >= size)) {
-            attachment = thumbnail;
+        if ((thumbnail.minDimension < attachment.height || !attachment.height) &&
+          (thumbnail.minDimension < attachment.width || !attachment.width) &&
+          (thumbnail.minDimension >= size)) {
+          attachment = thumbnail;
         }
       });
     }
@@ -46,11 +41,10 @@ Attachment.prototype.getById = function(attachmentId, options, callback) {
 
     callback(null, attachment);
   });
-}
+};
 
 Attachment.prototype.create = function(observationId, attachment, callback) {
   var event = this._event;
-  var observation = this._observation;
 
   var relativePath = createAttachmentPath(event);
   // move file upload to its new home
@@ -61,6 +55,7 @@ Attachment.prototype.create = function(observationId, attachment, callback) {
     var fileName = path.basename(attachment.path);
     attachment.relativePath = path.join(relativePath, fileName);
     var file = path.join(attachmentBase, attachment.relativePath);
+    console.log('renaming ', attachment.path);
 
     fs.move(attachment.path, file, function(err) {
       if (err) return callback(err);
@@ -70,13 +65,13 @@ Attachment.prototype.create = function(observationId, attachment, callback) {
       });
     });
   });
-}
+};
 
 Attachment.prototype.update = function(id, attachment, callback) {
   var event = this._event;
   var observation = this._observation;
 
-  var relativePath = createAttachmentPath(event, attachment);
+  var relativePath = createAttachmentPath(event);
   var dir = path.join(attachmentBase, relativePath);
   // move file upload to its new home
   fs.mkdirp(dir, function(err) {
@@ -88,17 +83,16 @@ Attachment.prototype.update = function(id, attachment, callback) {
     fs.move(attachment.path, file, function(err) {
       if (err) return callback(err);
 
-      ObservationModel.updateAttachment(event, id, attachment, function(err) {
+      ObservationModel.updateAttachment(event, observation._id, id, attachment, function(err, attachment) {
         if (err) return callback(err);
 
         callback(err, attachment);
       });
     });
   });
-}
+};
 
 Attachment.prototype.delete = function(id, callback) {
-  var event = this._event;
   var observation = this._observation;
   if (id !== Object(id)) {
     id = {id: id, field: '_id'};
@@ -109,7 +103,7 @@ Attachment.prototype.delete = function(id, callback) {
 
     var attachment = null;
     observation.attachments.forEach(function(a) {
-      if (a[id.field] == id.id) {
+      if (a[id.field] === id.id) {
         attachment = a;
         return false; //found attachment stop iterating
       }
@@ -119,14 +113,14 @@ Attachment.prototype.delete = function(id, callback) {
       var file = path.join(attachmentBase, attachment.relativePath);
       fs.remove(file, function(err) {
         if (err) {
-          log.error("Could not remove attachment file " + file + ". ", err);
+          log.error('Could not remove attachment file ' + file + '.', err);
         }
       });
     }
 
     callback();
   });
-}
+};
 
 Attachment.prototype.deleteAllForEvent = function (callback) {
   var directoryPath = path.join(attachmentBase, this._event.collectionName);
@@ -134,11 +128,11 @@ Attachment.prototype.deleteAllForEvent = function (callback) {
 
   fs.remove(directoryPath, function(err) {
     if (err) {
-      log.warn("Could not remove attachments for event at path '" + directoryPath + "''", err);
+      log.warn('Could not remove attachments for event at path "' + directoryPath + '"', err);
     }
 
     callback(err);
   });
-}
+};
 
 module.exports = Attachment;

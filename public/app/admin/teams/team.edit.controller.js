@@ -16,12 +16,10 @@ function AdminTeamEditController($scope, $location, $routeParams, Team) {
   $scope.saveTeam = function(team) {
     $scope.team.$save(function() {
       $location.path('/admin/teams/' + team.id);
-    }, function(reponse) {
-
     });
-  }
+  };
 
   $scope.cancel = function() {
     $location.path('/admin/teams/' + $scope.team.id);
-  }
+  };
 }

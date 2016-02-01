@@ -12,7 +12,7 @@ function observationPopup() {
       observationZoom: '&'
     },
     controller: ObservationPopupDirective
-  }
+  };
 
   return directive;
 }
@@ -32,13 +32,13 @@ function ObservationPopupDirective($scope, EventService) {
 
   $scope.onInfoClicked = function() {
     $scope.observationPopupInfo({observation: $scope.observation});
-  }
+  };
 
   $scope.onZoomClicked = function() {
     $scope.observationZoom({observation: $scope.observation});
-  }
+  };
 
-  $scope.$watch('observation', function(observation) {
+  $scope.$watch('observation', function() {
     $scope.date = moment($scope.observation.properties.timestamp).format("YYYY-MM-DD HH:mm:ss");
   });
 }

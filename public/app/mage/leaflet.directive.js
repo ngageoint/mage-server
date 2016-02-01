@@ -60,7 +60,7 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
     MapService.selectBaseLayer(layer);
   });
 
-  map.on('overlayadd', function(overlay, name) {
+  map.on('overlayadd', function(overlay) {
     var layer = layers[overlay.name];
     MapService.overlayAdded(layer);
   });
@@ -150,12 +150,11 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
 
   // TODO move into leaflet service, this and map clip both use it
   function createRasterLayer(layerInfo) {
-    var baseLayer = null;
     var options = {};
-    if (layerInfo.format == 'XYZ' || layerInfo.format == 'TMS') {
-      options = { tms: layerInfo.format == 'TMS', maxZoom: 18}
+    if (layerInfo.format === 'XYZ' || layerInfo.format === 'TMS') {
+      options = { tms: layerInfo.format === 'TMS', maxZoom: 18 };
       layerInfo.layer = new L.TileLayer(layerInfo.url, options);
-    } else if (layerInfo.format == 'WMS') {
+    } else if (layerInfo.format === 'WMS') {
       options = {
         layers: layerInfo.wms.layers,
         version: layerInfo.wms.version,
@@ -192,7 +191,7 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
         if (popup) {
           if (_.isFunction(popup.html)) {
             var options = {autoPan: false};
-            if (popup.closeButton != null) options.closeButton = popup.closeButton;
+            if (popup.closeButton) options.closeButton = popup.closeButton;
             layer.bindPopup(popup.html(feature), options);
           }
 
@@ -224,15 +223,15 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
       pointToLayer: function (feature, latlng) {
         if (layerInfo.options.temporal) {
           // TODO temporal layers should be fixed width as well, ie use fixedWidthMarker class
-          var options = {
+          var temporalOptions = {
             color: colorForFeature(feature, layerInfo.options.temporal)
           };
           if (feature.style && feature.style.iconUrl) options.iconUrl = feature.style.iconUrl + '?access_token=' + LocalStorageService.getToken();
 
-          return L.locationMarker(latlng, options);
+          return L.locationMarker(latlng, temporalOptions);
         } else {
           var options = {};
-          if (feature.style && feature.style.iconUrl) options.iconUrl = feature.style.iconUrl + '?access_token=' + LocalStorageService.getToken()
+          if (feature.style && feature.style.iconUrl) options.iconUrl = feature.style.iconUrl + '?access_token=' + LocalStorageService.getToken();
           return L.fixedWidthMarker(latlng, options);
         }
       },
@@ -254,7 +253,7 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
     var geojson = createGeoJsonForLayer(data.geojson, layerInfo);
     if (data.options.cluster) {
       layerInfo.layer = L.markerClusterGroup().addLayer(geojson);
-      layerInfo.layer.on('spiderfied', function(e) {
+      layerInfo.layer.on('spiderfied', function() {
         if (spiderfyState) {
           spiderfyState.layer.openPopup();
         }
@@ -273,23 +272,23 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
   function onLayersChanged(changed) {
     _.each(changed.added, function(added) {
       switch(added.type) {
-        case 'Feature':
-          createMarker(added);
-          break;
-        case 'Imagery':
-          createRasterLayer(added);
-          break;
-        case 'geojson':
-          createGeoJsonLayer(added);
-          break;
+      case 'Feature':
+        createMarker(added);
+        break;
+      case 'Imagery':
+        createRasterLayer(added);
+        break;
+      case 'geojson':
+        createGeoJsonLayer(added);
+        break;
       }
     });
 
     _.each(changed.updated, function(updated) {
       switch(updated.type) {
-        case 'Feature':
-          updateMarker(updated);
-          break;
+      case 'Feature':
+        updateMarker(updated);
+        break;
       }
     });
 
@@ -298,7 +297,6 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
       if (layer) {
         map.removeLayer(layer.layer);
         delete layer.layer;
-        delete layer;
         delete layers[removed.layerId];
       }
     });
@@ -327,10 +325,9 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
       // Set the icon
       if (layer.feature && layer.feature.iconUrl !== feature.iconUrl) {
         layer.setIcon(L.urlDivIcon({
-            feature: feature,
-            token: LocalStorageService.getToken()
-          })
-        );
+          feature: feature,
+          token: LocalStorageService.getToken()
+        }));
       }
 
       if (featureLayer.options.temporal) {

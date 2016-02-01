@@ -15,7 +15,7 @@ var LocationSchema = new Schema({
   },
   properties: Schema.Types.Mixed
 },{
-    versionKey: false
+  versionKey: false
 });
 
 LocationSchema.index({geometry: "2dsphere"});
@@ -31,7 +31,7 @@ exports.Model = Location;
 // create location
 exports.createLocations = function(locations, callback) {
   Location.create(locations, callback);
-}
+};
 
 exports.getLocations = function(options, callback) {
   var limit = 2000;
@@ -71,7 +71,7 @@ exports.getLocations = function(options, callback) {
   Location.find(conditions, {}, {sort: {"properties.timestamp": 1, _id: 1}, limit: limit}, function (err, locations) {
     callback(err, locations);
   });
-}
+};
 
 // update latest location
 exports.updateLocation = function(user, timestamp, callback) {
@@ -81,11 +81,11 @@ exports.updateLocation = function(user, timestamp, callback) {
   Location.findOneAndUpdate(conditions, update, options, function(err, location) {
     callback(err, location);
   });
-}
+};
 
 exports.removeLocationsForUser = function(user, callback) {
   var conditions = {"userId": user._id};
-  Location.remove(conditions, function(err, numberRemoved) {
+  Location.remove(conditions, function(err) {
     callback(err);
   });
-}
+};

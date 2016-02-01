@@ -8,13 +8,12 @@ var Schema = mongoose.Schema;
 
 // Collection to hold users
 var TeamSchema = new Schema({
-    name: { type: String, required: true, unique: true},
-    description: { type: String },
-    userIds: [{type: Schema.Types.ObjectId, ref: 'User'}],
-  },{
-    versionKey: false
-  }
-);
+  name: { type: String, required: true, unique: true},
+  description: { type: String },
+  userIds: [{type: Schema.Types.ObjectId, ref: 'User'}]
+},{
+  versionKey: false
+});
 
 TeamSchema.pre('remove', function(next) {
   var team = this;
@@ -24,15 +23,15 @@ TeamSchema.pre('remove', function(next) {
       User.removeTeamFromUsers(team, done);
     },
     teams: function(done) {
-      Event.removeTeamFromEvents(team, next);
+      Event.removeTeamFromEvents(team, done);
     }
   },
-  function(err, results) {
+  function(err) {
     next(err);
   });
 });
 
-var transform = function(team, ret, options) {
+function transform(team, ret) {
   ret.id = ret._id;
   delete ret._id;
 
@@ -52,36 +51,36 @@ exports.TeamModel = Team;
 
 exports.getTeamById = function(id, callback) {
   Team.findById(id).populate('userIds').exec(callback);
-}
+};
 
 exports.teamsForUserInEvent = function(user, event, callback) {
   var conditions = {
     _id: {$in: event.teamIds},
     userIds: user._id
-  }
+  };
   Team.find(conditions, function(err, teams) {
     callback(err, teams);
   });
-}
+};
 
 exports.count = function(callback) {
   Team.count({}, function(err, count) {
     callback(err, count);
   });
-}
+};
 
 exports.getTeams = function(callback) {
   var query = {};
   Team.find(query).populate('userIds').exec(function (err, teams) {
     callback(err, teams);
   });
-}
+};
 
 exports.createTeam = function(team, callback) {
   var create = {
     name: team.name,
-    description: team.description,
-  }
+    description: team.description
+  };
 
   if (team.users) {
     create.userIds = team.users.map(function(user) { return mongoose.Types.ObjectId(user.id); });
@@ -90,7 +89,7 @@ exports.createTeam = function(team, callback) {
   Team.create(create, function(err, team) {
     Team.populate(team, {path: 'userIds'}, callback);
   });
-}
+};
 
 exports.updateTeam = function(id, update, callback) {
   if (update.users) {
@@ -101,13 +100,13 @@ exports.updateTeam = function(id, update, callback) {
 
     Team.populate(team, {path: 'userIds'}, callback);
   });
-}
+};
 
 exports.deleteTeam = function(team, callback) {
   team.remove(function(err) {
     callback(err, team);
   });
-}
+};
 
 exports.addUser = function(team, user, callback) {
   var update = {
@@ -119,7 +118,7 @@ exports.addUser = function(team, user, callback) {
   Team.findByIdAndUpdate(team._id, update, function(err, team) {
     callback(err, team);
   });
-}
+};
 
 exports.removeUser = function(team, user, callback) {
   var update = {
@@ -131,4 +130,4 @@ exports.removeUser = function(team, user, callback) {
   Team.findByIdAndUpdate(team._id, update, function(err, team) {
     callback(err, team);
   });
-}
+};

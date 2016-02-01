@@ -1,5 +1,4 @@
 var cluster = require('cluster')
-  , http = require('http')
   , os = require('os')
   , log = require('winston');
 
@@ -11,7 +10,7 @@ if (cluster.isMaster) {
     cluster.fork();
   }
 
-  cluster.on('exit', function(worker, code, signal) {
+  cluster.on('exit', function(worker) {
     log.warn('worker ' + worker.process.pid + ' died');
   });
 } else {

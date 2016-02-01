@@ -1,13 +1,12 @@
 module.exports = function(app, security) {
   var Device = require('../models/device')
-    , User = require('../models/user')
     , access = require('../access');
 
   var passport = security.authentication.passport;
 
   var isAuthenticated = function(strategy) {
     return function(req, res, next) {
-      passport.authenticate(strategy, function(err, user, info) {
+      passport.authenticate(strategy, function(err, user) {
         if (err) return next(err);
 
         if (user) req.user = user;
@@ -15,8 +14,8 @@ module.exports = function(app, security) {
         next();
 
       })(req, res, next);
-    }
-  }
+    };
+  };
 
   var parseDeviceParams = function(req, res, next) {
     req.newDevice = {
@@ -28,7 +27,7 @@ module.exports = function(app, security) {
     };
 
     next();
-  }
+  };
 
   var validateDeviceParams = function(req, res, next) {
     if (!req.newDevice.uid) {
@@ -36,7 +35,7 @@ module.exports = function(app, security) {
     }
 
     next();
-  }
+  };
 
   // Create a new device, requires CREATE_DEVICE role
   app.post(
@@ -83,7 +82,7 @@ module.exports = function(app, security) {
       var expand = {};
       if (req.query.expand) {
         var expandList = req.query.expand.split(",");
-        if (expandList.some(function(e) { return e === 'user'})) {
+        if (expandList.some(function(e) { return e === 'user';})) {
           expand.user = true;
         }
       }
@@ -154,4 +153,4 @@ module.exports = function(app, security) {
       });
     }
   );
-}
+};

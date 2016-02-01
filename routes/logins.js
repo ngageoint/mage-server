@@ -61,7 +61,7 @@ module.exports = function(app, security) {
 
         var response = {
           logins: logins
-        }
+        };
 
         if (logins.length) {
           response.next = '/api/logins?lastLoginId=' + logins[logins.length - 1]._id;
@@ -77,4 +77,4 @@ module.exports = function(app, security) {
     }
   );
 
-}
+};

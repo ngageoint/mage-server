@@ -12,7 +12,7 @@ function userNewsItem() {
     },
     controller: UserNewsItemController,
     bindToController: true
-  }
+  };
 
   return directive;
 }
@@ -32,11 +32,11 @@ function UserNewsItemController($scope, LocalStorageService) {
   $scope.followUser = function(e, user) {
     e.stopPropagation();
     $scope.$emit('user:follow', user);
-  }
+  };
 
   $scope.onUserLocationClick = function(user) {
     $scope.$emit('user:zoom', user, {panToLocation: true, zoomToLocation: true});
-  }
+  };
 
   $scope.$on('user:poll', function() {
     $scope.fromNow = moment($scope.user.location.properties.timestamp).fromNow();

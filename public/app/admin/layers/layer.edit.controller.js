@@ -19,12 +19,12 @@ function AdminLayerEditController($scope, $injector, $location, $routeParams, Lo
   $scope.uploads = [{}];
 
   $scope.saveLayer = function (layer) {
-    layer.$save({}, function(success) {
+    layer.$save({}, function() {
       $location.path('/admin/layers/' + layer.id);
     });
-  }
+  };
 
   $scope.cancel = function() {
     $location.path('/admin/layers/' + $scope.layer.id);
-  }
+  };
 }

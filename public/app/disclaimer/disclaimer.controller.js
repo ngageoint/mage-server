@@ -9,9 +9,9 @@ function DisclaimerController($scope, $modalInstance, disclaimer) {
 
   $scope.accept = function() {
     $modalInstance.close();
-  }
+  };
 
   $scope.exit = function() {
     $modalInstance.dismiss();
-  }
+  };
 }

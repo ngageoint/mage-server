@@ -11,7 +11,7 @@ function iconUser() {
     },
     controller: IconUserController,
     bindToController: true
-  }
+  };
 
   return directive;
 }
@@ -29,7 +29,7 @@ function IconUserController($scope, $element, LocalStorageService) {
 
     if (window.FileReader) {
       var reader = new FileReader();
-      reader.onload = (function(file) {
+      reader.onload = (function() {
         return function(e) {
           $scope.$apply(function() {
             $scope.iconUrl = e.target.result;

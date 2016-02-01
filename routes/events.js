@@ -2,9 +2,7 @@ module.exports = function(app, security) {
   var Event = require('../models/event')
   , access = require('../access')
   , api = require('../api')
-  , archiver = require('archiver')
-  , fs = require('fs-extra')
-  , Zip = require('adm-zip');
+  , archiver = require('archiver');
 
   var passport = security.authentication.passport;
 
@@ -27,7 +25,11 @@ module.exports = function(app, security) {
     } else if (access.userHasPermission(req.user, 'READ_LOCATION_EVENT')) {
       // Make sure I am part of this event
       Event.eventHasUser(req.event, req.user._id, function(err, eventHasUser) {
-        eventHasUser ? next() : res.sendStatus(403);
+        if (eventHasUser) {
+          return next();
+        } else {
+          return res.sendStatus(403);
+        }
       });
     } else {
       res.sendStatus(403);
@@ -59,9 +61,9 @@ module.exports = function(app, security) {
     });
 
     var missing = [];
-    if (fieldNames.timestamp == null) missing.push("'timestamp' missing field is required");
-    if (fieldNames.geometry == null) missing.push("'geometry' missing field is required");
-    if (fieldNames.type == null) missing.push("'type' missing field is required");
+    if (!fieldNames.timestamp) missing.push("'timestamp' missing field is required");
+    if (!fieldNames.geometry) missing.push("'geometry' missing field is required");
+    if (!fieldNames.type) missing.push("'type' missing field is required");
     if (missing.length) return res.status(400).send(missing.join(","));
 
     var required = [];
@@ -201,7 +203,7 @@ module.exports = function(app, security) {
     '/api/events/:eventId',
     access.authorize('DELETE_EVENT'),
     function(req, res, next) {
-      Event.remove(req.event, function(err, event) {
+      Event.remove(req.event, function(err) {
         if (err) return next(err);
 
         res.status(204).send();
@@ -274,7 +276,7 @@ module.exports = function(app, security) {
   app.get(
     '/api/events/:eventId/form/icons.zip',
     validateEventAccess,
-    function(req, res, next) {
+    function(req, res) {
       var iconBasePath = new api.Icon(req.event._id).getBasePath();
       var archive = archiver('zip');
       res.attachment("icons.zip");
@@ -328,12 +330,12 @@ module.exports = function(app, security) {
   app.delete(
     '/api/events/:eventId/form/icons/:type?/:variant?',
     access.authorize('DELETE_EVENT'),
-    function(req, res) {
-      new api.Icon(req.event._id, req.params.type, req.params.variant).delete(function(err, icon) {
+    function(req, res, next) {
+      new api.Icon(req.event._id, req.params.type, req.params.variant).delete(function(err) {
         if (err) return next(err);
 
         return res.status(204).send();
       });
     }
   );
-}
+};

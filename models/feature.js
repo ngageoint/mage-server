@@ -1,7 +1,4 @@
-var mongoose = require('mongoose')
-  , async = require('async')
-  , moment = require('moment')
-  , Layer = require('../models/layer');
+var mongoose = require('mongoose');
 
 var Schema = mongoose.Schema;
 
@@ -17,8 +14,8 @@ var FeatureSchema = new Schema({
 
 FeatureSchema.index({geometry: "2dsphere"});
 
-var transform = function(feature, ret, options) {
-  if ('function' != typeof feature.ownerDocument) {
+function transform(feature, ret) {
+  if ('function' !== typeof feature.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;
   }
@@ -30,12 +27,12 @@ FeatureSchema.set("toJSON", {
 
 var models = {};
 
-var featureModel = function(layer) {
+function featureModel(layer) {
   var name = layer.collectionName;
   var model = models[name];
   if (!model) {
     // Creates the Model for the Features Schema
-    var model = mongoose.model(name, FeatureSchema, name);
+    model = mongoose.model(name, FeatureSchema, name);
     models[name] = model;
   }
 
@@ -48,8 +45,7 @@ exports.getFeatures = function(layer, callback) {
   featureModel(layer).find({}, function(err, features) {
     callback(err, features);
   });
-}
-
+};
 
 exports.createFeatures = function(layer, features, callback) {
   features.forEach(function(feature) {
@@ -59,4 +55,4 @@ exports.createFeatures = function(layer, features, callback) {
   featureModel(layer).create(features, function(err) {
     callback(err, features);
   });
-}
+};

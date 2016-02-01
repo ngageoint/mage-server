@@ -22,9 +22,9 @@ function config($provide, $httpProvider, $routeProvider) {
   function resolveLogin(roles) {
     return {
       user: ['UserService', function(UserService) {
-       return UserService.getMyself(roles);
-     }]
-    }
+        return UserService.getMyself(roles);
+      }]
+    };
   }
 
   $routeProvider.otherwise({
@@ -269,7 +269,7 @@ function run($rootScope, $route, $modal, UserService, $location, authService, Lo
 
 
   $rootScope.$on('event:auth-loginRequired', function() {
-    if (!$rootScope.loginDialogPresented && $location.path() != '/' && $location.path() != '/signin' && $location.path() != '/signup') {
+    if (!$rootScope.loginDialogPresented && $location.path() !== '/' && $location.path() !== '/signin' && $location.path() !== '/signup') {
       $rootScope.loginDialogPresented = true;
       var modalInstance = $modal.open({
         templateUrl: 'app/signin/signin-modal.html',
@@ -291,8 +291,7 @@ function run($rootScope, $route, $modal, UserService, $location, authService, Lo
 
           $scope.googleSignin = function() {
             UserService.oauthSignin('google', {uid: this.uid}).then(function(data) {
-              console.log('successfull oauth');
-              if (data.username != oldUsername) {
+              if (data.username !== oldUsername) {
                 data.newUser = true;
               }
 
@@ -311,16 +310,16 @@ function run($rootScope, $route, $modal, UserService, $location, authService, Lo
                 $scope.statusLevel = 'alert-danger';
               }
             });
-          }
+          };
 
           $scope.login = function (data) {
             UserService.login(data).success(function() {
-              if (data.username != oldUsername) {
+              if (data.username !== oldUsername) {
                 data.newUser = true;
               }
               $rootScope.loginDialogPresented = false;
               $modalInstance.close($scope);
-            }).error(function (data, status, headers, config) {
+            }).error(function (data, status) {
               $scope.status = status;
             });
           };
@@ -360,7 +359,7 @@ function run($rootScope, $route, $modal, UserService, $location, authService, Lo
         controller: 'DisclaimerController',
         resolve: {
           disclaimer: function() {
-            return api.disclaimer
+            return api.disclaimer;
           }
         }
       });

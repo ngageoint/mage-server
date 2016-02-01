@@ -1,10 +1,10 @@
-module.exports = function(app, security) {
+module.exports = function(app) {
   var doc = require('../docs/swagger.json');
 
   app.get(
     '/api/api-docs',
-    function(req, res, next) {
-        res.json(doc);
+    function(req, res) {
+      res.json(doc);
     }
   );
-}
+};

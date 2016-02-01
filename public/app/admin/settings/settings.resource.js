@@ -2,20 +2,19 @@ angular
 	.module('mage')
 	.factory('Settings', Settings);
 
-  Settings.$inject = ['$resource', '$http'];
+Settings.$inject = ['$resource'];
 
-function Settings($resource, $http) {
-	var Settings = $resource('/api/settings/:type', {
-		type: '@type'
-	},{
-		update: {
-			method: 'PUT',
-			headers: {
-				'Content-Type': 'application/json'
-			}
-		}
-	});
+function Settings($resource) {
+  var Settings = $resource('/api/settings/:type', {
+    type: '@type'
+  },{
+    update: {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }
+  });
 
-	return Settings;
-
+  return Settings;
 }

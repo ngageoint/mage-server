@@ -18,7 +18,7 @@ function start() {
 
   worker.on('exit', function(exitCode) {
     log.warn('********************** image plugin exit, code **********************', exitCode);
-    if (exitCode != 0) {
+    if (exitCode !== 0) {
       start();
     }
   });

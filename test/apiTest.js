@@ -1,11 +1,13 @@
 var request = require('supertest')
   , sinon = require('sinon')
   , app = require('../express')
-  , mongoose = require('mongoose')
-  , Setting = require('../models/setting')
-  , SettingModel = mongoose.model('Setting')
-  , User = require('../models/user')
-  , UserModel = mongoose.model('User');
+  , mongoose = require('mongoose');
+
+require('../models/setting');
+var SettingModel = mongoose.model('Setting');
+
+require('../models/user');
+var UserModel = mongoose.model('User');
 
 require('sinon-mongoose');
 require('chai').should();
@@ -26,17 +28,17 @@ describe("api route tests", function() {
       .expects('findOne')
       .withArgs({type: 'disclaimer'})
       .yields(null, {
-      	type : "banner",
-      	settings : {
-      		footerText : "Footer Text",
-      		showFooter : false,
-      		headerText : "Header Text",
-      		showHeader : false,
-      		footerBackgroundColor : "#ffffff",
-      		footerTextColor : "#000000",
-      		headerBackgroundColor : "#ffffff",
-      		headerTextColor : "#000000"
-      	}
+        type : "banner",
+        settings : {
+          footerText : "Footer Text",
+          showFooter : false,
+          headerText : "Header Text",
+          showHeader : false,
+          footerBackgroundColor : "#ffffff",
+          footerTextColor : "#000000",
+          headerBackgroundColor : "#ffffff",
+          headerTextColor : "#000000"
+        }
       });
 
     sandbox.mock(UserModel)
@@ -56,7 +58,7 @@ describe("api route tests", function() {
         config.should.have.property('provision');
         config.should.have.property('disclaimer');
       })
-      .end(done)
+      .end(done);
   });
 
   it("api should return initial", function(done) {
@@ -79,7 +81,7 @@ describe("api route tests", function() {
         var config = res.body;
         config.should.have.property('initial').that.is.true;
       })
-      .end(done)
+      .end(done);
   });
 
   it("api should not return initial", function(done) {
@@ -102,7 +104,7 @@ describe("api route tests", function() {
         var config = res.body;
         config.should.not.have.property('initial');
       })
-      .end(done)
+      .end(done);
   });
 
 });

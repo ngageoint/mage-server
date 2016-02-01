@@ -27,6 +27,10 @@ module.exports = function(app, passport, provision, strategies) {
 
       req.token = credentials.token;
 
+      if (credentials.token.deviceId) {
+        req.provisionedDeviceId = credentials.token.deviceId;
+      }
+
       return done(null, credentials.user, { scope: 'all' });
     });
   }));
@@ -40,4 +44,4 @@ module.exports = function(app, passport, provision, strategies) {
     passport: passport,
     strategies: strategies
   };
-}
+};

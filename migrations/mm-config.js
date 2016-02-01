@@ -9,7 +9,7 @@ var migrateConfig = {
   db: environment.mongo.db,
   collection: "migrations",
   directory: "migrations"
-}
+};
 
 var mongoUri = migrateConfig.scheme + "://" + migrateConfig.host + "/" + migrateConfig.db;
 mongoose.connect(mongoUri, function(err) {

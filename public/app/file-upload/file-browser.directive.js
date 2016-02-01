@@ -9,7 +9,7 @@ function fileBrowser() {
     templateUrl: '/app/file-upload/file-browser.directive.html',
     controller: FileBrowserController,
     bindToController: true
-  }
+  };
 
   return directive;
 }

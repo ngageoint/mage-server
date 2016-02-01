@@ -14,49 +14,49 @@ function AdminUsersController($scope, $injector, $filter, $location, LocalStorag
   UserService.getAllUsers({forceRefresh: true, populate: 'roleId'}).success(function(users) {
     $scope.users = users;
     $scope.allCount = $scope.users.length;
-    $scope.activeCount = _.filter($scope.users, function(u) {return u.active === true}).length;
-    $scope.inactiveCount = _.filter($scope.users, function(u) {return !u.active}).length;
+    $scope.activeCount = _.filter($scope.users, function(u) { return u.active === true; }).length;
+    $scope.inactiveCount = _.filter($scope.users, function(u) { return !u.active; }).length;
   });
 
   $scope.$watch('userSearch', function() {
     if (!$scope.filteredUsers) return;
 
     $scope.allCount = $scope.filteredUsers.length;
-    $scope.activeCount = _.filter($scope.filteredUsers, function(u) {return u.active === true}).length;
-    $scope.inactiveCount = _.filter($scope.filteredUsers, function(u) {return !u.active}).length;
+    $scope.activeCount = _.filter($scope.filteredUsers, function(u) { return u.active === true; }).length;
+    $scope.inactiveCount = _.filter($scope.filteredUsers, function(u) { return !u.active; }).length;
   });
 
   $scope.filterActive = function (user) {
     switch ($scope.filter) {
-      case 'all': return true;
-      case 'active': return user.active;
-      case 'inactive': return !user.active;
+    case 'all': return true;
+    case 'active': return user.active;
+    case 'inactive': return !user.active;
     }
-  }
+  };
 
   $scope.activeUsersCount = function(user) {
-    return user.active == true;
-  }
+    return user.active === true;
+  };
 
   $scope.reset = function() {
     $scope.page = 0;
     $scope.filter = 'all';
     $scope.userSearch = '';
-  }
+  };
 
   $scope.newUser = function() {
     $location.path('/admin/users/new');
-  }
+  };
 
   $scope.gotoUser = function(user) {
     $location.path('/admin/users/' + user.id);
-  }
+  };
 
   $scope.editUser = function($event, user) {
     $event.stopPropagation();
 
     $location.path('/admin/users/' + user.id + '/edit');
-  }
+  };
 
   $scope.deleteUser = function($event, user) {
     $event.stopPropagation();
@@ -71,11 +71,12 @@ function AdminUsersController($scope, $injector, $filter, $location, LocalStorag
       controller: ['$scope', '$modalInstance', 'user', function ($scope, $modalInstance, user) {
         $scope.user = user;
 
-        $scope.deleteUser = function(user, force) {
+        $scope.deleteUser = function(user) {
           UserService.deleteUser(user).success(function() {
             $modalInstance.close(user);
           });
-        }
+        };
+
         $scope.cancel = function () {
           $modalInstance.dismiss('cancel');
         };
@@ -84,16 +85,16 @@ function AdminUsersController($scope, $injector, $filter, $location, LocalStorag
 
     modalInstance.result.then(function(user) {
       $scope.user = null;
-      $scope.users = _.reject($scope.users, function(u) { return u.id == user.id});
+      $scope.users = _.reject($scope.users, function(u) { return u.id === user.id; });
     });
-  }
+  };
 
   /* shortcut for giving a user the USER_ROLE */
   $scope.activateUser = function ($event, user) {
     $event.stopPropagation();
 
     user.active = true;
-    UserService.updateUser(user.id, user, function(response) {
+    UserService.updateUser(user.id, user, function() {
       $scope.$apply(function() {
         $scope.saved = true;
       });
@@ -102,5 +103,5 @@ function AdminUsersController($scope, $injector, $filter, $location, LocalStorag
         $scope.error = response.responseText;
       });
     });
-  }
+  };
 }

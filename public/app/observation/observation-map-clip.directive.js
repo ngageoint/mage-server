@@ -6,7 +6,7 @@ function mapClip() {
   var directive = {
     restrict: 'A',
     scope: {
-      feature: '=mapClip',
+      feature: '=mapClip'
     },
     replace: true,
     template: '<div id="map"></div>',
@@ -24,8 +24,6 @@ function MapClipController($rootScope, $scope, $element, MapService, LocalStorag
   var worldExtentControl = L.control.worldExtent();
 
   var map = null;
-  var baseLayer = null;
-  var zoomEnabled = false;
   var controlsOn = false;
   var layers = {};
 
@@ -53,10 +51,10 @@ function MapClipController($rootScope, $scope, $element, MapService, LocalStorag
   function createRasterLayer(layer) {
     var baseLayer = null;
     var options = {};
-    if (layer.format == 'XYZ' || layer.format == 'TMS') {
-      options = { tms: layer.format == 'TMS', maxZoom: 18}
+    if (layer.format === 'XYZ' || layer.format === 'TMS') {
+      options = { tms: layer.format === 'TMS', maxZoom: 18 };
       baseLayer = new L.TileLayer(layer.url, options);
-    } else if (layer.format == 'WMS') {
+    } else if (layer.format === 'WMS') {
       options = {
         layers: layer.wms.layers,
         version: layer.wms.version,
@@ -83,8 +81,6 @@ function MapClipController($rootScope, $scope, $element, MapService, LocalStorag
       attributionControl: false
     });
 
-
-    var latLng = [0,0];
     if ($scope.feature && $scope.feature.geometry) {
       var geojson = L.geoJson($scope.feature, {
         pointToLayer: function (feature, latlng) {

@@ -11,7 +11,7 @@ function avatarUser() {
     },
     controller: AvatarUserController,
     bindToController: true
-  }
+  };
 
   return directive;
 }
@@ -29,7 +29,7 @@ function AvatarUserController($scope, $element, LocalStorageService) {
 
     if (window.FileReader) {
       var reader = new FileReader();
-      reader.onload = (function(file) {
+      reader.onload = (function() {
         return function(e) {
           $scope.$apply(function() {
             $scope.avatarUrl = e.target.result;

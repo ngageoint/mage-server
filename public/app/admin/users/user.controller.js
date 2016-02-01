@@ -12,7 +12,8 @@ function AdminUserController($scope, $modal, $filter, $routeParams, $location, $
 
   var filter = {
     user: {id: $routeParams.userId}
-  }
+  };
+
   $scope.device = {};
   $scope.login = {
     startDateOpened: false,
@@ -28,18 +29,16 @@ function AdminUserController($scope, $modal, $filter, $routeParams, $location, $
     $scope.iconUrl = iconUrl($scope.user, LocalStorageService.getToken());
 
     $scope.teams = result.teams;
-    teamsById = _.indexBy(result.teams, 'id');
-
     $scope.team = {};
     $scope.userTeams = _.filter($scope.teams, function(team) {
       return _.some(team.users, function(user) {
-        return $scope.user.id == user.id;
+        return $scope.user.id === user.id;
       });
     });
 
     $scope.nonTeams = _.reject($scope.teams, function(team) {
       return _.some(team.users, function(user) {
-        return $scope.user.id == user.id;
+        return $scope.user.id === user.id;
       });
     });
   });
@@ -65,7 +64,7 @@ function AdminUserController($scope, $modal, $filter, $routeParams, $location, $
 
   $scope.editUser = function(user) {
     $location.path('/admin/users/' + user.id + '/edit');
-  }
+  };
 
   function avatarUrl(user, token) {
     if (user && user.avatarUrl) {
@@ -86,20 +85,20 @@ function AdminUserController($scope, $modal, $filter, $routeParams, $location, $
   $scope.addUserToTeam = function(team) {
     Team.addUser({id: team.id}, $scope.user, function(team) {
       $scope.userTeams.push(team);
-      $scope.nonTeams = _.reject($scope.nonTeams, function(t) { return t.id == team.id });
+      $scope.nonTeams = _.reject($scope.nonTeams, function(t) { return t.id === team.id; });
 
       $scope.team = {};
     });
-  }
+  };
 
   $scope.removeUserFromTeam = function($event, team) {
     $event.stopPropagation();
 
     Team.removeUser({id: team.id, userId: $scope.user.id}, function(team) {
-      $scope.userTeams = _.reject($scope.userTeams, function(t) { return t.id == team.id; });
+      $scope.userTeams = _.reject($scope.userTeams, function(t) { return t.id === team.id; });
       $scope.nonTeams.push(team);
     });
-  }
+  };
 
   $scope.deleteUser = function(user) {
     var modalInstance = $modal.open({
@@ -112,57 +111,52 @@ function AdminUserController($scope, $modal, $filter, $routeParams, $location, $
       controller: ['$scope', '$modalInstance', 'user', function ($scope, $modalInstance, user) {
         $scope.user = user;
 
-        $scope.deleteUser = function(user, force) {
+        $scope.deleteUser = function(user) {
           UserService.deleteUser(user).success(function() {
             $modalInstance.close(user);
           });
-        }
+        };
+
         $scope.cancel = function () {
           $modalInstance.dismiss('cancel');
         };
       }]
     });
 
-    modalInstance.result.then(function(user) {
+    modalInstance.result.then(function() {
       $location.path('/admin/users');
     });
-  }
+  };
 
   /* shortcut for giving a user the USER_ROLE */
   $scope.activateUser = function(user) {
     user.active = true;
-    UserService.updateUser(user.id, user, function(response) {
-    }, function(response) {
-    });
-  }
+    UserService.updateUser(user.id, user);
+  };
 
   $scope.deactivateUser = function (user) {
     user.active = false;
-    UserService.updateUser(user.id, user, function(response) {
-
-    }, function(response) {
-
-    });
-  }
+    UserService.updateUser(user.id, user);
+  };
 
   $scope.gotoTeam = function(team) {
     $location.path('/admin/teams/' + team.id);
-  }
+  };
 
   $scope.gotoDevice = function(device) {
-    $location.path('/admin/devices/' + device.id)
-  }
+    $location.path('/admin/devices/' + device.id);
+  };
 
   $scope.pageLogin = function(url) {
     LoginService.query({url: url, filter: filter, limit: $scope.loginResultsLimit}).success(function(loginPage) {
 
       if (loginPage.logins.length) {
         $scope.loginPage = loginPage;
-        $scope.showNext = loginPage.logins.length != 0;
-        $scope.showPrevious = loginPage.logins[0].id != firstLogin.id;
+        $scope.showNext = loginPage.logins.length !== 0;
+        $scope.showPrevious = loginPage.logins[0].id !== firstLogin.id;
       }
     });
-  }
+  };
 
   $scope.filterLogins = function() {
     filter.device = $scope.device.selected;
@@ -172,29 +166,29 @@ function AdminUserController($scope, $modal, $filter, $routeParams, $location, $
     }
 
     LoginService.query({filter: filter, limit: $scope.loginResultsLimit}).success(function(loginPage) {
-      $scope.showNext = loginPage.logins.length != 0;
+      $scope.showNext = loginPage.logins.length !== 0;
       $scope.showPrevious = false;
       $scope.loginPage = loginPage;
     });
-  }
+  };
 
   $scope.openLoginStart = function($event) {
     $event.preventDefault();
     $event.stopPropagation();
 
     $scope.login.startDateOpened = true;
-  }
+  };
 
   $scope.openLoginEnd = function($event) {
     $event.preventDefault();
     $event.stopPropagation();
 
     $scope.login.endDateOpened = true;
-  }
+  };
 
   $scope.loginResultsLimitChanged = function() {
     $scope.filterLogins();
-  }
+  };
 
   $scope.$watch('login.startDate', function(newDate, oldDate) {
     if (!newDate && !oldDate) return;

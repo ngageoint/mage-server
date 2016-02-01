@@ -32,15 +32,15 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $mod
 
     $scope.event = result.event;
     $scope.team = {};
-    $scope.eventTeams = _.map($scope.event.teamIds, function(teamId) { return teamsById[teamId] });
+    $scope.eventTeams = _.map($scope.event.teamIds, function(teamId) { return teamsById[teamId]; });
     $scope.nonTeams = _.filter($scope.teams, function(team) {
       return $scope.event.teamIds.indexOf(team.id) === -1;
     });
 
     $scope.layer = {};
-    $scope.eventLayers = _.map($scope.event.layerIds, function(layerId) { return layersById[layerId] });
+    $scope.eventLayers = _.map($scope.event.layerIds, function(layerId) { return layersById[layerId]; });
     $scope.nonLayers = _.filter($scope.layers, function(layer) {
-     return $scope.event.layerIds.indexOf(layer.id) === -1;
+      return $scope.event.layerIds.indexOf(layer.id) === -1;
     });
 
   });
@@ -54,62 +54,62 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $mod
   $scope.filterTeams = function(team) {
     var filteredTeams = $filter('filter')([team], $scope.teamSearch);
     return filteredTeams && filteredTeams.length;
-  }
+  };
 
   $scope.filterLayers = function(layer) {
     var filteredLayers = $filter('filter')([layer], $scope.layerSearch);
     return filteredLayers && filteredLayers.length;
-  }
+  };
 
   $scope.addTeam = function(team) {
     $scope.team = {};
     $scope.event.teamIds.push(team.id);
     $scope.eventTeams.push(team);
-    $scope.nonTeams = _.reject($scope.nonTeams, function(t) { return t.id == team.id; });
+    $scope.nonTeams = _.reject($scope.nonTeams, function(t) { return t.id === team.id; });
 
     saveEvent($scope.event);
-  }
+  };
 
   $scope.removeTeam = function(team) {
-    $scope.event.teamIds = _.reject($scope.event.teamIds, function(teamId) {return teamId == team.id;});
-    $scope.eventTeams = _.reject($scope.eventTeams, function(t) { return t.id == team.id;});
+    $scope.event.teamIds = _.reject($scope.event.teamIds, function(teamId) {return teamId === team.id;});
+    $scope.eventTeams = _.reject($scope.eventTeams, function(t) { return t.id === team.id;});
     $scope.nonTeams.push(team);
 
     saveEvent($scope.event);
-  }
+  };
 
   $scope.addLayer = function(layer) {
     $scope.layer = {};
     $scope.event.layerIds.push(layer.id);
     $scope.eventLayers.push(layer);
-    $scope.nonLayers = _.reject($scope.nonLayers, function(l) { return l.id == layer.id; });
+    $scope.nonLayers = _.reject($scope.nonLayers, function(l) { return l.id === layer.id; });
 
     saveEvent($scope.event);
-  }
+  };
 
   $scope.removeLayer = function(layer) {
-    $scope.event.layerIds = _.reject($scope.event.layerIds, function(layerId) {return layerId == layer.id;});
-    $scope.eventLayers = _.reject($scope.eventLayers, function(l) { return l.id == layer.id;});
+    $scope.event.layerIds = _.reject($scope.event.layerIds, function(layerId) {return layerId === layer.id;});
+    $scope.eventLayers = _.reject($scope.eventLayers, function(l) { return l.id === layer.id;});
     $scope.nonLayers.push(layer);
 
     saveEvent($scope.event);
-  }
+  };
 
   $scope.editEvent = function(event) {
     $location.path('/admin/events/' + event.id + '/edit');
-  }
+  };
 
   $scope.editForm = function(event) {
     $location.path('/admin/events/' + event.id + '/edit/form');
-  }
+  };
 
   $scope.gotoTeam = function(team) {
     $location.path('/admin/teams/' + team.id);
-  }
+  };
 
   $scope.gotoLayer = function(layer) {
     $location.path('/admin/layers/' + layer.id);
-  }
+  };
 
   $scope.deleteEvent = function() {
     var modalInstance = $modal.open({
@@ -122,20 +122,20 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $mod
       controller: ['$scope', '$modalInstance', 'event', function ($scope, $modalInstance, event) {
         $scope.event = event;
 
-        $scope.deleteEvent = function(event, force) {
-          event.$delete(function(success) {
+        $scope.deleteEvent = function(event) {
+          event.$delete(function() {
             $modalInstance.close(event);
           });
-        }
+        };
+
         $scope.cancel = function () {
           $modalInstance.dismiss('cancel');
         };
       }]
     });
 
-    modalInstance.result.then(function (event) {
+    modalInstance.result.then(function () {
       $location.path('/admin/events');
-    }, function () {
     });
-  }
+  };
 }

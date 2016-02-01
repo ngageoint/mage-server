@@ -1,14 +1,11 @@
 var config = require('./config.js')
   , log = require('winston')
-  , serverConfig = require('../../config.js')
   , querystring = require('querystring')
   , os = require('os')
   , path = require('path')
   , fs = require('fs-extra')
-  , crypto = require('crypto')
   , async = require('async')
   , request = require('request')
-  , AdmZip = require('adm-zip')
   , mongoose = require('mongoose')
   , moment = require('moment')
   , api = require('../../api')
@@ -57,7 +54,7 @@ function sync(token, callback) {
     log.info('finished pulling all data ' + moment().toISOString());
     callback(err);
   });
-};
+}
 
 var baseUrl = config.url;
 
@@ -65,7 +62,7 @@ function syncUsers(done) {
   request.get(baseUrl + '/api/users', function(err, res, users) {
     if (err) return done(err);
 
-    if (res.statusCode != 200) return done(new Error('Error getting users, respose code: ' + res.statusCode));
+    if (res.statusCode !== 200) return done(new Error('Error getting users, respose code: ' + res.statusCode));
 
     log.info('syncing: ' + users.length + ' users');
     async.each(users, function(user, done) {
@@ -83,7 +80,7 @@ function syncDevices(done) {
   request.get(baseUrl + '/api/devices', function(err, res, devices) {
     if (err) return done(err);
 
-    if (res.statusCode != 200) return done(new Error('Error getting devices, respose code: ' + res.statusCode));
+    if (res.statusCode !== 200) return done(new Error('Error getting devices, respose code: ' + res.statusCode));
 
     log.info('syncing: ' + devices.length + ' devices');
     async.each(devices, function(device, done) {
@@ -101,7 +98,7 @@ function syncTeams(done) {
   request.get(baseUrl + '/api/teams', function(err, res, teams) {
     if (err) return done(err);
 
-    if (res.statusCode != 200) return done(new Error('Error getting teams, respose code: ' + res.statusCode));
+    if (res.statusCode !== 200) return done(new Error('Error getting teams, respose code: ' + res.statusCode));
 
     log.info('syncing: ' + teams.length + ' teams');
     async.each(teams, function(team, done) {
@@ -132,7 +129,7 @@ function syncEvents(done) {
   request.get(baseUrl + '/api/events', function(err, res, allEvents) {
     if (err) return done(err);
 
-    if (res.statusCode != 200) return done(new Error('Error getting events, respose code: ' + res.statusCode));
+    if (res.statusCode !== 200) return done(new Error('Error getting events, respose code: ' + res.statusCode));
 
     log.info('syncing: ' + allEvents.length + ' events');
     async.each(allEvents, function(event, done) {
@@ -167,9 +164,7 @@ function syncEvents(done) {
 function syncIcons(done) {
   log.info('sync icons');
 
-  var iconsBaseDir = serverConfig.server.iconBaseDirectory;
   async.each(events, function(event, done) {
-    var iconPath = path.join(iconsBaseDir, event._id.toString());
     var zipFile = path.join(os.tmpdir(), 'icons' + event._id.toString() + ".zip");
     var zipStream = fs.createWriteStream(zipFile);
     zipStream.on('finish', function() {
@@ -191,7 +186,7 @@ function syncLayers(done) {
   request.get(baseUrl + '/api/layers', function(err, res, layers) {
     if (err) return done(err);
 
-    if (res.statusCode != 200) return done(new Error('Error getting layers, respose code: ' + res.statusCode));
+    if (res.statusCode !== 200) return done(new Error('Error getting layers, respose code: ' + res.statusCode));
 
     log.info('syncing: ' + layers.length + ' layers');
     async.each(layers, function(layer, done) {
@@ -228,7 +223,7 @@ function syncFeatures(done) {
     request.get(baseUrl + '/api/layers/' + layer._id + '/features', function(err, res, featureCollection) {
       if (err) return done(err);
 
-      if (res.statusCode != 200) return done(new Error('Error getting features, respose code: ' + res.statusCode));
+      if (res.statusCode !== 200) return done(new Error('Error getting features, respose code: ' + res.statusCode));
 
       log.info('syncing: ' + featureCollection.features.length + ' features');
       async.each(featureCollection.features, function(feature, done) {
@@ -263,7 +258,7 @@ function syncObservations(done) {
       request.get(url, function(err, res, observations) {
         if (err) return done(err);
 
-        if (res.statusCode != 200) return done(new Error('Error getting observations, respose code: ' + res.statusCode));
+        if (res.statusCode !== 200) return done(new Error('Error getting observations, respose code: ' + res.statusCode));
 
         log.info('syncing: ' + observations.length + ' observations');
         async.each(observations, function(observation, done) {
@@ -305,6 +300,8 @@ function syncObservations(done) {
       });
     },
     function(err) {
+      if (err) return done(err);
+
       fs.writeJson(__dirname + "/.data.json", lastObservationTimes, done);
     });
   });
@@ -327,7 +324,7 @@ function requestLocations(event, lastLocation, done) {
 
     if (err) return done(err);
 
-    if (res.statusCode != 200) return done(new Error('Error getting locations, respose code: ' + res.statusCode));
+    if (res.statusCode !== 200) return done(new Error('Error getting locations, respose code: ' + res.statusCode));
 
     return done(null, locations);
   });
@@ -361,13 +358,13 @@ function syncLocations(done) {
 
             lastLocationTimes[event.collectionName] = {
               location: lastLocation
-            }
+            };
             fs.writeJson(__dirname + "/.locations.json", lastLocationTimes, done);
           });
         });
       },
       function() {
-        return locations.length == 0;
+        return locations.length === 0;
       },
       function(err) {
         if (err) return done(err);
@@ -394,13 +391,13 @@ function syncUserLocations(event, locations, done) {
     locationCollection: function(done) {
       // throw all this users locations in the location collection
       async.each(locations, function(location, done) {
-        Location.Model.findByIdAndUpdate(location._id, location, {upsert: true, new: true}, function(err, location) {
+        Location.Model.findByIdAndUpdate(location._id, location, {upsert: true, new: true}, function(err) {
           if (err) log.error('error inserting location into locations collection', err);
           done();
         });
       },
       function(err) {
-        done();
+        done(err);
       });
     },
     cappedLocationCollection: function(done) {
@@ -418,15 +415,15 @@ function syncUserLocations(event, locations, done) {
 
       async.each(Object.keys(locationsByUserId), function(userId, done) {
         CappedLocation.addLocations({_id: userId}, event, locationsByUserId[userId].locations, function(err) {
-          done();
+          done(err);
         });
       },
       function(err) {
-        done();
+        done(err);
       });
     }
   },
-  function(err, results) {
+  function(err) {
     done(err);
   });
 }

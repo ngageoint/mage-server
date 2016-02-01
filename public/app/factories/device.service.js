@@ -1,6 +1,6 @@
 angular
   .module('mage')
-  .factory('DeviceService', DeviceService )
+  .factory('DeviceService', DeviceService);
 
 DeviceService.$inject = ['$http'];
 
@@ -35,7 +35,7 @@ function DeviceService($http) {
     }
 
     return $http.get('/api/devices?' + $.param(parameters));
-  };
+  }
 
   function getDevice(id) {
     return resolvedDevices[id] || $http.get('/api/devices/' + id);
@@ -51,7 +51,7 @@ function DeviceService($http) {
     });
 
     return promise;
-  };
+  }
 
   function updateDevice(device) {
     var promise = $http.put('/api/devices/' + device.id, $.param(device), {
@@ -63,12 +63,12 @@ function DeviceService($http) {
     });
 
     return promise;
-  };
+  }
 
   function deleteDevice(device) {
     var promise = $http.delete('/api/devices/' + device.id);
 
-    promise.then(function(data) {
+    promise.then(function() {
       delete resolvedDevices[device.id];
     });
 

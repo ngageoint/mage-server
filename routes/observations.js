@@ -1,7 +1,6 @@
-module.exports = function(app, auth) {
+module.exports = function(app) {
 
   var api = require('../api')
-    , log = require('winston')
     , fs = require('fs-extra')
     , moment = require('moment')
     , Event = require('../models/event')
@@ -16,26 +15,46 @@ module.exports = function(app, auth) {
     return {
       eventId: req.event._id,
       path: req.getPath().match(/(.*observations)/)[0]
-    }
+    };
   }
 
-  function validateEventAccess(req, res, next) {
+  function validateObservationReadAccess(req, res, next) {
     if (access.userHasPermission(req.user, 'READ_OBSERVATION_ALL')) {
       next();
     } else if (access.userHasPermission(req.user, 'READ_OBSERVATION_EVENT')) {
       // Make sure I am part of this event
       Event.eventHasUser(req.event, req.user._id, function(err, eventHasUser) {
-        eventHasUser ? next() : res.sendStatus(403);
+        if (eventHasUser) {
+          return next();
+        } else {
+          return res.sendStatus(403);
+        }
       });
     } else {
       res.sendStatus(403);
     }
   }
 
-  var validateObservation = function(req, res, next) {
-    var observation = req.body;
+  function validateObservationUpdateAccess(req, res, next) {
+    if (access.userHasPermission(req.user, 'UPDATE_OBSERVATION_EVENT')) {
+      // Make sure I am part of this event
+      Event.eventHasUser(req.event, req.user._id, function(err, eventHasUser) {
+        if (eventHasUser) {
+          return next();
+        } else {
+          return res.sendStatus(403);
+        }
+      });
+    } else {
+      res.sendStatus(403);
+    }
+  }
 
-    if (!observation.type || observation.type != 'Feature' ) {
+  function validateObservation(req, res, next) {
+    var observation = req.body;
+    observation.properties = observation.properties || {};
+
+    if (!observation.type || observation.type !== 'Feature' ) {
       return res.status(400).send("cannot create observation 'type' param not specified, or is not set to 'Feature'");
     }
 
@@ -43,8 +62,12 @@ module.exports = function(app, auth) {
       return res.status(400).send("cannot create observation 'geometry' param not specified");
     }
 
-    if (!observation.properties || !observation.properties.timestamp) {
+    if (!observation.properties.timestamp) {
       return res.status(400).send("cannot create observation 'properties.timestamp' param not specified");
+    }
+
+    if (!observation.properties.type) {
+      return res.status(400).send("cannot create observation 'properties.type' param not specified");
     }
 
     Team.teamsForUserInEvent(req.user, req.event, function(err, teams) {
@@ -56,6 +79,7 @@ module.exports = function(app, auth) {
 
       observation.properties.timestamp = moment(observation.properties.timestamp).toDate();
 
+      var userId = req.user ? req.user._id : null;
       var state = {name: 'active'};
       if (userId) state.userId = userId;
       observation.states = [state];
@@ -68,7 +92,6 @@ module.exports = function(app, auth) {
         teamIds: teams.map(function(team) { return team._id; })
       };
 
-      var userId = req.user ? req.user._id : null;
       if (userId) req.newObservation.userId = userId;
 
       var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
@@ -78,7 +101,7 @@ module.exports = function(app, auth) {
     });
   }
 
-  var parseQueryParams = function(req, res, next) {
+  function parseQueryParams(req, res, next) {
     // setup defaults
     var parameters = {
       filter: {
@@ -127,21 +150,29 @@ module.exports = function(app, auth) {
     }
 
     var sort = req.param('sort');
+
     if (sort) {
       var columns = {};
-      sort.split(',').forEach(function(column) {
+      var err = null;
+      sort.split(',').every(function(column) {
         var sortParams = column.split('+');
         // Check sort column is in whitelist
-        if (sortColumnWhitelist.indexOf(sortParams[0]) == -1) return res.send("Cannot sort on column '" + sortParams[0] + "'");
+        if (sortColumnWhitelist.indexOf(sortParams[0]) === -1) {
+          err = "Cannot sort on column '" + sortParams[0] + "'";
+          return false; // break
+        }
 
         // Order can be nothing (ASC by default) or ASC, DESC
         var direction = 1; //ASC
-        if (sortParams.length > 1 && sortParams[1] == 'DESC') {
+        if (sortParams.length > 1 && sortParams[1] === 'DESC') {
           direction = -1; // DESC
         }
 
         columns[sortParams[0]] = direction;
       });
+
+      if (err) return res.status(400).send(err);
+
       parameters.sort = columns;
     }
 
@@ -152,7 +183,7 @@ module.exports = function(app, auth) {
 
   app.get(
     '/api/events/:eventId/observations',
-    validateEventAccess,
+    validateObservationReadAccess,
     parseQueryParams,
     function (req, res, next) {
       var options = {
@@ -163,18 +194,16 @@ module.exports = function(app, auth) {
 
       new api.Observation(req.event).getAll(options, function(err, observations) {
         if (err) return next(err);
-
-        var observations = observationXform.transform(observations, transformOptions(req));
-        res.json(observations);
+        res.json(observationXform.transform(observations, transformOptions(req)));
       });
     }
   );
 
   app.get(
     '/api/events/:eventId/observations/:id',
-    validateEventAccess,
+    validateObservationReadAccess,
     parseQueryParams,
-    function (req, res) {
+    function (req, res, next) {
       var options = {fields: req.parameters.fields};
       new api.Observation(req.event).getById(req.param('id'), options, function(err, observation) {
         if (err) return next(err);
@@ -199,13 +228,13 @@ module.exports = function(app, auth) {
 
         var response = observationXform.transform(newObservation, transformOptions(req));
         res.location(newObservation._id.toString()).json(response);
-      }
-    );
-  });
+      });
+    }
+  );
 
   app.put(
     '/api/events/:eventId/observations/:id',
-    validateEventAccess,
+    validateObservationUpdateAccess,
     function (req, res, next) {
 
       var observation = {};
@@ -213,11 +242,11 @@ module.exports = function(app, auth) {
       if (req.body.properties) {
         observation.properties = req.body.properties;
         if (!observation.properties.type) {
-          return res.send(400, "cannot create observation 'properties.type' param not specified");
+          return res.status(400).send("cannot update observation 'properties.type' param not specified");
         }
 
         if (!observation.properties.timestamp) {
-          return res.send(400, "cannot create observation 'properties.timestamp' param not specified");
+          return res.status(400).send("cannot update observation 'properties.timestamp' param not specified");
         }
 
         observation.properties.timestamp = moment(observation.properties.timestamp).toDate();
@@ -232,23 +261,23 @@ module.exports = function(app, auth) {
       new api.Observation(req.event).update(req.param('id'), observation, function(err, updatedObservation) {
         if (err) return next(err);
 
-        if (!updatedObservation) return res.status(400).send('Observation with id ' + req.params.id + " does not exist");
+        if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.id + " does not exist");
 
         var response = observationXform.transform(updatedObservation, transformOptions(req));
         res.json(response);
-      }
-    );
-  });
+      });
+    }
+  );
 
   app.post(
     '/api/events/:eventId/observations/:id/states',
-    validateEventAccess,
-    function(req, res, next) {
+    access.authorize('DELETE_OBSERVATION'),
+    function(req, res) {
       var state = req.body;
       if (!state) return res.send(400);
-      if (!state.name) return res.send(400, 'name required');
-      if (state.name != 'active' && state.name != 'complete' && state.name != 'archive') {
-        return res.send(400, "state name must be one of 'active', 'complete', 'archive'");
+      if (!state.name) return res.status(400).send('name required');
+      if (state.name !== 'active' && state.name !== 'complete' && state.name !== 'archive') {
+        return res.status(400).send("state name must be one of 'active', 'complete', 'archive'");
       }
 
       state = { name: state.name };
@@ -266,7 +295,7 @@ module.exports = function(app, auth) {
 
   app.get(
     '/api/events/:eventId/observations/:id/attachments',
-    validateEventAccess,
+    validateObservationReadAccess,
     function(req, res, next) {
       var fields = {attachments: true};
       var options = {fields: fields};
@@ -281,14 +310,13 @@ module.exports = function(app, auth) {
 
   app.get(
     '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
-    validateEventAccess,
+    validateObservationReadAccess,
     function(req, res, next) {
       new api.Attachment(req.event, req.observation).getById(req.param('attachmentId'), {size: req.param('size')}, function(err, attachment) {
         if (err) return next(err);
 
         if (!attachment) return res.send(404);
 
-        var stream;
         if (req.headers.range) {
           var range = req.headers.range;
           var rangeParts = range.replace(/bytes=/, "").split("-");
@@ -302,21 +330,14 @@ module.exports = function(app, auth) {
             'Content-Length': contentLength,
             'Content-Type': attachment.contentType
           });
-          stream = fs.createReadStream(attachment.path, {start: rangeStart, end: rangeEnd});
+          fs.createReadStream(attachment.path, {start: rangeStart, end: rangeEnd}).pipe(res);
         } else {
           res.writeHead(200, {
             'Content-Length': attachment.size,
             'Content-Type': attachment.contentType
           });
-          stream = fs.createReadStream(attachment.path);
+          fs.createReadStream(attachment.path).pipe(res);
         }
-
-        stream.on('open', function() {
-          stream.pipe(res);
-        });
-        stream.on('error', function(err) {
-          log.error('error streaming attachment', err);
-        });
       });
     }
   );
@@ -340,9 +361,9 @@ module.exports = function(app, auth) {
 
   app.put(
     '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
-    validateEventAccess,
+    validateObservationUpdateAccess,
     function(req, res, next) {
-      new api.Attachment(req.event, req.observation).update(req.observationId, req.files.attachment, function(err, attachment) {
+      new api.Attachment(req.event, req.observation).update(req.params.attachmentId, req.files.attachment, function(err, attachment) {
         if (err) return next(err);
 
         var observation = req.observation;
@@ -359,8 +380,8 @@ module.exports = function(app, auth) {
       new api.Attachment(req.event, req.observation).delete(req.param('attachmentId'), function(err) {
         if (err) return next(err);
 
-        res.send(200);
+        res.sendStatus(200);
       });
     }
   );
-}
+};

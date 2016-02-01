@@ -5,13 +5,12 @@ angular
 ApiService.$inject = ['$resource'];
 
 function ApiService($resource) {
-	var Api = $resource('/api', {
-  	get: {
-  		method: 'GET',
-  		isArray: false
+  var Api = $resource('/api', {
+    get: {
+      method: 'GET',
+      isArray: false
     }
   });
 
-	return Api;
-
+  return Api;
 }

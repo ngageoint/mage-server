@@ -1,7 +1,6 @@
 var mongoose = require('mongoose')
   , async = require('async')
   , Counter = require('./counter')
-  , Team = require('./team')
   , User = require('./user')
   , api = require('../api')
   , log = require('winston');
@@ -71,13 +70,13 @@ EventSchema.pre('remove', function(next) {
       });
     }
   },
-  function(err, results) {
+  function(err) {
     next(err);
   });
 });
 
-function transform(event, ret, options) {
-  if ('function' != typeof event.ownerDocument) {
+function transform(event, ret) {
+  if ('function' !== typeof event.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;
     delete ret.collectionName;
@@ -148,10 +147,10 @@ exports.count = function(callback) {
   Event.count({}, function(err, count) {
     callback(err, count);
   });
-}
+};
 
 exports.getEvents = function(options, callback) {
-  if (typeof options == 'function') {
+  if (typeof options === 'function') {
     callback = options;
     options = {};
   }
@@ -197,10 +196,10 @@ exports.getEvents = function(options, callback) {
       }
     });
   });
-}
+};
 
 exports.getById = function(id, options, callback) {
-  if (typeof options == 'function') {
+  if (typeof options === 'function') {
     callback = options;
     options = {};
   }
@@ -232,7 +231,7 @@ exports.getById = function(id, options, callback) {
       }
     });
   });
-}
+};
 
 // TODO probably should live in event api
 exports.filterEventsByUserId = filterEventsByUserId;
@@ -240,7 +239,7 @@ exports.eventHasUser = eventHasUser;
 
 function createObservationCollection(event) {
   log.info("Creating observation collection: " + event.collectionName + ' for event ' + event.name);
-  mongoose.connection.db.createCollection(event.collectionName, function(err, collection) {
+  mongoose.connection.db.createCollection(event.collectionName, function(err) {
     if (err) {
       log.error(err);
       return;
@@ -252,7 +251,7 @@ function createObservationCollection(event) {
 
 function dropObservationCollection(event, callback) {
   log.info("Dropping observation collection: " + event.collectionName);
-  mongoose.connection.db.dropCollection(event.collectionName, function(err, results) {
+  mongoose.connection.db.dropCollection(event.collectionName, function(err) {
     if (!err) {
       log.info('Dropped observation collection ' + event.collectionName);
     }
@@ -262,7 +261,7 @@ function dropObservationCollection(event, callback) {
 }
 
 exports.create = function(event, options, callback) {
-  if (typeof options == 'function') {
+  if (typeof options === 'function') {
     callback = options;
     options = {};
   }
@@ -285,10 +284,10 @@ exports.create = function(event, options, callback) {
       }
     });
   });
-}
+};
 
 exports.update = function(id, event, options, callback) {
-  if (typeof options == 'function') {
+  if (typeof options === 'function') {
     callback = options;
     options = {};
   }
@@ -304,7 +303,7 @@ exports.update = function(id, event, options, callback) {
       callback(err, updatedEvent);
     }
   });
-}
+};
 
 exports.addTeam = function(event, team, callback) {
   var update = {
@@ -316,7 +315,7 @@ exports.addTeam = function(event, team, callback) {
   Event.findByIdAndUpdate(event._id, update, function(err, event) {
     callback(err, event);
   });
-}
+};
 
 exports.removeTeam = function(event, team, callback) {
   var update = {
@@ -328,7 +327,7 @@ exports.removeTeam = function(event, team, callback) {
   Event.findByIdAndUpdate(event._id, update, function(err, event) {
     callback(err, event);
   });
-}
+};
 
 exports.addLayer = function(event, layer, callback) {
   var update = {
@@ -340,7 +339,7 @@ exports.addLayer = function(event, layer, callback) {
   Event.findByIdAndUpdate(event._id, update, function(err, event) {
     callback(err, event);
   });
-}
+};
 
 exports.removeLayer = function(event, layer, callback) {
   var update = {
@@ -352,28 +351,28 @@ exports.removeLayer = function(event, layer, callback) {
   Event.findByIdAndUpdate(event._id, update, function(err, event) {
     callback(err, event);
   });
-}
+};
 
 exports.removeLayerFromEvents = function(layer, callback) {
   var update = {
     $pull: {layerIds: layer._id}
   };
-  Event.update({}, update, function(err, numberAffected) {
+  Event.update({}, update, function(err) {
     callback(err);
   });
-}
+};
 
 exports.removeTeamFromEvents = function(team, callback) {
   var update = {
     $pull: {teamIds: team._id}
   };
-  Event.update({}, update, function(err, numberAffected) {
+  Event.update({}, update, function(err) {
     callback(err);
   });
-}
+};
 
 exports.remove = function(event, callback) {
   event.remove(function(err) {
     return callback(err);
   });
-}
+};

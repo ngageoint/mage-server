@@ -1,11 +1,6 @@
 var expect = require("chai").expect
- , request = require("request")
- , http = require('http')
- , assert = require('assert')
- , express  = require('express')
  , role = require('../models/role')
- , user = require('../models/user')
- , db = require('./config/dbTestConfig');
+ , user = require('../models/user');
 
 // Connect to database and perform testing
   // Before : create a user
@@ -37,8 +32,8 @@ describe("Direct database tests", function(){
         "roleId": role.id,
         "avatar": null,
         "icon": null
-      }
-      user.createUser(testUser, function(err, newUser){
+      };
+      user.createUser(testUser, function(err) {
         if(err){
           console.log("Error creating user before tests run: " + err);
         }
@@ -55,7 +50,7 @@ describe("Direct database tests", function(){
       if(err){
         throw "Error getting existing test user for deletion: " + err;
       }
-      user.deleteUser(existingUser, function(err, deletedUser){
+      user.deleteUser(existingUser, function(err){
         if(err){
           throw "Error deleting test user: " + err;
         }
@@ -87,7 +82,7 @@ describe("Direct database tests", function(){
       }
       // Update the email address
       existingUser.email = updatedEmailAddr;
-      user.updateUser(existingUser, function(err, updatedUser){
+      user.updateUser(existingUser, function(err){
         if(err){
           throw "Error updating test user: " + err;
         }

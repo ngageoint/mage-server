@@ -1,5 +1,4 @@
 var nock = require('nock');
-var path = require('path');
 var fs = require('fs');
 
 // record.js enables us to save off http requests as they are
@@ -10,13 +9,11 @@ var fs = require('fs');
 module.exports = function (name, options) {
   // options tell us where to store our fixtures
   options = options || {};
-  var test_folder = options.test_folder || 'test';
-  var fixtures_folder = options.fixtures_folder || 'fixtures';
   var fp = 'functionalTests/testRecordings.js';
   // `has_fixtures` indicates whether the test has fixtures we should read,
   // or doesn't, so we should record and save them.
   // the environment variable `NOCK_RECORD` can be used to force a new recording.
-  var has_fixtures = !!process.env.NOCK_RECORD;
+  var hasFixtures = !!process.env.NOCK_RECORD;
   // Set this to false if you don't want to save the file
   var saveToFile = true;
 
@@ -24,31 +21,31 @@ module.exports = function (name, options) {
   return {
     // starts recording, or ensure the fixtures exist
     before: function () {
-      if (!has_fixtures) try {
-        console.log("Has Fixtures: testRecordings should exist");
+      if (!hasFixtures) try {
+        console.log('Has Fixtures: testRecordings should exist');
         require('../' + fp);
-        has_fixtures = true;
+        hasFixtures = true;
       } catch (e) {
-        console.log("Caught error loading fixtures, recording");
+        console.log('Caught error loading fixtures, recording');
         nock.recorder.rec({
-          use_separator: false,
-          dont_print: true
+          use_separator: false, // eslint-disable-line camelcase
+          dont_print: true // eslint-disable-line camelcase
         });
       } else {
-        console.log("Doesn't have Fixtures");
-        has_fixtures = false;
+        console.log('Doesn\'t have Fixtures');
+        hasFixtures = false;
         nock.recorder.rec({
-          use_separator: false,
-          dont_print: true
+          use_separator: false, // eslint-disable-line camelcase
+          dont_print: true // eslint-disable-line camelcase
         });
       }
     },
     // saves our recording if fixtures didn't already exist
-    after: function (done) {
-      if (!has_fixtures && saveToFile) {
+    after: function () {
+      if (!hasFixtures && saveToFile) {
         var recordedText = nock.recorder.play();
         console.log("----- Record.js: Saving http request recording -----");
-        console.log("Saving file at: " + fp)
+        console.log("Saving file at: " + fp);
         var text = "var nock = require('nock');\n" + recordedText.join('\n');
         // Use "sync" version to force execution to wait for file to be written
         fs.writeFileSync(fp, text, 'utf8', function (err) {
@@ -59,5 +56,5 @@ module.exports = function (name, options) {
         "file already exists.");
       }
     }
-  }
+  };
 };

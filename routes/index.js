@@ -4,22 +4,20 @@ module.exports = function(app, security) {
     , async = require('async')
     , config = require('../config')
     , api = require('../api')
+    , User = require('../models/user')
     , Event = require('../models/event')
     , Team = require('../models/team')
-    , User = require('../models/user')
     , Role = require('../models/role')
     , Device = require('../models/device')
     , Layer = require('../models/layer')
-    , Observation = require('../models/observation')
     , Icon = require('../models/icon')
-    , Setting = require('../models/setting')
-    , log = require('winston');
+    , Setting = require('../models/setting');
 
   app.get('/api', function(req, res, next) {
     async.parallel({
       initial: function(done) {
         User.count(function(err, count) {
-          done(err, count == 0);
+          done(err, count === 0);
         });
       },
       disclaimer: function(done) {
@@ -43,7 +41,7 @@ module.exports = function(app, security) {
 
   // Dynamically import all routes
   fs.readdirSync(__dirname).forEach(function(file) {
-    if (file[0] == '.' || file === 'index.js') return;
+    if (file[0] === '.' || file === 'index.js') return;
     var route = file.substr(0, file.indexOf('.'));
     require('./' + route)(app, security);
   });
@@ -59,7 +57,7 @@ module.exports = function(app, security) {
         } else {
           next('route');
         }
-      }
+      };
     }
   });
 
@@ -103,20 +101,20 @@ module.exports = function(app, security) {
 
   // Grab the device for any endpoint that uses deviceId
   app.param('deviceId', function(req, res, next, deviceId) {
-      Device.getDeviceById(deviceId, function(err, device) {
-        if (!device) return res.status(404).send('Device not found');
-        req.device = device;
-        next();
-      });
+    Device.getDeviceById(deviceId, function(err, device) {
+      if (!device) return res.status(404).send('Device not found');
+      req.device = device;
+      next();
+    });
   });
 
   // Grab the role for any endpoint that uses roleId
   app.param('roleId', function(req, res, next, roleId) {
-      Role.getRoleById(roleId, function(err, role) {
-        if (!role) return res.status(404).send('Role ' + roleId + ' not found');
-        req.role = role;
-        next();
-      });
+    Role.getRoleById(roleId, function(err, role) {
+      if (!role) return res.status(404).send('Role ' + roleId + ' not found');
+      req.role = role;
+      next();
+    });
   });
 
   // Grab the layer for any endpoint that uses layerId
@@ -143,4 +141,4 @@ module.exports = function(app, security) {
       next();
     });
   });
-}
+};

@@ -2,15 +2,10 @@ var config = require('./config.js')
   , log = require('winston')
   , serverConfig = require('../../config.js')
   , async = require('async')
-  , crypto = require('crypto')
-  , async = require('async')
   , request = require('request')
   , moment = require('moment')
-  , User = require('../../models/user')
-  , Device = require('../../models/device')
   , Event = require('../../models/event')
   , Observation = require('../../models/observation')
-  , Location = require('../../models/location')
   , api = require('../../api')
   , path = require('path')
   , fs = require('fs-extra');
@@ -88,10 +83,12 @@ function getAttachmentsFromObservation(observation) {
 
 function sortObservationsByTimestamp(observations) {
   return observations.sort(function(a, b) {
-    if (moment(a.properties.timestamp).isBefore(b.properties.timestamp))
-       return 1;
-    if (moment(a.properties.timestamp).isAfter(b.properties.timestamp))
-       return -1;
+    if (moment(a.properties.timestamp).isBefore(b.properties.timestamp)) {
+      return 1;
+    }
+    if (moment(a.properties.timestamp).isAfter(b.properties.timestamp)) {
+      return -1;
+    }
 
     return 0;
   });
@@ -138,7 +135,7 @@ function sequentiallySyncAttachments(observations, event, done) {
     });
 
   }, function(err) {
-    done();
+    done(err);
   });
 }
 
@@ -150,17 +147,17 @@ function pullAttachmentsCallbackWhenComplete(observation, event, attachments, ca
     var r = request(url);
     r.on('response', function (resp) {
       log.info('attachment response status code is ' + resp.statusCode);
-      if (resp.statusCode == 200) {
+      if (resp.statusCode === 200) {
         fs.mkdirsSync(path.dirname(attachmentBase + '/' + attachment.relativePath));
         r.pipe(fs.createWriteStream(attachmentBase + '/' + attachment.relativePath));
         log.info('write the file for url ' + url + ' to ' + attachmentBase + '/' + attachment.relativePath);
 
-        Observation.observationModel(event).update({_id: observation._id, 'attachments._id': attachment._id}, {'attachments.$.synced': Date.now()}, function(err) {
+        Observation.observationModel(event).update({_id: observation._id, 'attachments._id': attachment._id}, {'attachments.$.synced': Date.now()}, function() {
             // who cares
         });
 
         done();
-      } else if (resp.statusCode == 404) {
+      } else if (resp.statusCode === 404) {
         // uhhh no data, hmmm
         log.error('no data for ' + url);
         appendErrorFile(JSON.stringify({
@@ -176,7 +173,7 @@ function pullAttachmentsCallbackWhenComplete(observation, event, attachments, ca
         done(new Error('something bad happend'));
       }
     });
-    r.on('error', function(resp) {
+    r.on('error', function() {
       done(new Error('more bad stuff happened'));
     });
   },
@@ -205,6 +202,6 @@ function syncAttachments(done) {
     });
   },
   function(err) {
-    done();
+    done(err);
   });
 }

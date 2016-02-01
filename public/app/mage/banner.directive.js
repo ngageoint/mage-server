@@ -6,7 +6,7 @@ function banner() {
   var directive = {
     restrict: "A",
     scope: {
-      type: '@banner',
+      type: '@banner'
     },
     templateUrl: '/app/mage/banner.directive.html',
     controller: BannerController
@@ -21,7 +21,7 @@ function BannerController($scope, $element, Settings) {
   Settings.get({type: 'banner'}, function(banner) {
     $scope.banner = banner.settings || {};
 
-    if ($scope.type == 'header' && $scope.banner.showHeader) {
+    if ($scope.type === 'header' && $scope.banner.showHeader) {
       if ($scope.banner.headerBackgroundColor) {
         $element.css('background-color', $scope.banner.headerBackgroundColor);
       }
@@ -31,7 +31,7 @@ function BannerController($scope, $element, Settings) {
       }
     }
 
-    if ($scope.type == 'footer' && $scope.banner.showFooter) {
+    if ($scope.type === 'footer' && $scope.banner.showFooter) {
       if ($scope.banner.footerBackgroundColor) {
         $element.css('background-color', $scope.banner.footerBackgroundColor);
       }

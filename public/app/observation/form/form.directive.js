@@ -14,7 +14,7 @@ function formDirective() {
     },
     controller: FormDirectiveController,
     bindToController: true
-  }
+  };
 
   return directive;
 }
@@ -35,15 +35,15 @@ function FormDirectiveController($scope, EventService, Observation, UserService,
   function formToObservation(form, observation) {
     _.each(form.fields, function(field) {
       switch (field.name) {
-        case 'geometry':
-          observation.geometry = {
-            type: 'Point',
-            coordinates: [field.value.x, field.value.y]
-          }
+      case 'geometry':
+        observation.geometry = {
+          type: 'Point',
+          coordinates: [field.value.x, field.value.y]
+        };
 
-          break;
-        default:
-          observation.properties[field.name] = field.value;
+        break;
+      default:
+        observation.properties[field.name] = field.value;
       }
     });
   }
@@ -53,7 +53,7 @@ function FormDirectiveController($scope, EventService, Observation, UserService,
     var markedForDelete = _.filter($scope.observation.attachments, function(a){ return a.markedForDelete; });
     formToObservation($scope.form, $scope.observation);
 
-    EventService.saveObservation($scope.observation).then(function(updatedObservation) {
+    EventService.saveObservation($scope.observation).then(function() {
       if (_.some(_.values($scope.attachmentUploads), function(v) {return v;})) {
         $scope.uploadAttachments = true;
       } else {
@@ -71,26 +71,26 @@ function FormDirectiveController($scope, EventService, Observation, UserService,
         $scope.saving = false;
       }
     });
-  }
+  };
 
   $scope.cancelEdit = function() {
     $scope.$emit('observation:editDone', $scope.observation);
-  }
+  };
 
   $scope.deleteObservation = function() {
-    EventService.archiveObservation($scope.observation).then(function(observation) {
+    EventService.archiveObservation($scope.observation).then(function() {
       $scope.$emit('observation:editDone',  $scope.observation);
     });
-  }
+  };
 
   $scope.addAttachment = function() {
     uploadId++;
     $scope.attachmentUploads[uploadId] = false;
-  }
+  };
 
   $scope.removeFileUpload = function(id) {
     delete $scope.attachmentUploads[id];
-  }
+  };
 
   $scope.$on('uploadFile', function(e, id) {
     $scope.attachmentUploads[id] = true;
@@ -100,7 +100,7 @@ function FormDirectiveController($scope, EventService, Observation, UserService,
     EventService.addAttachmentToObservation($scope.observation, response);
 
     delete $scope.attachmentUploads[id];
-    if (_.keys($scope.attachmentUploads).length == 0) {
+    if (_.keys($scope.attachmentUploads).length === 0) {
       $scope.attachmentUploads = {};
 
       $scope.$emit('observation:editDone', $scope.observation);
@@ -112,7 +112,7 @@ function FormDirectiveController($scope, EventService, Observation, UserService,
   // TODO warn user in some way that attachment didn't upload
   $scope.$on('uploadFailed', function(e, url, response, id) {
     delete $scope.attachmentUploads[id];
-    if (_.keys($scope.attachmentUploads).length == 0) {
+    if (_.keys($scope.attachmentUploads).length === 0) {
       $scope.attachmentUploads = {};
 
       $scope.$emit('observation:editDone');

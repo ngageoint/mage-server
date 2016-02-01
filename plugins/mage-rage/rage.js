@@ -35,7 +35,7 @@ function getToken(done) {
 
   request.post(options, function(err, res, body) {
     if (err) return done(err);
-    if (res.statusCode != 200) return done(new Error('Error hitting login api, respose code: ' + res.statusCode));
+    if (res.statusCode !== 200) return done(new Error('Error hitting login api, respose code: ' + res.statusCode));
     done(null, body.token);
   });
 }
@@ -64,6 +64,6 @@ function sync() {
       setTimeout(sync, config.interval * 1000);
     });
   });
-};
+}
 
 sync();

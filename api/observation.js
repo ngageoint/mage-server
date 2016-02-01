@@ -9,13 +9,13 @@ var attachmentBase = environment.attachmentBaseDirectory;
 
 function Observation(event) {
   this._event = event;
-};
+}
 
 Observation.prototype.getAll = function(options, callback) {
   var event = this._event;
   var filter = options.filter;
   if (filter && filter.geometries) {
-    allObservations = [];
+    var allObservations = [];
     async.each(
       filter.geometries,
       function(geometry, done) {
@@ -37,28 +37,28 @@ Observation.prototype.getAll = function(options, callback) {
   } else {
     ObservationModel.getObservations(event, options, callback);
   }
-}
+};
 
 Observation.prototype.getById = function(observationId, options, callback) {
-  if (typeof options == 'function') {
+  if (typeof options === 'function') {
     callback = options;
     options = {};
   }
 
   ObservationModel.getObservationById(this._event, observationId, options, callback);
-}
+};
 
 Observation.prototype.create = function(observation, callback) {
   ObservationModel.createObservation(this._event, observation, callback);
-}
+};
 
 Observation.prototype.update = function(observationId, observation, callback) {
   ObservationModel.updateObservation(this._event, observationId, observation, callback);
-}
+};
 
 Observation.prototype.addState = function(observationId, state, callback) {
   ObservationModel.addState(this._event, observationId, state, callback);
-}
+};
 
 Observation.prototype.delete = function(observationId, callback) {
   ObservationModel.removeFeature(this._event, observationId, function(err, observation) {
@@ -75,6 +75,6 @@ Observation.prototype.delete = function(observationId, callback) {
 
     callback(err, observation);
   });
-}
+};
 
 module.exports = Observation;

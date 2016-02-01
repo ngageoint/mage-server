@@ -11,7 +11,7 @@ function observationNewsItem() {
     },
     controller: ObservationNewsItemController,
     bindToController: true
-  }
+  };
 
   return directive;
 }
@@ -32,16 +32,16 @@ function ObservationNewsItemController($scope, EventService, UserService) {
       field.name !== 'timestamp' &&
       field.name !== 'type' &&
       field.name !== $scope.form.variantField;
-  }
+  };
 
   $scope.editObservation = function() {
     $scope.edit = true;
     $scope.editForm = angular.copy($scope.form);
-  }
+  };
 
   $scope.onObservationLocationClick = function(observation) {
     $scope.$emit('observation:zoom', observation, {panToLocation: true, zoomToLocation: true});
-  }
+  };
 
   $scope.$on('observation:editDone', function() {
     $scope.edit = false;

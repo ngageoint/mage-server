@@ -70,13 +70,13 @@ function FilterService(UserService) {
   }
 
   function removeListener(listener) {
-    listeners = _.reject(listeners, function(l) { return l === listener });
+    listeners = _.reject(listeners, function(l) { return l === listener; });
   }
 
   function setFilter(filter) {
-    eventChanged = null;
-    teamsChanged = null;
-    timeIntervalChanged = null;
+    var eventChanged = null;
+    var teamsChanged = null;
+    var timeIntervalChanged = null;
 
     if (filter.teams) {
       teamsChanged = setTeams(filter.teams);
@@ -115,13 +115,13 @@ function FilterService(UserService) {
   }
 
   function setEvent(newEvent) {
-    if (newEvent == null && event != null) {
+    if (!newEvent && event) {
       event = null;
 
       return {
         added: [],
         removed: [event]
-      }
+      };
     } else if (newEvent && !event || event.id !== newEvent.id) {
       var added = [newEvent];
       var removed = event ? [event] : [];
@@ -134,11 +134,11 @@ function FilterService(UserService) {
       return {
         added: added,
         removed: removed
-      }
+      };
     } else {
       return null;
     }
-  };
+  }
 
   function getEvent() {
     return event;
@@ -154,7 +154,7 @@ function FilterService(UserService) {
       }
     });
 
-    newTeamsById = _.indexBy(newTeams, 'id');
+    var newTeamsById = _.indexBy(newTeams, 'id');
     _.each(teamsById, function(team) {
       if (!newTeamsById[team.id]) {
         removed.push(team);
@@ -179,18 +179,18 @@ function FilterService(UserService) {
 
   function getIntervalChoice() {
     return interval.choice;
-  };
+  }
 
   function getInterval() {
     return interval;
   }
 
   function setTimeInterval(newInterval) {
-    if (newInterval.choice.filter == 'custom') {
-      if (interval.startDate && newInterval.options.startDate == interval.options.startDate &&
-          interval.endDate && newInterval.options.endDate == interval.options.endDate) {
-          return false;
-        }
+    if (newInterval.choice.filter === 'custom') {
+      if (interval.startDate && newInterval.options.startDate === interval.options.startDate &&
+          interval.endDate && newInterval.options.endDate === interval.options.endDate) {
+        return false;
+      }
     } else if (interval.choice === newInterval.choice) {
       return false;
     }
@@ -235,9 +235,9 @@ function FilterService(UserService) {
 
     if (choice.filter === 'all') {
       return null;
-    } else if (choice.filter == 'today') {
+    } else if (choice.filter === 'today') {
       return { start: moment().startOf('day').toISOString() };
-    } else if (choice.filter == 'custom') {
+    } else if (choice.filter === 'custom') {
       var startDate = moment(options.startDate);
       if (startDate) {
         startDate = options.localTime ? startDate.utc() : startDate;

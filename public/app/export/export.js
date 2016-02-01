@@ -78,11 +78,12 @@ function ExportController($scope, $modalInstance, $http, LocalStorageService, Fi
     $scope.showEventError = false;
     $scope.exporting[type] = true;
 
+    var start;
     if ($scope.exportTime.custom) {
       var startDate = moment($scope.startDate);
       if (startDate) {
         startDate = $scope.localTime ? startDate.utc() : startDate;
-        var start = startDate.format("YYYY-MM-DD HH:mm:ss");
+        start = startDate.format("YYYY-MM-DD HH:mm:ss");
       }
 
       var endDate = moment($scope.endDate);
@@ -91,14 +92,14 @@ function ExportController($scope, $modalInstance, $http, LocalStorageService, Fi
         var end = endDate.format("YYYY-MM-DD HH:mm:ss");
       }
     } else if ($scope.exportTime.value) {
-      var start = moment().subtract('seconds', $scope.exportTime.value).utc().format("YYYY-MM-DD HH:mm:ss");
+      start = moment().subtract('seconds', $scope.exportTime.value).utc().format("YYYY-MM-DD HH:mm:ss");
     }
 
     var params = {
       eventId: $scope.exportEvent.selected.id,
       observations: $scope.exportObservations.value,
       locations: $scope.exportLocations.value,
-      access_token: LocalStorageService.getToken()
+      access_token: LocalStorageService.getToken() //eslint-disable-line camelcase
     };
 
     if (start) params.startDate = start;
@@ -114,7 +115,7 @@ function ExportController($scope, $modalInstance, $http, LocalStorageService, Fi
       .fail(function() {
         $scope.$apply(function() {
           $scope.exporting[type] = false;
+        });
       });
-    });
-  }
+  };
 }

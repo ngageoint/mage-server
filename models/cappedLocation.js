@@ -12,7 +12,7 @@ var CappedLocationSchema = new Schema({
   eventId: {type: Number, required: false, sparse: true, ref:'Event'},
   locations: [LocationSchema]
 },{
-    versionKey: false
+  versionKey: false
 });
 
 CappedLocationSchema.index({'eventId': 1});
@@ -33,7 +33,7 @@ exports.addLocations = function(user, event, locations, callback) {
   CappedLocation.findOneAndUpdate({userId: user._id, eventId: event._id}, update, {upsert: true, new: true}, function(err, user) {
     callback(err, user);
   });
-}
+};
 
 exports.getLocations = function(options, callback) {
   var limit = options.limit;
@@ -42,7 +42,6 @@ exports.getLocations = function(options, callback) {
 
   var parameters = {};
   if (filter.eventId) parameters.eventId = filter.eventId;
-  if (filter.user) parameters.userId = user._id;
 
   var query = CappedLocation.find(parameters, {userId: 1, locations: {$slice: -1 * limit}});
 
@@ -67,11 +66,11 @@ exports.getLocations = function(options, callback) {
 
     callback(err, users);
   });
-}
+};
 
 exports.removeLocationsForUser = function(user, callback) {
   var conditions = {"userId": user._id};
-  CappedLocation.remove(conditions, function(err, numberRemoved) {
+  CappedLocation.remove(conditions, function(err) {
     callback(err);
   });
-}
+};

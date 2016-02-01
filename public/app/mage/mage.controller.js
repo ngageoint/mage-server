@@ -59,10 +59,12 @@ function MageController($scope, $compile, $timeout, $modal, UserService, FilterS
             $timeout(function() {
               onObservationSelected(observation, {scrollTo: true});
             });
-          }
+          };
+
           newScope.onZoom = function(observation) {
             MapService.zoomToFeatureInLayer(observation, 'Observations');
-          }
+          };
+
           compiled(newScope);
           popupScopes[observation.id] = newScope;
 
@@ -76,7 +78,7 @@ function MageController($scope, $compile, $timeout, $modal, UserService, FilterS
         }
       }
     }
-  }
+  };
   MapService.createVectorLayer(observationLayer);
 
   var peopleLayer = {
@@ -102,10 +104,12 @@ function MageController($scope, $compile, $timeout, $modal, UserService, FilterS
             $timeout(function() {
               onUserSelected(user, {scrollTo: true});
             });
-          }
+          };
+
           newScope.onZoom = function(user) {
             MapService.zoomToFeatureInLayer(user, 'People');
-          }
+          };
+
           compiled(newScope);
           popupScopes[user.id] = newScope;
 
@@ -119,7 +123,7 @@ function MageController($scope, $compile, $timeout, $modal, UserService, FilterS
         }
       }
     }
-  }
+  };
   MapService.createVectorLayer(peopleLayer);
 
   var observationsChangedListener = {
@@ -129,7 +133,7 @@ function MageController($scope, $compile, $timeout, $modal, UserService, FilterS
 
   var layersChangedListener = {
     onLayersChanged: onLayersChanged
-  }
+  };
   EventService.addLayersChangedListener(layersChangedListener);
 
   var filterChangedListener = {
@@ -192,7 +196,7 @@ function MageController($scope, $compile, $timeout, $modal, UserService, FilterS
     _.each(changed.added, function(layer) {
       // Add token to the url of all private layers
       // TODO add watch for token change and reset the url for these layers
-      if (layer.type === 'Imagery' && layer.url.indexOf('private') == 0) {
+      if (layer.type === 'Imagery' && layer.url.indexOf('private') === 0) {
         layer.url = layer.url + "?access_token=" + LocalStorageService.getToken();
       }
 
@@ -317,7 +321,7 @@ function MageController($scope, $compile, $timeout, $modal, UserService, FilterS
 
   function onLocation(l) {
     var event = FilterService.getEvent();
-    var location = Location.create({
+    Location.create({
       eventId: event.id,
       geometry: {
         type: 'Point',
@@ -367,7 +371,7 @@ function MageController($scope, $compile, $timeout, $modal, UserService, FilterS
     $scope.$broadcast('observation:deselect', observation);
   }
 
-  function onUserSelected(user, options) {
+  function onUserSelected(user) {
     $scope.$broadcast('user:select', user);
   }
 
@@ -392,7 +396,7 @@ function MageController($scope, $compile, $timeout, $modal, UserService, FilterS
     MapService.zoomToFeatureInLayer(observation, 'Observations');
   });
 
-  $scope.$on('user:zoom', function(e, user, options) {
+  $scope.$on('user:zoom', function(e, user) {
     MapService.zoomToFeatureInLayer(user, 'People');
   });
 

@@ -5,7 +5,7 @@ module.exports = function(app, security) {
 
   app.all('/api/roles*', passport.authenticate('bearer'));
 
-  var validateRoleParams = function(req, res, next) {
+  function validateRoleParams(req, res, next) {
     var name = req.param('name');
     if (!name) {
       return res.send(400, "cannot create role 'name' param not specified");
@@ -93,4 +93,4 @@ module.exports = function(app, security) {
       });
     }
   );
-}
+};

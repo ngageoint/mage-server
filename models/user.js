@@ -133,13 +133,13 @@ UserSchema.pre('remove', function(next) {
       });
     }
   },
-  function(err, results) {
+  function(err) {
     next(err);
   });
 });
 
 var transform = function(user, ret, options) {
-  if ('function' != typeof user.ownerDocument) {
+  if ('function' !== typeof user.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;
 
@@ -165,7 +165,7 @@ var transform = function(user, ret, options) {
       ret.iconUrl = [(options.path ? options.path : ""), "api", "users", user._id, "icon"].join("/");
     }
   }
-}
+};
 
 UserSchema.set("toJSON", {
   transform: transform
@@ -177,48 +177,38 @@ exports.transform = transform;
 var User = mongoose.model('User', UserSchema);
 exports.Model = User;
 
-var encryptPassword = function(password, done) {
-  if (!password) return done(null, null);
-
-  hasher.encryptPassword(password, function(err, encryptedPassword) {
-    if (err) return done(err);
-
-    done(null, encryptedPassword);
-  });
-}
-
 exports.getUserById = function(id, callback) {
   User.findById(id).populate('roleId').exec(function(err, user) {
     callback(err, user);
   });
-}
+};
 
 exports.getUserByUsername = function(username, callback) {
   User.findOne({username: username.toLowerCase()}).populate('roleId').exec(function(err, user) {
     callback(err, user);
   });
-}
+};
 
 exports.getUserByAuthenticationId = function(authenticationType, id, callback) {
   User.findOne({'authentication.type': authenticationType, 'authentication.id': id}).populate('roleId').exec(function(err, user) {
     callback(err, user);
   });
-}
+};
 
 exports.count = function(callback) {
   User.count({}, function(err, count) {
     callback(err, count);
   });
-}
+};
 
 exports.getUsers = function(options, callback) {
-  if (typeof options == 'function') {
+  if (typeof options === 'function') {
     callback = options;
     options = {};
   }
 
   var conditions = {};
-  var options = options || {};
+  options = options || {};
   var filter = options.filter || {};
 
   if (filter.active === true) {
@@ -231,7 +221,7 @@ exports.getUsers = function(options, callback) {
 
   var populate = [];
   if (options.populate) {
-    if (options.populate.indexOf('roleId') != -1) {
+    if (options.populate.indexOf('roleId') !== -1) {
       populate.push({path: 'roleId'});
     }
   }
@@ -244,7 +234,7 @@ exports.getUsers = function(options, callback) {
   query.exec(function(err, users) {
     callback(err, users);
   });
-}
+};
 
 exports.createUser = function(user, callback) {
   var create = {
@@ -257,7 +247,7 @@ exports.createUser = function(user, callback) {
     avatar: user.avatar,
     icon: user.icon,
     authentication: user.authentication
-  }
+  };
 
   User.create(create, function(err, user) {
     if (err) return callback(err);
@@ -266,7 +256,7 @@ exports.createUser = function(user, callback) {
       callback(err, user);
     });
   });
-}
+};
 
 exports.updateUser = function(user, callback) {
   user.save(function(err, user) {
@@ -276,60 +266,60 @@ exports.updateUser = function(user, callback) {
       callback(err, user);
     });
   });
-}
+};
 
 exports.deleteUser = function(user, callback) {
   user.remove(function(err, removedUser) {
     callback(err, removedUser);
   });
-}
+};
 
 exports.setStatusForUser = function(user, status, callback) {
   var update = { status: status };
   User.findByIdAndUpdate(user._id, update, {new: true}, function(err, user) {
     callback(err, user);
   });
-}
+};
 
 exports.setRoleForUser = function(user, role, callback) {
   var update = { role: role };
   User.findByIdAndUpdate(user._id, update, {new: true}, function (err, user) {
     callback(err, user);
   });
-}
+};
 
 exports.removeRolesForUser = function(user, callback) {
   var update = { roles: [] };
   User.findByIdAndUpdate(user._id, update, {new: true}, function (err, user) {
     callback(err, user);
   });
-}
+};
 
 exports.setTeamsForUser = function(user, teamIds, callback) {
   user.teams = teamIds;
   user.save(function (err, user) {
     callback(err, user);
   });
-}
+};
 
 exports.removeTeamsForUser = function(user, callback) {
   var update = { teams: [] };
   User.findByIdAndUpdate(user._id, update, {new: true}, function (err, user) {
     callback(err, user);
   });
-}
+};
 
 exports.removeRoleFromUsers = function(role, callback) {
-  User.update({role: role._id}, {roles: undefined}, function(err, number, raw) {
+  User.update({role: role._id}, {roles: undefined}, function(err, number) {
     callback(err, number);
   });
-}
+};
 
 exports.removeTeamFromUsers = function(team, callback) {
-  User.update({}, {'$pull': {teams: team._id}}, function(err, number, raw) {
+  User.update({}, {'$pull': {teams: team._id}}, function(err, number) {
     callback(err, number);
   });
-}
+};
 
 exports.addRecentEventForUser = function(user, event, callback) {
   var eventIds = user.recentEventIds.slice();
@@ -339,7 +329,7 @@ exports.addRecentEventForUser = function(user, event, callback) {
 
   // remove dupes
   eventIds = eventIds.filter(function(eventId, index) {
-    return eventIds.indexOf(eventId) == index;
+    return eventIds.indexOf(eventId) === index;
   });
 
   // limit to 5
@@ -350,7 +340,7 @@ exports.addRecentEventForUser = function(user, event, callback) {
   User.findByIdAndUpdate(user._id, {recentEventIds: eventIds}, {new: true}, function(err, user) {
     callback(err, user);
   });
-}
+};
 
 exports.removerRecentEventForUsers = function(event, callback) {
   var update = {
@@ -360,4 +350,4 @@ exports.removerRecentEventForUsers = function(event, callback) {
   User.update({}, update, {multi: true}, function(err) {
     callback(err);
   });
-}
+};

@@ -1,13 +1,16 @@
-module.exports = function(app, passport, provisioning, localStrategy) {
+module.exports = function(app, passport, provisioning, strategy) {
 
   var log = require('winston')
-    , mongoose = require('mongoose')
     , LocalStrategy = require('passport-local').Strategy
     , User = require('../models/user')
     , Device = require('../models/device')
-    , access = require('../access')
     , api = require('../api')
     , userTransformer = require('../transformers/user');
+
+  var passwordLength = null;
+  if (strategy.passwordLength) {
+    passwordLength = strategy.passwordLength;
+  }
 
   passport.use(new LocalStrategy(
     function(username, password, done) {
@@ -58,11 +61,11 @@ module.exports = function(app, passport, provisioning, localStrategy) {
   app.put(
     '/api/users/myself/password',
     passport.authenticate('local'),
-    function(req, res, next) {
+    function(req, res) {
       var password = req.param('newPassword');
       var passwordconfirm = req.param('newPasswordconfirm');
       if (password && passwordconfirm) {
-        if (password != passwordconfirm) {
+        if (password !== passwordconfirm) {
           return res.status(400).send('passwords do not match');
         }
 
@@ -82,7 +85,7 @@ module.exports = function(app, passport, provisioning, localStrategy) {
 
     }
   );
-  
+
   // Create a new device
   // Any authenticated user can create a new device, the registered field
   // will be set to false.
@@ -116,4 +119,4 @@ module.exports = function(app, passport, provisioning, localStrategy) {
       });
     }
   );
-}
+};

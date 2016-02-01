@@ -47,7 +47,7 @@ function LocationService($q, Location, UserService) {
           if (user && user.iconUrl) {
             userLocation.locations[0].style = {
               iconUrl: '/api/users/' + user.id + '/icon'
-            }
+            };
           }
 
           _.extend(userLocation, user);

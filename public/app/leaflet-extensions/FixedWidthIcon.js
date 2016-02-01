@@ -26,4 +26,4 @@ L.FixedWidthIcon = L.DivIcon.extend({
 
 L.fixedWidthIcon = function(options) {
   return new L.FixedWidthIcon(options);
-}
+};
