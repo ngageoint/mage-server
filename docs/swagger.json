@@ -2014,40 +2014,6 @@
                         "description": "location response"
                     }
                 }
-            },
-            "put": {
-                "description": "update timestamp on latest location for current user",
-                "operationId": "updateLocation",
-                "parameters": [
-                    {
-                        "name": "eventId",
-                        "in": "path",
-                        "description": "id of event to update location to",
-                        "required": true,
-                        "type": "number"
-                    },
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "description": "new location body",
-                        "schema": {
-                            "properties": {
-                                "timestamp": {
-                                    "type": "string",
-                                    "format": "dateTime"
-                                }
-                            }
-                        }
-                    }
-                ],
-                "tags": [
-                    "Location"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "location response"
-                    }
-                }
             }
         },
         "/api/events/{eventId}/locations/users": {

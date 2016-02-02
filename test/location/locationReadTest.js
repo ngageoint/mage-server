@@ -1,6 +1,7 @@
 var request = require('supertest')
   , sinon = require('sinon')
   , mongoose = require('mongoose')
+  , moment = require('moment')
   , should = require('chai').should()
   , MockToken = require('../mockToken')
   , app = require('../../express')
@@ -20,7 +21,7 @@ var LocationModel = mongoose.model('Location');
 require('../../models/cappedLocation');
 var CappedLocationModel = mongoose.model('CappedLocation');
 
-describe("location tests", function() {
+describe("location read tests", function() {
 
   var sandbox;
   before(function() {
@@ -55,6 +56,51 @@ describe("location tests", function() {
       .chain('exec')
       .yields(null, MockToken(userId, [permission]));
   }
+
+  it("should get locations with read all permission", function(done) {
+    mockTokenWithPermission('READ_LOCATION_ALL');
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, {
+        name: 'Event 1',
+        teamIds: [{
+          name: 'Team 1',
+          userIds: [userId]
+        }]
+      });
+
+    sandbox.mock(LocationModel)
+      .expects('find')
+      .yields(null, [{
+        "eventId": 1,
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 0]
+        },
+        "properties": {
+          "timestamp": Date.now(),
+          "accuracy": 39
+        }
+      }]);
+
+    request(app)
+      .get('/api/events/1/locations')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect(function(res) {
+        var locations = res.body;
+        should.exist(locations);
+        locations.should.be.an('array');
+        locations.should.have.length(1);
+      })
+      .end(done);
+  });
 
   it("should get locations with event read permission", function(done) {
     mockTokenWithPermission('READ_LOCATION_EVENT');
@@ -91,17 +137,6 @@ describe("location tests", function() {
       .get('/api/events/1/locations')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
-      .send({
-        type: 'Feature',
-        geometry: {
-          type: "Point",
-          coordinates: [0, 0]
-        },
-        properties: {
-          type: 'type',
-          timestamp: Date.now()
-        }
-      })
       .expect(200)
       .expect(function(res) {
         var locations = res.body;
@@ -155,17 +190,6 @@ describe("location tests", function() {
       .get('/api/events/1/locations/users')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
-      .send({
-        type: 'Feature',
-        geometry: {
-          type: "Point",
-          coordinates: [0, 0]
-        },
-        properties: {
-          type: 'type',
-          timestamp: Date.now()
-        }
-      })
       .expect(200)
       .expect(function(res) {
         var users = res.body;
@@ -174,6 +198,214 @@ describe("location tests", function() {
         var user = users[0];
         user.should.have.property('locations');
       })
+      .end(done);
+  });
+
+  it("should filter locations on startDate/endDate with event read permission", function(done) {
+    mockTokenWithPermission('READ_LOCATION_EVENT');
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, {
+        name: 'Event 1',
+        teamIds: [{
+          name: 'Team 1',
+          userIds: [userId]
+        }]
+      });
+
+    var startDate = moment("2016-01-01T00:00:00");
+    var endDate = moment("2016-02-01T00:00:00");
+    sandbox.mock(LocationModel)
+      .expects('find')
+      .withArgs({
+        eventId: 1,
+        'properties.timestamp': {
+          $gte: startDate.toDate(),
+          $lt: endDate.toDate()
+        }
+      })
+      .yields(null, [{
+        "eventId": 1,
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 0]
+        },
+        "properties": {
+          "timestamp": Date.now(),
+          "accuracy": 39
+        }
+      }]);
+
+    request(app)
+      .get('/api/events/1/locations')
+      .query({startDate: startDate.toISOString(), endDate: endDate.toISOString()})
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect(function(res) {
+        var locations = res.body;
+        should.exist(locations);
+        locations.should.be.an('array');
+        locations.should.have.length(1);
+      })
+      .end(done);
+  });
+
+  it("should page locations with event read permission", function(done) {
+    mockTokenWithPermission('READ_LOCATION_EVENT');
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, {
+        name: 'Event 1',
+        teamIds: [{
+          name: 'Team 1',
+          userIds: [userId]
+        }]
+      });
+
+    var startDate = moment("2016-01-01T00:00:00");
+    var endDate = moment("2016-02-01T00:00:00");
+    var lastLocationId = mongoose.Types.ObjectId();
+    sandbox.mock(LocationModel)
+      .expects('find')
+      .withArgs({
+        $or: [{
+          _id: { $gt: lastLocationId.toString() },
+          'properties.timestamp': startDate.toDate()
+        },{
+          'properties.timestamp': {
+            $gt: startDate.toDate()
+          }
+        }],
+        eventId: 1,
+        'properties.timestamp': {
+          $lt: endDate.toDate()
+        }
+      })
+      .yields(null, [{
+        "eventId": 1,
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 0]
+        },
+        "properties": {
+          "timestamp": Date.now(),
+          "accuracy": 39
+        }
+      }]);
+
+    request(app)
+      .get('/api/events/1/locations')
+      .query({
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        lastLocationId: lastLocationId.toString()
+      })
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect(function(res) {
+        var locations = res.body;
+        should.exist(locations);
+        locations.should.be.an('array');
+        locations.should.have.length(1);
+      })
+      .end(done);
+  });
+
+  it("should limit locations with event read permission", function(done) {
+    mockTokenWithPermission('READ_LOCATION_EVENT');
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, {
+        name: 'Event 1',
+        teamIds: [{
+          name: 'Team 1',
+          userIds: [userId]
+        }]
+      });
+
+    sandbox.mock(LocationModel)
+      .expects('find')
+      .withArgs(sinon.match.any, sinon.match.any, { limit: 10, sort: { _id: 1, 'properties.timestamp': 1 } })
+      .yields(null, [{
+        "eventId": 1,
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 0]
+        },
+        "properties": {
+          "timestamp": Date.now(),
+          "accuracy": 39
+        }
+      }]);
+
+    request(app)
+      .get('/api/events/1/locations')
+      .query({limit: 10})
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect(function(res) {
+        var locations = res.body;
+        should.exist(locations);
+        locations.should.be.an('array');
+        locations.should.have.length(1);
+      })
+      .end(done);
+  });
+
+  it("should deny locations with read event permission when not in event", function(done) {
+    mockTokenWithPermission('READ_LOCATION_EVENT');
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, {
+        name: 'Event 1',
+        teamIds: [{
+          name: 'Team 1',
+          userIds: [mongoose.Types.ObjectId()]
+        }]
+      });
+
+    sandbox.mock(LocationModel)
+      .expects('find')
+      .yields(null, [{
+        "eventId": 1,
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 0]
+        },
+        "properties": {
+          "timestamp": Date.now(),
+          "accuracy": 39
+        }
+      }]);
+
+    request(app)
+      .get('/api/events/1/locations')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(403)
       .end(done);
   });
 });

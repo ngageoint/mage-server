@@ -17,7 +17,10 @@ var EventModel = mongoose.model('Event');
 require('../../models/location');
 var LocationModel = mongoose.model('Location');
 
-describe("location tests", function() {
+require('../../models/cappedLocation');
+var CappedLocationModel = mongoose.model('CappedLocation');
+
+describe("location create tests", function() {
 
   var sandbox;
   before(function() {
@@ -84,6 +87,10 @@ describe("location tests", function() {
       .expects('create')
       .yields(null, mockLocations);
 
+    sandbox.mock(CappedLocationModel)
+      .expects('findOneAndUpdate')
+      .yields(null, {});
+
     request(app)
       .post('/api/events/1/locations')
       .set('Accept', 'application/json')
@@ -142,6 +149,10 @@ describe("location tests", function() {
       .expects('create')
       .yields(null, mockLocations);
 
+    sandbox.mock(CappedLocationModel)
+      .expects('findOneAndUpdate')
+      .yields(null, {});
+
     request(app)
       .post('/api/events/1/locations')
       .set('Accept', 'application/json')
@@ -164,6 +175,32 @@ describe("location tests", function() {
         should.exist(location);
         location.should.be.an('object');
       })
+      .end(done);
+  });
+
+  it("should fail to create a location for an event when not part of that event", function(done) {
+    mockTokenWithPermission('CREATE_LOCATION');
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, []);
+
+    request(app)
+      .post('/api/events/1/locations')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        "eventId": 1,
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 0]
+        },
+        "properties": {
+          "timestamp": Date.now(),
+          "accuracy": 39
+        }
+      })
+      .expect(403)
       .end(done);
   });
 

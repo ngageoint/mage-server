@@ -1,5 +1,6 @@
 module.exports = function(app, security) {
-  var moment = require('moment')
+  var async = require('async')
+    , moment = require('moment')
     , log = require('winston')
     , Location = require('../models/location')
     , CappedLocation = require('../models/cappedLocation')
@@ -138,38 +139,22 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     access.authorize('CREATE_LOCATION'),
     validateLocations,
-    function(req, res) {
-      Location.createLocations(req.locations, function(err, locations) {
-        if (err) {
-          return res.send(400, err);
+    function(req, res, next) {
+      async.parallel({
+        locations: function(done) {
+          Location.createLocations(req.locations, function(err, locations) {
+            done(err, locations);
+          });
+        },
+        cappedLocations: function(done) {
+          CappedLocation.addLocations(req.user, req.event, req.locations, function(err) {
+            done(err);
+          });
         }
+      }, function(err, results) {
+        if (err) return next(err);
 
-        res.json(locations);
-      });
-
-      CappedLocation.addLocations(req.user, req.event, req.locations, function(err) {
-        if (err) {
-          log.error('failed to store location in capped location collection');
-        }
-      });
-    }
-  );
-
-  // update time on a location
-  app.put(
-    '/api/events/:eventId/locations',
-    passport.authenticate('bearer'),
-    validateEventAccess,
-    function(req, res) {
-      var data = req.body;
-
-      // See if the client provieded a timestamp,
-      // if not, set it to now.
-      if (!data.timestamp) return res.send(400, "Missing required parameter 'timestamp");
-      var timestamp = moment.utc(timestamp).toDate();
-
-      Location.updateLocation(req.user, timestamp, function(err, location) {
-        res.json(location);
+        res.json(results.locations);
       });
     }
   );

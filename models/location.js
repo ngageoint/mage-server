@@ -73,16 +73,6 @@ exports.getLocations = function(options, callback) {
   });
 };
 
-// update latest location
-exports.updateLocation = function(user, timestamp, callback) {
-  var conditions = {"userId": user._id};
-  var update = {"properties.timestamp": timestamp};
-  var options = {sort: {"properties.timestamp": -1}, new: true};
-  Location.findOneAndUpdate(conditions, update, options, function(err, location) {
-    callback(err, location);
-  });
-};
-
 exports.removeLocationsForUser = function(user, callback) {
   var conditions = {"userId": user._id};
   Location.remove(conditions, function(err) {
