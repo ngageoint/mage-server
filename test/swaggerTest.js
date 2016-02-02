@@ -1,7 +1,7 @@
 var request = require('supertest')
   , app = require('../express');
 
-describe("documentation tests", function() {
+describe("swagger tests", function() {
 
   it("should get swagger document", function(done) {
     request(app)
