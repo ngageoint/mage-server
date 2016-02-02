@@ -40,25 +40,6 @@ describe("location tests", function() {
     sandbox.restore();
   });
 
-  xit("should create locations for an event", function(done) {
-
-  });
-
-  xit("should create a location for an event", function(done) {
-
-  });
-
-  xit("should reject new location w/o geometry", function(done) {
-
-  });
-
-  xit("should reject new location w/o properties", function(done) {
-
-  });
-
-  xit("should reject new location w/o timestamp", function(done) {
-
-  });
 
   xit("should get locations", function(done) {
 

@@ -6,8 +6,6 @@ module.exports = function(app, security) {
 
   var passport = security.authentication.passport;
 
-  app.all('/api/events*', passport.authenticate('bearer'));
-
   function validateEventParams(req, res, next) {
     var event = req.body;
 
@@ -77,6 +75,7 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/events',
+    passport.authenticate('bearer'),
     parseEventQueryParams,
     function (req, res, next) {
       var filter = {};
@@ -100,6 +99,7 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/events/count',
+    passport.authenticate('bearer'),
     access.authorize('READ_EVENT_ALL'),
     function(req, res, next) {
       Event.count(function(err, count) {
@@ -112,6 +112,7 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/events/:id',
+    passport.authenticate('bearer'),
     parseEventQueryParams,
     function (req, res, next) {
       if (access.userHasPermission(req.user, 'READ_EVENT_ALL')) {
@@ -134,6 +135,7 @@ module.exports = function(app, security) {
 
   app.post(
     '/api/events',
+    passport.authenticate('bearer'),
     access.authorize('CREATE_EVENT'),
     parseEventQueryParams,
     validateEventParams,
@@ -166,6 +168,7 @@ module.exports = function(app, security) {
 
   app.post(
     '/api/events',
+    passport.authenticate('bearer'),
     access.authorize('CREATE_EVENT'),
     parseEventQueryParams,
     validateEventParams,
@@ -187,6 +190,7 @@ module.exports = function(app, security) {
 
   app.put(
     '/api/events/:eventId',
+    passport.authenticate('bearer'),
     access.authorize('UPDATE_EVENT'),
     parseEventQueryParams,
     validateEventParams,
@@ -201,6 +205,7 @@ module.exports = function(app, security) {
 
   app.delete(
     '/api/events/:eventId',
+    passport.authenticate('bearer'),
     access.authorize('DELETE_EVENT'),
     function(req, res, next) {
       Event.remove(req.event, function(err) {
@@ -213,6 +218,7 @@ module.exports = function(app, security) {
 
   app.post(
     '/api/events/:eventId/teams',
+    passport.authenticate('bearer'),
     access.authorize('UPDATE_EVENT'),
     function(req, res, next) {
       Event.addTeam(req.event, req.body, function(err, event) {
@@ -225,6 +231,7 @@ module.exports = function(app, security) {
 
   app.delete(
     '/api/events/:eventId/teams/:id',
+    passport.authenticate('bearer'),
     access.authorize('UPDATE_EVENT'),
     function(req, res, next) {
       Event.removeTeam(req.event, {id: req.params.id}, function(err, event) {
@@ -237,6 +244,7 @@ module.exports = function(app, security) {
 
   app.post(
     '/api/events/:eventId/layers',
+    passport.authenticate('bearer'),
     access.authorize('UPDATE_EVENT'),
     function(req, res, next) {
       Event.addLayer(req.event, req.body, function(err, event) {
@@ -249,6 +257,7 @@ module.exports = function(app, security) {
 
   app.delete(
     '/api/events/:eventId/layers/:id',
+    passport.authenticate('bearer'),
     access.authorize('UPDATE_EVENT'),
     function(req, res, next) {
       Event.removeLayer(req.event, {id: req.params.id}, function(err, event) {
@@ -262,6 +271,7 @@ module.exports = function(app, security) {
   // export a zip of the form json and icons
   app.get(
     '/api/events/:eventId/form.zip',
+    passport.authenticate('bearer'),
     validateEventAccess,
     function(req, res, next) {
       new api.Form(req.event).export(function(err, file) {
@@ -275,6 +285,7 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/events/:eventId/form/icons.zip',
+    passport.authenticate('bearer'),
     validateEventAccess,
     function(req, res) {
       var iconBasePath = new api.Icon(req.event._id).getBasePath();
@@ -289,6 +300,7 @@ module.exports = function(app, security) {
   // get icon
   app.get(
     '/api/events/:eventId/form/icons/:type?/:variant?',
+    passport.authenticate('bearer'),
     validateEventAccess,
     function(req, res, next) {
       new api.Icon(req.event._id, req.params.type, req.params.variant).getIcon(function(err, iconPath) {
@@ -301,6 +313,7 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/events/:eventId/form/icons*',
+    passport.authenticate('bearer'),
     validateEventAccess,
     function(req, res, next) {
       new api.Icon().getDefaultIcon(function(err, iconPath) {
@@ -316,6 +329,7 @@ module.exports = function(app, security) {
   // Create a new icon
   app.post(
     '/api/events/:eventId/form/icons/:type?/:variant?',
+    passport.authenticate('bearer'),
     access.authorize('CREATE_EVENT'),
     function(req, res, next) {
       new api.Icon(req.event._id, req.params.type, req.params.variant).create(req.files.icon, function(err, icon) {
@@ -329,6 +343,7 @@ module.exports = function(app, security) {
   // Delete an icon
   app.delete(
     '/api/events/:eventId/form/icons/:type?/:variant?',
+    passport.authenticate('bearer'),
     access.authorize('DELETE_EVENT'),
     function(req, res, next) {
       new api.Icon(req.event._id, req.params.type, req.params.variant).delete(function(err) {

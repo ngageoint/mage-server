@@ -50,7 +50,7 @@ require('./routes')(app, {authentication: authentication, provisioning: provisio
 app.use(function(err, req, res, next) { // eslint-disable-line no-unused-vars
   log.error(err.message);
   log.error(err.stack);
-  res.send(500, 'Internal server error, please contact MAGE administrator.');
+  res.status(500).send('Internal server error, please contact MAGE administrator.');
 });
 
 module.exports = app;

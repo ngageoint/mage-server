@@ -70,13 +70,14 @@ module.exports = function(app, security) {
 
       var msg = "";
       var valid = locations.every(function(l) {
+        l.properties = l.properties || {};
         if (!l.geometry) {
           msg = "Missing required parameter 'geometry'.";
           return false;
         }
 
-        if (!l.properties || !l.properties.timestamp) {
-          msg = "Missing required parameter 'properties.timestamp";
+        if (!l.properties.timestamp) {
+          msg = "Missing required parameter 'properties.timestamp'";
           return false;
         }
 
