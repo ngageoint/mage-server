@@ -1,12 +1,6 @@
 var ObservationModel = require('../models/observation')
-  , log = require('winston')
-  , path = require('path')
-  , fs = require('fs-extra')
-  , async = require('async')
-  , config = require('../config.js');
-
-var attachmentBase = config.server.attachment.baseDirectory;
-
+  , async = require('async');
+    
 function Observation(event) {
   this._event = event;
 }
@@ -58,23 +52,6 @@ Observation.prototype.update = function(observationId, observation, callback) {
 
 Observation.prototype.addState = function(observationId, state, callback) {
   ObservationModel.addState(this._event, observationId, state, callback);
-};
-
-Observation.prototype.delete = function(observationId, callback) {
-  ObservationModel.removeFeature(this._event, observationId, function(err, observation) {
-    if (observation) {
-      observation.attachments.forEach(function(attachment) {
-        var file = path.join(attachmentBase, attachment.relativePath);
-        fs.remove(file, function(err) {
-          if (err) {
-            log.error("Could not remove attachment file " + file + ". ", err);
-          }
-        });
-      });
-    }
-
-    callback(err, observation);
-  });
 };
 
 module.exports = Observation;

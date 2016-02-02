@@ -3,9 +3,8 @@ var request = require('supertest')
   , should = require('chai').should()
   , mongoose = require('mongoose')
   , MockToken = require('../mockToken')
-  , fs = require('fs-extra')
-  , stream = require('stream')
   , app = require('../../express')
+  , mockfs = require('mock-fs')
   , TokenModel = mongoose.model('Token');
 
 require('sinon-mongoose');
@@ -117,6 +116,10 @@ describe("attachment read tests", function() {
   it("should get attachment for any event", function(done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
+    mockfs({
+      '/var/lib/mage/attachments/mock/path/attachment.jpeg': new Buffer([8, 6, 7, 5, 3, 0, 9])
+    });
+
     sandbox.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
@@ -140,7 +143,7 @@ describe("attachment read tests", function() {
       attachments: [{
         size: 4096,
         contentType: 'image/jpeg',
-        relativePath: 'some/relative/path'
+        relativePath: 'mock/path/attachment.jpeg'
       }]
     });
 
@@ -154,16 +157,6 @@ describe("attachment read tests", function() {
       .withArgs({_id: observationId})
       .yields(null, mockObservation);
 
-    var mockedStream = new stream.Readable();
-    mockedStream._read = function noop() {
-      this.push('mock');
-      this.push(null);
-    };
-
-    sandbox.mock(fs)
-      .expects('createReadStream')
-      .returns(mockedStream);
-
     request(app)
       .get('/api/events/1/observations/' + observationId + '/attachments/456')
       .set('Accept', 'application/json')
@@ -171,6 +164,109 @@ describe("attachment read tests", function() {
       .expect(200)
       .expect('Content-Type', 'image/jpeg')
       .expect('Content-Length', 4096)
+      .end(function(err) {
+        mockfs.restore();
+        done(err);
+      });
+  });
+
+  it("should fail to get attachment that does not exist", function(done) {
+    mockTokenWithPermission('READ_OBSERVATION_ALL');
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+    var observationId = mongoose.Types.ObjectId();
+    var mockObservation = new ObservationModel({
+      _id: observationId,
+      type: 'Feature',
+      geometry: {
+        type: "Point",
+        coordinates: [0, 0]
+      },
+      properties: {
+        timestamp: Date.now()
+      },
+      attachments: []
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .withArgs(observationId.toString())
+      .yields(null, mockObservation);
+
+    sandbox.mock(ObservationModel)
+      .expects('findOne')
+      .withArgs({_id: observationId})
+      .yields(null, mockObservation);
+
+    request(app)
+      .get('/api/events/1/observations/' + observationId + '/attachments/456')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(404)
+      .end(done);
+  });
+
+  it("should get attachment range", function(done) {
+    mockTokenWithPermission('READ_OBSERVATION_ALL');
+
+    mockfs({
+      '/var/lib/mage/attachments/mock/path/attachment.jpeg': new Buffer([8, 6, 7, 5, 3, 0, 9])
+    });
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+    var observationId = mongoose.Types.ObjectId();
+    var mockObservation = new ObservationModel({
+      _id: observationId,
+      type: 'Feature',
+      geometry: {
+        type: "Point",
+        coordinates: [0, 0]
+      },
+      properties: {
+        timestamp: Date.now()
+      },
+      attachments: [{
+        size: 4096,
+        contentType: 'image/jpeg',
+        relativePath: 'mock/path/attachment.jpeg'
+      }]
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .withArgs(observationId.toString())
+      .yields(null, mockObservation);
+
+    sandbox.mock(ObservationModel)
+      .expects('findOne')
+      .withArgs({_id: observationId})
+      .yields(null, mockObservation);
+
+    request(app)
+      .get('/api/events/1/observations/' + observationId + '/attachments/456')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .set('Range', 'bytes=0-8')
+      .expect(206)
+      .expect('Content-Type', 'image/jpeg')
+      .expect('Content-Length', 9)
+      .expect('Content-Range', 'bytes 0-8/4096')
       .end(done);
   });
 });

@@ -36,7 +36,9 @@ module.exports = function(app) {
   }
 
   function validateObservationUpdateAccess(req, res, next) {
-    if (access.userHasPermission(req.user, 'UPDATE_OBSERVATION_EVENT')) {
+    if (access.userHasPermission(req.user, 'UPDATE_OBSERVATION_ALL')) {
+      next();
+    }else if (access.userHasPermission(req.user, 'UPDATE_OBSERVATION_EVENT')) {
       // Make sure I am part of this event
       Event.eventHasUser(req.event, req.user._id, function(err, eventHasUser) {
         if (eventHasUser) {
@@ -224,8 +226,6 @@ module.exports = function(app) {
       new api.Observation(req.event).create(req.newObservation, function(err, newObservation) {
         if (err) return next(err);
 
-        if (!newObservation) return res.status(400).send();
-
         var response = observationXform.transform(newObservation, transformOptions(req));
         res.location(newObservation._id.toString()).json(response);
       });
@@ -315,7 +315,7 @@ module.exports = function(app) {
       new api.Attachment(req.event, req.observation).getById(req.param('attachmentId'), {size: req.param('size')}, function(err, attachment) {
         if (err) return next(err);
 
-        if (!attachment) return res.send(404);
+        if (!attachment) return res.sendStatus(404);
 
         if (req.headers.range) {
           var range = req.headers.range;

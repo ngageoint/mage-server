@@ -562,7 +562,10 @@ describe("observation read tests", function() {
       },
       properties: {
         timestamp: Date.now()
-      }
+      },
+      states: [{
+        name: 'active'
+      }]
     });
     sandbox.mock(ObservationModel)
       .expects('findById')
@@ -577,6 +580,30 @@ describe("observation read tests", function() {
         var observation = res.body;
         should.exist(observation);
       })
+      .end(done);
+  });
+
+  it("should fail to get observation by id that does not exist", function(done) {
+    mockTokenWithPermission('READ_OBSERVATION_ALL');
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .yields(null, null);
+
+    request(app)
+      .get('/api/events/1/observations/123')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(404)
       .end(done);
   });
 

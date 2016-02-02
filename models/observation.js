@@ -308,15 +308,6 @@ exports.addState = function(event, id, state, callback) {
   });
 };
 
-exports.getAttachments = function(event, id, callback) {
-  var query = {};
-  query[id.field] = id.id;
-  var fields = {attachments: 1};
-  observationModel(event).findOne(query, fields, function(err, observation) {
-    callback(observation.attachments);
-  });
-};
-
 exports.getAttachment = function(event, observationId, attachmentId, callback) {
   var id = {_id: observationId};
   var attachment = {"attachments": {"$elemMatch": {_id: attachmentId}}};
@@ -355,7 +346,7 @@ exports.updateAttachment = function(event, observationId, attachmentId, file, ca
   var condition = {_id: observationId, 'attachments._id': attachmentId};
   var set = {};
   if (file.name) set['attachments.$.name'] = file.name;
-  if (file.type) set['attachments.$.type'] = file.type;
+  if (file.type) set['attachments.$.contentType'] = file.type;
   if (file.size) set['attachments.$.size'] = file.size;
   if (file.width) set['attachments.$.width'] = file.width;
   if (file.height) set['attachments.$.height'] = file.height;

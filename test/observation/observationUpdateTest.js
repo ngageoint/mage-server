@@ -49,8 +49,71 @@ describe("observation update tests", function() {
       .yields(null, MockToken(userId, [permission]));
   }
 
-  it("should update observation for id", function(done) {
+  it("should update observation for id with event permission", function(done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, {
+        name: 'Event 1',
+        teamIds: [{
+          name: 'Team 1',
+          userIds: [userId]
+        }]
+      });
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+    var observationId = mongoose.Types.ObjectId();
+    var mockObservation = new ObservationModel({
+      _id: observationId,
+      type: 'Feature',
+      geometry: {
+        type: "Point",
+        coordinates: [0, 0]
+      },
+      properties: {
+        timestamp: Date.now()
+      }
+    });
+    sandbox.mock(ObservationModel)
+      .expects('findByIdAndUpdate')
+      .yields(null, mockObservation);
+
+    request(app)
+      .put('/api/events/1/observations/' + observationId.toString())
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        type: 'Feature',
+        geometry: {
+          type: "Point",
+          coordinates: [0, 0]
+        },
+        properties: {
+          type: 'type',
+          timestamp: Date.now()
+        }
+      })
+      .expect(200)
+      .expect(function(res) {
+        var observation = res.body;
+        should.exist(observation);
+        observation.should.have.property('id');
+        observation.should.have.property('url');
+      })
+      .end(done);
+  });
+
+  it("should update observation for id with all permission", function(done) {
+    mockTokenWithPermission('UPDATE_OBSERVATION_ALL');
 
     sandbox.mock(TeamModel)
       .expects('find')

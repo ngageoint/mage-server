@@ -7,6 +7,7 @@ var request = require('supertest')
   , app = require('../../express')
   , TokenModel = mongoose.model('Token');
 
+require('chai').should();
 require('sinon-mongoose');
 
 require('../../models/team');
@@ -107,9 +108,74 @@ describe("attachment create tests", function() {
       .attach('attachment', 'mock/path/attachment.jpeg')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
-      .end(function() {
-        mockfs.restore();
+      .end(function(err) {
+        mockfs.restore(err);
         done();
+      });
+  });
+
+  it("should fail to create attachment if no attachment is posted", function(done) {
+    mockTokenWithPermission('CREATE_OBSERVATION');
+
+    var tmp = os.tmpdir();
+    var fs = {
+      'mock/path/attachment.jpeg': new Buffer([8, 6, 7, 5, 3, 0, 9]),
+      'var/lib/mage': {}
+    };
+    fs[tmp] = {};
+    mockfs(fs);
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, {
+        name: 'Event 1',
+        teamIds: [{
+          name: 'Team 1',
+          userIds: [userId]
+        }]
+      });
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+    var observationId = mongoose.Types.ObjectId();
+    var mockObservation = new ObservationModel({
+      _id: observationId,
+      type: 'Feature',
+      geometry: {
+        type: "Point",
+        coordinates: [0, 0]
+      },
+      properties: {
+        timestamp: Date.now()
+      }
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .withArgs(observationId.toString())
+      .yields(null, mockObservation);
+
+    sandbox.mock(ObservationModel)
+      .expects('update')
+      .yields(null, mockObservation);
+
+    request(app)
+      .post('/api/events/1/observations/' + observationId + '/attachments')
+      .set('Authorization', 'Bearer 12345')
+      .expect(400)
+      .expect(function(res) {
+        res.text.should.equal("no attachment");
+      })
+      .end(function(err) {
+        mockfs.restore();
+        done(err);
       });
   });
 });
