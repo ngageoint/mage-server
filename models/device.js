@@ -152,10 +152,7 @@ exports.updateDevice = function(id, update, callback) {
 
 exports.deleteDevice = function(id, callback) {
   Device.findById(id, function(err, device) {
-    if (!device) {
-      var msg = "Device with id '" + id + "' not found and could not be deleted.";
-      return callback(new Error(msg));
-    }
+    if (!device) return callback(null, null);
 
     device.remove(function(err, removedDevice) {
       callback(err, removedDevice);

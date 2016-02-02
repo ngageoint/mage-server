@@ -180,6 +180,8 @@ module.exports = function(app, security) {
       Device.deleteDevice(req.param('id'), function(err, device) {
         if (err) return next(err);
 
+        if (!device) return res.sendStatus(404);
+
         res.json(device);
       });
     }
