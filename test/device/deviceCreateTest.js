@@ -198,5 +198,23 @@ describe("device create tests", function() {
       .end(done);
   });
 
+  it("should fail to create registered device w/o uid", function(done) {
+    mockTokenWithPermission('CREATE_DEVICE');
+
+    request(app)
+      .post('/api/devices')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        name: 'Test Device',
+        description: 'Some description',
+        userId: userId.toString()
+      })
+      .expect(400)
+      .expect(function(res) {
+        res.text.should.equal("missing required param 'uid'");
+      })
+      .end(done);
+  });
 
 });

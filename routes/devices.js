@@ -31,7 +31,7 @@ module.exports = function(app, security) {
 
   var validateDeviceParams = function(req, res, next) {
     if (!req.newDevice.uid) {
-      return res.send(401, "missing required param 'uid'");
+      return res.status(400).send("missing required param 'uid'");
     }
 
     next();
@@ -76,8 +76,6 @@ module.exports = function(app, security) {
         userId: req.user.id
       };
 
-      if (!newDevice.uid) return res.send(401, "missing required param 'uid'");
-
       Device.getDeviceByUid(newDevice.uid, function(err, device) {
         if (err) return next(err);
 
@@ -102,12 +100,8 @@ module.exports = function(app, security) {
     access.authorize('READ_DEVICE'),
     function (req, res, next) {
       var filter = {};
-      if (req.query.registered === 'true') {
-        filter.registered = true;
-      }
-
-      if (req.query.registered === 'false') {
-        filter.registered = false;
+      if (req.query.registered === 'true' || req.query.registered === 'false') {
+        filter.registered = req.query.registered === 'true';
       }
 
       var expand = {};

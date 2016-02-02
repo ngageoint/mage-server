@@ -56,6 +56,95 @@ describe("device read tests", function() {
       .end(done);
   });
 
+  it("should get devices and populate user", function(done) {
+    mockTokenWithPermission('READ_DEVICE');
+
+    var mockDevices = [{
+      uid: '123'
+    },{
+      uid: '456'
+    }];
+    sandbox.mock(DeviceModel)
+      .expects('find')
+      .yields(null, mockDevices);
+
+    sandbox.mock(DeviceModel)
+      .expects('populate')
+      .withArgs(mockDevices, 'userId')
+      .yields(null, [{
+        uid: '123',
+        userId: {}
+      },{
+        uid: '456',
+        userId: {}
+      }]);
+
+    request(app)
+      .get('/api/devices')
+      .query({expand: 'user'})
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(function(res) {
+        var devices = res.body;
+        should.exist(devices);
+      })
+      .end(done);
+  });
+
+  it("should get registered devices", function(done) {
+    mockTokenWithPermission('READ_DEVICE');
+
+    sandbox.mock(DeviceModel)
+      .expects('find')
+      .withArgs({ registered: true })
+      .yields(null, [{
+        uid: '123'
+      },{
+        uid: '456'
+      }]);
+
+    request(app)
+      .get('/api/devices')
+      .query({registered: 'true'})
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(function(res) {
+        var devices = res.body;
+        should.exist(devices);
+      })
+      .end(done);
+  });
+
+  it("should get unregistered devices", function(done) {
+    mockTokenWithPermission('READ_DEVICE');
+
+    sandbox.mock(DeviceModel)
+      .expects('find')
+      .withArgs({ registered: false })
+      .yields(null, [{
+        uid: '123'
+      },{
+        uid: '456'
+      }]);
+
+    request(app)
+      .get('/api/devices')
+      .query({registered: 'false'})
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(function(res) {
+        var devices = res.body;
+        should.exist(devices);
+      })
+      .end(done);
+  });
+
   it("should get device by id", function(done) {
     mockTokenWithPermission('READ_DEVICE');
 

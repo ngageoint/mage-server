@@ -106,7 +106,7 @@ exports.getDevices = function(options, callback) {
 
   Device.find(conditions, function (err, devices) {
     var expand = options.expand || {};
-    if (expand.user === true) {
+    if (expand.user) {
       Device.populate(devices, 'userId', callback);
     } else {
       callback(err, devices);
