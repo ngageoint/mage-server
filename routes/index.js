@@ -9,23 +9,6 @@ module.exports = function(app, security) {
     , Icon = require('../models/icon')
     , Setting = require('../models/setting');
 
-  var resources = {
-    layerResource: {
-      location: '/FeatureServer',
-      featureResource: {
-        location: '/features',
-        attachmentResource: {
-          location: '/attachments'
-        },
-        stateResource: {
-          location: '/states'
-        }
-      }
-    }
-  };
-
-  app.set('resources', resources);
-
   app.get('/api', function(req, res) {
     Setting.getSetting('disclaimer', function(err, disclaimer) {
       disclaimer = disclaimer || {};
