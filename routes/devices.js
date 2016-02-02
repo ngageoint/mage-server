@@ -44,7 +44,6 @@ module.exports = function(app, security) {
     parseDeviceParams,
     validateDeviceParams,
     function(req, res, next) {
-
       // If I did not authenticate a user go to the next route
       // '/api/devices' route which does not require authentication
       if (!access.userHasPermission(req.user, 'CREATE_DEVICE')) {
@@ -55,11 +54,43 @@ module.exports = function(app, security) {
       req.newDevice.registered = true;
 
       Device.createDevice(req.newDevice, function(err, device) {
-        if (err) {
-          return res.send(400, err.message);
-        }
+        if (err) return next(err);
 
         res.json(device);
+      });
+    }
+  );
+
+  // Create a new device
+  // Any authenticated user can create a new device, the registered field
+  // will be set to false.
+  app.post(
+    '/api/devices',
+    passport.authenticate('local'),
+    function(req, res, next) {
+      var newDevice = {
+        uid: req.param('uid'),
+        name: req.param('name'),
+        registered: false,
+        description: req.param('description'),
+        userId: req.user.id
+      };
+
+      if (!newDevice.uid) return res.send(401, "missing required param 'uid'");
+
+      Device.getDeviceByUid(newDevice.uid, function(err, device) {
+        if (err) return next(err);
+
+        if (device) {
+          // already exists, do not register
+          return res.json(device);
+        }
+
+        Device.createDevice(newDevice, function(err, newDevice) {
+          if (err) return next(err);
+
+          res.json(newDevice);
+        });
       });
     }
   );

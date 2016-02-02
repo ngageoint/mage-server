@@ -3,7 +3,6 @@ module.exports = function(app, passport, provisioning) {
   var log = require('winston')
     , LocalStrategy = require('passport-local').Strategy
     , User = require('../models/user')
-    , Device = require('../models/device')
     , api = require('../api')
     , userTransformer = require('../transformers/user');
 
@@ -48,41 +47,6 @@ module.exports = function(app, passport, provisioning) {
           token: token.token,
           expirationDate: token.expirationDate,
           user: userTransformer.transform(req.user, {path: req.getRoot()})
-        });
-      });
-    }
-  );
-
-
-  // Create a new device
-  // Any authenticated user can create a new device, the registered field
-  // will be set to false.
-  app.post(
-    '/api/devices',
-    passport.authenticate('local'),
-    function(req, res) {
-      var newDevice = {
-        uid: req.param('uid'),
-        name: req.param('name'),
-        registered: false,
-        description: req.param('description'),
-        userId: req.user.id
-      };
-
-      if (!newDevice.uid) return res.send(401, "missing required param 'uid'");
-
-      Device.getDeviceByUid(newDevice.uid, function(err, device) {
-        if (device) {
-          // already exists, do not register
-          return res.json(device);
-        }
-
-        Device.createDevice(newDevice, function(err, newDevice) {
-          if (err) {
-            return res.status(400);
-          }
-
-          res.json(newDevice);
         });
       });
     }
