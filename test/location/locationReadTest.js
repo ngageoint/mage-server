@@ -1,8 +1,24 @@
-var sinon = require('sinon')
+var request = require('supertest')
+  , sinon = require('sinon')
   , mongoose = require('mongoose')
+  , should = require('chai').should()
+  , MockToken = require('../mockToken')
+  , app = require('../../express')
   , TokenModel = mongoose.model('Token');
 
 require('sinon-mongoose');
+
+require('../../models/team');
+var TeamModel = mongoose.model('Team');
+
+require('../../models/event');
+var EventModel = mongoose.model('Event');
+
+require('../../models/location');
+var LocationModel = mongoose.model('Location');
+
+require('../../models/cappedLocation');
+var CappedLocationModel = mongoose.model('CappedLocation');
 
 describe("location tests", function() {
 
@@ -12,42 +28,152 @@ describe("location tests", function() {
   });
 
   beforeEach(function() {
-    var token = {
-      _id: '1',
-      token: '12345',
-      userId: {
-        populate: function(field, callback) {
-          callback(null, {
-            _id: '1',
-            username: 'test',
-            roleId: {
-              permissions: ['READ_USER']
-            }
-          });
-        }
-      }
-    };
+    var mockEvent = new EventModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1',
+      teams: [{
+        name: 'Team 1'
+      }]
+    });
 
-    sandbox.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({token: "12345"})
-      .chain('populate', 'userId')
-      .chain('exec')
-      .yields(null, token);
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
   });
 
   afterEach(function() {
     sandbox.restore();
   });
 
+  var userId = mongoose.Types.ObjectId();
+  function mockTokenWithPermission(permission) {
+    sandbox.mock(TokenModel)
+      .expects('findOne')
+      .withArgs({token: "12345"})
+      .chain('populate', 'userId')
+      .chain('exec')
+      .yields(null, MockToken(userId, [permission]));
+  }
 
-  xit("should get locations", function(done) {
+  it("should get locations with event read permission", function(done) {
+    mockTokenWithPermission('READ_LOCATION_EVENT');
 
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, {
+        name: 'Event 1',
+        teamIds: [{
+          name: 'Team 1',
+          userIds: [userId]
+        }]
+      });
+
+    sandbox.mock(LocationModel)
+      .expects('find')
+      .yields(null, [{
+        "eventId": 1,
+        "geometry": {
+          "type": "Point",
+          "coordinates": [0, 0]
+        },
+        "properties": {
+          "timestamp": Date.now(),
+          "accuracy": 39
+        }
+      }]);
+
+    request(app)
+      .get('/api/events/1/locations')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        type: 'Feature',
+        geometry: {
+          type: "Point",
+          coordinates: [0, 0]
+        },
+        properties: {
+          type: 'type',
+          timestamp: Date.now()
+        }
+      })
+      .expect(200)
+      .expect(function(res) {
+        var locations = res.body;
+        should.exist(locations);
+        locations.should.be.an('array');
+        locations.should.have.length(1);
+      })
+      .end(done);
   });
 
-  xit("should get locations grouped by user", function(done) {
+  it("should get locations grouped by user", function(done) {
+    mockTokenWithPermission('READ_LOCATION_EVENT');
 
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, {
+        name: 'Event 1',
+        teamIds: [{
+          name: 'Team 1',
+          userIds: [userId]
+        }]
+      });
+
+    sandbox.mock(CappedLocationModel)
+      .expects('find')
+      .chain('lean')
+      .chain('exec')
+      .yields(null, [{
+        locations:[{
+          type: "Feature",
+          userId: "56a8d5be03c39d15241f86df",
+          properties: {
+            timestamp: "2016-02-02T14:42:13.811Z",
+            accuracy: 39,
+            deviceId: "56a8d5b81db0452f4d7ec6a0"
+          },
+          eventId: 1,
+          geometry: {
+            type: "Point",
+            coordinates: [0, 0]
+          },
+          teamIds: ["56a8eabc1205e577246e3f36"]
+        }]
+      }]);
+
+    request(app)
+      .get('/api/events/1/locations/users')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        type: 'Feature',
+        geometry: {
+          type: "Point",
+          coordinates: [0, 0]
+        },
+        properties: {
+          type: 'type',
+          timestamp: Date.now()
+        }
+      })
+      .expect(200)
+      .expect(function(res) {
+        var users = res.body;
+        should.exist(users);
+        users.should.be.an('array').and.have.length(1);
+        var user = users[0];
+        user.should.have.property('locations');
+      })
+      .end(done);
   });
-
-
 });

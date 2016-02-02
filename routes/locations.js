@@ -118,7 +118,6 @@ module.exports = function(app, security) {
 
   // get locations
   // Will only return locations for the teams that the user is a part of
-  // TODO only one team for PDC, need to implement multiple teams later
   app.get(
     '/api/events/:eventId/locations',
     passport.authenticate('bearer'),
