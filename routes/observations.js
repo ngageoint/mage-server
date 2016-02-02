@@ -1,4 +1,4 @@
-module.exports = function(app) {
+module.exports = function(app, security) {
 
   var api = require('../api')
     , fs = require('fs-extra')
@@ -7,7 +7,8 @@ module.exports = function(app) {
     , Team = require('../models/team')
     , access = require('../access')
     , geometryFormat = require('../format/geoJsonFormat')
-    , observationXform = require('../transformers/observation');
+    , observationXform = require('../transformers/observation')
+    , passport = security.authentication.passport;
 
   var sortColumnWhitelist = ["lastModified"];
 
@@ -185,6 +186,7 @@ module.exports = function(app) {
 
   app.get(
     '/api/events/:eventId/observations',
+    passport.authenticate('bearer'),
     validateObservationReadAccess,
     parseQueryParams,
     function (req, res, next) {
@@ -203,6 +205,7 @@ module.exports = function(app) {
 
   app.get(
     '/api/events/:eventId/observations/:id',
+    passport.authenticate('bearer'),
     validateObservationReadAccess,
     parseQueryParams,
     function (req, res, next) {
@@ -220,6 +223,7 @@ module.exports = function(app) {
 
   app.post(
     '/api/events/:eventId/observations',
+    passport.authenticate('bearer'),
     access.authorize('CREATE_OBSERVATION'),
     validateObservation,
     function (req, res, next) {
@@ -234,6 +238,7 @@ module.exports = function(app) {
 
   app.put(
     '/api/events/:eventId/observations/:id',
+    passport.authenticate('bearer'),
     validateObservationUpdateAccess,
     function (req, res, next) {
 
@@ -271,6 +276,7 @@ module.exports = function(app) {
 
   app.post(
     '/api/events/:eventId/observations/:id/states',
+    passport.authenticate('bearer'),
     access.authorize('DELETE_OBSERVATION'),
     function(req, res) {
       var state = req.body;
@@ -295,6 +301,7 @@ module.exports = function(app) {
 
   app.get(
     '/api/events/:eventId/observations/:id/attachments',
+    passport.authenticate('bearer'),
     validateObservationReadAccess,
     function(req, res, next) {
       var fields = {attachments: true};
@@ -310,6 +317,7 @@ module.exports = function(app) {
 
   app.get(
     '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
+    passport.authenticate('bearer'),
     validateObservationReadAccess,
     function(req, res, next) {
       new api.Attachment(req.event, req.observation).getById(req.param('attachmentId'), {size: req.param('size')}, function(err, attachment) {
@@ -344,6 +352,7 @@ module.exports = function(app) {
 
   app.post(
     '/api/events/:eventId/observations/:observationId/attachments',
+    passport.authenticate('bearer'),
     access.authorize('CREATE_OBSERVATION'),
     function(req, res, next) {
       var attachment = req.files.attachment;
@@ -361,6 +370,7 @@ module.exports = function(app) {
 
   app.put(
     '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
+    passport.authenticate('bearer'),
     validateObservationUpdateAccess,
     function(req, res, next) {
       new api.Attachment(req.event, req.observation).update(req.params.attachmentId, req.files.attachment, function(err, attachment) {
@@ -375,6 +385,7 @@ module.exports = function(app) {
 
   app.delete(
     '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
+    passport.authenticate('bearer'),
     access.authorize('DELETE_OBSERVATION'),
     function(req, res, next) {
       new api.Attachment(req.event, req.observation).delete(req.param('attachmentId'), function(err) {

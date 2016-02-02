@@ -56,7 +56,6 @@ Attachment.prototype.create = function(observationId, attachment, callback) {
     var fileName = path.basename(attachment.path);
     attachment.relativePath = path.join(relativePath, fileName);
     var file = path.join(attachmentBase, attachment.relativePath);
-    console.log('renaming ', attachment.path);
 
     fs.rename(attachment.path, file, function(err) {
       if (err) return callback(err);
