@@ -98,6 +98,7 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/events/:eventId/layers',
+    passport.authenticate('bearer'),
     validateEventAccess,
     parseQueryParams,
     function(req, res, next) {
@@ -123,6 +124,7 @@ module.exports = function(app, security) {
   // get features for layer (must be a feature layer)
   app.get(
     '/api/events/:eventId/layers/:layerId/features',
+    passport.authenticate('bearer'),
     validateEventAccess,
     function (req, res) {
       if (req.layer.type !== 'Feature') return res.status(400).send('cannot get features, layer type is not "Feature"');
