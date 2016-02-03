@@ -207,7 +207,7 @@ module.exports = function(app, security) {
   app.put(
     '/api/users/myself',
     passport.authenticate('bearer'),
-    function(req, res) {
+    function(req, res, next) {
       if (req.param('username')) req.user.username = req.param('username');
       if (req.param('displayName')) req.user.displayName = req.param('displayName');
       if (req.param('email')) req.user.email = req.param('email');
@@ -237,6 +237,8 @@ module.exports = function(app, security) {
       }
 
       new api.User().update(req.user, {avatar: req.files.avatar}, function(err, updatedUser) {
+        if (err) return next(err);
+
         updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
         res.json(updatedUser);
       });

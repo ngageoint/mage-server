@@ -10,6 +10,7 @@ function createToken(userId, permissions) {
   var mockUser = new UserModel({
     _id: userId,
     username: 'test',
+    active: true,
     roleId: new RoleModel({
       permissions: permissions
     })

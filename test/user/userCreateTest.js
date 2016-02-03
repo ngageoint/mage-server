@@ -20,9 +20,6 @@ var TeamModel = mongoose.model('Team');
 require('../../models/event');
 var EventModel = mongoose.model('Event');
 
-var Observation = require('../../models/observation');
-var observationModel = Observation.observationModel;
-
 require('sinon-mongoose');
 
 describe("user create tests", function() {
