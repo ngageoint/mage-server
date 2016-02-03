@@ -9,8 +9,8 @@ module.exports = function(app, security) {
 
   var passwordLength = null;
   Object.keys(security.authentication.strategies).forEach(function(name) {
-    if (security.authentication.strategies[name].passwordLength) {
-      passwordLength = security.authentication.strategies[name].passwordLength;
+    if (security.authentication.strategies[name].passwordMinLength) {
+      passwordLength = security.authentication.strategies[name].passwordMinLength;
     }
   });
 
@@ -137,11 +137,8 @@ module.exports = function(app, security) {
     access.authorize('READ_USER'),
     function(req, res, next) {
       var filter = {};
-      if (req.query.active === 'true') {
-        filter.active = true;
-      }
-      if (req.query.active === 'false') {
-        filter.active = false;
+      if (req.query.active === 'true' || req.query.active === 'false') {
+        filter.active = req.query.active === 'true';
       }
 
       var populate = null;

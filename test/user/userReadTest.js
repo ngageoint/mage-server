@@ -86,6 +86,78 @@ describe("user read tests", function() {
       .end(done);
   });
 
+  it('should get all active users', function(done) {
+    mockTokenWithPermission('READ_USER');
+
+    sandbox.mock(UserModel)
+      .expects('find')
+      .withArgs({ active: true })
+      .chain('exec')
+      .yields(null, [{
+        username: 'test1'
+      },{
+        username: 'test2'
+      }]);
+
+    request(app)
+      .get('/api/users')
+      .query({active: 'true'})
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end(done);
+  });
+
+
+  it('should get all inactive users', function(done) {
+    mockTokenWithPermission('READ_USER');
+
+    sandbox.mock(UserModel)
+      .expects('find')
+      .withArgs({ active: false })
+      .chain('exec')
+      .yields(null, [{
+        username: 'test1'
+      },{
+        username: 'test2'
+      }]);
+
+    request(app)
+      .get('/api/users')
+      .query({active: 'false'})
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end(done);
+  });
+
+  it('should get all users and populate role', function(done) {
+    mockTokenWithPermission('READ_USER');
+
+    sandbox.mock(UserModel)
+      .expects('find')
+      .chain('populate')
+      .withArgs([{ path: "roleId" }])
+      .chain('exec')
+      .yields(null, [{
+        username: 'test1'
+      },{
+        username: 'test2'
+      }]);
+
+    request(app)
+      .get('/api/users')
+      .query({populate: 'roleId'})
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end(done);
+  });
+
+
   it('should get user by id', function(done) {
     mockTokenWithPermission('READ_USER');
 
@@ -166,6 +238,35 @@ describe("user read tests", function() {
         mockfs.restore();
         done(err);
       });
+  });
+
+  it('should fail to get non existant user avatar', function(done) {
+    mockTokenWithPermission('READ_USER');
+
+    var id = mongoose.Types.ObjectId();
+    var mockUser = new UserModel({
+      _id: id,
+      username: 'test1',
+      avatar: {
+        relativePath: 'mock/path/avatar.jpeg',
+        contentType: 'image/jpeg',
+        size: 256
+      }
+    });
+
+    sandbox.mock(UserModel)
+      .expects('findById')
+      .withArgs(id.toString())
+      .chain('populate')
+      .chain('exec')
+      .yields(null, mockUser);
+
+    request(app)
+      .get('/api/users/' + id.toString() + '/avatar')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(404)
+      .end(done);
   });
 
   it('should get user icon', function(done) {
