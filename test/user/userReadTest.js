@@ -3,6 +3,7 @@ var request = require('supertest')
   , should = require('chai').should()
   , MockToken = require('../mockToken')
   , app = require('../../express')
+  , mockfs = require('mock-fs')
   , mongoose = require('mongoose');
 
 require('../../models/token');
@@ -20,20 +21,23 @@ describe("user read tests", function() {
     sandbox = sinon.sandbox.create();
   });
 
-  beforeEach(function() {
+  afterEach(function() {
+    sandbox.restore();
+  });
+
+  var userId = mongoose.Types.ObjectId();
+  function mockTokenWithPermission(permission) {
     sandbox.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
       .chain('exec')
-      .yields(null, MockToken(mongoose.Types.ObjectId(), ['READ_USER']));
-  });
-
-  afterEach(function() {
-    sandbox.restore();
-  });
+      .yields(null, MockToken(userId, [permission]));
+  }
 
   it('should count users', function(done) {
+    mockTokenWithPermission('READ_USER');
+
     sandbox.mock(UserModel)
       .expects('count')
       .yields(null, 5);
@@ -53,6 +57,8 @@ describe("user read tests", function() {
   });
 
   it('should get all users', function(done) {
+    mockTokenWithPermission('READ_USER');
+
     var mockUsers = [{
       username: 'test1'
     },{
@@ -78,6 +84,125 @@ describe("user read tests", function() {
         users.should.deep.include.members(mockUsers);
       })
       .end(done);
+  });
+
+  it('should get user by id', function(done) {
+    mockTokenWithPermission('READ_USER');
+
+    var id = mongoose.Types.ObjectId();
+
+    sandbox.mock(UserModel)
+      .expects('findById')
+      .chain('exec')
+      .yields(null, new UserModel({
+        _id: id,
+        username: 'test'
+      }));
+
+    request(app)
+      .get('/api/users/' + id.toString())
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(function(res) {
+        var user = res.body;
+        should.exist(user);
+        user.should.have.property('id').that.equals(id.toString());
+        user.should.have.property('username').that.equals('test');
+      })
+      .end(done);
+  });
+
+  it('should get myself', function(done) {
+    mockTokenWithPermission('READ_USER');
+
+    request(app)
+      .get('/api/users/myself')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(function(res) {
+        var myself = res.body;
+        should.exist(myself);
+        myself.id.should.equal(userId.toString());
+      })
+      .end(done);
+  });
+
+  it('should get user avatar', function(done) {
+    mockTokenWithPermission('READ_USER');
+
+    mockfs({
+      '/var/lib/mage/users/mock/path/avatar.jpeg': new Buffer([8, 6, 7, 5, 3, 0, 9])
+    });
+
+    var id = mongoose.Types.ObjectId();
+    var mockUser = new UserModel({
+      _id: id,
+      username: 'test1',
+      avatar: {
+        relativePath: 'mock/path/avatar.jpeg',
+        contentType: 'image/jpeg',
+        size: 256
+      }
+    });
+
+    sandbox.mock(UserModel)
+      .expects('findById')
+      .withArgs(id.toString())
+      .chain('populate')
+      .chain('exec')
+      .yields(null, mockUser);
+
+    request(app)
+      .get('/api/users/' + id.toString() + '/avatar')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect('Content-Type', /image\/jpeg/)
+      .end(function(err) {
+        mockfs.restore();
+        done(err);
+      });
+  });
+
+  it('should get user icon', function(done) {
+    mockTokenWithPermission('READ_USER');
+
+    mockfs({
+      '/var/lib/mage/users/mock/path/icon.png': new Buffer([8, 6, 7, 5, 3, 0, 9])
+    });
+
+    var id = mongoose.Types.ObjectId();
+    var mockUser = new UserModel({
+      _id: id,
+      username: 'test1',
+      icon: {
+        relativePath: 'mock/path/icon.png',
+        contentType: 'image/png',
+        size: 48
+      }
+    });
+
+    sandbox.mock(UserModel)
+      .expects('findById')
+      .withArgs(id.toString())
+      .chain('populate')
+      .chain('exec')
+      .yields(null, mockUser);
+
+    request(app)
+      .get('/api/users/' + id.toString() + '/icon')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect('Content-Type', /image\/png/)
+      .end(function(err) {
+        mockfs.restore();
+        done(err);
+      });
   });
 
 });

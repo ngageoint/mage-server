@@ -1,17 +1,27 @@
+var mongoose = require('mongoose');
+
+require('../models/user');
+var UserModel = mongoose.model('User');
+
+require('../models/role');
+var RoleModel = mongoose.model('Role');
+
 function createToken(userId, permissions) {
+  var mockUser = new UserModel({
+    _id: userId,
+    username: 'test',
+    roleId: new RoleModel({
+      permissions: permissions
+    })
+  });
+
   var token = {
     _id: '1',
     token: '12345',
     deviceId: '123',
     userId: {
       populate: function(field, callback) {
-        callback(null, {
-          _id: userId,
-          username: 'test',
-          roleId: {
-            permissions: permissions
-          }
-        });
+        callback(null, mockUser);
       }
     }
   };
