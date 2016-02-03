@@ -122,7 +122,7 @@ User.prototype.create = function(user, options, callback) {
   async.waterfall(operations, function(err, newUser) {
     if (err) return callback(err);
 
-    if (!newUser.avatar && !newUser.icon) return callback(null, newUser);
+    if (!options.avatar && !options.icon) return callback(null, newUser);
 
     UserModel.updateUser(newUser, callback);
   });
