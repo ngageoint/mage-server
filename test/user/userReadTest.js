@@ -1,19 +1,19 @@
 var request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
-  , MockToken = require('./mockToken')
-  , app = require('../express')
+  , MockToken = require('../mockToken')
+  , app = require('../../express')
   , mongoose = require('mongoose');
 
-require('../models/token');
+require('../../models/token');
 var TokenModel = mongoose.model('Token');
 
-require('../models/user');
+require('../../models/user');
 var UserModel = mongoose.model('User');
 
 require('sinon-mongoose');
 
-describe("user tests", function() {
+describe("user read tests", function() {
 
   var sandbox;
   before(function() {
@@ -31,38 +31,6 @@ describe("user tests", function() {
 
   afterEach(function() {
     sandbox.restore();
-  });
-
-  it("should logout without token", function(done) {
-    sandbox.mock(TokenModel)
-      .expects('findByIdAndRemove')
-      .withArgs("1")
-      .yields(null);
-
-    request(app)
-      .post('/api/logout')
-      .set('Accept', 'application/json')
-      .expect(200)
-      .expect('Content-Type', /text\/plain/)
-      .end(done);
-  });
-
-  it("should logout with token", function(done) {
-    sandbox.mock(TokenModel)
-      .expects('findByIdAndRemove')
-      .withArgs("1")
-      .yields(null);
-
-    request(app)
-      .post('/api/logout')
-      .set('Accept', 'application/json')
-      .set('Authorization', 'Bearer 12345')
-      .expect(200)
-      .expect('Content-Type', /text\/html/)
-      .expect(function(res) {
-        res.text.should.equal('successfully logged out');
-      })
-      .end(done);
   });
 
   it('should count users', function(done) {
@@ -84,7 +52,7 @@ describe("user tests", function() {
       .end(done);
   });
 
-  it('get all users', function(done) {
+  it('should get all users', function(done) {
     var mockUsers = [{
       username: 'test1'
     },{
