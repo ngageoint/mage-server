@@ -76,7 +76,7 @@ module.exports = function(app, security) {
     function(req, res, next) {
       var update = {};
       if (req.teamParam.name) update.name = req.teamParam.name;
-      if (req.teamParam.description !== null) update.description = req.teamParam.description;
+      if (req.teamParam.description) update.description = req.teamParam.description;
       if (req.teamParam.users) update.users = req.teamParam.users;
 
       Team.updateTeam(req.team._id, update, function(err, team) {
