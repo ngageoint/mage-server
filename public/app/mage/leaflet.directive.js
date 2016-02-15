@@ -190,7 +190,7 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
       onEachFeature: function (feature, layer) {
         if (popup) {
           if (_.isFunction(popup.html)) {
-            var options = {autoPan: false};
+            var options = {autoPan: false, maxWidth: 400};
             if (popup.closeButton) options.closeButton = popup.closeButton;
             layer.bindPopup(popup.html(feature), options);
           }

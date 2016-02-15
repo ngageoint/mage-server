@@ -1,30 +1,28 @@
-<div class="location-popup">
-  <div class="row">
-    <div class="col-md-12">
-      <span class="pull-right">
-        <a href="javascript:void(0)" title="Show in feed" class="location-popup-info" ng-click="onInfoClicked()"><i class="fa fa-info-circle"></i></a>
-        <a href="javascript:void(0)" title="Zoom to" class="location-popup-info" ng-click="onZoomClicked()"><i class="fa fa-crosshairs"></i></a>
-      </span>
+<div class="user-popup">
+  <div class="user-popup-avatar">
+    <img width="60" height="60" class="avatar-thumbnail img-rounded" ng-src="{{avatarUrl}}">
+  </div>
 
-      <div class="feed-avatar-img-container pull-left">
-        <img class="avatar-thumbnail img-rounded" ng-src="{{avatarUrl}}">
-      </div>
-
-      <div class="observation-popup-title">
-        <strong>{{user.displayName}}</strong>
-      </div>
-      <div class="observation-popup-subtitle">
-        <span class="muted">{{user.email}}</span>
-      </div>
-      <div class="observation-popup-subtitle">
-        <span ng-if="date">{{date}}</span>
-      </div>
-      <div>
-        {{user.email}}
-      </div>
-      <div>
-        {{user.phones[0].number}}
-      </div>
+  <div class="user-popup-content">
+    <div class="observation-popup-title">
+      <strong>{{user.displayName}}</strong>
+    </div>
+    <div class="observation-popup-subtitle">
+      <span ng-if="date">{{date}}</span>
+    </div>
+    <div class="observation-popup-subtitle ellipsis">
+      <span class="muted" title="{{user.email}}">{{user.email}}</span>
+    </div>
+    <div class="observation-popup-subtitle">
+      <span class="muted" ng-if="user.phones && user.phones.length && user.phones[0].number">{{user.phones[0].number}}</span>
     </div>
   </div>
-<div>
+
+  <div class="user-popup-actions">
+    <div>
+      <a href="javascript:void(0)" title="Show in feed" class="location-popup-info" ng-click="onInfoClicked()"><i class="fa fa-info-circle right-gap"></i></a>
+      <a href="javascript:void(0)" title="Zoom to" class="location-popup-info" ng-click="onZoomClicked()"><i class="fa fa-crosshairs"></i></a>
+    </div>
+  </div>
+
+</div>

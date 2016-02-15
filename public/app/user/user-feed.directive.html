@@ -1,35 +1,25 @@
-<div class="row">
-	<div class="col-md-7">
-		<div class="feed-avatar-img-container pull-left">
-			<img class="avatar-thumbnail img-rounded" ng-src="{{avatarUrl}}"/>
-		</div>
-		<div class="news-feed-item-support observation-type">{{user.displayName}}</div>
-		<div class="news-feed-item-support observation-variant">{{user.email}}</div>
-	</div>
+<div class="user-item">
+  <div class="user-item-avatar">
+    <img class="avatar-thumbnail img-rounded" ng-src="{{avatarUrl}}"/>
+  </div>
 
-	<div class="col-md-5">
-		<div class="row">
-			<div class="col-md-12">
-				<div class="news-feed-item-support small-text pull-right">{{fromNow}}</div>
-			</div>
-		</div>
+  <div class="user-item-content">
+    <div class="news-feed-item-support observation-type">{{user.displayName}}</div>
+		<div class="news-feed-item-support observation-variant ellipsis" title="{{user.email}}">{{user.email}}</div>
+  </div>
 
-		<div class="row">
-			<div class="col-md-12">
-				<div class="pull-right">
-					<a href="javascript:void(0)" class="small-text" ng-click="onUserLocationClick(user)">
-						{{user.location.geometry.coordinates[1] | number: 3}}, {{user.location.geometry.coordinates[0] | number: 3}}
-					</a>
-				</div>
-			</div>
-		</div>
-
-		<div class="pull-right">
-			<button ng-class="{active: followUserId == user.id}" class="btn btn-xs btn-primary top-gap-s" data-toggle="button" ng-click="followUser($event, user)">
-				<span ng-show="followUserId == user.id">Following...</span>
-				<span ng-hide="followUserId == user.id">Follow</span>
-			</button>
-		</div>
-
-	</div>
+  <div class="user-item-actions">
+    <div class="news-feed-item-support small-text">{{fromNow}}</div>
+    <div>
+      <a href="javascript:void(0)" class="small-text" ng-click="onUserLocationClick(user)">
+        {{user.location.geometry.coordinates[1] | number: 3}}, {{user.location.geometry.coordinates[0] | number: 3}}
+      </a>
+    </div>
+    <div>
+      <button ng-class="{active: followUserId == user.id}" class="btn btn-xs btn-primary top-gap-s" data-toggle="button" ng-click="followUser($event, user)">
+        <span ng-show="followUserId == user.id">Following...</span>
+        <span ng-hide="followUserId == user.id">Follow</span>
+      </button>
+    </div>
+  </div>
 </div>
