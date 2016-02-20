@@ -10,7 +10,7 @@ function AdminTeamsController($scope, $injector, $filter, $location, Team) {
   $scope.itemsPerPage = 10;
 
   Team.query(function(teams) {
-    $scope.teams = teams;
+    $scope.teams = _.reject(teams, function(team) { return team.teamEventId; });
   });
 
   $scope.filterTeams = function(team) {

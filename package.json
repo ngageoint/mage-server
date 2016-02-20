@@ -35,7 +35,7 @@
     "migrate": "0.1.6",
     "moment": "2.1.0",
     "mongodb-migrations": "0.2.1",
-    "mongoose": "4.2.7",
+    "mongoose": "4.4.4",
     "multer": "0.1.x",
     "optimist": "0.3.x",
     "passport": "0.1.x",

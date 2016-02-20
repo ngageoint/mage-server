@@ -2,13 +2,13 @@ angular
   .module('mage')
   .controller('AdminEventController', AdminEventController);
 
-AdminEventController.$inject = ['$scope', '$location', '$filter', '$routeParams', '$q', '$modal', 'LocalStorageService', 'EventService', 'Event', 'Team', 'Layer'];
+AdminEventController.$inject = ['$scope', '$location', '$filter', '$routeParams', '$q', '$modal', 'LocalStorageService', 'UserService', 'EventService', 'Event', 'Team', 'Layer'];
 
-function AdminEventController($scope, $location, $filter, $routeParams, $q, $modal, LocalStorageService, EventService, Event, Team, Layer) {
+function AdminEventController($scope, $location, $filter, $routeParams, $q, $modal, LocalStorageService, UserService, EventService, Event, Team, Layer) {
   $scope.token = LocalStorageService.getToken();
 
   $scope.editTeams = false;
-  $scope.eventTeams = [];
+  $scope.eventMembers = [];
   $scope.teamsPage = 0;
   $scope.teamsPerPage = 10;
 
@@ -20,10 +20,21 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $mod
   $scope.teams = [];
   $scope.layers = [];
 
+  $scope.member = {};
+
   var teamsById = {};
   var layersById = {};
+  var eventTeam;
 
-  $q.all({teams: Team.query().$promise, layers: Layer.query().$promise, event: Event.get({id: $routeParams.eventId, populate: false}).$promise}).then(function(result) {
+  function normalize(item) {
+    return {
+      id: item.id,
+      name: item.name || item.displayName,
+      type: item.name ? 'team' : 'user'
+    };
+  }
+
+  $q.all({users: UserService.getAllUsers(), teams: Team.query().$promise, layers: Layer.query().$promise, event: Event.get({id: $routeParams.eventId, populate: false}).$promise}).then(function(result) {
     $scope.teams = result.teams;
     teamsById = _.indexBy(result.teams, 'id');
 
@@ -31,11 +42,30 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $mod
     layersById = _.indexBy(result.layers, 'id');
 
     $scope.event = result.event;
-    $scope.team = {};
-    $scope.eventTeams = _.map($scope.event.teamIds, function(teamId) { return teamsById[teamId]; });
-    $scope.nonTeams = _.filter($scope.teams, function(team) {
-      return $scope.event.teamIds.indexOf(team.id) === -1;
+
+    var eventTeamId = _.find($scope.event.teamIds, function(teamId) {
+      return teamsById[teamId].teamEventId === $scope.event.id;
     });
+    eventTeam = teamsById[eventTeamId];
+
+    var teamIdsInEvent = _.filter($scope.event.teamIds, function(teamId) {
+      return teamsById[teamId].teamEventId !== $scope.event.id;
+    });
+    var teamsInEvent = _.map(teamIdsInEvent, function(teamId) { return teamsById[teamId]; });
+
+    var usersInEvent = _.filter(result.users.data, function(user) {
+      return _.findWhere(eventTeam.users, {id: user.id});
+    });
+
+    $scope.eventMembers = _.map(usersInEvent.concat(teamsInEvent), function(item) { return normalize(item); });
+
+    var teamsNotInEvent = _.filter($scope.teams, function(team) {
+      return $scope.event.teamIds.indexOf(team.id) === -1 && !team.teamEventId;
+    });
+    var usersNotInEvent = _.reject(result.users.data, function(user) {
+      return _.findWhere(eventTeam.users, {id: user.id});
+    });
+    $scope.eventNonMembers = _.map(usersNotInEvent.concat(teamsNotInEvent), function(item) { return normalize(item); });
 
     $scope.layer = {};
     $scope.eventLayers = _.map($scope.event.layerIds, function(layerId) { return layersById[layerId]; });
@@ -46,14 +76,12 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $mod
   });
 
   function saveEvent(event) {
-    event.$save({populate: false}, function() {
-
-    });
+    event.$save({populate: false});
   }
 
-  $scope.filterTeams = function(team) {
-    var filteredTeams = $filter('filter')([team], $scope.teamSearch);
-    return filteredTeams && filteredTeams.length;
+  $scope.filterMembers = function(item) {
+    var filteredMembers = $filter('filter')([item], $scope.memberSearch);
+    return filteredMembers && filteredMembers.length;
   };
 
   $scope.filterLayers = function(layer) {
@@ -61,22 +89,47 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $mod
     return filteredLayers && filteredLayers.length;
   };
 
-  $scope.addTeam = function(team) {
-    $scope.team = {};
+  $scope.addMember = function(member) {
+    member.type === 'user' ? addUser(member) : addTeam(member);
+  };
+
+  function addTeam(team) {
+    $scope.member = {};
     $scope.event.teamIds.push(team.id);
-    $scope.eventTeams.push(team);
-    $scope.nonTeams = _.reject($scope.nonTeams, function(t) { return t.id === team.id; });
+    $scope.eventMembers.push(team);
+    $scope.eventNonMembers = _.reject($scope.eventNonMembers, function(item) { return item.id === team.id; });
 
     saveEvent($scope.event);
+  }
+
+  function addUser(user) {
+    $scope.member = {};
+    $scope.eventMembers.push(user);
+    $scope.eventNonMembers = _.reject($scope.eventNonMembers, function(item) { return item.id === user.id; });
+
+    eventTeam.users.push({id: user.id});
+    eventTeam.$save();
+  }
+
+  $scope.removeMember = function(member) {
+    member.type === 'user' ? removeUser(member) : removeTeam(member);
   };
 
-  $scope.removeTeam = function(team) {
-    $scope.event.teamIds = _.reject($scope.event.teamIds, function(teamId) {return teamId === team.id;});
-    $scope.eventTeams = _.reject($scope.eventTeams, function(t) { return t.id === team.id;});
-    $scope.nonTeams.push(team);
+  function removeTeam(team) {
+    $scope.event.teamIds = _.reject($scope.event.teamIds, function(teamId) {return teamId === team.id; });
+    $scope.eventMembers = _.reject($scope.eventMembers, function(item) { return item.id === team.id; });
+    $scope.eventNonMembers.push(team);
 
     saveEvent($scope.event);
-  };
+  }
+
+  function removeUser(user) {
+    $scope.eventMembers = _.reject($scope.eventMembers, function(item) { return item.id === user.id; });
+    $scope.eventNonMembers.push(user);
+
+    eventTeam.users = _.reject(eventTeam.users, function(u) { return user.id === u.id; });
+    eventTeam.$save();
+  }
 
   $scope.addLayer = function(layer) {
     $scope.layer = {};
@@ -103,8 +156,9 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $mod
     $location.path('/admin/events/' + event.id + '/edit/form');
   };
 
-  $scope.gotoTeam = function(team) {
-    $location.path('/admin/teams/' + team.id);
+  $scope.gotoMember = function(member) {
+    var resource = member.type === 'user' ? 'users' : 'teams';
+    $location.path('/admin/' + resource + '/' + member.id);
   };
 
   $scope.gotoLayer = function(layer) {

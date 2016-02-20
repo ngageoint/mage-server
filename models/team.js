@@ -10,6 +10,7 @@ var Schema = mongoose.Schema;
 var TeamSchema = new Schema({
   name: { type: String, required: true, unique: true},
   description: { type: String },
+  teamEventId: { type: Number, ref: 'Event' },
   userIds: [{type: Schema.Types.ObjectId, ref: 'User'}]
 },{
   versionKey: false
@@ -18,17 +19,25 @@ var TeamSchema = new Schema({
 TeamSchema.pre('remove', function(next) {
   var team = this;
 
-  async.parallel({
-    user: function(done) {
-      User.removeTeamFromUsers(team, done);
-    },
-    teams: function(done) {
-      Event.removeTeamFromEvents(team, done);
+  if (!team.teamEventId) return next();
+
+  Event.getById(team.teamEventId, function(err, event) {
+    if (err) return next(err);
+
+    if (event) {
+      var error = new Error("Cannot delete an events team, event '" + event.name + "' still exists.");
+      error.status = 405;
+      return next(error);
     }
-  },
-  function(err) {
-    next(err);
+
+    return next();
+
   });
+});
+
+TeamSchema.pre('remove', function(next) {
+  var team = this;
+  Event.removeTeamFromEvents(team, next);
 });
 
 function transform(team, ret) {
@@ -69,8 +78,19 @@ exports.count = function(callback) {
   });
 };
 
-exports.getTeams = function(callback) {
+exports.getTeams = function(options, callback) {
+  if (typeof options === 'function') {
+    callback = options;
+    options = {};
+  }
+
   var query = {};
+  if (options.teamIds) {
+    query._id = {
+      $in: options.teamIds
+    };
+  }
+
   Team.find(query).populate('userIds').exec(function (err, teams) {
     callback(err, teams);
   });
@@ -87,6 +107,31 @@ exports.createTeam = function(team, callback) {
   }
 
   Team.create(create, function(err, team) {
+    if (err) return callback(err);
+
+    Team.populate(team, {path: 'userIds'}, callback);
+  });
+};
+
+exports.createTeamForEvent = function(event, callback) {
+  async.waterfall([
+    function(done) {
+      var team = {
+        name: event.name,
+        description: "This team belongs specifically to event '" + event.name + "' and cannot be deleted.'",
+        teamEventId: event._id
+      };
+
+      Team.create(team, done);
+    },
+    function(team, done) {
+      Event.addTeam(event, {id: team._id }, function(err) {
+        done(err, team);
+      });
+    }
+  ], function(err, team) {
+    if (err) return callback(err);
+
     Team.populate(team, {path: 'userIds'}, callback);
   });
 };

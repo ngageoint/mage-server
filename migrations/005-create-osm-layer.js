@@ -16,6 +16,6 @@ exports.up = function(done) {
   Layer.create(osm, done);
 };
 
-exports.down = function(next) {
+exports.down = function(done) {
   Layer.Model.remove({name: "Open Street Map"}, done);
 };

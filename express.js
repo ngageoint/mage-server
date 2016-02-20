@@ -48,9 +48,14 @@ var authentication = require('./authentication')(app, passport, provisioning, co
 require('./routes')(app, {authentication: authentication, provisioning: provisioning});
 
 app.use(function(err, req, res, next) { // eslint-disable-line no-unused-vars
-  log.error(err.message);
-  log.error(err.stack);
-  res.status(500).send('Internal server error, please contact MAGE administrator.');
+  if (process.env.NODE_ENV !== 'test') {
+    log.error(err.message);
+    log.error(err.stack);
+  }
+
+  var status = err.status || 500;
+  var msg = status === 500 ? 'Internal server error, please contact MAGE administrator.' : err.message;
+  res.status(status).send(msg);
 });
 
 module.exports = app;

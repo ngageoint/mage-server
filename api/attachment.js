@@ -123,6 +123,7 @@ Attachment.prototype.delete = function(id, callback) {
 };
 
 Attachment.prototype.deleteAllForEvent = function (callback) {
+
   var directoryPath = path.join(attachmentBase, this._event.collectionName);
   log.info('removing attachments directory ' + directoryPath);
 

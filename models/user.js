@@ -295,28 +295,8 @@ exports.removeRolesForUser = function(user, callback) {
   });
 };
 
-exports.setTeamsForUser = function(user, teamIds, callback) {
-  user.teams = teamIds;
-  user.save(function (err, user) {
-    callback(err, user);
-  });
-};
-
-exports.removeTeamsForUser = function(user, callback) {
-  var update = { teams: [] };
-  User.findByIdAndUpdate(user._id, update, {new: true}, function (err, user) {
-    callback(err, user);
-  });
-};
-
 exports.removeRoleFromUsers = function(role, callback) {
   User.update({role: role._id}, {roles: undefined}, function(err, number) {
-    callback(err, number);
-  });
-};
-
-exports.removeTeamFromUsers = function(team, callback) {
-  User.update({}, {'$pull': {teams: team._id}}, function(err, number) {
     callback(err, number);
   });
 };
@@ -342,7 +322,7 @@ exports.addRecentEventForUser = function(user, event, callback) {
   });
 };
 
-exports.removerRecentEventForUsers = function(event, callback) {
+exports.removeRecentEventForUsers = function(event, callback) {
   var update = {
     $pull: { recentEventIds: event._id }
   };

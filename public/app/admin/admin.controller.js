@@ -43,8 +43,8 @@ function AdminController($scope, $routeParams, $location, $filter, UserService, 
     $scope.unregisteredDevices = data;
   });
 
-  Team.count(function (data) {
-    $scope.teamCount = data.count;
+  Team.query(function (teams) {
+    $scope.teamCount = _.reject(teams, function(team) { return team.teamEventId; }).length;
   });
 
   Event.count(function (data) {

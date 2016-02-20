@@ -1,0 +1,125 @@
+var request = require('supertest')
+  , sinon = require('sinon')
+  , mongoose = require('mongoose')
+  , mockfs = require('mock-fs')
+  , MockToken = require('../mockToken')
+  , app = require('../../express')
+  , TokenModel = mongoose.model('Token');
+
+require('chai').should();
+require('sinon-mongoose');
+
+require('../../models/team');
+var TeamModel = mongoose.model('Team');
+
+require('../../models/event');
+var EventModel = mongoose.model('Event');
+
+require('../../models/icon');
+var IconModel = mongoose.model('Icon');
+
+require('../../models/user');
+var UserModel = mongoose.model('User');
+
+describe("event delete tests", function() {
+
+  var sandbox;
+  before(function() {
+    sandbox = sinon.sandbox.create();
+  });
+
+  afterEach(function() {
+    sandbox.restore();
+  });
+
+  var userId = mongoose.Types.ObjectId();
+  function mockTokenWithPermission(permission) {
+    sandbox.mock(TokenModel)
+      .expects('findOne')
+      .withArgs({token: "12345"})
+      .chain('populate', 'userId')
+      .chain('exec')
+      .yields(null, MockToken(userId, [permission]));
+  }
+
+  it("should delete event", function(done) {
+    mockTokenWithPermission('DELETE_EVENT');
+
+    var eventId = 1;
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event',
+      collectionName: 'observations1'
+    });
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .twice()
+      .onFirstCall()
+      .yields(null, mockEvent)
+      .onSecondCall()
+      .yields(null, null);
+
+    sandbox.mock(EventModel.collection)
+      .expects('remove')
+      .yields(null);
+
+    mongoose.connection.db = sandbox.stub();
+    mongoose.connection.db.dropCollection = function() {};
+    sandbox.mock(mongoose.connection.db)
+      .expects('dropCollection')
+      .yields(null);
+
+    sandbox.mock(IconModel)
+      .expects('findOne')
+      .yields(null);
+
+    sandbox.mock(IconModel)
+      .expects('remove')
+      .yields(null);
+
+    var teamId = mongoose.Types.ObjectId();
+    var mockTeam = new TeamModel({
+      _id: teamId,
+      name: 'Mock Team',
+      teamEventId: 1
+    });
+
+    var removeEventsFromUserExpectation = sandbox.mock(UserModel)
+      .expects('update')
+      .withArgs({}, { $pull: { recentEventIds: eventId } }, { multi: true })
+      .yields(null);
+
+    mockfs({
+      '/var/lib/mage': {}
+    });
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .chain('populate')
+      .chain('exec')
+      .yields(null, [mockTeam]);
+
+    var removeTeamsFromEventExpectation = sandbox.mock(EventModel)
+      .expects('update')
+      .withArgs({}, { $pull: { teamIds: teamId } })
+      .yields(null, [mockTeam]);
+
+    var removeTeamExpectation = sandbox.mock(TeamModel.collection)
+      .expects('remove')
+      .yields(null);
+
+    request(app)
+      .delete('/api/events/' + eventId)
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(204)
+      .end(function(err) {
+        removeTeamExpectation.verify();
+        removeEventsFromUserExpectation.verify();
+        removeTeamsFromEventExpectation.verify();
+
+        mockfs.restore();
+        done(err);
+      });
+  });
+});

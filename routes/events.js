@@ -178,7 +178,6 @@ module.exports = function(app, security) {
         if (err) return next(err);
 
         //copy default icon into new event directory
-        // TODO test this, was id changed to _id
         new api.Icon(event._id).setDefaultIcon(function(err) {
           if (err) return next(err);
 

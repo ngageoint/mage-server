@@ -2,6 +2,7 @@ var mongoose = require('mongoose')
   , async = require('async')
   , Counter = require('./counter')
   , User = require('./user')
+  , Team = require('./team')
   , api = require('../api')
   , log = require('winston');
 
@@ -46,6 +47,25 @@ var EventSchema = new Schema({
   versionKey: false
 });
 
+function validateTeamIds(eventId, teamIds, next) {
+  if (!teamIds || !teamIds.length) return next();
+
+  Team.getTeams({teamIds: teamIds}, function(err, teams) {
+    if (err) return next(err);
+
+    var containsInvalidTeam = teams.some(function(team) {
+      return team.teamEventId && team.teamEventId !== eventId;
+    });
+    if (containsInvalidTeam) {
+      var error = new Error("Cannot add a team that belongs specifically to another event");
+      error.status = 405;
+      return next(error);
+    }
+
+    next();
+  });
+}
+
 EventSchema.pre('remove', function(next) {
   var event = this;
 
@@ -59,19 +79,35 @@ EventSchema.pre('remove', function(next) {
       });
     },
     recentEventIds: function(done) {
-      User.removerRecentEventForUsers(event, function(err) {
+      User.removeRecentEventForUsers(event, function(err) {
         done(err);
       });
     },
     attachments: function(done) {
       new api.Attachment(event).deleteAllForEvent(function(err) {
-        console.log('done deleting attachments for event');
+        log.info('done deleting attachments for event');
         done(err);
       });
     }
   },
   function(err) {
     next(err);
+  });
+});
+
+EventSchema.post('remove', function(event) {
+  Team.getTeams({teamIds: event.teamIds}, function(err, teams) {
+    if (err) log.error('Could not get teams for deleted event ' + event.name);
+
+    var teamEvents = teams.filter(function(team) {
+      return team.teamEventId && team.teamEventId === event._id;
+    });
+
+    if (teamEvents && teamEvents.length) {
+      Team.deleteTeam(teamEvents[0], function(err) {
+        if (err) log.error('Could not delete team for event ' + event.name);
+      });
+    }
   });
 });
 
@@ -266,23 +302,46 @@ exports.create = function(event, options, callback) {
     options = {};
   }
 
-  Counter.getNext('event', function(id) {
-    event._id = id;
-    event.collectionName = 'observations' + id;
+  async.waterfall([
+    function(done) {
+      Counter.getNext('event', function(id) {
+        done(null, id);
+      });
+    },
+    function(id, done) {
+      event._id = id;
+      event.collectionName = 'observations' + id;
 
-    Event.create(event, function(err, newEvent) {
-      if (err) return callback(err);
+      Event.create(event, function(err, newEvent) {
+        if (err) return done(err);
 
-      createObservationCollection(newEvent);
+        createObservationCollection(newEvent);
 
-      if (options.populate) {
-        Event.populate(newEvent, {path: 'teamIds'}, function(err, event) {
-          Event.populate(event, {path: 'teamIds.userIds', model: 'User'}, callback);
-        });
-      } else {
-        callback(err, newEvent);
-      }
-    });
+        done(null, newEvent);
+      });
+    },
+    function(event, done) {
+      Team.createTeamForEvent(event, function(err) {
+        if (err) {
+          // could not create the team for this event, remove the event and error out
+          event.remove(function() {
+            done(err);
+          });
+        }
+
+        done(err, event);
+      });
+    }
+  ], function(err, newEvent) {
+    if (err) return callback(err);
+
+    if (options.populate) {
+      Event.populate(newEvent, {path: 'teamIds'}, function(err, event) {
+        Event.populate(event, {path: 'teamIds.userIds', model: 'User'}, callback);
+      });
+    } else {
+      callback(err, newEvent);
+    }
   });
 };
 
@@ -292,8 +351,17 @@ exports.update = function(id, event, options, callback) {
     options = {};
   }
 
-  Event.findByIdAndUpdate(id, event, {new: true}, function(err, updatedEvent) {
+  async.series([
+    function(done) {
+      validateTeamIds(id, event.teamIds, done);
+    },
+    function(done) {
+      Event.findByIdAndUpdate(id, event, {new: true}, done);
+    }
+  ], function(err, results) {
     if (err) return callback(err);
+
+    var updatedEvent = results[1];
 
     if (options.populate) {
       Event.populate(updatedEvent, {path: 'teamIds'}, function(err, event) {
@@ -306,15 +374,23 @@ exports.update = function(id, event, options, callback) {
 };
 
 exports.addTeam = function(event, team, callback) {
-  var update = {
-    $addToSet: {
-      teamIds: mongoose.Types.ObjectId(team.id)
-    }
-  };
+  async.series([
+    function(done) {
+      validateTeamIds(event._id, [team.id], done);
+    },
+    function(done) {
+      var update = {
+        $addToSet: {
+          teamIds: mongoose.Types.ObjectId(team.id)
+        }
+      };
 
-  Event.findByIdAndUpdate(event._id, update, function(err, event) {
-    callback(err, event);
+      Event.findByIdAndUpdate(event._id, update, done);
+    }
+  ], function(err, results) {
+    callback(err, results[1]);
   });
+
 };
 
 exports.removeTeam = function(event, team, callback) {
