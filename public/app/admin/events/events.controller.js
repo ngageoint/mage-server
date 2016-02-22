@@ -6,12 +6,21 @@ AdminEventsController.$inject = ['$scope', '$location', '$filter', '$modal', 'Ev
 
 function AdminEventsController($scope, $location, $filter, $modal, Event) {
   $scope.events = [];
+  $scope.filter = "active"; // possible values all, active, complete
   $scope.page = 0;
   $scope.itemsPerPage = 10;
 
-  Event.query({populate: false}, function(events) {
+  Event.query({state: 'all',  populate: false}, function(events) {
     $scope.events = events;
   });
+
+  $scope.filterComplete = function (event) {
+    switch ($scope.filter) {
+    case 'all': return true;
+    case 'active': return !event.complete;
+    case 'complete': return event.complete;
+    }
+  };
 
   $scope.filterEvents = function(event) {
     var filteredEvents = $filter('filter')([event], $scope.eventSearch);

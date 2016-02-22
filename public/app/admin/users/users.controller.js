@@ -13,17 +13,6 @@ function AdminUsersController($scope, $injector, $filter, $location, LocalStorag
 
   UserService.getAllUsers({forceRefresh: true, populate: 'roleId'}).success(function(users) {
     $scope.users = users;
-    $scope.allCount = $scope.users.length;
-    $scope.activeCount = _.filter($scope.users, function(u) { return u.active === true; }).length;
-    $scope.inactiveCount = _.filter($scope.users, function(u) { return !u.active; }).length;
-  });
-
-  $scope.$watch('userSearch', function() {
-    if (!$scope.filteredUsers) return;
-
-    $scope.allCount = $scope.filteredUsers.length;
-    $scope.activeCount = _.filter($scope.filteredUsers, function(u) { return u.active === true; }).length;
-    $scope.inactiveCount = _.filter($scope.filteredUsers, function(u) { return !u.active; }).length;
   });
 
   $scope.filterActive = function (user) {

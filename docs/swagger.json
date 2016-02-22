@@ -727,6 +727,11 @@
                         "name": "userId",
                         "in": "query",
                         "type": "string"
+                    },
+                    {
+                        "name": "state",
+                        "in": "query",
+                        "type": "string"
                     }
                 ],
                 "responses": {

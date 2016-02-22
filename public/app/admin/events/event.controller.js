@@ -165,6 +165,20 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $mod
     $location.path('/admin/layers/' + layer.id);
   };
 
+  $scope.completeEvent = function(event) {
+    event.complete = true;
+    event.$save(function(updatedEvent) {
+      $scope.event = updatedEvent;
+    });
+  };
+
+  $scope.activateEvent = function(event) {
+    event.complete = false;
+    event.$save(function() {
+      event.complete = false;
+    });
+  };
+
   $scope.deleteEvent = function() {
     var modalInstance = $modal.open({
       templateUrl: '/app/admin/events/event-delete.html',

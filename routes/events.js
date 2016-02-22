@@ -36,6 +36,17 @@ module.exports = function(app, security) {
 
   function parseEventQueryParams(req, res, next) {
     var parameters = {};
+
+    var state = req.param('state');
+    if (!state) {
+      // default to only active events, if state is not a parameter
+      parameters.complete = false;
+    } else if (state === 'active') {
+      parameters.complete = false;
+    } else if (state === 'complete') {
+      parameters.complete = true;
+    }
+
     parameters.userId = req.param('userId');
 
     parameters.populate = true;
@@ -78,7 +89,9 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     parseEventQueryParams,
     function (req, res, next) {
-      var filter = {};
+      var filter = {
+        complete: req.parameters.complete
+      };
       if (req.parameters.userId) filter.userId = req.parameters.userId;
       if (access.userHasPermission(req.user, 'READ_EVENT_ALL')) {
         Event.getEvents({filter: filter, populate: req.parameters.populate}, function(err, events) {

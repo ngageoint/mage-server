@@ -51,7 +51,23 @@
             </div>
 
             <div class="col-md-6">
-              <div class="card">
+              <div class="card" ng-if="!event.complete">
+                <div class="card-content">
+                  <strong class="text-primary">Complete event</strong>
+                  <p class="text-primary">Marking an event as complete will remove it as a selectable event.  The event is not destroyed and can be changed back to an active state at any time.</p>
+                  <button class="btn btn-primary top-gap" ng-click="completeEvent(event)"> <i class="fa fa-check-square-o"></i> Complete</button>
+                </div>
+              </div>
+
+              <div class="card" ng-if="event.complete">
+                <div class="card-content">
+                  <strong class="text-primary">Activate event</strong>
+                  <p class="text-primary">Marking an event as active will show it as a selectable event on clients.  At that point users can contribute observations and locations to the event.</p>
+                  <button class="btn btn-primary top-gap" ng-click="activateEvent(event)"> <i class="fa fa-minus-square-o"></i> Activate</button>
+                </div>
+              </div>
+
+              <div class="card top-gap">
                 <div class="card-content">
                   <strong class="text-danger">Delete event</strong>
                   <p class="text-danger">Deleting event will remove all event information including observation and location data. This cannot be undone, all event data will be unrecoverable.</p>
