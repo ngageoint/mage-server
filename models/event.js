@@ -36,6 +36,7 @@ var EventSchema = new Schema({
   _id: { type: Number, required: true, unique: true },
   name: { type: String, required: true, unique: true },
   description: { type: String, required: false },
+  complete: { type: Boolean },
   collectionName: { type: String, required: true },
   teamIds: [{type: Schema.Types.ObjectId, ref: 'Team'}],
   layerIds: [{type: Number, ref: 'Layer'}],
@@ -191,7 +192,13 @@ exports.getEvents = function(options, callback) {
     options = {};
   }
 
-  Event.find({}, function (err, events) {
+  var query = {};
+
+  var filter = options.filter || {};
+  if (filter.complete === true) query.complete = true;
+  if (filter.complete === false) query.complete = {$ne: true};
+
+  Event.find(query, function (err, events) {
     if (err) return callback(err);
 
     var filters = [];

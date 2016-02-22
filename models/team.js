@@ -1,6 +1,5 @@
 var mongoose = require('mongoose')
   , async = require('async')
-  , User = require('./user')
   , Event = require('./event');
 
 // Creates a new Mongoose Schema object
@@ -8,7 +7,7 @@ var Schema = mongoose.Schema;
 
 // Collection to hold users
 var TeamSchema = new Schema({
-  name: { type: String, required: true, unique: true},
+  name: { type: String, required: true },
   description: { type: String },
   teamEventId: { type: Number, ref: 'Event' },
   userIds: [{type: Schema.Types.ObjectId, ref: 'User'}]
@@ -118,7 +117,7 @@ exports.createTeamForEvent = function(event, callback) {
     function(done) {
       var team = {
         name: event.name,
-        description: "This team belongs specifically to event '" + event.name + "' and cannot be deleted.'",
+        description: "This team belongs specifically to event '" + event.name + "' and cannot be deleted.",
         teamEventId: event._id
       };
 

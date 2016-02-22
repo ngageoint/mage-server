@@ -115,4 +115,88 @@ describe("event update tests", function() {
       })
       .end(done);
   });
+
+  it("should mark event as complete", function(done) {
+    mockTokenWithPermission('UPDATE_EVENT');
+
+    var eventId = 1;
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event'
+    });
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    var teamId = mongoose.Types.ObjectId();
+    var mockTeams = [{
+      id: teamId,
+      name: 'Mock Team'
+    }];
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .withArgs({ _id: { $in: [teamId.toString()] }})
+      .chain('populate')
+      .chain('exec')
+      .yields(null, mockTeams);
+
+    sandbox.mock(EventModel)
+      .expects('findByIdAndUpdate')
+      .withArgs(eventId, { name: 'Mock Event', complete: true })
+      .yields(null, mockEvent);
+
+    request(app)
+      .put('/api/events/' + eventId)
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        name: 'Mock Event',
+        complete: true
+      })
+      .expect(200)
+      .end(done);
+  });
+
+  it("should mark event as active", function(done) {
+    mockTokenWithPermission('UPDATE_EVENT');
+
+    var eventId = 1;
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event'
+    });
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    var teamId = mongoose.Types.ObjectId();
+    var mockTeams = [{
+      id: teamId,
+      name: 'Mock Team'
+    }];
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .withArgs({ _id: { $in: [teamId.toString()] }})
+      .chain('populate')
+      .chain('exec')
+      .yields(null, mockTeams);
+
+    sandbox.mock(EventModel)
+      .expects('findByIdAndUpdate')
+      .withArgs(eventId, { name: 'Mock Event', complete: false })
+      .yields(null, mockEvent);
+
+    request(app)
+      .put('/api/events/' + eventId)
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        name: 'Mock Event',
+        complete: false
+      })
+      .expect(200)
+      .end(done);
+  });
 });
