@@ -16,5 +16,3 @@ Adheres to [Semantic Versioning](http://semver.org/).
 ## [4.0.0](https://github.com/ngageoint/mage-server/releases/tag/v4.0.0) (02-03-2016)
 
 * Google oauth support
-
-* Standard Format Overlay has tile to retrieve implementation
