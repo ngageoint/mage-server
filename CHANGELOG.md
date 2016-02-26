@@ -6,7 +6,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 
 ## 4.0.2 (TBD)
 
-* TBD
+* Added environment module to support local and Cloud Foundry deployments.
 
 ## [4.0.1](https://github.com/ngageoint/mage-server/releases/tag/v4.0.1) (02-26-2016)
 
