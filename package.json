@@ -1,6 +1,6 @@
 {
   "name": "MAGE",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Geospatial situation awareness application",
   "keywords": [
     "NGA",
@@ -27,8 +27,8 @@
     "express": "4.10.6",
     "fs-extra": "0.11.x",
     "gm": "1.17.x",
-    "jade": "^1.11.0",
-    "json2csv": "^2.2.1",
+    "jade": "1.11.0",
+    "json2csv": "2.2.1",
     "json2csv-stream": "0.1.2",
     "jszip": "2.5.0",
     "method-override": "1.0.x",
@@ -40,13 +40,13 @@
     "optimist": "0.3.x",
     "passport": "0.1.x",
     "passport-anonymous": "1.0.1",
-    "passport-google-oauth": "^0.2.0",
+    "passport-google-oauth": "0.2.0",
     "passport-http-bearer": "0.2.x",
     "passport-local": "1.0.0",
     "request": "2.51.x",
     "terraformer": "1.0.4",
     "terraformer-arcgis-parser": "1.0.4",
-    "togeojson": "~0.3.0",
+    "togeojson": "0.3.0",
     "walk": "2.3.4",
     "winston": "1.0.1",
     "xmldom": "0.1.19",
@@ -80,5 +80,5 @@
   },
   "bundleDependencies": [],
   "private": true,
-  "main": "mage.js"
+  "main": "app.js"
 }
