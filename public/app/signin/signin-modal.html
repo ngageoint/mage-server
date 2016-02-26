@@ -1,6 +1,6 @@
 <form class="form">
   <div class="modal-header">
-    <h3 class="modal-title">Token Expired, Please log in.</h3>
+    <h3 class="modal-title">Please log in.</h3>
   </div>
 
   <div class="modal-body">
@@ -50,7 +50,10 @@
           <label>Password</label>
           <input ng-model="password" name="password" type="password" class="form-control"/>
         </div>
+
+        <button class="btn btn-primary pull-right top-gap" type="submit" ng-click="login({username: username, uid: uid, password: password})">Login</button>
       </div>
+
       <div class="col-md-10 col-md-offset-1">
         <div class="top-gap-s alert alert-danger" ng-show="status > 399">
           <strong>Failed login</strong>

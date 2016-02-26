@@ -1,6 +1,10 @@
 module.exports = function(app, security) {
   var fs = require('fs-extra')
+    , extend = require('util')._extend
+    , async = require('async')
+    , config = require('../config')
     , api = require('../api')
+    , User = require('../models/user')
     , Event = require('../models/event')
     , Team = require('../models/team')
     , Role = require('../models/role')
@@ -9,12 +13,28 @@ module.exports = function(app, security) {
     , Icon = require('../models/icon')
     , Setting = require('../models/setting');
 
-  app.get('/api', function(req, res) {
-    Setting.getSetting('disclaimer', function(err, disclaimer) {
-      disclaimer = disclaimer || {};
+  app.get('/api', function(req, res, next) {
+    async.parallel({
+      initial: function(done) {
+        User.count(function(err, count) {
+          done(err, count === 0);
+        });
+      },
+      disclaimer: function(done) {
+        Setting.getSetting('disclaimer', function(err, disclaimer) {
+          done(err, disclaimer || {});
+        });
+      }
+    }, function(err, results) {
+      if (err) return next(err);
 
-      var api = app.get('config').api;
-      api.disclaimer = disclaimer.settings;
+      var api = extend({}, config.api);
+      api.disclaimer = results.disclaimer.settings;
+
+      if (results.initial) {
+        api.initial = true;
+      }
+
       res.json(api);
     });
   });

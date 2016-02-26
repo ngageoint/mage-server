@@ -117,7 +117,7 @@ module.exports = function() {
 
     //does this feature have media
     if (feature.attachments && feature.attachments.length) {
-      description += '<div>'
+      description += '<div>';
 
       feature.attachments.forEach(function(attachment) {
         description += '<div style="padding-top:15px;"><a href="files/' + attachment.relativePath + '">' + attachment.name + '</a></div>';

@@ -6,6 +6,11 @@ module.exports = function(app, passport, provisioning) {
     , api = require('../api')
     , userTransformer = require('../transformers/user');
 
+  var passwordLength = null;
+  if (strategy.passwordLength) {
+    passwordLength = strategy.passwordLength;
+  }
+
   passport.use(new LocalStrategy(
     function(username, password, done) {
       User.getUserByUsername(username, function(err, user) {

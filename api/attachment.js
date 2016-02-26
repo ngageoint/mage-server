@@ -2,10 +2,9 @@ var ObservationModel = require('../models/observation')
   , log = require('winston')
   , path = require('path')
   , fs = require('fs-extra')
-  , config = require('../config.js');
-
-var attachmentConfig = config.server.attachment;
-var attachmentBase = attachmentConfig.baseDirectory;
+  , environment = require('environment');
+  
+var attachmentBase = environment.attachmentBaseDirectory;
 
 var createAttachmentPath = function(event) {
   var now = new Date();
@@ -57,7 +56,7 @@ Attachment.prototype.create = function(observationId, attachment, callback) {
     attachment.relativePath = path.join(relativePath, fileName);
     var file = path.join(attachmentBase, attachment.relativePath);
 
-    fs.rename(attachment.path, file, function(err) {
+    fs.move(attachment.path, file, function(err) {
       if (err) return callback(err);
 
       ObservationModel.addAttachment(event, observationId, attachment, function(err, newAttachment) {
@@ -80,7 +79,7 @@ Attachment.prototype.update = function(id, attachment, callback) {
     var fileName = path.basename(attachment.path);
     attachment.relativePath = path.join(relativePath, fileName);
     var file = path.join(attachmentBase, attachment.relativePath);
-    fs.rename(attachment.path, file, function(err) {
+    fs.move(attachment.path, file, function(err) {
       if (err) return callback(err);
 
       ObservationModel.updateAttachment(event, observation._id, id, attachment, function(err, attachment) {
