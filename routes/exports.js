@@ -19,7 +19,10 @@ module.exports = function(app, security) {
     , json2csvStream = require('json2csv-stream')
     , stream = require('stream')
     , archiver = require('archiver')
-    , exec = require('child_process').exec;
+    , exec = require('child_process').exec
+    , environment = require('environment');
+
+  var attachmentBase = environment.attachmentBaseDirectory;
 
   var passport = security.authentication.passport;
 
@@ -603,35 +606,42 @@ module.exports = function(app, security) {
   function exportCsv(req, res) {
     var event = req.event;
 
-    var fields = ['id', 'user', 'device', 'latitude', 'longitude'];
+    var fields = ['id', 'user', 'device', 'latitude', 'longitude', 'timestamp', 'excelTimestamp'];
+    var fieldNames = ['id', 'User', 'Device', 'Latitude', 'Longitude', 'Date (ISO8601)', 'Excel Timestamp (UTC)'];
 
     req.event.form.fields.forEach(function(field) {
-      if (field.title === 'Location') return;
-      fields.push(field.title);
+      if (field.title === 'Location' || field.name === 'timestamp' || field.archived) return;
+      fields.push(field.name);
+      fieldNames.push(field.title);
     });
     fields.push('attachment');
-    fields.push('attachmentExcelLink');
+    fieldNames.push('Attachment');
 
-    function excelLink(attachment) {
-      return '=HYPERLINK(LEFT(CELL("filename"),FIND("[",CELL("filename"),1)-1) & "' + attachment.name + '")';
+    fields.push('attachmentExcelLink');
+    fieldNames.push('Attachment Excel Link');
+
+    function excelLink(attachment, attachmentNumber) {
+      return '=HYPERLINK("' + attachment.name + '", "attachment' + attachmentNumber + '")';
     }
 
     function flatten(observations, req) {
       var flattened = [];
 
       observations.forEach(function(observation) {
-        mapObservationProperties(observation, req.event.form);
-
         var properties = observation.properties;
+        properties.id = observation.id;
+
         if (req.users[observation.userId]) properties.user = req.users[observation.userId].username;
         if (req.devices[observation.deviceId]) properties.device = req.devices[observation.deviceId].uid;
 
         properties.longitude = observation.geometry.coordinates[0];
         properties.latitude = observation.geometry.coordinates[1];
 
+        properties.excelTimestamp = "=DATEVALUE(MID(INDIRECT(ADDRESS(ROW(),COLUMN()-1)),1,10)) + TIMEVALUE(MID(INDIRECT(ADDRESS(ROW(),COLUMN()-1)),12,8))";
+
         if (observation.attachments.length > 0) {
           properties.attachment = observation.attachments[0].name;
-          properties.attachmentExcelLink = excelLink(observation.attachments[0]);
+          properties.attachmentExcelLink = excelLink(observation.attachments[0], 1);
         }
 
         flattened.push(properties);
@@ -639,7 +649,8 @@ module.exports = function(app, security) {
         for (var i = 1; i < observation.attachments.length; i++) {
           flattened.push({
             id: observation.id,
-            attachment: observation.attachments[i].name
+            attachment: observation.attachments[i].name,
+            attachmentExcelLink: excelLink(observation.attachments[i], i + 1)
           });
         }
       });
@@ -653,7 +664,7 @@ module.exports = function(app, security) {
       new api.Observation(event).getAll({filter: filter}, function(err, observations) {
         var data = flatten(observations, req);
 
-        json2csv({data: data, fields: fields}, function(err, csv) {
+        json2csv({data: data, fields: fields, fieldNames: fieldNames}, function(err, csv) {
           if (err) return done(err);
 
           stream.write(csv);
@@ -747,7 +758,7 @@ module.exports = function(app, security) {
 
           // throw in attachments
           archive.bulk([{
-            cwd: path.join(config.server.attachment.baseDirectory, event.collectionName),
+            cwd: path.join(attachmentBase, event.collectionName),
             src: ['**/*.*'],
             dest: 'mage-export',
             expand: true,
