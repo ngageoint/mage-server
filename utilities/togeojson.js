@@ -100,7 +100,7 @@ var kml = function(data, o) {
     if (lineStyle[0]) {
       style.lineStyle = {};
       var lineColor = get(lineStyle[0], 'color');
-      if (color[0]) {
+      if (lineColor[0]) {
         style.lineStyle.color = parseColor(nodeVal(lineColor[0]));
       }
 
@@ -158,7 +158,7 @@ var kml = function(data, o) {
     // only ever get placemarks.
     // I.E. pull all placemarks regards of depth level
   var placemarks = xpath.select("//Placemark", doc);
-  log.info('Found ' + placemarks.length);
+  log.info('Found ' + placemarks.length + ' placemarks in the KML document');
   placemarks.forEach(function(placemark) {
     features = features.concat(getPlacemark(placemark));
   });
