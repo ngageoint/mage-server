@@ -50,7 +50,7 @@
     "togeojson": "0.3.0",
     "walk": "2.3.4",
     "winston": "1.0.1",
-    "xmldom": "0.1.19",
+    "xmldom": "0.1.22",
     "xpath": "0.0.8"
   },
   "devDependencies": {
