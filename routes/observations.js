@@ -1,6 +1,7 @@
 module.exports = function(app, security) {
 
   var api = require('../api')
+    , log = require('winston')
     , fs = require('fs-extra')
     , moment = require('moment')
     , Event = require('../models/event')
@@ -325,6 +326,7 @@ module.exports = function(app, security) {
 
         if (!attachment) return res.sendStatus(404);
 
+        var stream;
         if (req.headers.range) {
           var range = req.headers.range;
           var rangeParts = range.replace(/bytes=/, "").split("-");
@@ -332,19 +334,39 @@ module.exports = function(app, security) {
           var rangeEnd = rangeParts[1] ? parseInt(rangeParts[1], 10) : attachment.size - 1;
           var contentLength = (rangeEnd - rangeStart) + 1;
 
-          res.writeHead(206, {
-            'Content-Range': 'bytes ' + rangeStart + '-' + rangeEnd + '/' + attachment.size,
-            'Accept-Ranges': 'bytes',
-            'Content-Length': contentLength,
-            'Content-Type': attachment.contentType
+
+          stream = fs.createReadStream(attachment.path, {start: rangeStart, end: rangeEnd});
+          stream.on('open', function() {
+            res.writeHead(206, {
+              'Content-Range': 'bytes ' + rangeStart + '-' + rangeEnd + '/' + attachment.size,
+              'Accept-Ranges': 'bytes',
+              'Content-Length': contentLength,
+              'Content-Type': attachment.contentType
+            });
+
+            stream.pipe(res);
           });
-          fs.createReadStream(attachment.path, {start: rangeStart, end: rangeEnd}).pipe(res);
+
+          stream.on('error', function(err) {
+            log.error('error streaming attachment', err);
+            return res.sendStatus(404);
+          });
         } else {
-          res.writeHead(200, {
-            'Content-Length': attachment.size,
-            'Content-Type': attachment.contentType
+          stream = fs.createReadStream(attachment.path);
+
+          stream.on('open', function() {
+            res.writeHead(200, {
+              'Content-Length': attachment.size,
+              'Content-Type': attachment.contentType
+            });
+
+            stream.pipe(res);
           });
-          fs.createReadStream(attachment.path).pipe(res);
+
+          stream.on('error', function(err) {
+            log.error('error streaming attachment', err);
+            return res.sendStatus(404);
+          });
         }
       });
     }
