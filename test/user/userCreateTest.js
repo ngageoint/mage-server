@@ -59,11 +59,16 @@ describe("user create tests", function() {
 
     sandbox.mock(mockUser)
       .expects('populate')
+      .twice()
       .withArgs('roleId')
       .yields(null, mockUser);
 
     sandbox.mock(UserModel)
       .expects('create')
+      .yields(null, mockUser);
+
+    sandbox.mock(mockUser)
+      .expects('save')
       .yields(null, mockUser);
 
     request(app)
@@ -276,6 +281,13 @@ describe("user create tests", function() {
 
   it('should fail to create user when passsord does not meet complexity', function(done) {
     mockTokenWithPermission('NO_PERMISSIONS');
+
+    sandbox.mock(RoleModel)
+      .expects('findOne')
+      .withArgs({ name: 'USER_ROLE' })
+      .yields(null, new RoleModel({
+        permissions: ['SOME_PERMISSIONS']
+      }));
 
     request(app)
       .post('/api/users')

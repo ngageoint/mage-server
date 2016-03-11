@@ -226,12 +226,16 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
           var temporalOptions = {
             color: colorForFeature(feature, layerInfo.options.temporal)
           };
-          if (feature.style && feature.style.iconUrl) temporalOptions.iconUrl = feature.style.iconUrl + '?access_token=' + LocalStorageService.getToken();
+          if (feature.style && feature.style.iconUrl) {
+            temporalOptions.iconUrl = feature.style.iconUrl;
+          }
 
           return L.locationMarker(latlng, temporalOptions);
         } else {
           var options = {};
-          if (feature.style && feature.style.iconUrl) options.iconUrl = feature.style.iconUrl + '?access_token=' + LocalStorageService.getToken();
+          if (feature.style && feature.style.iconUrl) {
+            options.iconUrl = feature.style.iconUrl;
+          }
           return L.fixedWidthMarker(latlng, options);
         }
       },

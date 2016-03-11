@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminEventEditFormController', AdminEventEditFormController);
 
-AdminEventEditFormController.$inject = ['$rootScope', '$scope', '$location', '$filter', '$routeParams', '$q', '$timeout', '$modal', 'LocalStorageService', 'EventService', 'Event'];
+AdminEventEditFormController.$inject = ['$rootScope', '$scope', '$location', '$filter', '$routeParams', '$q', '$timeout', '$uibModal', 'LocalStorageService', 'EventService', 'Event'];
 
-function AdminEventEditFormController($rootScope, $scope, $location, $filter, $routeParams, $q, $timeout, $modal, LocalStorageService, EventService, Event) {
+function AdminEventEditFormController($rootScope, $scope, $location, $filter, $routeParams, $q, $timeout, $uibModal, LocalStorageService, EventService, Event) {
   $scope.unSavedChanges = false;
   $scope.token = LocalStorageService.getToken();
 
@@ -334,7 +334,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     if ($scope.unSavedChanges) {
       event.preventDefault();
 
-      var modalInstance = $modal.open({
+      var modalInstance = $uibModal.open({
         templateUrl: '/app/admin/events/event.edit.form.unsaved.html'
       });
 

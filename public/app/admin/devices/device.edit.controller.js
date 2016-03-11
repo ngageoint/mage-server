@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminDeviceEditController', AdminDeviceEditController);
 
-AdminDeviceEditController.$inject = ['$scope', '$injector', '$filter', '$routeParams', '$location', 'LocalStorageService', 'DeviceService', 'UserService'];
+AdminDeviceEditController.$inject = ['$scope', '$filter', '$routeParams', '$location', 'LocalStorageService', 'DeviceService', 'UserService'];
 
-function AdminDeviceEditController($scope, $injector, $filter, $routeParams, $location, LocalStorageService, DeviceService, UserService) {
+function AdminDeviceEditController($scope, $filter, $routeParams, $location, LocalStorageService, DeviceService, UserService) {
   $scope.token = LocalStorageService.getToken();
 
   if ($routeParams.deviceId) {

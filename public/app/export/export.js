@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('ExportController', ExportController);
 
-ExportController.$inject = ['$scope', '$modalInstance', '$http', 'LocalStorageService', 'FilterService', 'events'];
+ExportController.$inject = ['$scope', '$uibModalInstance', '$http', 'LocalStorageService', 'FilterService', 'events'];
 
-function ExportController($scope, $modalInstance, $http, LocalStorageService, FilterService, events) {
+function ExportController($scope, $uibModalInstance, $http, LocalStorageService, FilterService, events) {
   $scope.exportEvent = {selected: FilterService.getEvent()};
   $scope.events = events;
 
@@ -50,7 +50,7 @@ function ExportController($scope, $modalInstance, $http, LocalStorageService, Fi
   $scope.exportTime = $scope.exportOptions[0];
 
   $scope.closeModal = function () {
-    $modalInstance.dismiss('cancel');
+    $uibModalInstance.dismiss('cancel');
   };
 
   $scope.openStartDate = function($event) {

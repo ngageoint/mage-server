@@ -7,7 +7,8 @@ function avatarUser() {
     restrict: "A",
     templateUrl: '/app/user/user-avatar.directive.html',
     scope: {
-      avatarUser: '='
+      avatarUser: '=',
+      avatarEdit: '='
     },
     controller: AvatarUserController,
     bindToController: true
@@ -50,7 +51,7 @@ function AvatarUserController($scope, $element, LocalStorageService) {
 
   function avatarUrl(user, token) {
     if (user && user.avatarUrl) {
-      return user.avatarUrl + "?access_token=" + token;
+      return user.avatarUrl + "?access_token=" + token + '&_dc=' + user.updatedAt;
     } else {
       return "img/missing_photo.png";
     }

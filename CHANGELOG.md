@@ -6,6 +6,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 
 ## 4.1.0 (TBD)
 
+* Create your own user icon from the user edit page.
 * Added environment module to support local and Cloud Foundry deployments.
 * When creating a new MAGE server the initial user and device are now creating through the web interface, rather then by a database patch.
 * Fixed a bug where canceling an observation edit did not also clear attachment delete flag.  This made it look like the attachment may still have been deleted after clicking cancel.

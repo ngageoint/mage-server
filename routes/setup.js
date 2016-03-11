@@ -7,8 +7,8 @@ module.exports = function(app, security) {
 
   var passwordLength = null;
   Object.keys(security.authentication.strategies).forEach(function(name) {
-    if (security.authentication.strategies[name].passwordLength) {
-      passwordLength = strategy.passwordMinLength
+    if (security.authentication.strategies[name].passwordMinLength) {
+      passwordLength = security.authentication.strategies[name].passwordMinLength;
     }
   });
 
@@ -40,7 +40,7 @@ module.exports = function(app, security) {
       return res.status(400).send('passwordconfirm is required');
     }
 
-    if (password != passwordconfirm) {
+    if (password !== passwordconfirm) {
       return res.status(400).send('passwords do not match');
     }
 
@@ -61,7 +61,7 @@ module.exports = function(app, security) {
         type: 'local',
         password: password
       }
-    }
+    };
 
     req.device = {
       uid: uid,
@@ -101,4 +101,4 @@ module.exports = function(app, security) {
     }
   );
 
-}
+};

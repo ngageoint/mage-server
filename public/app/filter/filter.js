@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('FilterController', FilterController);
 
-FilterController.$inject = ['$scope', '$modalInstance', 'EventService', 'FilterService', 'Event', 'events'];
+FilterController.$inject = ['$scope', '$uibModalInstance', 'EventService', 'FilterService', 'Event', 'events'];
 
-function FilterController($scope, $modalInstance, EventService, FilterService, Event, events) {
+function FilterController($scope, $uibModalInstance, EventService, FilterService, Event, events) {
   $scope.events = events;
 
   $scope.filterEvent = {selected: FilterService.getEvent()};
@@ -51,11 +51,11 @@ function FilterController($scope, $modalInstance, EventService, FilterService, E
       }
     });
 
-    $modalInstance.close('filter');
+    $uibModalInstance.close('filter');
   };
 
   $scope.closeModal = function () {
-    $modalInstance.dismiss('cancel');
+    $uibModalInstance.dismiss('cancel');
   };
 
   $scope.openStartDate = function($event) {

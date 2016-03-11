@@ -139,7 +139,7 @@
                 </span>
                 <i class="fa fa-icon-info icon-spacer"></i> {{myself.displayName}}
               </a>
-              <a href="#/user" class="nav-link hidden-xs" style="padding-top: 14px; padding-bottom: 10px;" tooltip="My&nbsp;Profile" tooltip-placement="bottom">
+              <a href="#/user" class="nav-link hidden-xs" style="padding-top: 14px; padding-bottom: 10px;" uib-tooltip="My&nbsp;Profile" tooltip-placement="bottom">
                 <span>
                   <img class="avatar-img" ng-src="{{myself.avatarUrl ? myself.avatarUrl + '?access_token=' + token : '/img/missing_photo.png'}}"/>
                 </span>
@@ -150,7 +150,7 @@
               <a ng-href="#/admin" data-toggle="collapse" data-target=".main-navbar-collapse" class="nav-link visible-xs-block">
                 <i class="icon-cogs icon-spacer"></i> Admin
               </a>
-              <a ng-href="#/admin" class="nav-link hidden-xs" tooltip="Admin" tooltip-placement="bottom">
+              <a ng-href="#/admin" class="nav-link hidden-xs" uib-tooltip="Admin" tooltip-placement="bottom">
                 <i class="icon-cogs icon-spacer"></i>
               </a>
             </li>
@@ -158,7 +158,7 @@
               <a href="#/about" data-toggle="collapse" data-target=".main-navbar-collapse" class="nav-link visible-xs-block">
                 <i class="fa fa-info-circle icon-spacer"></i> About MAGE
               </a>
-              <a href="#/about" class="nav-link hidden-xs" tooltip="About&nbsp;MAGE" tooltip-placement="bottom">
+              <a href="#/about" class="nav-link hidden-xs" uib-tooltip="About&nbsp;MAGE" tooltip-placement="bottom">
                 <i class="fa fa-info-circle icon-spacer"></i>
               </a>
             </li>
@@ -166,7 +166,7 @@
               <a ng-click="logout()" data-toggle="collapse" data-target=".main-navbar-collapse" class="nav-link pointer visible-xs-block">
                 <i class="fa fa-sign-out icon-spacer"></i> Sign out
               </a>
-              <a ng-click="logout()" class="nav-link pointer hidden-xs" tooltip="Sign&nbsp;out" tooltip-placement="bottom">
+              <a ng-click="logout()" class="nav-link pointer hidden-xs" uib-tooltip="Sign&nbsp;out" tooltip-placement="bottom">
                 <i class="fa fa-sign-out icon-spacer"></i>
               </a>
             </li>
@@ -198,7 +198,8 @@
   <script type="text/javascript" src="bower_components/jquery-file-download/src/Scripts/jquery.fileDownload.js"></script>
   <script type="text/javascript" src="bower_components/jquery-minicolors/jquery.minicolors.min.js"></script>
   <script type="text/javascript" src="bower_components/angular-minicolors/angular-minicolors.js"></script>
-  <script type="text/javascript" src="vendor/angular-bootstrap/ui-bootstrap-tpls-0.13.0-SNAPSHOT.min.js"></script>
+  <script type="text/javascript" src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+
   <script type="text/javascript" src="vendor/bootstrap/js/bootstrap.min.js"></script>
   <!-- endbuild -->
 
@@ -240,6 +241,7 @@
   <script type="text/javascript" src="app/admin/users/user.controller.js"></script>
   <script type="text/javascript" src="app/admin/users/user.edit.controller.js"></script>
   <script type="text/javascript" src="app/admin/users/users.controller.js"></script>
+  <script type="text/javascript" src="app/admin/users/map.icon.directive.js"></script>
   <script type="text/javascript" src="app/admin/teams/teams.controller.js"></script>
   <script type="text/javascript" src="app/admin/teams/team.controller.js"></script>
   <script type="text/javascript" src="app/admin/teams/team.edit.controller.js"></script>
@@ -264,6 +266,7 @@
   <script type="text/javascript" src="app/user/user-feed.directive.js"></script>
   <script type="text/javascript" src="app/user/user-avatar.directive.js"></script>
   <script type="text/javascript" src="app/user/user-icon.directive.js"></script>
+  <script type="text/javascript" src="app/user/user-icon-edit.directive.js"></script>
   <script type="text/javascript" src="app/user/user-popup.directive.js"></script>
 
   <script type="text/javascript" src="app/leaflet-extensions/LocationMarker.js"></script>

@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminLayerController', AdminLayerController);
 
-AdminLayerController.$inject = ['$scope', '$modal', '$routeParams', '$location', '$filter', 'Layer', 'Event', 'LocalStorageService'];
+AdminLayerController.$inject = ['$scope', '$uibModal', '$routeParams', '$location', '$filter', 'Layer', 'Event', 'LocalStorageService'];
 
-function AdminLayerController($scope, $modal, $routeParams, $location, $filter, Layer, Event, LocalStorageService) {
+function AdminLayerController($scope, $uibModal, $routeParams, $location, $filter, Layer, Event, LocalStorageService) {
 
   $scope.layerEvents = [];
   $scope.nonTeamEvents = [];
@@ -70,24 +70,24 @@ function AdminLayerController($scope, $modal, $routeParams, $location, $filter, 
   };
 
   $scope.deleteLayer = function() {
-    var modalInstance = $modal.open({
+    var modalInstance = $uibModal.open({
       templateUrl: '/app/admin/layers/layer-delete.html',
       resolve: {
         layer: function () {
           return $scope.layer;
         }
       },
-      controller: ['$scope', '$modalInstance', 'layer', function ($scope, $modalInstance, layer) {
+      controller: ['$scope', '$uibModalInstance', 'layer', function ($scope, $uibModalInstance, layer) {
         $scope.layer = layer;
 
         $scope.deleteLayer = function(layer) {
           layer.$delete(function() {
-            $modalInstance.close(layer);
+            $uibModalInstance.close(layer);
           });
         };
 
         $scope.cancel = function () {
-          $modalInstance.dismiss('cancel');
+          $uibModalInstance.dismiss('cancel');
         };
       }]
     });

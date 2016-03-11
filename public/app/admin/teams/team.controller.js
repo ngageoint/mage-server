@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminTeamController', AdminTeamController);
 
-AdminTeamController.$inject = ['$scope', '$modal', '$filter', '$location', '$routeParams', 'Team', 'Event', 'UserService'];
+AdminTeamController.$inject = ['$scope', '$uibModal', '$filter', '$location', '$routeParams', 'Team', 'Event', 'UserService'];
 
-function AdminTeamController($scope, $modal, $filter, $location, $routeParams, Team, Event, UserService) {
+function AdminTeamController($scope, $uibModal, $filter, $location, $routeParams, Team, Event, UserService) {
   $scope.edit = false;
   $scope.usersPage = 0;
   $scope.usersPerPage = 10;
@@ -102,24 +102,24 @@ function AdminTeamController($scope, $modal, $filter, $location, $routeParams, T
   };
 
   $scope.deleteTeam = function() {
-    var modalInstance = $modal.open({
+    var modalInstance = $uibModal.open({
       templateUrl: '/app/admin/teams/team-delete.html',
       resolve: {
         team: function () {
           return $scope.team;
         }
       },
-      controller: ['$scope', '$modalInstance', 'team', function ($scope, $modalInstance, team) {
+      controller: ['$scope', '$uibModalInstance', 'team', function ($scope, $uibModalInstance, team) {
         $scope.team = team;
 
         $scope.deleteTeam = function(team) {
           team.$delete(function() {
-            $modalInstance.close(team);
+            $uibModalInstance.close(team);
           });
         };
 
         $scope.cancel = function () {
-          $modalInstance.dismiss('cancel');
+          $uibModalInstance.dismiss('cancel');
         };
       }]
     });

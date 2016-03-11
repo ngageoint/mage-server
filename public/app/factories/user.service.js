@@ -7,7 +7,7 @@ UserService.$inject = ['$rootScope', '$q', '$http', '$location', '$timeout', '$w
 function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalStorageService) {
   var userDeferred = $q.defer();
   var resolvedUsers = {};
-  var resolveAllUsers = null;
+  var resolveAllUsers = true;
 
   var service = {
     myself: null,
@@ -201,8 +201,24 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     return $http.get('/api/users/count');
   }
 
-  function getUser(id) {
-    return resolvedUsers[id] || $http.get('/api/users/' + id, {});
+  function getUser(id, options) {
+    options = options || {};
+    if (options.forceRefresh) {
+      delete resolvedUsers[id];
+    }
+
+    var deferred = $q.defer();
+
+    if (resolvedUsers[id]) {
+      deferred.resolve(resolvedUsers[id]);
+    } else {
+      return $http.get('/api/users/' + id, {}).success(function(user) {
+        resolvedUsers[id] = user;
+        deferred.resolve(user);
+      });
+    }
+
+    return deferred.promise;
   }
 
   function getAllUsers(options) {
@@ -210,7 +226,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
 
     if (options.forceRefresh) {
       resolvedUsers = {};
-      resolveAllUsers = undefined;
+      resolveAllUsers = true;
     }
 
     var parameters = {};
@@ -218,13 +234,17 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
       parameters.populate = options.populate;
     }
 
-    resolveAllUsers = resolveAllUsers || $http.get('/api/users', {params: parameters}).success(function(users) {
-      for (var i = 0; i < users.length; i++) {
-        resolvedUsers[users[i]._id] = $q.when(users[i]);
-      }
-    });
+    var deferred = $q.defer();
+    if (resolveAllUsers) {
+      return $http.get('/api/users', {params: parameters}).success(function(users) {
+        deferred.resolve(users);
+        resolvedUsers = _.indexBy(users, 'id');
+      });
+    } else {
+      deferred.resolve(_.values(resolvedUsers));
+    }
 
-    return resolveAllUsers;
+    return deferred.promise;
   }
 
   function getInactiveUsers() {
@@ -235,9 +255,9 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     saveUser(user, {
       url: '/api/users?access_token=' + LocalStorageService.getToken(),
       type: 'POST'
-    }, function(data) {
-      resolvedUsers[data.id] = $q.when(data);
-      success(data);
+    }, function(user) {
+      resolvedUsers[user.id] = user;
+      if (_.isFunction(success)) success(user);
     }, error, progress);
   }
 
@@ -245,19 +265,16 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     saveUser(user, {
       url: '/api/users/' + id + '?access_token=' + LocalStorageService.getToken(),
       type: 'PUT'
-    }, function(data) {
-      resolvedUsers[data.id] = $q.when(data);
-      if (_.isFunction(success)) success(data);
+    }, function(user) {
+      resolvedUsers[user.id] = user;
+      if (_.isFunction(success)) success(user);
     }, error, progress);
   }
 
   function deleteUser(user) {
-    var promise = $http.delete('/api/users/' + user.id);
-    promise.success(function() {
+    return $http.delete('/api/users/' + user.id).success(function(){
       delete resolvedUsers[user.id];
     });
-
-    return promise;
   }
 
   // TODO is this really used in this service or just internal

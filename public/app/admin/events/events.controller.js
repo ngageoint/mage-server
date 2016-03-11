@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminEventsController', AdminEventsController);
 
-AdminEventsController.$inject = ['$scope', '$location', '$filter', '$modal', 'Event'];
+AdminEventsController.$inject = ['$scope', '$location', '$filter', '$uibModal', 'Event'];
 
-function AdminEventsController($scope, $location, $filter, $modal, Event) {
+function AdminEventsController($scope, $location, $filter, $uibModal, Event) {
   $scope.events = [];
   $scope.filter = "active"; // possible values all, active, complete
   $scope.page = 0;
@@ -49,24 +49,24 @@ function AdminEventsController($scope, $location, $filter, $modal, Event) {
   $scope.deleteEvent = function($event, event) {
     $event.stopPropagation();
 
-    var modalInstance = $modal.open({
+    var modalInstance = $uibModal.open({
       templateUrl: '/app/admin/events/event-delete.html',
       resolve: {
         event: function () {
           return event;
         }
       },
-      controller: ['$scope', '$modalInstance', 'event', function ($scope, $modalInstance, event) {
+      controller: ['$scope', '$uibModalInstance', 'event', function ($scope, $uibModalInstance, event) {
         $scope.event = event;
 
         $scope.deleteEvent = function(event) {
           event.$delete(function() {
-            $modalInstance.close(event);
+            $uibModalInstance.close(event);
           });
         };
 
         $scope.cancel = function () {
-          $modalInstance.dismiss('cancel');
+          $uibModalInstance.dismiss('cancel');
         };
       }]
     });

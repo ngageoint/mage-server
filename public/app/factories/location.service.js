@@ -2,9 +2,9 @@ angular
   .module('mage')
   .factory('LocationService', LocationService);
 
-LocationService.$inject = ['$q', 'Location', 'UserService'];
+LocationService.$inject = ['$q', 'Location', 'UserService', 'LocalStorageService'];
 
-function LocationService($q, Location, UserService) {
+function LocationService($q, Location, UserService, LocalStorageService) {
 
   // Specify times in milliseconds
   var colorBuckets = [{
@@ -46,7 +46,7 @@ function LocationService($q, Location, UserService) {
           var user = usersById[userLocation.id];
           if (user && user.iconUrl) {
             userLocation.locations[0].style = {
-              iconUrl: '/api/users/' + user.id + '/icon'
+              iconUrl: '/api/users/' + user.id + '/icon?' + $.param({access_token: LocalStorageService.getToken(), _dc: user.updatedAt})
             };
           }
 

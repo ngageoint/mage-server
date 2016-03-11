@@ -419,7 +419,10 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
           // Check if we already have this user, if so update, otherwise add
           var localUser = filteredUsersById[userLocation.id];
           if (localUser) {
-            if (userLocation.location.properties.timestamp !== localUser.location.properties.timestamp) updated.push(userLocation);
+            if (userLocation.location.properties.timestamp !== localUser.location.properties.timestamp ||
+                userLocation.updatedAt !== localUser.updatedAt) {
+              updated.push(userLocation);
+            }
           } else {
             added.push(userLocation);
           }

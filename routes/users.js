@@ -1,5 +1,6 @@
 module.exports = function(app, security) {
   var api = require('../api')
+    , util = require('util')
     , log = require('winston')
     , Role = require('../models/role')
     , access = require('../access')
@@ -32,6 +33,32 @@ module.exports = function(app, security) {
       req.role = role;
       next();
     });
+  }
+
+  function parseIconUpload(req, res, next) {
+    var iconMetadata = req.param('iconMetadata') || {};
+    if (util.isString(iconMetadata)) {
+      iconMetadata = JSON.parse(iconMetadata);
+    }
+
+    if (req.files.icon) {
+      // default type to upload
+      if (!iconMetadata.type) iconMetadata.type = 'upload';
+
+      if (iconMetadata.type !== 'create' && iconMetadata.type !== 'upload') {
+        return res.status(400).send('invalid icon metadata');
+      }
+
+      req.files.icon.type = iconMetadata.type;
+      req.files.icon.text = iconMetadata.text;
+      req.files.icon.color = iconMetadata.color;
+    } else {
+      if (iconMetadata.type === 'none') {
+        req.files.icon.type = 'none';
+      }
+    }
+
+    next();
   }
 
   function validateUser(req, res, next) {
@@ -249,6 +276,7 @@ module.exports = function(app, security) {
     '/api/users',
     isAuthenticated('bearer'),
     validateUser,
+    parseIconUpload,
     function(req, res, next) {
       // If I did not authenticate a user go to the next route
       // '/api/users' route which does not require authentication
@@ -325,6 +353,7 @@ module.exports = function(app, security) {
     '/api/users/:userId',
     passport.authenticate('bearer'),
     access.authorize('UPDATE_USER'),
+    parseIconUpload,
     function(req, res, next) {
       var user = req.userParam;
 

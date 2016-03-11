@@ -1,4 +1,6 @@
-var Team = require('../models/team')
+var async = require('async')
+  , mongoose = require('mongoose')
+  , Team = require('../models/team')
   , Event = require('../models/event');
 
 exports.id = '006-event-teams';
@@ -6,17 +8,22 @@ exports.id = '006-event-teams';
 exports.up = function(done) {
   console.log('\nCreating team for each event');
 
-  Event.getEvents(function(err, events) {
-    events.forEach(function(event) {
+  mongoose.model('Team').collection.dropAllIndexes(function (err) {
+    if (err) return done(err);
 
-      Team.createTeamForEvent(event, function(err, eventTeam) {
-        if (err) {
-          console.log('Error creating team for event ' + event.name);
-          return done(err);
-        }
+    Event.getEvents(function(err, events) {
+      async.each(events, function(event, done) {
+        Team.createTeamForEvent(event, function(err, eventTeam) {
+          if (err) {
+            console.log('Error creating team for event ' + event.name);
+            return done(err);
+          }
 
-        console.log('Created team ' + eventTeam.name + ' for event ' + event.name);
-        done();
+          console.log('Created team ' + eventTeam.name + ' for event ' + event.name);
+          done();
+        });
+      }, function(err) {
+        done(err);
       });
     });
   });

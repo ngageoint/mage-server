@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminEventController', AdminEventController);
 
-AdminEventController.$inject = ['$scope', '$location', '$filter', '$routeParams', '$q', '$modal', 'LocalStorageService', 'UserService', 'EventService', 'Event', 'Team', 'Layer'];
+AdminEventController.$inject = ['$scope', '$location', '$filter', '$routeParams', '$q', '$uibModal', 'LocalStorageService', 'UserService', 'EventService', 'Event', 'Team', 'Layer'];
 
-function AdminEventController($scope, $location, $filter, $routeParams, $q, $modal, LocalStorageService, UserService, EventService, Event, Team, Layer) {
+function AdminEventController($scope, $location, $filter, $routeParams, $q, $uibModal, LocalStorageService, UserService, EventService, Event, Team, Layer) {
   $scope.token = LocalStorageService.getToken();
 
   $scope.editTeams = false;
@@ -180,24 +180,24 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $mod
   };
 
   $scope.deleteEvent = function() {
-    var modalInstance = $modal.open({
+    var modalInstance = $uibModal.open({
       templateUrl: '/app/admin/events/event-delete.html',
       resolve: {
         event: function () {
           return $scope.event;
         }
       },
-      controller: ['$scope', '$modalInstance', 'event', function ($scope, $modalInstance, event) {
+      controller: ['$scope', '$uibModalInstance', 'event', function ($scope, $uibModalInstance, event) {
         $scope.event = event;
 
         $scope.deleteEvent = function(event) {
           event.$delete(function() {
-            $modalInstance.close(event);
+            $uibModalInstance.close(event);
           });
         };
 
         $scope.cancel = function () {
-          $modalInstance.dismiss('cancel');
+          $uibModalInstance.dismiss('cancel');
         };
       }]
     });

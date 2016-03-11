@@ -252,16 +252,15 @@ function config($provide, $httpProvider, $routeProvider) {
   });
 }
 
-run.$inject = ['$rootScope', '$route', '$modal', 'UserService', '$location', 'authService', 'LocalStorageService', 'UserService', 'ApiService'];
+run.$inject = ['$rootScope', '$route', '$uibModal', 'UserService', '$location', 'authService', 'LocalStorageService', 'UserService', 'ApiService'];
 
-function run($rootScope, $route, $modal, UserService, $location, authService, LocalStorageService, UserService, ApiService) {
+function run($rootScope, $route, $uibModal, UserService, $location, authService, LocalStorageService, UserService, ApiService) {
   var api;
   ApiService.get(function(apiData) {
     api = apiData;
   });
 
   $rootScope.$on( "$locationChangeStart", function(event, next, current) {
-    console.log('locationChangeStart')
     // if (api.initial && next !== '/setup') {
       // event.preventDefault;
     // }
@@ -271,9 +270,9 @@ function run($rootScope, $route, $modal, UserService, $location, authService, Lo
   $rootScope.$on('event:auth-loginRequired', function() {
     if (!$rootScope.loginDialogPresented && $location.path() !== '/' && $location.path() !== '/signin' && $location.path() !== '/signup') {
       $rootScope.loginDialogPresented = true;
-      var modalInstance = $modal.open({
+      var modalInstance = $uibModal.open({
         templateUrl: 'app/signin/signin-modal.html',
-        controller: ['$scope', '$modalInstance', function ($scope, $modalInstance) {
+        controller: ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
           ApiService.get(function(api) {
             function localStrategyFilter(strategy, name) {
               return name === 'local';
@@ -296,7 +295,7 @@ function run($rootScope, $route, $modal, UserService, $location, authService, Lo
               }
 
               $rootScope.loginDialogPresented = false;
-              $modalInstance.close($scope);
+              $uibModalInstance.close($scope);
             }, function(data) {
               $scope.showStatus = true;
 
@@ -318,7 +317,7 @@ function run($rootScope, $route, $modal, UserService, $location, authService, Lo
                 data.newUser = true;
               }
               $rootScope.loginDialogPresented = false;
-              $modalInstance.close($scope);
+              $uibModalInstance.close($scope);
             }).error(function (data, status) {
               $scope.status = status;
             });
@@ -326,7 +325,7 @@ function run($rootScope, $route, $modal, UserService, $location, authService, Lo
 
           $scope.cancel = function () {
             $rootScope.loginDialogPresented = false;
-            $modalInstance.dismiss('cancel');
+            $uibModalInstance.dismiss('cancel');
           };
         }]
       });
@@ -342,7 +341,7 @@ function run($rootScope, $route, $modal, UserService, $location, authService, Lo
       authService.loginConfirmed(data);
 
       LocalStorageService.setToken(data.token);
-      if ($location.path() == '/signin' || $location.path() == '/setup') {
+      if ($location.path() === '/signin' || $location.path() === '/setup') {
         $location.path('/map');
       }
     }
@@ -354,7 +353,7 @@ function run($rootScope, $route, $modal, UserService, $location, authService, Lo
         return;
       }
 
-      var modalInstance = $modal.open({
+      var modalInstance = $uibModal.open({
         templateUrl: 'app/disclaimer/disclaimer.html',
         controller: 'DisclaimerController',
         resolve: {

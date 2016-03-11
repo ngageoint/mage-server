@@ -193,8 +193,9 @@ exports.getEvents = function(options, callback) {
   }
 
   var query = {};
-  if (options.filter.complete === true) query.complete = true;
-  if (options.filter.complete === false) query.complete = {$ne: true};
+  var filter = options.filter || {};
+  if (filter.complete === true) query.complete = true;
+  if (filter.complete === false) query.complete = {$ne: true};
 
   Event.find(query, function (err, events) {
     if (err) return callback(err);
