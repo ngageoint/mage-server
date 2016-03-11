@@ -38,7 +38,7 @@ function config($provide, $httpProvider, $routeProvider) {
           if (api.initial) {
             $location.path('/setup');
           } else {
-            $location.path('/signin')
+            $location.path('/signin');
           }
         });
       }]
@@ -252,23 +252,11 @@ function config($provide, $httpProvider, $routeProvider) {
   });
 }
 
-run.$inject = ['$rootScope', '$route', '$uibModal', 'UserService', '$location', 'authService', 'LocalStorageService', 'UserService', 'ApiService'];
+run.$inject = ['$rootScope', '$route', '$uibModal', 'UserService', '$location', 'authService', 'LocalStorageService', 'ApiService'];
 
-function run($rootScope, $route, $uibModal, UserService, $location, authService, LocalStorageService, UserService, ApiService) {
-  var api;
-  ApiService.get(function(apiData) {
-    api = apiData;
-  });
-
-  $rootScope.$on( "$locationChangeStart", function(event, next, current) {
-    // if (api.initial && next !== '/setup') {
-      // event.preventDefault;
-    // }
-  });
-
-
+function run($rootScope, $route, $uibModal, UserService, $location, authService, LocalStorageService, ApiService) {
   $rootScope.$on('event:auth-loginRequired', function() {
-    if (!$rootScope.loginDialogPresented && $location.path() !== '/' && $location.path() !== '/signin' && $location.path() !== '/signup') {
+    if (!$rootScope.loginDialogPresented && $location.path() !== '/' && $location.path() !== '/signin' && $location.path() !== '/signup' && $location.path() !== '/setup') {
       $rootScope.loginDialogPresented = true;
       var modalInstance = $uibModal.open({
         templateUrl: 'app/signin/signin-modal.html',
