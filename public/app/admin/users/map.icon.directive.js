@@ -67,7 +67,7 @@ function MapIconController($scope, $element) {
 
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = '12pt monospace';
+      ctx.font = '11pt Menlo';
       ctx.fillStyle = hexToRgb($scope.icon.color, 1);
       ctx.fillText($scope.icon.text, 24, 22);
     } else {

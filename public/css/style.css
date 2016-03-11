@@ -7,6 +7,14 @@
   display: none !important;
 }
 
+@font-face {
+	font-family: "Menlo";
+	src: url("../fonts/Menlo-Regular.ttf");
+  font-weight: normal;
+  font-style: normal;
+}
+
+
 body {
   margin: 0;
   height: 100%;
