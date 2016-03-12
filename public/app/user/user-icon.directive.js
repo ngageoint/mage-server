@@ -29,7 +29,7 @@ function IconUserController($scope, $element, LocalStorageService) {
     var token = LocalStorageService.getToken();
 
     if (iconUrl) {
-      return iconUrl + "?access_token=" + token + '&_dc' + $scope.user.updatedAt;
+      return iconUrl + "?access_token=" + token + '&_dc' + $scope.user.lastUpdated;
     } else {
       return "img/missing_marker.png";
     }

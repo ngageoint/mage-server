@@ -420,7 +420,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
           var localUser = filteredUsersById[userLocation.id];
           if (localUser) {
             if (userLocation.location.properties.timestamp !== localUser.location.properties.timestamp ||
-                userLocation.updatedAt !== localUser.updatedAt) {
+                userLocation.lastUpdated !== localUser.lastUpdated) {
               updated.push(userLocation);
             }
           } else {

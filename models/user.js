@@ -48,7 +48,9 @@ var UserSchema = new Schema({
   }
 },{
   versionKey: false,
-  timestamps: true
+  timestamps: {
+    updatedAt: 'lastUpdated'
+  }
 });
 
 UserSchema.method('validPassword', function(password, callback) {

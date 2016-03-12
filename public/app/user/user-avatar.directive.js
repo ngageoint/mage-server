@@ -51,7 +51,7 @@ function AvatarUserController($scope, $element, LocalStorageService) {
 
   function avatarUrl(user, token) {
     if (user && user.avatarUrl) {
-      return user.avatarUrl + "?access_token=" + token + '&_dc=' + user.updatedAt;
+      return user.avatarUrl + "?access_token=" + token + '&_dc=' + user.lastUpdated;
     } else {
       return "img/missing_photo.png";
     }

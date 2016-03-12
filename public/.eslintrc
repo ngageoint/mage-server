@@ -4,7 +4,8 @@
       "_": true,
       "L": true,
       "angular": true,
-      "moment": true
+      "moment": true,
+      "WebFont": true
     },
     "rules": {
       "no-console": [1]

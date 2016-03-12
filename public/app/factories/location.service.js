@@ -46,7 +46,7 @@ function LocationService($q, Location, UserService, LocalStorageService) {
           var user = usersById[userLocation.id];
           if (user && user.iconUrl) {
             userLocation.locations[0].style = {
-              iconUrl: '/api/users/' + user.id + '/icon?' + $.param({access_token: LocalStorageService.getToken(), _dc: user.updatedAt})
+              iconUrl: '/api/users/' + user.id + '/icon?' + $.param({access_token: LocalStorageService.getToken(), _dc: user.lastUpdated})
             };
           }
 

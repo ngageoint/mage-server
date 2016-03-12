@@ -271,6 +271,12 @@ a.news-feed-tab-active {
   flex-direction: row;
 }
 
+.user-item-avatar img {
+  width: 60px;
+  height: 60px;
+  margin-right: 10px;
+}
+
 .user-item-content {
   flex: 1;
   margin-right: 10px;
@@ -417,6 +423,11 @@ a.news-feed-tab-active {
 
 .mage-icon-image {
 	width: 35px;
+}
+
+.user-map-icon {
+  font-family: RobotoMono;
+  font-weight: 500;
 }
 
 .observation-popup {
