@@ -1,6 +1,6 @@
 {
   "name": "MAGE",
-  "version": "4.0.1",
+  "version": "4.1.0",
   "description": "Geospatial situation awareness application",
   "keywords": [
     "NGA",
@@ -11,7 +11,7 @@
   },
   "contributors": {
     "name": "Billy Newman",
-    "email": "newmanw@bit-sys.com"
+    "email": "newmanw10@gmail.com"
   },
   "homepage": "https://www1.nga.mil",
   "engines": {
@@ -24,7 +24,7 @@
     "async": "0.2.x",
     "body-parser": "1.2.x",
     "bower": "1.3.12",
-    "cfenv": "^1.0.3",
+    "cfenv": "1.0.3",
     "dbf": "0.1.0",
     "environment": "file:environment",
     "express": "4.10.6",
