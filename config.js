@@ -6,9 +6,9 @@ module.exports = {
     "name": package.name,
     "description": package.description,
     "version": {
-      "major": version[0],
-      "minor": version[1],
-      "micro": version[2]
+      "major": parseInt(version[0]),
+      "minor": parseInt(version[1]),
+      "micro": parseInt(version[2])
     },
     "authenticationStrategies": {
       "local": {
