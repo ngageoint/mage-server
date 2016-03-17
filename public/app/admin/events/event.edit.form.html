@@ -37,21 +37,26 @@
       <div class="row">
         <div class="col-sm-12">
           <div class="admin-table admin-table-content">
-            <accordion close-others="accordion.oneAtATime">
-              <accordion-group ng-repeat="field in event.form.fields | filter:{archived: '!true'} | orderBy: 'id'">
-                <accordion-heading>
+            <uib-accordion close-others="accordion.oneAtATime">
+              <uib-accordion-group ng-repeat="field in event.form.fields | filter:{archived: '!true'} | orderBy: 'id'">
+                <uib-accordion-heading>
                   {{field.title}}
                   <i class="pull-right fa fa-arrow-up" ng-if="!$first" ng-click="moveFieldUp($event, field)"></i>
                   <i class="pull-right fa fa-arrow-down" ng-if="!$last" ng-click="moveFieldDown($event, field)"></i>
-                </accordion-heading>
+                </uib-accordion-heading>
                 <div class="accordion-edit">
-                  <button ng-show="deletableField(field)" class="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i class="fa fa-trash icon-white"></i> Delete</button>
                   <form>
                     <div class="row">
                       <div class="col-md-2">
                         <div class="form-group">
                           <label>Type</label>
-                          <input type="text" value="{{field.type}}" class="form-control" disabled>
+                          <input type="text" value="{{getTypeValue(field)}}" class="form-control" disabled>
+                        </div>
+                      </div>
+                      <div class="col-md-10" ng-if="isMemberField(field)">
+                        <div class="form-group">
+                          <label></label>
+                          <p class="help-block">The 'User Dropdown' type is a dynamic list of all users that are part of the event.  As such you cannot add/remove options from this dropdown, users will be automatically populated.</p>
                         </div>
                       </div>
                     </div>
@@ -74,7 +79,7 @@
                     </div>
                     <div class="row">
                       <div class="col-md-2">
-                        <div class="form-group" ng-show="showAddOptions(field)">
+                        <div class="form-group" ng-show="showAddOptions(field) && !isMemberField(field)">
                           <label>Default Value</label>
                           <select ng-model="field.value" ng-options="choice.title as choice.title for choice in field.choices" class="form-control">
                             <option value="">No Default</option>
@@ -84,7 +89,7 @@
                     </div>
                     <div class="row">
                       <div class="col-md-2">
-                        <div class="form-group" ng-show="showAddOptions(field)">
+                        <div class="form-group" ng-show="showAddOptions(field) && !isMemberField(field)">
                           <label>Field Options</label>
                           <div ng-repeat="option in field.choices | filter:{blank: '!true'}" class="row bottom-gap">
                             <div class="col-sm-12">
@@ -108,10 +113,12 @@
                       <input type="checkbox" ng-model="field.required"  ng-change="onRequiredChanged(field);"> Required
                       </label>
                     </div>
+
+                    <button ng-show="deletableField(field)" class="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i class="fa fa-trash icon-white"></i> Delete Field</button>
                   </form>
                 </div>
-              </accordion-group>
-            </accordion>
+              </uib-accordion-group>
+            </uib-accordion>
 
             <div class="row top-gap-l">
               <div class="col-md-12">
@@ -130,7 +137,13 @@
                   <div class="col-md-2">
                     <div class="form-group">
                       <label>Type</label>
-                      <select ng-model="newField.type" ng-options="type.name as type.value for type in fieldTypes" class="form-control"></select>
+                      <select ng-model="newField.type" ng-options="name as value for (name, value) in fieldTypes" class="form-control"></select>
+                    </div>
+                  </div>
+                  <div class="col-md-10" ng-if="isUserDropdown(newField)">
+                    <div class="form-group">
+                      <label></label>
+                      <p class="help-block">The 'User Dropdown' type is a dynamic list of all users that are part of the event.  As such you cannot add/remove options from this dropdown, users will be automatically populated.</p>
                     </div>
                   </div>
                 </div>
@@ -142,11 +155,11 @@
                     </div>
                   </div>
                 </div>
-                <div class="row" ng-hide="newField.type=='checkbox'">
+                <div class="row" ng-hide="newField.type === 'checkbox'">
                   <div class="col-md-2">
-                    <div class="form-group" ng-hide="showAddOptions(newField)">
+                    <div class="form-group" ng-hide="hideAddOptions(newField)">
                       <label>Default Value</label>
-                      <input ng-hide="newField.type=='checkbox'" type="text" ng-model="newField.value" value="{{newField.value}}" class="form-control">
+                      <input ng-hide="newField.type === 'checkbox'" type="text" ng-model="newField.value" value="{{newField.value}}" class="form-control">
                     </div>
                   </div>
                 </div>

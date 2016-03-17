@@ -41,7 +41,8 @@ var EventSchema = new Schema({
   teamIds: [{type: Schema.Types.ObjectId, ref: 'Team'}],
   layerIds: [{type: Number, ref: 'Layer'}],
   form: {
-    variantField: { type:String, required: false },
+    variantField: { type: String, required: false },
+    userFields: [String],
     fields: [FieldSchema]
   }
 },{

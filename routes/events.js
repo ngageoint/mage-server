@@ -2,7 +2,8 @@ module.exports = function(app, security) {
   var Event = require('../models/event')
   , access = require('../access')
   , api = require('../api')
-  , archiver = require('archiver');
+  , archiver = require('archiver')
+  , async = require('async');
 
   var passport = security.authentication.passport;
 
@@ -65,8 +66,14 @@ module.exports = function(app, security) {
     if (!fields) return res.status(400).send('fields is required');
 
     var fieldNames = {};
+    var userFields = form.userFields || [];
     fields.forEach(function(field) {
       fieldNames[field.name] = field;
+
+      // remove userFields chocies, these are set dynamically
+      if (userFields.indexOf(field.name) !== -1) {
+        field.choices = [];
+      }
     });
 
     var missing = [];
@@ -85,32 +92,6 @@ module.exports = function(app, security) {
   }
 
   app.get(
-    '/api/events',
-    passport.authenticate('bearer'),
-    parseEventQueryParams,
-    function (req, res, next) {
-      var filter = {
-        complete: req.parameters.complete
-      };
-      if (req.parameters.userId) filter.userId = req.parameters.userId;
-      if (access.userHasPermission(req.user, 'READ_EVENT_ALL')) {
-        Event.getEvents({filter: filter, populate: req.parameters.populate}, function(err, events) {
-          if (err) return next(err);
-          res.json(events);
-        });
-      } else if (access.userHasPermission(req.user, 'READ_EVENT_USER')) {
-        Event.getEvents({access: {userId: req.user._id}, filter: filter, populate: req.parameters.populate}, function(err, events) {
-          if (err) return next(err);
-          res.json(events);
-        });
-      } else {
-        // No valid READ EVENT permission
-        res.sendStatus(403);
-      }
-    }
-  );
-
-  app.get(
     '/api/events/count',
     passport.authenticate('bearer'),
     access.authorize('READ_EVENT_ALL'),
@@ -124,6 +105,46 @@ module.exports = function(app, security) {
   );
 
   app.get(
+    '/api/events',
+    passport.authenticate('bearer'),
+    parseEventQueryParams,
+    function (req, res, next) {
+      var filter = {
+        complete: req.parameters.complete
+      };
+      if (req.parameters.userId) filter.userId = req.parameters.userId;
+      if (access.userHasPermission(req.user, 'READ_EVENT_ALL')) {
+        Event.getEvents({filter: filter, populate: req.parameters.populate}, function(err, events) {
+          if (err) return next(err);
+
+          async.each(events, function(event, done) {
+            new api.Form(event).populateUserFields(done);
+          }, function(err) {
+            if (err) return next(err);
+
+            res.json(events);
+          });
+        });
+      } else if (access.userHasPermission(req.user, 'READ_EVENT_USER')) {
+        Event.getEvents({access: {userId: req.user._id}, filter: filter, populate: req.parameters.populate}, function(err, events) {
+          if (err) return next(err);
+
+          async.each(events, function(event, done) {
+            new api.Form(event).populateUserFields(done);
+          }, function(err) {
+            if (err) return next(err);
+
+            res.json(events);
+          });
+        });
+      } else {
+        // No valid READ EVENT permission
+        res.sendStatus(403);
+      }
+    }
+  );
+
+  app.get(
     '/api/events/:id',
     passport.authenticate('bearer'),
     parseEventQueryParams,
@@ -131,13 +152,23 @@ module.exports = function(app, security) {
       if (access.userHasPermission(req.user, 'READ_EVENT_ALL')) {
         Event.getById(req.params.id, {populate: req.parameters.populate}, function(err, event) {
           if (err) return next(err);
-          res.json(event);
+
+          new api.Form(event).populateUserFields(function(err) {
+            if (err) return next(err);
+
+            res.json(event);
+          });
         });
       } else if (access.userHasPermission(req.user, 'READ_EVENT_USER')) {
         Event.getById(req.params.id, {access: {userId: req.user._id}, populate: req.parameters.populate}, function(err, event) {
           if (err) return next(err);
           if (!event) return res.sendStatus(404);
-          res.json(event);
+
+          new api.Form(event).populateUserFields(function(err) {
+            if (err) return next(err);
+
+            res.json(event);
+          });
         });
       } else {
         // No valid READ EVENT permission
@@ -206,6 +237,7 @@ module.exports = function(app, security) {
     access.authorize('UPDATE_EVENT'),
     parseEventQueryParams,
     validateEventParams,
+    validateFormParams,
     function(req, res, next) {
       Event.update(req.event._id, req.newEvent, {populate: req.parameters.populate}, function(err, event) {
         if (err) return next(err);
