@@ -36,6 +36,10 @@ function FieldDirectiveController($scope) {
   $scope.datePopup = {open: false};
   $scope.templatePath = types[$scope.field.type];
 
+  if ($scope.field.type === 'dropdown') {
+    $scope.valueSelected = {};
+  }
+
   $scope.onLatLngChange = function(field) {
     if (field.name === 'geometry') {
       $scope.$emit('observation:move', $scope.observation, {lat: $scope.field.value.y, lng: $scope.field.value.x});

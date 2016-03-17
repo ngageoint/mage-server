@@ -62,6 +62,7 @@ function Event($rootScope, $resource, $http, LocalStorageService) {
 
   function defaultForm() {
     return {
+      userFields: [],
       fields: [{
         id: 1,
         title: 'Date',

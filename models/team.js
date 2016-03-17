@@ -1,6 +1,5 @@
 var mongoose = require('mongoose')
   , async = require('async')
-  , User = require('./user')
   , Event = require('./event');
 
 // Creates a new Mongoose Schema object
