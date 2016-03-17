@@ -7,7 +7,7 @@ function iconUser() {
     restrict: "A",
     templateUrl: '/app/user/user-icon.directive.html',
     scope: {
-      iconUser: '='
+      user: '=iconUser'
     },
     controller: IconUserController,
     bindToController: true
@@ -19,38 +19,17 @@ function iconUser() {
 IconUserController.$inject = ['$scope', '$element', 'LocalStorageService'];
 
 function IconUserController($scope, $element, LocalStorageService) {
-  $scope.fileName = 'Choose a map icon...';
-  $scope.iconUrl = iconUrl($scope.iconUser, LocalStorageService.getToken());
+  $scope.iconUrl = getIconUrl($scope.user);
 
-  $element.find(':file').change(function() {
-    $scope.file = this.files[0];
-    $scope.fileName = $scope.file.name;
-    $scope.$emit('userIcon', $scope.file);
+  $scope.$watch('user.iconUrl', function(iconUrl) {
+    $scope.iconUrl = getIconUrl(iconUrl);
+  }, true);
 
-    if (window.FileReader) {
-      var reader = new FileReader();
-      reader.onload = (function() {
-        return function(e) {
-          $scope.$apply(function() {
-            $scope.iconUrl = e.target.result;
-          });
-        };
-      })($scope.file);
+  function getIconUrl(iconUrl) {
+    var token = LocalStorageService.getToken();
 
-      reader.readAsDataURL($scope.file);
-    }
-  });
-
-  $scope.$watch('iconUser', function(iconUser) {
-    if (!iconUser) return;
-
-    $scope.iconUrl = iconUrl(iconUser, LocalStorageService.getToken());
-    $scope.fileName = 'Choose a map icon...';
-  });
-
-  function iconUrl(user, token) {
-    if (user && user.iconUrl) {
-      return user.iconUrl + "?access_token=" + token;
+    if (iconUrl) {
+      return iconUrl + "?access_token=" + token + '&_dc' + $scope.user.lastUpdated;
     } else {
       return "img/missing_marker.png";
     }

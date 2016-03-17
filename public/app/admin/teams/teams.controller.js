@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminTeamsController', AdminTeamsController);
 
-AdminTeamsController.$inject = ['$scope', '$injector', '$filter', '$location', 'Team'];
+AdminTeamsController.$inject = ['$scope', '$uibModal', '$filter', '$location', 'Team'];
 
-function AdminTeamsController($scope, $injector, $filter, $location, Team) {
+function AdminTeamsController($scope, $uibModal, $filter, $location, Team) {
   $scope.teams = [];
   $scope.page = 0;
   $scope.itemsPerPage = 10;
@@ -40,24 +40,24 @@ function AdminTeamsController($scope, $injector, $filter, $location, Team) {
   $scope.deleteTeam = function($event, team) {
     $event.stopPropagation();
 
-    var modalInstance = $injector.get('$modal').open({
+    var modalInstance = $uibModal.open({
       templateUrl: '/app/admin/teams/team-delete.html',
       resolve: {
         team: function () {
           return team;
         }
       },
-      controller: ['$scope', '$modalInstance', 'team', function ($scope, $modalInstance, team) {
+      controller: ['$scope', '$uibModalInstance', 'team', function ($scope, $uibModalInstance, team) {
         $scope.team = team;
 
         $scope.deleteTeam = function(team) {
           team.$delete(function() {
-            $modalInstance.close(team);
+            $uibModalInstance.close(team);
           });
         };
 
         $scope.cancel = function () {
-          $modalInstance.dismiss('cancel');
+          $uibModalInstance.dismiss('cancel');
         };
       }]
     });

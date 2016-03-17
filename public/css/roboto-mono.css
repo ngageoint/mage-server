@@ -1,0 +1,69 @@
+/* Thin */
+@font-face {
+	font-family: "RobotoMono";
+	font-style: normal;
+	font-weight: 200;
+	src: local('RobotoMono Thin'), local('RobotoMono-Thin'), url("../fonts/RobotoMono-Thin.ttf") format('truetype');
+}
+@font-face {
+	font-family: "RobotoMono";
+	font-style: italic;
+	font-weight: 200;
+	src: local('RobotoMono Thin Italic'), local('RobotoMono-ThinItalic'), url("../fonts/RobotoMono-ThinItalic.ttf") format('truetype');
+}
+
+/* Light */
+@font-face {
+	font-family: "RobotoMono";
+	font-style: normal;
+	font-weight: 300;
+	src: local('RobotoMono Light'), local('RobotoMono-Light'), url("../fonts/RobotoMono-Light.ttf") format('truetype');
+}
+@font-face {
+	font-family: "RobotoMono";
+	font-style: italic;
+	font-weight: 300;
+	src: local('RobotoMono Light Italic'), local('RobotoMono-LightItalic'), url("../fonts/RobotoMono-LightItalic.ttf") format('truetype');
+}
+
+/* Regular */
+@font-face {
+	font-family: "RobotoMono";
+	font-style: normal;
+	font-weight: 400;
+	src: local('RobotoMono Regular'), local('RobotoMono-Regular'), url("../fonts/RobotoMono-Regular.ttf") format('truetype');
+}
+@font-face {
+	font-family: "RobotoMono";
+	font-style: italic;
+	font-weight: 400;
+	src: local('RobotoMono Italic'), local('RobotoMono-Italic'), url("../fonts/RobotoMono-Italic.ttf") format('truetype');
+}
+
+/* Medium */
+@font-face {
+	font-family: "RobotoMono";
+	font-style: normal;
+	font-weight: 500;
+	src: local('RobotoMono Thin'), local('RobotoMono-Medium'), url("../fonts/RobotoMono-Medium.ttf") format('truetype');
+}
+@font-face {
+	font-family: "RobotoMono";
+	font-style: italic;
+	font-weight: 500;
+	src: local('RobotoMono Medium Italic'), local('RobotoMono-MediumItalic'), url("../fonts/RobotoMono-MediumItalic.ttf") format('truetype');
+}
+
+/* Bold */
+@font-face {
+	font-family: "RobotoMono";
+	font-style: normal;
+	font-weight: 600;
+	src: local('RobotoMono Bold'), local('RobotoMono-Bold'), url("../fonts/RobotoMono-Bold.ttf") format('truetype');
+}
+@font-face {
+	font-family: "RobotoMono";
+	font-style: italic;
+	font-weight: 600;
+	src: local('RobotoMono Bold Italic'), local('RobotoMono-BoldItalic'), url("../fonts/RobotoMono-BoldItalic.ttf") format('truetype');
+}

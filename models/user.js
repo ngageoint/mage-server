@@ -30,6 +30,9 @@ var UserSchema = new Schema({
     relativePath: { type: String, required: false }
   },
   icon: {
+    type: { type: String, enum: ['none', 'upload', 'create'], default: 'none' },
+    text: { type: String },
+    color: { type: String },
     contentType: { type: String, required: false },
     size: { type: Number, required: false },
     relativePath: { type: String, required: false }
@@ -44,7 +47,10 @@ var UserSchema = new Schema({
     password: { type: String, required: false }
   }
 },{
-  versionKey: false
+  versionKey: false,
+  timestamps: {
+    updatedAt: 'lastUpdated'
+  }
 });
 
 UserSchema.method('validPassword', function(password, callback) {
@@ -148,7 +154,9 @@ var transform = function(user, ret, options) {
     }
 
     delete ret.avatar;
-    delete ret.icon;
+    if (ret.icon) { // TODO remove if check, icon is always there
+      delete ret.icon.relativePath;
+    }
 
     if (user.populated('roleId')) {
       ret.role = ret.roleId;

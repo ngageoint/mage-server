@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminLayersController', AdminLayersController);
 
-AdminLayersController.$inject = ['$scope', '$filter', '$injector', '$location', 'Layer'];
+AdminLayersController.$inject = ['$scope', '$filter', '$uibModal', '$location', 'Layer'];
 
-function AdminLayersController($scope, $filter, $injector, $location, Layer) {
+function AdminLayersController($scope, $filter, $uibModal, $location, Layer) {
   $scope.filter = "all";
   $scope.layers = [];
   $scope.page = 0;
@@ -51,24 +51,24 @@ function AdminLayersController($scope, $filter, $injector, $location, Layer) {
   $scope.deleteLayer = function($event, layer) {
     $event.stopPropagation();
 
-    var modalInstance = $injector.get('$modal').open({
+    var modalInstance = $uibModal.open({
       templateUrl: '/app/admin/layers/layer-delete.html',
       resolve: {
         layer: function () {
           return layer;
         }
       },
-      controller: ['$scope', '$modalInstance', 'layer', function ($scope, $modalInstance, layer) {
+      controller: ['$scope', '$uibModalInstance', 'layer', function ($scope, $uibModalInstance, layer) {
         $scope.layer = layer;
 
         $scope.deleteLayer = function(layer) {
           layer.$delete(function() {
-            $modalInstance.close(layer);
+            $uibModalInstance.close(layer);
           });
         };
 
         $scope.cancel = function () {
-          $modalInstance.dismiss('cancel');
+          $uibModalInstance.dismiss('cancel');
         };
       }]
     });

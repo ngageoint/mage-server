@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminUserController', AdminUserController);
 
-AdminUserController.$inject = ['$scope', '$modal', '$filter', '$routeParams', '$location', '$q', 'LocalStorageService', 'UserService', 'LoginService', 'DeviceService', 'Team'];
+AdminUserController.$inject = ['$scope', '$uibModal', '$filter', '$routeParams', '$location', '$q', 'LocalStorageService', 'UserService', 'LoginService', 'DeviceService', 'Team'];
 
-function AdminUserController($scope, $modal, $filter, $routeParams, $location, $q, LocalStorageService, UserService, LoginService, DeviceService, Team) {
+function AdminUserController($scope, $uibModal, $filter, $routeParams, $location, $q, LocalStorageService, UserService, LoginService, DeviceService, Team) {
   $scope.userTeams = [];
   $scope.nonTeams = [];
   $scope.teamsPage = 0;
@@ -101,24 +101,24 @@ function AdminUserController($scope, $modal, $filter, $routeParams, $location, $
   };
 
   $scope.deleteUser = function(user) {
-    var modalInstance = $modal.open({
+    var modalInstance = $uibModal.open({
       templateUrl: '/app/admin/users/user-delete.html',
       resolve: {
         user: function () {
           return user;
         }
       },
-      controller: ['$scope', '$modalInstance', 'user', function ($scope, $modalInstance, user) {
+      controller: ['$scope', '$uibModalInstance', 'user', function ($scope, $uibModalInstance, user) {
         $scope.user = user;
 
         $scope.deleteUser = function(user) {
           UserService.deleteUser(user).success(function() {
-            $modalInstance.close(user);
+            $uibModalInstance.close(user);
           });
         };
 
         $scope.cancel = function () {
-          $modalInstance.dismiss('cancel');
+          $uibModalInstance.dismiss('cancel');
         };
       }]
     });

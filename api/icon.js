@@ -2,10 +2,10 @@ var IconModel = require('../models/icon')
   , log = require('winston')
   , path = require('path')
   , fs = require('fs-extra')
-  , config = require('../config.js');
+  , environment = require('environment');
 
 var appRoot = path.dirname(require.main.filename);
-var iconBase = config.server.iconBaseDirectory;
+var iconBase = environment.iconBaseDirectory;
 
 function Icon(eventId, type, variant) {
   this._eventId = eventId || null;

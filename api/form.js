@@ -2,11 +2,79 @@ var api = require('../api')
   , Zip = require('adm-zip')
   , archiver = require('archiver')
   , walk = require('walk')
-  , path = require('path');
+  , path = require('path')
+  , Team = require('../models/team');
 
 function Form(event) {
   this._event = event;
 }
+
+function compareDisplayName(a, b) {
+  var aNames = a.split(" ");
+  var aFirstName = aNames.shift();
+  var aLastName = aNames.pop();
+
+  var bNames = b.split(" ");
+  var bFirstName = bNames.shift();
+  var bLastName = bNames.pop();
+
+  if (aLastName < bLastName) return -1;
+
+  if (aLastName > bLastName) return 1;
+
+  if (aFirstName < bFirstName) return -1;
+
+  if (aFirstName > bFirstName) return 1;
+
+  return 0;
+}
+
+function getUserFields(form) {
+  return form.fields.filter(function(field) {
+    if (field.archived) return false;
+
+    return form.userFields.some(function(memberField) {
+      return memberField === field.name;
+    });
+  });
+}
+
+Form.prototype.populateUserFields = function(callback) {
+  var event = this._event;
+  var userFields = getUserFields(event.form);
+  if (!userFields.length) return callback();
+
+  // Get all users in this event
+  var teamIds = event.populated('teamIds') || event.teamIds;
+  Team.getTeams({teamIds: teamIds}, function(err, teams) {
+    if (err) return callback(err);
+
+    var choices = [];
+    var users = {};
+
+    teams.forEach(function(team) {
+      team.userIds.forEach(function(user) {
+        users[user.displayName] = user.displayName;
+      });
+    });
+
+    users = Object.keys(users);
+    users.sort(compareDisplayName);
+    for (var i = 0; i < users.length; i++) {
+      choices.push({
+        id: i,
+        value: i,
+        title: users[i]
+      });
+    }
+
+    userFields.forEach(function(userField) {
+      userField.choices = choices;
+    });
+
+    callback();
+  });
+};
 
 Form.prototype.export = function(callback) {
   var iconBasePath = new api.Icon(this._event._id).getBasePath();

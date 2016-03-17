@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminEventEditFormController', AdminEventEditFormController);
 
-AdminEventEditFormController.$inject = ['$rootScope', '$scope', '$location', '$filter', '$routeParams', '$q', '$timeout', '$modal', 'LocalStorageService', 'EventService', 'Event'];
+AdminEventEditFormController.$inject = ['$rootScope', '$scope', '$location', '$filter', '$routeParams', '$q', '$timeout', '$uibModal', 'LocalStorageService', 'EventService', 'Event'];
 
-function AdminEventEditFormController($rootScope, $scope, $location, $filter, $routeParams, $q, $timeout, $modal, LocalStorageService, EventService, Event) {
+function AdminEventEditFormController($rootScope, $scope, $location, $filter, $routeParams, $q, $timeout, $uibModal, LocalStorageService, EventService, Event) {
   $scope.unSavedChanges = false;
   $scope.token = LocalStorageService.getToken();
 
@@ -43,44 +43,26 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
 
   $scope.fileUploadOptions = {};
 
-  $scope.fieldTypes = [{
-    name : 'textfield',
-    value : 'Textfield'
-  },{
-    name : 'email',
-    value : 'E-mail'
-  },{
-    name : 'password',
-    value : 'Password'
-  },{
-    name : 'radio',
-    value : 'Radio Buttons'
-  },{
-    name : 'dropdown',
-    value : 'Dropdown List'
-  },{
-    name : 'date',
-    value : 'Date'
-  },{
-    name : 'geometry',
-    value : 'Geometry'
-  },{
-    name : 'textarea',
-    value : 'Text Area'
-  },{
-    name : 'checkbox',
-    value : 'Checkbox'
-  },{
-    name : 'hidden',
-    value : 'Hidden'
-  }];
+  $scope.fieldTypes = {
+    textfield : 'Textfield',
+    email : 'E-mail',
+    password : 'Password',
+    radio : 'Radio Buttons',
+    dropdown : 'Dropdown',
+    userDropdown: 'User Dropdown',
+    date : 'Date',
+    geometry : 'Geometry',
+    textarea : 'Text Area',
+    checkbox : 'Checkbox',
+    hidden : 'Hidden'
+  };
 
   $scope.newField = newField();
 
   function newField() {
     return {
       title : "New field",
-      type : $scope.fieldTypes[0].name,
+      type : 'textfield',
       value : "",
       required : false,
       choices: []
@@ -96,14 +78,27 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     return field.name.indexOf('field') !== -1;
   };
 
+  $scope.getTypeValue = function(field) {
+    if (field.type === 'dropdown' && $scope.isMemberField(field)) {
+      return $scope.fieldTypes.userDropdown;
+    }
+
+    return $scope.fieldTypes[field.type];
+  };
+
   // create new field button click
   $scope.addNewField = function() {
-    // put newField into fields array
     var fields = $scope.event.form.fields;
     var id = _.max(fields, function(field) { return field.id; }).id + 1;
 
     $scope.newField.id = id;
-    $scope.newField.name = "field" + id;
+    $scope.newField.name =  'field' + id;
+
+    if ($scope.newField.type === 'userDropdown') {
+      $scope.event.form.userFields.push($scope.newField.name);
+      $scope.newField.type = 'dropdown';
+    }
+
     $scope.onRequiredChanged($scope.newField);
     fields.push($scope.newField);
 
@@ -326,15 +321,29 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
   };
 
   // decides whether field options block will be shown (true for dropdown and radio fields)
-  $scope.showAddOptions = function (field) {
-    return (field.type === "radio" || field.type === "dropdown");
+  $scope.showAddOptions = function(field) {
+    return field.type === "radio" || field.type === "dropdown";
+  };
+
+  $scope.hideAddOptions = function(field) {
+    return field.type === 'radio' ||
+           field.type === 'dropdown' ||
+           field.type === 'userDropdown';
+  };
+
+  $scope.isMemberField = function(field) {
+    return _.contains($scope.event.form.userFields, field.name);
+  };
+
+  $scope.isUserDropdown = function(field) {
+    return field.type === 'userDropdown';
   };
 
   var disableLocationChangeStart = $rootScope.$on("$locationChangeStart", function(event, next) {
     if ($scope.unSavedChanges) {
       event.preventDefault();
 
-      var modalInstance = $modal.open({
+      var modalInstance = $uibModal.open({
         templateUrl: '/app/admin/events/event.edit.form.unsaved.html'
       });
 

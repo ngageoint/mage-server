@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('NavController', NavController);
 
-NavController.$inject =  ['$rootScope', '$scope', '$q', '$location', '$modal', 'UserService', 'FilterService', 'PollingService', 'Event', 'Settings'];
+NavController.$inject =  ['$rootScope', '$scope', '$q', '$location', '$uibModal', 'UserService', 'FilterService', 'PollingService', 'Event', 'Settings'];
 
-function NavController($rootScope, $scope, $q, $location, $modal, UserService, FilterService, PollingService, Event, Settings) {
+function NavController($rootScope, $scope, $q, $location, $uibModal, UserService, FilterService, PollingService, Event, Settings) {
   var events = [];
   $scope.location = $location;
 
@@ -57,7 +57,7 @@ function NavController($rootScope, $scope, $q, $location, $modal, UserService, F
   };
 
   $scope.onFilterClick = function() {
-    $modal.open({
+    $uibModal.open({
       templateUrl: '/app/filter/filter.html',
       controller: 'FilterController',
       backdrop: 'static',
@@ -70,7 +70,7 @@ function NavController($rootScope, $scope, $q, $location, $modal, UserService, F
   };
 
   $scope.onExportClick = function() {
-    $modal.open({
+    $uibModal.open({
       templateUrl: '/app/export/export.html',
       controller: 'ExportController',
       backdrop: 'static',

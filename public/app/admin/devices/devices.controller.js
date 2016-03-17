@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminDevicesController', AdminDevicesController);
 
-AdminDevicesController.$inject = ['$scope', '$injector', '$filter', '$location', 'LocalStorageService', 'DeviceService', 'UserService'];
+AdminDevicesController.$inject = ['$scope', '$uibModal', '$filter', '$location', 'LocalStorageService', 'DeviceService', 'UserService'];
 
-function AdminDevicesController($scope, $injector, $filter, $location, LocalStorageService, DeviceService, UserService) {
+function AdminDevicesController($scope, $uibModal, $filter, $location, LocalStorageService, DeviceService, UserService) {
   $scope.token = LocalStorageService.getToken();
   $scope.filter = "all"; // possible values all, registered, unregistered
   $scope.devices = [];
@@ -69,24 +69,24 @@ function AdminDevicesController($scope, $injector, $filter, $location, LocalStor
   $scope.deleteDevice = function($event, device) {
     $event.stopPropagation();
 
-    var modalInstance = $injector.get('$modal').open({
+    var modalInstance = $uibModal.open({
       templateUrl: '/app/admin/devices/device-delete.html',
       resolve: {
         device: function () {
           return device;
         }
       },
-      controller: ['$scope', '$modalInstance', 'device', function ($scope, $modalInstance, device) {
+      controller: ['$scope', '$uibModalInstance', 'device', function ($scope, $uibModalInstance, device) {
         $scope.device = device;
 
         $scope.deleteDevice = function(device) {
           DeviceService.deleteDevice(device).success(function() {
-            $modalInstance.close(device);
+            $uibModalInstance.close(device);
           });
         };
 
         $scope.cancel = function () {
-          $modalInstance.dismiss('cancel');
+          $uibModalInstance.dismiss('cancel');
         };
       }]
     });

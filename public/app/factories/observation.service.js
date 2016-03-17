@@ -2,9 +2,9 @@ angular
   .module('mage')
   .factory('ObservationService', ObservationService);
 
-ObservationService.$inject = ['$q', 'Observation', 'ObservationAttachment', 'ObservationState'];
+ObservationService.$inject = ['$q', 'Observation', 'ObservationAttachment', 'ObservationState', 'LocalStorageService'];
 
-function ObservationService($q, Observation, ObservationAttachment, ObservationState) {
+function ObservationService($q, Observation, ObservationAttachment, ObservationState, LocalStorageService) {
   var service = {
     getObservationsForEvent: getObservationsForEvent,
     saveObservationForEvent: saveObservationForEvent,
@@ -77,7 +77,7 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
 
     _.each(observations, function(observation) {
       observation.style = {
-        iconUrl: "/api/events/" + event.id + "/form/icons/" + observation.properties.type + "/" + observation.properties[event.form.variantField]
+        iconUrl: "/api/events/" + event.id + "/form/icons/" + observation.properties.type + "/" + observation.properties[event.form.variantField] + "?" + $.param({access_token: LocalStorageService.getToken()})
       };
     });
   }

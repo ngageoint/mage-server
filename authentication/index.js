@@ -21,7 +21,9 @@ module.exports = function(app, passport, provision, strategies) {
     Token.getToken(token, function(err, credentials) {
       if (err) { return done(err); }
 
-      if (!credentials || !credentials.user) { return done(null, false); }
+      if (!credentials || !credentials.user) {
+        return done(null, false);
+      }
 
       req.token = credentials.token;
 

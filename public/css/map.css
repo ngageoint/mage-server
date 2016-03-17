@@ -280,6 +280,7 @@ a.news-feed-tab-active {
 .user-item-content {
   flex: 1;
   margin-right: 10px;
+  margin-left: 10px;
   min-width: 0;
 }
 
@@ -422,6 +423,11 @@ a.news-feed-tab-active {
 
 .mage-icon-image {
 	width: 35px;
+}
+
+.user-map-icon {
+  font-family: RobotoMono;
+  font-weight: 500;
 }
 
 .observation-popup {

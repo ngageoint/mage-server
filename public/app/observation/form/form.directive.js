@@ -75,6 +75,11 @@ function FormDirectiveController($scope, EventService, Observation, UserService,
 
   $scope.cancelEdit = function() {
     $scope.$emit('observation:editDone', $scope.observation);
+
+    _.map($scope.observation.attachments, function(attachment) {
+      delete attachment.markedForDelete;
+      return attachment;
+    });
   };
 
   $scope.deleteObservation = function() {

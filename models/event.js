@@ -41,7 +41,8 @@ var EventSchema = new Schema({
   teamIds: [{type: Schema.Types.ObjectId, ref: 'Team'}],
   layerIds: [{type: Number, ref: 'Layer'}],
   form: {
-    variantField: { type:String, required: false },
+    variantField: { type: String, required: false },
+    userFields: [String],
     fields: [FieldSchema]
   }
 },{
@@ -193,7 +194,6 @@ exports.getEvents = function(options, callback) {
   }
 
   var query = {};
-
   var filter = options.filter || {};
   if (filter.complete === true) query.complete = true;
   if (filter.complete === false) query.complete = {$ne: true};

@@ -9,7 +9,9 @@ var removeSpace = (/\s*/g),
   splitSpace = (/\s+/);
 
 // all Y children of X
-function get(x, y) { return x.getElementsByTagName(y); }
+function get(x, y) {
+  return x.getElementsByTagNameNS("*", y);
+}
 
 function attr(x, y) { return x.getAttribute(y); }
 
@@ -100,7 +102,7 @@ var kml = function(data, o) {
     if (lineStyle[0]) {
       style.lineStyle = {};
       var lineColor = get(lineStyle[0], 'color');
-      if (color[0]) {
+      if (lineColor[0]) {
         style.lineStyle.color = parseColor(nodeVal(lineColor[0]));
       }
 
@@ -138,7 +140,7 @@ var kml = function(data, o) {
 
   for (var j = 0; j < styleMaps.length; j++) {
     var styleMap = styleMaps[j];
-    var pairs = xpath.select("Pair", styleMap);
+    var pairs = xpath.select("//*[local-name()='Pair']", styleMap);
     for (var p = 0; p < pairs.length; p++) {
       var key = get(pairs[p], 'key');
       if (key) {
@@ -154,11 +156,16 @@ var kml = function(data, o) {
       }
     }
   }
+  log.info('Style index ', styleIndex);
 
-    // only ever get placemarks.
-    // I.E. pull all placemarks regards of depth level
-  var placemarks = xpath.select("//Placemark", doc);
-  log.info('Found ' + placemarks.length);
+
+  // only ever get placemarks.
+  // I.E. pull all placemarks regards of depth level
+  var placemarks1 = xpath.select("//Placemark", doc);
+  log.info('Found ' + placemarks1.length + ' placemarks in the KML document');
+  var placemarks = xpath.select("//*[local-name()='Placemark']", doc);
+  log.info('Found ' + placemarks.length + ' placemarks in the KML document');
+
   placemarks.forEach(function(placemark) {
     features = features.concat(getPlacemark(placemark));
   });

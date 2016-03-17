@@ -161,14 +161,12 @@ Configuration:
             * clientSecret - google client secret
     * provison - device provisioning strategy
         * strategy - provision strategy name.  Provisioning strategy name maps to file name in provisioning directory
-    * locationServices - turn on/off location services
 * server - Server based configuration.  Not exposed to client
     * userBaseDirectory - root directory in which to store user avatar media
     * iconBaseDirectory - root directory in which to store user map icon media
     * token - client token information.  MAGE api is token based, upon authentication users will be issued a token.  Token must be present in all subsequent api requests.
         * expiration - token expiration in seconds.  Time at which token will expire.
     * locationServices
-        * enabled - flag to turn on/off location services
         * userCollectionLocationLimit - user locations are stored in 2 different collections.  This is the limit for the capped locations.
     * attachment
         * baseDirectory - root directory in which to store attachment media, i.e. images, videos and voice
@@ -199,8 +197,7 @@ Configuration:
     },
     "provision": {
       "strategy": "uid"
-    },
-    "locationServices": true
+    }
   },
   "server": {
     "userBaseDirectory": "/var/lib/mage/users",
@@ -209,7 +206,6 @@ Configuration:
       "expiration": 28800
     },
     "locationServices": {
-      "enabled": true,
       "userCollectionLocationLimit": 100
     },
     "attachment": {

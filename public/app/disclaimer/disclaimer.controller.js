@@ -2,16 +2,16 @@ angular
   .module('mage')
   .controller('DisclaimerController', DisclaimerController);
 
-DisclaimerController.$inject = ['$scope', '$modalInstance', 'disclaimer'];
+DisclaimerController.$inject = ['$scope', '$uibModalInstance', 'disclaimer'];
 
-function DisclaimerController($scope, $modalInstance, disclaimer) {
+function DisclaimerController($scope, $uibModalInstance, disclaimer) {
   $scope.disclaimer = disclaimer;
 
   $scope.accept = function() {
-    $modalInstance.close();
+    $uibModalInstance.close();
   };
 
   $scope.exit = function() {
-    $modalInstance.dismiss();
+    $uibModalInstance.dismiss();
   };
 }

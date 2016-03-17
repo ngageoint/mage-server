@@ -6,7 +6,7 @@ MageController.$inject = [
   '$scope',
   '$compile',
   '$timeout',
-  '$modal',
+  '$uibModal',
   'UserService',
   'FilterService',
   'EventService',
@@ -18,7 +18,7 @@ MageController.$inject = [
   'FeatureService'
 ];
 
-function MageController($scope, $compile, $timeout, $modal, UserService, FilterService, EventService, MapService, LocalStorageService, Observation, Location, LocationService, FeatureService) {
+function MageController($scope, $compile, $timeout, $uibModal, UserService, FilterService, EventService, MapService, LocalStorageService, Observation, Location, LocationService, FeatureService) {
 
   var observationsById = {};
   var newObservation = null;
@@ -340,7 +340,7 @@ function MageController($scope, $compile, $timeout, $modal, UserService, FilterS
 
   function onBroadcastLocation(callback) {
     if (!EventService.isUserInEvent(UserService.myself, FilterService.getEvent())) {
-      $modal.open({
+      $uibModal.open({
         templateUrl: '/app/error/not.in.event.html',
         controller: 'NotInEventController',
         resolve: {
@@ -413,7 +413,7 @@ function MageController($scope, $compile, $timeout, $modal, UserService, FilterS
     var event = FilterService.getEvent();
 
     if (!EventService.isUserInEvent(UserService.myself, event)) {
-      $modal.open({
+      $uibModal.open({
         templateUrl: '/app/error/not.in.event.html',
         controller: 'NotInEventController',
         resolve: {

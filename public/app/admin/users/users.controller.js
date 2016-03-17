@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminUsersController', AdminUsersController);
 
-AdminUsersController.$inject = ['$scope', '$injector', '$filter', '$location', 'LocalStorageService', 'UserService'];
+AdminUsersController.$inject = ['$scope', '$uibModal', '$filter', '$location', 'LocalStorageService', 'UserService'];
 
-function AdminUsersController($scope, $injector, $filter, $location, LocalStorageService, UserService) {
+function AdminUsersController($scope, $uibModal, $filter, $location, LocalStorageService, UserService) {
   $scope.token = LocalStorageService.getToken();
   $scope.filter = "all"; // possible values all, active, inactive
   $scope.users = [];
@@ -50,24 +50,24 @@ function AdminUsersController($scope, $injector, $filter, $location, LocalStorag
   $scope.deleteUser = function($event, user) {
     $event.stopPropagation();
 
-    var modalInstance = $injector.get('$modal').open({
+    var modalInstance = $uibModal.open({
       templateUrl: '/app/admin/users/user-delete.html',
       resolve: {
         user: function () {
           return user;
         }
       },
-      controller: ['$scope', '$modalInstance', 'user', function ($scope, $modalInstance, user) {
+      controller: ['$scope', '$uibModalInstance', 'user', function ($scope, $uibModalInstance, user) {
         $scope.user = user;
 
         $scope.deleteUser = function(user) {
           UserService.deleteUser(user).success(function() {
-            $modalInstance.close(user);
+            $uibModalInstance.close(user);
           });
         };
 
         $scope.cancel = function () {
-          $modalInstance.dismiss('cancel');
+          $uibModalInstance.dismiss('cancel');
         };
       }]
     });

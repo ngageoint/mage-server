@@ -1,15 +1,5 @@
-<div class="clearfix">
-  <div>
-    <img class="avatar-image img-rounded" style="float: left" width="43" height="43" ng-src="{{iconUrl}}">
-
-    <div class="input-group" style="margin-left: 83px; line-height: 100%">
-      <input type="text" class="form-control" ng-value="fileName" readonly>
-      <span class="input-group-btn">
-        <span class="btn btn-default btn-file">
-            Browse&hellip; <input type="file" multiple>
-        </span>
-      </span>
+  <div class="user-icon-container1">
+    <div class="user-icon">
+      <img class="avatar-image img-rounded" width="43" height="43" ng-src="{{user.iconData || iconUrl}}">
     </div>
-
   </div>
-</div>

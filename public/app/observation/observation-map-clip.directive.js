@@ -17,9 +17,9 @@ function mapClip() {
   return directive;
 }
 
-MapClipController.$inject = ['$rootScope', '$scope', '$element', 'MapService', 'LocalStorageService'];
+MapClipController.$inject = ['$rootScope', '$scope', '$element', 'MapService'];
 
-function MapClipController($rootScope, $scope, $element, MapService, LocalStorageService) {
+function MapClipController($rootScope, $scope, $element, MapService) {
   var zoomControl = L.control.zoom();
   var worldExtentControl = L.control.worldExtent();
 
@@ -85,7 +85,7 @@ function MapClipController($rootScope, $scope, $element, MapService, LocalStorag
       var geojson = L.geoJson($scope.feature, {
         pointToLayer: function (feature, latlng) {
           return L.fixedWidthMarker(latlng, {
-            iconUrl: feature.style.iconUrl + '?access_token=' + LocalStorageService.getToken()
+            iconUrl: feature.style.iconUrl
           });
         }
       });

@@ -9,12 +9,13 @@ angular
     "ngSanitize",
     "ngRoute",
     "ngResource",
+    "ngMessages",
     "http-auth-interceptor"
   ]).config(config).run(run);
 
-config.$inject = ['$routeProvider', '$locationProvider', '$httpProvider'];
+config.$inject = ['$provide', '$httpProvider', '$routeProvider'];
 
-function config($routeProvider, $locationProvider, $httpProvider) {
+function config($provide, $httpProvider, $routeProvider) {
   $httpProvider.defaults.withCredentials = true;
   $httpProvider.defaults.headers.post  = {'Content-Type': 'application/x-www-form-urlencoded'};
 
@@ -26,22 +27,79 @@ function config($routeProvider, $locationProvider, $httpProvider) {
     };
   }
 
-  function checkLogin(roles) {
-    return {
-      user: ['UserService', function(UserService) {
-        return UserService.checkLoggedInUser(roles);
+  $routeProvider.otherwise({
+    redirectTo: '/'
+  });
+
+  $routeProvider.when('/', {
+    resolve: {
+      api: ['$location', 'ApiService', function($location, ApiService) {
+        ApiService.get(function(api) {
+          if (api.initial) {
+            $location.path('/setup');
+          } else {
+            $location.path('/signin');
+          }
+        });
       }]
-    };
-  }
+    }
+  });
+
+  $routeProvider.when('/setup', {
+    templateUrl: 'app/setup/setup.html',
+    controller: 'SetupController',
+    resolve: {
+      api: ['$q', '$location', 'ApiService', function($q, $location, ApiService) {
+        var deferred = $q.defer();
+        ApiService.get(function(api) {
+          if (!api.initial) {
+            $location.path('/');
+          } else {
+            deferred.resolve(api);
+          }
+        });
+
+        return deferred.promise;
+      }]
+    }
+  });
 
   $routeProvider.when('/signin', {
     templateUrl:    'app/signin/signin.html',
     controller:     "SigninController",
-    resolve: checkLogin()
+    resolve: {
+      api: ['$q', '$location', 'ApiService', function($q, $location, ApiService) {
+        var deferred = $q.defer();
+        ApiService.get(function(api) {
+          if (api.initial) {
+            $location.path('/setup');
+          } else {
+            deferred.resolve(api);
+          }
+        });
+
+        return deferred.promise;
+      }]
+    }
   });
+
   $routeProvider.when('/signup', {
     templateUrl:    'app/signup/signup.html',
-    controller:     "SignupController"
+    controller:     "SignupController",
+    resolve: {
+      api: ['$q', '$location', 'ApiService', function($q, $location, ApiService) {
+        var deferred = $q.defer();
+        ApiService.get(function(api) {
+          if (api.initial) {
+            $location.path('/setup');
+          } else {
+            deferred.resolve(api);
+          }
+        });
+
+        return deferred.promise;
+      }]
+    }
   });
 
   $routeProvider.when('/admin', {
@@ -192,21 +250,17 @@ function config($routeProvider, $locationProvider, $httpProvider) {
     controller:     "AboutController",
     resolve: resolveLogin(["USER_ROLE", "ADMIN_ROLE"])
   });
-  $routeProvider.otherwise({
-    redirectTo:     '/signin',
-    controller:     "SigninController"
-  });
 }
 
-run.$inject = ['$rootScope', '$modal', 'UserService', '$location', 'authService', 'LocalStorageService', 'AboutService', 'ApiService'];
+run.$inject = ['$rootScope', '$route', '$uibModal', 'UserService', '$location', 'authService', 'LocalStorageService', 'ApiService'];
 
-function run($rootScope, $modal, UserService, $location, authService, LocalStorageService, AboutService, ApiService) {
+function run($rootScope, $route, $uibModal, UserService, $location, authService, LocalStorageService, ApiService) {
   $rootScope.$on('event:auth-loginRequired', function() {
-    if (!$rootScope.loginDialogPresented && $location.path() !== '/' && $location.path() !== '/signin' && $location.path() !== '/signup') {
+    if (!$rootScope.loginDialogPresented && $location.path() !== '/' && $location.path() !== '/signin' && $location.path() !== '/signup' && $location.path() !== '/setup') {
       $rootScope.loginDialogPresented = true;
-      var modalInstance = $modal.open({
+      var modalInstance = $uibModal.open({
         templateUrl: 'app/signin/signin-modal.html',
-        controller: ['$scope', '$modalInstance', function ($scope, $modalInstance) {
+        controller: ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
           ApiService.get(function(api) {
             function localStrategyFilter(strategy, name) {
               return name === 'local';
@@ -229,7 +283,7 @@ function run($rootScope, $modal, UserService, $location, authService, LocalStora
               }
 
               $rootScope.loginDialogPresented = false;
-              $modalInstance.close($scope);
+              $uibModalInstance.close($scope);
             }, function(data) {
               $scope.showStatus = true;
 
@@ -251,7 +305,7 @@ function run($rootScope, $modal, UserService, $location, authService, LocalStora
                 data.newUser = true;
               }
               $rootScope.loginDialogPresented = false;
-              $modalInstance.close($scope);
+              $uibModalInstance.close($scope);
             }).error(function (data, status) {
               $scope.status = status;
             });
@@ -259,7 +313,7 @@ function run($rootScope, $modal, UserService, $location, authService, LocalStora
 
           $scope.cancel = function () {
             $rootScope.loginDialogPresented = false;
-            $modalInstance.dismiss('cancel');
+            $uibModalInstance.dismiss('cancel');
           };
         }]
       });
@@ -275,19 +329,19 @@ function run($rootScope, $modal, UserService, $location, authService, LocalStora
       authService.loginConfirmed(data);
 
       LocalStorageService.setToken(data.token);
-      if ($location.path() === '/signin') {
+      if ($location.path() === '/signin' || $location.path() === '/setup') {
         $location.path('/map');
       }
     }
 
-    AboutService.about().success(function(api) {
+    ApiService.get(function(api) {
       var disclaimer = api.disclaimer || {};
       if (!disclaimer.show) {
         confirmLogin();
         return;
       }
 
-      var modalInstance = $modal.open({
+      var modalInstance = $uibModal.open({
         templateUrl: 'app/disclaimer/disclaimer.html',
         controller: 'DisclaimerController',
         resolve: {

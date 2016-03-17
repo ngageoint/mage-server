@@ -6,9 +6,9 @@ var UserModel = require('../models/user')
   , path = require('path')
   , fs = require('fs-extra')
   , async = require('async')
-  , config = require('../config.js');
+  , environment = require('environment');
 
-var userBase = config.server.userBaseDirectory;
+var userBase = environment.userBaseDirectory;
 
 function contentPath(id, user, content, type) {
   var relativePath = path.join(id.toString(), type + path.extname(content.path));
@@ -75,6 +75,7 @@ User.prototype.getById = function(id, callback) {
 
 User.prototype.create = function(user, options, callback) {
   var operations = [];
+
   operations.push(function(done) {
     UserModel.createUser(user, function(err, newUser) {
       done(err, newUser);
@@ -100,7 +101,7 @@ User.prototype.create = function(user, options, callback) {
     });
   }
 
-  if (options.icon) {
+  if (options.icon && (options.icon.type === 'create' || options.icon.type === 'upload')) {
     operations.push(function(newUser, done) {
       var icon = iconPath(newUser._id, newUser, options.icon);
       fs.move(options.icon.path, icon.absolutePath, function(err) {
@@ -108,11 +109,12 @@ User.prototype.create = function(user, options, callback) {
           return done(err);
         }
 
-        newUser.icon = {
-          relativePath: icon.relativePath,
-          contentType: options.icon.mimetype,
-          size: options.icon.size
-        };
+        newUser.icon.type = options.icon.type;
+        newUser.icon.relativePath = icon.relativePath;
+        newUser.icon.contentType = options.icon.mimetype;
+        newUser.icon.size = options.icon.size;
+        newUser.icon.text = options.icon.text;
+        newUser.icon.color = options.icon.color;
 
         done(null, newUser);
       });
@@ -158,23 +160,41 @@ User.prototype.update = function(user, options, callback) {
     });
   }
 
-  if (options.icon) {
-    operations.push(function(updatedUser, done) {
-      var icon = iconPath(updatedUser._id, updatedUser, options.icon);
-      fs.move(options.icon.path, icon.absolutePath, {clobber: true}, function(err) {
-        if (err) {
-          return done(err);
-        }
+  if (options.icon && options.icon.type) {
+    if (options.icon.type === 'none') {
+
+      // delete it
+      operations.push(function(updatedUser, done) {
+        var icon = iconPath(updatedUser._id, updatedUser, options.icon);
+        fs.remove(icon.absolutePath, function(err) {
+          if (err) {
+            log.warn('Error removing users map icon from ' + iconPath);
+          }
+        });
 
         updatedUser.icon = {
-          relativePath: icon.relativePath,
-          contentType: options.icon.mimetype,
-          size: options.icon.size
+          type: options.icon.type
         };
 
         done(null, updatedUser);
       });
-    });
+    } else {
+      operations.push(function(updatedUser, done) {
+        var icon = iconPath(updatedUser._id, updatedUser, options.icon);
+        fs.move(options.icon.path, icon.absolutePath, {clobber: true}, function(err) {
+          if (err) return done(err);
+
+          updatedUser.icon.type = options.icon.type;
+          updatedUser.icon.relativePath = icon.relativePath;
+          updatedUser.icon.contentType = options.icon.mimetype;
+          updatedUser.icon.size = options.icon.size;
+          updatedUser.icon.text = options.icon.type === 'create' ? options.icon.text : undefined;
+          updatedUser.icon.color = options.icon.type === 'create' ? options.icon.color : undefined;
+
+          done(null, updatedUser);
+        });
+      });
+    }
   }
 
   async.waterfall(operations, function(err, updatedUser) {

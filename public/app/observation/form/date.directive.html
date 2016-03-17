@@ -1,7 +1,7 @@
 <div class="field form-group">
   <label>{{field.title}}</label>
   <p class="input-group">
-    <input type="text" class="form-control" datepicker-popup="MM/dd/yyyy HH:mm:ss" ng-model="field.value" is-open="datePopup.open" close-text="Close" />
+    <input type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy HH:mm:ss" ng-model="field.value" is-open="datePopup.open" close-text="Close" />
     <span class="input-group-btn">
       <button type="button" class="btn btn-default" ng-click="openDate($event)"><i class="fa fa-calendar"></i></button>
     </span>
