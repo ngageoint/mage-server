@@ -1,10 +1,14 @@
+var package = require('./package');
+var version = package.version.split(".");
+
 module.exports = {
   api: {
-    "name": "MAGE (Mobile Awareness GEOINT Environment)",
+    "name": package.name,
+    "description": package.description,
     "version": {
-      "major": 4,
-      "minor": 0,
-      "micro": 0
+      "major": parseInt(version[0]),
+      "minor": parseInt(version[1]),
+      "micro": parseInt(version[2])
     },
     "authenticationStrategies": {
       "local": {
