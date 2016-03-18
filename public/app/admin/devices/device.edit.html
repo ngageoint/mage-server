@@ -1,13 +1,13 @@
 <div class="admin-nav-gap">
   <div class="container-fluid">
     <ol class="breadcrumb" ng-if="device.id">
-      <li><i class="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
+      <li><a href="#/admin"><i class="fa fa-dashboard admin-dashboard"></i>Dashboard</a></li>
       <li><a href="#/admin/devices">Devices</a></li>
       <li><a ng-href="#/admin/devices/{{device.id}}">{{device.uid}}</a></li>
       <li class="active">Edit</li>
     </ol>
     <ol class="breadcrumb" ng-if="!device.id">
-      <li><i class="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
+      <li><a href="#/admin"><i class="fa fa-dashboard admin-dashboard"></i>Dashboard</a></li>
       <li><a href="#/admin/devices">Devices</a></li>
       <li class="active">New</li>
     </ol>
@@ -22,7 +22,7 @@
 
       <div class="row">
         <div class="col-md-12">
-          <h2 ng-if="device.id">Edit device: {{device.uid}}</h2>
+          <h2 ng-if="device.id"><i class="fa" ng-class="iconClass(device)"></i> Edit device</h2>
           <h2 ng-if="!device.id">New device</h2>
         </div>
       </div>

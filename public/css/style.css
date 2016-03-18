@@ -10,8 +10,6 @@
 body {
   margin: 0;
   height: 100%;
-  color: #6389b3;
-
   display: flex;
   flex-direction: column;
 }
@@ -338,6 +336,11 @@ textarea {
    left: -10px;
 }
 
+.admin-dashboard {
+  color: #365F8C;
+  margin-right: 5px;
+}
+
 /* User management page styles */
 .admin-card {
   height: 235px;
@@ -451,8 +454,58 @@ a.admin-nav-inactive {
 	float: left;
 }
 
+.admin-device-container {
+  display: flex;
+}
+
+.admin-device-info {
+  flex: 1;
+  overflow: hidden;
+}
+
 .admin-device-icon {
-  font-size: 40px;
+  width: 40px;
+  text-align: center;
+}
+
+.admin-android-icon {
+  color: #A4C739;
+  font-size: 32px;
+}
+
+.admin-apple-icon {
+  color: #666;
+  font-size: 28px;
+}
+
+.admin-desktop-icon {
+  color: #555;
+  font-size: 26px;
+}
+
+.admin-generic-icon {
+  color: #555;
+  font-size: 36px;
+}
+
+.admin-android-icon-xs {
+  color: #A4C739;
+  font-size: 18px;
+}
+
+.admin-apple-icon-xs {
+  color: #666;
+  font-size: 18px;
+}
+
+.admin-desktop-icon-xs {
+  color: #555;
+  font-size: 14px;
+}
+
+.admin-generic-icon-xs {
+  color: #555;
+  font-size: 18px;
 }
 
 .admin-layer-icon {
@@ -655,10 +708,6 @@ h4.image-delete {
   display: flex;
 }
 
-.user-icon {
-  /*width: 55px;*/
-}
-
 .user-icon-initials {
   width: 52px;
   margin-right: 5px;
@@ -667,5 +716,4 @@ h4.image-delete {
 .user-icon-input {
   flex: 1;
   margin-left: 35px;
-
 }

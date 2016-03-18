@@ -46,6 +46,24 @@ function AdminDevicesController($scope, $uibModal, $filter, $location, LocalStor
     }
   };
 
+  $scope.iconClass = function(device) {
+    if (device.iconClass) return device.iconClass;
+
+    var userAgent = device.userAgent || "";
+
+    if (device.appVersion === 'Web Client') {
+      device.iconClass = 'fa-desktop admin-desktop-icon';
+    } else if (userAgent.toLowerCase().indexOf("android") !== -1) {
+      device.iconClass = 'fa-android admin-android-icon';
+    } else if(userAgent.toLowerCase().indexOf("ios") !== -1) {
+      device.iconClass = 'fa-apple admin-apple-icon';
+    } else {
+      device.iconClass = 'fa-mobile admin-generic-icon';
+    }
+
+    return device.iconClass;
+  };
+
   $scope.reset = function() {
     $scope.page = 0;
     $scope.filter = 'all';

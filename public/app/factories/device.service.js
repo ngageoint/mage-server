@@ -13,7 +13,7 @@ function DeviceService($http) {
     getDevice: getDevice,
     createDevice: createDevice,
     updateDevice: updateDevice,
-    deleteDevice: deleteDevice
+    deleteDevice: deleteDevice,
   };
 
   return service;

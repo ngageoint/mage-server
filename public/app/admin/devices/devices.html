@@ -1,7 +1,7 @@
 <div class="admin-nav-gap">
   <div class="container-fluid">
     <ol class="breadcrumb">
-      <li><i class="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
+      <li><a href="#/admin"><i class="fa fa-dashboard admin-dashboard"></i>Dashboard</a></li>
       <li class="active">Devices</li>
     </ol>
   </div>
@@ -52,23 +52,27 @@
                 <div class="well-item"
                     ng-repeat="d in (filteredDevices = (devices | filter:filterDevices)) | filter:filterRegistered | orderBy:'uid' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
 
-                    <div class="row pointer" ng-click="gotoDevice(d)">
-                      <div class="col-md-8">
-                        <div class="right-gap pull-left">
-                          <i class="fa fa-mobile admin-device-icon"></i>
-                        </div>
-                        <span class="strong">{{d.uid}}</span>
-                        <div class="muted" ng-if="userIdMap[d.userId]">{{userIdMap[d.userId].displayName}}</div>
-                        <div class="muted" ng-if="true">{{d.name}}</div>
-
+                  <div class="pointer" ng-click="gotoDevice(d)">
+                    <div class="admin-device-container">
+                      <div class="right-gap">
+                        <i class="fa admin-device-icon" ng-class="iconClass(d)"></i>
                       </div>
-                      <div class="col-md-4">
+
+                      <div class="admin-device-info">
+                        <div ng-if="userIdMap[d.userId]"><strong>{{userIdMap[d.userId].displayName}}</strong></div>
+                        <div class="muted small" ng-if="d.name">{{d.name}}</div>
+                        <div class="muted small ellipsis" ng-if="d.userAgent">{{d.userAgent}}</div>
+                        <div class="muted small" ng-if="d.appVersion">v{{d.appVersion}}</div>
+                        <span class="muted small">{{d.uid}}</span>
+                      </div>
+
+                      <div>
                         <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-click="deleteDevice($event, d)">Delete</button>
                         <button class="btn btn-sm btn-success pull-right admin-user-button" ng-if="!d.registered" ng-click="registerDevice($event, d)">Register</button>
                         <button class="btn btn-sm btn-default pull-right" ng-click="editDevice($event, d)">Edit</button>
                       </div>
                     </div>
-
+                  </div>
                 </div>
               </div>
               <div class="row">

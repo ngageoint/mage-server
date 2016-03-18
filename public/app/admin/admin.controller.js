@@ -62,6 +62,26 @@ function AdminController($scope, $routeParams, $location, $filter, UserService, 
     }
   });
 
+  $scope.iconClass = function(device) {
+    if (!device) return;
+
+    if (device.iconClass) return device.iconClass;
+
+    var userAgent = device.userAgent || "";
+
+    if (device.appVersion === 'Web Client') {
+      device.iconClass = 'fa-desktop admin-desktop-icon-xs';
+    } else if (userAgent.toLowerCase().indexOf("android") !== -1) {
+      device.iconClass = 'fa-android admin-android-icon-xs';
+    } else if(userAgent.toLowerCase().indexOf("ios") !== -1) {
+      device.iconClass = 'fa-apple admin-apple-icon-xs';
+    } else {
+      device.iconClass = 'fa-mobile admin-generic-icon-xs';
+    }
+
+    return device.iconClass;
+  };
+
   $scope.newUser = function() {
     $location.path('/admin/users/new');
   };

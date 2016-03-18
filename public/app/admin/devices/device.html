@@ -1,7 +1,7 @@
 <div class="admin-nav-gap">
   <div class="container-fluid">
     <ol class="breadcrumb">
-      <li><i class="fa fa-dashboard"></i><a href="#/admin">&nbsp;&nbsp;Dashboard</a></li>
+      <li><a href="#/admin"><i class="fa fa-dashboard admin-dashboard"></i>Dashboard</a></li>
       <li><a href="#/admin/devices">Devices</a></li>
       <li class="active">{{device.uid}}</li>
     </ol>
@@ -18,7 +18,7 @@
 
           <div class="row">
             <div class="col-md-10">
-              <h2>Device: {{device.uid}}</h2>
+              <h2><i class="fa" ng-class="iconClass(device)"></i> Device</h2>
             </div>
             <div class="col-md-2">
               <h2>
@@ -31,48 +31,57 @@
           <div class="row top-gap-l">
             <div class="col-md-6 col-xs-12">
 
-              <div class="row top-gap-l">
-                <div class="col-md-3">
-                  <span class="muted">Device Id:&nbsp;</span>
-                </div>
-                <div class="col-md-9">
-                  <span>{{device.uid}}</span>
-                </div>
-              </div>
-
               <div class="row top-gap-s">
                 <div class="col-md-3">
-                  <span class="muted">Description:&nbsp;</span>
-                </div>
-                <div class="col-md-9">
-                  <span>{{device.description}}</span>
-                </div>
-              </div>
-
-              <div class="row top-gap-s">
-                <div class="col-md-3">
-                  <span class="muted">POC:&nbsp;</span>
+                  <span class="muted">User</span>
                 </div>
                 <div class="col-md-9">
                   <span>{{userIdMap[device.userId].displayName}}</span>
                 </div>
               </div>
 
-              <div class="row top-gap-s">
+              <div class="row top-gap-s" ng-if="device.name">
                 <div class="col-md-3">
-                  <span class="muted">App Version:&nbsp;</span>
+                  <span class="muted">Name:</span>
+                </div>
+                <div class="col-md-9">
+                  <span>{{device.name}}</span>
+                </div>
+              </div>
+
+              <div class="row top-gap-s" ng-if="device.description">
+                <div class="col-md-3">
+                  <span class="muted">Description:</span>
+                </div>
+                <div class="col-md-9">
+                  <span>{{device.description}}</span>
+                </div>
+              </div>
+
+              <div class="row top-gap-s" ng-if="device.appVersion">
+                <div class="col-md-3">
+                  <span class="muted">App Version:</span>
                 </div>
                 <div class="col-md-9">
                   <span>{{device.appVersion}}</span>
                 </div>
               </div>
 
-              <div class="row top-gap-s bottom-gap">
+              <div class="row top-gap-s">
                 <div class="col-md-3">
-                  <span class="muted">User Agent:&nbsp;</span>
+                  <span class="muted">User Agent:</span>
                 </div>
                 <div class="col-md-9">
                   <span>{{device.userAgent}}</span>
+                </div>
+              </div>
+
+              <div class="row top-gap-s">
+                <div class="col-md-3">
+                  <span class="muted">Device Id:</span>
+                </div>
+                <div class="col-md-9">
+                  <span>{{device.uid}}</span>
                 </div>
               </div>
 
