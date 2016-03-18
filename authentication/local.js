@@ -6,6 +6,16 @@ module.exports = function(app, passport, provisioning) {
     , api = require('../api')
     , userTransformer = require('../transformers/user');
 
+  function parseLoginMetadata(req, res, next) {
+
+    var options = {};
+    options.userAgent = req.headers['user-agent'];
+    options.appVersion = req.param('appVersion');
+
+    req.loginOptions = options;
+    next();
+  }
+
   passport.use(new LocalStrategy(
     function(username, password, done) {
       User.getUserByUsername(username, function(err, user) {
@@ -41,8 +51,9 @@ module.exports = function(app, passport, provisioning) {
     '/api/login',
     passport.authenticate('local'),
     provisioning.provision.check(provisioning.strategy),
+    parseLoginMetadata,
     function(req, res) {
-      new api.User().login(req.user,  req.provisionedDevice, function(err, token) {
+      new api.User().login(req.user,  req.provisionedDevice, req.loginOptions, function(err, token) {
         res.json({
           token: token.token,
           expirationDate: token.expirationDate,

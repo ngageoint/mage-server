@@ -3,6 +3,7 @@ var UserModel = require('../models/user')
   , TokenModel = require('../models/token')
   , LoginModel = require('../models/login')
   , EventModel = require('../models/event')
+  , DeviceModel = require('../models/device')
   , path = require('path')
   , fs = require('fs-extra')
   , async = require('async')
@@ -30,7 +31,12 @@ function iconPath(id, user, icon) {
 function User() {
 }
 
-User.prototype.login = function(user, device, callback) {
+User.prototype.login = function(user, device, options, callback) {
+  if (typeof options === 'function') {
+    callback = options;
+    options = {};
+  }
+
   TokenModel.createToken({userId: user._id, device: device}, function(err, token) {
     if (err) return callback(err);
 
@@ -39,6 +45,12 @@ User.prototype.login = function(user, device, callback) {
     LoginModel.createLogin(user, device, function(err) {
       if (err) log.error('could not add login', err);
     });
+
+    // set user-agent and mage version on device
+    DeviceModel.updateDevice(device._id, {userAgent: options.userAgent, appVersion: options.appVersion}, function(err) {
+      if (err) log.error('could not add metadata to device', err);
+    });
+
   });
 };
 

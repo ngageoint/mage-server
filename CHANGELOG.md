@@ -4,6 +4,15 @@ Adheres to [Semantic Versioning](http://semver.org/).
 
 ---
 
+## 4.1.1 (TBD)
+
+* TBD
+##### Features
+* Added user agent and application version to device list on devices page.
+
+##### Bug Fixes
+* User agent and application version now parsed and saved w/ device on login.
+
 ## [4.1.0](https://github.com/ngageoint/mage-server/releases/tag/v4.1.0) (03-17-2016)
 ##### Features
 * 'Event Users' dropdown in form builder.  This dropdown is dynamically populated with all users in the event.

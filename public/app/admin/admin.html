@@ -311,7 +311,7 @@
                     <i class="fa fa-fw fa-sign-in"></i>
                   </div>
                   <strong class="right-gap"><a href="javascript:void(0);" ng-click="gotoUser(login.user)">{{login.user.displayName}}</a></strong>
-                  <span class="muted"><a href="javascript:void(0);" ng-click="gotoDevice(login.device)"><i class="fa fa-mobile-phone"></i> {{login.device.uid}}</a></span>
+                  <span class="muted"><a href="javascript:void(0);" ng-click="gotoDevice(login.device)"><i class="fa fa-fw" ng-class="iconClass(login.device)"></i>{{login.device.uid}}</a></span>
                 </div>
               </div>
               <div class="row">

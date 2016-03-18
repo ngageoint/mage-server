@@ -66,8 +66,14 @@ module.exports = function(app, security) {
     if (!fields) return res.status(400).send('fields is required');
 
     var fieldNames = {};
+    var userFields = form.userFields || [];
     fields.forEach(function(field) {
       fieldNames[field.name] = field;
+
+      // remove userFields chocies, these are set dynamically
+      if (userFields.indexOf(field.name) !== -1) {
+        field.choices = [];
+      }
     });
 
     var missing = [];
@@ -231,6 +237,7 @@ module.exports = function(app, security) {
     access.authorize('UPDATE_EVENT'),
     parseEventQueryParams,
     validateEventParams,
+    validateFormParams,
     function(req, res, next) {
       Event.update(req.event._id, req.newEvent, {populate: req.parameters.populate}, function(err, event) {
         if (err) return next(err);

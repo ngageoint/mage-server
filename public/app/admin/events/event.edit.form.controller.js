@@ -173,7 +173,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     return layer.type;
   };
 
-  $scope.saveForm = function() {
+  $scope.saveForm = function() {    
     formSaved = false;
     $scope.saving = true;
     $scope.uploadIcons = true;
