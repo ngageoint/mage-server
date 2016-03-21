@@ -54,7 +54,9 @@ module.exports = function(app, security) {
       req.files.icon.color = iconMetadata.color;
     } else {
       if (iconMetadata.type === 'none') {
-        req.files.icon.type = 'none';
+        req.files.icon = {
+          type: 'none'
+        };
       }
     }
 

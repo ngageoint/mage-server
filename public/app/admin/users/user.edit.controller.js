@@ -36,7 +36,12 @@ function AdminUserEditController($scope, $filter, $routeParams, $location, Local
     var type = icon.type;
     if (type === 'create') {
       if (icon.text == null) {
-        icon.text = $scope.user.displayName ? $scope.user.displayName.replace(/\W*(\w)\w*/g, '$1').toUpperCase() : null;
+        if ($scope.user.displayName) {
+          var initials = $scope.user.displayName.match(/\b\w/g);
+          icon.text = (initials.shift() + initials.pop()).toUpperCase();
+        }
+
+        // icon.text = $scope.user.displayName ? $scope.user.displayName.replace(/\W*(\w)\w*/g, '$1').toUpperCase() : null;
       }
 
       if (!icon.color) {
