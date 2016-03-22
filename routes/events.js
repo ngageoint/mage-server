@@ -194,18 +194,35 @@ module.exports = function(app, security) {
         req.newEvent.layerIds = req.newEvent.layerIds.split(",");
       }
 
-      Event.create(req.newEvent, function(err, event) {
+      function createEvent(callback) {
+        Event.create(req.newEvent, callback);
+      }
+
+      function importForm(event, callback) {
+        new api.Form(event).import(req.files.form, function(err, form) {
+          callback(err, event, form);
+        });
+      }
+
+      function updateEvent(event, form, callback) {
+        Event.update(event._id, {form: form}, callback);
+      }
+
+      function populateUserFields(event, callback) {
+        new api.Form(event).populateUserFields(function(err) {
+          callback(err, event);
+        });
+      }
+
+      async.waterfall([
+        createEvent,
+        importForm,
+        updateEvent,
+        populateUserFields
+      ], function (err, event) {
         if (err) return next(err);
 
-        new api.Form(event).import(req.files.form, function(err, form) {
-          if (err) return next(err);
-
-          Event.update(event._id, {form: form}, function(err, event) {
-            if (err) return next(err);
-
-            res.status(201).json(event);
-          });
-        });
+        res.status(201).json(event);
       });
     }
   );
@@ -242,7 +259,11 @@ module.exports = function(app, security) {
       Event.update(req.event._id, req.newEvent, {populate: req.parameters.populate}, function(err, event) {
         if (err) return next(err);
 
-        res.json(event);
+        new api.Form(event).populateUserFields(function(err) {
+          if (err) return next(err);
+
+          res.json(event);
+        });
       });
     }
   );

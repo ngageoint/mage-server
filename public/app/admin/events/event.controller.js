@@ -108,7 +108,9 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     $scope.eventNonMembers = _.reject($scope.eventNonMembers, function(item) { return item.id === user.id; });
 
     eventTeam.users.push({id: user.id});
-    eventTeam.$save();
+    eventTeam.$save(function() {
+      $scope.event.$get({popualte: false});
+    });
   }
 
   $scope.removeMember = function(member) {
@@ -128,7 +130,9 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     $scope.eventNonMembers.push(user);
 
     eventTeam.users = _.reject(eventTeam.users, function(u) { return user.id === u.id; });
-    eventTeam.$save();
+    eventTeam.$save(function() {
+      $scope.event.$get({populate: false});
+    });
   }
 
   $scope.addLayer = function(layer) {

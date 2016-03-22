@@ -27,6 +27,8 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
   $scope.$watch('event.form', function(newForm, oldForm) {
     if (!newForm || !oldForm) return;
 
+    if ($scope.saving) return;
+
     $scope.unSavedChanges = true;
   }, true);
 
@@ -107,6 +109,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
 
   $scope.moveFieldUp = function(e, fieldToMoveUp) {
     e.stopPropagation();
+    e.preventDefault();
 
     // find first non-archived field above me
     // and switch our ids to re-order
@@ -132,6 +135,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
 
   $scope.moveFieldDown = function(e, fieldToMoveDown) {
     e.stopPropagation();
+    e.preventDefault();
 
     // find the first non-archived field below me
     // and switch our ids to re-order
@@ -173,7 +177,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     return layer.type;
   };
 
-  $scope.saveForm = function() {    
+  $scope.saveForm = function() {
     formSaved = false;
     $scope.saving = true;
     $scope.uploadIcons = true;
