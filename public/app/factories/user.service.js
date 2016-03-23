@@ -123,6 +123,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
 
     promise.success(function(data) {
       setUser(data.user);
+      LocalStorageService.setToken(data.token);
       $rootScope.$broadcast('event:auth-login', {token: data.token, newUser: data.user.username !== oldUsername});
       $rootScope.$broadcast('event:user', {user: data.user, token: data.token, isAdmin: service.amAdmin});
     });

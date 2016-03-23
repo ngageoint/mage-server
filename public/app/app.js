@@ -328,7 +328,6 @@ function run($rootScope, $route, $uibModal, UserService, $location, authService,
     function confirmLogin() {
       authService.loginConfirmed(data);
 
-      LocalStorageService.setToken(data.token);
       if ($location.path() === '/signin' || $location.path() === '/setup') {
         $location.path('/map');
       }

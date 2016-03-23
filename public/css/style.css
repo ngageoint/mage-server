@@ -596,11 +596,7 @@ h4.image-delete {
 	border: 3px dashed #336699;
 }
 
-.avatar-img {
-	width: 25px;
-	height: 25px;
-	border-radius: 4px;
-}
+/* TODO remove*/
 
 .img-container {
 	width: 40px;
@@ -614,16 +610,20 @@ h4.image-delete {
 	height: 100%;
 }
 
-.feed-avatar-img-container {
-	width: 60px;
-	height: 60px;
-	overflow: hidden;
-	margin-right: 10px
+.avatar-img {
+	width: 25px;
+	height: 25px;
+	border-radius: 4px;
 }
 
-.feed-avatar-img-container img {
-	width: 100%;
-	height: 100%;
+
+/* TODO Combine into avatar-img*/
+.center-crop {
+  object-fit: cover;
+}
+
+.round {
+  border-radius: 4px;
 }
 
 .nav-link:focus {

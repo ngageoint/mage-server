@@ -12,6 +12,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 * User agent and application version now parsed and saved w/ device on login.
+* Fixed flexbox layout issues for map popups in IE 11.
 
 ## [4.1.0](https://github.com/ngageoint/mage-server/releases/tag/v4.1.0) (03-17-2016)
 ##### Features

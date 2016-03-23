@@ -7,8 +7,9 @@ function avatarUser() {
     restrict: "A",
     templateUrl: '/app/user/user-avatar.directive.html',
     scope: {
-      avatarUser: '=',
-      avatarEdit: '='
+      user: '=avatarUser',
+      avatarWidth: '=?',
+      avatarHeight: '=?'
     },
     controller: AvatarUserController,
     bindToController: true
@@ -20,38 +21,26 @@ function avatarUser() {
 AvatarUserController.$inject = ['$scope', '$element', 'LocalStorageService'];
 
 function AvatarUserController($scope, $element, LocalStorageService) {
-  $scope.fileName = 'Choose an avatar image...';
-  $scope.avatarUrl = avatarUrl($scope.avatarUser, LocalStorageService.getToken());
+  if (!$scope.avatarWidth) $scope.avatarWidth = 60;
+  if (!$scope.avatarHeight) $scope.avatarHeight = 60;
 
-  $element.find(':file').change(function() {
-    $scope.file = this.files[0];
-    $scope.fileName = $scope.file.name;
-    $scope.$emit('userAvatar', $scope.file);
+  $scope.avatar = avatarUrl($scope.user);
 
-    if (window.FileReader) {
-      var reader = new FileReader();
-      reader.onload = (function() {
-        return function(e) {
-          $scope.$apply(function() {
-            $scope.avatarUrl = e.target.result;
-          });
-        };
-      })($scope.file);
+  $scope.$watch('user.avatarUrl', function(url) {
+    if (!url || $scope.user.avatarData) return;
 
-      reader.readAsDataURL($scope.file);
-    }
+    $scope.avatar = avatarUrl($scope.user);
   });
 
-  $scope.$watch('avatarUser', function(avatarUser) {
-    if (!avatarUser) return;
+  $scope.$watch('user.avatarData', function(avatarData) {
+    if (!avatarData) return;
 
-    $scope.avatarUrl = avatarUrl(avatarUser, LocalStorageService.getToken());
-    $scope.fileName = 'Choose an image...';
+    $scope.avatar = avatarData;
   });
 
-  function avatarUrl(user, token) {
+  function avatarUrl(user) {
     if (user && user.avatarUrl) {
-      return user.avatarUrl + "?access_token=" + token + '&_dc=' + user.lastUpdated;
+      return user.avatarUrl + "?access_token=" + LocalStorageService.getToken() + '&_dc=' + user.lastUpdated;
     } else {
       return "img/missing_photo.png";
     }

@@ -40,8 +40,6 @@ function AdminUserEditController($scope, $filter, $routeParams, $location, Local
           var initials = $scope.user.displayName.match(/\b\w/g);
           icon.text = (initials.shift() + initials.pop()).toUpperCase();
         }
-
-        // icon.text = $scope.user.displayName ? $scope.user.displayName.replace(/\W*(\w)\w*/g, '$1').toUpperCase() : null;
       }
 
       if (!icon.color) {
@@ -56,6 +54,18 @@ function AdminUserEditController($scope, $filter, $routeParams, $location, Local
 
   $scope.$on('userAvatar', function(event, userAvatar) {
     $scope.user.avatar = userAvatar;
+
+    if (window.FileReader) {
+      var reader = new FileReader();
+      reader.onload = (function() {
+        return function(e) {
+          $scope.user.avatarData = e.target.result;
+          $scope.$apply();
+        };
+      })(userAvatar);
+
+      reader.readAsDataURL(userAvatar);
+    }
   });
 
   $scope.$on('userIcon', function(event, userIcon) {

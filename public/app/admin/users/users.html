@@ -54,9 +54,8 @@
 
                     <div class="row pointer" ng-click="gotoUser(u)">
                       <div class="col-md-8">
-                        <div class="img-container pull-left">
-                          <img class="avatar-thumbnail img-rounded" ng-src="{{u.avatarUrl ? u.avatarUrl + '?access_token=' + token : '/img/missing_photo.png'}}"/>
-                        </div>
+                        <div class="pull-left right-gap" avatar-user="u" avatar-width="40" avatar-height="40"></div>
+
                         <div class="strong">{{u.displayName}}</div>
                         <div class="muted">{{u.email}}</div>
                       </div>
