@@ -1,23 +1,22 @@
 <div class="observation-popup">
-  <div class="row">
-    <div class="col-md-12">
-      <div class="pull-right">
-        <a href="javascript:void(0)" title="Show in feed" class="observation-popup-info" ng-click="onInfoClicked()"><i class="fa fa-info-circle"></i></a>
-        <a href="javascript:void(0)" title="Zoom to" class="observation-popup-info" ng-click="onZoomClicked()"><i class="fa fa-crosshairs"></i></a>
-      </div>
 
-      <div ng-if="type" class="observation-popup-title">
-        {{type}}
-      </div>
-
-      <div class="observation-popup-subtitle">
-        <span ng-if="variant" class="icon-spacer">
-          <strong>{{variant}}</strong>
-        </span>
-        <span ng-if="date">
-          {{date}}
-        </span>
-      </div>
+  <div class="observation-popup-content">
+    <div ng-if="type" class="observation-popup-title">
+      <strong>{{type}}</strong>
     </div>
+
+    <div class="observation-popup-subtitle">
+      <strong class="muted">{{variant}}</strong>
+    </div>
+
+    <div class="muted small">{{date}}</div>
   </div>
+
+  <div class="observation-popup-actions">
+    <div>
+      <a href="javascript:void(0)" title="Show in feed" class="location-popup-info" ng-click="onInfoClicked()"><i class="fa fa-info-circle right-gap"></i></a>
+      <a href="javascript:void(0)" title="Zoom to" class="location-popup-info" ng-click="onZoomClicked()"><i class="fa fa-crosshairs"></i></a>
+    <div>
+  </div>
+
 </div>

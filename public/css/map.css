@@ -292,22 +292,33 @@ a.news-feed-tab-active {
 
 .user-popup {
   display: flex;
-  flex-direction: row;
-}
-
-.user-popup-avatar {
-  flex: 1;
 }
 
 .user-popup-content {
-  flex: none;
+  flex: 1 1 auto;
   margin-left: 15px;
   max-width: 200px;
 }
 
 .user-popup-actions {
-  flex: 1;
-  margin-left: 15px;
+  margin-left: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.observation-popup {
+  display: flex;
+}
+
+.observation-popup-content {
+  flex: 1 1 auto;
+  max-width: 200px;
+}
+
+.observation-popup-actions {
+  margin-left: 20px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -428,33 +439,6 @@ a.news-feed-tab-active {
 .user-map-icon {
   font-family: RobotoMono;
   font-weight: 500;
-}
-
-.observation-popup {
-	color: #345477;
-	width: 240px;
-}
-
-.observation-popup-title {
-	font-size: 14px;
-	padding-bottom: 2px;
-}
-
-.observation-popup-subtitle {
-	font-size: 12px;
-	color: #999;
-}
-
-.observation-popup-info i {
-	font-size: 17px;
-	padding: 10px 5px 0;
-	color: #345477;
-}
-
-.observation-popup-actions a {
-	/*font-size: 18px;*/
-	margin-top: 8px;
-	color: #FFF;
 }
 
 .location-popup {
