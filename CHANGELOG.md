@@ -3,16 +3,22 @@ All notable changes to this project will be documented in this file.
 Adheres to [Semantic Versioning](http://semver.org/).
 
 ---
-
-## 4.1.1 (TBD)
+## 4.1.2 (TBD)
 
 * TBD
 ##### Features
+
+##### Bug Fixes
+
+## [4.1.1](https://github.com/ngageoint/mage-server/releases/tag/v4.1.1) (03-23-2016)
+##### Features
 * Added user agent and application version to device list on devices page.
+* Maintain aspect ration for user avatars.
 
 ##### Bug Fixes
 * User agent and application version now parsed and saved w/ device on login.
 * Fixed flexbox layout issues for map popups in IE 11.
+* Fixed observation edit not allowing save in some situations.
 
 ## [4.1.0](https://github.com/ngageoint/mage-server/releases/tag/v4.1.0) (03-17-2016)
 ##### Features
