@@ -109,7 +109,7 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
 
     eventTeam.users.push({id: user.id});
     eventTeam.$save(function() {
-      $scope.event.$get({popualte: false});
+      $scope.event.$get({populate: false});
     });
   }
 
