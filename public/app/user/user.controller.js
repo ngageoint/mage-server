@@ -2,14 +2,21 @@ angular
   .module('mage')
   .controller('UserController', UserController);
 
-UserController.$inject =  ['$scope', '$location', '$timeout', 'UserService', 'user'];
+UserController.$inject =  ['$scope', '$location', '$timeout', 'Api', 'UserService', 'user'];
 
-function UserController($scope, $location, $timeout, UserService, user) {
+function UserController($scope, $location, $timeout, Api, UserService, user) {
   $scope.user = user;
   $scope.originalUser = angular.copy(user);
   $scope.passwordStatus = {};
   $scope.showUserStatus = false;
   $scope.avatar = null;
+
+  Api.get(function(api) {
+    var authenticationStrategies = api.authenticationStrategies || {};
+    if (authenticationStrategies.local && authenticationStrategies.local.passwordMinLength) {
+      $scope.passwordPlaceholder = authenticationStrategies.local.passwordMinLength + ' characters, alphanumeric';
+    }
+  });
 
   $scope.saveUser = function() {
     var user = {

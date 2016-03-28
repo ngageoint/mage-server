@@ -2,15 +2,15 @@ angular
   .module('mage')
   .controller('SigninController', SigninController);
 
-SigninController.$inject = ['$scope', '$rootScope', 'UserService', 'ApiService'];
+SigninController.$inject = ['$scope', '$rootScope', 'UserService', 'Api'];
 
-function SigninController($scope, $rootScope, UserService, ApiService) {
+function SigninController($scope, $rootScope, UserService, Api) {
   $scope.status = 0;
   $scope.showStatus = false;
   $scope.statusTitle = '';
   $scope.statusMessage = '';
 
-  ApiService.get(function(api) {
+  Api.get(function(api) {
     $scope.thirdPartyStrategies = _.map(_.omit(api.authenticationStrategies, localStrategyFilter), function(strategy, name) {
       strategy.name = name;
       return strategy;

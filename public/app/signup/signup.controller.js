@@ -2,21 +2,24 @@ angular
   .module('mage')
   .controller('SignupController', SignupController);
 
-SignupController.$inject = ['$scope', '$location', 'UserService', 'ApiService'];
+SignupController.$inject = ['$scope', '$location', 'UserService', 'Api'];
 
-function SignupController($scope, $location, UserService, ApiService) {
+function SignupController($scope, $location, UserService, Api) {
   $scope.user = {};
   $scope.showStatus = false;
   $scope.statusTitle = '';
   $scope.statusMessage = '';
 
-  ApiService.get(function(api) {
+  Api.get(function(api) {
     $scope.thirdPartyStrategies = _.map(_.omit(api.authenticationStrategies, localStrategyFilter), function(strategy, name) {
       strategy.name = name;
       return strategy;
     });
 
     $scope.localAuthenticationStrategy = api.authenticationStrategies.local;
+    if ($scope.localAuthenticationStrategy && $scope.localAuthenticationStrategy.passwordMinLength) {
+      $scope.passwordPlaceholder = $scope.localAuthenticationStrategy.passwordMinLength + ' characters, alphanumeric';
+    }
   });
 
   $scope.showStatusMessage = function (title, message, statusLevel) {

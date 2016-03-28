@@ -2,11 +2,18 @@ angular
   .module('mage')
   .controller('AdminUserEditController', AdminUserEditController);
 
-AdminUserEditController.$inject = ['$scope', '$filter', '$routeParams', '$location', 'LocalStorageService', 'UserService'];
+AdminUserEditController.$inject = ['$scope', '$filter', '$routeParams', '$location', 'Api', 'LocalStorageService', 'UserService'];
 
-function AdminUserEditController($scope, $filter, $routeParams, $location, LocalStorageService, UserService) {
+function AdminUserEditController($scope, $filter, $routeParams, $location, Api, LocalStorageService, UserService) {
   $scope.token = LocalStorageService.getToken();
   $scope.roles = [];
+
+  Api.get(function(api) {
+    var authenticationStrategies = api.authenticationStrategies || {};
+    if (authenticationStrategies.local && authenticationStrategies.local.passwordMinLength) {
+      $scope.passwordPlaceholder = authenticationStrategies.local.passwordMinLength + ' characters, alphanumeric';
+    }
+  });
 
   if ($routeParams.userId) {
     UserService.getUser($routeParams.userId).then(function(user) {

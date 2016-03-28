@@ -33,8 +33,8 @@ function config($provide, $httpProvider, $routeProvider) {
 
   $routeProvider.when('/', {
     resolve: {
-      api: ['$location', 'ApiService', function($location, ApiService) {
-        ApiService.get(function(api) {
+      api: ['$location', 'Api', function($location, Api) {
+        Api.get(function(api) {
           if (api.initial) {
             $location.path('/setup');
           } else {
@@ -49,9 +49,9 @@ function config($provide, $httpProvider, $routeProvider) {
     templateUrl: 'app/setup/setup.html',
     controller: 'SetupController',
     resolve: {
-      api: ['$q', '$location', 'ApiService', function($q, $location, ApiService) {
+      api: ['$q', '$location', 'Api', function($q, $location, Api) {
         var deferred = $q.defer();
-        ApiService.get(function(api) {
+        Api.get(function(api) {
           if (!api.initial) {
             $location.path('/');
           } else {
@@ -68,9 +68,9 @@ function config($provide, $httpProvider, $routeProvider) {
     templateUrl:    'app/signin/signin.html',
     controller:     "SigninController",
     resolve: {
-      api: ['$q', '$location', 'ApiService', function($q, $location, ApiService) {
+      api: ['$q', '$location', 'Api', function($q, $location, Api) {
         var deferred = $q.defer();
-        ApiService.get(function(api) {
+        Api.get(function(api) {
           if (api.initial) {
             $location.path('/setup');
           } else {
@@ -87,9 +87,9 @@ function config($provide, $httpProvider, $routeProvider) {
     templateUrl:    'app/signup/signup.html',
     controller:     "SignupController",
     resolve: {
-      api: ['$q', '$location', 'ApiService', function($q, $location, ApiService) {
+      api: ['$q', '$location', 'Api', function($q, $location, Api) {
         var deferred = $q.defer();
-        ApiService.get(function(api) {
+        Api.get(function(api) {
           if (api.initial) {
             $location.path('/setup');
           } else {
@@ -252,16 +252,16 @@ function config($provide, $httpProvider, $routeProvider) {
   });
 }
 
-run.$inject = ['$rootScope', '$route', '$uibModal', 'UserService', '$location', 'authService', 'LocalStorageService', 'ApiService'];
+run.$inject = ['$rootScope', '$route', '$uibModal', 'UserService', '$location', 'authService', 'LocalStorageService', 'Api'];
 
-function run($rootScope, $route, $uibModal, UserService, $location, authService, LocalStorageService, ApiService) {
+function run($rootScope, $route, $uibModal, UserService, $location, authService, LocalStorageService, Api) {
   $rootScope.$on('event:auth-loginRequired', function() {
     if (!$rootScope.loginDialogPresented && $location.path() !== '/' && $location.path() !== '/signin' && $location.path() !== '/signup' && $location.path() !== '/setup') {
       $rootScope.loginDialogPresented = true;
       var modalInstance = $uibModal.open({
         templateUrl: 'app/signin/signin-modal.html',
         controller: ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
-          ApiService.get(function(api) {
+          Api.get(function(api) {
             function localStrategyFilter(strategy, name) {
               return name === 'local';
             }
@@ -333,7 +333,7 @@ function run($rootScope, $route, $uibModal, UserService, $location, authService,
       }
     }
 
-    ApiService.get(function(api) {
+    Api.get(function(api) {
       var disclaimer = api.disclaimer || {};
       if (!disclaimer.show) {
         confirmLogin();

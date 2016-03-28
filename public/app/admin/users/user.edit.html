@@ -64,7 +64,7 @@
             <div class="form-group" ng-class="{error: 'has-error', success: 'hs-success'}[passwordStatus.status]" ng-if="!user.id">
               <label class="control-label col-sm-2">Password</label>
               <div class="col-sm-8">
-                <input type="password" placeholder="14 characters, alphanumeric" ng-model="user.password" name="password" class="form-control">
+                <input type="password" placeholder="{{passwordPlaceholder}}" ng-model="user.password" name="password" class="form-control">
                 <span class="help-inline" ng-show="passwordStatus.status">{{passwordStatus.msg}}</span>
               </div>
             </div>
@@ -72,7 +72,7 @@
             <div class="form-group" ng-class="{error: 'has-error', success: 'has-success'}[passwordStatus.status]" ng-if="!user.id">
               <label class="control-label col-sm-2">Confirm Password</label>
               <div class="col-sm-8">
-                <input type="password" placeholder="14 characters, alphanumeric" ng-model="user.passwordconfirm" name="passwordconfirm" class="form-control">
+                <input type="password" placeholder="{{passwordPlaceholder}}" ng-model="user.passwordconfirm" name="passwordconfirm" class="form-control">
                 <span class="help-inline" ng-show="passwordStatus.status">{{passwordStatus.msg}}</span>
               </div>
             </div>
@@ -151,7 +151,7 @@
                 <div class="form-group" ng-class="{error: 'has-error', success: 'hs-success'}[passwordStatus.status]">
                   <label class="control-label col-sm-4">Password</label>
                   <div class="col-sm-8">
-                    <input type="password" placeholder="14 characters, alphanumeric" ng-model="user.password" name="password" class="form-control">
+                    <input type="password" placeholder="{{passwordPlaceholder}}" ng-model="user.password" name="password" class="form-control">
                     <span class="help-inline" ng-show="passwordStatus.status">{{passwordStatus.msg}}</span>
                   </div>
                 </div>
@@ -159,7 +159,7 @@
                 <div class="form-group" ng-class="{error: 'has-error', success: 'has-success'}[passwordStatus.status]">
                   <label class="control-label col-sm-4">Confirm Password</label>
                   <div class="col-sm-8">
-                    <input type="password" placeholder="14 characters, alphanumeric" ng-model="user.passwordconfirm" name="passwordconfirm" class="form-control">
+                    <input type="password" placeholder="{{passwordPlaceholder}}" ng-model="user.passwordconfirm" name="passwordconfirm" class="form-control">
                     <span class="help-inline" ng-show="passwordStatus.status">{{passwordStatus.msg}}</span>
                   </div>
                 </div>

@@ -2,13 +2,13 @@ angular
   .module('mage')
   .controller('AboutController', AboutController);
 
-AboutController.$inject = ['$scope', 'ApiService'];
+AboutController.$inject = ['$scope', 'Api'];
 
-function AboutController ($scope, ApiService) {
+function AboutController ($scope, Api) {
 
-  ApiService.get(function(data) {
-		$scope.name = data.name;
-		$scope.serverVersion = data.version;
-		$scope.apk = data.apk
-	});
+  Api.get(function(api) {
+    $scope.name = api.name;
+    $scope.serverVersion = api.version;
+    $scope.apk = api.apk;
+  });
 }

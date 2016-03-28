@@ -1,10 +1,10 @@
 angular
 	.module('mage')
-	.factory('ApiService', ApiService);
+	.factory('Api', Api);
 
-ApiService.$inject = ['$resource'];
+Api.$inject = ['$resource'];
 
-function ApiService($resource) {
+function Api($resource) {
   var Api = $resource('/api', {
     get: {
       method: 'GET',
