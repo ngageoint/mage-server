@@ -1,6 +1,5 @@
 module.exports = function(app, security) {
   var api = require('../api')
-    , util = require('util')
     , log = require('winston')
     , Role = require('../models/role')
     , access = require('../access')
@@ -37,7 +36,7 @@ module.exports = function(app, security) {
 
   function parseIconUpload(req, res, next) {
     var iconMetadata = req.param('iconMetadata') || {};
-    if (util.isString(iconMetadata)) {
+    if (typeof iconMetadata === 'string' || iconMetadata instanceof String) {
       iconMetadata = JSON.parse(iconMetadata);
     }
 
