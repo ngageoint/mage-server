@@ -8,7 +8,7 @@ L.Control.worldExtent = L.Control.extend({
     var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
     this._link = L.DomUtil.create('a', '', container);
 
-    this._icon = L.DomUtil.create('i', 'fa fa-globe icon-sage', this._link);
+    this._icon = L.DomUtil.create('i', 'fa fa-globe icon-mage', this._link);
 
     this._link.href = '#';
     this._link.title = 'World extent';

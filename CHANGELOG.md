@@ -7,6 +7,8 @@ Adheres to [Semantic Versioning](http://semver.org/).
 
 * TBD
 ##### Features
+* Rework observation/people feed to show map and feed on smaller devices
+* Allow user to upload avatar when creating an account
 
 ##### Bug Fixes
 

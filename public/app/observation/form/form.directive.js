@@ -12,8 +12,7 @@ function formDirective() {
       observation: '=formObservation',
       preview: '=formPreview'
     },
-    controller: FormDirectiveController,
-    bindToController: true
+    controller: FormDirectiveController
   };
 
   return directive;

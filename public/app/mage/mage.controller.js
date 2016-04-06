@@ -6,6 +6,8 @@ MageController.$inject = [
   '$scope',
   '$compile',
   '$timeout',
+  '$animate',
+  '$document',
   '$uibModal',
   'UserService',
   'FilterService',
@@ -18,7 +20,8 @@ MageController.$inject = [
   'FeatureService'
 ];
 
-function MageController($scope, $compile, $timeout, $uibModal, UserService, FilterService, EventService, MapService, LocalStorageService, Observation, Location, LocationService, FeatureService) {
+function MageController($scope, $compile, $timeout, $animate, $document, $uibModal, UserService, FilterService, EventService, MapService, LocalStorageService, Observation, Location, LocationService, FeatureService) {
+  $scope.hideFeed = false;
 
   var observationsById = {};
   var newObservation = null;
@@ -34,6 +37,15 @@ function MageController($scope, $compile, $timeout, $uibModal, UserService, Filt
 
   $scope.filteredEvent = FilterService.getEvent();
   $scope.filteredInterval = FilterService.getIntervalChoice().label;
+
+  $animate.on('addClass', $document.find('.news-feed'), resolveMapAfterFeaturesPaneTransition);
+  $animate.on('removeClass', $document.find('.news-feed'), resolveMapAfterFeaturesPaneTransition);
+
+  function resolveMapAfterFeaturesPaneTransition($mapPane, animationPhase) {
+    if (animationPhase === 'close') {
+      MapService.hideFeed($scope.hideFeed);
+    }
+  }
 
   // TODO is there a better way to do this?
   // Need to hang onto popup scopes so that I can delete the scope if the observation
@@ -365,14 +377,22 @@ function MageController($scope, $compile, $timeout, $uibModal, UserService, Filt
 
   function onObservationSelected(observation, options) {
     $scope.$broadcast('observation:select', observation, options);
+    if (options.scrollTo) {
+      $scope.hideFeed = false;
+      MapService.hideFeed(false);
+    }
   }
 
   function onObservationDeselected(observation) {
     $scope.$broadcast('observation:deselect', observation);
   }
 
-  function onUserSelected(user) {
+  function onUserSelected(user, options) {
     $scope.$broadcast('user:select', user);
+    if (options.scrollTo) {
+      $scope.hideFeed = false;
+      MapService.hideFeed(false);
+    }
   }
 
   function onUserDeselected(user) {
@@ -410,6 +430,9 @@ function MageController($scope, $compile, $timeout, $uibModal, UserService, Filt
   });
 
   $scope.$on('observation:create', function(e, latlng) {
+    $scope.hideFeed = false;
+    MapService.hideFeed(false);
+
     var event = FilterService.getEvent();
 
     if (!EventService.isUserInEvent(UserService.myself, event)) {
@@ -463,6 +486,11 @@ function MageController($scope, $compile, $timeout, $uibModal, UserService, Filt
   $scope.$on('observation:move', function(e, observation, latlng) {
     $scope.$broadcast('observation:moved', observation, latlng);
     MapService.updateMarker(observation, 'NewObservation');
+  });
+
+  $scope.$on('feed:toggle', function() {
+    $scope.hideFeed = !$scope.hideFeed;
+    $scope.$apply();
   });
 
 }

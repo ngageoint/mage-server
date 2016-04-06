@@ -12,7 +12,7 @@ function attachment() {
       edit: '='
     },
     controller: AttachmentController,
-    bindToController: true
+    replace: true
   };
 
   return directive;

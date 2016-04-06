@@ -11,8 +11,7 @@ function locationPopup() {
       userPopupInfo: '&',
       userZoom: '&'
     },
-    controller: LocationPopupController,
-    bindToController: true
+    controller: LocationPopupController
   };
 
   return directive;

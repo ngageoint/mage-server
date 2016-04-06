@@ -12,8 +12,7 @@ function newsFeed() {
       users: '=feedUsers',
       feedUsersChanged: '='
     },
-    controller: NewsFeedController,
-    bindToController: true
+    controller: NewsFeedController
   };
 
   return directive;
@@ -62,10 +61,6 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Fil
     $scope.newObservation = null;
   });
 
-  $scope.tabSelected = function(tab) {
-    $scope.currentFeedPanel = tab;
-  };
-
   $scope.$watch('currentFeedPanel', function(currentFeedPanel) {
     if (currentFeedPanel === 'observationsTab') {
       $scope.feedObservationsChanged = {count: 0};
@@ -108,11 +103,13 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Fil
 
     $scope.currentObservationPage = page;
     $scope.currentFeedPanel = 'observationsTab';
+    $scope.hideFeed = false;
 
     $timeout(function() {
       // scroll to observation in that page
-      var feedElement = $($element.find(".news-items"));
-      feedElement.animate({scrollTop: $('#' + observation.id).position().top});
+      var offset = $($element.find(".feed-items-container")).prop('offsetTop');
+      var feedElement = $($element.find(".feed-items"));
+      feedElement.animate({scrollTop: $('#' + observation.id).prop('offsetTop') - offset}, "slow");
     });
   });
 
@@ -136,11 +133,13 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Fil
 
     $scope.currentUserPage = page;
     $scope.currentFeedPanel = 'peopleTab';
+    $scope.hideFeed = false;
 
     $timeout(function() {
       // scroll to observation in that page
-      var feedElement = $($element.find(".news-items"));
-      feedElement.animate({scrollTop: $('#' + user.id).position().top});
+      var offset = $($element.find(".feed-items-container")).prop('offsetTop');
+      var feedElement = $($element.find(".feed-items"));
+      feedElement.animate({scrollTop: $('#' + user.id).prop('offsetTop') - offset}, "slow");
     });
   });
 

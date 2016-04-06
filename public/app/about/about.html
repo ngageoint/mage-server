@@ -1,80 +1,86 @@
-<div class="container top-gap-xl">
-  <div class="row">
-    <div class="col-md-12">
-      <h2>About {{name}}</h2>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-6">
-      <p>
-        Mobile applications provide situational awareness capabilities to disconnected and disadvantaged users. MAGE enables imagery sharing, georeferencing, tracking, and communication between users supporting mobile and desktop users.
-      </p>
-      <p>
-        Designed to merge the best of breed features from MFO and Hermes based on GIAT technical experience and community feedback. MAGE delivers an enhanced mobile situational awareness capability for a broad community of users.
-      </p>
-    </div>
-    <div class="col-md-6">
-      <table class="table">
-        <p><strong>Version:</strong> {{serverVersion.major}}.{{serverVersion.minor}}.{{serverVersion.micro}}</p>
-        <p>Device Provisioning:<strong> enabled</strong></p>
-        <p>LocationServices:<strong> enabled</strong></p>
-      </table>
-    </div>
-  </div>
-  <div class="row top-gap-l">
-    <div class="col-md-12">
-      <h2>API</h2>
-  <p>Browse the MAGE API live with <a href="/api/swagger">Swagger.</a></p>
-  <p><strong>Important:</strong> Swagger interactive documentation will modify MAGE data via API calls, please be careful with <strong>POST/PUT/DELETE</strong> routes.</p>
+<div class="content-flex">
 
-</div>
-</div>
-  <div class="row top-gap-l">
-    <div class="col-md-12">
-      <h2>Apps</h2>
-      <p>
-        <em>
-          Due to a bug in some stock Android browsers you will need to use a third party browser such as Mozilla Firefox to download the mobile storefront for Android.
-        </em>
-      </p>
-    </div>
-  </div>
-  <div class="row top-gap">
-    <div class="col-md-1">
-      <i class="fa fa-magic icon-brand-s"></i>
-    </div>
-    <div class="col-md-5">
-      <h3>MAGE for Android</h3>
-      <a href="mobile-apps/mage.apk" class="btn btn-default">
-        <i class="icon-download"></i>
-        Download
-      </a>
-      <div class="top-gap">
-        <strong>Features:</strong>
-        <ul>
-          <li>Creating and viewing observations with photos, voice, and video.</li>
-          <li>Friendly Force Tracking.</li>
-          <li>Observation storage and synching for offline useage.</li>
-          <li>Automatically uses Map Cache (download below) for offline map data.</li>
-        </ul>
+  <div class="content-inner">
+
+    <div class="container top-gap-xl">
+      <div class="row">
+        <div class="col-md-12">
+          <h2>About {{name}}</h2>
+        </div>
       </div>
-    </div>
-  </div>
+      <div class="row">
+        <div class="col-md-6">
+          <p>
+            Mobile applications provide situational awareness capabilities to disconnected and disadvantaged users. MAGE enables imagery sharing, georeferencing, tracking, and communication between users supporting mobile and desktop users.
+          </p>
+          <p>
+            Designed to merge the best of breed features from MFO and Hermes based on GIAT technical experience and community feedback. MAGE delivers an enhanced mobile situational awareness capability for a broad community of users.
+          </p>
+        </div>
+        <div class="col-md-6">
+          <table class="table">
+            <p><strong>Version:</strong> {{serverVersion.major}}.{{serverVersion.minor}}.{{serverVersion.micro}}</p>
+            <p>Device Provisioning:<strong> enabled</strong></p>
+            <p>LocationServices:<strong> enabled</strong></p>
+          </table>
+        </div>
+      </div>
+      <div class="row top-gap-l">
+        <div class="col-md-12">
+          <h2>API</h2>
+      <p>Browse the MAGE API live with <a href="/api/swagger">Swagger.</a></p>
+      <p><strong>Important:</strong> Swagger interactive documentation will modify MAGE data via API calls, please be careful with <strong>POST/PUT/DELETE</strong> routes.</p>
 
-  <div class="row top-gap-xl">
-    <div class="col-md-12">
-      <h2>Acknowledgements</h2>
     </div>
-  </div>
-  <div class="row bottom-gap-l">
-    <div class="col-md-6">
-      <h4>Tech Stack</h4>
-      <p>The MAGE server is built on <a href="http://nodejs.org/" target="_blank">NodeJS</a>, with data stored in <a href="http://www.mongodb.org/" target="_blank">MongoDB</a> via <a href="http://mongoosejs.com/" target="_blank">mongoose</a>. Routing provided with <a href="http://expressjs.com/" target="_blank">express</a>, and authentication with <a href="http://passportjs.org/" target="_blank">passport</a>.</p>
-      <p>The front end maps are powered by <a href="http://leafletjs.com/" target="_blank">Leaflet</a>. The responsive layouts and buttons are styled by a modified version of <a href="http://getbootstrap.com/" target="_blank">Bootstrap</a>. The whole front end is tied together by <a href="http://angularjs.org/" target="_blank">AngularJS</a>.</p>
     </div>
-    <div class="col-md-6">
-      <h4>Iconography</h4>
-      <p>The icons used throughout the app come from <a href="http://fortawesome.github.io/Font-Awesome/" target="_blank">Font Awesome</a></p>
+      <div class="row top-gap-l">
+        <div class="col-md-12">
+          <h2>Apps</h2>
+          <p>
+            <em>
+              Due to a bug in some stock Android browsers you will need to use a third party browser such as Mozilla Firefox to download the mobile storefront for Android.
+            </em>
+          </p>
+        </div>
+      </div>
+      <div class="row top-gap">
+        <div class="col-md-1">
+          <i class="fa fa-magic icon-brand-s"></i>
+        </div>
+        <div class="col-md-5">
+          <h3>MAGE for Android</h3>
+          <a href="mobile-apps/mage.apk" class="btn btn-default">
+            <i class="icon-download"></i>
+            Download
+          </a>
+          <div class="top-gap">
+            <strong>Features:</strong>
+            <ul>
+              <li>Creating and viewing observations with photos, voice, and video.</li>
+              <li>Friendly Force Tracking.</li>
+              <li>Observation storage and synching for offline useage.</li>
+              <li>Automatically uses Map Cache (download below) for offline map data.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="row top-gap-xl">
+        <div class="col-md-12">
+          <h2>Acknowledgements</h2>
+        </div>
+      </div>
+      <div class="row bottom-gap-l">
+        <div class="col-md-6">
+          <h4>Tech Stack</h4>
+          <p>The MAGE server is built on <a href="http://nodejs.org/" target="_blank">NodeJS</a>, with data stored in <a href="http://www.mongodb.org/" target="_blank">MongoDB</a> via <a href="http://mongoosejs.com/" target="_blank">mongoose</a>. Routing provided with <a href="http://expressjs.com/" target="_blank">express</a>, and authentication with <a href="http://passportjs.org/" target="_blank">passport</a>.</p>
+          <p>The front end maps are powered by <a href="http://leafletjs.com/" target="_blank">Leaflet</a>. The responsive layouts and buttons are styled by a modified version of <a href="http://getbootstrap.com/" target="_blank">Bootstrap</a>. The whole front end is tied together by <a href="http://angularjs.org/" target="_blank">AngularJS</a>.</p>
+        </div>
+        <div class="col-md-6">
+          <h4>Iconography</h4>
+          <p>The icons used throughout the app come from <a href="http://fortawesome.github.io/Font-Awesome/" target="_blank">Font Awesome</a></p>
+        </div>
+      </div>
     </div>
   </div>
 </div>

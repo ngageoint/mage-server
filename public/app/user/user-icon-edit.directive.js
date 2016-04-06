@@ -9,8 +9,7 @@ function iconUserEdit() {
     scope: {
       user: '=iconUserEdit'
     },
-    controller: IconUserEditController,
-    bindToController: true
+    controller: IconUserEditController
   };
 
   return directive;

@@ -23,13 +23,12 @@
         <div class="row">
           <div class="col-md-12">
             <div class="form-group" ng-class="{'has-error': status > 399}">
-              <label>UID</label>
-              <input ng-model="uid" class="form-control" name="uid" type="text" autocapitalize="off"/>
+              <input ng-model="uid" class="form-control" name="uid" placeholder="UID" type="text" autocapitalize="off"/>
             </div>
           </div>
         </div>
 
-        <div class="row" ng-if="strategy.name == 'google'">
+        <div class="row" ng-if="strategy.name === 'google'">
           <div class="col-md-12 text-center">
             <button class="btn btn-google" ng-click="googleSignin()" ng-disabled="!uid">
               <i class="fa fa-google-plus right-gap"></i> Google
@@ -50,18 +49,15 @@
           <div class="col-md-12">
             <form class="form">
               <div class="form-group" ng-class="{'has-error': status > 399}">
-                <label>Username</label>
-                <input ng-model="username" class="form-control" name="username" type="text" autocapitalize="off"/>
+                <input ng-model="username" class="form-control" name="username" placeholder="Username" type="text" autocapitalize="off"/>
               </div>
 
               <div class="form-group" ng-class="{'has-error': status > 399}">
-                <label>UID</label>
-                <input ng-model="uid" class="form-control" name="uid" type="text" autocapitalize="off"/>
+                <input ng-model="uid" class="form-control" name="uid" placeholder="UID" type="text" autocapitalize="off"/>
               </div>
 
               <div class="form-group" ng-class="{'has-error': status > 399}">
-                <label>Password</label>
-                <input ng-model="password" class="form-control" name="password" type="password" autocapitalize="off"/>
+                <input ng-model="password" class="form-control" name="password" placeholder="Password" type="password" autocapitalize="off"/>
               </div>
 
               <span>

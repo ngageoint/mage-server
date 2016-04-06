@@ -6,17 +6,17 @@ function leaflet() {
   var directive = {
     restrict: "A",
     replace: true,
-    template: '<div id="map" class="map"></div>',
-    controller: LeafletController,
-    bindToController: true
+    template: '<div id="map" class="leaflet-map"></div>',
+    controller: LeafletController
   };
 
   return directive;
 }
 
-LeafletController.$inject = ['$rootScope', '$scope', '$interval', 'MapService', 'LocalStorageService'];
+LeafletController.$inject = ['$rootScope', '$scope', '$interval', '$timeout', 'MapService', 'LocalStorageService'];
 
-function LeafletController($rootScope, $scope, $interval, MapService, LocalStorageService) {
+function LeafletController($rootScope, $scope, $interval, $timeout, MapService, LocalStorageService) {
+
   var layers = {};
   var temporalLayers = [];
   var spiderfyState = null;
@@ -26,11 +26,12 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
     center: [0,0],
     zoom: 3,
     minZoom: 0,
-    maxZoom: 18
+    maxZoom: 18,
+    trackResize: true
   });
 
   // toolbar  and controls config
-  var sidebar = L.control.sidebar('side-bar', {closeButton: false});
+  // var sidebar = L.control.sidebar('side-bar', {closeButton: false});
   map.addControl(new L.Control.MageFeature({
     onClick: function(latlng) {
       $scope.$emit('observation:create', latlng);
@@ -45,13 +46,13 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
     stopLocation: stopLocation
   });
   map.addControl(userLocationControl);
-  map.addControl(new L.Control.MageListTools({
-    onClick: function() {
-      sidebar.toggle();
+
+  var feedControl = new L.Control.MageListTools({
+    onToggle: function(toggle) {
+      $scope.$emit('feed:toggle', toggle);
     }
-  }));
-  map.addControl(sidebar);
-  sidebar.show();
+  });
+  map.addControl(feedControl);
 
   var layerControl = L.control.groupedLayers();
   layerControl.addTo(map);
@@ -100,7 +101,8 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
     onFeaturesChanged: onFeaturesChanged,
     onFeatureZoom: onFeatureZoom,
     onPoll: onPoll,
-    onLocationStop: onLocationStop
+    onLocationStop: onLocationStop,
+    onHideFeed: onHideFeed
   };
   MapService.addListener(listener);
 
@@ -358,7 +360,7 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
 
   function openPopup(layer, options) {
     options = options || {};
-    if (options.zoomToLocation) { // && (!bounds.contains(layer.getLatLng()) || zoom != map.getZoom())) {
+    if (options.zoomToLocation) {
       map.once('moveend', function() {
         layer.openPopup();
       });
@@ -416,5 +418,10 @@ function LeafletController($rootScope, $scope, $interval, MapService, LocalStora
       layerControl.removeLayer(layerInfo.layer);
       delete layers[layer.name];
     }
+  }
+
+  function onHideFeed(hide) {
+    feedControl.hideFeed(hide);
+    map.invalidateSize({pan: false});
   }
 }

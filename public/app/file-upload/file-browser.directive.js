@@ -7,8 +7,7 @@ function fileBrowser() {
     restrict: "A",
     scope: {},
     templateUrl: '/app/file-upload/file-browser.directive.html',
-    controller: FileBrowserController,
-    bindToController: true
+    controller: FileBrowserController
   };
 
   return directive;

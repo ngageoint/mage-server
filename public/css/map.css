@@ -15,13 +15,8 @@
 	margin-bottom: 0;
 }
 
-/* Leaflet stuff */
-.leaflet-bar a, .leaflet-bar, a:hover {
-  color: #5278A2;
-}
-
 .leaflet-control-inverse, .leaflet-bar, a.leaflet-control-inverse {
-  background: #5278A2;
+  background: #204976;
 }
 
 .ellipsis {
@@ -32,15 +27,12 @@
  display: block;
 }
 
-.mage-map {
-  height: 100%
-}
-
-.mage-map-filter {
-	color: #345477;
-	background-color: #E2E2E2;
-	font-size: 16px;
-	z-index: 1029;
+.map-clip {
+  width: 100%;
+  height: 200px;
+  display: flex;
+  position: relative;
+  margin-top: 5px;
 }
 
 .news-feed-pane {
@@ -49,24 +41,6 @@
 	bottom: 0;
 	left: 0;
 	width: 100%;
-}
-
-.news-feed-tabs {
-	border-radius: 3px;
-	background-color: rgba(208, 231, 255, 0.8);
-	padding: 10px 0;
-}
-
-.news-feed-tab:hover {
-	border-bottom: 2px solid #EEE;
-	text-decoration: none;
-	color: #EEE;
-}
-
-
-a.news-feed-tab-active {
-	border-bottom: 3px solid #EEE;
-	color: #EEE;
 }
 
 @media(max-width:1024px){
@@ -128,62 +102,8 @@ a.news-feed-tab-active {
 	position: relative;
 }
 
-.news-items-wrapper {
-	position: absolute;
-	top: 45px;
-	overflow: hidden;
-	bottom: 0;
-	width: 100%;
-	/*z-index:6;*/
-}
-
-.news-feed-item {
-	padding: 5px;
-	border: 1px solid #EEE;
-	margin-bottom: 10px;
-	background: #D0E7FF;
-	background: rgba(208, 231, 255, 0.8);
-	border-radius: 3px;
-}
-
-.news-feed-image {
-	margin-bottom: 5px;
-	max-width: none !important;
-}
-
-.news-feed-video {
-	width: 100%;
-	margin: 3px 0;
-}
-
-.active-news-feed-item {
-	border: 2px solid #345477;
-	border-radius: 6px;
-}
-
 .inactive-news-feed-item {
 	opacity: .7;
-}
-
-.observation-news-item .news-feed-image {
-	max-width: 100% !important;
-}
-
-.news-items {
-	position: absolute;
-	width: 100%;
-	top: 0;
-	bottom: 0;
-	overflow-y: auto;
-	overflow-x: hidden;
-}
-
-.news-items-list {
-	width: 100%;
-}
-
-.the-news-items {
-	position: relative;
 }
 
 .bucket-panel {
@@ -206,10 +126,6 @@ a.news-feed-tab-active {
 	border-radius: 3px;
 	box-shadow: 0 7px 7px rgba(0,0,0,0.65);
 	z-index: 1100;
-}
-
-.news-feed-item-support {
-	color: #036;
 }
 
 .panel-close {

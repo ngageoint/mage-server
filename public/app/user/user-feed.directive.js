@@ -10,8 +10,7 @@ function userNewsItem() {
       user: '=userNewsItem',
       followUserId: '=userNewsItemFollow'
     },
-    controller: UserNewsItemController,
-    bindToController: true
+    controller: UserNewsItemController
   };
 
   return directive;

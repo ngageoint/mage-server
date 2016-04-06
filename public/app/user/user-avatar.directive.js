@@ -11,8 +11,7 @@ function avatarUser() {
       avatarWidth: '=?',
       avatarHeight: '=?'
     },
-    controller: AvatarUserController,
-    bindToController: true
+    controller: AvatarUserController
   };
 
   return directive;

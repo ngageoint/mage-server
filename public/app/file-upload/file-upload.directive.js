@@ -15,8 +15,7 @@ function fileUpload() {
       uploadFileFormName: '=',
       defaultImageUrl: '='
     },
-    controller: FileUploadController,
-    bindToController: true
+    controller: FileUploadController
   };
 
   return directive;

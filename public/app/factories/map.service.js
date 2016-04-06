@@ -27,7 +27,8 @@ function MapService() {
     onLocation: onLocation,
     onLocationStop: onLocationStop,
     onBroadcastLocation: onBroadcastLocation,
-    onPoll: onPoll
+    onPoll: onPoll,
+    hideFeed: hideFeed
   };
 
   var baseLayer = null;
@@ -264,5 +265,13 @@ function MapService() {
 
       delete rasterLayers[layer.name];
     }
+  }
+
+  function hideFeed(hide) {
+    _.each(listeners, function(listener) {
+      if (_.isFunction(listener.onHideFeed)) {
+        listener.onHideFeed(hide);
+      }
+    });
   }
 }

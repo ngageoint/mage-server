@@ -9,9 +9,8 @@ function mapClip() {
       feature: '=mapClip'
     },
     replace: true,
-    template: '<div id="map"></div>',
-    controller: MapClipController,
-    bindToController: true
+    template: '<div id="map" class="leaflet-map"></div>',
+    controller: MapClipController
   };
 
   return directive;

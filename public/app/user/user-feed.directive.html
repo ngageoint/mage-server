@@ -1,26 +1,30 @@
-<div class="user-item">
+<div class="feed-card">
+  <div class="user-item feed-card-content">
 
-  <div>
-    <div class="pull-left right-gap" avatar-user="user" avatar-width="60" avatar-height="60"></div>
-  </div>
-
-  <div class="user-item-content">
-    <div class="news-feed-item-support observation-type">{{user.displayName}}</div>
-		<div class="news-feed-item-support observation-variant ellipsis" title="{{user.email}}">{{user.email}}</div>
-  </div>
-
-  <div class="user-item-actions">
-    <div class="news-feed-item-support small-text">{{fromNow}}</div>
     <div>
-      <a href="javascript:void(0)" class="small-text" ng-click="onUserLocationClick(user)">
-        {{user.location.geometry.coordinates[1] | number: 3}}, {{user.location.geometry.coordinates[0] | number: 3}}
-      </a>
+      <div class="pull-left right-gap" avatar-user="user" avatar-width="60" avatar-height="60"></div>
     </div>
-    <div>
-      <button ng-class="{active: followUserId == user.id}" class="btn btn-xs btn-primary top-gap-s" data-toggle="button" ng-click="followUser($event, user)">
-        <span ng-show="followUserId == user.id">Following...</span>
-        <span ng-hide="followUserId == user.id">Follow</span>
-      </button>
+
+    <div class="user-item-content">
+      <div class="observation-type">
+        <strong class="muted">{{user.displayName}}</strong>
+      </div>
+  		<div class="observation-variant ellipsis muted" title="{{user.email}}">{{user.email}}</div>
+    </div>
+
+    <div class="user-item-actions">
+      <div class="small muted">{{fromNow}}</div>
+      <div>
+        <a href="javascript:void(0)" class="small muted" ng-click="onUserLocationClick(user)">
+          {{user.location.geometry.coordinates[1] | number: 3}}, {{user.location.geometry.coordinates[0] | number: 3}}
+        </a>
+      </div>
+      <div>
+        <button ng-class="{active: followUserId == user.id}" class="btn btn-xs btn-primary top-gap-s" data-toggle="button" ng-click="followUser($event, user)">
+          <span ng-show="followUserId == user.id">Following...</span>
+          <span ng-hide="followUserId == user.id">Follow</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>

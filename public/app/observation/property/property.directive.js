@@ -9,8 +9,7 @@ function propertyView() {
     scope: {
       field:'='
     },
-    controller: PropertyViewController,
-    bindToController: true
+    controller: PropertyViewController
   };
 
   return directive;

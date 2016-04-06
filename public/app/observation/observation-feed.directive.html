@@ -1,54 +1,48 @@
-<div class="observation-news-item">
-  <div ng-if="edit === false">
-    <div class="observation-item">
-      <div class="observation-item-content">
-        <div class="news-feed-item-support observation-type">{{observation.properties.type}}</div>
-        <div class="news-feed-item-support observation-variant" ng-if="observation.properties[form.variantField]">{{observation.properties[form.variantField]}}</div>
-      </div>
+<div class="feed-card">
+  <div class="feed-card-content" ng-cloak>
+    <div ng-if="edit === false">
+      <div class="observation-item">
+        <div class="observation-item-content">
+          <div class="observation-type">
+            <strong class="muted">{{observation.properties.type}}</strong>
+          </div>
+          <div class="observation-variant muted" ng-if="observation.properties[form.variantField]">{{observation.properties[form.variantField]}}</div>
+        </div>
 
-      <div class="observation-item-actions">
-        <div class=" news-feed-item-support ellipsis" title="{{observationUser.displayName}}">{{observationUser.displayName}}</div>
-        <div class="pull-right news-feed-item-support small-text">{{fromNow}}</div>
-        <div>
-          <a href="javascript:void(0)" class="small-text" ng-click="onObservationLocationClick(observation)">
-            {{observation.geometry.coordinates[0] | number: 3}}, {{observation.geometry.coordinates[1] | number: 3}}
-          </a>
+        <div class="observation-item-actions">
+          <div class="ellipsis small muted" title="{{observationUser.displayName}}">{{observationUser.displayName}}</div>
+          <div class="pull-right news-feed-item-support small muted">{{fromNow}}</div>
+          <div>
+            <a href="javascript:void(0)" class="small muted" ng-click="onObservationLocationClick(observation)">
+              {{observation.geometry.coordinates[0] | number: 3}}, {{observation.geometry.coordinates[1] | number: 3}}
+            </a>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="top-gap-s" style="width: 100%; height: 150px;">
-      <div map-clip="observation"></div>
-    </div>
+      <div class="map-clip">
+        <div map-clip="observation"></div>
+      </div>
 
-    <div class="row top-gap-s" ng-repeat="field in form.fields | filter:filterHidden | orderBy: 'id'">
-      <property-view field="field">
-    </div>
+      <div class="row top-gap-s" ng-repeat="field in form.fields | filter:filterHidden | orderBy: 'id'">
+        <property-view field="field">
+      </div>
 
-    <div class="top-gap-s bottom-gap-s">
-      <div class="attachment" ng-repeat="attachment in observation.attachments track by attachment.id">
-        <span ng-switch on="$index % 2">
-          <span ng-switch-when="0">
-            <div class="row">
-              <div class="col-md-6">
-                <div attachment="observation.attachments[$index]" attachment-observation="observation" edit="false"></div>
-              </div>
-              <div class="col-md-6">
-                <div attachment="observation.attachments[$index + 1]" attachment-observation="observation"  edit="false"></div>
-              </div>
-            </div>
-          </span>
-        </span>
+      <div class="attachments">
+        <div class="attachment" ng-repeat="attachment in observation.attachments track by attachment.id">
+          <div attachment="attachment" attachment-observation="observation" edit="false"></div>
+        </div>
+      </div>
+
+      <div style="height: 35px;">
+        <button class="btn btn-sm btn-primary pull-right" ng-click="editObservation()">Edit</button>
       </div>
     </div>
 
-    <div style="height: 35px;">
-      <button class="btn btn-sm btn-primary pull-right" ng-click="editObservation()">Edit</button>
+    <div ng-if="edit === true">
+      <form-directive form="editForm" form-observation="observation" class="row"></form-directive>
     </div>
-  </div>
 
-  <div ng-if="edit === true">
-    <form-directive form="editForm" form-observation="observation" class="row"></form-directive>
   </div>
 
 </div>

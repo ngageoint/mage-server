@@ -6,6 +6,7 @@ angular
     "ui.bootstrap",
     "ui.select",
     "minicolors",
+    "ngAnimate",
     "ngSanitize",
     "ngRoute",
     "ngResource",
@@ -13,11 +14,13 @@ angular
     "http-auth-interceptor"
   ]).config(config).run(run);
 
-config.$inject = ['$provide', '$httpProvider', '$routeProvider'];
+config.$inject = ['$provide', '$httpProvider', '$routeProvider', '$animateProvider'];
 
-function config($provide, $httpProvider, $routeProvider) {
+function config($provide, $httpProvider, $routeProvider, $animateProvider) {
   $httpProvider.defaults.withCredentials = true;
   $httpProvider.defaults.headers.post  = {'Content-Type': 'application/x-www-form-urlencoded'};
+
+  $animateProvider.classNameFilter(/ng-animatable/);
 
   function resolveLogin(roles) {
     return {

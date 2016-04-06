@@ -9,8 +9,7 @@ function observationNewsItem() {
     scope: {
       observation: '=observationNewsItem'
     },
-    controller: ObservationNewsItemController,
-    bindToController: true
+    controller: ObservationNewsItemController
   };
 
   return directive;

@@ -9,8 +9,7 @@ function avatarUserEdit() {
     scope: {
       user: '=avatarUserEdit'
     },
-    controller: AvatarUserEditController,
-    bindToController: true
+    controller: AvatarUserEditController
   };
 
   return directive;

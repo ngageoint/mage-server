@@ -2,7 +2,7 @@
   <div class="col-md-12">
     <form name="observationForm" id="myForm" class="form" novalidate>
         <h4 class="text-center">
-          <strong>{{event.name}}</strong>
+          <strong class="muted">{{event.name}}</strong>
         </h4>
 
         <div ng-repeat="field in form.fields | filter:{archived: '!true'} | orderBy: 'id'">

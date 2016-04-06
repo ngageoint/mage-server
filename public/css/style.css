@@ -12,42 +12,12 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
+  font-family: Roboto;
+  font-weight: 400;
 }
 
-html, #map {
+html {
   height: 100%;
-}
-
-header.navbar {
-  margin-bottom: 0px;
-}
-
-.banner-flex {
-  flex: none;
-}
-
-.navbar-flex {
-  flex: none;
-}
-
-.route-content {
-  flex: 1 0 auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.content-flex {
-  flex: 1;
-  position: relative;
-}
-
-.content-inner {
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	overflow: auto;
 }
 
 h1, h2, h3, h4, h5 {
@@ -56,71 +26,6 @@ h1, h2, h3, h4, h5 {
 
 a {
 	color: #365F8C;
-}
-
-.card {
-  box-sizing: border-box;
-  box-shadow: 0 3px 1px -2px rgba(0,0,0,.14),0 2px 2px 0 rgba(0,0,0,.098),0 1px 5px 0 rgba(0,0,0,.084);
-}
-
-.card > .card-content {
-  padding: 16px;
-}
-
-.dropdown-menu {
-  z-index: 1031;
-}
-
-.center-block {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.modal-content {
-  background-color: none;
-  border: none;
-}
-
-.modal-header {
-  background: #5278A2;
-  color: #91BDEE;
-}
-
-.modal-header h3 {
-  color: #FFF;
-}
-
-.modal-body {
-  background: #FFF;
-  color: #6389b3;
-}
-
-.modal-footer {
-  background: #FFF;
-  color: #6389b3;
-}
-
-.label-as-badge {
-  border-radius: 1em;
-}
-
-.pre-scrollable-small {
-	max-height: 150px;
-	overflow-y: scroll;
-}
-
-.pre-scrollable-large {
-	max-height: 450px;
-	overflow-y: scroll;
-}
-
-.well {
-	border: 1px solid #999999;
-}
-
-.sage-color {
-  color: #324962;
 }
 
 .right-gap-s {
@@ -163,13 +68,269 @@ a {
     margin-bottom: 50px;
 }
 
-.icon-spacer {
-    margin-right: 5px;
+.content-flex {
+  flex: 1 1 0;
+  position: relative;
 }
 
-.icon-brand {
-    color: #FFF;
-    background-image: none;
+.content-inner {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    overflow: auto;
+}
+
+.route-content {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.filter-banner {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  z-index: 1029;
+  font-size: 16px;
+  background-color: #555;
+  color: #fff;
+  padding: 10px 0px;
+}
+
+.filter-text {
+  flex: 1;
+}
+
+.filter-event {
+	font-family: Roboto;
+	font-weight: 400;
+}
+
+.filter-teams {
+	font-family: Roboto;
+	font-weight: 400;
+	margin-left: 5px;
+}
+
+.filter-interval {
+	font-family: Roboto;
+	font-weight: 400;
+	padding-left: 35px;
+}
+
+.main-container {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+
+.feed {
+  order: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #365F8C;
+  width: 500px;
+  transition: margin-left 0.3s linear;
+}
+
+.feed.ng-hide {
+  margin-left: -500px;
+}
+
+.feed-tabs {
+  flex: 0 0 48px;
+  display: flex;
+  color: #345477;
+  font-size: 17.5px;
+  line-height: 20px;
+  background-color: #5278A2;
+  padding: 7px 7px 0;
+}
+
+.feed-tab {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feed-tab:hover a {
+	text-decoration: none;
+	color: #EEE;
+}
+
+.feed-tab-active {
+	background-color: #365F8C;
+  border-radius: 3px 3px 0px 0px;
+}
+
+.feed-tab-inactive {
+	background-color: #5278A2;
+}
+
+.feed-tab-active a {
+	color: #fff;
+}
+
+.feed-tab-inactive a {
+	color: #fff;
+}
+
+.feed-badge {
+  margin-left: 5px;
+}
+
+.badge-accent {
+   background: #F8DA73;
+}
+
+.badge-notif {
+   position: relative;
+   top: 4px;
+   left: -10px;
+}
+
+.feed-items {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0px;
+}
+
+.feed-page {
+  margin: 7px 6px;
+}
+
+.feed-card {
+  background-color: #fff;
+  margin: 0 7px 10px;
+  box-shadow: 0 3px 7px rgba(0,0,0,.35);
+}
+
+.inactive-feed-card {
+  opacity: .2;
+}
+
+.feed-card-content {
+  padding: 10px;
+}
+
+.feed-video {
+	width: 100%;
+	margin: 3px 0;
+}
+
+.map {
+  flex: 1;
+  position: relative;
+  order: 2;
+}
+
+.leaflet-map {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 768px) {
+  .main-container {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .map {
+    order: 1;
+    flex: 1;
+    min-height: 200px;
+    position: relative;
+  }
+
+  .feed {
+    order: 2;
+    flex: 2;
+    width: 100%;
+    transition: flex-grow 0.3s linear;
+  }
+
+  .feed.ng-hide {
+    flex-grow: 0;
+    margin-left: 0px;
+  }
+
+  .feed-tabs {
+    flex: 0 0 30px;
+    display: flex;
+    font-size: 13.5px;
+  }
+}
+
+@media(max-width:768px){
+  .filter-interval {
+    padding-left: 0;
+  }
+}
+
+.attachments {
+  flex-flow: row wrap;
+  display: flex;
+}
+
+.attachment {
+  position: relative;
+  width: 32%;
+  margin-bottom: 2%;
+}
+
+.attachment:nth-child(3n-1) {
+  margin-left: 2%;
+  margin-right: 2%;
+}
+
+.attachment:before {
+  display: block;
+  content: "";
+  width: 100%;
+  padding-top: 100%;
+}
+
+.attachment-media {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.card {
+  box-sizing: border-box;
+  box-shadow: 0 3px 1px -2px rgba(0,0,0,.14),0 2px 2px 0 rgba(0,0,0,.098),0 1px 5px 0 rgba(0,0,0,.084);
+}
+
+.card > .card-content {
+  padding: 16px;
+}
+
+.modal-header {
+  background: #5278A2;
+  color: #91BDEE;
+}
+
+.modal-header h3 {
+  color: #FFF;
+}
+
+.modal-body {
+  background: #FFF;
+}
+
+.modal-footer {
+  background: #FFF;
+  color: #6389b3;
 }
 
 .icon-brand-s {
@@ -188,9 +349,6 @@ a {
 }
 
 /* Overrides */
-.form-horizontal .control-group {
-    margin-bottom: 10px;
-}
 
 textarea {
   height: 75px;
@@ -200,6 +358,7 @@ textarea {
   position: relative;
   overflow: hidden;
 }
+
 .btn-file input[type=file] {
   position: absolute;
   top: 0;
@@ -220,27 +379,13 @@ textarea {
 	color: #555;
 }
 
-.icon-sage {
-  color: #5278A2;
+.icon-mage {
+  color: #365F8C;
   font-size: 1.2em;
   background-image: none;
 }
 
-.icon-large {
-	font-size: 5em;
-}
-
-.icon-android {
-  height: 75px;
-  width: 75px;
-  font-size: 64px;
-}
-
-.andriod-color {
-  color: #83C400;
-}
-
-.icon-sage-inverse {
+.icon-mage-inverse {
   color: #FEFEFE;
   font-size: 1.2em;
   background-image: none;
@@ -257,37 +402,6 @@ textarea {
   width: 200px;
 }
 
-#panel-login {
-  margin-top: 20%;
-  margin-left: 45%;
-  padding: 15px 5px;
-  background-color: #94bbe8;
-  width: 250px;
-}
-
-.filter-event {
-	font-family: Roboto;
-	font-weight: 500;
-}
-
-.filter-teams {
-	font-family: Roboto;
-	font-weight: 300;
-	margin-left: 5px;
-}
-
-.filter-interval {
-	font-family: Roboto;
-	font-weight: 500;
-	padding-left: 35px;
-}
-
-@media(max-width:768px){
-  .filter-interval {
-    padding-left: 0;
-  }
-}
-
 @media (min-width: 768px) {
   .navbar {
     border-radius: 0;
@@ -300,6 +414,10 @@ textarea {
       width: 100%;
       vertical-align: middle;
   }
+}
+
+.navbar {
+  flex: none;
 }
 
 .navbar-default .admin-navbar-toggle {
@@ -324,16 +442,6 @@ textarea {
 
 .navbar-default .admin-navbar-collapse, .navbar-default .navbar-form {
     border-color: #e7e7e7;
-}
-
-.badge-accent {
-   background: #FFBF9C;
-}
-
-.badge-notif {
-   position: relative;
-   top: 4px;
-   left: -10px;
 }
 
 .admin-dashboard {
@@ -361,7 +469,6 @@ textarea {
 }
 
 .admin-dashboard-item {
-  /*color: #FFD9C5;*/
   line-height: 48px;
   font-size: 36px;
   padding: 20px;
@@ -375,45 +482,7 @@ textarea {
 }
 
 .admin-nav-gap {
-  padding: 20px 0 20px;
-
-}
-
-a.admin-nav-active {
-	border-bottom: 2px solid #345477;
-	color: #345477;
-}
-
-a.admin-nav-inactive {
-	color: #777;
-}
-
-.admin-header {
-	color: #345477;
-	font-size: 20px;
-	padding-bottom: 20px;
-	margin-bottom: 20px;
-}
-
-.admin-header hr {
-  border-top: 1px solid #345477;
-}
-
-.admin-area {
-  border-right: 1px solid #4F719B;
-  min-height: 350px;
-}
-
-.admin-tab {
-	color: #345477;
-	font-size: 17.5px;
-	font-weight: bold;
-	font-family: SansBetween, Arial, sans-serif;
-	line-height: 20px;
-}
-
-.admin-tab a {
-	padding: 10px;
+  margin: 20px 0 20px;
 }
 
 .admin-table {
@@ -426,27 +495,8 @@ a.admin-nav-inactive {
   padding: 15px;
 }
 
-.admin-tab:hover a {
-	border-bottom: 2px solid #345477;
-	text-decoration: none;
-	color: #345477;
-}
-
-.admin-row {
-	padding: 7px;
-}
-
-.admin-unsaved {
-  margin-top: 5px;
-}
-
 .admin-user-button {
   margin-left: 10px;
-}
-
-.admin-active {
-	background-color: #E2E2E2;
-	border-radius: 5px;
 }
 
 .admin-table-delete-btn {
@@ -517,26 +567,6 @@ a.admin-nav-inactive {
   cursor: pointer; cursor: hand;
 }
 
-.awesome-marker i {
-  font-size: 17px;
-  margin: 10px 0;
-}
-
-div.image-button {
-  position: relative;
-}
-
-div.image-button:hover button {
-  display: block;
-}
-
-div.image-button button {
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: none;
-}
-
 .image-delete {
 	opacity: 0.2;
 }
@@ -548,20 +578,6 @@ h4.image-delete {
 	font-weight: bold;
 }
 
-.awesome-marker-display {
-  position:static;
-}
-
-.feature-title {
-  border-bottom: 1px solid #F6F6F6;
-  margin-bottom: 10px;
-  padding-bottom: 5px;
-}
-
-.small-text {
-  font-size: 0.8em;
-}
-
 .well-item {
 	padding: 10px;
 	border-bottom: 1px solid rgba(0,0,0,0.05);
@@ -569,11 +585,6 @@ h4.image-delete {
 
 .well-item:last-child {
 	border-bottom: none;
-}
-
-.edit-well {
-  background: #43719F;
-  color: white;
 }
 
 .muted {
@@ -592,83 +603,19 @@ h4.image-delete {
 	width: 35px;
 }
 
-.deleted-border {
-	border: 3px dashed #336699;
-}
-
-/* TODO remove*/
-
-.img-container {
-	width: 40px;
-	height: 40px;
-	overflow: hidden;
-	margin-right: 10px
-}
-
-.img-container img {
-	width: 100%;
-	height: 100%;
-}
-
-.avatar-img {
-	width: 25px;
-	height: 25px;
-	border-radius: 4px;
-}
-
-
-/* TODO Combine into avatar-img*/
 .center-crop {
   object-fit: cover;
 }
 
-.round {
-  border-radius: 4px;
-}
-
-.nav-link:focus {
-	outline: none;
-}
 
 .observation-type {
-	font-size: 17.5px;
+	font-size: 15.5px;
 	padding-bottom: 2px;
 }
 
 .observation-variant {
 	font-size: 14px;
 	font-style: italic;
-}
-
-.select2-result-single {
-	margin-left: 0;
-}
-
-.select2-results ul.select2-result-sub {
-	margin-left: 5px;
-	padding-left: 0;
-}
-
-.select2-container .select2-choice {
-	background-image: none;
-}
-
-.select2-container .select2-choice .select2-arrow {
-	background: #fff;
-	background-image: none;
-}
-
-.merged .input-group-addon {
-	background-color: #fff;
-  border-left: 0px;
-  padding: 6px 3px;
-}
-.merged input {
-    border-right: 0px;
-    padding: 6px;
-}
-.merged .input-group-addon + input {
-	border-left: 0px;
 }
 
 .or-container {
@@ -716,4 +663,8 @@ h4.image-delete {
 .user-icon-input {
   flex: 1;
   margin-left: 35px;
+}
+
+.dropdown-menu {
+    z-index: 1031;
 }

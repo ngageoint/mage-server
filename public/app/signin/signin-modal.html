@@ -1,6 +1,6 @@
 <form class="form">
   <div class="modal-header">
-    <h3 class="modal-title">Please log in.</h3>
+    <h3 class="modal-title">Log in to continue to MAGE</h3>
   </div>
 
   <div class="modal-body">
@@ -9,8 +9,7 @@
         <div class="row">
           <div class="col-md-10 col-md-offset-1">
             <div class="form-group" ng-class="{'has-error': status > 399}">
-              <label>UID</label>
-              <input ng-model="uid" class="form-control" name="uid" type="text" autocapitalize="off"/>
+              <input ng-model="uid" class="form-control" name="uid" placeholder="UID" type="text" autocapitalize="off"/>
             </div>
           </div>
         </div>
@@ -37,18 +36,15 @@
     <div class="row">
       <div class="col-md-10 col-md-offset-1">
         <div class="form-group" ng-class="{'has-error': status > 399}">
-          <label>Username</label>
-          <input ng-model="username" name="username" type="text" autocapitalize="off" class="form-control"/>
+          <input ng-model="username" name="username" placeholder="Username" type="text" autocapitalize="off" class="form-control"/>
         </div>
 
         <div class="form-group" ng-class="{'has-error': status > 399}">
-          <label>UID</label>
-          <input ng-model="uid" name="uid" type="text" autocapitalize="off" class="form-control"/>
+          <input ng-model="uid" name="uid" type="text" placeholder="UID" autocapitalize="off" class="form-control"/>
         </div>
 
         <div class="form-group" ng-class="{'has-error': status > 399}">
-          <label>Password</label>
-          <input ng-model="password" name="password" type="password" class="form-control"/>
+          <input ng-model="password" name="password" placeholder="Password" type="password" class="form-control"/>
         </div>
 
         <button class="btn btn-primary pull-right top-gap" type="submit" ng-click="login({username: username, uid: uid, password: password})">Login</button>
@@ -62,5 +58,5 @@
       </div>
     </div>
   </div>
-  
+
 </form>

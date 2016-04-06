@@ -10,8 +10,7 @@ function fieldDirective() {
       field: '=',
       observation: '=fieldObservation'
     },
-    controller: FieldDirectiveController,
-    bindToController: true
+    controller: FieldDirectiveController
   };
 
   return directive;
