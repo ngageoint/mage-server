@@ -23,7 +23,7 @@ function AdminUserController($scope, $uibModal, $filter, $routeParams, $location
   $scope.showPrevious = false;
   $scope.showNext = true;
 
-  $q.all({user: UserService.getUser($routeParams.userId), teams: Team.query({populate: false}).$promise}).then(function(result) {
+  $q.all({user: UserService.getUser($routeParams.userId, {forceRefresh: true, populate: 'roleId'}), teams: Team.query({populate: false}).$promise}).then(function(result) {
     $scope.user = result.user.data || result.user;
     $scope.avatarUrl = avatarUrl($scope.user, LocalStorageService.getToken());
     $scope.iconUrl = iconUrl($scope.user, LocalStorageService.getToken());

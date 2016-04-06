@@ -208,12 +208,17 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
       delete resolvedUsers[id];
     }
 
+    var parameters = {};
+    if (options.populate) {
+      parameters.populate = options.populate;
+    }
+
     var deferred = $q.defer();
 
     if (resolvedUsers[id]) {
       deferred.resolve(resolvedUsers[id]);
     } else {
-      return $http.get('/api/users/' + id, {}).success(function(user) {
+      return $http.get('/api/users/' + id, {params: parameters}).success(function(user) {
         resolvedUsers[id] = user;
         deferred.resolve(user);
       });
