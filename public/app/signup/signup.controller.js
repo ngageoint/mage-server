@@ -22,6 +22,27 @@ function SignupController($scope, $location, UserService, Api) {
     }
   });
 
+  $scope.$on('userAvatar', function(event, userAvatar) {
+    $scope.user.avatar = userAvatar;
+
+    if (!userAvatar) {
+      $scope.user.avatarData = null;
+      return;
+    }
+
+    if (window.FileReader) {
+      var reader = new FileReader();
+      reader.onload = (function() {
+        return function(e) {
+          $scope.user.avatarData = e.target.result;
+          $scope.$apply();
+        };
+      })(userAvatar);
+
+      reader.readAsDataURL(userAvatar);
+    }
+  });
+
   $scope.showStatusMessage = function (title, message, statusLevel) {
     $scope.statusTitle = title;
     $scope.statusMessage = message;
@@ -54,7 +75,8 @@ function SignupController($scope, $location, UserService, Api) {
       email: $scope.user.email,
       phone: $scope.user.phone,
       password: $scope.user.password,
-      passwordconfirm: $scope.user.passwordconfirm
+      passwordconfirm: $scope.user.passwordconfirm,
+      avatar: $scope.user.avatar
     };
 
     // TODO throw in progress

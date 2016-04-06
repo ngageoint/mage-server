@@ -25,4 +25,12 @@ function AvatarUserEditController($scope, $element) {
     $scope.fileName = $scope.file.name;
     $scope.$emit('userAvatar', $scope.file);
   });
+
+  $scope.$watch('user.avatar', function(avatar) {
+    if (!avatar) {
+      $scope.file = null;
+      $scope.fileName = 'Choose an avatar image...';
+      $scope.$emit('userAvatar', null);
+    }
+  });
 }

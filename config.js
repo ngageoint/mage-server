@@ -12,7 +12,7 @@ module.exports = {
     },
     "authenticationStrategies": {
       "local": {
-        "passwordMinLength": 14
+        "passwordMinLength": 1
       }
       // "google": {
       //   "url": " ",

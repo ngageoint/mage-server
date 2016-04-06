@@ -60,6 +60,14 @@ function AdminUserEditController($scope, $filter, $routeParams, $location, Api, 
   }, true);
 
   $scope.$on('userAvatar', function(event, userAvatar) {
+    if (!$scope.user) return;
+
+    if (!userAvatar) {
+      $scope.user.avatarData = null;
+      $scope.user.avatar = null;
+      return;
+    }
+
     $scope.user.avatar = userAvatar;
 
     if (window.FileReader) {

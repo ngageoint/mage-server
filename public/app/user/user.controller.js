@@ -18,6 +18,27 @@ function UserController($scope, $location, $timeout, Api, UserService, user) {
     }
   });
 
+  $scope.$on('userAvatar', function(event, userAvatar) {
+    $scope.user.avatar = userAvatar;
+
+    if (!userAvatar) {
+      $scope.user.avatarData = null;
+      return;
+    }
+
+    if (window.FileReader) {
+      var reader = new FileReader();
+      reader.onload = (function() {
+        return function(e) {
+          $scope.user.avatarData = e.target.result;
+          $scope.$apply();
+        };
+      })(userAvatar);
+
+      reader.readAsDataURL(userAvatar);
+    }
+  });
+
   $scope.saveUser = function() {
     var user = {
       username: this.user.username,

@@ -32,9 +32,7 @@ function AvatarUserController($scope, $element, LocalStorageService) {
   });
 
   $scope.$watch('user.avatarData', function(avatarData) {
-    if (!avatarData) return;
-
-    $scope.avatar = avatarData;
+    $scope.avatar = avatarData ? avatarData : avatarUrl($scope.user);
   });
 
   function avatarUrl(user) {
