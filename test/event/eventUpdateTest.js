@@ -70,7 +70,19 @@ describe("event update tests", function() {
       .set('Authorization', 'Bearer 12345')
       .send({
         name: 'Mock Event',
-        teamIds: [teamId.toString()]
+        teamIds: [teamId.toString()],
+        form: {
+          fields: [{
+            name: 'timestamp',
+            required: true
+          },{
+            name: 'geometry',
+            required: true
+          },{
+            name: 'type',
+            required: true
+          }]
+        }
       })
       .expect(200)
       .end(done);
@@ -107,7 +119,19 @@ describe("event update tests", function() {
       .set('Authorization', 'Bearer 12345')
       .send({
         name: 'Mock Event',
-        teamIds: [teamId.toString()]
+        teamIds: [teamId.toString()],
+        form: {
+          fields: [{
+            name: 'timestamp',
+            required: true
+          },{
+            name: 'geometry',
+            required: true
+          },{
+            name: 'type',
+            required: true
+          }]
+        }
       })
       .expect(405)
       .expect(function(res) {
@@ -143,7 +167,7 @@ describe("event update tests", function() {
 
     sandbox.mock(EventModel)
       .expects('findByIdAndUpdate')
-      .withArgs(eventId, { name: 'Mock Event', complete: true })
+      .withArgs(eventId, sinon.match({ complete: true }))
       .yields(null, mockEvent);
 
     request(app)
@@ -152,7 +176,19 @@ describe("event update tests", function() {
       .set('Authorization', 'Bearer 12345')
       .send({
         name: 'Mock Event',
-        complete: true
+        complete: true,
+        form: {
+          fields: [{
+            name: 'timestamp',
+            required: true
+          },{
+            name: 'geometry',
+            required: true
+          },{
+            name: 'type',
+            required: true
+          }]
+        }
       })
       .expect(200)
       .end(done);
@@ -185,7 +221,7 @@ describe("event update tests", function() {
 
     sandbox.mock(EventModel)
       .expects('findByIdAndUpdate')
-      .withArgs(eventId, { name: 'Mock Event', complete: false })
+      .withArgs(eventId, sinon.match({ complete: false }))
       .yields(null, mockEvent);
 
     request(app)
@@ -194,7 +230,19 @@ describe("event update tests", function() {
       .set('Authorization', 'Bearer 12345')
       .send({
         name: 'Mock Event',
-        complete: false
+        complete: false,
+        form: {
+          fields: [{
+            name: 'timestamp',
+            required: true
+          },{
+            name: 'geometry',
+            required: true
+          },{
+            name: 'type',
+            required: true
+          }]
+        }
       })
       .expect(200)
       .end(done);

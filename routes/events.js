@@ -61,9 +61,11 @@ module.exports = function(app, security) {
   function validateFormParams(req, res, next) {
     var form = req.body.form;
 
+    if (!form) return res.status(400).send('form is required');
+
     // check for required fields
     var fields = form.fields;
-    if (!fields) return res.status(400).send('fields is required');
+    if (!fields) return res.status(400).send('form.fields is required');
 
     var fieldNames = {};
     var userFields = form.userFields || [];

@@ -310,7 +310,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
   function saveUser(user, options, success, error, progress) {
     var formData = new FormData();
     for (var property in user) {
-      if (user[property]) {
+      if (user[property] != null) {
         formData.append(property, user[property]);
       }
     }

@@ -361,7 +361,7 @@ module.exports = function(app, security) {
       if (req.param('username')) user.username = req.param('username');
       if (req.param('displayName')) user.displayName = req.param('displayName');
       if (req.param('email')) user.email = req.param('email');
-      if (req.param('active')) user.active = req.param('active');
+      if (req.param('active') === 'true' || req.param('active') === 'false') user.active = req.param('active');
       if (req.param('roleId')) user.roleId = req.param('roleId');
 
       var phone = req.param('phone');

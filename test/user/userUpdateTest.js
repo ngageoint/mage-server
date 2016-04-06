@@ -8,7 +8,7 @@ var request = require('supertest')
 require('../../models/token');
 var TokenModel = mongoose.model('Token');
 
-require('../../models/user');
+var User = require('../../models/user');
 var UserModel = mongoose.model('User');
 
 require('sinon-mongoose');
@@ -237,6 +237,76 @@ describe("user update tests", function() {
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
       })
+      .end(done);
+  });
+
+  it('should activate user', function(done) {
+    mockTokenWithPermission('UPDATE_USER');
+
+    var id = mongoose.Types.ObjectId();
+    var mockUser = new UserModel({
+      _id: id,
+      username: 'test',
+      displayName: 'test',
+      authentication: {
+        type: 'local'
+      }
+    });
+
+    sandbox.mock(UserModel)
+      .expects('findById')
+      .chain('exec')
+      .yields(null, mockUser);
+
+    sandbox.mock(User)
+      .expects('updateUser')
+      .withArgs(sinon.match({active: true}))
+      .yields(null, mockUser);
+
+    request(app)
+      .put('/api/users/' + id.toString())
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        active: 'true'
+      })
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end(done);
+  });
+
+  it('should deactivate user', function(done) {
+    mockTokenWithPermission('UPDATE_USER');
+
+    var id = mongoose.Types.ObjectId();
+    var mockUser = new UserModel({
+      _id: id,
+      username: 'test',
+      displayName: 'test',
+      authentication: {
+        type: 'local'
+      }
+    });
+
+    sandbox.mock(UserModel)
+      .expects('findById')
+      .chain('exec')
+      .yields(null, mockUser);
+
+    sandbox.mock(User)
+      .expects('updateUser')
+      .withArgs(sinon.match({active: false}))
+      .yields(null, mockUser);
+
+    request(app)
+      .put('/api/users/' + id.toString())
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        active: 'false'
+      })
+      .expect(200)
+      .expect('Content-Type', /json/)
       .end(done);
   });
 
