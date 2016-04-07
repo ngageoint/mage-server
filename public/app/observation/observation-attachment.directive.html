@@ -8,7 +8,7 @@
 
     <div ng-switch-when="video/mp4">
       <div class="attachment-media" ng-class="{'attachment-media-sm': !fullscreen}">
-        <videogular vg-player-ready="onPlayerReady($API)" vg-can-play="videoCanPlay" vg-error="onVideoError">
+        <videogular vg-player-ready="onPlayerReady($API)" vg-error="onVideoError">
             <vg-media vg-src="[{src: attachment.url + '?access_token=' + token, type: attachment.contentType}, {src: null, type: 'none'}]"></vg-media>
 
             <vg-controls>

@@ -30,13 +30,8 @@ function AttachmentController($scope, $filter, UserService, LocalStorageService)
     $scope.videoAPI = videoAPI;
   };
 
-  $scope.videoCanPlay = function() {
-    console.log('video can play');
-  };
-
   $scope.onVideoError = function() {
     $scope.videoError = true;
-    console.log('ERROR: video cannot play');
   };
 
   $scope.$watch('videoAPI.isFullScreen', function(isFullScreen) {
