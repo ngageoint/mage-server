@@ -37,6 +37,10 @@
     "underscore": "1.8.2",
     "angular-minicolors": "0.0.7",
     "font-awesome": "4.4.0",
-    "bower-webfontloader": "1.6.6"
+    "bower-webfontloader": "1.6.6",
+    "videogular": "1.4.3",
+    "videogular-themes-default": "1.4.3",
+    "videogular-controls": "1.4.3",
+    "videogular-overlay-play": "1.4.3"
   }
 }

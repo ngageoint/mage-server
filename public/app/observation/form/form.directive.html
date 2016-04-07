@@ -12,11 +12,10 @@
 
         <div class="top-gap" ng-if="preview !== true">
           <h4 class="muted">Attachments</h4>
-          <div class="attachment" ng-repeat="attachment in observation.attachments track by attachment.id">
-            <div class="row">
-              <div>
+
+          <div class="attachments">
+            <div class="attachment" ng-repeat="attachment in observation.attachments track by attachment.id">
                 <div attachment="attachment" attachment-observation="observation" edit="true"></div>
-              </div>
             </div>
           </div>
 

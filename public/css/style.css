@@ -218,11 +218,6 @@ a {
   padding: 10px;
 }
 
-.feed-video {
-	width: 100%;
-	margin: 3px 0;
-}
-
 .map {
   flex: 1;
   position: relative;
@@ -282,6 +277,35 @@ a {
   position: relative;
   width: 32%;
   margin-bottom: 2%;
+}
+
+.attachment-delete {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+.attachment-icon {
+  color: #eee;
+  background-color: #555;
+}
+
+.attachment-icon a {
+  color: #eee;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-decoration: none;
+}
+
+.attachment-icon i {
+  font-size: 50px;
+}
+
+.image-delete {
+	opacity: 0.5;
 }
 
 .attachment:nth-child(3n-1) {
@@ -567,10 +591,6 @@ textarea {
   cursor: pointer; cursor: hand;
 }
 
-.image-delete {
-	opacity: 0.2;
-}
-
 h4.image-delete {
 	position: absolute;
   text-align: center;
@@ -667,4 +687,12 @@ h4.image-delete {
 
 .dropdown-menu {
     z-index: 1031;
+}
+
+.attachment-media-sm videogular vg-controls, [videogular] vg-controls {
+    height: 30px;
+}
+
+.attachment-media-sm videogular vg-controls .controls-container, [videogular] vg-controls .controls-container {
+    height: 30px;
 }

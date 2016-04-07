@@ -11,7 +11,10 @@ angular
     "ngRoute",
     "ngResource",
     "ngMessages",
-    "http-auth-interceptor"
+    "http-auth-interceptor",
+    "com.2fdevs.videogular",
+    "com.2fdevs.videogular.plugins.controls",
+    "com.2fdevs.videogular.plugins.overlayplay"
   ]).config(config).run(run);
 
 config.$inject = ['$provide', '$httpProvider', '$routeProvider', '$animateProvider'];
