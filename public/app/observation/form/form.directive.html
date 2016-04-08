@@ -6,7 +6,7 @@
         </h4>
 
         <div ng-repeat="field in form.fields | filter:{archived: '!true'} | orderBy: 'id'">
-          <field-directive field="field" field-observation="observation"></field-directive>
+          <field-directive field="field" field-observation="observation" field-form="observationForm"></field-directive>
         </div>
         <span>* required</span>
 

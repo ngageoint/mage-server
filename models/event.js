@@ -26,7 +26,9 @@ var FieldSchema = new Schema({
   value: { type: Schema.Types.Mixed, required: false },
   name: { type: String, required: true },
   required: { type: Boolean, required: true },
-  choices: [OptionSchema]
+  choices: [OptionSchema],
+  min: { type: Number, required: false },
+  max: { type: Number, required: false }
 },{
   _id: false
 });

@@ -20,6 +20,7 @@ PropertyViewController.$inject = ['$scope'];
 function PropertyViewController($scope) {
   var types = {
     textfield: 'app/observation/property/textfield.directive.html',
+    numberfield: 'app/observation/property/textfield.directive.html',
     email: 'app/observation/property/email.directive.html',
     textarea: 'app/observation/property/textarea.directive.html',
     checkbox: 'app/observation/property/checkbox.directive.html',

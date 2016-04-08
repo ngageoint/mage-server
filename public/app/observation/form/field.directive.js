@@ -8,7 +8,8 @@ function fieldDirective() {
     restrict: 'E',
     scope: {
       field: '=',
-      observation: '=fieldObservation'
+      observation: '=fieldObservation',
+      form: '=fieldForm'
     },
     controller: FieldDirectiveController
   };
@@ -21,6 +22,7 @@ FieldDirectiveController.$inject = ['$scope'];
 function FieldDirectiveController($scope) {
   var types = {
     textfield: 'app/observation/form/textfield.directive.html',
+    numberfield: 'app/observation/form/numberfield.directive.html',
     email: 'app/observation/form/email.directive.html',
     textarea: 'app/observation/form/textarea.directive.html',
     checkbox: 'app/observation/form/checkbox.directive.html',

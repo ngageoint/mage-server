@@ -47,6 +47,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
 
   $scope.fieldTypes = {
     textfield : 'Textfield',
+    numberfield: 'Numberfield',
     email : 'E-mail',
     password : 'Password',
     radio : 'Radio Buttons',
@@ -65,7 +66,6 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     return {
       title : "New field",
       type : 'textfield',
-      value : "",
       required : false,
       choices: []
     };
