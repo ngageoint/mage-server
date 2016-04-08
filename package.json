@@ -65,6 +65,7 @@
     "grunt-contrib-uglify": "0.8.0",
     "grunt-usemin": "3.0.0",
     "http": "0.0.0",
+    "istanbul": "0.4.3",
     "mocha": "2.3.3",
     "mock-fs": "3.7.0",
     "nock": "2.15.0",

@@ -7,3 +7,5 @@ public/dist
 public/.tmp
 
 public/bower_components
+
+coverage

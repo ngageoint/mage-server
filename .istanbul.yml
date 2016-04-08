@@ -1,0 +1,3 @@
+instrumentation:
+  excludes: ['public/**','node_modules/**', 'modules/**', 'mapcache-modules/**']
+  include-all-sources: true
