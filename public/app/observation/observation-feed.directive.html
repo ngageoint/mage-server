@@ -24,7 +24,7 @@
         <div map-clip="observation"></div>
       </div>
 
-      <div class="row top-gap-s" ng-repeat="field in form.fields | filter:filterHidden | orderBy: 'id'">
+      <div ng-repeat="field in form.fields | filter:filterHidden | orderBy: 'id'">
         <property-view field="field">
       </div>
 
