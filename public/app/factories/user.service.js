@@ -30,6 +30,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     deleteUser: deleteUser,
     clearUser: clearUser,
     getRoles: getRoles,
+    hasPermission: hasPermission,
     addRecentEvent: addRecentEvent,
     getRecentEventId: getRecentEventId
   };
@@ -295,6 +296,10 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
   // TODO should this go in Roles service/resource
   function getRoles() {
     return $http.get('/api/roles');
+  }
+
+  function hasPermission(permission) {
+    return _.contains(service.myself.role.permissions, permission);
   }
 
   // TODO possibly name this addRecentEventForMyself

@@ -19,6 +19,7 @@ ObservationNewsItemController.$inject = ['$scope', 'EventService', 'UserService'
 
 function ObservationNewsItemController($scope, EventService, UserService) {
   $scope.edit = false;
+  $scope.canEdit = UserService.hasPermission('UPDATE_OBSERVATION_EVENT') || UserService.hasPermission('UPDATE_OBSERVATION_ALL');
   $scope.fromNow = moment($scope.observation.properties.timestamp).fromNow();
 
   UserService.getUser($scope.observation.userId).then(function(user) {
