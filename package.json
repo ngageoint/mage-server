@@ -76,9 +76,9 @@
     "supertest": "1.1.0"
   },
   "scripts": {
-    "postinstall": "bower install --config.cwd=public --config.interactive=false && grunt build",
     "test": "mocha --reporter spec",
     "coverage": "istanbul cover _mocha",
+    "build": "bower install --config.cwd=public --config.interactive=false && grunt build",
     "prestart": "sh bin/prestart.sh",
     "poststop": "sh bin/poststop.sh",
     "migrate": "mm --config=migrations/mm-config.js",
