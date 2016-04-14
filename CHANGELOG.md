@@ -3,13 +3,19 @@ All notable changes to this project will be documented in this file.
 Adheres to [Semantic Versioning](http://semver.org/).
 
 ---
-## 4.2.0 (TBD)
+## 4.2.1 (TBD)
 
 * TBD
+##### Features
+
+##### Bug Fixes
+
+## [4.2.0](https://github.com/ngageoint/mage-server/releases/tag/v4.1.1) (04-14-2016)
 ##### Features
 * New numberfield in event form
 * Rework observation/people feed to show map and feed on smaller devices
 * Allow user to upload avatar when creating an account
+* Read user permissions (web) to determine observation edit capabilities
 
 ##### Bug Fixes
 
