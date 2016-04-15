@@ -116,7 +116,7 @@ var kml = function(data, o) {
     if (labelStyle[0]) {
       style.labelStyle = {};
       var labelColor = get(labelStyle[0], 'color');
-      if (color[0]) {
+      if (labelColor[0]) {
         style.labelStyle.color = parseColor(nodeVal(labelColor[0]));
       }
 
