@@ -24,14 +24,6 @@ module.exports = {
     "provision": {
       "strategy": "uid"
     }
-    // "locationServices": true,
-    // "apk": {
-    //   "version": "4.0.0",
-    //   "supportedVersions": [
-    //     "4.0",
-    //     "5.1"
-    //   ]
-    // }
   },
   server: {
     "locationServices": {
