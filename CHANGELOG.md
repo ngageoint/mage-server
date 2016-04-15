@@ -9,6 +9,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+* Only allow ISO8601 times for observation timestamps.  Invalid time will result in a 400 response.
 
 ## [4.2.0](https://github.com/ngageoint/mage-server/releases/tag/v4.1.1) (04-14-2016)
 ##### Features

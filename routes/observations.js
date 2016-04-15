@@ -70,6 +70,10 @@ module.exports = function(app, security) {
       return res.status(400).send("cannot create observation 'properties.timestamp' param not specified");
     }
 
+    if (!moment(observation.properties.timestamp, moment.ISO_8601).isValid()) {
+      return res.status(400).send("cannot create observation 'properties.timestamp' is not a valid ISO8601 date");
+    }
+
     if (!observation.properties.type) {
       return res.status(400).send("cannot create observation 'properties.type' param not specified");
     }
