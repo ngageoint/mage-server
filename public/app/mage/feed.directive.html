@@ -1,11 +1,11 @@
 <div class="feed-tabs">
   <div class="feed-tab" ng-class="{observationsTab:'feed-tab-active', peopleTab:'feed-tab-inactive'}[currentFeedPanel]">
     <span><a class="pointer" ng-click="currentFeedPanel = 'observationsTab'"><i class="fa fa-map-marker"></i> Observations</a></span>
-    <span class="badge badge-accent feed-badge" ng-show="observationsChanged > 0">{{observationsChanged}}</span>
+    <span class="badge feed-badge" ng-show="observationsChanged > 0">{{observationsChanged}}</span>
   </div>
   <div class="feed-tab" ng-class="{peopleTab:'feed-tab-active', observationsTab:'feed-tab-inactive'}[currentFeedPanel]">
     <span><a class="pointer" ng-click="currentFeedPanel = 'peopleTab'"><i class="fa fa-users"></i> People</a></span>
-    <span class="badge badge-accent feed-badge" ng-show="usersChanged > 0">{{usersChanged}}</span>
+    <span class="badge feed-badge" ng-show="usersChanged > 0">{{usersChanged}}</span>
   </div>
 </div>
 

@@ -132,8 +132,10 @@ a {
   order: 1;
   display: flex;
   flex-direction: column;
-  background-color: #365F8C;
-  width: 500px;
+  min-width: 450px;
+  max-width: 500px;
+  flex:1;
+  background-color: #5278a2;
   transition: margin-left 0.3s linear;
 }
 
@@ -142,13 +144,16 @@ a {
 }
 
 .feed-tabs {
-  flex: 0 0 48px;
+  flex: 0 0 53px;
   display: flex;
   color: #345477;
   font-size: 17.5px;
   line-height: 20px;
-  background-color: #5278A2;
-  padding: 7px 7px 0;
+  background-color: #fff;
+}
+
+.feed-tab:last-child {
+	margin-left: 0;
 }
 
 .feed-tab {
@@ -156,6 +161,10 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 3px 3px 0 0;
+  margin: 10px 10px 0 10px;
+  box-shadow: 3px -5px 5px -5px rgba(0,0,0,.35),
+              5px 0px 5px -5px rgba(0,0,0,.35);
 }
 
 .feed-tab:hover a {
@@ -164,12 +173,11 @@ a {
 }
 
 .feed-tab-active {
-	background-color: #365F8C;
-  border-radius: 3px 3px 0px 0px;
+	background-color: #5278a2;
 }
 
 .feed-tab-inactive {
-	background-color: #5278A2;
+	background-color: #7C9DC2;
 }
 
 .feed-tab-active a {
@@ -182,10 +190,11 @@ a {
 
 .feed-badge {
   margin-left: 5px;
+  background: #666;
 }
 
 .badge-accent {
-   background: #F8DA73;
+   background: #F8A173;
 }
 
 .badge-notif {
@@ -219,7 +228,7 @@ a {
 }
 
 .map {
-  flex: 1;
+  flex: 2;
   position: relative;
   order: 2;
 }
@@ -247,6 +256,8 @@ a {
     order: 2;
     flex: 2;
     width: 100%;
+    min-width: none;
+    max-width: none;
     transition: flex-grow 0.3s linear;
   }
 
@@ -256,9 +267,9 @@ a {
   }
 
   .feed-tabs {
-    flex: 0 0 30px;
+    flex: 0 0 35px;
     display: flex;
-    font-size: 13.5px;
+    font-size: 12.5px;
   }
 }
 
@@ -271,6 +282,7 @@ a {
 .attachments {
   flex-flow: row wrap;
   display: flex;
+  margin-top: 10px;
 }
 
 .attachment {
