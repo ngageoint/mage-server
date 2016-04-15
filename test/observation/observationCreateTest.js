@@ -69,7 +69,7 @@ describe("observation create tests", function() {
         coordinates: [0, 0]
       },
       properties: {
-        timestamp: Date.now()
+        timestamp: '2016-01-01T00:00:00'
       }
     });
     sandbox.mock(ObservationModel)
@@ -88,7 +88,7 @@ describe("observation create tests", function() {
         },
         properties: {
           type: 'type',
-          timestamp: Date.now()
+          timestamp: '2016-01-01T00:00:00'
         }
       })
       .expect(200)
@@ -121,7 +121,7 @@ describe("observation create tests", function() {
         },
         properties: {
           type: 'type',
-          timestamp: Date.now()
+          timestamp: '2016-01-01T00:00:00'
         }
       })
       .expect(403)
@@ -148,7 +148,7 @@ describe("observation create tests", function() {
           coordinates: [0, 0]
         },
         properties: {
-          timestamp: Date.now()
+          timestamp: '2016-01-01T00:00:00'
         }
       })
       .expect(400)
@@ -173,7 +173,7 @@ describe("observation create tests", function() {
         type: 'Feature',
         properties: {
           type: 'type',
-          timestamp: Date.now()
+          timestamp: '2016-01-01T00:00:00'
         }
       })
       .expect(400)
@@ -233,6 +233,36 @@ describe("observation create tests", function() {
       .end(done);
   });
 
+  it("should reject new observation with invalid timestamp", function(done) {
+    mockTokenWithPermission('CREATE_OBSERVATION');
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    request(app)
+      .post('/api/events/1/observations')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        type: 'Feature',
+        geometry: {
+          type: "Point",
+          coordinates: [0, 0]
+        },
+        properties: {
+          type: 'type',
+          timestamp: Date.now()
+        }
+      })
+      .expect(400)
+      .expect(function(res) {
+        res.text.should.equal("cannot create observation 'properties.timestamp' is not a valid ISO8601 date");
+      })
+      .end(done);
+  });
+
+
   it("should reject new observation w/o type", function(done) {
     mockTokenWithPermission('CREATE_OBSERVATION');
 
@@ -251,7 +281,7 @@ describe("observation create tests", function() {
           coordinates: [0, 0]
         },
         properties: {
-          timestamp: Date.now()
+          timestamp: '2016-01-01T00:00:00'
         }
       })
       .expect(400)
@@ -280,7 +310,7 @@ describe("observation create tests", function() {
         },
         properties: {
           type: 'type',
-          timestamp: Date.now()
+          timestamp: '2016-01-01T00:00:00'
         }
       })
       .expect(403)
