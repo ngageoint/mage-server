@@ -176,6 +176,7 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Fil
     }
 
     $scope.observationPages = pages;
+    $scope.currentObservationPage = $scope.currentObservationPage || 0;
   }
 
   function calculateUserPages(users) {
@@ -193,5 +194,7 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Fil
     }
 
     $scope.userPages = pages;
+    $scope.currentUserPage = $scope.currentUserPage || 0;
+
   }
 }
