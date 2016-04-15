@@ -1,10 +1,10 @@
-var package = require('./package');
-var version = package.version.split(".");
+var packageJson = require('./package');
+var version = packageJson.version.split(".");
 
 module.exports = {
   api: {
-    "name": package.name,
-    "description": package.description,
+    "name": packageJson.name,
+    "description": packageJson.description,
     "version": {
       "major": parseInt(version[0]),
       "minor": parseInt(version[1]),

@@ -7,6 +7,17 @@
   display: none !important;
 }
 
+/* CLEAR FIX*/
+.clearfix:after {content: ".";
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;}
+.clearfix {display: inline-block;}
+/* Hides from IE-mac \*/
+* html .clearfix { height: 1%;}
+.clearfix {display: block;}
+
 body {
   margin: 0;
   height: 100%;
@@ -66,6 +77,18 @@ a {
 
 .bottom-gap-xl {
     margin-bottom: 50px;
+}
+
+.ellipsis {
+ text-overflow: ellipsis;
+ width: 100%;
+ overflow: hidden;
+ white-space: nowrap;
+ display: block;
+}
+
+.navbar {
+	margin-bottom: 0;
 }
 
 .content-flex {
