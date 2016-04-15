@@ -121,7 +121,7 @@ module.exports = function(app, security) {
   app.param('layerId', function(req, res, next, layerId) {
     Layer.getById(layerId, function(layer) {
       if (!layer) {
-        return res.staus(404).send("Layer not found: ");
+        return res.status(404).send("Layer not found: ");
       }
 
       req.layer = layer;
