@@ -234,6 +234,7 @@ a {
 
 .feed-page {
   margin: 7px 6px;
+  flex: 0 0 34px;
 }
 
 .feed-card {
