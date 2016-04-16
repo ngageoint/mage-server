@@ -11,15 +11,13 @@ module.exports = function(app, security) {
     , Icon = require('../models/icon')
     , access = require('../access')
     , generateKml = require('../utilities/generate_kml')
-    , fs = require('fs-extra')
     , path = require('path')
     , geojson = require('../transformers/geojson')
-    , shp = require('../shp-write')
+    , shp = require('../utilities/shpwrite')
     , json2csv = require('json2csv')
     , json2csvStream = require('json2csv-stream')
     , stream = require('stream')
     , archiver = require('archiver')
-    , exec = require('child_process').exec
     , environment = require('environment');
 
   var attachmentBase = environment.attachmentBaseDirectory;
@@ -153,16 +151,6 @@ module.exports = function(app, security) {
     });
   }
 
-  function createTmpDirectory(req, res, next) {
-    var directory = "/tmp/mage-export-" + new Date().getTime();
-    fs.mkdirp(directory, function(err) {
-      if (err) return next(err);
-
-      req.directory = directory;
-      next();
-    });
-  }
-
   function requestLocations(event, options, done) {
     var filter = {
       eventId: event._id
@@ -187,7 +175,6 @@ module.exports = function(app, security) {
     validateEventAccess,
     mapUsers,
     mapDevices,
-    createTmpDirectory,
     function(req, res, next) {
       switch (req.params.exportType) {
       case 'shapefile':
@@ -212,26 +199,28 @@ module.exports = function(app, security) {
 
   function exportShapefile(req, res, next) {
     var event = req.event;
-    var now = new Date();
+
+    var archive = archiver('zip');
+    archive.pipe(res);
 
     function eventToShapefile(done) {
       if (!req.parameters.filter.exportObservations) return done(null, []);
 
       var filter = req.parameters.filter;
       filter.states = ['active'];
-      new api.Observation(event).getAll(filter, function(err, observations){
+      new api.Observation(event).getAll(filter, function(err, observations) {
         if (err) return done(err);
 
         mapObservations(observations, req);
 
-        var streams = {
-          shp: fs.createWriteStream(req.directory + "/" + event.name + ".shp"),
-          shx: fs.createWriteStream(req.directory + "/" + event.name + ".shx"),
-          dbf: fs.createWriteStream(req.directory + "/" + event.name + ".dbf"),
-          prj: fs.createWriteStream(req.directory + "/" + event.name + ".prj")
-        };
-        shp.writeGeoJson(streams, {features: JSON.parse(JSON.stringify(observations))}, function(err, files) {
-          done(err, {event: event, files: files});
+        shp.write(observations, function(err, files) {
+          if (err) return done(err);
+
+          archive.append(files.shp, {name: 'observations/observations.shp'});
+          archive.append(files.shx, {name: 'observations/observations.shx'});
+          archive.append(files.dbf, {name: 'observations/observations.dbf'});
+          archive.append(files.prj, {name: 'observations/observations.prj'});
+          done();
         });
       });
     }
@@ -262,18 +251,14 @@ module.exports = function(app, security) {
           var first = locations.slice(1).pop();
           var last = locations.slice(-1).pop();
           if (last) {
-            var interval = moment(first.properties.timestamp).toISOString() + '_' +
-              moment(last.properties.timestamp).toISOString();
-
-            var streams = {
-              shp: fs.createWriteStream(req.directory + "/locations_" + interval + ".shp"),
-              shx: fs.createWriteStream(req.directory + "/locations_" + interval + ".shx"),
-              dbf: fs.createWriteStream(req.directory + "/locations_" + interval + ".dbf"),
-              prj: fs.createWriteStream(req.directory + "/locations_" + interval + ".prj")
-            };
-
-            shp.writeGeoJson(streams, {features: JSON.parse(JSON.stringify(locations))}, function(err) {
+            var interval = moment(first.properties.timestamp).toISOString() + '_' + moment(last.properties.timestamp).toISOString();
+            shp.write(locations, function(err, files) {
               if (err) return done(err);
+
+              archive.append(files.shp, {name: 'locations/' + interval + '/locations.shp'});
+              archive.append(files.shx, {name: 'locations/' + interval + '/locations.shx'});
+              archive.append(files.dbf, {name: 'locations/' + interval + '/locations.dbf'});
+              archive.append(files.prj, {name: 'locations/' + interval + '/locations.prj'});
 
               log.info('Successfully wrote ' + locations.length + ' locations to SHAPEFILE');
 
@@ -302,37 +287,8 @@ module.exports = function(app, security) {
 
     function generateZip(err) {
       if (err) return next(err);
-      var zipFile = '/tmp/mage-shapefile-export-' + now.getTime() + '.zip';
-      exec("zip -r " + zipFile + " " + req.directory + "/",
-        function (err) {
-          log.info('something bad happened', err);
-          if (err !== null) {
-            return next(err);
-          }
 
-          // stream zip to client
-          var stream = fs.createReadStream(zipFile);
-          stream.on('end', function() {
-            // remove dir
-            fs.remove(req.directory, function(err) {
-              if (err) log.info('could not remove shapfile dir', req.directory);
-            });
-
-            // remove zip file
-            fs.remove(zipFile, function(err) {
-              if (err) log.info('could not remove shapfile zip', zipFile);
-            });
-          });
-
-          var stat = fs.statSync(zipFile);
-
-          res.type('application/zip');
-          res.attachment(zipFile);
-          res.header('Content-Length', stat.size);
-          res.cookie("fileDownload", "true", {path: '/'});
-          stream.pipe(res);
-        }
-      );
+      archive.finalize();
     }
 
     async.parallel({
@@ -346,7 +302,6 @@ module.exports = function(app, security) {
 
     res.type('application/zip');
     res.attachment('mage-export-kml.zip');
-    res.cookie("fileDownload", "true", {path: '/'});
 
     //Known bug in Google Earth makes embedded images from a kmz file not render properly.  Treating
     //it as a zip file for now.
@@ -543,7 +498,6 @@ module.exports = function(app, security) {
     ////////////////////////////////////////////////////////////////////
     res.type('application/zip');
     res.attachment("mage-export-geojson.zip");
-    res.cookie("fileDownload", "true", {path: '/'});
 
     var archive = archiver('zip');
     archive.pipe(res);
@@ -740,7 +694,6 @@ module.exports = function(app, security) {
     ////////////////////////////////////////////////////////////////////
     res.type('application/zip');
     res.attachment("mage-export-csv.zip");
-    res.cookie("fileDownload", "true", {path: '/'});
 
     var archive = archiver('zip');
     archive.pipe(res);

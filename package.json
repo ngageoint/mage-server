@@ -45,6 +45,7 @@
     "passport-http-bearer": "0.2.x",
     "passport-local": "1.0.0",
     "request": "2.51.x",
+    "shp-write": "^0.2.5",
     "terraformer": "1.0.4",
     "terraformer-arcgis-parser": "1.0.4",
     "togeojson": "0.3.0",

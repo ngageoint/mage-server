@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('ExportController', ExportController);
 
-ExportController.$inject = ['$scope', '$uibModalInstance', '$http', 'LocalStorageService', 'FilterService', 'events'];
+ExportController.$inject = ['$scope', '$uibModalInstance', 'LocalStorageService', 'FilterService', 'events'];
 
-function ExportController($scope, $uibModalInstance, $http, LocalStorageService, FilterService, events) {
+function ExportController($scope, $uibModalInstance, LocalStorageService, FilterService, events) {
   $scope.exportEvent = {selected: FilterService.getEvent()};
   $scope.events = events;
 
@@ -67,7 +67,6 @@ function ExportController($scope, $uibModalInstance, $http, LocalStorageService,
     $scope.endDatePopup.open = true;
   };
 
-  $scope.exporting = {};
   $scope.exportData = function($event, type) {
     if (!$scope.exportEvent.selected) {
       $event.preventDefault();
@@ -76,7 +75,6 @@ function ExportController($scope, $uibModalInstance, $http, LocalStorageService,
     }
 
     $scope.showEventError = false;
-    $scope.exporting[type] = true;
 
     var start;
     if ($scope.exportTime.custom) {
@@ -108,14 +106,8 @@ function ExportController($scope, $uibModalInstance, $http, LocalStorageService,
     var url = "api/" + type + "?" + $.param(params);
     $.fileDownload(url)
       .done(function() {
-        $scope.$apply(function() {
-          $scope.exporting[type] = false;
-        });
       })
       .fail(function() {
-        $scope.$apply(function() {
-          $scope.exporting[type] = false;
-        });
       });
   };
 }

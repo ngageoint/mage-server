@@ -101,16 +101,8 @@
 <div class="modal-footer ng-scope">
   <button class="btn btn-default pull-left" ng-click="closeModal()">Close</button>
 
-  <button class="btn btn-primary" ng-disabled="exporting.kml" ng-click="exportData($event, 'kml')">
-    <i ng-class="exporting.kml && 'fa fa-spinner fa-pulse' || ''"></i> {{exporting.kml && "Exporting..." || "KML"}}
-  </button>
-  <button class="btn btn-primary" ng-disabled="exporting.geojson" ng-click="exportData($event, 'geojson')">
-    <i ng-class="exporting.geojson && 'fa fa-spinner fa-pulse' || ''"></i> {{exporting.geojson && "Exporting..." || "GeoJSON"}}
-  </button>
-  <button class="btn btn-primary" ng-disabled="exporting.csv" ng-click="exportData($event, 'csv')">
-    <i ng-class="exporting.csv && 'fa fa-spinner fa-pulse' || ''"></i> {{exporting.csv && "Exporting..." || "CSV"}}
-  </button>
-  <button class="btn btn-primary" ng-disabled="exporting.shapefile" ng-click="exportData($event, 'shapefile')">
-    <i ng-class="exporting.shapefile && 'fa fa-spinner fa-pulse' || ''"></i> {{exporting.shapefile && "Exporting..." || "Shapefile"}}
-  </button>
+  <button class="btn btn-primary" ng-click="exportData($event, 'kml')">KML</button>
+  <button class="btn btn-primary" ng-click="exportData($event, 'geojson')">GeoJSON</button>
+  <button class="btn btn-primary" ng-click="exportData($event, 'csv')">CSV</button>
+  <button class="btn btn-primary" ng-click="exportData($event, 'shapefile')">Shapefile</button>
 </div>
