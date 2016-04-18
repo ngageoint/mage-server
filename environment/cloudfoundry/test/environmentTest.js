@@ -5,7 +5,8 @@ describe("cloud foundry environment tests", function() {
 
   process.env['CLOUDFOUNDRY'] = "cf";
 
-  var environment = proxyquire('../env', { 'cfenv': {
+  var environment = proxyquire('../env', {
+    'cfenv': {
       getAppEnv: function() {
         return {
           getServiceCreds: function() {
@@ -14,11 +15,13 @@ describe("cloud foundry environment tests", function() {
               scheme: 'mongodb',
               host: '127.0.0.1',
               port: 2727,
-              db: 'magedb',
+              database: 'magedb',
+              username: 'username',
+              password: 'password',
               poolSize: 5
-            }
+            };
           }
-        }
+        };
       }
     }
   });
@@ -44,14 +47,17 @@ describe("cloud foundry environment tests", function() {
   });
 
   it("environment should provide mongo", function() {
+    console.log('mongo is', environment.mongo);
     var mongo = environment.mongo;
     should.exist(mongo);
-    mongo.should.have.property('uri');
-    mongo.should.have.property('scheme');
-    mongo.should.have.property('host');
-    mongo.should.have.property('port');
-    mongo.should.have.property('db');
-    mongo.should.have.property('poolSize');
+    mongo.should.have.property('uri').to.exist;
+    mongo.should.have.property('scheme').to.exist;
+    mongo.should.have.property('host').to.exist;
+    mongo.should.have.property('port').to.exist;
+    mongo.should.have.property('db').to.exist;
+    mongo.should.have.property('username').to.exist;
+    mongo.should.have.property('password').to.exist;
+    mongo.should.have.property('poolSize').to.exist;
   });
 
   it("environment should provide token expiration", function() {

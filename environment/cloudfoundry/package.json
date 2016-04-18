@@ -1,6 +1,6 @@
 {
   "name": "cloudfoundry-environment",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "MAGE cloudfoundry environment.  Used in Cloud Foundry deployment",
   "keywords": [
     "NGA",
@@ -22,5 +22,8 @@
     "cfenv": "1.0.3"
   },
   "private": true,
-  "main": "env.js"
+  "main": "env.js",
+  "devDependencies": {
+    "proxyquire": "1.7.4"
+  }
 }
