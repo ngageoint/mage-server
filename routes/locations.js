@@ -1,7 +1,6 @@
 module.exports = function(app, security) {
   var async = require('async')
     , moment = require('moment')
-    , log = require('winston')
     , Location = require('../models/location')
     , CappedLocation = require('../models/cappedLocation')
     , Team = require('../models/team')

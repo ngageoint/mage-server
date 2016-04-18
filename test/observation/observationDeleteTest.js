@@ -159,17 +159,6 @@ describe("observation delete tests", function() {
       collectionName: 'observations1'
     });
     var observationId = mongoose.Types.ObjectId();
-    var mockObservation = new ObservationModel({
-      _id: observationId,
-      type: 'Feature',
-      geometry: {
-        type: "Point",
-        coordinates: [0, 0]
-      },
-      properties: {
-        timestamp: Date.now()
-      }
-    });
     sandbox.mock(ObservationModel)
       .expects('update')
       .yields(new Error("some mock error"), null);
@@ -183,7 +172,6 @@ describe("observation delete tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        console.log(res.text);
         res.text.should.equal("state is already 'archive'");
       })
       .end(done);

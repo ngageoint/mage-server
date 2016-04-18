@@ -39,10 +39,7 @@ module.exports = function(app, security) {
     var parameters = {};
 
     var state = req.param('state');
-    if (!state) {
-      // default to only active events, if state is not a parameter
-      parameters.complete = false;
-    } else if (state === 'active') {
+    if (!state || state === 'active') {
       parameters.complete = false;
     } else if (state === 'complete') {
       parameters.complete = true;

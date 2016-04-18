@@ -15,22 +15,22 @@ var CounterSchema = new Schema({
 // Creates the Model for the Attachments Schema
 var Counter = mongoose.model('Counter', CounterSchema);
 
-var range = function(start, end) {
+function range(start, end) {
   var values = [];
   for (var i = start; i <= end; i++) {
     values.push(i);
   }
 
   return values;
-};
+}
 
-var getNext = function(collection, callback) {
+function getNext(collection, callback) {
   getGroup(collection, 1, function(ids) {
     callback(ids[0]);
   });
-};
+}
 
-var getGroup = function(collection, amount, callback) {
+function getGroup(collection, amount, callback) {
   var query = {_id: collection};
   var update = {$inc: {sequence: amount}};
   var options = {upsert: true, new: true};
@@ -42,7 +42,7 @@ var getGroup = function(collection, amount, callback) {
     var ids = range(counter.sequence, counter.sequence + amount);
     callback(ids);
   });
-};
+}
 
 exports.getNext = getNext;
 exports.getGroup = getGroup;

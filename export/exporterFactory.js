@@ -2,10 +2,7 @@ var Shapefile = require('./shapefile')
   , Kml = require('./kml')
   , Csv = require('./csv')
   , GeoJson = require('./geojson');
-
-console.log('got geojson class', GeoJson);
-console.log('got shapefile class', Shapefile);
-
+  
 function ExporterFactory() {}
 
 ExporterFactory.prototype.createExporter = function(type, options) {

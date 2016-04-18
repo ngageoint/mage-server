@@ -65,7 +65,7 @@ UserSchema.method('validPassword', function(password, callback) {
 UserSchema.pre('save', function(next) {
   var user = this;
   user.username = user.username.toLowerCase();
-  User.findOne({username: user.username}, function(err, possibleDuplicate) {
+  this.model('User').findOne({username: user.username}, function(err, possibleDuplicate) {
     if (err) return next(err);
 
     if (possibleDuplicate && !possibleDuplicate._id.equals(user._id)) {
@@ -228,10 +228,8 @@ exports.getUsers = function(options, callback) {
   }
 
   var populate = [];
-  if (options.populate) {
-    if (options.populate.indexOf('roleId') !== -1) {
-      populate.push({path: 'roleId'});
-    }
+  if (options.populate && (options.populate.indexOf('roleId') !== -1)) {
+    populate.push({path: 'roleId'});
   }
 
   var query = User.find(conditions);

@@ -34,10 +34,7 @@ describe("Direct database tests", function(){
         "icon": null
       };
       user.createUser(testUser, function(err) {
-        if(err){
-          console.log("Error creating user before tests run: " + err);
-        }
-        done();
+        done(err);
       });
     });
   });
@@ -47,14 +44,10 @@ describe("Direct database tests", function(){
   after(function(done){
     // get the test user
     user.getUserByUsername("testUser", function(err, existingUser){
-      if(err){
-        throw "Error getting existing test user for deletion: " + err;
-      }
+      if (err) return done(err);
+
       user.deleteUser(existingUser, function(err){
-        if(err){
-          throw "Error deleting test user: " + err;
-        }
-        done();
+        done(err);
       });
     });
   });
@@ -67,7 +60,7 @@ describe("Direct database tests", function(){
   it("Get test user from database, verify first name = test", function(done){
     user.getUserByUsername("testUser",function(err, user){
       expect(user.username).to.equal('testuser');
-      done();
+      done(err);
     });
   });
 
@@ -77,20 +70,16 @@ describe("Direct database tests", function(){
     var updatedEmailAddr = "updatedEmail@caci.com";
     // Get the existing User
     user.getUserByUsername("testUser", function(err, existingUser){
-      if(err){
-        throw "Error getting existing test user for update: " + err;
-      }
+      if(err) return done(err);
+
       // Update the email address
       existingUser.email = updatedEmailAddr;
-      user.updateUser(existingUser, function(err){
-        if(err){
-          throw "Error updating test user: " + err;
-        }
+      user.updateUser(existingUser, function(err) {
+        if(err) return done(err);
+
         // Get the user one more time to verify the update worked
         user.getUserByUsername("testUser", function(err, updatedUser){
-          if(err){
-            throw "Error getting existing test user for update: " + err;
-          }
+          if(err) return done(err);
           expect(updatedUser.email).to.equal(updatedEmailAddr);
           done();
         });

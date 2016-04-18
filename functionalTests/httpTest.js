@@ -47,13 +47,11 @@ describe("MAGE-server API JSON test", function(){
         'password': testUser.password
       }
     };
-    request(tokenOptions, function(error, response, body){
-      if(error){
-        console.log("Error getting token: " + error);
-      } else{
-        var tokenObj = JSON.parse(body);
-        myToken = tokenObj.token;
-      }
+    request(tokenOptions, function(err, response, body){
+      if (err) return done(err);
+
+      var tokenObj = JSON.parse(body);
+      myToken = tokenObj.token;
       done();
     });
   });
@@ -86,12 +84,9 @@ describe("MAGE-server API JSON test", function(){
       url: conUrl + "/users/" + testUser.userId,
       method: 'GET'
     };
-    request(tokenOptions, function(error, response){
+    request(tokenOptions, function(err, response){
       expect(response.statusCode).to.equal(401);
-      if(error){
-        console.log("Error from /api/users/{id}: " + error);
-      }
-      done();
+      done(err);
     });
   });
 
@@ -102,15 +97,12 @@ describe("MAGE-server API JSON test", function(){
       method: 'GET',
       headers: {'Authorization': 'Bearer ' + myToken}
     };
-    console.log("AUTH: " + myToken);
-    request(tokenOptions, function(error, response, body){
+    
+    request(tokenOptions, function(err, response, body){
       var jsonObj = JSON.parse(body);
       var username = jsonObj.username;
       expect(username).to.equal(testUser.username);
-      if(error){
-        console.log("Error from /api/users/{id}: " + error);
-      }
-      done();
+      done(err);
     });
   });
 
