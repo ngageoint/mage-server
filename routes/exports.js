@@ -3,7 +3,7 @@ var moment = require('moment')
   , User = require('../models/user')
   , Device = require('../models/device')
   , access = require('../access')
-  , exporterFactory = require('../export/ExporterFactory');
+  , exporterFactory = require('../export/exporterFactory');
 
 module.exports = function(app, security) {
   app.get(

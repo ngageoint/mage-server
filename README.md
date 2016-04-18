@@ -240,7 +240,7 @@ The migration patches live in the [migrations folder](migrations).  MAGE uses [m
 
 To run the migrations:
 ``` bash
-$ ./node_modules/.bin/mm
+$ npm run migrate
 ```
 
 ### Running the Server

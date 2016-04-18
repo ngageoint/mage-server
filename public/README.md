@@ -4,7 +4,7 @@ The MAGE web application is built with [AngularJS](https://angularjs.org/).
 
 ### Installing dependencies
 
-MAGE dependencies are managed using [Bower](http://bower.io/).  Although the package.json file has a postinstall section that will install all bower dependencies when you run npm install at the root of the MAGE project, you can also install bower dependencies seperatly.
+MAGE dependencies are managed using [Bower](http://bower.io/).  Although the package.json file has a postinstall section that will install all bower dependencies when you run npm install at the root of the MAGE project, you can also install bower dependencies separately.
 
 To install bower dependencies run:
 ```bash
