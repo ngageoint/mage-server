@@ -51,6 +51,7 @@ exports.getLogins = function(options, callback) {
   if (filter.userId) {
     conditions.userId = filter.userId;
   }
+
   if (filter.deviceId) {
     conditions.deviceId = filter.deviceId;
   }
@@ -79,7 +80,7 @@ exports.getLogins = function(options, callback) {
       _id: options.firstLoginId ? 1 : -1
     }
   };
-
+console.log('find logins with conditions', conditions);
   Login.find(conditions, null, o).populate([{path: 'userId'}, {path: 'deviceId'}]).exec(function (err, logins) {
     callback(err, options.firstLoginId ? logins.reverse() : logins);
   });

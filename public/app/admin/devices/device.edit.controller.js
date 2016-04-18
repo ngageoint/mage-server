@@ -58,15 +58,15 @@ function AdminDeviceEditController($scope, $filter, $routeParams, $location, Loc
 
     if (device.id) {
       DeviceService.updateDevice(device).success(function() {
-        $location.path('/admin/devices/' + $scope.device.id);
+        $location.path('/admin/devices/' + device.id);
       })
       .error(function(response) {
         $scope.saving = false;
         $scope.error = response.responseText;
       });
     } else {
-      DeviceService.createDevice(device).success(function () {
-        $location.path('/admin/devices/' + $scope.device.id);
+      DeviceService.createDevice(device).success(function (newDevice) {
+        $location.path('/admin/devices/' + newDevice.id);
       })
       .error(function (response) {
         $scope.saving = false;
