@@ -7,7 +7,6 @@ environment.port = appEnv.port;
 environment.address = appEnv.bind;
 
 var mongoConfig = appEnv.getServiceCreds('MongoInstance');
-console.log('mongoConfigParam: ' + mongoConfig);
 environment.mongo = {
   uri: mongoConfig.uri,
   scheme: mongoConfig.scheme,
