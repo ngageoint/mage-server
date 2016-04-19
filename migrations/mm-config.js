@@ -7,13 +7,14 @@ var migrateConfig = {
   host: environment.mongo.host,
   port: environment.mongo.port,
   db: environment.mongo.db,
-  username: environment.mongo.username,
+  user: environment.mongo.username,
   password: environment.mongo.password,
   collection: "migrations",
   directory: "migrations"
 };
 
-mongoose.connect(environment.mongo.uri, function(err) {
+var mongoUri = migrateConfig.scheme + "://" + migrateConfig.host + "/" + migrateConfig.db;
+mongoose.connect(mongoUri, function(err) {
   if (err) {
     log.error('Error connecting to mongo database, please make sure mongodbConfig is running...');
     throw err;
