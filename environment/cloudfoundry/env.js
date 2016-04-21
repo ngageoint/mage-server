@@ -1,5 +1,6 @@
 var cfenv = require('cfenv')
-  , appEnv = cfenv.getAppEnv();
+  , appEnv = cfenv.getAppEnv()
+  , path = require('path');
 
 var environment = {};
 
@@ -20,9 +21,9 @@ environment.mongo = {
 
 environment.mongoInstance = mongoConfig;
 
-environment.userBaseDirectory = 'mage/users';
-environment.iconBaseDirectory = 'mage/icons';
-environment.attachmentBaseDirectory = 'mage/attachments';
+environment.userBaseDirectory = path.resolve('mage/users');
+environment.iconBaseDirectory = path.resolve('mage/icons');
+environment.attachmentBaseDirectory = path.resolve('mage/attachments');
 
 environment.tokenExpiration = 28800;
 

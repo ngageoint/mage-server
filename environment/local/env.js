@@ -1,9 +1,13 @@
+var util = require('util');
+
 var environment = {};
 
 environment.port = process.env.PORT || 4242;
 environment.address = process.env.ADDRESS || "0.0.0.0";
 
 var mongoConfig = {
+  // username: 'changeme',
+  // password: 'changeme',
   scheme: 'mongodb',
   host: "localhost",
   port: 27017,
@@ -11,8 +15,9 @@ var mongoConfig = {
   poolSize: 5
 };
 
+var credentials = (mongoConfig.username || mongoConfig.password) ?  util.format('%s:%s@', mongoConfig.username, mongoConfig.password) : '';
 environment.mongo = {
-  uri: mongoConfig.scheme + '://' + mongoConfig.host +  ':' + mongoConfig.port + '/' + mongoConfig.db,
+  uri: mongoConfig.scheme + '://' + credentials + mongoConfig.host +  ':' + mongoConfig.port + '/' + mongoConfig.db,
   scheme: mongoConfig.scheme,
   host: mongoConfig.host,
   port: mongoConfig.port,

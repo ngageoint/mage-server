@@ -1,6 +1,6 @@
 {
   "name": "local-environment",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "MAGE local environment.  Typically used when deploying mage to a bare metal",
   "keywords": [
     "NGA",

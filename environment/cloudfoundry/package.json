@@ -1,6 +1,6 @@
 {
   "name": "cloudfoundry-environment",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "MAGE cloudfoundry environment.  Used in Cloud Foundry deployment",
   "keywords": [
     "NGA",
