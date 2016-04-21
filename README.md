@@ -132,15 +132,6 @@ $ gm version
 
 ## Running MAGE
 
-### Installing Dependencies
-
-You can install all server and web dependencies by using npm from the mage-server directory:
-```bash
-$ npm install
-```
-
-NPM install will install all node (server) dependencies in the node_modules folder.  There is a postinstall section in the [package.json](package.json) file that will also install all bower (web) dependencies to the public/bower_components directory.
-
 ### Configuring and Customizing MAGE
 
 MAGE configuration lies within the config.js file located at the servers root directory.
@@ -162,19 +153,8 @@ Configuration:
     * provison - device provisioning strategy
         * strategy - provision strategy name.  Provisioning strategy name maps to file name in provisioning directory
 * server - Server based configuration.  Not exposed to client
-    * userBaseDirectory - root directory in which to store user avatar media
-    * iconBaseDirectory - root directory in which to store user map icon media
-    * token - client token information.  MAGE api is token based, upon authentication users will be issued a token.  Token must be present in all subsequent api requests.
-        * expiration - token expiration in seconds.  Time at which token will expire.
     * locationServices
         * userCollectionLocationLimit - user locations are stored in 2 different collections.  This is the limit for the capped locations.
-    * attachment
-        * baseDirectory - root directory in which to store attachment media, i.e. images, videos and voice
-    * mongodb
-        * host - host in which mongodb is running
-        * port - port in which mongodb is running
-        * db - mongodb database name in which to store MAGE data
-        * poolSize - mongodb connection pool size for this plugin
 
 ```json
 {
@@ -200,26 +180,45 @@ Configuration:
     }
   },
   "server": {
-    "userBaseDirectory": "/var/lib/mage/users",
-    "iconBaseDirectory": "/var/lib/mage/icons",
-    "token": {
-      "expiration": 28800
-    },
     "locationServices": {
       "userCollectionLocationLimit": 100
-    },
-    "attachment": {
-      "baseDirectory": "/var/lib/mage/attachments"
-    },
-    "mongodb": {
-      "host": "localhost",
-      "port": 27017,
-      "db": "magedb",
-      "poolSize": 5
     }
   }
 }
 ```
+
+### Setting up MAGE for local deployment
+
+MAGE local deployment configuration is located here: [environment/local/env.js](environment/local/env.js)
+
+Configuration includes:
+* port - port in which to run nodejs server
+* address - the bound address of the server
+* mongodb
+    * uri - full uri to mongo
+    * host - host in which mongodb is running
+    * port - port in which mongodb is running
+    * db - mongodb database name in which to store MAGE data
+    * username - username to use to log into magedb
+    * password - password to use to log into magedb
+    * poolSize - mongodb connection pool size for this plugin
+* userBaseDirectory - root directory in which to store user avatar media
+* iconBaseDirectory - root directory in which to store user map icon media
+* attachmentBaseDirectory - root directory in which to store attachment media, i.e. images, videos and voice
+* tokenExpiration - token expiration in seconds.  Time at which token will expire.
+
+### Setting up MAGE for Cloud Foundry deployment
+
+MAGE uses the cfenv node module to pull the configuration it needs directly from Cloud Foundry.
+
+### Installing Dependencies and Building MAGE
+
+You can install all server and web dependencies by using npm from the mage-server directory:
+```bash
+$ npm install
+```
+
+NPM install will install all node (server) dependencies in the node_modules folder.  There is a postinstall section in the [package.json](package.json) file that will also install all bower (web) dependencies to the public/bower_components directory.
 
 ### Starting MongoDB
 To start the mongo daemon type the following:
@@ -241,6 +240,14 @@ The migration patches live in the [migrations folder](migrations).  MAGE uses [m
 To run the migrations:
 ``` bash
 $ npm run migrate
+```
+
+### Web dependencies and build
+
+Initially you will need to pull down the web dependencies (via bower).   Make sure you run this again if you add any new dependencies in bower.
+
+```bash
+$ npm run build
 ```
 
 ### Running the Server
