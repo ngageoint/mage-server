@@ -70,6 +70,10 @@ Form.prototype.populateUserFields = function(callback) {
 
     userFields.forEach(function(userField) {
       userField.choices = choices;
+
+      if (!userField.required) {
+        userField.choices.unshift("");
+      }
     });
 
     callback();

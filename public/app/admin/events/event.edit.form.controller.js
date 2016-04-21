@@ -162,7 +162,14 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
   var debouncedAutoSave = _.debounce(function() {
     $scope.$apply(function() {
       $scope.saving = false;
-      $scope.event.$save({populate: false}, function() {
+      $scope.event.$save({populate: false}, function(event) {
+        _.each(event.form.fields, function(field) {
+          if ($scope.isMemberField(field)) {
+            field.choices = [];
+          }
+        });
+        $scope.event = event;
+
         formSaved = true;
         completeSave();
       });
@@ -299,7 +306,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
   };
 
   $scope.onRequiredChanged = function(field) {
-    if (field.type === 'dropdown') {
+    if (field.type === 'dropdown' || field.type === 'userDropdown') {
       if (field.required && field.choices.length && field.choices[0].blank) {
         field.choices.shift();
 
