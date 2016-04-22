@@ -3,9 +3,14 @@ All notable changes to this project will be documented in this file.
 Adheres to [Semantic Versioning](http://semver.org/).
 
 ---
-## 4.2.1 (TBD)
+## 4.2.2 (TBD)
 
 * TBD
+##### Features
+
+##### Bug Fixes
+
+## [4.2.1](https://github.com/ngageoint/mage-server/releases/tag/v4.2.1) (04-22-2016)
 ##### Features
 * OSM geocoder added.  Search addresses from the MAGE map.  On successful search the map will pan an zoom to that location.
 
@@ -14,7 +19,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 * Insert empty option for non required user fields in a form.  This will allow to to select no user, or clear a currently selected user.
 * Map should no longer hang on invalid XYZ/TMS data sources.
 
-## [4.2.0](https://github.com/ngageoint/mage-server/releases/tag/v4.1.1) (04-14-2016)
+## [4.2.0](https://github.com/ngageoint/mage-server/releases/tag/v4.2.0) (04-14-2016)
 ##### Features
 * New numberfield in event form
 * Rework observation/people feed to show map and feed on smaller devices
