@@ -9,7 +9,9 @@ exports.up = function(done) {
   console.log('\nCreating team for each event');
 
   mongoose.model('Team').collection.dropAllIndexes(function (err) {
-    if (err) return done(err);
+    if (err) {
+      console.log('Could not drop indexes.  If you are starting with an empty DB, you can ignore this error');
+    }
 
     Event.getEvents(function(err, events) {
       async.each(events, function(event, done) {
