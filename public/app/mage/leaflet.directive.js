@@ -31,12 +31,16 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   });
 
   // toolbar  and controls config
-  // var sidebar = L.control.sidebar('side-bar', {closeButton: false});
-  map.addControl(new L.Control.MageFeature({
+  new L.Control.GeoSearch({
+    provider: new L.GeoSearch.Provider.OpenStreetMap(),
+    showMarker: false
+  }).addTo(map);
+
+  new L.Control.MageFeature({
     onClick: function(latlng) {
       $scope.$emit('observation:create', latlng);
     }
-  }));
+  }).addTo(map);
 
   var userLocationControl = new L.Control.MageUserLocation({
     onBroadcastLocationClick: function(callback) {

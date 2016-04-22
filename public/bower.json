@@ -41,6 +41,7 @@
     "videogular": "1.4.3",
     "videogular-themes-default": "1.4.3",
     "videogular-controls": "1.4.3",
-    "videogular-overlay-play": "1.4.3"
+    "videogular-overlay-play": "1.4.3",
+    "leaflet-geosearch": "1.1.0"
   }
 }

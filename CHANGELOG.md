@@ -7,6 +7,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 
 * TBD
 ##### Features
+* OSM geocoder added.  Search addresses from the MAGE map.  On successful search the map will pan an zoom to that location.
 
 ##### Bug Fixes
 * Only allow ISO8601 times for observation timestamps.  Invalid time will result in a 400 response.

@@ -732,3 +732,32 @@ h4.image-delete {
 .attachment-media-sm videogular vg-controls .controls-container, [videogular] vg-controls .controls-container {
     height: 30px;
 }
+
+/* Leaflet controls overrides */
+.leaflet-bar a, .leaflet-bar a:hover {
+    color: #365F8C;
+}
+
+/* Leaflet geosearch overrides */
+.leaflet-control-geosearch a.glass {
+  background-image: none;
+  background-size: 0;
+}
+
+.leaflet-control-geosearch a.alert {
+  background-image: none;
+  background-size: 0;
+  padding: 0;
+}
+
+a.glass:before {
+  font-family: FontAwesome;
+  content: '\f002';
+}
+
+a.alert:after {
+  font-family: FontAwesome;
+  content: '\f06a';
+  color: red;
+  font-size: 1.2em;
+}
