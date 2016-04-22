@@ -11,6 +11,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 ##### Bug Fixes
 * Only allow ISO8601 times for observation timestamps.  Invalid time will result in a 400 response.
 * Insert empty option for non required user fields in a form.  This will allow to to select no user, or clear a currently selected user.
+* Map should no longer hang on invalid XYZ/TMS data sources.
 
 ## [4.2.0](https://github.com/ngageoint/mage-server/releases/tag/v4.1.1) (04-14-2016)
 ##### Features
