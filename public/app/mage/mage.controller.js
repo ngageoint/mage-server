@@ -9,6 +9,7 @@ MageController.$inject = [
   '$animate',
   '$document',
   '$uibModal',
+  '$http',
   'UserService',
   'FilterService',
   'EventService',
@@ -20,9 +21,10 @@ MageController.$inject = [
   'FeatureService'
 ];
 
-function MageController($scope, $compile, $timeout, $animate, $document, $uibModal, UserService, FilterService, EventService, MapService, LocalStorageService, Observation, Location, LocationService, FeatureService) {
-  $scope.hideFeed = false;
 
+function MageController($scope, $compile, $timeout, $http, $animate, $document, $uibModal, UserService, FilterService, EventService, MapService, LocalStorageService, Observation, Location, LocationService, FeatureService) {
+  $scope.hideFeed = false;
+  
   var observationsById = {};
   var newObservation = null;
   var firstObservationChange = true;
@@ -219,30 +221,96 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
         }
 
         MapService.createRasterLayer(layer);
-      } else if (layer.type === 'Feature') {
+      } else if (layer.type === 'Feature' || layer.type === 'Sensor') {
         FeatureService.getFeatureCollection(event, layer).then(function(featureCollection) {
-          MapService.createVectorLayer({
-            name: layer.name, // TODO need to track by id as well not just names
-            group: 'Static',
-            type: 'geojson',
-            geojson: featureCollection,
-            options: {
-              popup: {
-                html: function(feature) {
-                  // TODO user leaflet template for this
-                  var content = "";
-                  if (feature.properties.name) {
-                    content += '<div><strong><u>' + feature.properties.name + '</u></strong></div>';
-                  }
-                  if (feature.properties.description) {
-                    content += '<div>' + feature.properties.description + '</div>';
-                  }
 
-                  return content;
+          //extract the base url for the server e.g. http://sensiasoft.net:8181
+          var tokens = layer.url.split('&');
+          var timeToken = "";
+          if(tokens[tokens.length-1].indexOf('replaySpeed') != -1) {
+            timeToken = '&'+tokens.pop(); //replay speed
+            timeToken = '&'+tokens.pop()+timeToken; //time duration
+          }
+          //chop off http:// and ending '/' since we will be using websocket
+          var baseURL = tokens[0].substring(0, tokens[0].length - 1);
+          baseURL = baseURL.replace("http://", "");
+          var sensorOffering = tokens[1];
+          baseURL = baseURL + '/sensorhub/sos?service=SOS&version=2.0&request=GetResult&'+sensorOffering;
+
+          var contentHTML = "";
+          for(var propIndex = 2; propIndex < tokens.length; propIndex++) {
+
+            var streamURL = baseURL + '&' + tokens[propIndex]+timeToken;
+            var observedProperty =tokens[propIndex];
+
+            if(observedProperty.indexOf('Video') != -1) {
+              contentHTML += '<img width = \"128\" height = \"96\" src = \"http://'+streamURL+'\"></img>';
+
+            } else {
+
+              var contentID = 'Content_' + layer.name + '_' + observedProperty;
+              contentID = contentID.replace(/\//g,'-');
+              contentID = contentID.replace(/ /g,'-');
+              contentID = contentID.replace(/=/g,'-');
+              contentID = contentID.replace(/:/g,'-');
+              contentID = contentID.replace(/\./g,'-');
+              contentHTML += '<div style = \"max-width:128; word-wrap:break-word;\" id = \"'+contentID+'\"></div>';
+
+              var reader = new FileReader();
+
+              reader.onload = function () {
+                var rec = reader.result;
+                if(observedProperty.indexOf('Location') != -1) {
+                  var data = rec.trim().split(",");
+                  var lat = parseFloat(data[1]);
+                  var lon = parseFloat(data[2]);
+                  var alt = parseFloat(data[3]);
+                  var ltlg = {'lat': lat, 'lng': lon};
+
+                  var contentTag = document.getElementById(contentID);
+                  if (contentTag != null)
+                    contentTag.innerHTML = 'lon: ' + lon.toFixed(10) + '<br>lat: ' + lat.toFixed(10) + '<br>alt: ' + alt.toFixed(1);
+
+                  featureCollection.features[0].id = layer.name;
+                  featureCollection.features[0].type = 'Sensor';
+                  featureCollection.features[0].geometry.coordinates = [lon, lat];
+                  MapService.updateMarker(featureCollection.features[0], layer.name);
+                }
+                else {
+                   var contentTag = document.getElementById(contentID);
+                   if (contentTag != null)
+                    contentTag.textContent = 'Data: ' + rec;
                 }
               }
+
+              var ws = new WebSocket("ws://" + streamURL);
+              ws.onmessage = function (event) {
+                reader.readAsText(event.data);
+              }
+              ws.onerror = function (event) {
+                ws.close();
+              }
             }
+          }
+
+          var newMarker = {
+            eventId: event.id,
+            type: 'Sensor',
+            geometry: {
+              type: 'Point',
+              coordinates: featureCollection.features[0].geometry.coordinates
+            },
+          };
+
+          MapService.createMarker(newMarker, {
+            layerId: layer.name,
+            selected: true,
+            clickable: true,
+            popup: '<div style = \"min-width:128px;\"><strong><u>' + layer.name + '</u></strong></div> <br> ' + contentHTML
           });
+
+
+
         });
       }
     });

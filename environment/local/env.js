@@ -25,9 +25,9 @@ environment.mongo = {
   poolSize: mongoConfig.poolSize
 };
 
-environment.userBaseDirectory = '/var/lib/mage/users';
-environment.iconBaseDirectory = '/var/lib/mage/icons';
-environment.attachmentBaseDirectory = '/var/lib/mage/attachments';
+environment.userBaseDirectory = '/Users/richard.becker/Dev/MAGE/Media/users';
+environment.iconBaseDirectory = '/Users/richard.becker/Dev/MAGE/Media/icons';
+environment.attachmentBaseDirectory = '/Users/richard.becker/Dev/MAGE/Media/attachments';
 
 environment.tokenExpiration = 28800;
 

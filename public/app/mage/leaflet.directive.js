@@ -114,6 +114,40 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     MapService.removeListener(listener);
   });
 
+  function createSensorMarker(marker) {
+    // cannot create another marker with the same id
+    if (layers[marker.layerId]) return;
+
+    var options = marker.options || {};
+
+    if (marker.geometry && marker.geometry.type === 'Point') {
+      var latlng = [0, 0];
+      if (marker.geometry.coordinates) {
+        latlng = [marker.geometry.coordinates[1], marker.geometry.coordinates[0]];
+      } else {
+        latlng = map.getCenter();
+      }
+
+      var layer = L.marker(latlng, {
+        draggable: options.draggable,
+
+      });
+      layer.bindPopup(options.popup).openPopup();
+
+      /*if (_.isFunction(options.onDragEnd)) {
+        layer.on('dragend', function() {
+          options.onDragEnd(layer.getLatLng());
+        });
+      }*/
+
+      //add the marker to a separate layer in the overlay list
+      layerControl.addOverlay(layer, marker.options.layerId, 'static');
+      if (options.selected)
+        layer.addTo(map);
+      layers[marker.options.layerId] = {layer: layer};
+    }
+  }
+
   function createMarker(marker) {
     // cannot create another marker with the same id
     if (layers[marker.layerId]) return;
@@ -144,6 +178,14 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
       if (options.selected) layer.addTo(map);
       layers[marker.layerId] = {layer: layer};
+    }
+  }
+
+  function updateSensorMarker(marker) {
+    var layer = layers[marker.id];
+
+    if (marker.geometry && marker.geometry.type === 'Point') {
+      layer.layer.setLatLng([marker.geometry.coordinates[1], marker.geometry.coordinates[0]]);
     }
   }
 
@@ -285,6 +327,9 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       case 'Feature':
         createMarker(added);
         break;
+      case 'Sensor':
+        createSensorMarker(added);
+        break;
       case 'Imagery':
         createRasterLayer(added);
         break;
@@ -298,6 +343,9 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       switch(updated.type) {
       case 'Feature':
         updateMarker(updated);
+        break;
+      case 'Sensor':
+        updateSensorMarker(updated);
         break;
       }
     });

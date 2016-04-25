@@ -114,14 +114,14 @@ exports.create = function(layer, callback) {
   Counter.getNext('layer', function(id) {
     layer._id = id;
 
-    if (layer.type === 'Feature') {
+    if (layer.type === 'Feature' || layer.type === 'Sensor') {
       layer.collectionName = 'features' + id;
     }
 
     Layer.create(layer, function(err, newLayer) {
       if (err) return callback(err);
 
-      if (layer.type === 'Feature') {
+      if (layer.type === 'Feature' || layer.type === 'Sensor') {
         createFeatureCollection(newLayer);
       }
 

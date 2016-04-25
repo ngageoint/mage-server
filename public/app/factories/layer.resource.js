@@ -35,7 +35,7 @@ function Layer($resource) {
   });
 
   Layer.prototype.$save = function(params, success, error) {
-    if (this.type === 'Feature') {
+    if (this.type === 'Feature' || this.type === 'Sensor') {
       delete this.base;
       delete this.format;
       delete this.wms;

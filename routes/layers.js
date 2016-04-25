@@ -83,7 +83,7 @@ module.exports = function(app, security) {
     '/api/layers/:layerId/features',
     access.authorize('READ_LAYER_ALL'),
     function (req, res) {
-      if (req.layer.type !== 'Feature') return res.status(400).send('cannot get features, layer type is not "Feature"');
+      if (req.layer.type !== 'Feature' && req.layer.type !== 'Sensor') return res.status(400).send('cannot get features, layer type is not "Feature"');
 
       new api.Feature(req.layer).getAll(function(err, features) {
         features = features.map(function(f) { return f.toJSON(); });
@@ -127,7 +127,7 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     validateEventAccess,
     function (req, res) {
-      if (req.layer.type !== 'Feature') return res.status(400).send('cannot get features, layer type is not "Feature"');
+      if (req.layer.type !== 'Feature' && req.layer.type !== 'Sensor') return res.status(400).send('cannot get features, layer type is not "Feature"');
       if (req.event.layerIds.indexOf(req.layer._id) === -1) return res.status(400).send('layer requested is not in event ' + req.event.name);
 
       new api.Feature(req.layer).getAll(function(err, features) {

@@ -7,8 +7,8 @@ module.exports = function(app, security) {
   var passport = security.authentication.passport;
 
   function verifyLayer(req, res, next) {
-    if (req.layer.type !== 'Feature') {
-      return res.status(400).send("Cannot import data, layer type is not 'Static'");
+    if (req.layer.type !== 'Feature' && req.layer.type !== 'Sensor') {
+      return res.status(400).send("Cannot import data, layer type is not 'Static'" + req.layer.type);
     }
 
     return next();

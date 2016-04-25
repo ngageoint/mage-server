@@ -40,6 +40,9 @@
               <label class="radio-inline">
                 <input type="radio" name="layer-type" value="Feature" ng-model="layer.type"> Static
               </label>
+              <label class="radio-inline">
+                <input type="radio" name="layer-type" value="Sensor" ng-model="layer.type"> OSH Sensor
+              </label>
             </div>
 
             <div class="form-group">
@@ -47,9 +50,29 @@
               <input class="form-control" type="text" placeholder="i.e. HurricaneSandy" ng-model="layer.name"/>
             </div>
 
-            <div class="form-group" ng-show="layer.type == 'Imagery'">
-              <label class="control-label">Layer URL</label>
+            <div class="form-group" ng-show="layer.type == 'Imagery' || (layer.type == 'Sensor')">
+              <label class="control-label" ng-show="layer.type == 'Imagery'">Layer URL</label>
+              <label class="control-label" ng-show="layer.type == 'Sensor'">OSH Server URL</label>
               <input class="form-control" type="text" class="input-xxlarge" placeholder="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" ng-model="layer.url"/>
+              <span class="pull-right" ng-show="layer.type == 'Sensor'">
+                <a class="btn btn-default" ng-class="{'disabled': saving}" ng-click="getSensorProperties()">Get properties</a>
+              </span>
+              <div ng-show = "sensors.length > 0">
+                <label class="control-label">Sensors</label>
+                <div ng-repeat="x in sensors">
+                  <input type = "radio" name = "selected-sensor" value = {{x.name}} ng-model = "selectedSensor.name" ng-change = "selectedSensorChanged()"/>
+
+                  <b>ID:</b> {{ x.name }} <br>
+                  <b>Description:</b> {{ x.description }} <br>
+                  <div ng-show = "x.name === selectedSensor.name && x.properties.length > 0"><b>Properties: </b></div>
+                  <div ng-show = "x.name === selectedSensor.name" ng-repeat="prop in x.properties">
+                    <input type = "checkbox" ng-model = "prop.enabled" ng-true-value = "true" ng-false-value = "false" />
+                     {{ prop.name }}
+                     <br>
+                  </div>
+                  <hr>
+                </div>
+              </div>
             </div>
 
             <div class="form-group">

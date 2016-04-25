@@ -9,3 +9,6 @@ public/.tmp
 public/bower_components
 
 coverage
+
+.idea/
+

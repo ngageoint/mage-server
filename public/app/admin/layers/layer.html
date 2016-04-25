@@ -254,7 +254,7 @@
 
               <div class="admin-table">
                 <div class="well-item">
-                  <div ng-show="layer.type == 'Feature'">
+                  <div ng-show="layer.type == 'Feature' || layer.type == 'Sensor'">
                     <div ng-repeat="upload in uploads" class="bottom-gap">
                       <form enctype="multipart/form-data" file-upload url="{{fileUploadOptions.url}}" allow-upload="uploadConfirmed" upload-file-form-name="'file'">
                       </form>
