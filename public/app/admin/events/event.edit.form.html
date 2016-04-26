@@ -41,8 +41,8 @@
               <uib-accordion-group ng-repeat="field in event.form.fields | filter:{archived: '!true'} | orderBy: 'id'">
                 <uib-accordion-heading>
                   {{field.title}}
-                  <i class="pull-right fa fa-arrow-up" ng-if="!$first" ng-click="moveFieldUp($event, field)"></i>
-                  <i class="pull-right fa fa-arrow-down" ng-if="!$last" ng-click="moveFieldDown($event, field)"></i>
+                  <i class="pull-right fa fa-arrow-up" ng-if="!$first && canMoveField(field)" ng-click="moveFieldUp($event, field)"></i>
+                  <i class="pull-right fa fa-arrow-down" ng-if="!$last && canMoveField(field)" ng-click="moveFieldDown($event, field)"></i>
                 </uib-accordion-heading>
                 <div class="accordion-edit">
                   <form name="form.fields" novalidate>

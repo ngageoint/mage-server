@@ -7,6 +7,8 @@ Adheres to [Semantic Versioning](http://semver.org/).
 
 * TBD
 ##### Features
+* Don't allow ordering of type, timestamp, geometry or variantField from the form editor.  This will eliminate confusion
+  since we always put those fields at the top of our clients.
 
 ##### Bug Fixes
 

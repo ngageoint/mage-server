@@ -107,6 +107,13 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     $scope.newField = newField();
   };
 
+  $scope.canMoveField = function(field) {
+    return field.name !== 'type' &&
+      field.name !== 'geometry' &&
+      field.name !== 'timestamp' &&
+      field !== $scope.variantField;
+  };
+
   $scope.moveFieldUp = function(e, fieldToMoveUp) {
     e.stopPropagation();
     e.preventDefault();
