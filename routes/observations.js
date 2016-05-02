@@ -54,29 +54,17 @@ module.exports = function(app, security) {
     }
   }
 
+  function populateUserFields(req, res, next) {
+    new api.Form(req.event).populateUserFields(function(err) {
+      if (err) return next(err);
+
+      next();
+    });
+  }
+
   function validateObservation(req, res, next) {
     var observation = req.body;
     observation.properties = observation.properties || {};
-
-    if (!observation.type || observation.type !== 'Feature' ) {
-      return res.status(400).send("cannot create observation 'type' param not specified, or is not set to 'Feature'");
-    }
-
-    if (!observation.geometry) {
-      return res.status(400).send("cannot create observation 'geometry' param not specified");
-    }
-
-    if (!observation.properties.timestamp) {
-      return res.status(400).send("cannot create observation 'properties.timestamp' param not specified");
-    }
-
-    if (!moment(observation.properties.timestamp, moment.ISO_8601, true).isValid()) {
-      return res.status(400).send("cannot create observation 'properties.timestamp' is not a valid ISO8601 date");
-    }
-
-    if (!observation.properties.type) {
-      return res.status(400).send("cannot create observation 'properties.type' param not specified");
-    }
 
     Team.teamsForUserInEvent(req.user, req.event, function(err, teams) {
       if (err) return next(err);
@@ -84,8 +72,6 @@ module.exports = function(app, security) {
       if (teams.length === 0) {
         return res.status(403).send('Cannot submit an observation for an event that you are not part of.');
       }
-
-      observation.properties.timestamp = moment(observation.properties.timestamp).toDate();
 
       var userId = req.user ? req.user._id : null;
       var state = {name: 'active'};
@@ -230,6 +216,7 @@ module.exports = function(app, security) {
     '/api/events/:eventId/observations',
     passport.authenticate('bearer'),
     access.authorize('CREATE_OBSERVATION'),
+    populateUserFields,
     validateObservation,
     function (req, res, next) {
       new api.Observation(req.event).create(req.newObservation, function(err, newObservation) {
@@ -244,6 +231,7 @@ module.exports = function(app, security) {
   app.put(
     '/api/events/:eventId/observations/:id',
     passport.authenticate('bearer'),
+    populateUserFields,
     validateObservationUpdateAccess,
     function (req, res, next) {
 

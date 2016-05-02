@@ -28,7 +28,25 @@ describe("observation create tests", function() {
     var mockEvent = {
       _id: 1,
       name: 'Event 1',
-      collectionName: 'observations1'
+      collectionName: 'observations1',
+      form: {
+        fields: [{
+          type: "date",
+          name: "timestamp",
+          title: "Date",
+          required: true
+        },{
+          type: "geometry",
+          name: "geometry",
+          title: "Location",
+          required: true
+        },{
+          type: "dropdown",
+          name: "type",
+          title: "type",
+          required: true
+        }]
+      }
     };
     sandbox.mock(EventModel)
       .expects('findById')
@@ -87,7 +105,7 @@ describe("observation create tests", function() {
           coordinates: [0, 0]
         },
         properties: {
-          type: 'type',
+          type: 'test',
           timestamp: '2016-01-01T00:00:00'
         }
       })
@@ -257,7 +275,7 @@ describe("observation create tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal("cannot create observation 'properties.timestamp' is not a valid ISO8601 date");
+        res.text.should.equal("cannot create observation, 'timestamp' property is not a valid ISO8601 date");
       })
       .end(done);
   });

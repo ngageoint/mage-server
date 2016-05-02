@@ -1,6 +1,9 @@
-var ObservationModel = require('../models/observation')
-  , async = require('async');
-    
+var async = require('async')
+  , FieldFactory = require('./field')
+  , ObservationModel = require('../models/observation');
+
+var fieldFactory = new FieldFactory();
+
 function Observation(event) {
   this._event = event;
 }
@@ -42,7 +45,37 @@ Observation.prototype.getById = function(observationId, options, callback) {
   ObservationModel.getObservationById(this._event, observationId, options, callback);
 };
 
+Observation.prototype.validate = function(observation) {
+  if (!observation.type || observation.type !== 'Feature' ) {
+    throw new Error("cannot create observation 'type' param not specified, or is not set to 'Feature'");
+  }
+
+  if (!observation.geometry) {
+    throw new Error("cannot create observation 'geometry' param not specified");
+  }
+
+  if (!observation.properties.timestamp) {
+    throw new Error("cannot create observation 'properties.timestamp' param not specified");
+  }
+
+  if (!observation.properties.type) {
+    throw new Error("cannot create observation 'properties.type' param not specified");
+  }
+
+  this._event.form.fields.forEach(function(fieldDefinition) {
+    var field = fieldFactory.createField(fieldDefinition, observation);
+    field.validate();
+  });
+};
+
 Observation.prototype.create = function(observation, callback) {
+  try {
+    this.validate(observation);
+  } catch (err) {
+    err.status = 400;
+    return callback(err);
+  }
+
   ObservationModel.createObservation(this._event, observation, callback);
 };
 

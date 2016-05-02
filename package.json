@@ -29,6 +29,7 @@
     "environment": "file:environment",
     "express": "4.10.6",
     "fs-extra": "0.11.x",
+    "geojson-validation": "^0.1.6",
     "gm": "1.17.x",
     "jade": "1.11.0",
     "json2csv": "2.2.1",
