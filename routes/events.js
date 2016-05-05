@@ -193,18 +193,23 @@ module.exports = function(app, security) {
         req.newEvent.layerIds = req.newEvent.layerIds.split(",");
       }
 
-      function createEvent(callback) {
-        Event.create(req.newEvent, callback);
+      function validateForm(callback) {
+        new api.Form().validate(req.files.form, function(err, form) {
+          callback(err, form);
+        });
       }
 
-      function importForm(event, callback) {
-        new api.Form(event).import(req.files.form, function(err, form) {
+      function createEvent(form, callback) {
+        req.newEvent.form = form;
+        Event.create(req.newEvent, function(err, event) {
           callback(err, event, form);
         });
       }
 
-      function updateEvent(event, form, callback) {
-        Event.update(event._id, {form: form}, callback);
+      function importIcons(event, form, callback) {
+        new api.Form(event).importIcons(req.files.form, form, function(err) {
+          callback(err, event);
+        });
       }
 
       function populateUserFields(event, callback) {
@@ -214,12 +219,15 @@ module.exports = function(app, security) {
       }
 
       async.waterfall([
+        validateForm,
         createEvent,
-        importForm,
-        updateEvent,
+        importIcons,
         populateUserFields
       ], function (err, event) {
-        if (err) return next(err);
+        if (err) {
+          console.log('uh oh err', err);
+          return next(err);
+        }
 
         res.status(201).json(event);
       });

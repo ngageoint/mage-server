@@ -113,7 +113,14 @@ function Event($rootScope, $resource, $http, LocalStorageService) {
               success(self);
             });
           },
-          error: error,
+          error: function(response) {
+            if (!_.isFunction(error)) return;
+
+            $rootScope.$apply(function() {
+              response.statusText = response.responseText;
+              error(response);
+            });
+          },
           data: formData,
           cache: false,
           contentType: false,

@@ -47,10 +47,17 @@
             </div>
           </form>
 
-          <span class="pull-right">
-            <a class="btn btn-default" ng-class="{'disabled': saving}" ng-click="cancel()">Cancel</a>
-            <a class="btn btn-success" ng-class="{'disabled': saving}" ng-click="saveEvent(event)"><i class="fa fa-check"></i> Save</a>
-          </span>
+          <div class="clearfix">
+            <span class="pull-right">
+              <a class="btn btn-default" ng-class="{'disabled': saving}" ng-click="cancel()">Cancel</a>
+              <a class="btn btn-success" ng-class="{'disabled': saving}" ng-click="saveEvent(event)"><i class="fa fa-check"></i> Save</a>
+            </span>
+          </div>
+
+          <div class="alert alert-danger top-gap" ng-show="error">
+            <strong>Error Creating Event</strong>
+            <div>{{error}}</div>
+          </div>
 
         </div>
       </div>

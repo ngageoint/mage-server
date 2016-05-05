@@ -90,18 +90,37 @@ Form.prototype.export = function(callback) {
   callback(null, archive);
 };
 
-Form.prototype.import = function(file, callback) {
-  if (file.extension !== 'zip') return callback(new Error('File attachment must be of type "zip"'));
+Form.prototype.validate = function(file, callback) {
+  var err;
 
-  var event = this._event;
+  if (file.extension !== 'zip') {
+    err = new Error('Form import attachment must be of type "zip"');
+    err.status = 400;
+    return callback(err);
+  }
+
   var zip = new Zip(file.path);
   var form = zip.readAsText('form/form.json');
-  if (!form) return callback(new Error('invalid zip archive, no form.json'));
+  if (!form) {
+    err = new Error('Invalid zip archive, no form/form.json');
+    err.status = 400;
+    return callback(err);
+  }
+
   try {
     form = JSON.parse(form);
   } catch (e) {
-    return callback(new Error('invalid zip archive cannot parse'));
+    err = new Error('Error parsing form.json, please insure its valid JSON');
+    err.status = 400;
+    return callback(err);
   }
+
+  callback(null, form);
+};
+
+Form.prototype.importIcons = function(file, form, callback) {
+  var event = this._event;
+  var zip = new Zip(file.path);
 
   var iconsEntry = zip.getEntry('form/icons/');
   if (iconsEntry) {
@@ -127,8 +146,10 @@ Form.prototype.import = function(file, callback) {
       });
     });
     walker.on("end", function() {
-      callback(null, form);
+      callback(null);
     });
+  } else {
+    callback(null);
   }
 };
 

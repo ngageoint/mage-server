@@ -16,6 +16,8 @@ function AdminEventEditController($scope, $location, $routeParams, Event) {
   $scope.saveEvent = function(event) {
     event.$save(function() {
       $location.path('/admin/events/' + event.id);
+    }, function(response) {
+      $scope.error = response.responseText;
     });
   };
 

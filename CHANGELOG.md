@@ -11,6 +11,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
   since we always put those fields at the top of our clients.
 
 ##### Bug Fixes
+* Added form import error handling on web client.
 
 ## [4.2.1](https://github.com/ngageoint/mage-server/releases/tag/v4.2.1) (04-22-2016)
 ##### Features

@@ -11,7 +11,7 @@ var Schema = mongoose.Schema;
 
 var OptionSchema = new Schema({
   id: { type: Number, required: true },
-  title: { type: String, required: true },
+  title: {type: String, required: false, default: ''},
   value: { type: Number, required: true },
   blank: { type: Boolean, required: false }
 },{
@@ -365,7 +365,7 @@ exports.update = function(id, event, options, callback) {
       validateTeamIds(id, event.teamIds, done);
     },
     function(done) {
-      Event.findByIdAndUpdate(id, event, {new: true}, done);
+      Event.findByIdAndUpdate(id, event, {new: true, runValidators: true}, done);
     }
   ], function(err, results) {
     if (err) return callback(err);
