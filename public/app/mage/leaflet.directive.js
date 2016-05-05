@@ -38,7 +38,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
   new L.Control.MageFeature({
     onClick: function(latlng) {
-      $scope.$emit('observation:create', latlng);
+      $scope.$emit('observation:create', latlng.wrap());
     }
   }).addTo(map);
 
@@ -138,7 +138,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
       if (_.isFunction(options.onDragEnd)) {
         layer.on('dragend', function() {
-          options.onDragEnd(layer.getLatLng());
+          options.onDragEnd(layer.getLatLng().wrap());
         });
       }
 
