@@ -110,6 +110,7 @@ a {
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: auto;
 }
 
 .filter-banner {
@@ -149,6 +150,8 @@ a {
   display: flex;
   flex-direction: row;
   height: 100%;
+  flex: 1;
+  overflow: auto;
 }
 
 .feed {
@@ -230,10 +233,11 @@ a {
   flex: 1 1 auto;
   overflow-y: auto;
   min-height: 0px;
+  margin-top: 10px;
 }
 
 .feed-page {
-  margin: 7px 6px;
+  margin: 7px 6px 0;
   flex: 0 0 34px;
 }
 
@@ -477,7 +481,7 @@ textarea {
 }
 
 .navbar {
-  flex: none;
+  flex: auto;
 }
 
 .navbar-default .admin-navbar-toggle {

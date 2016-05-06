@@ -115,6 +115,48 @@ EventSchema.post('remove', function(event) {
   });
 });
 
+function validateFields(next) {
+  var err;
+  console.log('in field validation method w/ args', arguments);
+  console.log('in field validation method w/ this', this);
+
+  var fields = this.form.fields;
+  if (!fields) {
+    err = new Error('form.fields is required');
+    err.status = 400;
+    return next(err);
+  }
+
+  var fieldsByName = {};
+  fields.forEach(function(field) {
+    fieldsByName[field.name] = field;
+  });
+
+  var errors = [];
+  if (!fieldsByName.timestamp) errors.push("'timestamp' missing field is required");
+  if (!fieldsByName.geometry) errors.push("'geometry' missing field is required");
+  if (!fieldsByName.type) errors.push("'type' missing field is required");
+
+  if (fieldsByName.timestamp && !fieldsByName.timestamp.required) errors.push("'timestamp' required property must be true");
+  if (fieldsByName.geometry && !fieldsByName.geometry.required) errors.push("'geometry' required property must be true");
+  if (fieldsByName.geometry && !fieldsByName.type.required) errors.push("'type' required property must be true");
+
+  if (errors.length > 0) {
+    err = new Error({
+      message: 'Invalid form',
+      errors: errors
+    });
+    err.status = err;
+
+    return next(err);
+  }
+
+  next();
+}
+
+EventSchema.pre('save', validateFields);
+EventSchema.pre('update', validateFields);
+
 function transform(event, ret) {
   if ('function' !== typeof event.ownerDocument) {
     ret.id = ret._id;
@@ -365,7 +407,7 @@ exports.update = function(id, event, options, callback) {
       validateTeamIds(id, event.teamIds, done);
     },
     function(done) {
-      Event.findByIdAndUpdate(id, event, {new: true, runValidators: true}, done);
+      Event.findByIdAndUpdate(id, event, {new: true, runValidators: true, context: 'query'}, done);
     }
   ], function(err, results) {
     if (err) return callback(err);
