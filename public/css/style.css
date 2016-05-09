@@ -667,7 +667,6 @@ h4.image-delete {
   object-fit: cover;
 }
 
-
 .observation-type {
 	font-size: 15.5px;
 	padding-bottom: 2px;
@@ -764,4 +763,14 @@ a.alert:after {
   content: '\f06a';
   color: red;
   font-size: 1.2em;
+}
+
+.field {
+  padding-left: 7px;
+  font-size: 1.1em;
+}
+
+.field-textarea {
+  white-space: pre;
+  padding-left: 0;
 }
