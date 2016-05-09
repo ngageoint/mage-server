@@ -44,8 +44,14 @@ describe("observation create tests", function() {
           type: "dropdown",
           name: "type",
           title: "type",
+          choices: [{
+            id: 1,
+            value: 1,
+            title: 'test'
+          }],
           required: true
-        }]
+        }],
+        userFields: []
       }
     };
     sandbox.mock(EventModel)
@@ -275,7 +281,7 @@ describe("observation create tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal("cannot create observation, 'timestamp' property is not a valid ISO8601 date");
+        res.text.should.equal("cannot create observation, 'Date' property is not a valid ISO8601 date");
       })
       .end(done);
   });

@@ -55,8 +55,10 @@
           </div>
 
           <div class="alert alert-danger top-gap" ng-show="error">
-            <strong>Error Creating Event</strong>
-            <div>{{error}}</div>
+            <strong>{{error.message}}</strong>
+            <div ng-if="error.errors">
+              <li ng-repeat="(key, value) in error.errors">{{key}}: {{value.message}}</li>
+            </div>
           </div>
 
         </div>

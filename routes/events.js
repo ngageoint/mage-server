@@ -7,17 +7,6 @@ module.exports = function(app, security) {
 
   var passport = security.authentication.passport;
 
-  function validateEventParams(req, res, next) {
-    var event = req.body;
-
-    if (!event.name) {
-      return res.status(400).send("cannot create event 'name' param not specified");
-    }
-
-    req.newEvent = event;
-    next();
-  }
-
   function validateEventAccess(req, res, next) {
     if (access.userHasPermission(req.user, 'READ_LOCATION_ALL')) {
       next();
@@ -50,42 +39,17 @@ module.exports = function(app, security) {
     parameters.populate = true;
     if (req.query.populate === 'false') parameters.populate = false;
 
-    req.parameters = parameters;
-
-    next();
-  }
-
-  function validateFormParams(req, res, next) {
-    var form = req.body.form;
-
-    if (!form) return res.status(400).send('form is required');
-
-    // check for required fields
-    var fields = form.fields;
-    if (!fields) return res.status(400).send('form.fields is required');
-
-    var fieldNames = {};
+    var form = req.body.form || {};
+    var fields = form.fields || [];
     var userFields = form.userFields || [];
     fields.forEach(function(field) {
-      fieldNames[field.name] = field;
-
       // remove userFields chocies, these are set dynamically
       if (userFields.indexOf(field.name) !== -1) {
         field.choices = [];
       }
     });
 
-    var missing = [];
-    if (!fieldNames.timestamp) missing.push("'timestamp' missing field is required");
-    if (!fieldNames.geometry) missing.push("'geometry' missing field is required");
-    if (!fieldNames.type) missing.push("'type' missing field is required");
-    if (missing.length) return res.status(400).send(missing.join(","));
-
-    var required = [];
-    if (!fieldNames.timestamp.required) required.push("'timestamp' required property must be true");
-    if (!fieldNames.geometry.required) required.push("'geometry' required property must be true");
-    if (!fieldNames.type.required) required.push("'type' required property must be true");
-    if (required.length) return res.status(400).send(required.join(","));
+    req.parameters = parameters;
 
     next();
   }
@@ -181,16 +145,17 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     access.authorize('CREATE_EVENT'),
     parseEventQueryParams,
-    validateEventParams,
     function(req, res, next) {
+      var event = req.body;
+
       if (!req.is('multipart/form-data')) return next();
 
-      if (req.newEvent.teamIds) {
-        req.newEvent.teamIds = req.newEvent.teamIds.split(",");
+      if (event.teamIds) {
+        event.teamIds = event.teamIds.split(",");
       }
 
-      if (req.newEvent.layerIds) {
-        req.newEvent.layerIds = req.newEvent.layerIds.split(",");
+      if (event.layerIds) {
+        event.layerIds = event.layerIds.split(",");
       }
 
       function validateForm(callback) {
@@ -200,8 +165,8 @@ module.exports = function(app, security) {
       }
 
       function createEvent(form, callback) {
-        req.newEvent.form = form;
-        Event.create(req.newEvent, function(err, event) {
+        event.form = form;
+        Event.create(event, function(err, event) {
           callback(err, event, form);
         });
       }
@@ -225,7 +190,6 @@ module.exports = function(app, security) {
         populateUserFields
       ], function (err, event) {
         if (err) {
-          console.log('uh oh err', err);
           return next(err);
         }
 
@@ -239,15 +203,15 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     access.authorize('CREATE_EVENT'),
     parseEventQueryParams,
-    validateEventParams,
-    validateFormParams,
     function(req, res, next) {
-      Event.create(req.newEvent, function(err, event) {
+      Event.create(req.body, function(err, event) {
         if (err) return next(err);
 
         //copy default icon into new event directory
         new api.Icon(event._id).setDefaultIcon(function(err) {
-          if (err) return next(err);
+          if (err) {
+            return next(err);
+          }
 
           res.status(201).json(event);
         });
@@ -260,10 +224,8 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     access.authorize('UPDATE_EVENT'),
     parseEventQueryParams,
-    validateEventParams,
-    validateFormParams,
     function(req, res, next) {
-      Event.update(req.event._id, req.newEvent, {populate: req.parameters.populate}, function(err, event) {
+      Event.update(req.event._id, req.body, {populate: req.parameters.populate}, function(err, event) {
         if (err) return next(err);
 
         new api.Form(event).populateUserFields(function(err) {

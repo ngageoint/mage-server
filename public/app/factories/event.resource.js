@@ -116,8 +116,12 @@ function Event($rootScope, $resource, $http, LocalStorageService) {
           error: function(response) {
             if (!_.isFunction(error)) return;
 
+            var contentType = response.getResponseHeader("content-type") || "";
+            if (contentType.indexOf('json') > -1) {
+              response.responseJSON = JSON.parse(response.responseText);
+            }
+
             $rootScope.$apply(function() {
-              response.statusText = response.responseText;
               error(response);
             });
           },

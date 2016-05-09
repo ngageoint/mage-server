@@ -55,6 +55,15 @@ app.use(function(err, req, res, next) { // eslint-disable-line no-unused-vars
 
   var status = err.status || 500;
   var msg = status === 500 ? 'Internal server error, please contact MAGE administrator.' : err.message;
+  if (err.name === 'ValidationError') {
+    msg = {
+      message: err.message,
+      errors: err.errors
+    };
+
+    return res.status(400).json(msg);
+  }
+
   res.status(status).send(msg);
 });
 

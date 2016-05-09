@@ -17,7 +17,16 @@ function AdminEventEditController($scope, $location, $routeParams, Event) {
     event.$save(function() {
       $location.path('/admin/events/' + event.id);
     }, function(response) {
-      $scope.error = response.responseText;
+      if (response.responseJSON) {
+        $scope.error = {
+          message: response.responseJSON.message,
+          errors: response.responseJSON.errors
+        };
+      } else {
+        $scope.error = {
+          message: response.responseText
+        };
+      }
     });
   };
 

@@ -1,5 +1,6 @@
 var request = require('supertest')
   , sinon = require('sinon')
+  , should = require('chai').should()
   , mongoose = require('mongoose')
   , path = require('path')
   , mockfs = require('mock-fs')
@@ -34,14 +35,6 @@ describe("event create tests", function() {
   });
 
   var userId = mongoose.Types.ObjectId();
-  function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({token: "12345"})
-      .chain('populate', 'userId')
-      .chain('exec')
-      .yields(null, MockToken(userId, [permission]));
-  }
 
   it("should create event", function(done) {
     sandbox.mock(TokenModel)
@@ -128,5 +121,59 @@ describe("event create tests", function() {
         mockfs.restore();
         done(err);
       });
+  });
+
+  it("should reject event with no name", function(done) {
+    sandbox.mock(TokenModel)
+      .expects('findOne').atLeast(1)
+      .withArgs({token: "12345"})
+      .chain('populate').atLeast(1)
+      .chain('exec').atLeast(1)
+      .yields(null, MockToken(userId, ['CREATE_EVENT']));
+
+    var eventId = 1;
+    sandbox.mock(CounterModel)
+      .expects('findOneAndUpdate')
+      .yields(null, { sequence: eventId });
+
+    var mockEvent = new EventModel({
+      _id: eventId
+    });
+    sandbox.mock(EventModel.collection)
+      .expects('insert')
+      .yields(null, mockEvent);
+
+    request(app)
+      .post('/api/events')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        form: {
+          fields: [{
+            name: 'timestamp',
+            required: true
+          },{
+            name: 'geometry',
+            required: true
+          },{
+            name: 'type',
+            required: true
+          }]
+        }
+      })
+      .expect(400)
+      .expect(function(res) {
+        var error = res.text;
+        should.exist(error);
+        error.should.be.a('string');
+        error = JSON.parse(error);
+        error.should.have.property('message').that.equals("Event validation failed");
+        var errors = error.errors;
+        should.exist(errors.name);
+        errors.name.should.have.property('path').that.equals('name');
+        errors.name.should.have.property('message').that.equals('Path `name` is required.');
+
+      })
+      .end(done);
   });
 });

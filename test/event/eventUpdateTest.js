@@ -1,4 +1,5 @@
 var request = require('supertest')
+  , should = require('chai').should()
   , sinon = require('sinon')
   , mongoose = require('mongoose')
   , MockToken = require('../mockToken')
@@ -34,6 +35,181 @@ describe("event update tests", function() {
       .chain('exec')
       .yields(null, MockToken(userId, [permission]));
   }
+
+  it("should reject event with no fields", function(done) {
+    mockTokenWithPermission('UPDATE_EVENT');
+
+    var eventId = 1;
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, new EventModel({
+        _id: eventId,
+        name: 'testEvent'
+      }));
+
+    var teamId = mongoose.Types.ObjectId();
+    var mockTeams = [{
+      id: teamId,
+      name: 'Mock Team'
+    }];
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .withArgs({ _id: { $in: [teamId.toString()] }})
+      .chain('populate')
+      .chain('exec')
+      .yields(null, mockTeams);
+
+    sandbox.mock(EventModel.collection)
+      .expects('findAndModify')
+      .yields(null);
+
+    request(app)
+      .put('/api/events/1')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        form: {
+          fields: []
+        }
+      })
+      .expect(400)
+      .expect(function(res) {
+        var error = res.text;
+        should.exist(error);
+        error.should.be.a('string');
+        error = JSON.parse(error);
+        error.should.have.property('message').that.equals("Validation failed");
+        var errors = error.errors;
+        should.exist(errors['form.fields']);
+        errors['form.fields'].should.have.property('path').that.equals('form.fields');
+      })
+      .end(done);
+  });
+
+  it("should reject event with no type in form", function(done) {
+    mockTokenWithPermission('UPDATE_EVENT');
+
+    var eventId = 1;
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, new EventModel({
+        _id: eventId,
+        name: 'testEvent'
+      }));
+
+    var teamId = mongoose.Types.ObjectId();
+    var mockTeams = [{
+      id: teamId,
+      name: 'Mock Team'
+    }];
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .withArgs({ _id: { $in: [teamId.toString()] }})
+      .chain('populate')
+      .chain('exec')
+      .yields(null, mockTeams);
+
+    sandbox.mock(EventModel.collection)
+      .expects('findAndModify')
+      .yields(null);
+
+    request(app)
+      .put('/api/events/1')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        form: {
+          fields: [{
+            name: 'timestamp',
+            required: true
+          },{
+            name: 'geometry',
+            required: true
+          }]
+        }
+      })
+      .expect(400)
+      .expect(function(res) {
+        var error = res.text;
+        should.exist(error);
+        error.should.be.a('string');
+        error = JSON.parse(error);
+        error.should.have.property('message').that.equals("Validation failed");
+        var errors = error.errors;
+        should.exist(errors['form.fields']);
+        errors['form.fields'].should.have.property('path').that.equals('form.fields');
+        errors['form.fields'].should.have.property('message').that.equals('fields array must contain one type field');
+      })
+      .end(done);
+  });
+
+  it("should reject event with invalid field in form", function(done) {
+    mockTokenWithPermission('UPDATE_EVENT');
+
+    var eventId = 1;
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, new EventModel({
+        _id: eventId,
+        name: 'testEvent'
+      }));
+
+    var teamId = mongoose.Types.ObjectId();
+    var mockTeams = [{
+      id: teamId,
+      name: 'Mock Team'
+    }];
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .withArgs({ _id: { $in: [teamId.toString()] }})
+      .chain('populate')
+      .chain('exec')
+      .yields(null, mockTeams);
+
+    sandbox.mock(EventModel.collection)
+      .expects('findAndModify')
+      .yields(null);
+
+    request(app)
+      .put('/api/events/1')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        form: {
+          fields: [{
+            name: 'timestamp',
+            required: true,
+            type: 'date'
+          },{
+            name: 'geometry',
+            required: true,
+            type: 'geometry'
+          },{
+            name: 'type',
+            required: true,
+            type: 'dropdown'
+          },{
+            name: 'invalid',
+            type: 'invalid'
+          }]
+        }
+      })
+      .expect(400)
+      .expect(function(res) {
+        var error = res.text;
+        should.exist(error);
+        error.should.be.a('string');
+        error = JSON.parse(error);
+        error.should.have.property('message').that.equals("Validation failed");
+        var errors = error.errors;
+        should.exist(errors['form.fields.3.type']);
+        errors['form.fields.3.type'].should.have.property('message').that.equals("`invalid` is not a valid enum value for path `type`.");
+      })
+      .end(done);
+  });
 
   it("should add team to event", function(done) {
     mockTokenWithPermission('UPDATE_EVENT');

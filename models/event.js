@@ -22,7 +22,7 @@ var FieldSchema = new Schema({
   id: { type: Number, required: true },
   archived: { type: Boolean, required: false},
   title: { type: String, required: true },
-  type: { type: String, required: true },
+  type: { type: String, required: true, enum: ['textfield', 'numberfield', 'email','password','radio','dropdown','userDropdown','date','geometry','textarea','checkbox','hidden'] },
   value: { type: Schema.Types.Mixed, required: false },
   name: { type: String, required: true },
   required: { type: Boolean, required: true },
@@ -32,6 +32,23 @@ var FieldSchema = new Schema({
 },{
   _id: false
 });
+
+
+function hasFieldOnce(name) {
+  return function(fields) {
+    return fields.filter(function(field) {
+      return field.name === name;
+    }).length === 1;
+  };
+}
+
+function fieldIsRequired(name) {
+  return function(fields) {
+    return fields.filter(function(field) {
+      return field.name === name && field.required;
+    }).length;
+  };
+}
 
 // Creates the Schema for the Attachments object
 var EventSchema = new Schema({
@@ -50,6 +67,13 @@ var EventSchema = new Schema({
 },{
   versionKey: false
 });
+
+EventSchema.path('form.fields').validate(hasFieldOnce('timestamp'), 'fields array must contain one timestamp field');
+EventSchema.path('form.fields').validate(fieldIsRequired('timestamp'), 'timestamp must have a required property set to true.');
+EventSchema.path('form.fields').validate(hasFieldOnce('geometry'), 'fields array must contain one geometry field');
+EventSchema.path('form.fields').validate(fieldIsRequired('geometry'), 'geometry must have a required property set to true.');
+EventSchema.path('form.fields').validate(hasFieldOnce('type'), 'fields array must contain one type field');
+EventSchema.path('form.fields').validate(fieldIsRequired('type'), 'type must have a required property set to true.');
 
 function validateTeamIds(eventId, teamIds, next) {
   if (!teamIds || !teamIds.length) return next();
@@ -114,48 +138,6 @@ EventSchema.post('remove', function(event) {
     }
   });
 });
-
-function validateFields(next) {
-  var err;
-  console.log('in field validation method w/ args', arguments);
-  console.log('in field validation method w/ this', this);
-
-  var fields = this.form.fields;
-  if (!fields) {
-    err = new Error('form.fields is required');
-    err.status = 400;
-    return next(err);
-  }
-
-  var fieldsByName = {};
-  fields.forEach(function(field) {
-    fieldsByName[field.name] = field;
-  });
-
-  var errors = [];
-  if (!fieldsByName.timestamp) errors.push("'timestamp' missing field is required");
-  if (!fieldsByName.geometry) errors.push("'geometry' missing field is required");
-  if (!fieldsByName.type) errors.push("'type' missing field is required");
-
-  if (fieldsByName.timestamp && !fieldsByName.timestamp.required) errors.push("'timestamp' required property must be true");
-  if (fieldsByName.geometry && !fieldsByName.geometry.required) errors.push("'geometry' required property must be true");
-  if (fieldsByName.geometry && !fieldsByName.type.required) errors.push("'type' required property must be true");
-
-  if (errors.length > 0) {
-    err = new Error({
-      message: 'Invalid form',
-      errors: errors
-    });
-    err.status = err;
-
-    return next(err);
-  }
-
-  next();
-}
-
-EventSchema.pre('save', validateFields);
-EventSchema.pre('update', validateFields);
 
 function transform(event, ret) {
   if ('function' !== typeof event.ownerDocument) {
@@ -305,7 +287,7 @@ exports.getById = function(id, options, callback) {
         });
       });
     }
-
+    
     async.series(filters, function(err) {
       if (err) return callback(err);
 
@@ -362,7 +344,6 @@ exports.create = function(event, options, callback) {
     function(id, done) {
       event._id = id;
       event.collectionName = 'observations' + id;
-
       Event.create(event, function(err, newEvent) {
         if (err) return done(err);
 
