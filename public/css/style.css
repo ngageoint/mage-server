@@ -284,7 +284,7 @@ a {
     order: 2;
     flex: 2;
     width: 100%;
-    min-width: none;
+    min-width: 0;
     max-width: none;
     transition: flex-grow 0.3s linear;
   }
