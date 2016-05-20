@@ -68,7 +68,7 @@
                         </div>
                       </div>
                     </div>
-                    <div class="row" ng-hide="showAddOptions(field) || field.type === 'numberfield'">
+                    <div class="row" ng-hide="showAddOptions(field) || field.type === 'numberfield' || field.type === 'checkbox'">
                       <div class="col-md-4">
                         <div class="form-group">
                           <label>Default Value</label>
@@ -99,8 +99,9 @@
                       </div>
                     </div>
                     <div class="checkbox" ng-show="field.type=='checkbox'">
-                      <label>Default Value</label>
-                      <input ng-model="field.value" id="{{field.id}}" type="checkbox" ng-checked="field.value == true"/>
+                      <label>
+                        <input ng-model="field.value" id="{{field.id}}" type="checkbox" ng-checked="field.value == true"/> Default Value
+                      </label>
                     </div>
                     <div class="row" ng-show="field.type === 'numberfield'">
                       <div class="col-md-4">
