@@ -355,7 +355,7 @@ exports.updateAttachment = function(event, observationId, attachmentId, file, ca
   set['attachments.$.lastModified'] = new Date();
 
   var update = { '$set': set };
-  observationModel(event).update(condition, update, function(err, observation) {
+  observationModel(event).findOneAndUpdate(condition, update, function(err, observation) {
     var attachments = observation.attachments.filter(function(attachment) {
       return attachment._id.toString() === attachmentId;
     });

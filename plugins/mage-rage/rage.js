@@ -3,7 +3,7 @@ var async = require('async')
   , request = require('request')
   , mongoose = require('mongoose')
   , moment = require('moment')
-  , config = require('./config')
+  , config = require('./config.json')
   , data = require('./data')
   , attachments = require('./attachments');
 

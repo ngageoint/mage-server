@@ -1,6 +1,6 @@
 var config = require('./config.js')
   , log = require('winston')
-  , serverConfig = require('../../config.js')
+  , environment = require('environment')
   , async = require('async')
   , request = require('request')
   , moment = require('moment')
@@ -35,7 +35,7 @@ function sync(token, callback) {
   });
 }
 
-var attachmentBase = serverConfig.server.attachment.baseDirectory;
+var attachmentBase = environment.attachmentBaseDirectory;
 
 var baseUrl = config.url;
 

@@ -1,6 +1,6 @@
 var log = require('../../logger')
-  , config = require('./config.js')
-  , serverConfig = require('../../config.js')
+  , config = require('./config.json')
+  , environment = require('environment')
   , async = require('async')
   , request = require('request')
   , path = require('path')
@@ -24,7 +24,7 @@ mongoose.set('debug', function(collection, method, query, doc, options) {
   mongooseLogger.log('mongoose', "%s.%s(%j, %j, %j)", collection, method, query, doc, options);
 });
 
-var attachmentBase = serverConfig.server.attachment.baseDirectory;
+var attachmentBase = environment.attachmentBaseDirectory;
 var timeout = config.esri.attachments.interval * 1000;
 var url = [url.host, url.site, url.restServices, url.folder, url.serviceName, url.serviceType, url.layerId].join("/");
 

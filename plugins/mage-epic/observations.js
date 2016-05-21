@@ -1,4 +1,4 @@
-var config = require('./config.js')
+var config = require('./config.json')
   , async = require('async')
   , request = require('request')
   , log = require('../../logger')

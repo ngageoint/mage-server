@@ -7,5 +7,5 @@ fs.readdirSync(__dirname).map(function(file) {
 }).filter(function(file) {
   return fs.statSync(file).isDirectory();
 }).forEach(function(file) {
-  require('./' + path.extname(file));
+  require('./' + path.basename(file));
 });

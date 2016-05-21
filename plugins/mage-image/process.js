@@ -1,6 +1,6 @@
-var config = require('./config.js')
+var config = require('./config.json')
 	, log = require('../../logger')
-	, serverConfig = require('../../config.js')
+  , environment = require('environment')
 	, async = require('async')
 	, path = require('path')
 	, fs = require('fs-extra')
@@ -9,7 +9,7 @@ var config = require('./config.js')
 	, Observation = require('../../models/observation')
 	, gm = require('gm');
 
-var attachmentBase = serverConfig.server.attachment.baseDirectory;
+var attachmentBase = environment.attachmentBaseDirectory;
 var thumbSizes = config.image.thumbSizes;
 
 var timeout = config.image.interval * 1000;

@@ -1,4 +1,4 @@
-var config = require('./config.js')
+var config = require('./config.json')
   , log = require('winston')
   , querystring = require('querystring')
   , os = require('os')

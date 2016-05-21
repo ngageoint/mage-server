@@ -1,6 +1,6 @@
 var child = require('child_process')
   , log = require('winston')
-  , config = require('./config.js');
+  , config = require('./config.json');
 
 if (!config.enable) return;
 
