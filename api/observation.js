@@ -62,7 +62,10 @@ Observation.prototype.validate = function(observation) {
     throw new Error("cannot create observation 'properties.type' param not specified");
   }
 
-  this._event.form.fields.forEach(function(fieldDefinition) {
+  // Don't validate archived fields
+  this._event.form.fields.filter(function(fieldDefinition) {
+    return !fieldDefinition.archived;
+  }).forEach(function(fieldDefinition) {
     var field = fieldFactory.createField(fieldDefinition, observation);
     field.validate();
   });
