@@ -111,7 +111,7 @@ describe("attachment update tests", function() {
       .yields(null, mockObservation);
 
     sandbox.mock(ObservationModel)
-      .expects('update')
+      .expects('findOneAndUpdate')
       .yields(null, mockObservation);
 
     request(app)

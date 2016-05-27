@@ -3,7 +3,7 @@ var ObservationModel = require('../models/observation')
   , path = require('path')
   , fs = require('fs-extra')
   , environment = require('environment');
-  
+
 var attachmentBase = environment.attachmentBaseDirectory;
 
 var createAttachmentPath = function(event) {
