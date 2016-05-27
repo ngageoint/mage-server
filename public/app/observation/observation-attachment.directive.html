@@ -6,6 +6,15 @@
     <a ng-switch-when="image/png"  ng-href="{{attachment.url + '?access_token=' + token}}" target="_blank"><img class="center-crop attachment-media" ng-class="{'image-delete': attachment.markedForDelete}" ng-src="{{attachment.url + '?access_token=' + token + '&size=150' + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
     <a ng-switch-when="image/gif"  ng-href="{{attachment.url + '?access_token=' + token}}" target="_blank"><img class="center-crop attachment-media" ng-class="{'image-delete': attachment.markedForDelete}" ng-src="{{attachment.url + '?access_token=' + token + '&size=150' + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
 
+    <div ng-switch-when="audio/mp4"  ng-class="{'image-delete': attachment.markedForDelete}">
+      <div class="attachment-media attachment-icon" ng-class="{'attachment-media-sm': !fullscreen}">
+        <a target="_blank" ng-href="{{attachment.url + '?access_token=' + token}}">
+            <i class="fa fa-play attachment-icon"></i>
+            <div class="top-gap-s">{{attachment.name | filename:6}}</div>
+        </a>
+      </div>
+    </div>
+
     <div ng-switch-when="video/mp4">
       <div class="attachment-media" ng-class="{'attachment-media-sm': !fullscreen}">
         <videogular vg-player-ready="onPlayerReady($API)" vg-error="onVideoError">
