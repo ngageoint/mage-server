@@ -251,7 +251,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
       var field = service.getFormField(form, key);
       if (field) {
         if (field.type === 'date') {
-          field.value = moment(observation.properties.timestamp).toDate();
+          field.value = moment(value).toDate();
         } else {
           field.value = value;
         }

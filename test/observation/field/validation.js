@@ -353,6 +353,74 @@ it("should throw validation error for invalid dropdown", function() {
   expect(field.validate.bind(field)).to.throw(Error);
 });
 
+it("should pass validation for multiselectdropdown", function() {
+  var definition = {
+    name: 'test',
+    title: 'test',
+    type: 'multiselectdropdown',
+    choices: [{
+      title: 'red'
+    },{
+      title: 'blue'
+    },{
+      title: 'green'
+    }]
+  };
+
+  var observation =  {
+    properties: {
+      'test': ['red', 'blue']
+    }
+  };
+
+  var field = factory.createField(definition, observation);
+  expect(field.validate.bind(field)).to.not.throw(Error);
+});
+
+it("should throw validation error for invalid multiselectdropdown type", function() {
+  var definition = {
+    name: 'test',
+    title: 'test',
+    type: 'multiselectdropdown',
+    choices: [{
+      title: 'red'
+    },{
+      title: 'blue'
+    }]
+  };
+
+  var observation =  {
+    properties: {
+      'test': 'green'
+    }
+  };
+
+  var field = factory.createField(definition, observation);
+  expect(field.validate.bind(field)).to.throw(Error);
+});
+
+it("should throw validation error for invalid multiselectdropdown choice", function() {
+  var definition = {
+    name: 'test',
+    title: 'test',
+    type: 'multiselectdropdown',
+    choices: [{
+      title: 'red'
+    },{
+      title: 'blue'
+    }]
+  };
+
+  var observation =  {
+    properties: {
+      'test': ['red', 'green']
+    }
+  };
+
+  var field = factory.createField(definition, observation);
+  expect(field.validate.bind(field)).to.throw(Error);
+});
+
 it("should pass validation for checkbox", function() {
   var definition = {
     name: 'test',

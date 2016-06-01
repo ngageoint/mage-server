@@ -27,6 +27,7 @@ function PropertyViewController($scope) {
     date: 'app/observation/property/date.directive.html',
     geometry: 'app/observation/property/geometry.directive.html',
     dropdown: 'app/observation/property/dropdown.directive.html',
+    multiselectdropdown: 'app/observation/property/multiselectdropdown.directive.html',
     hidden: 'app/observation/property/hidden.directive.html',
     password: 'app/observation/property/password.directive.html',
     radio: 'app/observation/property/radio.directive.html'

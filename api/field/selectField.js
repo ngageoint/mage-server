@@ -9,7 +9,9 @@ util.inherits(ComboField, Field);
 ComboField.prototype.validate = function() {
   ComboField.super_.prototype.validate.call(this);
 
-  if (!this.value.trim()) return;
+  if (!this.value) return;
+
+  this.value.trim();
 
   var choices = this.definition.choices.filter(function(choice) {
     return choice.title === this.value;

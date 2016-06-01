@@ -5,6 +5,7 @@ var Field = require('./field')
   , TextField = require('./textField')
   , EmailField  = require('./emailField')
   , SelectField = require('./selectField')
+  , MultiSelectField = require('./multiSelectField')
   , CheckboxField = require('./checkboxField');
 
 function FieldFactory() {
@@ -18,6 +19,7 @@ function FieldFactory() {
     emailfield: EmailField,
     radiofield: SelectField,
     dropdown: SelectField,
+    multiselectdropdown: MultiSelectField,
     checkbox: CheckboxField
   };
 

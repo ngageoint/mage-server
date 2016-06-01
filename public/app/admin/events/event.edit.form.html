@@ -47,21 +47,16 @@
                 <div class="accordion-edit">
                   <form name="form.fields" novalidate>
                     <div class="row">
-                      <div class="col-md-4">
+                      <div class="col-md-6">
                         <div class="form-group">
                           <label>Type</label>
                           <input type="text" value="{{getTypeValue(field)}}" class="form-control" disabled>
-                        </div>
-                      </div>
-                      <div class="col-md-8" ng-if="isMemberField(field)">
-                        <div class="form-group">
-                          <label></label>
-                          <p class="help-block">The 'User Dropdown' type is a dynamic list of all users that are part of the event.  As such you cannot add/remove options from this dropdown, users will be automatically populated.</p>
+                          <p class="help-block" ng-if="isMemberField(field)">The 'User Select' type is a dynamic list of all users that are part of the event.  As such you cannot add/remove choices, users will be automatically populated.</p>
                         </div>
                       </div>
                     </div>
                     <div class="row">
-                      <div class="col-md-4">
+                      <div class="col-md-6">
                         <div class="form-group">
                           <label>Title</label>
                           <input type="text" ng-model="field.title" value="{{field.title}}" class="form-control">
@@ -69,7 +64,7 @@
                       </div>
                     </div>
                     <div class="row" ng-hide="showAddOptions(field) || field.type === 'numberfield' || field.type === 'checkbox'">
-                      <div class="col-md-4">
+                      <div class="col-md-6">
                         <div class="form-group">
                           <label>Default Value</label>
                           <input type="text" ng-model="field.value" value="{{field.value}}" class="form-control">
@@ -77,7 +72,7 @@
                       </div>
                     </div>
                     <div class="row" ng-show="showAddOptions(field) && !isMemberField(field)">
-                      <div class="col-md-4">
+                      <div class="col-md-6" ng-if="field.type === 'dropdown'">
                         <div class="form-group">
                           <label>Default Value</label>
                           <select ng-model="field.value" ng-options="choice.title as choice.title for choice in field.choices" class="form-control">
@@ -85,9 +80,22 @@
                           </select>
                         </div>
                       </div>
+
+                      <div class="col-md-6" ng-if="field.type === 'multiselectdropdown'">
+                        <div class="form-group">
+                          <label>Default Value</label>
+                          <ui-select multiple ng-model="field.value" theme="bootstrap">
+                            <ui-select-match>{{$item.title}}</ui-select-match>
+                            <ui-select-choices repeat="choice.title as choice in field.choices">
+                              <div ng-bind-html="choice.title"></div>
+                            </ui-select-choices>
+                          </ui-select>
+                        </div>
+                      </div>
+
                     </div>
                     <div class="row" ng-if="field.type === 'numberfield'">
-                      <div class="col-md-4">
+                      <div class="col-md-6">
                         <div class="form-group" ng-class="{'has-error': form.fields.{{field.name}}.$invalid}">
                           <label>Default Value</label>
                           <input type="number" ng-model="field.value" name="{{field.name}}" value="{{field.value}}" min="{{field.min}}" max="{{field.max}}" class="form-control">
@@ -104,13 +112,13 @@
                       </label>
                     </div>
                     <div class="row" ng-show="field.type === 'numberfield'">
-                      <div class="col-md-4">
+                      <div class="col-md-6">
                         <div class="form-group">
                           <label>Min</label>
                           <input type="number" ng-model="field.min" value="{{field.min}}" class="form-control">
                         </div>
                       </div>
-                      <div class="col-md-4">
+                      <div class="col-md-6">
                         <div class="form-group">
                           <label>Max</label>
                           <input type="number" ng-model="field.max" value="{{field.max}}" class="form-control">
@@ -118,7 +126,7 @@
                       </div>
                     </div>
                     <div class="row">
-                      <div class="col-md-4">
+                      <div class="col-md-6">
                         <div class="form-group" ng-show="showAddOptions(field) && !isMemberField(field)">
                           <label>Field Options</label>
                           <div ng-repeat="option in field.choices | filter:{blank: '!true'}" class="row bottom-gap">
@@ -165,29 +173,36 @@
             <div class="admin-table admin-table-content">
               <form name="form.newField" novalidate>
                 <div class="row">
-                  <div class="col-md-4">
+                  <div class="col-md-6">
                     <div class="form-group">
                       <label>Type</label>
-                      <select ng-model="newField.type" ng-options="name as value for (name, value) in fieldTypes" class="form-control"></select>
-                    </div>
-                  </div>
-                  <div class="col-md-8" ng-if="isUserDropdown(newField)">
-                    <div class="form-group">
-                      <label></label>
-                      <p class="help-block">The 'User Dropdown' type is a dynamic list of all users that are part of the event.  As such you cannot add/remove options from this dropdown, users will be automatically populated.</p>
+                      <select ng-model="newField.type" ng-options="type.name as type.title for type in fieldTypes | filter: {hidden: '!'}" class="form-control"></select>
+                      <p class="help-block" ng-if="isUserDropdown(newField)">The 'User Select' type is a dynamic list of all users that are part of the event.  As such you cannot add/remove options from this list, users will be automatically populated.</p>
                     </div>
                   </div>
                 </div>
                 <div class="row">
-                  <div class="col-md-4">
+                  <div class="col-md-6">
                     <div class="form-group">
                       <label>Title</label>
                       <input type="text" ng-model="newField.title" value="{{newField.title}}" class="form-control">
                     </div>
                   </div>
                 </div>
+
+                <div class="row" ng-if="newField.type === 'dropdown' || isUserDropdown(newField)">
+                  <div class="col-md-6">
+                    <div class="checkbox">
+                      <label>
+                        <input ng-model="newField.multiselect" type="checkbox" ng-checked="newField.multiselect == true"/> Multiselect
+                      </label>
+                      <p class="help-block">Choose multiselect if you would like users to be able to select more than one choice.</p>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="row" ng-if="newField.type !== 'checkbox' && newField.type !== 'numberfield'">
-                  <div class="col-md-4">
+                  <div class="col-md-6">
                     <div class="form-group" ng-hide="hideAddOptions(newField)">
                       <label>Default Value</label>
                       <input type="text" ng-model="newField.value" value="{{newField.value}}" class="form-control">
@@ -195,7 +210,7 @@
                   </div>
                 </div>
                 <div class="row" ng-if="newField.type === 'numberfield'">
-                  <div class="col-md-4">
+                  <div class="col-md-6">
                     <div class="form-group" ng-class="{'has-error': form.newField.value.$invalid}">
                       <label>Default Value</label>
                       <input type="number" ng-model="newField.value" name="value" value="{{newField.value}}" min="{{newField.min}}" max="{{newField.max}}" class="form-control">
@@ -207,13 +222,13 @@
                   </div>
                 </div>
                 <div class="row" ng-show="newField.type === 'numberfield'">
-                  <div class="col-md-4">
+                  <div class="col-md-6">
                     <div class="form-group">
                       <label>Min</label>
                       <input type="number" ng-model="newField.min" value="{{newField.min}}" class="form-control">
                     </div>
                   </div>
-                  <div class="col-md-4">
+                  <div class="col-md-6">
                     <div class="form-group">
                       <label>Max</label>
                       <input type="number" ng-model="newField.max" value="{{newField.max}}" class="form-control">
@@ -225,18 +240,30 @@
                     <input ng-model="newField.value" type="checkbox" ng-checked="newField.value == true"/> Default Value
                   </label>
                 </div>
-                <div class="row">
-                  <div class="col-md-4">
-                    <div class="form-group" ng-show="showAddOptions(newField)">
+                <div class="row" ng-if="showAddOptions(newField)">
+                  <div class="col-md-6" ng-if="!newField.multiselect">
+                    <div class="form-group">
                       <label>Default Value</label>
                       <select ng-model="newField.value" ng-options="choice.title as choice.title for choice in newField.choices" class="form-control">
                         <option value="">No Default</option>
                       </select>
                     </div>
                   </div>
+
+                  <div class="col-md-6" ng-if="newField.multiselect">
+                    <div class="form-group">
+                      <label>Default Value</label>
+                      <ui-select multiple ng-model="newField.value" theme="bootstrap">
+                        <ui-select-match>{{$item.title}}</ui-select-match>
+                        <ui-select-choices repeat="choice.title as choice in newField.choices">
+                          <div ng-bind-html="choice.title"></div>
+                        </ui-select-choices>
+                      </ui-select>
+                    </div>
+                  </div>
                 </div>
                 <div class="row">
-                  <div class="col-md-4">
+                  <div class="col-md-6">
                     <div class="form-group" ng-show="showAddOptions(newField)">
                       <label>Field Options</label>
                       <div ng-repeat="option in newField.choices | filter:{blank: '!true'}" class="row bottom-gap">
@@ -246,10 +273,10 @@
                         </div>
                       </div>
                       <div class="row">
-                        <div class="col-md-10">
+                        <div class="col-md-9">
                           <input type="text" ng-model="newFieldNewOptionTitle" class="form-control">
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                           <button class="btn btn-primary" type="button" ng-click="addOption(newField, newFieldNewOptionTitle); newFieldNewOptionTitle = '';"><i class="fa fa-plus"></i> Add Option</button>
                         </div>
                       </div>
@@ -258,8 +285,9 @@
                 </div>
                 <div class="checkbox">
                   <label>
-                  <input type="checkbox" ng-model="newField.required"> Required
+                    <input type="checkbox" ng-model="newField.required"> Required
                   </label>
+                  <p class="help-block">Choose required if users must enter a value.</p>
                 </div>
 
                 <hr>

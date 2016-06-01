@@ -3,11 +3,12 @@ All notable changes to this project will be documented in this file.
 Adheres to [Semantic Versioning](http://semver.org/).
 
 ---
-## 4.2.2 (TBD)
+## 4.3.0 (TBD)
 
 * TBD
 
 ##### Features
+* Multi select support for dropdown and user dropdown fields.
 * Don't allow ordering of type, timestamp, geometry or variantField from the form editor.  This will eliminate confusion
   since we always put those fields at the top of our clients.
 * Update server configuration to allow for SSL communication between application and database.

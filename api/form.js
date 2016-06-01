@@ -71,7 +71,7 @@ Form.prototype.populateUserFields = function(callback) {
     userFields.forEach(function(userField) {
       userField.choices = choices;
 
-      if (!userField.required) {
+      if (!userField.required && userField.type === 'dropdown') {
         userField.choices.unshift("");
       }
     });

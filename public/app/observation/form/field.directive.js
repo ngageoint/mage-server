@@ -29,17 +29,20 @@ function FieldDirectiveController($scope) {
     date: 'app/observation/form/date.directive.html',
     geometry: 'app/observation/form/geometry.directive.html',
     dropdown: 'app/observation/form/dropdown.directive.html',
+    multiselectdropdown: 'app/observation/form/multiselectdropdown.directive.html',
     hidden: 'app/observation/form/hidden.directive.html',
     password: 'app/observation/form/password.directive.html',
-    radio: 'app/observation/form/radio.directive.html'
+    radio: 'app/observation/form/radio.directive.html' 
   };
 
   $scope.datePopup = {open: false};
   $scope.templatePath = types[$scope.field.type];
 
-  if ($scope.field.type === 'dropdown') {
-    $scope.valueSelected = {};
-  }
+  $scope.$watch('selected.value', function(value) {
+    if (!value) return;
+
+    $scope.field.value = [value];
+  });
 
   $scope.onLatLngChange = function(field) {
     if (field.name === 'geometry') {
@@ -62,8 +65,7 @@ function FieldDirectiveController($scope) {
     $scope.field.value = null;
   };
 
-  if ($scope.field.type === 'dropdown' && !$scope.field.required) {
-    $scope.field.value = "";
-  }
-
+  // if ($scope.field.type === 'dropdown' && !$scope.field.required) {
+    // $scope.field.value = "";
+  // }
 }
