@@ -3,9 +3,15 @@ All notable changes to this project will be documented in this file.
 Adheres to [Semantic Versioning](http://semver.org/).
 
 ---
-## 4.3.0 (TBD)
+## 4.4.0
 
 * TBD
+
+##### Features
+
+##### Bug Fixes
+
+## [4.3.0](https://github.com/ngageoint/mage-server/releases/tag/v4.3.0) (09-22-2016)
 
 ##### Features
 * Multi select support for dropdown and user dropdown fields.
