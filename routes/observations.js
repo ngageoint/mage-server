@@ -235,7 +235,9 @@ module.exports = function(app, security) {
     validateObservationUpdateAccess,
     function (req, res, next) {
 
-      var observation = {};
+      var observation = {
+        type: req.body.type
+      };
       if (req.body.geometry) observation.geometry = req.body.geometry;
       if (req.body.properties) {
         observation.properties = req.body.properties;
@@ -246,8 +248,6 @@ module.exports = function(app, security) {
         if (!observation.properties.timestamp) {
           return res.status(400).send("cannot update observation 'properties.timestamp' param not specified");
         }
-
-        observation.properties.timestamp = moment(observation.properties.timestamp).toDate();
       }
 
       var userId = req.user ? req.user._id : null;

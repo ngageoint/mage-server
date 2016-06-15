@@ -9,6 +9,8 @@ util.inherits(NumberField, Field);
 NumberField.prototype.validate = function() {
   NumberField.super_.prototype.validate.call(this);
 
+  if (!this.value) return;
+
   if (this.value != null && !isNumber(this.value)) {
     throw new Error("cannot create observation, '" + this.definition.title + "' property must be a number");
   }

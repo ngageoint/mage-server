@@ -10,6 +10,8 @@ util.inherits(GeometryField, Field);
 GeometryField.prototype.validate = function() {
   GeometryField.super_.prototype.validate.call(this);
 
+  if (!this.value) return;
+
   if (!geoJsonValidator.isPoint(this.value)) {
     throw new Error("cannot create observation, '" + this.definition.title + "' property must be a valid GeoJson point");
   }

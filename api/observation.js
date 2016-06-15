@@ -83,6 +83,13 @@ Observation.prototype.create = function(observation, callback) {
 };
 
 Observation.prototype.update = function(observationId, observation, callback) {
+  try {
+    this.validate(observation);
+  } catch (err) {
+    err.status = 400;
+    return callback(err);
+  }
+
   ObservationModel.updateObservation(this._event, observationId, observation, callback);
 };
 

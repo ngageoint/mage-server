@@ -9,6 +9,8 @@ util.inherits(TextField, Field);
 TextField.prototype.validate = function() {
   TextField.super_.prototype.validate.call(this);
 
+  if (!this.value) return;
+
   if (this.value != null && !isString(this.value)) {
     throw new Error("cannot create observation, '" + this.definition.title + "' property must be a string");
   }
