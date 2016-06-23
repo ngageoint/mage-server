@@ -1,0 +1,8 @@
+{
+  "enable": true,
+  "context": "ogc",
+  "geoserver": {
+    "url": "http://localhost:8080",
+    "namespace": "cite"
+  }
+}
