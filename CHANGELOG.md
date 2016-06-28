@@ -6,9 +6,11 @@ Adheres to [Semantic Versioning](http://semver.org/).
 ## 4.2.2 (TBD)
 
 * TBD
+
 ##### Features
 * Don't allow ordering of type, timestamp, geometry or variantField from the form editor.  This will eliminate confusion
   since we always put those fields at the top of our clients.
+* Update server configuration to allow for SSL communication between application and database.
 
 ##### Bug Fixes
 * Added form import error handling on web client.

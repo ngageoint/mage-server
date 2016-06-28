@@ -199,9 +199,16 @@ Configuration includes:
     * host - host in which mongodb is running
     * port - port in which mongodb is running
     * db - mongodb database name in which to store MAGE data
+    * ssl - flag used to specify whether ssl is on/off
     * username - username to use to log into magedb
     * password - password to use to log into magedb
     * poolSize - mongodb connection pool size for this plugin
+    * server
+        * ssl - ssl on/off
+        * sslValidate - validate ssl connection. turn off for self signed certificates
+        * sslCA - ssl certificate authority file
+        * sslKey = ssl key file
+        * sslCert = ssl certificate
 * userBaseDirectory - root directory in which to store user avatar media
 * iconBaseDirectory - root directory in which to store user map icon media
 * attachmentBaseDirectory - root directory in which to store attachment media, i.e. images, videos and voice
