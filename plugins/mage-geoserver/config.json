@@ -4,5 +4,6 @@
   "geoserver": {
     "url": "http://localhost:8080",
     "namespace": "cite"
-  }
+  },
+  "token": "changeit"
 }

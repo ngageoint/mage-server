@@ -2,14 +2,17 @@ var xmlbuilder = require('xmlbuilder')
   , async = require('async')
   , util = require('util')
   , moment = require('moment')
-  , Event = require('../../models/event')
-  , namespace = require('./config').geoserver.namespace;
+  , Event = require('../../../models/event')
+  , config = require('../config')
+  , token = config.token
+  , namespace = config.geoserver.namespace;
 
 function addNamedObservationLayer(sld, baseUrl, event) {
   var href = util.format('%s/ogc/icons/observation/%s/${strEncode("properties.type")}', baseUrl, event._id);
   if (event.form.variantField) {
-    href += util.format('/${strEncode("properties.%s")}/${archived}', event.form.variantField);
+    href += util.format('/${strEncode("properties.%s")}', event.form.variantField);
   }
+  href += util.format('.svg?access_token=%s', token);
 
   sld.ele({
     NamedLayer: {
@@ -30,11 +33,11 @@ function addNamedObservationLayer(sld, baseUrl, event) {
                     '@xlink:href': href
                   },
                   Format: {
-                    '#text': 'image/png'
+                    '#text': 'image/svg+xml'
                   }
                 },
                 Size: {
-                  '#text': '45'
+                  '#text': '84'
                 }
               }
             }
@@ -46,7 +49,7 @@ function addNamedObservationLayer(sld, baseUrl, event) {
 }
 
 function addNamedLocationLayer(sld, baseUrl, event) {
-  var iconHref = util.format('%s/ogc/icons/users/${userId}.svg', baseUrl);
+  var iconHref = util.format('%s/ogc/icons/users/${userId}.svg?access_token', baseUrl, token);
 
   sld.ele({
     NamedLayer: {
@@ -60,27 +63,29 @@ function addNamedLocationLayer(sld, baseUrl, event) {
         FeatureTypeStyle: {
           Rule: [{
             Name: {
-              '#text': 'low'
+              '#text': 'blueCircle'
             },
             Title: {
-              '#text': '> 10 minutes'
+              '#text': 'less than 10 minutes'
             },
-            PointSymbolizer: [{
-              Graphic: {
-                ExternalGraphic: {
-                  OnlineResource: {
-                    '@xlink:type': 'simple',
-                    '@xlink:href': iconHref
-                  },
-                  Format: {
-                    '#text': 'image/svg+xml'
+            'ogc:Filter': {
+              'ogc:PropertyIsBetween': {
+                'ogc:PropertyName': {
+                  '#text': 'properties.timestamp'
+                },
+                'ogc:LowerBoundary': {
+                  'ogc:Literal': {
+                    '#text': moment().utc().subtract(5, 'minutes').toISOString()
                   }
                 },
-                Size: {
-                  '#text': 84
+                'ogc:UpperBoundary': {
+                  'ogc:Literal': {
+                    '#text': moment().utc().add(1, 'days').toISOString()
+                  }
                 }
               }
-            },{
+            },
+            PointSymbolizer: {
               Graphic: {
                 Mark: {
                   WellKnownName: {
@@ -97,40 +102,32 @@ function addNamedLocationLayer(sld, baseUrl, event) {
                   '#text': 8
                 }
               }
-            }]
+            }
           },{
             Name: {
-              '#text': 'medium'
+              '#text': 'yellowCircle'
             },
             Title: {
-              '#text': '> 10 minutes and <= 20 minutes'
+              '#text': 'greater than 10 minutes and less than 30 minutes'
             },
             'ogc:Filter': {
-              'ogc:PropertyIsLessThan': {
+              'ogc:PropertyIsBetween': {
                 'ogc:PropertyName': {
                   '#text': 'properties.timestamp'
                 },
-                'ogc:Literal': {
-                  '#text': moment().subtract(20, 'minutes').toISOString()
+                'ogc:LowerBoundary': {
+                  'ogc:Literal': {
+                    '#text': moment().subtract(30, 'minutes').toISOString()
+                  }
+                },
+                'ogc:UpperBoundary': {
+                  'ogc:Literal': {
+                    '#text': moment().subtract(5, 'minutes').toISOString()
+                  }
                 }
               }
             },
-            PointSymbolizer: [{
-              Graphic: {
-                ExternalGraphic: {
-                  OnlineResource: {
-                    '@xlink:type': 'simple',
-                    '@xlink:href': iconHref
-                  },
-                  Format: {
-                    '#text': 'image/svg+xml'
-                  }
-                },
-                Size: {
-                  '#text': 84
-                }
-              }
-            },{
+            PointSymbolizer: {
               Graphic: {
                 Mark: {
                   WellKnownName: {
@@ -147,10 +144,10 @@ function addNamedLocationLayer(sld, baseUrl, event) {
                   '#text': 8
                 }
               }
-            }]
+            }
           },{
             Name: {
-              '#text': 'high'
+              '#text': 'redCircle'
             },
             Title: {
               '#text': 'default'
@@ -165,22 +162,7 @@ function addNamedLocationLayer(sld, baseUrl, event) {
                 }
               }
             },
-            PointSymbolizer: [{
-              Graphic: {
-                ExternalGraphic: {
-                  OnlineResource: {
-                    '@xlink:type': 'simple',
-                    '@xlink:href': iconHref
-                  },
-                  Format: {
-                    '#text': 'image/svg+xml'
-                  }
-                },
-                Size: {
-                  '#text': 84
-                }
-              }
-            },{
+            PointSymbolizer: {
               Graphic: {
                 Mark: {
                   WellKnownName: {
@@ -197,7 +179,30 @@ function addNamedLocationLayer(sld, baseUrl, event) {
                   '#text': 8
                 }
               }
-            }]
+            }
+          },{
+            Name: {
+              '#text': 'icon'
+            },
+            Title: {
+              '#text': 'User Map Icon'
+            },
+            PointSymbolizer: {
+              Graphic: {
+                ExternalGraphic: {
+                  OnlineResource: {
+                    '@xlink:type': 'simple',
+                    '@xlink:href': iconHref
+                  },
+                  Format: {
+                    '#text': 'image/svg+xml'
+                  }
+                },
+                Size: {
+                  '#text': 84
+                }
+              }
+            }
           }]
         }
       }
