@@ -7,7 +7,7 @@ var express = require('express')
 
 require('./authentication')(passport);
 
-var urlFilter = new RegExp('^/' + config.token + '/wms?');
+var urlFilter = new RegExp('^/' + config.token + '/' + config.geoserver.namespace);
 var geoserverProxy = proxy(config.geoserver.url, {
   filter: function(req) {
     return urlFilter.test(req.url);

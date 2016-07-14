@@ -49,7 +49,7 @@ function addNamedObservationLayer(sld, baseUrl, event) {
 }
 
 function addNamedLocationLayer(sld, baseUrl, event) {
-  var iconHref = util.format('%s/ogc/icons/users/${userId}.svg?access_token', baseUrl, token);
+  var iconHref = util.format('%s/ogc/icons/users/${userId}.svg?access_token=%s', baseUrl, token);
 
   sld.ele({
     NamedLayer: {
@@ -222,22 +222,30 @@ function create(baseUrl, layers, callback) {
     }
   });
 
+  if (!layers) {
+    return callback(null, sld.end());
+  }
+
   async.each(layers, function(layer, done) {
-    var components = layer.split(':');
+    // var components = layer.split(':');
 
-    if (components.length !== 2) {
-      return callback();
-    }
+    // if (components.length !== 2) {
+    //   return callback();
+    // }
 
-    if (components[1].indexOf('observations') !== -1) {
-      Event.getById(components[1].split('observations')[1], function(err, event) {
+    console.log('get sld for', layer);
+
+    if (layer.indexOf('observations') !== -1) {
+      console.log('get sld for observations');
+      Event.getById(layer.split('observations')[1], function(err, event) {
         if (err || !event) return done(err);
 
         addNamedObservationLayer(sld, baseUrl, event);
         done();
       });
-    } else if (components[1].indexOf('locations') !== -1) {
-      addNamedLocationLayer(sld, baseUrl, {_id: components[1].split('locations')[1]});
+    } else if (layer.indexOf('locations') !== -1) {
+      console.log('get sld for locations');
+      addNamedLocationLayer(sld, baseUrl, {_id: layer.split('locations')[1]});
       done();
     }
   }, function(err) {
