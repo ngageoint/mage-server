@@ -227,16 +227,13 @@ function create(baseUrl, layers, callback) {
   }
 
   async.each(layers, function(layer, done) {
-    // var components = layer.split(':');
+    var components = layer.split(':');
 
-    // if (components.length !== 2) {
-    //   return callback();
-    // }
-
-    console.log('get sld for', layer);
+    if (components.length === 2 && components[0] === namespace) {
+      layer = components[1];
+    }
 
     if (layer.indexOf('observations') !== -1) {
-      console.log('get sld for observations');
       Event.getById(layer.split('observations')[1], function(err, event) {
         if (err || !event) return done(err);
 
@@ -244,7 +241,6 @@ function create(baseUrl, layers, callback) {
         done();
       });
     } else if (layer.indexOf('locations') !== -1) {
-      console.log('get sld for locations');
       addNamedLocationLayer(sld, baseUrl, {_id: layer.split('locations')[1]});
       done();
     }

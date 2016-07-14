@@ -44,16 +44,13 @@ module.exports = function(app, authentication) {
 
 };
 
-GeoServerResource.prototype.sld = function(req, res) {
+GeoServerResource.prototype.sld = function(req, res, next) {
   var layers = req.param('layers');
   if (!layers) return res.sendStatus(400);
 
   sldBuilder.create(req.getRoot(), layers.split(','), function(err, sld) {
-    if (err) {
-      console.log('got an error from the observation sld function');
-      return res.sendStatus(500);
-    }
-
+    if (err) return next(err);
+    
     res.send(sld);
   });
 };
