@@ -50,7 +50,8 @@ GeoServerResource.prototype.sld = function(req, res, next) {
 
   sldBuilder.create(req.getRoot(), layers.split(','), function(err, sld) {
     if (err) return next(err);
-    
+    console.log('making an sld', sld);
+
     res.send(sld);
   });
 };
@@ -89,6 +90,7 @@ GeoServerResource.prototype.getObservationIcon = function(req, res, next) {
 };
 
 GeoServerResource.prototype.getUserSvg = function(req, res) {
+  console.log('try to get a user svg');
   var svg = xmlbuilder.create({
     svg: {
       '@xmlns': 'http://www.w3.org/2000/svg',
@@ -109,6 +111,8 @@ GeoServerResource.prototype.getUserSvg = function(req, res) {
 };
 
 GeoServerResource.prototype.getUserIcon = function(req, res, next) {
+  console.log('try to get a user icon');
+
   if (!req.userParam) return res.sendStatus(200);
 
   new api.User().icon(req.userParam, function(err, icon) {

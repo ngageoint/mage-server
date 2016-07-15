@@ -75,14 +75,15 @@ function addNamedLocationLayer(sld, baseUrl, event) {
                 },
                 'ogc:LowerBoundary': {
                   'ogc:Literal': {
-                    '#text': moment().utc().subtract(5, 'minutes').toISOString()
-                  }
-                },
-                'ogc:UpperBoundary': {
-                  'ogc:Literal': {
-                    '#text': moment().utc().add(1, 'days').toISOString()
+                    '#text': moment().utc().subtract(10, 'minutes').toISOString()
                   }
                 }
+                // ,
+                // 'ogc:UpperBoundary': {
+                //   'ogc:Literal': {
+                //     '#text': moment().utc().add(1, 'days').toISOString()
+                //   }
+                // }
               }
             },
             PointSymbolizer: {
@@ -122,7 +123,7 @@ function addNamedLocationLayer(sld, baseUrl, event) {
                 },
                 'ogc:UpperBoundary': {
                   'ogc:Literal': {
-                    '#text': moment().subtract(5, 'minutes').toISOString()
+                    '#text': moment().subtract(10, 'minutes').toISOString()
                   }
                 }
               }

@@ -25,6 +25,8 @@ var geoserverProxy = proxy(config.geoserver.url, {
 
       url.query.sld = util.format('%s/ogc/sld?layers=%s&access_token=%s', req.getRoot(), layers, config.token);
     }
+
+    console.log('making request', '/geoserver/' + config.geoserver.namespace + '/ows' + URL.parse(URL.format(url)).path);
     return '/geoserver/' + config.geoserver.namespace + '/ows' + URL.parse(URL.format(url)).path;
   }
 });
