@@ -21,7 +21,8 @@
   },
   "dependencies": {
     "express": "4.10.6",
-    "express-http-proxy": "0.7.1",
+    "express-http-proxy": "0.7.4",
+    "http-proxy": "^1.14.0",
     "xmlbuilder": "8.2.2"
   },
   "devDependencies": {

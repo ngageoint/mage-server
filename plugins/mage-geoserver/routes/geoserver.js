@@ -19,19 +19,19 @@ module.exports = function(app, authentication) {
     resource.sld
   );
 
-  app.get('/icons/observation/:eventId/(:type)?/(:variant)?.svg',
+  app.get('/svg/observation/:eventId/(:type)?/(:variant)?',
     passport.authenticate('geoserver-bearer', { session: false }),
     resource.getObservationSvg
   );
 
   app.get(
-    '/icons/observation/:eventId/:type?/:variant?',
+    '/icons/observation/:eventId/(:type)?/(:variant)?',
     passport.authenticate('geoserver-bearer', { session: false }),
     resource.getObservationIcon
   );
 
   app.get(
-    '/icons/users/(:userId)?.svg',
+    '/svg/users/:userId?',
     passport.authenticate('geoserver-bearer', { session: false }),
     resource.getUserSvg
   );
@@ -50,13 +50,17 @@ GeoServerResource.prototype.sld = function(req, res, next) {
 
   sldBuilder.create(req.getRoot(), layers.split(','), function(err, sld) {
     if (err) return next(err);
-    console.log('making an sld', sld);
 
     res.send(sld);
   });
 };
 
 GeoServerResource.prototype.getObservationSvg = function(req, res) {
+  console.log('get observation svg');
+  console.log('eventId', req.params.eventId);
+  console.log('type', req.params.type);
+  console.log('variant', req.params.variant);
+
   var svg = xmlbuilder.create({
     svg: {
       '@xmlns': 'http://www.w3.org/2000/svg',
@@ -83,14 +87,15 @@ GeoServerResource.prototype.getObservationSvg = function(req, res) {
 
 GeoServerResource.prototype.getObservationIcon = function(req, res, next) {
   new api.Icon(req.event._id, req.params.type, req.params.variant).getIcon(function(err, iconPath) {
-    if (err || !iconPath) return next();
+    if (err || !iconPath) {
+      return next();
+    }
 
     res.sendFile(iconPath);
   });
 };
 
 GeoServerResource.prototype.getUserSvg = function(req, res) {
-  console.log('try to get a user svg');
   var svg = xmlbuilder.create({
     svg: {
       '@xmlns': 'http://www.w3.org/2000/svg',
@@ -111,8 +116,6 @@ GeoServerResource.prototype.getUserSvg = function(req, res) {
 };
 
 GeoServerResource.prototype.getUserIcon = function(req, res, next) {
-  console.log('try to get a user icon');
-
   if (!req.userParam) return res.sendStatus(200);
 
   new api.User().icon(req.userParam, function(err, icon) {

@@ -7,16 +7,19 @@ var express = require('express')
 
 require('./authentication')(passport);
 
-var urlFilter = new RegExp('^/' + config.token + '/' + config.geoserver.namespace);
+// var urlFilter = new RegExp('^/' + config.token + '/' + config.geoserver.namespace);
+var urlFilter = new RegExp('^/' + config.token + '/(.*)');
 var geoserverProxy = proxy(config.geoserver.url, {
   filter: function(req) {
     return urlFilter.test(req.url);
   },
   forwardPath: function(req) {
-    var url = URL.parse(req.url, Boolean('parse query string'));
+    var url = URL.parse(urlFilter.exec(req.url)[1], Boolean('parse query string'));
+    console.log('request coming in is', req.url);
     delete url.search;
 
-    if (!url.query['SLD_BODY']) {
+    var wmsMatch = /service=wms/i.exec(url.path);
+    if (wmsMatch && !url.query['SLD_BODY']) {
       var layers = '';
       var layersMatch = /layers=([^&]*)/i.exec(url.path);
       if (layersMatch && layersMatch.length > 1) {
@@ -26,8 +29,10 @@ var geoserverProxy = proxy(config.geoserver.url, {
       url.query.sld = util.format('%s/ogc/sld?layers=%s&access_token=%s', req.getRoot(), layers, config.token);
     }
 
-    console.log('making request', '/geoserver/' + config.geoserver.namespace + '/ows' + URL.parse(URL.format(url)).path);
-    return '/geoserver/' + config.geoserver.namespace + '/ows' + URL.parse(URL.format(url)).path;
+    var forward = '/geoserver/' + URL.parse(URL.format(url)).path;
+    console.log('making request', forward);
+
+    return forward;
   }
 });
 

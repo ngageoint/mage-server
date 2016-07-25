@@ -8,11 +8,11 @@ var xmlbuilder = require('xmlbuilder')
   , namespace = config.geoserver.namespace;
 
 function addNamedObservationLayer(sld, baseUrl, event) {
-  var href = util.format('%s/ogc/icons/observation/%s/${strEncode("properties.type")}', baseUrl, event._id);
+  var href = util.format('%s/ogc/svg/observation/%s/${strEncode("properties.type")}', baseUrl, event._id);
   if (event.form.variantField) {
     href += util.format('/${strEncode("properties.%s")}', event.form.variantField);
   }
-  href += util.format('.svg?access_token=%s', token);
+  href += util.format('?access_token=%s', token);
 
   sld.ele({
     NamedLayer: {
@@ -49,7 +49,7 @@ function addNamedObservationLayer(sld, baseUrl, event) {
 }
 
 function addNamedLocationLayer(sld, baseUrl, event) {
-  var iconHref = util.format('%s/ogc/icons/users/${userId}.svg?access_token=%s', baseUrl, token);
+  var iconHref = util.format('%s/ogc/svg/users/${userId}?access_token=%s', baseUrl, token);
 
   sld.ele({
     NamedLayer: {
