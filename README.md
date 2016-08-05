@@ -74,16 +74,17 @@ $ mongo --version
 Configure mongo yum repository
 
 ```bash
-$ vi /etc/yum.repos.d/10gen-mongodb.repo
+$ vi /etc/yum.repos.d/mongodb-org-3.2.repo
 ```
 With contents:
 
 ```bash
-[mongodb-org-3.0]
+[mongodb-org-3.2]
 name=MongoDB Repository
-baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/3.0/x86_64/
-gpgcheck=0
+baseurl=https://repo.mongodb.org/yum/amazon/2013.03/mongodb-org/3.2/x86_64/
+gpgcheck=1
 enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-3.2.asc
 ```
 
 Install from newly created repo:
@@ -189,7 +190,15 @@ Configuration:
 
 ### Setting up MAGE for local deployment
 
-MAGE local deployment configuration is located here: [environment/local/env.js](environment/local/env.js)
+MAGE local deployment configuration is located here: [environment/local/env.js](environment/local/env.js).  
+
+IMPORTANT, if you make changes to this file after you have [installed mage dependencies](###installing-dependencies-and-building-mage) with npm install, you will need to remove the environment and local-environment modules from the node modules folder and re-run 'npm install' to for your changes to take effect.
+
+```bash
+$ rm -rf node_modules/environment
+$ rm -rf node_modules/local-environment
+$ npm install
+```
 
 Configuration includes:
 * port - port in which to run nodejs server
