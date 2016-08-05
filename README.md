@@ -192,7 +192,7 @@ Configuration:
 
 MAGE local deployment configuration is located here: [environment/local/env.js](environment/local/env.js).  
 
-IMPORTANT, if you make changes to this file after you have [installed mage dependencies](###installing-dependencies-and-building-mage) with npm install, you will need to remove the environment and local-environment modules from the node modules folder and re-run 'npm install' to for your changes to take effect.
+IMPORTANT, if you make changes to this file after you have [installed mage dependencies](#installing-dependencies-and-building-mage) with npm install, you will need to remove the environment and local-environment modules from the node modules folder and re-run 'npm install' to for your changes to take effect.
 
 ```bash
 $ rm -rf node_modules/environment
