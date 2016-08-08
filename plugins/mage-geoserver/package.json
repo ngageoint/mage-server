@@ -21,36 +21,8 @@
   },
   "dependencies": {
     "express": "4.10.6",
-    "express-http-proxy": "0.7.4",
-    "http-proxy": "^1.14.0",
+    "http-proxy-middleware": "0.17.0",
     "xmlbuilder": "8.2.2"
   },
-  "devDependencies": {
-    "assert": "1.3.0",
-    "chai": "3.3.0",
-    "grunt": "0.4.5",
-    "grunt-cli": "0.1.13",
-    "grunt-contrib-clean": "0.6.0",
-    "grunt-contrib-concat": "0.5.1",
-    "grunt-contrib-copy": "0.8.0",
-    "grunt-contrib-cssmin": "0.12.2",
-    "grunt-contrib-uglify": "0.8.0",
-    "grunt-usemin": "3.0.0",
-    "http": "0.0.0",
-    "istanbul": "0.4.3",
-    "mocha": "2.3.3",
-    "mock-fs": "3.7.0",
-    "nock": "2.15.0",
-    "sinon": "1.17.1",
-    "sinon-chai": "2.8.0",
-    "sinon-mongoose": "1.2.1",
-    "superagent": "1.4.0",
-    "supertest": "1.1.0"
-  },
-  "scripts": {
-    "test": "mocha --reporter spec",
-    "coverage": "istanbul cover _mocha"
-  },
-  "bundleDependencies": [],
   "private": true
 }
