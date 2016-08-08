@@ -143,7 +143,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     return promise;
   }
 
-  function getMyself(roles) {
+  function getMyself() {
     var theDeferred = $q.defer();
     $http.get('/api/users/myself',{
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
@@ -152,11 +152,6 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
       setUser(user);
 
       $rootScope.$broadcast('event:user', {user: user, token: LocalStorageService.getToken(), isAdmin: service.amAdmin});
-
-      if (roles && !_.contains(roles, user.role.name)) {
-        // TODO probably want to redirect to a unauthorized page.
-        $location.path('/signin');
-      }
 
       theDeferred.resolve(user);
     })

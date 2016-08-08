@@ -2,22 +2,20 @@ angular
   .module('mage')
   .controller('SigninController', SigninController);
 
-SigninController.$inject = ['$scope', '$rootScope', 'UserService', 'Api'];
+SigninController.$inject = ['$scope', '$rootScope', 'UserService', 'api'];
 
-function SigninController($scope, $rootScope, UserService, Api) {
+function SigninController($scope, $rootScope, UserService, api) {
   $scope.status = 0;
   $scope.showStatus = false;
   $scope.statusTitle = '';
   $scope.statusMessage = '';
 
-  Api.get(function(api) {
-    $scope.thirdPartyStrategies = _.map(_.omit(api.authenticationStrategies, localStrategyFilter), function(strategy, name) {
-      strategy.name = name;
-      return strategy;
-    });
-
-    $scope.localAuthenticationStrategy = api.authenticationStrategies.local;
+  $scope.thirdPartyStrategies = _.map(_.omit(api.authenticationStrategies, localStrategyFilter), function(strategy, name) {
+    strategy.name = name;
+    return strategy;
   });
+
+  $scope.localAuthenticationStrategy = api.authenticationStrategies.local;
 
   $scope.signin = function () {
     UserService.login({username: this.username, uid: this.uid, password: this.password})

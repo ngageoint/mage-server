@@ -271,6 +271,8 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
   }
 
   function isUserInEvent(user, event) {
+    if (!event) return false;
+
     return _.some(event.teams, function(team) {
       return _.contains(team.userIds, user.id);
     });
