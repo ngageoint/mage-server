@@ -9,6 +9,20 @@
   </div>
 </div>
 
+<div class="top-gap feed-page" >
+  <div class="btn-group btn-group-justified">
+    <div class="btn-group" role="group">
+      <button type="button" class="btn btn-default" ng-model="actionFilter" uib-btn-radio="'all'">All</button>
+    </div>
+    <div class="btn-group" role="group">
+      <button type="button" class="btn btn-default" ng-model="actionFilter" uib-btn-radio="'favorite'">Favorite</button>
+    </div>
+    <div class="btn-group" role="group">
+      <button type="button" class="btn btn-default" ng-model="actionFilter" uib-btn-radio="'important'">Important</button>
+    </div>
+  </div>
+</div>
+
 <div class="feed-page" ng-show="currentFeedPanel == 'observationsTab' && observationPages.length">
   <select
     class="form-control"
@@ -45,7 +59,7 @@
       <div id="{{user.id}}"
         ng-class="(selectedUser && selectedUser.id !== user.id) && 'inactive-feed-card'"
         ng-repeat="user in userPages[currentUserPage] track by user.id">
-        <div user-news-item="user" user-news-item-follow="followUserId" container-element="side-bar"></div>
+        <div user-news-item="user" user-news-item-followable="true" user-news-item-follow="followUserId" container-element="side-bar"></div>
       </div>
     </div>
   </div>

@@ -93,6 +93,22 @@ Observation.prototype.update = function(observationId, observation, callback) {
   ObservationModel.updateObservation(this._event, observationId, observation, callback);
 };
 
+Observation.prototype.addFavorite = function(observationId, user, callback) {
+  ObservationModel.addFavorite(this._event, observationId, user, callback);
+};
+
+Observation.prototype.removeFavorite = function(observation, user, callback) {
+  ObservationModel.removeFavorite(this._event, observation, user, callback);
+};
+
+Observation.prototype.addImportant = function(observationId, important, callback) {
+  ObservationModel.updateObservation(this._event, observationId, {important: important}, callback);
+};
+
+Observation.prototype.removeImportant = function(observation, callback) {
+  ObservationModel.removeImportant(this._event, observation, callback);
+};
+
 Observation.prototype.addState = function(observationId, state, callback) {
   ObservationModel.addState(this._event, observationId, state, callback);
 };

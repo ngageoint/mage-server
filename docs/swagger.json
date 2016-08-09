@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "version": "4.0.0",
+        "version": "4.4.0",
         "title": "MAGE (Mobile Awareness GEOINT Environment)",
         "description": "MAGE API",
         "contact": {
@@ -1535,6 +1535,143 @@
                 }
             }
         },
+        "/api/events/{eventId}/observations/{observationId}/favorite": {
+            "put": {
+                "description": "favorite observation for provided event",
+                "operationId": "addFavoriteObservation",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which to observation lives",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "observationId",
+                        "in": "path",
+                        "description": "observationId for observation to favorite",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Observation"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "observation response",
+                        "schema": {
+                            "$ref": "#/definitions/FeatureState"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "remove favorite for observation for provided event",
+                "operationId": "removeFavoriteObservation",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which to observation lives",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "observationId",
+                        "in": "path",
+                        "description": "observationId for observation to remove favorite",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Observation"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "observation response",
+                        "schema": {
+                            "$ref": "#/definitions/FeatureState"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/events/{eventId}/observations/{observationId}/important": {
+            "put": {
+                "description": "add/update important on provided observation for provided event",
+                "operationId": "addObservationImportant",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which to add/update observation important",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "observationId",
+                        "in": "path",
+                        "description": "observationId for observation",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "important request body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ObservationImportantCreate"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Observation"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "observation response",
+                        "schema": {
+                            "$ref": "#/definitions/FeatureState"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "remove important on provided observation for provided event",
+                "operationId": "removeObservationImportant",
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which to remove observation important",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "observationId",
+                        "in": "path",
+                        "description": "observationId for observation",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Observation"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "observation response",
+                        "schema": {
+                            "$ref": "#/definitions/FeatureState"
+                        }
+                    }
+                }
+            }
+        },
         "/api/events/{eventId}/observations/{observationId}/states": {
             "post": {
                 "description": "update state on provided observation for provided event",
@@ -2641,6 +2778,13 @@
                 },
                 "properties": {
                     "type": "object"
+                }
+            }
+        },
+        "ObservationImportantCreate": {
+            "properties": {
+                "description": {
+                    "type": "string"
                 }
             }
         },

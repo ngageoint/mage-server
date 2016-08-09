@@ -49,6 +49,17 @@ function parseQueryParams(req, res, next) {
   var observations = req.param('observations');
   if (observations) {
     parameters.filter.exportObservations = observations === 'true';
+
+    if (parameters.filter.exportObservations) {
+      parameters.filter.favorites = req.param('favorites') === 'true';
+      if (parameters.filter.favorites) {
+        parameters.filter.favorites = {
+          userId: req.user._id
+        };
+      }
+
+      parameters.filter.important = req.param('important') === 'true';
+    }
   }
 
   var locations = req.param('locations');

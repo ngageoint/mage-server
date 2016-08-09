@@ -15,6 +15,8 @@ function ExportController($scope, $uibModalInstance, LocalStorageService, Filter
 
   $scope.exportLocations = {value: true};
   $scope.exportObservations = {value: true};
+  $scope.exportFavoriteObservations = {value: false};
+  $scope.exportImportantObservations = {value: false};
 
   $scope.localOffset = moment().format('Z');
   $scope.localTime = true;
@@ -102,6 +104,11 @@ function ExportController($scope, $uibModalInstance, LocalStorageService, Filter
 
     if (start) params.startDate = start;
     if (end) params.endDate = end;
+
+    if ($scope.exportObservations.value) {
+      params.favorites = $scope.exportFavoriteObservations.value;
+      params.important = $scope.exportImportantObservations.value;
+    }
 
     var url = "api/" + type + "?" + $.param(params);
     $.fileDownload(url)

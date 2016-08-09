@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 Adheres to [Semantic Versioning](http://semver.org/).
 
 ---
-## 4.3.1
+## 4.4.0 (TBD)
 
 * TBD
 
@@ -11,11 +11,13 @@ Adheres to [Semantic Versioning](http://semver.org/).
 * Please run `npm run migrate`
 
 ##### Features
-* Added user no edit role to db migrations. This role is similar to the user role except for that it
-  does not allow for editing of observations or locations by the user.
+* Added observations favorites.  Users can mark observations as a favorite, and can view other users favorites.
+* Added important observations.  Users with event edit permissions can mark observations as important.
+* Added observation share via email.
 
 ##### Bug Fixes
 * Changed default form type to textarea for textarea fields.  This will enable users to add new lines to default.
+
 
 ## [4.3.0](https://github.com/ngageoint/mage-server/releases/tag/v4.3.0) (09-22-2016)
 

@@ -46,7 +46,13 @@ var ObservationSchema = new Schema({
   geometry: Schema.Types.Mixed,
   properties: Schema.Types.Mixed,
   attachments: [AttachmentSchema],
-  states: [StateSchema]
+  states: [StateSchema],
+  important: {
+    userId: {type: Schema.Types.ObjectId, ref: 'User', required: false},
+    timestamp: {type: Date, required: false},
+    description: {type: String, required: false}
+  },
+  favoriteUserIds: [{type: Schema.Types.ObjectId, ref: 'User'}]
 },{
   strict: false
 });
@@ -201,7 +207,15 @@ exports.getObservations = function(event, o, callback) {
   }
 
   if (filter.states) {
-    conditions['states.0.name'] = {$in: filter.states};
+    conditions['states.0.name'] = { $in: filter.states };
+  }
+
+  if (filter.favorites && filter.favorites.userId) {
+    conditions['favoriteUserIds'] = { $in: [filter.favorites.userId] };
+  }
+
+  if (filter.important) {
+    conditions['important'] = {$exists: true};
   }
 
   var options = {};
@@ -210,45 +224,33 @@ exports.getObservations = function(event, o, callback) {
   }
 
   var fields = parseFields(o.fields);
-  observationModel(event).find(conditions, fields, options, function (err, observations) {
-    callback(err, observations);
-  });
+  observationModel(event).find(conditions, fields, options, callback);
 };
 
 exports.getLatestObservation = function(event, callback) {
-  observationModel(event).findOne({}, {lastModified: true}, {sort: {"lastModified": -1}, limit: 1}, function(err, observation) {
-    callback(err, observation);
-  });
+  observationModel(event).findOne({}, {lastModified: true}, {sort: {"lastModified": -1}, limit: 1}, callback);
 };
 
 exports.getObservationById = function(event, observationId, options, callback) {
   var fields = parseFields(options.fields);
 
-  observationModel(event).findById(observationId, fields, function(err, observation) {
-    callback(err, observation);
-  });
+  observationModel(event).findById(observationId, fields, callback);
 };
 
 exports.createObservation = function(event, observation, callback) {
   observation.lastModified = moment.utc().toDate();
 
-  observationModel(event).create(observation, function(err, newObservation) {
-    callback(err, newObservation);
-  });
+  observationModel(event).create(observation, callback);
 };
 
 exports.updateObservation = function(event, observationId, observation, callback) {
   observation.lastModified = moment.utc().toDate();
 
-  observationModel(event).findByIdAndUpdate(observationId, observation, {new: true}, function (err, updatedObservation) {
-    callback(err, updatedObservation);
-  });
+  observationModel(event).findByIdAndUpdate(observationId, observation, {new: true}, callback);
 };
 
 exports.removeObservation = function(event, observationId, callback) {
-  observationModel(event).findByIdAndRemove(observationId, function (err) {
-    callback(err);
-  });
+  observationModel(event).findByIdAndRemove(observationId, callback);
 };
 
 exports.removeUser = function(user, callback) {
@@ -306,6 +308,45 @@ exports.addState = function(event, id, state, callback) {
   observationModel(event).update(condition, update, {upsert: true}, function(err) {
     callback(err, state);
   });
+};
+
+exports.addFavorite = function(event, observationId, user, callback) {
+  var update = {
+    $addToSet: {
+      favoriteUserIds: user._id
+    },
+    '$set': {
+      lastModified: moment.utc().toDate()
+    }
+  };
+
+  observationModel(event).findByIdAndUpdate(observationId, update, {new: true}, callback);
+};
+
+exports.removeFavorite = function (event, observationId, user, callback) {
+  var update = {
+    $pull: {
+      favoriteUserIds: user._id
+    },
+    '$set': {
+      lastModified: moment.utc().toDate()
+    }
+  };
+
+  observationModel(event).findByIdAndUpdate(observationId, update, {new: true}, callback);
+};
+
+exports.removeImportant = function(event, id, callback) {
+  var update = {
+    '$unset': {
+      important: 1
+    },
+    '$set': {
+      lastModified: moment.utc().toDate()
+    }
+  };
+
+  observationModel(event).findByIdAndUpdate(id, update, {new: true}, callback);
 };
 
 exports.getAttachment = function(event, observationId, attachmentId, callback) {

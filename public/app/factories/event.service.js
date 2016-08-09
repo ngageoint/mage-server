@@ -2,9 +2,9 @@ angular
   .module('mage')
   .service('EventService', EventService);
 
-EventService.$inject = ['$rootScope', '$q', '$timeout', '$http', 'Event', 'ObservationService', 'LocationService', 'LayerService', 'FilterService', 'PollingService'];
+EventService.$inject = ['$rootScope', '$q', '$timeout', '$http', 'Event', 'ObservationService', 'LocationService', 'LayerService', 'FilterService', 'PollingService', 'UserService'];
 
-function EventService($rootScope, $q, $timeout, $http, Event, ObservationService, LocationService, LayerService, FilterService, PollingService) {
+function EventService($rootScope, $q, $timeout, $http, Event, ObservationService, LocationService, LayerService, FilterService, PollingService, UserService) {
   var observationsChangedListeners = [];
   var usersChangedListeners = [];
   var layersChangedListeners = [];
@@ -22,6 +22,10 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
         fetch();
       } else if (filter.teams) { // filter in memory
         onTeamsChanged(filter.teams);
+      }
+
+      if (filter.actionFilter) {
+        onActionFilterChanged(filter.actionFilter);
       }
     }
   };
@@ -91,6 +95,63 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     usersChanged({added: usersAdded, removed: usersRemoved});
   }
 
+  function onActionFilterChanged(actionFilter) {
+    var event = FilterService.getEvent();
+    if (!event) return;
+
+    var actionEvent = eventsById[event.id];
+
+    // remove observations that are not part of action filter
+    function isFavorite(observation) {
+      return _.contains(observation.favoriteUserIds, UserService.myself.id);
+    }
+
+    function isImportant(observation) {
+      return observation.important;
+    }
+
+    var observationsRemoved = [];
+    _.each(actionEvent.filteredObservationsById, function(observation) {
+      var remove = false;
+      switch (actionFilter) {
+      case 'favorite':
+        remove = !isFavorite(observation);
+        break;
+      case 'important':
+        remove = !isImportant(observation);
+        break;
+      }
+
+      if (remove) {
+        delete actionEvent.filteredObservationsById[observation.id];
+        observationsRemoved.push(observation);
+      }
+    });
+
+    var observationsAdded = [];
+    // add any observations that are part of the filtered teams
+    _.each(actionEvent.observationsById, function(observation) {
+      var add = false;
+      switch (actionFilter) {
+      case 'favorite':
+        add = isFavorite(observation) && !actionEvent.filteredObservationsById[observation.id];
+        break;
+      case 'important':
+        add = isImportant(observation) && !actionEvent.filteredObservationsById[observation.id];
+        break;
+      default:
+        add = !actionEvent.filteredObservationsById[observation.id];
+      }
+
+      if (add) {
+        observationsAdded.push(observation);
+        actionEvent.filteredObservationsById[observation.id] = observation;
+      }
+    });
+
+    observationsChanged({added: observationsAdded, removed: observationsRemoved});
+  }
+
   var pollingServiceListener = {
     onPollingIntervalChanged: function(interval) {
       if (pollingTimeout) {
@@ -125,6 +186,10 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     removeLayersChangedListener: removeLayersChangedListener,
     getEventById: getEventById,
     saveObservation: saveObservation,
+    addObservationFavorite: addObservationFavorite,
+    removeObservationFavorite: removeObservationFavorite,
+    markObservationAsImportant: markObservationAsImportant,
+    clearObservationAsImportant: clearObservationAsImportant,
     archiveObservation: archiveObservation,
     addAttachmentToObservation: addAttachmentToObservation,
     deleteAttachmentForObservation: deleteAttachmentForObservation,
@@ -209,6 +274,47 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
         event.filteredObservationsById[observation.id] = observation;
         isNewObservation ? observationsChanged({added: [observation]}) : observationsChanged({updated: [observation]});
       }
+    });
+  }
+
+  function addObservationFavorite(observation) {
+    var event = eventsById[observation.eventId];
+
+    var promise = ObservationService.addObservationFavorite(event, observation);
+
+    promise.then(function(updatedObservation) {
+      event.observationsById[updatedObservation.id] = updatedObservation;
+      observationsChanged({updated: [updatedObservation]});
+    });
+
+    return promise;
+  }
+
+  function removeObservationFavorite(observation) {
+    var event = eventsById[observation.eventId];
+
+    var promise = ObservationService.removeObservationFavorite(event, observation);
+    promise.then(function(updatedObservation) {
+      event.observationsById[updatedObservation.id] = updatedObservation;
+      observationsChanged({updated: [updatedObservation]});
+    });
+
+    return promise;
+  }
+
+  function markObservationAsImportant(observation, important) {
+    var event = eventsById[observation.eventId];
+    return ObservationService.markObservationAsImportantForEvent(event, observation, important).then(function(updatedObservation) {
+      event.observationsById[updatedObservation.id] = updatedObservation;
+      observationsChanged({updated: [updatedObservation]});
+    });
+  }
+
+  function clearObservationAsImportant(observation) {
+    var event = eventsById[observation.eventId];
+    return ObservationService.clearObservationAsImportantForEvent(event, observation).then(function(updatedObservation) {
+      event.observationsById[updatedObservation.id] = updatedObservation;
+      observationsChanged({updated: [updatedObservation]});
     });
   }
 

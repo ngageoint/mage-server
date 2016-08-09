@@ -24,7 +24,35 @@
         <div map-clip="observation"></div>
       </div>
 
-      <div ng-repeat="field in form.fields | filter:filterHidden | orderBy: 'id'">
+      <div class="top-gap observation-actions">
+        <span class="observation-action">
+          <i ng-if="canEditImportant || observation.important" class="fa fa-flag observation-action-important pointer" ng-class="{'observation-action-important-active': observation.important}"
+          uib-tooltip="{{canEditImportant ? 'Flag As Important' : 'Flagged as Important'}}"
+          uib-popover-template="'/app/observation/observation-important.html'"
+          popover-placement="auto"
+          popover-is-open="importantPopover.isOpen"></i>
+        </span>
+
+        <span class="observation-action">
+          <i class="fa fa-heart observation-action-favorite pointer"
+          ng-class="{'observation-action-favorite-active': isUserFavorite}"
+          ng-click="toggleFavorite()"
+          uib-tooltip="Favorite"></i>
+
+          <span class="observation-action-favorite-count pointer"
+            ng-if="observation.favoriteUserIds.length"
+            ng-class="{'observation-action-favorite-active': isUserFavorite}"
+            ng-click="showFavoriteUsers()">{{observation.favoriteUserIds.length}}
+          </span>
+
+        </span>
+
+        <span class="observation-action observation-action-email">
+          <i class="fa fa-download observation-action-email pointer" uib-tooltip="Download" ng-click="download()"></i>
+        </span>
+      </div>
+
+      <div class="top-gap" ng-repeat="field in form.fields | filter:filterHidden | orderBy: 'id'">
         <property-view field="field">
       </div>
 

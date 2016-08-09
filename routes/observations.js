@@ -2,6 +2,10 @@ module.exports = function(app, security) {
 
   var api = require('../api')
     , log = require('winston')
+    , jade = require('jade')
+    , archiver = require('archiver')
+    , path = require('path')
+    , environment = require('environment')
     , fs = require('fs-extra')
     , moment = require('moment')
     , Event = require('../models/event')
@@ -91,6 +95,27 @@ module.exports = function(app, security) {
       var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
       if (deviceId) req.newObservation.deviceId = deviceId;
 
+      next();
+    });
+  }
+
+  function getUserForObservation(req, res, next) {
+    var userId = req.observation.userId;
+    if (!userId) return next();
+
+    new api.User().getById(userId, function(err, user) {
+      if (err) return next(err);
+
+      req.observationUser = user;
+      next();
+    });
+  }
+
+  function getIconForObservation(req, res, next) {
+    new api.Icon(req.event._id, req.observation.properties.type, req.observation.properties[req.event.form.variantField]).getIcon(function(err, icon) {
+      if (err) return next(err);
+
+      req.observationIcon = icon;
       next();
     });
   }
@@ -195,6 +220,41 @@ module.exports = function(app, security) {
   );
 
   app.get(
+    '/api/events/:eventId/observations/(:observationId).zip',
+    passport.authenticate('bearer'),
+    validateObservationReadAccess,
+    getUserForObservation,
+    getIconForObservation,
+    function (req, res) {
+      var fieldsByName = {};
+      req.event.form.fields.forEach(function(field) {
+        fieldsByName[field.name] = field;
+      });
+
+      var archive = archiver('zip');
+      archive.pipe(res);
+      var html = jade.renderFile('views/observation.jade', {
+        event: req.event,
+        form: req.event.form,
+        fieldsByName: fieldsByName,
+        observation: req.observation,
+        user: req.observationUser
+      });
+      archive.append(html, { name: req.observation._id + '/index.html' });
+
+      if (req.observationIcon) {
+        archive.file(req.observationIcon, {name: req.observation._id + '/media/icon.png'});
+      }
+
+      req.observation.attachments.forEach(function(attachment) {
+        archive.file(path.join(environment.attachmentBaseDirectory, attachment.relativePath), {name: req.observation._id + '/media/' + attachment.name});
+      });
+
+      archive.finalize();
+    }
+  );
+
+  app.get(
     '/api/events/:eventId/observations/:id',
     passport.authenticate('bearer'),
     validateObservationReadAccess,
@@ -259,6 +319,72 @@ module.exports = function(app, security) {
       new api.Observation(req.event).update(req.param('id'), observation, function(err, updatedObservation) {
         if (err) return next(err);
 
+        if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.id + " does not exist");
+
+        var response = observationXform.transform(updatedObservation, transformOptions(req));
+        res.json(response);
+      });
+    }
+  );
+
+  app.put(
+    '/api/events/:eventId/observations/:id/favorite',
+    passport.authenticate('bearer'),
+    function (req, res, next) {
+      new api.Observation(req.event).addFavorite(req.params.id, req.user, function(err, updatedObservation) {
+        if (err) return next(err);
+        if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.id + " does not exist");
+
+        var response = observationXform.transform(updatedObservation, transformOptions(req));
+        res.json(response);
+      });
+    }
+  );
+
+  app.delete(
+    '/api/events/:eventId/observations/:id/favorite',
+    passport.authenticate('bearer'),
+    function (req, res, next) {
+
+      new api.Observation(req.event).removeFavorite(req.params.id, req.user, function(err, updatedObservation) {
+        if (err) return next(err);
+        if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.id + " does not exist");
+
+        var response = observationXform.transform(updatedObservation, transformOptions(req));
+        res.json(response);
+      });
+    }
+  );
+
+  app.put(
+    '/api/events/:eventId/observations/:id/important',
+    passport.authenticate('bearer'),
+    access.authorize('UPDATE_EVENT'),
+    function (req, res, next) {
+      var important = {
+        userId: req.user._id,
+        timestamp: new Date(),
+        description: req.body.description
+      };
+
+      new api.Observation(req.event).addImportant(req.params.id, important, function(err, updatedObservation) {
+        if (err) return next(err);
+        if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.id + " does not exist");
+
+        var response = observationXform.transform(updatedObservation, transformOptions(req));
+        res.json(response);
+      });
+    }
+  );
+
+  app.delete(
+    '/api/events/:eventId/observations/:id/important',
+    passport.authenticate('bearer'),
+    access.authorize('UPDATE_EVENT'),
+    function (req, res, next) {
+
+      new api.Observation(req.event).removeImportant(req.params.id, function(err, updatedObservation) {
+        if (err) return next(err);
         if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.id + " does not exist");
 
         var response = observationXform.transform(updatedObservation, transformOptions(req));

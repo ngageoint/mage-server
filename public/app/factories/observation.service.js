@@ -2,13 +2,17 @@ angular
   .module('mage')
   .factory('ObservationService', ObservationService);
 
-ObservationService.$inject = ['$q', 'Observation', 'ObservationAttachment', 'ObservationState', 'LocalStorageService'];
+ObservationService.$inject = ['$q', 'Observation', 'ObservationAttachment', 'ObservationState', 'ObservationImportant', 'ObservationFavorite', 'LocalStorageService'];
 
-function ObservationService($q, Observation, ObservationAttachment, ObservationState, LocalStorageService) {
+function ObservationService($q, Observation, ObservationAttachment, ObservationState, ObservationImportant, ObservationFavorite, LocalStorageService) {
   var service = {
     getObservationsForEvent: getObservationsForEvent,
     saveObservationForEvent: saveObservationForEvent,
     archiveObservationForEvent: archiveObservationForEvent,
+    addObservationFavorite: addObservationFavorite,
+    removeObservationFavorite: removeObservationFavorite,
+    markObservationAsImportantForEvent: markObservationAsImportantForEvent,
+    clearObservationAsImportantForEvent: clearObservationAsImportantForEvent,
     addAttachmentToObservationForEvent: addAttachmentToObservationForEvent,
     deleteAttachmentInObservationForEvent: deleteAttachmentInObservationForEvent
   };
@@ -38,6 +42,54 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
       transformObservations(updatedObservation, event);
 
       deferred.resolve(updatedObservation);
+    });
+
+    return deferred.promise;
+  }
+
+  function addObservationFavorite(event, observation) {
+    var deferred = $q.defer();
+
+    ObservationFavorite.save({eventId: event.id, observationId: observation.id}, function(updatedObservation) {
+      observation.favoriteUserIds = updatedObservation.favoriteUserIds;
+
+      deferred.resolve(observation);
+    });
+
+    return deferred.promise;
+  }
+
+  function removeObservationFavorite(event, observation) {
+    var deferred = $q.defer();
+
+    ObservationFavorite.delete({eventId: event.id, observationId: observation.id}, function(updatedObservation) {
+      observation.favoriteUserIds = updatedObservation.favoriteUserIds;
+
+      deferred.resolve(observation);
+    });
+
+    return deferred.promise;
+  }
+
+  function markObservationAsImportantForEvent(event, observation, important) {
+    var deferred = $q.defer();
+
+    ObservationImportant.save({eventId: event.id, observationId: observation.id}, important, function(updatedObservation) {
+      observation.important = updatedObservation.important;
+
+      deferred.resolve(observation);
+    });
+
+    return deferred.promise;
+  }
+
+  function clearObservationAsImportantForEvent(event, observation) {
+    var deferred = $q.defer();
+
+    ObservationImportant.delete({eventId: event.id, observationId: observation.id}, function(updatedObservation) {
+      observation.important = updatedObservation.important;
+
+      deferred.resolve(observation);
     });
 
     return deferred.promise;

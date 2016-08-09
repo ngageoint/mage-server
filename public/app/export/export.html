@@ -22,10 +22,26 @@
       </div>
     </div>
 
-    <div class="checkbox">
-      <label>
-        <input type="checkbox" ng-model="exportObservations.value">Observations
-      </label>
+    <div class="form-group">
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" ng-model="exportObservations.value">Observations
+        </label>
+      </div>
+
+      <div class="checkbox export-actions" ng-show="exportObservations.value">
+        <label>
+          <input type="checkbox" ng-model="exportFavoriteObservations.value">Favorites
+        </label>
+        <p class="help-block">Export your favorite observations.</p>
+      </div>
+
+      <div class="checkbox export-actions" ng-show="exportObservations.value">
+        <label>
+          <input type="checkbox" ng-model="exportImportantObservations.value">Important
+        </label>
+        <p class="help-block">Export important observations.</p>
+      </div>
     </div>
 
     <div class="checkbox">

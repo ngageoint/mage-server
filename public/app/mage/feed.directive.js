@@ -18,10 +18,13 @@ function newsFeed() {
   return directive;
 }
 
-NewsFeedController.$inject = ['$rootScope', '$scope', '$element', '$filter', '$timeout', 'FilterService', 'EventService'];
+NewsFeedController.$inject = ['$rootScope', '$scope', '$element', '$filter', '$timeout', 'EventService', 'UserService', 'FilterService'];
 
-function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, FilterService, EventService) {
+function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, EventService, UserService, FilterService) {
+
   $scope.currentFeedPanel = 'observationsTab';
+
+  $scope.actionFilter = 'all';
 
   $scope.currentObservationPage = 0;
   $scope.observationsChanged = 0;
@@ -70,6 +73,10 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Fil
       $scope.feedUsersChanged = {};
       $scope.usersChanged = 0;
     }
+  });
+
+  $scope.$watch('actionFilter', function(actionFilter) {
+    FilterService.setFilter({actionFilter: actionFilter});
   });
 
   $scope.$watch('feedObservationsChanged', function(feedObservationsChanged) {

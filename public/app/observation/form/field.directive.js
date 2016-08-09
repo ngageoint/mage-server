@@ -32,7 +32,7 @@ function FieldDirectiveController($scope) {
     multiselectdropdown: 'app/observation/form/multiselectdropdown.directive.html',
     hidden: 'app/observation/form/hidden.directive.html',
     password: 'app/observation/form/password.directive.html',
-    radio: 'app/observation/form/radio.directive.html' 
+    radio: 'app/observation/form/radio.directive.html'
   };
 
   $scope.datePopup = {open: false};

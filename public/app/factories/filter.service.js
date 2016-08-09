@@ -77,6 +77,7 @@ function FilterService(UserService) {
     var eventChanged = null;
     var teamsChanged = null;
     var timeIntervalChanged = null;
+    var actionFilterChanged = null;
 
     if (filter.teams) {
       teamsChanged = setTeams(filter.teams);
@@ -92,6 +93,10 @@ function FilterService(UserService) {
       }
     }
 
+    if (filter.actionFilter) {
+      actionFilterChanged = filter.actionFilter;
+    }
+
     if (filter.timeInterval && setTimeInterval(filter.timeInterval)) {
       timeIntervalChanged = filter.timeInterval;
     }
@@ -99,6 +104,7 @@ function FilterService(UserService) {
     var changed = {};
     if (eventChanged) changed.event = eventChanged;
     if (teamsChanged) changed.teams = teamsChanged;
+    if (actionFilterChanged) changed.actionFilter = actionFilterChanged;
     if (timeIntervalChanged) changed.timeInterval = timeIntervalChanged;
 
     filterChanged(changed);

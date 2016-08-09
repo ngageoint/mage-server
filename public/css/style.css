@@ -397,6 +397,54 @@ a {
   color: #6389b3;
 }
 
+.modal-content, .observation-favorite-modal-content {
+  background-color: #F5F5F5;
+}
+
+.observation-favorite-modal-header {
+  color: #AAA;
+  border-bottom: 1px solid #e5e5e5;
+  padding: 15px;
+  border-radius: 6px 6px 0 0;
+  background-color: #FFF;
+}
+
+.observation-favorite-modal-title {
+  text-align: center;
+  color: #999;
+  font-size: 16px;
+  margin: 0 auto;
+}
+
+.observation-favorite-modal-body {
+  position: relative;
+  padding-bottom: 5px;
+}
+
+.observation-favorite-modal-item {
+  padding: 15px;
+  border-radius: 6px 6px 0 0;
+  background-color: #FFF;
+}
+
+.observation-favorite-icon {
+  margin-right: 10px;
+}
+
+.observation-favorite-modal-users {
+  max-height: 300px;
+  overflow-y: scroll;
+}
+
+.observation-favorite-user {
+  background-color: #F5F5F5;
+  border-bottom: 1px solid #EAEAEA;
+}
+
+.observation-favorite-user:last-child {
+    border-bottom: 0;
+}
+
 .icon-brand-s {
 	font-size: 75px;
 	color: #365F8C;
@@ -416,6 +464,15 @@ a {
 
 textarea {
   height: 75px;
+}
+
+.btn-no-border {
+  border: 0px solid transparent;
+  background: none;
+}
+
+.btn-no-border:focus, .btn-no-border:active:focus, .btn-no-border.active:focus {
+    outline: 0 none;
 }
 
 .btn-file {
@@ -677,6 +734,53 @@ h4.image-delete {
 	font-style: italic;
 }
 
+.observation-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+.observation-action {
+  font-size: 20px;
+  color: #AAA;
+  width: 80px;
+}
+
+.observation-action-important-close {
+  margin: -8px -13px 0;
+  font-size: 14px;
+}
+
+.observation-action-important-active {
+  color: #D0021B;
+}
+
+.observation-action-important:hover {
+  color: #D0021B;
+}
+
+.observation-action-favorite-active {
+  color: #7ED321;
+}
+
+.observation-action-favorite:hover {
+  color: #7ED321;
+}
+
+.observation-action-favorite-count {
+  font-size: 12px;
+  position: relative;
+}
+
+.observation-action-email {
+  width: auto;
+}
+
+.observation-action-email:hover {
+  color: #4A90E2;
+}
+
 .or-container {
     text-align: center;
     margin-top: 20px;
@@ -773,4 +877,8 @@ a.alert:after {
 .field-textarea {
   white-space: pre;
   padding-left: 0;
+}
+
+.export-actions {
+  margin-left: 15px;
 }

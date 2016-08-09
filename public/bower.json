@@ -24,7 +24,7 @@
     "angular-route": "1.5.3",
     "angular-messages": "1.5.3",
     "angular-ui-select": "0.17.1",
-    "angular-bootstrap": "1.2.5",
+    "angular-bootstrap": "2.0.1",
     "jquery": "1.9.1",
     "jquery-file-upload": "9.3.0",
     "jquery-file-download": "latest",

@@ -31,6 +31,40 @@ angular.module('mage').factory('Observation', ['$resource', function($resource) 
 
   return Observation;
 }])
+.factory('ObservationFavorite', ['$resource', function($resource) {
+
+  var ObservationFavorite = $resource('/api/events/:eventId/observations/:observationId/favorite', {
+    id: '@id',
+    observationId: '@observationId',
+    eventId: '@eventId'
+  },{
+    save: {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }
+  });
+
+  return ObservationFavorite;
+}])
+.factory('ObservationImportant', ['$resource', function($resource) {
+
+  var ObservationImportant = $resource('/api/events/:eventId/observations/:observationId/important', {
+    id: '@id',
+    observationId: '@observationId',
+    eventId: '@eventId'
+  },{
+    save: {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }
+  });
+
+  return ObservationImportant;
+}])
 .factory('ObservationState', ['$resource', function($resource) {
 
   var ObservationState = $resource('/api/events/:eventId/observations/:observationId/states/:id', {
