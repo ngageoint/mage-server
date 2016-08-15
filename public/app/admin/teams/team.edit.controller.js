@@ -20,6 +20,7 @@ function AdminTeamEditController($scope, $location, $routeParams, Team) {
   };
 
   $scope.cancel = function() {
-    $location.path('/admin/teams/' + $scope.team.id);
+    var path = $scope.team.id ? '/admin/teams/' + $scope.team.id : '/admin/teams';
+    $location.path(path);
   };
 }

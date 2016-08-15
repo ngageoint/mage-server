@@ -75,6 +75,7 @@ function UserController($scope, $location, $timeout, Api, UserService, user) {
 
   $scope.cancel = function() {
     $scope.user = angular.copy($scope.originalUser);
+    $location.path('/map');
   };
 
   $scope.updatePassword = function() {

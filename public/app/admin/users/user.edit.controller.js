@@ -100,7 +100,8 @@ function AdminUserEditController($scope, $filter, $routeParams, $location, Api, 
   });
 
   $scope.cancel = function() {
-    $location.path('/admin/users/' + $scope.user.id);
+    var path = $scope.user.id ? '/admin/users/' + $scope.user.id : '/admin/users';
+    $location.path(path);
   };
 
   $scope.saveUser = function () {

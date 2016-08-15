@@ -47,7 +47,8 @@ function AdminDeviceEditController($scope, $filter, $routeParams, $location, Loc
   };
 
   $scope.cancel = function() {
-    $location.path('/admin/devices/' + $scope.device.id);
+    var path = $scope.device.id ? '/admin/devices/' + $scope.device.id : '/admin/devices';
+    $location.path(path);
   };
 
   $scope.saveDevice = function () {

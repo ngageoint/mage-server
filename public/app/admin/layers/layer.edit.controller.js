@@ -25,6 +25,7 @@ function AdminLayerEditController($scope, $location, $routeParams, LocalStorageS
   };
 
   $scope.cancel = function() {
-    $location.path('/admin/layers/' + $scope.layer.id);
+    var path = $scope.layer.id ? '/admin/layers/' + $scope.layer.id : '/admin/layers';
+    $location.path(path);
   };
 }
