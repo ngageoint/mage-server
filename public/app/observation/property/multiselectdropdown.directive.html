@@ -1,4 +1,4 @@
-<div class="row top-gap-s" ng-show="field.value">
+<div class="row top-gap-s" ng-show="field.value && field.value.length">
   <div class="col-md-12">
     <strong class="muted">{{field.title}}</strong>
     <span class="field">{{field.value.join(", ")}}</span>
