@@ -248,12 +248,17 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
 
     var existingPropertyFields = [];
     _.each(observation.properties, function(value, key) {
-      if (key === 'geometry') return; 
+      if (key === 'geometry') return;
 
       var field = service.getFormField(form, key);
       if (field) {
         if (field.type === 'date') {
           field.value = moment(value).toDate();
+        } else if (field.type === 'geometry') {
+          field.value = {
+            x: value.coordinates[0],
+            y: value.coordinates[1]
+          };
         } else {
           field.value = value;
         }

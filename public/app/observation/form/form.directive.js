@@ -33,12 +33,18 @@ function FormDirectiveController($scope, EventService, Observation, UserService,
 
   function formToObservation(form, observation) {
     _.each(form.fields, function(field) {
-      switch (field.name) {
+      switch (field.type) {
       case 'geometry':
-        observation.geometry = {
+        var geometry = {
           type: 'Point',
           coordinates: [field.value.x, field.value.y]
         };
+
+        if (field.name === 'geometry') {
+          observation.geometry = geometry;
+        } else {
+          observation.properties[field.name] = geometry;
+        }
 
         break;
       default:
