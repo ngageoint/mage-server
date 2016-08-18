@@ -138,7 +138,6 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
       $scope.newField.type = 'multiselectdropdown';
     }
 
-    $scope.onRequiredChanged($scope.newField);
     fields.push($scope.newField);
 
     $scope.newField = newField();
@@ -347,32 +346,6 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
       }
     }
     $scope.populateVariants();
-  };
-
-  $scope.onRequiredChanged = function(field) {
-    if (field.type === 'dropdown' || field.type === 'userDropdown') {
-      if (field.required && field.choices.length && field.choices[0].blank) {
-        field.choices.shift();
-
-        _.each(field.choices, function(choice) {
-          choice.id = choice.id - 1;
-          choice.value = choice.value - 1;
-        });
-      } else if (!field.required && field.choices.length > 0  && !field.choices[0].blank) {
-        // add empty field
-        _.each(field.choices, function(choice) {
-          choice.id = choice.id + 1;
-          choice.value = choice.value + 1;
-        });
-
-        field.choices.unshift({
-          id: 0,
-          title: "",
-          value: 0,
-          blank: true
-        });
-      }
-    }
   };
 
   // decides whether field options block will be shown (true for dropdown and radio fields)

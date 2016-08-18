@@ -129,7 +129,7 @@
                       <div class="col-md-6">
                         <div class="form-group" ng-show="showAddOptions(field) && !isMemberField(field)">
                           <label>Field Options</label>
-                          <div ng-repeat="option in field.choices | filter:{blank: '!true'}" class="row bottom-gap">
+                          <div ng-repeat="option in field.choices" class="row bottom-gap">
                             <div class="col-sm-12">
                               <span class="admin-table-delete-btn"><a class="btn btn-danger btn-xs pull-left" type="button" ng-click="deleteOption(field, option)"><i class="fa fa-minus icon-white"></i></a></span>
                               {{option.title}}
@@ -148,7 +148,7 @@
                     </div>
                     <div class="checkbox" ng-show="field.name != 'timestamp' &amp;&amp; field.name != 'geometry' &amp;&amp; field.name != 'type'">
                       <label>
-                      <input type="checkbox" ng-model="field.required"  ng-change="onRequiredChanged(field);"> Required
+                      <input type="checkbox" ng-model="field.required"> Required
                       </label>
                     </div>
 
@@ -266,7 +266,7 @@
                   <div class="col-md-6">
                     <div class="form-group" ng-show="showAddOptions(newField)">
                       <label>Field Options</label>
-                      <div ng-repeat="option in newField.choices | filter:{blank: '!true'}" class="row bottom-gap">
+                      <div ng-repeat="option in newField.choices" class="row bottom-gap">
                         <div class="col-sm-12">
                           <span class="admin-table-delete-btn"><a class="btn btn-danger btn-xs pull-left" type="button" ng-click="deleteOption(newField, option)"><i class="fa fa-minus icon-white"></i></a></span>
                           {{option.title}}
