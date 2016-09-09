@@ -187,9 +187,10 @@ function AdminUserEditController($scope, $filter, $routeParams, $location, Api, 
 
     UserService.updateUser($scope.user.id, user, function() {
       $location.path('/admin/users/' + $scope.user.id);
-    })
-    .error(function(data) {
-      $scope.passwordStatus = {status: "error", msg: data};
+    }, function(data) {
+      $scope.$apply(function() {
+        $scope.passwordStatus = {status: "error", msg: data.responseText};
+      });
     });
   };
 }
