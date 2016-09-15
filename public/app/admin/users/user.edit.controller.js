@@ -126,13 +126,16 @@ function AdminUserEditController($scope, $filter, $routeParams, $location, Api, 
       username: $scope.user.username,
       displayName: $scope.user.displayName,
       email: $scope.user.email,
-      phone: $scope.user.phone,
       password: $scope.user.password,
       passwordconfirm: $scope.user.passwordconfirm,
       avatar: $scope.user.avatar,
       icon: $scope.user.icon,
       iconMetadata: JSON.stringify($scope.iconMetadata)
     };
+
+    if ($scope.user.phones && $scope.user.phones.length) {
+      user.phone = $scope.user.phones[0].number;
+    }
 
     if ($scope.user.role) {
       user.roleId = $scope.user.role.id;
