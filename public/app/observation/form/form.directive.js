@@ -33,6 +33,8 @@ function FormDirectiveController($scope, EventService, Observation, UserService,
 
   function formToObservation(form, observation) {
     _.each(form.fields, function(field) {
+      if (field.value == null) return;
+
       switch (field.type) {
       case 'geometry':
         var geometry = {
