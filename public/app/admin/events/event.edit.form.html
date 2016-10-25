@@ -63,7 +63,7 @@
                         </div>
                       </div>
                     </div>
-                    <div class="row" ng-hide="showAddOptions(field) || field.type === 'numberfield' || field.type === 'checkbox'">
+                    <div class="row" ng-hide="showAddOptions(field) || field.type === 'numberfield' || field.type === 'checkbox' || field.type === 'textarea'">
                       <div class="col-md-6">
                         <div class="form-group">
                           <label>Default Value</label>
@@ -71,6 +71,15 @@
                         </div>
                       </div>
                     </div>
+                    <div class="row" ng-show="field.type === 'textarea'">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label>Default Value</label>
+                          <textarea class="form-control" type="text" ng-model="field.value" value="{{field.value}}"></textarea>
+                        </div>
+                      </div>
+                    </div>
+
                     <div class="row" ng-show="showAddOptions(field) && !isMemberField(field)">
                       <div class="col-md-6" ng-if="field.type === 'dropdown'">
                         <div class="form-group">
@@ -201,7 +210,7 @@
                   </div>
                 </div>
 
-                <div class="row" ng-if="newField.type !== 'checkbox' && newField.type !== 'numberfield'">
+                <div class="row" ng-if="newField.type !== 'checkbox' && newField.type !== 'numberfield' && newField.type !== 'textarea'">
                   <div class="col-md-6">
                     <div class="form-group" ng-hide="hideAddOptions(newField)">
                       <label>Default Value</label>
@@ -209,6 +218,16 @@
                     </div>
                   </div>
                 </div>
+
+                <div class="row" ng-show="newField.type === 'textarea'">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label>Default Value</label>
+                      <textarea class="form-control" type="text" ng-model="newField.value" value="{{newField.value}}"></textarea>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="row" ng-if="newField.type === 'numberfield'">
                   <div class="col-md-6">
                     <div class="form-group" ng-class="{'has-error': form.newField.value.$invalid}">
