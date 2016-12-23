@@ -7,7 +7,12 @@ Adheres to [Semantic Versioning](http://semver.org/).
 
 * TBD
 
+#### This release include database migrations.
+* Please run `npm run migrate`
+
 ##### Features
+* Added user no edit role to db migrations. This role is similar to the user role except for that it
+  does not allow for editing of observations or locations by the user.
 
 ##### Bug Fixes
 
