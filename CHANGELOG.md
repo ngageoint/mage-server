@@ -7,14 +7,14 @@ Adheres to [Semantic Versioning](http://semver.org/).
 
 * TBD
 
-#### This release include database migrations.
-* Please run `npm run migrate`
-
 ##### Features
 
 ##### Bug Fixes
 
 ## [4.4.0](https://github.com/ngageoint/mage-server/releases/tag/v4.4.0) (01-11-2017)
+
+#### This release include database migrations.
+* Please run `npm run migrate`
 
 ##### Features
 * Added observations favorites.  Users can mark observations as a favorite, and can view other users favorites.
