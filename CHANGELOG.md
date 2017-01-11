@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 Adheres to [Semantic Versioning](http://semver.org/).
 
 ---
-## 4.4.0 (TBD)
+## 4.4.1 (TBD)
 
 * TBD
 
@@ -11,13 +11,18 @@ Adheres to [Semantic Versioning](http://semver.org/).
 * Please run `npm run migrate`
 
 ##### Features
+
+##### Bug Fixes
+
+## [4.4.0](https://github.com/ngageoint/mage-server/releases/tag/v4.4.0) (01-11-2017)
+
+##### Features
 * Added observations favorites.  Users can mark observations as a favorite, and can view other users favorites.
 * Added important observations.  Users with event edit permissions can mark observations as important.
-* Added observation share via email.
+* Added observation share/export.  Share/export will package observation (including attachments) into a self contained html page.
 
 ##### Bug Fixes
 * Changed default form type to textarea for textarea fields.  This will enable users to add new lines to default.
-
 
 ## [4.3.0](https://github.com/ngageoint/mage-server/releases/tag/v4.3.0) (09-22-2016)
 
