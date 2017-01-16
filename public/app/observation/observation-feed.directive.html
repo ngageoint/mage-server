@@ -37,7 +37,7 @@
           <i class="fa fa-heart observation-action-favorite pointer"
           ng-class="{'observation-action-favorite-active': isUserFavorite}"
           ng-click="toggleFavorite()"
-          uib-tooltip="Favorite"></i>
+          uib-tooltip="{{isUserFavorite ? 'Unfavorite' : 'Favorite'}}"></i>
 
           <span class="observation-action-favorite-count pointer"
             ng-if="observation.favoriteUserIds.length"
