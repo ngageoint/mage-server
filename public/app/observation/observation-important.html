@@ -14,8 +14,8 @@
       <textarea rows="2" ng-model="importantPopover.description" class="form-control"></textarea>
     </div>
 
-    <button class="btn btn-sm btn-primary pull-right" ng-click="markAsImportant()">{{observation.important ? 'Update' : 'Mark As Important'}}</button>
-    <button class="btn btn-sm btn-danger" ng-if="observation.important" ng-click="clearImportant()">Clear Important</button>
+    <button class="btn btn-sm btn-primary pull-right" ng-click="markAsImportant()">{{observation.important ? 'Update' : 'Flag As Important'}}</button>
+    <button class="btn btn-sm btn-danger" ng-if="observation.important" ng-click="clearImportant()">Remove</button>
   </form>
 
   <div class="top-gap" ng-if="!canEditImportant && observation.important.description">
