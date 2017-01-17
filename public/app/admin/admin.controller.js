@@ -91,7 +91,9 @@ function AdminController($scope, $routeParams, $location, $filter, UserService, 
 
     user.active = true;
     UserService.updateUser(user.id, user, function(data) {
-      $scope.inactiveUsers = _.reject($scope.inactiveUsers, function(u) { return u.id === data.id; });
+      $scope.$apply(function() {
+        $scope.inactiveUsers = _.reject($scope.inactiveUsers, function(u) { return u.id === data.id; });
+      });
     });
   };
 
