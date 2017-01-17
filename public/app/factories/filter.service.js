@@ -11,6 +11,7 @@ function FilterService(UserService) {
 
   var interval = {};
   var filterLocalOffset = moment().format('Z');
+  var actionFilter = {};
 
   var intervalChoices = [{
     filter: 'all',
@@ -95,6 +96,7 @@ function FilterService(UserService) {
 
     if (filter.actionFilter) {
       actionFilterChanged = filter.actionFilter;
+      actionFilter = filter.actionFilter;
     }
 
     if (filter.timeInterval && setTimeInterval(filter.timeInterval)) {
@@ -217,6 +219,15 @@ function FilterService(UserService) {
       } else if (time.end) {
         if (!moment(o.timestamp).isBefore(time.start)) return false;
       }
+    }
+
+    // remove observations that are not part of action filter
+    if (actionFilter === 'important' && !o.important) {
+      return false;
+    }
+
+    if (actionFilter === 'favorite' && !_.contains(o.favoriteUserIds, UserService.myself.id)) {
+      return false;
     }
 
     return true;

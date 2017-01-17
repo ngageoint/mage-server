@@ -101,49 +101,18 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
 
     var actionEvent = eventsById[event.id];
 
-    // remove observations that are not part of action filter
-    function isFavorite(observation) {
-      return _.contains(observation.favoriteUserIds, UserService.myself.id);
-    }
-
-    function isImportant(observation) {
-      return observation.important;
-    }
-
     var observationsRemoved = [];
     _.each(actionEvent.filteredObservationsById, function(observation) {
-      var remove = false;
-      switch (actionFilter) {
-      case 'favorite':
-        remove = !isFavorite(observation);
-        break;
-      case 'important':
-        remove = !isImportant(observation);
-        break;
-      }
-
-      if (remove) {
+      if (!FilterService.isContainedWithinFilter(observation)) {
         delete actionEvent.filteredObservationsById[observation.id];
         observationsRemoved.push(observation);
       }
     });
 
     var observationsAdded = [];
-    // add any observations that are part of the filtered teams
+    // add any observations that are part of the filtered actions
     _.each(actionEvent.observationsById, function(observation) {
-      var add = false;
-      switch (actionFilter) {
-      case 'favorite':
-        add = isFavorite(observation) && !actionEvent.filteredObservationsById[observation.id];
-        break;
-      case 'important':
-        add = isImportant(observation) && !actionEvent.filteredObservationsById[observation.id];
-        break;
-      default:
-        add = !actionEvent.filteredObservationsById[observation.id];
-      }
-
-      if (add) {
+      if (FilterService.isContainedWithinFilter(observation)) {
         observationsAdded.push(observation);
         actionEvent.filteredObservationsById[observation.id] = observation;
       }
@@ -481,7 +450,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
       var filteredObservationsById = eventsById[event.id].filteredObservationsById;
       _.each(observations, function(observation) {
         // Check if this observation passes the team filter.
-        if (FilterService.areTeamsInFilter(observation.teamIds)) {
+        if (FilterService.isContainedWithinFilter(observation)) {
           // Check if we already have this observation, if so update, otherwise add
           var localObservation = filteredObservationsById[observation.id];
           if (localObservation) {
