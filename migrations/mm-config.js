@@ -2,6 +2,8 @@ var environment = require('environment')
   , mongoose = require('mongoose')
   , log = require('winston');
 
+var mongo = environment.mongo;
+
 var migrateConfig = {
   scheme: environment.mongo.scheme,
   host: environment.mongo.host,
@@ -10,10 +12,12 @@ var migrateConfig = {
   user: environment.mongo.username,
   password: environment.mongo.password,
   collection: "migrations",
-  directory: "migrations"
+  directory: "migrations",
+  options: environment.mongo.options
 };
 
-mongoose.connect(environment.mongo.uri, function(err) {
+log.info('using mongodb connection from: ' + mongo.uri);
+mongoose.connect(environment.mongo.uri, environment.mongo.options, function(err) {
   if (err) {
     log.error('Error connecting to mongo database, please make sure mongodbConfig is running...');
     throw err;

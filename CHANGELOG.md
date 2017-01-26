@@ -3,13 +3,20 @@ All notable changes to this project will be documented in this file.
 Adheres to [Semantic Versioning](http://semver.org/).
 
 ---
-## 4.4.1 (TBD)
+## 4.4.2 (TBD)
 
 * TBD
 
 ##### Features
 
 ##### Bug Fixes
+
+## [4.4.1](https://github.com/ngageoint/mage-server/releases/tag/v4.4.1) (01-26-2017)
+
+##### Features
+
+##### Bug Fixes
+* Fix migrations module to work with mongodb SSL connection
 
 ## [4.4.0](https://github.com/ngageoint/mage-server/releases/tag/v4.4.0) (01-11-2017)
 

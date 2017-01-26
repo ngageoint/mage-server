@@ -37,6 +37,16 @@ var serverOptions = {
 // http://mongodb.github.io/node-mongodb-native/2.0/tutorials/enterprise_features/
 // You will also need to setup SSL on the mongodb side: https://docs.mongodb.com/v3.0/tutorial/configure-ssl/
 
+// 2-way ssl configuration with x509 certificate
+// environment.mongo.options = {
+//   server: serverOptions,
+//   user: '',
+//   auth: {
+//      authdb: '$external' ,
+//      authMechanism: 'MONGODB-X509'
+//    }
+// };
+
 // serverOptions.ssl = true;
 // serverOptions.sslValidate = false;
 // serverOptions.sslCA = fs.readFileSync('/etc/ssl/mongodb-cert.crt');
