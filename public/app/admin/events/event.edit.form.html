@@ -38,7 +38,7 @@
         <div class="col-sm-12">
           <div class="admin-table admin-table-content">
             <uib-accordion close-others="accordion.oneAtATime">
-              <uib-accordion-group ng-repeat="field in event.form.fields | filter:{archived: '!true'} | orderBy: 'id'">
+              <div uib-accordion-group class="panel-default" ng-repeat="field in event.form.fields | filter:{archived: '!true'} | orderBy: 'id'">
                 <uib-accordion-heading>
                   {{field.title}}
                   <i class="pull-right fa fa-arrow-up" ng-if="!$first && canMoveField(field)" ng-click="moveFieldUp($event, field)"></i>
@@ -165,7 +165,7 @@
                   </form>
 
                 </div>
-              </uib-accordion-group>
+              </div>
             </uib-accordion>
 
             <div class="row top-gap-l">

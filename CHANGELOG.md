@@ -3,13 +3,20 @@ All notable changes to this project will be documented in this file.
 Adheres to [Semantic Versioning](http://semver.org/).
 
 ---
-## 4.4.2 (TBD)
+## 4.4.3 (TBD)
 
 * TBD
 
 ##### Features
 
 ##### Bug Fixes
+
+## [4.4.2](https://github.com/ngageoint/mage-server/releases/tag/v4.4.2) (01-27-2017)
+
+##### Features
+
+##### Bug Fixes
+* Fixed issue with viewing already created form fields for an event
 
 ## [4.4.1](https://github.com/ngageoint/mage-server/releases/tag/v4.4.1) (01-26-2017)
 
