@@ -140,16 +140,21 @@
                           <label>Field Options</label>
                           <div ng-repeat="option in field.choices" class="row bottom-gap">
                             <div class="col-sm-12">
-                              <span class="admin-table-delete-btn"><a class="btn btn-danger btn-xs pull-left" type="button" ng-click="deleteOption(field, option)"><i class="fa fa-minus icon-white"></i></a></span>
-                              {{option.title}}
+                              <div class="admin-option-container">
+                                <a class="admin-option-action text-primary" ng-click="reorderOption(field, option)"><i class="fa fa-sort"></i></i></a>
+                                <div class="admin-option-text right-gap">
+                                  <span>{{option.title}}</span>
+                                </div>
+                                <a class="admin-table-delete-btn pointer" ng-click="deleteOption(field, option)"><i class="fa fa-trash-o text-danger"></i></a>
+                              </div>
                             </div>
                           </div>
-                          <div class="row">
+                          <div class="row top-gap-l">
                             <div class="col-md-10">
                               <input type="text" ng-model="newOptionTitle" class="form-control">
                             </div>
                             <div class="col-md-2">
-                              <button class="btn btn-primary" type="button" ng-click="addOption(field, newOptionTitle); newOptionTitle = '';"><i class="fa fa-plus"></i> Add Option</button>
+                              <button class="btn btn-sm btn-primary" type="button" ng-click="addOption(field, newOptionTitle); newOptionTitle = '';"><i class="fa fa-plus"></i> Add Option</button>
                             </div>
                           </div>
                         </div>
@@ -203,7 +208,7 @@
                   <div class="col-md-6">
                     <div class="checkbox">
                       <label>
-                        <input ng-model="newField.multiselect" type="checkbox" ng-checked="newField.multiselect == true"/> Multiselect
+                        <input ng-model="newField.$multiselect" type="checkbox" ng-checked="newField.$multiselect == true"/> Multiselect
                       </label>
                       <p class="help-block">Choose multiselect if you would like users to be able to select more than one choice.</p>
                     </div>
@@ -260,7 +265,7 @@
                   </label>
                 </div>
                 <div class="row" ng-if="showAddOptions(newField)">
-                  <div class="col-md-6" ng-if="!newField.multiselect">
+                  <div class="col-md-6" ng-if="!newField.$multiselect">
                     <div class="form-group">
                       <label>Default Value</label>
                       <select ng-model="newField.value" ng-options="choice.title as choice.title for choice in newField.choices" class="form-control">
@@ -269,7 +274,7 @@
                     </div>
                   </div>
 
-                  <div class="col-md-6" ng-if="newField.multiselect">
+                  <div class="col-md-6" ng-if="newField.$multiselect">
                     <div class="form-group">
                       <label>Default Value</label>
                       <ui-select multiple ng-model="newField.value" theme="bootstrap">
@@ -287,8 +292,13 @@
                       <label>Field Options</label>
                       <div ng-repeat="option in newField.choices" class="row bottom-gap">
                         <div class="col-sm-12">
-                          <span class="admin-table-delete-btn"><a class="btn btn-danger btn-xs pull-left" type="button" ng-click="deleteOption(newField, option)"><i class="fa fa-minus icon-white"></i></a></span>
-                          {{option.title}}
+                          <div class="admin-option-container">
+                            <a class="right-gap pointer" ng-click="reorderOption(newField, option)"><i class="fa fa-sort"></i></i></a>
+                            <div class="admin-option-text right-gap">
+                              <span>{{option.title}}</span>
+                            </div>
+                            <a class="admin-table-delete-btn pointer" ng-click="deleteOption(newField, option)"><i class="fa fa-trash-o text-danger"></i></a>
+                          </div>
                         </div>
                       </div>
                       <div class="row">

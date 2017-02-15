@@ -8,6 +8,9 @@ Adheres to [Semantic Versioning](http://semver.org/).
 * TBD
 
 ##### Features
+* Admin can reorder select field options.
+* Bulk user create.  From 'Users' admin page click the 'Bulk Import' button to import a csv of users.
+* When deleting a team, you can now delete all users that are part of that team.
 
 ##### Bug Fixes
 

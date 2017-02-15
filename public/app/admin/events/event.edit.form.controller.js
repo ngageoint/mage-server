@@ -337,6 +337,43 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     $scope.populateVariants();
   };
 
+  $scope.reorderOption = function(field, option) {
+    var modalInstance = $uibModal.open({
+      templateUrl: '/app/admin/events/event.field.option.reorder.html',
+      controller: ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
+        $scope.model = {
+          option: option,
+          choices: field.choices.slice()
+        };
+
+        $scope.move = function(choiceIndex) {
+          var optionIndex = _.findIndex($scope.model.choices, function(c) {
+            return c.title === $scope.model.option.title;
+          });
+
+          // Moving down subtract an index
+          if (choiceIndex > optionIndex) {
+            choiceIndex--;
+          }
+
+          $scope.model.choices.splice(choiceIndex, 0, $scope.model.choices.splice(optionIndex, 1)[0]);
+        };
+
+        $scope.done = function() {
+          $uibModalInstance.close($scope.model.choices);
+        };
+
+        $scope.cancel = function () {
+          $uibModalInstance.dismiss('cancel');
+        };
+      }]
+    });
+
+    modalInstance.result.then(function (choices) {
+      field.choices = choices;
+    });
+  };
+
   // delete particular option
   $scope.deleteOption = function (field, option) {
     for (var i = 0; i < field.choices.length; i++) {

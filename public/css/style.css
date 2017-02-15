@@ -384,7 +384,7 @@ a {
   color: #91BDEE;
 }
 
-.modal-header h3 {
+.modal-title {
   color: #FFF;
 }
 
@@ -620,6 +620,40 @@ textarea {
   margin-left: 10px;
 }
 
+.admin-option-container {
+  display: flex;
+  align-items: center;
+}
+
+.admin-option-text {
+  margin-left: 5px;
+  flex: 1;
+}
+
+.admin-option-action {
+  margin-right: 10px;
+  cursor: pointer; cursor: hand;
+}
+
+.admin-option-border {
+  height: 1px;
+  margin-top: 10px;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.admin-option-modal-content {
+  overflow: scroll;
+  max-height: 65vh;
+}
+
+.admin-option-reorder:hover {
+  font-size: 18px;
+}
+
+.admin-option-model-text:hover {
+  font-weight: bold;
+}
+
 .admin-table-delete-btn {
 	margin-right: 15px;
 	float: left;
@@ -682,6 +716,10 @@ textarea {
 .admin-layer-icon {
   padding: 5px 0 5px;
   font-size: 25px;
+}
+
+.admin-delete-icon {
+  color: red;
 }
 
 .pointer {
