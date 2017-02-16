@@ -69,7 +69,9 @@ UserSchema.pre('save', function(next) {
     if (err) return next(err);
 
     if (possibleDuplicate && !possibleDuplicate._id.equals(user._id)) {
-      return next(new Error('username already exists'));
+      var error = new Error('username already exists');
+      error.status = 400;
+      return next(error);
     }
 
     next();
@@ -91,6 +93,15 @@ UserSchema.pre('save', function(next) {
   } else {
     next();
   }
+});
+
+UserSchema.post('save', function(err, user, next) {
+  if (err.name === 'MongoError' && err.code === 11000) {
+    err = new Error('username already exists');
+    err.status = 400;
+  }
+
+  next(err);
 });
 
 // Remove Token if password changed

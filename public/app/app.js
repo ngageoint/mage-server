@@ -139,6 +139,11 @@ function config($provide, $httpProvider, $routeProvider, $animateProvider) {
     controller:     "AdminUserEditController",
     resolve: resolveAdmin()
   });
+  $routeProvider.when('/admin/users/bulk', {
+    templateUrl:    'app/admin/users/user.bulk.html',
+    controller:     "AdminUserBulkController",
+    resolve: resolveAdmin()
+  });
   $routeProvider.when('/admin/users/:userId/', {
     templateUrl:    'app/admin/users/user.html',
     controller:     "AdminUserController",

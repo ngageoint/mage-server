@@ -722,6 +722,23 @@ textarea {
   color: red;
 }
 
+.admin-bulk-user-content {
+  overflow-y: scroll;
+  max-height: 50vh;
+}
+
+.admin-bulk-column {
+  min-width: 120px;
+}
+
+.cssFade {
+    transition: 0.5s linear all;
+    opacity: 1;
+}
+.cssFade.ng-hide {
+    opacity: 0;
+}
+
 .pointer {
   cursor: pointer; cursor: hand;
 }

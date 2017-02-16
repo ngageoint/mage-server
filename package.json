@@ -1,6 +1,6 @@
 {
   "name": "MAGE",
-  "version": "4.4.2",
+  "version": "4.4.3",
   "description": "Geospatial situation awareness application",
   "keywords": [
     "NGA",
@@ -38,7 +38,7 @@
     "method-override": "1.0.x",
     "moment": "2.12.0",
     "mongodb-migrations": "0.8.3",
-    "mongoose": "4.4.4",
+    "mongoose": "4.8.1",
     "multer": "0.1.x",
     "passport": "0.1.x",
     "passport-anonymous": "1.0.1",

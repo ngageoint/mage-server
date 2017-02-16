@@ -37,6 +37,10 @@ function AdminUsersController($scope, $uibModal, $filter, $location, LocalStorag
     $location.path('/admin/users/new');
   };
 
+  $scope.bulkImport = function() {
+    $location.path('/admin/users/bulk');
+  };
+
   $scope.gotoUser = function(user) {
     $location.path('/admin/users/' + user.id);
   };

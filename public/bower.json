@@ -42,6 +42,7 @@
     "videogular-controls": "1.4.3",
     "videogular-overlay-play": "1.4.3",
     "leaflet-geosearch": "1.1.0",
-    "exif-js": "~2.1.1"
+    "exif-js": "~2.1.1",
+    "papaparse": "~4.1.4"
   }
 }

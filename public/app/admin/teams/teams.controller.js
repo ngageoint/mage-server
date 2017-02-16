@@ -47,19 +47,7 @@ function AdminTeamsController($scope, $uibModal, $filter, $location, Team) {
           return team;
         }
       },
-      controller: ['$scope', '$uibModalInstance', 'team', function ($scope, $uibModalInstance, team) {
-        $scope.team = team;
-
-        $scope.deleteTeam = function(team) {
-          team.$delete(function() {
-            $uibModalInstance.close(team);
-          });
-        };
-
-        $scope.cancel = function () {
-          $uibModalInstance.dismiss('cancel');
-        };
-      }]
+      controller: 'AdminTeamDeleteController'
     });
 
     modalInstance.result.then(function (team) {
