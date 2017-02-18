@@ -1,6 +1,6 @@
 html
   head
-    
+
     link(rel="stylesheet" href="https://unpkg.com/leaflet@0.7.7/dist/leaflet.css")
     style.
       body { margin-top: 15px; background-color: #47688c; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";}
@@ -26,11 +26,11 @@ html
       .attachment-image { height: 200px; width: 200px; object-fit: cover }
       .card { margin: auto; width: 50%; min-width: 600px; background-color: #fff; box-shadow: 0 3px 7px rgba(0,0,0,.35); border-radius: 3px;}
       .card-content { padding: 10px; }
-      
-  body  
+
+  body
     h1 MAGE
     h2= event.name
-    
+
     .card
       .card-content
         .property-header
@@ -41,54 +41,54 @@ html
               if user
                 .property.property-user
                   .div= user.displayName
-              
+
               .property.property-date
                 div= observation.properties.timestamp
-                
+
               .property.property-geometry
                 span #{observation.geometry.coordinates[0]},&nbsp
                 span= observation.geometry.coordinates[1]
-              
+
             .property.property-type
               strong= observation.properties.type
-    
+
             if form.variantField && observation.properties[form.variantField]
               .property.property-variant
                 div= observation.properties[form.variantField]
-                
+
         #map.hide
-                      
+
         .properties
           each property, key in observation.properties
             if property && (key !== 'type' && key !== 'timestamp' && key !== form.variantField && fieldsByName[key] != null)
               .property
                 strong.property-title #{fieldsByName[key].title}:
                 div= property
-    
+
         .attachments
           each attachment in observation.attachments
             .attachment
               if attachment.contentType.indexOf('image/') === 0 || attachment.name.indexOf('.png') !== -1 || attachment.name.indexOf('.jpg') !== -1 || attachment.name.indexOf('.jpeg') !== -1
-                a(href="media/#{attachment.name}", target='_blank')
-                  img.attachment-image(src="media/#{attachment.name}")
+                a(href="media/" + attachment.name, target='_blank')
+                  img.attachment-image(src="media/" + attachment.name)
               if attachment.contentType.indexOf('video/') === 0 || attachment.name.indexOf('.mp4') !== -1
-                video(src="media/#{attachment.name}", controls, style={'height': '200px'})
-                  a(href="media/#{attachment.name}") download video
-                  
+                video(src="media/" + attachment.name, controls, style={'height': '200px'})
+                  a(href="media/" + attachment.name) download video
+
   script.
     var geometry = !{JSON.stringify(observation.geometry)};
-    function loadMap() {      
+    function loadMap() {
       var latLng = L.GeoJSON.coordsToLatLng(geometry.coordinates);
       var map = L.map('map').setView(latLng, 13);
       L.DomUtil.removeClass(L.DomUtil.get('map'), 'hide');
       map.invalidateSize();
-      
+
       L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
           attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(map);
-      
+
       L.marker(latLng).addTo(map)
         .bindPopup('A pretty CSS3 popup.<br> Easily customizable.');
     }
-    
+
   script(type="text/javascript" src="https://npmcdn.com/leaflet@0.7.7/dist/leaflet.js" onload ="loadMap()")

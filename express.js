@@ -21,7 +21,7 @@ app.use(function(req, res, next) {
 app.set('config', config);
 app.enable('trust proxy');
 
-app.set('view engine', 'jade');
+app.set('view engine', 'pug');
 
 app.use(function(req, res, next) {
   req.getRoot = function() {

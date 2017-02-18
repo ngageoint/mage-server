@@ -31,7 +31,7 @@
     "fs-extra": "0.11.x",
     "geojson-validation": "^0.1.6",
     "gm": "1.17.x",
-    "jade": "1.11.0",
+    "pug": "2.0.0-beta11",
     "json2csv": "2.2.1",
     "json2csv-stream": "0.1.2",
     "jszip": "2.5.0",

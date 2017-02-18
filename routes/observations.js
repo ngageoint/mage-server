@@ -2,7 +2,7 @@ module.exports = function(app, security) {
 
   var api = require('../api')
     , log = require('winston')
-    , jade = require('jade')
+    , pug = require('pug')
     , archiver = require('archiver')
     , path = require('path')
     , environment = require('environment')
@@ -233,7 +233,7 @@ module.exports = function(app, security) {
 
       var archive = archiver('zip');
       archive.pipe(res);
-      var html = jade.renderFile('views/observation.jade', {
+      var html = pug.renderFile('views/observation.pug', {
         event: req.event,
         form: req.event.form,
         fieldsByName: fieldsByName,
