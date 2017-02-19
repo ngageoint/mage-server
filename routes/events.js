@@ -326,7 +326,7 @@ module.exports = function(app, security) {
       var archive = archiver('zip');
       res.attachment("icons.zip");
       archive.pipe(res);
-      archive.bulk([{src: ['**'], dest: '/icons', expand: true, cwd: iconBasePath}]);
+      archive.directory(iconBasePath, '/icons');
       archive.finalize();
     }
   );

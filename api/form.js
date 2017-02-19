@@ -83,7 +83,7 @@ Form.prototype.populateUserFields = function(callback) {
 Form.prototype.export = function(callback) {
   var iconBasePath = new api.Icon(this._event._id).getBasePath();
   var archive = archiver('zip');
-  archive.bulk([{src: ['**'], dest: 'form/icons', expand: true, cwd: iconBasePath}]);
+  archive.directory(iconBasePath, 'form/icons');
   archive.append(JSON.stringify(this._event.form), {name: "form/form.json"});
   archive.finalize();
 

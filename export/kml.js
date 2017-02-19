@@ -93,13 +93,7 @@ Kml.prototype.streamObservations = function(stream, archive, done) {
       stream.write(writer.generateKMLFolderClose());
 
       // throw in icons
-      archive.bulk([{
-        cwd: new api.Icon(self._event._id).getBasePath(),
-        src: ['**'],
-        dest: 'icons/' + self._event._id,
-        expand: true,
-        data: { date: new Date() } }
-      ]);
+      archive.directory(new api.Icon(self._event._id).getBasePath(), 'icons/' + self._event._id, {date: new Date()});
 
       done();
     });

@@ -8,6 +8,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 * TBD
 
 ##### Features
+* Upgraded npm dependencies to latest.
 
 ##### Bug Fixes
 

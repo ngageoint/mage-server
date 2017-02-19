@@ -78,14 +78,8 @@ GeoJson.prototype.streamObservations = function(stream, archive, done) {
     }));
 
     // throw in icons
-    archive.bulk([{
-      cwd: new api.Icon(self._event._id).getBasePath(),
-      src: ['*/**'],
-      dest: 'mage-export/icons',
-      expand: true,
-      data: { date: new Date() } }
-    ]);
-
+    archive.directory(new api.Icon(self._event._id).getBasePath(), 'mage-export/icons', {date: new Date()});
+    
     done();
   });
 };
