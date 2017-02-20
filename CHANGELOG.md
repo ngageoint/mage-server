@@ -3,9 +3,15 @@ All notable changes to this project will be documented in this file.
 Adheres to [Semantic Versioning](http://semver.org/).
 
 ---
-## 4.4.3 (TBD)
+## 4.4.4 (TBD)
 
 * TBD
+
+##### Features
+
+##### Bug Fixes
+
+## [4.4.3](https://github.com/ngageoint/mage-server/releases/tag/v4.4.3) (02-20-2017)
 
 ##### Features
 * Admin can reorder select field options.
