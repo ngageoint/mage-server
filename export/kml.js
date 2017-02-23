@@ -122,7 +122,7 @@ Kml.prototype.streamUserLocations = function(stream, user, done) {
       }
 
       locations.forEach(function(location) {
-        stream.write(writer.generatePlacemark('FFT', location));
+        stream.write(writer.generatePlacemark(user.displayName, location));
       });
 
       log.info('Successfully wrote ' + locations.length + ' locations to KML for user ' + user.username);
