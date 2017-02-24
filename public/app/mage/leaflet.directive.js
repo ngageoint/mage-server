@@ -30,6 +30,10 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     trackResize: true
   });
 
+  L.Icon.Default.imagePath = 'bower_components/leaflet/dist/images';
+
+  new L.marker([0, 0]).addTo(map);
+
   // toolbar  and controls config
   new L.Control.GeoSearch({
     provider: new L.GeoSearch.Provider.OpenStreetMap(),
