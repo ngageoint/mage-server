@@ -47,7 +47,7 @@ function FormDirectiveController($scope, EventService, Observation, UserService,
             observation.properties[field.name] = geometry;
           }
         }
-      
+
         break;
       default:
         observation.properties[field.name] = field.value;
@@ -103,6 +103,14 @@ function FormDirectiveController($scope, EventService, Observation, UserService,
   $scope.removeFileUpload = function(id) {
     delete $scope.attachmentUploads[id];
   };
+
+  $scope.$on('observation:move', function(e, observation) {
+    if (observation.id) {
+      // Don't propagate above this directive if this is en edit
+      // for an existing observation
+      e.stopPropagation();
+    }
+  });
 
   $scope.$on('uploadFile', function(e, id) {
     $scope.attachmentUploads[id] = true;

@@ -32,8 +32,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
   L.Icon.Default.imagePath = 'bower_components/leaflet/dist/images';
 
-  new L.marker([0, 0]).addTo(map);
-
   // toolbar  and controls config
   new L.Control.GeoSearch({
     provider: new L.GeoSearch.Provider.OpenStreetMap(),
@@ -147,14 +145,14 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       }
 
       if (options.selected) layer.addTo(map);
-      layers[marker.layerId] = {layer: layer};
+      layers[options.layerId] = {layer: layer};
     }
   }
 
-  function updateMarker(marker) {
-    var layer = layers[marker.id];
+  function updateMarker(marker, layerId) {
+    var layer = layers[layerId];
     if (marker.geometry && marker.geometry.type === 'Point') {
-      layer.setLatLng([marker.geometry.coordinates[1], marker.geometry.coordinates[0]]);
+      layer.layer.setLatLng([marker.geometry.coordinates[1], marker.geometry.coordinates[0]]);
     }
   }
 
@@ -301,13 +299,13 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     _.each(changed.updated, function(updated) {
       switch(updated.type) {
       case 'Feature':
-        updateMarker(updated);
+        updateMarker(updated, changed.name);
         break;
       }
     });
 
     _.each(changed.removed, function(removed) {
-      var layer = layers[removed.layerId];
+      var layer = layers[changed.name];
       if (layer) {
         map.removeLayer(layer.layer);
         delete layer.layer;
