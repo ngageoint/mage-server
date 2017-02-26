@@ -30,8 +30,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     trackResize: true
   });
 
-  L.Icon.Default.imagePath = 'bower_components/leaflet/dist/images';
-
   // toolbar  and controls config
   new L.Control.GeoSearch({
     provider: new L.GeoSearch.Provider.OpenStreetMap(),
@@ -389,7 +387,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
             openPopup(layer);
           });
         });
-        map.setZoom(17);
+        map.setView(layer.getLatLng(), 17);
       } else {
         featureLayer.layer.zoomToShowLayer(layer, function() {
           openPopup(layer);

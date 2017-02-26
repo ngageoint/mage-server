@@ -16,7 +16,6 @@ module.exports = function(grunt) {
       },
       images: {
         files: [{expand: true, cwd: 'public/', src: ['favicon.ico', 'img/**/*'], dest: 'public/dist/'},
-                {expand: true, cwd: 'public/bower_components/leaflet/dist', src: ['images/**/*'], dest: 'public/dist/bower_components/leaflet/dist'},
                 {expand: true, cwd: 'public/bower_components/leaflet/dist', src: ['images/**/*'], dest: 'public/dist/vendor/css'},
                 {expand: true, cwd: 'public/bower_components/Leaflet.awesome-markers/dist', src: ['images/**/*'], dest: 'public/dist/vendor/css'},
                 {expand: true, cwd: 'public/bower_components/videogular-themes-default/', src: ['fonts/**/*'], dest: 'public/dist/vendor/css'}]

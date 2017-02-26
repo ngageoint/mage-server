@@ -16,18 +16,7 @@ L.FixedWidthMarker = L.Marker.extend({
 
     L.Marker.prototype.initialize.call(this, latlng, options);
   },
-
-  onAdd: function (map) {
-    L.Marker.prototype.onAdd.call(this, map);
-
-    if (this._openPopup) this.openPopup();
-  },
-
-  onRemove: function(map) {
-    L.Marker.prototype.onRemove.call(this, map);
-    this._openPopup = false;
-  },
-
+  
   openPopup: function () {
     this._openPopup = true;
 
