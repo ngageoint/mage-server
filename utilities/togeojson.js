@@ -140,7 +140,7 @@ var kml = function(data, o) {
 
   for (var j = 0; j < styleMaps.length; j++) {
     var styleMap = styleMaps[j];
-    var pairs = xpath.select("//*[local-name()='Pair']", styleMap);
+    var pairs = xpath.select("*[local-name()='Pair']", styleMap);
     for (var p = 0; p < pairs.length; p++) {
       var key = get(pairs[p], 'key');
       if (key) {
@@ -158,11 +158,8 @@ var kml = function(data, o) {
   }
   log.info('Style index ', styleIndex);
 
-
   // only ever get placemarks.
   // I.E. pull all placemarks regards of depth level
-  var placemarks1 = xpath.select("//Placemark", doc);
-  log.info('Found ' + placemarks1.length + ' placemarks in the KML document');
   var placemarks = xpath.select("//*[local-name()='Placemark']", doc);
   log.info('Found ' + placemarks.length + ' placemarks in the KML document');
 
