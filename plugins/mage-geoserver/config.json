@@ -5,5 +5,8 @@
     "url": "http://localhost:8080",
     "namespace": "cite"
   },
+  "mongo": {
+    "uri": "mongodb://localhost:27017/geoserverdb"
+  },
   "token": "changeit"
 }

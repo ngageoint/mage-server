@@ -7,10 +7,25 @@ var xmlbuilder = require('xmlbuilder')
   , token = config.token
   , namespace = config.geoserver.namespace;
 
-function addNamedObservationLayer(sld, baseUrl, event) {
-  var href = util.format('%s/ogc/svg/observation/%s/${strEncode("properties.type")}', baseUrl, event._id);
-  if (event.form.variantField) {
-    href += util.format('/${strEncode("properties.%s")}', event.form.variantField);
+function getVariantField(form) {
+  var variantField;
+  if (form.variantField) {
+    for (var i = 0; i < form.fields.length; i++) {
+      if (form.fields[i].name === form.variantField) {
+        variantField = form.fields[i];
+        break;
+      }
+    }
+  }
+
+  return variantField;
+}
+
+function addNamedObservationLayer(sld, baseUrl, layer, event) {
+  var href = util.format('%s/ogc/svg/observation/%s/${strURLEncode("properties.type")}', baseUrl, event._id);
+  var variantField = getVariantField(event.form);
+  if (variantField) {
+    href += util.format('/${strURLEncode("properties.%s")}', variantField.title);
   }
   href += util.format('?access_token=%s', token);
 
@@ -238,7 +253,7 @@ function create(baseUrl, layers, callback) {
       Event.getById(layer.split('observations')[1], function(err, event) {
         if (err || !event) return done(err);
 
-        addNamedObservationLayer(sld, baseUrl, event);
+        addNamedObservationLayer(sld, baseUrl, layer, event);
         done();
       });
     } else if (layer.indexOf('locations') !== -1) {

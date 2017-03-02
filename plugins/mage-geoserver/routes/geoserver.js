@@ -19,13 +19,13 @@ module.exports = function(app, authentication) {
     resource.sld
   );
 
-  app.get('/svg/observation/:eventId/(:type)?/(:variant)?',
+  app.get('/svg/observation/:eventId/:type?/:variant?',
     passport.authenticate('geoserver-bearer', { session: false }),
     resource.getObservationSvg
   );
 
   app.get(
-    '/icons/observation/:eventId/(:type)?/(:variant)?',
+    '/icons/observation/:eventId/:type?/:variant?',
     passport.authenticate('geoserver-bearer', { session: false }),
     resource.getObservationIcon
   );
@@ -56,11 +56,6 @@ GeoServerResource.prototype.sld = function(req, res, next) {
 };
 
 GeoServerResource.prototype.getObservationSvg = function(req, res) {
-  console.log('get observation svg');
-  console.log('eventId', req.params.eventId);
-  console.log('type', req.params.type);
-  console.log('variant', req.params.variant);
-
   var svg = xmlbuilder.create({
     svg: {
       '@xmlns': 'http://www.w3.org/2000/svg',
