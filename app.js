@@ -7,7 +7,7 @@ var mongoose = require('mongoose')
 var mongooseLogger = log.loggers.get('mongoose');
 
 mongoose.set('debug', function(collection, method, query, doc, options) {
-  mongooseLogger.log('mongoose', "%s.%s(%j, %j, %j)", collection, method, query, doc, options);
+  mongooseLogger.log('mongoose', "%s.%s(%s, %s, %s)", collection, method, this.$format(query), this.$format(doc), this.$format(options));
 });
 
 mongoose.Error.messages.general.required = "{PATH} is required.";
