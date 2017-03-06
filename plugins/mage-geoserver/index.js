@@ -7,6 +7,7 @@ var express = require('express')
   , config = require('./config')
   , log = require('winston')
   , api = require('../../api')
+  , Event = api.Event
   , Observation = api.Observation
   , Location = api.Location;
 
@@ -66,6 +67,14 @@ Observation.on.remove(ObservationModel.removeObservation);
 
 var LocationModel = require('./models/location');
 Location.on.add(LocationModel.createLocations);
+
+var UserModel = require('./models/user');
+Location.on.add(UserModel.createLocations);
+
+var GeoServerApi = require('./geoserver/api');
+Event.on.add(GeoServerApi.createLayer);
+Event.on.update(GeoServerApi.updateLayer);
+Event.on.remove(GeoServerApi.removeLayer);
 
 // include routes
 require('./routes')(geoserver, {passport: passport});

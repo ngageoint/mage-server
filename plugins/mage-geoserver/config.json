@@ -3,7 +3,10 @@
   "context": "ogc",
   "geoserver": {
     "url": "http://localhost:8080",
-    "namespace": "cite"
+    "namespace": "cite",
+    "datastore": "mage",
+    "username": "admin",
+    "password": "geoserver"
   },
   "mongo": {
     "uri": "mongodb://localhost:27017/geoserverdb"

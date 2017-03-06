@@ -10,24 +10,11 @@ var Schema = mongoose.Schema;
 // Also not sure how to handle an array of attachments, might need to
 // flatten the array
 
-var EventSchema = new Schema({
-  _id: { type: Number},
-  name: {type: String},
-  description: {type: String}
-});
-
-var UserSchema = new Schema({
-  username: {type: String},
-  displayName: {type: String}
-});
-
 var ObservationSchema = new Schema({
   type: {type: String, required: true},
   lastModified: {type: Date, required: false},
   geometry: Schema.Types.Mixed,
-  properties: Schema.Types.Mixed,
-  event: EventSchema,
-  user: UserSchema
+  properties: Schema.Types.Mixed
 });
 
 ObservationSchema.index({geometry: "2dsphere"});
@@ -78,19 +65,19 @@ function mapPropertyNameToTitle(properties, form) {
 function createOrUpdateObservation(observation, event, user) {
   mapPropertyNameToTitle(observation.properties, event.form);
 
-  observation.event = {
+  observation.properties.event = {
     _id: event._id,
     name: event.name,
     description: event.description
   };
 
-  observation.user = {
+  observation.properties.user = {
     _id: user._id,
     username: user.username,
     displayName: user.displayName
   };
 
-  var options= {
+  var options = {
     upsert: true,
     new: true
   };
@@ -110,6 +97,19 @@ function removeObservation(observationId, event) {
   });
 }
 
+function createCollection(event, callback) {
+  var model = observationModel(event);
+  model.on('index', function() {
+    callback();
+  });
+}
+
+function removeCollection(event, callback) {
+  observationModel(event).collection.drop(callback);
+}
+
+exports.createCollection = createCollection;
+exports.removeCollection = removeCollection;
 exports.createObservation = createOrUpdateObservation;
 exports.updateObservation = createOrUpdateObservation;
 exports.removeObservation = removeObservation;

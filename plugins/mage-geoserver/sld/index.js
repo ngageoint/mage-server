@@ -7,23 +7,24 @@ var xmlbuilder = require('xmlbuilder')
   , token = config.token
   , namespace = config.geoserver.namespace;
 
-function getVariantField(form) {
-  var variantField;
-  if (form.variantField) {
+function getField(fieldName, form) {
+  var field;
+  if (fieldName) {
     for (var i = 0; i < form.fields.length; i++) {
-      if (form.fields[i].name === form.variantField) {
-        variantField = form.fields[i];
+      if (form.fields[i].name === fieldName) {
+        field = form.fields[i];
         break;
       }
     }
   }
 
-  return variantField;
+  return field;
 }
 
 function addNamedObservationLayer(sld, baseUrl, layer, event) {
-  var href = util.format('%s/ogc/svg/observation/%s/${strURLEncode("properties.type")}', baseUrl, event._id);
-  var variantField = getVariantField(event.form);
+  var typeField = getField("type", event.form);
+  var href = util.format('%s/ogc/svg/observation/%s/${strURLEncode("properties.%s")}', baseUrl, event._id, typeField.title);
+  var variantField = getField(event.form.variantField, event.form);
   if (variantField) {
     href += util.format('/${strURLEncode("properties.%s")}', variantField.title);
   }
