@@ -1,4 +1,5 @@
-var express = require('express')
+var async = require('async')
+  , express = require('express')
   , mongoose = require('mongoose')
   , passport = require('passport')
   , util = require('util')
@@ -20,6 +21,24 @@ mongoose.connect(mongo.uri, mongo.options, function(err) {
     log.error('Error connecting to mongo database, please make sure mongodb is running...');
     throw err;
   }
+});
+
+async.series([
+  function(done) {
+    var workspace = require('./geoserver/workspace');
+    workspace.create(done);
+  },
+  function(done) {
+    var datastore = require('./geoserver/datastore');
+    datastore.create(done);
+  }
+], function(err) {
+  if (err) {
+    log.error('Error initializing geoserver', err);
+    throw(err);
+  }
+
+  registerListeners();
 });
 
 var urlFilter = new RegExp('^/' + config.context + '/' + config.token + '/(.*)');
@@ -59,23 +78,6 @@ var geoserverProxy = proxy(filter, {
 var geoserver = new express.Router();
 geoserver.use(geoserverProxy);
 
-// listen for observation changes
-var ObservationModel = require('./models/observation');
-Observation.on.add(ObservationModel.createObservation);
-Observation.on.update(ObservationModel.updateObservation);
-Observation.on.remove(ObservationModel.removeObservation);
-
-var LocationModel = require('./models/location');
-Location.on.add(LocationModel.createLocations);
-
-var UserModel = require('./models/user');
-Location.on.add(UserModel.createLocations);
-
-var GeoServerApi = require('./geoserver/api');
-Event.on.add(GeoServerApi.createLayer);
-Event.on.update(GeoServerApi.updateLayer);
-Event.on.remove(GeoServerApi.removeLayer);
-
 // include routes
 require('./routes')(geoserver, {passport: passport});
 
@@ -83,3 +85,25 @@ module.exports = {
   context: config.context,
   express: geoserver
 };
+
+function registerListeners() {
+  var ObservationModel = require('./models/observation');
+  Observation.on.add(ObservationModel.createObservation);
+  Observation.on.update(ObservationModel.updateObservation);
+  Observation.on.remove(ObservationModel.removeObservation);
+
+  var LocationModel = require('./models/location');
+  Location.on.add(LocationModel.createLocations);
+
+  var UserModel = require('./models/user');
+  Location.on.add(UserModel.createLocations);
+
+  var GeoServerObservation = require('./geoserver/observation');
+  Event.on.add(GeoServerObservation.createLayer);
+  Event.on.update(GeoServerObservation.updateLayer);
+  Event.on.remove(GeoServerObservation.removeLayer);
+
+  var GeoServerLocation = require('./geoserver/location');
+  Event.on.add(GeoServerLocation.createLayer);
+  Event.on.remove(GeoServerLocation.removeLayer);
+}

@@ -30,6 +30,7 @@ var normalizeLocation = function(location, user, event) {
   };
 
   normalized.properties.user = {
+    _id: user._id,
     username: user.username,
     displayName: user.displayName
   };

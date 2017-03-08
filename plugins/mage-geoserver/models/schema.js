@@ -21,25 +21,8 @@ var GeoServerSchema = new Schema({
 
 var SchemaModel = mongoose.model('Schema', GeoServerSchema);
 
-exports.createSchema = function(event, descriptors, callback) {
-  var schema = {
-    typeName: 'observations' + event._id,
-    userData: {
-      collection: 'observations' + event._id
-    },
-    geometryDescriptor: {
-      localName: "geometry",
-      crs: {
-        type: "name",
-        properties: {
-          name: "urn:ogc:def:crs:EPSG:4326"
-        }
-      }
-    },
-    attributeDescriptors: descriptors
-  };
-
-  SchemaModel.findOneAndUpdate({typeName: 'observations' + event._id}, schema, {upsert: true}, callback);
+exports.createSchema = function(schema, callback) {
+  SchemaModel.findOneAndUpdate({typeName: schema.typeName}, schema, {upsert: true}, callback);
 };
 
 exports.updateAttributeDescriptors = function(event, descriptors, callback) {

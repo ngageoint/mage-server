@@ -5,7 +5,7 @@ var xmlbuilder = require('xmlbuilder')
   , Event = require('../../../models/event')
   , config = require('../config')
   , token = config.token
-  , namespace = config.geoserver.namespace;
+  , workspace = config.geoserver.workspace;
 
 function getField(fieldName, form) {
   var field;
@@ -33,7 +33,7 @@ function addNamedObservationLayer(sld, baseUrl, layer, event) {
   sld.ele({
     NamedLayer: {
       Name: {
-        '#text': util.format('%s:observations%d', namespace, event._id)
+        '#text': util.format('%s:observations%d', workspace, event._id)
       },
       UserStyle: {
         Title: {
@@ -65,12 +65,12 @@ function addNamedObservationLayer(sld, baseUrl, layer, event) {
 }
 
 function addNamedLocationLayer(sld, baseUrl, event) {
-  var iconHref = util.format('%s/ogc/svg/users/${userId}?access_token=%s', baseUrl, token);
+  var iconHref = util.format('%s/ogc/svg/users/${"properties.user._id"}?access_token=%s', baseUrl, token);
 
   sld.ele({
     NamedLayer: {
       Name: {
-        '#text': util.format('%s:locations%d', namespace, event._id)
+        '#text': util.format('%s:locations%d', workspace, event._id)
       },
       UserStyle: {
         Title: {
@@ -246,7 +246,7 @@ function create(baseUrl, layers, callback) {
   async.each(layers, function(layer, done) {
     var components = layer.split(':');
 
-    if (components.length === 2 && components[0] === namespace) {
+    if (components.length === 2 && components[0] === workspace) {
       layer = components[1];
     }
 

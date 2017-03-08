@@ -5,23 +5,104 @@ function fieldFilter(field) {
 }
 
 exports.attributesFromForm = function(form) {
-  var attributes = [];
+  var attributes = {
+    attribute: [{
+      name: 'geometry',
+      minOccurs: 0,
+      maxOccurs: 1,
+      nillable: true,
+      binding: 'com.vividsolutions.jts.geom.Geometry'
+    },{
+      name: 'properties.event._id',
+      minOccurs: 0,
+      maxOccurs: 1,
+      nillable: true,
+      binding: 'java.lang.Integer'
+    },{
+      name: 'properties.event.name',
+      minOccurs: 0,
+      maxOccurs: 1,
+      nillable: true,
+      binding: "java.lang.String"
+    },{
+      name: 'properties.user.username',
+      minOccurs: 0,
+      maxOccurs: 1,
+      nillable: true,
+      binding: 'java.lang.String'
+    },{
+      name: 'properties.user.displayName',
+      minOccurs: 0,
+      maxOccurs: 1,
+      nillable: true,
+      binding: 'java.lang.String'
+    }]
+  };
 
   form.fields.filter(fieldFilter).forEach(function(field) {
-    attributes.push(attributeFromField(field));
+    attributes.attribute.push(attributeFromField(field));
   });
 
   return attributes;
 };
 
 exports.descriptorsFromForm = function(form) {
-  var attributes = [];
+  var descriptors = [{
+    localName: 'geometry',
+    type: {
+      binding: 'com.vividsolutions.jts.geom.Geometry'
+    },
+    userData: {
+      mapping: 'geometry',
+      encoding: "GeoJSON"
+    }
+  },{
+    localName: 'properties.event._id',
+    minOccurs: 0,
+    maxOccurs: 1,
+    type: {
+      binding: 'java.lang.Integer'
+    },
+    userData: {
+      mapping: 'properties.event._id'
+    }
+  },{
+    localName: 'properties.event.name',
+    minOccurs: 0,
+    maxOccurs: 1,
+    type: {
+      binding: 'java.lang.String'
+    },
+    userData: {
+      mapping: 'properties.event.name'
+    }
+  },{
+    localName: 'properties.user.username',
+    minOccurs: 0,
+    maxOccurs: 1,
+    type: {
+      binding: 'java.lang.String'
+    },
+    userData: {
+      mapping: 'properties.user.username'
+    }
+  },{
+    localName: 'properties.user.displayName',
+    minOccurs: 0,
+    maxOccurs: 1,
+    type: {
+      binding: 'java.lang.String'
+    },
+    userData: {
+      mapping: 'properties.user.displayName'
+    }
+  }];
 
   form.fields.filter(fieldFilter).forEach(function(field) {
-    attributes.push(descriptorFromField(field));
+    descriptors.push(descriptorFromField(field));
   });
 
-  return attributes;
+  return descriptors;
 };
 
 function attributeFromField(field) {
