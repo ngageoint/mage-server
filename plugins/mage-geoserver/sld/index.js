@@ -23,7 +23,7 @@ function getField(fieldName, form) {
 
 function addNamedObservationLayer(sld, baseUrl, layer, event) {
   var typeField = getField("type", event.form);
-  var href = util.format('%s/ogc/svg/observation/%s/${strURLEncode("properties.%s")}', baseUrl, event._id, typeField.title);
+  var href = util.format('%s/ogc/svg/observation/%s/${"properties.%s"}', baseUrl, event._id, typeField.title);
   var variantField = getField(event.form.variantField, event.form);
   if (variantField) {
     href += util.format('/${strURLEncode("properties.%s")}', variantField.title);

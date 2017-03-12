@@ -19,7 +19,6 @@ var ObservationSchema = new Schema({
 
 ObservationSchema.index({geometry: "2dsphere"});
 ObservationSchema.index({'lastModified': 1});
-ObservationSchema.index({'attachments.lastModified': 1});
 ObservationSchema.index({'event.name': 1});
 ObservationSchema.index({'user.username': 1});
 ObservationSchema.index({'user.displayName': 1});
@@ -62,7 +61,7 @@ function mapPropertyNameToTitle(properties, form) {
   }
 }
 
-function createOrUpdateObservation(observation, event, user) {
+function createOrUpdateObservation(observation, event, user, callback) {
   mapPropertyNameToTitle(observation.properties, event.form);
 
   observation.properties.event = {
@@ -71,45 +70,58 @@ function createOrUpdateObservation(observation, event, user) {
     description: event.description
   };
 
-  observation.properties.user = {
-    _id: user._id,
-    username: user.username,
-    displayName: user.displayName
-  };
+  if (user) {
+    observation.properties.user = {
+      _id: user._id,
+      username: user.username,
+      displayName: user.displayName
+    };
+  }
 
   var options = {
     upsert: true,
     new: true
   };
 
-  observationModel(event).findOneAndUpdate({_id: observation.id}, observation, options, function(err) {
+  observationModel(event).findOneAndUpdate({_id: observation.id}, observation, options, function(err, observation) {
     if (err) {
       log.error('Error creating observation', err);
+    }
+
+    if (callback) {
+      callback(err, observation);
     }
   });
 }
 
-function removeObservation(observationId, event) {
+exports.createObservation = createOrUpdateObservation;
+exports.updateObservation = createOrUpdateObservation;
+
+exports.removeObservation = function(observationId, event) {
   observationModel(event).findByIdAndRemove(observationId, function(err) {
     if (err) {
       log.error('Error removing observation', err);
     }
   });
-}
+};
 
-function createCollection(event, callback) {
+exports.createCollection = function(event, callback) {
   var model = observationModel(event);
   model.on('index', function() {
     callback();
   });
-}
+};
 
-function removeCollection(event, callback) {
+exports.removeCollection = function(event, callback) {
   observationModel(event).collection.drop(callback);
-}
+};
 
-exports.createCollection = createCollection;
-exports.removeCollection = removeCollection;
-exports.createObservation = createOrUpdateObservation;
-exports.updateObservation = createOrUpdateObservation;
-exports.removeObservation = removeObservation;
+exports.getLastObservation = function(event, callback) {
+
+  observationModel(event).find({},{}, {limit: 1, sort: {lastModified: -1}}, function(err, observations) {
+    if (err) return callback(err);
+
+    var observation = observations.length ? observations[0] : null;
+    callback(err, observation);
+  });
+};

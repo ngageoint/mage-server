@@ -9,19 +9,11 @@ function Location() {
 var EventEmitter = new LocationEvents();
 Location.on = EventEmitter;
 
-function getLocations(options, callback) {
-  LocationModel.getLocations(options, callback);
-}
-
-function getLocationsGroupedByUser(options, callback) {
-  CappedLocationModel.getLocations(options, callback);
-}
-
 Location.prototype.getLocations = function(options, callback) {
   if (options.groupByUser) {
-    getLocationsGroupedByUser(options, callback);
+    CappedLocationModel.getLocations(options, callback);
   } else {
-    getLocations(options, callback);
+    return LocationModel.getLocations(options, callback);
   }
 };
 

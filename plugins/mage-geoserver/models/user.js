@@ -27,7 +27,7 @@ function getLatestLocation(locations) {
   }, {properties: {timestamp: 0}});
 }
 
-exports.createLocations = function(locations, user, event) {
+exports.createLocations = function(locations, user, event, callback) {
   var location = getLatestLocation(locations);
 
   var normalized = {
@@ -59,6 +59,10 @@ exports.createLocations = function(locations, user, event) {
   UserModel.findByIdAndUpdate({_id: user._id, eventId: event._id}, normalized, options, function(err) {
     if (err) {
       console.log('Error updating users latest location', err);
+    }
+
+    if (callback) {
+      callback(err);
     }
   });
 };

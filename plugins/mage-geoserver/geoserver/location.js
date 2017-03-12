@@ -4,7 +4,7 @@ var async = require('async')
   , log = require('winston')
   , geoserverConfig = require('../config').geoserver
   , SchemaModel = require('../models/schema')
-  , ObservationModel = require('../models/observation');
+  , LocationModel = require('../models/location');
 
 var geoserverRequest = request.defaults({
   json: true,
@@ -15,32 +15,22 @@ var geoserverRequest = request.defaults({
   baseUrl: geoserverConfig.url + '/geoserver/rest'
 });
 
-exports.createLayer = function(event) {
+exports.createLayer = function(event, callback) {
   log.info('Creating geoserver location layer for event', event.name);
 
-  async.series([
-    function(done) {
-      var schema = createSchema(event);
-      SchemaModel.createSchema(schema, done);
-    },
-    function(done) {
-      geoserverRequest.post({
-        url: util.format('workspaces/%s/datastores/%s/featuretypes', geoserverConfig.workspace, geoserverConfig.datastore),
-        body: createLayer(event)
-      }, function(err, response) {
-        if (err || response.statusCode !== 201) {
-          log.error('Failed to create geoserver location layer for event ' + event.name, err);
-        } else {
-          log.info('Created geoserver location layer for event ' + event.name);
-        }
+  getLayer(event, function(err, layer) {
+    if (err) return callback(err);
 
-        done(err);
-      });
+    if (layer) {
+      log.info('Geoserver layer "%s:" already exists', layer.name);
+      return callback(err, layer);
     }
-  ], function(err) {
-    if (err) {
-      log.error('Error creating geoserver location layer', err);
-    }
+
+    createLayer(event, function(err) {
+      if (callback) {
+        callback(err);
+      }
+    });
   });
 };
 
@@ -62,7 +52,7 @@ exports.removeLayer = function(event) {
       });
     },
     function(done) {
-      ObservationModel.removeCollection(event, done);
+      LocationModel.removeLocations(event, done);
     }
   ], function(err) {
     if (err) {
@@ -169,7 +159,54 @@ function createSchema(event) {
   };
 }
 
-function createLayer(event) {
+function getLayer(event, callback) {
+  geoserverRequest.get({
+    url: util.format('workspaces/%s/datastores/%s/featuretypes/%s', geoserverConfig.workspace, geoserverConfig.datastore, 'locations' + event._id),
+  }, function(err, response, body) {
+    if (err) {
+      return callback(err);
+    }
+
+    var layer = body ? body.featureType : null;
+    callback(err, layer);
+  });
+}
+
+function createLayer(event, callback) {
+  log.info('Creating geoserver location layer for event', event.name);
+
+  async.series([
+    function(done) {
+      LocationModel.createCollection(event, done);
+    },
+    function(done) {
+      var schema = createSchema(event);
+      SchemaModel.createSchema(schema, done);
+    },
+    function(done) {
+      geoserverRequest.post({
+        url: util.format('workspaces/%s/datastores/%s/featuretypes', geoserverConfig.workspace, geoserverConfig.datastore),
+        body: createLayerBody(event)
+      }, function(err, response) {
+        if (err || response.statusCode !== 201) {
+          log.error('Failed to create geoserver location layer for event ' + event.name, err);
+        } else {
+          log.info('Created geoserver location layer for event ' + event.name);
+        }
+
+        done(err);
+      });
+    }
+  ], function(err) {
+    if (err) {
+      log.error('Error creating geoserver location layer', err);
+    }
+
+    callback(err);
+  });
+}
+
+function createLayerBody(event) {
   var layer =  {
     featureType: {
       name: 'locations' + event._id,

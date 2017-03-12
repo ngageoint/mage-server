@@ -15,10 +15,10 @@ var async = require('async')
 require('./authentication')(passport);
 
 var mongo = config.mongo;
-log.info('using mongodb connection from: ' + mongo.uri);
+log.info('Geoserver using mongodb connection uri %s', mongo.uri);
 mongoose.connect(mongo.uri, mongo.options, function(err) {
   if (err) {
-    log.error('Error connecting to mongo database, please make sure mongodb is running...');
+    log.error('Error connecting to mongo database, please make sure mongodb is running.', err);
     throw err;
   }
 });
@@ -31,6 +31,22 @@ async.series([
   function(done) {
     var datastore = require('./geoserver/datastore');
     datastore.create(done);
+  },
+  function(done) {
+    var eventSync = require('./sync/event');
+    eventSync.sync(done);
+  },
+  function(done) {
+    var observationSync = require('./sync/observation');
+    observationSync.sync(done);
+  },
+  function(done) {
+    var locationSync = require('./sync/location');
+    locationSync.sync(done);
+  },
+  function(done) {
+    var userSync = require('./sync/user');
+    userSync.sync(done);
   }
 ], function(err) {
   if (err) {
@@ -38,6 +54,7 @@ async.series([
     throw(err);
   }
 
+  // TODO let mage know we are done initializing this plugin
   registerListeners();
 });
 
@@ -95,8 +112,8 @@ function registerListeners() {
   var LocationModel = require('./models/location');
   Location.on.add(LocationModel.createLocations);
 
-  var UserModel = require('./models/user');
-  Location.on.add(UserModel.createLocations);
+  // var UserModel = require('./models/user');
+  // Location.on.add(UserModel.createLocations);
 
   var GeoServerObservation = require('./geoserver/observation');
   Event.on.add(GeoServerObservation.createLayer);

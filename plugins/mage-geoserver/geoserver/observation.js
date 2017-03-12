@@ -16,51 +16,22 @@ var geoserverRequest = request.defaults({
   baseUrl: geoserverConfig.url + '/geoserver/rest'
 });
 
-exports.createLayer = function(event) {
+exports.createLayer = function(event, callback) {
   log.info('Creating geoserver observation layer for event', event.name);
 
-  async.series([
-    function(done) {
-      ObservationModel.createCollection(event, done);
-    },
-    function(done) {
-      var schema = {
-        typeName: 'observations' + event._id,
-        userData: {
-          collection: 'observations' + event._id
-        },
-        geometryDescriptor: {
-          localName: "geometry",
-          crs: {
-            type: "name",
-            properties: {
-              name: "urn:ogc:def:crs:EPSG:4326"
-            }
-          }
-        },
-        attributeDescriptors: mapper.descriptorsFromForm(event.form)
-      };
+  getLayer(event, function(err, layer) {
+    if (err) return callback(err);
 
-      SchemaModel.createSchema(schema, done);
-    },
-    function(done) {
-      geoserverRequest.post({
-        url: util.format('workspaces/%s/datastores/%s/featuretypes', geoserverConfig.workspace, geoserverConfig.datastore),
-        body: createLayer(event)
-      }, function(err, response) {
-        if (err || response.statusCode !== 201) {
-          log.error('Failed to create geoserver observation layer for event ' + event.name, err);
-        } else {
-          log.info('Created geoserver observation layer for event ' + event.name);
-        }
+    if (layer) {
+      log.info('Geoserver layer "%s:" already exists', layer.name);
+      return callback(err, layer);
+    }
 
-        done(err);
-      });
-    }
-  ], function(err) {
-    if (err) {
-      log.error('Error creating geoserver observation layer', err);
-    }
+    createLayer(event, function(err) {
+      if (callback) {
+        callback(err);
+      }
+    });
   });
 };
 
@@ -120,34 +91,93 @@ exports.removeLayer = function(event) {
   });
 };
 
-function createLayer(event) {
-  var layer =  {
-    featureType: {
-      name: 'observations' + event._id,
-      title: event.name + ' Observations',
-      nativeCRS: 'EPSG:4326',
-      srs: 'EPSG:4326',
-      nativeBoundingBox: {
-        minx: -180,
-        maxx: 180,
-        miny: -90,
-        maxy: 90,
-        crs: 'EPSG:4326'
-      },
-      latLonBoundingBox: {
-        minx: -180,
-        maxx: 180,
-        miny: -90,
-        maxy: 90,
-        crs: 'EPSG:4326'
-      },
-      projectionPolicy: 'FORCE_DECLARED',
-      store: {
-        name: 'cite:mage'
-      },
-      attributes: mapper.attributesFromForm(event.form)
+function getLayer(event, callback) {
+  geoserverRequest.get({
+    url: util.format('workspaces/%s/datastores/%s/featuretypes/%s', geoserverConfig.workspace, geoserverConfig.datastore, 'observations' + event._id),
+  }, function(err, response, body) {
+    if (err) {
+      return callback(err);
     }
-  };
 
-  return layer;
+    var layer = body ? body.featureType : null;
+    callback(err, layer);
+  });
+}
+
+function createLayer(event, callback) {
+  log.info('Creating geoserver observation layer %s.', event.name);
+
+  async.series([
+    function(done) {
+      ObservationModel.createCollection(event, done);
+    },
+    function(done) {
+      var schema = {
+        typeName: 'observations' + event._id,
+        userData: {
+          collection: 'observations' + event._id
+        },
+        geometryDescriptor: {
+          localName: "geometry",
+          crs: {
+            type: "name",
+            properties: {
+              name: "urn:ogc:def:crs:EPSG:4326"
+            }
+          }
+        },
+        attributeDescriptors: mapper.descriptorsFromForm(event.form)
+      };
+
+      SchemaModel.createSchema(schema, done);
+    },
+    function(done) {
+      var layer =  {
+        featureType: {
+          name: 'observations' + event._id,
+          title: event.name + ' Observations',
+          nativeCRS: 'EPSG:4326',
+          srs: 'EPSG:4326',
+          nativeBoundingBox: {
+            minx: -180,
+            maxx: 180,
+            miny: -90,
+            maxy: 90,
+            crs: 'EPSG:4326'
+          },
+          latLonBoundingBox: {
+            minx: -180,
+            maxx: 180,
+            miny: -90,
+            maxy: 90,
+            crs: 'EPSG:4326'
+          },
+          projectionPolicy: 'FORCE_DECLARED',
+          store: {
+            name: 'cite:mage'
+          },
+          attributes: mapper.attributesFromForm(event.form)
+        }
+      };
+
+      geoserverRequest.post({
+        url: util.format('workspaces/%s/datastores/%s/featuretypes', geoserverConfig.workspace, geoserverConfig.datastore),
+        body: layer
+      }, function(err, response) {
+        if (err || response.statusCode !== 201) {
+          log.error('Failed to create geoserver observation layer for event ' + event.name, err);
+        } else {
+          log.info('Created geoserver observation layer for event ' + event.name);
+        }
+
+        done(err);
+      });
+    }
+  ], function(err) {
+    if (err) {
+      log.error('Error creating geoserver observation layer', err);
+    }
+
+    callback(err);
+  });
 }

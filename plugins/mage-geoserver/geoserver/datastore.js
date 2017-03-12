@@ -29,7 +29,7 @@ function getDatastore(datastore, callback) {
   geoserverRequest.get({
     url: util.format('workspaces/%s/datastores/%s?quietOnNotFound=true', geoserverConfig.workspace, datastore)
   }, function(err, response, body) {
-    callback(err, body ? body.workspace : null);
+    callback(err, body ? body.dataStore : null);
   });
 }
 

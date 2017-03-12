@@ -35,11 +35,6 @@ exports.createLocations = function(locations, callback) {
 };
 
 exports.getLocations = function(options, callback) {
-  var limit = 2000;
-  if (options.limit && options.limit < 2000) {
-    limit = options.limit;
-  }
-
   var conditions = {};
 
   var filter = options.filter || {};
@@ -52,10 +47,10 @@ exports.getLocations = function(options, callback) {
   }
 
   if (filter.lastLocationId && (filter.startDate || filter.endDate)) {
-    conditions['$or'] = [{_id: {'$gt': filter.lastLocationId}}];
+    conditions['$or'] = [{ _id: { '$gt': filter.lastLocationId } }];
     if (filter.startDate) {
       conditions['$or'] = [{
-        _id: {'$gt': filter.lastLocationId},
+        _id: { '$gt': filter.lastLocationId },
         'properties.timestamp': filter.startDate
       },{
         'properties.timestamp': {'$gt': filter.startDate}
@@ -69,9 +64,25 @@ exports.getLocations = function(options, callback) {
     if (filter.endDate) conditions['properties.timestamp']['$lt'] = filter.endDate;
   }
 
-  Location.find(conditions, {}, {sort: {"properties.timestamp": 1, _id: 1}, limit: limit}, function (err, locations) {
-    callback(err, locations);
-  });
+
+  if (options.stream === true) {
+    var queryOptions = {sort: {"properties.timestamp": 1, _id: 1}};
+    if (options.limit) {
+      queryOptions.limit = options.limit;
+    }
+
+    return Location.find(conditions, {}, options).cursor();
+  } else {
+    // If we are not streaming limit number of locations to 2000
+    var limit = 2000;
+    if (options.limit && options.limit < 2000) {
+      limit = options.limit;
+    }
+
+    Location.find(conditions, {}, {sort: {"properties.timestamp": 1, _id: 1}, limit: limit}, function (err, locations) {
+      callback(err, locations);
+    });
+  }
 };
 
 exports.removeLocationsForUser = function(user, callback) {

@@ -43,7 +43,13 @@ var normalizeLocation = function(location, user, event) {
   return normalized;
 };
 
-exports.createLocations = function(locations, user, event) {
+exports.createCollection = function(event, callback) {
+  LocationModel.on('index', function() {
+    callback();
+  });
+};
+
+exports.createLocations = function(locations, user, event, callback) {
   if (!Array.isArray(locations)) {
     locations = [locations];
   }
@@ -63,5 +69,23 @@ exports.createLocations = function(locations, user, event) {
     if (err) {
       log.error('Error creating locations', err);
     }
+
+    if (callback) {
+      callback(err);
+    }
+  });
+};
+
+exports.removeLocations = function(event, callback) {
+  LocationModel.remove({"properties.event._id": event._id}, callback);
+};
+
+exports.getLastLocation = function(event, callback) {
+
+  LocationModel.find({},{}, {limit: 1, sort: {'properties.timestamp': -1}}, function(err, locations) {
+    if (err) return callback(err);
+
+    var location = locations.length ? locations[0] : null;
+    callback(err, location);
   });
 };

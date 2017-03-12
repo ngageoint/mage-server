@@ -81,6 +81,9 @@ GeoServerResource.prototype.getObservationSvg = function(req, res) {
 };
 
 GeoServerResource.prototype.getObservationIcon = function(req, res, next) {
+  console.log('observation icon type', req.params.type);
+  console.log('observation icon variant', req.params.variant);
+
   new api.Icon(req.event._id, req.params.type, req.params.variant).getIcon(function(err, iconPath) {
     if (err || !iconPath) {
       return next();
