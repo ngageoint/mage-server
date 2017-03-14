@@ -21,8 +21,12 @@ function getEvents(callback) {
 }
 
 function syncEvents(events, callback) {
-  async.eachSeries(events, function(event) {
-    syncEvent(event, callback);
+  log.info('Syncing users for events', events.length);
+
+  async.eachSeries(events, function(event, done) {
+    syncEvent(event, done);
+  }, function(err) {
+    callback(err);
   });
 }
 
@@ -33,7 +37,8 @@ function syncEvent(event, callback) {
     groupByUser: true,
     filter: {
       eventId: event._id
-    }
+    },
+    limit: 1
   };
 
   new api.Location().getLocations(options, function(err, users) {

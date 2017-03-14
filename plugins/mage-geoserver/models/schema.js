@@ -1,4 +1,5 @@
-var mongoose = require('mongoose');
+var mongoose = require('mongoose')
+  , log = require('winston');
 
 var Schema = mongoose.Schema;
 
@@ -33,4 +34,18 @@ exports.updateAttributeDescriptors = function(event, descriptors, callback) {
   };
 
   SchemaModel.findOneAndUpdate({typeName: 'observations' + event._id}, update, callback);
+};
+
+exports.removeSchema = function(event) {
+  SchemaModel.remove({typeName: 'observations' + event._id}, function(err) {
+    if (err) {
+      log.error('Error removing observations schema', err);
+    }
+  });
+
+  SchemaModel.remove({typeName: 'locations' + event._id}, function(err) {
+    if (err) {
+      log.error('Error removing locations schema', err);
+    }
+  });
 };

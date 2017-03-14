@@ -2,7 +2,8 @@ var async = require('async')
   , log = require('winston')
   , api = require('../../../api')
   , GeoServerObservation = require('../geoserver/observation')
-  , GeoServerLocation = require('../geoserver/location');
+  , GeoServerLocation = require('../geoserver/location')
+  , GeoServerUser = require('../geoserver/user');
 
 exports.sync = function(callback) {
   async.waterfall([
@@ -22,8 +23,10 @@ function getEvents(callback) {
 }
 
 function createEvents(events, callback) {
-  async.eachSeries(events, function(event) {
-    createEvent(event, callback);
+  async.eachSeries(events, function(event, done) {
+    createEvent(event, done);
+  }, function(err) {
+    callback(err);
   });
 }
 
@@ -35,6 +38,9 @@ function createEvent(event, callback) {
     },
     function(done) {
       GeoServerLocation.createLayer(event, done);
+    },
+    function(done) {
+      GeoServerUser.createLayer(event, done);
     }
   ], function(err) {
     callback(err);

@@ -23,6 +23,11 @@ mongoose.connect(mongo.uri, mongo.options, function(err) {
   }
 });
 
+var mongooseLogger = log.loggers.get('mongoose');
+mongoose.set('debug', function(collection, method, query, doc, options) {
+  mongooseLogger.log('mongoose', "%s.%s(%s, %s, %s)", collection, method, this.$format(query), this.$format(doc), this.$format(options));
+});
+
 async.series([
   function(done) {
     var workspace = require('./geoserver/workspace');
@@ -53,6 +58,8 @@ async.series([
     log.error('Error initializing geoserver', err);
     throw(err);
   }
+
+  log.info('Done with sync to geoserver');
 
   // TODO let mage know we are done initializing this plugin
   registerListeners();
@@ -111,9 +118,14 @@ function registerListeners() {
 
   var LocationModel = require('./models/location');
   Location.on.add(LocationModel.createLocations);
+  Event.on.remove(LocationModel.removeLocations);
 
-  // var UserModel = require('./models/user');
-  // Location.on.add(UserModel.createLocations);
+  var UserModel = require('./models/user');
+  Location.on.add(UserModel.createLocations);
+  Event.on.remove(UserModel.removeLocations);
+
+  var SchemaModel = require('./models/schema');
+  Event.on.remove(SchemaModel.removeSchema);
 
   var GeoServerObservation = require('./geoserver/observation');
   Event.on.add(GeoServerObservation.createLayer);

@@ -1,10 +1,10 @@
 var mongoose = require('mongoose')
-  , moment = require('moment')
-  , log = require('winston');
+  , moment = require('moment');
 
 var Schema = mongoose.Schema;
 
 var UserSchema = new Schema({
+  userId: {type: Schema.Types.ObjectId, required: true},
   eventId: {type: Number, required: true},
   type: {type: String, required: true},
   geometry: Schema.Types.Mixed,
@@ -31,7 +31,7 @@ exports.createLocations = function(locations, user, event, callback) {
   var location = getLatestLocation(locations);
 
   var normalized = {
-    _id: user._id,
+    userId: user._id,
     eventId: event._id,
     type: location.type,
     geometry: {
@@ -56,11 +56,19 @@ exports.createLocations = function(locations, user, event, callback) {
     new: true
   };
 
-  UserModel.findByIdAndUpdate({_id: user._id, eventId: event._id}, normalized, options, function(err) {
+  UserModel.findOneAndUpdate({userId: user._id, eventId: event._id}, normalized, options, function(err) {
     if (err) {
       console.log('Error updating users latest location', err);
     }
 
+    if (callback) {
+      callback(err);
+    }
+  });
+};
+
+exports.removeLocations = function(event, callback) {
+  UserModel.remove({eventId: event._id}, function(err){
     if (callback) {
       callback(err);
     }

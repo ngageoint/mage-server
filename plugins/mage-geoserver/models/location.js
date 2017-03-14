@@ -43,12 +43,6 @@ var normalizeLocation = function(location, user, event) {
   return normalized;
 };
 
-exports.createCollection = function(event, callback) {
-  LocationModel.on('index', function() {
-    callback();
-  });
-};
-
 exports.createLocations = function(locations, user, event, callback) {
   if (!Array.isArray(locations)) {
     locations = [locations];
@@ -77,7 +71,11 @@ exports.createLocations = function(locations, user, event, callback) {
 };
 
 exports.removeLocations = function(event, callback) {
-  LocationModel.remove({"properties.event._id": event._id}, callback);
+  LocationModel.remove({'properties.event._id': event._id}, function(err) {
+    if (callback) {
+      callback(err);
+    }
+  });
 };
 
 exports.getLastLocation = function(event, callback) {

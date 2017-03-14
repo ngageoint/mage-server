@@ -37,33 +37,7 @@ function observationModel(event) {
   return model;
 }
 
-function mapPropertyNameToTitle(properties, form) {
-  properties = properties || {};
-
-  var fieldNameToField = {};
-  form.fields.forEach(function(field) {
-    fieldNameToField[field.name] = field;
-  });
-
-  for (var name in properties) {
-    if (name === 'type') continue;
-
-    var field = fieldNameToField[name];
-    if (field) {
-      if (field.archived) {
-        delete properties[field.title];
-      } else {
-        properties[field.title] = properties[name];
-      }
-
-      delete properties[name];
-    }
-  }
-}
-
 function createOrUpdateObservation(observation, event, user, callback) {
-  mapPropertyNameToTitle(observation.properties, event.form);
-
   observation.properties.event = {
     _id: event._id,
     name: event.name,

@@ -33,17 +33,17 @@ exports.createLayer = function(event, callback) {
 };
 
 exports.removeLayer = function(event) {
-  log.info('Removing geoserver location layer for event', event.name);
+  log.info('Removing geoserver user layer for event', event.name);
 
   async.series([
     function(done) {
       geoserverRequest.delete({
-        url: util.format('workspaces/%s/datastores/%s/featuretypes/%s?recurse=true', geoserverConfig.workspace, geoserverConfig.datastore, 'locations' + event._id),
+        url: util.format('workspaces/%s/datastores/%s/featuretypes/%s?recurse=true', geoserverConfig.workspace, geoserverConfig.datastore, 'users' + event._id),
       }, function(err, response) {
         if (err || response.statusCode !== 200) {
-          log.error('Failed to delete geoserver location layer for event ' + event.name, err);
+          log.error('Failed to delete geoserver user layer for event ' + event.name, err);
         } else {
-          log.info('Deleted geoserver location layer for event ' + event.name);
+          log.info('Deleted geoserver user layer for event ' + event.name);
         }
 
         done();
@@ -54,16 +54,16 @@ exports.removeLayer = function(event) {
     }
   ], function(err) {
     if (err) {
-      log.error('Error removing geoserver location layer', err);
+      log.error('Error removing geoserver user layer', err);
     }
   });
 };
 
 function createSchema(event) {
   return {
-    typeName: 'locations' + event._id,
+    typeName: 'users' + event._id,
     userData: {
-      collection: 'locations'
+      collection: 'users'
     },
     geometryDescriptor: {
       localName: 'geometry',
@@ -141,7 +141,7 @@ function createSchema(event) {
         binding : "java.lang.String"
       },
       userData : {
-        mapping : "properties.accuracy"
+        mapping : "properties.provider"
       }
     },{
       localName : "accuracy",
@@ -199,7 +199,7 @@ function createSchema(event) {
 
 function getLayer(event, callback) {
   geoserverRequest.get({
-    url: util.format('workspaces/%s/datastores/%s/featuretypes/%s', geoserverConfig.workspace, geoserverConfig.datastore, 'locations' + event._id),
+    url: util.format('workspaces/%s/datastores/%s/featuretypes/%s', geoserverConfig.workspace, geoserverConfig.datastore, 'users' + event._id),
   }, function(err, response, body) {
     if (err) {
       return callback(err);
@@ -211,7 +211,7 @@ function getLayer(event, callback) {
 }
 
 function createLayer(event, callback) {
-  log.info('Creating geoserver location layer for event', event.name);
+  log.info('Creating geoserver user layer for event', event.name);
 
   async.series([
     function(done) {
@@ -224,9 +224,9 @@ function createLayer(event, callback) {
         body: createLayerBody(event)
       }, function(err, response) {
         if (err || response.statusCode !== 201) {
-          log.error('Failed to create geoserver location layer for event ' + event.name, err);
+          log.error('Failed to create geoserver user layer for event ' + event.name, err);
         } else {
-          log.info('Created geoserver location layer for event ' + event.name);
+          log.info('Created geoserver user layer for event ' + event.name);
         }
 
         done(err);
@@ -234,7 +234,7 @@ function createLayer(event, callback) {
     }
   ], function(err) {
     if (err) {
-      log.error('Error creating geoserver location layer', err);
+      log.error('Error creating geoserver user layer', err);
     }
 
     callback(err);
@@ -244,8 +244,8 @@ function createLayer(event, callback) {
 function createLayerBody(event) {
   var layer =  {
     featureType: {
-      name: 'locations' + event._id,
-      title: event.name + ' Locations',
+      name: 'users' + event._id,
+      title: event.name + ' Users',
       nativeCRS: 'EPSG:4326',
       srs: 'EPSG:4326',
       nativeBoundingBox: {

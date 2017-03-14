@@ -1,4 +1,5 @@
-var log = require('winston');
+var util = require('util')
+  , log = require('winston');
 
 function fieldFilter(field) {
   return !field.archived && field.name !== 'geometry';
@@ -13,25 +14,25 @@ exports.attributesFromForm = function(form) {
       nillable: true,
       binding: 'com.vividsolutions.jts.geom.Geometry'
     },{
-      name: 'properties.event._id',
+      name: 'event.id',
       minOccurs: 0,
       maxOccurs: 1,
       nillable: true,
       binding: 'java.lang.Integer'
     },{
-      name: 'properties.event.name',
+      name: 'event.name',
       minOccurs: 0,
       maxOccurs: 1,
       nillable: true,
       binding: "java.lang.String"
     },{
-      name: 'properties.user.username',
+      name: 'user.username',
       minOccurs: 0,
       maxOccurs: 1,
       nillable: true,
       binding: 'java.lang.String'
     },{
-      name: 'properties.user.displayName',
+      name: 'user.displayName',
       minOccurs: 0,
       maxOccurs: 1,
       nillable: true,
@@ -40,7 +41,7 @@ exports.attributesFromForm = function(form) {
   };
 
   form.fields.filter(fieldFilter).forEach(function(field) {
-    attributes.attribute.push(attributeFromField(field));
+    attributes.attribute.push(attributeForField(field));
   });
 
   return attributes;
@@ -57,7 +58,7 @@ exports.descriptorsFromForm = function(form) {
       encoding: "GeoJSON"
     }
   },{
-    localName: 'properties.event._id',
+    localName: 'event.id',
     minOccurs: 0,
     maxOccurs: 1,
     type: {
@@ -67,7 +68,7 @@ exports.descriptorsFromForm = function(form) {
       mapping: 'properties.event._id'
     }
   },{
-    localName: 'properties.event.name',
+    localName: 'event.name',
     minOccurs: 0,
     maxOccurs: 1,
     type: {
@@ -77,7 +78,7 @@ exports.descriptorsFromForm = function(form) {
       mapping: 'properties.event.name'
     }
   },{
-    localName: 'properties.user.username',
+    localName: 'user.username',
     minOccurs: 0,
     maxOccurs: 1,
     type: {
@@ -87,7 +88,7 @@ exports.descriptorsFromForm = function(form) {
       mapping: 'properties.user.username'
     }
   },{
-    localName: 'properties.user.displayName',
+    localName: 'user.displayName',
     minOccurs: 0,
     maxOccurs: 1,
     type: {
@@ -99,15 +100,15 @@ exports.descriptorsFromForm = function(form) {
   }];
 
   form.fields.filter(fieldFilter).forEach(function(field) {
-    descriptors.push(descriptorFromField(field));
+    descriptors.push(descriptorForField(field));
   });
 
   return descriptors;
 };
 
-function attributeFromField(field) {
+function attributeForField(field) {
   return {
-    name: 'properties.' + field.title,
+    name: generateCName(field.title),
     minOccurs: 0,
     maxOccurs: 1,
     nillable: true,
@@ -115,20 +116,24 @@ function attributeFromField(field) {
   };
 }
 
-function descriptorFromField(field) {
-  var descriptor = {
-    localName: 'properties.' + field.title,
+function descriptorForField(field) {
+  return {
+    localName: generateCName(field.title),
     minOccurs: 0,
     maxOccurs: 1,
     type: {
       binding: binding(field)
     },
     userData: {
-      mapping: 'properties.' + field.title
+      mapping: util.format('properties.%s', field.name)
     }
   };
+}
 
-  return descriptor;
+function generateCName(value) {
+  return value
+    .replace(/[^\w\.-_]+/g, '_')
+    .replace(/^(\d+)/, '_$1');
 }
 
 var bindingMap = {
