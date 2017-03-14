@@ -42,6 +42,7 @@ exports.createLocations = function(locations, user, event, callback) {
   };
 
   normalized.properties.user = {
+    _id: user._id,
     username: user.username,
     displayName: user.displayName
   };

@@ -65,13 +65,13 @@ function addNamedObservationLayer(sld, baseUrl, layer, event) {
   });
 }
 
-function addNamedLocationLayer(sld, baseUrl, event) {
+function addNamedLocationLayer(sld, baseUrl, event, collection) {
   var iconHref = util.format('%s/ogc/svg/users/${"user.id"}?access_token=%s', baseUrl, token);
 
   sld.ele({
     NamedLayer: {
       Name: {
-        '#text': util.format('%s:locations%d', workspace, event._id)
+        '#text': util.format('%s:%s%d', workspace, collection, event._id)
       },
       UserStyle: {
         Title: {
@@ -259,7 +259,10 @@ function create(baseUrl, layers, callback) {
         done();
       });
     } else if (layer.indexOf('locations') !== -1) {
-      addNamedLocationLayer(sld, baseUrl, {_id: layer.split('locations')[1]});
+      addNamedLocationLayer(sld, baseUrl, {_id: layer.split('locations')[1]}, 'locations');
+      done();
+    } else if (layer.indexOf('users') !== -1) {
+      addNamedLocationLayer(sld, baseUrl, {_id: layer.split('users')[1]}, 'users');
       done();
     }
   }, function(err) {
