@@ -1,6 +1,5 @@
 var mongoose = require('mongoose')
-  , log = require('winston')
-  , util = require('util');
+  , log = require('winston');
 
 var Schema = mongoose.Schema;
 
@@ -25,17 +24,9 @@ ObservationSchema.index({'user.displayName': 1});
 ObservationSchema.index({'device.uid': 1});
 ObservationSchema.index({'properties.type': 1});
 ObservationSchema.index({'properties.timestamp': 1});
+ObservationSchema.index({'properties.event._id': 1});
 
-function observationModel(event) {
-  var name = util.format('observations%d', event._id);
-  try {
-    var model = mongoose.model(name);
-  } catch(e) {
-    model = mongoose.model(name, ObservationSchema, name);
-  }
-
-  return model;
-}
+var ObservationModel = mongoose.model('Observation', ObservationSchema);
 
 function createOrUpdateObservation(observation, event, user, callback) {
   observation.properties.event = {
@@ -57,7 +48,7 @@ function createOrUpdateObservation(observation, event, user, callback) {
     new: true
   };
 
-  observationModel(event).findOneAndUpdate({_id: observation.id}, observation, options, function(err, observation) {
+  ObservationModel.findOneAndUpdate({_id: observation.id, 'properties.event._id': event._id}, observation, options, function(err, observation) {
     if (err) {
       log.error('Error creating observation', err);
     }
@@ -72,27 +63,24 @@ exports.createObservation = createOrUpdateObservation;
 exports.updateObservation = createOrUpdateObservation;
 
 exports.removeObservation = function(observationId, event) {
-  observationModel(event).findByIdAndRemove(observationId, function(err) {
+  ObservationModel.findOneAndRemove({_id: observationId, 'properties.event._id': event._id}, function(err) {
     if (err) {
       log.error('Error removing observation', err);
     }
   });
 };
 
-exports.createCollection = function(event, callback) {
-  var model = observationModel(event);
-  model.on('index', function() {
-    callback();
+exports.removeObservations = function(event, callback) {
+  ObservationModel.remove({'properties.event._id': event._id}, function(err) {
+    if (callback) {
+      callback(err);
+    }
   });
-};
-
-exports.removeCollection = function(event, callback) {
-  observationModel(event).collection.drop(callback);
 };
 
 exports.getLastObservation = function(event, callback) {
 
-  observationModel(event).find({},{}, {limit: 1, sort: {lastModified: -1}}, function(err, observations) {
+  ObservationModel.find({'properties.event._id': event._id}, {}, {limit: 1, sort: {lastModified: -1}}, function(err, observations) {
     if (err) return callback(err);
 
     var observation = observations.length ? observations[0] : null;

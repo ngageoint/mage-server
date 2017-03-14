@@ -4,6 +4,7 @@ var xmlbuilder = require('xmlbuilder')
   , moment = require('moment')
   , Event = require('../../../models/event')
   , config = require('../config')
+  , cname = require('../cname')
   , token = config.token
   , workspace = config.geoserver.workspace;
 
@@ -23,10 +24,10 @@ function getField(fieldName, form) {
 
 function addNamedObservationLayer(sld, baseUrl, layer, event) {
   var typeField = getField("type", event.form);
-  var href = util.format('%s/ogc/svg/observation/%s/${"properties.%s"}', baseUrl, event._id, typeField.title);
+  var href = util.format('%s/ogc/svg/observation/%s/${"%s"}', baseUrl, event._id, cname.generateCName(typeField.title));
   var variantField = getField(event.form.variantField, event.form);
   if (variantField) {
-    href += util.format('/${strURLEncode("properties.%s")}', variantField.title);
+    href += util.format('/${strURLEncode("%s")}', cname.generateCName(variantField.title));
   }
   href += util.format('?access_token=%s', token);
 
@@ -65,7 +66,7 @@ function addNamedObservationLayer(sld, baseUrl, layer, event) {
 }
 
 function addNamedLocationLayer(sld, baseUrl, event) {
-  var iconHref = util.format('%s/ogc/svg/users/${"properties.user._id"}?access_token=%s', baseUrl, token);
+  var iconHref = util.format('%s/ogc/svg/users/${"user.id"}?access_token=%s', baseUrl, token);
 
   sld.ele({
     NamedLayer: {

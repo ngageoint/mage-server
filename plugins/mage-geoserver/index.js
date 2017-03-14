@@ -115,6 +115,7 @@ function registerListeners() {
   Observation.on.add(ObservationModel.createObservation);
   Observation.on.update(ObservationModel.updateObservation);
   Observation.on.remove(ObservationModel.removeObservation);
+  Event.on.remove(ObservationModel.removeObservations);
 
   var LocationModel = require('./models/location');
   Location.on.add(LocationModel.createLocations);

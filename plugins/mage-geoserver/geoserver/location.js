@@ -3,9 +3,8 @@ var async = require('async')
   , util = require('util')
   , log = require('winston')
   , geoserverConfig = require('../config').geoserver
-  , SchemaModel = require('../models/schema')
-  , LocationModel = require('../models/location');
-
+  , SchemaModel = require('../models/schema');
+  
 var geoserverRequest = request.defaults({
   json: true,
   auth: {
@@ -35,26 +34,13 @@ exports.createLayer = function(event, callback) {
 exports.removeLayer = function(event) {
   log.info('Removing geoserver location layer for event', event.name);
 
-  async.series([
-    function(done) {
-      geoserverRequest.delete({
-        url: util.format('workspaces/%s/datastores/%s/featuretypes/%s?recurse=true', geoserverConfig.workspace, geoserverConfig.datastore, 'locations' + event._id),
-      }, function(err, response) {
-        if (err || response.statusCode !== 200) {
-          log.error('Failed to delete geoserver location layer for event ' + event.name, err);
-        } else {
-          log.info('Deleted geoserver location layer for event ' + event.name);
-        }
-
-        done();
-      });
-    },
-    function(done) {
-      LocationModel.removeLocations(event, done);
-    }
-  ], function(err) {
-    if (err) {
-      log.error('Error removing geoserver location layer', err);
+  geoserverRequest.delete({
+    url: util.format('workspaces/%s/datastores/%s/featuretypes/%s?recurse=true', geoserverConfig.workspace, geoserverConfig.datastore, 'locations' + event._id),
+  }, function(err, response) {
+    if (err || response.statusCode !== 200) {
+      log.error('Failed to delete geoserver location layer for event ' + event.name, err);
+    } else {
+      log.info('Deleted geoserver location layer for event ' + event.name);
     }
   });
 };

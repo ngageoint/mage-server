@@ -4,8 +4,7 @@ var async = require('async')
   , log = require('winston')
   , geoserverConfig = require('../config').geoserver
   , mapper = require('./attributeMapper')
-  , SchemaModel = require('../models/schema')
-  , ObservationModel = require('../models/observation');
+  , SchemaModel = require('../models/schema');
 
 var geoserverRequest = request.defaults({
   json: true,
@@ -44,9 +43,38 @@ exports.updateLayer = function(event) {
       SchemaModel.updateAttributeDescriptors(event, descriptors, done);
     },
     function(done) {
+      var layer = {
+        featureType: {
+          name: 'observations' + event._id,
+          title: event.name + ' Observations',
+          nativeCRS: 'EPSG:4326',
+          srs: 'EPSG:4326',
+          nativeBoundingBox: {
+            minx: -180,
+            maxx: 180,
+            miny: -90,
+            maxy: 90,
+            crs: 'EPSG:4326'
+          },
+          latLonBoundingBox: {
+            minx: -180,
+            maxx: 180,
+            miny: -90,
+            maxy: 90,
+            crs: 'EPSG:4326'
+          },
+          projectionPolicy: 'FORCE_DECLARED',
+          store: {
+            name: 'cite:mage'
+          },
+          cqlFilter: "\"event.id\" = " + event._id,
+          attributes: mapper.attributesFromForm(event.form)
+        }
+      };
+
       geoserverRequest.put({
         url: util.format('workspaces/%s/datastores/%s/featuretypes/%s', geoserverConfig.workspace, geoserverConfig.datastore, 'observations' + event._id),
-        body: createLayer(event)
+        body: layer
       }, function(err, response) {
         if (err || response.statusCode !== 200) {
           log.error('Failed to update geoserver observation layer for event ' + event.name, err);
@@ -67,26 +95,13 @@ exports.updateLayer = function(event) {
 exports.removeLayer = function(event) {
   log.info('Removing geoserver observation layer for event', event.name);
 
-  async.series([
-    function(done) {
-      geoserverRequest.delete({
-        url: util.format('workspaces/%s/datastores/%s/featuretypes/%s?recurse=true', geoserverConfig.workspace, geoserverConfig.datastore, 'observations' + event._id),
-      }, function(err, response) {
-        if (err || response.statusCode !== 200) {
-          log.error('Failed to delete geoserver observation layer for event ' + event.name, err);
-        } else {
-          log.info('Deleted geoserver observation layer for event ' + event.name);
-        }
-
-        done();
-      });
-    },
-    function(done) {
-      ObservationModel.removeCollection(event, done);
-    }
-  ], function(err) {
-    if (err) {
-      log.error('Error removing geoserver observation layer', err);
+  geoserverRequest.delete({
+    url: util.format('workspaces/%s/datastores/%s/featuretypes/%s?recurse=true', geoserverConfig.workspace, geoserverConfig.datastore, 'observations' + event._id),
+  }, function(err, response) {
+    if (err || response.statusCode !== 200) {
+      log.error('Failed to delete geoserver observation layer for event ' + event.name, err);
+    } else {
+      log.info('Deleted geoserver observation layer for event ' + event.name);
     }
   });
 };
@@ -109,13 +124,10 @@ function createLayer(event, callback) {
 
   async.series([
     function(done) {
-      ObservationModel.createCollection(event, done);
-    },
-    function(done) {
       var schema = {
         typeName: 'observations' + event._id,
         userData: {
-          collection: 'observations' + event._id
+          collection: 'observations'
         },
         geometryDescriptor: {
           localName: "geometry",
@@ -156,6 +168,7 @@ function createLayer(event, callback) {
           store: {
             name: 'cite:mage'
           },
+          cqlFilter: "\"event.id\" = " + event._id,
           attributes: mapper.attributesFromForm(event.form)
         }
       };

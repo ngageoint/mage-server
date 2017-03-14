@@ -1,5 +1,6 @@
 var util = require('util')
-  , log = require('winston');
+  , log = require('winston')
+  , cname = require('../cname');
 
 function fieldFilter(field) {
   return !field.archived && field.name !== 'geometry';
@@ -108,7 +109,7 @@ exports.descriptorsFromForm = function(form) {
 
 function attributeForField(field) {
   return {
-    name: generateCName(field.title),
+    name: cname.generateCName(field.title),
     minOccurs: 0,
     maxOccurs: 1,
     nillable: true,
@@ -118,7 +119,7 @@ function attributeForField(field) {
 
 function descriptorForField(field) {
   return {
-    localName: generateCName(field.title),
+    localName: cname.generateCName(field.title),
     minOccurs: 0,
     maxOccurs: 1,
     type: {
@@ -128,12 +129,6 @@ function descriptorForField(field) {
       mapping: util.format('properties.%s', field.name)
     }
   };
-}
-
-function generateCName(value) {
-  return value
-    .replace(/[^\w\.-_]+/g, '_')
-    .replace(/^(\d+)/, '_$1');
 }
 
 var bindingMap = {
