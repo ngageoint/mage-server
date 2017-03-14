@@ -14,101 +14,122 @@ var async = require('async')
 
 require('./authentication')(passport);
 
-var mongo = config.mongo;
-log.info('Geoserver using mongodb connection uri %s', mongo.uri);
-mongoose.connect(mongo.uri, mongo.options, function(err) {
-  if (err) {
-    log.error('Error connecting to mongo database, please make sure mongodb is running.', err);
-    throw err;
-  }
-});
-
-var mongooseLogger = log.loggers.get('mongoose');
-mongoose.set('debug', function(collection, method, query, doc, options) {
-  mongooseLogger.log('mongoose', "%s.%s(%s, %s, %s)", collection, method, this.$format(query), this.$format(doc), this.$format(options));
-});
-
-async.series([
-  function(done) {
-    var workspace = require('./geoserver/workspace');
-    workspace.create(done);
-  },
-  function(done) {
-    var datastore = require('./geoserver/datastore');
-    datastore.create(done);
-  },
-  function(done) {
-    var eventSync = require('./sync/event');
-    eventSync.sync(done);
-  },
-  function(done) {
-    var observationSync = require('./sync/observation');
-    observationSync.sync(done);
-  },
-  function(done) {
-    var locationSync = require('./sync/location');
-    locationSync.sync(done);
-  },
-  function(done) {
-    var userSync = require('./sync/user');
-    userSync.sync(done);
-  }
-], function(err) {
-  if (err) {
-    log.error('Error initializing geoserver', err);
-    throw(err);
+exports.initialize = function(app, callback) {
+  if (!config.enable) {
+    return callback();
   }
 
-  log.info('Done with sync to geoserver');
+  log.info('Initializing geoserver plugin');
 
-  // TODO let mage know we are done initializing this plugin
-  registerListeners();
-});
+  var mongo = config.mongo;
+  log.info('Geoserver using mongodb connection uri %s', mongo.uri);
+  mongoose.connect(mongo.uri, mongo.options, function(err) {
+    if (err) {
+      log.error('Error connecting to mongo database, please make sure mongodb is running.', err);
+      throw err;
+    }
+  });
 
-var urlFilter = new RegExp('^/' + config.context + '/' + config.token + '/(.*)');
+  var mongooseLogger = log.loggers.get('mongoose');
+  mongoose.set('debug', function(collection, method, query, doc, options) {
+    mongooseLogger.log('mongoose', "%s.%s(%s, %s, %s)", collection, method, this.$format(query), this.$format(doc), this.$format(options));
+  });
 
-function filter(pathname) {
-  var filter = urlFilter.exec(pathname);
+  var geoserver = setupGeoserverProxy();
 
-  return filter;
-}
+  // include routes
+  require('./routes')(geoserver, {passport: passport});
 
-function pathRewrite(path, req) {
-  var url = URL.parse(urlFilter.exec(path)[1], Boolean('parse query string'));
-  delete url.search;
+  app.use('/' + config.context, geoserver);
 
-  var wmsMatch = /service=wms/i.exec(url.path);
-  if (wmsMatch && !url.query['SLD_BODY']) {
-    var layers = '';
-    var layersMatch = /layers=([^&]*)/i.exec(url.path);
-    if (layersMatch && layersMatch.length > 1) {
-      layers = layersMatch[1];
+  syncDataToGeoserver(function(err) {
+    if (err) {
+      log.error('Error syncing data to geoserver', err);
+      return callback(err);
     }
 
-    url.query.sld = util.format('%s/ogc/sld?layers=%s&access_token=%s', req.getRoot(), layers, config.token);
+    registerListeners();
+    callback();
+  });
+};
+
+function setupGeoserverProxy() {
+  var urlFilter = new RegExp('^/' + config.context + '/' + config.token + '/(.*)');
+
+  function filter(pathname) {
+    var filter = urlFilter.exec(pathname);
+
+    return filter;
   }
 
-  var forward = '/geoserver/' + URL.parse(URL.format(url)).path;
+  function pathRewrite(path, req) {
+    var url = URL.parse(urlFilter.exec(path)[1], Boolean('parse query string'));
+    delete url.search;
 
-  return forward;
+    var wmsMatch = /service=wms/i.exec(url.path);
+    if (wmsMatch && !url.query['SLD_BODY']) {
+      var layers = '';
+      var layersMatch = /layers=([^&]*)/i.exec(url.path);
+      if (layersMatch && layersMatch.length > 1) {
+        layers = layersMatch[1];
+      }
+
+      url.query.sld = util.format('%s/ogc/sld?layers=%s&access_token=%s', req.getRoot(), layers, config.token);
+    }
+
+    var forward = '/geoserver/' + URL.parse(URL.format(url)).path;
+
+    return forward;
+  }
+
+  var geoserverProxy = proxy(filter, {
+    target: config.geoserver.url,
+    pathRewrite: pathRewrite,
+    logLevel: 'debug'
+  });
+
+  var geoserver = new express.Router();
+  geoserver.use(geoserverProxy);
+
+  return geoserver;
 }
 
-var geoserverProxy = proxy(filter, {
-  target: config.geoserver.url,
-  pathRewrite: pathRewrite,
-  logLevel: 'debug'
-});
+function syncDataToGeoserver(callback) {
+  async.series([
+    function(done) {
+      var workspace = require('./geoserver/workspace');
+      workspace.create(done);
+    },
+    function(done) {
+      var datastore = require('./geoserver/datastore');
+      datastore.create(done);
+    },
+    function(done) {
+      var eventSync = require('./sync/event');
+      eventSync.sync(done);
+    },
+    function(done) {
+      var observationSync = require('./sync/observation');
+      observationSync.sync(done);
+    },
+    function(done) {
+      var locationSync = require('./sync/location');
+      locationSync.sync(done);
+    },
+    function(done) {
+      var userSync = require('./sync/user');
+      userSync.sync(done);
+    }
+  ], function(err) {
+    if (err) {
+      log.error('Error initializing geoserver', err);
+      throw(err);
+    }
 
-var geoserver = new express.Router();
-geoserver.use(geoserverProxy);
-
-// include routes
-require('./routes')(geoserver, {passport: passport});
-
-module.exports = {
-  context: config.context,
-  express: geoserver
-};
+    log.info('Done with sync to geoserver');
+    callback(err);
+  });
+}
 
 function registerListeners() {
   var ObservationModel = require('./models/observation');

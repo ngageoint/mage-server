@@ -24,7 +24,7 @@ function getField(fieldName, form) {
 
 function addNamedObservationLayer(sld, baseUrl, layer, event) {
   var typeField = getField("type", event.form);
-  var href = util.format('%s/ogc/svg/observation/%s/${"%s"}', baseUrl, event._id, cname.generateCName(typeField.title));
+  var href = util.format('%s/ogc/svg/observation/%s/${strUrlEncode("%s")}', baseUrl, event._id, cname.generateCName(typeField.title));
   var variantField = getField(event.form.variantField, event.form);
   if (variantField) {
     href += util.format('/${strURLEncode("%s")}', cname.generateCName(variantField.title));
@@ -88,7 +88,7 @@ function addNamedLocationLayer(sld, baseUrl, event) {
             'ogc:Filter': {
               'ogc:PropertyIsBetween': {
                 'ogc:PropertyName': {
-                  '#text': 'properties.timestamp'
+                  '#text': 'timestamp'
                 },
                 'ogc:LowerBoundary': {
                   'ogc:Literal': {
@@ -131,7 +131,7 @@ function addNamedLocationLayer(sld, baseUrl, event) {
             'ogc:Filter': {
               'ogc:PropertyIsBetween': {
                 'ogc:PropertyName': {
-                  '#text': 'properties.timestamp'
+                  '#text': 'timestamp'
                 },
                 'ogc:LowerBoundary': {
                   'ogc:Literal': {
@@ -173,7 +173,7 @@ function addNamedLocationLayer(sld, baseUrl, event) {
             'ogc:Filter': {
               'ogc:PropertyIsLessThan': {
                 'ogc:PropertyName': {
-                  '#text': 'properties.timestamp'
+                  '#text': 'timestamp'
                 },
                 'ogc:Literal': {
                   '#text': moment().subtract(30, 'minutes').toISOString()

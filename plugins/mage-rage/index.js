@@ -2,10 +2,21 @@ var child = require('child_process')
   , log = require('winston')
   , config = require('./config.json');
 
-if (!config.enable) return;
+exports.initialize = function(app, callback) {
+  if (!config.enable) {
+    return callback();
+  }
+
+  log.info('activating rage plugin');
+  start();
+
+  // nothing async happening in setup
+  setImmediate(function() {
+    callback();
+  });
+};
 
 function start() {
-  log.info('activating rage plugin');
   var rage = child.fork(__dirname + '/rage');
 
   rage.on('error', function(err) {
@@ -26,6 +37,4 @@ function start() {
     log.warn('***************** rage parent process exit, killing ********************', err);
     rage.kill();
   });
-
 }
-start();

@@ -2,9 +2,20 @@ var child = require('child_process')
   , log = require('winston')
   , config = require('./config.json');
 
-if (!config.enable) return;
+exports.initialize = function(app, callback) {
+  if (!config.enable) {
+    return callback();
+  }
 
-log.info('activating image plugin');
+  log.info('activating image plugin');
+
+  start();
+
+  // nothing async happening in setup
+  setImmediate(function() {
+    callback();
+  });
+};
 
 function start() {
   // start worker
@@ -34,5 +45,3 @@ function start() {
     worker.kill();
   });
 }
-
-start();

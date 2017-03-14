@@ -120,7 +120,9 @@ GeoServerResource.prototype.getUserIcon = function(req, res, next) {
     if (err) return next(err);
 
     if (!icon || !icon.relativePath) {
-      return res.sendFile(path.resolve(__dirname, './img/blank.png'));
+      var blankImagePath = path.resolve(__dirname, 'images/blank.png');
+      console.log('blank image path is: ', blankImagePath);
+      return res.sendFile(path.resolve(__dirname, '../images/blank.png'));
     }
 
     res.sendFile(icon.path);
