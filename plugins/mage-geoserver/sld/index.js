@@ -264,6 +264,8 @@ function create(baseUrl, layers, callback) {
     } else if (layer.indexOf('users') !== -1) {
       addNamedLocationLayer(sld, baseUrl, {_id: layer.split('users')[1]}, 'users');
       done();
+    } else {
+      done(new Error('Unrecognized layer, cannot create SLD ' + layer));
     }
   }, function(err) {
     if (err) return callback(err);
