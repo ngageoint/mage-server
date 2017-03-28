@@ -7,7 +7,7 @@ fs.readdirSync('plugins').map(function(file) {
 }).filter(function(file) {
   return fs.statSync(file).isDirectory();
 }).filter(function(file) {
-  return fs.readdirSync(file).indexOf('package.json') !== -1;
+  return fs.existsSync(path.join(file, 'package.json'));
 }).forEach(function(plugin) {
   console.log('npm install on ', plugin);
   cp.spawn('npm', ['install'], {env: process.env, cwd: plugin, stdio: 'inherit'});
