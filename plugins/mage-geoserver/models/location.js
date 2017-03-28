@@ -80,7 +80,7 @@ exports.removeLocations = function(event, callback) {
 
 exports.getLastLocation = function(event, callback) {
 
-  LocationModel.find({},{}, {limit: 1, sort: {'properties.timestamp': -1}}, function(err, locations) {
+  LocationModel.find({'properties.event._id': event._id},{}, {limit: 1, sort: {'properties.timestamp': -1}}, function(err, locations) {
     if (err) return callback(err);
 
     var location = locations.length ? locations[0] : null;

@@ -30,10 +30,10 @@ exports.initialize = function(app, callback) {
     }
   });
 
-  var mongooseLogger = log.loggers.get('mongoose');
-  mongoose.set('debug', function(collection, method, query, doc, options) {
-    mongooseLogger.log('mongoose', "%s.%s(%s, %s, %s)", collection, method, this.$format(query), this.$format(doc), this.$format(options));
-  });
+  // var mongooseLogger = log.loggers.get('mongoose');
+  // mongoose.set('debug', function(collection, method, query, doc, options) {
+  //   mongooseLogger.log('mongoose', "%s.%s(%s, %s, %s)", collection, method, this.$format(query), this.$format(doc), this.$format(options));
+  // });
 
   var geoserver = setupGeoserverProxy();
 

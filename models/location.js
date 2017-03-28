@@ -71,7 +71,7 @@ exports.getLocations = function(options, callback) {
       queryOptions.limit = options.limit;
     }
 
-    return Location.find(conditions, {}, options).cursor();
+    return Location.find(conditions, {}, queryOptions).cursor();
   } else {
     // If we are not streaming limit number of locations to 2000
     var limit = 2000;

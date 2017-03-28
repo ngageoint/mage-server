@@ -21,9 +21,9 @@ function getEvents(callback) {
 }
 
 function syncEvents(events, callback) {
-  async.eachSeries(events, function(event) {
-    syncEvent(event, callback);
-  });
+  async.eachSeries(events, function(event, done) {
+    syncEvent(event, done);
+  }, callback);
 }
 
 function syncEvent(event, callback) {
@@ -66,9 +66,7 @@ function syncObservations(event, since, callback) {
 
     async.each(observations, function(observation, done) {
       syncObservation(observation.toObject(), event, done);
-    }, function(err) {
-      callback(err);
-    });
+    }, callback);
   });
 }
 

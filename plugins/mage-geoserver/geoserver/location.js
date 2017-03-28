@@ -4,7 +4,7 @@ var async = require('async')
   , log = require('winston')
   , geoserverConfig = require('../config').geoserver
   , SchemaModel = require('../models/schema');
-  
+
 var geoserverRequest = request.defaults({
   json: true,
   auth: {
@@ -198,6 +198,10 @@ function getLayer(event, callback) {
 
 function createLayer(event, callback) {
   log.info('Creating geoserver location layer for event', event.name);
+  
+  // Geoserver expects that the collection exists for the created,
+  // his will ensure that the observation collection exists
+  require('../models/location');
 
   async.series([
     function(done) {

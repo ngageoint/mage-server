@@ -213,6 +213,10 @@ function getLayer(event, callback) {
 function createLayer(event, callback) {
   log.info('Creating geoserver user layer for event', event.name);
 
+  // Geoserver expects that the collection exists for the created,
+  // his will ensure that the observation collection exists
+  require('../models/user');
+
   async.series([
     function(done) {
       var schema = createSchema(event);

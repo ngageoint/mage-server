@@ -12,6 +12,8 @@ exports.sync = function(callback) {
       log.error('Error syncing locations to geoserver.', err);
     }
 
+    log.info('Completed location sync to geoserver');
+
     callback(err);
   });
 };
@@ -21,9 +23,9 @@ function getEvents(callback) {
 }
 
 function syncEvents(events, callback) {
-  async.eachSeries(events, function(event) {
-    syncEvent(event, callback);
-  });
+  async.eachSeries(events, function(event, done) {
+    syncEvent(event, done);
+  }, callback);
 }
 
 function syncEvent(event, callback) {
@@ -37,6 +39,7 @@ function syncEvent(event, callback) {
       });
     },
     function(lastModified, done) {
+      // done();
       syncLocations(event, lastModified, function(err) {
         done(err);
       });
@@ -45,6 +48,8 @@ function syncEvent(event, callback) {
     if (err) {
       log.error('Error syncing event %s locations to geoserver', event.name, err);
     }
+
+    log.info('Completed location sync for event %s', event.name);
 
     callback(err);
   });
@@ -59,6 +64,7 @@ function syncLocations(event, since, callback) {
   };
 
   if (since) {
+    log.info('Pulling locations for event %s, since %s', event.name, since.toISOString());
     options.filter.startDate = since;
   }
 

@@ -25,9 +25,7 @@ function syncEvents(events, callback) {
 
   async.eachSeries(events, function(event, done) {
     syncEvent(event, done);
-  }, function(err) {
-    callback(err);
-  });
+  }, callback);
 }
 
 function syncEvent(event, callback) {
@@ -44,9 +42,7 @@ function syncEvent(event, callback) {
   new api.Location().getLocations(options, function(err, users) {
     async.each(users, function(user, done) {
       syncUser(user, event, done);
-    }, function(err) {
-      callback(err);
-    });
+    }, callback);
   });
 }
 

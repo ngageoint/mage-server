@@ -25,9 +25,7 @@ function getEvents(callback) {
 function createEvents(events, callback) {
   async.eachSeries(events, function(event, done) {
     createEvent(event, done);
-  }, function(err) {
-    callback(err);
-  });
+  }, callback);
 }
 
 function createEvent(event, callback) {
