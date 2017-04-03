@@ -51,15 +51,15 @@ Observation.prototype.validate = function(observation) {
   }
 
   if (!observation.geometry) {
-    throw new Error("cannot create observation 'geometry' param not specified");
+    throw new Error("'geometry' param required but not specified");
   }
 
   if (!observation.properties.timestamp) {
-    throw new Error("cannot create observation 'properties.timestamp' param not specified");
+    throw new Error("'properties.timestamp' param required but not specified");
   }
 
   if (!observation.properties.type) {
-    throw new Error("cannot create observation 'properties.type' param not specified");
+    throw new Error("'properties.type' param required but not specified");
   }
 
   // Don't validate archived fields
@@ -71,15 +71,21 @@ Observation.prototype.validate = function(observation) {
   });
 };
 
-Observation.prototype.create = function(observation, callback) {
-  try {
-    this.validate(observation);
-  } catch (err) {
-    err.status = 400;
-    return callback(err);
-  }
+Observation.prototype.createObservationId = function(callback) {
+  ObservationModel.createObservationId(callback);
+};
 
-  ObservationModel.createObservation(this._event, observation, callback);
+Observation.prototype.validateObservationId = function(id, callback) {
+  ObservationModel.getObservationId(id, function(err, id) {
+    if (err) return callback(err);
+
+    if (!id) {
+      err = new Error();
+      err.status = 404;
+    }
+
+    callback(err, id);
+  });
 };
 
 Observation.prototype.update = function(observationId, observation, callback) {

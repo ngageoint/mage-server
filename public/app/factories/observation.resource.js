@@ -1,15 +1,20 @@
 angular.module('mage').factory('Observation', ['$resource', function($resource) {
 
-  var Observation = $resource('/api/events/:eventId/observations/:id', {
-    id: '@id',
+  var ObservationId = $resource('/api/events/:eventId/observations/', {
     eventId: '@eventId'
   }, {
-    create: {
+    createId: {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       }
-    },
+    }
+  });
+
+  var Observation = $resource('/api/events/:eventId/observations/:id', {
+    id: '@id',
+    eventId: '@eventId'
+  }, {
     update: {
       method: 'PUT',
       headers: {
@@ -22,10 +27,16 @@ angular.module('mage').factory('Observation', ['$resource', function($resource) 
   });
 
   Observation.prototype.$save = function(params, success, error) {
-    if(this.id) {
+    if (this.id) {
       this.$update(params, success, error);
     } else {
-      this.$create(params, success, error);
+      var self = this;
+      var onSuccess = function(observation) {
+        self.id = observation.id;
+        self.$update(params, success, error);
+      };
+
+      new ObservationId({eventId: this.eventId}).$createId({}, onSuccess, error);
     }
   };
 

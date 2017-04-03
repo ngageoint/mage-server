@@ -1,6 +1,7 @@
 module.exports = function(app, security) {
 
-  var api = require('../api')
+  var async = require('async')
+    , api = require('../api')
     , log = require('winston')
     , pug = require('pug')
     , archiver = require('archiver')
@@ -41,10 +42,40 @@ module.exports = function(app, security) {
     }
   }
 
+  function validateObservationCreateAccess(validateObservationId) {
+    return function(req, res, next) {
+
+      if (!access.userHasPermission(req.user, 'CREATE_OBSERVATION')) {
+        return res.sendStatus(403);
+      }
+
+      var tasks = [];
+      if (validateObservationId) {
+        tasks.push(function(done) {
+          new api.Observation().validateObservationId(req.param('id'), done);
+        });
+      }
+
+      tasks.push(function(done) {
+        Team.teamsForUserInEvent(req.user, req.event, function(err, teams) {
+          if (err) return next(err);
+
+          if (teams.length === 0) {
+            return res.status(403).send('Cannot submit an observation for an event that you are not part of.');
+          }
+
+          done();
+        });
+      });
+
+      async.series(tasks, next);
+    };
+  }
+
   function validateObservationUpdateAccess(req, res, next) {
     if (access.userHasPermission(req.user, 'UPDATE_OBSERVATION_ALL')) {
       next();
-    }else if (access.userHasPermission(req.user, 'UPDATE_OBSERVATION_EVENT')) {
+    } else if (access.userHasPermission(req.user, 'UPDATE_OBSERVATION_EVENT')) {
       // Make sure I am part of this event
       Event.eventHasUser(req.event, req.user._id, function(err, eventHasUser) {
         if (eventHasUser) {
@@ -58,6 +89,12 @@ module.exports = function(app, security) {
     }
   }
 
+  function validateCreateOrUpdateAccess(req, res, next) {
+    req.existingObservation ?
+      validateObservationUpdateAccess(req, res, next) :
+      validateObservationCreateAccess(true)(req, res, next);
+  }
+
   function populateUserFields(req, res, next) {
     new api.Form(req.event).populateUserFields(function(err) {
       if (err) return next(err);
@@ -66,37 +103,39 @@ module.exports = function(app, security) {
     });
   }
 
-  function validateObservation(req, res, next) {
-    var observation = req.body;
-    observation.properties = observation.properties || {};
-
-    Team.teamsForUserInEvent(req.user, req.event, function(err, teams) {
-      if (err) return next(err);
-
-      if (teams.length === 0) {
-        return res.status(403).send('Cannot submit an observation for an event that you are not part of.');
-      }
-
-      var userId = req.user ? req.user._id : null;
-      var state = {name: 'active'};
-      if (userId) state.userId = userId;
-      observation.states = [state];
-
-      req.newObservation = {
-        type: observation.type,
-        geometry: observation.geometry,
-        properties: observation.properties,
-        states: [state],
-        teamIds: teams.map(function(team) { return team._id; })
-      };
-
-      if (userId) req.newObservation.userId = userId;
-
-      var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
-      if (deviceId) req.newObservation.deviceId = deviceId;
-
-      next();
+  function getObservation(req, res, next) {
+    new api.Observation(req.event).getById(req.param('id'), function(err, observation) {
+      req.existingObservation = observation;
+      next(err);
     });
+  }
+
+  function populateObservation(req, res, next) {
+    req.observation = {};
+
+    var userId = req.user ? req.user._id : null;
+    if (userId) req.observation.userId = userId;
+
+    var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
+    if (deviceId) req.observation.deviceId = deviceId;
+
+    if (!req.existingObservation) {
+      var state = { name: 'active' };
+      if (userId) state.userId = userId;
+      req.observation.states = [state];
+    }
+
+    req.observation.type = req.body.type;
+
+    if (req.body.geometry) {
+      req.observation.geometry = req.body.geometry;
+    }
+
+    if (req.body.properties) {
+      req.observation.properties = req.body.properties;
+    }
+
+    next();
   }
 
   function getUserForObservation(req, res, next) {
@@ -151,7 +190,6 @@ module.exports = function(app, security) {
     if (observationEndDate) {
       parameters.filter.observationEndDate = moment(observationEndDate).utc().toDate();
     }
-
 
     var bbox = req.param('bbox');
     if (bbox) {
@@ -275,15 +313,13 @@ module.exports = function(app, security) {
   app.post(
     '/api/events/:eventId/observations',
     passport.authenticate('bearer'),
-    access.authorize('CREATE_OBSERVATION'),
-    populateUserFields,
-    validateObservation,
+    validateObservationCreateAccess(false),
     function (req, res, next) {
-      new api.Observation(req.event).create(req.newObservation, function(err, newObservation) {
+      new api.Observation().createObservationId(function(err, doc) {
         if (err) return next(err);
 
-        var response = observationXform.transform(newObservation, transformOptions(req));
-        res.location(newObservation._id.toString()).json(response);
+        var response = observationXform.transform(doc, transformOptions(req));
+        res.status(201).json(response);
       });
     }
   );
@@ -291,32 +327,13 @@ module.exports = function(app, security) {
   app.put(
     '/api/events/:eventId/observations/:id',
     passport.authenticate('bearer'),
+    getObservation,
+    validateCreateOrUpdateAccess,
+    populateObservation,
     populateUserFields,
-    validateObservationUpdateAccess,
     function (req, res, next) {
 
-      var observation = {
-        type: req.body.type
-      };
-      if (req.body.geometry) observation.geometry = req.body.geometry;
-      if (req.body.properties) {
-        observation.properties = req.body.properties;
-        if (!observation.properties.type) {
-          return res.status(400).send("cannot update observation 'properties.type' param not specified");
-        }
-
-        if (!observation.properties.timestamp) {
-          return res.status(400).send("cannot update observation 'properties.timestamp' param not specified");
-        }
-      }
-
-      var userId = req.user ? req.user._id : null;
-      if (userId) observation.userId = userId;
-
-      var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
-      if (deviceId) observation.deviceId = deviceId;
-
-      new api.Observation(req.event).update(req.param('id'), observation, function(err, updatedObservation) {
+      new api.Observation(req.event).update(req.param('id'), req.observation, function(err, updatedObservation) {
         if (err) return next(err);
 
         if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.id + " does not exist");

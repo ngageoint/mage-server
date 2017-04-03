@@ -83,6 +83,11 @@ describe("observation update tests", function() {
         timestamp: Date.now()
       }
     });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .yields(null, mockObservation);
+
     sandbox.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .yields(null, mockObservation);
@@ -146,6 +151,11 @@ describe("observation update tests", function() {
         timestamp: Date.now()
       }
     });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .yields(null, mockObservation);
+
     sandbox.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .yields(null, mockObservation);
@@ -188,8 +198,18 @@ describe("observation update tests", function() {
         }]
       });
 
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .yields(null, {});
+
     request(app)
-      .put('/api/events/1/observations/123')
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -204,7 +224,7 @@ describe("observation update tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal("cannot update observation 'properties.type' param not specified");
+        res.text.should.equal("'properties.type' param required but not specified");
       })
       .end(done);
   });
@@ -222,8 +242,18 @@ describe("observation update tests", function() {
         }]
       });
 
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .yields(null, {});
+
     request(app)
-      .put('/api/events/1/observations/123')
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -238,7 +268,7 @@ describe("observation update tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal("cannot update observation 'properties.timestamp' param not specified");
+        res.text.should.equal("'properties.timestamp' param required but not specified");
       })
       .end(done);
   });
@@ -266,12 +296,17 @@ describe("observation update tests", function() {
       collectionName: 'observations1'
     });
 
+    var observationId = mongoose.Types.ObjectId();
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .yields(null, {_id: observationId});
+
     sandbox.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/123')
+      .put('/api/events/1/observations/' + observationId)
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -287,7 +322,7 @@ describe("observation update tests", function() {
       })
       .expect(404)
       .expect(function(res) {
-        res.text.should.equal('Observation with id 123 does not exist');
+        res.text.should.equal('Observation with id ' +  observationId + ' does not exist');
       })
       .end(done);
   });
@@ -315,6 +350,10 @@ describe("observation update tests", function() {
       collectionName: 'observations1'
     });
     var observationId = mongoose.Types.ObjectId();
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .yields(null, {_id: observationId});
+
     var mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',

@@ -174,8 +174,8 @@ describe("attachment create tests", function() {
         res.text.should.equal("no attachment");
       })
       .end(function(err) {
-        mockfs.restore();
-        done(err);
+        mockfs.restore(err);
+        done();
       });
   });
 });

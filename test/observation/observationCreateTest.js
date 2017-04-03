@@ -16,6 +16,7 @@ var EventModel = mongoose.model('Event');
 
 var Observation = require('../../models/observation');
 var observationModel = Observation.observationModel;
+var ObservationIdModel = mongoose.model('ObservationId');
 
 describe("observation create tests", function() {
 
@@ -73,6 +74,33 @@ describe("observation create tests", function() {
       .yields(null, MockToken(userId, [permission]));
   }
 
+  it("should create an observation id", function(done) {
+    mockTokenWithPermission('CREATE_OBSERVATION');
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    var mockObservation = new ObservationIdModel({_id: mongoose.Types.ObjectId()});
+    sandbox.mock(ObservationIdModel)
+      .expects('create')
+      .withArgs({})
+      .yields(null, mockObservation);
+
+    request(app)
+      .post('/api/events/1/observations')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send()
+      .expect(201)
+      .expect('Content-Type', /json/)
+      .expect(function(res) {
+        should.exist(res.body);
+        res.body.should.have.property('id');
+      })
+      .end(done);
+  });
+
   it("should create an observation for an event", function(done) {
     mockTokenWithPermission('CREATE_OBSERVATION');
 
@@ -80,13 +108,19 @@ describe("observation create tests", function() {
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
+    var observationId = mongoose.Types.ObjectId();
+    sandbox.mock(ObservationIdModel)
+      .expects('findById')
+      .yields(null, {_id: observationId});
+
     var ObservationModel = observationModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1'
     });
+
     var mockObservation = new ObservationModel({
-      _id: mongoose.Types.ObjectId(),
+      _id: observationId,
       type: 'Feature',
       geometry: {
         type: "Point",
@@ -96,12 +130,18 @@ describe("observation create tests", function() {
         timestamp: '2016-01-01T00:00:00'
       }
     });
+
     sandbox.mock(ObservationModel)
-      .expects('create')
+      .expects('findById')
+      .yields(null, null);
+
+    sandbox.mock(ObservationModel)
+      .expects('findByIdAndUpdate')
+      .withArgs(observationId.toString(), sinon.match.any, {new: true, upsert: true})
       .yields(null, mockObservation);
 
     request(app)
-      .post('/api/events/1/observations')
+      .put('/api/events/1/observations/' + observationId.toString())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -126,15 +166,66 @@ describe("observation create tests", function() {
       .end(done);
   });
 
-  it("should reject new observation for invalid permission", function(done) {
-    mockTokenWithPermission('READ_OBSERVATION');
+  it("should reject new observation with invalid id", function(done) {
+    mockTokenWithPermission('CREATE_OBSERVATION');
 
     sandbox.mock(TeamModel)
       .expects('find')
       .yields(null, []);
 
+    var observationId = mongoose.Types.ObjectId();
+    sandbox.mock(ObservationIdModel)
+      .expects('findById')
+      .yields(null, null);
+
+    var ObservationModel = observationModel({
+      _id: observationId,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .yields(null, null);
+
     request(app)
-      .post('/api/events/1/observations')
+      .put('/api/events/1/observations/' + observationId.toString())
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        type: 'Feature',
+        geometry: {
+          type: "Point",
+          coordinates: [0, 0]
+        },
+        properties: {
+          type: 'type',
+          timestamp: '2016-01-01T00:00:00'
+        }
+      })
+      .expect(404)
+      .end(done);
+  });
+
+  it("should reject new observation for invalid permission", function(done) {
+    mockTokenWithPermission('UPDATE_OBSERVATION');
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, []);
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .yields(null, null);
+
+    request(app)
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -162,8 +253,22 @@ describe("observation create tests", function() {
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
+    sandbox.mock(ObservationIdModel)
+      .expects('findById')
+      .yields(null, {_id: 1});
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .yields(null, null);
+
     request(app)
-      .post('/api/events/1/observations')
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -189,8 +294,22 @@ describe("observation create tests", function() {
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
+    sandbox.mock(ObservationIdModel)
+      .expects('findById')
+      .yields(null, {_id: 1});
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .yields(null, null);
+
     request(app)
-      .post('/api/events/1/observations')
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -202,7 +321,7 @@ describe("observation create tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal("cannot create observation 'geometry' param not specified");
+        res.text.should.equal("'geometry' param required but not specified");
       })
       .end(done);
   });
@@ -214,8 +333,22 @@ describe("observation create tests", function() {
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
+    sandbox.mock(ObservationIdModel)
+      .expects('findById')
+      .yields(null, {_id: 1});
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .yields(null, null);
+
     request(app)
-      .post('/api/events/1/observations')
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -236,8 +369,22 @@ describe("observation create tests", function() {
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
+    sandbox.mock(ObservationIdModel)
+      .expects('findById')
+      .yields(null, {_id: 1});
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .yields(null, null);
+
     request(app)
-      .post('/api/events/1/observations')
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -252,7 +399,7 @@ describe("observation create tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal("cannot create observation 'properties.timestamp' param not specified");
+        res.text.should.equal("'properties.timestamp' param required but not specified");
       })
       .end(done);
   });
@@ -264,8 +411,22 @@ describe("observation create tests", function() {
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
+    sandbox.mock(ObservationIdModel)
+      .expects('findById')
+      .yields(null, {_id: 1});
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .yields(null, null);
+
     request(app)
-      .post('/api/events/1/observations')
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -282,35 +443,6 @@ describe("observation create tests", function() {
       .expect(400)
       .expect(function(res) {
         res.text.should.equal("cannot create observation, 'Date' property is not a valid ISO8601 date");
-      })
-      .end(done);
-  });
-
-
-  it("should reject new observation w/o type", function(done) {
-    mockTokenWithPermission('CREATE_OBSERVATION');
-
-    sandbox.mock(TeamModel)
-      .expects('find')
-      .yields(null, [{ name: 'Team 1' }]);
-
-    request(app)
-      .post('/api/events/1/observations')
-      .set('Accept', 'application/json')
-      .set('Authorization', 'Bearer 12345')
-      .send({
-        type: 'Feature',
-        geometry: {
-          type: "Point",
-          coordinates: [0, 0]
-        },
-        properties: {
-          timestamp: '2016-01-01T00:00:00'
-        }
-      })
-      .expect(400)
-      .expect(function(res) {
-        res.text.should.equal("cannot create observation 'properties.type' param not specified");
       })
       .end(done);
   });

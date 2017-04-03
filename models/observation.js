@@ -1,10 +1,14 @@
 var mongoose = require('mongoose')
   , async = require('async')
   , moment = require('moment')
-  , Event = require('../models/event')
+  , Event = require('./event')
   , log = require('winston');
 
 var Schema = mongoose.Schema;
+
+// Collection to hold unique observation ids
+var ObservationIdSchema = new Schema();
+var ObservationId = mongoose.model('ObservationId', ObservationIdSchema);
 
 var StateSchema = new Schema({
   name: { type: String, required: true },
@@ -109,6 +113,10 @@ function transform(observation, ret, options) {
     }
   }
 }
+
+ObservationIdSchema.set("toJSON", {
+  transform: transform
+});
 
 ObservationSchema.set("toJSON", {
   transform: transform
@@ -227,6 +235,16 @@ exports.getObservations = function(event, o, callback) {
   observationModel(event).find(conditions, fields, options, callback);
 };
 
+exports.createObservationId = function(callback) {
+  ObservationId.create({}, callback);
+};
+
+exports.getObservationId = function(id, callback) {
+  ObservationId.findById(id, function(err, doc) {
+    callback(err, doc ? doc._id : null);
+  });
+};
+
 exports.getLatestObservation = function(event, callback) {
   observationModel(event).findOne({}, {lastModified: true}, {sort: {"lastModified": -1}, limit: 1}, callback);
 };
@@ -237,16 +255,10 @@ exports.getObservationById = function(event, observationId, options, callback) {
   observationModel(event).findById(observationId, fields, callback);
 };
 
-exports.createObservation = function(event, observation, callback) {
-  observation.lastModified = moment.utc().toDate();
-
-  observationModel(event).create(observation, callback);
-};
-
 exports.updateObservation = function(event, observationId, observation, callback) {
   observation.lastModified = moment.utc().toDate();
 
-  observationModel(event).findByIdAndUpdate(observationId, observation, {new: true}, callback);
+  observationModel(event).findByIdAndUpdate(observationId, observation, {new: true, upsert: true}, callback);
 };
 
 exports.removeObservation = function(event, observationId, callback) {

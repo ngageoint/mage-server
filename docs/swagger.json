@@ -1394,7 +1394,7 @@
                 }
             },
             "post": {
-                "description": "add new observation",
+                "description": "Generate a new observation resource location",
                 "operationId": "addObservation",
                 "parameters": [
                     {
@@ -1403,15 +1403,6 @@
                         "description": "eventId for which to create observation",
                         "required": true,
                         "type": "number"
-                    },
-                    {
-                        "name": "body",
-                        "in": "body",
-                        "description": "observation request body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/Feature"
-                        }
                     }
                 ],
                 "tags": [
@@ -1419,9 +1410,14 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "observation response",
+                        "description": "new observation location",
                         "schema": {
-                            "$ref": "#/definitions/Feature"
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                                "type": "string"
+                            }
+                          }
                         }
                     }
                 }
