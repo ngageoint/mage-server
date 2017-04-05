@@ -9,7 +9,8 @@ var FeatureSchema = new Schema({
   properties: Schema.Types.Mixed
 },{
   strict: false,
-  versionKey: false
+  versionKey: false,
+  minimize: false
 });
 
 FeatureSchema.index({geometry: "2dsphere"});

@@ -7,7 +7,7 @@ L.FixedWidthMarker = L.Marker.extend({
         iconUrl: options.iconUrl,
         onIconLoad: function() {
           if (self._popup && self._icon) {
-            self._popup.options.offset = [0, self._icon.offsetTop + 7];
+            self._popup.options.offset = [0, self._icon.offsetTop + 10];
             self._popup.update();
           }
         }
@@ -16,15 +16,17 @@ L.FixedWidthMarker = L.Marker.extend({
 
     L.Marker.prototype.initialize.call(this, latlng, options);
   },
-  
-  openPopup: function () {
+
+  openPopup: function (layer, latlng) {
     this._openPopup = true;
 
-    if (this._popup && this._map && !this._map.hasLayer(this._popup)) {
-      this._popup.options.offset = [0, this._icon.offsetTop + 7];
+    if (this._popup && this._popup.options.iconUrl) {
+      this._popup.options.offset = [0, this._icon.offsetTop + 10];
+    }
 
-      this._popup.setLatLng(this._latlng);
-      this._map.openPopup(this._popup);
+    if (this._popup && this._map && !this._map.hasLayer(this._popup)) {
+
+      this._map.openPopup(this._popup, latlng);
     }
 
     return this;

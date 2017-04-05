@@ -229,7 +229,7 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
             options: {
               popup: {
                 html: function(feature) {
-                  // TODO user leaflet template for this
+                  // TODO use leaflet template for this
                   var content = "";
                   if (feature.properties.name) {
                     content += '<div><strong><u>' + feature.properties.name + '</u></strong></div>';

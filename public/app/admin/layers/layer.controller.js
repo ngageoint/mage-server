@@ -104,4 +104,9 @@ function AdminLayerController($scope, $uibModal, $routeParams, $location, $filte
   $scope.confirmUpload = function() {
     $scope.uploadConfirmed = true;
   };
+
+  $scope.status = {};
+  $scope.$on('uploadComplete', function(e, url, response, index) {
+    $scope.status[index] = response.files[0];
+  });
 }

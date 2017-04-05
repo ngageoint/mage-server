@@ -36,7 +36,7 @@ module.exports = function(app, security) {
 
         var response = {
           files: [{
-            name: req.files.file.name,
+            name: req.files.file.originalname,
             size: req.files.file.size,
             features: newFeatures.length
           }]
