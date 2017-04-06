@@ -42,6 +42,8 @@ function AdminDeviceController($scope, $uibModal, $filter, $routeParams, $locati
   });
 
   $scope.iconClass = function(device) {
+    if (!device) return;
+
     if (device.iconClass) return device.iconClass;
 
     var userAgent = device.userAgent || "";
