@@ -30,11 +30,17 @@ function AdminUserController($scope, $uibModal, $filter, $routeParams, $location
 
     $scope.teams = result.teams;
     $scope.team = {};
-    $scope.userTeams = _.filter($scope.teams, function(team) {
-      return _.some(team.users, function(user) {
-        return $scope.user.id === user.id;
-      });
-    });
+
+    $scope.userTeams = _.chain(result.teams)
+      .reject(function(team) {
+        return team.teamEventId;
+      })
+      .filter(function(team) {
+        return _.some(team.users, function(user) {
+          return $scope.user.id === user.id;
+        });
+      })
+      .value();
 
     $scope.nonTeams = _.reject($scope.teams, function(team) {
       return _.some(team.users, function(user) {
