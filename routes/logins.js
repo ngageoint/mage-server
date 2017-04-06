@@ -37,7 +37,13 @@ module.exports = function(app, security) {
     access.authorize('READ_USER'),
     function(req, res, next) {
       var options = {};
-      options.limit = req.query.limit || 10;
+
+      var limit = 10;
+      if (req.query.limit && !isNaN(req.query.limit)) {
+        limit = +req.query.limit;
+      }
+      options.limit = limit;
+
       options.lastLoginId = req.query.lastLoginId || null;
       options.firstLoginId = req.query.firstLoginId || null;
 
