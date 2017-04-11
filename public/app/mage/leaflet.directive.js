@@ -347,12 +347,17 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
       // Set the lat/lng
       if (feature.geometry.coordinates) {
-        layer.setLatLng(L.GeoJSON.coordsToLatLng(feature.geometry.coordinates));
-        // // TODO fix, this is showing accuracy when a new location comes in.
-        // // this should only happen when the popup is openPopup
-        // if (featureLayer.options.showAccuracy && layer._popup._isOpen  && layer.getAccuracy()) {
-        //   layer.setAccuracy(layer.feature.properties.accuracy);
-        // }
+        if(feature.geometry.type === 'Point'){
+          layer.setLatLng(L.GeoJSON.coordsToLatLng(feature.geometry.coordinates));
+          // // TODO fix, this is showing accuracy when a new location comes in.
+          // // this should only happen when the popup is openPopup
+          // if (featureLayer.options.showAccuracy && layer._popup._isOpen  && layer.getAccuracy()) {
+          //   layer.setAccuracy(layer.feature.properties.accuracy);
+          // }
+        } else{
+          featureLayer.layer.removeLayer(layer);
+          featureLayer.layer.addLayer(createGeoJsonForLayer(feature, featureLayer));
+        }
       }
     });
 
