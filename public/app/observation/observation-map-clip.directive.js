@@ -90,9 +90,18 @@ function MapClipController($rootScope, $scope, $element, MapService) {
         observation.addTo(map);
         map.setView(L.GeoJSON.coordsToLatLng(feature.geometry.coordinates), 15);
       }else{
-        observation = L.geoJson(feature, {});
+        observation = L.geoJson(feature, {
+          style: function(feature) {
+            return feature.style;
+          }
+        });
         observation.addTo(map);
-        map.fitBounds(L.latLngBounds(L.GeoJSON.coordsToLatLngs(feature.geometry.coordinates[0])));
+
+        var coordinates = feature.geometry.coordinates;
+        if(feature.geometry.type === 'Polygon'){
+          coordinates = coordinates[0];
+        }
+        map.fitBounds(L.latLngBounds(L.GeoJSON.coordsToLatLngs(coordinates)));
       }
     }
   }
