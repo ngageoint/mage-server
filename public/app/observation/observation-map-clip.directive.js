@@ -25,6 +25,7 @@ function MapClipController($rootScope, $scope, $element, MapService) {
   var map = null;
   var controlsOn = false;
   var layers = {};
+  var observation = null;
 
   initialize();
 
@@ -36,6 +37,13 @@ function MapClipController($rootScope, $scope, $element, MapService) {
   $scope.$on('$destroy', function() {
     MapService.removeListener(mapListener);
   });
+
+  $scope.$watch('feature', function(feature) {
+
+    map.removeLayer(observation);
+    addObservation($scope.feature);
+
+  }, true);
 
   function onBaseLayerSelected(baseLayer) {
     var layer = layers[baseLayer.name];
@@ -68,6 +76,27 @@ function MapClipController($rootScope, $scope, $element, MapService) {
     return baseLayer;
   }
 
+  function addObservation(feature) {
+
+    if(feature.geometry){
+      if(feature.geometry.type === 'Point'){
+        observation= L.geoJson(feature, {
+          pointToLayer: function (feature, latlng) {
+            return L.fixedWidthMarker(latlng, {
+              iconUrl: feature.style.iconUrl
+            });
+          }
+        });
+        observation.addTo(map);
+        map.setView(L.GeoJSON.coordsToLatLng(feature.geometry.coordinates), 15);
+      }else{
+        observation = L.geoJson(feature, {});
+        observation.addTo(map);
+        map.fitBounds(L.latLngBounds(L.GeoJSON.coordsToLatLngs(feature.geometry.coordinates[0])));
+      }
+    }
+  }
+
   function initialize() {
     map = L.map($element[0], {
       center: [0,0],
@@ -80,17 +109,8 @@ function MapClipController($rootScope, $scope, $element, MapService) {
       attributionControl: false
     });
 
-    if ($scope.feature && $scope.feature.geometry) {
-      var geojson = L.geoJson($scope.feature, {
-        pointToLayer: function (feature, latlng) {
-          return L.fixedWidthMarker(latlng, {
-            iconUrl: feature.style.iconUrl
-          });
-        }
-      });
-
-      geojson.addTo(map);
-      map.setView(L.GeoJSON.coordsToLatLng($scope.feature.geometry.coordinates), 15);
+    if ($scope.feature) {
+      addObservation($scope.feature);
     }
 
     map.on('mouseover', function() {
