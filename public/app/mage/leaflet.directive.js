@@ -333,10 +333,15 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       }
 
       // Set the icon
-      if (layer.feature && layer.feature.iconUrl !== feature.iconUrl) {
-        layer.setIcon(L.urlDivIcon({
-          feature: feature,
-          token: LocalStorageService.getToken()
+      if (feature.style && feature.style.iconUrl) {
+        layer.setIcon(L.fixedWidthIcon({
+          iconUrl: feature.style.iconUrl,
+          onIconLoad: function() {
+            if (self._popup && self._icon) {
+              self._popup.options.offset = [0, self._icon.offsetTop + 7];
+              self._popup.update();
+            }
+          }
         }));
       }
 
