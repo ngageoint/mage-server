@@ -332,19 +332,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
         layer.feature = feature;
       }
 
-      // Set the icon
-      if (feature.style && feature.style.iconUrl) {
-        layer.setIcon(L.fixedWidthIcon({
-          iconUrl: feature.style.iconUrl,
-          onIconLoad: function() {
-            if (self._popup && self._icon) {
-              self._popup.options.offset = [0, self._icon.offsetTop + 7];
-              self._popup.update();
-            }
-          }
-        }));
-      }
-
       if (featureLayer.options.temporal) {
         var color = colorForFeature(feature, featureLayer.options.temporal);
         layer.setColor(color);
@@ -353,6 +340,20 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       // Set the lat/lng
       if (feature.geometry.coordinates) {
         if(feature.geometry.type === 'Point'){
+
+          // Set the icon
+          if (feature.style && feature.style.iconUrl) {
+            layer.setIcon(L.fixedWidthIcon({
+              iconUrl: feature.style.iconUrl,
+              onIconLoad: function() {
+                if (self._popup && self._icon) {
+                  self._popup.options.offset = [0, self._icon.offsetTop + 7];
+                  self._popup.update();
+                }
+              }
+            }));
+          }
+
           layer.setLatLng(L.GeoJSON.coordsToLatLng(feature.geometry.coordinates));
           // // TODO fix, this is showing accuracy when a new location comes in.
           // // this should only happen when the popup is openPopup
