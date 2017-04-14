@@ -2,14 +2,17 @@ angular
   .module('mage')
   .service('PollingService', PollingService);
 
-function PollingService() {
+PollingService.$inject = ['LocalStorageService'];
+
+function PollingService(LocalStorageService) {
   var listeners = [];
-  var pollingInterval = 0;
+  var pollingInterval = LocalStorageService.getPollingInterval() || 30000;
 
   var service = {
     addListener: addListener,
     removeListener: removeListener,
-    setPollingInterval: setPollingInterval
+    setPollingInterval: setPollingInterval,
+    getPollingInterval: getPollingInterval
   };
 
   return service;
@@ -28,10 +31,15 @@ function PollingService() {
 
   function setPollingInterval(interval) {
     pollingInterval = interval;
+    LocalStorageService.setPollingInterval(pollingInterval);
     _.each(listeners, function(listener) {
       if (_.isFunction(listener.onPollingIntervalChanged)) {
         listener.onPollingIntervalChanged(interval);
       }
     });
+  }
+
+  function getPollingInterval() {
+    return pollingInterval;
   }
 }

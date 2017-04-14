@@ -35,7 +35,7 @@
 
       <div class="form-group">
         <label>Time</label>
-        <select ng-model="intervalChoice" ng-options="intervalChoice.label for intervalChoice in intervalChoices" class="form-control"></select>
+        <select ng-model="intervalChoice" ng-options="intervalChoice as intervalChoice.label for intervalChoice in intervalChoices track by intervalChoice.filter" class="form-control"></select>
       </div>
 
       <div ng-show="intervalChoice.filter == 'custom'">

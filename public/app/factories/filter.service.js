@@ -2,9 +2,9 @@ angular
   .module('mage')
   .factory('FilterService', FilterService);
 
-FilterService.$inject = ['UserService'];
+FilterService.$inject = ['UserService', 'LocalStorageService'];
 
-function FilterService(UserService) {
+function FilterService(UserService, LocalStorageService) {
   var event = null;
   var teamsById = {};
   var listeners = [];
@@ -35,7 +35,8 @@ function FilterService(UserService) {
     filter: 'custom',
     label: 'Custom'
   }];
-  setTimeInterval({choice: intervalChoices[1]});
+
+  setTimeInterval(LocalStorageService.getTimeInterval() || {choice: intervalChoices[1]});
   filterChanged({intervalChoice: interval.choice});
 
   var service = {
@@ -90,7 +91,14 @@ function FilterService(UserService) {
       // if they changed the event, and didn't set teams filter
       // then reset teams filter to empty array
       if (!filter.teams) {
-        teamsChanged = setTeams([]);
+        var oldTeamIds = LocalStorageService.getTeams();
+        var teams = [];
+        for (var i = 0; i < filter.event.teams.length; i++) {
+          if (oldTeamIds.indexOf(event.teams[i].id) != -1) {
+            teams.push(event.teams[i]);
+          }
+        }
+        teamsChanged = setTeams(teams);
       }
     }
 
@@ -170,6 +178,7 @@ function FilterService(UserService) {
     });
 
     teamsById = newTeamsById;
+    LocalStorageService.setTeams(_.keys(teamsById));
 
     return {
       added: added,
@@ -202,7 +211,7 @@ function FilterService(UserService) {
     } else if (interval.choice === newInterval.choice) {
       return false;
     }
-
+    LocalStorageService.setTimeInterval(newInterval);
     interval = newInterval;
     return true;
   }
