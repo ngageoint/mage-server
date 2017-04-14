@@ -91,7 +91,7 @@ function FilterService(UserService, LocalStorageService) {
       // if they changed the event, and didn't set teams filter
       // then reset teams filter to empty array
       if (!filter.teams) {
-        var oldTeamIds = LocalStorageService.getTeams();
+        var oldTeamIds = LocalStorageService.getTeams() || [];
         var teams = [];
         for (var i = 0; i < filter.event.teams.length; i++) {
           if (oldTeamIds.indexOf(event.teams[i].id) != -1) {
