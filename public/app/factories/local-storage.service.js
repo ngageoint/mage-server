@@ -9,6 +9,7 @@ function LocalStorageService() {
   var pollingIntervalKey = 'pollingInterval';
   var timeIntervalKey = 'timeInterval';
   var teamsKey = 'teams';
+  var mapPositionKey = 'mapPosition';
 
   var service = {
     getToken: getToken,
@@ -20,7 +21,9 @@ function LocalStorageService() {
     getTimeInterval: getTimeInterval,
     getTeams: getTeams,
     setTeams: setTeams,
-    removeTeams: removeTeams
+    removeTeams: removeTeams,
+    getMapPosition: getMapPosition,
+    setMapPosition: setMapPosition
   };
 
   return service;
@@ -72,6 +75,14 @@ function LocalStorageService() {
 
   function removeTeams() {
     return removeLocalItem(teamsKey);
+  }
+
+  function setMapPosition(mapPosition) {
+    return setLocalItem(mapPositionKey, JSON.stringify(mapPosition));
+  }
+
+  function getMapPosition() {
+    return JSON.parse(getLocalItem(mapPositionKey));
   }
 
   function getLocalItem(key) {

@@ -22,13 +22,27 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   var spiderfyState = null;
   var currentLocation = null;
   var locationLayer = L.locationMarker([0,0], {color: '#136AEC'});
-  var map = L.map("map", {
+  var mapPosition = LocalStorageService.getMapPosition() || {
     center: [0,0],
-    zoom: 3,
+    zoom: 3
+  };
+  var map = L.map("map", {
+    center: mapPosition.center,
+    zoom: mapPosition.zoom,
     minZoom: 0,
     maxZoom: 18,
     trackResize: true
   });
+
+  map.on('moveend', saveMapPosition);
+
+  function saveMapPosition() {
+    console.log('save map');
+    LocalStorageService.setMapPosition({
+      center: map.getCenter(),
+      zoom: map.getZoom()
+    });
+  }
 
   // toolbar  and controls config
   new L.Control.GeoSearch({
@@ -344,13 +358,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
           // Set the icon
           if (feature.style && feature.style.iconUrl) {
             layer.setIcon(L.fixedWidthIcon({
-              iconUrl: feature.style.iconUrl,
-              onIconLoad: function() {
-                if (self._popup && self._icon) {
-                  self._popup.options.offset = [0, self._icon.offsetTop + 7];
-                  self._popup.update();
-                }
-              }
+              iconUrl: feature.style.iconUrl
             }));
           }
 
@@ -392,17 +400,33 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     if (!map.hasLayer(featureLayer.layer)) return;
 
     if (featureLayer.options.cluster) {
+
       if (map.getZoom() < 17) {
-        map.once('zoomend', function() {
+
+        if (layer.getBounds) {
+          map.fitBounds(layer.getBounds(), {
+            maxZoom: 17
+          });
+          openPopup(layer);
+        } else {
+          map.once('zoomend', function() {
+            featureLayer.layer.zoomToShowLayer(layer, function() {
+              openPopup(layer);
+            });
+          });
+          map.setView(layer.getLatLng(), 17);
+        }
+      } else {
+        if (layer.getBounds) {
+          map.fitBounds(layer.getBounds(), {
+            maxZoom: 17
+          });
+          openPopup(layer);
+        } else {
           featureLayer.layer.zoomToShowLayer(layer, function() {
             openPopup(layer);
           });
-        });
-        map.setView(layer.getLatLng(), 17);
-      } else {
-        featureLayer.layer.zoomToShowLayer(layer, function() {
-          openPopup(layer);
-        });
+        }
       }
     } else {
       openPopup(layer, {zoomToLocation: true});

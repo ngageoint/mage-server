@@ -15,21 +15,6 @@ L.FixedWidthMarker = L.Marker.extend({
     }
 
     L.Marker.prototype.initialize.call(this, latlng, options);
-  },
-
-  openPopup: function (layer, latlng) {
-    this._openPopup = true;
-
-    if (this._popup && this._popup.options.iconUrl) {
-      this._popup.options.offset = [0, this._icon.offsetTop + 10];
-    }
-
-    if (this._popup && this._map && !this._map.hasLayer(this._popup)) {
-
-      this._map.openPopup(this._popup, latlng);
-    }
-
-    return this;
   }
 
 });
