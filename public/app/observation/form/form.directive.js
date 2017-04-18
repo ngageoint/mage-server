@@ -25,6 +25,15 @@ function FormDirectiveController($scope, EventService, Observation, UserService,
 
   if ($scope.observation) {
     $scope.event = EventService.getEventById($scope.observation.eventId);
+    $scope.$emit('observation:edit', $scope.observation);
+    $scope.$on('observation:moved', function(e, observation, latlng) {
+      if (!$scope.observation || !latlng) return;
+
+      $scope.observation.geometry.coordinates = [latlng.lng, latlng.lat];
+
+      var geometryField = EventService.getFormField($scope.form, 'geometry');
+      geometryField.value = {x: latlng.lng, y: latlng.lat};
+    });
   }
 
   $scope.getToken = LocalStorageService.getToken;

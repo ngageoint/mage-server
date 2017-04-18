@@ -324,6 +324,37 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
         delete layers[removed.layerId];
       }
     });
+
+    _.each(changed.edit, function(edit) {
+      var layer = layers['Observations'].featureIdToLayer[edit.id];
+      layers['Observations'].layer.removeLayer(layer);
+      layer.setIcon(L.fixedWidthIcon({
+        iconUrl: layer.feature.style.iconUrl,
+        tooltip: true
+      }));
+      layers['EditObservation'] =  layers['EditObservation'] || {
+        featureIdToLayer: {}
+      };
+      layers['EditObservation'].featureIdToLayer[edit.id] = layer;
+      layer.addTo(map);
+      layer.dragging.enable();
+      layer.on('dragend', function() {
+        $scope.$broadcast('observation:moved', edit, layer.getLatLng().wrap());
+        $scope.$apply();
+      });
+      layer.setZIndexOffset(1000);
+    });
+
+    _.each(changed.editComplete, function(editComplete) {
+      var layer = layers['EditObservation'].featureIdToLayer[editComplete.id];
+      layer.dragging.disable();
+      layer.setZIndexOffset(0);
+      map.removeLayer(layer);
+      layer.setIcon(L.fixedWidthIcon({
+        iconUrl: layer.feature.style.iconUrl
+      }));
+      layers['Observations'].layer.addLayer(layer);
+    });
   }
 
   function onFeaturesChanged(changed) {

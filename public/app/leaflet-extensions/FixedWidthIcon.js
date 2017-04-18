@@ -18,6 +18,11 @@ L.FixedWidthIcon = L.DivIcon.extend({
     });
 
     div.appendChild(s);
+    if (this.options.tooltip) {
+      var tooltip = L.DomUtil.create('div', 'marker-tooltip');
+      tooltip.innerHTML = '<b>Edit Observation</b><p>Drag this marker to re-position</p>';
+      div.insertBefore(tooltip, div.firstChild);
+    }
 
     return div;
   }

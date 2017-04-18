@@ -20,6 +20,8 @@ function MapService() {
     createMarker: createMarker,
     removeMarker: removeMarker,
     updateMarker: updateMarker,
+    editMarker: editMarker,
+    stopEditing: stopEditing,
     addFeaturesToLayer: addFeaturesToLayer,
     updateFeatureForLayer: updateFeatureForLayer,
     removeFeatureFromLayer: removeFeatureFromLayer,
@@ -106,6 +108,20 @@ function MapService() {
     layersChanged({
       name: markerId,
       updated: [marker]
+    });
+  }
+
+  function editMarker(marker) {
+    layersChanged({
+      name: marker.id,
+      edit: [marker]
+    });
+  }
+
+  function stopEditing(marker) {
+    layersChanged({
+      name: marker.id,
+      editComplete: [marker]
     });
   }
 
