@@ -6,7 +6,10 @@ PollingService.$inject = ['LocalStorageService'];
 
 function PollingService(LocalStorageService) {
   var listeners = [];
-  var pollingInterval = LocalStorageService.getPollingInterval() || 30000;
+  var pollingInterval = LocalStorageService.getPollingInterval();
+  if (!pollingInterval || parseInt(pollingInterval) === 0 || Number.isNaN(parseInt(pollingInterval))) {
+    pollingInterval = 30000;
+  }
 
   var service = {
     addListener: addListener,
