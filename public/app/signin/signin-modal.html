@@ -4,7 +4,6 @@
   </div>
 
   <div class="modal-body">
-    <div class="row">
       <div ng-repeat="strategy in thirdPartyStrategies">
         <div class="row">
           <div class="col-md-10 col-md-offset-1">
@@ -22,38 +21,39 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="row">
-      <div ng-if="thirdPartyStrategies.length" class="top-gap col-md-10 col-md-offset-1">
-        <div class="or-container">
-          <hr class="or-hr">
-          <div id="or">or</div>
+    <div ng-if="localAuthenticationStrategy">
+      <div class="row">
+        <div ng-if="thirdPartyStrategies.length" class="top-gap col-md-10 col-md-offset-1">
+          <div class="or-container">
+            <hr class="or-hr">
+            <div id="or">or</div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="row">
-      <div class="col-md-10 col-md-offset-1">
-        <div class="form-group" ng-class="{'has-error': status > 399}">
-          <input ng-model="username" name="username" placeholder="Username" type="text" autocomplete="username" autocapitalize="off" class="form-control"/>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+          <div class="form-group" ng-class="{'has-error': status > 399}">
+            <input ng-model="username" name="username" placeholder="Username" type="text" autocomplete="username" autocapitalize="off" class="form-control"/>
+          </div>
+
+          <div class="form-group" ng-class="{'has-error': status > 399}">
+            <input ng-model="uid" name="uid" type="text" placeholder="UID" autocapitalize="off" class="form-control"/>
+          </div>
+
+          <div class="form-group" ng-class="{'has-error': status > 399}">
+            <input ng-model="password" name="password" placeholder="Password" autocomplete="password" type="password" class="form-control"/>
+          </div>
+
+          <button class="btn btn-primary pull-right top-gap" type="submit" ng-click="login({username: username, uid: uid, password: password})">Login</button>
         </div>
 
-        <div class="form-group" ng-class="{'has-error': status > 399}">
-          <input ng-model="uid" name="uid" type="text" placeholder="UID" autocapitalize="off" class="form-control"/>
-        </div>
-
-        <div class="form-group" ng-class="{'has-error': status > 399}">
-          <input ng-model="password" name="password" placeholder="Password" autocomplete="password" type="password" class="form-control"/>
-        </div>
-
-        <button class="btn btn-primary pull-right top-gap" type="submit" ng-click="login({username: username, uid: uid, password: password})">Login</button>
-      </div>
-
-      <div class="col-md-10 col-md-offset-1">
-        <div class="top-gap-s alert alert-danger" ng-show="status > 399">
-          <strong>Failed login</strong>
-          <p>Please check your username, UID, and password and try again.</p>
+        <div class="col-md-10 col-md-offset-1">
+          <div class="top-gap-s alert alert-danger" ng-show="status > 399">
+            <strong>Failed login</strong>
+            <p>Please check your username, UID, and password and try again.</p>
+          </div>
         </div>
       </div>
     </div>
