@@ -8,6 +8,8 @@ function momentFilter() {
 
     if (format === 'fromNow') {
       return  moment(input).fromNow();
+    } else if (format === 'humanize') {
+      return moment.duration(Number(input), 'milliseconds').humanize();
     } else if (format) {
       return moment(input).format(format);
     }

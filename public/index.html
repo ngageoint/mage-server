@@ -71,41 +71,41 @@
             </li>
             <li class="dropdown">
               <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown">
-                <i style="margin-right: 3px;" ng-class="pollingInterval == 0 ? 'fa fa-square-o' : 'fa fa-check-square-o'"></i> Live Update
+                <i style="margin-right: 3px;" ng-class="pollingInterval == 0 ? 'fa fa-square-o' : 'fa fa-check-square-o'"></i> Live Update ({{pollingInterval | polling}})
                 <b class="caret"></b>
               </a>
               <ul class="dropdown-menu">
-                <li role="presentation" class="dropdown-header">Poll Time</li>
+                <li role="presentation" class="dropdown-header">Refresh Interval</li>
                 <li>
                   <a ng-click="onPollingIntervalChanged('5000')" class="pointer">
                     <i ng-class="pollingInterval == 5000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
-                    5 Seconds
+                    {{5000 | polling}}
                   </a>
                 </li>
                 <li>
                   <a ng-click="onPollingIntervalChanged('30000')" class="pointer">
                     <i ng-class="pollingInterval == 30000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
-                    30 Seconds
+                    {{30000 | polling}}
                   </a>
                 </li>
                 <li>
                   <a ng-click="onPollingIntervalChanged('120000')" class="pointer">
                     <i ng-class="pollingInterval == 120000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
-                    2 Minutes
+                    {{120000 | polling}}
                   </a>
                 </li>
                 <li>
                   <a ng-click="onPollingIntervalChanged('300000')" class="pointer">
                     <i ng-class="pollingInterval == 300000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
-                    5 Minutes
+                    {{300000 | polling}}
                   </a>
                 </li>
-                <li>
+                <!-- <li>
                   <a ng-click="onPollingIntervalChanged('0')" class="pointer">
                     <i ng-class="pollingInterval == 0 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
-                    No Polling
+                    {{0 | polling}}
                   </a>
-                </li>
+                </li> -->
               </ul>
             </li>
             <li class="dropdown">
@@ -297,6 +297,7 @@
   <script type="text/javascript" src="app/filters/moment.filter.js"></script>
   <script type="text/javascript" src="app/filters/paging-offset.filter.js"></script>
   <script type="text/javascript" src="app/filters/password.filter.js"></script>
+  <script type="text/javascript" src="app/filters/polling.filter.js"></script>
   <script type="text/javascript" src="app/filters/user.filter.js"></script>
 
   <!-- endbuild -->
