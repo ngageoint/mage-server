@@ -56,6 +56,54 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     }
   }).addTo(map);
 
+  var editableLayers = new L.FeatureGroup();
+  map.addLayer(editableLayers);
+
+  var drawControl = new L.Control.Draw({
+    position: 'topleft',
+    draw: {
+      polyline: {
+        shapeOptions: {
+          color: '#f357a1',
+          weight: 10
+        }
+      },
+      polygon: {
+        allowIntersection: false, // Restricts shapes to simple polygons
+        drawError: {
+          color: '#e1e100', // Color the shape will turn when intersects
+          message: '<strong>Oh snap!<strong> you can\'t draw that!' // Message that will show when intersect
+        },
+        shapeOptions: {
+          color: '#bada55'
+        }
+      },
+      circle: false, // Turns off this drawing tool
+      rectangle: {
+        shapeOptions: {
+          clickable: false
+        }
+      }
+    }
+    // ,
+    // edit: {
+    //   featureGroup: editableLayers, //REQUIRED!!
+    //   remove: true,
+    //   allowIntersection: false
+    // }
+  });
+
+  map.on(L.Draw.Event.CREATED, function (e) {
+    var type = e.layerType,
+        layer = e.layer;
+
+    if (type === 'marker') {
+      layer.bindPopup('A popup!');
+    }
+
+    editableLayers.addLayer(layer);
+  });
+
   var userLocationControl = new L.Control.MageUserLocation({
     onBroadcastLocationClick: function(callback) {
       MapService.onBroadcastLocation(callback);
@@ -328,32 +376,57 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     _.each(changed.editStarted, function(edit) {
       var layer = layers['Observations'].featureIdToLayer[edit.id];
       layers['Observations'].layer.removeLayer(layer);
-      layer.setIcon(L.fixedWidthIcon({
-        iconUrl: layer.feature.style.iconUrl,
-        tooltip: true
-      }));
       layers['EditObservation'] =  layers['EditObservation'] || {
         featureIdToLayer: {}
       };
       layers['EditObservation'].featureIdToLayer[edit.id] = layer;
-      layer.addTo(map);
-      layer.dragging.enable();
-      layer.on('dragend', function() {
-        $scope.$broadcast('observation:moved', edit, layer.getLatLng().wrap());
-        $scope.$apply();
-      });
-      layer.setZIndexOffset(1000);
+
+      console.log('layer', layer);
+
+      if (layer.feature.geometry.type === 'Point') {
+        layer.setIcon(L.fixedWidthIcon({
+          iconUrl: layer.feature.style.iconUrl,
+          tooltip: true
+        }));
+
+        layer.addTo(map);
+
+        layer.dragging.enable();
+        layer.on('dragend', function() {
+          $scope.$broadcast('observation:moved', edit, layer.toGeoJSON().geometry);
+          $scope.$apply();
+        });
+        layer.setZIndexOffset(1000);
+      } else {
+        editableLayers.addLayer(layer);
+        layer.editing.enable();
+        layer.on('edit', function() {
+          $scope.$broadcast('observation:moved', edit, editableLayers.getLayers()[0].toGeoJSON().geometry);
+          $scope.$apply();
+        });
+      }
     });
 
     _.each(changed.editComplete, function(editComplete) {
       var layer = layers['EditObservation'].featureIdToLayer[editComplete.id];
-      layer.dragging.disable();
-      layer.setZIndexOffset(0);
-      map.removeLayer(layer);
-      layer.setLatLng({lat: layer.feature.geometry.coordinates[1], lng: layer.feature.geometry.coordinates[0]});
-      layer.setIcon(L.fixedWidthIcon({
-        iconUrl: layer.feature.style.iconUrl
-      }));
+
+      if (layer.feature.geometry.type === 'Point') {
+        layer.dragging.disable();
+        layer.setZIndexOffset(0);
+        map.removeLayer(layer);
+        layer.setLatLng({lat: layer.feature.geometry.coordinates[1], lng: layer.feature.geometry.coordinates[0]});
+        layer.setIcon(L.fixedWidthIcon({
+          iconUrl: layer.feature.style.iconUrl
+        }));
+      } else {
+        map.removeControl(drawControl);
+        layer.editing.disable();
+        editableLayers.removeLayer(layer);
+        var latLngs = [];
+        layer.setLatLngs(L.GeoJSON.coordsToLatLngs(layer.feature.geometry.coordinates, 1));
+      }
+
+      delete layers['EditObservation'].featureIdToLayer[editComplete.id];
       layers['Observations'].layer.addLayer(layer);
     });
 

@@ -316,10 +316,11 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     var event = eventsById[observation.eventId];
 
     var form = angular.copy(event.form);
-    service.getFormField(form, "geometry").value = {
-      x: observation.geometry.coordinates[0],
-      y: observation.geometry.coordinates[1]
-    };
+    service.getFormField(form, "geometry").value = observation.geometry
+    // {
+    //   x: observation.geometry.coordinates[0],
+    //   y: observation.geometry.coordinates[1]
+    // };
 
     var existingPropertyFields = [];
     _.each(observation.properties, function(value, key) {
@@ -329,12 +330,14 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
       if (field) {
         if (field.type === 'date') {
           field.value = moment(value).toDate();
-        } else if (field.type === 'geometry') {
-          field.value = {
-            x: value.coordinates[0],
-            y: value.coordinates[1]
-          };
-        } else {
+        }
+        //  else if (field.type === 'geometry') {
+        //   field.value = {
+        //     x: value.coordinates[0],
+        //     y: value.coordinates[1]
+        //   };
+        // }
+        else {
           field.value = value;
         }
         existingPropertyFields.push(field);

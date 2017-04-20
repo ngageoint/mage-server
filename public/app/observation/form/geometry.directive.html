@@ -1,12 +1,15 @@
 <div class="field form-group">
   <label>{{field.title}}</label> <span class="required-error" ng-show="field.required && !field.value">*</span>
-
-  <div class="row">
+  <div class="row" ng-if="field.value.type === 'Point'">
     <div class="col-md-5">
-      <input class="form-control" type="number" ng-model="field.value.x" value="{{field.value.x}}" ng-required="field.required" ng-change="onLatLngChange(field)">
+      <input class="form-control" type="number" ng-model="field.value.coordinates[0]" value="{{field.value.coordinates[0]}}" ng-required="field.required" ng-change="onLatLngChange(field)">
     </div>
     <div class="col-md-5">
-      <input class="form-control" type="number" ng-model="field.value.y" value="{{field.value.y}}" ng-required="field.required" ng-change="onLatLngChange(field)">
+      <input class="form-control" type="number" ng-model="field.value.coordinates[1]" value="{{field.value.coordinates[1]}}" ng-required="field.required" ng-change="onLatLngChange(field)">
     </div>
+  </div>
+  <div class="row" ng-if="field.value.type !== 'Point'">
+    {{field.value.type}}
+    {{field.value.coordinates | json}}
   </div>
 </div>

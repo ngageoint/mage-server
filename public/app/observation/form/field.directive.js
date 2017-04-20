@@ -46,7 +46,7 @@ function FieldDirectiveController($scope) {
 
   $scope.onLatLngChange = function(field) {
     if (field.name === 'geometry') {
-      $scope.$emit('observation:move', $scope.observation, {lat: $scope.field.value.y, lng: $scope.field.value.x});
+      $scope.$emit('observation:move', $scope.observation, $scope.field.value);
     }
   };
 

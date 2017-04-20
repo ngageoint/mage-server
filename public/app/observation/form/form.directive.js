@@ -26,15 +26,18 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
   if ($scope.observation) {
     $scope.event = EventService.getEventById($scope.observation.eventId);
     $scope.$emit('observation:editStarted', $scope.observation);
-    $scope.$on('observation:moved', function(e, observation, latlng) {
-      if (!$scope.observation || !latlng) return;
+    $scope.$on('observation:moved', function(e, observation, geometry) {
+      console.log('moved args', arguments);
+      if (!$scope.observation || !geometry) return;
 
       var geometryField = EventService.getFormField($scope.form, 'geometry');
-      geometryField.value = {x: latlng.lng, y: latlng.lat};
+      geometryField.value = geometry;
     });
     $scope.$watch('form', function() {
-      var variantField = EventService.getFormField($scope.form, $scope.form.variantField);
-      $scope.$emit('observation:iconEdited', $scope.observation, ObservationService.getObservationIconUrlForEvent($scope.event.id, EventService.getFormField($scope.form, 'type').value, variantField ? variantField.value : ''));
+      if ($scope.observation.geometry.type === 'Point') {
+        var variantField = EventService.getFormField($scope.form, $scope.form.variantField);
+        $scope.$emit('observation:iconEdited', $scope.observation, ObservationService.getObservationIconUrlForEvent($scope.event.id, EventService.getFormField($scope.form, 'type').value, variantField ? variantField.value : ''));
+      }
     }, true);
   }
 
@@ -44,23 +47,9 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
 
   function formToObservation(form, observation) {
     _.each(form.fields, function(field) {
-      switch (field.type) {
-      case 'geometry':
-        if (field.value) {
-          var geometry = {
-            type: 'Point',
-            coordinates: [field.value.x, field.value.y]
-          };
-
-          if (field.name === 'geometry') {
-            observation.geometry = geometry;
-          } else {
-            observation.properties[field.name] = geometry;
-          }
-        }
-
-        break;
-      default:
+      if (field.name === 'geometry') {
+        observation.geometry = field.value;
+      } else {
         observation.properties[field.name] = field.value;
       }
     });
