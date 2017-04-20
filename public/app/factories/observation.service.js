@@ -14,7 +14,8 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
     markObservationAsImportantForEvent: markObservationAsImportantForEvent,
     clearObservationAsImportantForEvent: clearObservationAsImportantForEvent,
     addAttachmentToObservationForEvent: addAttachmentToObservationForEvent,
-    deleteAttachmentInObservationForEvent: deleteAttachmentInObservationForEvent
+    deleteAttachmentInObservationForEvent: deleteAttachmentInObservationForEvent,
+    getObservationIconUrlForEvent: getObservationIconUrlForEvent
   };
 
   return service;
@@ -129,8 +130,12 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
 
     _.each(observations, function(observation) {
       observation.style = {
-        iconUrl: "/api/events/" + event.id + "/form/icons/" + observation.properties.type + "/" + observation.properties[event.form.variantField] + "?" + $.param({access_token: LocalStorageService.getToken()})
+        iconUrl: getObservationIconUrlForEvent(event.id, observation.properties.type, observation.properties[event.form.variantField])
       };
     });
+  }
+
+  function getObservationIconUrlForEvent(eventId, primary, variant) {
+    return "/api/events/" + eventId + "/form/icons/" + primary + "/" + variant + "?" + $.param({access_token: LocalStorageService.getToken()});
   }
 }

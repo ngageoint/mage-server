@@ -325,7 +325,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       }
     });
 
-    _.each(changed.edit, function(edit) {
+    _.each(changed.editStarted, function(edit) {
       var layer = layers['Observations'].featureIdToLayer[edit.id];
       layers['Observations'].layer.removeLayer(layer);
       layer.setIcon(L.fixedWidthIcon({
@@ -350,10 +350,26 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       layer.dragging.disable();
       layer.setZIndexOffset(0);
       map.removeLayer(layer);
+      layer.setLatLng({lat: layer.feature.geometry.coordinates[1], lng: layer.feature.geometry.coordinates[0]});
       layer.setIcon(L.fixedWidthIcon({
         iconUrl: layer.feature.style.iconUrl
       }));
       layers['Observations'].layer.addLayer(layer);
+    });
+
+    _.each(changed.updateIcon, function(updateIcon) {
+      var layer;
+      if (layers['EditObservation'] && layers['EditObservation'].featureIdToLayer && layers['EditObservation'].featureIdToLayer[updateIcon.id]) {
+        layer = layers['EditObservation'].featureIdToLayer[updateIcon.id];
+      } else if (layers['NewObservation']) {
+        layer = layers['NewObservation'].layer;
+      } else {
+        return;
+      }
+      layer.setIcon(L.fixedWidthIcon({
+        iconUrl: updateIcon.iconUrl,
+        tooltip: true
+      }));
     });
   }
 

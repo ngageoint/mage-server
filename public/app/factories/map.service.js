@@ -20,8 +20,9 @@ function MapService() {
     createMarker: createMarker,
     removeMarker: removeMarker,
     updateMarker: updateMarker,
-    editMarker: editMarker,
+    startedMarkerEdit: startedMarkerEdit,
     stopEditing: stopEditing,
+    updateIcon: updateIcon,
     addFeaturesToLayer: addFeaturesToLayer,
     updateFeatureForLayer: updateFeatureForLayer,
     removeFeatureFromLayer: removeFeatureFromLayer,
@@ -111,10 +112,10 @@ function MapService() {
     });
   }
 
-  function editMarker(marker) {
+  function startedMarkerEdit(marker) {
     layersChanged({
       name: marker.id,
-      edit: [marker]
+      editStarted: [marker]
     });
   }
 
@@ -122,6 +123,13 @@ function MapService() {
     layersChanged({
       name: marker.id,
       editComplete: [marker]
+    });
+  }
+
+  function updateIcon(marker, iconUrl) {
+    layersChanged({
+      id: marker.id,
+      updateIcon: [{id:marker.id, iconUrl:iconUrl}]
     });
   }
 

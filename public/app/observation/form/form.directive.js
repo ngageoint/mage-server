@@ -18,22 +18,24 @@ function formDirective() {
   return directive;
 }
 
-FormDirectiveController.$inject = ['$scope', 'EventService', 'Observation', 'UserService', 'LocalStorageService'];
+FormDirectiveController.$inject = ['$scope', 'EventService', 'Observation', 'ObservationService', 'UserService', 'LocalStorageService'];
 
-function FormDirectiveController($scope, EventService, Observation, UserService, LocalStorageService) {
+function FormDirectiveController($scope, EventService, Observation, ObservationService, UserService, LocalStorageService) {
   var uploadId = 0;
 
   if ($scope.observation) {
     $scope.event = EventService.getEventById($scope.observation.eventId);
-    $scope.$emit('observation:edit', $scope.observation);
+    $scope.$emit('observation:editStarted', $scope.observation);
     $scope.$on('observation:moved', function(e, observation, latlng) {
       if (!$scope.observation || !latlng) return;
-
-      $scope.observation.geometry.coordinates = [latlng.lng, latlng.lat];
 
       var geometryField = EventService.getFormField($scope.form, 'geometry');
       geometryField.value = {x: latlng.lng, y: latlng.lat};
     });
+    $scope.$watch('form', function() {
+      var variantField = EventService.getFormField($scope.form, $scope.form.variantField);
+      $scope.$emit('observation:iconEdited', $scope.observation, ObservationService.getObservationIconUrlForEvent($scope.event.id, EventService.getFormField($scope.form, 'type').value, variantField ? variantField.value : ''));
+    }, true);
   }
 
   $scope.getToken = LocalStorageService.getToken;

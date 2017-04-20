@@ -475,8 +475,12 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
     $scope.$apply();
   });
 
-  $scope.$on('observation:edit', function(e, observation) {
-    MapService.editMarker(observation);
+  $scope.$on('observation:editStarted', function(e, observation) {
+    MapService.startedMarkerEdit(observation);
+  });
+
+  $scope.$on('observation:iconEdited', function(e, observation, iconUrl) {
+    MapService.updateIcon(observation, iconUrl);
   });
 
   $scope.$on('observation:editDone', function(e, observation) {
