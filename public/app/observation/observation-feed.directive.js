@@ -103,6 +103,7 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
   };
 
   $scope.editObservation = function() {
+    $scope.onObservationLocationClick($scope.observation);
     $scope.edit = true;
     $scope.editForm = angular.copy($scope.form);
   };
