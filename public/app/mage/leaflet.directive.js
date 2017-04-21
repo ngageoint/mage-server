@@ -423,7 +423,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
         layer.editing.disable();
         editableLayers.removeLayer(layer);
         var latLngs = [];
-        layer.setLatLngs(L.GeoJSON.coordsToLatLngs(layer.feature.geometry.coordinates, 1));
+        layer.setLatLngs(L.GeoJSON.coordsToLatLngs(layer.feature.geometry.coordinates, layer.feature.geometry.type === 'Polygon' ? 1 : 0));
       }
 
       delete layers['EditObservation'].featureIdToLayer[editComplete.id];
