@@ -31,7 +31,6 @@
     "leaflet": "1.0.3",
     "Leaflet.awesome-markers": "2.0.2",
     "leaflet.markercluster": "1.0.3",
-    "leaflet.draw": "0.4.9",
     "leaflet-groupedlayercontrol": "0.3.0",
     "moment": "2.9.0",
     "underscore": "1.8.2",
@@ -44,6 +43,7 @@
     "videogular-overlay-play": "1.4.3",
     "leaflet-geosearch": "1.1.0",
     "exif-js": "~2.1.1",
-    "papaparse": "~4.1.4"
+    "papaparse": "~4.1.4",
+    "leaflet.pm": "^0.16.0"
   }
 }
