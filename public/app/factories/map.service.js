@@ -129,7 +129,7 @@ function MapService() {
   function updateIcon(marker, iconUrl) {
     layersChanged({
       id: marker.id,
-      updateIcon: [{id:marker.id, iconUrl:iconUrl}]
+      updateIcon: [{id:marker.id, marker: marker, iconUrl:iconUrl}]
     });
   }
 

@@ -940,3 +940,12 @@ a.alert:after {
 .export-actions {
   margin-left: 15px;
 }
+
+.marker-icon {
+  border: 1px solid #777;
+}
+
+.marker-icon:focus {
+  border: 1px solid #000;
+  background-color: #00e976;
+}

@@ -37,7 +37,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   map.on('moveend', saveMapPosition);
 
   function saveMapPosition() {
-    console.log('save map');
     LocalStorageService.setMapPosition({
       center: map.getCenter(),
       zoom: map.getZoom()
@@ -342,8 +341,12 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       } else {
         layer.pm.enable({
           draggable: true,
-          snappable: true
+          snappable: true,
+          clickListener: function(e) {
+            $scope.$broadcast('observation:edit:vertex', edit, e.target);
+          }
         });
+
         layer.on('pm:edit', function(event) {
           $scope.$broadcast('observation:moved', edit, event.target.toGeoJSON().geometry);
           $scope.$apply();
@@ -375,6 +378,11 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       if (!layer) {
         return;
       }
+      if (layer.feature.geometry.type === 'Point') {
+        layer.setLatLng({lat: updateIcon.marker.geometry.coordinates[1], lng: updateIcon.marker.geometry.coordinates[0]});
+      } else {
+        layer.setLatLngs(L.GeoJSON.coordsToLatLngs(updateIcon.marker.geometry.coordinates, updateIcon.marker.geometry.type === 'Polygon' ? 1 : 0));
+      }
       layer.setIcon(L.fixedWidthIcon({
         iconUrl: updateIcon.iconUrl,
         tooltip: true
@@ -387,7 +395,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
     _.each(changed.added, function(feature) {
       if (featureLayer.options.cluster) {
-        console.log('add a layer');
         featureLayer.layer.addLayer(createGeoJsonForLayer(feature, featureLayer));
       } else {
         featureLayer.layer.addData(feature);

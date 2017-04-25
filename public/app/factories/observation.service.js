@@ -130,6 +130,10 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
 
     _.each(observations, function(observation) {
       observation.style = {
+        color: '#000000',
+        fillColor: '#000000',
+        fillOpacity: .07,
+        opacity: .85,
         iconUrl: getObservationIconUrlForEvent(event.id, observation.properties.type, observation.properties[event.form.variantField])
       };
     });

@@ -27,16 +27,16 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
     $scope.event = EventService.getEventById($scope.observation.eventId);
     $scope.$emit('observation:editStarted', $scope.observation);
     $scope.$on('observation:moved', function(e, observation, geometry) {
-      console.log('moved args', arguments);
       if (!$scope.observation || !geometry) return;
 
       var geometryField = EventService.getFormField($scope.form, 'geometry');
       geometryField.value = geometry;
     });
     $scope.$watch('form', function() {
+      var obs = {id: $scope.observation.id, geometry: EventService.getFormField($scope.form, 'geometry').value};
       if ($scope.observation.geometry.type === 'Point') {
         var variantField = EventService.getFormField($scope.form, $scope.form.variantField);
-        $scope.$emit('observation:iconEdited', $scope.observation, ObservationService.getObservationIconUrlForEvent($scope.event.id, EventService.getFormField($scope.form, 'type').value, variantField ? variantField.value : ''));
+        $scope.$emit('observation:iconEdited', obs, ObservationService.getObservationIconUrlForEvent($scope.event.id, EventService.getFormField($scope.form, 'type').value, variantField ? variantField.value : ''));
       }
     }, true);
   }
