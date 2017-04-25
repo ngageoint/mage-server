@@ -295,6 +295,37 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     if (data.options.selected) layerInfo.layer.addTo(map);
   }
 
+  var selectedVertex;
+
+  function enableEditable(layer) {
+    layer.pm.enable({
+      draggable: true,
+      snappable: true,
+      clickListener: function(e) {
+        var group = layer.pm._markerGroup;
+        group.eachLayer(function(layer) {
+          L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
+        });
+        selectedVertex = e.target._index;
+        L.DomUtil.addClass(e.target.getElement(), 'selected-marker');
+        $scope.$broadcast('observation:edit:vertex', layer.feature, e.target.getLatLng());
+        $scope.$apply();
+      }
+    });
+    if (selectedVertex !== undefined) {
+      var group = layer.pm._markerGroup;
+      group.eachLayer(function(layer) {
+        if (layer._index === selectedVertex) {
+          L.DomUtil.addClass(layer.getElement(), 'selected-marker');
+        }
+      });
+    }
+    layer.on('pm:edit', function(event) {
+      $scope.$broadcast('observation:moved', layer.feature, event.target.toGeoJSON().geometry);
+      $scope.$apply();
+    });
+  }
+
   function onLayersChanged(changed) {
     _.each(changed.added, function(added) {
       switch(added.type) {
@@ -339,18 +370,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
           $scope.$apply();
         });
       } else {
-        layer.pm.enable({
-          draggable: true,
-          snappable: true,
-          clickListener: function(e) {
-            $scope.$broadcast('observation:edit:vertex', edit, e.target);
-          }
-        });
-
-        layer.on('pm:edit', function(event) {
-          $scope.$broadcast('observation:moved', edit, event.target.toGeoJSON().geometry);
-          $scope.$apply();
-        });
+        enableEditable(layer);
       }
     });
 
@@ -380,13 +400,19 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       }
       if (layer.feature.geometry.type === 'Point') {
         layer.setLatLng({lat: updateIcon.marker.geometry.coordinates[1], lng: updateIcon.marker.geometry.coordinates[0]});
+        layer.setIcon(L.fixedWidthIcon({
+          iconUrl: updateIcon.iconUrl,
+          tooltip: true
+        }));
       } else {
-        layer.setLatLngs(L.GeoJSON.coordsToLatLngs(updateIcon.marker.geometry.coordinates, updateIcon.marker.geometry.type === 'Polygon' ? 1 : 0));
+        if (layer.pm.enabled()) {
+          layer.pm.disable();
+          layer.setLatLngs(L.GeoJSON.coordsToLatLngs(updateIcon.marker.geometry.coordinates, updateIcon.marker.geometry.type === 'Polygon' ? 1 : 0));
+          enableEditable(layer);
+        } else {
+          layer.setLatLngs(L.GeoJSON.coordsToLatLngs(updateIcon.marker.geometry.coordinates, updateIcon.marker.geometry.type === 'Polygon' ? 1 : 0));
+        }
       }
-      layer.setIcon(L.fixedWidthIcon({
-        iconUrl: updateIcon.iconUrl,
-        tooltip: true
-      }));
     });
   }
 

@@ -9,7 +9,11 @@
     </div>
   </div>
   <div class="row" ng-if="field.value.type !== 'Point'">
-    {{field.value.type}}
-    {{field.value.coordinates | json}}
+    <div class="col-md-5">
+      <input class="form-control" type="number" ng-model="field.value.coordinates[field.edit][0]" value="{{field.value.coordinates[field.edit][0]}}" ng-required="field.required" ng-change="onLatLngChange(field)">
+    </div>
+    <div class="col-md-5">
+      <input class="form-control" type="number" ng-model="field.value.coordinates[field.edit][1]" value="{{field.value.coordinates[field.edit][1]}}" ng-required="field.required" ng-change="onLatLngChange(field)">
+    </div>
   </div>
 </div>

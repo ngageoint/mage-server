@@ -25,6 +25,8 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
 
   if ($scope.observation) {
     $scope.event = EventService.getEventById($scope.observation.eventId);
+    var geometryField = EventService.getFormField($scope.form, 'geometry');
+    geometryField.edit = 0;
     $scope.$emit('observation:editStarted', $scope.observation);
     $scope.$on('observation:moved', function(e, observation, geometry) {
       if (!$scope.observation || !geometry) return;
@@ -32,12 +34,23 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
       var geometryField = EventService.getFormField($scope.form, 'geometry');
       geometryField.value = geometry;
     });
+    $scope.$on('observation:edit:vertex', function(e, observation, latlng) {
+      var geometryField = EventService.getFormField($scope.form, 'geometry');
+      if (geometryField.value.type !== 'Point') {
+        for (var i = 0; i < geometryField.value.coordinates.length; i++) {
+          var coord = geometryField.value.coordinates[i];
+          if (coord[0] === latlng.lng && coord[1] === latlng.lat) {
+            geometryField.edit = i;
+          }
+        }
+      }
+    });
     $scope.$watch('form', function() {
       var obs = {id: $scope.observation.id, geometry: EventService.getFormField($scope.form, 'geometry').value};
-      if ($scope.observation.geometry.type === 'Point') {
+      // if ($scope.observation.geometry.type === 'Point') {
         var variantField = EventService.getFormField($scope.form, $scope.form.variantField);
         $scope.$emit('observation:iconEdited', obs, ObservationService.getObservationIconUrlForEvent($scope.event.id, EventService.getFormField($scope.form, 'type').value, variantField ? variantField.value : ''));
-      }
+      // }
     }, true);
   }
 

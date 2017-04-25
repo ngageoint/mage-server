@@ -947,5 +947,10 @@ a.alert:after {
 
 .marker-icon:focus {
   border: 1px solid #000;
-  background-color: #00e976;
+  background-color: transparent;
+}
+
+.selected-marker {
+  border: 1px solid #000;
+  background-color: #00e976 !important;
 }
