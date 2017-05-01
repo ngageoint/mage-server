@@ -127,7 +127,7 @@ function createSchema(event) {
         binding : "java.lang.String"
       },
       userData : {
-        mapping : "properties.accuracy"
+        mapping : "properties.provider"
       }
     },{
       localName : "accuracy",
@@ -164,7 +164,7 @@ function createSchema(event) {
       minOccurs : 0,
       maxOccurs : 1,
       type : {
-        binding : "java.lang.Integer"
+        binding : "java.lang.Double"
       },
       userData : {
         mapping : "properties.altitude"
@@ -198,7 +198,7 @@ function getLayer(event, callback) {
 
 function createLayer(event, callback) {
   log.info('Creating geoserver location layer for event', event.name);
-  
+
   // Geoserver expects that the collection exists for the created,
   // his will ensure that the observation collection exists
   require('../models/location');
@@ -299,7 +299,7 @@ function createLayerBody(event) {
           minOccurs: 0,
           maxOccurs: 1,
           nillable: true,
-          binding: 'java.lang.Integer'
+          binding: 'java.lang.Double'
         },{
           name: 'event.id',
           minOccurs: 0,

@@ -178,7 +178,7 @@ function createSchema(event) {
       minOccurs : 0,
       maxOccurs : 1,
       type : {
-        binding : "java.lang.Integer"
+        binding : "java.lang.Double"
       },
       userData : {
         mapping : "properties.altitude"
@@ -313,7 +313,7 @@ function createLayerBody(event) {
           minOccurs: 0,
           maxOccurs: 1,
           nillable: true,
-          binding: 'java.lang.Integer'
+          binding: 'java.lang.Double'
         },{
           name: 'event.id',
           minOccurs: 0,
