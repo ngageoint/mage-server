@@ -35,6 +35,68 @@ function FieldDirectiveController($scope) {
     radio: 'app/observation/form/radio.directive.html'
   };
 
+  $scope.shapes = [{
+    display: 'Point',
+    value: 'Point'
+  },{
+    display: 'Line',
+    value: 'LineString'
+  },{
+    display: 'Polygon',
+    value: 'Polygon'
+  }];
+
+  if ($scope.field.type === 'geometry') {
+    $scope.shape = {
+      type:$scope.field.value.type
+    };
+  }
+
+  $scope.validateShapeChange = function() {
+    switch($scope.shape.type) {
+      case 'Point':
+        if ($scope.field.value.type === 'LineString') {
+          $scope.field.value.coordinates = [$scope.field.value.coordinates[$scope.field.editedVertex][0], $scope.field.value.coordinates[$scope.field.editedVertex][1]];
+        } else {
+          $scope.field.value.coordinates = [$scope.field.value.coordinates[0][$scope.field.editedVertex][0], $scope.field.value.coordinates[0][$scope.field.editedVertex][1]];
+        }
+      break;
+      case 'LineString':
+        if ($scope.field.value.type === 'Point') {
+          $scope.field.value.coordinates = [$scope.field.value.coordinates, [$scope.field.value.coordinates[0]+1, $scope.field.value.coordinates[1]+1]];
+        } else {
+          if ($scope.field.editedVertex === 0) {
+            $scope.field.value.coordinates = $scope.field.value.coordinates[0].slice(0,$scope.field.value.coordinates[0].length-1);
+          } else {
+            var newCoords = $scope.field.value.coordinates[0].slice($scope.field.editedVertex,$scope.field.value.coordinates[0].length-1);
+            newCoords.push($scope.field.value.coordinates[0].slice(1, $scope.field.editedVertex-1));
+            $scope.field.value.coordinates = newCoords;
+          }
+        }
+      break;
+      case 'Polygon':
+        if ($scope.field.value.type === 'Point') {
+          $scope.field.value.coordinates = [[
+            $scope.field.value.coordinates,
+            [$scope.field.value.coordinates[0]+1, $scope.field.value.coordinates[1]],
+            [$scope.field.value.coordinates[0]+1, $scope.field.value.coordinates[1]+1],
+            [$scope.field.value.coordinates[0], $scope.field.value.coordinates[1]+1],
+            $scope.field.value.coordinates
+          ]];
+        } else {
+          $scope.field.value.coordinates = [$scope.field.value.coordinates];
+          $scope.field.value.coordinates[0].push($scope.field.value.coordinates[0][0]);
+        }
+      break;
+    }
+
+    console.log('scope.shapeType', $scope.shape);
+    $scope.field.value.type = $scope.shape.type;
+    console.log('arguments', arguments);
+    console.log('shape', $scope.field.value);
+
+  }
+
   $scope.datePopup = {open: false};
   $scope.templatePath = types[$scope.field.type];
 

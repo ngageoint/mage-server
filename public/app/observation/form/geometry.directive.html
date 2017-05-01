@@ -1,6 +1,13 @@
 <div class="field form-group">
   <label>{{field.title}}</label> <span class="required-error" ng-show="field.required && !field.value">*</span>
-  <div class="row" ng-if="field.value.type === 'Point'">
+  <div class="row">
+    <div class="col-md-12">
+      <input type="radio" ng-model="shape.type" name="shape" value="Point" ng-change="validateShapeChange()">Point
+      <input type="radio" ng-model="shape.type" name="shape" value="LineString" ng-change="validateShapeChange()">Line
+      <input type="radio" ng-model="shape.type" name="shape" value="Polygon" ng-change="validateShapeChange()">Polygon
+    </div>
+  </div>
+  <div class="row top-gap" ng-if="field.value.type === 'Point'">
     <div class="col-md-5">
       <input class="form-control" type="number" ng-model="field.value.coordinates[0]" value="{{field.value.coordinates[0]}}" ng-required="field.required" ng-change="onLatLngChange(field)">
     </div>
@@ -8,12 +15,12 @@
       <input class="form-control" type="number" ng-model="field.value.coordinates[1]" value="{{field.value.coordinates[1]}}" ng-required="field.required" ng-change="onLatLngChange(field)">
     </div>
   </div>
-  <div class="row" ng-if="field.value.type !== 'Point'">
+  <div class="row top-gap" ng-if="field.value.type !== 'Point'">
     <div class="col-md-5">
-      <input class="form-control" type="number" ng-model="field.value.coordinates[field.edit][0]" value="{{field.value.coordinates[field.edit][0]}}" ng-required="field.required" ng-change="onLatLngChange(field)">
+      <input class="form-control" type="number" ng-model="field.edit[0]" value="{{field.edit[0]}}" ng-required="field.required" ng-change="onLatLngChange(field)">
     </div>
     <div class="col-md-5">
-      <input class="form-control" type="number" ng-model="field.value.coordinates[field.edit][1]" value="{{field.value.coordinates[field.edit][1]}}" ng-required="field.required" ng-change="onLatLngChange(field)">
+      <input class="form-control" type="number" ng-model="field.edit[1]" value="{{field.edit[1]}}" ng-required="field.required" ng-change="onLatLngChange(field)">
     </div>
   </div>
 </div>
