@@ -115,7 +115,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
 
   $scope.getTypeValue = function(field) {
     if ($scope.isMemberField(field)) {
-      return field.type === 'dropdown' ? fieldNameMap.userDropdown : fieldNameMap.multiSelectUserDropdown;
+      return field.type === 'dropdown' ? fieldNameMap.userDropdown.title : fieldNameMap.multiSelectUserDropdown.title;
     }
 
     return fieldNameMap[field.type].title;
@@ -134,7 +134,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
       $scope.newField.type = 'dropdown';
     }
 
-    if ($scope.newField.type === 'dropdown' && $scope.newField.multiselect) {
+    if ($scope.newField.type === 'dropdown' && $scope.newField.$multiselect) {
       $scope.newField.type = 'multiselectdropdown';
     }
 

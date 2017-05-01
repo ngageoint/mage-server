@@ -10,6 +10,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+* Multi select checkbox for dropdowns fixed
 
 ## [4.4.3](https://github.com/ngageoint/mage-server/releases/tag/v4.4.3) (02-20-2017)
 
