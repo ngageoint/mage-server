@@ -63,13 +63,13 @@ function FieldDirectiveController($scope) {
       break;
       case 'LineString':
         if ($scope.field.value.type === 'Point') {
-          $scope.field.value.coordinates = [$scope.field.value.coordinates, [$scope.field.value.coordinates[0]+1, $scope.field.value.coordinates[1]+1]];
+          $scope.field.value.coordinates = [$scope.field.value.coordinates, [$scope.field.value.coordinates[0]+.005, $scope.field.value.coordinates[1]+.005]];
         } else {
           if ($scope.field.editedVertex === 0) {
             $scope.field.value.coordinates = $scope.field.value.coordinates[0].slice(0,$scope.field.value.coordinates[0].length-1);
           } else {
             var newCoords = $scope.field.value.coordinates[0].slice($scope.field.editedVertex,$scope.field.value.coordinates[0].length-1);
-            newCoords.push($scope.field.value.coordinates[0].slice(1, $scope.field.editedVertex-1));
+            newCoords = newCoords.concat($scope.field.value.coordinates[0].slice(0, $scope.field.editedVertex));
             $scope.field.value.coordinates = newCoords;
           }
         }
@@ -78,9 +78,9 @@ function FieldDirectiveController($scope) {
         if ($scope.field.value.type === 'Point') {
           $scope.field.value.coordinates = [[
             $scope.field.value.coordinates,
-            [$scope.field.value.coordinates[0]+1, $scope.field.value.coordinates[1]],
-            [$scope.field.value.coordinates[0]+1, $scope.field.value.coordinates[1]+1],
-            [$scope.field.value.coordinates[0], $scope.field.value.coordinates[1]+1],
+            [$scope.field.value.coordinates[0]+.005, $scope.field.value.coordinates[1]],
+            [$scope.field.value.coordinates[0]+.005, $scope.field.value.coordinates[1]+.005],
+            [$scope.field.value.coordinates[0], $scope.field.value.coordinates[1]+.005],
             $scope.field.value.coordinates
           ]];
         } else {
@@ -90,11 +90,7 @@ function FieldDirectiveController($scope) {
       break;
     }
 
-    console.log('scope.shapeType', $scope.shape);
     $scope.field.value.type = $scope.shape.type;
-    console.log('arguments', arguments);
-    console.log('shape', $scope.field.value);
-
   }
 
   $scope.datePopup = {open: false};
