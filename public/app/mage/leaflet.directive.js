@@ -322,14 +322,13 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
           $scope.$apply();
         }
       });
-      if (selectedVertex !== undefined) {
-        var group = layer.pm._markerGroup;
-        group.eachLayer(function(layer) {
-          if (layer._index === selectedVertex) {
-            L.DomUtil.addClass(layer.getElement(), 'selected-marker');
-          }
-        });
-      }
+      selectedVertex = selectedVertex || 0;
+      var group = layer.pm._markerGroup;
+      group.eachLayer(function(layer) {
+        if (layer._index === selectedVertex) {
+          L.DomUtil.addClass(layer.getElement(), 'selected-marker');
+        }
+      });
       layer.on('pm:edit', function(event) {
         $scope.$broadcast('observation:moved', layer.feature, event.target.toGeoJSON().geometry);
         $scope.$apply();
