@@ -134,6 +134,26 @@ function createSchema(event) {
         mapping : "properties.user.username"
       }
     },{
+      localName : "user.phone",
+      minOccurs : 0,
+      maxOccurs : 1,
+      type : {
+        binding : "java.lang.String"
+      },
+      userData : {
+        mapping : "properties.user.phone"
+      }
+    },{
+      localName : "user.email",
+      minOccurs : 0,
+      maxOccurs : 1,
+      type : {
+        binding : "java.lang.String"
+      },
+      userData : {
+        mapping : "properties.user.email"
+      }
+    },{
       localName : "provider",
       minOccurs : 0,
       maxOccurs : 1,
@@ -340,6 +360,18 @@ function createLayerBody(event) {
           binding: 'java.lang.String'
         },{
           name: 'user.username',
+          minOccurs: 0,
+          maxOccurs: 1,
+          nillable: true,
+          binding: 'java.lang.String'
+        },{
+          name: 'user.phone',
+          minOccurs: 0,
+          maxOccurs: 1,
+          nillable: true,
+          binding: 'java.lang.String'
+        },{
+          name: 'user.email',
           minOccurs: 0,
           maxOccurs: 1,
           nillable: true,

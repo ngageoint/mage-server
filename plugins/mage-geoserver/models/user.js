@@ -52,6 +52,14 @@ exports.createLocations = function(locations, user, event, callback) {
     name: event.name
   };
 
+  if (user.email) {
+    normalized.properties.user.email = user.email;
+  }
+
+  user.phones.forEach(function(phone) {
+    normalized.properties.user.phone = phone.number;
+  });
+
   var options= {
     upsert: true,
     new: true

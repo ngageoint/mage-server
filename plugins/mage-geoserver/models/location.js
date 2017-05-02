@@ -35,6 +35,14 @@ var normalizeLocation = function(location, user, event) {
     displayName: user.displayName
   };
 
+  if (user.email) {
+    normalized.properties.user.email = user.email;
+  }
+
+  user.phones.forEach(function(phone) {
+    normalized.properties.user.phone = phone.number;
+  });
+
   normalized.properties.event = {
     _id: event._id,
     name: event.name
