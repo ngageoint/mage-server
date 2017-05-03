@@ -44,9 +44,12 @@ function UserController($scope, $location, $timeout, Api, UserService, user) {
       username: this.user.username,
       displayName: this.user.displayName,
       email: this.user.email,
-      phone: this.user.phone,
       avatar: $scope.avatar
     };
+
+    if (this.user.phones && this.user.phones.length) {
+      user.phone = $scope.user.phones[0].number;
+    }
 
     // TODO throw in progress
     var progress = function(e) {
