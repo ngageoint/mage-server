@@ -6,6 +6,8 @@ var path = require('path')
   , sldBuilder = require('../sld')
   , config = require('../config.json');
 
+var blankImagePath = path.resolve(__dirname, '../images/blank.png');
+
 function GeoServerResource() {}
 
 module.exports = function(app, authentication) {
@@ -111,15 +113,15 @@ GeoServerResource.prototype.getUserSvg = function(req, res) {
 };
 
 GeoServerResource.prototype.getUserIcon = function(req, res, next) {
-  if (!req.userParam) return res.sendStatus(200);
+  if (!req.userParam) {
+    return res.sendFile(blankImagePath);
+  }
 
   new api.User().icon(req.userParam, function(err, icon) {
     if (err) return next(err);
 
     if (!icon || !icon.relativePath) {
-      var blankImagePath = path.resolve(__dirname, 'images/blank.png');
-      console.log('blank image path is: ', blankImagePath);
-      return res.sendFile(path.resolve(__dirname, '../images/blank.png'));
+      return res.sendFile(blankImagePath);
     }
 
     res.sendFile(icon.path);
