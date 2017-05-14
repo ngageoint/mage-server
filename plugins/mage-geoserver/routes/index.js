@@ -39,7 +39,6 @@ module.exports = function(app, security) {
   app.param('userId', /^[0-9a-f]{24}$/); //ensure userId is a mongo id
   app.param('userId', function(req, res, next, userId) {
     new api.User().getById(userId, function(err, user) {
-      if (!user) return res.status(404).send('User not found');
       req.userParam = user;
       next();
     });
