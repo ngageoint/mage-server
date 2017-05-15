@@ -9,7 +9,10 @@ var util = require('util')
   , Icon = require('../models/icon')
   , Exporter = require('./exporter')
   , writer = require('./kmlWriter')
-  , attachmentBase = require('environment').attachmentBaseDirectory;
+  , environment = require('environment');
+
+var userBase = environment.userBaseDirectory;
+var attachmentBase = environment.attachmentBaseDirectory;
 
 function Kml(options) {
   Kml.super_.call(this, options);
@@ -45,8 +48,10 @@ Kml.prototype.export = function(streamable) {
     function(done) {
       if (!self._filter.exportLocations) return done();
 
+      kmlStream.write(writer.generateUserStyles(self._users));
+
       async.eachSeries(Object.keys(self._users), function(userId, callback) {
-        self.streamUserLocations(kmlStream, self._users[userId], callback);
+        self.streamUserLocations(kmlStream, archive, self._users[userId], callback);
       },
       function(err) {
         done(err);
@@ -72,13 +77,13 @@ Kml.prototype.streamObservations = function(stream, archive, done) {
   self._filter.states = ['active'];
   new api.Observation(self._event).getAll({filter: self._filter}, function(err, observations) {
     Icon.getAll({eventId: self._event._id}, function(err, icons) {
-      stream.write(writer.generateStyles(self._event, icons));
+      stream.write(writer.generateObservationStyles(self._event, icons));
       stream.write(writer.generateKMLFolderStart(self._event.name, false));
 
       observations.forEach(function(o) {
         var variant = o.properties[self._event.form.variantField];
         self.mapObservations(o);
-        stream.write(writer.generatePlacemark(o.properties.type, o, self._event, variant));
+        stream.write(writer.generateObservationPlacemark(o.properties.type, o, self._event, variant));
 
         o.attachments.forEach(function(attachment) {
           archive.file(path.join(attachmentBase, attachment.relativePath), {name: attachment.relativePath});
@@ -101,7 +106,7 @@ Kml.prototype.streamObservations = function(stream, archive, done) {
   });
 };
 
-Kml.prototype.streamUserLocations = function(stream, user, done) {
+Kml.prototype.streamUserLocations = function(stream, archive, user, done) {
   var self = this;
 
   log.info('writing locations for user ' + user.username);
@@ -122,7 +127,7 @@ Kml.prototype.streamUserLocations = function(stream, user, done) {
       }
 
       locations.forEach(function(location) {
-        stream.write(writer.generatePlacemark(user.displayName, location));
+        stream.write(writer.generateLocationPlacemark(user, location));
       });
 
       log.info('Successfully wrote ' + locations.length + ' locations to KML for user ' + user.username);
@@ -142,6 +147,14 @@ Kml.prototype.streamUserLocations = function(stream, user, done) {
     return locations.length === 0;
   },
   function(err) {
+    // throw in user map icon
+    if (user.icon && user.icon.relativePath) {
+      archive.file(path.join(userBase, user.icon.relativePath), {
+        name: 'icons/users/' + user._id.toString(),
+        date: new Date()
+      });
+    }
+
     if (lastLocationId) { // if we got at least one location
       stream.write(writer.generateKMLFolderClose());
     }

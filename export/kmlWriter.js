@@ -13,7 +13,21 @@ KmlWriter.prototype.generateKMLHeader = function() {
                "xmlns:atom='http://www.w3.org/2005/Atom'>";
 };
 
-KmlWriter.prototype.generateStyles = function(event, icons) {
+KmlWriter.prototype.generateUserStyles = function(users) {
+  var styles = [];
+
+  Object.keys(users).forEach(function(userId) {
+    var user = users[userId];
+
+    if (!user.icon || !user.icon.relativePath) return;
+
+    styles.push("<Style id='user-" + user._id.toString() + "'><IconStyle><Icon><href>" + path.join("icons/users/", user._id.toString()) + "</href></Icon></IconStyle></Style>");
+  });
+
+  return styles.join("");
+};
+
+KmlWriter.prototype.generateObservationStyles = function(event, icons) {
   var styles = [];
 
   var defaultIconPath = "";
@@ -70,13 +84,55 @@ KmlWriter.prototype.generateKMLFolderStart = function(name) {
   return "<Folder>" + "<name>" + name + "</name>";
 };
 
-KmlWriter.prototype.generatePlacemark = function(name, feature, event, variant) {
-  var timeFormat = "YYYY-MM-DDTHH:mm:ss";
+KmlWriter.prototype.generateObservationPlacemark = function(name, observation, event, variant) {
+  var timestamp = generateTimestamp(observation.properties.timestamp);
+  var description = generateDescription(observation);
 
-  var timestamp = "<TimeStamp>" +
-    "<when>" + moment(feature.properties.timestamp).utc().format(timeFormat) + "Z</when>" +
+  var styles = [];
+  if (event) {
+    styles.push(event._id.toString());
+    if (observation.properties.type) {
+      styles.push(observation.properties.type);
+      if (variant) {
+        styles.push(variant);
+      }
+    }
+  }
+
+  var style = '#' + styles.join('-');
+  var coordinates = generatePlacemarkCoordinates(observation);
+
+  return generatePlacemarkElement(name, style, coordinates, timestamp, description);
+};
+
+KmlWriter.prototype.generateLocationPlacemark = function(user, location) {
+  var timestamp = generateTimestamp(location.properties.timestamp);
+  var description = generateDescription(location);
+  var style = '#user-' + user._id.toString();
+  var coordinates = generatePlacemarkCoordinates(location);
+
+  return generatePlacemarkElement(user.displayName, style, coordinates, timestamp, description);
+};
+
+KmlWriter.prototype.generateKMLDocumentClose = function() {
+  return "</Document>";
+};
+
+KmlWriter.prototype.generateKMLFolderClose = function() {
+  return "</Folder>";
+};
+
+KmlWriter.prototype.generateKMLClose = function() {
+  return "</kml>";
+};
+
+function generateTimestamp(timestamp) {
+  return "<TimeStamp>" +
+    "<when>" + moment(timestamp).utc().format("YYYY-MM-DDTHH:mm:ss") + "Z</when>" +
     "</TimeStamp>";
+}
 
+function generateDescription(geojson) {
   var description = "<description>" +
     '<![CDATA[<html xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:msxsl="urn:schemas-microsoft-com:xslt">' +
       '<head>' +
@@ -88,32 +144,32 @@ KmlWriter.prototype.generatePlacemark = function(name, feature, event, variant) 
 
   description +=
     '<tr bgcolor="#D4E4F3">' +
-      '<td>Lat</td>' + '<td>' + feature.geometry.coordinates[1] + '</td>' +
+      '<td>Lat</td>' + '<td>' + geojson.geometry.coordinates[1] + '</td>' +
     '<tr>';
   description +=
     '<tr>' +
-      '<td>Lon</td>' + '<td>' + feature.geometry.coordinates[0] + '</td>' +
+      '<td>Lon</td>' + '<td>' + geojson.geometry.coordinates[0] + '</td>' +
     '<tr>';
 
   var odd = true;
-  Object.keys(feature.properties).forEach(function(key) {
+  Object.keys(geojson.properties).forEach(function(key) {
     var color = "";
     if (odd) color = "#D4E4F3";
     odd = !odd;
 
     description +=
     '<tr bgcolor="' + color + '">' +
-      '<td>' + key + '</td>' + '<td>' + feature.properties[key] + '</td>' +
+      '<td>' + key + '</td>' + '<td>' + geojson.properties[key] + '</td>' +
     '</tr>';
   });
 
   description += '</table>';
 
   //does this feature have media
-  if (feature.attachments && feature.attachments.length) {
+  if (geojson.attachments && geojson.attachments.length) {
     description += '<div>';
 
-    feature.attachments.forEach(function(attachment) {
+    geojson.attachments.forEach(function(attachment) {
       description += '<div style="padding-top:15px;"><a href="' + attachment.relativePath + '">' + attachment.name + '</a></div>';
 
       //determine media type (image or other)
@@ -130,59 +186,37 @@ KmlWriter.prototype.generatePlacemark = function(name, feature, event, variant) 
 
   description += '</html>]]></description>';
 
-  var style = [];
-  if (event) {
-    style.push(event._id.toString());
-    if (feature.properties.type) {
-      style.push(feature.properties.type);
-      if (variant) {
-        style.push(variant);
-      }
-    }
-  }
+  return description;
+}
 
+function generatePlacemarkCoordinates(geojson) {
   var coordinates = "<Point><coordinates>" +
-  feature.geometry.coordinates[0] + "," +
-  feature.geometry.coordinates[1];
+    geojson.geometry.coordinates[0] + "," +
+    geojson.geometry.coordinates[1];
 
-  if (feature.properties.altitude) {
-    coordinates += "," + feature.properties.altitude;
+  if (geojson.properties.altitude) {
+    coordinates += "," + geojson.properties.altitude;
   }
 
   coordinates += "</coordinates></Point>";
 
-  if (feature.properties.altitude) {
+  if (geojson.properties.altitude) {
     coordinates += "<altitudeMode>absolute</altitudeMode>";
   }
 
-  //build the actual placemark
-  var placemark =
-    "<Placemark>" +
+  return coordinates;
+}
+
+function generatePlacemarkElement(name, style, coordinates, timestamp, description) {
+  return "<Placemark>" +
       "<name>" + name + "</name>" +
       "<visibility>0</visibility>" +
-      "<styleUrl>#" + style.join("-") + "</styleUrl>" +
+      "<styleUrl>" + style + "</styleUrl>" +
       coordinates +
       timestamp +
       description +
     "</Placemark>";
-
-  return placemark;
-};
-
-KmlWriter.prototype.generateKMLDocumentClose = function() {
-  var doc = "</Document>";
-  return doc;
-};
-
-KmlWriter.prototype.generateKMLFolderClose = function() {
-  var folder = "</Folder>";
-  return folder;
-};
-
-KmlWriter.prototype.generateKMLClose = function() {
-  var kml = "</kml>";
-  return kml;
-};
+}
 
 function getFieldByName(form, name) {
   for (var i = 0; i < form.fields.length; i++) {
