@@ -34,6 +34,16 @@ DeviceSchema.path('userId').validate(function(userId, done) {
   });
 }, 'Invalid POC user, user does not exist');
 
+DeviceSchema.pre('findOneAndUpdate', function(next) {
+  if (this.getUpdate().registered === false) {
+    Token.removeTokenForDevice({_id: this.getQuery()._id}, function(err) {
+      next(err);
+    });
+  } else {
+    next();
+  }
+});
+
 DeviceSchema.pre('remove', function(next) {
   var device = this;
 

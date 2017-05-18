@@ -4,7 +4,8 @@ var request = require('supertest')
   , mongoose = require('mongoose')
   , app = require('../../express')
   , MockToken = require('../mockToken')
-  , TokenModel = mongoose.model('Token');
+  , TokenModel = mongoose.model('Token')
+  , UserModel = mongoose.model('User');
 
 require('sinon-mongoose');
 
@@ -54,6 +55,56 @@ describe("device update tests", function() {
         uid: '12345',
         name: 'Test Device',
         registered: true,
+        description: 'Some description',
+        userId: userId.toString()
+      })
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(function(res) {
+        var device = res.body;
+        should.exist(device);
+      })
+      .end(done);
+  });
+
+  it("should remove token for unregistered device", function(done) {
+    mockTokenWithPermission('UPDATE_DEVICE');
+
+    var userId = mongoose.Types.ObjectId();
+
+    var deviceId = mongoose.Types.ObjectId();
+    sandbox.mock(TokenModel.collection)
+      .expects('remove')
+      .withArgs({ deviceId: deviceId})
+      .yields(null);
+
+    sandbox.mock(UserModel)
+      .expects('findById')
+      .withArgs(userId)
+      .chain('populate')
+      .chain('exec')
+      .yields(null, {});
+
+    sandbox.mock(DeviceModel.collection)
+      .expects('findAndModify')
+      .yields(null, {
+        value: {
+          uid: '12345',
+          name: 'Test Device',
+          registered: false,
+          description: 'Some description',
+          userId: userId.toString()
+        }
+      });
+
+    request(app)
+      .put('/api/devices/' + deviceId)
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        uid: '12345',
+        name: 'Test Device',
+        registered: 'false',
         description: 'Some description',
         userId: userId.toString()
       })

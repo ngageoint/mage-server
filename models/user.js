@@ -95,6 +95,20 @@ UserSchema.pre('save', function(next) {
   }
 });
 
+UserSchema.pre('save', function(next) {
+  var user = this;
+  console.log('************rmove token for inactive user');
+  if (user.active === false) {
+    console.log('************rmove token for inactive user');
+
+    Token.removeTokensForUser(user, function(err) {
+      next(err);
+    });
+  } else {
+    next();
+  }
+});
+
 UserSchema.post('save', function(err, user, next) {
   if (err.name === 'MongoError' && err.code === 11000) {
     err = new Error('username already exists');

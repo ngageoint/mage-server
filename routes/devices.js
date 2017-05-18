@@ -140,7 +140,7 @@ DeviceResource.prototype.updateDevice = function(req, res, next) {
   if (req.newDevice.uid) update.uid = req.newDevice.uid;
   if (req.newDevice.name) update.name = req.newDevice.name;
   if (req.newDevice.description) update.description = req.newDevice.description;
-  if (req.newDevice.registered) update.registered = req.newDevice.registered;
+  if (req.newDevice.registered !== undefined) update.registered = req.newDevice.registered;
   if (req.newDevice.userId) update.userId = req.newDevice.userId;
 
   DeviceModel.updateDevice(req.param('id'), update, function(err, device) {
@@ -177,10 +177,13 @@ DeviceResource.prototype.parseDeviceParams = function(req, res, next) {
   req.newDevice = {
     uid: req.param('uid'),
     name: req.param('name'),
-    registered: req.param('registered'),
     description: req.param('description'),
     userId: req.param('userId')
   };
+
+  if (req.param('registered') !== undefined) {
+    req.newDevice.registered = req.param('registered') === 'true';
+  }
 
   next();
 };
