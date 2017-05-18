@@ -140,8 +140,6 @@ $ curl https://codeload.github.com/ngageoint/mage-server/zip/4.4.3 | tar -xf - -
 
 The rest of the installation steps assume you are in the MAGE server directory, eg /opt/mage
 
-The migration patches live in the [migrations folder](migrations).  MAGE uses [mongodb-migrations](https://github.com/emirotin/mongodb-migrations) to support applying migrations.  On initial setup, you will have to run the migrations to create the initial user and device used to log into the web.
-
 ### MAGE local media directory
 By default MAGE will store media attachments (video, images, etc) locally on the MAGE server.  The default directory is '/var/lib/mage', lets make sure this directory exists.  If you would like to change where MAGE is looking for media please see the attachmentBaseDirectory in [MAGE Setup](#setting-up-mage-for-local-deployment)
 
@@ -150,6 +148,7 @@ $ mkdir /var/lib/mage
 ```
 
 ### MAGE database setup
+The migration patches live in the [migrations folder](migrations).  MAGE uses [mongodb-migrations](https://github.com/emirotin/mongodb-migrations) to support applying migrations.  On initial setup, you will have to run the migrations to create the initial user and device used to log into the web.
 
 To run the migrations:
 ``` bash
