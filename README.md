@@ -121,7 +121,7 @@ $ gm version
 #### GraphicsMagick install with yum
 
 ```bash
-$ yum install GraphicMagick
+$ yum install GraphicsMagick
 $ gm version
 ```
 
