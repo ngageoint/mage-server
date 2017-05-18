@@ -112,7 +112,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     var observationsAdded = [];
     // add any observations that are part of the filtered actions
     _.each(actionEvent.observationsById, function(observation) {
-      if (FilterService.isContainedWithinFilter(observation)) {
+      if (!actionEvent.filteredObservationsById[observation.id] && FilterService.isContainedWithinFilter(observation)) {
         observationsAdded.push(observation);
         actionEvent.filteredObservationsById[observation.id] = observation;
       }
