@@ -8,9 +8,11 @@ Adheres to [Semantic Versioning](http://semver.org/).
 * TBD
 
 ##### Features
+* Added user map icons to KML export
 
 ##### Bug Fixes
 * Multi select checkbox for dropdowns fixed
+* Fix a bug with observations duplicating on the map when changing favorite/important filter.
 
 ## [4.4.3](https://github.com/ngageoint/mage-server/releases/tag/v4.4.3) (02-20-2017)
 
