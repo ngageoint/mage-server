@@ -235,6 +235,13 @@ exports.getObservations = function(event, o, callback) {
   observationModel(event).find(conditions, fields, options, callback);
 };
 
+// DEPRECATED backwards compat for creating an observation.  Will be removed in version 5.x.x
+exports.createObservation = function(event, observation, callback) {
+  observation.lastModified = moment.utc().toDate();
+
+  observationModel(event).create(observation, callback);
+};
+
 exports.createObservationId = function(callback) {
   ObservationId.create({}, callback);
 };

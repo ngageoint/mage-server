@@ -71,6 +71,18 @@ Observation.prototype.validate = function(observation) {
   });
 };
 
+// DEPRECATED backwards compat for creating an observation.  Will be removed in version 5.x.x
+Observation.prototype.create = function(observation, callback) {
+  try {
+    this.validate(observation);
+  } catch (err) {
+    err.status = 400;
+    return callback(err);
+  }
+
+  ObservationModel.createObservation(this._event, observation, callback);
+};
+
 Observation.prototype.createObservationId = function(callback) {
   ObservationModel.createObservationId(callback);
 };

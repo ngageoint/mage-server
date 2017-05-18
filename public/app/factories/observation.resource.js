@@ -1,6 +1,6 @@
 angular.module('mage').factory('Observation', ['$resource', function($resource) {
 
-  var ObservationId = $resource('/api/events/:eventId/observations/', {
+  var ObservationId = $resource('/api/events/:eventId/observations/id/', {
     eventId: '@eventId'
   }, {
     createId: {
@@ -17,6 +17,7 @@ angular.module('mage').factory('Observation', ['$resource', function($resource) 
   }, {
     update: {
       method: 'PUT',
+      url: '/api/events/:eventId/observations/id/:id',
       headers: {
         'Content-Type': 'application/json'
       }

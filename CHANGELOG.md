@@ -3,12 +3,15 @@ All notable changes to this project will be documented in this file.
 Adheres to [Semantic Versioning](http://semver.org/).
 
 ---
-## 4.4.4 (TBD)
+## 4.5.0 (TBD)
 
 * TBD
 
 ##### Features
-* Added user map icons to KML export
+* New routes to create observations. POST to /id will now generate the observation location (the id of the observation)
+  instead of the resource.  After getting a server generated location for an observation resource, clients are
+  responsible for send the observation data as a PUT (idempotent). This will prevent duplicate observations
+  if the client loses the response from the POST.
 
 ##### Bug Fixes
 * Multi select checkbox for dropdowns fixed

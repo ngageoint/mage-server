@@ -88,7 +88,7 @@ describe("observation create tests", function() {
       .yields(null, mockObservation);
 
     request(app)
-      .post('/api/events/1/observations')
+      .post('/api/events/1/observations/id')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send()
@@ -97,6 +97,60 @@ describe("observation create tests", function() {
       .expect(function(res) {
         should.exist(res.body);
         res.body.should.have.property('id');
+      })
+      .end(done);
+  });
+
+  // DEPRECATED test, backwards compat for creating an observation.  Will be removed in version 5.x.x
+  it("should create an observation for an event with DEPRECATED api", function(done) {
+    mockTokenWithPermission('CREATE_OBSERVATION');
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+    var mockObservation = new ObservationModel({
+      _id: mongoose.Types.ObjectId(),
+      type: 'Feature',
+      geometry: {
+        type: "Point",
+        coordinates: [0, 0]
+      },
+      properties: {
+        timestamp: '2016-01-01T00:00:00'
+      }
+    });
+    sandbox.mock(ObservationModel)
+      .expects('create')
+      .yields(null, mockObservation);
+
+    request(app)
+      .post('/api/events/1/observations')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        type: 'Feature',
+        geometry: {
+          type: "Point",
+          coordinates: [0, 0]
+        },
+        properties: {
+          type: 'test',
+          timestamp: '2016-01-01T00:00:00'
+        }
+      })
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(function(res) {
+        var observation = res.body;
+        should.exist(observation);
+        res.body.should.have.property('id');
+        res.body.should.have.property('url');
       })
       .end(done);
   });
@@ -141,7 +195,7 @@ describe("observation create tests", function() {
       .yields(null, mockObservation);
 
     request(app)
-      .put('/api/events/1/observations/' + observationId.toString())
+      .put('/api/events/1/observations/id/' + observationId.toString())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -189,7 +243,7 @@ describe("observation create tests", function() {
       .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/' + observationId.toString())
+      .put('/api/events/1/observations/id/' + observationId.toString())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -225,7 +279,7 @@ describe("observation create tests", function() {
       .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
+      .put('/api/events/1/observations/id/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -268,7 +322,7 @@ describe("observation create tests", function() {
       .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
+      .put('/api/events/1/observations/id/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -309,7 +363,7 @@ describe("observation create tests", function() {
       .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
+      .put('/api/events/1/observations/id/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -348,7 +402,7 @@ describe("observation create tests", function() {
       .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
+      .put('/api/events/1/observations/id/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -384,7 +438,7 @@ describe("observation create tests", function() {
       .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
+      .put('/api/events/1/observations/id/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -426,7 +480,7 @@ describe("observation create tests", function() {
       .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
+      .put('/api/events/1/observations/id/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({

@@ -310,8 +310,26 @@ module.exports = function(app, security) {
     }
   );
 
+  // DEPRECATED backwards compat for creating an observation.  Will be removed in version 5.x.x
   app.post(
     '/api/events/:eventId/observations',
+    passport.authenticate('bearer'),
+    access.authorize('CREATE_OBSERVATION'),
+    validateObservationCreateAccess(false),
+    populateObservation,
+    populateUserFields,
+    function (req, res, next) {
+      new api.Observation(req.event).create(req.observation, function(err, newObservation) {
+        if (err) return next(err);
+
+        var response = observationXform.transform(newObservation, transformOptions(req));
+        res.location(newObservation._id.toString()).json(response);
+      });
+    }
+  );
+
+  app.post(
+    '/api/events/:eventId/observations/id',
     passport.authenticate('bearer'),
     validateObservationCreateAccess(false),
     function (req, res, next) {
@@ -325,10 +343,30 @@ module.exports = function(app, security) {
   );
 
   app.put(
-    '/api/events/:eventId/observations/:id',
+    '/api/events/:eventId/observations/id/:id',
     passport.authenticate('bearer'),
     getObservation,
     validateCreateOrUpdateAccess,
+    populateObservation,
+    populateUserFields,
+    function (req, res, next) {
+
+      new api.Observation(req.event).update(req.param('id'), req.observation, function(err, updatedObservation) {
+        if (err) return next(err);
+
+        if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.id + " does not exist");
+
+        var response = observationXform.transform(updatedObservation, transformOptions(req));
+        res.json(response);
+      });
+    }
+  );
+
+  // DEPRECATED backwards compat for creating an observation.  Will be removed in version 5.x.x
+  app.put(
+    '/api/events/:eventId/observations/:id',
+    passport.authenticate('bearer'),
+    validateObservationUpdateAccess,
     populateObservation,
     populateUserFields,
     function (req, res, next) {
