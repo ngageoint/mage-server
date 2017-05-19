@@ -134,33 +134,39 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     // cannot create another marker with the same id
     if (layers[marker.layerId]) return;
 
-    var options = marker.options || {};
+    createGeoJsonForLayer(marker, layers['NewObservation']);
+    layer = layers['NewObservation'].featureIdToLayer[marker.id];
+    layers['NewObservation'].layer.addLayer(layer);
 
-    if (marker.geometry && marker.geometry.type === 'Point') {
-      var latlng = [0, 0];
-      if (marker.geometry.coordinates) {
-        latlng = [marker.geometry.coordinates[1], marker.geometry.coordinates[0]];
-      } else {
-        latlng = map.getCenter();
-      }
 
-      var layer = L.marker(latlng, {
-        draggable: options.draggable,
-        icon: L.AwesomeMarkers.newDivIcon({
-          icon: 'plus',
-          color: 'cadetblue'
-        })
-      });
 
-      if (_.isFunction(options.onDragEnd)) {
-        layer.on('dragend', function() {
-          options.onDragEnd(layer.getLatLng().wrap());
-        });
-      }
-
-      if (options.selected) layer.addTo(map);
-      layers[options.layerId] = {layer: layer};
-    }
+    // var options = marker.options || {};
+    //
+    // if (marker.geometry && marker.geometry.type === 'Point') {
+    //   var latlng = [0, 0];
+    //   if (marker.geometry.coordinates) {
+    //     latlng = [marker.geometry.coordinates[1], marker.geometry.coordinates[0]];
+    //   } else {
+    //     latlng = map.getCenter();
+    //   }
+    //
+    //   var layer = L.marker(latlng, {
+    //     draggable: options.draggable,
+    //     icon: L.AwesomeMarkers.newDivIcon({
+    //       icon: 'plus',
+    //       color: 'cadetblue'
+    //     })
+    //   });
+    //
+    //   if (_.isFunction(options.onDragEnd)) {
+    //     layer.on('dragend', function() {
+    //       options.onDragEnd(layer.getLatLng().wrap());
+    //     });
+    //   }
+    //
+    //   if (options.selected) layer.addTo(map);
+    //   layers[options.layerId] = {layer: layer};
+    // }
   }
 
   function updateMarker(marker, layerId) {
@@ -374,6 +380,9 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
     _.each(changed.editStarted, function(edit) {
       var layer = layers['Observations'].featureIdToLayer[edit.id];
+      if (!layer && layers['NewObservation']) {
+        layer = layers['NewObservation'].featureIdToLayer[edit.id];
+      }
       enableEditable(layer);
     });
 
@@ -393,22 +402,25 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     });
 
     _.each(changed.updateIcon, function(updateIcon) {
-      var layer = layers['Observations'].featureIdToLayer[updateIcon.id];
+      var groupName = 'Observations';
+      var layer = layers[groupName].featureIdToLayer[updateIcon.id];
       if (!layer && layers['NewObservation']) {
-        layer = layers['NewObservation'].layer;
+        groupName = 'NewObservation';
+        layer = layers[groupName].featureIdToLayer[updateIcon.id];
       }
       if (!layer) {
         return;
       }
       var feature = JSON.parse(JSON.stringify(layer.feature));
       feature.geometry = updateIcon.marker.geometry;
+      feature.style.iconUrl = updateIcon.iconUrl;
       if (layer.pm.enabled()) {
         layer.pm.disable();
       }
       map.removeLayer(layer);
-      createGeoJsonForLayer(feature, layers['Observations']);
-      layer = layers['Observations'].featureIdToLayer[updateIcon.id];
-      layers['Observations'].layer.addLayer(layer);
+      createGeoJsonForLayer(feature, layers[groupName]);
+      layer = layers[groupName].featureIdToLayer[updateIcon.id];
+      layers[groupName].layer.addLayer(layer);
       enableEditable(layer);
     });
   }

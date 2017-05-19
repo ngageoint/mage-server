@@ -77,7 +77,10 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
     $scope.saving = true;
     var markedForDelete = _.filter($scope.observation.attachments, function(a){ return a.markedForDelete; });
     formToObservation($scope.form, $scope.observation);
-
+    // this is a hack that will be corrected when we pull ids from the server
+    if ($scope.observation.id === 'new') {
+      delete $scope.observation.id;
+    }
     EventService.saveObservation($scope.observation).then(function() {
       if (_.some(_.values($scope.attachmentUploads), function(v) {return v;})) {
         $scope.uploadAttachments = true;
