@@ -134,39 +134,19 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     // cannot create another marker with the same id
     if (layers[marker.layerId]) return;
 
+    var newObservationLayer = {
+      name: 'NewObservation',
+      group: 'MAGE',
+      type: 'geojson',
+      options: {
+        selected: true
+      }
+    };
+    MapService.createVectorLayer(newObservationLayer);
+
     createGeoJsonForLayer(marker, layers['NewObservation']);
     layer = layers['NewObservation'].featureIdToLayer[marker.id];
     layers['NewObservation'].layer.addLayer(layer);
-
-
-
-    // var options = marker.options || {};
-    //
-    // if (marker.geometry && marker.geometry.type === 'Point') {
-    //   var latlng = [0, 0];
-    //   if (marker.geometry.coordinates) {
-    //     latlng = [marker.geometry.coordinates[1], marker.geometry.coordinates[0]];
-    //   } else {
-    //     latlng = map.getCenter();
-    //   }
-    //
-    //   var layer = L.marker(latlng, {
-    //     draggable: options.draggable,
-    //     icon: L.AwesomeMarkers.newDivIcon({
-    //       icon: 'plus',
-    //       color: 'cadetblue'
-    //     })
-    //   });
-    //
-    //   if (_.isFunction(options.onDragEnd)) {
-    //     layer.on('dragend', function() {
-    //       options.onDragEnd(layer.getLatLng().wrap());
-    //     });
-    //   }
-    //
-    //   if (options.selected) layer.addTo(map);
-    //   layers[options.layerId] = {layer: layer};
-    // }
   }
 
   function updateMarker(marker, layerId) {

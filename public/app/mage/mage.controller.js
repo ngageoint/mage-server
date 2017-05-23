@@ -93,16 +93,6 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
   };
   MapService.createVectorLayer(observationLayer);
 
-  var newObservationLayer = {
-    name: 'NewObservation',
-    group: 'MAGE',
-    type: 'geojson',
-    options: {
-      selected: true
-    }
-  };
-  MapService.createVectorLayer(newObservationLayer);
-
   var peopleLayer = {
     name: 'People',
     group: 'MAGE',
@@ -471,7 +461,7 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
         timestamp: new Date()
       },
       style: {
-        
+
       }
     });
 
