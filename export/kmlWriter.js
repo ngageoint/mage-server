@@ -45,7 +45,7 @@ KmlWriter.prototype.generateObservationStyles = function(event, icons) {
   });
 
   // default icon style
-  styles.push("<Style id='" + event._id.toString() + "'><IconStyle><Icon><href>" + path.join("icons", defaultIconPath) + "</href></Icon></IconStyle></Style>");
+  styles.push("<Style id='" + event._id.toString() + "'><LineStyle><width>1.5</width></LineStyle><PolyStyle><color>7dff0000</color></PolyStyle><IconStyle><Icon><href>" + path.join("icons", defaultIconPath) + "</href></Icon></IconStyle></Style>");
 
   var typeField = getFieldByName(event.form, 'type');
   if (!typeField) return;
@@ -54,7 +54,7 @@ KmlWriter.prototype.generateObservationStyles = function(event, icons) {
   typeField.choices.forEach(function(choice) {
     // create style for choice (determine if choice is in map or pick default)
     var iconPath = typePathMap[choice.title] ? typePathMap[choice.title] : defaultIconPath;
-    styles.push("<Style id='" + [event._id.toString(), choice.title].join("-") + "'><IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
+    styles.push("<Style id='" + [event._id.toString(), choice.title].join("-") + "'><LineStyle><width>1.5</width></LineStyle><PolyStyle><color>7dff0000</color></PolyStyle><IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
 
     // variant styles for each type
     if (variantField) {
@@ -66,7 +66,7 @@ KmlWriter.prototype.generateObservationStyles = function(event, icons) {
         } else {
           iconPath = defaultIconPath;
         }
-        styles.push("<Style id='" + [event._id.toString(), choice.title, variantChoice.title].join("-") + "'><IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
+        styles.push("<Style id='" + [event._id.toString(), choice.title, variantChoice.title].join("-") + "'><LineStyle><width>1.5</width></LineStyle><PolyStyle><color>7dff0000</color></PolyStyle><IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
       });
     }
   });
@@ -142,14 +142,16 @@ function generateDescription(geojson) {
 
   description += '<table style="font-family:Arial,Verdana,Times;font-size:12px;text-align:left;width:100%;border-collapse:collapse;padding:3px 3px 3px 3px">';
 
-  description +=
-    '<tr bgcolor="#D4E4F3">' +
-      '<td>Lat</td>' + '<td>' + geojson.geometry.coordinates[1] + '</td>' +
-    '<tr>';
-  description +=
-    '<tr>' +
-      '<td>Lon</td>' + '<td>' + geojson.geometry.coordinates[0] + '</td>' +
-    '<tr>';
+  if (feature.geometry.type === 'Point') {
+    description +=
+      '<tr bgcolor="#D4E4F3">' +
+        '<td>Lat</td>' + '<td>' + feature.geometry.coordinates[1] + '</td>' +
+      '<tr>';
+    description +=
+      '<tr>' +
+        '<td>Lon</td>' + '<td>' + feature.geometry.coordinates[0] + '</td>' +
+      '<tr>';
+  }
 
   var odd = true;
   Object.keys(geojson.properties).forEach(function(key) {
@@ -190,25 +192,57 @@ function generateDescription(geojson) {
 }
 
 function generatePlacemarkCoordinates(geojson) {
-  var coordinates = "<Point><coordinates>" +
-    geojson.geometry.coordinates[0] + "," +
-    geojson.geometry.coordinates[1];
+  var coordinates = '<'+feature.geometry.type+'>';
 
   if (geojson.properties.altitude) {
     coordinates += "," + geojson.properties.altitude;
   }
-
-  coordinates += "</coordinates></Point>";
-
-  if (geojson.properties.altitude) {
-    coordinates += "<altitudeMode>absolute</altitudeMode>";
+    
+    if (geojson.geometry.type === 'Point') {
+        coordinates += "<coordinates>" +
+        geojson.geometry.coordinates[0] + "," +
+        geojson.geometry.coordinates[1];
+        
+        if (geojson.properties.altitude) {
+            coordinates += "," + geojson.properties.altitude;
+        }
+        
+        coordinates += "</coordinates>";
+    } else if (geojson.geometry.type === 'Polygon') {
+    // this will only work for simple polygons with no holes
+    coordinates += '<extrude>1</extrude>';
+    coordinates += '<outerBoundaryIs><LinearRing><coordinates>';
+    var polyPoints = geojson.geometry.coordinates[0];
+    for (var i = 0; i < polyPoints.length; i++) {
+      coordinates += polyPoints[i][0] + ',' + polyPoints[i][1];
+      if (geojson.properties.altitude) {
+        coordinates += "," + geojson.properties.altitude;
+      }
+      coordinates += ' ';
+    }
+    coordinates += '</coordinates></LinearRing></outerBoundaryIs>'
+  } else if (geojson.geometry.type === 'LineString') {
+    coordinates += '<extrude>1</extrude>';
+    coordinates += '<coordinates>';
+    for (var i = 0; i < geojson.geometry.coordinates.length; i++) {
+      coordinates += geojson.geometry.coordinates[i][0] + ',' + geojson.geometry.coordinates[i][1];
+      if (geojson.properties.altitude) {
+        coordinates += "," + geojson.properties.altitude;
+      }
+      coordinates += ' ';
+    }
+    coordinates += '</coordinates>';
   }
 
-  return coordinates;
+  coordinates += '</' + feature.geometry.type+'>';
+    
+    return coordinates;
 }
 
 function generatePlacemarkElement(name, style, coordinates, timestamp, description) {
-  return "<Placemark>" +
+  //build the actual placemark
+  var placemark =
+    "<Placemark>" +
       "<name>" + name + "</name>" +
       "<visibility>0</visibility>" +
       "<styleUrl>" + style + "</styleUrl>" +
