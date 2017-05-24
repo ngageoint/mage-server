@@ -31,7 +31,8 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     zoom: mapPosition.zoom,
     minZoom: 0,
     maxZoom: 18,
-    trackResize: true
+    trackResize: true,
+    worldCopyJump: true
   });
 
   map.on('moveend', saveMapPosition);

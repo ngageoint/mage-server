@@ -136,7 +136,35 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
         opacity: .85,
         iconUrl: getObservationIconUrlForEvent(event.id, observation.properties.type, observation.properties[event.form.variantField])
       };
+      if (observation.geometry.type === 'Polygon') {
+        minimizePolygon(observation.geometry.coordinates);
+      } else if (observation.geometry.type === 'LineString') {
+        minimizeLineString(observation.geometry.coordinates);
+      }
     });
+  }
+
+  function minimizePolygon(polygon) {
+    for (var i = 0; i < polygon.length; i++) {
+      minimizeLineString(polygon[i]);
+    }
+  }
+
+  function minimizeLineString(lineString) {
+    var world = 360;
+    var coord = lineString[0];
+    for (var i = 1; i < lineString.length; i++) {
+      var next = lineString[i];
+      if (coord[0] < next[0]) {
+        if (next[0] - coord[0] > coord[0] - next[0] + world) {
+          next[0] = next[0] - world;
+        }
+      } else if (coord[0] > next[0]) {
+        if (coord[0] - next[0] > next[0] - coord[0] + world) {
+          next[0] = next[0] + world;
+        }
+      }
+    }
   }
 
   function getObservationIconUrlForEvent(eventId, primary, variant) {

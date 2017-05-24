@@ -53,6 +53,7 @@ function FieldDirectiveController($scope) {
   }
 
   $scope.validateShapeChange = function() {
+    if (!$scope.shape || !$scope.shape.type || $scope.shape.type === $scope.field.value.type) return;
     switch($scope.shape.type) {
       case 'Point':
         if ($scope.field.value.type === 'LineString') {
@@ -92,6 +93,8 @@ function FieldDirectiveController($scope) {
 
     $scope.field.value.type = $scope.shape.type;
   }
+
+  $scope.$watch('shape.type', $scope.validateShapeChange);
 
   $scope.datePopup = {open: false};
   $scope.templatePath = types[$scope.field.type];

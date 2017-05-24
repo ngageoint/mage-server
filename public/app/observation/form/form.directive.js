@@ -66,6 +66,30 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
   function formToObservation(form, observation) {
     _.each(form.fields, function(field) {
       if (field.name === 'geometry') {
+        // put all coordinates in -180 to 180
+        switch (field.value.type) {
+          case 'Point':
+            if (field.value.coordinates[0] < -180) field.value.coordinates[0] = field.value.coordinates[0] + 360;
+            else if (field.value.coordinates[0] > 180) field.value.coordinates[0] = field.value.coordinates[0] - 360;
+            break;
+          case 'LineString':
+            for (var i = 0; i < field.value.coordinates.length; i++) {
+              var coord = field.value.coordinates[i];
+              while (coord[0] < -180) coord[0] = coord[0] + 360;
+              while (coord[0] > 180) coord[0] = coord[0] - 360;
+            }
+            break;
+          case 'Polygon':
+            for (var p = 0; p < field.value.coordinates.length; p++) {
+              var poly = field.value.coordinates[p];
+              for (var i = 0; i < poly.length; i++) {
+                var coord = poly[i];
+                while (coord[0] < -180) coord[0] = coord[0] + 360;
+                while (coord[0] > 180) coord[0] = coord[0] - 360;
+              }
+            }
+            break;
+        }
         observation.geometry = field.value;
       } else {
         observation.properties[field.name] = field.value;
