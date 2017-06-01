@@ -20,6 +20,7 @@ function MapService() {
     createMarker: createMarker,
     removeMarker: removeMarker,
     updateMarker: updateMarker,
+    updateShapeType: updateShapeType,
     startedMarkerEdit: startedMarkerEdit,
     stopEditing: stopEditing,
     updateIcon: updateIcon,
@@ -130,6 +131,13 @@ function MapService() {
     layersChanged({
       id: marker.id,
       updateIcon: [{id:marker.id, marker: marker, iconUrl:iconUrl}]
+    });
+  }
+
+  function updateShapeType(marker) {
+    layersChanged({
+      id: marker.id,
+      updateShapeType: [{id: marker.id, marker: marker}]
     });
   }
 

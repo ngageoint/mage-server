@@ -56,9 +56,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     }
   }).addTo(map);
 
-  var editableLayers = new L.FeatureGroup();
-  map.addLayer(editableLayers);
-
   var userLocationControl = new L.Control.MageUserLocation({
     onBroadcastLocationClick: function(callback) {
       MapService.onBroadcastLocation(callback);
@@ -285,46 +282,117 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   var selectedVertex;
 
   function enableEditable(layer) {
+    if (layers['EditObservation'] && layers['EditObservation'].featureIdToLayer[layer.feature.id]) return;
+
+    layers['Observations'].layer.removeLayer(layer);
+    if (!layers['EditObservation']) {
+      var editObservationLayer = {
+        name: 'EditObservation',
+        group: 'MAGE',
+        type: 'geojson',
+        options: {
+          selected: true
+        }
+      };
+      MapService.createVectorLayer(editObservationLayer);
+    }
+    layers['EditObservation'].layer.addLayer(layer);
+    layers['EditObservation'].featureIdToLayer[layer.feature.id] = layer;
+
     if (layer.feature.geometry.type === 'Point') {
-      layers['Observations'].layer.removeLayer(layer);
       layer.setZIndexOffset(1000);
-      map.addLayer(layer);
+
       layer.dragging.enable();
       layer.on('dragend', function(event) {
         $scope.$broadcast('observation:moved', layer.feature, event.target.toGeoJSON().geometry);
         $scope.$apply();
       });
     } else {
-      layer.pm.enable({
-        draggable: true,
-        snappable: true,
-        clickListener: function(e) {
-          var group = layer.pm._markerGroup;
-          group.eachLayer(function(layer) {
-            L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
-          });
-          selectedVertex = e.target._index;
-          L.DomUtil.addClass(e.target.getElement(), 'selected-marker');
-          $scope.$broadcast('observation:edit:vertex', layer.feature, e.target.getLatLng(), e.target._index);
-          $scope.$apply();
-        }
-      });
-      selectedVertex = selectedVertex || 0;
+      if (!layer.feature.geometry.coordinates || layer.feature.geometry.coordinates.length === 0 || (layer.feature.geometry.coordinates.length === 1 && layer.feature.geometry.coordinates[0].length === 0)) {
+        initiateShapeDraw(layer.feature.geometry.type === 'Polygon' ? 'Poly' : 'Line', layer);
+      } else {
+        initiateShapeEdit(layer);
+      }
+    }
+  }
+
+  function initiateShapeDraw(shapeType, layer) {
+    map.pm.enableDraw(shapeType, {
+      snappable: true,
+      templineStyle: {
+          color: 'blue',
+      },
+      hintlineStyle: {
+          color: 'blue',
+          dashArray: [5, 5],
+      },
+      pathOptions: {
+          color: 'red',
+          fillColor: 'orange',
+          fillOpacity: 0.7,
+      },
+      cursorMarker: true,
+      finishOnDoubleClick: true,
+    });
+    map.on('pm:create', function(event) {
+      map.off('pm:create');
+      map.pm.disableDraw(shapeType);
+      var gj = event.layer.toGeoJSON();
+      map.removeLayer(event.layer);
+      gj.id = layer.feature.id;
+      layers['EditObservation'].layer.removeLayer(layer);
+      createGeoJsonForLayer(gj, layers['EditObservation']);
+      var newLayer = layers['EditObservation'].featureIdToLayer[layer.feature.id];
+      layers['EditObservation'].layer.addLayer(newLayer);
+      newLayer.feature = layer.feature;
+      newLayer.feature.geometry = gj.geometry;
+      initiateShapeEdit(newLayer);
+      $scope.$broadcast('observation:moved', newLayer.feature, gj.geometry);
+      // $scope.$broadcast('observation:edit:vertex', newLayer.feature, gj.geometry, 0);
+      $scope.$apply();
+    });
+  }
+
+  function initiateShapeEdit(layer) {
+
+    layer.pm.enable({
+      draggable: true,
+      snappable: false,
+      clickListener: function(e) {
+        var group = layer.pm._markerGroup;
+        group.eachLayer(function(layer) {
+          L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
+        });
+        selectedVertex = e.target._index;
+        L.DomUtil.addClass(e.target.getElement(), 'selected-marker');
+        $scope.$broadcast('observation:edit:vertex', layer.feature, e.target.getLatLng(), e.target._index);
+        $scope.$apply();
+      }
+    });
+
+    selectedVertex = selectedVertex || 0;
+    var group = layer.pm._markerGroup;
+    group.eachLayer(function(layer) {
+      if (layer._index === selectedVertex) {
+        L.DomUtil.addClass(layer.getElement(), 'selected-marker');
+      }
+    });
+
+    layer.on('pm:edit', function(event) {
+      $scope.$broadcast('observation:moved', layer.feature, event.target.toGeoJSON().geometry);
+      $scope.$apply();
+    });
+    layer.on('pm:markerdragend', function(event) {
       var group = layer.pm._markerGroup;
       group.eachLayer(function(layer) {
-        if (layer._index === selectedVertex) {
-          L.DomUtil.addClass(layer.getElement(), 'selected-marker');
-        }
+        L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
       });
-      layer.on('pm:edit', function(event) {
-        $scope.$broadcast('observation:moved', layer.feature, event.target.toGeoJSON().geometry);
-        $scope.$apply();
-      });
-      layer.on('pm:markerdragend', function(event) {
-        $scope.$broadcast('observation:edit:vertex', layer.feature, event.markerEvent.target.getLatLng(), event.markerEvent.target._index);
-        $scope.$apply();
-      });
-    }
+      selectedVertex = event.markerEvent.target._index;
+      L.DomUtil.addClass(event.markerEvent.target.getElement(), 'selected-marker');
+
+      $scope.$broadcast('observation:edit:vertex', layer.feature, event.markerEvent.target.getLatLng(), event.markerEvent.target._index);
+      $scope.$apply();
+    });
   }
 
   function onLayersChanged(changed) {
@@ -360,15 +428,19 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     });
 
     _.each(changed.editStarted, function(edit) {
-      var layer = layers['Observations'].featureIdToLayer[edit.id];
+      var groupName = 'Observations';
+      var layer = layers[groupName].featureIdToLayer[edit.id];
       if (!layer && layers['NewObservation']) {
-        layer = layers['NewObservation'].featureIdToLayer[edit.id];
+        groupName = 'NewObservation';
+        layer = layers[groupName].featureIdToLayer[edit.id];
       }
+      delete layers[groupName].featureIdToLayer[edit.id];
+      layers[groupName].layer.removeLayer(layer);
       enableEditable(layer);
     });
 
     _.each(changed.editComplete, function(editComplete) {
-      var layer = layers['Observations'].featureIdToLayer[editComplete.id];
+      var layer = layers['EditObservation'].featureIdToLayer[editComplete.id];
 
       if (layer.pm.enabled()) {
         layer.pm.disable();
@@ -376,7 +448,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       if (layer.dragging) {
         layer.dragging.disable();
       }
-      map.removeLayer(layer);
+      layers['EditObservation'].layer.removeLayer(layer);
       createGeoJsonForLayer(editComplete, layers['Observations']);
       layer = layers['Observations'].featureIdToLayer[editComplete.id];
       layers['Observations'].layer.addLayer(layer);
@@ -388,6 +460,9 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       if (!layer && layers['NewObservation']) {
         groupName = 'NewObservation';
         layer = layers[groupName].featureIdToLayer[updateIcon.id];
+      } else if (!layer && layers['EditObservation']) {
+        groupName = 'EditObservation';
+        layer = layers[groupName].featureIdToLayer[updateIcon.id];
       }
       if (!layer) {
         return;
@@ -398,11 +473,51 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       if (layer.pm.enabled()) {
         layer.pm.disable();
       }
-      map.removeLayer(layer);
+      layers[groupName].layer.removeLayer(layer);
+      delete layers[groupName].featureIdToLayer[updateIcon.id];
       createGeoJsonForLayer(feature, layers[groupName]);
       layer = layers[groupName].featureIdToLayer[updateIcon.id];
       layers[groupName].layer.addLayer(layer);
-      enableEditable(layer);
+      layer.setZIndexOffset(1000);
+
+      layer.dragging.enable();
+      layer.on('dragend', function(event) {
+        $scope.$broadcast('observation:moved', layer.feature, event.target.toGeoJSON().geometry);
+        $scope.$apply();
+      });
+    });
+
+    _.each(changed.updateShapeType, function(updateShapeType) {
+      var groupName = 'EditObservation';
+      var layer = layers[groupName].featureIdToLayer[updateShapeType.id];
+      if (!layer && layers['NewObservation']) {
+        groupName = 'NewObservation';
+        layer = layers[groupName].featureIdToLayer[updateShapeType.id];
+      }
+      if (!layer) {
+        return;
+      }
+
+      layers[groupName].layer.removeLayer(layer);
+
+      if (updateShapeType.marker.geometry.type === 'Point') {
+        var center = map.getCenter();
+        updateShapeType.marker.geometry.coordinates = [center.lng, center.lat];
+        var feature = layer.feature;
+        feature.geometry = updateShapeType.marker.geometry;
+        createGeoJsonForLayer(feature, layers[groupName]);
+        layer = layers[groupName].featureIdToLayer[updateShapeType.id];
+        layers[groupName].layer.addLayer(layer);
+        layer.setZIndexOffset(1000);
+
+        layer.dragging.enable();
+        layer.on('dragend', function(event) {
+          $scope.$broadcast('observation:moved', layer.feature, event.target.toGeoJSON().geometry);
+          $scope.$apply();
+        });
+      } else {
+        initiateShapeDraw(updateShapeType.marker.geometry.type === 'Polygon' ? 'Poly' : 'Line', layer);
+      }
     });
   }
 
@@ -420,6 +535,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
     _.each(changed.updated, function(feature) {
       var layer = featureLayer.featureIdToLayer[feature.id];
+      if (!layer) return;
 
       // Copy over the updated feature data
       if (layer.feature) {

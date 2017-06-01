@@ -44,6 +44,7 @@
     "leaflet-geosearch": "1.1.0",
     "exif-js": "~2.1.1",
     "papaparse": "~4.1.4",
-    "leaflet.pm": "^0.16.0"
+    "leaflet.pm": "^0.16.0",
+    "turfjs": "*"
   }
 }

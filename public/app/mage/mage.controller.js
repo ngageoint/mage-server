@@ -454,8 +454,8 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
       type: 'Feature',
       id: 'new', // this will be retrieved with the new id stuff
       geometry: {
-        type: 'Point',
-        coordinates: [latlng.lng, latlng.lat]
+        type: 'LineString',
+        coordinates: []
       },
       properties: {
         timestamp: new Date()
@@ -485,6 +485,10 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
 
   $scope.$on('observation:iconEdited', function(e, observation, iconUrl) {
     MapService.updateIcon(observation, iconUrl);
+  });
+
+  $scope.$on('observation:shapeChanged', function(e, observation) {
+    MapService.updateShapeType(observation, 'EditObservation');
   });
 
   $scope.$on('observation:editDone', function(e, observation) {

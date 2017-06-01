@@ -24,9 +24,11 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
   var uploadId = 0;
 
   if ($scope.observation) {
+    $scope.iconUrl = $scope.observation.style.iconUrl;
     $scope.event = EventService.getEventById($scope.observation.eventId);
     var editedVertex = 0;
     var geometryField = EventService.getFormField($scope.form, 'geometry');
+    $scope.shape = geometryField.value.type;
     updateGeometryEdit(geometryField, editedVertex);
     $scope.$emit('observation:editStarted', $scope.observation);
     $scope.$on('observation:moved', function(e, observation, geometry) {
@@ -43,10 +45,19 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
     });
     $scope.$watch('form', function() {
       var geometryField = EventService.getFormField($scope.form, 'geometry');
+
       var obs = {id: $scope.observation.id, geometry: geometryField.value};
       updateGeometryEdit(geometryField, editedVertex);
+      if (geometryField.value.type !== $scope.shape) {
+        $scope.shape = geometryField.value.type;
+        $scope.$emit('observation:shapeChanged', obs);
+      }
       var variantField = EventService.getFormField($scope.form, $scope.form.variantField);
-      $scope.$emit('observation:iconEdited', obs, ObservationService.getObservationIconUrlForEvent($scope.event.id, EventService.getFormField($scope.form, 'type').value, variantField ? variantField.value : ''));
+      var iconUrl = ObservationService.getObservationIconUrlForEvent($scope.event.id, EventService.getFormField($scope.form, 'type').value, variantField ? variantField.value : '');
+      if (iconUrl !== $scope.iconUrl) {
+        $scope.iconUrl = iconUrl;
+        $scope.$emit('observation:iconEdited', obs, ObservationService.getObservationIconUrlForEvent($scope.event.id, EventService.getFormField($scope.form, 'type').value, variantField ? variantField.value : ''));
+      }
     }, true);
   }
 
@@ -55,6 +66,7 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
   $scope.attachmentUploads = {};
 
   function updateGeometryEdit(geometryField, vertex) {
+    if (!geometryField.value.coordinates) return;
     geometryField.editedVertex = vertex;
     if (geometryField.value.type === 'LineString') {
       geometryField.edit = geometryField.value.coordinates[vertex];
