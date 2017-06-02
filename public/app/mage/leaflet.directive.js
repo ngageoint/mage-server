@@ -498,25 +498,46 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
         return;
       }
 
-      layers[groupName].layer.removeLayer(layer);
-
-      if (updateShapeType.marker.geometry.type === 'Point') {
-        var center = map.getCenter();
-        updateShapeType.marker.geometry.coordinates = [center.lng, center.lat];
-        var feature = layer.feature;
-        feature.geometry = updateShapeType.marker.geometry;
-        createGeoJsonForLayer(feature, layers[groupName]);
-        layer = layers[groupName].featureIdToLayer[updateShapeType.id];
-        layers[groupName].layer.addLayer(layer);
-        layer.setZIndexOffset(1000);
-
-        layer.dragging.enable();
-        layer.on('dragend', function(event) {
-          $scope.$broadcast('observation:moved', layer.feature, event.target.toGeoJSON().geometry);
-          $scope.$apply();
-        });
+      if (updateShapeType.marker.geometry.type === layer.feature.geometry.type) {
+        // update the shape coordinates
+        if (layer.feature.geometry.coordinates && !_.isEqual(updateShapeType.marker.geometry.coordinates, layer.feature.geometry.coordinates)) {
+          if(layer.feature.geometry.type === 'Point'){
+            layer.setLatLng(L.GeoJSON.coordsToLatLng(updateShapeType.marker.geometry.coordinates));
+            // // TODO fix, this is showing accuracy when a new location comes in.
+            // // this should only happen when the popup is openPopup
+            // if (featureLayer.options.showAccuracy && layer._popup._isOpen  && layer.getAccuracy()) {
+            //   layer.setAccuracy(layer.feature.properties.accuracy);
+            // }
+          } else {
+            layer.setLatLngs(L.GeoJSON.coordsToLatLngs(updateShapeType.marker.geometry.coordinates, updateShapeType.marker.geometry.type === 'Polygon' ? 1 : 0));
+            layer.off('pm:markerdragend');
+            layer.off('pm:edit');
+            layer.pm.disable();
+            initiateShapeEdit(layer);
+          }
+        }
       } else {
-        initiateShapeDraw(updateShapeType.marker.geometry.type === 'Polygon' ? 'Poly' : 'Line', layer);
+
+        layers[groupName].layer.removeLayer(layer);
+
+        if (updateShapeType.marker.geometry.type === 'Point') {
+          var center = map.getCenter();
+          updateShapeType.marker.geometry.coordinates = [center.lng, center.lat];
+          var feature = layer.feature;
+          feature.geometry = updateShapeType.marker.geometry;
+          createGeoJsonForLayer(feature, layers[groupName]);
+          layer = layers[groupName].featureIdToLayer[updateShapeType.id];
+          layers[groupName].layer.addLayer(layer);
+          layer.setZIndexOffset(1000);
+
+          layer.dragging.enable();
+          layer.on('dragend', function(event) {
+            $scope.$broadcast('observation:moved', layer.feature, event.target.toGeoJSON().geometry);
+            $scope.$apply();
+          });
+        } else {
+          initiateShapeDraw(updateShapeType.marker.geometry.type === 'Polygon' ? 'Poly' : 'Line', layer);
+        }
       }
     });
   }

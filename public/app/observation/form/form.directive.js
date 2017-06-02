@@ -41,6 +41,11 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
     $scope.$on('observation:edit:vertex', function(e, observation, latlng, index) {
       editedVertex = index;
       var geometryField = EventService.getFormField($scope.form, 'geometry');
+      if (geometryField.value.type === 'LineString') {
+        geometryField.value.coordinates[index] = [latlng.lng, latlng.lat];
+      } else if (geometryField.value.type === 'Polygon') {
+        geometryField.value.coordinates[0][index] = [latlng.lng, latlng.lat];
+      }
       updateGeometryEdit(geometryField, editedVertex);
     });
     $scope.$watch('form', function() {
@@ -48,10 +53,10 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
 
       var obs = {id: $scope.observation.id, geometry: geometryField.value};
       updateGeometryEdit(geometryField, editedVertex);
-      if (geometryField.value.type !== $scope.shape) {
-        $scope.shape = geometryField.value.type;
+      // if (geometryField.value.type !== $scope.shape) {
+      //   $scope.shape = geometryField.value.type;
         $scope.$emit('observation:shapeChanged', obs);
-      }
+      // }
       var variantField = EventService.getFormField($scope.form, $scope.form.variantField);
       var iconUrl = ObservationService.getObservationIconUrlForEvent($scope.event.id, EventService.getFormField($scope.form, 'type').value, variantField ? variantField.value : '');
       if (iconUrl !== $scope.iconUrl) {
