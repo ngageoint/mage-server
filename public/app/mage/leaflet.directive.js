@@ -132,6 +132,20 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     // cannot create another marker with the same id
     if (layers[marker.layerId]) return;
 
+    /*
+    if (!layers['EditObservation']) {
+      var editObservationLayer = {
+        name: 'EditObservation',
+        group: 'MAGE',
+        type: 'geojson',
+        options: {
+          selected: true
+        }
+      };
+      MapService.createVectorLayer(editObservationLayer);
+    }
+     */
+
     var newObservationLayer = {
       name: 'NewObservation',
       group: 'MAGE',
@@ -536,6 +550,14 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
             $scope.$apply();
           });
         } else {
+          if (layer.pm) {
+            layer.pm.disable();
+            layer.off('pm:markerdragend');
+            layer.off('pm:edit');
+          } else {
+            layer.off('dragend');
+            layer.dragging.disable();
+          }
           initiateShapeDraw(updateShapeType.marker.geometry.type === 'Polygon' ? 'Poly' : 'Line', layer);
         }
       }

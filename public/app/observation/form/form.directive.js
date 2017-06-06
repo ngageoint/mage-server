@@ -32,10 +32,12 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
     updateGeometryEdit(geometryField, editedVertex);
     $scope.$emit('observation:editStarted', $scope.observation);
     $scope.$on('observation:moved', function(e, observation, geometry) {
+      console.log('observation moved', arguments);
       if (!$scope.observation || !geometry) return;
 
       var geometryField = EventService.getFormField($scope.form, 'geometry');
-      geometryField.value = geometry;
+      var copy = JSON.parse(JSON.stringify(geometry));
+      geometryField.value = copy;
       updateGeometryEdit(geometryField, editedVertex);
     });
     $scope.$on('observation:edit:vertex', function(e, observation, latlng, index) {
@@ -50,13 +52,14 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
     });
     $scope.$watch('form', function() {
       var geometryField = EventService.getFormField($scope.form, 'geometry');
-
-      var obs = {id: $scope.observation.id, geometry: geometryField.value};
+      var copy = JSON.parse(JSON.stringify(geometryField));
+      var obs = {id: $scope.observation.id, geometry: copy.value};
+      console.log('obs from form', obs);
       updateGeometryEdit(geometryField, editedVertex);
       // if (geometryField.value.type !== $scope.shape) {
       //   $scope.shape = geometryField.value.type;
-        $scope.$emit('observation:shapeChanged', obs);
       // }
+      $scope.$emit('observation:shapeChanged', obs);
       var variantField = EventService.getFormField($scope.form, $scope.form.variantField);
       var iconUrl = ObservationService.getObservationIconUrlForEvent($scope.event.id, EventService.getFormField($scope.form, 'type').value, variantField ? variantField.value : '');
       if (iconUrl !== $scope.iconUrl) {
