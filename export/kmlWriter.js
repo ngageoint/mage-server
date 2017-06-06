@@ -84,15 +84,15 @@ KmlWriter.prototype.generateKMLFolderStart = function(name) {
   return "<Folder>" + "<name>" + name + "</name>";
 };
 
-KmlWriter.prototype.generateObservationPlacemark = function(name, observation, event, variant) {
-  var timestamp = generateTimestamp(observation.properties.timestamp);
+KmlWriter.prototype.generateObservationPlacemark = function(type, observation, timestamp, event, variant) {
+  var observationTimestamp = generateTimestamp(timestamp);
   var description = generateDescription(observation);
 
   var styles = [];
   if (event) {
     styles.push(event._id.toString());
-    if (observation.properties.type) {
-      styles.push(observation.properties.type);
+    if (type) {
+      styles.push(type);
       if (variant) {
         styles.push(variant);
       }
@@ -102,7 +102,7 @@ KmlWriter.prototype.generateObservationPlacemark = function(name, observation, e
   var style = '#' + styles.join('-');
   var coordinates = generatePlacemarkCoordinates(observation);
 
-  return generatePlacemarkElement(name, style, coordinates, timestamp, description);
+  return generatePlacemarkElement(type, style, coordinates, observationTimestamp, description);
 };
 
 KmlWriter.prototype.generateLocationPlacemark = function(user, location) {

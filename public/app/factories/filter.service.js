@@ -212,12 +212,13 @@ function FilterService(UserService) {
 
     var time = formatInterval(interval);
     if (time) {
+      var properties = o.properties;
       if (time.start && time.end) {
-        if (!moment(o.timestamp).isBetween(time.start, time.end)) return false;
+        if (!moment(properties.timestamp).isBetween(time.start, time.end)) return false;
       } else if (time.start) {
-        if (!moment(o.timestamp).isAfter(time.start)) return false;
+        if (!moment(properties.timestamp).isAfter(time.start)) return false;
       } else if (time.end) {
-        if (!moment(o.timestamp).isBefore(time.start)) return false;
+        if (!moment(properties.timestamp).isBefore(time.start)) return false;
       }
     }
 

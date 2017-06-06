@@ -82,8 +82,10 @@ Kml.prototype.streamObservations = function(stream, archive, done) {
 
       observations.forEach(function(o) {
         var variant = o.properties[self._event.form.variantField];
+        var timestamp = o.properties.timestamp;
+        var type = o.properties.type;
         self.mapObservations(o);
-        stream.write(writer.generateObservationPlacemark(o.properties.type, o, self._event, variant));
+        stream.write(writer.generateObservationPlacemark(type, o, timestamp, self._event, variant));
 
         o.attachments.forEach(function(attachment) {
           archive.file(path.join(attachmentBase, attachment.relativePath), {name: attachment.relativePath});
@@ -120,9 +122,11 @@ Kml.prototype.streamUserLocations = function(stream, archive, user, done) {
         stream.write(writer.generateKMLFolderStart('user: ' + user.username, false));
       }
 
+      var locationString = "";
       locations.forEach(function(location) {
-        stream.write(writer.generateLocationPlacemark(user, location));
+        locationString += writer.generateLocationPlacemark(user, location);
       });
+      stream.write(locationString);
 
       log.info('Successfully wrote ' + locations.length + ' locations to KML for user ' + user.username);
       var last = locations.slice(-1).pop();
