@@ -1,0 +1,38 @@
+<div class="modal-header">
+  <h4 class="modal-title">Symbology<span ng-if="model.primary"> for {{model.primary}} {{model.variant}}</span></h4>
+</div>
+
+<div class="modal-body admin-option-modal-content">
+
+  <div class="row" style="min-height: 200px">
+    <div class="col-md-4 text-center">
+      <strong>Point Icon</strong>
+      <form
+        type="button"
+        enctype="multipart/form-data"
+        file-upload url="{{uploadUrl}}"
+        allow-upload="updateStyle"
+        preview="true"
+        upload-file-form-name="'icon'">
+      </form>
+    </div>
+    <div class="col-md-4">
+      <strong>Line Color</strong>
+      <div><input minicolors="minicolorSettings" class="form-control" type="text" ng-model="model.style.stroke"></div>
+      <strong>Line Opacity</strong>
+      <div><input class="form-control" type="text" ng-model="model.style.strokeOpacity"></div>
+    </div>
+    <div class="col-md-4">
+      <strong>Fill Color</strong>
+      <div><input minicolors="minicolorSettings" class="form-control" type="text" ng-model="model.style.fill"></div>
+      <strong>Fill Opacity</strong>
+      <div><input class="form-control" type="text" ng-model="model.style.fillOpacity"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-default" ng-click="cancel()" ngm-tap="cancel()">Cancel</button>
+  <button class="btn btn-primary" ng-click="done()">Set Symbology</button>
+</div>

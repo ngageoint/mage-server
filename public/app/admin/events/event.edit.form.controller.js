@@ -17,6 +17,14 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
   Event.get({id: $routeParams.eventId}, function(event) {
     $scope.event = event;
 
+    $scope.event.form.style = $scope.event.form.style || {
+      fill: '#5278A2',
+      stroke: '#5278A2',
+      fillOpacity: 0.2,
+      strokeOpacity: 1,
+      strokeWidth: 2
+    };
+
     _.each(event.form.fields, function(field) {
       if (field.name === 'type') {
         $scope.typeField = field;
@@ -373,6 +381,73 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
       field.choices = choices;
     });
   };
+
+  $scope.updateSymbology = function(primary, variant) {
+    var eventId = $scope.event.id;
+    var token = $scope.token;
+    var style = $scope.event.form.style;
+
+    if (primary) {
+      $scope.event.form.style[primary] = $scope.event.form.style[primary] || {
+        fill: $scope.event.form.style.fill,
+        stroke: $scope.event.form.style.stroke,
+        fillOpacity: $scope.event.form.style.fillOpacity,
+        strokeOpacity: $scope.event.form.style.strokeOpacity,
+        strokeWidth: $scope.event.form.style.strokeWidth
+      };
+      style = $scope.event.form.style[primary];
+    }
+    if (variant) {
+      $scope.event.form.style[primary][variant] = $scope.event.form.style[primary][variant] || {
+        fill: $scope.event.form.style[primary].fill,
+        stroke: $scope.event.form.style[primary].stroke,
+        fillOpacity: $scope.event.form.style[primary].fillOpacity,
+        strokeOpacity: $scope.event.form.style[primary].strokeOpacity,
+        strokeWidth: $scope.event.form.style[primary].strokeWidth
+      };
+      style = $scope.event.form.style[primary][variant];
+    }
+
+    var styleProps = {
+      fill: style.fill,
+      stroke: style.stroke,
+      fillOpacity: style.fillOpacity,
+      strokeOpacity: style.strokeOpacity,
+      strokeWidth: style.strokeWidth
+    };
+
+    var modalInstance = $uibModal.open({
+      templateUrl: '/app/admin/events/event.symbology.chooser.html',
+      controller: ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
+        $scope.model = {
+          primary: primary,
+          variant: variant,
+          style: styleProps
+        };
+        $scope.minicolorSettings = {
+          position: 'bottom left'
+        };
+        $scope.uploadUrl = '/api/events/' + eventId + '/form/icons' + (primary ? '/' + primary : '') + (variant ? '/' + variant : '')  + '?access_token=' + token;
+
+        $scope.done = function() {
+          $scope.updateStyle = true;
+          $uibModalInstance.close($scope.model.style);
+        };
+
+        $scope.cancel = function () {
+          $uibModalInstance.dismiss('cancel');
+        };
+      }]
+    });
+
+    modalInstance.result.then(function (updatedStyle) {
+      style.fill = updatedStyle.fill;
+      style.stroke = updatedStyle.stroke;
+      style.fillOpacity = updatedStyle.fillOpacity;
+      style.strokeOpacity = updatedStyle.strokeOpacity;
+      style.strokeWidth = updatedStyle.strokeWidth;
+    });
+  }
 
   // delete particular option
   $scope.deleteOption = function (field, option) {

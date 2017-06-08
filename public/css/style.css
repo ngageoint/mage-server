@@ -778,6 +778,19 @@ h4.image-delete {
 	width: 35px;
 }
 
+.symbology-card {
+  text-align: center;
+}
+
+.symbology-card:before {
+  font-family: FontAwesome;
+  content: '\f040';
+  font-size: 1.2em;
+  position: absolute;
+  right: 10px;
+  top: -10px;
+}
+
 .center-crop {
   object-fit: cover;
 }
