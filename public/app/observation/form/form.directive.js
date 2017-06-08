@@ -29,10 +29,11 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
     var editedVertex = 0;
     var geometryField = EventService.getFormField($scope.form, 'geometry');
     $scope.shape = geometryField.value.type;
+    var copy = JSON.parse(JSON.stringify(geometryField.value));
+    geometryField.value = copy;
     updateGeometryEdit(geometryField, editedVertex);
     $scope.$emit('observation:editStarted', $scope.observation);
     $scope.$on('observation:moved', function(e, observation, geometry) {
-      console.log('observation moved', arguments);
       if (!$scope.observation || !geometry) return;
 
       var geometryField = EventService.getFormField($scope.form, 'geometry');
@@ -54,17 +55,28 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
       var geometryField = EventService.getFormField($scope.form, 'geometry');
       var copy = JSON.parse(JSON.stringify(geometryField));
       var obs = {id: $scope.observation.id, geometry: copy.value};
-      console.log('obs from form', obs);
+      if (copy.value.type === 'Polygon' && copy.value.coordinates[0].length > 0) {
+        if (copy.value.coordinates[0][0][0] !== copy.value.coordinates[0][copy.value.coordinates[0].length-1][0]
+        || copy.value.coordinates[0][0][1] !== copy.value.coordinates[0][copy.value.coordinates[0].length-1][1]) {
+          return;
+        }
+      } else if (copy.value.type === 'LineString' && copy.value.coordinates.length > 0) {
+        if (copy.value.coordinates[0][0] !== copy.value.coordinates[copy.value.coordinates.length-1][0]
+        || copy.value.coordinates[0][1] !== copy.value.coordinates[copy.value.coordinates.length-1][1]) {
+          return;
+        }
+      }
       updateGeometryEdit(geometryField, editedVertex);
-      // if (geometryField.value.type !== $scope.shape) {
-      //   $scope.shape = geometryField.value.type;
-      // }
+      if (geometryField.value.type !== $scope.shape) {
+        $scope.shape = geometryField.value.type;
+        editedVertex = 0;
+      }
       $scope.$emit('observation:shapeChanged', obs);
       var variantField = EventService.getFormField($scope.form, $scope.form.variantField);
       var iconUrl = ObservationService.getObservationIconUrlForEvent($scope.event.id, EventService.getFormField($scope.form, 'type').value, variantField ? variantField.value : '');
       if (iconUrl !== $scope.iconUrl) {
         $scope.iconUrl = iconUrl;
-        $scope.$emit('observation:iconEdited', obs, ObservationService.getObservationIconUrlForEvent($scope.event.id, EventService.getFormField($scope.form, 'type').value, variantField ? variantField.value : ''));
+        $scope.$emit('observation:iconEdited', obs, iconUrl);
       }
     }, true);
   }
@@ -79,7 +91,9 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
     if (geometryField.value.type === 'LineString') {
       geometryField.edit = geometryField.value.coordinates[vertex];
     } else if (geometryField.value.type === 'Polygon') {
-      geometryField.edit = geometryField.value.coordinates[0][vertex];
+      if (geometryField.value.coordinates[0]) {
+        geometryField.edit = geometryField.value.coordinates[0][vertex];
+      }
     }
   }
 

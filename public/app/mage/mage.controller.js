@@ -454,8 +454,8 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
       type: 'Feature',
       id: 'new', // this will be retrieved with the new id stuff
       geometry: {
-        type: 'LineString',
-        coordinates: []
+        type: 'Point',
+        coordinates: [latlng.lng, latlng.lat]
       },
       properties: {
         timestamp: new Date()
@@ -466,17 +466,13 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
     });
 
     MapService.createMarker(newObservation, {
-      layerId: 'NewObservation',
-      selected: true,
-      draggable: true,
-      onDragEnd: function(latlng) {
-        $scope.$broadcast('observation:moved', newObservation, latlng);
-        $scope.$apply();
-      }
+      layerId: 'Observations'
     });
 
     $scope.$broadcast('observation:new', newObservation);
     $scope.$apply();
+
+    MapService.startedMarkerEdit(newObservation);
   });
 
   $scope.$on('observation:editStarted', function(e, observation) {
@@ -493,7 +489,7 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
 
   $scope.$on('observation:editDone', function(e, observation) {
     if (newObservation === observation) {
-      MapService.removeMarker(observation, 'NewObservation');
+      MapService.removeMarker(observation, 'EditObservation');
     } else {
       MapService.stopEditing(observation);
     }
@@ -503,7 +499,7 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
 
   $scope.$on('observation:move', function(e, observation, latlng) {
     $scope.$broadcast('observation:moved', observation, latlng);
-    MapService.updateMarker(observation, 'NewObservation');
+    MapService.updateMarker(observation, 'EditObservation');
   });
 
   $scope.$on('feed:toggle', function() {

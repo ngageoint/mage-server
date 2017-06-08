@@ -132,7 +132,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     // cannot create another marker with the same id
     if (layers[marker.layerId]) return;
 
-    /*
     if (!layers['EditObservation']) {
       var editObservationLayer = {
         name: 'EditObservation',
@@ -144,10 +143,9 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       };
       MapService.createVectorLayer(editObservationLayer);
     }
-     */
 
     var newObservationLayer = {
-      name: 'NewObservation',
+      name: 'EditObservation',
       group: 'MAGE',
       type: 'geojson',
       options: {
@@ -156,9 +154,9 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     };
     MapService.createVectorLayer(newObservationLayer);
 
-    createGeoJsonForLayer(marker, layers['NewObservation']);
-    layer = layers['NewObservation'].featureIdToLayer[marker.id];
-    layers['NewObservation'].layer.addLayer(layer);
+    createGeoJsonForLayer(marker, layers['EditObservation']);
+    layer = layers['EditObservation'].featureIdToLayer[marker.id];
+    layers['EditObservation'].layer.addLayer(layer);
   }
 
   function updateMarker(marker, layerId) {
@@ -361,7 +359,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       newLayer.feature = layer.feature;
       newLayer.feature.geometry = gj.geometry;
       initiateShapeEdit(newLayer);
-      $scope.$broadcast('observation:moved', newLayer.feature, gj.geometry);
+      $scope.$broadcast('observation:moved', newLayer.feature, newLayer.toGeoJSON().geometry);
       // $scope.$broadcast('observation:edit:vertex', newLayer.feature, gj.geometry, 0);
       $scope.$apply();
     });
@@ -393,10 +391,12 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     });
 
     layer.on('pm:edit', function(event) {
+      console.log('pm edit');
       $scope.$broadcast('observation:moved', layer.feature, event.target.toGeoJSON().geometry);
       $scope.$apply();
     });
     layer.on('pm:markerdragend', function(event) {
+      console.log('pm marker drag end');
       var group = layer.pm._markerGroup;
       group.eachLayer(function(layer) {
         L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
@@ -444,8 +444,8 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     _.each(changed.editStarted, function(edit) {
       var groupName = 'Observations';
       var layer = layers[groupName].featureIdToLayer[edit.id];
-      if (!layer && layers['NewObservation']) {
-        groupName = 'NewObservation';
+      if (!layer && layers['EditObservation']) {
+        groupName = 'EditObservation';
         layer = layers[groupName].featureIdToLayer[edit.id];
       }
       delete layers[groupName].featureIdToLayer[edit.id];
@@ -469,6 +469,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     });
 
     _.each(changed.updateIcon, function(updateIcon) {
+      if (updateIcon.marker.geometry.type !== 'Point') return;
       var groupName = 'Observations';
       var layer = layers[groupName].featureIdToLayer[updateIcon.id];
       if (!layer && layers['NewObservation']) {
@@ -512,27 +513,44 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
         return;
       }
 
+      console.log('layer.feature.geometry.type', layer.feature.geometry.type);
+      console.log('updateShapeType.marker.geometry.type', updateShapeType.marker.geometry.type);
       if (updateShapeType.marker.geometry.type === layer.feature.geometry.type) {
         // update the shape coordinates
         if (layer.feature.geometry.coordinates && !_.isEqual(updateShapeType.marker.geometry.coordinates, layer.feature.geometry.coordinates)) {
-          if(layer.feature.geometry.type === 'Point'){
-            layer.setLatLng(L.GeoJSON.coordsToLatLng(updateShapeType.marker.geometry.coordinates));
-            // // TODO fix, this is showing accuracy when a new location comes in.
-            // // this should only happen when the popup is openPopup
-            // if (featureLayer.options.showAccuracy && layer._popup._isOpen  && layer.getAccuracy()) {
-            //   layer.setAccuracy(layer.feature.properties.accuracy);
-            // }
-          } else {
-            layer.setLatLngs(L.GeoJSON.coordsToLatLngs(updateShapeType.marker.geometry.coordinates, updateShapeType.marker.geometry.type === 'Polygon' ? 1 : 0));
-            layer.off('pm:markerdragend');
-            layer.off('pm:edit');
-            layer.pm.disable();
-            initiateShapeEdit(layer);
+          try {
+            if(layer.feature.geometry.type === 'Point'){
+              layer.setLatLng(L.GeoJSON.coordsToLatLng(updateShapeType.marker.geometry.coordinates));
+              // // TODO fix, this is showing accuracy when a new location comes in.
+              // // this should only happen when the popup is openPopup
+              // if (featureLayer.options.showAccuracy && layer._popup._isOpen  && layer.getAccuracy()) {
+              //   layer.setAccuracy(layer.feature.properties.accuracy);
+              // }
+            } else {
+              var geojson = L.GeoJSON.coordsToLatLngs(updateShapeType.marker.geometry.coordinates, updateShapeType.marker.geometry.type === 'Polygon' ? 1 : 0);
+              layer.setLatLngs(geojson);
+              layer.off('pm:markerdragend');
+              layer.off('pm:edit');
+              layer.pm.disable();
+              initiateShapeEdit(layer);
+            }
+          } catch (e) {
+            console.log('exception setting lat lngs', e);
           }
         }
       } else {
 
+        map.pm.disableDraw(layer.feature.geometry.type === 'Polygon' ? 'Poly' : 'Line');
+
         layers[groupName].layer.removeLayer(layer);
+        if (layer.pm) {
+          layer.pm.disable();
+          layer.off('pm:markerdragend');
+          layer.off('pm:edit');
+        } else {
+          layer.off('dragend');
+          layer.dragging.disable();
+        }
 
         if (updateShapeType.marker.geometry.type === 'Point') {
           var center = map.getCenter();
@@ -549,15 +567,11 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
             $scope.$broadcast('observation:moved', layer.feature, event.target.toGeoJSON().geometry);
             $scope.$apply();
           });
+
+          $scope.$broadcast('observation:moved', layer.feature, layer.toGeoJSON().geometry);
         } else {
-          if (layer.pm) {
-            layer.pm.disable();
-            layer.off('pm:markerdragend');
-            layer.off('pm:edit');
-          } else {
-            layer.off('dragend');
-            layer.dragging.disable();
-          }
+          var feature = layer.feature;
+          feature.geometry = updateShapeType.marker.geometry;
           initiateShapeDraw(updateShapeType.marker.geometry.type === 'Polygon' ? 'Poly' : 'Line', layer);
         }
       }
