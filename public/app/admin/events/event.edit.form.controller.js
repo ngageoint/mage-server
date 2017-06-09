@@ -6,13 +6,17 @@ AdminEventEditFormController.$inject = ['$rootScope', '$scope', '$location', '$f
 
 function AdminEventEditFormController($rootScope, $scope, $location, $filter, $routeParams, $q, $timeout, $uibModal, LocalStorageService, EventService, Event) {
   $scope.unSavedChanges = false;
+  $scope.unSavedUploads = false;
   $scope.token = LocalStorageService.getToken();
 
   var formSaved = false;
   var unsavedIcons = 0;
   $scope.uploadIcons = false;
+  $scope.filesToUpload = {};
 
   $scope.saveTime = 0;
+
+  var originalForm;
 
   Event.get({id: $routeParams.eventId}, function(event) {
     $scope.event = event;
@@ -32,10 +36,16 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     $scope.unSavedChanges = true;
   }, true);
 
-  $scope.$on('uploadFile', function() {
-    $scope.unSavedChanges = true;
-
-    unsavedIcons++;
+  $scope.$watchCollection('filesToUpload', function() {
+    if ($scope.filesToUpload && Object.keys($scope.filesToUpload).length > 0) {
+      unsavedIcons = Object.keys($scope.filesToUpload).length;
+      $scope.unSavedUploads = true;
+    } else {
+      if (!$scope.saving) {
+        $scope.unSavedChanges = false;
+      }
+      $scope.unSavedUploads = false;
+    }
   });
 
   $scope.$on('uploadComplete', function() {
@@ -204,7 +214,10 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
 
   var debouncedAutoSave = _.debounce(function() {
     $scope.$apply(function() {
-      $scope.saving = false;
+      for (var url in $scope.filesToUpload) {
+        var file = $scope.filesToUpload[url];
+        upload(url, file);
+      }
       $scope.event.$save({populate: false}, function(event) {
         _.each(event.form.fields, function(field) {
           if ($scope.isMemberField(field)) {
@@ -212,12 +225,40 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
           }
         });
         $scope.event = event;
-
+        $scope.saving = false;
         formSaved = true;
         completeSave();
       });
     });
   }, 1000);
+
+  var upload = function(url, file) {
+
+    var formData = new FormData();
+    formData.append('icon', file);
+
+    $.ajax({
+      url: url,
+      type: 'POST',
+      xhr: function() {
+        var myXhr = $.ajaxSettings.xhr();
+        return myXhr;
+      },
+      success: function() {
+        $scope.$apply(function(){
+          delete $scope.filesToUpload[url];
+          // unsavedIcons--;
+          completeSave();
+          $scope.savedTime = Date.now();
+        })
+      },
+      // error: uploadFailed,
+      data: formData,
+      cache: false,
+      contentType: false,
+      processData: false
+    });
+  };
 
   $scope.$on('uploadComplete', function() {
     $scope.savedTime = Date.now();
@@ -378,6 +419,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     var eventId = $scope.event.id;
     var token = $scope.token;
     var style = $scope.event.form.style;
+    var filesToUpload = $scope.filesToUpload;
 
     if (primary) {
       $scope.event.form.style[primary] = $scope.event.form.style[primary] || {
@@ -410,7 +452,9 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
 
     var modalInstance = $uibModal.open({
       templateUrl: '/app/admin/events/event.symbology.chooser.html',
+      scope: $scope,
       controller: ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
+        var fileToUpload;
         $scope.model = {
           primary: primary,
           variant: variant,
@@ -421,25 +465,53 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
         };
         $scope.uploadUrl = '/api/events/' + eventId + '/form/icons' + (primary ? '/' + primary : '') + (variant ? '/' + variant : '')  + '?access_token=' + token;
 
+        $scope.$on('uploadFile', function(e, uploadId, file, url) {
+          fileToUpload = file;
+        });
+
         $scope.done = function() {
-          $scope.updateStyle = true;
-          $uibModalInstance.close($scope.model.style);
+
+          $uibModalInstance.close({style:$scope.model.style, file: fileToUpload, uploadUrl: $scope.uploadUrl});
         };
 
         $scope.cancel = function () {
-          $uibModalInstance.dismiss('cancel');
+          $uibModalInstance.dismiss({reason:'cancel', url:$scope.uploadUrl});
         };
       }]
     });
 
-    modalInstance.result.then(function (updatedStyle) {
+    modalInstance.result.then(function (result) {
+      var updatedStyle = result.style;
+      var file = result.file;
+      var url = result.uploadUrl;
+
       style.fill = updatedStyle.fill;
       style.stroke = updatedStyle.stroke;
       style.fillOpacity = updatedStyle.fillOpacity;
       style.strokeOpacity = updatedStyle.strokeOpacity;
       style.strokeWidth = updatedStyle.strokeWidth;
+      var reader = new FileReader();
+
+      reader.onload = (function(theFile) {
+        return function(e) {
+          $scope.uploadImageMissing = false;
+          $scope.$apply();
+          var img = $('img[src*="'+url+'"]').first();
+          img.attr('src',e.target.result);
+        };
+      })(file);
+
+      reader.readAsDataURL(file);
+    }, function(result) {
+      // rejected
+      delete filesToUpload[result.url];
     });
   }
+
+  $scope.$on('uploadFile', function(e, uploadId, file, url) {
+    $scope.filesToUpload[url] = file;
+
+  });
 
   // delete particular option
   $scope.deleteOption = function (field, option) {

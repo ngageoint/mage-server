@@ -351,10 +351,10 @@
                       <div class="col-md-12"><strong>Default Symbology<strong></div>
                     </div>
                     <img class="preview-image" width="100%" ng-src="{{'/api/events/' + event.id + '/form/icons?access_token=' + token + '&_dc=' + savedTime}}"/>
-                    <div>
+                    <div class="shape-style">
                       <div style-preview="event.form.style" type="Polygon"></div>
                     </div>
-                    <div>
+                    <div class="shape-style">
                       <div style-preview="event.form.style" type="LineString"></div>
                     </div>
                   </div>
@@ -419,10 +419,10 @@
                         <div class="col-md-12">Default</div>
                       </div>
                       <img class="preview-image" width="100%" ng-src="{{'/api/events/' + event.id + '/form/icons/' + option.title + '?access_token=' + token + '&_dc=' + savedTime}}"/>
-                      <div>
+                      <div class="shape-style">
                         <div style-preview="event.form.style" type="Polygon" primary="option.title"></div>
                       </div>
-                      <div>
+                      <div class="shape-style">
                         <div style-preview="event.form.style" type="LineString" primary="option.title"></div>
                       </div>
                     </div>
@@ -447,10 +447,10 @@
                           </div>
                         </div>
                         <img class="preview-image" width="100%" ng-src="{{'/api/events/' + event.id + '/form/icons/' + option.title + '/' + variant.title + '?access_token=' + token + '&_dc=' + savedTime}}"/>
-                        <div>
+                        <div class="shape-style">
                           <div style-preview="event.form.style" type="Polygon" primary="option.title" variant="variant.title"></div>
                         </div>
-                        <div>
+                        <div class="shape-style">
                           <div style-preview="event.form.style" type="LineString" primary="option.title" variant="variant.title"></div>
                         </div>
                       </div>
@@ -471,8 +471,8 @@
   <div class="container" ng-if="event">
     <div class="row">
       <div class="col-xs-12">
-        <button class="btn btn-success pull-right" ng-if="unSavedChanges && !saving" ng-click="saveForm(event)" ng-disabled="form.fields.$invalid">Save Form</button>
-        <button class="btn btn-success pull-right" ng-if="!unSavedChanges && !saving" disabled="disabled">Save Form</button>
+        <button class="btn btn-success pull-right" ng-if="(unSavedChanges || unSavedUploads) && !saving" ng-click="saveForm(event)" ng-disabled="form.fields.$invalid">Save Form</button>
+        <button class="btn btn-success pull-right" ng-if="!unSavedUploads && !unSavedChanges && !saving" disabled="disabled">Save Form</button>
         <button class="btn btn-success pull-right" ng-if="saving" disabled="disabled"><i class="fa fa-spinner fa-spin"></i> Saving Form</button>
       </div>
     </div>

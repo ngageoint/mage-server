@@ -46,7 +46,7 @@ function FileUploadController($scope, $element) {
       previewFile($scope.file, element);
     }
     $scope.$apply(function() {
-      $scope.$emit('uploadFile', $scope.uploadId);
+      $scope.$emit('uploadFile', $scope.uploadId, $scope.file, $scope.url);
     });
     upload();
   });
