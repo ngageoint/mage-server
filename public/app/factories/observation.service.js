@@ -172,7 +172,8 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
         color: eventStyle.stroke,
         fillColor: eventStyle.fill,
         fillOpacity: eventStyle.fillOpacity,
-        opacity: eventStyle.strokeOpacity
+        opacity: eventStyle.strokeOpacity,
+        weight: eventStyle.strokeWidth
       };
     } else if (!variant) {
       if (eventStyle[primary]) {
@@ -180,14 +181,16 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
           color: eventStyle[primary].stroke,
           fillColor: eventStyle[primary].fill,
           fillOpacity: eventStyle[primary].fillOpacity,
-          opacity: eventStyle[primary].strokeOpacity
+          opacity: eventStyle[primary].strokeOpacity,
+          weight: eventStyle[primary].strokeWidth
         };
       } else {
         return {
           color: eventStyle.stroke,
           fillColor: eventStyle.fill,
           fillOpacity: eventStyle.fillOpacity,
-          opacity: eventStyle.strokeOpacity
+          opacity: eventStyle.strokeOpacity,
+          weight: eventStyle.strokeWidth
         };
       }
     } else {
@@ -196,21 +199,24 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
           color: eventStyle[primary][variant].stroke,
           fillColor: eventStyle[primary][variant].fill,
           fillOpacity: eventStyle[primary][variant].fillOpacity,
-          opacity: eventStyle[primary][variant].strokeOpacity
+          opacity: eventStyle[primary][variant].strokeOpacity,
+          weight: eventStyle[primary][variant].strokeWidth
         };
       } else if (eventStyle[primary]) {
         return {
           color: eventStyle[primary].stroke,
           fillColor: eventStyle[primary].fill,
           fillOpacity: eventStyle[primary].fillOpacity,
-          opacity: eventStyle[primary].strokeOpacity
+          opacity: eventStyle[primary].strokeOpacity,
+          weight: eventStyle[primary].strokeWidth
         };
       } else {
         return {
           color: eventStyle.stroke,
           fillColor: eventStyle.fill,
           fillOpacity: eventStyle.fillOpacity,
-          opacity: eventStyle.strokeOpacity
+          opacity: eventStyle.strokeOpacity,
+          weight: eventStyle.strokeWidth
         };
       }
     }
@@ -218,7 +224,8 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
       color: eventStyle.stroke,
       fillColor: eventStyle.fill,
       fillOpacity: eventStyle.fillOpacity,
-      opacity: eventStyle.strokeOpacity
+      opacity: eventStyle.strokeOpacity,
+      weight: eventStyle.strokeWidth
     };
   }
 

@@ -19,14 +19,16 @@
     <div class="col-md-4">
       <strong>Line Color</strong>
       <div><input minicolors="minicolorSettings" class="form-control" type="text" ng-model="model.style.stroke"></div>
-      <strong>Line Opacity</strong>
-      <div><input class="form-control" type="text" ng-model="model.style.strokeOpacity"></div>
+      <strong>Line Opacity (0.0 - 1.0)</strong>
+      <div><input class="form-control" type="number" ng-model="model.style.strokeOpacity"></div>
+      <strong>Line Width</strong>
+      <div><input class="form-control" type="number" ng-model="model.style.strokeWidth"></div>
     </div>
     <div class="col-md-4">
       <strong>Fill Color</strong>
       <div><input minicolors="minicolorSettings" class="form-control" type="text" ng-model="model.style.fill"></div>
-      <strong>Fill Opacity</strong>
-      <div><input class="form-control" type="text" ng-model="model.style.fillOpacity"></div>
+      <strong>Fill Opacity (0.0 - 1.0)</strong>
+      <div><input class="form-control" type="number" ng-model="model.style.fillOpacity"></div>
     </div>
   </div>
 
