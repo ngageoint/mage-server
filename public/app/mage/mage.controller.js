@@ -61,6 +61,10 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
     options: {
       selected: true,
       cluster: true,
+      style: function(feature) {
+        console.log('feature', feature);
+        return {};
+      },
       popup: {
         html: function(observation) {
           var el = angular.element('<div observation-popup="observation" observation-popup-info="onInfo(observation)" observation-zoom="onZoom(observation)"></div>');

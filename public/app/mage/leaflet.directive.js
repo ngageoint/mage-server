@@ -513,8 +513,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
         return;
       }
 
-      console.log('layer.feature.geometry.type', layer.feature.geometry.type);
-      console.log('updateShapeType.marker.geometry.type', updateShapeType.marker.geometry.type);
       if (updateShapeType.marker.geometry.type === layer.feature.geometry.type) {
         // update the shape coordinates
         if (layer.feature.geometry.coordinates && !_.isEqual(updateShapeType.marker.geometry.coordinates, layer.feature.geometry.coordinates)) {

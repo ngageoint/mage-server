@@ -17,14 +17,6 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
   Event.get({id: $routeParams.eventId}, function(event) {
     $scope.event = event;
 
-    $scope.event.form.style = $scope.event.form.style || {
-      fill: '#5278A2',
-      stroke: '#5278A2',
-      fillOpacity: 0.2,
-      strokeOpacity: 1,
-      strokeWidth: 2
-    };
-
     _.each(event.form.fields, function(field) {
       if (field.name === 'type') {
         $scope.typeField = field;
