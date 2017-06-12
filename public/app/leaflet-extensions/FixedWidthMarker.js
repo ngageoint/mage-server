@@ -5,6 +5,7 @@ L.FixedWidthMarker = L.Marker.extend({
     if (options.iconUrl) {
       options.icon = L.fixedWidthIcon({
         iconUrl: options.iconUrl,
+        tooltip: options.tooltip,
         onIconLoad: function() {
           if (self._popup && self._icon) {
             self._popup.options.offset = [0, self._icon.offsetTop + 10];

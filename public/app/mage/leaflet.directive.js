@@ -154,7 +154,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     };
     MapService.createVectorLayer(newObservationLayer);
 
-    createGeoJsonForLayer(marker, layers['EditObservation']);
+    createGeoJsonForLayer(marker, layers['EditObservation'], true);
     layer = layers['EditObservation'].featureIdToLayer[marker.id];
     layers['EditObservation'].layer.addLayer(layer);
   }
@@ -201,7 +201,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     return bucket ? bucket.color : null;
   }
 
-  function createGeoJsonForLayer(json, layerInfo) {
+  function createGeoJsonForLayer(json, layerInfo, editMode) {
     var popup = layerInfo.options.popup;
 
     var geojson = L.geoJson(json, {
@@ -254,6 +254,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
           if (feature.style && feature.style.iconUrl) {
             options.iconUrl = feature.style.iconUrl;
           }
+          options.tooltip = editMode;
           return L.fixedWidthMarker(latlng, options);
         }
       },
@@ -314,6 +315,17 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     if (layer.feature.geometry.type === 'Point') {
       layer.setZIndexOffset(1000);
 
+      layer.setIcon(L.fixedWidthIcon({
+        iconUrl: layer.feature.style.iconUrl,
+        tooltip: true,
+        onIconLoad: function() {
+          if (self._popup && self._icon) {
+            self._popup.options.offset = [0, self._icon.offsetTop + 10];
+            self._popup.update();
+          }
+        }
+      }));
+
       layer.dragging.enable();
       layer.on('dragend', function(event) {
         $scope.$broadcast('observation:moved', layer.feature, event.target.toGeoJSON().geometry);
@@ -353,7 +365,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       map.removeLayer(event.layer);
       gj.id = layer.feature.id;
       layers['EditObservation'].layer.removeLayer(layer);
-      createGeoJsonForLayer(gj, layers['EditObservation']);
+      createGeoJsonForLayer(gj, layers['EditObservation'], true);
       var newLayer = layers['EditObservation'].featureIdToLayer[layer.feature.id];
       layers['EditObservation'].layer.addLayer(newLayer);
       newLayer.feature = layer.feature;
@@ -490,7 +502,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       }
       layers[groupName].layer.removeLayer(layer);
       delete layers[groupName].featureIdToLayer[updateIcon.id];
-      createGeoJsonForLayer(feature, layers[groupName]);
+      createGeoJsonForLayer(feature, layers[groupName], true);
       layer = layers[groupName].featureIdToLayer[updateIcon.id];
       layers[groupName].layer.addLayer(layer);
       layer.setZIndexOffset(1000);
@@ -555,7 +567,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
           updateShapeType.marker.geometry.coordinates = [center.lng, center.lat];
           var feature = layer.feature;
           feature.geometry = updateShapeType.marker.geometry;
-          createGeoJsonForLayer(feature, layers[groupName]);
+          createGeoJsonForLayer(feature, layers[groupName], true);
           layer = layers[groupName].featureIdToLayer[updateShapeType.id];
           layers[groupName].layer.addLayer(layer);
           layer.setZIndexOffset(1000);
