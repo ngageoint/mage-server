@@ -263,6 +263,8 @@ function generatePlacemarkCoordinates(geojson) {
     coordinates += '</coordinates></LinearRing></outerBoundaryIs>'
   } else if (geojson.geometry.type === 'LineString') {
     coordinates += '<extrude>1</extrude>';
+    coordinates += '<altitudeMode>clampToGround</altitudeMode>';
+    coordinates += '<tessellate>1</tessellate>';
     coordinates += '<coordinates>';
     for (var i = 0; i < geojson.geometry.coordinates.length; i++) {
       coordinates += geojson.geometry.coordinates[i][0] + ',' + geojson.geometry.coordinates[i][1];
