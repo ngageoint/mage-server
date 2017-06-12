@@ -238,17 +238,17 @@ function generatePlacemarkCoordinates(geojson) {
     coordinates += "," + geojson.properties.altitude;
   }
 
-    if (geojson.geometry.type === 'Point') {
-        coordinates += "<coordinates>" +
-        geojson.geometry.coordinates[0] + "," +
-        geojson.geometry.coordinates[1];
+  if (geojson.geometry.type === 'Point') {
+      coordinates += "<coordinates>" +
+      geojson.geometry.coordinates[0] + "," +
+      geojson.geometry.coordinates[1];
 
-        if (geojson.properties.altitude) {
-            coordinates += "," + geojson.properties.altitude;
-        }
+      if (geojson.properties.altitude) {
+          coordinates += "," + geojson.properties.altitude;
+      }
 
-        coordinates += "</coordinates>";
-    } else if (geojson.geometry.type === 'Polygon') {
+      coordinates += "</coordinates>";
+  } else if (geojson.geometry.type === 'Polygon') {
     // this will only work for simple polygons with no holes
     coordinates += '<extrude>1</extrude>';
     coordinates += '<outerBoundaryIs><LinearRing><coordinates>';
