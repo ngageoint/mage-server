@@ -490,18 +490,20 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
       style.fillOpacity = updatedStyle.fillOpacity;
       style.strokeOpacity = updatedStyle.strokeOpacity;
       style.strokeWidth = updatedStyle.strokeWidth;
-      var reader = new FileReader();
+      if (result.file) {
+        var reader = new FileReader();
 
-      reader.onload = (function(theFile) {
-        return function(e) {
-          $scope.uploadImageMissing = false;
-          $scope.$apply();
-          var img = $('img[src*="'+url+'"]').first();
-          img.attr('src',e.target.result);
-        };
-      })(file);
+        reader.onload = (function(theFile) {
+          return function(e) {
+            $scope.uploadImageMissing = false;
+            $scope.$apply();
+            var img = $('img[src*="'+url+'"]').first();
+            img.attr('src',e.target.result);
+          };
+        })(file);
 
-      reader.readAsDataURL(file);
+        reader.readAsDataURL(file);
+      }
     }, function(result) {
       // rejected
       delete filesToUpload[result.url];

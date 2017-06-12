@@ -27,12 +27,33 @@ KmlWriter.prototype.generateUserStyles = function(users) {
   return styles.join("");
 };
 
+function hexToParts(hex) {
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+      r: result[1],
+      g: result[2],
+      b: result[3]
+  } : null;
+}
+
+function convert(integer) {
+    var str = Number(integer).toString(16);
+    return str.length == 1 ? "0" + str : str;
+}
+
 KmlWriter.prototype.generateObservationStyles = function(event, icons) {
   var styles = [];
 
   var defaultIconPath = "";
   var typePathMap = {};
   var variantPathMap = {};
+  var styleTypeMap = {};
+  var styleVariantMap = {};
+  var strokeParts = hexToParts(event.form.style.stroke);
+  var fillParts = hexToParts(event.form.style.fill);
+  var strokeOpacity = convert(~~(event.form.style.strokeOpacity * 255));
+  var fillOpacity = convert(~~(event.form.style.fillOpacity * 255));
+  var defaultStyle = '<LineStyle><width>'+event.form.style.strokeWidth+'</width><color>' + strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r +'</color></LineStyle><PolyStyle><color>'+ fillOpacity + fillParts.b + fillParts.g + fillParts.r +'</color></PolyStyle>';
   icons.forEach(function(icon) {
     if (icon.variant) {
       variantPathMap[icon.type] = variantPathMap[icon.type] || {};
@@ -45,7 +66,7 @@ KmlWriter.prototype.generateObservationStyles = function(event, icons) {
   });
 
   // default icon style
-  styles.push("<Style id='" + event._id.toString() + "'><LineStyle><width>1.5</width></LineStyle><PolyStyle><color>7dff0000</color></PolyStyle><IconStyle><Icon><href>" + path.join("icons", defaultIconPath) + "</href></Icon></IconStyle></Style>");
+  styles.push("<Style id='" + event._id.toString() + "'>"+defaultStyle+"<IconStyle><Icon><href>" + path.join("icons", defaultIconPath) + "</href></Icon></IconStyle></Style>");
 
   var typeField = getFieldByName(event.form, 'type');
   if (!typeField) return;
@@ -54,7 +75,17 @@ KmlWriter.prototype.generateObservationStyles = function(event, icons) {
   typeField.choices.forEach(function(choice) {
     // create style for choice (determine if choice is in map or pick default)
     var iconPath = typePathMap[choice.title] ? typePathMap[choice.title] : defaultIconPath;
-    styles.push("<Style id='" + [event._id.toString(), choice.title].join("-") + "'><LineStyle><width>1.5</width></LineStyle><PolyStyle><color>7dff0000</color></PolyStyle><IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
+    if (!event.form.style[choice.title]) {
+      styleTypeMap[choice.title] = defaultStyle;
+    } else {
+      strokeParts = hexToParts(event.form.style[choice.title].stroke);
+      fillParts = hexToParts(event.form.style[choice.title].fill);
+      strokeOpacity = convert(~~(event.form.style[choice.title].strokeOpacity * 255));
+      fillOpacity = convert(~~(event.form.style[choice.title].fillOpacity * 255));
+      styleTypeMap[choice.title] = '<LineStyle><width>'+event.form.style[choice.title].strokeWidth+'</width><color>' + strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r +'</color></LineStyle><PolyStyle><color>' + fillOpacity + fillParts.b + fillParts.g + fillParts.r +'</color></PolyStyle>';
+    }
+    styleVariantMap[choice.title] = {};
+    styles.push("<Style id='" + [event._id.toString(), choice.title].join("-") + "'>"+styleTypeMap[choice.title]+"<IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
 
     // variant styles for each type
     if (variantField) {
@@ -66,7 +97,16 @@ KmlWriter.prototype.generateObservationStyles = function(event, icons) {
         } else {
           iconPath = defaultIconPath;
         }
-        styles.push("<Style id='" + [event._id.toString(), choice.title, variantChoice.title].join("-") + "'><LineStyle><width>1.5</width></LineStyle><PolyStyle><color>7dff0000</color></PolyStyle><IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
+        if (!event.form.style[choice.title] || !event.form.style[choice.title][variantChoice.title]) {
+          styleVariantMap[choice.title][variantChoice.title] = styleTypeMap[choice.title];
+        } else {
+          strokeParts = hexToParts(event.form.style[choice.title][variantChoice.title].stroke);
+          fillParts = hexToParts(event.form.style[choice.title][variantChoice.title].fill);
+          strokeOpacity = convert(~~(event.form.style[choice.title][variantChoice.title].strokeOpacity * 255));
+          fillOpacity = convert(~~(event.form.style[choice.title][variantChoice.title].fillOpacity * 255));
+          styleVariantMap[choice.title][variantChoice.title] = '<LineStyle><width>'+event.form.style[choice.title][variantChoice.title].strokeWidth+'</width><color>' + strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r +'</color></LineStyle><PolyStyle><color>' + fillOpacity + fillParts.b + fillParts.g + fillParts.r +'</color></PolyStyle>'
+        }
+        styles.push("<Style id='" + [event._id.toString(), choice.title, variantChoice.title].join("-") + "'>"+styleVariantMap[choice.title][variantChoice.title]+"<IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
       });
     }
   });
@@ -142,14 +182,14 @@ function generateDescription(geojson) {
 
   description += '<table style="font-family:Arial,Verdana,Times;font-size:12px;text-align:left;width:100%;border-collapse:collapse;padding:3px 3px 3px 3px">';
 
-  if (feature.geometry.type === 'Point') {
+  if (geojson.geometry.type === 'Point') {
     description +=
       '<tr bgcolor="#D4E4F3">' +
-        '<td>Lat</td>' + '<td>' + feature.geometry.coordinates[1] + '</td>' +
+        '<td>Lat</td>' + '<td>' + geojson.geometry.coordinates[1] + '</td>' +
       '<tr>';
     description +=
       '<tr>' +
-        '<td>Lon</td>' + '<td>' + feature.geometry.coordinates[0] + '</td>' +
+        '<td>Lon</td>' + '<td>' + geojson.geometry.coordinates[0] + '</td>' +
       '<tr>';
   }
 
@@ -192,21 +232,21 @@ function generateDescription(geojson) {
 }
 
 function generatePlacemarkCoordinates(geojson) {
-  var coordinates = '<'+feature.geometry.type+'>';
+  var coordinates = '<'+geojson.geometry.type+'>';
 
   if (geojson.properties.altitude) {
     coordinates += "," + geojson.properties.altitude;
   }
-    
+
     if (geojson.geometry.type === 'Point') {
         coordinates += "<coordinates>" +
         geojson.geometry.coordinates[0] + "," +
         geojson.geometry.coordinates[1];
-        
+
         if (geojson.properties.altitude) {
             coordinates += "," + geojson.properties.altitude;
         }
-        
+
         coordinates += "</coordinates>";
     } else if (geojson.geometry.type === 'Polygon') {
     // this will only work for simple polygons with no holes
@@ -234,9 +274,9 @@ function generatePlacemarkCoordinates(geojson) {
     coordinates += '</coordinates>';
   }
 
-  coordinates += '</' + feature.geometry.type+'>';
-    
-    return coordinates;
+  coordinates += '</' + geojson.geometry.type+'>';
+
+  return coordinates;
 }
 
 function generatePlacemarkElement(name, style, coordinates, timestamp, description) {
@@ -250,6 +290,7 @@ function generatePlacemarkElement(name, style, coordinates, timestamp, descripti
       timestamp +
       description +
     "</Placemark>";
+    return placemark;
 }
 
 function getFieldByName(form, name) {
