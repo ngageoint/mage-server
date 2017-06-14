@@ -5,6 +5,7 @@ var util = require('util')
   , moment = require('moment')
   , log = require('winston')
   , shpwrite = require('shp-write')
+  , shpgeojson = require('shp-write/src/geojson')
   , Exporter = require('./exporter');
 
 function Shapefile(options) {
@@ -53,12 +54,11 @@ Shapefile.prototype.observationsToShapefile = function(archive, done) {
     write(observations, function(err, files) {
       if (err) return done(err);
 
-      archive.append(files.shp, {name: 'observations/observations.shp'});
-      archive.append(files.shx, {name: 'observations/observations.shx'});
-      archive.append(files.dbf, {name: 'observations/observations.dbf'});
-      archive.append(files.prj, {name: 'observations/observations.prj'});
-      done();
-    });
+      archive.append(files.shp, {name: 'observations/observations'+files.shapeType+'.shp'});
+      archive.append(files.shx, {name: 'observations/observations'+files.shapeType+'.shx'});
+      archive.append(files.dbf, {name: 'observations/observations'+files.shapeType+'.dbf'});
+      archive.append(files.prj, {name: 'observations/observations'+files.shapeType+'.prj'});
+    }, done);
   });
 };
 
@@ -88,7 +88,7 @@ Shapefile.prototype.locationsToShapefiles = function(archive, done) {
         delete l.properties.deviceId;
       });
 
-      var first = locations.slice(1).pop();
+      var first = locations.slice(0).pop();
       var last = locations.slice(-1).pop();
       if (last) {
         var interval = moment(first.properties.timestamp).toISOString() + '_' + moment(last.properties.timestamp).toISOString();
@@ -108,8 +108,7 @@ Shapefile.prototype.locationsToShapefiles = function(archive, done) {
             startDate = locationTime;
           }
 
-          done();
-        });
+        }, done);
       } else {
         done();
       }
@@ -125,38 +124,25 @@ Shapefile.prototype.locationsToShapefiles = function(archive, done) {
   });
 };
 
-function justPoints(geojson) {
-  return {
-    type: 'POINT',
-    geometries: geojson.map(justCoords),
-    properties: geojson.map(justProps)
+function write(geojson, callback, doneCallback) {
+  var gj = {
+    features: geojson
   };
-}
-
-function justCoords(t) {
-  if (t.geometry.coordinates[0] !== undefined &&
-      t.geometry.coordinates[0][0] !== undefined &&
-      t.geometry.coordinates[0][0][0] !== undefined) {
-    return t.geometry.coordinates[0];
-  } else {
-    return t.geometry.coordinates;
-  }
-}
-
-function justProps(geojson) {
-  return geojson.properties;
-}
-
-function write(geojson, callback) {
-  var points = justPoints(geojson);
-  shpwrite.write(points.properties, 'POINT', points.geometries, function(err, files) {
-    if (err) return callback(err);
-
-    callback(err, {
-      shp: new Buffer(new Uint8Array(files.shp.buffer)),
-      shx: new Buffer(new Uint8Array(files.shx.buffer)),
-      dbf: new Buffer(new Uint8Array(files.dbf.buffer)),
-      prj: files.prj
-    });
+  [shpgeojson.polygon(gj), shpgeojson.point(gj), shpgeojson.line(gj)]
+    .forEach(function(l) {
+      if (l.geometries.length && l.geometries[0].length) {
+        shpwrite.write(l.properties, l.type, l.geometries,
+          function(err, files) {
+            callback(err, {
+              shapeType: l.type,
+              shp: new Buffer(new Uint8Array(files.shp.buffer)),
+              shx: new Buffer(new Uint8Array(files.shx.buffer)),
+              dbf: new Buffer(new Uint8Array(files.dbf.buffer)),
+              prj: files.prj
+            });
+          }
+        );
+      }
   });
+  doneCallback();
 }

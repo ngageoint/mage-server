@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="bower_components/Leaflet.awesome-markers/dist/leaflet.awesome-markers.css"/>
   <link rel="stylesheet" href="bower_components/leaflet.markercluster/dist/MarkerCluster.css"/>
   <link rel="stylesheet" href="bower_components/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
+  <link rel="stylesheet" href="vendor/leaflet.pm/dist/leaflet.pm.css"/>
   <link rel="stylesheet" href="bower_components/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.css"/>
   <link rel="stylesheet" href="bower_components/leaflet-geosearch/src/css/l.geosearch.css"/>
   <link rel="stylesheet" href="bower_components/angular-ui-select/dist/select.min.css"/>
@@ -71,41 +72,41 @@
             </li>
             <li class="dropdown">
               <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown">
-                <i style="margin-right: 3px;" ng-class="pollingInterval == 0 ? 'fa fa-square-o' : 'fa fa-check-square-o'"></i> Live Update
+                <i style="margin-right: 3px;" ng-class="pollingInterval == 0 ? 'fa fa-square-o' : 'fa fa-check-square-o'"></i> Live Update ({{pollingInterval | polling}})
                 <b class="caret"></b>
               </a>
               <ul class="dropdown-menu">
-                <li role="presentation" class="dropdown-header">Poll Time</li>
+                <li role="presentation" class="dropdown-header">Refresh Interval</li>
                 <li>
                   <a ng-click="onPollingIntervalChanged('5000')" class="pointer">
                     <i ng-class="pollingInterval == 5000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
-                    5 Seconds
+                    {{5000 | polling}}
                   </a>
                 </li>
                 <li>
                   <a ng-click="onPollingIntervalChanged('30000')" class="pointer">
                     <i ng-class="pollingInterval == 30000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
-                    30 Seconds
+                    {{30000 | polling}}
                   </a>
                 </li>
                 <li>
                   <a ng-click="onPollingIntervalChanged('120000')" class="pointer">
                     <i ng-class="pollingInterval == 120000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
-                    2 Minutes
+                    {{120000 | polling}}
                   </a>
                 </li>
                 <li>
                   <a ng-click="onPollingIntervalChanged('300000')" class="pointer">
                     <i ng-class="pollingInterval == 300000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
-                    5 Minutes
+                    {{300000 | polling}}
                   </a>
                 </li>
-                <li>
+                <!-- <li>
                   <a ng-click="onPollingIntervalChanged('0')" class="pointer">
                     <i ng-class="pollingInterval == 0 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
-                    No Polling
+                    {{0 | polling}}
                   </a>
-                </li>
+                </li> -->
               </ul>
             </li>
             <li class="dropdown">
@@ -172,9 +173,10 @@
   <script type="text/javascript" src="bower_components/angular-sanitize/angular-sanitize.min.js"></script>
   <script type="text/javascript" src="bower_components/angular-messages/angular-messages.min.js"></script>
   <script type="text/javascript" src="bower_components/angular-route/angular-route.min.js"></script>
-  <script type="text/javascript" src="bower_components/leaflet/dist/leaflet.js"></script>
+  <script type="text/javascript" src="bower_components/leaflet/dist/leaflet-src.js"></script>
   <script type="text/javascript" src="bower_components/Leaflet.awesome-markers/dist/leaflet.awesome-markers.min.js"></script>
   <script type="text/javascript" src="bower_components/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+  <script type="text/javascript" src="vendor/leaflet.pm/dist/leaflet.pm.min.js"></script>
   <script type="text/javascript" src="bower_components/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.js"></script>
   <script type="text/javascript" src="bower_components/leaflet-geosearch/src/js/l.control.geosearch.js"></script>
   <script type="text/javascript" src="bower_components/leaflet-geosearch/src/js/l.geosearch.provider.openstreetmap.js"></script>
@@ -189,7 +191,7 @@
   <script type="text/javascript" src="bower_components/videogular-overlay-play/vg-overlay-play.js"></script>
   <script type="text/javascript" src="bower_components/exif-js/exif.js"></script>
   <script type="text/javascript" src="bower_components/papaparse/papaparse.min.js"></script>
-
+  <script type="text/javascript" src="bower_components/turfjs/turf.min.js"></script>
   <script type="text/javascript" src="vendor/bootstrap/js/bootstrap.min.js"></script>
   <!-- endbuild -->
 
@@ -205,6 +207,7 @@
   <script type="text/javascript" src="app/mage/feed.directive.js"></script>
   <script type="text/javascript" src="app/mage/color.picker.directive.js"></script>
   <script type="text/javascript" src="app/mage/banner.directive.js"></script>
+  <script type="text/javascript" src="app/mage/style-preview.directive.js"></script>
 
   <script type="text/javascript" src="app/error/not.in.event.controller.js"></script>
 
@@ -293,9 +296,11 @@
   <script type="text/javascript" src="app/file-upload/file-upload.directive.js"></script>
 
   <script type="text/javascript" src="app/filters/filename.filter.js"></script>
+  <script type="text/javascript" src="app/filters/geometry.filter.js"></script>
   <script type="text/javascript" src="app/filters/moment.filter.js"></script>
   <script type="text/javascript" src="app/filters/paging-offset.filter.js"></script>
   <script type="text/javascript" src="app/filters/password.filter.js"></script>
+  <script type="text/javascript" src="app/filters/polling.filter.js"></script>
   <script type="text/javascript" src="app/filters/user.filter.js"></script>
 
   <!-- endbuild -->

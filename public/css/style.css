@@ -517,10 +517,13 @@ textarea {
   position: absolute;
   background-color: gray;
   color: white;
+  padding-top: 7px;
   margin-left: 40px;
+  margin-top: -7px;
   opacity: .7;
   border-radius: 3px;
   width: 200px;
+  text-align: center;
 }
 
 @media (min-width: 768px) {
@@ -775,6 +778,23 @@ h4.image-delete {
 	width: 35px;
 }
 
+.symbology-card {
+  text-align: center;
+}
+
+.symbology-card:before {
+  font-family: FontAwesome;
+  content: '\f040';
+  font-size: 1.2em;
+  position: absolute;
+  right: 10px;
+  top: -10px;
+}
+
+.shape-style {
+  margin-top: 5px;
+}
+
 .center-crop {
   object-fit: cover;
 }
@@ -936,4 +956,30 @@ a.alert:after {
 
 .export-actions {
   margin-left: 15px;
+}
+
+.marker-icon {
+  border: 1px solid #777;
+}
+
+.marker-icon:focus {
+  border: 1px solid #000;
+  background-color: transparent;
+}
+
+.selected-marker {
+  border: 1px solid #000;
+  background-color: #00e976 !important;
+}
+
+.cursor-marker:after {
+  content: 'Click to draw vertex';
+  background-color: rgba(128, 128, 128 ,.2);
+  font-size: 1.3em;
+  display: block;
+  width: 155px;
+  margin-left: 20px;
+  margin-top: -4px;
+  border-radius: 3px;
+  padding-left: 5px;
 }

@@ -35,6 +35,46 @@ function FieldDirectiveController($scope) {
     radio: 'app/observation/form/radio.directive.html'
   };
 
+  $scope.shapes = [{
+    display: 'Point',
+    value: 'Point'
+  },{
+    display: 'Line',
+    value: 'LineString'
+  },{
+    display: 'Polygon',
+    value: 'Polygon'
+  }];
+
+  if ($scope.field.type === 'geometry') {
+    $scope.shape = {
+      type:$scope.field.value.type
+    };
+  }
+
+  $scope.validateShapeChange = function() {
+    if (!$scope.shape || !$scope.shape.type || $scope.shape.type === $scope.field.value.type) return;
+
+    switch($scope.shape.type) {
+      case 'Point':
+        $scope.field.value.coordinates = [];
+        $scope.field.value.type = 'Point';
+        break;
+      case 'LineString':
+        $scope.field.value.coordinates = [];
+        $scope.field.value.type = 'LineString';
+        break;
+      case 'Polygon':
+        $scope.field.value.coordinates = [[]];
+        $scope.field.value.type = 'Polygon';
+        break;
+    }
+
+    $scope.field.value.type = $scope.shape.type;
+  }
+
+  $scope.$watch('shape.type', $scope.validateShapeChange);
+
   $scope.datePopup = {open: false};
   $scope.templatePath = types[$scope.field.type];
 
@@ -46,7 +86,7 @@ function FieldDirectiveController($scope) {
 
   $scope.onLatLngChange = function(field) {
     if (field.name === 'geometry') {
-      $scope.$emit('observation:move', $scope.observation, {lat: $scope.field.value.y, lng: $scope.field.value.x});
+      $scope.$emit('observation:move', $scope.observation, $scope.field.value);
     }
   };
 

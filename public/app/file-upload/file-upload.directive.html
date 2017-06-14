@@ -1,11 +1,16 @@
 <div class="upload-file">
-  <div ng-show="preview && !uploadImageMissing" class="row bottom-gap-s">
-    <div class="col-md-12">
-      <div class="preview" style="float:left;">
-        <img class="preview-image" ng-src="{{url}}"/>
+  <span class="input-group-btn">
+    <span class="btn btn-file">
+      <div ng-show="preview && !uploadImageMissing" class="row bottom-gap-s">
+        <div class="col-md-12">
+          <div class="preview" style="float:left;">
+            <img class="preview-image" ng-src="{{url}}"/>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
+      <input type="file" multiple>
+    </span>
+  </span>
 
   <div class="row">
     <div class="col-md-12">

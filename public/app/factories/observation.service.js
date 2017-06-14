@@ -14,7 +14,8 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
     markObservationAsImportantForEvent: markObservationAsImportantForEvent,
     clearObservationAsImportantForEvent: clearObservationAsImportantForEvent,
     addAttachmentToObservationForEvent: addAttachmentToObservationForEvent,
-    deleteAttachmentInObservationForEvent: deleteAttachmentInObservationForEvent
+    deleteAttachmentInObservationForEvent: deleteAttachmentInObservationForEvent,
+    getObservationIconUrlForEvent: getObservationIconUrlForEvent
   };
 
   return service;
@@ -127,10 +128,108 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
   function transformObservations(observations, event) {
     if (!_.isArray(observations)) observations = [observations];
 
+    var eventStyle = event.form.style;
+
     _.each(observations, function(observation) {
-      observation.style = {
-        iconUrl: "/api/events/" + event.id + "/form/icons/" + observation.properties.type + "/" + observation.properties[event.form.variantField] + "?" + $.param({access_token: LocalStorageService.getToken()})
-      };
+      var style = getObservationStyle(eventStyle, observation.properties.type, observation.properties[event.form.variantField]);
+      style.iconUrl = getObservationIconUrlForEvent(event.id, observation.properties.type, observation.properties[event.form.variantField]);
+
+      observation.style = style;
+      if (observation.geometry.type === 'Polygon') {
+        minimizePolygon(observation.geometry.coordinates);
+      } else if (observation.geometry.type === 'LineString') {
+        minimizeLineString(observation.geometry.coordinates);
+      }
     });
+  }
+
+  function minimizePolygon(polygon) {
+    for (var i = 0; i < polygon.length; i++) {
+      minimizeLineString(polygon[i]);
+    }
+  }
+
+  function minimizeLineString(lineString) {
+    var world = 360;
+    var coord = lineString[0];
+    for (var i = 1; i < lineString.length; i++) {
+      var next = lineString[i];
+      if (coord[0] < next[0]) {
+        if (next[0] - coord[0] > coord[0] - next[0] + world) {
+          next[0] = next[0] - world;
+        }
+      } else if (coord[0] > next[0]) {
+        if (coord[0] - next[0] > next[0] - coord[0] + world) {
+          next[0] = next[0] + world;
+        }
+      }
+    }
+  }
+
+  function getObservationStyle(eventStyle, primary, variant) {
+    if (!primary && !variant) {
+      return {
+        color: eventStyle.stroke,
+        fillColor: eventStyle.fill,
+        fillOpacity: eventStyle.fillOpacity,
+        opacity: eventStyle.strokeOpacity,
+        weight: eventStyle.strokeWidth
+      };
+    } else if (!variant) {
+      if (eventStyle[primary]) {
+        return {
+          color: eventStyle[primary].stroke,
+          fillColor: eventStyle[primary].fill,
+          fillOpacity: eventStyle[primary].fillOpacity,
+          opacity: eventStyle[primary].strokeOpacity,
+          weight: eventStyle[primary].strokeWidth
+        };
+      } else {
+        return {
+          color: eventStyle.stroke,
+          fillColor: eventStyle.fill,
+          fillOpacity: eventStyle.fillOpacity,
+          opacity: eventStyle.strokeOpacity,
+          weight: eventStyle.strokeWidth
+        };
+      }
+    } else {
+      if (eventStyle[primary] && eventStyle[primary][variant]) {
+        return {
+          color: eventStyle[primary][variant].stroke,
+          fillColor: eventStyle[primary][variant].fill,
+          fillOpacity: eventStyle[primary][variant].fillOpacity,
+          opacity: eventStyle[primary][variant].strokeOpacity,
+          weight: eventStyle[primary][variant].strokeWidth
+        };
+      } else if (eventStyle[primary]) {
+        return {
+          color: eventStyle[primary].stroke,
+          fillColor: eventStyle[primary].fill,
+          fillOpacity: eventStyle[primary].fillOpacity,
+          opacity: eventStyle[primary].strokeOpacity,
+          weight: eventStyle[primary].strokeWidth
+        };
+      } else {
+        return {
+          color: eventStyle.stroke,
+          fillColor: eventStyle.fill,
+          fillOpacity: eventStyle.fillOpacity,
+          opacity: eventStyle.strokeOpacity,
+          weight: eventStyle.strokeWidth
+        };
+      }
+    }
+    var style = {
+      color: eventStyle.stroke,
+      fillColor: eventStyle.fill,
+      fillOpacity: eventStyle.fillOpacity,
+      opacity: eventStyle.strokeOpacity,
+      weight: eventStyle.strokeWidth
+    };
+  }
+
+  function getObservationIconUrlForEvent(eventId, primary, variant) {
+    return "/api/events/" + eventId + "/form/icons/" + primary + "/" + variant + "?" + $.param({access_token: LocalStorageService.getToken()});
   }
 }

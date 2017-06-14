@@ -21,7 +21,22 @@ function Event($rootScope, $resource, $http, LocalStorageService) {
       }
     },
     query: {
-      isArray: true
+      isArray: true,
+      responseType: 'json',
+      transformResponse: function(response) {
+        if (response && response.length) {
+          for (var i = 0; i < response.length; i++) {
+            response[i].form.style = response[i].form.style || {
+              fill: '#5278A2',
+              stroke: '#5278A2',
+              fillOpacity: 0.2,
+              strokeOpacity: 1,
+              strokeWidth: 2
+            };
+          }
+        }
+        return response;
+      }
     },
     count: {
       method: 'GET',

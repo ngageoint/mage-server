@@ -9,6 +9,8 @@ var util = require('util')
   , json2csv = require('json2csv')
   , json2csvStream = require('json2csv-stream')
   , Exporter = require('./exporter')
+  , turfCentroid = require('@turf/centroid')
+  , wkx = require('wkx')
   , attachmentBase = require('environment').attachmentBaseDirectory;
 
 function Csv(options) {
@@ -28,8 +30,8 @@ Csv.prototype.export = function(streamable) {
   streamable.type('application/zip');
   streamable.attachment('mage-csv.zip');
 
-  var fields = ['id', 'user', 'device', 'latitude', 'longitude', 'timestamp', 'excelTimestamp'];
-  var fieldNames = ['id', 'User', 'Device', 'Latitude', 'Longitude', 'Date (ISO8601)', 'Excel Timestamp (UTC)'];
+  var fields = ['id', 'user', 'device', 'shapeType', 'latitude', 'longitude', 'timestamp', 'excelTimestamp', 'wkt'];
+  var fieldNames = ['id', 'User', 'Device', 'Shape Type', 'Latitude', 'Longitude', 'Date (ISO8601)', 'Excel Timestamp (UTC)', 'Well Known Text'];
 
   self._event.form.fields.forEach(function(field) {
     if (field.title === 'Location' || field.name === 'timestamp' || field.archived) return;
@@ -110,8 +112,16 @@ Csv.prototype.flattenObservations = function(observations, archive) {
     if (users[observation.userId]) properties.user = users[observation.userId].username;
     if (devices[observation.deviceId]) properties.device = devices[observation.deviceId].uid;
 
-    properties.longitude = observation.geometry.coordinates[0];
-    properties.latitude = observation.geometry.coordinates[1];
+    properties.shapeType = observation.geometry.type;
+    if (observation.geometry.type === 'Point') {
+      properties.longitude = observation.geometry.coordinates[0];
+      properties.latitude = observation.geometry.coordinates[1];
+    } else {
+      var centroid = turfCentroid(observation);
+      properties.longitude = centroid.geometry.coordinates[0];
+      properties.latitude = centroid.geometry.coordinates[1];
+    }
+    properties.wkt = wkx.Geometry.parseGeoJSON(observation.geometry).toWkt();
 
     properties.excelTimestamp = "=DATEVALUE(MID(INDIRECT(ADDRESS(ROW(),COLUMN()-1)),1,10)) + TIMEVALUE(MID(INDIRECT(ADDRESS(ROW(),COLUMN()-1)),12,8))";
 

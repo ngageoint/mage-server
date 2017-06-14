@@ -12,8 +12,8 @@ GeometryField.prototype.validate = function() {
 
   if (!this.value) return;
 
-  if (!geoJsonValidator.isPoint(this.value)) {
-    throw new Error("cannot create observation, '" + this.definition.title + "' property must be a valid GeoJson point");
+  if (!geoJsonValidator.isGeometryObject(this.value)) {
+    throw new Error("cannot create observation, '" + this.definition.title + "' property must be a valid GeoJson geometry");
   }
 };
 

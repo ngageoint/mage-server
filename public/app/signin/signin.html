@@ -49,7 +49,7 @@
           <div class="col-md-12">
             <form class="form">
               <div class="form-group" ng-class="{'has-error': status > 399}">
-                <input ng-model="username" class="form-control" name="username" placeholder="Username" type="text" autocapitalize="off"/>
+                <input ng-model="username" class="form-control" name="username" placeholder="Username" autocomplete="username" type="text" autocapitalize="off"/>
               </div>
 
               <div class="form-group" ng-class="{'has-error': status > 399}">
@@ -57,7 +57,7 @@
               </div>
 
               <div class="form-group" ng-class="{'has-error': status > 399}">
-                <input ng-model="password" class="form-control" name="password" placeholder="Password" type="password" autocapitalize="off"/>
+                <input ng-model="password" class="form-control" name="password" placeholder="Password" autocomplete="password" type="password" autocapitalize="off"/>
               </div>
 
               <span>

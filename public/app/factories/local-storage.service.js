@@ -6,11 +6,24 @@ LocalStorageService.$inject = [];
 
 function LocalStorageService() {
   var tokenKey = 'token';
+  var pollingIntervalKey = 'pollingInterval';
+  var timeIntervalKey = 'timeInterval';
+  var teamsKey = 'teams';
+  var mapPositionKey = 'mapPosition';
 
   var service = {
     getToken: getToken,
     setToken: setToken,
-    removeToken: removeToken
+    removeToken: removeToken,
+    setPollingInterval: setPollingInterval,
+    getPollingInterval: getPollingInterval,
+    setTimeInterval: setTimeInterval,
+    getTimeInterval: getTimeInterval,
+    getTeams: getTeams,
+    setTeams: setTeams,
+    removeTeams: removeTeams,
+    getMapPosition: getMapPosition,
+    setMapPosition: setMapPosition
   };
 
   return service;
@@ -25,6 +38,51 @@ function LocalStorageService() {
 
   function removeToken() {
     return removeLocalItem(tokenKey);
+  }
+
+  function setPollingInterval(pollingInterval) {
+    return setLocalItem(pollingIntervalKey, pollingInterval);
+  }
+
+  function getPollingInterval() {
+    return getLocalItem(pollingIntervalKey);
+  }
+
+  function setTimeInterval(timeInterval) {
+    return setLocalItem(timeIntervalKey, JSON.stringify(timeInterval));
+  }
+
+  function getTimeInterval() {
+    var time = JSON.parse(getLocalItem(timeIntervalKey));
+    if (time && time.options) {
+        if (time.options.startDate) {
+          time.options.startDate = new Date(time.options.startDate);
+        }
+        if (time.options.endDate) {
+          time.options.endDate = new Date(time.options.endDate);
+        }
+    }
+    return time;
+  }
+
+  function getTeams() {
+    return JSON.parse(getLocalItem(teamsKey));
+  }
+
+  function setTeams(teams) {
+    return setLocalItem(teamsKey, JSON.stringify(teams));
+  }
+
+  function removeTeams() {
+    return removeLocalItem(teamsKey);
+  }
+
+  function setMapPosition(mapPosition) {
+    return setLocalItem(mapPositionKey, JSON.stringify(mapPosition));
+  }
+
+  function getMapPosition() {
+    return JSON.parse(getLocalItem(mapPositionKey));
   }
 
   function getLocalItem(key) {

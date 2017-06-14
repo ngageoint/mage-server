@@ -22,13 +22,27 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   var spiderfyState = null;
   var currentLocation = null;
   var locationLayer = L.locationMarker([0,0], {color: '#136AEC'});
-  var map = L.map("map", {
+  var mapPosition = LocalStorageService.getMapPosition() || {
     center: [0,0],
-    zoom: 3,
+    zoom: 3
+  };
+  var map = L.map("map", {
+    center: mapPosition.center,
+    zoom: mapPosition.zoom,
     minZoom: 0,
     maxZoom: 18,
-    trackResize: true
+    trackResize: true,
+    worldCopyJump: true
   });
+
+  map.on('moveend', saveMapPosition);
+
+  function saveMapPosition() {
+    LocalStorageService.setMapPosition({
+      center: map.getCenter(),
+      zoom: map.getZoom()
+    });
+  }
 
   // toolbar  and controls config
   new L.Control.GeoSearch({
@@ -118,33 +132,31 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     // cannot create another marker with the same id
     if (layers[marker.layerId]) return;
 
-    var options = marker.options || {};
-
-    if (marker.geometry && marker.geometry.type === 'Point') {
-      var latlng = [0, 0];
-      if (marker.geometry.coordinates) {
-        latlng = [marker.geometry.coordinates[1], marker.geometry.coordinates[0]];
-      } else {
-        latlng = map.getCenter();
-      }
-
-      var layer = L.marker(latlng, {
-        draggable: options.draggable,
-        icon: L.AwesomeMarkers.newDivIcon({
-          icon: 'plus',
-          color: 'cadetblue'
-        })
-      });
-
-      if (_.isFunction(options.onDragEnd)) {
-        layer.on('dragend', function() {
-          options.onDragEnd(layer.getLatLng().wrap());
-        });
-      }
-
-      if (options.selected) layer.addTo(map);
-      layers[options.layerId] = {layer: layer};
+    if (!layers['EditObservation']) {
+      var editObservationLayer = {
+        name: 'EditObservation',
+        group: 'MAGE',
+        type: 'geojson',
+        options: {
+          selected: true
+        }
+      };
+      MapService.createVectorLayer(editObservationLayer);
     }
+
+    var newObservationLayer = {
+      name: 'EditObservation',
+      group: 'MAGE',
+      type: 'geojson',
+      options: {
+        selected: true
+      }
+    };
+    MapService.createVectorLayer(newObservationLayer);
+
+    createGeoJsonForLayer(marker, layers['EditObservation'], true);
+    layer = layers['EditObservation'].featureIdToLayer[marker.id];
+    layers['EditObservation'].layer.addLayer(layer);
   }
 
   function updateMarker(marker, layerId) {
@@ -189,7 +201,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     return bucket ? bucket.color : null;
   }
 
-  function createGeoJsonForLayer(json, layerInfo) {
+  function createGeoJsonForLayer(json, layerInfo, editMode) {
     var popup = layerInfo.options.popup;
 
     var geojson = L.geoJson(json, {
@@ -242,6 +254,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
           if (feature.style && feature.style.iconUrl) {
             options.iconUrl = feature.style.iconUrl;
           }
+          options.tooltip = editMode;
           return L.fixedWidthMarker(latlng, options);
         }
       },
@@ -279,6 +292,135 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     if (data.options.selected) layerInfo.layer.addTo(map);
   }
 
+  var selectedVertex;
+
+  function enableEditable(layer) {
+    if (layers['EditObservation'] && layers['EditObservation'].featureIdToLayer[layer.feature.id]) return;
+
+    layers['Observations'].layer.removeLayer(layer);
+    if (!layers['EditObservation']) {
+      var editObservationLayer = {
+        name: 'EditObservation',
+        group: 'MAGE',
+        type: 'geojson',
+        options: {
+          selected: true
+        }
+      };
+      MapService.createVectorLayer(editObservationLayer);
+    }
+    layers['EditObservation'].layer.addLayer(layer);
+    layers['EditObservation'].featureIdToLayer[layer.feature.id] = layer;
+
+    if (layer.feature.geometry.type === 'Point') {
+      layer.setZIndexOffset(1000);
+
+      layer.setIcon(L.fixedWidthIcon({
+        iconUrl: layer.feature.style.iconUrl,
+        tooltip: true,
+        onIconLoad: function() {
+          if (self._popup && self._icon) {
+            self._popup.options.offset = [0, self._icon.offsetTop + 10];
+            self._popup.update();
+          }
+        }
+      }));
+
+      layer.dragging.enable();
+      layer.on('dragend', function(event) {
+        $scope.$broadcast('observation:moved', layer.feature, event.target.toGeoJSON().geometry);
+        $scope.$apply();
+      });
+    } else {
+      if (!layer.feature.geometry.coordinates || layer.feature.geometry.coordinates.length === 0 || (layer.feature.geometry.coordinates.length === 1 && layer.feature.geometry.coordinates[0].length === 0)) {
+        initiateShapeDraw(layer.feature.geometry.type === 'Polygon' ? 'Poly' : 'Line', layer);
+      } else {
+        initiateShapeEdit(layer);
+      }
+    }
+  }
+
+  function initiateShapeDraw(shapeType, layer) {
+    map.pm.enableDraw(shapeType, {
+      snappable: true,
+      templineStyle: {
+          color: 'blue',
+      },
+      hintlineStyle: {
+          color: 'blue',
+          dashArray: [5, 5],
+      },
+      pathOptions: {
+          color: 'red',
+          fillColor: 'orange',
+          fillOpacity: 0.7,
+      },
+      cursorMarker: true,
+      finishOnDoubleClick: true,
+    });
+    map.on('pm:create', function(event) {
+      map.off('pm:create');
+      map.pm.disableDraw(shapeType);
+      var gj = event.layer.toGeoJSON();
+      map.removeLayer(event.layer);
+      gj.id = layer.feature.id;
+      layers['EditObservation'].layer.removeLayer(layer);
+      createGeoJsonForLayer(gj, layers['EditObservation'], true);
+      var newLayer = layers['EditObservation'].featureIdToLayer[layer.feature.id];
+      layers['EditObservation'].layer.addLayer(newLayer);
+      newLayer.feature = layer.feature;
+      newLayer.feature.geometry = gj.geometry;
+      initiateShapeEdit(newLayer);
+      $scope.$broadcast('observation:moved', newLayer.feature, newLayer.toGeoJSON().geometry);
+      // $scope.$broadcast('observation:edit:vertex', newLayer.feature, gj.geometry, 0);
+      $scope.$apply();
+    });
+  }
+
+  function initiateShapeEdit(layer) {
+
+    layer.pm.enable({
+      draggable: true,
+      snappable: false,
+      clickListener: function(e) {
+        var group = layer.pm._markerGroup;
+        group.eachLayer(function(layer) {
+          L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
+        });
+        selectedVertex = e.target._index;
+        L.DomUtil.addClass(e.target.getElement(), 'selected-marker');
+        $scope.$broadcast('observation:edit:vertex', layer.feature, e.target.getLatLng(), e.target._index);
+        $scope.$apply();
+      }
+    });
+
+    selectedVertex = selectedVertex || 0;
+    var group = layer.pm._markerGroup;
+    group.eachLayer(function(layer) {
+      if (layer._index === selectedVertex) {
+        L.DomUtil.addClass(layer.getElement(), 'selected-marker');
+      }
+    });
+
+    layer.on('pm:edit', function(event) {
+      console.log('pm edit');
+      $scope.$broadcast('observation:moved', layer.feature, event.target.toGeoJSON().geometry);
+      $scope.$apply();
+    });
+    layer.on('pm:markerdragend', function(event) {
+      console.log('pm marker drag end');
+      var group = layer.pm._markerGroup;
+      group.eachLayer(function(layer) {
+        L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
+      });
+      selectedVertex = event.markerEvent.target._index;
+      L.DomUtil.addClass(event.markerEvent.target.getElement(), 'selected-marker');
+
+      $scope.$broadcast('observation:edit:vertex', layer.feature, event.markerEvent.target.getLatLng(), event.markerEvent.target._index);
+      $scope.$apply();
+    });
+  }
+
   function onLayersChanged(changed) {
     _.each(changed.added, function(added) {
       switch(added.type) {
@@ -310,6 +452,140 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
         delete layers[removed.layerId];
       }
     });
+
+    _.each(changed.editStarted, function(edit) {
+      var groupName = 'Observations';
+      var layer = layers[groupName].featureIdToLayer[edit.id];
+      if (!layer && layers['EditObservation']) {
+        groupName = 'EditObservation';
+        layer = layers[groupName].featureIdToLayer[edit.id];
+      }
+      delete layers[groupName].featureIdToLayer[edit.id];
+      layers[groupName].layer.removeLayer(layer);
+      enableEditable(layer);
+    });
+
+    _.each(changed.editComplete, function(editComplete) {
+      var layer = layers['EditObservation'].featureIdToLayer[editComplete.id];
+
+      if (layer.pm.enabled()) {
+        layer.pm.disable();
+      }
+      if (layer.dragging) {
+        layer.dragging.disable();
+      }
+      layers['EditObservation'].layer.removeLayer(layer);
+      createGeoJsonForLayer(editComplete, layers['Observations']);
+      layer = layers['Observations'].featureIdToLayer[editComplete.id];
+      layers['Observations'].layer.addLayer(layer);
+    });
+
+    _.each(changed.updateIcon, function(updateIcon) {
+      if (updateIcon.marker.geometry.type !== 'Point') return;
+      var groupName = 'Observations';
+      var layer = layers[groupName].featureIdToLayer[updateIcon.id];
+      if (!layer && layers['NewObservation']) {
+        groupName = 'NewObservation';
+        layer = layers[groupName].featureIdToLayer[updateIcon.id];
+      } else if (!layer && layers['EditObservation']) {
+        groupName = 'EditObservation';
+        layer = layers[groupName].featureIdToLayer[updateIcon.id];
+      }
+      if (!layer) {
+        return;
+      }
+      var feature = JSON.parse(JSON.stringify(layer.feature));
+      feature.geometry = updateIcon.marker.geometry;
+      feature.style.iconUrl = updateIcon.iconUrl;
+      if (layer.pm.enabled()) {
+        layer.pm.disable();
+      }
+      layers[groupName].layer.removeLayer(layer);
+      delete layers[groupName].featureIdToLayer[updateIcon.id];
+      createGeoJsonForLayer(feature, layers[groupName], true);
+      layer = layers[groupName].featureIdToLayer[updateIcon.id];
+      layers[groupName].layer.addLayer(layer);
+      layer.setZIndexOffset(1000);
+
+      layer.dragging.enable();
+      layer.on('dragend', function(event) {
+        $scope.$broadcast('observation:moved', layer.feature, event.target.toGeoJSON().geometry);
+        $scope.$apply();
+      });
+    });
+
+    _.each(changed.updateShapeType, function(updateShapeType) {
+      var groupName = 'EditObservation';
+      var layer = layers[groupName].featureIdToLayer[updateShapeType.id];
+      if (!layer && layers['NewObservation']) {
+        groupName = 'NewObservation';
+        layer = layers[groupName].featureIdToLayer[updateShapeType.id];
+      }
+      if (!layer) {
+        return;
+      }
+
+      if (updateShapeType.marker.geometry.type === layer.feature.geometry.type) {
+        // update the shape coordinates
+        if (layer.feature.geometry.coordinates && !_.isEqual(updateShapeType.marker.geometry.coordinates, layer.feature.geometry.coordinates)) {
+          try {
+            if(layer.feature.geometry.type === 'Point'){
+              layer.setLatLng(L.GeoJSON.coordsToLatLng(updateShapeType.marker.geometry.coordinates));
+              // // TODO fix, this is showing accuracy when a new location comes in.
+              // // this should only happen when the popup is openPopup
+              // if (featureLayer.options.showAccuracy && layer._popup._isOpen  && layer.getAccuracy()) {
+              //   layer.setAccuracy(layer.feature.properties.accuracy);
+              // }
+            } else {
+              var geojson = L.GeoJSON.coordsToLatLngs(updateShapeType.marker.geometry.coordinates, updateShapeType.marker.geometry.type === 'Polygon' ? 1 : 0);
+              layer.setLatLngs(geojson);
+              layer.off('pm:markerdragend');
+              layer.off('pm:edit');
+              layer.pm.disable();
+              initiateShapeEdit(layer);
+            }
+          } catch (e) {
+            console.log('exception setting lat lngs', e);
+          }
+        }
+      } else {
+
+        map.pm.disableDraw(layer.feature.geometry.type === 'Polygon' ? 'Poly' : 'Line');
+
+        layers[groupName].layer.removeLayer(layer);
+        if (layer.pm) {
+          layer.pm.disable();
+          layer.off('pm:markerdragend');
+          layer.off('pm:edit');
+        } else {
+          layer.off('dragend');
+          layer.dragging.disable();
+        }
+
+        if (updateShapeType.marker.geometry.type === 'Point') {
+          var center = map.getCenter();
+          updateShapeType.marker.geometry.coordinates = [center.lng, center.lat];
+          var feature = layer.feature;
+          feature.geometry = updateShapeType.marker.geometry;
+          createGeoJsonForLayer(feature, layers[groupName], true);
+          layer = layers[groupName].featureIdToLayer[updateShapeType.id];
+          layers[groupName].layer.addLayer(layer);
+          layer.setZIndexOffset(1000);
+
+          layer.dragging.enable();
+          layer.on('dragend', function(event) {
+            $scope.$broadcast('observation:moved', layer.feature, event.target.toGeoJSON().geometry);
+            $scope.$apply();
+          });
+
+          $scope.$broadcast('observation:moved', layer.feature, layer.toGeoJSON().geometry);
+        } else {
+          var feature = layer.feature;
+          feature.geometry = updateShapeType.marker.geometry;
+          initiateShapeDraw(updateShapeType.marker.geometry.type === 'Polygon' ? 'Poly' : 'Line', layer);
+        }
+      }
+    });
   }
 
   function onFeaturesChanged(changed) {
@@ -326,18 +602,11 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
     _.each(changed.updated, function(feature) {
       var layer = featureLayer.featureIdToLayer[feature.id];
+      if (!layer) return;
 
       // Copy over the updated feature data
       if (layer.feature) {
         layer.feature = feature;
-      }
-
-      // Set the icon
-      if (layer.feature && layer.feature.iconUrl !== feature.iconUrl) {
-        layer.setIcon(L.urlDivIcon({
-          feature: feature,
-          token: LocalStorageService.getToken()
-        }));
       }
 
       if (featureLayer.options.temporal) {
@@ -347,12 +616,24 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
       // Set the lat/lng
       if (feature.geometry.coordinates) {
-        layer.setLatLng(L.GeoJSON.coordsToLatLng(feature.geometry.coordinates));
-        // // TODO fix, this is showing accuracy when a new location comes in.
-        // // this should only happen when the popup is openPopup
-        // if (featureLayer.options.showAccuracy && layer._popup._isOpen  && layer.getAccuracy()) {
-        //   layer.setAccuracy(layer.feature.properties.accuracy);
-        // }
+        if(feature.geometry.type === 'Point'){
+
+          // Set the icon
+          if (feature.style && feature.style.iconUrl) {
+            layer.setIcon(L.fixedWidthIcon({
+              iconUrl: feature.style.iconUrl
+            }));
+          }
+
+          layer.setLatLng(L.GeoJSON.coordsToLatLng(feature.geometry.coordinates));
+          // // TODO fix, this is showing accuracy when a new location comes in.
+          // // this should only happen when the popup is openPopup
+          // if (featureLayer.options.showAccuracy && layer._popup._isOpen  && layer.getAccuracy()) {
+          //   layer.setAccuracy(layer.feature.properties.accuracy);
+          // }
+        } else {
+          layer.setLatLngs(L.GeoJSON.coordsToLatLngs(feature.geometry.coordinates, layer.feature.geometry.type === 'Polygon' ? 1 : 0));
+        }
       }
     });
 
@@ -381,17 +662,33 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     if (!map.hasLayer(featureLayer.layer)) return;
 
     if (featureLayer.options.cluster) {
+
       if (map.getZoom() < 17) {
-        map.once('zoomend', function() {
+
+        if (layer.getBounds) {
+          map.fitBounds(layer.getBounds(), {
+            maxZoom: 17
+          });
+          openPopup(layer);
+        } else {
+          map.once('zoomend', function() {
+            featureLayer.layer.zoomToShowLayer(layer, function() {
+              openPopup(layer);
+            });
+          });
+          map.setView(layer.getLatLng(), 17);
+        }
+      } else {
+        if (layer.getBounds) {
+          map.fitBounds(layer.getBounds(), {
+            maxZoom: 17
+          });
+          openPopup(layer);
+        } else {
           featureLayer.layer.zoomToShowLayer(layer, function() {
             openPopup(layer);
           });
-        });
-        map.setView(layer.getLatLng(), 17);
-      } else {
-        featureLayer.layer.zoomToShowLayer(layer, function() {
-          openPopup(layer);
-        });
+        }
       }
     } else {
       openPopup(layer, {zoomToLocation: true});

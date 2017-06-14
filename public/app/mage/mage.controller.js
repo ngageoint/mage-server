@@ -61,6 +61,10 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
     options: {
       selected: true,
       cluster: true,
+      style: function(feature) {
+        console.log('feature', feature);
+        return {};
+      },
       popup: {
         html: function(observation) {
           var el = angular.element('<div observation-popup="observation" observation-popup-info="onInfo(observation)" observation-zoom="onZoom(observation)"></div>');
@@ -452,32 +456,46 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
     newObservation = new Observation({
       eventId: event.id,
       type: 'Feature',
+      id: 'new', // this will be retrieved with the new id stuff
       geometry: {
         type: 'Point',
         coordinates: [latlng.lng, latlng.lat]
       },
       properties: {
         timestamp: new Date()
+      },
+      style: {
+
       }
     });
 
     MapService.createMarker(newObservation, {
-      layerId: 'NewObservation',
-      selected: true,
-      draggable: true,
-      onDragEnd: function(latlng) {
-        $scope.$broadcast('observation:moved', newObservation, latlng);
-        $scope.$apply();
-      }
+      layerId: 'Observations'
     });
 
     $scope.$broadcast('observation:new', newObservation);
     $scope.$apply();
+
+    MapService.startedMarkerEdit(newObservation);
+  });
+
+  $scope.$on('observation:editStarted', function(e, observation) {
+    MapService.startedMarkerEdit(observation);
+  });
+
+  $scope.$on('observation:iconEdited', function(e, observation, iconUrl) {
+    MapService.updateIcon(observation, iconUrl);
+  });
+
+  $scope.$on('observation:shapeChanged', function(e, observation) {
+    MapService.updateShapeType(observation, 'EditObservation');
   });
 
   $scope.$on('observation:editDone', function(e, observation) {
     if (newObservation === observation) {
-      MapService.removeMarker(observation, 'NewObservation');
+      MapService.removeMarker(observation, 'EditObservation');
+    } else {
+      MapService.stopEditing(observation);
     }
 
     newObservation = null;
@@ -485,7 +503,7 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
 
   $scope.$on('observation:move', function(e, observation, latlng) {
     $scope.$broadcast('observation:moved', observation, latlng);
-    MapService.updateMarker(observation, 'NewObservation');
+    MapService.updateMarker(observation, 'EditObservation');
   });
 
   $scope.$on('feed:toggle', function() {

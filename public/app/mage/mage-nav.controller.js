@@ -8,7 +8,7 @@ function NavController($rootScope, $scope, $q, $location, $uibModal, UserService
   var events = [];
   $scope.location = $location;
 
-  $scope.pollingInterval = 30000;
+  $scope.pollingInterval = PollingService.getPollingInterval();
 
   Settings.get({type: 'banner'}, function(banner) {
     $scope.banner = banner.settings;

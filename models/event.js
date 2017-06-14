@@ -62,7 +62,8 @@ var EventSchema = new Schema({
   form: {
     variantField: { type: String, required: false },
     userFields: [String],
-    fields: [FieldSchema]
+    fields: [FieldSchema],
+    style: { type: Schema.Types.Mixed, required: false }
   }
 },{
   versionKey: false
