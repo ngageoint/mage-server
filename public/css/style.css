@@ -950,7 +950,7 @@ a.alert:after {
 }
 
 .field-textarea {
-  white-space: pre;
+  white-space: pre-wrap;
   padding-left: 0;
 }
 
