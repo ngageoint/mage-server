@@ -475,6 +475,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
         layer.dragging.disable();
       }
       layers['EditObservation'].layer.removeLayer(layer);
+      delete layers['EditObservation'].featureIdToLayer[editComplete.id];
       createGeoJsonForLayer(editComplete, layers['Observations']);
       layer = layers['Observations'].featureIdToLayer[editComplete.id];
       layers['Observations'].layer.addLayer(layer);
