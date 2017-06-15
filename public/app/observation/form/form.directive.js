@@ -22,8 +22,10 @@ FormDirectiveController.$inject = ['$scope', 'EventService', 'Observation', 'Obs
 
 function FormDirectiveController($scope, EventService, Observation, ObservationService, UserService, LocalStorageService) {
   var uploadId = 0;
+  var initialObservation;
 
   if ($scope.observation) {
+    initialObservation = JSON.parse(JSON.stringify($scope.observation));
     $scope.iconUrl = $scope.observation.style.iconUrl;
     $scope.event = EventService.getEventById($scope.observation.eventId);
     var editedVertex = 0;
@@ -160,6 +162,7 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
   };
 
   $scope.cancelEdit = function() {
+    $scope.observation.geometry = initialObservation.geometry;
     $scope.$emit('observation:editDone', $scope.observation);
 
     _.map($scope.observation.attachments, function(attachment) {
