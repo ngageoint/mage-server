@@ -45,7 +45,9 @@ function AdminUserEditController($scope, $filter, $routeParams, $location, Api, 
       if (icon.text == null) {
         if ($scope.user.displayName) {
           var initials = $scope.user.displayName.match(/\b\w/g);
-          icon.text = (initials.shift() + initials.pop()).toUpperCase();
+          var firstDisplayNamePart = initials.shift();
+          var secondDisplayNamePart = initials.pop();
+          icon.text = (firstDisplayNamePart + (secondDisplayNamePart ? secondDisplayNamePart : '')).toUpperCase();
         }
       }
 
