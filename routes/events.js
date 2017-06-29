@@ -322,12 +322,9 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     validateEventAccess,
     function(req, res) {
-      var iconBasePath = new api.Icon(req.event._id).getBasePath();
-      var archive = archiver('zip');
-      res.attachment("icons.zip");
-      archive.pipe(res);
-      archive.directory(iconBasePath, '/icons');
-      archive.finalize();
+      new api.Icon(req.event._id).getZipPath(function(err, zipPath) {
+        res.sendFile(zipPath);
+      });
     }
   );
 
@@ -368,6 +365,13 @@ module.exports = function(app, security) {
     function(req, res, next) {
       new api.Icon(req.event._id, req.params.type, req.params.variant).create(req.files.icon, function(err, icon) {
         if (err) return next(err);
+
+        var iconBasePath = new api.Icon(req.event._id).getBasePath();
+        var archive = archiver('zip');
+        res.attachment("icons.zip");
+        archive.pipe(res);
+        archive.directory(iconBasePath, '/icons');
+        archive.finalize();
 
         return res.json(icon);
       });

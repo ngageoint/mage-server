@@ -2,6 +2,7 @@ var IconModel = require('../models/icon')
   , log = require('winston')
   , path = require('path')
   , fs = require('fs-extra')
+  , archiver = require('archiver')
   , environment = require('environment');
 
 var appRoot = path.dirname(require.main.filename);
@@ -39,6 +40,23 @@ Icon.prototype.getBasePath = function() {
   return path.join(iconBase, this._eventId.toString());
 };
 
+Icon.prototype.writeZip = function(callback) {
+  var output = fs.createWriteStream(path.join(iconBase, this._eventId+'_icons.zip'));
+  var archive = archiver('zip');
+  output.on('close', callback);
+  archive.on('warning', callback);
+  archive.on('error', callback);
+  archive.pipe(output);
+  archive.directory(path.join(this.getBasePath()), 'icons');
+  archive.finalize();
+};
+
+Icon.prototype.getZipPath = function(callback) {
+  this.writeZip(function(err) {
+    return callback(err, path.join(iconBase, this._eventId+'_icons.zip'));
+  }.bind(this));
+};
+
 Icon.prototype.getIcon = function(callback) {
   var options = {
     eventId: this._eventId,
@@ -48,7 +66,6 @@ Icon.prototype.getIcon = function(callback) {
 
   IconModel.getIcon(options, function(err, icon) {
     if (err || !icon) return callback(err);
-
     callback(null, path.join(iconBase, icon.relativePath));
   });
 };
