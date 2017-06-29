@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "version": "4.4.0",
+        "version": "4.5.0",
         "title": "MAGE (Mobile Awareness GEOINT Environment)",
         "description": "MAGE API",
         "contact": {
@@ -1394,8 +1394,44 @@
                 }
             },
             "post": {
-                "description": "Generate a new observation resource location",
-                "operationId": "addObservation",
+                "description": "add new observation",
+                "operationId": "addObservationDeprecated",
+                "deprecated": true,
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId for which to create observation",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "observation request body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Feature"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Observation"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "observation response",
+                        "schema": {
+                            "$ref": "#/definitions/Feature"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/events/{eventId}/observations/id": {
+          "post": {
+            "description": "Generate a new observation resource location",
+                "operationId": "createObservationId",
                 "parameters": [
                     {
                         "name": "eventId",
@@ -1421,7 +1457,7 @@
                         }
                     }
                 }
-            }
+          }
         },
         "/api/events/{eventId}/observations/{observationId}": {
             "get": {
@@ -1490,6 +1526,49 @@
                     }
                 }
             },
+            "put": {
+                "description": "update observation for eventId",
+                "operationId": "updateObservationDeprecated",
+                "deprecated": true,
+                "parameters": [
+                    {
+                        "name": "eventId",
+                        "in": "path",
+                        "description": "eventId in which to update observation",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "observationId",
+                        "in": "path",
+                        "description": "observationId for observation",
+                        "required": true,
+                        "type": "string"
+                    },
+                    {
+                        "name": "body",
+                        "in": "body",
+                        "description": "observation request body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Feature"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Observation"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "observation response",
+                        "schema": {
+                            "$ref": "#/definitions/Feature"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/events/{eventId}/observations/id/{observationId}/": {
             "put": {
                 "description": "update observation for eventId",
                 "operationId": "updateObservation",
