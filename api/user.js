@@ -174,22 +174,26 @@ User.prototype.update = function(user, options, callback) {
 
   if (options.icon && options.icon.type) {
     if (options.icon.type === 'none') {
+      if (user.icon.relativePath) {
+        // delete it
+        operations.push(function(updatedUser, done) {
+          var icon = updatedUser.icon;
+          icon.path = path.join(userBase, updatedUser.icon.relativePath);
 
-      // delete it
-      operations.push(function(updatedUser, done) {
-        var icon = iconPath(updatedUser._id, updatedUser, options.icon);
-        fs.remove(icon.absolutePath, function(err) {
-          if (err) {
-            log.warn('Error removing users map icon from ' + iconPath);
-          }
+          var iconPaths = iconPath(updatedUser._id, updatedUser, icon);
+          fs.remove(iconPaths.absolutePath, function(err) {
+            if (err) {
+              log.warn('Error removing users map icon from ' + iconPaths.absolutePath);
+            }
+          });
+
+          updatedUser.icon = {
+            type: options.icon.type
+          };
+
+          done(null, updatedUser);
         });
-
-        updatedUser.icon = {
-          type: options.icon.type
-        };
-
-        done(null, updatedUser);
-      });
+      }
     } else {
       operations.push(function(updatedUser, done) {
         var icon = iconPath(updatedUser._id, updatedUser, options.icon);

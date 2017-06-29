@@ -475,6 +475,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
         layer.dragging.disable();
       }
       layers['EditObservation'].layer.removeLayer(layer);
+      delete layers['EditObservation'].featureIdToLayer[editComplete.id];
       createGeoJsonForLayer(editComplete, layers['Observations']);
       layer = layers['Observations'].featureIdToLayer[editComplete.id];
       layers['Observations'].layer.addLayer(layer);
@@ -616,24 +617,8 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
       // Set the lat/lng
       if (feature.geometry.coordinates) {
-        if(feature.geometry.type === 'Point'){
-
-          // Set the icon
-          if (feature.style && feature.style.iconUrl) {
-            layer.setIcon(L.fixedWidthIcon({
-              iconUrl: feature.style.iconUrl
-            }));
-          }
-
-          layer.setLatLng(L.GeoJSON.coordsToLatLng(feature.geometry.coordinates));
-          // // TODO fix, this is showing accuracy when a new location comes in.
-          // // this should only happen when the popup is openPopup
-          // if (featureLayer.options.showAccuracy && layer._popup._isOpen  && layer.getAccuracy()) {
-          //   layer.setAccuracy(layer.feature.properties.accuracy);
-          // }
-        } else {
-          layer.setLatLngs(L.GeoJSON.coordsToLatLngs(feature.geometry.coordinates, layer.feature.geometry.type === 'Polygon' ? 1 : 0));
-        }
+        featureLayer.layer.removeLayer(layer);
+        featureLayer.layer.addLayer(createGeoJsonForLayer(feature, featureLayer));
       }
     });
 

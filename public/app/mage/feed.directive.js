@@ -56,8 +56,14 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
     geometryField.value = {x: latlng.lng, y: latlng.lat};
   });
 
-  $scope.$on('observation:editDone', function() {
+  $scope.$on('observation:editDone', function(event, observation) {
     $scope.newObservation = null;
+    $timeout(function() {
+      // scroll to observation in that page
+      var offset = $($element.find(".feed-items-container")).prop('offsetTop');
+      var feedElement = $($element.find(".feed-items"));
+      feedElement.animate({scrollTop: $('#' + observation.id).prop('offsetTop') - offset}, "slow");
+    });
   });
 
   $scope.$on('observation:cancel', function() {

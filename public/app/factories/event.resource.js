@@ -8,6 +8,20 @@ function Event($rootScope, $resource, $http, LocalStorageService) {
   var Event = $resource('/api/events/:id', {
     id: '@id'
   },{
+    get: {
+      method: 'GET',
+      responseType: 'json',
+      transformResponse: function(response) {
+        response.form.style = response.form.style || {
+          fill: '#5278A2',
+          stroke: '#5278A2',
+          fillOpacity: 0.2,
+          strokeOpacity: 1,
+          strokeWidth: 2
+        };
+        return response;
+      }
+    },
     create: {
       method: 'POST',
       headers: {

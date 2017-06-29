@@ -1,9 +1,7 @@
 <div class="modal-header">
   <h4 class="modal-title">Symbology<span ng-if="model.primary"> for {{model.primary}} {{model.variant}}</span></h4>
 </div>
-
 <div class="modal-body admin-option-modal-content">
-
   <div class="row" style="min-height: 200px">
     <div class="col-md-4 text-center">
       <strong>Point Icon</strong>
@@ -18,17 +16,17 @@
     </div>
     <div class="col-md-4">
       <strong>Line Color</strong>
-      <div><input minicolors="minicolorSettings" class="form-control" type="text" ng-model="model.style.stroke"></div>
+      <div><input minicolors="minicolorSettings" class="form-control" type="text" ng-model="model.style.stroke" required="true"></div>
       <strong>Line Opacity (0.0 - 1.0)</strong>
-      <div><input class="form-control" type="number" ng-model="model.style.strokeOpacity"></div>
+      <div><input class="form-control" type="number" ng-model="model.style.strokeOpacity" required="true"></div>
       <strong>Line Width</strong>
-      <div><input class="form-control" type="number" ng-model="model.style.strokeWidth"></div>
+      <div><input class="form-control" type="number" ng-model="model.style.strokeWidth" required="true"></div>
     </div>
     <div class="col-md-4">
       <strong>Fill Color</strong>
-      <div><input minicolors="minicolorSettings" class="form-control" type="text" ng-model="model.style.fill"></div>
+      <div><input minicolors="minicolorSettings" class="form-control" type="text" ng-model="model.style.fill" required="true"></div>
       <strong>Fill Opacity (0.0 - 1.0)</strong>
-      <div><input class="form-control" type="number" ng-model="model.style.fillOpacity"></div>
+      <div><input class="form-control" type="number" ng-model="model.style.fillOpacity" required="true"></div>
     </div>
   </div>
 
@@ -36,5 +34,5 @@
 
 <div class="modal-footer">
   <button class="btn btn-default" ng-click="cancel()" ngm-tap="cancel()">Cancel</button>
-  <button class="btn btn-primary" ng-click="done()">Set Symbology</button>
+  <button class="btn btn-primary" ng-click="done()" ng-disabled="!model.style.stroke || !model.style.fill || !model.style.strokeOpacity || !model.style.strokeWidth || !model.style.fillOpacity">Set Symbology</button>
 </div>

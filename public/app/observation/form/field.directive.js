@@ -46,7 +46,7 @@ function FieldDirectiveController($scope) {
     value: 'Polygon'
   }];
 
-  if ($scope.field.type === 'geometry') {
+  if ($scope.field.type === 'geometry' && $scope.field.value) {
     $scope.shape = {
       type:$scope.field.value.type
     };
