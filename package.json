@@ -1,5 +1,5 @@
 {
-  "name": "MAGE",
+  "name": "mage",
   "version": "4.5.0",
   "description": "Geospatial situation awareness application",
   "keywords": [
@@ -80,7 +80,7 @@
   "scripts": {
     "test": "mocha --reporter spec",
     "coverage": "istanbul cover _mocha",
-    "build": "bower install --config.cwd=public --config.interactive=false && grunt build",
+    "build": "bower install --allow-root --config.cwd=public --config.interactive=false && grunt build",
     "prestart": "sh bin/prestart.sh",
     "poststop": "sh bin/poststop.sh",
     "migrate": "mm --config=migrations/mm-config.js",

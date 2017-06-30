@@ -10,8 +10,8 @@ var mongoConfig = {
   // password: 'changeme',
   // ssl: true,
   scheme: 'mongodb',
-  host: "localhost",
-  port: 27017,
+  host: process.env.MONGO_HOST,
+  port: process.env.MONGO_PORT,
   db: "magedb",
   poolSize: 5
 };
