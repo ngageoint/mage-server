@@ -4,6 +4,8 @@ var mongoose = require('mongoose')
   , environment = require('environment')
   , log = require('./logger');
 
+mongoose.Promise = require('bluebird');
+
 var mongooseLogger = log.loggers.get('mongoose');
 
 mongoose.set('debug', function(collection, method, query, doc, options) {
@@ -36,7 +38,6 @@ fs.mkdirp(iconBase, function(err) {
 
 var mongo = environment.mongo;
 log.info('using mongodb connection from: ' + mongo.uri);
-mongoose.Promise = require('bluebird');
 mongoose.connect(mongo.uri, mongo.options, function(err) {
   if (err) {
     log.error('Error connecting to mongo database, please make sure mongodb is running...');

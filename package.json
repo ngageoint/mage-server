@@ -84,7 +84,7 @@
     "build": "bower install --allow-root --config.cwd=public --config.interactive=false && grunt build",
     "prestart": "sh bin/prestart.sh",
     "poststop": "sh bin/poststop.sh",
-    "migrate": "mm --config=migrations/mm-config.js",
+    "migrate": "DEBUG=true mm --config=migrations/mm-config.js",
     "start": "node app.js"
   },
   "bundleDependencies": [],

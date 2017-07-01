@@ -1,6 +1,7 @@
 version: "3.2"
 services:
   mongo:
+    container_name: "mage_db"
     image: mongo:latest
     restart: always
     ports:
@@ -10,6 +11,7 @@ services:
       - /var/lib/mongodb
       - /var/log/mongodb
   mage:
+    container_name: "mage_server"
     restart: always
     build:
       context: .
