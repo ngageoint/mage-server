@@ -2,6 +2,8 @@ var environment = require('environment')
   , mongoose = require('mongoose')
   , log = require('winston');
 
+mongoose.Promise = require('bluebird');
+
 var mongo = environment.mongo;
 
 var migrateConfig = {

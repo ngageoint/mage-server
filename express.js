@@ -3,7 +3,10 @@ var express = require("express")
   , path = require('path')
   , config = require('./config.js')
   , provision = require('./provision')
-  , log = require('./logger');
+  , log = require('./logger')
+  , bodyParser = require('body-parser')
+  , multer = require('multer')
+  , environment = require('environment');
 
 var app = express();
 app.use(function(req, res, next) {
@@ -29,9 +32,11 @@ app.use(function(req, res, next) {
   };
   return next();
 });
-app.use(require('body-parser')({ keepExtensions: true}));
+
+app.use(bodyParser.urlencoded());
+app.use(bodyParser.json());
 app.use(require('method-override')());
-app.use(require('multer')());
+app.use(multer({dest:environment.attachmentBaseDirectory}).any());
 app.use(passport.initialize());
 app.use(express.static(path.join(__dirname, process.env.NODE_ENV === 'production' ? 'public/dist' : 'public')));
 app.use('/api/swagger', express.static('./public/vendor/swagger-ui/'));
