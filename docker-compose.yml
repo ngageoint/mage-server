@@ -3,15 +3,13 @@ services:
   mongo:
     image: mongo:latest
     restart: always
-    expose:
-      - "27017"
+    ports:
+      - "27017:27017"
     volumes:
       - /data/db
       - /var/lib/mongodb
       - /var/log/mongodb
-    networks:
-      - mage-net
-  server:
+  mage:
     restart: always
     build:
       context: .
@@ -37,8 +35,3 @@ services:
       - MONGO_PORT=27017
     links:
       - mongo
-    networks:
-      - mage-net
-networks:
-  mage-net:
-    driver: bridge

@@ -57,7 +57,7 @@ it("should throw validation error for invalid date field", function() {
 
   var observation =  {
     properties: {
-      'test': new Date()
+      'test': '6/26/17'
     }
   };
 

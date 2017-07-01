@@ -36,6 +36,7 @@ fs.mkdirp(iconBase, function(err) {
 
 var mongo = environment.mongo;
 log.info('using mongodb connection from: ' + mongo.uri);
+mongoose.Promise = require('bluebird');
 mongoose.connect(mongo.uri, mongo.options, function(err) {
   if (err) {
     log.error('Error connecting to mongo database, please make sure mongodb is running...');

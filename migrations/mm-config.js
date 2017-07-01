@@ -17,6 +17,7 @@ var migrateConfig = {
 };
 
 log.info('using mongodb connection from: ' + mongo.uri);
+mongoose.Promise = require('bluebird');
 mongoose.connect(environment.mongo.uri, environment.mongo.options, function(err) {
   if (err) {
     log.error('Error connecting to mongo database, please make sure mongodbConfig is running...');

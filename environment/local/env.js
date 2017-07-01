@@ -8,7 +8,7 @@ environment.address = process.env.ADDRESS || "0.0.0.0";
 var mongoConfig = {
   // username: 'changeme',
   // password: 'changeme',
-  // ssl: true,
+  ssl: false,
   scheme: 'mongodb',
   host: process.env.MONGO_HOST,
   port: process.env.MONGO_PORT,
