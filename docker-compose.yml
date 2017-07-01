@@ -1,0 +1,39 @@
+version: "3.2"
+services:
+  mongo:
+    container_name: "mage_db"
+    image: mongo:latest
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - /data/db
+      - /var/lib/mongodb
+      - /var/log/mongodb
+  mage:
+    container_name: "mage_server"
+    restart: always
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        - MONGO_HOST=mongo
+        - MONGO_PORT=27017
+    ports:
+      - "3000:3000"
+      - "5858:5858"
+      - "8080:8080"
+      - "35729:35729"
+    volumes:
+      - /tmp:/opt/mage
+      - /opt/mage/node_modules
+      - /opt/mage/public
+      - /opt/mage/uploads
+      - /tmp:/var/lib/mage
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_HOST=mongo
+      - MONGO_PORT=27017
+    links:
+      - mongo

@@ -5,6 +5,7 @@ var mongoose = require('mongoose')
 
 var mongodbConfig = config.server.mongodb;
 var mongoUri = "mongodb://" + mongodbConfig.host + "/" + mongodbConfig.db;
+mongoose.Promise = require('bluebird');
 mongoose.connect(mongoUri);
 var dbStatus = mongoose.connection;
 dbStatus.on('error', console.error.bind(console, 'dbTest connection error:'));
