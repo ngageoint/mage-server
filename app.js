@@ -4,6 +4,8 @@ var mongoose = require('mongoose')
   , environment = require('environment')
   , log = require('./logger');
 
+mongoose.Promise = require('bluebird');
+
 var mongooseLogger = log.loggers.get('mongoose');
 
 mongoose.set('debug', function(collection, method, query, doc, options) {
