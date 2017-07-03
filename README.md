@@ -140,12 +140,32 @@ $ curl https://codeload.github.com/ngageoint/mage-server/zip/4.4.3 | tar -xf - -
 
 The rest of the installation steps assume you are in the MAGE server directory, eg /opt/mage
 
+### Installing Dependencies and Building MAGE
+
+You can install all server and web dependencies by using npm from the mage-server directory:
+```bash
+$ npm install
+```
+
 ### MAGE local media directory
 By default MAGE will store media attachments (video, images, etc) locally on the MAGE server.  The default directory is '/var/lib/mage', lets make sure this directory exists.  If you would like to change where MAGE is looking for media please see the attachmentBaseDirectory in [MAGE Setup](#setting-up-mage-for-local-deployment)
 
 ``` bash
 $ mkdir /var/lib/mage
 ```
+
+### Starting MongoDB
+To start the mongo daemon type the following:
+```bash
+$ mongod --config <filename>
+```
+
+The mongodb configuation file will live in a different place depending on your system:
+* homebrew: /usr/local/etc/mongod.conf
+* yum: /etc/mongod.conf
+* apt: /etc/mongodb.conf
+
+MAGE will run with the provided configuration defaults, but feel free to modified these settings for your particular deployment.
 
 ### MAGE database setup
 The migration patches live in the [migrations folder](migrations).  MAGE uses [mongodb-migrations](https://github.com/emirotin/mongodb-migrations) to support applying migrations.  On initial setup, you will have to run the migrations to create the initial user and device used to log into the web.
@@ -282,27 +302,7 @@ Configuration includes:
 
 MAGE uses the cfenv node module to pull the configuration it needs directly from Cloud Foundry.
 
-### Installing Dependencies and Building MAGE
-
-You can install all server and web dependencies by using npm from the mage-server directory:
-```bash
-$ npm install
-```
-
 NPM install will install all node (server) dependencies in the node_modules folder.  There is a postinstall section in the [package.json](package.json) file that will also install all bower (web) dependencies to the public/bower_components directory.
-
-### Starting MongoDB
-To start the mongo daemon type the following:
-```bash
-$ mongod --config <filename>
-```
-
-The mongodb configuation file will live in a different place depending on your system:
-* homebrew: /usr/local/etc/mongod.conf
-* yum: /etc/mongod.conf
-* apt: /etc/mongodb.conf
-
-MAGE will run with the provided configuration defaults, but feel free to modified these settings for your particular deployment.
 
 ## Plugins
 
