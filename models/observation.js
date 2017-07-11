@@ -58,7 +58,11 @@ var ObservationSchema = new Schema({
   },
   favoriteUserIds: [{type: Schema.Types.ObjectId, ref: 'User'}]
 },{
-  strict: false
+  strict: false,
+  timestamps: {
+    createdAt: 'createdAt',
+    updatedAt: 'lastModified'
+  }
 });
 
 ObservationSchema.index({geometry: "2dsphere"});
@@ -237,8 +241,6 @@ exports.getObservations = function(event, o, callback) {
 
 // DEPRECATED backwards compat for creating an observation.  Will be removed in version 5.x.x
 exports.createObservation = function(event, observation, callback) {
-  observation.lastModified = moment.utc().toDate();
-
   observationModel(event).create(observation, callback);
 };
 
@@ -263,8 +265,6 @@ exports.getObservationById = function(event, observationId, options, callback) {
 };
 
 exports.updateObservation = function(event, observationId, observation, callback) {
-  observation.lastModified = moment.utc().toDate();
-
   observationModel(event).findByIdAndUpdate(observationId, observation, {new: true, upsert: true}, callback);
 };
 
@@ -318,9 +318,6 @@ exports.addState = function(event, id, state, callback) {
         '$each': [state],
         '$position': 0
       }
-    },
-    '$set': {
-      lastModified: moment.utc().toDate()
     }
   };
 
@@ -333,9 +330,6 @@ exports.addFavorite = function(event, observationId, user, callback) {
   var update = {
     $addToSet: {
       favoriteUserIds: user._id
-    },
-    '$set': {
-      lastModified: moment.utc().toDate()
     }
   };
 
@@ -346,9 +340,6 @@ exports.removeFavorite = function (event, observationId, user, callback) {
   var update = {
     $pull: {
       favoriteUserIds: user._id
-    },
-    '$set': {
-      lastModified: moment.utc().toDate()
     }
   };
 
@@ -359,9 +350,6 @@ exports.removeImportant = function(event, id, callback) {
   var update = {
     '$unset': {
       important: 1
-    },
-    '$set': {
-      lastModified: moment.utc().toDate()
     }
   };
 
@@ -396,7 +384,7 @@ exports.addAttachment = function(event, id, file, callback) {
     lastModified: new Date()
   });
 
-  var update = {'$push': { attachments: attachment }, 'lastModified': new Date()};
+  var update = {'$push': { attachments: attachment }};
   observationModel(event).update(condition, update, function(err) {
     callback(err, attachment);
   });

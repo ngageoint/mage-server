@@ -3,11 +3,18 @@ All notable changes to this project will be documented in this file.
 Adheres to [Semantic Versioning](http://semver.org/).
 
 ---
-## 4.5.1 (TBD)
+## 4.5.2 (TBD)
 
 * TBD
 
 ##### Features
+
+##### Bug Fixes
+
+## [4.5.1](https://github.com/ngageoint/mage-server/releases/tag/4.5.1) (07-11-2017)
+
+##### Features
+* Added createdAt timestamp for observations
 
 ##### Bug Fixes
 
