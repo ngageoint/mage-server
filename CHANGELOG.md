@@ -9,6 +9,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Features
 * Upgraded npm dependencies to latest.
+* Added map icon color and map icon initials columns to bulk user import.
 
 ##### Bug Fixes
 
