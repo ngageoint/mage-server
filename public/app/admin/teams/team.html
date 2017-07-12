@@ -130,7 +130,7 @@
               <div class="admin-table">
                 <div class="well-item"
                     ng-repeat="user in (filteredUsers = (team.users | user:['displayName','email']:memberSearch)) | orderBy:'displayName' | offset: usersPage*usersPerPage | limitTo:usersPerPage" >
-                  <div class="row">
+                  <div class="row pointer" ng-click="gotoUser(user)">
                     <div class="col-md-12">
                       <div class="right-gap pull-left">
                         <i class="fa fa-user"></i>
