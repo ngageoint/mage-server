@@ -162,6 +162,58 @@ describe("user create tests", function() {
       .end(done);
   });
 
+  it.only('should create user with no whitespace', function(done) {
+    mockTokenWithPermission('NO_PERMISSIONS');
+
+    sandbox.mock(RoleModel)
+      .expects('findOne')
+      .withArgs({ name: 'USER_ROLE' })
+      .yields(null, new RoleModel({
+        permissions: ['SOME_PERMISSIONS']
+      }));
+
+    var id = mongoose.Types.ObjectId();
+    var mockUser = new UserModel({
+      _id: id,
+      username: 'test',
+      displayName: 'test',
+      password: 'passwordpassword',
+      passwordconfirm: 'passwordpassword'
+    });
+
+    sandbox.mock(mockUser)
+      .expects('populate')
+      .withArgs('roleId')
+      .yields(null, mockUser);
+
+    sandbox.mock(UserModel)
+      .expects('create')
+      .withArgs(sinon.match.has('username', 'test'))
+      .yields(null, mockUser);
+
+    request(app)
+      .post('/api/users')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        username: ' test ',
+        displayName: 'test',
+        phone: '000-000-0000',
+        email: 'test@test.com',
+        password: 'passwordpassword',
+        passwordconfirm: 'passwordpassword'
+      })
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(function(res) {
+        var user = res.body;
+        console.log('user', user);
+        should.exist(user);
+        user.should.have.property('id').that.equals(id.toString());
+      })
+      .end(done);
+  });
+
   it('should fail to create user w/o username', function(done) {
     mockTokenWithPermission('NO_PERMISSIONS');
 
