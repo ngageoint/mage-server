@@ -1,7 +1,9 @@
 var IconModel = require('../models/icon')
+  , mongoose = require('mongoose')
   , log = require('winston')
   , path = require('path')
   , fs = require('fs-extra')
+  , os = require('os')
   , archiver = require('archiver')
   , environment = require('environment');
 
@@ -40,8 +42,8 @@ Icon.prototype.getBasePath = function() {
   return path.join(iconBase, this._eventId.toString());
 };
 
-Icon.prototype.writeZip = function(callback) {
-  var output = fs.createWriteStream(path.join(iconBase, this._eventId+'_icons.zip'));
+Icon.prototype.writeZip = function(zipPath, callback) {
+  var output = fs.createWriteStream(zipPath);
   var archive = archiver('zip');
   output.on('close', callback);
   archive.on('warning', callback);
@@ -52,8 +54,9 @@ Icon.prototype.writeZip = function(callback) {
 };
 
 Icon.prototype.getZipPath = function(callback) {
-  this.writeZip(function(err) {
-    return callback(err, path.join(iconBase, this._eventId+'_icons.zip'));
+  var zipPath = path.join(os.tmpdir(), this._eventId+'_icons'+mongoose.Types.ObjectId()+'.zip');
+  this.writeZip(zipPath, function(err) {
+    return callback(err, zipPath);
   }.bind(this));
 };
 
