@@ -2,6 +2,7 @@ module.exports = function(app, security) {
   var Event = require('../models/event')
   , access = require('../access')
   , api = require('../api')
+  , fs = require('fs-extra')
   , archiver = require('archiver')
   , async = require('async');
 
@@ -323,6 +324,11 @@ module.exports = function(app, security) {
     validateEventAccess,
     function(req, res) {
       new api.Icon(req.event._id).getZipPath(function(err, zipPath) {
+        res.on('finish', function() {
+          fs.remove(zipPath, function() {
+            console.log('Deleted the temp icon zip %s', zipPath);
+          });
+        });
         res.sendFile(zipPath);
       });
     }
