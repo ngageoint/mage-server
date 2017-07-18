@@ -3,7 +3,6 @@ module.exports = function(app, security) {
   , access = require('../access')
   , api = require('../api')
   , fs = require('fs-extra')
-  , archiver = require('archiver')
   , async = require('async');
 
   var passport = security.authentication.passport;
@@ -207,15 +206,7 @@ module.exports = function(app, security) {
     function(req, res, next) {
       Event.create(req.body, function(err, event) {
         if (err) return next(err);
-
-        //copy default icon into new event directory
-        new api.Icon(event._id).setDefaultIcon(function(err) {
-          if (err) {
-            return next(err);
-          }
-
-          res.status(201).json(event);
-        });
+        res.status(201).json(event);
       });
     }
   );
@@ -247,6 +238,76 @@ module.exports = function(app, security) {
         if (err) return next(err);
 
         res.status(204).send();
+      });
+    }
+  );
+
+  app.post(
+    '/api/events/:eventId/forms',
+    passport.authenticate('bearer'),
+    access.authorize('UPDATE_EVENT'),
+    parseEventQueryParams,
+    function(req, res, next) {
+      var form = req.body || {};
+      var fields = form.fields || [];
+      var userFields = form.userFields || [];
+      fields.forEach(function(field) {
+        // remove userFields chocies, these are set dynamically
+        if (userFields.indexOf(field.name) !== -1) {
+          field.choices = [];
+        }
+      });
+
+      Event.addForm(req.event._id, form, function(err, form) {
+        console.log('ADDED FORM', err);
+        if (err) return next(err);
+
+        async.parallel([
+          function(done) {
+            //copy default icon into new event directory
+            new api.Icon(req.event._id, form._id).setDefaultIcon(function(err) {
+              done(err);
+            });
+          },
+          function(done) {
+            new api.Form(req.event, form).populateUserFields(function(err) {
+              done(err);
+            });
+          }
+        ], function(err) {
+          if (err) return next(err);
+          console.log('return new form', form.toJSON());
+          res.status(201).json(form.toJSON());
+        });
+      });
+    }
+  );
+
+  app.put(
+    '/api/events/:eventId/forms/:formId',
+    passport.authenticate('bearer'),
+    access.authorize('UPDATE_EVENT'),
+    parseEventQueryParams,
+    function(req, res, next) {
+      var form = req.body || {};
+      var fields = form.fields || [];
+      var userFields = form.userFields || [];
+      fields.forEach(function(field) {
+        // remove userFields chocies, these are set dynamically
+        if (userFields.indexOf(field.name) !== -1) {
+          field.choices = [];
+        }
+      });
+
+      form._id = parseInt(req.params.formId);
+      Event.updateForm(req.event._id, form, function(err, form) {
+        if (err) return next(err);
+
+        new api.Form(req.event, form).populateUserFields(function(err) {
+          if (err) return next(err);
+
+          res.json(form);
+        });
       });
     }
   );
@@ -336,11 +397,11 @@ module.exports = function(app, security) {
 
   // get icon
   app.get(
-    '/api/events/:eventId/form/icons/:type?/:variant?',
+    '/api/events/:eventId/forms/:formId/icons/:type?/:variant?',
     passport.authenticate('bearer'),
     validateEventAccess,
     function(req, res, next) {
-      new api.Icon(req.event._id, req.params.type, req.params.variant).getIcon(function(err, iconPath) {
+      new api.Icon(req.event._id, req.params.formId, req.params.type, req.params.variant).getIcon(function(err, iconPath) {
         if (err || !iconPath) return next();
 
         res.sendFile(iconPath);
@@ -365,19 +426,12 @@ module.exports = function(app, security) {
 
   // Create a new icon
   app.post(
-    '/api/events/:eventId/form/icons/:type?/:variant?',
+    '/api/events/:eventId/forms/:formId/icons/:type?/:variant?',
     passport.authenticate('bearer'),
     access.authorize('CREATE_EVENT'),
     function(req, res, next) {
-      new api.Icon(req.event._id, req.params.type, req.params.variant).create(req.files.icon, function(err, icon) {
+      new api.Icon(req.event._id, req.params.formId, req.params.type, req.params.variant).create(req.files.icon, function(err, icon) {
         if (err) return next(err);
-
-        var iconBasePath = new api.Icon(req.event._id).getBasePath();
-        var archive = archiver('zip');
-        res.attachment("icons.zip");
-        archive.pipe(res);
-        archive.directory(iconBasePath, '/icons');
-        archive.finalize();
 
         return res.json(icon);
       });
@@ -386,11 +440,11 @@ module.exports = function(app, security) {
 
   // Delete an icon
   app.delete(
-    '/api/events/:eventId/form/icons/:type?/:variant?',
+    '/api/events/:eventId/forms:/formId/icons/:type?/:variant?',
     passport.authenticate('bearer'),
     access.authorize('DELETE_EVENT'),
     function(req, res, next) {
-      new api.Icon(req.event._id, req.params.type, req.params.variant).delete(function(err) {
+      new api.Icon(req.event._id, req.params.formId, req.params.type, req.params.variant).delete(function(err) {
         if (err) return next(err);
 
         return res.status(204).send();

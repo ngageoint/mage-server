@@ -198,7 +198,12 @@ function config($provide, $httpProvider, $routeProvider, $animateProvider) {
     controller:     "AdminEventEditController",
     resolve: resolveAdmin()
   });
-  $routeProvider.when('/admin/events/:eventId/edit/form', {
+  $routeProvider.when('/admin/events/:eventId/forms/new', {
+    templateUrl:    'app/admin/events/event.edit.form.html',
+    controller:     "AdminEventEditFormController",
+    resolve: resolveAdmin()
+  });
+  $routeProvider.when('/admin/events/:eventId/forms/:formId', {
     templateUrl:    'app/admin/events/event.edit.form.html',
     controller:     "AdminEventEditFormController",
     resolve: resolveAdmin()

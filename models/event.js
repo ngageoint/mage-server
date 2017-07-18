@@ -33,22 +33,26 @@ var FieldSchema = new Schema({
   _id: false
 });
 
-
-function hasFieldOnce(name) {
-  return function(fields) {
-    return fields.filter(function(field) {
-      return field.name === name;
-    }).length === 1;
-  };
+function hasAtLeastOneField(fields) {
+  return fields.length > 0;
 }
 
-function fieldIsRequired(name) {
-  return function(fields) {
-    return fields.filter(function(field) {
-      return field.name === name && field.required;
-    }).length;
-  };
+function validateColor(color) {
+  return /^#[0-9A-F]{6}$/i.test(color);
 }
+
+var FormSchema = new Schema({
+  _id: { type: Number, required: true, unique: true },
+  name: { type: String, required: true },
+  description: { type: String, required: false },
+  color: {type: String, required: true},
+  archived: {type: Boolean, required: true, default: false},
+  primaryField: { type: String, required: false },
+  variantField: { type: String, required: false },
+  userFields: [String],
+  fields: [FieldSchema],
+  style: { type: Schema.Types.Mixed, required: false }
+});
 
 // Creates the Schema for the Attachments object
 var EventSchema = new Schema({
@@ -59,22 +63,19 @@ var EventSchema = new Schema({
   collectionName: { type: String, required: true },
   teamIds: [{type: Schema.Types.ObjectId, ref: 'Team'}],
   layerIds: [{type: Number, ref: 'Layer'}],
-  form: {
-    variantField: { type: String, required: false },
-    userFields: [String],
-    fields: [FieldSchema],
-    style: { type: Schema.Types.Mixed, required: false }
-  }
+  forms: [FormSchema]
 },{
   versionKey: false
 });
 
-EventSchema.path('form.fields').validate(hasFieldOnce('timestamp'), 'fields array must contain one timestamp field');
-EventSchema.path('form.fields').validate(fieldIsRequired('timestamp'), 'timestamp must have a required property set to true.');
-EventSchema.path('form.fields').validate(hasFieldOnce('geometry'), 'fields array must contain one geometry field');
-EventSchema.path('form.fields').validate(fieldIsRequired('geometry'), 'geometry must have a required property set to true.');
-EventSchema.path('form.fields').validate(hasFieldOnce('type'), 'fields array must contain one type field');
-EventSchema.path('form.fields').validate(fieldIsRequired('type'), 'type must have a required property set to true.');
+// TODO figure out how to validate multiple forms
+// TODO validate form color is a hex color
+// TODO validate form has at least one field
+FormSchema.path('fields').validate(hasAtLeastOneField, 'Form must have at least one field.');
+FormSchema.path('color').validate(validateColor, 'Form color must be valid hex string.');
+
+// EventSchema.path('form.fields').validate(hasFieldOnce('type'), 'fields array must contain one type field');
+// EventSchema.path('form.fields').validate(fieldIsRequired('type'), 'type must have a required property set to true.');
 
 function validateTeamIds(eventId, teamIds, next) {
   if (!teamIds || !teamIds.length) return next();
@@ -140,6 +141,11 @@ EventSchema.post('remove', function(event) {
   });
 });
 
+function transformForm(form, ret) {
+  ret.id = ret._id;
+  delete ret._id;
+}
+
 function transform(event, ret) {
   if ('function' !== typeof event.ownerDocument) {
     ret.id = ret._id;
@@ -157,6 +163,10 @@ function transform(event, ret) {
     }
   }
 }
+
+FormSchema.set("toJSON", {
+  transform: transformForm
+});
 
 EventSchema.set("toJSON", {
   transform: transform
@@ -389,6 +399,11 @@ exports.update = function(id, event, options, callback) {
       validateTeamIds(id, event.teamIds, done);
     },
     function(done) {
+      // Preserve form ids
+      event.forms.forEach(function(form) {
+        form._id = form.id;
+      });
+
       Event.findByIdAndUpdate(id, event, {new: true, runValidators: true, context: 'query'}, done);
     }
   ], function(err, results) {
@@ -403,6 +418,39 @@ exports.update = function(id, event, options, callback) {
     } else {
       callback(err, updatedEvent);
     }
+  });
+};
+
+exports.addForm = function(eventId, form, callback) {
+  Counter.getNext('form', function(id) {
+    form._id = id;
+
+    var update = {
+      $push: {forms: form}
+    };
+
+    Event.findByIdAndUpdate(eventId, update, {new: true, runValidators: true}, function(err, event) {
+      console.log('added form', err);
+      if (err) return callback(err);
+
+      var forms = event.forms.filter(function(f) {
+        return f._id === form._id;
+      });
+
+      callback(err, forms.length ? forms[0] : null);
+    });
+  });
+};
+
+exports.updateForm = function(event, form, callback) {
+  var update = {
+    $set: {
+      'forms.$': form
+    }
+  };
+
+  Event.update({'forms._id': form._id}, update, {new: true, runValidators: true}, function(err) {
+    callback(err, form);
   });
 };
 

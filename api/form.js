@@ -5,8 +5,9 @@ var api = require('../api')
   , path = require('path')
   , Team = require('../models/team');
 
-function Form(event) {
+function Form(event, form) {
   this._event = event;
+  this._form = form;
 }
 
 function compareDisplayName(a, b) {
@@ -41,10 +42,8 @@ function getUserFields(form) {
 
 Form.prototype.populateUserFields = function(callback) {
   var event = this._event;
-  var userFields = getUserFields(event.form);
-  if (!userFields.length) return callback();
+  var form = this._form;
 
-  // Get all users in this event
   var teamIds = event.populated('teamIds') || event.teamIds;
   Team.getTeams({teamIds: teamIds}, function(err, teams) {
     if (err) return callback(err);
@@ -68,12 +67,20 @@ Form.prototype.populateUserFields = function(callback) {
       });
     }
 
-    userFields.forEach(function(userField) {
-      userField.choices = choices;
+    var forms = form ? [form] : event.forms;
+    forms.forEach(function(form) {
+      var userFields = getUserFields(form);
+      if (!userFields.length) return;
 
-      if (!userField.required && userField.type === 'dropdown') {
-        userField.choices.unshift("");
-      }
+      // Get all users in this event
+      userFields.forEach(function(userField) {
+        userField.choices = choices;
+
+        if (!userField.required && userField.type === 'dropdown') {
+          userField.choices.unshift("");
+        }
+      });
+
     });
 
     callback();

@@ -10,8 +10,9 @@ var IconModel = require('../models/icon')
 var appRoot = path.dirname(require.main.filename);
 var iconBase = environment.iconBaseDirectory;
 
-function Icon(eventId, type, variant) {
+function Icon(eventId, formId, type, variant) {
   this._eventId = eventId || null;
+  this._formId = formId || null;
   this._type = type || null;
   this._variant = variant || null;
 
@@ -25,7 +26,7 @@ function Icon(eventId, type, variant) {
 
 function createIconPath(icon, name) {
   var ext = path.extname(name);
-  var iconPath = icon._eventId.toString();
+  var iconPath = path.join(icon._eventId.toString(), icon._formId.toString());
   if (icon._type !== null) {
     iconPath = path.join(iconPath, icon._type);
     if (icon._variant !== null) {
@@ -63,6 +64,7 @@ Icon.prototype.getZipPath = function(callback) {
 Icon.prototype.getIcon = function(callback) {
   var options = {
     eventId: this._eventId,
+    formId: this._formId,
     type: this._type,
     variant: this._variant
   };
@@ -77,6 +79,7 @@ Icon.prototype.setDefaultIcon = function(callback) {
   var relativePath = createIconPath(this, 'default-icon.png');
   var newIcon = {
     eventId: this._eventId,
+    formId: this._formId,
     relativePath: relativePath
   };
 
@@ -96,6 +99,7 @@ Icon.prototype.create = function(icon, callback) {
   var relativePath = createIconPath(this, icon.name);
   var newIcon = {
     eventId: this._eventId,
+    formId: this._formId,
     type: this._type,
     variant: this._variant,
     relativePath: relativePath
@@ -125,6 +129,7 @@ Icon.prototype.add = function(icon, callback) {
   var relativePath = createIconPath(this, icon.name);
   var newIcon = {
     eventId: this._eventId,
+    formId: this._formId,
     type: this._type,
     variant: this._variant,
     relativePath: relativePath
@@ -139,6 +144,7 @@ Icon.prototype.delete = function(callback) {
   var self = this;
   var conditions = {
     eventId: this._eventId,
+    formId: this._formId,
     type: this._type,
     variant: this._variant
   };
@@ -146,7 +152,7 @@ Icon.prototype.delete = function(callback) {
   IconModel.getIcon(conditions, function(err) {
     if (err) return callback(err);
 
-    var remove = {eventId: self._eventId};
+    var remove = {eventId: self._eventId, formId: self._formId};
     if (self._type) remove.type = self._type;
     if (self._variant) remove.variant = self._variant;
 

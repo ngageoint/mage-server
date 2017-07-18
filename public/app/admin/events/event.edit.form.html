@@ -14,21 +14,84 @@
   <div class="content-inner">
 
     <div class="container" ng-show="event">
-
       <div class="row">
         <div class="col-md-12">
-          <a class="btn btn-default pull-right" ng-href="{{'/api/events/' + event.id + '/form.zip?access_token=' + token}}">
-            <i class="fa fa-download"></i> Export Form
-          </a>
+          <h2 ng-if="form.id">Edit form: {{form.name}}</h2>
+          <h2 ng-if="!form.id">New form</h2>
         </div>
       </div>
+
+      <div class="row top-gap-l">
+        <div class="col-md-6 col-xs-12">
+
+          <form name="generalForm" class="form-horizontal" >
+            <div class="form-group" ng-class="{'has-error': generalForm.$submitted && generalForm.name.$invalid}">
+              <label class="control-label col-sm-2">Name</label>
+              <div class="col-sm-10">
+                <input class="form-control" type="text" placeholder="Form name" name="name" ng-model="form.name" ng-required="true"/>
+                <span class="help-block" ng-if=" generalForm.$submitted && generalForm.name.$invalid">Name is required</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="control-label col-sm-2">Description</label>
+              <div class="col-sm-10">
+                <textarea class="form-control" type="text" placeholder="Brief description of the form." ng-model="form.description"/>
+              </div>
+            </div>
+
+            <div class="form-group" ng-class="{'has-error': generalForm.$submitted && generalForm.color.$invalid}">
+              <label class="control-label col-sm-2">Color</label>
+              <div class="col-sm-10">
+                <input minicolors="minicolorSettings" class="form-control" type="text" ng-model="form.color" name="color" ng-required="true">
+                <span class="help-block" ng-if=" generalForm.$submitted && generalForm.color.$invalid">Color is invalid</span>
+              </div>
+            </div>
+          </form>
+
+        </div>
+
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-content">
+              <strong class="text-info">Export Form</strong>
+              <p class="text-info">Export this form for use in another event.</p>
+              <a class="btn btn-info top-gap" ng-href="{{'/api/events/' + event.id + '/form.zip?access_token=' + token}}">
+                <i class="fa fa-download"></i> Export
+              </a>
+
+              <span class="help-block" ng-if="true">{{exportError}}</span>
+            </div>
+          </div>
+
+          <div class="card top-gap" ng-if="!form.archived">
+            <div class="card-content">
+              <strong class="text-danger">Archive Form</strong>
+              <p class="text-danger">Archiving a form will remove it from the list of forms a users sees when creating an observation. The form can be restored at any time.</p>
+              <button class="btn btn-danger top-gap" ng-click="archiveForm()"> <i class="fa fa-trash"></i> Archive</button>
+            </div>
+          </div>
+
+          <div class="card top-gap" ng-if="form.archived">
+            <div class="card-content">
+              <strong class="text-success">Restore Form</strong>
+              <p class="text-success">Restoring a form will add it back to the list of forms a users sees when creating an observation.</p>
+              <button class="btn btn-success top-gap" ng-click="restoreForm()"> <i class="fa fa-check"></i> Restore</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr>
 
       <div class="row top-gap-l">
         <div class="col-md-12">
           <nav class="navbar navbar-default admin-dashboard-navbar">
             <div class="container-fluid">
-              <div class="navbar-header">
+              <div class="navbar-header" style="width: 100%;">
                 <a class="navbar-brand">Form Fields</a>
+              </div>
+              <div class="has-error" ng-if="generalForm.$submitted && (form.fields | filter:{archived: '!true'}).length < 1">
+                <span class="help-block">Form must contain at least one field.</span>
               </div>
             </div>
           </nav>
@@ -38,14 +101,14 @@
         <div class="col-sm-12">
           <div class="admin-table admin-table-content">
             <uib-accordion close-others="accordion.oneAtATime">
-              <div uib-accordion-group class="panel-default" ng-repeat="field in event.form.fields | filter:{archived: '!true'} | orderBy: 'id'">
+              <div uib-accordion-group class="panel-default" ng-repeat="field in form.fields | filter:{archived: '!true'} | orderBy: 'id'">
                 <uib-accordion-heading>
                   {{field.title}}
-                  <i class="pull-right fa fa-arrow-up" ng-if="!$first && canMoveField(field)" ng-click="moveFieldUp($event, field)"></i>
-                  <i class="pull-right fa fa-arrow-down" ng-if="!$last && canMoveField(field)" ng-click="moveFieldDown($event, field)"></i>
+                  <i class="pull-right fa fa-arrow-up" ng-if="!$first" ng-click="moveFieldUp($event, field)"></i>
+                  <i class="pull-right fa fa-arrow-down" ng-if="!$last" ng-click="moveFieldDown($event, field)"></i>
                 </uib-accordion-heading>
                 <div class="accordion-edit">
-                  <form name="form.fields" novalidate>
+                  <form name="eventForm" novalidate>
                     <div class="row">
                       <div class="col-md-6">
                         <div class="form-group">
@@ -185,7 +248,7 @@
               </div>
             </div>
             <div class="admin-table admin-table-content">
-              <form name="form.newField" novalidate>
+              <form name="newFieldForm" novalidate>
                 <div class="row">
                   <div class="col-md-6">
                     <div class="form-group">
@@ -350,12 +413,12 @@
                     <div class="row">
                       <div class="col-md-12"><strong>Default Symbology<strong></div>
                     </div>
-                    <img class="preview-image" width="100%" ng-src="{{'/api/events/' + event.id + '/form/icons?access_token=' + token + '&_dc=' + savedTime}}"/>
+                    <img class="preview-image" width="100%" ng-src="{{'/api/events/' + event.id + '/forms/' + form.id + '/icons?access_token=' + token + '&_dc=' + savedTime}}"/>
                     <div class="shape-style">
-                      <div style-preview="event.form.style" type="Polygon"></div>
+                      <div style-preview="form.style" type="Polygon"></div>
                     </div>
                     <div class="shape-style">
-                      <div style-preview="event.form.style" type="LineString"></div>
+                      <div style-preview="form.style" type="LineString"></div>
                     </div>
                   </div>
                 </div>
@@ -363,25 +426,25 @@
             </div>
             <hr>
 
-            <strong>Choose a field to be used for icon variants:</strong>
+            <strong>Choose a field to be used for map symbology:</strong>
             <div class="row bottom-gap">
               <div class="col-md-2">
-                <select ng-model="event.form.variantField" ng-change="variantChanged()" ng-options="field.name as field.title for field in event.form.fields | filter: variantFilter" class="form-control">
-                  <option value="">No Variant</option>
+                <select ng-model="form.primaryField" ng-change="primaryChanged()" ng-options="field.name as field.title for field in form.fields | filter: primaryFilter" class="form-control">
+                  <option value="">None</option>
                 </select>
               </div>
             </div>
-            <div ng-show="showNumberVariants" class="bottom-gap">
-              <h4>You have chosen a date field for your icon variants.  Please define the ranges for each variant.</h4>
-              <div ng-repeat="variant in variants" class="row bottom-gap">
+            <div ng-show="showPrimaryNumberVariants" class="bottom-gap">
+              <h4>You have chosen a date field for your map icon symbology.  Please define the ranges.</h4>
+              <div ng-repeat="primary in variants" class="row bottom-gap">
                 <div class="col-md-12">
-                  <span class="strong">{{variant.title}}
+                  <span class="strong">{{primary.title}}
                   <span ng-show="variants[$index+1]">
                   - {{variants[$index+1].title}}
                   </span>
                   <span ng-hide="variants[$index+1]">+</span>
                   minutes old
-                  <button class="btn btn-sm btn-danger" ng-click="removeVariant(variant)">Remove Variant</button>
+                  <button class="btn btn-sm btn-danger" ng-click="removeVariant(primary)">Remove Variant</button>
                   </span>
                 </div>
               </div>
@@ -403,9 +466,51 @@
               </div>
             </div>
 
+            <div ng-show="form.primaryField">
+              <strong>Choose a secondary field to be used for map symbology:</strong>
+              <div class="row bottom-gap">
+                <div class="col-md-2">
+                  <select ng-model="form.variantField" ng-change="variantChanged()" ng-options="field.name as field.title for field in form.fields | filter: variantFilter" class="form-control">
+                    <option value="">None</option>
+                  </select>
+                </div>
+              </div>
+              <div ng-show="showNumberVariants" class="bottom-gap">
+                <h4>You have chosen a date field for your icon variants.  Please define the ranges for each variant.</h4>
+                <div ng-repeat="variant in variants" class="row bottom-gap">
+                  <div class="col-md-12">
+                    <span class="strong">{{variant.title}}
+                    <span ng-show="variants[$index+1]">
+                    - {{variants[$index+1].title}}
+                    </span>
+                    <span ng-hide="variants[$index+1]">+</span>
+                    minutes old
+                    <button class="btn btn-sm btn-danger" ng-click="removeVariant(variant)">Remove Variant</button>
+                    </span>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <form class="form-inline">
+                      <div class="form-group">
+                        <p class="form-control-static">More than</p>
+                      </div>
+                      <div class="form-group">
+                        <input type="number" ng-model="newVariantMin" class="form-control"/>
+                      </div>
+                      <div class="form-group">
+                        <p class="form-control-static">minutes old</p>
+                      </div>
+                      <button class="btn btn-sm btn-primary" ng-click="addVariantOption(newVariantMin)">Add Variant</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <hr>
 
-            <div ng-repeat="option in typeField.choices">
+            <div ng-repeat="option in primaryField.choices">
               <div class="row bottom-gap-s">
                 <div class="col-md-12">
                   <strong>{{option.title}}</strong>
@@ -418,12 +523,12 @@
                       <div class="row">
                         <div class="col-md-12">Default</div>
                       </div>
-                      <img class="preview-image" width="100%" ng-src="{{'/api/events/' + event.id + '/form/icons/' + option.title + '?access_token=' + token + '&_dc=' + savedTime}}"/>
+                      <img class="preview-image" width="100%" ng-src="{{'/api/events/' + event.id + '/forms/' + form.id + '/icons/' + option.title + '?access_token=' + token + '&_dc=' + savedTime}}"/>
                       <div class="shape-style">
-                        <div style-preview="event.form.style" type="Polygon" primary="option.title"></div>
+                        <div style-preview="form.style" type="Polygon" primary="option.title"></div>
                       </div>
                       <div class="shape-style">
-                        <div style-preview="event.form.style" type="LineString" primary="option.title"></div>
+                        <div style-preview="form.style" type="LineString" primary="option.title"></div>
                       </div>
                     </div>
                   </div>
@@ -446,12 +551,12 @@
                             </span>
                           </div>
                         </div>
-                        <img class="preview-image" width="100%" ng-src="{{'/api/events/' + event.id + '/form/icons/' + option.title + '/' + variant.title + '?access_token=' + token + '&_dc=' + savedTime}}"/>
+                        <img class="preview-image" width="100%" ng-src="{{'/api/events/' + event.id + '/forms/' + form.id + '/icons/' + option.title + '/' + variant.title + '?access_token=' + token + '&_dc=' + savedTime}}"/>
                         <div class="shape-style">
-                          <div style-preview="event.form.style" type="Polygon" primary="option.title" variant="variant.title"></div>
+                          <div style-preview="form.style" type="Polygon" primary="option.title" variant="variant.title"></div>
                         </div>
                         <div class="shape-style">
-                          <div style-preview="event.form.style" type="LineString" primary="option.title" variant="variant.title"></div>
+                          <div style-preview="form.style" type="LineString" primary="option.title" variant="variant.title"></div>
                         </div>
                       </div>
                     </div>

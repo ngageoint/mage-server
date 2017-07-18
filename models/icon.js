@@ -5,6 +5,7 @@ var Schema = mongoose.Schema;
 
 var IconSchema = new Schema({
   eventId: { type: Number, required: true },
+  formId: { type: Number, required: true },
   type: { type: String, required: false },
   variant: { type: Object, required: false },
   relativePath: {type: String, required: true }
@@ -31,6 +32,7 @@ exports.getIcon = function(options, callback) {
 
   var condition = {
     eventId: options.eventId,
+    formId: options.formId,
     type: {"$in": [type, null]}
   };
 
@@ -48,6 +50,7 @@ exports.getIcon = function(options, callback) {
 exports.create = function(icon, callback) {
   var conditions = {
     eventId: icon.eventId,
+    formId: icon.formId,
     type: icon.type,
     variant: icon.variant
   };
@@ -58,7 +61,8 @@ exports.create = function(icon, callback) {
 
 exports.remove = function(options, callback) {
   var condition = {
-    eventId: options.eventId
+    eventId: options.eventId,
+    formId: options.formId
   };
 
   if (options.type) condition.type = options.type;
