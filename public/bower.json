@@ -34,7 +34,7 @@
     "leaflet-groupedlayercontrol": "0.3.0",
     "moment": "2.9.0",
     "underscore": "1.8.2",
-    "angular-minicolors": "0.0.7",
+    "angular-minicolors": "0.0.10",
     "font-awesome": "4.7.0",
     "bower-webfontloader": "1.6.6",
     "videogular": "1.4.3",

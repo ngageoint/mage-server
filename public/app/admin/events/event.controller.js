@@ -7,6 +7,8 @@ AdminEventController.$inject = ['$scope', '$location', '$filter', '$routeParams'
 function AdminEventController($scope, $location, $filter, $routeParams, $q, $uibModal, LocalStorageService, UserService, EventService, Event, Team, Layer) {
   $scope.token = LocalStorageService.getToken();
 
+  $scope.showArchivedForms = false;
+
   $scope.editTeams = false;
   $scope.eventMembers = [];
   $scope.teamsPage = 0;
@@ -163,13 +165,13 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
   $scope.editEvent = function(event) {
     $location.path('/admin/events/' + event.id + '/edit');
   };
-
+    
   $scope.editAccess= function(event) {
     $location.path('/admin/events/' + event.id + '/access');
   };
 
-  $scope.editForm = function(event) {
-    $location.path('/admin/events/' + event.id + '/edit/form');
+  $scope.editForm = function(event, form) {
+    $location.path('/admin/events/' + event.id + '/forms/' + form.id);
   };
 
   $scope.gotoMember = function(member) {
@@ -193,6 +195,34 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     event.$save(function() {
       event.complete = false;
     });
+  };
+
+  $scope.addForm = function() {
+    $location.path('/admin/events/' + $scope.event.id + '/forms/new');
+  };
+
+  $scope.moveFormUp = function($event, form) {
+    $event.stopPropagation();
+
+    var forms = $scope.event.forms;
+
+    var from = forms.indexOf(form);
+    var to = from - 1;
+    forms.splice(to, 0, forms.splice(from, 1)[0]);
+
+    $scope.event.$save();
+  };
+
+  $scope.moveFormDown = function($event, form) {
+    $event.stopPropagation();
+
+    var forms = $scope.event.forms;
+
+    var from = forms.indexOf(form);
+    var to = from + 1;
+    forms.splice(to, 0, forms.splice(from, 1)[0]);
+
+    $scope.event.$save();
   };
 
   $scope.deleteEvent = function() {

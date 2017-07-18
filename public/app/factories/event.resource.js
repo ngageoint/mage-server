@@ -5,6 +5,8 @@ angular
 
 Event.$inject = ['$rootScope', '$resource', '$http', 'LocalStorageService'];
 
+// TODO should default styles be added by the server?
+
 function Event($rootScope, $resource, $http, LocalStorageService) {
   var Event = $resource('/api/events/:id', {
     id: '@id'
@@ -13,13 +15,16 @@ function Event($rootScope, $resource, $http, LocalStorageService) {
       method: 'GET',
       responseType: 'json',
       transformResponse: function(response) {
-        response.form.style = response.form.style || {
-          fill: '#5278A2',
-          stroke: '#5278A2',
-          fillOpacity: 0.2,
-          strokeOpacity: 1,
-          strokeWidth: 2
-        };
+        response.forms.forEach(function(form) {
+          form.style = form.style || {
+            fill: '#5278A2',
+            stroke: '#5278A2',
+            fillOpacity: 0.2,
+            strokeOpacity: 1,
+            strokeWidth: 2
+          };
+        });
+
         return response;
       }
     },
@@ -41,13 +46,15 @@ function Event($rootScope, $resource, $http, LocalStorageService) {
       transformResponse: function(response) {
         if (response && response.length) {
           for (var i = 0; i < response.length; i++) {
-            response[i].form.style = response[i].form.style || {
-              fill: '#5278A2',
-              stroke: '#5278A2',
-              fillOpacity: 0.2,
-              strokeOpacity: 1,
-              strokeWidth: 2
-            };
+            response[i].forms.forEach(function(form) {
+              form.style = form.style || {
+                fill: '#5278A2',
+                stroke: '#5278A2',
+                fillOpacity: 0.2,
+                strokeOpacity: 1,
+                strokeWidth: 2
+              };
+            });
           }
         }
         return response;
