@@ -56,22 +56,22 @@ function FieldDirectiveController($scope) {
     if (!$scope.shape || !$scope.shape.type || $scope.shape.type === $scope.field.value.type) return;
 
     switch($scope.shape.type) {
-      case 'Point':
-        $scope.field.value.coordinates = [];
-        $scope.field.value.type = 'Point';
-        break;
-      case 'LineString':
-        $scope.field.value.coordinates = [];
-        $scope.field.value.type = 'LineString';
-        break;
-      case 'Polygon':
-        $scope.field.value.coordinates = [[]];
-        $scope.field.value.type = 'Polygon';
-        break;
+    case 'Point':
+      $scope.field.value.coordinates = [];
+      $scope.field.value.type = 'Point';
+      break;
+    case 'LineString':
+      $scope.field.value.coordinates = [];
+      $scope.field.value.type = 'LineString';
+      break;
+    case 'Polygon':
+      $scope.field.value.coordinates = [[]];
+      $scope.field.value.type = 'Polygon';
+      break;
     }
 
     $scope.field.value.type = $scope.shape.type;
-  }
+  };
 
   $scope.$watch('shape.type', $scope.validateShapeChange);
 

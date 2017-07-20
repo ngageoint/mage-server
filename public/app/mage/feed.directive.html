@@ -40,8 +40,19 @@
 </div>
 
 <div class="feed-items">
-  <div class="feed-card" ng-if="newObservation">
-    <div class="feed-card-content">
+  <div class="feed-card">
+    <div class="feed-card-content observation-forms" ng-if="newObservationForms">
+      <h4>What type of observation would you like to create?</h4>
+      <div ng-repeat="form in newObservationForms track by form.id" class="observation-form pointer" ng-click="createObservation(form)">
+        <span class="fa-stack fa-3x">
+          <i class="fa fa-circle fa-stack-2x" ng-style="{'color': form.color}"></i>
+          <i class="fa fa-map-marker fa-stack-1x fa-inverse"></i>
+        </span>
+        <div>{{form.name}}</div>
+
+      </div>
+    </div>
+    <div class="feed-card-content" ng-if="newObservation">
       <form-directive form="newObservationForm" form-observation="newObservation"></form-directive>
     </div>
   </div>
