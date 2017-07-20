@@ -5,9 +5,16 @@
           <strong class="muted">{{event.name}}</strong>
         </h4>
 
-        <div ng-repeat="field in form.fields | filter:{archived: '!true'} | orderBy: 'id'">
-          <field-directive field="field" field-observation="observation" field-form="observationForm"></field-directive>
+        <field-directive field="form.timestampField" field-observation="observation" field-form="form"></field-directive>
+        <field-directive field="form.geometryField" field-observation="observation" field-form="form"></field-directive>
+
+        <div ng-repeat="aForm in form.forms" class="bottom-gap-l">
+          <h4>{{aForm.name}}</h4>
+          <div ng-repeat="field in aForm.fields | filter:{archived: '!true'} | orderBy: 'id'">
+            <field-directive field="field" field-observation="observation" field-form="aForm"></field-directive>
+          </div>
         </div>
+
         <span>* required</span>
 
         <div class="top-gap" ng-if="preview !== true">

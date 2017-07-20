@@ -52,8 +52,11 @@
         </span>
       </div>
 
-      <div class="top-gap" ng-repeat="field in form.fields | filter:filterHidden | orderBy: 'id'">
-        <property-view field="field">
+      <div class="top-gap" ng-repeat="form in observationForm.forms">
+        <h4>{{form.name}}</h4>
+        <div class="top-gap" ng-repeat="field in form.fields | filter:filterHidden(form) | orderBy: 'id'">
+          <property-view field="field">
+        </div>
       </div>
 
       <div class="attachments">

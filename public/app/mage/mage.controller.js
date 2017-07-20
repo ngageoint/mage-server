@@ -433,12 +433,13 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
     }
   });
 
-  $scope.$on('observation:create', function(e, latlng) {
+  $scope.onObservationCreate = function(latlng) {
+    console.log('leaflet on observation button clicked', latlng);
+
     $scope.hideFeed = false;
     MapService.hideFeed(false);
 
     var event = FilterService.getEvent();
-
     if (!EventService.isUserInEvent(UserService.myself, event)) {
       $uibModal.open({
         templateUrl: '/app/error/not.in.event.html',
@@ -462,21 +463,46 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
         coordinates: [latlng.lng, latlng.lat]
       },
       properties: {
-        timestamp: new Date()
+        timestamp: new Date(),
+        forms: []
       },
       style: {
 
       }
     });
 
+    $scope.$broadcast('observation:feed', newObservation);
+
+    // MapService.createMarker(newObservation, {
+    //   layerId: 'Observations'
+    // });
+    //
+    // MapService.startedMarkerEdit(newObservation);
+
+    $scope.$apply();
+  };
+
+  $scope.$on('observation:create', function(e, observation) {
+
     MapService.createMarker(newObservation, {
       layerId: 'Observations'
     });
 
-    $scope.$broadcast('observation:new', newObservation);
+    // $scope.$apply();
+    //
+    MapService.startedMarkerEdit(newObservation);
+  });
+
+  $scope.$on('observation:new', function(e, observation) {
+    MapService.createMarker(observation, {
+      layerId: 'Observations'
+    });
+
+    // $scope.$broadcast('observation:new', newObservation);
+    $scope.$broadcast('observation:create', observation);
     $scope.$apply();
 
-    MapService.startedMarkerEdit(newObservation);
+    MapService.startedMarkerEdit(observation);
   });
 
   $scope.$on('observation:editStarted', function(e, observation) {

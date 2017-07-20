@@ -29,7 +29,7 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
     $scope.iconUrl = $scope.observation.style.iconUrl;
     $scope.event = EventService.getEventById($scope.observation.eventId);
     var editedVertex = 0;
-    var geometryField = EventService.getFormField($scope.form, 'geometry');
+    var geometryField = $scope.form.geometryField;
     $scope.shape = geometryField.value.type;
     var copy = JSON.parse(JSON.stringify(geometryField.value));
     geometryField.value = copy;
@@ -54,7 +54,7 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
       updateGeometryEdit(geometryField, editedVertex);
     });
     $scope.$watch('form', function() {
-      var geometryField = EventService.getFormField($scope.form, 'geometry');
+      var geometryField = $scope.form.geometryField;
       var copy = JSON.parse(JSON.stringify(geometryField));
       var obs = {id: $scope.observation.id, geometry: copy.value};
       if (copy.value.type === 'Polygon' && copy.value.coordinates[0].length > 0) {
@@ -74,8 +74,9 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
         editedVertex = 0;
       }
       $scope.$emit('observation:shapeChanged', obs);
+      var primaryField = EventService.getFormField($scope.form, $scope.form.primaryField);
       var variantField = EventService.getFormField($scope.form, $scope.form.variantField);
-      var iconUrl = ObservationService.getObservationIconUrlForEvent($scope.event.id, EventService.getFormField($scope.form, 'type').value, variantField ? variantField.value : '');
+      var iconUrl = ObservationService.getObservationIconUrlForEvent($scope.event.id, primaryField ? primaryField.value : '', variantField ? variantField.value : '');
       if (iconUrl !== $scope.iconUrl) {
         $scope.iconUrl = iconUrl;
         $scope.$emit('observation:iconEdited', obs, iconUrl);
@@ -100,36 +101,45 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
   }
 
   function formToObservation(form, observation) {
-    _.each(form.fields, function(field) {
-      if (field.name === 'geometry') {
-        // put all coordinates in -180 to 180
-        switch (field.value.type) {
-          case 'Point':
-            if (field.value.coordinates[0] < -180) field.value.coordinates[0] = field.value.coordinates[0] + 360;
-            else if (field.value.coordinates[0] > 180) field.value.coordinates[0] = field.value.coordinates[0] - 360;
-            break;
-          case 'LineString':
-            for (var i = 0; i < field.value.coordinates.length; i++) {
-              var coord = field.value.coordinates[i];
-              while (coord[0] < -180) coord[0] = coord[0] + 360;
-              while (coord[0] > 180) coord[0] = coord[0] - 360;
-            }
-            break;
-          case 'Polygon':
-            for (var p = 0; p < field.value.coordinates.length; p++) {
-              var poly = field.value.coordinates[p];
-              for (var i = 0; i < poly.length; i++) {
-                var coord = poly[i];
-                while (coord[0] < -180) coord[0] = coord[0] + 360;
-                while (coord[0] > 180) coord[0] = coord[0] - 360;
-              }
-            }
-            break;
-        }
-        observation.geometry = field.value;
-      } else {
-        observation.properties[field.name] = field.value;
+    var geometry = form.geometryField.value;
+
+    // put all coordinates in -180 to 180
+    switch (geometry.type) {
+    case 'Point':
+      if (geometry.coordinates[0] < -180) geometry.coordinates[0] = geometry.coordinates[0] + 360;
+      else if (geometry.coordinates[0] > 180) geometry.coordinates[0] = geometry.coordinates[0] - 360;
+      break;
+    case 'LineString':
+      for (var i = 0; i < geometry.coordinates.length; i++) {
+        var coord = geometry.coordinates[i];
+        while (coord[0] < -180) coord[0] = coord[0] + 360;
+        while (coord[0] > 180) coord[0] = coord[0] - 360;
       }
+      break;
+    case 'Polygon':
+      for (var p = 0; p < geometry.coordinates.length; p++) {
+        var poly = geometry.coordinates[p];
+        for (var i = 0; i < poly.length; i++) {
+          var coord = poly[i];
+          while (coord[0] < -180) coord[0] = coord[0] + 360;
+          while (coord[0] > 180) coord[0] = coord[0] - 360;
+        }
+      }
+      break;
+    }
+    observation.geometry = geometry;
+
+    observation.properties.forms = [];
+    _.each(form.forms, function(observationForm) {
+      var propertiesForm = {
+        formId: observationForm.id
+      };
+
+      _.each(observationForm.fields, function(field) {
+        propertiesForm[field.name] = field.value;
+      });
+
+      observation.properties.forms.push(propertiesForm);
     });
   }
 

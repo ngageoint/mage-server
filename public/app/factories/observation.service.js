@@ -128,17 +128,21 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
   function transformObservations(observations, event) {
     if (!_.isArray(observations)) observations = [observations];
 
-    var eventStyle = event.form.style;
-
+    var formMap = _.indexBy(event.forms, 'id');
     _.each(observations, function(observation) {
-      var style = getObservationStyle(eventStyle, observation.properties.type, observation.properties[event.form.variantField]);
-      style.iconUrl = getObservationIconUrlForEvent(event.id, observation.properties.type, observation.properties[event.form.variantField]);
+      if (observation.properties.forms.length) {
+        var observationForm = formMap[observation.properties.forms[0].formId];
+        var style = getObservationStyle(observationForm, observation.properties[observationForm.primaryField], observation.properties[observationForm.variantField]);
+        style.iconUrl = getObservationIconUrlForEvent(event.id, observation.properties[observationForm.primaryField], observation.properties[observationForm.variantField]);
 
-      observation.style = style;
-      if (observation.geometry.type === 'Polygon') {
-        minimizePolygon(observation.geometry.coordinates);
-      } else if (observation.geometry.type === 'LineString') {
-        minimizeLineString(observation.geometry.coordinates);
+        observation.style = style;
+        if (observation.geometry.type === 'Polygon') {
+          minimizePolygon(observation.geometry.coordinates);
+        } else if (observation.geometry.type === 'LineString') {
+          minimizeLineString(observation.geometry.coordinates);
+        }
+      } else {
+        // TODO default style
       }
     });
   }

@@ -259,6 +259,22 @@ a {
   padding: 10px;
 }
 
+.observation-forms {
+  display: flex;
+  flex-flow: row wrap;
+  align-content: space-between;
+  align-items: center;
+  justify-content: center;
+}
+
+.observation-form {
+  text-align: center;
+  width: 30%;
+  position: relative;
+  margin: auto;
+  box-shadow: 0 3px 7px rgba(0,0,0,.35);
+}
+
 .map {
   flex: 2;
   position: relative;

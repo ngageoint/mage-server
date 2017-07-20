@@ -20,13 +20,19 @@ function observationPopup() {
 ObservationPopupDirective.$inject = ['$scope', 'EventService'];
 
 function ObservationPopupDirective($scope, EventService) {
-  var form = EventService.createForm($scope.observation);
 
-  $scope.type = $scope.observation.properties.type;
-  $scope.variant = null;
-  if (form.variantField) {
-    $scope.variant = $scope.observation.properties[form.variantField];
-  }
+  // TODO decide what to show on popup
+  // var form = EventService.createForm($scope.observation);
+
+  // $scope.primary = null;
+  // if (observationForm.primaryField) {
+  //   $scope.primary = $scope.observation.properties[observationForm.primaryField];
+  // }
+  //
+  // $scope.variant = null;
+  // if (observationForm.variantField) {
+  //   $scope.variant = $scope.observation.properties[observationForm.variantField];
+  // }
 
   $scope.date = moment($scope.observation.properties.timestamp).format("YYYY-MM-DD HH:mm:ss");
 
