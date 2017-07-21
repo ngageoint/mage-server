@@ -63,7 +63,18 @@ var EventSchema = new Schema({
   collectionName: { type: String, required: true },
   teamIds: [{type: Schema.Types.ObjectId, ref: 'Team'}],
   layerIds: [{type: Number, ref: 'Layer'}],
-  forms: [FormSchema]
+  forms: [FormSchema],
+  style: {
+    type: Schema.Types.Mixed,
+    required: true,
+    default: {
+      fill: '#5278A2',
+      stroke: '#5278A2',
+      fillOpacity: 0.2,
+      strokeOpacity: 1,
+      strokeWidth: 2
+    }
+  }
 },{
   versionKey: false
 });
@@ -430,7 +441,6 @@ exports.addForm = function(eventId, form, callback) {
     };
 
     Event.findByIdAndUpdate(eventId, update, {new: true, runValidators: true}, function(err, event) {
-      console.log('added form', err);
       if (err) return callback(err);
 
       var forms = event.forms.filter(function(f) {

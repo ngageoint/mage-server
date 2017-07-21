@@ -206,7 +206,15 @@ module.exports = function(app, security) {
     function(req, res, next) {
       Event.create(req.body, function(err, event) {
         if (err) return next(err);
-        res.status(201).json(event);
+
+        //copy default icon into new event directory
+        new api.Icon(event._id).setDefaultIcon(function(err) {
+          if (err) {
+            return next(err);
+          }
+
+          res.status(201).json(event);
+        });
       });
     }
   );
@@ -397,11 +405,13 @@ module.exports = function(app, security) {
 
   // get icon
   app.get(
-    '/api/events/:eventId/forms/:formId/icons/:type?/:variant?',
+    '/api/events/:eventId/icons/:formId?/:type?/:variant?',
     passport.authenticate('bearer'),
     validateEventAccess,
     function(req, res, next) {
+      console.log('get icon for formId: ', req.params.formId);
       new api.Icon(req.event._id, req.params.formId, req.params.type, req.params.variant).getIcon(function(err, iconPath) {
+        console.log('iconPath is: ', iconPath);
         if (err || !iconPath) return next();
 
         res.sendFile(iconPath);
@@ -426,7 +436,7 @@ module.exports = function(app, security) {
 
   // Create a new icon
   app.post(
-    '/api/events/:eventId/forms/:formId/icons/:type?/:variant?',
+    '/api/events/:eventId/icons/:formId?/:type?/:variant?',
     passport.authenticate('bearer'),
     access.authorize('CREATE_EVENT'),
     function(req, res, next) {
@@ -440,7 +450,7 @@ module.exports = function(app, security) {
 
   // Delete an icon
   app.delete(
-    '/api/events/:eventId/forms:/formId/icons/:type?/:variant?',
+    '/api/events/:eventId/icons/:formId?/:type?/:variant?',
     passport.authenticate('bearer'),
     access.authorize('DELETE_EVENT'),
     function(req, res, next) {
