@@ -26,9 +26,9 @@ function StylePreviewController($scope, $element) {
   function hexToRgb(hex) {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
     } : null;
   }
 
@@ -39,7 +39,7 @@ function StylePreviewController($scope, $element) {
     if ($scope.stylePreview[$scope.primary] && $scope.stylePreview[$scope.primary][$scope.variant]) {
       style = $scope.stylePreview[$scope.primary][$scope.variant];
     } else if ($scope.stylePreview[$scope.primary]) {
-      style = $scope.stylePreview[$scope.primary]
+      style = $scope.stylePreview[$scope.primary];
     }
 
     if (canvas.getContext){
@@ -70,8 +70,6 @@ function StylePreviewController($scope, $element) {
         ctx.stroke();
       }
 
-    } else {
-      console.log('no canvas support');
     }
   }, true);
 }

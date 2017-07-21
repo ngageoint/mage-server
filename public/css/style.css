@@ -906,6 +906,10 @@ h4.image-delete {
 	font-style: italic;
 }
 
+.observation-user {
+	font-size: 14px;
+}
+
 .observation-actions {
   display: flex;
   flex-direction: row;

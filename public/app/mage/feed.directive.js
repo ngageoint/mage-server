@@ -86,9 +86,7 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
     if (!$scope.newObservation || !latlng) return;
 
     $scope.newObservation.geometry.coordinates = [latlng.lng, latlng.lat];
-
-    var geometryField = EventService.getFormField($scope.newObservationForm, 'geometry');
-    geometryField.value = {x: latlng.lng, y: latlng.lat};
+    $scope.newObservationForm.geometryField.value = {x: latlng.lng, y: latlng.lat};
   });
 
   $scope.$on('observation:editDone', function(event, observation) {

@@ -7,10 +7,10 @@
             <strong class="muted">{{observation.properties.type}}</strong>
           </div>
           <div class="observation-variant muted" ng-if="observation.properties[form.variantField]">{{observation.properties[form.variantField]}}</div>
+          <div class="observation-user muted" title="{{observationUser.displayName}}">{{observationUser.displayName}}</div>
         </div>
 
         <div class="observation-item-actions">
-          <div class="ellipsis small muted" title="{{observationUser.displayName}}">{{observationUser.displayName}}</div>
           <div class="pull-right news-feed-item-support small muted">{{fromNow}}</div>
           <div>
             <a href="javascript:void(0)" class="small muted" ng-click="onObservationLocationClick(observation)">

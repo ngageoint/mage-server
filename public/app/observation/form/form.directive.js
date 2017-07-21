@@ -38,14 +38,14 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
     $scope.$on('observation:moved', function(e, observation, geometry) {
       if (!$scope.observation || !geometry) return;
 
-      var geometryField = EventService.getFormField($scope.form, 'geometry');
+      var geometryField = $scope.form.geometryField;
       var copy = JSON.parse(JSON.stringify(geometry));
       geometryField.value = copy;
       updateGeometryEdit(geometryField, editedVertex);
     });
     $scope.$on('observation:edit:vertex', function(e, observation, latlng, index) {
       editedVertex = index;
-      var geometryField = EventService.getFormField($scope.form, 'geometry');
+      var geometryField = $scope.form.geometryField;
       if (geometryField.value.type === 'LineString') {
         geometryField.value.coordinates[index] = [latlng.lng, latlng.lat];
       } else if (geometryField.value.type === 'Polygon') {
@@ -74,9 +74,19 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
         editedVertex = 0;
       }
       $scope.$emit('observation:shapeChanged', obs);
-      var primaryField = EventService.getFormField($scope.form, $scope.form.primaryField);
-      var variantField = EventService.getFormField($scope.form, $scope.form.variantField);
-      var iconUrl = ObservationService.getObservationIconUrlForEvent($scope.event.id, primaryField ? primaryField.value : '', variantField ? variantField.value : '');
+
+      var formId = null;
+      var primary = null;
+      var variant = null;
+      if ($scope.form.forms.length > 0) {
+        var firstForm = $scope.form.forms[0];
+        formId = firstForm.id;
+        primary = EventService.getFormField(firstForm, firstForm.primaryField) || {};
+        variant = EventService.getFormField(firstForm, firstForm.variantField) || {};
+      }
+
+      var iconUrl = ObservationService.getObservationIconUrlForEvent($scope.event.id, formId, primary.value, variant.value);
+
       if (iconUrl !== $scope.iconUrl) {
         $scope.iconUrl = iconUrl;
         $scope.$emit('observation:iconEdited', obs, iconUrl);

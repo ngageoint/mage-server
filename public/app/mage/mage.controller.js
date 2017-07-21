@@ -433,7 +433,7 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
     }
   });
 
-  $scope.onObservationCreate = function(latlng) {
+  $scope.$on('observation:latlng', function(e, latlng) {
     console.log('leaflet on observation button clicked', latlng);
 
     $scope.hideFeed = false;
@@ -480,30 +480,28 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
     // MapService.startedMarkerEdit(newObservation);
 
     $scope.$apply();
-  };
+  });
 
-  $scope.$on('observation:create', function(e, observation) {
+  $scope.$on('observation:create', function() {
 
     MapService.createMarker(newObservation, {
       layerId: 'Observations'
     });
 
-    // $scope.$apply();
-    //
     MapService.startedMarkerEdit(newObservation);
   });
-
-  $scope.$on('observation:new', function(e, observation) {
-    MapService.createMarker(observation, {
-      layerId: 'Observations'
-    });
-
-    // $scope.$broadcast('observation:new', newObservation);
-    $scope.$broadcast('observation:create', observation);
-    $scope.$apply();
-
-    MapService.startedMarkerEdit(observation);
-  });
+  //
+  // $scope.$on('observation:new', function(e, observation) {
+  //   MapService.createMarker(observation, {
+  //     layerId: 'Observations'
+  //   });
+  //
+  //   // $scope.$broadcast('observation:new', newObservation);
+  //   $scope.$broadcast('observation:create', observation);
+  //   $scope.$apply();
+  //
+  //   MapService.startedMarkerEdit(observation);
+  // });
 
   $scope.$on('observation:editStarted', function(e, observation) {
     MapService.startedMarkerEdit(observation);

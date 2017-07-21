@@ -7,10 +7,7 @@ function leaflet() {
     restrict: "A",
     replace: true,
     template: '<div id="map" class="leaflet-map"></div>',
-    controller: LeafletController,
-    scope: {
-      callback: '&'
-    }
+    controller: LeafletController
   };
 
   return directive;
@@ -60,8 +57,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
   new L.Control.MageFeature({
     onClick: function(latlng) {
-      $scope.callback({latlng: latlng.wrap()});
-      // $scope.$emit('observation:create', latlng.wrap());
+      $scope.$emit('observation:latlng', latlng.wrap());
     }
   }).addTo(map);
 

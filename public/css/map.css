@@ -76,6 +76,8 @@
 
 .observation-popup {
   display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .observation-popup-content {

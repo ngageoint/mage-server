@@ -44,6 +44,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     if ($scope.saving) return;
 
     if (newForm.id && !oldForm.id) {
+      $location.path('/admin/events/' + $scope.event.id + '/forms/' + newForm.id);
       return;
     }
 
@@ -477,7 +478,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     var eventId = $scope.event.id;
     var formId = $scope.form.id;
     var token = $scope.token;
-    var style = $scope.form.style;
+    var style = $scope.form.style || $scope.event.style;
     var filesToUpload = $scope.filesToUpload;
 
     if (primary) {
@@ -522,14 +523,13 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
         $scope.minicolorSettings = {
           position: 'bottom left'
         };
-        $scope.uploadUrl = '/api/events/' + eventId + '/forms/' + formId + '/icons' + (primary ? '/' + primary : '') + (variant ? '/' + variant : '')  + '?access_token=' + token;
+        $scope.uploadUrl = '/api/events/' + eventId + '/icons' + (formId ? '/' + formId : '') + (primary ? '/' + primary : '') + (variant ? '/' + variant : '')  + '?access_token=' + token;
 
-        $scope.$on('uploadFile', function(e, uploadId, file, url) {
+        $scope.$on('uploadFile', function(e, uploadId, file) {
           fileToUpload = file;
         });
 
         $scope.done = function() {
-
           $uibModalInstance.close({style:$scope.model.style, file: fileToUpload, uploadUrl: $scope.uploadUrl});
         };
 
@@ -549,14 +549,15 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
       style.fillOpacity = updatedStyle.fillOpacity;
       style.strokeOpacity = updatedStyle.strokeOpacity;
       style.strokeWidth = updatedStyle.strokeWidth;
+
       if (result.file) {
         var reader = new FileReader();
 
-        reader.onload = (function(theFile) {
+        reader.onload = (function() {
           return function(e) {
             $scope.uploadImageMissing = false;
             $scope.$apply();
-            var img = $('img[src*="'+url+'"]').first();
+            var img = $('img[src*="' + url + '"]').first();
             img.attr('src',e.target.result);
           };
         })(file);
