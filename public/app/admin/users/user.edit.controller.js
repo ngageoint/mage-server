@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminUserEditController', AdminUserEditController);
 
-AdminUserEditController.$inject = ['$scope', '$filter', '$routeParams', '$location', 'Api', 'LocalStorageService', 'UserService'];
+AdminUserEditController.$inject = ['$scope', '$filter', '$routeParams', '$location', 'Api', 'LocalStorageService', 'UserService', 'UserIconService'];
 
-function AdminUserEditController($scope, $filter, $routeParams, $location, Api, LocalStorageService, UserService) {
+function AdminUserEditController($scope, $filter, $routeParams, $location, Api, LocalStorageService, UserService, UserIconService) {
   $scope.token = LocalStorageService.getToken();
   $scope.roles = [];
 
@@ -111,17 +111,8 @@ function AdminUserEditController($scope, $filter, $routeParams, $location, Api, 
     $scope.error = false;
 
     if ($scope.iconMetadata.type === 'create') {
-      var icon = $scope.iconMetadata.getPng();
-      if (icon) {
-        var byteString = atob(icon.split(',')[1]);
-        var ab = new ArrayBuffer(byteString.length);
-        var ia = new Uint8Array(ab);
-        for (var i = 0; i < byteString.length; i++) {
-          ia[i] = byteString.charCodeAt(i);
-        }
-
-        $scope.user.icon = new Blob([ab], { type: 'image/png' });
-      }
+      var canvas = $scope.iconMetadata.getCanvas();
+      $scope.user.icon = UserIconService.canvasToPng(canvas);
     }
 
     var user = {

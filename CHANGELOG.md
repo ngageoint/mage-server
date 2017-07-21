@@ -9,6 +9,8 @@ Adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Features
 * Upgraded npm dependencies to latest.
+* Added map icon color and map icon initials columns to bulk user import.
+* Trim leading/trailing white space from username when creating users.
 
 ##### Bug Fixes
 

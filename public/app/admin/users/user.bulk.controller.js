@@ -14,9 +14,9 @@ angular
   .module('mage')
   .controller('AdminUserBulkController', AdminUserBulkController);
 
-AdminUserBulkController.$inject = ['$scope', '$filter', '$routeParams', '$location', '$q', 'LocalStorageService', 'UserService', 'Team'];
+AdminUserBulkController.$inject = ['$scope', '$filter', '$routeParams', '$location', '$q', 'LocalStorageService', 'UserService', 'Team', 'UserIconService'];
 
-function AdminUserBulkController($scope, $filter, $routeParams, $location, $q, LocalStorageService, UserService, Team) {
+function AdminUserBulkController($scope, $filter, $routeParams, $location, $q, LocalStorageService, UserService, Team, UserIconService) {
   var requiredFields = ['username', 'displayname', 'password'];
 
   $scope.token = LocalStorageService.getToken();
@@ -92,6 +92,8 @@ function AdminUserBulkController($scope, $filter, $routeParams, $location, $q, L
           phone: user[$scope.columnMap.phone],
           password: user[$scope.columnMap.password],
           passwordconfirm: user[$scope.columnMap.password],
+          iconInitials: user[$scope.columnMap.iconInitials],
+          iconColor: user[$scope.columnMap.iconColor],
           roleId: user.role.id
         }
       };
@@ -141,6 +143,22 @@ function AdminUserBulkController($scope, $filter, $routeParams, $location, $q, L
 
   function importUser(results, user) {
     var deferred = $q.defer();
+
+    var canvas = document.createElement("canvas");
+    canvas.height = 44;
+    canvas.width = 44;
+
+    if (user.user.iconInitials && user.user.iconColor && canvas.getContext) {
+      var iconColor = user.user.iconColor;
+      var iconInitials = user.user.iconInitials.substring(0, 2);
+      UserIconService.drawMarker(canvas, iconColor, iconInitials);
+      user.user.icon = UserIconService.canvasToPng(canvas);
+      user.user.iconMetadata = JSON.stringify({
+        type: 'create',
+        text: iconInitials,
+        color: iconColor
+      });
+    }
 
     UserService.createUser(user.user, function(newUser) {
       Team.addUser({id: user.team.id}, newUser, function() {
@@ -194,6 +212,12 @@ function AdminUserBulkController($scope, $filter, $routeParams, $location, $q, L
 
     var passwordIndex = _.indexOf(columnNames, 'password');
     if (passwordIndex !== -1) map.password = passwordIndex;
+
+    var iconInitialsIndex = _.indexOf(columnNames, 'iconInitials');
+    if (iconInitialsIndex !== -1) map.iconInitials = iconInitialsIndex;
+
+    var iconColorIndex = _.indexOf(columnNames, 'iconColor');
+    if (iconColorIndex !== -1) map.iconColor = iconColorIndex;
 
     $scope.columnMap = map;
     validateMapping();

@@ -73,7 +73,7 @@ module.exports = function(app, security) {
     if (!username) {
       return res.status(400).send(invalidResponse('username'));
     }
-    user.username = username;
+    user.username = username.trim();
 
     var displayName = req.param('displayName');
     if (!displayName) {
