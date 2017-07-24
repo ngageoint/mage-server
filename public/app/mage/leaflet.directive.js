@@ -162,7 +162,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     MapService.createVectorLayer(newObservationLayer);
 
     createGeoJsonForLayer(marker, layers['EditObservation'], true);
-    layer = layers['EditObservation'].featureIdToLayer[marker.id];
+    var layer = layers['EditObservation'].featureIdToLayer[marker.id];
     layers['EditObservation'].layer.addLayer(layer);
   }
 
@@ -360,16 +360,16 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     map.pm.enableDraw(shapeType, {
       snappable: true,
       templineStyle: {
-          color: 'blue',
+        color: 'blue',
       },
       hintlineStyle: {
-          color: 'blue',
-          dashArray: [5, 5],
+        color: 'blue',
+        dashArray: [5, 5],
       },
       pathOptions: {
-          color: 'red',
-          fillColor: 'orange',
-          fillOpacity: 0.7,
+        color: 'red',
+        fillColor: 'orange',
+        fillOpacity: 0.7,
       },
       cursorMarker: true,
       finishOnDoubleClick: true,
@@ -614,7 +614,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       } else {
         featureLayer.layer.addData(feature);
       }
-
     });
 
     _.each(changed.updated, function(feature) {
@@ -640,6 +639,11 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
     _.each(changed.removed, function(feature) {
       var layer = featureLayer.featureIdToLayer[feature.id];
+      if (!layer) {
+        // TODO fixme, there is a chance this is an observation that is currently being editted.
+        layer = layers['EditObservation'].featureIdToLayer[feature.id];
+      }
+
       featureLayer.layer.removeLayer(layer);
     });
   }
