@@ -69,9 +69,13 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
     $scope.$emit('observation:create');
   };
 
+  $scope.cancelNewObservation = function() {
+    $scope.newObservationForms = null;
+  };
+
   $scope.$on('observation:feed', function(e, observation) {
     newObservation = observation;
-    var newObservationForms = EventService.getForms(observation);
+    var newObservationForms = EventService.getForms(observation, {archived: false});
 
     if (newObservationForms.length === 0) {
       $scope.createObservation();

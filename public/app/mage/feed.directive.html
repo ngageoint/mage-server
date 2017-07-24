@@ -41,17 +41,25 @@
 
 <div class="feed-items">
   <div class="feed-card">
-    <div class="feed-card-content observation-forms" ng-if="newObservationForms">
-      <h4>What type of observation would you like to create?</h4>
-      <div ng-repeat="form in newObservationForms track by form.id" class="observation-form pointer" ng-click="createObservation(form)">
-        <span class="fa-stack fa-3x">
-          <i class="fa fa-circle fa-stack-2x" ng-style="{'color': form.color}"></i>
-          <i class="fa fa-map-marker fa-stack-1x fa-inverse"></i>
-        </span>
-        <div>{{form.name}}</div>
+    <div class="feed-card-content clearfix" ng-if="newObservationForms">
+      <i class="fa fa-times pointer muted pull-right" ng-click="cancelNewObservation()"></i>
 
+      <div class="bottom-gap-l">
+        <h4 class="bottom-gap-l">What type of observation would you like to create?</h4>
+        <div ng-repeat="form in newObservationForms track by form.id" class="pointer" ng-click="createObservation(form)">
+          <div class="observation-form">
+            <i class="fa fa-3x fa-map-marker right-gap" ng-style="{'color': form.color}"></i>
+            <div class="observation-form-information">
+              <strong class="muted">{{form.name}}</strong>
+              <div>
+                <span class="muted">{{form.description}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+
     <div class="feed-card-content" ng-if="newObservation">
       <form-directive form="newObservationForm" form-observation="newObservation"></form-directive>
     </div>

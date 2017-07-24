@@ -459,8 +459,12 @@ exports.updateForm = function(event, form, callback) {
     }
   };
 
-  Event.update({'forms._id': form._id}, update, {new: true, runValidators: true}, function(err) {
-    callback(err, form);
+  Event.findOneAndUpdate({'forms._id': form._id}, update, {new: true, runValidators: true}, function(err, event) {
+    var forms = event.forms.filter(function(f) {
+      return f._id === form._id;
+    });
+
+    callback(err, forms.length ? forms[0] : null);
   });
 };
 
