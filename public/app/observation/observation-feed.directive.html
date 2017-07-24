@@ -3,8 +3,8 @@
     <div ng-if="edit === false">
       <div class="observation-item">
         <div class="observation-item-content">
-          <div class="observation-type">
-            <strong class="muted">{{observation.properties.type}}</strong>
+          <div class="observation-type" ng-if="primaryField">
+            <strong class="muted">{{primaryField.value}}</strong>
           </div>
           <div class="observation-variant muted" ng-if="observation.properties[form.variantField]">{{observation.properties[form.variantField]}}</div>
           <div class="observation-user muted" title="{{observationUser.displayName}}">{{observationUser.displayName}}</div>

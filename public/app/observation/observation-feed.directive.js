@@ -167,6 +167,25 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
       $scope.observationForm.forms.push(observationForm);
     });
 
+    if ($scope.observation.properties.forms.length > 0) {
+      var firstForm = $scope.observation.properties.forms[0];
+      var observationForm = $scope.observationForm.forms.find(function(observationForm) {
+        return observationForm.id === firstForm.formId;
+      });
+
+      if (observationForm.primaryField && firstForm[observationForm.primaryField]) {
+        $scope.primaryField = {
+          value: firstForm[observationForm.primaryField]
+        };
+      }
+
+      if (observationForm.variantField && firstForm[observationForm.variantField]) {
+        $scope.variantField = {
+          value: firstForm[observationForm.variantField]
+        };
+      }
+    }
+
     $scope.isUserFavorite = _.contains(observation.favoriteUserIds, UserService.myself.id);
   }, true);
 
