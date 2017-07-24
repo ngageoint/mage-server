@@ -313,9 +313,18 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     return _.find(form.fields, function(field) { return field.name === fieldName; });
   }
 
-  function getForms(observation) {
+  function getForms(observation, options) {
+    options = options || {};
     var event = eventsById[observation.eventId];
-    return event.forms;
+
+    var forms = event.forms;
+    if (options.archived === false) {
+      forms = _.filter(forms, function(form) {
+        return !form.archived;
+      });
+    }
+
+    return forms;
   }
 
   function createForm(observation, form, viewMode) {
