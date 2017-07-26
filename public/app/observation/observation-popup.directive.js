@@ -33,7 +33,7 @@ function ObservationPopupDirective($scope, EventService) {
 
     $scope.variant = null;
     if (form.variantField) {
-      $scope.variant = $scope.observation.properties[form.variantField];
+      $scope.variant = $scope.observation.properties.forms[0][form.variantField];
     }
   }
 
