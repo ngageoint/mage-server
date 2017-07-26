@@ -429,7 +429,7 @@
             <strong>Choose a field to be used for map symbology:</strong>
             <div class="row bottom-gap">
               <div class="col-md-2">
-                <select ng-model="form.primaryField" ng-change="primaryChanged()" ng-options="field.name as field.title for field in form.fields | filter: primaryFilter" class="form-control">
+                <select ng-model="form.primaryField" ng-change="primaryChanged()" ng-options="field.name as field.title for field in form.fields | filter: symbologyFilter(variantField)" class="form-control">
                   <option value="">None</option>
                 </select>
               </div>
@@ -470,7 +470,7 @@
               <strong>Choose a secondary field to be used for map symbology:</strong>
               <div class="row bottom-gap">
                 <div class="col-md-2">
-                  <select ng-model="form.variantField" ng-change="variantChanged()" ng-options="field.name as field.title for field in form.fields | filter: variantFilter" class="form-control">
+                  <select ng-model="form.variantField" ng-change="variantChanged()" ng-options="field.name as field.title for field in form.fields | filter: symbologyFilter(primaryField)" class="form-control">
                     <option value="">None</option>
                   </select>
                 </div>
