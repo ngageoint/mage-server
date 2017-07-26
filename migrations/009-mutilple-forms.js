@@ -29,7 +29,7 @@ function getEvents(callback) {
   console.log('get events');
 
   var EventModel = mongoose.model('Event');
-  EventModel.find({}, function(err, events) {
+  EventModel.find({}).lean().exec(function(err, events) {
     callback(err, events);
   });
 }
@@ -74,10 +74,7 @@ function migrateIconFiles(event, formId, callback) {
   var eventIconPath = path.join(iconBase, event._id.toString());
   var formIconPath = path.join(eventIconPath, formId.toString());
 
-  var files = fs.readdirSync(eventIconPath);
-  console.log('migrate files', files);
-
-  async.eachSeries(files, function(child, done) {
+  async.eachSeries(fs.readdirSync(eventIconPath), function(child, done) {
     if (child === formId.toString()) {
       done();
     } else if (child === 'icon.png') {
@@ -101,7 +98,7 @@ function migrateIconData(event, formId, callback) {
       IconModel.find({eventId: event._id}, function(err, icons) {
         async.eachSeries(icons, function(icon, done) {
           icon.formId = formId;
-          icon.relativePath = path.join(path.join(event.id.toString(), formId.toString()),  icon.relativePath.split(path.sep).splice(1).join(path.sep));
+          icon.relativePath = path.join(path.join(event._id.toString(), formId.toString()),  icon.relativePath.split(path.sep).splice(1).join(path.sep));
           icon.save(done);
         }, function(err) {
           done(err);
@@ -156,37 +153,36 @@ function migrateEventData(event, formId, callback) {
 }
 
 function migrateObservationData(event, formId, callback) {
-  console.log('migrate observation data for event ' + event.name);
+  console.log('migrate observation data for event form ' + event.name);
 
   var ObservationModel = Observation.observationModel(event);
 
-  async.series([
-    function(done) {
-      ObservationModel.find({}).lean().exec(function(err, observations) {
-        async.eachSeries(observations, function(observation, done) {
-          var form = {
-            formId: formId
-          };
+  var fieldMap = {};
+  event.form.fields.forEach(function(field) {
+    fieldMap[field.name] = field;
+  });
 
-          // TODO don't move properties that are not in the form, ie accuracy
-          for (var property in observation.properties) {
-            if (property === 'timestamp') continue;
+  ObservationModel.find({}).lean().exec(function(err, observations) {
+    async.eachSeries(observations, function(observation, done) {
+      var form = {
+        formId: formId
+      };
 
-            form[property] = observation.properties[property];
-            delete observation.properties[property];
-          }
+      // TODO don't move properties that are not in the form, ie accuracy
+      for (var property in observation.properties) {
+        if (property === 'timestamp' || !fieldMap[property]) continue;
 
-          observation.properties.forms = [form];
+        form[property] = observation.properties[property];
+        delete observation.properties[property];
+      }
 
-          ObservationModel.findByIdAndUpdate(observation._id, observation, {overwrite: true, new: true}, function(err) {
-            done(err);
-          });
-        }, function(err) {
-          done(err);
-        });
+      observation.properties.forms = [form];
+
+      ObservationModel.findByIdAndUpdate(observation._id, observation, {overwrite: true, new: true}, function(err) {
+        done(err);
       });
-    }
-  ],function(err) {
-    callback(err);
+    }, function(err) {
+      callback(err);
+    });
   });
 }
