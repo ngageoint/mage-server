@@ -406,12 +406,12 @@ module.exports = function(app, security) {
 
   // get icon
   app.get(
-    '/api/events/:eventId/icons/:formId?/:type?/:variant?',
+    '/api/events/:eventId/icons/:formId?/:primary?/:variant?',
     passport.authenticate('bearer'),
     authorizeAccess('READ_EVENT_ALL', 'read'),
     function(req, res, next) {
       console.log('get icon for formId: ', req.params.formId);
-      new api.Icon(req.event._id, req.params.formId, req.params.type, req.params.variant).getIcon(function(err, iconPath) {
+      new api.Icon(req.event._id, req.params.formId, req.params.primary, req.params.variant).getIcon(function(err, iconPath) {
         console.log('iconPath is: ', iconPath);
         if (err || !iconPath) return next();
 
@@ -437,11 +437,11 @@ module.exports = function(app, security) {
 
   // Create a new icon
   app.post(
-    '/api/events/:eventId/icons/:formId?/:type?/:variant?',
+    '/api/events/:eventId/icons/:formId?/:primary?/:variant?',
     passport.authenticate('bearer'),
     authorizeAccess('UPDATE_EVENT', 'update'),
     function(req, res, next) {
-      new api.Icon(req.event._id, req.params.formId, req.params.type, req.params.variant).create(req.files.icon, function(err, icon) {
+      new api.Icon(req.event._id, req.params.formId, req.params.primary, req.params.variant).create(req.files.icon, function(err, icon) {
         if (err) return next(err);
 
         return res.json(icon);
@@ -451,11 +451,11 @@ module.exports = function(app, security) {
 
   // Delete an icon
   app.delete(
-    '/api/events/:eventId/icons/:formId?/:type?/:variant?',
+    '/api/events/:eventId/icons/:formId?/:primary?/:variant?',
     passport.authenticate('bearer'),
     authorizeAccess('UPDATE_EVENT', 'update'),
     function(req, res, next) {
-      new api.Icon(req.event._id, req.params.formId, req.params.type, req.params.variant).delete(function(err) {
+      new api.Icon(req.event._id, req.params.formId, req.params.primary, req.params.variant).delete(function(err) {
         if (err) return next(err);
 
         return res.status(204).send();

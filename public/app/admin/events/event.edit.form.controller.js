@@ -43,6 +43,9 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
 
     if ($scope.saving) return;
 
+    var formEqual = angular.equals(newForm, oldForm);
+    var fieldsEqual = angular.equals(newForm.fields, oldForm.fields);
+
     if (newForm.id && !oldForm.id) {
       $location.path('/admin/events/' + $scope.event.id + '/forms/' + newForm.id);
       return;
