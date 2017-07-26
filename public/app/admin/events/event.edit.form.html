@@ -42,7 +42,7 @@
             <div class="form-group" ng-class="{'has-error': generalForm.$submitted && generalForm.color.$invalid}">
               <label class="control-label col-sm-2">Color</label>
               <div class="col-sm-10">
-                <input minicolors="minicolorSettings" class="form-control" type="text" ng-model="form.color" name="color" ng-required="true">
+                <input minicolors="{letterCase: 'uppercase'}" class="form-control" type="text" ng-model="form.color" name="color" ng-required="true">
                 <span class="help-block" ng-if=" generalForm.$submitted && generalForm.color.$invalid">Color is invalid</span>
               </div>
             </div>
@@ -551,7 +551,7 @@
                             </span>
                           </div>
                         </div>
-                        <img class="preview-image" width="100%" ng-src="{{'/api/events/' + event.id + '/icons/' + form.id = '/' + option.title + '/' + variant.title + '?access_token=' + token + '&_dc=' + savedTime}}"/>
+                        <img class="preview-image" width="100%" ng-src="{{'/api/events/' + event.id + '/icons/' + form.id + '/' + option.title + '/' + variant.title + '?access_token=' + token + '&_dc=' + savedTime}}"/>
                         <div class="shape-style">
                           <div style-preview="form.style || event.style" type="Polygon" primary="option.title" variant="variant.title"></div>
                         </div>

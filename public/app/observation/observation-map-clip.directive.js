@@ -38,7 +38,7 @@ function MapClipController($rootScope, $scope, $element, MapService) {
     MapService.removeListener(mapListener);
   });
 
-  $scope.$watch('feature', function(feature) {
+  $scope.$watch('feature', function() {
 
     map.removeLayer(observation);
     addObservation($scope.feature);
