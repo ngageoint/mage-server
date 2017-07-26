@@ -407,8 +407,12 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     }
   };
 
-  $scope.variantFilter = function(field) {
-    return (field.type === 'dropdown' || field.type === 'date') && field.name !== 'type';
+  $scope.symbologyFilter = function(otherFilterField) {
+    return function(field) {
+      return !field.archived &&
+        otherFilterField.name !== field.name &&
+        (field.type === 'dropdown' || field.type === 'date');
+    };
   };
 
   $scope.removeVariant = function(variant) {
