@@ -162,7 +162,7 @@ describe("user create tests", function() {
       .end(done);
   });
 
-  it.only('should create user with no whitespace', function(done) {
+  it('should create user with no whitespace', function(done) {
     mockTokenWithPermission('NO_PERMISSIONS');
 
     sandbox.mock(RoleModel)
