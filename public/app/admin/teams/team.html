@@ -21,8 +21,9 @@
               <h2>Team: {{team.name}}</h2>
             </div>
             <div class="col-md-4">
-              <h2>
+              <h2 ng-if="hasUpdatePermission">
                 <button class="btn btn-default pull-right" ng-click="editTeam(team)"><i class="fa fa-edit"></i> Edit</button>
+                <button class="btn btn-default pull-right right-gap" ng-click="editAccess(team)"><i class="fa fa-shield"></i> Access</button>
               </h2>
             </div>
           </div>
@@ -51,7 +52,7 @@
               </div>
             </div>
 
-            <div class="col-sm-6" >
+            <div class="col-sm-6" ng-if="hasDeletePermission">
               <div class="card">
                 <div class="card-content">
                   <strong class="text-danger">Delete team</strong>
@@ -69,42 +70,45 @@
 
       <div class="row">
         <div class="col-md-6 col-xs-12">
-          <div class="row">
-            <div class="col-md-12">
-              <nav class="navbar navbar-default admin-dashboard-navbar">
-                <div class="container-fluid">
-                  <div class="navbar-header">
-                    <a class="navbar-brand">Add user to the team</a>
+
+          <div ng-if="hasUpdatePermission" class="bottom-gap-l">
+            <div class="row">
+              <div class="col-md-12">
+                <nav class="navbar navbar-default admin-dashboard-navbar">
+                  <div class="container-fluid">
+                    <div class="navbar-header">
+                      <a class="navbar-brand">Add user to the team</a>
+                    </div>
+                  </div>
+                </nav>
+              </div>
+            </div>
+
+            <div class="admin-table">
+              <div class="well-item">
+                <div class="row">
+                  <div class="col-md-12">
+                    <ui-select ng-model="user.selected" theme="bootstrap">
+                      <ui-select-match placeholder="Select a user to add to team">{{$select.selected.displayName}}</ui-select-match>
+                      <ui-select-choices group-by="groupLayerByType" repeat="user in nonUsers | orderBy: 'name' | filter: $select.search">
+                        <div ng-bind-html="user.displayName | highlight: $select.search"></div>
+                      </ui-select-choices>
+                    </ui-select>
                   </div>
                 </div>
-              </nav>
-            </div>
-          </div>
 
-          <div class="admin-table">
-            <div class="well-item">
-              <div class="row">
-                <div class="col-md-12">
-                  <ui-select ng-model="user.selected" theme="bootstrap">
-                    <ui-select-match placeholder="Select a user to add to team">{{$select.selected.displayName}}</ui-select-match>
-                    <ui-select-choices group-by="groupLayerByType" repeat="user in nonUsers | orderBy: 'name' | filter: $select.search">
-                      <div ng-bind-html="user.displayName | highlight: $select.search"></div>
-                    </ui-select-choices>
-                  </ui-select>
+                <hr>
+
+                <div class="row">
+                   <div class="col-md-12">
+                     <button class="btn btn-success" ng-click="addUser(user.selected)" ng-disabled="user.selected == null"><i class="fa fa-plus"></i> Add User</button>
+                   </div>
                 </div>
               </div>
-
-              <hr>
-
-              <div class="row">
-                 <div class="col-md-12">
-                   <button class="btn btn-success" ng-click="addUser(user.selected)" ng-disabled="user.selected == null"><i class="fa fa-plus"></i> Add User</button>
-                 </div>
-              </div>
             </div>
           </div>
 
-          <div class="row top-gap-l">
+          <div class="row">
             <div class="col-md-12">
               <nav class="navbar navbar-default admin-dashboard-navbar">
                 <div class="container-fluid">
@@ -117,7 +121,7 @@
                       <input type="text" class="form-control" placeholder="Search" ng-model="memberSearch">
                     </div>
                   </form>
-                  <div class="navbar-form navbar-right right-gap-s">
+                  <div class="navbar-form navbar-right right-gap-s" ng-show="hasUpdatePermission">
                     <button class="btn btn-default navbar-right" ng-click="edit = !edit">Edit</button>
                   </div>
                 </div>
@@ -177,6 +181,8 @@
 
           <div class="admin-table">
             <div class="well-item">
+
+              <!-- TODO only show events that I have update access for -->
               <div class="row">
                 <div class="col-md-12">
                   <ui-select ng-model="event.selected" theme="bootstrap">
@@ -227,6 +233,7 @@
                   <div class="row pointer" ng-click="gotoEvent(e)">
                     <div class="col-md-12">
                       <span class="pull-right" ng-show="editEvent">
+                        <!-- TODO Don't let them remove a team from an event they don't have access to -->
                         <a class="btn btn-xs btn-danger" ng-click="removeEventFromTeam($event, e)"><i class="fa fa-minus"></i></a>
                       </span>
 

@@ -32,8 +32,10 @@
                     <div class="admin-dashboard-item"><i class="fa fa-user"></i><span ng-if="inactiveUsers.length" class="badge badge-notif badge-accent">{{inactiveUsers.length}}</span></div>
                   </a>
 
-                  <hr>
-                  <button class="btn btn-primary" ng-click="newUser()">New User</button>
+                  <div ng-if="hasPermission('CREATE_USER')">
+                    <hr>
+                    <button class="btn btn-primary" ng-click="newUser()">New User</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -48,8 +50,11 @@
                     <div class="admin-dashboard-item"><i class="fa fa-users"></i></div>
                   </a>
 
-                  <hr>
-                  <button class="btn btn-primary" ng-click="newTeam()">New Team</button>
+                  <div ng-if="hasPermission('CREATE_TEAM')">
+                    <hr>
+                    <button class="btn btn-primary" ng-click="newTeam()">New Team</button>
+                  </div>
+
                 </div>
               </div>
             </div>
@@ -64,8 +69,11 @@
                     <div class="admin-dashboard-item"><i class="fa fa-calendar"></i></div>
                   </a>
 
-                  <hr>
-                  <button class="btn btn-primary" ng-click="newEvent()">New Event</button>
+                  <div ng-if="hasPermission('CREATE_EVENT')">
+                    <hr>
+                    <button class="btn btn-primary" ng-click="newEvent()">New Event</button>
+                  </div>
+
                 </div>
               </div>
             </div>
@@ -80,8 +88,11 @@
                     <div class="admin-dashboard-item"><i class="fa fa-mobile-phone"></i><span ng-if="unregisteredDevices.length" class="badge badge-notif badge-accent">{{unregisteredDevices.length}}</span></div>
                   </a>
 
-                  <hr>
-                  <button class="btn btn-primary" ng-click="newDevice()">New Device</button>
+                  <div ng-if="hasPermission('CREATE_DEVICE')">
+                    <hr>
+                    <button class="btn btn-primary" ng-click="newDevice()">New Device</button>
+                  </div>
+
                 </div>
               </div>
             </div>
@@ -96,24 +107,29 @@
                     <div class="admin-dashboard-item"><i class="fa fa-map"></i></div>
                   </a>
 
-                  <hr>
-                  <button class="btn btn-primary" ng-click="newLayer()">New Layer</button>
+                  <div ng-if="hasPermission('CREATE_LAYER')">
+                    <hr>
+                    <button class="btn btn-primary" ng-click="newLayer()">New Layer</button>
+                  </div>
+
                 </div>
               </div>
             </div>
 
+            <div ng-ifs="hasPermission('UPDATE_SETTINGS')">
+              <div class="col-md-2">
+                <div class="card">
+                  <div class="card-content admin-card">
+                    <h4>Settings</h4>
 
-            <div class="col-md-2">
-              <div class="card">
-                <div class="card-content admin-card">
-                  <h4>Settings</h4>
-
-                  <a ng-href="#admin/settings">
-                    <div class="admin-dashboard-item"><i class="fa fa-wrench"></i></div>
-                  </a>
+                    <a ng-href="#admin/settings">
+                      <div class="admin-dashboard-item"><i class="fa fa-wrench"></i></div>
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -155,7 +171,7 @@
                         {{user.displayName}}
                       </span>
 
-                      <span class="pull-right">
+                      <span class="pull-right" ng-if="hasPermission('UPDATE_USER')">
                         <a class="btn btn-xs btn-success" ng-click="activateUser($event, user)"><i class="fa fa-check"></i> Activate</a>
                       </span>
                     </div>
@@ -207,7 +223,7 @@
                       </div>
                       <span class="strong">{{d.uid}}</span>
                       <span class="muted" ng-if="d.user">({{d.user.displayName}})</span>
-                      <span class="pull-right">
+                      <span class="pull-right" ng-if="hasPermission('UPDATE_DEVICE')">
                         <a class="btn btn-xs btn-success" ng-click="registerDevice($event, d)"><i class="fa fa-check"></i> Register</a>
                       </span>
                     </div>

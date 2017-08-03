@@ -55,6 +55,7 @@ describe("event create tests", function() {
     });
     sandbox.mock(EventModel)
       .expects('create')
+      .withArgs(sinon.match.has('acl', [{role: 'OWNER', userId: userId}]))
       .yields(null, mockEvent);
 
     mongoose.connection.db = sandbox.stub();
@@ -72,6 +73,7 @@ describe("event create tests", function() {
 
     sandbox.mock(TeamModel)
       .expects('create')
+      .withArgs(sinon.match.has('acl', [{role: 'OWNER', userId: userId}]).and(sinon.match.has('teamEventId', eventId)))
       .yields(null, mockTeam);
 
     sandbox.mock(TeamModel)
@@ -167,7 +169,7 @@ describe("event create tests", function() {
         should.exist(error);
         error.should.be.a('string');
         error = JSON.parse(error);
-        error.should.have.property('message').that.equals("Event validation failed");
+        error.should.have.property('message').that.contains("Event validation failed");
         var errors = error.errors;
         should.exist(errors.name);
         errors.name.should.have.property('path').that.equals('name');

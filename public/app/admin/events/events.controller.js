@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminEventsController', AdminEventsController);
 
-AdminEventsController.$inject = ['$scope', '$location', '$filter', '$uibModal', 'Event'];
+AdminEventsController.$inject = ['$scope', '$location', '$filter', '$uibModal', 'Event', 'UserService'];
 
-function AdminEventsController($scope, $location, $filter, $uibModal, Event) {
+function AdminEventsController($scope, $location, $filter, $uibModal, Event, UserService) {
   $scope.events = [];
   $scope.filter = "active"; // possible values all, active, complete
   $scope.page = 0;
@@ -45,6 +45,28 @@ function AdminEventsController($scope, $location, $filter, $uibModal, Event) {
 
     $location.path('/admin/events/' + event.id + '/edit');
   };
+
+  $scope.hasUpdatePermission = function(event) {
+    return hasPermission(event, 'update');
+  };
+
+  $scope.hasDeletePermission = function(event) {
+    return hasPermission(event, 'delete');
+  };
+
+  function hasPermission(event, permission) {
+    var myAccess = _.find(event.acl, function(access) {
+      return access.userId === UserService.myself.id;
+    });
+    var aclPermissions = myAccess ? myAccess.permissions : [];
+
+    switch(permission) {
+    case 'update':
+      return _.contains(UserService.myself.role.permissions, 'EVENT_UPDATE') || _.contains(aclPermissions, 'update');
+    case 'delete':
+      return _.contains(UserService.myself.role.permissions, 'EVENT_DELETE') || _.contains(aclPermissions, 'delete');
+    }
+  }
 
   $scope.deleteEvent = function($event, event) {
     $event.stopPropagation();

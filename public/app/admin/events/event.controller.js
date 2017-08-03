@@ -68,11 +68,25 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     $scope.eventNonMembers = _.map(usersNotInEvent.concat(teamsNotInEvent), function(item) { return normalize(item); });
 
     $scope.layer = {};
-    $scope.eventLayers = _.map($scope.event.layerIds, function(layerId) { return layersById[layerId]; });
+    $scope.eventLayers = _.chain($scope.event.layerIds)
+      .filter(function(layerId) {
+        return layersById[layerId]; })
+      .map(function(layerId) {
+        return layersById[layerId];
+      }).value();
+
     $scope.nonLayers = _.filter($scope.layers, function(layer) {
       return $scope.event.layerIds.indexOf(layer.id) === -1;
     });
 
+    var myAccess = _.find($scope.event.acl, function(access) {
+      return access.userId === UserService.myself.id;
+    });
+    var aclPermissions = myAccess ? myAccess.permissions : [];
+
+    $scope.hasReadPermission = _.contains(UserService.myself.role.permissions, 'READ_EVENT_ALL') || _.contains(aclPermissions, 'read');
+    $scope.hasUpdatePermission = _.contains(UserService.myself.role.permissions, 'UPDATE_EVENT') || _.contains(aclPermissions, 'update');
+    $scope.hasDeletePermission = _.contains(UserService.myself.role.permissions, 'DELETE_EVENT') || _.contains(aclPermissions, 'delete');
   });
 
   function saveEvent(event) {
@@ -154,6 +168,10 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
 
   $scope.editEvent = function(event) {
     $location.path('/admin/events/' + event.id + '/edit');
+  };
+
+  $scope.editAccess= function(event) {
+    $location.path('/admin/events/' + event.id + '/access');
   };
 
   $scope.editForm = function(event) {

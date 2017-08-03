@@ -1,6 +1,7 @@
 angular
   .module('mage')
-  .factory('Event', Event);
+  .factory('Event', Event)
+  .factory('EventAccess', EventAccess);
 
 Event.$inject = ['$rootScope', '$resource', '$http', 'LocalStorageService'];
 
@@ -138,4 +139,39 @@ function Event($rootScope, $resource, $http, LocalStorageService) {
   };
 
   return Event;
+}
+
+EventAccess.$inject = ['$resource'];
+
+function EventAccess($resource) {
+  var EventAccess = $resource('/api/events/:eventId/acl', {
+    eventId: '@eventId',
+    userId: '@userId'
+  },{
+    create: {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      isArray: false
+    },
+    update: {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      isArray: false,
+      url: '/api/events/:eventId/acl/:userId'
+    },
+    delete: {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      isArray: false,
+      url: '/api/events/:eventId/acl/:userId'
+    }
+  });
+
+  return EventAccess;
 }

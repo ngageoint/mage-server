@@ -97,10 +97,7 @@ UserSchema.pre('save', function(next) {
 
 UserSchema.pre('save', function(next) {
   var user = this;
-  console.log('************rmove token for inactive user');
   if (user.active === false) {
-    console.log('************rmove token for inactive user');
-
     Token.removeTokensForUser(user, function(err) {
       next(err);
     });
@@ -201,6 +198,10 @@ var transform = function(user, ret, options) {
 };
 
 UserSchema.set("toJSON", {
+  transform: transform
+});
+
+UserSchema.set("toObject", {
   transform: transform
 });
 

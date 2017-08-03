@@ -1,6 +1,5 @@
 var mongoose = require('mongoose')
   , async = require('async')
-  , moment = require('moment')
   , Event = require('./event')
   , log = require('winston');
 

@@ -82,6 +82,10 @@ function AdminController($scope, $routeParams, $location, $filter, UserService, 
     return device.iconClass;
   };
 
+  $scope.hasPermission = function(permission) {
+    return _.contains(UserService.myself.role.permissions, permission);
+  };
+
   $scope.newUser = function() {
     $location.path('/admin/users/new');
   };
@@ -111,6 +115,10 @@ function AdminController($scope, $routeParams, $location, $filter, UserService, 
 
   $scope.newDevice = function() {
     $location.path('/admin/devices/new');
+  };
+
+  $scope.hasDeviceUpdatePermission = function() {
+    return _.contains(UserService.myself.role.permissions, 'UPDATE_DEVICE');
   };
 
   $scope.registerDevice = function($event, device) {

@@ -79,7 +79,7 @@ describe("event update tests", function() {
         should.exist(error);
         error.should.be.a('string');
         error = JSON.parse(error);
-        error.should.have.property('message').that.equals("Validation failed");
+        error.should.have.property('message').that.contains("Validation failed");
         var errors = error.errors;
         should.exist(errors['form.fields']);
         errors['form.fields'].should.have.property('path').that.equals('form.fields');
@@ -136,7 +136,8 @@ describe("event update tests", function() {
         should.exist(error);
         error.should.be.a('string');
         error = JSON.parse(error);
-        error.should.have.property('message').that.equals("Validation failed");
+
+        error.should.have.property('message').that.contains("Validation failed");
         var errors = error.errors;
         should.exist(errors['form.fields']);
         errors['form.fields'].should.have.property('path').that.equals('form.fields');
@@ -144,6 +145,7 @@ describe("event update tests", function() {
       })
       .end(done);
   });
+
 
   it("should reject event with invalid field in form", function(done) {
     mockTokenWithPermission('UPDATE_EVENT');
@@ -203,7 +205,8 @@ describe("event update tests", function() {
         should.exist(error);
         error.should.be.a('string');
         error = JSON.parse(error);
-        error.should.have.property('message').that.equals("Validation failed");
+
+        error.should.have.property('message').that.contains("Validation failed");
         var errors = error.errors;
         should.exist(errors['form.fields.3.type']);
         errors['form.fields.3.type'].should.have.property('message').that.equals("`invalid` is not a valid enum value for path `type`.");
@@ -423,4 +426,259 @@ describe("event update tests", function() {
       .expect(200)
       .end(done);
   });
+
+  it("should update event if update access in acl", function(done) {
+    mockTokenWithPermission('');
+
+    var eventId = 1;
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event',
+      acl: [{
+        role: 'MANAGER',
+        userId: userId
+      }]
+    });
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    var teamId = mongoose.Types.ObjectId();
+    var mockTeams = [{
+      id: teamId,
+      name: 'Mock Team'
+    }];
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .withArgs({ _id: { $in: [teamId.toString()] }})
+      .chain('populate')
+      .chain('exec')
+      .yields(null, mockTeams);
+
+    sandbox.mock(EventModel)
+      .expects('findByIdAndUpdate')
+      .withArgs(eventId)
+      .yields(null, mockEvent);
+
+    request(app)
+      .put('/api/events/' + eventId)
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        name: 'Updated Mock Event'
+      })
+      .expect(200)
+      .end(done);
+  });
+
+
+  it("should reject update to event if not in acl", function(done) {
+    mockTokenWithPermission('');
+
+    var eventId = 1;
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event',
+      acl: []
+    });
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    request(app)
+      .put('/api/events/' + eventId)
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        name: 'Updated Mock Event'
+      })
+      .expect(403)
+      .end(done);
+  });
+
+  it("should reject update to event if no update access in acl", function(done) {
+    mockTokenWithPermission('');
+
+    var eventId = 1;
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event',
+      acl: [{
+        role: 'GUEST',
+        userId: userId
+      }]
+    });
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    request(app)
+      .put('/api/events/' + eventId)
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        name: 'Updated Mock Event'
+      })
+      .expect(403)
+      .end(done);
+  });
+
+  it("should add user to acl in event", function(done) {
+    mockTokenWithPermission('');
+    var aclUserId = mongoose.Types.ObjectId();
+
+    var eventId = 1;
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event',
+      acl: [{
+        role: 'MANAGER',
+        userId: userId
+      }]
+    });
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    sandbox.mock(mockEvent)
+      .expects('save')
+      .yields(null, mockEvent);
+
+    var mockTeam = new TeamModel({
+      name: 'Mock Team'
+    });
+    sandbox.mock(TeamModel)
+      .expects('findOne')
+      .withArgs({teamEventId: eventId})
+      .yields(null, mockTeam);
+
+    sandbox.mock(mockTeam)
+      .expects('save')
+      .yields(null);
+
+    request(app)
+      .post('/api/events/' + eventId + '/acl/')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        userId: aclUserId.toString(),
+        role: 'MANAGER'
+      })
+      .expect(200)
+      .end(done);
+  });
+
+  it("should update user in acl for event", function(done) {
+    mockTokenWithPermission('');
+    var aclUserId = mongoose.Types.ObjectId();
+
+    var teamId = mongoose.Types.ObjectId();
+    var mockTeams = [{
+      id: teamId,
+      name: 'Mock Team'
+    }];
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .withArgs({ _id: { $in: [teamId.toString()] }})
+      .chain('populate')
+      .chain('exec')
+      .yields(null, mockTeams);
+
+    var eventId = 1;
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event',
+      acl: [{
+        role: 'MANAGER',
+        userId: userId
+      }]
+    });
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    sandbox.mock(mockEvent)
+      .expects('save')
+      .yields(null, mockEvent);
+
+    var mockTeam = new TeamModel({
+      name: 'Mock Team'
+    });
+    sandbox.mock(TeamModel)
+      .expects('findOne')
+      .withArgs({teamEventId: eventId})
+      .yields(null, mockTeam);
+
+    sandbox.mock(mockTeam)
+      .expects('save')
+      .yields(null);
+
+    request(app)
+      .put('/api/events/' + eventId + '/acl/' + aclUserId.toString())
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        role: 'OWNER'
+      })
+      .expect(200)
+      .end(done);
+  });
+
+  it("should delete user in acl for event", function(done) {
+    mockTokenWithPermission('');
+    var aclUserId = mongoose.Types.ObjectId();
+
+    var teamId = mongoose.Types.ObjectId();
+    var mockTeams = [{
+      id: teamId,
+      name: 'Mock Team'
+    }];
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .withArgs({ _id: { $in: [teamId.toString()] }})
+      .chain('populate')
+      .chain('exec')
+      .yields(null, mockTeams);
+
+    var eventId = 1;
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event',
+      acl: [{
+        role: 'MANAGER',
+        userId: userId
+      }]
+    });
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    sandbox.mock(mockEvent)
+      .expects('save')
+      .yields(null, mockEvent);
+
+    var mockTeam = new TeamModel({
+      name: 'Mock Team'
+    });
+    sandbox.mock(TeamModel)
+      .expects('findOne')
+      .withArgs({teamEventId: eventId})
+      .yields(null, mockTeam);
+
+    sandbox.mock(mockTeam)
+      .expects('save')
+      .yields(null);
+
+    request(app)
+      .delete('/api/events/' + eventId + '/acl/' + aclUserId.toString())
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send()
+      .expect(200)
+      .end(done);
+  });
+
 });

@@ -33,6 +33,55 @@ var FieldSchema = new Schema({
   _id: false
 });
 
+var permissions = {
+  OWNER: ['read', 'update', 'delete'],
+  MANAGER: ['read', 'update'],
+  GUEST: ['read']
+};
+
+function rolesWithPermission(permission) {
+  var roles = [];
+
+  for (var key in permissions) {
+    if (permissions[key].indexOf(permission) !== -1) {
+      roles.push(key);
+    }
+  }
+
+  return roles;
+}
+
+var AccessSchema = new Schema({
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: false },
+  role: { type: String, enum: ['OWNER', 'MANAGER', 'GUEST'], required: false }
+}, {
+  _id: false
+});
+
+// Creates the Schema for the Attachments object
+var EventSchema = new Schema({
+  _id: { type: Number, required: true, unique: true },
+  name: { type: String, required: true, unique: true },
+  description: { type: String, required: false },
+  complete: { type: Boolean },
+  collectionName: { type: String, required: true },
+  teamIds: [{type: Schema.Types.ObjectId, ref: 'Team'}],
+  layerIds: [{type: Number, ref: 'Layer'}],
+  form: {
+    variantField: { type: String, required: false },
+    userFields: [String],
+    fields: [FieldSchema]
+  },
+  acl: [AccessSchema]
+},{
+  versionKey: false
+});
+
+function hasAtLeastOneOwner(acl) {
+  return acl.filter(function(access) {
+    return access.role === 'OWNER';
+  }).length > 0;
+}
 
 function hasFieldOnce(name) {
   return function(fields) {
@@ -50,24 +99,7 @@ function fieldIsRequired(name) {
   };
 }
 
-// Creates the Schema for the Attachments object
-var EventSchema = new Schema({
-  _id: { type: Number, required: true, unique: true },
-  name: { type: String, required: true, unique: true },
-  description: { type: String, required: false },
-  complete: { type: Boolean },
-  collectionName: { type: String, required: true },
-  teamIds: [{type: Schema.Types.ObjectId, ref: 'Team'}],
-  layerIds: [{type: Number, ref: 'Layer'}],
-  form: {
-    variantField: { type: String, required: false },
-    userFields: [String],
-    fields: [FieldSchema]
-  }
-},{
-  versionKey: false
-});
-
+EventSchema.path('acl').validate(hasAtLeastOneOwner, 'Event must have at least "Owner"');
 EventSchema.path('form.fields').validate(hasFieldOnce('timestamp'), 'fields array must contain one timestamp field');
 EventSchema.path('form.fields').validate(fieldIsRequired('timestamp'), 'timestamp must have a required property set to true.');
 EventSchema.path('form.fields').validate(hasFieldOnce('geometry'), 'fields array must contain one geometry field');
@@ -124,8 +156,12 @@ EventSchema.pre('remove', function(next) {
 });
 
 EventSchema.post('remove', function(event) {
+  if (event.populated('teamIds')) {
+    event.depopulate('teamIds');
+  }
+
   Team.getTeams({teamIds: event.teamIds}, function(err, teams) {
-    if (err) log.error('Could not get teams for deleted event ' + event.name);
+    if (err) log.error('Could not get teams for deleted event ' + event.name, err);
 
     var teamEvents = teams.filter(function(team) {
       return team.teamEventId && team.teamEventId === event._id;
@@ -139,7 +175,7 @@ EventSchema.post('remove', function(event) {
   });
 });
 
-function transform(event, ret) {
+function transform(event, ret, options) {
   if ('function' !== typeof event.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;
@@ -154,6 +190,24 @@ function transform(event, ret) {
       ret.layers = ret.layerIds;
       delete ret.layerIds;
     }
+
+    // if read only permissions in event acl on return users acl
+    if (options.access) {
+      var userAccess = ret.acl.filter(function(access) {
+        return access.userId.toString() === options.access.user._id.toString();
+      })[0] || null;
+
+      var roles = rolesWithPermission('update').concat(rolesWithPermission('delete'));
+      if (!userAccess || roles.indexOf(userAccess.role) === -1) {
+        ret.acl = ret.acl.filter(function(access) {
+          return access.userId.toString() === options.access.user._id.toString();
+        });
+      }
+    }
+
+    ret.acl.forEach(function(access) {
+      access.permissions = permissions[access.role];
+    });
   }
 }
 
@@ -169,29 +223,49 @@ EventSchema.set("toObject", {
 var Event = mongoose.model('Event', EventSchema);
 exports.Model = Event;
 
+// TODO look at filtering this in query, not after
 function filterEventsByUserId(events, userId, callback) {
   Event.populate(events, 'teamIds', function(err, events) {
+
     if (err) return callback(err);
 
     var filteredEvents = events.filter(function(event) {
-      return event.teamIds.some(function(team) {
-        return team.userIds.indexOf(userId) !== -1;
-      });
+      // Check if user has read access to the event based on
+      // being on a team that is in the event
+      if (event.teamIds.some(function(team) { return team.userIds.indexOf(userId) !== -1; })) {
+        return true;
+      }
+
+      // Check if user has read access to the event based on
+      // being in the events access control listen
+      var roles = rolesWithPermission('read');
+      if (event.acl.some(function(access) { return access.userId.toString() === userId.toString() && roles.indexOf(access.role) !== -1; })) {
+        return true;
+      }
+
+      return false;
     });
 
     callback(null, filteredEvents);
   });
 }
 
-function eventHasUser(event, userId, callback) {
+function userHasEventPermission(event, userId, permission, callback) {
   getTeamsForEvent(event, function(err, teams) {
     if (err) return callback(err);
 
-    var userInEvent = teams.some(function(team) {
-      return team.userIds.indexOf(userId) !== -1;
-    });
+    // If asking for event read permission and user is part of a team in this event
+    if (permission === 'read' && teams.some(function(team) { return team.userIds.indexOf(userId) !== -1; })) {
+      return callback(null, true);
+    }
 
-    callback(null, userInEvent);
+    // Check if user has permission in event acl
+    var roles = rolesWithPermission(permission);
+    if (event.acl.some(function(access) { return access.userId.toString() === userId.toString() && roles.indexOf(access.role) !== -1; })) {
+      return callback(null, true);
+    }
+
+    callback(null, false);
   });
 }
 
@@ -207,8 +281,31 @@ function getTeamsForEvent(event, callback) {
   }
 }
 
-exports.count = function(callback) {
-  Event.count({}, function(err, count) {
+exports.count = function(options, callback) {
+  if (typeof options === 'function') {
+    callback = options;
+    options = {};
+  }
+
+  var conditions = {};
+  if (options.access) {
+    var roles = rolesWithPermission(options.access.permission);
+    var accesses = [];
+    roles.forEach(function(role) {
+      accesses.push({
+        acl: {
+          $elemMatch: {
+            userId: options.access.user._id,
+            role: role
+          }
+        }
+      });
+    });
+
+    conditions['$or'] = accesses;
+  }
+
+  Event.count(conditions, function(err, count) {
     callback(err, count);
   });
 };
@@ -230,9 +327,9 @@ exports.getEvents = function(options, callback) {
     var filters = [];
 
     // First filter out events user my not have access to
-    if (options.access && options.access.userId) {
+    if (options.access && options.access.user) {
       filters.push(function(done) {
-        filterEventsByUserId(events, options.access.userId, function(err, filteredEvents) {
+        filterEventsByUserId(events, options.access.user._id, function(err, filteredEvents) {
           if (err) return done(err);
 
           events = filteredEvents;
@@ -268,13 +365,15 @@ exports.getEvents = function(options, callback) {
 };
 
 exports.getById = function(id, options, callback) {
+
   if (typeof options === 'function') {
     callback = options;
+
     options = {};
   }
 
   Event.findById(id, function (err, event) {
-    if (err) return callback(err);
+    if (err || !event) return callback(err);
 
     var filters = [];
     // First filter out events user my not have access to
@@ -296,6 +395,8 @@ exports.getById = function(id, options, callback) {
           callback(err, events);
         });
       } else {
+        event.depopulate('teamIds');
+        event.depopulate('layerIds');
         callback(null, event);
       }
     });
@@ -304,7 +405,7 @@ exports.getById = function(id, options, callback) {
 
 // TODO probably should live in event api
 exports.filterEventsByUserId = filterEventsByUserId;
-exports.eventHasUser = eventHasUser;
+exports.userHasEventPermission = userHasEventPermission;
 
 function createObservationCollection(event) {
   log.info("Creating observation collection: " + event.collectionName + ' for event ' + event.name);
@@ -329,7 +430,7 @@ function dropObservationCollection(event, callback) {
   });
 }
 
-exports.create = function(event, options, callback) {
+exports.create = function(event, user, options, callback) {
   if (typeof options === 'function') {
     callback = options;
     options = {};
@@ -344,6 +445,12 @@ exports.create = function(event, options, callback) {
     function(id, done) {
       event._id = id;
       event.collectionName = 'observations' + id;
+
+      event.acl = [{
+        userId: user._id,
+        role: 'OWNER'
+      }];
+
       Event.create(event, function(err, newEvent) {
         if (err) return done(err);
 
@@ -353,7 +460,7 @@ exports.create = function(event, options, callback) {
       });
     },
     function(event, done) {
-      Team.createTeamForEvent(event, function(err) {
+      Team.createTeamForEvent(event, user, function(err) {
         if (err) {
           // could not create the team for this event, remove the event and error out
           event.remove(function() {
@@ -476,6 +583,49 @@ exports.removeTeamFromEvents = function(team, callback) {
   };
   Event.update({}, update, function(err) {
     callback(err);
+  });
+};
+
+exports.updateUserInAcl = function(event, userId, role, callback) {
+  var access = event.acl.filter(function(access) {
+    return access.userId.toString() === userId.toString();
+  });
+
+  if (access.length) {
+    access = access[0];
+    access.role = role;
+  } else {
+    event.acl.push({
+      userId: userId,
+      role: role
+    });
+  }
+
+  event.markModified('acl');
+  event.save(function(err) {
+    if (err) return callback(err);
+    // The team that belongs to this event should have the same acl as the event
+    Team.updateUserInAclForEventTeam(event, userId, role, function(err) {
+      callback(err, event);
+    });
+  });
+};
+
+
+exports.removeUserFromAcl = function(event, userId, callback) {
+  var acl = event.acl.filter(function(access) {
+    return access.userId.toString() !== userId.toString();
+  });
+
+  event.acl = acl;
+  event.markModified('acl');
+  event.save(function (err) {
+    if (err) return callback(err);
+
+    // The team that belongs to this event should have the same acl as the event
+    Team.removeUserFromAclForEventTeam(event, userId, function(err) {
+      callback(err, event);
+    });
   });
 };
 

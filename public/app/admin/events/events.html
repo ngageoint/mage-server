@@ -61,8 +61,8 @@
                         <div class="muted">{{e.description}}</div>
                       </div>
                       <div class="col-md-4">
-                        <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-click="deleteEvent($event, e)">Delete</button>
-                        <button class="btn btn-sm btn-default pull-right" ng-click="editEvent($event, e)">Edit</button>
+                        <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-if="hasDeletePermission(e)" ng-click="deleteEvent($event, e)">Delete</button>
+                        <button class="btn btn-sm btn-default pull-right" ng-if="hasUpdatePermission(e)" ng-click="editEvent($event, e)">Edit</button>
                       </div>
                     </div>
 

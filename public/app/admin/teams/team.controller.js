@@ -5,6 +5,8 @@ angular
 AdminTeamController.$inject = ['$scope', '$uibModal', '$filter', '$location', '$routeParams', 'Team', 'Event', 'UserService'];
 
 function AdminTeamController($scope, $uibModal, $filter, $location, $routeParams, Team, Event, UserService) {
+  var permissions = [];
+
   $scope.edit = false;
   $scope.usersPage = 0;
   $scope.usersPerPage = 10;
@@ -29,6 +31,15 @@ function AdminTeamController($scope, $uibModal, $filter, $location, $routeParams
       $scope.nonUsers = _.filter($scope.users, function(user) {
         return !$scope.teamUsersById[user.id];
       });
+
+      var myAccess = _.find($scope.team.acl, function(access) {
+        return access.userId === UserService.myself.id;
+      });
+      var aclPermissions = myAccess ? myAccess.permissions : [];
+
+      $scope.hasReadPermission = _.contains(UserService.myself.role.permissions, 'READ_TEAM') || _.contains(aclPermissions, 'read');
+      $scope.hasUpdatePermission = _.contains(UserService.myself.role.permissions, 'UPDATE_TEAM') || _.contains(aclPermissions, 'update');
+      $scope.hasDeletePermission = _.contains(UserService.myself.role.permissions, 'DELETE_TEAM') || _.contains(aclPermissions, 'delete');
     });
 
     Event.query(function(events) {
@@ -45,6 +56,7 @@ function AdminTeamController($scope, $uibModal, $filter, $location, $routeParams
         });
       });
     });
+
   });
 
   $scope.editTeam = function(team) {
@@ -74,6 +86,14 @@ function AdminTeamController($scope, $uibModal, $filter, $location, $routeParams
   function saveTeam() {
     $scope.team.$save();
   }
+
+  $scope.hasPermission = function(permission) {
+    return _.contains(permissions, permission);
+  };
+
+  $scope.editAccess= function(team) {
+    $location.path('/admin/teams/' + team.id + '/access');
+  };
 
   $scope.gotoEvent = function(event) {
     $location.path('/admin/events/' + event.id);

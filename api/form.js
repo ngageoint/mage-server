@@ -45,14 +45,13 @@ Form.prototype.populateUserFields = function(callback) {
   if (!userFields.length) return callback();
 
   // Get all users in this event
-  var teamIds = event.populated('teamIds') || event.teamIds;
-  Team.getTeams({teamIds: teamIds}, function(err, teams) {
+  event.populate({path: 'teamIds', populate: {path: 'userIds'}}, function(err, event) {
     if (err) return callback(err);
 
     var choices = [];
     var users = {};
 
-    teams.forEach(function(team) {
+    event.teamIds.forEach(function(team) {
       team.userIds.forEach(function(user) {
         users[user.displayName] = user.displayName;
       });

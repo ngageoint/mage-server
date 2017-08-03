@@ -77,8 +77,8 @@ function validateEventAccess(req, res, next) {
     next();
   } else if (access.userHasPermission(req.user, 'READ_OBSERVATION_EVENT')) {
     // Make sure I am part of this event
-    Event.eventHasUser(req.event, req.user._id, function(err, eventHasUser) {
-      if (eventHasUser) {
+    Event.userHasEventPermission(req.event, req.user._id, 'read', function(err, hasPermission) {
+      if (hasPermission) {
         return next();
       } else {
         return res.sendStatus(403);

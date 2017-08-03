@@ -309,7 +309,8 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
 
   function setUser(user) {
     service.myself = user;
-    service.amAdmin = service.myself && service.myself.role && (service.myself.role.name === "ADMIN_ROLE");
+    // TODO don't just check for role name
+    service.amAdmin = service.myself && service.myself.role && (service.myself.role.name === "ADMIN_ROLE" || service.myself.role.name === 'EVENT_MANAGER_ROLE');
   }
 
   function saveUser(user, options, success, error, progress) {

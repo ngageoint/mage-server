@@ -1,5 +1,9 @@
-angular.module('mage').factory('Team', ['$resource', function($resource) {
+angular
+  .module('mage')
+  .factory('Team', Team)
+  .factory('TeamAccess', TeamAccess);
 
+function Team($resource) {
   var Team = $resource('/api/teams/:id', {
     id: '@id'
   },{
@@ -47,4 +51,39 @@ angular.module('mage').factory('Team', ['$resource', function($resource) {
   };
 
   return Team;
-}]);
+}
+
+TeamAccess.$inject = ['$resource'];
+
+function TeamAccess($resource) {
+  var TeamAccess = $resource('/api/teams/:teamId/acl', {
+    teamId: '@teamId',
+    userId: '@userId'
+  },{
+    create: {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      isArray: false
+    },
+    update: {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      isArray: false,
+      url: '/api/teams/:teamId/acl/:userId'
+    },
+    delete: {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      isArray: false,
+      url: '/api/teams/:teamId/acl/:userId'
+    }
+  });
+
+  return TeamAccess;
+}

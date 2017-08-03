@@ -39,7 +39,8 @@ function config($provide, $httpProvider, $routeProvider, $animateProvider) {
         var deferred = $q.defer();
 
         UserService.getMyself().then(function(myself) {
-          myself.role.name === 'ADMIN_ROLE' ? deferred.resolve(myself) : deferred.reject();
+          // TODO don't just check for these 2 roles
+          myself.role.name === 'ADMIN_ROLE' || myself.role.name === 'EVENT_MANAGER_ROLE' ? deferred.resolve(myself) : deferred.reject();
         });
 
         return deferred.promise;
@@ -176,6 +177,11 @@ function config($provide, $httpProvider, $routeProvider, $animateProvider) {
     controller:     "AdminTeamEditController",
     resolve: resolveAdmin()
   });
+  $routeProvider.when('/admin/teams/:teamId/access', {
+    templateUrl:    'app/admin/teams/team.access.html',
+    controller:     "AdminTeamAccessController",
+    resolve: resolveAdmin()
+  });
 
   // Admin event routes
   $routeProvider.when('/admin/events', {
@@ -196,6 +202,11 @@ function config($provide, $httpProvider, $routeProvider, $animateProvider) {
   $routeProvider.when('/admin/events/:eventId/edit', {
     templateUrl:    'app/admin/events/event.edit.html',
     controller:     "AdminEventEditController",
+    resolve: resolveAdmin()
+  });
+  $routeProvider.when('/admin/events/:eventId/access', {
+    templateUrl:    'app/admin/events/event.access.html',
+    controller:     "AdminEventAccessController",
     resolve: resolveAdmin()
   });
   $routeProvider.when('/admin/events/:eventId/edit/form', {

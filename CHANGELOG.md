@@ -8,6 +8,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 * TBD
 
 ##### Features
+* Event and Team access control lists.
 
 ##### Bug Fixes
 * Base layers will never show on top of overlay layers.

@@ -47,6 +47,10 @@ a {
   margin-right: 10px;
 }
 
+.left-gap {
+  margin-left: 10px;
+}
+
 .top-gap-s {
   margin-top: 5px;
 }
@@ -731,6 +735,11 @@ textarea {
   min-width: 120px;
 }
 
+.admin-event-member {
+  display: flex;
+  align-items: center;
+}
+
 .cssFade {
     transition: 0.5s linear all;
     opacity: 1;
@@ -936,4 +945,8 @@ a.alert:after {
 
 .export-actions {
   margin-left: 15px;
+}
+
+.role-popover {
+  max-width: 100;
 }
