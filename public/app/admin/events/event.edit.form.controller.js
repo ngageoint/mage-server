@@ -23,6 +23,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
         return form.id.toString() === $routeParams.formId;
       });
       $scope.form = new Form(form);
+      $scope.form.style = $scope.form.style || {};
 
       _.each($scope.form.fields, function(field) {
         if (field.name === $scope.form.primaryField) {
