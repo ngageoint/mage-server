@@ -333,19 +333,20 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
 
     var existingPropertyFields = [];
     _.each(observation.properties.forms, function(form) {
-      _.each(form, function(value, key) {
+      if (form.formId === observationForm.id) {
+        _.each(form, function(value, key) {
 
-        var field = service.getFormField(observationForm, key);
-        if (field) {
-          if (field.type === 'date') {
-            field.value = moment(value).toDate();
-          } else {
-            field.value = value;
+          var field = service.getFormField(observationForm, key);
+          if (field) {
+            if (field.type === 'date') {
+              field.value = moment(value).toDate();
+            } else {
+              field.value = value;
+            }
+            existingPropertyFields.push(field);
           }
-          existingPropertyFields.push(field);
-        }
-      });
-
+        });
+      }
     });
 
     if (viewMode) {
