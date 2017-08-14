@@ -3,9 +3,15 @@ All notable changes to this project will be documented in this file.
 Adheres to [Semantic Versioning](http://semver.org/).
 
 ---
-## 4.5.2 (TBD)
+## 4.5.3 (TBD)
 
 * TBD
+
+##### Features
+
+##### Bug Fixes
+
+## [4.5.2](https://github.com/ngageoint/mage-server/releases/tag/4.5.2) (08-14-2017)
 
 ##### Features
 * Event and Team access control lists.
