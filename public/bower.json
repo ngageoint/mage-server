@@ -28,7 +28,7 @@
     "jquery": "1.9.1",
     "jquery-file-upload": "9.3.0",
     "jquery-file-download": "latest",
-    "leaflet": "1.0.3",
+    "leaflet": "1.1.0",
     "Leaflet.awesome-markers": "2.0.2",
     "leaflet.markercluster": "1.0.3",
     "leaflet-groupedlayercontrol": "0.3.0",

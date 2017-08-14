@@ -10,6 +10,8 @@ Adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+* Base layers will never show on top of overlay layers.
+* Last overlay layer clicked will be on top of other overlays.
 
 ## [4.5.1](https://github.com/ngageoint/mage-server/releases/tag/4.5.1) (07-11-2017)
 
