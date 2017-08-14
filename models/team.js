@@ -372,6 +372,18 @@ exports.removeUserFromAcl = function(team, userId, callback) {
   team.save(callback);
 };
 
+exports.removeUserFromAllAcls = function(user, callback) {
+  var update = {
+    '$pull': {
+      acl: {
+        userId: user._id
+      }
+    }
+  };
+
+  Team.update({}, update, {multi: true}, callback);
+};
+
 exports.removeUserFromAclForEventTeam = function(event, userId, callback) {
   Team.findOne({teamEventId: event._id}, function(err, team) {
     if (err || !team) return callback(err);

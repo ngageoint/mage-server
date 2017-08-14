@@ -629,6 +629,18 @@ exports.removeUserFromAcl = function(event, userId, callback) {
   });
 };
 
+exports.removeUserFromAllAcls = function(user, callback) {
+  var update = {
+    '$pull': {
+      acl: {
+        userId: user._id
+      }
+    }
+  };
+
+  Event.update({}, update, {multi: true}, callback);
+};
+
 exports.remove = function(event, callback) {
   event.remove(function(err) {
     return callback(err);

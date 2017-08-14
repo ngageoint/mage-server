@@ -3,6 +3,8 @@ var mongoose = require('mongoose')
   , hasher = require('../utilities/pbkdf2')()
   , Token = require('../models/token')
   , Login = require('../models/login')
+  , Event = require('../models/event')
+  , Team = require('../models/team')
   , Observation = require('../models/observation')
   , Location = require('../models/location')
   , CappedLocation = require('../models/cappedLocation');
@@ -136,29 +138,25 @@ UserSchema.pre('remove', function(next) {
 
   async.parallel({
     location: function(done) {
-      Location.removeLocationsForUser(user, function(err) {
-        done(err);
-      });
+      Location.removeLocationsForUser(user, done);
     },
     cappedlocation: function(done) {
-      CappedLocation.removeLocationsForUser(user, function(err) {
-        done(err);
-      });
+      CappedLocation.removeLocationsForUser(user, done);
     },
     token: function(done) {
-      Token.removeTokensForUser(user, function(err) {
-        done(err);
-      });
+      Token.removeTokensForUser(user, done);
     },
     login: function(done) {
-      Login.removeLoginsForUser(user, function(err) {
-        done(err);
-      });
+      Login.removeLoginsForUser(user, done);
     },
     observation: function(done) {
-      Observation.removeUser(user, function(err) {
-        done(err);
-      });
+      Observation.removeUser(user, done);
+    },
+    eventAcl: function(done) {
+      Event.removeUserFromAllAcls(user, done);
+    },
+    teamAcl: function(done) {
+      Team.removeUserFromAllAcls(user, done);
     }
   },
   function(err) {
