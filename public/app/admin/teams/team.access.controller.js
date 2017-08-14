@@ -24,7 +24,8 @@ function AdminTeamAccessController($scope, $location, $routeParams, $q, $filter,
     var usersById = _.indexBy(users, 'id');
 
     $scope.teamMembers = _.map($scope.team.acl, function(access) {
-      var member = _.pick(usersById[access.userId], 'id', 'displayName', 'avatarUrl', 'lastUpdated');
+      var member = _.pick(usersById[access.userId], 'displayName', 'avatarUrl', 'lastUpdated');
+      member.id = access.userId;
       member.role = access.role;
       return member;
     });
