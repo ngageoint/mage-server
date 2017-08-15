@@ -3,6 +3,8 @@ angular
   .factory('Team', Team)
   .factory('TeamAccess', TeamAccess);
 
+Team.$inject = ['$resource'];
+
 function Team($resource) {
   var Team = $resource('/api/teams/:id', {
     id: '@id'
