@@ -68,14 +68,13 @@ describe("team update tests", function() {
 
     var teamId = mongoose.Types.ObjectId();
     var eventId = 1;
+    var acl = {};
+    acl[userId.toString()] = 'MANAGER';
     var mockTeam = new TeamModel({
       id: teamId,
       name: 'Mock Team',
       teamEventId: eventId,
-      acl: [{
-        role: 'MANAGER',
-        userId: userId
-      }]
+      acl: acl
     });
 
     sandbox.mock(TeamModel)
@@ -104,14 +103,13 @@ describe("team update tests", function() {
 
     var teamId = mongoose.Types.ObjectId();
     var eventId = 1;
+    var acl = {};
+    acl[userId.toString()] = 'GUEST';
     var mockTeam = new TeamModel({
       id: teamId,
       name: 'Mock Team',
       teamEventId: eventId,
-      acl: [{
-        role: 'GUEST',
-        userId: userId
-      }]
+      acl: acl
     });
 
     sandbox.mock(TeamModel)
@@ -131,53 +129,17 @@ describe("team update tests", function() {
       .end(done);
   });
 
-  it("should add user to acl in team", function(done) {
-    mockTokenWithPermission('');
-    var aclUserId = mongoose.Types.ObjectId();
-
-    var teamId = 1;
-    var mockTeam = new TeamModel({
-      _id: teamId,
-      name: 'Mock Team',
-      acl: [{
-        role: 'MANAGER',
-        userId: userId
-      }]
-    });
-    sandbox.mock(TeamModel)
-      .expects('findOne')
-      .chain('populate')
-      .chain('exec')
-      .yields(null, mockTeam);
-
-    sandbox.mock(mockTeam)
-      .expects('save')
-      .yields(null, mockTeam);
-
-    request(app)
-      .post('/api/teams/' + teamId + '/acl/')
-      .set('Accept', 'application/json')
-      .set('Authorization', 'Bearer 12345')
-      .send({
-        userId: aclUserId.toString(),
-        role: 'MANAGER'
-      })
-      .expect(200)
-      .end(done);
-  });
-
   it("should update user in acl for team", function(done) {
     mockTokenWithPermission('');
     var aclUserId = mongoose.Types.ObjectId();
 
-    var teamId = 1;
+    var teamId = mongoose.Types.ObjectId();
+    var acl = {};
+    acl[userId.toString()] = 'MANAGER';
     var mockTeam = new TeamModel({
       _id: teamId,
       name: 'Mock Team',
-      acl: [{
-        role: 'MANAGER',
-        userId: userId
-      }]
+      acl: acl
     });
     sandbox.mock(TeamModel)
       .expects('findOne')
@@ -185,8 +147,11 @@ describe("team update tests", function() {
       .chain('exec')
       .yields(null, mockTeam);
 
-    sandbox.mock(mockTeam)
-      .expects('save')
+    var update = {};
+    update['acl.' + aclUserId.toString()] = 'OWNER';
+    sandbox.mock(TeamModel)
+      .expects('findOneAndUpdate')
+      .withArgs({_id: teamId}, update)
       .yields(null, mockTeam);
 
     request(app)
@@ -204,14 +169,13 @@ describe("team update tests", function() {
     mockTokenWithPermission('');
     var aclUserId = mongoose.Types.ObjectId();
 
-    var teamId = 1;
+    var teamId = mongoose.Types.ObjectId();
+    var acl = {};
+    acl[userId.toString()] = 'MANAGER';
     var mockTeam = new TeamModel({
       _id: teamId,
       name: 'Mock Team',
-      acl: [{
-        role: 'MANAGER',
-        userId: userId
-      }]
+      acl: acl
     });
     sandbox.mock(TeamModel)
       .expects('findOne')
@@ -219,8 +183,11 @@ describe("team update tests", function() {
       .chain('exec')
       .yields(null, mockTeam);
 
-    sandbox.mock(mockTeam)
-      .expects('save')
+    var args = { $unset: {} };
+    args.$unset['acl.' + aclUserId.toString()] = true;
+    sandbox.mock(TeamModel)
+      .expects('findOneAndUpdate')
+      .withArgs({_id: teamId}, args)
       .yields(null, mockTeam);
 
     request(app)
@@ -229,6 +196,78 @@ describe("team update tests", function() {
       .set('Authorization', 'Bearer 12345')
       .send()
       .expect(200)
+      .end(done);
+  });
+
+  it("should reject update user in acl with invalid userId", function(done) {
+    mockTokenWithPermission('');
+    var aclUserId = mongoose.Types.ObjectId();
+
+    var teamId = mongoose.Types.ObjectId();
+    var acl = {};
+    acl[userId.toString()] = 'MANAGER';
+    var mockTeam = new TeamModel({
+      _id: teamId,
+      name: 'Mock Team',
+      acl: acl
+    });
+    sandbox.mock(TeamModel)
+      .expects('findOne')
+      .chain('populate')
+      .chain('exec')
+      .yields(null, mockTeam);
+
+    var update = {};
+    update['acl.' + aclUserId.toString()] = 'MANAGER';
+    sandbox.mock(TeamModel)
+      .expects('findOneAndUpdate')
+      .withArgs({_id: teamId}, update)
+      .yields(null, mockTeam);
+
+    request(app)
+      .put('/api/teams/' + teamId + '/acl/1')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        role: 'MANAGER'
+      })
+      .expect(400)
+      .end(done);
+  });
+
+  it("should reject update user in acl with invalid role", function(done) {
+    mockTokenWithPermission('');
+    var aclUserId = mongoose.Types.ObjectId();
+
+    var teamId = mongoose.Types.ObjectId();
+    var acl = {};
+    acl[userId.toString()] = 'MANAGER';
+    var mockTeam = new TeamModel({
+      _id: teamId,
+      name: 'Mock Team',
+      acl: acl
+    });
+    sandbox.mock(TeamModel)
+      .expects('findOne')
+      .chain('populate')
+      .chain('exec')
+      .yields(null, mockTeam);
+
+    var update = {};
+    update['acl.' + aclUserId.toString()] = 'MANAGER';
+    sandbox.mock(TeamModel)
+      .expects('findOneAndUpdate')
+      .withArgs({_id: teamId}, update)
+      .yields(null, mockTeam);
+
+    request(app)
+      .put('/api/teams/' + teamId + '/acl/' + aclUserId.toString())
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        role: 'NONE'
+      })
+      .expect(400)
       .end(done);
   });
 });

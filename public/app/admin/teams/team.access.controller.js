@@ -23,9 +23,9 @@ function AdminTeamAccessController($scope, $location, $routeParams, $q, $filter,
 
     var usersById = _.indexBy(users, 'id');
 
-    $scope.teamMembers = _.map($scope.team.acl, function(access) {
-      var member = _.pick(usersById[access.userId], 'displayName', 'avatarUrl', 'lastUpdated');
-      member.id = access.userId;
+    $scope.teamMembers = _.map($scope.team.acl, function(access, userId) {
+      var member = _.pick(usersById[userId], 'displayName', 'avatarUrl', 'lastUpdated');
+      member.id = userId;
       member.role = access.role;
       return member;
     });
@@ -44,7 +44,7 @@ function AdminTeamAccessController($scope, $location, $routeParams, $q, $filter,
   }
 
   $scope.addMember = function(member, role) {
-    TeamAccess.create({
+    TeamAccess.update({
       teamId: $scope.team.id,
       userId: member.id,
       role: role

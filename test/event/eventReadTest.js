@@ -61,27 +61,26 @@ describe("event read tests", function() {
   it("should read active events if user has read permission in acl", function(done) {
     mockTokenWithPermission('');
 
-    var eventId = 1;
-
-    var mockEvents = [{
-      _id: eventId,
+    var mockEvent1 = {
+      _id: 1,
       name: 'Mock Event',
-      acl: [{
+      acl: {
         userId: userId,
         role: 'GUEST'
-      }]
-    },{
-      _id: eventId,
+      }
+    };
+    mockEvent1.acl[userId] = 'GUEST';
+
+    var mockEvent2 = {
+      _id: 2,
       name: 'Mock Event',
-      acl: [{
-        userId: mongoose.Types.ObjectId(),
-        role: 'GUEST'
-      }]
-    }];
+      acl: {}
+    };
+
 
     var mockCursor = {
       toArray: function(callback) {
-        callback(null, mockEvents);
+        callback(null, [mockEvent1, mockEvent2]);
       }
     };
 
@@ -110,8 +109,11 @@ describe("event read tests", function() {
 
     var mockEvent1 = new EventModel({
       _id: eventId,
-      name: 'Mock Event 1',
-      teamIds: []
+      name: 'Mock Event 123',
+      teamIds: [],
+      acl: {
+        1: 'NONE'
+      }
     });
     mockEvent1.teamIds[0] = {
       userIds: [userId]
@@ -119,7 +121,8 @@ describe("event read tests", function() {
 
     var mockEvent2 = new EventModel({
       _id: eventId,
-      name: 'Mock Event 2',
+      name: 'Mock Event 267',
+      acl: {}
     });
 
     sandbox.mock(EventModel)
@@ -152,12 +155,14 @@ describe("event read tests", function() {
 
     var mockEvent1 = new EventModel({
       _id: eventId,
-      name: 'Mock Event 1'
+      name: 'Mock Event 1',
+      acl: {}
     });
 
     var mockEvent2 = new EventModel({
       _id: eventId,
-      name: 'Mock Event 2'
+      name: 'Mock Event 2',
+      acl: {}
     });
 
     sandbox.mock(EventModel)

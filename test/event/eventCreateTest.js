@@ -53,9 +53,12 @@ describe("event create tests", function() {
       _id: eventId,
       name: 'Mock Event'
     });
+
+    var eventAcl = {};
+    eventAcl[userId.toString()] = 'OWNER';
     sandbox.mock(EventModel)
       .expects('create')
-      .withArgs(sinon.match.has('acl', [{role: 'OWNER', userId: userId}]))
+      .withArgs(sinon.match.has('acl', eventAcl).and(sinon.match.has('_id', eventId)))
       .yields(null, mockEvent);
 
     mongoose.connection.db = sandbox.stub();
@@ -71,9 +74,11 @@ describe("event create tests", function() {
       teamEventId: eventId
     };
 
+    var teamAcl = {};
+    teamAcl[userId.toString()] = 'OWNER';
     sandbox.mock(TeamModel)
       .expects('create')
-      .withArgs(sinon.match.has('acl', [{role: 'OWNER', userId: userId}]).and(sinon.match.has('teamEventId', eventId)))
+      .withArgs(sinon.match.has('acl', teamAcl).and(sinon.match.has('teamEventId', eventId)))
       .yields(null, mockTeam);
 
     sandbox.mock(TeamModel)

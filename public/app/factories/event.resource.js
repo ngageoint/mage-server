@@ -148,20 +148,13 @@ function EventAccess($resource) {
     eventId: '@eventId',
     userId: '@userId'
   },{
-    create: {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      isArray: false
-    },
     update: {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
-      isArray: false,
-      url: '/api/events/:eventId/acl/:userId'
+      url: '/api/events/:eventId/acl/:userId',
+      isArray: false
     },
     delete: {
       method: 'DELETE',

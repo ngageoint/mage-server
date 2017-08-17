@@ -1,7 +1,5 @@
 var request = require('supertest')
   , sinon = require('sinon')
-  , should = require('chai').should()
-  , expect = require('chai').expect
   , mongoose = require('mongoose')
   , MockToken = require('../mockToken')
   , app = require('../../express')
@@ -12,9 +10,6 @@ require('sinon-mongoose');
 
 require('../../models/team');
 var TeamModel = mongoose.model('Team');
-
-require('../../models/event');
-var EventModel = mongoose.model('Event');
 
 describe("team read tests", function() {
 
@@ -64,17 +59,24 @@ describe("team read tests", function() {
     mockTokenWithPermission('');
 
     var teamId = 1;
+    var acl = {};
+    acl[userId.toString()] = 'GUEST';
     var mockTeam = new TeamModel({
-      _id: teamId,
+      id: teamId,
       name: 'Mock Team',
-      acl: [{
-        userId: userId,
-        role: 'GUEST'
-      }]
+      acl: acl
     });
+
+    var aclOwner = {};
+    aclOwner['acl.' + userId.toString()] = 'OWNER';
+    var aclManager = {};
+    aclManager['acl.' + userId.toString()] = 'MANAGER';
+    var aclGuest= {};
+    aclGuest['acl.' + userId.toString()] = 'GUEST';
+
     sandbox.mock(TeamModel)
       .expects('find')
-      .withArgs({$or: [{ userIds: { $in: [userId] } }, { acl: { $elemMatch: { role: "OWNER", userId: userId } } }, { acl: { $elemMatch: { role: "MANAGER", userId: userId } } }, { acl: { $elemMatch: { role: "GUEST", userId: userId } } }]})
+      .withArgs({$or: [{ userIds: { $in: [userId] } }, aclOwner, aclManager, aclGuest]})
       .chain('populate').withArgs('userIds')
       .chain('exec')
       .yields(null, [mockTeam]);

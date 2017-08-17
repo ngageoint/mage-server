@@ -10,7 +10,7 @@ require('sinon-mongoose');
 require('../../models/team');
 var TeamModel = mongoose.model('Team');
 
-describe("team delete tests", function() {
+describe("team create tests", function() {
 
   var sandbox;
   before(function() {
@@ -42,9 +42,11 @@ describe("team delete tests", function() {
       teamEventId: eventId
     });
 
+    var acl = {};
+    acl[userId.toString()] = 'OWNER';
     sandbox.mock(TeamModel)
       .expects('create')
-      .withArgs(sinon.match.has('acl', [{role: 'OWNER', userId: userId}]))
+      .withArgs(sinon.match.has('acl', acl))
       .yields(null, mockTeam);
 
     request(app)

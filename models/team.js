@@ -5,31 +5,16 @@ var mongoose = require('mongoose')
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
 
-var AccessSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: false },
-  role: { type: String, enum: ['OWNER', 'MANAGER', 'GUEST'], required: false }
-}, {
-  _id: false
-});
-
 // Collection to hold users
 var TeamSchema = new Schema({
   name: { type: String, required: true },
   description: { type: String },
   teamEventId: { type: Number, ref: 'Event' },
   userIds: [{type: Schema.Types.ObjectId, ref: 'User'}],
-  acl: [AccessSchema]
+  acl: {}
 },{
-  versionKey: false
+  minimize: false
 });
-
-function hasAtLeastOneOwner(acl) {
-  return acl.filter(function(access) {
-    return access.role === 'OWNER';
-  }).length > 0;
-}
-
-TeamSchema.path('acl').validate(hasAtLeastOneOwner, 'Team must have at least "Owner"');
 
 var permissions = {
   OWNER: ['read', 'update', 'delete'],
@@ -83,21 +68,21 @@ function transform(team, ret, options) {
 
   // if read only permissions in team acl, then return users acl
   if (options.access) {
-    var userAccess = ret.acl.filter(function(access) {
-      return access.userId.toString() === options.access.user._id.toString();
-    })[0] || null;
-
+    var userAccess = ret.acl[options.access.user._id];
     var roles = rolesWithPermission('update').concat(rolesWithPermission('delete'));
-    if (!userAccess || roles.indexOf(userAccess.role) === -1) {
-      ret.acl = ret.acl.filter(function(access) {
-        return access.userId.toString() === options.access.user._id.toString();
-      });
+    if (!userAccess || roles.indexOf(userAccess) === -1) {
+      var acl = {};
+      acl[options.access.user._id] = ret.acl[options.access.user._id];
+      ret.acl = acl;
     }
   }
 
-  ret.acl.forEach(function(access) {
-    access.permissions = permissions[access.role];
-  });
+  for (var userId in ret.acl) {
+    ret.acl[userId] = {
+      role: ret.acl[userId],
+      permissions: permissions[ret.acl[userId]]
+    };
+  }
 }
 
 TeamSchema.set("toObject", {
@@ -113,16 +98,11 @@ var Team = mongoose.model('Team', TeamSchema);
 exports.TeamModel = Team;
 
 exports.userHasAclPermission = function(team, userId, permission) {
-  // Check if user has permission in team acl
-  var roles = rolesWithPermission(permission);
-  if (team.acl.some(function(access) { return access.userId.toString() === userId.toString() && roles.indexOf(access.role) !== -1; })) {
-    return true;
-  }
-
-  return false;
+  return team.acl[userId] && rolesWithPermission(permission).some(function(role) {
+    return role === team.acl[userId];
+  });
 };
 
-// TODO is user in team, then they have 'read' access
 exports.getTeamById = function(id, options, callback) {
   if (typeof options === 'function') {
     callback = options;
@@ -133,22 +113,16 @@ exports.getTeamById = function(id, options, callback) {
     _id: id
   };
   if (options.access) {
-    var roles = rolesWithPermission(options.access.permission);
     var accesses = [{
       userIds: {
         '$in': [options.access.user._id]
       }
     }];
 
-    roles.forEach(function(role) {
-      accesses.push({
-        acl: {
-          $elemMatch: {
-            userId: options.access.user._id,
-            role: role
-          }
-        }
-      });
+    rolesWithPermission(options.access.permission).forEach(function(role) {
+      var access = {};
+      access['acl.' + options.access.user._id.toString()] = role;
+      accesses.push(access);
     });
 
     conditions['$or'] = accesses;
@@ -175,21 +149,15 @@ exports.count = function(options, callback) {
 
   var conditions = {};
   if (options.access) {
-    var roles = rolesWithPermission(options.access.permission);
     var accesses = [{
       userIds: {
         '$in': [options.access.user._id]
       }
     }];
-    roles.forEach(function(role) {
-      accesses.push({
-        acl: {
-          $elemMatch: {
-            userId: options.access.user._id,
-            role: role
-          }
-        }
-      });
+    rolesWithPermission(options.access.permission).forEach(function(role) {
+      var access = {};
+      access['acl.' + options.access.user._id.toString()] = role;
+      accesses.push(access);
     });
 
     conditions['$or'] = accesses;
@@ -220,21 +188,16 @@ exports.getTeams = function(options, callback) {
   }
 
   if (options.access) {
-    var roles = rolesWithPermission(options.access.permission);
     var accesses = [{
       userIds: {
         '$in': [options.access.user._id]
       }
     }];
-    roles.forEach(function(role) {
-      accesses.push({
-        acl: {
-          $elemMatch: {
-            userId: options.access.user._id,
-            role: role
-          }
-        }
-      });
+
+    rolesWithPermission(options.access.permission).forEach(function(role) {
+      var access = {};
+      access['acl.' + options.access.user._id.toString()] = role;
+      accesses.push(access);
     });
 
     conditions['$or'] = accesses;
@@ -255,10 +218,8 @@ exports.createTeam = function(team, user, callback) {
     create.userIds = team.users.map(function(user) { return mongoose.Types.ObjectId(user.id); });
   }
 
-  create.acl = [{
-    userId: user._id,
-    role: 'OWNER'
-  }];
+  create.acl = {};
+  create.acl[user._id.toString()] = 'OWNER';
 
   Team.create(create, function(err, team) {
     if (err) return callback(err);
@@ -274,11 +235,10 @@ exports.createTeamForEvent = function(event, user, callback) {
         name: event.name,
         description: "This team belongs specifically to event '" + event.name + "' and cannot be deleted.",
         teamEventId: event._id,
-        acl: [{
-          role: 'OWNER',
-          userId: user._id
-        }]
+        acl: {}
       };
+
+      team.acl[user._id.toString()] = 'OWNER';
 
       Team.create(team, done);
     },
@@ -334,60 +294,58 @@ exports.removeUser = function(team, user, callback) {
   });
 };
 
-exports.updateUserInAcl = function(team, userId, role, callback) {
-  console.log('update acl for team')
-  var access = team.acl.filter(function(access) {
-    return access.userId.toString() === userId.toString();
-  });
-
-  if (access.length) {
-    access = access[0];
-    access.role = role;
-  } else {
-    team.acl.push({
-      userId: userId,
-      role: role
-    });
+exports.updateUserInAcl = function(teamId, userId, role, callback) {
+  // validate userId
+  var err;
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    err = new Error('Invalid userId');
+    err.status = 400;
+    return callback(err);
   }
 
-  team.markModified('acl');
-  team.save(callback);
+  // validate role
+  if (Object.keys(permissions).indexOf(role) === -1) {
+    err = new Error('Invalid role');
+    err.status = 400;
+    return callback(err);
+  }
+
+  var update = {};
+  update['acl.' + userId.toString()] = role;
+
+  Team.findOneAndUpdate({_id: teamId}, update, {new: true}, callback);
 };
 
-exports.updateUserInAclForEventTeam = function(event, userId, role, callback) {
-  Team.findOne({teamEventId: event._id}, function(err, team) {
-    if (err || !team) return callback(err);
+exports.updateUserInAclForEventTeam = function(eventId, userId, role, callback) {
+  var update = {};
+  update['acl.' + userId.toString()] = role;
 
-    exports.updateUserInAcl(team, userId, role, callback);
-  });
+  Team.findOneAndUpdate({teamEventId: eventId}, update, {new: true}, callback);
 };
 
-exports.removeUserFromAcl = function(team, userId, callback) {
-  var acl = team.acl.filter(function(access) {
-    return access.userId.toString() !== userId.toString();
-  });
+exports.removeUserFromAcl = function(teamId, userId, callback) {
+  var update = {
+    $unset: {}
+  };
+  update.$unset['acl.' + userId.toString()] = true;
 
-  team.acl = acl;
-  team.markModified('acl');
-  team.save(callback);
+  Team.findByIdAndUpdate(teamId, update, {new: true}, callback);
+};
+
+exports.removeUserFromAclForEventTeam = function(eventId, userId, callback) {
+  var update = {
+    $unset: {}
+  };
+  update.$unset['acl.' + userId.toString()] = true;
+
+  Team.findOneAndUpdate({teamEventId: eventId}, update, {new: true}, callback);
 };
 
 exports.removeUserFromAllAcls = function(user, callback) {
   var update = {
-    '$pull': {
-      acl: {
-        userId: user._id
-      }
-    }
+    $unset: {}
   };
+  update.$unset['acl.' + user._id.toString()] = true;
 
-  Team.update({}, update, {multi: true}, callback);
-};
-
-exports.removeUserFromAclForEventTeam = function(event, userId, callback) {
-  Team.findOne({teamEventId: event._id}, function(err, team) {
-    if (err || !team) return callback(err);
-
-    exports.removeUserFromAcl(team, userId, callback);
-  });
+  Team.update({}, update, {multi: true}, {new: true}, callback);
 };

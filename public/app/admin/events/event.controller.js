@@ -79,19 +79,13 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
       return $scope.event.layerIds.indexOf(layer.id) === -1;
     });
 
-    var myAccess = _.find($scope.event.acl, function(access) {
-      return access.userId === UserService.myself.id;
-    });
+    var myAccess = $scope.event.acl[UserService.myself.id];
     var aclPermissions = myAccess ? myAccess.permissions : [];
 
     $scope.hasReadPermission = _.contains(UserService.myself.role.permissions, 'READ_EVENT_ALL') || _.contains(aclPermissions, 'read');
     $scope.hasUpdatePermission = _.contains(UserService.myself.role.permissions, 'UPDATE_EVENT') || _.contains(aclPermissions, 'update');
     $scope.hasDeletePermission = _.contains(UserService.myself.role.permissions, 'DELETE_EVENT') || _.contains(aclPermissions, 'delete');
   });
-
-  function saveEvent(event) {
-    event.$save({populate: false});
-  }
 
   $scope.filterMembers = function(item) {
     var filteredMembers = $filter('filter')([item], $scope.memberSearch);
@@ -113,7 +107,7 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     $scope.eventMembers.push(team);
     $scope.eventNonMembers = _.reject($scope.eventNonMembers, function(item) { return item.id === team.id; });
 
-    saveEvent($scope.event);
+    Event.addTeam({id: $scope.event.id}, team);
   }
 
   function addUser(user) {
@@ -136,7 +130,7 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     $scope.eventMembers = _.reject($scope.eventMembers, function(item) { return item.id === team.id; });
     $scope.eventNonMembers.push(team);
 
-    saveEvent($scope.event);
+    Event.removeTeam({id: $scope.event.id, teamId: team.id});
   }
 
   function removeUser(user) {
@@ -155,7 +149,7 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     $scope.eventLayers.push(layer);
     $scope.nonLayers = _.reject($scope.nonLayers, function(l) { return l.id === layer.id; });
 
-    saveEvent($scope.event);
+    Event.addLayer({id: $scope.event.id}, layer);
   };
 
   $scope.removeLayer = function(layer) {
@@ -163,7 +157,7 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     $scope.eventLayers = _.reject($scope.eventLayers, function(l) { return l.id === layer.id;});
     $scope.nonLayers.push(layer);
 
-    saveEvent($scope.event);
+    Event.removeLayer({id: $scope.event.id, layerId: layer.id});
   };
 
   $scope.editEvent = function(event) {

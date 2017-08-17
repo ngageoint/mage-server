@@ -38,9 +38,9 @@ function AdminEventAccessController($scope, $location, $routeParams, $q, $filter
 
     var usersById = _.indexBy(users, 'id');
 
-    $scope.eventMembers = _.map($scope.event.acl, function(access) {
-      var member = _.pick(usersById[access.userId], 'displayName', 'avatarUrl', 'lastUpdated');
-      member.id = access.userId;
+    $scope.eventMembers = _.map($scope.event.acl, function(access, userId) {
+      var member = _.pick(usersById[userId], 'displayName', 'avatarUrl', 'lastUpdated');
+      member.id = userId;
       member.role = {
         selected: _.find($scope.roles, function(role) { return role.name === access.role; })
       };
@@ -62,7 +62,7 @@ function AdminEventAccessController($scope, $location, $routeParams, $q, $filter
   }
 
   $scope.addMember = function(member, role) {
-    EventAccess.create({
+    EventAccess.update({
       eventId: $scope.event.id,
       userId: member.id,
       role: role.name

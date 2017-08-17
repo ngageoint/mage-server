@@ -51,13 +51,6 @@ function rolesWithPermission(permission) {
   return roles;
 }
 
-var AccessSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: false },
-  role: { type: String, enum: ['OWNER', 'MANAGER', 'GUEST'], required: false }
-}, {
-  _id: false
-});
-
 // Creates the Schema for the Attachments object
 var EventSchema = new Schema({
   _id: { type: Number, required: true, unique: true },
@@ -72,16 +65,11 @@ var EventSchema = new Schema({
     userFields: [String],
     fields: [FieldSchema]
   },
-  acl: [AccessSchema]
+  acl: {}
 },{
+  minimize: false,
   versionKey: false
 });
-
-function hasAtLeastOneOwner(acl) {
-  return acl.filter(function(access) {
-    return access.role === 'OWNER';
-  }).length > 0;
-}
 
 function hasFieldOnce(name) {
   return function(fields) {
@@ -99,7 +87,6 @@ function fieldIsRequired(name) {
   };
 }
 
-EventSchema.path('acl').validate(hasAtLeastOneOwner, 'Event must have at least "Owner"');
 EventSchema.path('form.fields').validate(hasFieldOnce('timestamp'), 'fields array must contain one timestamp field');
 EventSchema.path('form.fields').validate(fieldIsRequired('timestamp'), 'timestamp must have a required property set to true.');
 EventSchema.path('form.fields').validate(hasFieldOnce('geometry'), 'fields array must contain one geometry field');
@@ -193,21 +180,21 @@ function transform(event, ret, options) {
 
     // if read only permissions in event acl on return users acl
     if (options.access) {
-      var userAccess = ret.acl.filter(function(access) {
-        return access.userId.toString() === options.access.user._id.toString();
-      })[0] || null;
-
+      var userAccess = ret.acl[options.access.user._id];
       var roles = rolesWithPermission('update').concat(rolesWithPermission('delete'));
-      if (!userAccess || roles.indexOf(userAccess.role) === -1) {
-        ret.acl = ret.acl.filter(function(access) {
-          return access.userId.toString() === options.access.user._id.toString();
-        });
+      if (!userAccess || roles.indexOf(userAccess) === -1) {
+        var acl = {};
+        acl[options.access.user._id] = ret.acl[options.access.user._id];
+        ret.acl = acl;
       }
     }
 
-    ret.acl.forEach(function(access) {
-      access.permissions = permissions[access.role];
-    });
+    for (var userId in ret.acl) {
+      ret.acl[userId] = {
+        role: ret.acl[userId],
+        permissions: permissions[ret.acl[userId]]
+      };
+    }
   }
 }
 
@@ -226,7 +213,6 @@ exports.Model = Event;
 // TODO look at filtering this in query, not after
 function filterEventsByUserId(events, userId, callback) {
   Event.populate(events, 'teamIds', function(err, events) {
-
     if (err) return callback(err);
 
     var filteredEvents = events.filter(function(event) {
@@ -238,8 +224,7 @@ function filterEventsByUserId(events, userId, callback) {
 
       // Check if user has read access to the event based on
       // being in the events access control listen
-      var roles = rolesWithPermission('read');
-      if (event.acl.some(function(access) { return access.userId.toString() === userId.toString() && roles.indexOf(access.role) !== -1; })) {
+      if (event.acl[userId] && rolesWithPermission('read').some(function(role) { return role === event.acl[userId]; })) {
         return true;
       }
 
@@ -260,8 +245,7 @@ function userHasEventPermission(event, userId, permission, callback) {
     }
 
     // Check if user has permission in event acl
-    var roles = rolesWithPermission(permission);
-    if (event.acl.some(function(access) { return access.userId.toString() === userId.toString() && roles.indexOf(access.role) !== -1; })) {
+    if (event.acl[userId] && rolesWithPermission(permission).some(function(role) { return role === event.acl[userId]; })) {
       return callback(null, true);
     }
 
@@ -270,6 +254,7 @@ function userHasEventPermission(event, userId, permission, callback) {
 }
 
 function getTeamsForEvent(event, callback) {
+
   if (event.populated('teamIds')) {
     callback(null, event.teamIds);
   } else {
@@ -289,17 +274,11 @@ exports.count = function(options, callback) {
 
   var conditions = {};
   if (options.access) {
-    var roles = rolesWithPermission(options.access.permission);
     var accesses = [];
-    roles.forEach(function(role) {
-      accesses.push({
-        acl: {
-          $elemMatch: {
-            userId: options.access.user._id,
-            role: role
-          }
-        }
-      });
+    rolesWithPermission(options.access.permission).forEach(function(role) {
+      var access = {};
+      access['acl.' + options.access.user._id.toString()] = role;
+      accesses.push(access);
     });
 
     conditions['$or'] = accesses;
@@ -446,10 +425,8 @@ exports.create = function(event, user, options, callback) {
       event._id = id;
       event.collectionName = 'observations' + id;
 
-      event.acl = [{
-        userId: user._id,
-        role: 'OWNER'
-      }];
+      event.acl = {};
+      event.acl[user._id.toString()] = 'OWNER';
 
       Event.create(event, function(err, newEvent) {
         if (err) return done(err);
@@ -490,17 +467,13 @@ exports.update = function(id, event, options, callback) {
     options = {};
   }
 
-  async.series([
-    function(done) {
-      validateTeamIds(id, event.teamIds, done);
-    },
-    function(done) {
-      Event.findByIdAndUpdate(id, event, {new: true, runValidators: true, context: 'query'}, done);
-    }
-  ], function(err, results) {
-    if (err) return callback(err);
+  var update = ['name', 'description', 'complete', 'form'].reduce(function(o, k) {
+    if (event[k] !== undefined) o[k] = event[k];
+    return o;
+  }, {});
 
-    var updatedEvent = results[1];
+  Event.findByIdAndUpdate(id, update, {new: true, runValidators: true, context: 'query'}, function(err, updatedEvent) {
+    if (err) return callback(err);
 
     if (options.populate) {
       Event.populate(updatedEvent, {path: 'teamIds'}, function(err, event) {
@@ -586,44 +559,47 @@ exports.removeTeamFromEvents = function(team, callback) {
   });
 };
 
-exports.updateUserInAcl = function(event, userId, role, callback) {
-  var access = event.acl.filter(function(access) {
-    return access.userId.toString() === userId.toString();
-  });
-
-  if (access.length) {
-    access = access[0];
-    access.role = role;
-  } else {
-    event.acl.push({
-      userId: userId,
-      role: role
-    });
+exports.updateUserInAcl = function(eventId, userId, role, callback) {
+  // validate userId
+  var err;
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
+    err = new Error('Invalid userId');
+    err.status = 400;
+    return callback(err);
   }
 
-  event.markModified('acl');
-  event.save(function(err) {
+  // validate role
+  if (Object.keys(permissions).indexOf(role) === -1) {
+    err = new Error('Invalid role');
+    err.status = 400;
+    return callback(err);
+  }
+
+  var update = {};
+  update['acl.' + userId] = role;
+
+  Event.findOneAndUpdate({_id: eventId}, update, {new: true, runValidators: true}, function(err, event) {
     if (err) return callback(err);
+
     // The team that belongs to this event should have the same acl as the event
-    Team.updateUserInAclForEventTeam(event, userId, role, function(err) {
+    Team.updateUserInAclForEventTeam(eventId, userId, role, function(err) {
       callback(err, event);
     });
   });
 };
 
 
-exports.removeUserFromAcl = function(event, userId, callback) {
-  var acl = event.acl.filter(function(access) {
-    return access.userId.toString() !== userId.toString();
-  });
+exports.removeUserFromAcl = function(eventId, userId, callback) {
+  var update = {
+    $unset: {}
+  };
+  update.$unset['acl.' + userId] = true;
 
-  event.acl = acl;
-  event.markModified('acl');
-  event.save(function (err) {
+  Event.findByIdAndUpdate(eventId, update, {new: true, runValidators: true}, function(err, event) {
     if (err) return callback(err);
 
     // The team that belongs to this event should have the same acl as the event
-    Team.removeUserFromAclForEventTeam(event, userId, function(err) {
+    Team.removeUserFromAclForEventTeam(eventId, userId, function(err) {
       callback(err, event);
     });
   });
@@ -631,14 +607,11 @@ exports.removeUserFromAcl = function(event, userId, callback) {
 
 exports.removeUserFromAllAcls = function(user, callback) {
   var update = {
-    '$pull': {
-      acl: {
-        userId: user._id
-      }
-    }
+    $unset: {}
   };
+  update.$unset['acl.' + user._id.toString()] = true;
 
-  Event.update({}, update, {multi: true}, callback);
+  Event.update({}, update, {multi: true}, {new: true, runValidators: true}, callback);
 };
 
 exports.remove = function(event, callback) {

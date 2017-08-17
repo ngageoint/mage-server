@@ -74,14 +74,14 @@ describe("team delete tests", function() {
 
     var teamId = mongoose.Types.ObjectId();
     var eventId = 1;
+
+    var acl = {};
+    acl[userId.toString()] = 'OWNER';
     var mockTeam = new TeamModel({
       id: teamId,
-      name: 'Team 1',
       teamEventId: eventId,
-      acl: [{
-        role: 'OWNER',
-        userId: userId
-      }]
+      name: 'Mock Team',
+      acl: acl
     });
 
     sandbox.mock(TeamModel)
@@ -113,14 +113,14 @@ describe("team delete tests", function() {
 
     var teamId = mongoose.Types.ObjectId();
     var eventId = 1;
+
+    var acl = {};
+    acl[userId.toString()] = 'MANAGER';
     var mockTeam = new TeamModel({
       id: teamId,
-      name: 'Team 1',
       teamEventId: eventId,
-      acl: [{
-        role: 'MANAGER',
-        userId: userId
-      }]
+      name: 'Mock Team',
+      acl: acl
     });
 
     sandbox.mock(TeamModel)

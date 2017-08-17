@@ -131,11 +131,10 @@ describe("event delete tests", function() {
       _id: eventId,
       name: 'Mock Event',
       collectionName: 'observations1',
-      acl: [{
-        role: 'OWNER',
-        userId: userId
-      }]
+      acl: {}
     });
+    mockEvent.acl[userId] = 'OWNER';
+
     sandbox.mock(EventModel)
       .expects('findById')
       .twice()

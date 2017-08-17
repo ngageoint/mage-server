@@ -32,9 +32,7 @@ function AdminTeamController($scope, $uibModal, $filter, $location, $routeParams
         return !$scope.teamUsersById[user.id];
       });
 
-      var myAccess = _.find($scope.team.acl, function(access) {
-        return access.userId === UserService.myself.id;
-      });
+      var myAccess = $scope.team.acl[UserService.myself.id];
       var aclPermissions = myAccess ? myAccess.permissions : [];
 
       $scope.hasReadPermission = _.contains(UserService.myself.role.permissions, 'READ_TEAM') || _.contains(aclPermissions, 'read');

@@ -227,24 +227,12 @@ module.exports = function(app, security) {
     }
   );
 
-  app.post(
-    '/api/events/:eventId/acl',
-    passport.authenticate('bearer'),
-    authorizeAccess('UPDATE_EVENT', 'update'),
-    function(req, res, next) {
-      Event.updateUserInAcl(req.event, req.body.userId, req.body.role, function(err, event) {
-        if (err) return next(err);
-        res.json(event);
-      });
-    }
-  );
-
   app.put(
     '/api/events/:eventId/acl/:id',
     passport.authenticate('bearer'),
     authorizeAccess('UPDATE_EVENT', 'update'),
     function(req, res, next) {
-      Event.updateUserInAcl(req.event, req.params.id, req.body.role, function(err, event) {
+      Event.updateUserInAcl(req.event._id, req.params.id, req.body.role, function(err, event) {
         if (err) return next(err);
         res.json(event);
       });
@@ -256,7 +244,7 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     authorizeAccess('UPDATE_EVENT', 'update'),
     function(req, res, next) {
-      Event.removeUserFromAcl(req.event, req.params.id, function(err, event) {
+      Event.removeUserFromAcl(req.event._id, req.params.id, function(err, event) {
         if (err) return next(err);
         res.json(event);
       });

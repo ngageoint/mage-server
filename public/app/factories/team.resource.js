@@ -62,20 +62,13 @@ function TeamAccess($resource) {
     teamId: '@teamId',
     userId: '@userId'
   },{
-    create: {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      isArray: false
-    },
     update: {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
-      isArray: false,
-      url: '/api/teams/:teamId/acl/:userId'
+      url: '/api/teams/:teamId/acl/:userId',
+      isArray: false
     },
     delete: {
       method: 'DELETE',

@@ -121,22 +121,11 @@ module.exports = function(app, security) {
     }
   );
 
-  app.post(
-    '/api/teams/:teamId/acl',
-    authorizeAccess('UPDATE_TEAM', 'update'),
-    function(req, res, next) {
-      Team.updateUserInAcl(req.team, req.body.userId, req.body.role, function(err, event) {
-        if (err) return next(err);
-        res.json(event);
-      });
-    }
-  );
-
   app.put(
     '/api/teams/:teamId/acl/:id',
     authorizeAccess('UPDATE_TEAM', 'update'),
     function(req, res, next) {
-      Team.updateUserInAcl(req.team, req.params.id, req.body.role, function(err, event) {
+      Team.updateUserInAcl(req.team._id, req.params.id, req.body.role, function(err, event) {
         if (err) return next(err);
         res.json(event);
       });
@@ -147,7 +136,7 @@ module.exports = function(app, security) {
     '/api/teams/:teamId/acl/:id',
     authorizeAccess('UPDATE_TEAM', 'update'),
     function(req, res, next) {
-      Team.removeUserFromAcl(req.team, req.params.id, function(err, event) {
+      Team.removeUserFromAcl(req.team._id, req.params.id, function(err, event) {
         if (err) return next(err);
         res.json(event);
       });
