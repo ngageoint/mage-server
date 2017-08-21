@@ -2,9 +2,9 @@ angular
   .module('mage')
   .factory('DeviceService', DeviceService);
 
-DeviceService.$inject = ['$http'];
+DeviceService.$inject = ['$http', '$q'];
 
-function DeviceService($http) {
+function DeviceService($http, $q) {
   var resolvedDevices = {};
 
   var service = {
@@ -30,15 +30,33 @@ function DeviceService($http) {
       parameters.expand = 'user';
     }
 
-    if (options.registered === false) {
-      parameters.registered = false;
+    var deferred = $q.defer();
+
+    if (_.values(resolvedDevices).length === 0) {
+      $http.get('/api/devices/', {params: parameters}).success(function(devices) {
+        deferred.resolve(devices);
+        resolvedDevices = _.indexBy(devices, 'id');
+      });
+    } else {
+      deferred.resolve(_.values(resolvedDevices));
     }
 
-    return $http.get('/api/devices?' + $.param(parameters));
+    return deferred.promise;
   }
 
   function getDevice(id) {
-    return resolvedDevices[id] || $http.get('/api/devices/' + id);
+    var deferred = $q.defer();
+
+    if (resolvedDevices[id]) {
+      deferred.resolve(resolvedDevices[id]);
+    } else {
+      $http.get('/api/devices/' + id).success(function(device) {
+        resolvedDevices[id] = device;
+        deferred.resolve(device);
+      });
+    }
+
+    return deferred.promise;
   }
 
   function createDevice(device) {
@@ -58,8 +76,8 @@ function DeviceService($http) {
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
     });
 
-    promise.then(function(data) {
-      resolvedDevices[device.id] = $.when(data);
+    promise.then(function(response) {
+      resolvedDevices[response.data.id] = response.data;
     });
 
     return promise;

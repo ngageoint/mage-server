@@ -22,10 +22,10 @@ function AdminDeviceController($scope, $uibModal, $filter, $routeParams, $locati
   $scope.showNext = true;
 
   DeviceService.getDevice($routeParams.deviceId).then(function(device) {
-    $scope.device = device.data;
+    $scope.device = device;
   });
 
-  UserService.getAllUsers().success(function (users) {
+  UserService.getAllUsers().then(function (users) {
     $scope.users = users;
   });
 
@@ -99,12 +99,16 @@ function AdminDeviceController($scope, $uibModal, $filter, $routeParams, $locati
 
   $scope.registerDevice = function (device) {
     device.registered = true;
-    DeviceService.updateDevice(device);
+    DeviceService.updateDevice(device).then(function() {
+      $scope.$broadcast('device:registered', device);
+    });
   };
 
   $scope.unregisterDevice = function (device) {
     device.registered = false;
-    DeviceService.updateDevice(device);
+    DeviceService.updateDevice(device).then(function() {
+      $scope.$broadcast('device:unregistered', device);
+    });
   };
 
   $scope.pageLogin = function(url) {

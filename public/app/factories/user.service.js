@@ -7,7 +7,6 @@ UserService.$inject = ['$rootScope', '$q', '$http', '$location', '$timeout', '$w
 function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalStorageService) {
   var userDeferred = $q.defer();
   var resolvedUsers = {};
-  var resolveAllUsers = true;
 
   var service = {
     myself: null,
@@ -24,7 +23,6 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     getUserCount: getUserCount,
     getUser: getUser,
     getAllUsers: getAllUsers,
-    getInactiveUsers: getInactiveUsers,
     createUser: createUser,
     updateUser: updateUser,
     deleteUser: deleteUser,
@@ -200,10 +198,6 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
 
   function getUser(id, options) {
     options = options || {};
-    if (options.forceRefresh) {
-      delete resolvedUsers[id];
-    }
-
     var parameters = {};
     if (options.populate) {
       parameters.populate = options.populate;
@@ -211,13 +205,13 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
 
     var deferred = $q.defer();
 
-    if (resolvedUsers[id]) {
-      deferred.resolve(resolvedUsers[id]);
-    } else {
-      return $http.get('/api/users/' + id, {params: parameters}).success(function(user) {
+    if (options.forceRefresh || !resolvedUsers[id]) {
+      $http.get('/api/users/' + id, {params: parameters}).success(function(user) {
         resolvedUsers[id] = user;
         deferred.resolve(user);
       });
+    } else {
+      deferred.resolve(resolvedUsers[id]);
     }
 
     return deferred.promise;
@@ -226,9 +220,9 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
   function getAllUsers(options) {
     options = options || {};
 
+
     if (options.forceRefresh) {
       resolvedUsers = {};
-      resolveAllUsers = true;
     }
 
     var parameters = {};
@@ -237,8 +231,8 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     }
 
     var deferred = $q.defer();
-    if (resolveAllUsers) {
-      return $http.get('/api/users', {params: parameters}).success(function(users) {
+    if (options.forceRefresh || _.values(resolvedUsers).length === 0) {
+      $http.get('/api/users', {params: parameters}).success(function(users) {
         deferred.resolve(users);
         resolvedUsers = _.indexBy(users, 'id');
       });
@@ -247,10 +241,6 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     }
 
     return deferred.promise;
-  }
-
-  function getInactiveUsers() {
-    return $http.get('/api/users?active=false');
   }
 
   function createUser(user, success, error, progress) {

@@ -24,7 +24,7 @@ function AdminEventAccessController($scope, $location, $routeParams, $q, $filter
   }];
 
   $q.all({users: UserService.getAllUsers(), event: Event.get({id: $routeParams.eventId, populate: false}).$promise}).then(function(result) {
-    users = result.users.data;
+    users = result.users;
 
     $scope.role = {
       selected: $scope.roles[0]

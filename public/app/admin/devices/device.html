@@ -1,212 +1,212 @@
-<div class="admin-nav-gap">
-  <div class="container-fluid">
-    <ol class="breadcrumb">
-      <li><a href="#/admin"><i class="fa fa-dashboard admin-dashboard"></i>Dashboard</a></li>
-      <li><a href="#/admin/devices">Devices</a></li>
-      <li class="active">{{device.uid}}</li>
-    </ol>
-  </div>
-</div>
+<div class="admin">
+  <div admin-tab="'devices'"></div>
 
-<div class="content-flex">
+  <div class="admin-main">
+    <div class="admin-nav-gap">
+      <div class="container-fluid">
+        <ol class="breadcrumb">
+          <li><i class="fa fa-mobile-phone admin-dashboard"></i> <a href="#/admin/devices">Devices</li></a>
+          <li class="active">{{device.uid}}</li>
+        </ol>
+      </div>
+    </div>
 
-  <div class="content-inner">
+    <div class="admin-content">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12" ng-show="device">
 
-    <div class="container">
-      <div class="row">
-        <div class="col-md-12" ng-show="device">
-
-          <div class="row">
-            <div class="col-md-10">
-              <h2><i class="fa" ng-class="iconClass(device)"></i> Device</h2>
-            </div>
-            <div class="col-md-2">
-              <h2>
-                <button class="btn btn-default pull-right" ng-click="editDevice(device)"><i class="fa fa-edit"></i> Edit</button>
-              </h2>
-            </div>
-          </div>
-          <hr>
-
-          <div class="row top-gap-l">
-            <div class="col-md-6 col-xs-12">
-
-              <div class="row top-gap-s">
-                <div class="col-md-3">
-                  <span class="muted">User</span>
-                </div>
-                <div class="col-md-9">
-                  <span>{{userIdMap[device.userId].displayName}}</span>
-                </div>
+            <div class="row">
+              <div class="col-md-10">
+                <h2><i class="fa" ng-class="iconClass(device)"></i> Device</h2>
               </div>
-
-              <div class="row top-gap-s" ng-if="device.name">
-                <div class="col-md-3">
-                  <span class="muted">Name:</span>
-                </div>
-                <div class="col-md-9">
-                  <span>{{device.name}}</span>
-                </div>
-              </div>
-
-              <div class="row top-gap-s" ng-if="device.description">
-                <div class="col-md-3">
-                  <span class="muted">Description:</span>
-                </div>
-                <div class="col-md-9">
-                  <span>{{device.description}}</span>
-                </div>
-              </div>
-
-              <div class="row top-gap-s" ng-if="device.appVersion">
-                <div class="col-md-3">
-                  <span class="muted">App Version:</span>
-                </div>
-                <div class="col-md-9">
-                  <span>{{device.appVersion}}</span>
-                </div>
-              </div>
-
-              <div class="row top-gap-s">
-                <div class="col-md-3">
-                  <span class="muted">User Agent:</span>
-                </div>
-                <div class="col-md-9">
-                  <span>{{device.userAgent}}</span>
-                </div>
-              </div>
-
-              <div class="row top-gap-s">
-                <div class="col-md-3">
-                  <span class="muted">Device Id:</span>
-                </div>
-                <div class="col-md-9">
-                  <span>{{device.uid}}</span>
-                </div>
-              </div>
-
-            </div>
-
-            <div class="col-md-6">
-              <div class="card" ng-if="!device.registered">
-                <div class="card-content">
-                  <strong class="text-success">Register device</strong>
-                  <p class="text-success">Registering will allow device to access MAGE data. The device can be deregistered at any time.</p>
-                  <button class="btn btn-success top-gap" ng-click="registerDevice(device)"> <i class="fa fa-check"></i> Register</button>
-                </div>
-              </div>
-
-              <div class="card" ng-if="device.registered">
-                <div class="card-content">
-                  <strong class="text-warning">Unregister device</strong>
-                  <p class="text-warning">Unregistering will deny device from accessing MAGE data. All device information will be retained and the device can be registered again at any time.</p>
-                  <button class="btn btn-warning top-gap" ng-click="unregisterDevice(device)"> <i class="fa fa-ban"></i> Unregister</button>
-                </div>
-              </div>
-
-              <div class="card top-gap">
-                <div class="card-content">
-                  <strong class="text-danger">Delete device</strong>
-                  <p class="text-danger">Deleting device will remove all device information. This cannot be undone, all device data will be unrecoverable.</p>
-                  <button class="btn btn-danger top-gap" ng-click="deleteDevice(device)"> <i class="fa fa-trash-o"></i> Delete</button>
-                </div>
+              <div class="col-md-2">
+                <h2>
+                  <button class="btn btn-default pull-right" ng-click="editDevice(device)"><i class="fa fa-edit"></i> Edit</button>
+                </h2>
               </div>
             </div>
-          </div>
+            <hr>
 
-          <hr>
+            <div class="row top-gap-l">
+              <div class="col-md-6 col-xs-12">
 
-          <div class="row top-gap-xl">
-            <div class="col-md-12">
-              <nav class="navbar navbar-default admin-dashboard-navbar">
-                <div class="container-fluid">
-                  <div class="navbar-header">
-                    <button type="button" class="admin-navbar-toggle navbar-toggle collapsed" data-toggle="collapse" data-target="#login-nav" aria-expanded="false">
-                      <span class="sr-only">Toggle navigation</span>
-                      <span class="icon-bar"></span>
-                      <span class="icon-bar"></span>
-                      <span class="icon-bar"></span>
-                    </button>
-                    <a class="navbar-brand">Logins</a>
+                <div class="row top-gap-s">
+                  <div class="col-md-3">
+                    <span class="muted">User</span>
                   </div>
-                  <div class="collapse navbar-collapse admin-navbar-collapse" id="login-nav">
-                    <form class="navbar-form navbar-left fixed-width-navbar">
-                      <div class="form-group">
-                        <ui-select ng-model="user.selected" theme="bootstrap" on-select="filterLogins()" style="width: 300px;">
-                          <ui-select-match allow-clear placeholder="Filter on user">{{$select.selected.displayName}}</ui-select-match>
-                          <ui-select-choices group-by="groupLayerByType" repeat="user in users | orderBy: 'name' | filter: $select.search">
-                            <div ng-bind-html="user.displayName | highlight: $select.search"></div>
-                          </ui-select-choices>
-                        </ui-select>
-                      </div>
-                      <div class="form-group">
-                        <div class="input-group">
-                          <input type="text" placeholder="Start Date" class="form-control" uib-datepicker-popup="MM-dd-yyyy" ng-model="login.startDate" is-open="login.startDateOpened" close-text="Close" />
-                          <span class="input-group-btn">
-                            <button type="button" class="btn btn-default" ng-click="openLoginStart($event)"><i class="glyphicon glyphicon-calendar"></i></button>
-                          </span>
-                        </div>
-                      </div>
-                      <div class="form-group">
-                        <span class="navbar-text-inverse">&nbsp;to&nbsp;</span>
-                      </div>
-                      <div class="form-group">
-                        <div class="input-group">
-                          <input type="text" placeholder="End Date" class="form-control" uib-datepicker-popup="MM-dd-yyyy" ng-model="login.endDate" is-open="login.endDateOpened"  close-text="Close" />
-                          <span class="input-group-btn">
-                            <button type="button" class="btn btn-default" ng-click="openLoginEnd($event)"><i class="glyphicon glyphicon-calendar"></i></button>
-                          </span>
-                        </div>
-                      </div>
-                    </form>
-                    <form class="navbar-form navbar-right">
-                      <div class="form-group">
-                        <span class="navbar-text-inverse">Results: </span>
-                        <select class="form-control" ng-init="loginResultsLimit = 10" ng-model="loginResultsLimit" ng-change="loginResultsLimitChanged()" ng-options="o as o for o in [10, 25, 50, 100]"></select>
-                      </div>
-                    </form>
+                  <div class="col-md-9">
+                    <span>{{userIdMap[device.userId].displayName}}</span>
                   </div>
                 </div>
-              </nav>
+
+                <div class="row top-gap-s" ng-if="device.name">
+                  <div class="col-md-3">
+                    <span class="muted">Name:</span>
+                  </div>
+                  <div class="col-md-9">
+                    <span>{{device.name}}</span>
+                  </div>
+                </div>
+
+                <div class="row top-gap-s" ng-if="device.description">
+                  <div class="col-md-3">
+                    <span class="muted">Description:</span>
+                  </div>
+                  <div class="col-md-9">
+                    <span>{{device.description}}</span>
+                  </div>
+                </div>
+
+                <div class="row top-gap-s" ng-if="device.appVersion">
+                  <div class="col-md-3">
+                    <span class="muted">App Version:</span>
+                  </div>
+                  <div class="col-md-9">
+                    <span>{{device.appVersion}}</span>
+                  </div>
+                </div>
+
+                <div class="row top-gap-s">
+                  <div class="col-md-3">
+                    <span class="muted">User Agent:</span>
+                  </div>
+                  <div class="col-md-9">
+                    <span>{{device.userAgent}}</span>
+                  </div>
+                </div>
+
+                <div class="row top-gap-s">
+                  <div class="col-md-3">
+                    <span class="muted">Device Id:</span>
+                  </div>
+                  <div class="col-md-9">
+                    <span>{{device.uid}}</span>
+                  </div>
+                </div>
+
+              </div>
+
+              <div class="col-md-6">
+                <div class="card" ng-if="!device.registered">
+                  <div class="card-content">
+                    <strong class="text-success">Register device</strong>
+                    <p class="text-success">Registering will allow device to access MAGE data. The device can be deregistered at any time.</p>
+                    <button class="btn btn-success top-gap" ng-click="registerDevice(device)"> <i class="fa fa-check"></i> Register</button>
+                  </div>
+                </div>
+
+                <div class="card" ng-if="device.registered">
+                  <div class="card-content">
+                    <strong class="text-warning">Unregister device</strong>
+                    <p class="text-warning">Unregistering will deny device from accessing MAGE data. All device information will be retained and the device can be registered again at any time.</p>
+                    <button class="btn btn-warning top-gap" ng-click="unregisterDevice(device)"> <i class="fa fa-ban"></i> Unregister</button>
+                  </div>
+                </div>
+
+                <div class="card top-gap">
+                  <div class="card-content">
+                    <strong class="text-danger">Delete device</strong>
+                    <p class="text-danger">Deleting device will remove all device information. This cannot be undone, all device data will be unrecoverable.</p>
+                    <button class="btn btn-danger top-gap" ng-click="deleteDevice(device)"> <i class="fa fa-trash-o"></i> Delete</button>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="row">
-            <div class="col-sm-12">
-              <div class="admin-table">
-                <div class="well-item" ng-repeat="login in loginPage.logins" >
-                  <div class="row">
-                    <div class="col-md-12">
-                      <div class="right-gap pull-left">
-                        <i class="fa fa-fw fa-sign-in"></i>
-                      </div>
-                      <strong class="right-gap"><a href="javascript:void(0);" ng-click="gotoUser(login.user)">{{login.user.displayName}}</a></strong>
+
+            <hr>
+
+            <div class="row top-gap-xl">
+              <div class="col-md-12">
+                <nav class="navbar navbar-default admin-dashboard-navbar">
+                  <div class="container-fluid">
+                    <div class="navbar-header">
+                      <button type="button" class="admin-navbar-toggle navbar-toggle collapsed" data-toggle="collapse" data-target="#login-nav" aria-expanded="false">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                      </button>
+                      <a class="navbar-brand">Logins</a>
+                    </div>
+                    <div class="collapse navbar-collapse admin-navbar-collapse" id="login-nav">
+                      <form class="navbar-form navbar-left fixed-width-navbar">
+                        <div class="form-group">
+                          <ui-select ng-model="user.selected" theme="bootstrap" on-select="filterLogins()" style="width: 300px;">
+                            <ui-select-match allow-clear placeholder="Filter on user">{{$select.selected.displayName}}</ui-select-match>
+                            <ui-select-choices group-by="groupLayerByType" repeat="user in users | orderBy: 'name' | filter: $select.search">
+                              <div ng-bind-html="user.displayName | highlight: $select.search"></div>
+                            </ui-select-choices>
+                          </ui-select>
+                        </div>
+                        <div class="form-group">
+                          <div class="input-group">
+                            <input type="text" placeholder="Start Date" class="form-control" uib-datepicker-popup="MM-dd-yyyy" ng-model="login.startDate" is-open="login.startDateOpened" close-text="Close" />
+                            <span class="input-group-btn">
+                              <button type="button" class="btn btn-default" ng-click="openLoginStart($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <span class="navbar-text-inverse">&nbsp;to&nbsp;</span>
+                        </div>
+                        <div class="form-group">
+                          <div class="input-group">
+                            <input type="text" placeholder="End Date" class="form-control" uib-datepicker-popup="MM-dd-yyyy" ng-model="login.endDate" is-open="login.endDateOpened"  close-text="Close" />
+                            <span class="input-group-btn">
+                              <button type="button" class="btn btn-default" ng-click="openLoginEnd($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+                            </span>
+                          </div>
+                        </div>
+                      </form>
+                      <form class="navbar-form navbar-right">
+                        <div class="form-group">
+                          <span class="navbar-text-inverse">Results: </span>
+                          <select class="form-control" ng-init="loginResultsLimit = 10" ng-model="loginResultsLimit" ng-change="loginResultsLimitChanged()" ng-options="o as o for o in [10, 25, 50, 100]"></select>
+                        </div>
+                      </form>
                     </div>
                   </div>
-                  <div class="row">
-                    <div class="col-md-12">
-                      <div class="right-gap pull-left">
-                        <i class="fa fa-fw"></i>
+                </nav>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-12">
+                <div class="admin-table">
+                  <div class="well-item" ng-repeat="login in loginPage.logins" >
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="right-gap pull-left">
+                          <i class="fa fa-fw fa-sign-in"></i>
+                        </div>
+                        <strong class="right-gap"><a href="javascript:void(0);" ng-click="gotoUser(login.user)">{{login.user.displayName}}</a></strong>
                       </div>
-                      <span>{{login.timestamp | moment:'fromNow'}} ({{login.timestamp | moment:'MMM D YYYY hh:mm:ss A'}})</span>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="right-gap pull-left">
+                          <i class="fa fa-fw"></i>
+                        </div>
+                        <span>{{login.timestamp | moment:'fromNow'}} ({{login.timestamp | moment:'MMM D YYYY hh:mm:ss A'}})</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="row">
-            <div class="col-md-12">
-              <ul class="pager pull-right">
-                <li ng-class="{'disabled': !showPrevious}">
-                  <a href="javascript:void(0);" ng-click="pageLogin(loginPage.prev)">&larr; Previous</a>
-                </li>
-                <li ng-class="{'disabled': !showNext}">
-                  <a href="javascript:void(0);" ng-click="pageLogin(loginPage.next)">Next &rarr;</a>
-                </li>
-              </ul>
+            <div class="row">
+              <div class="col-md-12">
+                <ul class="pager pull-right">
+                  <li ng-class="{'disabled': !showPrevious}">
+                    <a href="javascript:void(0);" ng-click="pageLogin(loginPage.prev)">&larr; Previous</a>
+                  </li>
+                  <li ng-class="{'disabled': !showNext}">
+                    <a href="javascript:void(0);" ng-click="pageLogin(loginPage.next)">Next &rarr;</a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>

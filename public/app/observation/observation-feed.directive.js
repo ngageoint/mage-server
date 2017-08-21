@@ -26,7 +26,7 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
   $scope.fromNow = moment($scope.observation.properties.timestamp).fromNow();
 
   UserService.getUser($scope.observation.userId).then(function(user) {
-    $scope.observationUser = user.data || user;
+    $scope.observationUser = user;
   });
 
   $scope.toggleFavorite = function() {
@@ -130,7 +130,7 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
 
     $scope.importantPopover.description = important.description;
     UserService.getUser(important.userId).then(function(user) {
-      $scope.importantUser = user.data || user;
+      $scope.importantUser = user;
     });
   });
 }

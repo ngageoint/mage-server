@@ -53,7 +53,7 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     });
     var teamsInEvent = _.map(teamIdsInEvent, function(teamId) { return teamsById[teamId]; });
 
-    var usersInEvent = _.filter(result.users.data, function(user) {
+    var usersInEvent = _.filter(result.users, function(user) {
       return _.findWhere(eventTeam.users, {id: user.id});
     });
 
@@ -62,7 +62,7 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     var teamsNotInEvent = _.filter($scope.teams, function(team) {
       return $scope.event.teamIds.indexOf(team.id) === -1 && !team.teamEventId;
     });
-    var usersNotInEvent = _.reject(result.users.data, function(user) {
+    var usersNotInEvent = _.reject(result.users, function(user) {
       return _.findWhere(eventTeam.users, {id: user.id});
     });
     $scope.eventNonMembers = _.map(usersNotInEvent.concat(teamsNotInEvent), function(item) { return normalize(item); });

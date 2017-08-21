@@ -24,7 +24,7 @@ function AdminUserController($scope, $uibModal, $filter, $routeParams, $location
   $scope.showNext = true;
 
   $q.all({user: UserService.getUser($routeParams.userId, {forceRefresh: true, populate: 'roleId'}), teams: Team.query({populate: false}).$promise}).then(function(result) {
-    $scope.user = result.user.data || result.user;
+    $scope.user = result.user;
     $scope.avatarUrl = avatarUrl($scope.user, LocalStorageService.getToken());
     $scope.iconUrl = iconUrl($scope.user, LocalStorageService.getToken());
 
@@ -56,7 +56,7 @@ function AdminUserController($scope, $uibModal, $filter, $routeParams, $location
     }
   });
 
-  DeviceService.getAllDevices().success(function (devices) {
+  DeviceService.getAllDevices().then(function (devices) {
     $scope.devices = devices;
   });
 
@@ -157,12 +157,20 @@ function AdminUserController($scope, $uibModal, $filter, $routeParams, $location
   /* shortcut for giving a user the USER_ROLE */
   $scope.activateUser = function(user) {
     user.active = true;
-    UserService.updateUser(user.id, user);
+    UserService.updateUser(user.id, user, function() {
+      $scope.$apply(function() {
+        $scope.$broadcast('user:activated', user);
+      });
+    });
   };
 
   $scope.deactivateUser = function (user) {
     user.active = false;
-    UserService.updateUser(user.id, user);
+    UserService.updateUser(user.id, user, function() {
+      $scope.$apply(function() {
+        $scope.$broadcast('user:inactivated', user);
+      });
+    });
   };
 
   $scope.gotoTeam = function(team) {

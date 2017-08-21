@@ -11,11 +11,11 @@ function AdminDevicesController($scope, $uibModal, $filter, $location, LocalStor
   $scope.page = 0;
   $scope.itemsPerPage = 10;
 
-  DeviceService.getAllDevices().success(function (devices) {
+  DeviceService.getAllDevices().then(function (devices) {
     $scope.devices = devices;
   });
 
-  UserService.getAllUsers().success(function (users) {
+  UserService.getAllUsers().then(function (users) {
     $scope.users = users;
   });
 
@@ -121,6 +121,7 @@ function AdminDevicesController($scope, $uibModal, $filter, $location, LocalStor
     DeviceService.updateDevice(device).success(function(data) {
       angular.copy(data, device);
       $scope.saved = true;
+      $scope.$broadcast('device:registered', device);
     }, function(response) {
       $scope.error = response.responseText;
     });

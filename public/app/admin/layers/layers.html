@@ -1,84 +1,85 @@
-<div class="admin-nav-gap">
-  <div class="container-fluid">
-    <ol class="breadcrumb">
-      <li><a href="#/admin"><i class="fa fa-dashboard admin-dashboard"></i>Dashboard</a></li>
-      <li class="active">Layers</li>
-    </ol>
-  </div>
-</div>
+<div class="admin">
+  <div admin-tab="'layers'"></div>
 
-<div class="content-flex">
+  <div class="admin-main">
+    <div class="admin-nav-gap">
+      <div class="container-fluid">
+        <ol class="breadcrumb">
+          <li class="active"><i class="fa fa-map"></i> Layers</li>
+        </ol>
+      </div>
+    </div>
 
-  <div class="content-inner">
+    <div class="admin-content">
+      <div class="container">
 
-    <div class="container">
+        <div class="row">
+          <div class="col-md-3">
+            <ul class="nav nav-pills nav-stacked">
+              <li ng-click="page = 0; filter='all'" ng-class="{active: filter=='all'}"><a href="javascript:void(0);">All Layers <span class="badge pull-right">{{filteredLayers.length}}</span></a></li>
+              <li ng-click="page = 0; filter='base'" ng-class="{active: filter=='base'}"><a href="javascript:void(0);">Base Layers <span class="badge pull-right">{{filteredLayers.length}}</span></a></li>
+              <li ng-click="page = 0; filter='imagery'" ng-class="{active: filter=='imagery'}"><a href="javascript:void(0);">Imagery Layers <span class="badge pull-right">{{(filteredLayers | filter:{active: true}).length}}</span></a></li>
+              <li ng-click="page = 0; filter='feature'" ng-class="{active: filter=='feature'}"><a href="javascript:void(0);">Feature Layers <span class="badge pull-right">{{(filteredLayers | filter:{active: !true}).length}}</span></a></li>
+            </ul>
 
-      <div class="row">
-        <div class="col-md-3">
-          <ul class="nav nav-pills nav-stacked">
-            <li ng-click="page = 0; filter='all'" ng-class="{active: filter=='all'}"><a href="javascript:void(0);">All Layers <span class="badge pull-right">{{filteredLayers.length}}</span></a></li>
-            <li ng-click="page = 0; filter='base'" ng-class="{active: filter=='base'}"><a href="javascript:void(0);">Base Layers <span class="badge pull-right">{{filteredLayers.length}}</span></a></li>
-            <li ng-click="page = 0; filter='imagery'" ng-class="{active: filter=='imagery'}"><a href="javascript:void(0);">Imagery Layers <span class="badge pull-right">{{(filteredLayers | filter:{active: true}).length}}</span></a></li>
-            <li ng-click="page = 0; filter='feature'" ng-class="{active: filter=='feature'}"><a href="javascript:void(0);">Feature Layers <span class="badge pull-right">{{(filteredLayers | filter:{active: !true}).length}}</span></a></li>
-          </ul>
-
-          <hr>
-          <form class="form">
-            <div class="form-group">
-              <label>Search</label>
-              <input type="text" class="form-control" placeholder="layer name, description" ng-model="layerSearch" ng-change="page=0">
-            </div>
-          </form>
-          <hr>
-
-          <button class="btn btn-default pull-right" ng-click="reset()">Reset</button>
-        </div>
-
-        <div class="col-md-9">
-          <nav class="navbar navbar-default admin-dashboard-navbar">
-            <div class="container-fluid">
-              <div class="navbar-header">
-                <a class="navbar-brand">Layers</a>
+            <hr>
+            <form class="form">
+              <div class="form-group">
+                <label>Search</label>
+                <input type="text" class="form-control" placeholder="layer name, description" ng-model="layerSearch" ng-change="page=0">
               </div>
+            </form>
+            <hr>
 
-              <form class="navbar-form navbar-right" role="search">
-                <button type="submit" class="btn btn-default" ng-click="newLayer()">New Layer</button>
-              </form>
-            </div>
-          </nav>
+            <button class="btn btn-default pull-right" ng-click="reset()">Reset</button>
+          </div>
 
-          <div class="row">
-            <div class="col-md-12">
-              <div class="admin-table">
-                <div class="well-item"
-                    ng-repeat="l in (filteredLayers = (layers | filter:filterLayers)) | filter:filterType | orderBy:'name' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
-
-                    <div class="row pointer" ng-click="gotoLayer(l)">
-                      <div class="col-md-8">
-                        <div class="right-gap pull-left">
-                          <i class="fa fa-map admin-layer-icon"></i>
-                        </div>
-                        <div class="strong">{{l.name}}</div>
-                        <div class="muted"><span class="right-gap">{{l.type}}</span><span>{{l.url}}</span></div>
-                      </div>
-                      <div class="col-md-4">
-                        <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-click="deleteLayer($event, l)">Delete</button>
-                        <button class="btn btn-sm btn-default pull-right" ng-click="editLayer($event, l)">Edit</button>
-                      </div>
-                    </div>
-
+          <div class="col-md-9">
+            <nav class="navbar navbar-default admin-dashboard-navbar">
+              <div class="container-fluid">
+                <div class="navbar-header">
+                  <a class="navbar-brand">Layers</a>
                 </div>
+
+                <form class="navbar-form navbar-right" role="search">
+                  <button type="submit" class="btn btn-default" ng-click="newLayer()">New Layer</button>
+                </form>
               </div>
-              <div class="row">
-                <div class="col-md-12">
-                  <ul class="pager pull-right">
-                    <li ng-class="{'disabled': page == 0}">
-                      <a href="javascript:void(0);" ng-click="page == 0 || (page=page-1)">&larr; Previous</a>
-                    </li>
-                    <li ng-class="{'disabled': page >= (filteredLayers.length/itemsPerPage) - 1}">
-                      <a href="javascript:void(0);" ng-click="page >= (filteredLayers.length/itemsPerPage) - 1 || (page=page+1)">Next&rarr;</a>
-                    </li>
-                  </ul>
+            </nav>
+
+            <div class="row">
+              <div class="col-md-12">
+                <div class="admin-table">
+                  <div class="well-item"
+                      ng-repeat="l in (filteredLayers = (layers | filter:filterLayers)) | filter:filterType | orderBy:'name' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
+
+                      <div class="row pointer" ng-click="gotoLayer(l)">
+                        <div class="col-md-8">
+                          <div class="right-gap pull-left">
+                            <i class="fa fa-map admin-layer-icon"></i>
+                          </div>
+                          <div class="strong">{{l.name}}</div>
+                          <div class="muted"><span class="right-gap">{{l.type}}</span><span>{{l.url}}</span></div>
+                        </div>
+                        <div class="col-md-4">
+                          <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-click="deleteLayer($event, l)">Delete</button>
+                          <button class="btn btn-sm btn-default pull-right" ng-click="editLayer($event, l)">Edit</button>
+                        </div>
+                      </div>
+
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12">
+                    <ul class="pager pull-right">
+                      <li ng-class="{'disabled': page == 0}">
+                        <a href="javascript:void(0);" ng-click="page == 0 || (page=page-1)">&larr; Previous</a>
+                      </li>
+                      <li ng-class="{'disabled': page >= (filteredLayers.length/itemsPerPage) - 1}">
+                        <a href="javascript:void(0);" ng-click="page >= (filteredLayers.length/itemsPerPage) - 1 || (page=page+1)">Next&rarr;</a>
+                      </li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>

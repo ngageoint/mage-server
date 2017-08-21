@@ -9,7 +9,7 @@ function AdminTeamAccessController($scope, $location, $routeParams, $q, $filter,
   var users = [];
 
   $q.all({users: UserService.getAllUsers(), team: Team.get({id: $routeParams.teamId, populate: false}).$promise}).then(function(result) {
-    users = result.users.data;
+    users = result.users;
 
     $scope.member = {
       role: 'GUEST'
