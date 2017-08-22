@@ -322,7 +322,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
         return myXhr;
       },
       success: function(data) {
-        resolvedUsers[user.id] = $q.when(data);
+        resolvedUsers[data.id] = data;
         success(data);
       },
       error: error,

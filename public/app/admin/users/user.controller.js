@@ -10,6 +10,9 @@ function AdminUserController($scope, $uibModal, $filter, $routeParams, $location
   $scope.teamsPage = 0;
   $scope.teamsPerPage = 10;
 
+  $scope.hasUserEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
+  $scope.hasUserDeletePermission =  _.contains(UserService.myself.role.permissions, 'DELETE_USER');
+
   var filter = {
     user: {id: $routeParams.userId}
   };

@@ -61,9 +61,9 @@
                           <div class="muted">{{u.email}}</div>
                         </div>
                         <div class="col-md-4">
-                          <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-click="deleteUser($event, u)">Delete</button>
-                          <button class="btn btn-sm btn-success pull-right admin-user-button" ng-hide="u.active" ng-click="activateUser($event, u)">Activate</button>
-                          <button class="btn btn-sm btn-default pull-right" ng-click="editUser($event, u)">Edit</button>
+                          <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-if="hasUserDeletePermission" ng-click="deleteUser($event, u)">Delete</button>
+                          <button class="btn btn-sm btn-success pull-right admin-user-button" ng-if="hasUserEditPermission" ng-hide="u.active" ng-click="activateUser($event, u)">Activate</button>
+                          <button class="btn btn-sm btn-default pull-right" ng-if="hasUserEditPermission"  ng-click="editUser($event, u)">Edit</button>
                         </div>
                       </div>
 

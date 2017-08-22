@@ -55,8 +55,8 @@
                           <div class="muted">{{t.description}}</div>
                         </div>
                         <div class="col-md-4">
-                          <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-click="deleteTeam($event, t)">Delete</button>
-                          <button class="btn btn-sm btn-default pull-right" ng-click="editTeam($event, t)">Edit</button>
+                          <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-if="hasDeletePermission(t)" ng-click="deleteTeam($event, t)">Delete</button>
+                          <button class="btn btn-sm btn-default pull-right" ng-if="hasUpdatePermission(t)" ng-click="editTeam($event, t)">Edit</button>
                         </div>
                       </div>
                   </div>

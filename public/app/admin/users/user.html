@@ -20,7 +20,7 @@
               <div class="col-md-10">
                 <h2>User: {{user.displayName}}</h2>
               </div>
-              <div class="col-md-2">
+              <div class="col-md-2" ng-if="hasUserEditPermission">
                 <h2>
                   <button class="btn btn-default pull-right" ng-click="editUser(user)"><i class="fa fa-edit"></i> Edit</button>
                 </h2>
@@ -99,7 +99,7 @@
               </div>
 
               <div class="col-md-6">
-                <div class="card" ng-if="!user.active">
+                <div class="card" ng-if="!user.active && hasUserEditPermission">
                   <div class="card-content">
                     <strong class="text-success">Activate user</strong>
                     <p class="text-success">Activating will allow user to access MAGE data. The user can be deactivated at any time.</p>
@@ -107,7 +107,7 @@
                   </div>
                 </div>
 
-                <div class="card" ng-if="user.active">
+                <div class="card" ng-if="user.active && hasUserEditPermission">
                   <div class="card-content">
                     <strong class="text-warning">Deactivate user</strong>
                     <p class="text-warning">Deactivating will deny user from accessing MAGE data. All user information will be retained and the user can be activated again at any time.</p>
@@ -115,7 +115,7 @@
                   </div>
                 </div>
 
-                <div class="card top-gap">
+                <div class="card top-gap" ng-if="hasUserDeletePermission">
                   <div class="card-content">
                     <strong class="text-danger">Delete user</strong>
                     <p class="text-danger">Deleting user will remove all user information including location data. This cannot be undone, all user data will be unrecoverable.</p>

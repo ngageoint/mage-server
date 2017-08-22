@@ -55,16 +55,14 @@ function AdminEventsController($scope, $location, $filter, $uibModal, Event, Use
   };
 
   function hasPermission(event, permission) {
-    var myAccess = _.find(event.acl, function(access) {
-      return access.userId === UserService.myself.id;
-    });
+    var myAccess = event.acl[UserService.myself.id];
     var aclPermissions = myAccess ? myAccess.permissions : [];
 
     switch(permission) {
     case 'update':
-      return _.contains(UserService.myself.role.permissions, 'EVENT_UPDATE') || _.contains(aclPermissions, 'update');
+      return _.contains(UserService.myself.role.permissions, 'UPDATE_EVENT') || _.contains(aclPermissions, 'update');
     case 'delete':
-      return _.contains(UserService.myself.role.permissions, 'EVENT_DELETE') || _.contains(aclPermissions, 'delete');
+      return _.contains(UserService.myself.role.permissions, 'DELETE_EVENT') || _.contains(aclPermissions, 'delete');
     }
   }
 

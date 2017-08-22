@@ -611,7 +611,7 @@ exports.removeUserFromAllAcls = function(user, callback) {
   };
   update.$unset['acl.' + user._id.toString()] = true;
 
-  Event.update({}, update, {multi: true}, {new: true, runValidators: true}, callback);
+  Event.update({}, update, {multi: true, new: true}, callback);
 };
 
 exports.remove = function(event, callback) {

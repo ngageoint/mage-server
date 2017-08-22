@@ -153,13 +153,17 @@ UserSchema.pre('remove', function(next) {
       Observation.removeUser(user, done);
     },
     eventAcl: function(done) {
-      Event.removeUserFromAllAcls(user, done);
+      Event.removeUserFromAllAcls(user, function(err) {
+        console.log('event acl remove', err);
+        done(err);
+      });
     },
     teamAcl: function(done) {
       Team.removeUserFromAllAcls(user, done);
     }
   },
   function(err) {
+    console.log('remove all user stuff with err', err);
     next(err);
   });
 });
@@ -299,7 +303,10 @@ exports.updateUser = function(user, callback) {
 };
 
 exports.deleteUser = function(user, callback) {
+  console.log('delete user', user._id);
   user.remove(function(err, removedUser) {
+    // console.log('deleted user', err);
+
     callback(err, removedUser);
   });
 };

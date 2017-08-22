@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminTeamsController', AdminTeamsController);
 
-AdminTeamsController.$inject = ['$scope', '$uibModal', '$filter', '$location', 'Team'];
+AdminTeamsController.$inject = ['$scope', '$uibModal', '$filter', '$location', 'Team', 'UserService'];
 
-function AdminTeamsController($scope, $uibModal, $filter, $location, Team) {
+function AdminTeamsController($scope, $uibModal, $filter, $location, Team, UserService) {
   $scope.teams = [];
   $scope.page = 0;
   $scope.itemsPerPage = 10;
@@ -36,6 +36,26 @@ function AdminTeamsController($scope, $uibModal, $filter, $location, Team) {
 
     $location.path('/admin/teams/' + team.id + '/edit');
   };
+
+  $scope.hasUpdatePermission = function(team) {
+    return hasPermission(team, 'update');
+  };
+
+  $scope.hasDeletePermission = function(team) {
+    return hasPermission(team, 'delete');
+  };
+
+  function hasPermission(team, permission) {
+    var myAccess = team.acl[UserService.myself.id];
+    var aclPermissions = myAccess ? myAccess.permissions : [];
+
+    switch(permission) {
+    case 'update':
+      return _.contains(UserService.myself.role.permissions, 'UPDATE_TEAM') || _.contains(aclPermissions, 'update');
+    case 'delete':
+      return _.contains(UserService.myself.role.permissions, 'DELETE_TEAM') || _.contains(aclPermissions, 'delete');
+    }
+  }
 
   $scope.deleteTeam = function($event, team) {
     $event.stopPropagation();
