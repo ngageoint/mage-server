@@ -144,7 +144,7 @@ module.exports = function(app, security) {
 
       function createEvent(form, callback) {
         event.form = form;
-        Event.create(event, function(err, event) {
+        Event.create(event, req.user, function(err, event) {
           callback(err, event, form);
         });
       }
