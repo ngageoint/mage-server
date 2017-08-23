@@ -11,6 +11,10 @@ function AdminDevicesController($scope, $uibModal, $filter, $location, LocalStor
   $scope.page = 0;
   $scope.itemsPerPage = 10;
 
+  $scope.hasDeviceCreatePermission =  _.contains(UserService.myself.role.permissions, 'CREATE_DEVICE');
+  $scope.hasDeviceEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_DEVICE');
+  $scope.hasDeviceDeletePermission =  _.contains(UserService.myself.role.permissions, 'DELETE_DEVICE');
+
   DeviceService.getAllDevices().then(function (devices) {
     $scope.devices = devices;
   });

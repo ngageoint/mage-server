@@ -11,6 +11,7 @@ function AdminUsersController($scope, $uibModal, $filter, $location, LocalStorag
   $scope.page = 0;
   $scope.itemsPerPage = 10;
 
+  $scope.hasUserEditPermission =  _.contains(UserService.myself.role.permissions, 'CREATE_USER');
   $scope.hasUserEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
   $scope.hasUserDeletePermission =  _.contains(UserService.myself.role.permissions, 'DELETE_USER');
 

@@ -41,7 +41,7 @@
                   <a class="navbar-brand">Layers</a>
                 </div>
 
-                <form class="navbar-form navbar-right" role="search">
+                <form class="navbar-form navbar-right" role="search" ng-if="hasLayerCreatePermission">
                   <button type="submit" class="btn btn-default" ng-click="newLayer()">New Layer</button>
                 </form>
               </div>
@@ -62,8 +62,8 @@
                           <div class="muted"><span class="right-gap">{{l.type}}</span><span>{{l.url}}</span></div>
                         </div>
                         <div class="col-md-4">
-                          <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-click="deleteLayer($event, l)">Delete</button>
-                          <button class="btn btn-sm btn-default pull-right" ng-click="editLayer($event, l)">Edit</button>
+                          <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-if="hasLayerDeletePermission" ng-click="deleteLayer($event, l)">Delete</button>
+                          <button class="btn btn-sm btn-default pull-right" ng-if="hasLayerEditPermission" ng-click="editLayer($event, l)">Edit</button>
                         </div>
                       </div>
 

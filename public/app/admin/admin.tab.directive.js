@@ -19,6 +19,10 @@ function adminTab() {
 AdminTabController.$inject = ['$scope', '$location', 'UserService', 'DeviceService'];
 
 function AdminTabController($scope, $location, UserService, DeviceService) {
+  $scope.hasPermission = function(permission) {
+    return _.contains(UserService.myself.role.permisssions, permission);
+  };
+
   $scope.onTabChanged = function(tab) {
     $location.path('/admin/' + tab);
   };

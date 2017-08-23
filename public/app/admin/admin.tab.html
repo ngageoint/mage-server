@@ -2,11 +2,13 @@
   <div class="admin-actions-content">
 
     <div class="admin-action" ng-class="{'admin-action-selected': tab === 'dashboard'}" ng-click="onTabChanged('')">
+      <div ng-class="{'admin-action-arrow-left': tab === 'dashboard'}"></div>
       <i class="fa fa-dashboard"></i>
       <div>Dashboard</div>
     </div>
 
     <div class="admin-action" ng-class="{'admin-action-selected': tab === 'users'}" ng-click="onTabChanged('users')">
+      <div ng-class="{'admin-action-arrow-left': tab === 'users'}"></div>
       <div class="admin-badge">
         <i class="fa fa-user"></i>
         <span ng-if="inactiveUsers.length" class="badge badge-notif badge-accent">{{inactiveUsers.length}}</span>
@@ -15,16 +17,19 @@
     </div>
 
     <div class="admin-action" ng-class="{'admin-action-selected': tab === 'teams'}" ng-click="onTabChanged('teams')">
+      <div ng-class="{'admin-action-arrow-left': tab === 'teams'}"></div>
       <i class="fa fa-users"></i>
       <div>Teams</div>
     </div>
 
     <div class="admin-action" ng-class="{'admin-action-selected': tab === 'events'}" ng-click="onTabChanged('events')">
+      <div ng-class="{'admin-action-arrow-left': tab === 'events'}"></div>
       <i class="fa fa-calendar"></i>
       <div>Events</div>
     </div>
 
     <div class="admin-action" ng-class="{'admin-action-selected': tab === 'devices'}" ng-click="onTabChanged('devices')">
+      <div ng-class="{'admin-action-arrow-left': tab === 'devices'}"></div>
       <div class="admin-badge">
         <i class="fa fa-mobile-phone"></i>
         <span ng-if="unregisteredDevices.length" class="badge badge-notif badge-accent">{{unregisteredDevices.length}}</span>
@@ -33,11 +38,13 @@
     </div>
 
     <div class="admin-action" ng-class="{'admin-action-selected': tab === 'layers'}" ng-click="onTabChanged('layers')">
+      <div ng-class="{'admin-action-arrow-left': tab === 'layers'}"></div>
       <i class="fa fa-map"></i>
       <div>Layers</div>
     </div>
 
-    <div class="admin-action" ng-class="{'admin-action-selected': tab === 'settings'}" ng-click="onTabChanged('settings')">
+    <div class="admin-action" ng-if="hasPermission('UPDATE_SETTINGS')" ng-class="{'admin-action-selected': tab === 'settings'}" ng-click="onTabChanged('settings')">
+      <div ng-class="{'admin-action-arrow-left': tab === 'settings'}"></div>
       <i class="fa fa-wrench"></i>
       <div>Settings</div>
     </div>

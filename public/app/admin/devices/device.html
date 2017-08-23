@@ -20,7 +20,7 @@
               <div class="col-md-10">
                 <h2><i class="fa" ng-class="iconClass(device)"></i> Device</h2>
               </div>
-              <div class="col-md-2">
+              <div class="col-md-2" ng-if="hasDeviceEditPermission">
                 <h2>
                   <button class="btn btn-default pull-right" ng-click="editDevice(device)"><i class="fa fa-edit"></i> Edit</button>
                 </h2>
@@ -88,7 +88,7 @@
               </div>
 
               <div class="col-md-6">
-                <div class="card" ng-if="!device.registered">
+                <div class="card" ng-if="!device.registered && hasDeviceEditPermission">
                   <div class="card-content">
                     <strong class="text-success">Register device</strong>
                     <p class="text-success">Registering will allow device to access MAGE data. The device can be deregistered at any time.</p>
@@ -96,7 +96,7 @@
                   </div>
                 </div>
 
-                <div class="card" ng-if="device.registered">
+                <div class="card" ng-if="device.registered && hasDeviceEditPermission">
                   <div class="card-content">
                     <strong class="text-warning">Unregister device</strong>
                     <p class="text-warning">Unregistering will deny device from accessing MAGE data. All device information will be retained and the device can be registered again at any time.</p>
@@ -104,7 +104,7 @@
                   </div>
                 </div>
 
-                <div class="card top-gap">
+                <div class="card top-gap" ng-if="hasDeviceDeletePermission">
                   <div class="card-content">
                     <strong class="text-danger">Delete device</strong>
                     <p class="text-danger">Deleting device will remove all device information. This cannot be undone, all device data will be unrecoverable.</p>

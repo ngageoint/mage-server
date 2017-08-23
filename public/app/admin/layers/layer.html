@@ -20,7 +20,7 @@
               <div class="col-md-10">
                 <h2>Layer: {{layer.name}}</h2>
               </div>
-              <div class="col-md-2">
+              <div class="col-md-2" ng-if="hasLayerEditPermission">
                 <h2>
                   <button class="btn btn-default pull-right" ng-click="editLayer(layer)"><i class="fa fa-edit"></i> Edit</button>
                 </h2>
@@ -132,7 +132,7 @@
               </div>
 
               <div class="col-md-6">
-                <div class="card">
+                <div class="card" ng-if="hasLayerDeletePermission">
                   <div class="card-content">
                     <strong class="text-danger">Delete layer</strong>
                     <p class="text-danger">Deleting layer will remove all information. This cannot be undone, all layer data will be unrecoverable.</p>
@@ -239,7 +239,7 @@
                 </div>
               </div>
 
-              <div class="col-md-6 col-xs-12">
+              <div class="col-md-6 col-xs-12" ng-if="layer.type === 'Feature' && hasLayerEditPermission">
                 <div class="row">
                   <div class="col-md-12">
                     <nav class="navbar navbar-default admin-dashboard-navbar">

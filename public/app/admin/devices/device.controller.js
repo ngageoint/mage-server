@@ -7,6 +7,9 @@ AdminDeviceController.$inject = ['$scope', '$uibModal', '$filter', '$routeParams
 function AdminDeviceController($scope, $uibModal, $filter, $routeParams, $location, LocalStorageService, DeviceService, UserService, LoginService) {
   $scope.token = LocalStorageService.getToken();
 
+  $scope.hasDeviceEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_DEVICE');
+  $scope.hasDeviceDeletePermission =  _.contains(UserService.myself.role.permissions, 'DELETE_DEVICE');
+
   var filter = {
     device: {id: $routeParams.deviceId}
   };

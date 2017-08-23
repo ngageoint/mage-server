@@ -605,6 +605,7 @@ textarea {
 }
 
 .admin-action {
+  position: relative;
   padding: 25px;
   flex: 1;
   display: flex;
@@ -613,6 +614,16 @@ textarea {
   justify-content: center;
   color: rgba(255, 255, 255, 0.54);
   cursor: pointer; cursor: hand;
+}
+
+.admin-action-arrow-left {
+  position: absolute;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-right:10px solid white;
 }
 
 .admin-action .fa {
