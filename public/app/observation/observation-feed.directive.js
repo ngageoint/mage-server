@@ -15,15 +15,18 @@ function observationNewsItem() {
   return directive;
 }
 
-ObservationNewsItemController.$inject = ['$scope', '$window', '$uibModal', 'EventService', 'UserService', 'LocalStorageService'];
+ObservationNewsItemController.$inject = ['$scope', '$window', '$uibModal', 'EventService', 'UserService', 'FilterService', 'LocalStorageService'];
 
-function ObservationNewsItemController($scope, $window, $uibModal, EventService, UserService, LocalStorageService) {
+function ObservationNewsItemController($scope, $window, $uibModal, EventService, UserService, FilterService, LocalStorageService) {
   $scope.edit = false;
   $scope.isUserFavorite = _.contains($scope.observation.favoriteUserIds, UserService.myself.id);
-  $scope.canEditImportant = _.contains(UserService.myself.role.permissions, 'UPDATE_EVENT');
   $scope.importantPopoverIsOpen = false;
-  $scope.canEdit = UserService.hasPermission('UPDATE_OBSERVATION_EVENT') || UserService.hasPermission('UPDATE_OBSERVATION_ALL');
   $scope.fromNow = moment($scope.observation.properties.timestamp).fromNow();
+  $scope.canEdit = UserService.hasPermission('UPDATE_OBSERVATION_EVENT') || UserService.hasPermission('UPDATE_OBSERVATION_ALL');
+
+  var myAccess = FilterService.getEvent().acl[UserService.myself.id];
+  var aclPermissions = myAccess ? myAccess.permissions : [];
+  $scope.canEditImportant = _.contains(UserService.myself.role.permissions, 'UPDATE_EVENT') || _.contains(aclPermissions, 'update');
 
   UserService.getUser($scope.observation.userId).then(function(user) {
     $scope.observationUser = user;

@@ -95,6 +95,18 @@ module.exports = function(app, security) {
       validateObservationCreateAccess(true)(req, res, next);
   }
 
+  function authorizeEventAccess(collectionPermission, aclPermission) {
+    return function(req, res, next) {
+      if (access.userHasPermission(req.user, collectionPermission)) {
+        next();
+      } else {
+        Event.userHasEventPermission(req.event, req.user._id, aclPermission, function(err, hasPermission) {
+          hasPermission ? next() : res.sendStatus(403);
+        });
+      }
+    };
+  }
+
   function populateUserFields(req, res, next) {
     new api.Form(req.event).populateUserFields(function(err) {
       if (err) return next(err);
@@ -414,7 +426,7 @@ module.exports = function(app, security) {
   app.put(
     '/api/events/:eventId/observations/:id/important',
     passport.authenticate('bearer'),
-    access.authorize('UPDATE_EVENT'),
+    authorizeEventAccess('UPDATE_EVENT', 'update'),
     function (req, res, next) {
       var important = {
         userId: req.user._id,
@@ -435,7 +447,7 @@ module.exports = function(app, security) {
   app.delete(
     '/api/events/:eventId/observations/:id/important',
     passport.authenticate('bearer'),
-    access.authorize('UPDATE_EVENT'),
+    authorizeEventAccess('UPDATE_EVENT', 'update'),
     function (req, res, next) {
 
       new api.Observation(req.event).removeImportant(req.params.id, function(err, updatedObservation) {
