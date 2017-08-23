@@ -145,7 +145,7 @@ module.exports = function(app, security) {
 
   app.post(
     '/api/teams/:teamId/users',
-    access.authorize('UPDATE_TEAM'),
+    authorizeAccess('UPDATE_TEAM', 'update'),
     function(req, res, next) {
       Team.addUser(req.team, req.body, function(err, team) {
         if (err) return next(err);
@@ -157,7 +157,7 @@ module.exports = function(app, security) {
 
   app.delete(
     '/api/teams/:teamId/users/:id',
-    access.authorize('UPDATE_TEAM'),
+    authorizeAccess('UPDATE_TEAM', 'update'),
     function(req, res, next) {
       Team.removeUser(req.team, {id: req.params.id}, function(err, team) {
         if (err) return next(err);

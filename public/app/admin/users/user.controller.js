@@ -45,11 +45,22 @@ function AdminUserController($scope, $uibModal, $filter, $routeParams, $location
       })
       .value();
 
-    $scope.nonTeams = _.reject($scope.teams, function(team) {
+    var teams = _.chain($scope.teams);
+    if (!_.contains(UserService.myself.role.permissions, 'UPDATE_TEAM')) {
+      // filter teams based on acl
+      teams = teams.filter(function(team) {
+        var permissions = team.acl[UserService.myself.id] ? team.acl[UserService.myself.id].permissions : [];
+        return _.contains(permissions, 'update');
+      });
+    }
+
+    teams = teams.reject(function(team) {
       return _.some(team.users, function(user) {
         return $scope.user.id === user.id;
       });
     });
+
+    $scope.nonTeams = teams.value();
   });
 
   LoginService.query({filter: filter, limit: $scope.loginResultsLimit}).success(function(loginPage) {

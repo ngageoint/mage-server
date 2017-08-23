@@ -621,7 +621,8 @@ textarea {
 }
 
 .admin-action .fa-mobile-phone {
-  font-size: 40px;
+  font-size: 46px;
+  margin-bottom: 0;
  }
 
 .admin-action-selected {
