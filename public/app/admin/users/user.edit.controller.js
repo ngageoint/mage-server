@@ -17,7 +17,7 @@ function AdminUserEditController($scope, $filter, $routeParams, $location, Api, 
 
   if ($routeParams.userId) {
     UserService.getUser($routeParams.userId).then(function(user) {
-      $scope.user = angular.copy(user.data || user);
+      $scope.user = angular.copy(user);
 
       $scope.iconMetadata = {
         type: $scope.user.icon.type,

@@ -2,14 +2,17 @@ angular
   .module('mage')
   .controller('AdminLayerController', AdminLayerController);
 
-AdminLayerController.$inject = ['$scope', '$uibModal', '$routeParams', '$location', '$filter', 'Layer', 'Event', 'LocalStorageService'];
+AdminLayerController.$inject = ['$scope', '$uibModal', '$routeParams', '$location', '$filter', 'Layer', 'Event', 'LocalStorageService', 'UserService'];
 
-function AdminLayerController($scope, $uibModal, $routeParams, $location, $filter, Layer, Event, LocalStorageService) {
+function AdminLayerController($scope, $uibModal, $routeParams, $location, $filter, Layer, Event, LocalStorageService, UserService) {
 
   $scope.layerEvents = [];
   $scope.nonTeamEvents = [];
   $scope.eventsPage = 0;
   $scope.eventsPerPage = 10;
+
+  $scope.hasLayerEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_LAYER');
+  $scope.hasLayerDeletePermission =  _.contains(UserService.myself.role.permissions, 'DELETE_LAYER');
 
   $scope.fileUploadOptions = {
     acceptFileTypes: /(\.|\/)(kml)$/i,
@@ -29,12 +32,23 @@ function AdminLayerController($scope, $uibModal, $routeParams, $location, $filte
           return $scope.layer.id === layer.id;
         });
       });
+      
+      var nonLayerEvents = _.chain(events);
+      if (!_.contains(UserService.myself.role.permissions, 'UPDATE_EVENT')) {
+        // filter teams based on acl
+        nonLayerEvents = nonLayerEvents.filter(function(event) {
+          var permissions = event.acl[UserService.myself.id] ? event.acl[UserService.myself.id].permissions : [];
+          return _.contains(permissions, 'update');
+        });
+      }
 
-      $scope.nonLayerEvents = _.reject(events, function(event) {
+      nonLayerEvents = nonLayerEvents.reject(function(event) {
         return _.some(event.layers, function(layer) {
           return $scope.layer.id === layer.id;
         });
       });
+
+      $scope.nonLayerEvents = nonLayerEvents.value();
     });
   });
 

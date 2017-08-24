@@ -1,59 +1,60 @@
-<div class="admin-nav-gap">
-  <div class="container-fluid">
-    <ol class="breadcrumb" ng-if="device.id">
-      <li><a href="#/admin"><i class="fa fa-dashboard admin-dashboard"></i>Dashboard</a></li>
-      <li><a href="#/admin/devices">Devices</a></li>
-      <li><a ng-href="#/admin/devices/{{device.id}}">{{device.uid}}</a></li>
-      <li class="active">Edit</li>
-    </ol>
-    <ol class="breadcrumb" ng-if="!device.id">
-      <li><a href="#/admin"><i class="fa fa-dashboard admin-dashboard"></i>Dashboard</a></li>
-      <li><a href="#/admin/devices">Devices</a></li>
-      <li class="active">New</li>
-    </ol>
-  </div>
-</div>
+<div class="admin">
+  <div admin-tab="'devices'"></div>
 
-<div class="content-flex">
-
-  <div class="content-inner">
-
-    <div class="container bottom-gap-l">
-
-      <div class="row">
-        <div class="col-md-12">
-          <h2 ng-if="device.id"><i class="fa" ng-class="iconClass(device)"></i> Edit device</h2>
-          <h2 ng-if="!device.id">New device</h2>
-        </div>
+  <div class="admin-main">
+    <div class="admin-nav-gap">
+      <div class="container-fluid">
+        <ol class="breadcrumb" ng-if="device.id">
+          <li><i class="fa fa-mobile-phone admin-dashboard"></i> <a href="#/admin/devices">Devices</li></a>
+          <li><a ng-href="#/admin/devices/{{device.id}}">{{device.uid}}</a></li>
+          <li class="active">Edit</li>
+        </ol>
+        <ol class="breadcrumb" ng-if="!device.id">
+          <li><i class="fa fa-mobile-phone admin-dashboard"></i> <a href="#/admin/devices">Devices</li></a>
+          <li><a href="#/admin/devices">Devices</a></li>
+          <li class="active">New</li>
+        </ol>
       </div>
-      <hr>
+    </div>
 
-      <div class="row">
-        <div class="col-md-6" ng-show="device">
+    <div class="admin-content">
+      <div class="container bottom-gap-l">
 
-          <form ng-submit="saveDevice()" class="form">
+        <div class="row">
+          <div class="col-md-12">
+            <h2 ng-if="device.id"><i class="fa" ng-class="iconClass(device)"></i> Edit device</h2>
+            <h2 ng-if="!device.id">New device</h2>
+          </div>
+        </div>
+        <hr>
 
-            <div class="form-group">
-              <label class="control-label">Device Identifier</label>
-              <input type="text" placeholder="for example 01:02:03:04:05:06:08" ng-model="device.uid" class="form-control" ng-readonly="device.id">
-              <span class="help-block top-gap">MAC address, or some sort of unique identifier for your device.</span>
-            </div>
+        <div class="row">
+          <div class="col-md-6" ng-show="device">
 
-            <div class="form-group">
-              <label class="control-label">Description</label>
-              <textarea type="text" placeholder="A bit about the device" ng-model="device.description" class="form-control"></textarea>
-            </div>
+            <form ng-submit="saveDevice()" class="form">
 
-            <div class="form-group">
-              <label class="control-label">Point of Contact</label>
-              <select ng-model="device.userId" ng-options="user.id as user.displayName for user in users" class="form-control"></select>
-            </div>
+              <div class="form-group">
+                <label class="control-label">Device Identifier</label>
+                <input type="text" placeholder="for example 01:02:03:04:05:06:08" ng-model="device.uid" class="form-control" ng-readonly="device.id">
+                <span class="help-block top-gap">MAC address, or some sort of unique identifier for your device.</span>
+              </div>
 
-            <span class="pull-right">
-              <a class="btn btn-default" ng-class="{'disabled': saving}" ng-click="cancel()">Cancel</a>
-              <a class="btn btn-success" ng-class="{'disabled': saving}" ng-click="saveDevice(device)"><i class="fa fa-check"></i> Save</a>
-            </span>
-          </form>
+              <div class="form-group">
+                <label class="control-label">Description</label>
+                <textarea type="text" placeholder="A bit about the device" ng-model="device.description" class="form-control"></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="control-label">Point of Contact</label>
+                <select ng-model="device.userId" ng-options="user.id as user.displayName for user in users" class="form-control"></select>
+              </div>
+
+              <span class="pull-right">
+                <a class="btn btn-default" ng-class="{'disabled': saving}" ng-click="cancel()">Cancel</a>
+                <a class="btn btn-success" ng-class="{'disabled': saving}" ng-click="saveDevice(device)"><i class="fa fa-check"></i> Save</a>
+              </span>
+            </form>
+          </div>
         </div>
       </div>
     </div>

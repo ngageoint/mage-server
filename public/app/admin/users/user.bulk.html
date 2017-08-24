@@ -1,85 +1,85 @@
-<div class="admin-nav-gap">
-  <div class="container-fluid">
-    <ol class="breadcrumb">
-      <li><a href="#/admin"><i class="fa fa-dashboard admin-dashboard"></i>Dashboard</a></li>
-      <li><a href="#/admin/users">Users</a></li>
-      <li class="active">Bulk Import</li>
-    </ol>
-  </div>
-</div>
+<div class="admin">
+  <div admin-tab="'users'"></div>
 
-<div class="content-flex">
-
-  <div class="content-inner">
-
-    <div class="container bottom-gap-l">
-
-      <div class="row">
-        <div class="col-md-12">
-          <p class="muted">Please select a team you would like to import users into.</p>
-        </div>
+  <div class="admin-main">
+    <div class="admin-nav-gap">
+      <div class="container-fluid">
+        <ol class="breadcrumb">
+          <li><i class="fa fa-user admin-dashboard"></i> <a href="#/admin/users">Users</li></a>
+          <li class="active">Bulk Import</li>
+        </ol>
       </div>
+    </div>
 
-      <div class="row">
-        <div class="col-md-12">
-          <ui-select ng-model="team.selected" theme="bootstrap">
-            <ui-select-match placeholder="Select a team">{{$select.selected.name}}</ui-select-match>
-            <ui-select-choices repeat="team in teams | orderBy: 'name' | filter: $select.search">
-              <div ng-bind-html="team.name | highlight: $select.search"></div>
-            </ui-select-choices>
-          </ui-select>
-        </div>
-      </div>
+    <div class="admin-content">
+      <div class="container bottom-gap-l">
 
-      <div class="row top-gap">
-        <div class="col-md-12">
-          <p class="muted">Please select a role you would like assign to all imported users.</p>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-md-12">
-          <ui-select ng-model="role.selected" theme="bootstrap">
-            <ui-select-match placeholder="Select a role">{{$select.selected.name}}</ui-select-match>
-            <ui-select-choices repeat="role in roles | filter: $select.search">
-              <div ng-bind-html="role.name | highlight: $select.search"></div>
-            </ui-select-choices>
-          </ui-select>
-        </div>
-      </div>
-
-      <div class="row top-gap-l" ng-if="team.selected && role.selected">
-        <div class="col-md-12">
-          <p class="muted">Grab a csv file that contains users you would like to import into MAGE.</p>
-          <span class="btn btn-default btn-file" ng-disabled="columns != null">
-              <i class="fa fa-file-o"></i> Import CSV <input type="file" file-change="importFile" >
-          </span>
-        </div>
-      </div>
-
-      <div ng-if="columns">
-        <div class="row top-gap-xl">
+        <div class="row">
           <div class="col-md-12">
+            <p class="muted">Please select a team you would like to import users into.</p>
+          </div>
+        </div>
 
-            <div ng-if="unmappedFields.length" class="bottom-gap">
-              <div ng-repeat="unmappedField in unmappedFields">
-                <div class="text-danger"><i class="fa fa-warning"></i> {{unmappedField}} is not mapped.  Please map the column that contains {{unmappedField}} in the table below.</div>
+        <div class="row">
+          <div class="col-md-12">
+            <ui-select ng-model="team.selected" theme="bootstrap">
+              <ui-select-match placeholder="Select a team">{{$select.selected.name}}</ui-select-match>
+              <ui-select-choices repeat="team in teams | orderBy: 'name' | filter: $select.search">
+                <div ng-bind-html="team.name | highlight: $select.search"></div>
+              </ui-select-choices>
+            </ui-select>
+          </div>
+        </div>
+
+        <div class="row top-gap">
+          <div class="col-md-12">
+            <p class="muted">Please select a role you would like assign to all imported users.</p>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-12">
+            <ui-select ng-model="role.selected" theme="bootstrap">
+              <ui-select-match placeholder="Select a role">{{$select.selected.name}}</ui-select-match>
+              <ui-select-choices repeat="role in roles | filter: $select.search">
+                <div ng-bind-html="role.name | highlight: $select.search"></div>
+              </ui-select-choices>
+            </ui-select>
+          </div>
+        </div>
+
+        <div class="row top-gap-l" ng-if="team.selected && role.selected">
+          <div class="col-md-12">
+            <p class="muted">Grab a csv file that contains users you would like to import into MAGE.</p>
+            <span class="btn btn-default btn-file" ng-disabled="columns != null">
+                <i class="fa fa-file-o"></i> Import CSV <input type="file" file-change="importFile" >
+            </span>
+          </div>
+        </div>
+
+        <div ng-if="columns">
+          <div class="row top-gap-xl">
+            <div class="col-md-12">
+
+              <div ng-if="unmappedFields.length" class="bottom-gap">
+                <div ng-repeat="unmappedField in unmappedFields">
+                  <div class="text-danger"><i class="fa fa-warning"></i> {{unmappedField}} is not mapped.  Please map the column that contains {{unmappedField}} in the table below.</div>
+                </div>
               </div>
-            </div>
 
-            <div class="row">
-              <div class="col-md-12">
-                <nav class="navbar navbar-default admin-dashboard-navbar">
-                  <div class="container-fluid">
-                    <div class="navbar-header">
-                      <a class="navbar-brand">Users To Import
-                        <sup><span class="badge">{{numberOfUsersToImport()}}</span></sup>
-                      </a>
+              <div class="row">
+                <div class="col-md-12">
+                  <nav class="navbar navbar-default admin-dashboard-navbar">
+                    <div class="container-fluid">
+                      <div class="navbar-header">
+                        <a class="navbar-brand">Users To Import
+                          <sup><span class="badge">{{numberOfUsersToImport()}}</span></sup>
+                        </a>
+                      </div>
                     </div>
-                  </div>
-                </nav>
+                  </nav>
+                </div>
               </div>
-            </div>
 
             <div class="admin-table">
               <div class="well-item">
@@ -112,47 +112,48 @@
                       <tr ng-repeat="user in users" class="ng-animatable cssFade" ng-class="!importing && (results[$index] && results[$index].status !== 200) ? 'danger' : ''" ng-hide="results[$index].status === 200">
                         <td><i class="fa fa-edit text-primary" ng-click="edit.row !== $index ? edit.row = $index : edit.row = null"></i></td>
 
-                        <td>
-                          <span ng-if="edit.row !== $index">{{user.team.selected.name}}</span>
-                          <ui-select ng-model="user.team.selected" theme="bootstrap" ng-if="edit.row === $index">
-                            <ui-select-match placeholder="Select a team">{{$select.selected.name}}</ui-select-match>
-                            <ui-select-choices repeat="team in teams | orderBy: 'name' | filter: $select.search">
-                              <div ng-bind-html="team.name | highlight: $select.search"></div>
-                            </ui-select-choices>
-                          </ui-select>
-                        </td>
+                          <td>
+                            <span ng-if="edit.row !== $index">{{user.team.selected.name}}</span>
+                            <ui-select ng-model="user.team.selected" theme="bootstrap" ng-if="edit.row === $index">
+                              <ui-select-match placeholder="Select a team">{{$select.selected.name}}</ui-select-match>
+                              <ui-select-choices repeat="team in teams | orderBy: 'name' | filter: $select.search">
+                                <div ng-bind-html="team.name | highlight: $select.search"></div>
+                              </ui-select-choices>
+                            </ui-select>
+                          </td>
 
-                        <td>
-                          <span ng-if="edit.row !== $index">{{user.role.name}}</span>
-                          <select ng-if="edit.row === $index" class="form-control" ng-model="user.role" ng-options="role as role.name for role in roles"></select>
-                        </td>
+                          <td>
+                            <span ng-if="edit.row !== $index">{{user.role.name}}</span>
+                            <select ng-if="edit.row === $index" class="form-control" ng-model="user.role" ng-options="role as role.name for role in roles"></select>
+                          </td>
 
-                        <td ng-repeat="userColumn in user track by $index">
-                          <span ng-if="edit.row !== $parent.$index">{{userColumn}}</span>
-                          <input ng-if="edit.row === $parent.$index" type="text" ng-model="user[$index]" class="form-control">
-                        </td>
+                          <td ng-repeat="userColumn in user track by $index">
+                            <span ng-if="edit.row !== $parent.$index">{{userColumn}}</span>
+                            <input ng-if="edit.row === $parent.$index" type="text" ng-model="user[$index]" class="form-control">
+                          </td>
 
-                        <td>
-                          <i class="fa fa-spinner fa-spin" ng-if="importing && results[$index].status !== 200"></i>
-                          <i class="fa fa-exclamation-triangle text-danger"
-                            ng-if="!importing && (results[$index] && results[$index].status !== 200)"
-                            uib-tooltip="{{results[$index].message}}"></i>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                          <td>
+                            <i class="fa fa-spinner fa-spin" ng-if="importing && results[$index].status !== 200"></i>
+                            <i class="fa fa-exclamation-triangle text-danger"
+                              ng-if="!importing && (results[$index] && results[$index].status !== 200)"
+                              uib-tooltip="{{results[$index].message}}"></i>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="row top-gap-l">
-          <div class="col-md-12">
-            <span ng-if="numberOfUsersImported() > 0" class="pull-left text-success"><i class="fa fa-check"></i> Successfully created {{numberOfUsersImported()}} users</span>
+          <div class="row top-gap-l">
+            <div class="col-md-12">
+              <span ng-if="numberOfUsersImported() > 0" class="pull-left text-success"><i class="fa fa-check"></i> Successfully created {{numberOfUsersImported()}} users</span>
 
-            <button ng-if="!imported" class="btn btn-primary pull-right" ng-disabled="importing || unmappedFields.length" ng-click="import()">Create Users</button>
-            <button ng-if="errors.length" class="btn btn-primary pull-right" ng-disabled="importing || unmappedFields.length" ng-click="retry()">Retry {{errors.length}} Users</button>
+              <button ng-if="!imported" class="btn btn-primary pull-right" ng-disabled="importing || unmappedFields.length" ng-click="import()">Create Users</button>
+              <button ng-if="errors.length" class="btn btn-primary pull-right" ng-disabled="importing || unmappedFields.length" ng-click="retry()">Retry {{errors.length}} Users</button>
+            </div>
           </div>
         </div>
       </div>

@@ -10,6 +10,9 @@ function AdminUserController($scope, $uibModal, $filter, $routeParams, $location
   $scope.teamsPage = 0;
   $scope.teamsPerPage = 10;
 
+  $scope.hasUserEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
+  $scope.hasUserDeletePermission =  _.contains(UserService.myself.role.permissions, 'DELETE_USER');
+
   var filter = {
     user: {id: $routeParams.userId}
   };
@@ -24,7 +27,7 @@ function AdminUserController($scope, $uibModal, $filter, $routeParams, $location
   $scope.showNext = true;
 
   $q.all({user: UserService.getUser($routeParams.userId, {forceRefresh: true, populate: 'roleId'}), teams: Team.query({populate: false}).$promise}).then(function(result) {
-    $scope.user = result.user.data || result.user;
+    $scope.user = result.user;
     $scope.avatarUrl = avatarUrl($scope.user, LocalStorageService.getToken());
     $scope.iconUrl = iconUrl($scope.user, LocalStorageService.getToken());
 
@@ -42,11 +45,22 @@ function AdminUserController($scope, $uibModal, $filter, $routeParams, $location
       })
       .value();
 
-    $scope.nonTeams = _.reject($scope.teams, function(team) {
+    var teams = _.chain($scope.teams);
+    if (!_.contains(UserService.myself.role.permissions, 'UPDATE_TEAM')) {
+      // filter teams based on acl
+      teams = teams.filter(function(team) {
+        var permissions = team.acl[UserService.myself.id] ? team.acl[UserService.myself.id].permissions : [];
+        return _.contains(permissions, 'update');
+      });
+    }
+
+    teams = teams.reject(function(team) {
       return _.some(team.users, function(user) {
         return $scope.user.id === user.id;
       });
     });
+
+    $scope.nonTeams = teams.value();
   });
 
   LoginService.query({filter: filter, limit: $scope.loginResultsLimit}).success(function(loginPage) {
@@ -56,7 +70,7 @@ function AdminUserController($scope, $uibModal, $filter, $routeParams, $location
     }
   });
 
-  DeviceService.getAllDevices().success(function (devices) {
+  DeviceService.getAllDevices().then(function (devices) {
     $scope.devices = devices;
   });
 
@@ -157,12 +171,20 @@ function AdminUserController($scope, $uibModal, $filter, $routeParams, $location
   /* shortcut for giving a user the USER_ROLE */
   $scope.activateUser = function(user) {
     user.active = true;
-    UserService.updateUser(user.id, user);
+    UserService.updateUser(user.id, user, function() {
+      $scope.$apply(function() {
+        $scope.$broadcast('user:activated', user);
+      });
+    });
   };
 
   $scope.deactivateUser = function (user) {
     user.active = false;
-    UserService.updateUser(user.id, user);
+    UserService.updateUser(user.id, user, function() {
+      $scope.$apply(function() {
+        $scope.$broadcast('user:inactivated', user);
+      });
+    });
   };
 
   $scope.gotoTeam = function(team) {

@@ -53,7 +53,7 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     });
     var teamsInEvent = _.map(teamIdsInEvent, function(teamId) { return teamsById[teamId]; });
 
-    var usersInEvent = _.filter(result.users.data, function(user) {
+    var usersInEvent = _.filter(result.users, function(user) {
       return _.findWhere(eventTeam.users, {id: user.id});
     });
 
@@ -62,22 +62,30 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     var teamsNotInEvent = _.filter($scope.teams, function(team) {
       return $scope.event.teamIds.indexOf(team.id) === -1 && !team.teamEventId;
     });
-    var usersNotInEvent = _.reject(result.users.data, function(user) {
+    var usersNotInEvent = _.reject(result.users, function(user) {
       return _.findWhere(eventTeam.users, {id: user.id});
     });
     $scope.eventNonMembers = _.map(usersNotInEvent.concat(teamsNotInEvent), function(item) { return normalize(item); });
 
     $scope.layer = {};
-    $scope.eventLayers = _.map($scope.event.layerIds, function(layerId) { return layersById[layerId]; });
+    $scope.eventLayers = _.chain($scope.event.layerIds)
+      .filter(function(layerId) {
+        return layersById[layerId]; })
+      .map(function(layerId) {
+        return layersById[layerId];
+      }).value();
+
     $scope.nonLayers = _.filter($scope.layers, function(layer) {
       return $scope.event.layerIds.indexOf(layer.id) === -1;
     });
 
-  });
+    var myAccess = $scope.event.acl[UserService.myself.id];
+    var aclPermissions = myAccess ? myAccess.permissions : [];
 
-  function saveEvent(event) {
-    event.$save({populate: false});
-  }
+    $scope.hasReadPermission = _.contains(UserService.myself.role.permissions, 'READ_EVENT_ALL') || _.contains(aclPermissions, 'read');
+    $scope.hasUpdatePermission = _.contains(UserService.myself.role.permissions, 'UPDATE_EVENT') || _.contains(aclPermissions, 'update');
+    $scope.hasDeletePermission = _.contains(UserService.myself.role.permissions, 'DELETE_EVENT') || _.contains(aclPermissions, 'delete');
+  });
 
   $scope.filterMembers = function(item) {
     var filteredMembers = $filter('filter')([item], $scope.memberSearch);
@@ -99,7 +107,7 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     $scope.eventMembers.push(team);
     $scope.eventNonMembers = _.reject($scope.eventNonMembers, function(item) { return item.id === team.id; });
 
-    saveEvent($scope.event);
+    Event.addTeam({id: $scope.event.id}, team);
   }
 
   function addUser(user) {
@@ -122,7 +130,7 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     $scope.eventMembers = _.reject($scope.eventMembers, function(item) { return item.id === team.id; });
     $scope.eventNonMembers.push(team);
 
-    saveEvent($scope.event);
+    Event.removeTeam({id: $scope.event.id, teamId: team.id});
   }
 
   function removeUser(user) {
@@ -141,7 +149,7 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     $scope.eventLayers.push(layer);
     $scope.nonLayers = _.reject($scope.nonLayers, function(l) { return l.id === layer.id; });
 
-    saveEvent($scope.event);
+    Event.addLayer({id: $scope.event.id}, layer);
   };
 
   $scope.removeLayer = function(layer) {
@@ -149,11 +157,15 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     $scope.eventLayers = _.reject($scope.eventLayers, function(l) { return l.id === layer.id;});
     $scope.nonLayers.push(layer);
 
-    saveEvent($scope.event);
+    Event.removeLayer({id: $scope.event.id, layerId: layer.id});
   };
 
   $scope.editEvent = function(event) {
     $location.path('/admin/events/' + event.id + '/edit');
+  };
+
+  $scope.editAccess= function(event) {
+    $location.path('/admin/events/' + event.id + '/access');
   };
 
   $scope.editForm = function(event) {

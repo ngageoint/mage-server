@@ -47,6 +47,10 @@ a {
   margin-right: 10px;
 }
 
+.left-gap {
+  margin-left: 10px;
+}
+
 .top-gap-s {
   margin-top: 5px;
 }
@@ -224,9 +228,9 @@ a {
 }
 
 .badge-notif {
-   position: relative;
-   top: 4px;
-   left: -10px;
+   position: absolute;
+   top: -6px;
+   left: 18px;
 }
 
 .feed-items {
@@ -573,6 +577,73 @@ textarea {
   margin-right: 5px;
 }
 
+.admin {
+  display: flex;
+  flex: 1;
+}
+
+.admin-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-actions {
+  background-color: #555;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-actions-content {
+  overflow: auto;
+}
+
+.admin-badge {
+  position: relative;
+}
+
+.admin-content {
+  flex: 1;
+  overflow: auto;
+}
+
+.admin-action {
+  position: relative;
+  padding: 25px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.54);
+  cursor: pointer; cursor: hand;
+}
+
+.admin-action-arrow-left {
+  position: absolute;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-right:10px solid white;
+}
+
+.admin-action .fa {
+  font-size: 30px;
+  margin-bottom: 8px;
+}
+
+.admin-action .fa-mobile-phone {
+  font-size: 46px;
+  margin-bottom: 0;
+ }
+
+.admin-action-selected {
+  color: rgba(255, 255, 255, .96);
+  background-color: #444;
+}
+
 /* User management page styles */
 .admin-card {
   height: 235px;
@@ -586,6 +657,11 @@ textarea {
 
 .admin-dashboard-navbar > .container-fluid > .navbar-header > .navbar-brand {
   color: #204976;
+}
+
+.nav-pills>li.active>a, .nav-pills>li.active>a:hover, .nav-pills>li.active>a:focus {
+    color: #fff;
+    background-color: #5278a2;
 }
 
 .admin-dashboard-content {
@@ -732,6 +808,11 @@ textarea {
 
 .admin-bulk-column {
   min-width: 120px;
+}
+
+.admin-event-member {
+  display: flex;
+  align-items: center;
 }
 
 .cssFade {
@@ -982,4 +1063,8 @@ a.alert:after {
   margin-top: -4px;
   border-radius: 3px;
   padding-left: 5px;
+}
+
+.role-popover {
+  max-width: 100;
 }

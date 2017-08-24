@@ -382,6 +382,16 @@ describe("user create tests", function() {
       .expects('findById')
       .yields(null, mockEvent);
 
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, {
+        name: 'Event 1',
+        teamIds: [{
+          name: 'Team 1',
+          userIds: [userId]
+        }]
+      });
+
     var mockUser = new UserModel({
       _id: userId,
       username: 'test',

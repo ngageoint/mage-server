@@ -30,8 +30,8 @@ module.exports = function(app, security) {
       next();
     } else if (access.userHasPermission(req.user, 'READ_OBSERVATION_EVENT')) {
       // Make sure I am part of this event
-      Event.eventHasUser(req.event, req.user._id, function(err, eventHasUser) {
-        if (eventHasUser) {
+      Event.userHasEventPermission(req.event, req.user._id, 'read', function(err, hasPermission) {
+        if (hasPermission) {
           return next();
         } else {
           return res.sendStatus(403);
@@ -77,8 +77,8 @@ module.exports = function(app, security) {
       next();
     } else if (access.userHasPermission(req.user, 'UPDATE_OBSERVATION_EVENT')) {
       // Make sure I am part of this event
-      Event.eventHasUser(req.event, req.user._id, function(err, eventHasUser) {
-        if (eventHasUser) {
+      Event.userHasEventPermission(req.event, req.user._id, 'read', function(err, hasPermission) {
+        if (hasPermission) {
           return next();
         } else {
           return res.sendStatus(403);
@@ -93,6 +93,18 @@ module.exports = function(app, security) {
     req.existingObservation ?
       validateObservationUpdateAccess(req, res, next) :
       validateObservationCreateAccess(true)(req, res, next);
+  }
+
+  function authorizeEventAccess(collectionPermission, aclPermission) {
+    return function(req, res, next) {
+      if (access.userHasPermission(req.user, collectionPermission)) {
+        next();
+      } else {
+        Event.userHasEventPermission(req.event, req.user._id, aclPermission, function(err, hasPermission) {
+          hasPermission ? next() : res.sendStatus(403);
+        });
+      }
+    };
   }
 
   function populateUserFields(req, res, next) {
@@ -414,7 +426,7 @@ module.exports = function(app, security) {
   app.put(
     '/api/events/:eventId/observations/:id/important',
     passport.authenticate('bearer'),
-    access.authorize('UPDATE_EVENT'),
+    authorizeEventAccess('UPDATE_EVENT', 'update'),
     function (req, res, next) {
       var important = {
         userId: req.user._id,
@@ -435,7 +447,7 @@ module.exports = function(app, security) {
   app.delete(
     '/api/events/:eventId/observations/:id/important',
     passport.authenticate('bearer'),
-    access.authorize('UPDATE_EVENT'),
+    authorizeEventAccess('UPDATE_EVENT', 'update'),
     function (req, res, next) {
 
       new api.Observation(req.event).removeImportant(req.params.id, function(err, updatedObservation) {

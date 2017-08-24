@@ -26,7 +26,7 @@ describe("observation create tests", function() {
   });
 
   beforeEach(function() {
-    var mockEvent = {
+    var mockEvent = EventModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
@@ -54,7 +54,9 @@ describe("observation create tests", function() {
         }],
         userFields: []
       }
-    };
+
+    });
+
     sandbox.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);

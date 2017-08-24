@@ -2,13 +2,17 @@ angular
   .module('mage')
   .controller('AdminLayersController', AdminLayersController);
 
-AdminLayersController.$inject = ['$scope', '$filter', '$uibModal', '$location', 'Layer'];
+AdminLayersController.$inject = ['$scope', '$filter', '$uibModal', '$location', 'Layer', 'UserService'];
 
-function AdminLayersController($scope, $filter, $uibModal, $location, Layer) {
+function AdminLayersController($scope, $filter, $uibModal, $location, Layer, UserService) {
   $scope.filter = "all";
   $scope.layers = [];
   $scope.page = 0;
   $scope.itemsPerPage = 10;
+
+  $scope.hasLayerCreatePermission =  _.contains(UserService.myself.role.permissions, 'CREATE_LAYER');
+  $scope.hasLayerEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_LAYER');
+  $scope.hasLayerDeletePermission =  _.contains(UserService.myself.role.permissions, 'DELETE_LAYER');
 
   Layer.query(function(layers) {
     $scope.layers = layers;

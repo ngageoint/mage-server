@@ -29,7 +29,8 @@ describe("observation read tests", function() {
     var mockEvent = new EventModel({
       _id: 1,
       name: 'Event 1',
-      collectionName: 'observations1'
+      collectionName: 'observations1',
+      acl: {}
     });
     sandbox.mock(EventModel)
       .expects('findById')

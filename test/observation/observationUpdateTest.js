@@ -28,7 +28,8 @@ describe("observation update tests", function() {
     var mockEvent = new EventModel({
       _id: 1,
       name: 'Event 1',
-      collectionName: 'observations1'
+      collectionName: 'observations1',
+      acl: {}
     });
     sandbox.mock(EventModel)
       .expects('findById')
@@ -334,15 +335,19 @@ describe("observation update tests", function() {
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
+    var mockEvent = {
+      name: 'Event 1',
+      teamIds: [{
+        name: 'Team 1',
+        userIds: [mongoose.Types.ObjectId()]
+      }],
+      acl: {}
+    };
+
     sandbox.mock(EventModel)
       .expects('populate')
-      .yields(null, {
-        name: 'Event 1',
-        teamIds: [{
-          name: 'Team 1',
-          userIds: [mongoose.Types.ObjectId()]
-        }]
-      });
+      .withArgs(sinon.match.any, 'teamIds')
+      .yields(null, mockEvent);
 
     var ObservationModel = observationModel({
       _id: 1,

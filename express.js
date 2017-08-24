@@ -39,7 +39,6 @@ app.use('/private',
   passport.authenticate('bearer'),
   express.static(path.join(__dirname, 'private')));
 
-
 // Configure authentication
 var provisioning = require('./provision/' + config.api.provision.strategy)(provision);
 var authentication = require('./authentication')(app, passport, provisioning, config.api.authenticationStrategies);

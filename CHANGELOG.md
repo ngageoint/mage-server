@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 Adheres to [Semantic Versioning](http://semver.org/).
 
 ---
-## 4.5.1 (TBD)
+## 4.5.3 (TBD)
 
 * TBD
 
@@ -11,6 +11,22 @@ Adheres to [Semantic Versioning](http://semver.org/).
 * Upgraded npm dependencies to latest.
 * Added map icon color and map icon initials columns to bulk user import.
 * Trim leading/trailing white space from username when creating users.
+
+##### Bug Fixes
+
+## [4.5.2](https://github.com/ngageoint/mage-server/releases/tag/4.5.2) (08-14-2017)
+
+##### Features
+* Event and Team access control lists.
+
+##### Bug Fixes
+* Base layers will never show on top of overlay layers.
+* Last overlay layer clicked will be on top of other overlays.
+
+## [4.5.1](https://github.com/ngageoint/mage-server/releases/tag/4.5.1) (07-11-2017)
+
+##### Features
+* Added createdAt timestamp for observations
 
 ##### Bug Fixes
 
