@@ -38,9 +38,8 @@ function hasAtLeastOneField(fields) {
 }
 
 function validateColor(color) {
-    return /^#[0-9A-F]{6}$/i.test(color);
+  return /^#[0-9A-F]{6}$/i.test(color);
 }
-
 
 var permissions = {
   OWNER: ['read', 'update', 'delete'],
@@ -58,6 +57,7 @@ function rolesWithPermission(permission) {
   }
 
   return roles;
+}
 
 var FormSchema = new Schema({
   _id: { type: Number, required: true, unique: true },
@@ -176,12 +176,12 @@ EventSchema.post('remove', function(event) {
   });
 });
 
-function transformForm(form, ret, options) {
+function transformForm(form, ret) {
   ret.id = ret._id;
   delete ret._id;
 }
 
-function transform(event, ret) {
+function transform(event, ret, options) {
   if ('function' !== typeof event.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;
@@ -218,6 +218,10 @@ function transform(event, ret) {
 }
 
 FormSchema.set("toJSON", {
+  transform: transformForm
+});
+
+FormSchema.set("toObject", {
   transform: transformForm
 });
 
@@ -494,7 +498,7 @@ exports.update = function(id, event, options, callback) {
     if (event[k] !== undefined) o[k] = event[k];
     return o;
   }, {});
-    
+
   // Preserve form ids
   event.forms.forEach(function(form) {
     form._id = form.id;

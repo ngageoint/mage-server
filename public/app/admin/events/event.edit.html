@@ -1,61 +1,61 @@
-<div class="admin-nav-gap">
-  <div class="container-fluid">
-    <ol class="breadcrumb" ng-if="event.id">
-      <li><a href="#/admin"><i class="fa fa-dashboard admin-dashboard"></i>Dashboard</a></li>
-      <li><a href="#/admin/events">Events</a></li>
-      <li><a ng-href="#/admin/events/{{event.id}}">{{event.name}}</a></li>
-      <li class="active">Edit</li>
-    </ol>
-    <ol class="breadcrumb" ng-if="!event.id">
-      <li><a href="#/admin"><i class="fa fa-dashboard admin-dashboard"></i>Dashboard</a></li>
-      <li><a href="#/admin/events">Events</a></li>
-      <li class="active">New</li>
-    </ol>
-  </div>
-</div>
+<div class="admin">
+  <div admin-tab="'events'"></div>
 
-<div class="content-flex">
-
-  <div class="content-inner">
-
-    <div class="container">
-
-      <div class="row">
-        <div class="col-md-12">
-          <h2 ng-if="event.id">Edit event: {{event.name}}</h2>
-          <h2 ng-if="!event.id">New event</h2>
-        </div>
+  <div class="admin-main">
+    <div class="admin-nav-gap">
+      <div class="container-fluid">
+        <ol class="breadcrumb" ng-if="event.id">
+          <li><i class="fa fa-calendar admin-dashboard"></i> <a href="#/admin/events">Events</li></a>
+          <li><a ng-href="#/admin/events/{{event.id}}">{{event.name}}</a></li>
+          <li class="active">Edit</li>
+        </ol>
+        <ol class="breadcrumb" ng-if="!event.id">
+          <li><i class="fa fa-calendar admin-dashboard"></i> <a href="#/admin/events">Events</li></a>
+          <li class="active">New</li>
+        </ol>
       </div>
-      <hr>
+    </div>
 
-      <div class="row">
-        <div class="col-md-12" ng-show="event">
+    <div class="admin-content">
+      <div class="container">
 
-          <form ng-submit="saveEvent()" class="form">
-            <div class="form-group">
-              <label class="control-label">Name</label>
-              <input class="form-control" type="text" placeholder="Event name" ng-model="event.name"/>
-            </div>
-            <div class="form-group">
-              <label class="control-label">Description</label>
-              <textarea class="form-control" type="text" placeholder="Brief description of the event." ng-model="event.description"/>
-            </div>
-          </form>
-
-          <div class="clearfix">
-            <span class="pull-right">
-              <a class="btn btn-default" ng-class="{'disabled': saving}" ng-click="cancel()">Cancel</a>
-              <a class="btn btn-success" ng-class="{'disabled': saving}" ng-click="saveEvent(event)"><i class="fa fa-check"></i> Save</a>
-            </span>
+        <div class="row">
+          <div class="col-md-12">
+            <h2 ng-if="event.id">Edit event: {{event.name}}</h2>
+            <h2 ng-if="!event.id">New event</h2>
           </div>
+        </div>
+        <hr>
 
-          <div class="alert alert-danger top-gap" ng-show="error">
-            <strong>{{error.message}}</strong>
-            <div ng-if="error.errors">
-              <li ng-repeat="(key, value) in error.errors">{{key}}: {{value.message}}</li>
+        <div class="row">
+          <div class="col-md-12" ng-show="event">
+
+            <form ng-submit="saveEvent()" class="form">
+              <div class="form-group">
+                <label class="control-label">Name</label>
+                <input class="form-control" type="text" placeholder="Event name" ng-model="event.name"/>
+              </div>
+              <div class="form-group">
+                <label class="control-label">Description</label>
+                <textarea class="form-control" type="text" placeholder="Brief description of the event." ng-model="event.description"/>
+              </div>
+            </form>
+
+            <div class="clearfix">
+              <span class="pull-right">
+                <a class="btn btn-default" ng-class="{'disabled': saving}" ng-click="cancel()">Cancel</a>
+                <a class="btn btn-success" ng-class="{'disabled': saving}" ng-click="saveEvent(event)"><i class="fa fa-check"></i> Save</a>
+              </span>
             </div>
-          </div>
 
+            <div class="alert alert-danger top-gap" ng-show="error">
+              <strong>{{error.message}}</strong>
+              <div ng-if="error.errors">
+                <li ng-repeat="(key, value) in error.errors">{{key}}: {{value.message}}</li>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
     </div>

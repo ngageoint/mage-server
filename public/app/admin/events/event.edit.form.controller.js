@@ -23,7 +23,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
         return form.id.toString() === $routeParams.formId;
       });
       $scope.form = new Form(form);
-      $scope.form.style = $scope.form.style || {};
+      // $scope.form.style = $scope.form.style || {};
 
       _.each($scope.form.fields, function(field) {
         if (field.name === $scope.form.primaryField) {
@@ -43,9 +43,6 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     if (!newForm || !oldForm) return;
 
     if ($scope.saving) return;
-
-    var formEqual = angular.equals(newForm, oldForm);
-    var fieldsEqual = angular.equals(newForm.fields, oldForm.fields);
 
     if (newForm.id && !oldForm.id) {
       $location.path('/admin/events/' + $scope.event.id + '/forms/' + newForm.id);
@@ -484,10 +481,12 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
   };
 
   $scope.updateSymbology = function(primary, variant) {
+    $scope.form.style = $scope.form.style || {};
+
     var eventId = $scope.event.id;
     var formId = $scope.form.id;
     var token = $scope.token;
-    var style = $scope.form.style || $scope.event.style;
+    var style = $scope.form.style;
     var filesToUpload = $scope.filesToUpload;
 
     if (primary) {
