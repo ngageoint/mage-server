@@ -1,8 +1,8 @@
 var util = require('util')
   , Field = require('./field');
 
-function CheckboxField(fieldDefinition, observation) {
-  CheckboxField.super_.call(this, fieldDefinition, observation.properties[fieldDefinition.name]);
+function CheckboxField(fieldDefinition, form) {
+  CheckboxField.super_.call(this, fieldDefinition, form[fieldDefinition.name]);
 }
 util.inherits(CheckboxField, Field);
 

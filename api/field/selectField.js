@@ -1,9 +1,10 @@
 var util = require('util')
   , Field = require('./field');
 
-function ComboField(fieldDefinition, observation) {
-  ComboField.super_.call(this, fieldDefinition, observation.properties[fieldDefinition.name]);
+function ComboField(fieldDefinition, form) {
+  ComboField.super_.call(this, fieldDefinition, form[fieldDefinition.name]);
 }
+
 util.inherits(ComboField, Field);
 
 ComboField.prototype.validate = function() {

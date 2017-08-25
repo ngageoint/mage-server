@@ -63,7 +63,7 @@ Observation.prototype.validate = function(observation) {
     type: "date",
     required: true,
     name: "timestamp",
-  }, observation);
+  }, observation.properties);
   timestampField.validate();
 
   var geometryField = fieldFactory.createField({
@@ -84,7 +84,7 @@ Observation.prototype.validate = function(observation) {
       // Don't validate archived fields
       return !fieldDefinition.archived;
     }).forEach(function(fieldDefinition) {
-      var field = fieldFactory.createField(fieldDefinition, observation);
+      var field = fieldFactory.createField(fieldDefinition, observationForm);
       field.validate();
     });
   });
