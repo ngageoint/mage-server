@@ -99,14 +99,8 @@ var EventSchema = new Schema({
   versionKey: false
 });
 
-// TODO figure out how to validate multiple forms
-// TODO validate form color is a hex color
-// TODO validate form has at least one field
 FormSchema.path('fields').validate(hasAtLeastOneField, 'Form must have at least one field.');
 FormSchema.path('color').validate(validateColor, 'Form color must be valid hex string.');
-
-// EventSchema.path('form.fields').validate(hasFieldOnce('type'), 'fields array must contain one type field');
-// EventSchema.path('form.fields').validate(fieldIsRequired('type'), 'type must have a required property set to true.');
 
 function validateTeamIds(eventId, teamIds, next) {
   if (!teamIds || !teamIds.length) return next();
@@ -500,9 +494,12 @@ exports.update = function(id, event, options, callback) {
   }, {});
 
   // Preserve form ids
-  event.forms.forEach(function(form) {
-    form._id = form.id;
-  });
+  if (event.forms) {
+    event.forms.forEach(function(form) {
+      form._id = form.id;
+    });
+  }
+
 
   Event.findByIdAndUpdate(id, update, {new: true, runValidators: true, context: 'query'}, function(err, updatedEvent) {
     if (err) return callback(err);

@@ -63,19 +63,6 @@ describe("team create tests", function() {
   it("should reject create team w/o name", function(done) {
     mockTokenWithPermission('CREATE_TEAM');
 
-    var teamId = mongoose.Types.ObjectId();
-    var eventId = 1;
-    var mockTeam = new TeamModel({
-      id: teamId,
-      name: 'Mock Team',
-      teamEventId: eventId
-    });
-
-    sandbox.mock(TeamModel)
-      .expects('create')
-      .withArgs(sinon.match.has('acl', [{role: 'OWNER', userId: userId}]))
-      .yields(null, mockTeam);
-
     request(app)
       .post('/api/teams/')
       .set('Accept', 'application/json')

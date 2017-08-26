@@ -53,10 +53,6 @@ describe("observation update tests", function() {
   it("should update observation for id with event permission", function(done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
-    sandbox.mock(TeamModel)
-      .expects('find')
-      .yields(null, [{ name: 'Team 1' }]);
-
     sandbox.mock(EventModel)
       .expects('populate')
       .yields(null, {
@@ -81,7 +77,7 @@ describe("observation update tests", function() {
         coordinates: [0, 0]
       },
       properties: {
-        timestamp: Date.now()
+        timestamp: '2014-01-01T00:00:00'
       }
     });
 
@@ -104,8 +100,7 @@ describe("observation update tests", function() {
           coordinates: [0, 0]
         },
         properties: {
-          type: 'type',
-          timestamp: Date.now()
+          timestamp: '2014-01-01T00:00:00'
         }
       })
       .expect(200)
@@ -121,10 +116,6 @@ describe("observation update tests", function() {
   it("should update observation for id with all permission", function(done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_ALL');
 
-    sandbox.mock(TeamModel)
-      .expects('find')
-      .yields(null, [{ name: 'Team 1' }]);
-
     sandbox.mock(EventModel)
       .expects('populate')
       .yields(null, {
@@ -149,7 +140,7 @@ describe("observation update tests", function() {
         coordinates: [0, 0]
       },
       properties: {
-        timestamp: Date.now()
+        timestamp: '2014-01-01T00:00:00'
       }
     });
 
@@ -172,8 +163,7 @@ describe("observation update tests", function() {
           coordinates: [0, 0]
         },
         properties: {
-          type: 'type',
-          timestamp: Date.now()
+          timestamp: '2014-01-01T00:00:00'
         }
       })
       .expect(200)
@@ -182,50 +172,6 @@ describe("observation update tests", function() {
         should.exist(observation);
         observation.should.have.property('id');
         observation.should.have.property('url');
-      })
-      .end(done);
-  });
-
-  it("should deny update observation for id w/o type", function(done) {
-    mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
-
-    sandbox.mock(EventModel)
-      .expects('populate')
-      .yields(null, {
-        name: 'Event 1',
-        teamIds: [{
-          name: 'Team 1',
-          userIds: [userId]
-        }]
-      });
-
-    var ObservationModel = observationModel({
-      _id: 1,
-      name: 'Event 1',
-      collectionName: 'observations1'
-    });
-
-    sandbox.mock(ObservationModel)
-      .expects('findById')
-      .yields(null, {});
-
-    request(app)
-      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
-      .set('Accept', 'application/json')
-      .set('Authorization', 'Bearer 12345')
-      .send({
-        type: 'Feature',
-        geometry: {
-          type: "Point",
-          coordinates: [0, 0]
-        },
-        properties: {
-          timestamp: Date.now()
-        }
-      })
-      .expect(400)
-      .expect(function(res) {
-        res.text.should.equal("'properties.type' param required but not specified");
       })
       .end(done);
   });
@@ -264,7 +210,6 @@ describe("observation update tests", function() {
           coordinates: [0, 0]
         },
         properties: {
-          type: 'type'
         }
       })
       .expect(400)
@@ -276,10 +221,6 @@ describe("observation update tests", function() {
 
   it("should deny update observation for id that does not exist", function(done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
-
-    sandbox.mock(TeamModel)
-      .expects('find')
-      .yields(null, [{ name: 'Team 1' }]);
 
     sandbox.mock(EventModel)
       .expects('populate')
@@ -307,7 +248,7 @@ describe("observation update tests", function() {
       .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/' + observationId)
+      .put('/api/events/1/observations/id/' + observationId)
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -317,8 +258,7 @@ describe("observation update tests", function() {
           coordinates: [0, 0]
         },
         properties: {
-          type: 'type',
-          timestamp: Date.now()
+          timestamp: '2014-01-01T00:00:00'
         }
       })
       .expect(404)

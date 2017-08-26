@@ -60,16 +60,18 @@ Observation.prototype.validate = function(observation) {
 
   // validate timestamp
   var timestampField = fieldFactory.createField({
-    type: "date",
+    type: 'date',
     required: true,
-    name: "timestamp",
+    name: 'timestamp',
+    title: 'timestamp'
   }, observation.properties);
   timestampField.validate();
 
   var geometryField = fieldFactory.createField({
-    type: "geometry",
+    type: 'geometry',
     required: true,
-    name: "geometry",
+    name: 'geometry',
+    title: 'geometry'
   }, observation);
   geometryField.validate();
 
@@ -79,7 +81,8 @@ Observation.prototype.validate = function(observation) {
     formMap[form._id] = form;
   });
 
-  observation.properties.forms.forEach(function(observationForm) {
+  var forms = observation.properties.forms || [];
+  forms.forEach(function(observationForm) {
     formMap[observationForm.formId].fields.filter(function(fieldDefinition) {
       // Don't validate archived fields
       return !fieldDefinition.archived;
