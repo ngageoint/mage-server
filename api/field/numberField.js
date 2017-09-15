@@ -1,8 +1,8 @@
 var util = require('util')
   , Field = require('./field');
 
-function NumberField(fieldDefinition, observation) {
-  NumberField.super_.call(this, fieldDefinition, observation.properties[fieldDefinition.name]);
+function NumberField(fieldDefinition, form) {
+  NumberField.super_.call(this, fieldDefinition, form[fieldDefinition.name]);
 }
 util.inherits(NumberField, Field);
 

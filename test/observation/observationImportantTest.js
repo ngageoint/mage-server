@@ -22,11 +22,13 @@ describe("observation important tests", function() {
   });
 
   beforeEach(function() {
-    var mockEvent = {
+
+    var mockEvent = new EventModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
-      form: {
+      forms: [{
+        id: 1,
         fields: [{
           type: "date",
           name: "timestamp",
@@ -39,7 +41,7 @@ describe("observation important tests", function() {
           required: true
         },{
           type: "dropdown",
-          name: "type",
+          name: "field1",
           title: "type",
           choices: [{
             id: 1,
@@ -49,8 +51,10 @@ describe("observation important tests", function() {
           required: true
         }],
         userFields: []
-      }
-    };
+      }],
+      acl: {}
+    });
+
     sandbox.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
@@ -112,7 +116,6 @@ describe("observation important tests", function() {
           coordinates: [0, 0]
         },
         properties: {
-          type: 'test',
           timestamp: '2016-01-01T00:00:00'
         }
       })
@@ -146,7 +149,6 @@ describe("observation important tests", function() {
           coordinates: [0, 0]
         },
         properties: {
-          type: 'test',
           timestamp: '2016-01-01T00:00:00'
         }
       })

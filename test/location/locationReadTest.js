@@ -35,7 +35,8 @@ describe("location read tests", function() {
       collectionName: 'observations1',
       teams: [{
         name: 'Team 1'
-      }]
+      }],
+      acl: {}
     });
 
     sandbox.mock(EventModel)

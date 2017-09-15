@@ -122,4 +122,113 @@ describe("event delete tests", function() {
         done(err);
       });
   });
+
+  it("should delete event if delete permission in acl", function(done) {
+    mockTokenWithPermission('');
+
+    var eventId = 1;
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event',
+      collectionName: 'observations1',
+      acl: {}
+    });
+    mockEvent.acl[userId] = 'OWNER';
+
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .twice()
+      .onFirstCall()
+      .yields(null, mockEvent)
+      .onSecondCall()
+      .yields(null, null);
+
+    sandbox.mock(EventModel.collection)
+      .expects('remove')
+      .yields(null);
+
+    mongoose.connection.db = sandbox.stub();
+    mongoose.connection.db.dropCollection = function() {};
+    sandbox.mock(mongoose.connection.db)
+      .expects('dropCollection')
+      .yields(null);
+
+    sandbox.mock(IconModel)
+      .expects('findOne')
+      .yields(null);
+
+    sandbox.mock(IconModel)
+      .expects('remove')
+      .yields(null);
+
+    var teamId = mongoose.Types.ObjectId();
+    var mockTeam = new TeamModel({
+      _id: teamId,
+      name: 'Mock Team',
+      teamEventId: 1
+    });
+
+    var removeEventsFromUserExpectation = sandbox.mock(UserModel)
+      .expects('update')
+      .withArgs({}, { $pull: { recentEventIds: eventId } }, { multi: true })
+      .yields(null);
+
+    mockfs({
+      '/var/lib/mage': {}
+    });
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .chain('populate')
+      .chain('exec')
+      .yields(null, [mockTeam]);
+
+    var removeTeamsFromEventExpectation = sandbox.mock(EventModel)
+      .expects('update')
+      .withArgs({}, { $pull: { teamIds: teamId } })
+      .yields(null, [mockTeam]);
+
+    var removeTeamExpectation = sandbox.mock(TeamModel.collection)
+      .expects('remove')
+      .yields(null);
+
+    request(app)
+      .delete('/api/events/' + eventId)
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(204)
+      .end(function(err) {
+        removeTeamExpectation.verify();
+        removeEventsFromUserExpectation.verify();
+        removeTeamsFromEventExpectation.verify();
+
+        mockfs.restore();
+        done(err);
+      });
+  });
+
+  it("should reject event delete if no delete permission in acl", function(done) {
+    mockTokenWithPermission('');
+
+    var eventId = 1;
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event',
+      collectionName: 'observations1',
+      acl: [{
+        role: 'MANAGER',
+        userId: userId
+      }]
+    });
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    request(app)
+      .delete('/api/events/' + eventId)
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(403)
+      .end(done);
+  });
 });

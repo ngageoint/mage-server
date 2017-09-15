@@ -19,7 +19,7 @@ function createToken(userId, permissions) {
   var token = {
     _id: '1',
     token: '12345',
-    deviceId: '123',
+    deviceId: mongoose.Types.ObjectId(),
     userId: {
       populate: function(field, callback) {
         callback(null, mockUser);

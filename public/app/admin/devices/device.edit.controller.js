@@ -9,13 +9,13 @@ function AdminDeviceEditController($scope, $filter, $routeParams, $location, Loc
 
   if ($routeParams.deviceId) {
     DeviceService.getDevice($routeParams.deviceId).then(function(device) {
-      $scope.device = angular.copy(device.data);
+      $scope.device = angular.copy(device);
     });
   } else {
     $scope.device = {};
   }
 
-  UserService.getAllUsers().success(function (users) {
+  UserService.getAllUsers().then(function (users) {
     $scope.users = users;
   });
 

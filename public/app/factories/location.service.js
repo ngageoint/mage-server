@@ -37,8 +37,7 @@ function LocationService($q, Location, UserService, LocalStorageService) {
       parameters.endDate = options.interval.end;
     }
 
-    UserService.getAllUsers().then(function(response) {
-      var users = response.data || response;
+    UserService.getAllUsers().then(function(users) {
       var usersById = _.indexBy(users, 'id');
 
       Location.query(parameters, function(userLocations) {

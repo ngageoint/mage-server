@@ -44,6 +44,18 @@ Form.prototype.populateUserFields = function(callback) {
   var event = this._event;
   var form = this._form;
 
+  var forms = form ? [form] : event.forms;
+  var formsUserFields = [];
+  forms.forEach(function(form) {
+    var userFields = getUserFields(form);
+    if (userFields.length) {
+      formsUserFields.push(userFields);
+    }
+  });
+
+  // None of the forms in this event contain user fields
+  if (!formsUserFields.length) return callback();
+
   var teamIds = event.populated('teamIds') || event.teamIds;
   Team.getTeams({teamIds: teamIds}, function(err, teams) {
     if (err) return callback(err);
@@ -67,12 +79,8 @@ Form.prototype.populateUserFields = function(callback) {
       });
     }
 
-    var forms = form ? [form] : event.forms;
-    forms.forEach(function(form) {
-      var userFields = getUserFields(form);
-      if (!userFields.length) return;
-
-      // Get all users in this event
+    // Update the choices for user field
+    formsUserFields.forEach(function(userFields) {
       userFields.forEach(function(userField) {
         userField.choices = choices;
 
@@ -80,7 +88,6 @@ Form.prototype.populateUserFields = function(callback) {
           userField.choices.unshift("");
         }
       });
-
     });
 
     callback();

@@ -26,7 +26,7 @@ describe("observation create tests", function() {
   });
 
   beforeEach(function() {
-    var mockEvent = {
+    var mockEvent = EventModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
@@ -54,7 +54,9 @@ describe("observation create tests", function() {
         }],
         userFields: []
       }
-    };
+
+    });
+
     sandbox.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
@@ -97,60 +99,6 @@ describe("observation create tests", function() {
       .expect(function(res) {
         should.exist(res.body);
         res.body.should.have.property('id');
-      })
-      .end(done);
-  });
-
-  // DEPRECATED test, backwards compat for creating an observation.  Will be removed in version 5.x.x
-  it("should create an observation for an event with DEPRECATED api", function(done) {
-    mockTokenWithPermission('CREATE_OBSERVATION');
-
-    sandbox.mock(TeamModel)
-      .expects('find')
-      .yields(null, [{ name: 'Team 1' }]);
-
-    var ObservationModel = observationModel({
-      _id: 1,
-      name: 'Event 1',
-      collectionName: 'observations1'
-    });
-    var mockObservation = new ObservationModel({
-      _id: mongoose.Types.ObjectId(),
-      type: 'Feature',
-      geometry: {
-        type: "Point",
-        coordinates: [0, 0]
-      },
-      properties: {
-        timestamp: '2016-01-01T00:00:00'
-      }
-    });
-    sandbox.mock(ObservationModel)
-      .expects('create')
-      .yields(null, mockObservation);
-
-    request(app)
-      .post('/api/events/1/observations')
-      .set('Accept', 'application/json')
-      .set('Authorization', 'Bearer 12345')
-      .send({
-        type: 'Feature',
-        geometry: {
-          type: "Point",
-          coordinates: [0, 0]
-        },
-        properties: {
-          type: 'test',
-          timestamp: '2016-01-01T00:00:00'
-        }
-      })
-      .expect(200)
-      .expect('Content-Type', /json/)
-      .expect(function(res) {
-        var observation = res.body;
-        should.exist(observation);
-        res.body.should.have.property('id');
-        res.body.should.have.property('url');
       })
       .end(done);
   });
@@ -223,10 +171,6 @@ describe("observation create tests", function() {
   it("should reject new observation with invalid id", function(done) {
     mockTokenWithPermission('CREATE_OBSERVATION');
 
-    sandbox.mock(TeamModel)
-      .expects('find')
-      .yields(null, []);
-
     var observationId = mongoose.Types.ObjectId();
     sandbox.mock(ObservationIdModel)
       .expects('findById')
@@ -264,10 +208,6 @@ describe("observation create tests", function() {
   it("should reject new observation for invalid permission", function(done) {
     mockTokenWithPermission('UPDATE_OBSERVATION');
 
-    sandbox.mock(TeamModel)
-      .expects('find')
-      .yields(null, []);
-
     var ObservationModel = observationModel({
       _id: 1,
       name: 'Event 1',
@@ -300,47 +240,6 @@ describe("observation create tests", function() {
       .end(done);
   });
 
-  it("should reject new observation w/o type", function(done) {
-    mockTokenWithPermission('CREATE_OBSERVATION');
-
-    sandbox.mock(TeamModel)
-      .expects('find')
-      .yields(null, [{ name: 'Team 1' }]);
-
-    sandbox.mock(ObservationIdModel)
-      .expects('findById')
-      .yields(null, {_id: 1});
-
-    var ObservationModel = observationModel({
-      _id: 1,
-      name: 'Event 1',
-      collectionName: 'observations1'
-    });
-
-    sandbox.mock(ObservationModel)
-      .expects('findById')
-      .yields(null, null);
-
-    request(app)
-      .put('/api/events/1/observations/id/' + mongoose.Types.ObjectId())
-      .set('Accept', 'application/json')
-      .set('Authorization', 'Bearer 12345')
-      .send({
-        geometry: {
-          type: "Point",
-          coordinates: [0, 0]
-        },
-        properties: {
-          timestamp: '2016-01-01T00:00:00'
-        }
-      })
-      .expect(400)
-      .expect(function(res) {
-        res.text.should.equal("cannot create observation 'type' param not specified, or is not set to 'Feature'");
-      })
-      .end(done);
-  });
-
   it("should reject new observation w/o geometry", function(done) {
     mockTokenWithPermission('CREATE_OBSERVATION');
 
@@ -369,7 +268,6 @@ describe("observation create tests", function() {
       .send({
         type: 'Feature',
         properties: {
-          type: 'type',
           timestamp: '2016-01-01T00:00:00'
         }
       })
@@ -448,7 +346,6 @@ describe("observation create tests", function() {
           coordinates: [0, 0]
         },
         properties: {
-          type: 'type'
         }
       })
       .expect(400)
@@ -490,8 +387,7 @@ describe("observation create tests", function() {
           coordinates: [0, 0]
         },
         properties: {
-          type: 'type',
-          timestamp: Date.now()
+          timestamp: 'not a timestamp'
         }
       })
       .expect(400)
@@ -519,7 +415,6 @@ describe("observation create tests", function() {
           coordinates: [0, 0]
         },
         properties: {
-          type: 'type',
           timestamp: '2016-01-01T00:00:00'
         }
       })

@@ -3,9 +3,10 @@ var util = require('util')
 
 var emailRegex = /^[^\s@]+@[^\s@]+\./;
 
-function EmailField(fieldDefinition, observation) {
-  EmailField.super_.call(this, fieldDefinition, observation);
+function EmailField(fieldDefinition, form) {
+  EmailField.super_.call(this, fieldDefinition, form);
 }
+
 util.inherits(EmailField, TextField);
 
 EmailField.prototype.validate = function() {

@@ -1,5 +1,7 @@
 var request = require('supertest')
   , sinon = require('sinon')
+  , should = require('chai').should()
+  , expect = require('chai').expect
   , mongoose = require('mongoose')
   , MockToken = require('../mockToken')
   , app = require('../../express')
@@ -56,6 +58,135 @@ describe("event read tests", function() {
       .end(done);
   });
 
+  it("should read active events if user has read permission in acl", function(done) {
+    mockTokenWithPermission('');
+
+    var mockEvent1 = {
+      _id: 1,
+      name: 'Mock Event',
+      acl: {
+        userId: userId,
+        role: 'GUEST'
+      }
+    };
+    mockEvent1.acl[userId] = 'GUEST';
+
+    var mockEvent2 = {
+      _id: 2,
+      name: 'Mock Event',
+      acl: {}
+    };
+
+    var mockCursor = {
+      toArray: function(callback) {
+        callback(null, [mockEvent1, mockEvent2]);
+      }
+    };
+
+    sandbox.mock(EventModel.collection)
+      .expects('find')
+      .withArgs({ complete: { $ne: true } })
+      .yields(null, mockCursor);
+
+    request(app)
+      .get('/api/events')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect(function(res) {
+        should.exist(res.body);
+        res.body.should.be.array;
+        expect(res.body).to.have.lengthOf(1);
+      })
+      .end(done);
+  });
+
+  it("should read active events if user is part of a team in event", function(done) {
+    mockTokenWithPermission('');
+
+    var eventId = 1;
+
+    var mockEvent1 = new EventModel({
+      _id: eventId,
+      name: 'Mock Event 123',
+      teamIds: [],
+      acl: {
+        1: 'NONE'
+      }
+    });
+    mockEvent1.teamIds[0] = {
+      userIds: [userId]
+    };
+
+    var mockEvent2 = new EventModel({
+      _id: eventId,
+      name: 'Mock Event 267',
+      acl: {}
+    });
+
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, [mockEvent1, mockEvent2]);
+
+    sandbox.mock(EventModel)
+      .expects('find')
+      .withArgs({ complete: { $ne: true } })
+      .yields(null);
+
+    request(app)
+      .get('/api/events?populate=false')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect(function(res) {
+        console.log('res.body', res.body);
+        should.exist(res.body);
+        res.body.should.be.array;
+        expect(res.body).to.have.lengthOf(1);
+      })
+      .end(done);
+  });
+
+  it("should not read events if user is not part of a team in event or in acl", function(done) {
+    mockTokenWithPermission('');
+
+    var eventId = 1;
+
+    var mockEvent1 = new EventModel({
+      _id: eventId,
+      name: 'Mock Event 1',
+      acl: {}
+    });
+
+    var mockEvent2 = new EventModel({
+      _id: eventId,
+      name: 'Mock Event 2',
+      acl: {}
+    });
+
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, [mockEvent1, mockEvent2]);
+
+    sandbox.mock(EventModel)
+      .expects('find')
+      .withArgs({ complete: { $ne: true } })
+      .yields(null);
+
+    request(app)
+      .get('/api/events?populate=false')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect(function(res) {
+        console.log('res.body', res.body);
+        should.exist(res.body);
+        res.body.should.be.array;
+        expect(res.body).to.have.lengthOf(0);
+      })
+      .end(done);
+  });
+
   it("should read complete events", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
@@ -67,6 +198,10 @@ describe("event read tests", function() {
     sandbox.mock(EventModel)
       .expects('find')
       .withArgs({ complete: true })
+      .yields(null, [mockEvent]);
+
+    sandbox.mock(EventModel)
+      .expects('populate')
       .yields(null, [mockEvent]);
 
     request(app)
@@ -89,6 +224,10 @@ describe("event read tests", function() {
     sandbox.mock(EventModel)
       .expects('find')
       .withArgs({})
+      .yields(null, [mockEvent]);
+
+    sandbox.mock(EventModel)
+      .expects('populate')
       .yields(null, [mockEvent]);
 
     request(app)

@@ -5,6 +5,25 @@ module.exports = function(app, security) {
 
   app.all('/api/teams*', passport.authenticate('bearer'));
 
+  function determineReadAccess(req, res, next) {
+    if (!access.userHasPermission(req.user, 'READ_TEAM')) {
+      req.access = { user: req.user, permission: 'read' };
+    }
+
+    next();
+  }
+
+  function authorizeAccess(collectionPermission, aclPermission) {
+    return function(req, res, next) {
+      if (access.userHasPermission(req.user, collectionPermission)) {
+        next();
+      } else {
+        var hasPermission = Team.userHasAclPermission(req.team, req.user._id, aclPermission);
+        hasPermission ? next() : res.sendStatus(403);
+      }
+    };
+  }
+
   function validateTeamParams(req, res, next) {
     var name = req.param('name');
     if (!name) {
@@ -22,9 +41,9 @@ module.exports = function(app, security) {
 
   app.get(
     '/api/teams/count',
-    access.authorize('READ_TEAM'),
+    determineReadAccess,
     function(req, res, next) {
-      Team.count(function(err, count) {
+      Team.count({access: req.access}, function(err, count) {
         if (err) return next(err);
 
         res.json({count: count});
@@ -35,12 +54,14 @@ module.exports = function(app, security) {
   // get all teams
   app.get(
     '/api/teams',
-    access.authorize('READ_TEAM'),
+    determineReadAccess,
     function (req, res, next) {
-      Team.getTeams(function (err, teams) {
+      Team.getTeams({access: req.access}, function (err, teams) {
         if (err) return next(err);
 
-        res.json(teams);
+        res.json(teams.map(function(team) {
+          return team.toObject({access: req.access});
+        }));
       });
     }
   );
@@ -48,9 +69,9 @@ module.exports = function(app, security) {
   // get team
   app.get(
     '/api/teams/:teamId',
-    access.authorize('READ_TEAM'),
+    authorizeAccess('READ_TEAM', 'read'),
     function (req, res) {
-      res.json(req.team);
+      res.json(req.team.toObject({access: req.access}));
     }
   );
 
@@ -60,7 +81,7 @@ module.exports = function(app, security) {
     access.authorize('CREATE_TEAM'),
     validateTeamParams,
     function(req, res, next) {
-      Team.createTeam(req.teamParam, function(err, team) {
+      Team.createTeam(req.teamParam, req.user, function(err, team) {
         if (err) return next(err);
 
         res.json(team);
@@ -71,7 +92,7 @@ module.exports = function(app, security) {
   // Update a team
   app.put(
     '/api/teams/:teamId',
-    access.authorize('UPDATE_TEAM'),
+    authorizeAccess('UPDATE_TEAM', 'update'),
     validateTeamParams,
     function(req, res, next) {
       var update = {};
@@ -90,7 +111,7 @@ module.exports = function(app, security) {
   // Delete a team
   app.delete(
     '/api/teams/:teamId',
-    access.authorize('DELETE_TEAM'),
+    authorizeAccess('DELETE_TEAM', 'delete'),
     function(req, res, next) {
       Team.deleteTeam(req.team, function(err, team) {
         if (err) return next(err);
@@ -100,9 +121,31 @@ module.exports = function(app, security) {
     }
   );
 
+  app.put(
+    '/api/teams/:teamId/acl/:id',
+    authorizeAccess('UPDATE_TEAM', 'update'),
+    function(req, res, next) {
+      Team.updateUserInAcl(req.team._id, req.params.id, req.body.role, function(err, event) {
+        if (err) return next(err);
+        res.json(event);
+      });
+    }
+  );
+
+  app.delete(
+    '/api/teams/:teamId/acl/:id',
+    authorizeAccess('UPDATE_TEAM', 'update'),
+    function(req, res, next) {
+      Team.removeUserFromAcl(req.team._id, req.params.id, function(err, event) {
+        if (err) return next(err);
+        res.json(event);
+      });
+    }
+  );
+
   app.post(
     '/api/teams/:teamId/users',
-    access.authorize('UPDATE_TEAM'),
+    authorizeAccess('UPDATE_TEAM', 'update'),
     function(req, res, next) {
       Team.addUser(req.team, req.body, function(err, team) {
         if (err) return next(err);
@@ -114,7 +157,7 @@ module.exports = function(app, security) {
 
   app.delete(
     '/api/teams/:teamId/users/:id',
-    access.authorize('UPDATE_TEAM'),
+    authorizeAccess('UPDATE_TEAM', 'update'),
     function(req, res, next) {
       Team.removeUser(req.team, {id: req.params.id}, function(err, team) {
         if (err) return next(err);

@@ -22,7 +22,7 @@ describe("observation favorite tests", function() {
   });
 
   beforeEach(function() {
-    var mockEvent = {
+    var mockEvent = new EventModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
@@ -50,7 +50,8 @@ describe("observation favorite tests", function() {
         }],
         userFields: []
       }
-    };
+    });
+    
     sandbox.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);

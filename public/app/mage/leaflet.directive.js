@@ -35,6 +35,11 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     worldCopyJump: true
   });
 
+  // Create a map pane for our base layers
+  var BASE_LAYER_PANE = 'baseLayerPane';
+  map.createPane(BASE_LAYER_PANE);
+  map.getPane(BASE_LAYER_PANE).style.zIndex = 100;
+
   map.on('moveend', saveMapPosition);
 
   function saveMapPosition() {
@@ -72,7 +77,9 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   });
   map.addControl(feedControl);
 
-  var layerControl = L.control.groupedLayers();
+  var layerControl = L.control.groupedLayers([], [], {
+    autoZIndex: false
+  });
   layerControl.addTo(map);
   map.on('baselayerchange', function(baseLayer) {
     var layer = layers[baseLayer.name];
@@ -171,6 +178,11 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     var options = {};
     if (layerInfo.format === 'XYZ' || layerInfo.format === 'TMS') {
       options = { tms: layerInfo.format === 'TMS', maxZoom: 18 };
+
+      if (layerInfo.base) {
+        options.pane = BASE_LAYER_PANE;
+      }
+
       layerInfo.layer = new L.TileLayer(layerInfo.url, options);
     } else if (layerInfo.format === 'WMS') {
       options = {
@@ -179,6 +191,10 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
         format: layerInfo.wms.format,
         transparent: layerInfo.wms.transparent
       };
+
+      if (layerInfo.base) {
+        options.pane = BASE_LAYER_PANE;
+      }
 
       if (layerInfo.wms.styles) options.styles = layerInfo.wms.styles;
       layerInfo.layer = new L.TileLayer.WMS(layerInfo.url, options);

@@ -5,6 +5,8 @@ angular
 AdminController.$inject = ['$scope', '$routeParams', '$location', '$filter', 'UserService', 'DeviceService', 'LoginService', 'Team', 'Event', 'Layer'];
 
 function AdminController($scope, $routeParams, $location, $filter, UserService, DeviceService, LoginService, Team, Event, Layer) {
+  $scope.action = 'dashboard';
+
   $scope.currentAdminPanel = $routeParams.adminPanel || "";
 
   var filter = {};
@@ -29,18 +31,17 @@ function AdminController($scope, $routeParams, $location, $filter, UserService, 
 
   UserService.getAllUsers().then(function(users) {
     $scope.users = users.data || users;
+
+    $scope.inactiveUsers = _.filter($scope.users, function(user) {
+      return !user.active;
+    });
   });
 
-  UserService.getInactiveUsers().success(function(data) {
-    $scope.inactiveUsers = data;
-  });
-
-  DeviceService.getAllDevices().success(function (devices) {
+  DeviceService.getAllDevices().then(function (devices) {
     $scope.devices = devices;
-  });
-
-  DeviceService.getAllDevices({expand: 'user', registered: false}).success(function(data) {
-    $scope.unregisteredDevices = data;
+    $scope.unregisteredDevices = _.filter(devices, function(device) {
+      return !device.registered;
+    });
   });
 
   Team.query(function (teams) {
@@ -82,6 +83,10 @@ function AdminController($scope, $routeParams, $location, $filter, UserService, 
     return device.iconClass;
   };
 
+  $scope.hasPermission = function(permission) {
+    return _.contains(UserService.myself.role.permissions, permission);
+  };
+
   $scope.newUser = function() {
     $location.path('/admin/users/new');
   };
@@ -92,6 +97,7 @@ function AdminController($scope, $routeParams, $location, $filter, UserService, 
     user.active = true;
     UserService.updateUser(user.id, user, function(data) {
       $scope.$apply(function() {
+        $scope.$broadcast('user:activated', data);
         $scope.inactiveUsers = _.reject($scope.inactiveUsers, function(u) { return u.id === data.id; });
       });
     });
@@ -113,12 +119,17 @@ function AdminController($scope, $routeParams, $location, $filter, UserService, 
     $location.path('/admin/devices/new');
   };
 
+  $scope.hasDeviceUpdatePermission = function() {
+    return _.contains(UserService.myself.role.permissions, 'UPDATE_DEVICE');
+  };
+
   $scope.registerDevice = function($event, device) {
     $event.stopPropagation();
 
     device.registered = true;
     DeviceService.updateDevice(device).success(function(data) {
       $scope.unregisteredDevices = _.reject($scope.unregisteredDevices, function(d) { return d.id === data.id; });
+      $scope.$broadcast('device:registered', device);
     });
   };
 
