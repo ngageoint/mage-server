@@ -30,9 +30,10 @@
 
         <div class="row" ng-if="strategy.name === 'google'">
           <div class="col-md-12 text-center">
-            <button class="btn btn-google" ng-click="googleSignin()" ng-disabled="!uid">
+            <div ng-init="initializeGoogleButton()" id="google-signin" class="pull-right g-signin2" data-onsuccess="onSignIn"></div>
+            <!-- <button class="btn btn-google" ng-click="googleSignin()" ng-disabled="!uid">
               <i class="fa fa-google-plus right-gap"></i> Google
-            </button>
+            </button> -->
           </div>
         </div>
       </div>

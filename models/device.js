@@ -139,7 +139,9 @@ exports.createDevice = function(device, callback) {
   var update = {
     name: device.name,
     description: device.description,
-    userId: device.userId
+    userId: device.userId,
+    userAgent: device.userAgent,
+    appVersion: device.appVersion
   };
 
   if (device.registered) update.registered = device.registered;
