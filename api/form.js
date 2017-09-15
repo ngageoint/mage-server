@@ -94,14 +94,30 @@ Form.prototype.populateUserFields = function(callback) {
   });
 };
 
-Form.prototype.export = function(callback) {
+Form.prototype.export = function(formId, callback) {
   var iconBasePath = new api.Icon(this._event._id).getBasePath();
+  var formBasePath = path.join(iconBasePath, formId.toString());
+
   var archive = archiver('zip');
-  archive.directory(iconBasePath, 'form/icons');
-  archive.append(JSON.stringify(this._event.form), {name: "form/form.json"});
+  archive.directory(formBasePath, 'form/icons');
+
+  var forms = this._event.forms.filter(function(form) {
+    return form._id === formId;
+  });
+
+  if (!forms.length) {
+    var err = new Error('Form with id ' + formId + ' does not exist');
+    err.status = 400;
+    return callback(err);
+  }
+
+  archive.append(JSON.stringify(this._event.forms[0]), {name: "form/form.json"});
   archive.finalize();
 
-  callback(null, archive);
+  callback(null, {
+    file: archive,
+    name: forms[0].name
+  });
 };
 
 Form.prototype.validate = function(file, callback) {
@@ -129,6 +145,14 @@ Form.prototype.validate = function(file, callback) {
     return callback(err);
   }
 
+  var iconsEntry = zip.getEntry('form/icons/');
+  if (!iconsEntry) {
+    err = new Error('Error parsing icons directory...');
+    err.status = 400;
+    callback(err);
+  }
+
+
   callback(null, form);
 };
 
@@ -138,24 +162,24 @@ Form.prototype.importIcons = function(file, form, callback) {
 
   var iconsEntry = zip.getEntry('form/icons/');
   if (iconsEntry) {
-    var iconPath = new api.Icon(event._id).getBasePath() + path.sep;
+    var iconPath = path.join(new api.Icon(event._id).getBasePath(), form._id.toString()) + path.sep;
 
     zip.extractEntryTo(iconsEntry, iconPath, false, false);
 
     // for each file in each directory
     var walker = walk.walk(iconPath);
     walker.on("file", function(filePath, stat, next) {
-      var type = null;
+      var primary = null;
       var variant = null;
       var regex = new RegExp(iconPath + path.sep + "+(.*)");
       var match = regex.exec(filePath);
       if (match && match[1]) {
         var variants = match[1].split("/");
-        type = variants.shift();
+        primary = variants.shift();
         variant = variants.shift();
       }
 
-      new api.Icon(event._id, type, variant).add({name: stat.name}, function(err) {
+      new api.Icon(event._id, form._id, primary, variant).add({name: stat.name}, function(err) {
         next(err);
       });
     });

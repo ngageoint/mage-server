@@ -96,50 +96,9 @@ function Event($rootScope, $resource, $http, LocalStorageService) {
     if (this.id) {
       this.$update(success, error);
     } else {
-      if (this.formArchiveFile) {
-        var formData = new FormData();
-        formData.append('form', this.formArchiveFile);
-        for (var key in this) {
-          if (this.hasOwnProperty(key) && key !== 'formArchiveFile' ) {
-            formData.append(key, this[key]);
-          }
-        }
-
-        var self = this;
-        $.ajax({
-          url: '/api/events',
-          type: 'POST',
-          headers: {
-            authorization: 'Bearer ' + LocalStorageService.getToken()
-          },
-          success: function(response) {
-            delete self.formArchiveFile;
-            _.extend(self, response);
-            $rootScope.$apply(function() {
-              success(self);
-            });
-          },
-          error: function(response) {
-            if (!_.isFunction(error)) return;
-
-            var contentType = response.getResponseHeader("content-type") || "";
-            if (contentType.indexOf('json') > -1) {
-              response.responseJSON = JSON.parse(response.responseText);
-            }
-
-            $rootScope.$apply(function() {
-              error(response);
-            });
-          },
-          data: formData,
-          cache: false,
-          contentType: false,
-          processData: false
-        });
-      } else {
-        this.form = defaultForm();
-        this.$create(success, error);
-      }
+      // TODO default form???  this is probably dropped on server side
+      this.form = defaultForm();
+      this.$create(success, error);
     }
   };
 

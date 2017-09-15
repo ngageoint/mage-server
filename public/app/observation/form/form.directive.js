@@ -139,6 +139,8 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
     }
     observation.geometry = geometry;
 
+    observation.properties.timestamp = form.timestampField.value;
+
     observation.properties.forms = [];
     _.each(form.forms, function(observationForm) {
       var propertiesForm = {
