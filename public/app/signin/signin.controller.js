@@ -48,6 +48,23 @@ function SigninController($scope, $rootScope, UserService, api) {
     });
   };
 
+  $scope.onSignIn = function() {
+    console.log('on sign in arguments', arguments);
+  }
+
+  $scope.initializeGoogleButton = function() {
+      gapi.signin2.render("google-signin", {
+        scope: "profile email",
+        prompt: "select_account",
+        longtitle: true,
+        theme: "dark",
+        onsuccess: $scope.onSignIn,
+        onfailure: function (e) {
+            console.warn("Google Sign-In failure: " + e.error);
+        }
+      });
+  }
+
   function localStrategyFilter(strategy, name) {
     return name === 'local';
   }
