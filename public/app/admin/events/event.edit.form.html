@@ -7,7 +7,7 @@
         <ol class="breadcrumb">
           <li><i class="fa fa-calendar admin-dashboard"></i> <a href="#/admin/events">Events</li></a>
           <li><a ng-href="#/admin/events/{{event.id}}">{{event.name}}</a></li>
-          <li class="active">Form <span class="text-danger" ng-show="unSavedChanges"> (unsaved changes)</span></li>
+          <li class="active">{{form.name}} <span class="text-danger" ng-show="unSavedChanges"> (unsaved changes)</span></li>
         </ol>
       </div>
     </div>
@@ -29,7 +29,7 @@
                 <label class="control-label col-sm-2">Name</label>
                 <div class="col-sm-10">
                   <input class="form-control" type="text" placeholder="Form name" name="name" ng-model="form.name" ng-required="true"/>
-                  <span class="help-block" ng-if=" generalForm.$submitted && generalForm.name.$invalid">Name is required</span>
+                  <span class="help-block" ng-if="generalForm.$submitted && generalForm.name.$invalid">Name is required</span>
                 </div>
               </div>
               <div class="form-group">
@@ -43,7 +43,7 @@
                 <label class="control-label col-sm-2">Color</label>
                 <div class="col-sm-10">
                   <input minicolors="{letterCase: 'uppercase'}" class="form-control" type="text" ng-model="form.color" name="color" ng-required="true">
-                  <span class="help-block" ng-if=" generalForm.$submitted && generalForm.color.$invalid">Color is invalid</span>
+                  <span class="help-block" ng-if="generalForm.$submitted && generalForm.color.$invalid">Color is invalid</span>
                 </div>
               </div>
             </form>
@@ -55,7 +55,7 @@
               <div class="card-content">
                 <strong class="text-info">Export Form</strong>
                 <p class="text-info">Export this form for use in another event.</p>
-                <a class="btn btn-info top-gap" ng-href="{{'/api/events/' + event.id + '/form.zip?access_token=' + token}}">
+                <a class="btn btn-info top-gap" ng-href="{{'/api/events/' + event.id + '/' + form.id + '/form.zip?access_token=' + token}}">
                   <i class="fa fa-download"></i> Export
                 </a>
 

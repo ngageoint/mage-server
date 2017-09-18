@@ -633,7 +633,10 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       // Set the lat/lng
       if (feature.geometry.coordinates) {
         featureLayer.layer.removeLayer(layer);
-        featureLayer.layer.addLayer(createGeoJsonForLayer(feature, featureLayer));
+        
+        var newLayer = createGeoJsonForLayer(feature, featureLayer);
+        featureLayer.featureIdToLayer[feature.id] = newLayer;
+        featureLayer.layer.addLayer(newLayer);
       }
     });
 

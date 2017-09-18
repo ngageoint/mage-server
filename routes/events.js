@@ -124,64 +124,6 @@ module.exports = function(app, security) {
     access.authorize('CREATE_EVENT'),
     parseEventQueryParams,
     function(req, res, next) {
-      var event = req.body;
-
-      if (!req.is('multipart/form-data')) return next();
-
-      if (event.teamIds) {
-        event.teamIds = event.teamIds.split(",");
-      }
-
-      if (event.layerIds) {
-        event.layerIds = event.layerIds.split(",");
-      }
-
-      function validateForm(callback) {
-        new api.Form().validate(req.files.form, function(err, form) {
-          callback(err, form);
-        });
-      }
-
-      function createEvent(form, callback) {
-        event.form = form;
-        Event.create(event, req.user, function(err, event) {
-          callback(err, event, form);
-        });
-      }
-
-      function importIcons(event, form, callback) {
-        new api.Form(event).importIcons(req.files.form, form, function(err) {
-          callback(err, event);
-        });
-      }
-
-      function populateUserFields(event, callback) {
-        new api.Form(event).populateUserFields(function(err) {
-          callback(err, event);
-        });
-      }
-
-      async.waterfall([
-        validateForm,
-        createEvent,
-        importIcons,
-        populateUserFields
-      ], function (err, event) {
-        if (err) {
-          return next(err);
-        }
-
-        res.status(201).json(event);
-      });
-    }
-  );
-
-  app.post(
-    '/api/events',
-    passport.authenticate('bearer'),
-    access.authorize('CREATE_EVENT'),
-    parseEventQueryParams,
-    function(req, res, next) {
       Event.create(req.body, req.user, function(err, event) {
         if (err) return next(err);
 
@@ -257,6 +199,45 @@ module.exports = function(app, security) {
     access.authorize('UPDATE_EVENT'),
     parseEventQueryParams,
     function(req, res, next) {
+
+      if (!req.is('multipart/form-data')) return next();
+
+      function validateForm(callback) {
+        new api.Form().validate(req.files.form, callback);
+      }
+
+      function updateEvent(form, callback) {
+        form.name = req.param('name');
+        form.color = req.param('color');
+        Event.addForm(req.event._id, form, callback);
+      }
+
+      function importIcons(form, callback) {
+        new api.Form(req.event).importIcons(req.files.form, form, function(err) {
+          callback(err, form);
+        });
+      }
+
+      async.waterfall([
+        validateForm,
+        updateEvent,
+        importIcons
+      ], function (err, form) {
+        if (err) {
+          return next(err);
+        }
+
+        res.status(201).json(form);
+      });
+    }
+  );
+
+  app.post(
+    '/api/events/:eventId/forms',
+    passport.authenticate('bearer'),
+    access.authorize('UPDATE_EVENT'),
+    parseEventQueryParams,
+    function(req, res, next) {
       var form = req.body || {};
       var fields = form.fields || [];
       var userFields = form.userFields || [];
@@ -268,7 +249,6 @@ module.exports = function(app, security) {
       });
 
       Event.addForm(req.event._id, form, function(err, form) {
-        console.log('ADDED FORM', err);
         if (err) return next(err);
 
         async.parallel([
@@ -375,15 +355,15 @@ module.exports = function(app, security) {
 
   // export a zip of the form json and icons
   app.get(
-    '/api/events/:eventId/form.zip',
+    '/api/events/:eventId/:formId/form.zip',
     passport.authenticate('bearer'),
     authorizeAccess('READ_EVENT_ALL', 'read'),
     function(req, res, next) {
-      new api.Form(req.event).export(function(err, file) {
+      new api.Form(req.event).export(parseInt(req.params.formId, 10), function(err, form) {
         if (err) return next(err);
 
-        res.attachment(req.event.name + "-form.zip");
-        file.pipe(res);
+        res.attachment(req.event.name + "-" + form.name + "-form.zip");
+        form.file.pipe(res);
       });
     }
   );

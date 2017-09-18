@@ -18,6 +18,8 @@ ComboField.prototype.validate = function() {
     return choice.title === this.value;
   }, this);
 
+  console.log('choice', choices);
+
   if (choices.length === 0) {
     throw new Error("cannot create observation, '" + this.definition.title + "' property must be one of '" + this.definition.choices + "'");
   }
