@@ -181,6 +181,13 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
                   id: req.param('userID')
                 }
               };
+              var phone = req.param('phone');
+              if (phone) {
+                user.phones = [{
+                  type: "Main",
+                  number: phone
+                }];
+              }
 
               User.createUser(user, function(err, newUser) {
                 if (err) return next(err);
