@@ -100,6 +100,7 @@ Form.prototype.export = function(formId, callback) {
 
   var archive = archiver('zip');
   archive.directory(formBasePath, 'form/icons');
+  archive.append("", {name: 'icons/', prefix: 'form'});
 
   var forms = this._event.forms.filter(function(form) {
     return form._id === formId;
@@ -111,7 +112,7 @@ Form.prototype.export = function(formId, callback) {
     return callback(err);
   }
 
-  archive.append(JSON.stringify(this._event.forms[0]), {name: "form/form.json"});
+  archive.append(JSON.stringify(forms[0]), {name: "form/form.json"});
   archive.finalize();
 
   callback(null, {
