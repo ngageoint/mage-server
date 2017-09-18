@@ -19,21 +19,71 @@
 
       <hr>
 
-      <div ng-repeat="strategy in thirdPartyStrategies">
+      <div ng-repeat="strategy in thirdPartyStrategies" ng-if="!thirdPartyUser">
         <div class="row" ng-if="strategy.name == 'google'">
+          <div class="or-container">
+            <hr class="or-hr">
+            <div id="or">Use Google to Sign up for a MAGE account</div>
+          </div>
           <div class="col-md-12 text-center">
-            <button class="btn btn-google" ng-click="signup('google')">
-              <i class="fa fa-google-plus right-gap"></i> Google
-            </button>
+            <div style="display:inline-block;" ng-init="initializeGoogleButton(strategy)" id="google-signin" class="g-signin2"></div>
           </div>
         </div>
       </div>
 
-      <div ng-if="localAuthenticationStrategy">
+      <div ng-if="thirdPartyUser">
+        <div ng-if="thirdPartyUser.type=='google'">
+          <div class="or-container">
+            <hr class="or-hr">
+            <div id="or">Google Account</div>
+          </div>
+          <div class="row">
+            <div class="col-md-1 col-md-offset-3">
+                <img width="42" height="42" class="img-circle pull-right" ng-src="{{thirdPartyUser.imageUrl}}"></img>
+            </div>
+            <div class="col-md-5">
+                <div>{{thirdPartyUser.displayName}}</div>
+                <div>{{thirdPartyUser.email}}</div>
+            </div>
+          </div>
+          <div class="or-container">
+            <hr class="or-hr">
+            <div id="or">Verify MAGE Account Info</div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <form id="new-user-form" class="form-horizontal">
+                <div class="form-group">
+                  <label class="control-label col-sm-3" for="type">Display Name</label>
+                  <div class="col-sm-8">
+                    <input type="text" placeholder="Johnny Appleseed" ng-model="thirdPartyUser.displayName" class="form-control">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="control-label col-sm-3" for="type">Email</label>
+                  <div class="col-sm-8">
+                    <input type="text" placeholder="johnny@appleseed.com" ng-model="thirdPartyUser.email" autocapitalize="off" class="form-control">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="control-label col-sm-3" for="type">Phone</label>
+                  <div class="col-sm-8">
+                    <input type="text" ng-model="thirdPartyUser.phone" autocapitalize="off" class="form-control">
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div ng-if="localAuthenticationStrategy && !thirdPartyUser" >
         <div ng-if="thirdPartyStrategies.length" class="top-gap">
           <div class="or-container">
             <hr class="or-hr">
-            <div id="or">or</div>
+            <div id="or">or create a MAGE account</div>
           </div>
         </div>
 
@@ -70,6 +120,14 @@
               </div>
 
               <div class="form-group">
+                <label class="control-label col-sm-3" for="type">Phone</label>
+                <div class="col-sm-8">
+                  <input type="text" ng-model="user.phone" autocapitalize="off" class="form-control">
+                </div>
+              </div>
+            </form>
+
+              <div class="form-group">
                 <label class="control-label col-sm-3" for="type">Password</label>
                 <div class="col-sm-8">
                   <input type="password" placeholder="{{passwordPlaceholder}}" ng-model="user.password" class="form-control">
@@ -96,7 +154,7 @@
 
       <div class="row top-gap">
         <div class="col-sm-8 col-sm-offset-3">
-          <button type="submit" class="btn btn-default pull-right" ng-click="signup('local')">Create my account</button>
+          <button type="submit" class="btn btn-default pull-right" ng-click="signup(thirdPartyUser.type || 'local')">Create my account</button>
         </div>
       </div>
 

@@ -20,6 +20,11 @@
       <hr>
 
       <div ng-repeat="strategy in thirdPartyStrategies">
+        <div class="or-container" ng-if="strategy.name === 'google'">
+          <hr class="or-hr">
+          <div id="or">Log in to MAGE with Google</div>
+        </div>
+
         <div class="row">
           <div class="col-md-12">
             <div class="form-group" ng-class="{'has-error': status > 399}">
@@ -30,10 +35,10 @@
 
         <div class="row" ng-if="strategy.name === 'google'">
           <div class="col-md-12 text-center">
-            <div ng-init="initializeGoogleButton()" id="google-signin" class="pull-right g-signin2" data-onsuccess="onSignIn"></div>
-            <!-- <button class="btn btn-google" ng-click="googleSignin()" ng-disabled="!uid">
-              <i class="fa fa-google-plus right-gap"></i> Google
-            </button> -->
+            <div ng-hide="uid">
+              Please enter your server UID before logging in with Google.
+            </div>
+            <div style="display:inline-block;" ng-init="initializeGoogleButton(strategy)" id="google-signin" class="g-signin2"></div>
           </div>
         </div>
       </div>
@@ -42,7 +47,7 @@
         <div ng-if="thirdPartyStrategies.length" class="top-gap">
           <div class="or-container">
             <hr class="or-hr">
-            <div id="or">or</div>
+            <div id="or">Log in with your MAGE account</div>
           </div>
         </div>
 
