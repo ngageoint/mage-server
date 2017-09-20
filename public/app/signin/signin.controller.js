@@ -48,21 +48,49 @@ function SigninController($scope, $rootScope, UserService, api) {
     });
   };
 
-  $scope.onSignIn = function() {
-    console.log('on sign in arguments', arguments);
-  }
+  function onFail(z){ alert('Fail' + JSON.stringify(z)); }
+function onWin(googleUser){
+  var basicProfile = googleUser.getBasicProfile();
+  var id_token = googleUser.getAuthResponse().id_token;
+  UserService.googleSignin({uid: $scope.uid, token: id_token}).then(function() {
+    // success
+  }, function(data) {
+    $scope.showStatus = true;
 
-  $scope.initializeGoogleButton = function() {
-      gapi.signin2.render("google-signin", {
-        scope: "profile email",
-        prompt: "select_account",
-        longtitle: true,
-        theme: "dark",
-        onsuccess: $scope.onSignIn,
-        onfailure: function (e) {
-            console.warn("Google Sign-In failure: " + e.error);
-        }
+    if (data.device && !data.device.registered) {
+      $scope.statusTitle = 'Device Pending Registration';
+      $scope.statusMessage = data.errorMessage;
+      $scope.statusLevel = 'alert-warning';
+    } else {
+      $scope.statusTitle = 'Error signing in';
+      $scope.statusMessage = data.data;
+      $scope.statusLevel = 'alert-danger';
+    }
+  });
+}
+
+var updateSignIn = function() {
+  console.log('update sign in state' + auth2.isSignedIn.get());
+}
+
+  $scope.initializeGoogleButton = function(strategy) {
+    gapi.load('auth2', function() {
+      gapi.auth2.init({
+        client_id: strategy.webClientID
+      }).then(function() {
+        var auth2 = gapi.auth2.getAuthInstance();
+        auth2.signOut().then(function () {
+          gapi.signin2.render('google-signin', {
+            scope: 'profile email',
+            prompt: 'select_account',
+            onsuccess: onWin,
+            onfail: onFail,
+            theme: 'dark',
+            longtitle: true
+          });
+        });
       });
+    });
   }
 
   function localStrategyFilter(strategy, name) {
