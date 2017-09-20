@@ -81,11 +81,15 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
       if ($scope.form.forms.length > 0) {
         var firstForm = $scope.form.forms[0];
         formId = firstForm.id;
-        primary = EventService.getFormField(firstForm, firstForm.primaryField) || {};
-        variant = EventService.getFormField(firstForm, firstForm.variantField) || {};
+
+        var primaryField = EventService.getFormField(firstForm, firstForm.primaryField);
+        primary = primaryField ? primaryField.value : null;
+
+        var variantField = EventService.getFormField(firstForm, firstForm.variantField);
+        variant = variantField ? variantField.value : null;
       }
 
-      var iconUrl = ObservationService.getObservationIconUrlForEvent($scope.event.id, formId, primary.value, variant.value);
+      var iconUrl = ObservationService.getObservationIconUrlForEvent($scope.event.id, formId, primary, variant);
 
       if (iconUrl !== $scope.iconUrl) {
         $scope.iconUrl = iconUrl;

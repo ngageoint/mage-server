@@ -28,7 +28,7 @@
     "jquery": "1.9.1",
     "jquery-file-upload": "9.3.0",
     "jquery-file-download": "latest",
-    "leaflet": "1.1.0",
+    "leaflet": "1.2.0",
     "Leaflet.awesome-markers": "2.0.2",
     "leaflet.markercluster": "1.0.3",
     "leaflet-groupedlayercontrol": "0.3.0",
@@ -42,9 +42,8 @@
     "videogular-controls": "1.4.3",
     "videogular-overlay-play": "1.4.3",
     "leaflet-geosearch": "1.1.0",
-    "exif-js": "~2.1.1",
-    "papaparse": "~4.1.4",
-    "leaflet.pm": "^0.16.0",
+    "exif-js": "2.1.1",
+    "papaparse": "4.1.4",
     "turfjs": "*"
   }
 }

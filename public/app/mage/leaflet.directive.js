@@ -397,17 +397,18 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
     layer.pm.enable({
       draggable: true,
-      snappable: false,
-      clickListener: function(e) {
-        var group = layer.pm._markerGroup;
-        group.eachLayer(function(layer) {
-          L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
-        });
-        selectedVertex = e.target._index;
-        L.DomUtil.addClass(e.target.getElement(), 'selected-marker');
-        $scope.$broadcast('observation:edit:vertex', layer.feature, e.target.getLatLng(), e.target._index);
-        $scope.$apply();
-      }
+      snappable: false
+    });
+
+    layer.on('pm:markermouseup', function(e) {
+      var group = layer.pm._markerGroup;
+      group.eachLayer(function(layer) {
+        L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
+      });
+      selectedVertex = e.target._index;
+      L.DomUtil.addClass(e.markerEvent.target.getElement(), 'selected-marker');
+      $scope.$broadcast('observation:edit:vertex', layer.feature, e.markerEvent.target.getLatLng(), e.target._index);
+      $scope.$apply();
     });
 
     selectedVertex = selectedVertex || 0;
@@ -419,12 +420,10 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     });
 
     layer.on('pm:edit', function(event) {
-      console.log('pm edit');
       $scope.$broadcast('observation:moved', layer.feature, event.target.toGeoJSON().geometry);
       $scope.$apply();
     });
     layer.on('pm:markerdragend', function(event) {
-      console.log('pm marker drag end');
       var group = layer.pm._markerGroup;
       group.eachLayer(function(layer) {
         L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
@@ -569,7 +568,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
         map.pm.disableDraw(layer.feature.geometry.type === 'Polygon' ? 'Poly' : 'Line');
 
-        layers[groupName].layer.removeLayer(layer);
         if (layer.pm) {
           layer.pm.disable();
           layer.off('pm:markerdragend');
@@ -578,6 +576,8 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
           layer.off('dragend');
           layer.dragging.disable();
         }
+
+        layers[groupName].layer.removeLayer(layer);
 
         if (updateShapeType.marker.geometry.type === 'Point') {
           var center = map.getCenter();
@@ -620,23 +620,12 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       var layer = featureLayer.featureIdToLayer[feature.id];
       if (!layer) return;
 
-      // Copy over the updated feature data
-      if (layer.feature) {
-        layer.feature = feature;
-      }
+      featureLayer.layer.removeLayer(layer);
 
-      if (featureLayer.options.temporal) {
-        var color = colorForFeature(feature, featureLayer.options.temporal);
-        layer.setColor(color);
-      }
-
-      // Set the lat/lng
-      if (feature.geometry.coordinates) {
-        featureLayer.layer.removeLayer(layer);
-        
-        var newLayer = createGeoJsonForLayer(feature, featureLayer);
-        featureLayer.featureIdToLayer[feature.id] = newLayer;
-        featureLayer.layer.addLayer(newLayer);
+      if (featureLayer.options.cluster) {
+        featureLayer.layer.addLayer(createGeoJsonForLayer(feature, featureLayer));
+      } else {
+        featureLayer.layer.addData(feature);
       }
     });
 

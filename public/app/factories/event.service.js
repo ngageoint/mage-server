@@ -240,7 +240,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
       event.observationsById[observation.id] = observation;
 
       // Check if this new observation passes the current filter
-      if (FilterService.isContainedWithinFilter({teamIds: observation.teamIds, timestamp: observation.properties.timestamp})) {
+      if (FilterService.isContainedWithinFilter(observation)) {
         event.filteredObservationsById[observation.id] = observation;
         isNewObservation ? observationsChanged({added: [observation]}) : observationsChanged({updated: [observation]});
       }

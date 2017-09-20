@@ -153,7 +153,6 @@ Form.prototype.validate = function(file, callback) {
     callback(err);
   }
 
-
   callback(null, form);
 };
 
