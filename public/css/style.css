@@ -230,7 +230,7 @@ a {
 .badge-notif {
    position: absolute;
    top: -6px;
-   left: 18px;
+   right: -17px;
 }
 
 .feed-items {

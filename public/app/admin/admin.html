@@ -96,10 +96,12 @@
                     <div class="row pointer" ng-click="gotoDevice(d)">
                       <div class="col-md-12">
                         <div class="right-gap pull-left">
-                          <i class="fa fa-mobile"></i>
+                          <i class="fa" ng-class="iconClass(d)"></i>
                         </div>
-                        <span class="strong">{{d.uid}}</span>
-                        <span class="muted" ng-if="d.user">({{d.user.displayName}})</span>
+
+                        <span class="strong" ng-if="d.user">{{d.user.displayName}}</span>
+                        <span class="muted" ng-if="d.user">({{d.uid}})</span>
+
                         <span class="pull-right" ng-if="hasPermission('UPDATE_DEVICE')">
                           <a class="btn btn-xs btn-success" ng-click="registerDevice($event, d)"><i class="fa fa-check"></i> Register</a>
                         </span>

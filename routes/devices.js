@@ -38,7 +38,7 @@ module.exports = function(app, security) {
   );
 
   // get device
-  app.get('/api/devices/:deviceId',
+  app.get('/api/devices/:id',
     passport.authenticate('bearer'),
     access.authorize('READ_DEVICE'),
     resource.getDevice
@@ -131,8 +131,20 @@ DeviceResource.prototype.getDevices = function (req, res, next) {
   });
 };
 
-DeviceResource.prototype.getDevice =function (req, res) {
-  res.json(req.device);
+DeviceResource.prototype.getDevice = function(req, res, next) {
+  var expand = {};
+  if (req.query.expand) {
+    var expandList = req.query.expand.split(",");
+    if (expandList.some(function(e) { return e === 'user';})) {
+      expand.user = true;
+    }
+  }
+
+  DeviceModel.getDeviceById(req.params.id, {expand: expand}, function (err, device) {
+    if (err) return next(err);
+
+    res.json(device);
+  });
 };
 
 DeviceResource.prototype.updateDevice = function(req, res, next) {

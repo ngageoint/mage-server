@@ -27,11 +27,6 @@ function AdminDevicesController($scope, $uibModal, $filter, $location, LocalStor
     $scope.filteredDevices = devices;
   });
 
-  $scope.userIdMap = {};
-  $scope.$watch('users', function(users) {
-    $scope.userIdMap = _.indexBy(users, 'id');
-  });
-
   $scope.filterDevices = function(device) {
     var filteredDevices = $filter('filter')([device], $scope.deviceSearch);
     if (filteredDevices && filteredDevices.length) return true;

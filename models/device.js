@@ -84,16 +84,36 @@ DeviceSchema.set("toJSON", {
 var Device = mongoose.model('Device', DeviceSchema);
 exports.Model = Device;
 
-exports.getDeviceById = function(id, callback) {
+exports.getDeviceById = function(id, options, callback) {
+  if (typeof options === 'function') {
+    callback = options;
+    options = {};
+  }
+  
   Device.findById(id, function(err, device) {
-    callback(err, device);
+    var expand = options.expand || {};
+    if (expand.user) {
+      Device.populate(device, 'userId', callback);
+    } else {
+      callback(err, device);
+    }
   });
 };
 
-exports.getDeviceByUid = function(uid, callback) {
+exports.getDeviceByUid = function(uid, options, callback) {
+  if (typeof options === 'function') {
+    callback = options;
+    options = {};
+  }
+
   var conditions = {uid: uid.toLowerCase()};
   Device.findOne(conditions, function(err, device) {
-    callback(err, device);
+    var expand = options.expand || {};
+    if (expand.user) {
+      Device.populate(device, 'userId', callback);
+    } else {
+      callback(err, device);
+    }
   });
 };
 

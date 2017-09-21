@@ -28,20 +28,11 @@ function AdminDeviceController($scope, $uibModal, $filter, $routeParams, $locati
     $scope.device = device;
   });
 
-  UserService.getAllUsers().then(function (users) {
-    $scope.users = users;
-  });
-
   LoginService.query({filter: filter, limit: $scope.loginResultsLimit}).success(function(loginPage) {
     $scope.loginPage = loginPage;
     if (loginPage.logins.length) {
       firstLogin = loginPage.logins[0];
     }
-  });
-
-  $scope.userIdMap = {};
-  $scope.$watch('users', function(users) {
-    $scope.userIdMap = _.indexBy(users, 'id');
   });
 
   $scope.iconClass = function(device) {
