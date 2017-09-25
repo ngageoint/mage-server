@@ -50,6 +50,7 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
       geometryField: {
         title: 'Location',
         type: 'geometry',
+        name: 'geometry',
         value: newObservation.geometry
       },
       timestampField: {

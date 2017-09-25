@@ -121,6 +121,7 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
       geometryField: {
         title: 'Location',
         type: 'geometry',
+        name: 'geometry',
         value: $scope.observation.geometry
       },
       timestampField: {

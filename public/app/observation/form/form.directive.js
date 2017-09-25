@@ -35,7 +35,8 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
     geometryField.value = copy;
     updateGeometryEdit(geometryField, editedVertex);
     $scope.$emit('observation:editStarted', $scope.observation);
-    $scope.$on('observation:moved', function(e, observation, geometry) {
+
+    $scope.$on('feature:moved', function(e, feature, geometry) {
       if (!$scope.observation || !geometry) return;
 
       var geometryField = $scope.form.geometryField;
@@ -43,38 +44,13 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
       geometryField.value = copy;
       updateGeometryEdit(geometryField, editedVertex);
     });
-    $scope.$on('observation:edit:vertex', function(e, observation, latlng, index) {
-      editedVertex = index;
-      var geometryField = $scope.form.geometryField;
-      if (geometryField.value.type === 'LineString') {
-        geometryField.value.coordinates[index] = [latlng.lng, latlng.lat];
-      } else if (geometryField.value.type === 'Polygon') {
-        geometryField.value.coordinates[0][index] = [latlng.lng, latlng.lat];
-      }
-      updateGeometryEdit(geometryField, editedVertex);
-    });
-    $scope.$watch('form', function() {
-      var geometryField = $scope.form.geometryField;
-      var copy = JSON.parse(JSON.stringify(geometryField));
-      var obs = {id: $scope.observation.id, geometry: copy.value};
-      if (copy.value.type === 'Polygon' && copy.value.coordinates[0].length > 0) {
-        if (copy.value.coordinates[0][0][0] !== copy.value.coordinates[0][copy.value.coordinates[0].length-1][0]
-        || copy.value.coordinates[0][0][1] !== copy.value.coordinates[0][copy.value.coordinates[0].length-1][1]) {
-          return;
-        }
-      } else if (copy.value.type === 'LineString' && copy.value.coordinates.length > 0) {
-        if (copy.value.coordinates[0][0] !== copy.value.coordinates[copy.value.coordinates.length-1][0]
-        || copy.value.coordinates[0][1] !== copy.value.coordinates[copy.value.coordinates.length-1][1]) {
-          return;
-        }
-      }
-      updateGeometryEdit(geometryField, editedVertex);
-      if (geometryField.value.type !== $scope.shape) {
-        $scope.shape = geometryField.value.type;
-        editedVertex = 0;
-      }
-      $scope.$emit('observation:shapeChanged', obs);
 
+    $scope.$on('map:map:edit:vertex', function(e, observation, latlng, index) {
+      editedVertex = index;
+      updateGeometryEdit($scope.form.geometryField, index);
+    });
+
+    $scope.$watch('form', function() {
       var formId = null;
       var primary = null;
       var variant = null;
@@ -93,7 +69,7 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
 
       if (iconUrl !== $scope.iconUrl) {
         $scope.iconUrl = iconUrl;
-        $scope.$emit('observation:iconEdited', obs, iconUrl);
+        $scope.$emit('observation:iconEdited', {id: $scope.observation.id, geometry: angular.copy($scope.form.geometryField.value)}, iconUrl);
       }
     }, true);
   }
@@ -212,12 +188,12 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
     delete $scope.attachmentUploads[id];
   };
 
-  $scope.$on('observation:move', function(e, observation) {
-    if (observation.id) {
-      // Don't propagate above this directive if this is en edit
-      // for an existing observation
-      e.stopPropagation();
-    }
+  $scope.$on('observation:moved', function(e, observation, geometry) {
+    $scope.$emit('observation:shapeChanged', {id: observation.id, geometry: angular.copy(geometry)});
+  });
+
+  $scope.$on('observation:shapechanged', function(e, observation, shapeType) {
+    $scope.$emit('observation:shapeChanged', {id: observation.id, geometry: {type: shapeType}});
   });
 
   $scope.$on('uploadFile', function(e, id) {

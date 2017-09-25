@@ -71,6 +71,8 @@ function FieldDirectiveController($scope) {
     }
 
     $scope.field.value.type = $scope.shape.type;
+
+    $scope.$emit('observation:shapechanged', $scope.observation, $scope.shape.type);
   };
 
   $scope.$watch('shape.type', $scope.validateShapeChange);
@@ -86,7 +88,15 @@ function FieldDirectiveController($scope) {
 
   $scope.onLatLngChange = function(field) {
     if (field.name === 'geometry') {
-      $scope.$emit('observation:move', $scope.observation, $scope.field.value);
+      if (field.value.type === 'Polygon') {
+        if (field.editedVertex === 0) {
+          field.value.coordinates[0][field.value.coordinates[0].length - 1] = field.value.coordinates[0][0];
+        } else if (field.editedVertex === field.value.coordinates[0].length - 1) {
+          field.value.coordinates[0][0] = field.value.coordinates[0][field.value.coordinates[0].length - 1];
+        }
+      }
+
+      $scope.$emit('observation:moved', $scope.observation, field.value);
     }
   };
 
