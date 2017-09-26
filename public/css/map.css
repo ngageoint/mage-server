@@ -106,12 +106,27 @@
 }
 
 .mage-icon-image {
+  transform: translate(0, -100%);
 	width: 35px;
   image-rendering: -moz-crisp-edges;         /* Firefox */
   image-rendering:   -o-crisp-edges;         /* Opera */
   image-rendering: -webkit-optimize-contrast;/* Webkit (non-standard naming) */
   image-rendering: crisp-edges;
   -ms-interpolation-mode: nearest-neighbor;  /* IE (non-standard property) */
+}
+
+.marker-tooltip {
+  transform: translate(0, -100%);
+  position: absolute;
+  background-color: gray;
+  color: white;
+  padding-top: 7px;
+  margin-left: 40px;
+  margin-top: 3px;
+  opacity: .7;
+  border-radius: 3px;
+  width: 200px;
+  text-align: center;
 }
 
 .leaflet-vertex-icon {

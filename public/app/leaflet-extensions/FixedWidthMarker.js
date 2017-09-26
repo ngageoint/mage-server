@@ -8,8 +8,11 @@ L.FixedWidthMarker = L.Marker.extend({
         tooltip: options.tooltip,
         onIconLoad: function() {
           if (self._popup && self._icon) {
-            self._popup.options.offset = [0, self._icon.offsetTop + 10];
-            self._popup.update();
+            var iconHeight = $(self._icon).height();
+
+            var popup = self.getPopup();
+            popup.options.offset = [0, (iconHeight - 8) * -1];
+            popup.update();
           }
         }
       });
@@ -17,7 +20,6 @@ L.FixedWidthMarker = L.Marker.extend({
 
     L.Marker.prototype.initialize.call(this, latlng, options);
   }
-
 });
 
 L.fixedWidthMarker = function (latlng, options) {

@@ -12,8 +12,6 @@ L.FixedWidthIcon = L.DivIcon.extend({
     s.className = "mage-icon-image";
     s.src = this.options.iconUrl;
     $(s).load(function() {
-      var height = $(this).height();
-      $(div).css('margin-top', height * -1);
       if (self.options.onIconLoad) self.options.onIconLoad(self);
     });
 

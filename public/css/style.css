@@ -529,19 +529,6 @@ textarea {
   margin-bottom: 9px;
 }
 
-.marker-tooltip {
-  position: absolute;
-  background-color: gray;
-  color: white;
-  padding-top: 7px;
-  margin-left: 40px;
-  margin-top: -7px;
-  opacity: .7;
-  border-radius: 3px;
-  width: 200px;
-  text-align: center;
-}
-
 @media (min-width: 768px) {
   .navbar {
     border-radius: 0;

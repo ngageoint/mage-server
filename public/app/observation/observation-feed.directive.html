@@ -14,7 +14,7 @@
           <div class="pull-right news-feed-item-support small muted">{{fromNow}}</div>
           <div>
             <a href="javascript:void(0)" class="small muted" ng-click="onObservationLocationClick(observation)">
-              {{observation.geometry | geometry}}
+              {{observation.geometry | geometry:5}}
             </a>
           </div>
         </div>
