@@ -13,9 +13,9 @@ function leaflet() {
   return directive;
 }
 
-LeafletController.$inject = ['$rootScope', '$scope', '$interval', '$timeout', 'MapService', 'LocalStorageService'];
+LeafletController.$inject = ['$rootScope', '$scope', '$interval', '$timeout', 'MapService', 'LocalStorageService', 'GeometryService'];
 
-function LeafletController($rootScope, $scope, $interval, $timeout, MapService, LocalStorageService) {
+function LeafletController($rootScope, $scope, $interval, $timeout, MapService, LocalStorageService, GeometryService) {
 
   var layers = {};
   var temporalLayers = [];
@@ -409,6 +409,32 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       $scope.$apply();
     }
 
+    function onVertexClick(vertex) {
+
+      if (GeometryService.featureHasIntersections(layer.toGeoJSON()) && previousLatLngs) {
+        layer.setLatLngs(previousLatLngs);
+        layer.editor.reset();
+
+        layer.editor.editLayer.eachLayer(function(l) {
+          if (l.getIndex && l.getIndex() === layer.selectedVertex.getIndex()) {
+            L.DomUtil.addClass(l.getElement(), 'selected-marker');
+          }
+        });
+
+        return;
+      }
+
+      layer.editor.editLayer.eachLayer(function(layer) {
+        L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
+      });
+
+      L.DomUtil.addClass(vertex.getElement(), 'selected-marker');
+      layer.selectedVertex = vertex;
+
+      $scope.$broadcast('mage:map:edit:vertex', layer.feature, vertex.latlng, vertex.getIndex());
+      $scope.$apply();
+    }
+
     layer.on('editable:vertex:dragend', geometryChanged);
     layer.on('editable:vertex:new', geometryChanged);
     layer.on('editable:vertex:deleted', geometryChanged);
@@ -421,28 +447,18 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     });
 
     layer.on('editable:vertex:rawclick', function(e) {
-      e.cancel();
+      e.cancel(); // turn of delete when clicking a vertex
+      onVertexClick(e.vertex);
+    });
 
-      layer.editor.editLayer.eachLayer(function(layer) {
-        L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
-      });
-      L.DomUtil.addClass(e.vertex.getElement(), 'selected-marker');
+    var previousLatLngs;
+    layer.on('editable:vertex:dragstart', function(e) {
       layer.selectedVertex = e.vertex;
-
-      $scope.$broadcast('mage:map:edit:vertex', layer.feature, e.vertex.latlng, e.vertex.getIndex());
-      $scope.$apply();
+      previousLatLngs = angular.copy(layer.getLatLngs());
     });
 
     layer.on('editable:vertex:dragend', function(e) {
-      layer.editor.editLayer.eachLayer(function(layer) {
-        L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
-      });
-
-      L.DomUtil.addClass(e.vertex.getElement(), 'selected-marker');
-      layer.selectedVertex = e.vertex;
-
-      $scope.$broadcast('mage:map:edit:vertex', layer.feature, e.vertex.latlng, e.vertex.getIndex());
-      $scope.$apply();
+      onVertexClick(e.vertex);
     });
   }
 

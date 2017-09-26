@@ -17,9 +17,9 @@ function fieldDirective() {
   return directive;
 }
 
-FieldDirectiveController.$inject = ['$scope'];
+FieldDirectiveController.$inject = ['$scope', 'GeometryService'];
 
-function FieldDirectiveController($scope) {
+function FieldDirectiveController($scope, GeometryService) {
   var types = {
     textfield: 'app/observation/form/textfield.directive.html',
     numberfield: 'app/observation/form/numberfield.directive.html',
@@ -48,7 +48,7 @@ function FieldDirectiveController($scope) {
 
   if ($scope.field.type === 'geometry' && $scope.field.value) {
     $scope.shape = {
-      type:$scope.field.value.type
+      type: $scope.field.value.type
     };
   }
 
@@ -87,14 +87,42 @@ function FieldDirectiveController($scope) {
   });
 
   $scope.onLatLngChange = function(field) {
+
     if (field.name === 'geometry') {
-      if (field.value.type === 'Polygon') {
-        if (field.editedVertex === 0) {
-          field.value.coordinates[0][field.value.coordinates[0].length - 1] = field.value.coordinates[0][0];
-        } else if (field.editedVertex === field.value.coordinates[0].length - 1) {
-          field.value.coordinates[0][0] = field.value.coordinates[0][field.value.coordinates[0].length - 1];
+      var coordinates = angular.copy(field.value.coordinates);
+
+      // copy edit field lat/lng in coordinates at correct index
+      if (field.value.type === 'LineString') {
+        coordinates[field.editedVertex] = angular.copy(field.edit);
+      } else if (field.value.type === 'Polygon') {
+        if (coordinates[0]) {
+          coordinates[0][field.editedVertex] = angular.copy(field.edit);
         }
       }
+
+      // Ensure first and last points are the same for polygon
+      if (field.value.type === 'Polygon') {
+        if (field.editedVertex === 0) {
+          coordinates[0][coordinates[0].length - 1] = coordinates[0][0];
+        } else if (field.editedVertex === coordinates[0].length - 1) {
+          coordinates[0][0] = coordinates[0][coordinates[0].length - 1];
+        }
+      }
+
+      // Check for polygon for intersections
+      if (GeometryService.featureHasIntersections({geometry: {coordinates:coordinates}})) {
+        if (field.value.type === 'LineString') {
+          field.edit = angular.copy(field.value.coordinates[field.editedVertex]);
+        } else if (field.value.type === 'Polygon') {
+          if (field.value.coordinates[0]) {
+            field.edit = angular.copy(field.value.coordinates[0][field.editedVertex]);
+          }
+        }
+
+        return;
+      }
+
+      field.value.coordinates = coordinates;
 
       $scope.$emit('observation:moved', $scope.observation, field.value);
     }

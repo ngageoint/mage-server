@@ -45,7 +45,7 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
       updateGeometryEdit(geometryField, editedVertex);
     });
 
-    $scope.$on('map:map:edit:vertex', function(e, observation, latlng, index) {
+    $scope.$on('mage:map:edit:vertex', function(e, observation, latlng, index) {
       editedVertex = index;
       updateGeometryEdit($scope.form.geometryField, index);
     });
@@ -82,10 +82,10 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
     if (!geometryField.value.coordinates) return;
     geometryField.editedVertex = vertex;
     if (geometryField.value.type === 'LineString') {
-      geometryField.edit = geometryField.value.coordinates[vertex];
+      geometryField.edit = angular.copy(geometryField.value.coordinates[vertex]);
     } else if (geometryField.value.type === 'Polygon') {
       if (geometryField.value.coordinates[0]) {
-        geometryField.edit = geometryField.value.coordinates[0][vertex];
+        geometryField.edit = angular.copy(geometryField.value.coordinates[0][vertex]);
       }
     }
   }
