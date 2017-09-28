@@ -70,6 +70,7 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
 
   $scope.cancelNewObservation = function() {
     $scope.newObservationForms = null;
+    $scope.$emit('observation:cancel');
   };
 
   $scope.$on('observation:feed', function(e, observation) {

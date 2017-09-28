@@ -433,6 +433,11 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
   });
 
   $scope.$on('observation:latlng', function(e, latlng) {
+    if (newObservation) {
+      // already creating a new observation
+      return;
+    }
+
     $scope.hideFeed = false;
     MapService.hideFeed(false);
 
@@ -454,7 +459,7 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
     newObservation = new Observation({
       eventId: event.id,
       type: 'Feature',
-      id: 'new', // this will be retrieved with the new id stuff
+      id: 'new',
       geometry: {
         type: 'Point',
         coordinates: [latlng.lng, latlng.lat]
@@ -536,6 +541,12 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
       name: 'Observations',
       feature: observation
     });
+
+    newObservation = null;
+  });
+
+  $scope.$on('observation:cancel', function() {
+    newObservation = null;
   });
 
   $scope.$on('feed:toggle', function() {
