@@ -66,8 +66,6 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
       observationForm.name = form.name;
       $scope.newObservationForm.forms.push(observationForm);
     }
-
-    $scope.$emit('observation:create');
   };
 
   $scope.cancelNewObservation = function() {
@@ -85,13 +83,6 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
     } else {
       $scope.newObservationForms = newObservationForms;
     }
-  });
-
-  $scope.$on('observation:moved', function(e, observation, latlng) {
-    if (!$scope.newObservation || !latlng) return;
-
-    $scope.newObservation.geometry.coordinates = [latlng.lng, latlng.lat];
-    $scope.newObservationForm.geometryField.value = {x: latlng.lng, y: latlng.lat};
   });
 
   $scope.$on('observation:editDone', function(event, observation) {
