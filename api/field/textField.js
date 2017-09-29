@@ -1,8 +1,8 @@
 var util = require('util')
   , Field = require('./field');
 
-function TextField(fieldDefinition, observation) {
-  TextField.super_.call(this, fieldDefinition, observation.properties[fieldDefinition.name]);
+function TextField(fieldDefinition, form) {
+  TextField.super_.call(this, fieldDefinition, form[fieldDefinition.name]);
 }
 util.inherits(TextField, Field);
 

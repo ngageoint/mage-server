@@ -78,11 +78,6 @@ L.LocationMarker = L.Marker.extend({
   setColor: function(color) {
     if (this._accuracyCircle.options.color === color) return this;
 
-    // this._accuracyCircle.options.color = color;
-    // this._accuracyCircle.options.fillColor = color;
-    // this._locationMarker.options.color = color;
-    // this._locationMarker.options.fillColor = color;
-
     var style = {color: color, fillColor: color};
     this._accuracyCircle.setStyle(style);
     this._locationMarker.setStyle(style);

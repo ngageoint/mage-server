@@ -12,6 +12,8 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     myself: null,
     amAdmin: false,
     signup: signup,
+    googleSignin: googleSignin,
+    googleSignup: googleSignup,
     oauthSignin: oauthSignin,
     oauthSignup: oauthSignup,
     login: login,
@@ -40,6 +42,34 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
       url: '/api/users',
       type: 'POST'
     }, success, error, progress);
+  }
+
+  function googleSignup(user, success, error, progress) {
+    saveUser(user, {
+      url: '/auth/google/signup',
+      type: 'POST'
+    }, success, error, progress);
+  }
+
+  function googleSignin(data) {
+    userDeferred = $q.defer();
+
+    var oldUsername = service.myself && service.myself.username || null;
+
+    data.appVersion = 'Web Client';
+    var promise = $http.post('/auth/google/signin', $.param(data), {
+     headers: {"Content-Type": "application/x-www-form-urlencoded"},
+     ignoreAuthModule:true
+    });
+
+    promise.success(function(data) {
+     setUser(data.user);
+     LocalStorageService.setToken(data.token);
+     $rootScope.$broadcast('event:auth-login', {token: data.token, newUser: data.user.username !== oldUsername});
+     $rootScope.$broadcast('event:user', {user: data.user, token: data.token, isAdmin: service.amAdmin});
+    });
+
+    return promise;
   }
 
   function oauthSignin(strategy, data) {

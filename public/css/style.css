@@ -230,7 +230,7 @@ a {
 .badge-notif {
    position: absolute;
    top: -6px;
-   left: 18px;
+   right: -17px;
 }
 
 .feed-items {
@@ -257,6 +257,18 @@ a {
 
 .feed-card-content {
   padding: 10px;
+}
+
+.observation-form {
+  display: flex;
+  box-shadow: 0 1px 3px rgba(0,0,0,.35);
+  margin-bottom: 12px;
+  padding: 12px;
+}
+
+.observation-form-information {
+  display: flex;
+  flex-direction: column;
 }
 
 .map {
@@ -515,19 +527,6 @@ textarea {
   font-size: 1.2em;
   background-image: none;
   margin-bottom: 9px;
-}
-
-.marker-tooltip {
-  position: absolute;
-  background-color: gray;
-  color: white;
-  padding-top: 7px;
-  margin-left: 40px;
-  margin-top: -7px;
-  opacity: .7;
-  border-radius: 3px;
-  width: 200px;
-  text-align: center;
 }
 
 @media (min-width: 768px) {
@@ -890,6 +889,10 @@ h4.image-delete {
 	font-style: italic;
 }
 
+.observation-user {
+	font-size: 14px;
+}
+
 .observation-actions {
   display: flex;
   flex-direction: row;
@@ -1037,32 +1040,6 @@ a.alert:after {
 
 .export-actions {
   margin-left: 15px;
-}
-
-.marker-icon {
-  border: 1px solid #777;
-}
-
-.marker-icon:focus {
-  border: 1px solid #000;
-  background-color: transparent;
-}
-
-.selected-marker {
-  border: 1px solid #000;
-  background-color: #00e976 !important;
-}
-
-.cursor-marker:after {
-  content: 'Click to draw vertex';
-  background-color: rgba(128, 128, 128 ,.2);
-  font-size: 1.3em;
-  display: block;
-  width: 155px;
-  margin-left: 20px;
-  margin-top: -4px;
-  border-radius: 3px;
-  padding-left: 5px;
 }
 
 .role-popover {

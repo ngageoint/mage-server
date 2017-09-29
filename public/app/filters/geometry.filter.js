@@ -13,7 +13,7 @@ function geometryFilter() {
     };
 
     var center = turf.center(feature);
-    return center.geometry.coordinates[0].toFixed(3) + ', ' + center.geometry.coordinates[1].toFixed(3);
+    return center.geometry.coordinates[0].toFixed(format) + ', ' + center.geometry.coordinates[1].toFixed(format);
   }
 
   filter.$stateful = true;

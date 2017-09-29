@@ -58,16 +58,38 @@ Observation.prototype.validate = function(observation) {
     throw new Error("'properties.timestamp' param required but not specified");
   }
 
-  if (!observation.properties.type) {
-    throw new Error("'properties.type' param required but not specified");
-  }
+  // validate timestamp
+  var timestampField = fieldFactory.createField({
+    type: 'date',
+    required: true,
+    name: 'timestamp',
+    title: 'timestamp'
+  }, observation.properties);
+  timestampField.validate();
 
-  // Don't validate archived fields
-  this._event.form.fields.filter(function(fieldDefinition) {
-    return !fieldDefinition.archived;
-  }).forEach(function(fieldDefinition) {
-    var field = fieldFactory.createField(fieldDefinition, observation);
-    field.validate();
+  var geometryField = fieldFactory.createField({
+    type: 'geometry',
+    required: true,
+    name: 'geometry',
+    title: 'geometry'
+  }, observation);
+  geometryField.validate();
+
+  // validate form fields
+  var formMap = {};
+  this._event.forms.forEach(function(form) {
+    formMap[form._id] = form;
+  });
+
+  var forms = observation.properties.forms || [];
+  forms.forEach(function(observationForm) {
+    formMap[observationForm.formId].fields.filter(function(fieldDefinition) {
+      // Don't validate archived fields
+      return !fieldDefinition.archived;
+    }).forEach(function(fieldDefinition) {
+      var field = fieldFactory.createField(fieldDefinition, observationForm);
+      field.validate();
+    });
   });
 };
 

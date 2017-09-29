@@ -5,8 +5,9 @@ var api = require('../api')
   , path = require('path')
   , Team = require('../models/team');
 
-function Form(event) {
+function Form(event, form) {
   this._event = event;
+  this._form = form;
 }
 
 function compareDisplayName(a, b) {
@@ -41,10 +42,20 @@ function getUserFields(form) {
 
 Form.prototype.populateUserFields = function(callback) {
   var event = this._event;
-  var userFields = getUserFields(event.form);
-  if (!userFields.length) return callback();
+  var form = this._form;
 
-  // Get all users in this event
+  var forms = form ? [form] : event.forms;
+  var formsUserFields = [];
+  forms.forEach(function(form) {
+    var userFields = getUserFields(form);
+    if (userFields.length) {
+      formsUserFields.push(userFields);
+    }
+  });
+
+  // None of the forms in this event contain user fields
+  if (!formsUserFields.length) return callback();
+
   var teamIds = event.populated('teamIds') || event.teamIds;
   Team.getTeams({teamIds: teamIds}, function(err, teams) {
     if (err) return callback(err);
@@ -68,26 +79,46 @@ Form.prototype.populateUserFields = function(callback) {
       });
     }
 
-    userFields.forEach(function(userField) {
-      userField.choices = choices;
+    // Update the choices for user field
+    formsUserFields.forEach(function(userFields) {
+      userFields.forEach(function(userField) {
+        userField.choices = choices;
 
-      if (!userField.required && userField.type === 'dropdown') {
-        userField.choices.unshift("");
-      }
+        if (!userField.required && userField.type === 'dropdown') {
+          userField.choices.unshift("");
+        }
+      });
     });
 
     callback();
   });
 };
 
-Form.prototype.export = function(callback) {
+Form.prototype.export = function(formId, callback) {
   var iconBasePath = new api.Icon(this._event._id).getBasePath();
+  var formBasePath = path.join(iconBasePath, formId.toString());
+
   var archive = archiver('zip');
-  archive.directory(iconBasePath, 'form/icons');
-  archive.append(JSON.stringify(this._event.form), {name: "form/form.json"});
+  archive.directory(formBasePath, 'form/icons');
+  archive.append("", {name: 'icons/', prefix: 'form'});
+
+  var forms = this._event.forms.filter(function(form) {
+    return form._id === formId;
+  });
+
+  if (!forms.length) {
+    var err = new Error('Form with id ' + formId + ' does not exist');
+    err.status = 400;
+    return callback(err);
+  }
+
+  archive.append(JSON.stringify(forms[0]), {name: "form/form.json"});
   archive.finalize();
 
-  callback(null, archive);
+  callback(null, {
+    file: archive,
+    name: forms[0].name
+  });
 };
 
 Form.prototype.validate = function(file, callback) {
@@ -115,6 +146,13 @@ Form.prototype.validate = function(file, callback) {
     return callback(err);
   }
 
+  var iconsEntry = zip.getEntry('form/icons/');
+  if (!iconsEntry) {
+    err = new Error('Error parsing icons directory...');
+    err.status = 400;
+    callback(err);
+  }
+
   callback(null, form);
 };
 
@@ -124,24 +162,24 @@ Form.prototype.importIcons = function(file, form, callback) {
 
   var iconsEntry = zip.getEntry('form/icons/');
   if (iconsEntry) {
-    var iconPath = new api.Icon(event._id).getBasePath() + path.sep;
+    var iconPath = path.join(new api.Icon(event._id).getBasePath(), form._id.toString()) + path.sep;
 
     zip.extractEntryTo(iconsEntry, iconPath, false, false);
 
     // for each file in each directory
     var walker = walk.walk(iconPath);
     walker.on("file", function(filePath, stat, next) {
-      var type = null;
+      var primary = null;
       var variant = null;
       var regex = new RegExp(iconPath + path.sep + "+(.*)");
       var match = regex.exec(filePath);
       if (match && match[1]) {
         var variants = match[1].split("/");
-        type = variants.shift();
+        primary = variants.shift();
         variant = variants.shift();
       }
 
-      new api.Icon(event._id, type, variant).add({name: stat.name}, function(err) {
+      new api.Icon(event._id, form._id, primary, variant).add({name: stat.name}, function(err) {
         next(err);
       });
     });

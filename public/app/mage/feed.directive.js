@@ -40,20 +40,50 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
   calculateObservationPages($scope.observations);
   calculateUserPages($scope.users);
 
-  $scope.$on('observation:new', function(e, newObservation) {
-    if ($scope.newObservation) return;
+  var newObservation;
 
+  $scope.createObservation = function(form) {
+    delete $scope.newObservationForms;
     $scope.newObservation = newObservation;
-    $scope.newObservationForm = EventService.createForm($scope.newObservation);
-  });
 
-  $scope.$on('observation:moved', function(e, observation, latlng) {
-    if (!$scope.newObservation || !latlng) return;
+    $scope.newObservationForm = {
+      geometryField: {
+        title: 'Location',
+        type: 'geometry',
+        name: 'geometry',
+        value: newObservation.geometry
+      },
+      timestampField: {
+        title: 'Date',
+        type: 'date',
+        value: moment(newObservation.properties.timestamp).toDate()
+      },
+      forms: []
+    };
 
-    $scope.newObservation.geometry.coordinates = [latlng.lng, latlng.lat];
+    if (form) {
+      var observationForm = EventService.createForm(newObservation, form);
+      observationForm.name = form.name;
+      $scope.newObservationForm.forms.push(observationForm);
+    }
+  };
 
-    var geometryField = EventService.getFormField($scope.newObservationForm, 'geometry');
-    geometryField.value = {x: latlng.lng, y: latlng.lat};
+  $scope.cancelNewObservation = function() {
+    $scope.newObservationForms = null;
+    $scope.$emit('observation:cancel');
+  };
+
+  $scope.$on('observation:feed', function(e, observation) {
+    newObservation = observation;
+    var newObservationForms = EventService.getForms(observation, {archived: false});
+
+    if (newObservationForms.length === 0) {
+      $scope.createObservation();
+    } else if (newObservationForms.length === 1) {
+      $scope.createObservation(newObservationForms[0]);
+    } else {
+      $scope.newObservationForms = newObservationForms;
+    }
   });
 
   $scope.$on('observation:editDone', function(event, observation) {

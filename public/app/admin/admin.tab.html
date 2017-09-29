@@ -3,7 +3,10 @@
 
     <div class="admin-action" ng-class="{'admin-action-selected': tab === 'dashboard'}" ng-click="onTabChanged('')">
       <div ng-class="{'admin-action-arrow-left': tab === 'dashboard'}"></div>
-      <i class="fa fa-dashboard"></i>
+      <div class="admin-badge">
+        <i class="fa fa-dashboard"></i>
+        <span ng-if="inactiveUsers.length || unregisteredDevices.length" class="badge badge-notif badge-accent">{{inactiveUsers.length + unregisteredDevices.length}}</span>
+      </div>
       <div>Dashboard</div>
     </div>
 

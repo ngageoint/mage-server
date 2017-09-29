@@ -3,6 +3,7 @@
       "$": true,
       "_": true,
       "L": true,
+      "turf": true,
       "angular": true,
       "moment": true,
       "WebFont": true,

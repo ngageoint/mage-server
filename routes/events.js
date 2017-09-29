@@ -3,7 +3,6 @@ module.exports = function(app, security) {
   , access = require('../access')
   , api = require('../api')
   , fs = require('fs-extra')
-  , archiver = require('archiver')
   , async = require('async');
 
   var passport = security.authentication.passport;
@@ -125,64 +124,6 @@ module.exports = function(app, security) {
     access.authorize('CREATE_EVENT'),
     parseEventQueryParams,
     function(req, res, next) {
-      var event = req.body;
-
-      if (!req.is('multipart/form-data')) return next();
-
-      if (event.teamIds) {
-        event.teamIds = event.teamIds.split(",");
-      }
-
-      if (event.layerIds) {
-        event.layerIds = event.layerIds.split(",");
-      }
-
-      function validateForm(callback) {
-        new api.Form().validate(req.files.form, function(err, form) {
-          callback(err, form);
-        });
-      }
-
-      function createEvent(form, callback) {
-        event.form = form;
-        Event.create(event, req.user, function(err, event) {
-          callback(err, event, form);
-        });
-      }
-
-      function importIcons(event, form, callback) {
-        new api.Form(event).importIcons(req.files.form, form, function(err) {
-          callback(err, event);
-        });
-      }
-
-      function populateUserFields(event, callback) {
-        new api.Form(event).populateUserFields(function(err) {
-          callback(err, event);
-        });
-      }
-
-      async.waterfall([
-        validateForm,
-        createEvent,
-        importIcons,
-        populateUserFields
-      ], function (err, event) {
-        if (err) {
-          return next(err);
-        }
-
-        res.status(201).json(event);
-      });
-    }
-  );
-
-  app.post(
-    '/api/events',
-    passport.authenticate('bearer'),
-    access.authorize('CREATE_EVENT'),
-    parseEventQueryParams,
-    function(req, res, next) {
       Event.create(req.body, req.user, function(err, event) {
         if (err) return next(err);
 
@@ -253,6 +194,114 @@ module.exports = function(app, security) {
   );
 
   app.post(
+    '/api/events/:eventId/forms',
+    passport.authenticate('bearer'),
+    access.authorize('UPDATE_EVENT'),
+    parseEventQueryParams,
+    function(req, res, next) {
+
+      if (!req.is('multipart/form-data')) return next();
+
+      function validateForm(callback) {
+        new api.Form().validate(req.files.form, callback);
+      }
+
+      function updateEvent(form, callback) {
+        form.name = req.param('name');
+        form.color = req.param('color');
+        Event.addForm(req.event._id, form, callback);
+      }
+
+      function importIcons(form, callback) {
+        new api.Form(req.event).importIcons(req.files.form, form, function(err) {
+          callback(err, form);
+        });
+      }
+
+      async.waterfall([
+        validateForm,
+        updateEvent,
+        importIcons
+      ], function (err, form) {
+        if (err) {
+          return next(err);
+        }
+
+        res.status(201).json(form);
+      });
+    }
+  );
+
+  app.post(
+    '/api/events/:eventId/forms',
+    passport.authenticate('bearer'),
+    access.authorize('UPDATE_EVENT'),
+    parseEventQueryParams,
+    function(req, res, next) {
+      var form = req.body || {};
+      var fields = form.fields || [];
+      var userFields = form.userFields || [];
+      fields.forEach(function(field) {
+        // remove userFields chocies, these are set dynamically
+        if (userFields.indexOf(field.name) !== -1) {
+          field.choices = [];
+        }
+      });
+
+      Event.addForm(req.event._id, form, function(err, form) {
+        if (err) return next(err);
+
+        async.parallel([
+          function(done) {
+            //copy default icon into new event directory
+            new api.Icon(req.event._id, form._id).setDefaultIcon(function(err) {
+              done(err);
+            });
+          },
+          function(done) {
+            new api.Form(req.event, form).populateUserFields(function(err) {
+              done(err);
+            });
+          }
+        ], function(err) {
+          if (err) return next(err);
+          console.log('return new form', form.toJSON());
+          res.status(201).json(form.toJSON());
+        });
+      });
+    }
+  );
+
+  app.put(
+    '/api/events/:eventId/forms/:formId',
+    passport.authenticate('bearer'),
+    access.authorize('UPDATE_EVENT'),
+    parseEventQueryParams,
+    function(req, res, next) {
+      var form = req.body || {};
+      var fields = form.fields || [];
+      var userFields = form.userFields || [];
+      fields.forEach(function(field) {
+        // remove userFields chocies, these are set dynamically
+        if (userFields.indexOf(field.name) !== -1) {
+          field.choices = [];
+        }
+      });
+
+      form._id = parseInt(req.params.formId);
+      Event.updateForm(req.event._id, form, function(err, form) {
+        if (err) return next(err);
+
+        new api.Form(req.event, form).populateUserFields(function(err) {
+          if (err) return next(err);
+
+          res.json(form);
+        });
+      });
+    }
+  );
+
+  app.post(
     '/api/events/:eventId/teams',
     passport.authenticate('bearer'),
     authorizeAccess('UPDATE_EVENT', 'update'),
@@ -306,15 +355,15 @@ module.exports = function(app, security) {
 
   // export a zip of the form json and icons
   app.get(
-    '/api/events/:eventId/form.zip',
+    '/api/events/:eventId/:formId/form.zip',
     passport.authenticate('bearer'),
     authorizeAccess('READ_EVENT_ALL', 'read'),
     function(req, res, next) {
-      new api.Form(req.event).export(function(err, file) {
+      new api.Form(req.event).export(parseInt(req.params.formId, 10), function(err, form) {
         if (err) return next(err);
 
-        res.attachment(req.event.name + "-form.zip");
-        file.pipe(res);
+        res.attachment(req.event.name + "-" + form.name + "-form.zip");
+        form.file.pipe(res);
       });
     }
   );
@@ -337,11 +386,13 @@ module.exports = function(app, security) {
 
   // get icon
   app.get(
-    '/api/events/:eventId/form/icons/:type?/:variant?',
+    '/api/events/:eventId/icons/:formId?/:primary?/:variant?',
     passport.authenticate('bearer'),
     authorizeAccess('READ_EVENT_ALL', 'read'),
     function(req, res, next) {
-      new api.Icon(req.event._id, req.params.type, req.params.variant).getIcon(function(err, iconPath) {
+      console.log('get icon for formId: ', req.params.formId);
+      new api.Icon(req.event._id, req.params.formId, req.params.primary, req.params.variant).getIcon(function(err, iconPath) {
+        console.log('iconPath is: ', iconPath);
         if (err || !iconPath) return next();
 
         res.sendFile(iconPath);
@@ -366,19 +417,12 @@ module.exports = function(app, security) {
 
   // Create a new icon
   app.post(
-    '/api/events/:eventId/form/icons/:type?/:variant?',
+    '/api/events/:eventId/icons/:formId?/:primary?/:variant?',
     passport.authenticate('bearer'),
     authorizeAccess('UPDATE_EVENT', 'update'),
     function(req, res, next) {
-      new api.Icon(req.event._id, req.params.type, req.params.variant).create(req.files.icon, function(err, icon) {
+      new api.Icon(req.event._id, req.params.formId, req.params.primary, req.params.variant).create(req.files.icon, function(err, icon) {
         if (err) return next(err);
-
-        var iconBasePath = new api.Icon(req.event._id).getBasePath();
-        var archive = archiver('zip');
-        res.attachment("icons.zip");
-        archive.pipe(res);
-        archive.directory(iconBasePath, '/icons');
-        archive.finalize();
 
         return res.json(icon);
       });
@@ -387,11 +431,11 @@ module.exports = function(app, security) {
 
   // Delete an icon
   app.delete(
-    '/api/events/:eventId/form/icons/:type?/:variant?',
+    '/api/events/:eventId/icons/:formId?/:primary?/:variant?',
     passport.authenticate('bearer'),
     authorizeAccess('UPDATE_EVENT', 'update'),
     function(req, res, next) {
-      new api.Icon(req.event._id, req.params.type, req.params.variant).delete(function(err) {
+      new api.Icon(req.event._id, req.params.formId, req.params.primary, req.params.variant).delete(function(err) {
         if (err) return next(err);
 
         return res.status(204).send();

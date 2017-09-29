@@ -2,9 +2,9 @@ angular
   .module('mage')
   .controller('AdminEventEditFormController', AdminEventEditFormController);
 
-AdminEventEditFormController.$inject = ['$rootScope', '$scope', '$location', '$filter', '$routeParams', '$q', '$timeout', '$uibModal', 'LocalStorageService', 'EventService', 'Event'];
+AdminEventEditFormController.$inject = ['$rootScope', '$scope', '$location', '$filter', '$routeParams', '$q', '$timeout', '$uibModal', 'LocalStorageService', 'EventService', 'Event', 'Form'];
 
-function AdminEventEditFormController($rootScope, $scope, $location, $filter, $routeParams, $q, $timeout, $uibModal, LocalStorageService, EventService, Event) {
+function AdminEventEditFormController($rootScope, $scope, $location, $filter, $routeParams, $q, $timeout, $uibModal, LocalStorageService, EventService, Event, Form) {
   $scope.unSavedChanges = false;
   $scope.unSavedUploads = false;
   $scope.token = LocalStorageService.getToken();
@@ -13,25 +13,40 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
   var unsavedIcons = 0;
   $scope.uploadIcons = false;
   $scope.filesToUpload = {};
-
   $scope.saveTime = 0;
-
-  var originalForm;
 
   Event.get({id: $routeParams.eventId}, function(event) {
     $scope.event = event;
 
-    _.each(event.form.fields, function(field) {
-      if (field.name === 'type') {
-        $scope.typeField = field;
-      }
-    });
+    if ($routeParams.formId) {
+      var form = _.find(event.forms, function(form) {
+        return form.id.toString() === $routeParams.formId;
+      });
+      $scope.form = new Form(form);
+
+      _.each($scope.form.fields, function(field) {
+        if (field.name === $scope.form.primaryField) {
+          $scope.primaryField = field;
+        }
+      });
+    } else {
+      $scope.form = new Form();
+      $scope.form.archived = false;
+      $scope.form.color = '#' + (Math.random()*0xFFFFFF<<0).toString(16);
+      $scope.form.fields = [];
+      $scope.form.userFields = [];
+    }
   });
 
-  $scope.$watch('event.form', function(newForm, oldForm) {
+  $scope.$watch('form', function(newForm, oldForm) {
     if (!newForm || !oldForm) return;
 
     if ($scope.saving) return;
+
+    if (newForm.id && !oldForm.id) {
+      $location.path('/admin/events/' + $scope.event.id + '/forms/' + newForm.id);
+      return;
+    }
 
     $scope.unSavedChanges = true;
   }, true);
@@ -133,14 +148,14 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
 
   // create new field button click
   $scope.addNewField = function() {
-    var fields = $scope.event.form.fields;
-    var id = _.max(fields, function(field) { return field.id; }).id + 1;
+    var fields = $scope.form.fields;
+    var id = _.isEmpty(fields) ? 1 : _.max(fields, function(field) { return field.id; }).id + 1;
 
     $scope.newField.id = id;
     $scope.newField.name =  'field' + id;
 
     if ($scope.newField.type === 'userDropdown') {
-      $scope.event.form.userFields.push($scope.newField.name);
+      $scope.form.userFields.push($scope.newField.name);
       $scope.newField.type = 'dropdown';
     }
 
@@ -153,20 +168,13 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     $scope.newField = newField();
   };
 
-  $scope.canMoveField = function(field) {
-    return field.name !== 'type' &&
-      field.name !== 'geometry' &&
-      field.name !== 'timestamp' &&
-      field !== $scope.variantField;
-  };
-
   $scope.moveFieldUp = function(e, fieldToMoveUp) {
     e.stopPropagation();
     e.preventDefault();
 
     // find first non-archived field above me
     // and switch our ids to re-order
-    var sortedFields = _.sortBy($scope.event.form.fields, function(field) {
+    var sortedFields = _.sortBy($scope.form.fields, function(field) {
       return field.id;
     });
 
@@ -192,7 +200,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
 
     // find the first non-archived field below me
     // and switch our ids to re-order
-    var sortedFields = _.sortBy($scope.event.form.fields, function(field) {
+    var sortedFields = _.sortBy($scope.form.fields, function(field) {
       return field.id;
     });
 
@@ -218,13 +226,16 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
         var file = $scope.filesToUpload[url];
         upload(url, file);
       }
-      $scope.event.$save({populate: false}, function(event) {
-        _.each(event.form.fields, function(field) {
+
+      //TODO save form / update form
+      var form = angular.copy($scope.form);
+      form.eventId = $scope.event.id;
+      $scope.form.$save(form, function() {
+        _.each($scope.form.fields, function(field) {
           if ($scope.isMemberField(field)) {
             field.choices = [];
           }
         });
-        $scope.event = event;
         $scope.saving = false;
         formSaved = true;
         completeSave();
@@ -250,7 +261,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
           // unsavedIcons--;
           completeSave();
           $scope.savedTime = Date.now();
-        })
+        });
       },
       // error: uploadFailed,
       data: formData,
@@ -268,7 +279,34 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     return layer.type;
   };
 
+  $scope.archiveForm = function() {
+    $scope.form.archived = true;
+
+    var form = angular.copy($scope.form);
+    form.eventId = $scope.event.id;
+    $scope.form.$save(form, function() {
+    });
+  };
+
+  $scope.restoreForm = function() {
+    $scope.form.archived = false;
+
+    var form = angular.copy($scope.form);
+    form.eventId = $scope.event.id;
+    $scope.form.$save(form, function() {
+    });
+  };
+
   $scope.saveForm = function() {
+    $scope.generalForm.$submitted = true;
+
+    var unarchivedFields = _.filter($scope.form.fields, function(field) {
+      return !field.archived;
+    });
+    if ($scope.generalForm.$invalid || _.isEmpty(unarchivedFields)) {
+      return;
+    }
+
     formSaved = false;
     $scope.saving = true;
     $scope.uploadIcons = true;
@@ -280,20 +318,35 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
       $scope.saving = false;
       $scope.unSavedChanges = false;
       $scope.uploadIcons = false;
+      delete $scope.exportError;
     }
   }
 
   $scope.populateVariants = function() {
-    if (!$scope.event.form) return;
+    // TODO account for primary variantField
 
-    $scope.variantField = _.find($scope.event.form.fields, function(field) {
-      return field.name === $scope.event.form.variantField;
+    if (!$scope.form) return;
+
+    $scope.primaryField = _.find($scope.form.fields, function(field) {
+      return field.name === $scope.form.primaryField;
     });
+
+    $scope.variantField = _.find($scope.form.fields, function(field) {
+      return field.name === $scope.form.variantField;
+    });
+
+    if (!$scope.primaryField) {
+      $scope.variants = [];
+      $scope.form.primaryField = null;
+      $scope.form.variantField = null;
+
+      return;
+    }
 
     if (!$scope.variantField) {
       // they do not want a variant
       $scope.variants = [];
-      $scope.event.form.variantField = null;
+      $scope.form.variantField = null;
 
       return;
     }
@@ -307,25 +360,36 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     }
   };
 
-  $scope.$watch('event.form.variantField', function(variantField) {
+  $scope.$watch('form.primaryField', function(primaryField) {
+    if (!primaryField) return;
+
+    $scope.populateVariants();
+  });
+
+  $scope.$watch('form.variantField', function(variantField) {
     if (!variantField) return;
 
     $scope.populateVariants();
   });
 
-  $scope.$watch('event.form.fields', function() {
-    if (!$scope.event || !$scope.event.form || !$scope.event.form.fields) return;
+  $scope.$watch('form.fields', function() {
+    if (!$scope.form || !$scope.form.fields) return;
 
-    angular.forEach($scope.event.form.fields, function(field) {
-      if (field.name === 'type') {
-        $scope.typeField = field;
+    angular.forEach($scope.form.fields, function(field) {
+      if (field.name === $scope.form.primaryField) {
+        $scope.primaryField = field;
       }
     });
   });
 
   $scope.$on('uploadFile', function(e, uploadFile) {
+    // TODO what is this?
     $scope.event.formArchiveFile = uploadFile;
   });
+
+  $scope.primaryChanged = function() {
+    $scope.populateVariants();
+  };
 
   $scope.variantChanged = function() {
     $scope.populateVariants();
@@ -333,15 +397,20 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
 
   // deletes particular field on button click
   $scope.deleteField = function (id) {
-    var deletedField = _.find($scope.event.form.fields, function(field) { return id === field.id; });
+    var deletedField = _.find($scope.form.fields, function(field) { return id === field.id; });
     if (deletedField) {
       deletedField.archived = true;
       $scope.populateVariants();
     }
   };
 
-  $scope.variantFilter = function(field) {
-    return (field.type === 'dropdown' || field.type === 'date') && field.name !== 'type';
+  $scope.symbologyFilter = function(otherFilterField) {
+    return function(field) {
+      return !otherFilterField ||
+        (!field.archived &&
+        otherFilterField.name !== field.name &&
+        (field.type === 'dropdown' || field.type === 'date'));
+    };
   };
 
   $scope.removeVariant = function(variant) {
@@ -359,11 +428,6 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     $scope.variantField.choices = $scope.variantField.choices || new Array();
     $scope.variantField.choices.push(newOption);
     $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
-  };
-
-  $scope.addType = function() {
-    $scope.addOption($scope.typeField);
-    if ($scope.event.id) { $scope.event.$save(); }
   };
 
   // add new option to the field
@@ -416,30 +480,33 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
   };
 
   $scope.updateSymbology = function(primary, variant) {
+    $scope.form.style = $scope.form.style || {};
+
     var eventId = $scope.event.id;
+    var formId = $scope.form.id;
     var token = $scope.token;
-    var style = $scope.event.form.style;
+    var style = $scope.form.style;
     var filesToUpload = $scope.filesToUpload;
 
     if (primary) {
-      $scope.event.form.style[primary] = $scope.event.form.style[primary] || {
-        fill: $scope.event.form.style.fill,
-        stroke: $scope.event.form.style.stroke,
-        fillOpacity: $scope.event.form.style.fillOpacity,
-        strokeOpacity: $scope.event.form.style.strokeOpacity,
-        strokeWidth: $scope.event.form.style.strokeWidth
+      $scope.form.style[primary] = $scope.form.style[primary] || {
+        fill: $scope.form.style.fill,
+        stroke: $scope.form.style.stroke,
+        fillOpacity: $scope.form.style.fillOpacity,
+        strokeOpacity: $scope.form.style.strokeOpacity,
+        strokeWidth: $scope.form.style.strokeWidth
       };
-      style = $scope.event.form.style[primary];
+      style = $scope.form.style[primary];
     }
     if (variant) {
-      $scope.event.form.style[primary][variant] = $scope.event.form.style[primary][variant] || {
-        fill: $scope.event.form.style[primary].fill,
-        stroke: $scope.event.form.style[primary].stroke,
-        fillOpacity: $scope.event.form.style[primary].fillOpacity,
-        strokeOpacity: $scope.event.form.style[primary].strokeOpacity,
-        strokeWidth: $scope.event.form.style[primary].strokeWidth
+      $scope.form.style[primary][variant] = $scope.form.style[primary][variant] || {
+        fill: $scope.form.style[primary].fill,
+        stroke: $scope.form.style[primary].stroke,
+        fillOpacity: $scope.form.style[primary].fillOpacity,
+        strokeOpacity: $scope.form.style[primary].strokeOpacity,
+        strokeWidth: $scope.form.style[primary].strokeWidth
       };
-      style = $scope.event.form.style[primary][variant];
+      style = $scope.form.style[primary][variant];
     }
 
     var styleProps = {
@@ -463,14 +530,13 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
         $scope.minicolorSettings = {
           position: 'bottom left'
         };
-        $scope.uploadUrl = '/api/events/' + eventId + '/form/icons' + (primary ? '/' + primary : '') + (variant ? '/' + variant : '')  + '?access_token=' + token;
+        $scope.uploadUrl = '/api/events/' + eventId + '/icons' + (formId ? '/' + formId : '') + (primary ? '/' + primary : '') + (variant ? '/' + variant : '')  + '?access_token=' + token;
 
-        $scope.$on('uploadFile', function(e, uploadId, file, url) {
+        $scope.$on('uploadFile', function(e, uploadId, file) {
           fileToUpload = file;
         });
 
         $scope.done = function() {
-
           $uibModalInstance.close({style:$scope.model.style, file: fileToUpload, uploadUrl: $scope.uploadUrl});
         };
 
@@ -490,14 +556,15 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
       style.fillOpacity = updatedStyle.fillOpacity;
       style.strokeOpacity = updatedStyle.strokeOpacity;
       style.strokeWidth = updatedStyle.strokeWidth;
+
       if (result.file) {
         var reader = new FileReader();
 
-        reader.onload = (function(theFile) {
+        reader.onload = (function() {
           return function(e) {
             $scope.uploadImageMissing = false;
             $scope.$apply();
-            var img = $('img[src*="'+url+'"]').first();
+            var img = $('img[src*="' + url + '"]').first();
             img.attr('src',e.target.result);
           };
         })(file);
@@ -508,7 +575,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
       // rejected
       delete filesToUpload[result.url];
     });
-  }
+  };
 
   $scope.$on('uploadFile', function(e, uploadId, file, url) {
     $scope.filesToUpload[url] = file;
@@ -538,7 +605,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
   };
 
   $scope.isMemberField = function(field) {
-    return _.contains($scope.event.form.userFields, field.name);
+    return _.contains($scope.form.userFields, field.name);
   };
 
   $scope.isUserDropdown = function(field) {

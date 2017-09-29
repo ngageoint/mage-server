@@ -61,8 +61,7 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
     options: {
       selected: true,
       cluster: true,
-      style: function(feature) {
-        console.log('feature', feature);
+      style: function() {
         return {};
       },
       popup: {
@@ -433,12 +432,16 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
     }
   });
 
-  $scope.$on('observation:create', function(e, latlng) {
+  $scope.$on('observation:latlng', function(e, latlng) {
+    if (newObservation) {
+      // already creating a new observation
+      return;
+    }
+
     $scope.hideFeed = false;
     MapService.hideFeed(false);
 
     var event = FilterService.getEvent();
-
     if (!EventService.isUserInEvent(UserService.myself, event)) {
       $uibModal.open({
         templateUrl: '/app/error/not.in.event.html',
@@ -456,54 +459,94 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
     newObservation = new Observation({
       eventId: event.id,
       type: 'Feature',
-      id: 'new', // this will be retrieved with the new id stuff
+      id: 'new',
       geometry: {
         type: 'Point',
         coordinates: [latlng.lng, latlng.lat]
       },
       properties: {
-        timestamp: new Date()
+        timestamp: new Date(),
+        forms: []
       },
-      style: {
-
-      }
+      style: {}
     });
 
-    MapService.createMarker(newObservation, {
-      layerId: 'Observations'
-    });
+    $scope.$broadcast('observation:feed', newObservation);
 
-    $scope.$broadcast('observation:new', newObservation);
     $scope.$apply();
-
-    MapService.startedMarkerEdit(newObservation);
   });
 
   $scope.$on('observation:editStarted', function(e, observation) {
-    MapService.startedMarkerEdit(observation);
+    if (newObservation === observation) {
+      MapService.create({
+        type: 'start',
+        name: 'Observations',
+        feature: newObservation
+      });
+    } else {
+      MapService.edit({
+        type: 'start',
+        name: 'Observations',
+        feature: observation
+      });
+    }
   });
 
   $scope.$on('observation:iconEdited', function(e, observation, iconUrl) {
-    MapService.updateIcon(observation, iconUrl);
+    MapService.edit({
+      type: 'icon',
+      name: 'Observations',
+      feature: observation,
+      iconUrl: iconUrl
+    });
   });
 
   $scope.$on('observation:shapeChanged', function(e, observation) {
-    MapService.updateShapeType(observation, 'EditObservation');
+    MapService.edit({
+      type: 'shape',
+      name: 'Observations',
+      feature: observation
+    });
+  });
+
+  $scope.$on('observation:geometryChanged', function(e, observation) {
+    MapService.edit({
+      type: 'geometry',
+      name: 'Observations',
+      feature: observation
+    });
   });
 
   $scope.$on('observation:editDone', function(e, observation) {
     if (newObservation === observation) {
-      MapService.removeMarker(observation, 'EditObservation');
+      MapService.create({
+        type: 'complete',
+        name: 'Observations',
+        feature: observation
+      });
     } else {
-      MapService.stopEditing(observation);
+      MapService.edit({
+        type: 'complete',
+        name: 'Observations',
+        feature: observation
+      });
     }
 
     newObservation = null;
   });
 
-  $scope.$on('observation:move', function(e, observation, latlng) {
-    $scope.$broadcast('observation:moved', observation, latlng);
-    MapService.updateMarker(observation, 'EditObservation');
+  $scope.$on('observation:delete', function(e, observation) {
+    MapService.edit({
+      type: 'delete',
+      name: 'Observations',
+      feature: observation
+    });
+
+    newObservation = null;
+  });
+
+  $scope.$on('observation:cancel', function() {
+    newObservation = null;
   });
 
   $scope.$on('feed:toggle', function() {

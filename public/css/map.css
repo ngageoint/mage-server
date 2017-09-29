@@ -76,6 +76,8 @@
 
 .observation-popup {
   display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .observation-popup-content {
@@ -104,12 +106,65 @@
 }
 
 .mage-icon-image {
+  transform: translate(0, -100%);
 	width: 35px;
   image-rendering: -moz-crisp-edges;         /* Firefox */
   image-rendering:   -o-crisp-edges;         /* Opera */
   image-rendering: -webkit-optimize-contrast;/* Webkit (non-standard naming) */
   image-rendering: crisp-edges;
   -ms-interpolation-mode: nearest-neighbor;  /* IE (non-standard property) */
+}
+
+.marker-tooltip {
+  transform: translate(0, -100%);
+  position: absolute;
+  background-color: gray;
+  color: white;
+  padding-top: 7px;
+  margin-left: 40px;
+  margin-top: 3px;
+  opacity: .7;
+  border-radius: 3px;
+  width: 200px;
+  text-align: center;
+}
+
+.leaflet-vertex-icon {
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #999;
+}
+
+.leaflet-middle-icon {
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #999;
+}
+
+.marker-icon {
+  border: 1px solid #777;
+}
+
+.marker-icon:focus {
+  border: 1px solid #000;
+  background-color: transparent;
+}
+
+.selected-marker {
+  border: 1px solid #999;
+  background-color: #00e976 !important;
+}
+
+.cursor-marker:after {
+  content: 'Click to draw vertex';
+  background-color: rgba(128, 128, 128 ,.2);
+  font-size: 1.3em;
+  display: block;
+  width: 155px;
+  margin-left: 20px;
+  margin-top: -4px;
+  border-radius: 3px;
+  padding-left: 5px;
 }
 
 .user-map-icon {

@@ -2,8 +2,8 @@ var util = require('util')
   , geoJsonValidator = require('geojson-validation')
   , Field = require('./field');
 
-function GeometryField(fieldDefinition, observation) {
-  GeometryField.super_.call(this, fieldDefinition, observation.geometry);
+function GeometryField(fieldDefinition, form) {
+  GeometryField.super_.call(this, fieldDefinition, form[fieldDefinition.name]);
 }
 util.inherits(GeometryField, Field);
 

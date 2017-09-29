@@ -69,9 +69,10 @@ describe("event update tests", function() {
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
-        form: {
+        forms: [{
+          id: 1,
           fields: []
-        }
+        }]
       })
       .expect(400)
       .expect(function(res) {
@@ -81,70 +82,12 @@ describe("event update tests", function() {
         error = JSON.parse(error);
         error.should.have.property('message').that.contains("Validation failed");
         var errors = error.errors;
-        should.exist(errors['form.fields']);
-        errors['form.fields'].should.have.property('path').that.equals('form.fields');
+        should.exist(errors['forms.0.fields']);
+        errors['forms.0.fields'].should.have.property('path').that.equals('forms.0.fields');
       })
       .end(done);
   });
 
-  it("should reject event with no type in form", function(done) {
-    mockTokenWithPermission('UPDATE_EVENT');
-
-    var eventId = 1;
-    sandbox.mock(EventModel)
-      .expects('findById')
-      .yields(null, new EventModel({
-        _id: eventId,
-        name: 'testEvent'
-      }));
-
-    var teamId = mongoose.Types.ObjectId();
-    var mockTeams = [{
-      id: teamId,
-      name: 'Mock Team'
-    }];
-
-    sandbox.mock(TeamModel)
-      .expects('find')
-      .withArgs({ _id: { $in: [teamId.toString()] }})
-      .chain('populate')
-      .chain('exec')
-      .yields(null, mockTeams);
-
-    sandbox.mock(EventModel.collection)
-      .expects('findAndModify')
-      .yields(null);
-
-    request(app)
-      .put('/api/events/1')
-      .set('Accept', 'application/json')
-      .set('Authorization', 'Bearer 12345')
-      .send({
-        form: {
-          fields: [{
-            name: 'timestamp',
-            required: true
-          },{
-            name: 'geometry',
-            required: true
-          }]
-        }
-      })
-      .expect(400)
-      .expect(function(res) {
-        var error = res.text;
-        should.exist(error);
-        error.should.be.a('string');
-        error = JSON.parse(error);
-
-        error.should.have.property('message').that.contains("Validation failed");
-        var errors = error.errors;
-        should.exist(errors['form.fields']);
-        errors['form.fields'].should.have.property('path').that.equals('form.fields');
-        errors['form.fields'].should.have.property('message').that.equals('fields array must contain one type field');
-      })
-      .end(done);
-  });
 
 
   it("should reject event with invalid field in form", function(done) {
@@ -158,19 +101,6 @@ describe("event update tests", function() {
         name: 'testEvent'
       }));
 
-    var teamId = mongoose.Types.ObjectId();
-    var mockTeams = [{
-      id: teamId,
-      name: 'Mock Team'
-    }];
-
-    sandbox.mock(TeamModel)
-      .expects('find')
-      .withArgs({ _id: { $in: [teamId.toString()] }})
-      .chain('populate')
-      .chain('exec')
-      .yields(null, mockTeams);
-
     sandbox.mock(EventModel.collection)
       .expects('findAndModify')
       .yields(null);
@@ -180,7 +110,8 @@ describe("event update tests", function() {
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
-        form: {
+        forms: [{
+          id: 1,
           fields: [{
             name: 'timestamp',
             required: true,
@@ -197,7 +128,7 @@ describe("event update tests", function() {
             name: 'invalid',
             type: 'invalid'
           }]
-        }
+        }]
       })
       .expect(400)
       .expect(function(res) {
@@ -208,8 +139,8 @@ describe("event update tests", function() {
 
         error.should.have.property('message').that.contains("Validation failed");
         var errors = error.errors;
-        should.exist(errors['form.fields.3.type']);
-        errors['form.fields.3.type'].should.have.property('message').that.equals("`invalid` is not a valid enum value for path `type`.");
+        should.exist(errors['forms.0.fields.3.type']);
+        errors['forms.0.fields.3.type'].should.have.property('message').that.equals("`invalid` is not a valid enum value for path `type`.");
       })
       .end(done);
   });
@@ -227,18 +158,6 @@ describe("event update tests", function() {
       .yields(null, mockEvent);
 
     var teamId = mongoose.Types.ObjectId();
-    var mockTeams = [{
-      id: teamId,
-      name: 'Mock Team'
-    }];
-
-    sandbox.mock(TeamModel)
-      .expects('find')
-      .withArgs({ _id: { $in: [teamId.toString()] }})
-      .chain('populate')
-      .chain('exec')
-      .yields(null, mockTeams);
-
     sandbox.mock(EventModel)
       .expects('findByIdAndUpdate')
       .yields(null, mockEvent);
@@ -318,19 +237,6 @@ describe("event update tests", function() {
       .expects('findById')
       .yields(null, mockEvent);
 
-    var teamId = mongoose.Types.ObjectId();
-    var mockTeams = [{
-      id: teamId,
-      name: 'Mock Team'
-    }];
-
-    sandbox.mock(TeamModel)
-      .expects('find')
-      .withArgs({ _id: { $in: [teamId.toString()] }})
-      .chain('populate')
-      .chain('exec')
-      .yields(null, mockTeams);
-
     sandbox.mock(EventModel)
       .expects('findByIdAndUpdate')
       .withArgs(eventId, sinon.match({ complete: true }))
@@ -371,19 +277,6 @@ describe("event update tests", function() {
     sandbox.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
-
-    var teamId = mongoose.Types.ObjectId();
-    var mockTeams = [{
-      id: teamId,
-      name: 'Mock Team'
-    }];
-
-    sandbox.mock(TeamModel)
-      .expects('find')
-      .withArgs({ _id: { $in: [teamId.toString()] }})
-      .chain('populate')
-      .chain('exec')
-      .yields(null, mockTeams);
 
     sandbox.mock(EventModel)
       .expects('findByIdAndUpdate')
@@ -428,19 +321,6 @@ describe("event update tests", function() {
     sandbox.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
-
-    var teamId = mongoose.Types.ObjectId();
-    var mockTeams = [{
-      id: teamId,
-      name: 'Mock Team'
-    }];
-
-    sandbox.mock(TeamModel)
-      .expects('find')
-      .withArgs({ _id: { $in: [teamId.toString()] }})
-      .chain('populate')
-      .chain('exec')
-      .yields(null, mockTeams);
 
     sandbox.mock(EventModel)
       .expects('findByIdAndUpdate')

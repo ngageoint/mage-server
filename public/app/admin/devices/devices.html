@@ -59,7 +59,7 @@
                         </div>
 
                         <div class="admin-device-info">
-                          <div ng-if="userIdMap[d.userId]"><strong>{{userIdMap[d.userId].displayName}}</strong></div>
+                          <div ng-if="d.user"><strong>{{d.user.displayName}}</strong></div>
                           <div class="muted small" ng-if="d.name">{{d.name}}</div>
                           <div class="muted small ellipsis" ng-if="d.userAgent">{{d.userAgent}}</div>
                           <div class="muted small" ng-if="d.appVersion">v{{d.appVersion}}</div>

@@ -22,13 +22,10 @@ function DeviceService($http, $q) {
     return $http.get('/api/devices/count');
   }
 
-  function getAllDevices(options) {
-    var parameters = {};
-
-    options = options || {};
-    if (options.expand) {
-      parameters.expand = 'user';
-    }
+  function getAllDevices() {
+    var parameters = {
+      expand: 'user'
+    };
 
     var deferred = $q.defer();
 
@@ -45,12 +42,16 @@ function DeviceService($http, $q) {
   }
 
   function getDevice(id) {
+    var parameters = {
+      expand: 'user'
+    };
+
     var deferred = $q.defer();
 
     if (resolvedDevices[id]) {
       deferred.resolve(resolvedDevices[id]);
     } else {
-      $http.get('/api/devices/' + id).success(function(device) {
+      $http.get('/api/devices/' + id, {params: parameters}).success(function(device) {
         resolvedDevices[id] = device;
         deferred.resolve(device);
       });

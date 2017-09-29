@@ -2,9 +2,9 @@ angular
   .module('mage')
   .service('EventService', EventService);
 
-EventService.$inject = ['$rootScope', '$q', '$timeout', '$http', 'Event', 'ObservationService', 'LocationService', 'LayerService', 'FilterService', 'PollingService', 'UserService'];
+EventService.$inject = ['$rootScope', '$q', '$timeout', '$http', 'Event', 'ObservationService', 'LocationService', 'LayerService', 'FilterService', 'PollingService'];
 
-function EventService($rootScope, $q, $timeout, $http, Event, ObservationService, LocationService, LayerService, FilterService, PollingService, UserService) {
+function EventService($rootScope, $q, $timeout, $http, Event, ObservationService, LocationService, LayerService, FilterService, PollingService) {
   var observationsChangedListeners = [];
   var usersChangedListeners = [];
   var layersChangedListeners = [];
@@ -163,6 +163,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     addAttachmentToObservation: addAttachmentToObservation,
     deleteAttachmentForObservation: deleteAttachmentForObservation,
     getFormField: getFormField,
+    getForms: getForms,
     createForm: createForm,
     exportForm: exportForm,
     isUserInEvent: isUserInEvent
@@ -239,7 +240,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
       event.observationsById[observation.id] = observation;
 
       // Check if this new observation passes the current filter
-      if (FilterService.isContainedWithinFilter({teamIds: observation.teamIds, timestamp: observation.properties.timestamp})) {
+      if (FilterService.isContainedWithinFilter(observation)) {
         event.filteredObservationsById[observation.id] = observation;
         isNewObservation ? observationsChanged({added: [observation]}) : observationsChanged({updated: [observation]});
       }
@@ -312,43 +313,47 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     return _.find(form.fields, function(field) { return field.name === fieldName; });
   }
 
-  function createForm(observation, viewMode) {
+  function getForms(observation, options) {
+    options = options || {};
     var event = eventsById[observation.eventId];
 
-    var form = angular.copy(event.form);
-    service.getFormField(form, "geometry").value = observation.geometry
-    // {
-    //   x: observation.geometry.coordinates[0],
-    //   y: observation.geometry.coordinates[1]
-    // };
+    var forms = event.forms;
+    if (options.archived === false) {
+      forms = _.filter(forms, function(form) {
+        return !form.archived;
+      });
+    }
+
+    return forms;
+  }
+
+  function createForm(observation, form, viewMode) {
+
+    var observationForm = angular.copy(form);
 
     var existingPropertyFields = [];
-    _.each(observation.properties, function(value, key) {
-      if (key === 'geometry') return;
+    _.each(observation.properties.forms, function(form) {
+      if (form.formId === observationForm.id) {
+        _.each(form, function(value, key) {
 
-      var field = service.getFormField(form, key);
-      if (field) {
-        if (field.type === 'date') {
-          field.value = moment(value).toDate();
-        }
-        //  else if (field.type === 'geometry') {
-        //   field.value = {
-        //     x: value.coordinates[0],
-        //     y: value.coordinates[1]
-        //   };
-        // }
-        else {
-          field.value = value;
-        }
-        existingPropertyFields.push(field);
+          var field = service.getFormField(observationForm, key);
+          if (field) {
+            if (field.type === 'date') {
+              field.value = moment(value).toDate();
+            } else {
+              field.value = value;
+            }
+            existingPropertyFields.push(field);
+          }
+        });
       }
     });
 
     if (viewMode) {
-      form.fields = _.intersection(form.fields, existingPropertyFields);
+      observationForm.fields = _.intersection(observationForm.fields, existingPropertyFields);
     }
 
-    return form;
+    return observationForm;
   }
 
   function exportForm(event) {

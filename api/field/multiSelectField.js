@@ -1,14 +1,14 @@
 var util = require('util')
   , Field = require('./field');
 
-function MultiSelectField(fieldDefinition, observation) {
-  MultiSelectField.super_.call(this, fieldDefinition, observation.properties[fieldDefinition.name]);
+function MultiSelectField(fieldDefinition, form) {
+  MultiSelectField.super_.call(this, fieldDefinition, form[fieldDefinition.name]);
 }
 util.inherits(MultiSelectField, Field);
 
 MultiSelectField.prototype.validate = function() {
   MultiSelectField.super_.prototype.validate.call(this);
-  
+
   if (!this.value) return;
 
   if (!Array.isArray(this.value)) {

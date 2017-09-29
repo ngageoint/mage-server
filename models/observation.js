@@ -69,7 +69,6 @@ ObservationSchema.index({'lastModified': 1});
 ObservationSchema.index({'attachments.lastModified': 1});
 ObservationSchema.index({'userId': 1});
 ObservationSchema.index({'deviceId': 1});
-ObservationSchema.index({'properties.type': 1});
 ObservationSchema.index({'properties.timestamp': 1});
 ObservationSchema.index({'states.name': 1});
 ObservationSchema.index({'attachments.oriented': 1});

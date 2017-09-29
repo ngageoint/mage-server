@@ -101,14 +101,44 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
     return !field.archived &&
       field.name !== 'geometry' &&
       field.name !== 'timestamp' &&
-      field.name !== 'type' &&
-      field.name !== $scope.form.variantField;
+      field.value &&
+      isSelectField(field) ? field.value.length : true;
   };
+
+  function isSelectField(field) {
+    return field.type === 'dropdown' ||
+      field.type === 'multiselectdropdown' ||
+      field.type === 'userDropdown' ||
+      field.type === 'multiSelectUserDropdown';
+  }
 
   $scope.editObservation = function() {
     $scope.onObservationLocationClick($scope.observation);
     $scope.edit = true;
-    $scope.editForm = angular.copy($scope.form);
+
+    var formMap = _.indexBy(EventService.getForms($scope.observation), 'id');
+    var form = {
+      geometryField: {
+        title: 'Location',
+        type: 'geometry',
+        name: 'geometry',
+        value: $scope.observation.geometry
+      },
+      timestampField: {
+        title: 'Date',
+        type: 'date',
+        value: moment($scope.observation.properties.timestamp).toDate()
+      },
+      forms: []
+    };
+
+    _.each($scope.observation.properties.forms, function(propertyForm) {
+      var observationForm = EventService.createForm($scope.observation, formMap[propertyForm.formId]);
+      observationForm.name = formMap[propertyForm.formId].name;
+      form.forms.push(observationForm);
+    });
+
+    $scope.editForm = form;
   };
 
   $scope.onObservationLocationClick = function(observation) {
@@ -125,8 +155,47 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
   });
 
   $scope.$watch('observation', function(observation) {
-    $scope.form = EventService.createForm(observation);
-    $scope.isUserFavorite = _.contains($scope.observation.favoriteUserIds, UserService.myself.id);
+    var formMap = _.indexBy(EventService.getForms(observation), 'id');
+    $scope.observationForm = {
+      geometryField: {
+        title: 'Location',
+        type: 'geometry',
+        value: observation.geometry
+      },
+      timestampField: {
+        title: 'Date',
+        type: 'date',
+        value: moment(observation.properties.timestamp).toDate()
+      },
+      forms: []
+    };
+
+    _.each(observation.properties.forms, function(form) {
+      var observationForm = EventService.createForm(observation, formMap[form.formId]);
+      observationForm.name = formMap[form.formId].name;
+      $scope.observationForm.forms.push(observationForm);
+    });
+
+    if ($scope.observation.properties.forms.length > 0) {
+      var firstForm = $scope.observation.properties.forms[0];
+      var observationForm = $scope.observationForm.forms.find(function(observationForm) {
+        return observationForm.id === firstForm.formId;
+      });
+
+      if (observationForm.primaryField && firstForm[observationForm.primaryField]) {
+        $scope.primaryField = {
+          value: firstForm[observationForm.primaryField]
+        };
+      }
+
+      if (observationForm.variantField && firstForm[observationForm.variantField]) {
+        $scope.variantField = {
+          value: firstForm[observationForm.variantField]
+        };
+      }
+    }
+
+    $scope.isUserFavorite = _.contains(observation.favoriteUserIds, UserService.myself.id);
   }, true);
 
   $scope.$watch('observation.important', function(important) {

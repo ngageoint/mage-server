@@ -128,11 +128,24 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
   function transformObservations(observations, event) {
     if (!_.isArray(observations)) observations = [observations];
 
-    var eventStyle = event.form.style;
-
+    var formMap = _.indexBy(event.forms, 'id');
     _.each(observations, function(observation) {
-      var style = getObservationStyle(eventStyle, observation.properties.type, observation.properties[event.form.variantField]);
-      style.iconUrl = getObservationIconUrlForEvent(event.id, observation.properties.type, observation.properties[event.form.variantField]);
+      var formId = null;
+      var formStyle = null;
+      var primaryField = null;
+      var variantField = null;
+
+      if (observation.properties.forms.length) {
+        var firstForm = observation.properties.forms[0];
+        var form = formMap[firstForm.formId];
+        formId = form.id;
+        formStyle = form.style;
+        primaryField = firstForm[form.primaryField];
+        variantField = firstForm[form.variantField];
+      }
+
+      var style = getObservationStyle(event.style, formStyle, primaryField, variantField);
+      style.iconUrl = getObservationIconUrlForEvent(event.id, formId, primaryField, variantField);
 
       observation.style = style;
       if (observation.geometry.type === 'Polygon') {
@@ -140,6 +153,7 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
       } else if (observation.geometry.type === 'LineString') {
         minimizeLineString(observation.geometry.coordinates);
       }
+
     });
   }
 
@@ -166,70 +180,43 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
     }
   }
 
-  function getObservationStyle(eventStyle, primary, variant) {
-    if (!primary && !variant) {
-      return {
-        color: eventStyle.stroke,
-        fillColor: eventStyle.fill,
-        fillOpacity: eventStyle.fillOpacity,
-        opacity: eventStyle.strokeOpacity,
-        weight: eventStyle.strokeWidth
-      };
-    } else if (!variant) {
-      if (eventStyle[primary]) {
-        return {
-          color: eventStyle[primary].stroke,
-          fillColor: eventStyle[primary].fill,
-          fillOpacity: eventStyle[primary].fillOpacity,
-          opacity: eventStyle[primary].strokeOpacity,
-          weight: eventStyle[primary].strokeWidth
-        };
+  function getObservationStyle(eventStyle, formStyle, primary, variant) {
+    var style = eventStyle;
+    if (formStyle) {
+      if (primary && formStyle[primary] && variant && formStyle[variant]) {
+        style = formStyle[primary][variant];
+      } else if (primary && formStyle[primary]) {
+        style = formStyle[primary];
       } else {
-        return {
-          color: eventStyle.stroke,
-          fillColor: eventStyle.fill,
-          fillOpacity: eventStyle.fillOpacity,
-          opacity: eventStyle.strokeOpacity,
-          weight: eventStyle.strokeWidth
-        };
-      }
-    } else {
-      if (eventStyle[primary] && eventStyle[primary][variant]) {
-        return {
-          color: eventStyle[primary][variant].stroke,
-          fillColor: eventStyle[primary][variant].fill,
-          fillOpacity: eventStyle[primary][variant].fillOpacity,
-          opacity: eventStyle[primary][variant].strokeOpacity,
-          weight: eventStyle[primary][variant].strokeWidth
-        };
-      } else if (eventStyle[primary]) {
-        return {
-          color: eventStyle[primary].stroke,
-          fillColor: eventStyle[primary].fill,
-          fillOpacity: eventStyle[primary].fillOpacity,
-          opacity: eventStyle[primary].strokeOpacity,
-          weight: eventStyle[primary].strokeWidth
-        };
-      } else {
-        return {
-          color: eventStyle.stroke,
-          fillColor: eventStyle.fill,
-          fillOpacity: eventStyle.fillOpacity,
-          opacity: eventStyle.strokeOpacity,
-          weight: eventStyle.strokeWidth
-        };
+        style = formStyle;
       }
     }
-    var style = {
-      color: eventStyle.stroke,
-      fillColor: eventStyle.fill,
-      fillOpacity: eventStyle.fillOpacity,
-      opacity: eventStyle.strokeOpacity,
-      weight: eventStyle.strokeWidth
+
+    return {
+      color: style.stroke,
+      fillColor: style.fill,
+      fillOpacity: style.fillOpacity,
+      opacity: style.strokeOpacity,
+      weight: style.strokeWidth
     };
+
   }
 
-  function getObservationIconUrlForEvent(eventId, primary, variant) {
-    return "/api/events/" + eventId + "/form/icons/" + primary + "/" + variant + "?" + $.param({access_token: LocalStorageService.getToken()});
+  function getObservationIconUrlForEvent(eventId, formId, primary, variant) {
+    var url = '/api/events/' + eventId + '/icons';
+
+    if (formId) {
+      url += '/' + formId;
+    }
+
+    if (primary) {
+      url += '/' + primary;
+    }
+
+    if (variant) {
+      url += '/' + variant;
+    }
+
+    return url + '?' + $.param({access_token: LocalStorageService.getToken()});
   }
 }

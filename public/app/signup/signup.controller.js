@@ -51,8 +51,48 @@ function SignupController($scope, $location, UserService, Api) {
   };
 
   $scope.signup = function(strategy) {
-    strategy === 'local' ? localSignup() : oauthSignup(strategy);
+    if (strategy == 'local') {
+      localSignup();
+    } else if (strategy == 'google') {
+      googleSignup();
+    } else {
+      oauthSignup(strategy);
+    }
   };
+
+  function onFail(z){ alert('Fail' + JSON.stringify(z)); }
+function onWin(googleUser){
+  var basicProfile = googleUser.getBasicProfile();
+  var id_token = googleUser.getAuthResponse().id_token;
+  $scope.thirdPartyUser = {
+    type: 'google',
+    displayName: basicProfile.getName(),
+    email: basicProfile.getEmail(),
+    imageUrl: basicProfile.getImageUrl(),
+    token: id_token
+  };
+  $scope.$apply();
+}
+
+  $scope.initializeGoogleButton = function(strategy) {
+    gapi.load('auth2', function() {
+      gapi.auth2.init({
+        client_id: strategy.webClientID
+      }).then(function() {
+        var auth2 = gapi.auth2.getAuthInstance();
+        auth2.signOut().then(function () {
+          gapi.signin2.render('google-signin', {
+            scope: 'profile email',
+            prompt: 'select_account',
+            onsuccess: onWin,
+            onfail: onFail,
+            theme: 'dark',
+            longtitle: true
+          });
+        });
+      });
+    });
+  }
 
   function oauthSignup(strategy) {
     UserService.oauthSignup(strategy).then(function() {
@@ -66,6 +106,41 @@ function SignupController($scope, $location, UserService, Api) {
       $scope.statusMessage = data.errorMessage;
       $scope.statusLevel = 'alert-danger';
     });
+  }
+
+  function googleSignup() {
+    var user = {
+      displayName: $scope.thirdPartyUser.displayName,
+      email: $scope.thirdPartyUser.email,
+      phone: $scope.thirdPartyUser.phone,
+      token: $scope.thirdPartyUser.token
+      // avatar: $scope.user.avatar
+    };
+
+    // TODO throw in progress
+    var progress = function(e) {
+      if(e.lengthComputable){
+        $scope.$apply(function() {
+          $scope.uploading = true;
+          $scope.uploadProgress = (e.loaded/e.total) * 100;
+        });
+      }
+    };
+
+    var complete = function() {
+      $scope.$apply(function() {
+        $scope.user = {};
+        $scope.showStatusMessage("Success", "Account created, contact an administrator to activate your account.", "alert-success");
+      });
+    };
+
+    var failed = function(data) {
+      $scope.$apply(function() {
+        $scope.showStatusMessage("There was a problem creating your account", data.responseText, "alert-danger");
+      });
+    };
+
+    UserService.googleSignup(user, complete, failed, progress);
   }
 
   function localSignup() {

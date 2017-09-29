@@ -77,7 +77,6 @@ describe("event read tests", function() {
       acl: {}
     };
 
-
     var mockCursor = {
       toArray: function(callback) {
         callback(null, [mockEvent1, mockEvent2]);
@@ -201,6 +200,10 @@ describe("event read tests", function() {
       .withArgs({ complete: true })
       .yields(null, [mockEvent]);
 
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, [mockEvent]);
+
     request(app)
       .get('/api/events')
       .query({state: 'complete'})
@@ -221,6 +224,10 @@ describe("event read tests", function() {
     sandbox.mock(EventModel)
       .expects('find')
       .withArgs({})
+      .yields(null, [mockEvent]);
+
+    sandbox.mock(EventModel)
+      .expects('populate')
       .yields(null, [mockEvent]);
 
     request(app)

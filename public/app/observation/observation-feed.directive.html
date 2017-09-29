@@ -3,18 +3,18 @@
     <div ng-if="edit === false">
       <div class="observation-item">
         <div class="observation-item-content">
-          <div class="observation-type">
-            <strong class="muted">{{observation.properties.type}}</strong>
+          <div class="observation-type" ng-if="primaryField">
+            <strong class="muted">{{primaryField.value}}</strong>
           </div>
-          <div class="observation-variant muted" ng-if="observation.properties[form.variantField]">{{observation.properties[form.variantField]}}</div>
+          <div class="observation-variant muted" ng-if="variantField">{{variantField.value}}</div>
+          <div class="observation-user muted" title="{{observationUser.displayName}}">{{observationUser.displayName}}</div>
         </div>
 
         <div class="observation-item-actions">
-          <div class="ellipsis small muted" title="{{observationUser.displayName}}">{{observationUser.displayName}}</div>
           <div class="pull-right news-feed-item-support small muted">{{fromNow}}</div>
           <div>
             <a href="javascript:void(0)" class="small muted" ng-click="onObservationLocationClick(observation)">
-              {{observation.geometry | geometry}}
+              {{observation.geometry | geometry:5}}
             </a>
           </div>
         </div>
@@ -52,8 +52,11 @@
         </span>
       </div>
 
-      <div class="top-gap" ng-repeat="field in form.fields | filter:filterHidden | orderBy: 'id'">
-        <property-view field="field">
+      <div class="top-gap" ng-repeat="form in observationForm.forms">
+        <h4 ng-if="filteredFields.length > 0">{{form.name}}</h4>
+        <div class="top-gap" ng-repeat="field in filteredFields = (form.fields | filter:filterHidden) | orderBy: 'id'">
+          <property-view field="field">
+        </div>
       </div>
 
       <div class="attachments">

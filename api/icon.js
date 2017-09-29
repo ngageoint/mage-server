@@ -10,10 +10,11 @@ var IconModel = require('../models/icon')
 var appRoot = path.dirname(require.main.filename);
 var iconBase = environment.iconBaseDirectory;
 
-function Icon(eventId, type, variant) {
+function Icon(eventId, formId, primary, variant) {
   this._eventId = eventId || null;
-  this._type = type || null;
-  this._variant = variant || null;
+  this._formId = formId === "null" || !formId ? null : formId;
+  this._primary = primary === "null" || !primary ? null : primary;
+  this._variant = variant === "null" || !variant ? null : variant;
 
   if (this._variant) {
     var number = Number(this._variant);
@@ -26,10 +27,13 @@ function Icon(eventId, type, variant) {
 function createIconPath(icon, name) {
   var ext = path.extname(name);
   var iconPath = icon._eventId.toString();
-  if (icon._type !== null) {
-    iconPath = path.join(iconPath, icon._type);
-    if (icon._variant !== null) {
-      iconPath = path.join(iconPath, icon._variant);
+  if (icon._formId !== null) {
+    iconPath = path.join(iconPath, icon._formId.toString());
+    if (icon._primary !== null) {
+      iconPath = path.join(iconPath, icon._primary);
+      if (icon._variant !== null) {
+        iconPath = path.join(iconPath, icon._variant);
+      }
     }
   }
 
@@ -54,7 +58,7 @@ Icon.prototype.writeZip = function(zipPath, callback) {
 };
 
 Icon.prototype.getZipPath = function(callback) {
-  var zipPath = path.join(os.tmpdir(), this._eventId+'_icons'+mongoose.Types.ObjectId()+'.zip');
+  var zipPath = path.join(os.tmpdir(), this._eventId + '_icons' + mongoose.Types.ObjectId() + '.zip');
   this.writeZip(zipPath, function(err) {
     return callback(err, zipPath);
   }.bind(this));
@@ -63,12 +67,14 @@ Icon.prototype.getZipPath = function(callback) {
 Icon.prototype.getIcon = function(callback) {
   var options = {
     eventId: this._eventId,
-    type: this._type,
+    formId: this._formId,
+    primary: this._primary,
     variant: this._variant
   };
 
   IconModel.getIcon(options, function(err, icon) {
     if (err || !icon) return callback(err);
+
     callback(null, path.join(iconBase, icon.relativePath));
   });
 };
@@ -77,6 +83,7 @@ Icon.prototype.setDefaultIcon = function(callback) {
   var relativePath = createIconPath(this, 'default-icon.png');
   var newIcon = {
     eventId: this._eventId,
+    formId: this._formId,
     relativePath: relativePath
   };
 
@@ -96,7 +103,8 @@ Icon.prototype.create = function(icon, callback) {
   var relativePath = createIconPath(this, icon.name);
   var newIcon = {
     eventId: this._eventId,
-    type: this._type,
+    formId: this._formId,
+    primary: this._primary,
     variant: this._variant,
     relativePath: relativePath
   };
@@ -125,7 +133,8 @@ Icon.prototype.add = function(icon, callback) {
   var relativePath = createIconPath(this, icon.name);
   var newIcon = {
     eventId: this._eventId,
-    type: this._type,
+    formId: this._formId,
+    primary: this._primary,
     variant: this._variant,
     relativePath: relativePath
   };
@@ -139,15 +148,16 @@ Icon.prototype.delete = function(callback) {
   var self = this;
   var conditions = {
     eventId: this._eventId,
-    type: this._type,
+    formId: this._formId,
+    primary: this._primary,
     variant: this._variant
   };
 
   IconModel.getIcon(conditions, function(err) {
     if (err) return callback(err);
 
-    var remove = {eventId: self._eventId};
-    if (self._type) remove.type = self._type;
+    var remove = {eventId: self._eventId, formId: self._formId};
+    if (self._primary) remove.primary = self._primary;
     if (self._variant) remove.variant = self._variant;
 
     IconModel.remove(remove, function(err) {
@@ -155,10 +165,10 @@ Icon.prototype.delete = function(callback) {
 
       callback(err);
 
-      // remove the variant dir, type dir, or base dir
+      // remove the variant dir, primary dir, or base dir
       var removePath = path.join(iconBase, self._eventId.toString());
-      if (self._type) {
-        removePath = path.join(removePath, self._type);
+      if (self._primary) {
+        removePath = path.join(removePath, self._primary);
         if (self._variant) {
           removePath = path.join(removePath, self._variant);
         }
@@ -167,7 +177,7 @@ Icon.prototype.delete = function(callback) {
       log.info('removing icons: ', removePath);
       fs.remove(removePath, function(err) {
         if (err) {
-          log.error("Could not remove attachment file " + removePath + ". ", err);
+          log.error("Could not remove icon file " + removePath + ". ", err);
         }
       });
     });

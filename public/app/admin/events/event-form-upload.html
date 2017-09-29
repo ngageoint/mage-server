@@ -1,0 +1,39 @@
+<div class="modal-header">
+  <h3 class="modal-title">Upload form to "{{event.name}}"</h3>
+</div>
+
+<div class="modal-body">
+  <div class="row bottom-gap top-gap">
+    <div class="col-md-12">
+      <form name="generalForm" >
+        <div class="form-group" ng-class="{'has-error': generalForm.$submitted && generalForm.name.$invalid}">
+          <label class="control-label">Name</label>
+          <input class="form-control" type="text" placeholder="Form name" name="name" ng-model="form.name" ng-required="true"/>
+          <span class="help-block" ng-if=" generalForm.$submitted && generalForm.name.$invalid">Name is required</span>
+        </div>
+        <div class="form-group">
+          <label class="control-label">Description</label>
+          <textarea class="form-control" type="text" placeholder="Brief description of the form." ng-model="form.description"/>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': generalForm.$submitted && generalForm.color.$invalid}">
+          <label class="control-label">Color</label>
+          <input minicolors="{letterCase: 'uppercase'}" class="form-control" type="text" ng-model="form.color" name="color" ng-required="true">
+          <span class="help-block" ng-if=" generalForm.$submitted && generalForm.color.$invalid">Color is invalid</span>
+        </div>
+
+        <div class="form-group" ng-class="{'has-error': generalForm.$submitted && generalForm.color.$invalid}">
+          <label class="control-label">Form</label>
+          <div file-browser></div>
+          <p class="help-block">Please choose a previously archived MAGE form.</p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-default" ng-click="cancel()" ngm-tap="cancel()">Cancel</button>
+  <button class="btn btn-success" ng-click="upload()"><i class="fa fa-upload"> </i> Upload Form</button>
+</div>

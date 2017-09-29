@@ -285,33 +285,50 @@
 
             <hr>
 
-            <div class="row">
-              <div class="col-md-12">
-                <nav class="navbar navbar-default admin-dashboard-navbar">
-                  <div class="container-fluid">
-                    <div class="navbar-header">
-                      <a class="navbar-brand">Form</a>
+          <div class="row top-gap-l">
+            <div class="col-md-12">
+              <nav class="navbar navbar-default admin-dashboard-navbar">
+                <div class="container-fluid">
+                  <div class="navbar-header">
+                    <a class="navbar-brand">Forms</a>
+                  </div>
+
+                  <form class="navbar-form navbar-right">
+                    <div class="form-group">
+                      <button ng-hide="showArchivedForms" class="btn btn-default" ng-click="showArchivedForms = !showArchivedForms">Show Archived Forms</button>
+                      <button ng-show="showArchivedForms" class="btn btn-default" ng-click="showArchivedForms = !showArchivedForms">Hide Archived Forms</button>
                     </div>
-
-                    <form class="navbar-form navbar-right">
-                      <div class="form-group">
-                        <a class="btn btn-default" ng-href="{{'/api/events/' + event.id + '/form.zip?access_token=' + token}}">
-                          <i class="fa fa-download"></i> Export Form
-                        </a>
-
-                        <button class="btn btn-default left-gap" ng-click="editForm(event)" ng-if="hasUpdatePermission"><i class="fa fa-edit"></i> Edit Form</button>
-                      </div>
-                    </form>
-                  </div>
-                </nav>
-              </div>
+                  </form>
+                </div>
+              </nav>
             </div>
-            <div class="row">
-              <div class="col-sm-12">
-                <div class="admin-table">
-                  <div class="well-item">
-                    <form-directive form="event.form" form-preview="true"></form-directive>
+          </div>
+
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="admin-table">
+                <div class="well-item" ng-repeat="form in event.forms | filter: (!showArchivedForms || '') && {archived: '!true'}" ng-click="editForm(event, form)">
+                  <div class="row pointer">
+                    <div class="col-md-12">
+                      <div class="right-gap pull-left">
+                        <i class="fa fa-file-text-o"></i>
+                      </div>
+                      <span>{{form.name}}</span><span ng-if="form.archived" class="text-danger"> (Archived)</span>
+
+                      <i class="pull-right fa fa-arrow-up" ng-if="!$first" ng-click="moveFormUp($event, form)"></i>
+                      <i class="pull-right fa fa-arrow-down" ng-if="!$last" ng-click="moveFormDown($event, form)"></i>
+                    </div>
                   </div>
+                  <div class="row" ng-if="layer.description">
+                    <div class="col-md-12">
+                      <span class="muted">{{form.description}}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="well-item">
+                  <button class="btn btn-success pull-left right-gap" ng-click="addForm($event, event)"><i class="fa fa-plus"></i> New Form</button>
+                  <button class="btn btn-success" ng-click="addForm($event, event)"><i class="fa fa-upload"></i> Import Form</button>
                 </div>
               </div>
             </div>
