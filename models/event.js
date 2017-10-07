@@ -121,6 +121,85 @@ function validateTeamIds(eventId, teamIds, next) {
   });
 }
 
+function getUserFields(form) {
+  return form.fields.filter(function(field) {
+    if (field.archived) return false;
+
+    return form.userFields.some(function(memberField) {
+      return memberField === field.name;
+    });
+  });
+}
+
+function compareDisplayName(a, b) {
+  var aNames = a.split(" ");
+  var aFirstName = aNames.shift();
+  var aLastName = aNames.pop();
+
+  var bNames = b.split(" ");
+  var bFirstName = bNames.shift();
+  var bLastName = bNames.pop();
+
+  if (aLastName < bLastName) return -1;
+
+  if (aLastName > bLastName) return 1;
+
+  if (aFirstName < bFirstName) return -1;
+
+  if (aFirstName > bFirstName) return 1;
+
+  return 0;
+}
+
+function populateUserFields(event, callback) {
+  var userFields = getUserFields(event.form);
+  if (!userFields.length) return callback();
+
+  // Get all users in this event
+  Team.getTeams({teamIds: event.teamIds}, function(err, teams) {
+    if (err) return callback(err);
+
+    var choices = [];
+    var users = {};
+
+    teams.forEach(function(team) {
+      team.userIds.forEach(function(user) {
+        users[user.displayName] = user.displayName;
+      });
+    });
+
+    users = Object.keys(users);
+    users.sort(compareDisplayName);
+    for (var i = 0; i < users.length; i++) {
+      choices.push({
+        id: i,
+        value: i,
+        title: users[i]
+      });
+    }
+
+    userFields.forEach(function(userField) {
+      userField.choices = choices;
+
+      if (!userField.required && userField.type === 'dropdown') {
+        userField.choices.unshift("");
+      }
+    });
+
+    callback();
+  });
+}
+
+EventSchema.pre('init', function(next, event) {
+  if (event.form) {
+    populateUserFields(event, function() {
+      next();
+    });
+  } else {
+    next();
+  }
+});
+
 EventSchema.pre('remove', function(next) {
   var event = this;
 
@@ -231,6 +310,24 @@ EventSchema.set("toObject", {
 var Event = mongoose.model('Event', EventSchema);
 exports.Model = Event;
 
+function convertProjection(field, keys, projection) {
+  keys = keys || [];
+  projection = projection || {};
+
+  for (var childField in field) {
+    keys.push(childField);
+    if (Object(field[childField]) === field[childField]) {
+      convertProjection(field[childField], keys, projection);
+    } else {
+      var key = keys.join(".");
+      if (field[childField]) projection[key] = field[childField];
+      keys.pop();
+    }
+  }
+
+  return projection;
+}
+
 // TODO look at filtering this in query, not after
 function filterEventsByUserId(events, userId, callback) {
   Event.populate(events, 'teamIds', function(err, events) {
@@ -321,7 +418,13 @@ exports.getEvents = function(options, callback) {
   if (filter.complete === true) query.complete = true;
   if (filter.complete === false) query.complete = {$ne: true};
 
-  Event.find(query, function (err, events) {
+  var projection = {};
+  if (options.projection) {
+    console.log('projection is', options.projection);
+    projection = convertProjection(options.projection);
+  }
+
+  Event.find(query, projection, function (err, events) {
     if (err) return callback(err);
 
     var filters = [];

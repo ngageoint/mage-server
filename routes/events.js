@@ -30,6 +30,12 @@ module.exports = function(app, security) {
   function parseEventQueryParams(req, res, next) {
     var parameters = {};
 
+    var projection = req.param('projection');
+    if (projection) {
+      parameters.projection = JSON.parse(projection);
+    }
+    console.log('params projection', parameters.projection);
+
     var state = req.param('state');
     if (!state || state === 'active') {
       parameters.complete = false;
@@ -137,17 +143,12 @@ module.exports = function(app, security) {
       };
       if (req.parameters.userId) filter.userId = req.parameters.userId;
 
-      Event.getEvents({access: req.access, filter: filter, populate: req.parameters.populate}, function(err, events) {
+      Event.getEvents({access: req.access, filter: filter, populate: req.parameters.populate, projection: req.parameters.projection}, function(err, events) {
         if (err) return next(err);
 
-        async.each(events, function(event, done) {
-          new api.Form(event).populateUserFields(done);
-        }, function(err) {
-          if (err) return next(err);
-          res.json(events.map(function(event) {
-            return event.toObject({access: req.access});
-          }));
-        });
+        res.json(events.map(function(event) {
+          return event.toObject({access: req.access});
+        }));
       });
     }
   );
@@ -161,15 +162,11 @@ module.exports = function(app, security) {
     function (req, res, next) {
       // TODO already queried event to check access, don't need to get it again.  Just need to populate the
       // correct fields based on query params
-      Event.getById(req.event._id, {access: req.access, populate: req.parameters.populate}, function(err, event) {
+      Event.getById(req.event._id, {access: req.access, populate: req.parameters.populate, projection: req.parameters.projection}, function(err, event) {
         if (err) return next(err);
         if (!event) return res.sendStatus(404);
 
-        new api.Form(event).populateUserFields(function(err) {
-          if (err) return next(err);
-
-          res.json(event.toObject({access: req.access}));
-        });
+        res.json(event.toObject({access: req.access}));
       });
     }
   );
