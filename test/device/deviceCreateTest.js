@@ -47,7 +47,9 @@ describe("device create tests", function() {
         description: "Some description",
         name: "Test Device",
         registered: true,
-        userId: userId.toString()
+        userId: userId.toString(),
+        appVersion: undefined,
+        userAgent: undefined
       })
       .yields(null, {
         uid: '12345',
@@ -113,7 +115,9 @@ describe("device create tests", function() {
       },{
         description: "Some description",
         name: "Test Device",
-        userId: userId.toString()
+        userId: userId.toString(),
+        appVersion: undefined,
+        userAgent: undefined
       })
       .yields(null, {
         uid: '12345',

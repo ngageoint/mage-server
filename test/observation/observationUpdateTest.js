@@ -248,7 +248,7 @@ describe("observation update tests", function() {
       .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/id/' + observationId)
+      .put('/api/events/1/observations/' + observationId)
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({

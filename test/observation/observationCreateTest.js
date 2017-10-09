@@ -143,7 +143,7 @@ describe("observation create tests", function() {
       .yields(null, mockObservation);
 
     request(app)
-      .put('/api/events/1/observations/id/' + observationId.toString())
+      .put('/api/events/1/observations/' + observationId.toString())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -187,7 +187,7 @@ describe("observation create tests", function() {
       .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/id/' + observationId.toString())
+      .put('/api/events/1/observations/' + observationId.toString())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -219,7 +219,7 @@ describe("observation create tests", function() {
       .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/id/' + mongoose.Types.ObjectId())
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -262,7 +262,7 @@ describe("observation create tests", function() {
       .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/id/' + mongoose.Types.ObjectId())
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -300,7 +300,7 @@ describe("observation create tests", function() {
       .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/id/' + mongoose.Types.ObjectId())
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -336,7 +336,7 @@ describe("observation create tests", function() {
       .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/id/' + mongoose.Types.ObjectId())
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -377,7 +377,7 @@ describe("observation create tests", function() {
       .yields(null, null);
 
     request(app)
-      .put('/api/events/1/observations/id/' + mongoose.Types.ObjectId())
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -392,7 +392,7 @@ describe("observation create tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal("cannot create observation, 'Date' property is not a valid ISO8601 date");
+        res.text.should.equal("cannot create observation, 'timestamp' property is not a valid ISO8601 date");
       })
       .end(done);
   });
@@ -405,7 +405,7 @@ describe("observation create tests", function() {
       .yields(null, []);
 
     request(app)
-      .post('/api/events/1/observations')
+      .post('/api/events/1/observations/id')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({

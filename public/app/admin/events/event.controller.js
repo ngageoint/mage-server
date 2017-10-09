@@ -198,6 +198,10 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
   };
 
   $scope.addForm = function() {
+    $location.path('/admin/events/' + $scope.event.id + '/forms/new');
+  };
+
+  $scope.importForm = function() {
     //present upload modalInstance
     var modalInstance = $uibModal.open({
       templateUrl: '/app/admin/events/event-form-upload.html',

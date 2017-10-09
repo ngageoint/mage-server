@@ -147,6 +147,7 @@ describe("user update tests", function() {
       username: 'test',
       displayName: 'test',
       active: true,
+      roleId: mongoose.Types.ObjectId(),
       authentication: {
         type: 'local'
       }
