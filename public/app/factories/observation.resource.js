@@ -17,7 +17,7 @@ angular.module('mage').factory('Observation', ['$resource', function($resource) 
   }, {
     update: {
       method: 'PUT',
-      url: '/api/events/:eventId/observations/id/:id',
+      url: '/api/events/:eventId/observations/:id',
       headers: {
         'Content-Type': 'application/json'
       }
