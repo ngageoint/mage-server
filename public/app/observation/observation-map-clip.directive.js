@@ -135,5 +135,11 @@ function MapClipController($rootScope, $scope, $element, MapService) {
         controlsOn = false;
       }
     });
+
+    $scope.$watch('feature.style.iconUrl', function(iconUrl) {
+      marker.setIcon(L.fixedWidthIcon({
+        iconUrl: iconUrl
+      }));
+    });
   }
 }
