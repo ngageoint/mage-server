@@ -140,11 +140,8 @@ module.exports = function(app, security) {
     determineReadAccess,
     parseEventQueryParams,
     function (req, res, next) {
-      var options = {
-        filter: {
-          complete: req.parameters.complete
-        },
-        populate: req.parameters.populate
+      var filter = {
+        complete: req.parameters.complete
       };
       if (req.parameters.userId) filter.userId = req.parameters.userId;
 
