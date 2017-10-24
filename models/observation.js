@@ -117,6 +117,10 @@ function transform(observation, ret, options) {
   }
 }
 
+ObservationIdSchema.set("toJSON", {
+  transform: transform
+});
+
 ObservationSchema.set('toJSON', {
   transform: transform
 });
