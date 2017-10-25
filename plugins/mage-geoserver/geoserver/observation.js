@@ -71,7 +71,6 @@ exports.updateLayer = function(event) {
           attributes: mapper.attributesFromForm(event.form)
         }
       };
-
       geoserverRequest.put({
         url: util.format('workspaces/%s/datastores/%s/featuretypes/%s', geoserverConfig.workspace, geoserverConfig.datastore, 'observations' + event._id),
         body: layer

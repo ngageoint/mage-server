@@ -42,8 +42,8 @@ Event.prototype.getById = function(id, options, callback) {
   });
 };
 
-Event.prototype.createEvent = function(event, callback) {
-  EventModel.create(event, function(err, newEvent) {
+Event.prototype.createEvent = function(event, user, callback) {
+  EventModel.create(event, user, function(err, newEvent) {
     if (err) return callback(err);
 
     // copy default icon into new event directory

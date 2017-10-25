@@ -157,4 +157,8 @@ function registerListeners() {
   var GeoServerLocation = require('./geoserver/location');
   Event.on.add(GeoServerLocation.createLayer);
   Event.on.remove(GeoServerLocation.removeLayer);
+
+  var GeoServerUser = require('./geoserver/user');
+  Event.on.add(GeoServerUser.createLayer);
+  Event.on.remove(GeoServerUser.removeLayer);
 }

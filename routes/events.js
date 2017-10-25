@@ -215,10 +215,10 @@ module.exports = function(app, security) {
     access.authorize('CREATE_EVENT'),
     parseEventQueryParams,
     function(req, res, next) {
-      Event.create(req.body, req.user, function(err, event) {
-        if (err) {
-          return next(err);
-        }
+      new api.Event().createEvent(req.body, req.user, function(err, event) {
+        if (err) return next(err);
+
+        //copy default icon into new event directory
         new api.Icon(event._id).saveDefaultIconToEventForm(function(err) {
           if (err) {
             return next(err);
@@ -235,7 +235,7 @@ module.exports = function(app, security) {
     authorizeAccess('UPDATE_EVENT', 'update'),
     parseEventQueryParams,
     function(req, res, next) {
-      Event.update(req.event._id, req.body, {populate: req.parameters.populate}, function(err, event) {
+      new api.Event(req.event).updateEvent(req.body, {populate: req.parameters.populate}, function(err, event) {
         if (err) return next(err);
 
         new api.Form(event).populateUserFields(function(err) {
@@ -252,7 +252,7 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     authorizeAccess('DELETE_EVENT', 'delete'),
     function(req, res, next) {
-      Event.remove(req.event, function(err) {
+      new api.Event(req.event).deleteEvent(function(err) {
         if (err) return next(err);
         res.status(204).send();
       });
