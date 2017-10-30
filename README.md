@@ -135,7 +135,7 @@ You can install the MAGE server wherever you would like. In this example we will
 ```bash
 $ mkdir /opt/mage
 $ cd /opt/mage
-$ curl https://codeload.github.com/ngageoint/mage-server/zip/4.4.3 | tar -xf - -C .
+$ curl https://codeload.github.com/ngageoint/mage-server/zip/<version> | tar -xf - -C .
 ```
 
 The rest of the installation steps assume you are in the MAGE server directory, eg /opt/mage
