@@ -102,7 +102,7 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
       field.name !== 'geometry' &&
       field.name !== 'timestamp' &&
       field.value &&
-      isSelectField(field) ? field.value.length : true;
+      (isSelectField(field) ? field.value.length : true);
   };
 
   function isSelectField(field) {
