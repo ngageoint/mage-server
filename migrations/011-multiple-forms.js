@@ -130,6 +130,17 @@ function migrateEventData(event, formId, callback) {
         event.forms[0].name = event.name;
         event.forms[0].color = '#5278A2';
         event.forms[0].primaryField = 'type';
+
+        // remove the timestamp and geometry fields, these are no
+        // longer in the form.
+
+        console.log('number of form fields ' + event.forms[0].fields.length);
+        event.forms[0].fields = event.forms[0].fields.filter(function(field) {
+          return field.name !== 'timestamp' && field.name !== 'geometry';
+        });
+
+        console.log('number of form fields after ' + event.forms[0].fields.length);
+
         var typeFields = event.forms[0].fields.filter(function(field) {
           return field.name === 'type';
         });
