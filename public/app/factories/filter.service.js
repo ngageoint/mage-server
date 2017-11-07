@@ -230,6 +230,10 @@ function FilterService(UserService) {
       return false;
     }
 
+    if (actionFilter === 'attachments' && !o.attachments.length) {
+      return false;
+    }
+
     return true;
   }
 
