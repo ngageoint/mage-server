@@ -1,4 +1,5 @@
-var path = require('path')
+var fs = require('fs')
+  , path = require('path')
   , util = require('util')
   , querystring = require('querystring')
   , xmlbuilder = require('xmlbuilder')
@@ -42,6 +43,18 @@ module.exports = function(app, authentication) {
     '/icons/users/:userId/',
     passport.authenticate('geoserver-bearer', { session: false }),
     resource.getUserIcon
+  );
+
+  app.get(
+    '/events/:eventId/observations/:observationId',
+    passport.authenticate('geoserver-bearer', { session: false }),
+    resource.getAttachments
+  );
+
+  app.get(
+    '/events/:eventId/observations/:observationId/attachments/:attachmentId/',
+    passport.authenticate('geoserver-bearer', { session: false }),
+    resource.getAttachment
   );
 
 };
@@ -125,5 +138,38 @@ GeoServerResource.prototype.getUserIcon = function(req, res, next) {
     }
 
     res.sendFile(icon.path);
+  });
+};
+
+GeoServerResource.prototype.getAttachments = function(req, res) {
+  var fieldsByName = {};
+  req.event.form.fields.forEach(function(field) {
+    fieldsByName[field.name] = field;
+  });
+  req.event.fieldsByName = fieldsByName;
+
+  req.observation.iconUrl = util.format('/%s/icons/observation/%d/%s/%s?access_token=%s', config.context, req.event._id, req.observation.properties.type, req.observation.properties[req.event.form.variantField], config.token);
+
+  res.render(__dirname + '/../views/observation', { event: req.event, observation: req.observation, token: 'changeit' });
+};
+
+GeoServerResource.prototype.getAttachment = function(req, res, next) {
+  new api.Attachment(req.event, req.observation).getById(req.params.attachmentId, {}, function(err, attachment) {
+    if (err) return next(err);
+
+    var stream = fs.createReadStream(attachment.path);
+
+    stream.on('open', function() {
+      res.writeHead(200, {
+        'Content-Length': attachment.size,
+        'Content-Type': attachment.contentType
+      });
+
+      stream.pipe(res);
+    });
+
+    stream.on('error', function() {
+      return res.sendStatus(404);
+    });
   });
 };

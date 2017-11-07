@@ -1,5 +1,7 @@
 var mongoose = require('mongoose')
-  , log = require('winston');
+  , log = require('winston')
+  , util = require('util')
+  , config = require('../config.json');
 
 var Schema = mongoose.Schema;
 
@@ -29,6 +31,8 @@ ObservationSchema.index({'properties.event._id': 1});
 var ObservationModel = mongoose.model('Observation', ObservationSchema);
 
 function createOrUpdateObservation(observation, event, user, callback) {
+  observation.properties.url = util.format('%s/%s/events/%d/observations/%s?access_token=%s', config.mage.baseUrl, config.context, event._id, observation.id, config.token);
+
   observation.properties.event = {
     _id: event._id,
     name: event.name,

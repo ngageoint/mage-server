@@ -1,0 +1,98 @@
+html
+  head
+
+    link(rel="stylesheet" href="https://unpkg.com/leaflet@0.7.7/dist/leaflet.css")
+    style.
+      body { margin-top: 15px; background-color: #47688c; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";}
+      h1 { color: #fff; text-align: center; }
+      h2 { color: #fff; text-align: center; margin-bottom: 30px; }
+      #map { height: 350px; }
+      .hide { display: none; }
+      .bottom-margin { margin-bottom: 25px; }
+      .pull-right { float: right; }
+      .property-header { display: flex; flex-direction: row; }
+      .property-header-icon { margin-right: 5px; }
+      .property-header-icon > img { height: 65px; }
+      .property-header-content {flex: 1; min-width: 0; }
+      .property { margin-bottom: 5px; }
+      .property-type { color: #555; font-size: 22px; }
+      .property-variant { color: #555; font-size: 18px; font-style: italic; }
+      .property-user { color: #555; text-align: right; }
+      .property-date { color: #555; text-align: right; }
+      .property-geometry { color: #555; text-align: right; }
+      .properties {margin-top: 30px; }
+      .property-title { margin-right: 5px; color: #555; }
+      .attachments { margin-top: 8px; display: flex; flex-direction: row; flex-wrap: wrap; }
+      .attachment { margin-right: 15px; margin-bottom: 15px; }
+      .attachment-image { height: 400px; width: 400px; object-fit: cover }
+      .card { margin: auto; width: 50%; min-width: 600px; background-color: #fff; box-shadow: 0 3px 7px rgba(0,0,0,.35); border-radius: 3px;}
+      .card-content { padding: 10px; }
+
+  body
+    h1 MAGE
+    h2= event.name
+
+    .card
+      .card-content
+        .property-header
+          .property-header-icon.bottom-margin
+            img(src=observation.iconUrl)
+          .property-header-content
+            .pull-right
+              if user
+                .property.property-user
+                  .div= user.displayName
+
+              .property.property-date
+                div= observation.properties.timestamp
+
+              .property.property-geometry
+                span #{Number(observation.geometry.coordinates[0]).toFixed(8)},&nbsp
+                span= Number(observation.geometry.coordinates[1]).toFixed(8)
+
+            .property.property-type
+              strong= observation.properties.type
+
+            if event.form.variantField && observation.properties[event.form.variantField]
+              .property.property-variant
+                div= observation.properties[event.form.variantField]
+
+        #map.hide
+
+        .properties.bottom-margin
+          each property, key in observation.properties
+            if property && (key !== 'type' && key !== 'timestamp' && key !== event.form.variantField && event.fieldsByName[key] != null)
+              .property
+                strong.property-title #{event.fieldsByName[key].title}:
+                div= property
+
+        .property
+          strong.property-title
+            div= "Attachments"
+
+        .attachments
+          each attachment in observation.attachments
+            .attachment
+              if attachment.contentType.indexOf('image/') === 0 || attachment.name.indexOf('.png') !== -1 || attachment.name.indexOf('.jpg') !== -1 || attachment.name.indexOf('.jpeg') !== -1
+                a(href=observation.id + "/attachments/" + attachment.id + "?access_token=" + token, target='_blank')
+                  img.attachment-image(src=observation.id + "/attachments/" + attachment.id + "?access_token=" + token)
+              if attachment.contentType.indexOf('video/') === 0 || attachment.name.indexOf('.mp4') !== -1
+                video(src=observation.id + "/attachments/" + attachment.id + "?access_token=" + token, controls, style={'height': '400px'})
+                  a(href=observation.id + "/attachments/" + attachment.id + "?access_token=" + token) download video
+
+  script.
+    var geometry = !{JSON.stringify(observation.geometry)};
+    function loadMap() {
+      var latLng = L.GeoJSON.coordsToLatLng(geometry.coordinates);
+      var map = L.map('map').setView(latLng, 15);
+      L.DomUtil.removeClass(L.DomUtil.get('map'), 'hide');
+      map.invalidateSize();
+
+      L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+
+      L.marker(latLng).addTo(map);
+    }
+
+  script(type="text/javascript" src="https://npmcdn.com/leaflet@0.7.7/dist/leaflet.js" onload ="loadMap()")

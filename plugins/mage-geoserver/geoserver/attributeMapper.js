@@ -15,6 +15,12 @@ exports.attributesFromForm = function(form) {
       nillable: true,
       binding: 'com.vividsolutions.jts.geom.Geometry'
     },{
+      name: 'url',
+      minOccurs: 0,
+      maxOccurs: 1,
+      nillable: true,
+      binding: 'java.lang.String'
+    },{
       name: 'event.id',
       minOccurs: 0,
       maxOccurs: 1,
@@ -57,6 +63,16 @@ exports.descriptorsFromForm = function(form) {
     userData: {
       mapping: 'geometry',
       encoding: "GeoJSON"
+    }
+  },{
+    localName: 'url',
+    minOccurs: 0,
+    maxOccurs: 1,
+    type: {
+      binding: 'java.lang.String'
+    },
+    userData: {
+      mapping: 'properties.url'
     }
   },{
     localName: 'event.id',
