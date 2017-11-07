@@ -106,6 +106,7 @@ function ExportController($scope, $uibModalInstance, LocalStorageService, Filter
     if (end) params.endDate = end;
 
     if ($scope.exportObservations.value) {
+      params.attachments = $scope.exportObservationsWithAttachments.value;
       params.favorites = $scope.exportFavoriteObservations.value;
       params.important = $scope.exportImportantObservations.value;
     }

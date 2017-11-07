@@ -59,6 +59,7 @@ function parseQueryParams(req, res, next) {
       }
 
       parameters.filter.important = req.param('important') === 'true';
+      parameters.filter.attachments = req.param('attachments') === 'true';
     }
   }
 
