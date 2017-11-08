@@ -228,6 +228,10 @@ exports.getObservations = function(event, o, callback) {
     conditions['important'] = {$exists: true};
   }
 
+  if (filter.attachments) {
+    conditions['attachments'] = {$gt: []};
+  }
+
   var options = {};
   if (o.sort) {
     options.sort = o.sort;
