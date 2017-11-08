@@ -98,8 +98,8 @@
                         <div class="right-gap pull-left">
                           <i class="fa fa-mobile"></i>
                         </div>
-                        <span class="strong">{{d.uid}}</span>
-                        <span class="muted" ng-if="d.user">({{d.user.displayName}})</span>
+                        <span class="muted" ng-if="d.user">{{d.user.displayName}}</span>
+                        <span class="strong">({{d.uid}})</span>
                         <span class="pull-right" ng-if="hasPermission('UPDATE_DEVICE')">
                           <a class="btn btn-xs btn-success" ng-click="registerDevice($event, d)"><i class="fa fa-check"></i> Register</a>
                         </span>
