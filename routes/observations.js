@@ -475,10 +475,11 @@ module.exports = function(app, security) {
 
         var stream;
         if (req.headers.range) {
+          var attachmentRangeEnd = attachment.size > 0 ? attachment.size - 1 : 0;
           var range = req.headers.range;
           var rangeParts = range.replace(/bytes=/, "").split("-");
           var rangeStart = parseInt(rangeParts[0], 10);
-          var rangeEnd = rangeParts[1] ? parseInt(rangeParts[1], 10) : attachment.size - 1;
+          var rangeEnd = rangeParts[1] ? parseInt(rangeParts[1], 10) : attachmentRangeEnd;
           var contentLength = (rangeEnd - rangeStart) + 1;
 
 
