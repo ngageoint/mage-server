@@ -31,7 +31,7 @@
             <hr>
 
             <div class="row top-gap-l">
-              <div class="col-sm-6 col-xs-12" >
+              <div class="col-sm-6 col-xs-12">
 
                 <div class="row top-gap-l">
                   <div class="col-md-3">
@@ -63,6 +63,7 @@
               </div>
 
             </div>
+
           </div>
         </div>
 
@@ -129,38 +130,39 @@
               </div>
             </div>
 
-          <div class="row">
-            <div class="col-sm-12">
-              <div class="admin-table">
-                <div class="well-item"
-                    ng-repeat="user in (filteredUsers = (team.users | user:['displayName','email']:memberSearch)) | orderBy:'displayName' | offset: usersPage*usersPerPage | limitTo:usersPerPage" >
-                  <div class="row pointer" ng-click="gotoUser(user)">
-                    <div class="col-md-12">
-                      <div class="right-gap pull-left">
-                        <i class="fa fa-user"></i>
-                      </div>
-                      <span>
-                        {{user.displayName}}
-                      </span>
+            <div class="row">
+              <div class="col-sm-12">
+                <div class="admin-table">
+                  <div class="well-item"
+                      ng-repeat="user in (filteredUsers = (team.users | user:['displayName','email']:memberSearch)) | orderBy:'displayName' | offset: usersPage*usersPerPage | limitTo:usersPerPage" >
+                    <div class="row pointer" ng-click="gotoUser(user)">
+                      <div class="col-md-12">
+                        <div class="right-gap pull-left">
+                          <i class="fa fa-user"></i>
+                        </div>
+                        <span>
+                          {{user.displayName}}
+                        </span>
 
-                      <span class="pull-right" ng-show="edit">
-                        <a class="btn btn-xs btn-danger" ng-click="removeUser(user)"><i class="fa fa-minus"></i></a>
-                      </span>
+                        <span class="pull-right" ng-show="edit">
+                          <a class="btn btn-xs btn-danger" ng-click="removeUser(user)"><i class="fa fa-minus"></i></a>
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="row">
-              <div class="col-md-12">
-                <ul class="pager pull-right">
-                  <li ng-class="{'disabled': usersPage == 0}">
-                    <a href="javascript:void(0);" ng-click="usersPage == 0 || (usersPage=usersPage-1)">&larr; Previous</a>
-                  </li>
-                  <li ng-class="{'disabled': usersPage >= (filteredUsers.length/usersPerPage) - 1}">
-                    <a href="javascript:void(0);" ng-click="usersPage >= (filteredUsers.length/usersPerPage) - 1 || (usersPage=usersPage+1)">Next&rarr;</a>
-                  </li>
-                </ul>
+              <div class="row">
+                <div class="col-md-12">
+                  <ul class="pager pull-right">
+                    <li ng-class="{'disabled': usersPage == 0}">
+                      <a href="javascript:void(0);" ng-click="usersPage == 0 || (usersPage=usersPage-1)">&larr; Previous</a>
+                    </li>
+                    <li ng-class="{'disabled': usersPage >= (filteredUsers.length/usersPerPage) - 1}">
+                      <a href="javascript:void(0);" ng-click="usersPage >= (filteredUsers.length/usersPerPage) - 1 || (usersPage=usersPage+1)">Next&rarr;</a>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
