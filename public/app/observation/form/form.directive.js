@@ -18,9 +18,9 @@ function formDirective() {
   return directive;
 }
 
-FormDirectiveController.$inject = ['$scope', 'EventService', 'Observation', 'ObservationService', 'UserService', 'LocalStorageService'];
+FormDirectiveController.$inject = ['$scope', 'EventService', 'FilterService', 'Observation', 'ObservationService', 'UserService', 'LocalStorageService'];
 
-function FormDirectiveController($scope, EventService, Observation, ObservationService, UserService, LocalStorageService) {
+function FormDirectiveController($scope, EventService, FilterService, Observation, ObservationService, UserService, LocalStorageService) {
   var uploadId = 0;
   var initialObservation;
 
@@ -74,8 +74,22 @@ function FormDirectiveController($scope, EventService, Observation, ObservationS
   }
 
   $scope.getToken = LocalStorageService.getToken;
-  $scope.amAdmin = UserService.amAdmin;
+  $scope.canDeleteObservation = hasEventUpdatePermission() || isCurrentUsersObservation() || hasUpdatePermissionsInEventAcl();
   $scope.attachmentUploads = {};
+
+  function hasEventUpdatePermission() {
+    return _.contains(UserService.myself.role.permissions, 'DELETE_OBSERVATION');
+  }
+
+  function isCurrentUsersObservation() {
+    return $scope.observation.userId === UserService.myself.id;
+  }
+
+  function hasUpdatePermissionsInEventAcl() {
+    var myAccess = FilterService.getEvent().acl[UserService.myself.id];
+    var aclPermissions = myAccess ? myAccess.permissions : [];
+    return _.contains(aclPermissions, 'update');
+  }
 
   function updateGeometryEdit(geometryField, index) {
     if (!geometryField.value.coordinates) return;

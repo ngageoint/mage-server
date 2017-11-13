@@ -107,6 +107,18 @@ module.exports = function(app, security) {
     };
   }
 
+  function authorizeDeleteAccess(req, res, next) {
+    if (access.userHasPermission(req.user, 'UPDATE_EVENT')) {
+      next();
+    } else if (req.user._id.toString() === req.observation.userId.toString()) {
+      next();
+    } else {
+      Event.userHasEventPermission(req.event, req.user._id, 'update', function(err, hasPermission) {
+        hasPermission ? next() : res.sendStatus(403);
+      });
+    }
+  }
+
   function populateUserFields(req, res, next) {
     new api.Form(req.event).populateUserFields(function(err) {
       if (err) return next(err);
@@ -125,13 +137,13 @@ module.exports = function(app, security) {
   function populateObservation(req, res, next) {
     req.observation = {};
 
-    var userId = req.user ? req.user._id : null;
-    if (userId) req.observation.userId = userId;
-
-    var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
-    if (deviceId) req.observation.deviceId = deviceId;
-
     if (!req.existingObservation) {
+      var userId = req.user ? req.user._id : null;
+      if (userId) req.observation.userId = userId;
+
+      var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
+      if (deviceId) req.observation.deviceId = deviceId;
+
       var state = { name: 'active' };
       if (userId) state.userId = userId;
       req.observation.states = [state];
@@ -344,7 +356,6 @@ module.exports = function(app, security) {
     populateObservation,
     populateUserFields,
     function (req, res, next) {
-
       new api.Observation(req.event).update(req.param('id'), req.observation, function(err, updatedObservation) {
         if (err) return next(err);
 
@@ -423,9 +434,9 @@ module.exports = function(app, security) {
   );
 
   app.post(
-    '/api/events/:eventId/observations/:id/states',
+    '/api/events/:eventId/observations/:observationId/states',
     passport.authenticate('bearer'),
-    access.authorize('DELETE_OBSERVATION'),
+    authorizeDeleteAccess,
     function(req, res) {
       var state = req.body;
       if (!state) return res.send(400);
@@ -437,7 +448,7 @@ module.exports = function(app, security) {
       state = { name: state.name };
       if (req.user) state.userId = req.user._id;
 
-      new api.Observation(req.event).addState(req.param('id'), state, function(err, state) {
+      new api.Observation(req.event).addState(req.observation._id, state, function(err, state) {
         if (err) {
           return res.status(400).send('state is already ' + "'" + state.name + "'");
         }

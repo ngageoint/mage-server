@@ -45,7 +45,7 @@
               <button class="btn btn-primary" ng-click="save()" ng-disabled="observationForm.$invalid || saving"><i ng-class="{true: 'fa fa-spinner fa-spin', false: 'icon-save'}[saving]"></i> Save</button>
             </span>
             <span>
-              <button class="btn btn-danger pull-left" ng-show="observation.id && amAdmin" ng-click="deleteObservation(observation)"><i class="icon-trash"></i> Delete Observation</button>
+              <button class="btn btn-danger pull-left" ng-show="observation.id && canDeleteObservation" ng-click="deleteObservation(observation)"><i class="icon-trash"></i> Delete Observation</button>
             </span>
           </div>
         </div>
