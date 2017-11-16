@@ -409,7 +409,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
       return !otherFilterField ||
         (!field.archived &&
         otherFilterField.name !== field.name &&
-        (field.type === 'dropdown' || field.type === 'date'));
+        (field.type === 'dropdown'));
     };
   };
 
