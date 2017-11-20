@@ -1,4 +1,5 @@
 var util = require('util')
+  , turfKinks= require('@turf/kinks')
   , geoJsonValidator = require('geojson-validation')
   , Field = require('./field');
 
@@ -14,6 +15,13 @@ GeometryField.prototype.validate = function() {
 
   if (!geoJsonValidator.isGeometryObject(this.value)) {
     throw new Error("cannot create observation, '" + this.definition.title + "' property must be a valid GeoJson geometry");
+  }
+
+  if (this.value.type === 'Polygon') {
+    var kinks = turfKinks(this.value);
+    if (kinks.features.length > 0) {
+      throw new Error('Observation polygon geometry cannot intersect itself.');
+    }
   }
 };
 
