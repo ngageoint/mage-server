@@ -24,17 +24,6 @@ describe("observation delete tests", function() {
     sandbox = sinon.sandbox.create();
   });
 
-  beforeEach(function() {
-    var mockEvent = new EventModel({
-      _id: 1,
-      name: 'Event 1',
-      collectionName: 'observations1'
-    });
-    sandbox.mock(EventModel)
-      .expects('findById')
-      .yields(null, mockEvent);
-  });
-
   afterEach(function() {
     sandbox.restore();
   });
@@ -49,22 +38,23 @@ describe("observation delete tests", function() {
       .yields(null, MockToken(userId, [permission]));
   }
 
-  it("should update observation state to archived", function(done) {
-    mockTokenWithPermission('DELETE_OBSERVATION');
+  it("should update observation state to archived with UPDATE_EVENT role", function(done) {
+    mockTokenWithPermission('UPDATE_EVENT');
 
     sandbox.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
+    var mockEvent = new EventModel({
+      _id: 1,
+      name: 'Mock Event',
+      collectionName: 'observations1',
+      acl: {}
+    });
+
     sandbox.mock(EventModel)
-      .expects('populate')
-      .yields(null, {
-        name: 'Event 1',
-        teamIds: [{
-          name: 'Team 1',
-          userIds: [mongoose.Types.ObjectId()]
-        }]
-      });
+      .expects('findById')
+      .yields(null, mockEvent);
 
     var ObservationModel = observationModel({
       _id: 1,
@@ -81,8 +71,140 @@ describe("observation delete tests", function() {
       },
       properties: {
         timestamp: Date.now()
-      }
+      },
+      userId: mongoose.Types.ObjectId()
     });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .withArgs(observationId.toString())
+      .yields(null, mockObservation);
+
+    sandbox.mock(ObservationModel)
+      .expects('update')
+      .yields(null, mockObservation);
+
+    request(app)
+      .post('/api/events/1/observations/' + observationId.toString() + '/states')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        name: 'archive'
+      })
+      .expect(201)
+      .expect(function(res) {
+        var state = res.body;
+        should.exist(state);
+        state.should.have.property('name').and.equal('archive');
+      })
+      .end(done);
+  });
+
+  it("should update observation state to archived with acl update role", function(done) {
+    mockTokenWithPermission('');
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    var mockEvent = new EventModel({
+      _id: 1,
+      name: 'Mock Event',
+      collectionName: 'observations1',
+      acl: {}
+    });
+    mockEvent.acl[userId] = 'MANAGER';
+
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+    var observationId = mongoose.Types.ObjectId();
+    var mockObservation = new ObservationModel({
+      _id: observationId,
+      type: 'Feature',
+      geometry: {
+        type: "Point",
+        coordinates: [0, 0]
+      },
+      properties: {
+        timestamp: Date.now()
+      },
+      userId: mongoose.Types.ObjectId()
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .withArgs(observationId.toString())
+      .yields(null, mockObservation);
+
+    sandbox.mock(ObservationModel)
+      .expects('update')
+      .yields(null, mockObservation);
+
+    request(app)
+      .post('/api/events/1/observations/' + observationId.toString() + '/states')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        name: 'archive'
+      })
+      .expect(201)
+      .expect(function(res) {
+        var state = res.body;
+        should.exist(state);
+        state.should.have.property('name').and.equal('archive');
+      })
+      .end(done);
+  });
+
+  it("should update observation state to archived if observation owner", function(done) {
+    mockTokenWithPermission('');
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    var mockEvent = new EventModel({
+      _id: 1,
+      name: 'Mock Event',
+      collectionName: 'observations1',
+      acl: {}
+    });
+
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+    var observationId = mongoose.Types.ObjectId();
+    var mockObservation = new ObservationModel({
+      _id: observationId,
+      type: 'Feature',
+      geometry: {
+        type: "Point",
+        coordinates: [0, 0]
+      },
+      properties: {
+        timestamp: Date.now()
+      },
+      userId: userId
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .withArgs(observationId.toString())
+      .yields(null, mockObservation);
+
     sandbox.mock(ObservationModel)
       .expects('update')
       .yields(null, mockObservation);
@@ -106,8 +228,43 @@ describe("observation delete tests", function() {
   it("should not update observation state if name is missing", function(done) {
     mockTokenWithPermission('DELETE_OBSERVATION');
 
+    var mockEvent = new EventModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1',
+      acl: {}
+    });
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+
+    var observationId = mongoose.Types.ObjectId();
+    var mockObservation = new ObservationModel({
+      _id: observationId,
+      type: 'Feature',
+      geometry: {
+        type: "Point",
+        coordinates: [0, 0]
+      },
+      properties: {
+        timestamp: Date.now()
+      },
+      userId: userId
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .withArgs(observationId.toString())
+      .yields(null, mockObservation);
+
     request(app)
-      .post('/api/events/1/observations/123/states')
+      .post('/api/events/1/observations/' + observationId.toString() + '/states')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -122,8 +279,45 @@ describe("observation delete tests", function() {
   it("should not update observation state if name is not allowed", function(done) {
     mockTokenWithPermission('DELETE_OBSERVATION');
 
+    var mockEvent = new EventModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1',
+      acl: {}
+    });
+
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    var observationId = mongoose.Types.ObjectId();
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+
+    var mockObservation = new ObservationModel({
+      _id: observationId,
+      type: 'Feature',
+      geometry: {
+        type: "Point",
+        coordinates: [0, 0]
+      },
+      properties: {
+        timestamp: Date.now()
+      },
+      userId: userId
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .withArgs(observationId.toString())
+      .yields(null, mockObservation);
+
     request(app)
-      .post('/api/events/1/observations/123/states')
+      .post('/api/events/1/observations/' + observationId + '/states')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -138,6 +332,17 @@ describe("observation delete tests", function() {
 
   it("should not update observation state if name did not change", function(done) {
     mockTokenWithPermission('DELETE_OBSERVATION');
+
+    var mockEvent = new EventModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1',
+      acl: {}
+    });
+
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
 
     sandbox.mock(TeamModel)
       .expects('find')
@@ -158,7 +363,26 @@ describe("observation delete tests", function() {
       name: 'Event 1',
       collectionName: 'observations1'
     });
+
     var observationId = mongoose.Types.ObjectId();
+    var mockObservation = new ObservationModel({
+      _id: observationId,
+      type: 'Feature',
+      geometry: {
+        type: "Point",
+        coordinates: [0, 0]
+      },
+      properties: {
+        timestamp: Date.now()
+      },
+      userId: userId
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .withArgs(observationId.toString())
+      .yields(null, mockObservation);
+
     sandbox.mock(ObservationModel)
       .expects('update')
       .yields(new Error("some mock error"), null);

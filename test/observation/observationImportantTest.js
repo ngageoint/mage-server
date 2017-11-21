@@ -100,9 +100,14 @@ describe("observation important tests", function() {
       }
     });
 
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .withArgs(observationId.toString())
+      .yields(null, mockObservation);
+
     var observationMock = sandbox.mock(ObservationModel)
       .expects('findByIdAndUpdate')
-      .withArgs(observationId.toString(), sinon.match( { 'important': sinon.match({ userId: userId }) }), sinon.match.any)
+      .withArgs(observationId, sinon.match( { 'important': sinon.match({ userId: userId }) }), sinon.match.any)
       .yields(null, mockObservation);
 
     request(app)
@@ -110,14 +115,7 @@ describe("observation important tests", function() {
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
-        type: 'Feature',
-        geometry: {
-          type: "Point",
-          coordinates: [0, 0]
-        },
-        properties: {
-          timestamp: '2016-01-01T00:00:00'
-        }
+        description: 'Some important description.'
       })
       .expect(200)
       .expect('Content-Type', /json/)
@@ -133,24 +131,69 @@ describe("observation important tests", function() {
       .end(done);
   });
 
-  it("should fail to flag observation as important without permissions", function(done) {
-    mockTokenWithPermissions(['CREATE_OBSERVATION']);
+  it("should fail to flag observation as important if observation does not exist", function(done) {
+    mockTokenWithPermissions(['CREATE_OBSERVATION', 'UPDATE_EVENT']);
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
 
     var observationId = mongoose.Types.ObjectId();
+    var mockObservation = new ObservationModel({
+      _id: observationId,
+      type: 'Feature',
+      geometry: {
+        type: "Point",
+        coordinates: [0, 0]
+      },
+      properties: {
+        timestamp: '2016-01-01T00:00:00'
+      },
+      important: {
+        userId: userId,
+        description: 'test'
+      }
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .withArgs(observationId.toString())
+      .yields(null, null);
 
     request(app)
       .put('/api/events/1/observations/' + observationId + '/important')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
-        type: 'Feature',
-        geometry: {
-          type: "Point",
-          coordinates: [0, 0]
-        },
-        properties: {
-          timestamp: '2016-01-01T00:00:00'
-        }
+        description: 'Some important description'
+      })
+      .expect(404)
+      .end(done);
+  });
+
+  it("should fail to flag observation as important without permissions", function(done) {
+    mockTokenWithPermissions(['CREATE_OBSERVATION']);
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+
+    var observationId = mongoose.Types.ObjectId();
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .withArgs(observationId.toString())
+      .yields(null, {});
+
+    request(app)
+      .put('/api/events/1/observations/' + observationId + '/important')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        description: 'Some important description.'
       })
       .expect(403)
       .end(done);
@@ -179,9 +222,14 @@ describe("observation important tests", function() {
       favoriteUserIds: []
     });
 
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .withArgs(observationId.toString())
+      .yields(null, mockObservation);
+
     var observationMock = sandbox.mock(ObservationModel)
       .expects('findByIdAndUpdate')
-      .withArgs(observationId.toString(), sinon.match( { '$unset': {important: 1} } ), sinon.match.any)
+      .withArgs(observationId, sinon.match( { '$unset': {important: 1} } ), sinon.match.any)
       .yields(null, mockObservation);
 
     request(app)

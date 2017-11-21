@@ -397,7 +397,7 @@ module.exports = function(app, security) {
   );
 
   app.put(
-    '/api/events/:eventId/observations/:id/important',
+    '/api/events/:eventId/observations/:observationId/important',
     passport.authenticate('bearer'),
     authorizeEventAccess('UPDATE_EVENT', 'update'),
     function (req, res, next) {
@@ -407,7 +407,7 @@ module.exports = function(app, security) {
         description: req.body.description
       };
 
-      new api.Observation(req.event).addImportant(req.params.id, important, function(err, updatedObservation) {
+      new api.Observation(req.event).addImportant(req.observation._id, important, function(err, updatedObservation) {
         if (err) return next(err);
         if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.id + " does not exist");
 
@@ -418,12 +418,12 @@ module.exports = function(app, security) {
   );
 
   app.delete(
-    '/api/events/:eventId/observations/:id/important',
+    '/api/events/:eventId/observations/:observationId/important',
     passport.authenticate('bearer'),
     authorizeEventAccess('UPDATE_EVENT', 'update'),
     function (req, res, next) {
 
-      new api.Observation(req.event).removeImportant(req.params.id, function(err, updatedObservation) {
+      new api.Observation(req.event).removeImportant(req.observation._id, function(err, updatedObservation) {
         if (err) return next(err);
         if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.id + " does not exist");
 
