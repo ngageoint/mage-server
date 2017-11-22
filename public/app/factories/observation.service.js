@@ -183,7 +183,7 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
   function getObservationStyle(eventStyle, formStyle, primary, variant) {
     var style = eventStyle;
     if (formStyle) {
-      if (primary && formStyle[primary] && variant && formStyle[variant]) {
+      if (primary && formStyle[primary] && variant && formStyle[primary][variant]) {
         style = formStyle[primary][variant];
       } else if (primary && formStyle[primary]) {
         style = formStyle[primary];
