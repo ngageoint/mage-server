@@ -3,11 +3,19 @@ All notable changes to this project will be documented in this file.
 Adheres to [Semantic Versioning](http://semver.org/).
 
 ---
-## 4.5.3 (TBD)
+## 5.0.1 (TBD)
 
 * TBD
 
 ##### Features
+
+##### Bug Fixes
+
+## 5.0.0 (TBD)
+
+##### Features
+* Support for multiple forms per event
+* Linestring and polygon observation support
 * Upgraded npm dependencies to latest.
 * Added map icon color and map icon initials columns to bulk user import.
 * Trim leading/trailing white space from username when creating users.
