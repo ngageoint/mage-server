@@ -543,6 +543,12 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       // don't delete on click
       e.cancel();
     });
+
+    editLayer.on('editable:drawing:clicked', function(e) {
+      if (GeometryService.featureHasIntersections(editLayer.toGeoJSON())) {
+        editLayer.editor.pop();
+      }
+    });
   }
 
   function initiateShapeEdit(layer) {
