@@ -520,6 +520,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     var modalInstance = $uibModal.open({
       templateUrl: '/app/admin/events/event.symbology.chooser.html',
       scope: $scope,
+      size: 'lg',
       controller: ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
         var fileToUpload;
         $scope.model = {
@@ -537,6 +538,11 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
         });
 
         $scope.done = function() {
+          $scope.styleForm.$submitted = true;
+          if ($scope.styleForm.$invalid) {
+            return;
+          }
+
           $uibModalInstance.close({style:$scope.model.style, file: fileToUpload, uploadUrl: $scope.uploadUrl});
         };
 
