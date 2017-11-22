@@ -480,7 +480,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
   };
 
   $scope.updateSymbology = function(primary, variant) {
-    $scope.form.style = $scope.form.style || {};
+    $scope.form.style = $scope.form.style || angular.copy($scope.event.style);
 
     var eventId = $scope.event.id;
     var formId = $scope.form.id;
@@ -488,7 +488,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     var style = $scope.form.style;
     var filesToUpload = $scope.filesToUpload;
 
-    if (primary) {
+    if (primary && $scope.form.style) {
       $scope.form.style[primary] = $scope.form.style[primary] || {
         fill: $scope.form.style.fill,
         stroke: $scope.form.style.stroke,
@@ -498,7 +498,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
       };
       style = $scope.form.style[primary];
     }
-    if (variant) {
+    if (variant && $scope.form.style) {
       $scope.form.style[primary][variant] = $scope.form.style[primary][variant] || {
         fill: $scope.form.style[primary].fill,
         stroke: $scope.form.style[primary].stroke,
@@ -585,7 +585,6 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
 
   $scope.$on('uploadFile', function(e, uploadId, file, url) {
     $scope.filesToUpload[url] = file;
-
   });
 
   // delete particular option
