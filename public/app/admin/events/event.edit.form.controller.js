@@ -406,10 +406,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
 
   $scope.symbologyFilter = function(otherFilterField) {
     return function(field) {
-      return !otherFilterField ||
-        (!field.archived &&
-        otherFilterField.name !== field.name &&
-        (field.type === 'dropdown'));
+      return !field.archived && field.type === 'dropdown' && (!otherFilterField || otherFilterField.name !== field.name);
     };
   };
 
