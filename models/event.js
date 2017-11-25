@@ -542,6 +542,8 @@ exports.updateForm = function(event, form, callback) {
   };
 
   Event.findOneAndUpdate({'forms._id': form._id}, update, {new: true, runValidators: true}, function(err, event) {
+    if (err) return callback(err);
+
     var forms = event.forms.filter(function(f) {
       return f._id === form._id;
     });

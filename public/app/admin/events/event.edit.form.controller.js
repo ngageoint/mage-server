@@ -227,10 +227,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
         upload(url, file);
       }
 
-      //TODO save form / update form
-      var form = angular.copy($scope.form);
-      form.eventId = $scope.event.id;
-      $scope.form.$save(form, function() {
+      $scope.form.$save({eventId: $scope.event.id, id: form.id}, function() {
         _.each($scope.form.fields, function(field) {
           if ($scope.isMemberField(field)) {
             field.choices = [];
@@ -281,19 +278,13 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
 
   $scope.archiveForm = function() {
     $scope.form.archived = true;
-
-    var form = angular.copy($scope.form);
-    form.eventId = $scope.event.id;
-    $scope.form.$save(form, function() {
+    $scope.form.$save({eventId: $scope.event.id, id: form.id}, function() {
     });
   };
 
   $scope.restoreForm = function() {
     $scope.form.archived = false;
-
-    var form = angular.copy($scope.form);
-    form.eventId = $scope.event.id;
-    $scope.form.$save(form, function() {
+    $scope.form.$save({eventId: $scope.event.id, id: form.id}, function() {
     });
   };
 
