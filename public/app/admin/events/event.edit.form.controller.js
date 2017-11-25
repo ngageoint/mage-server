@@ -227,7 +227,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
         upload(url, file);
       }
 
-      $scope.form.$save({eventId: $scope.event.id, id: form.id}, function() {
+      $scope.form.$save({eventId: $scope.event.id, id: $scope.form.id}, function() {
         _.each($scope.form.fields, function(field) {
           if ($scope.isMemberField(field)) {
             field.choices = [];
@@ -278,13 +278,13 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
 
   $scope.archiveForm = function() {
     $scope.form.archived = true;
-    $scope.form.$save({eventId: $scope.event.id, id: form.id}, function() {
+    $scope.form.$save({eventId: $scope.event.id, id: $scope.form.id}, function() {
     });
   };
 
   $scope.restoreForm = function() {
     $scope.form.archived = false;
-    $scope.form.$save({eventId: $scope.event.id, id: form.id}, function() {
+    $scope.form.$save({eventId: $scope.event.id, id: $scope.form.id}, function() {
     });
   };
 
