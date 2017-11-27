@@ -392,7 +392,6 @@ module.exports = function(app, security) {
     function(req, res, next) {
       console.log('get icon for formId: ', req.params.formId);
       new api.Icon(req.event._id, req.params.formId, req.params.primary, req.params.variant).getIcon(function(err, iconPath) {
-        console.log('iconPath is: ', iconPath);
         if (err || !iconPath) return next();
 
         res.sendFile(iconPath);
