@@ -63,11 +63,6 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     }
   });
 
-  $scope.$on('uploadComplete', function() {
-    unsavedIcons--;
-    completeSave();
-  });
-
   $scope.fileUploadOptions = {};
 
   $scope.fieldTypes = [{
@@ -255,7 +250,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
       success: function() {
         $scope.$apply(function(){
           delete $scope.filesToUpload[url];
-          // unsavedIcons--;
+          unsavedIcons--;
           completeSave();
           $scope.savedTime = Date.now();
         });
