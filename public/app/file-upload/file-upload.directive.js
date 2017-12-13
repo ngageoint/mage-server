@@ -9,6 +9,7 @@ function fileUpload() {
     scope: {
       type: '@',
       url: '@',
+      icon: '@',
       allowUpload: '=',
       preview: '=',
       uploadId: '=',
@@ -55,7 +56,7 @@ function FileUploadController($scope, $element) {
     if (!url) return;
 
     $scope.uploadImageMissing = false;
-    $element.find('.preview').html(['<img class="preview-image" src="',$scope.url,'"/>'].join(''));
+    $element.find('.preview').html(['<img class="preview-image" src="', $scope.icon || $scope.url, '"/>'].join(''));
   });
 
   var previewFile = function(file, element) {

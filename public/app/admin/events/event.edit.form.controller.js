@@ -469,6 +469,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     var formId = $scope.form.id;
     var token = $scope.token;
     var style = $scope.form.style;
+    var icon = {};
     var filesToUpload = $scope.filesToUpload;
 
     if (primary && $scope.form.style) {
@@ -515,6 +516,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
           position: 'bottom left'
         };
         $scope.uploadUrl = '/api/events/' + eventId + '/icons' + (formId ? '/' + formId : '') + (primary ? '/' + primary : '') + (variant ? '/' + variant : '')  + '?access_token=' + token;
+        $scope.icon = $scope.getIcon(primary, variant);
 
         $scope.$on('uploadFile', function(e, uploadId, file) {
           fileToUpload = file;
@@ -526,7 +528,12 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
             return;
           }
 
-          $uibModalInstance.close({style:$scope.model.style, file: fileToUpload, uploadUrl: $scope.uploadUrl});
+          $uibModalInstance.close({
+            icon: icon,
+            style: $scope.model.style,
+            file: fileToUpload,
+            uploadUrl: $scope.uploadUrl
+          });
         };
 
         $scope.cancel = function () {
@@ -555,6 +562,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
             $scope.$apply();
             var img = $('img[src*="' + url + '"]').first();
             img.attr('src',e.target.result);
+            style.icon = e.target.result;
           };
         })(file);
 
@@ -569,6 +577,19 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
   $scope.$on('uploadFile', function(e, uploadId, file, url) {
     $scope.filesToUpload[url] = file;
   });
+
+  $scope.getIcon = function(primary, secondary) {
+    var style = $scope.form.style || {};
+    if (style[primary] && style[primary][secondary] && style[primary][secondary].icon) {
+      return style[primary][secondary].icon;
+    } else if (style[primary] && style[primary].icon) {
+      return style[primary].icon;
+    } else if (style.icon) {
+      return style.icon;
+    } else {
+      return null;
+    }
+  };
 
   // delete particular option
   $scope.deleteOption = function (field, option) {

@@ -523,7 +523,7 @@
                         <div class="row">
                           <div class="col-md-12">Default</div>
                         </div>
-                        <img class="preview-image" width="100%" ng-src="{{'/api/events/' + event.id + '/icons/' + form.id + '/' + option.title + '?access_token=' + token + '&_dc=' + savedTime}}"/>
+                        <img class="preview-image" width="100%" ng-src="{{ getIcon(option.title) || '/api/events/' + event.id + '/icons/' + form.id + '/' + option.title + '?access_token=' + token + '&_dc=' + savedTime}}"/>
                         <div class="shape-style">
                           <div style-preview="form.style || event.style" type="Polygon" primary="option.title"></div>
                         </div>
@@ -551,7 +551,7 @@
                               </span>
                             </div>
                           </div>
-                          <img class="preview-image" width="100%" ng-src="{{'/api/events/' + event.id + '/icons/' + form.id + '/' + option.title + '/' + variant.title + '?access_token=' + token + '&_dc=' + savedTime}}"/>
+                          <img class="preview-image" width="100%" ng-src="{{ getIcon(option.title, variant.title) || '/api/events/' + event.id + '/icons/' + form.id + '/' + option.title + '/' + variant.title + '?access_token=' + token + '&_dc=' + savedTime}}"/>
                           <div class="shape-style">
                             <div style-preview="form.style || event.style" type="Polygon" primary="option.title" variant="variant.title"></div>
                           </div>

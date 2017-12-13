@@ -1,9 +1,9 @@
 module.exports = function(app, security) {
   var Event = require('../models/event')
-  , access = require('../access')
-  , api = require('../api')
-  , fs = require('fs-extra')
-  , async = require('async');
+    , access = require('../access')
+    , api = require('../api')
+    , fs = require('fs-extra')
+    , async = require('async');
 
   var passport = security.authentication.passport;
 
@@ -55,6 +55,62 @@ module.exports = function(app, security) {
     req.parameters = parameters;
 
     next();
+  }
+
+  function parseForm(req, res, next) {
+    var form = req.body || {};
+
+    var fields = form.fields || [];
+    var userFields = form.userFields || [];
+    fields.forEach(function(field) {
+      // remove userFields chocies, these are set dynamically
+      if (userFields.indexOf(field.name) !== -1) {
+        field.choices = [];
+      }
+    });
+
+    if (form.style) {
+      var whitelistStyle = reduceStyle(form.style);
+
+      var primaryField = form.fields.filter(function(field) {
+        return field.name === form.primaryField;
+      }).shift();
+      var primaryChoices = primaryField.choices.map(function(item) {
+        return item.title;
+      });
+
+      var secondaryField = form.fields.filter(function(field) {
+        return field.name === form.variantField;
+      }).shift();
+      var secondaryChoices = secondaryField.choices.map(function(choice) {
+        return choice.title;
+      });
+
+      primaryChoices.reduce(function(o, primary) {
+        if (form.style[primary] !== undefined && typeof form.style[primary] === 'object') {
+          whitelistStyle[primary] = reduceStyle(form.style[primary]);
+
+          secondaryChoices.reduce(function(o, secondary) {
+            if (form.style[primary][secondary] !== undefined && typeof form.style[primary][secondary] === 'object') {
+              whitelistStyle[primary][secondary] = reduceStyle(form.style[primary][secondary]);
+            }
+          }, o[primary]);
+        }
+
+      }, whitelistStyle);
+
+      form.style = whitelistStyle;
+    }
+
+    req.form = form;
+    next();
+  }
+
+  function reduceStyle(style) {
+    return ['fill', 'fillOpacity', 'stroke', 'strokeOpacity', 'strokeWidth'].reduce(function(o, k) {
+      if (style[k] !== undefined) o[k] = style[k];
+      return o;
+    }, {});
   }
 
   app.get(
@@ -197,7 +253,6 @@ module.exports = function(app, security) {
     '/api/events/:eventId/forms',
     passport.authenticate('bearer'),
     access.authorize('UPDATE_EVENT'),
-    parseEventQueryParams,
     function(req, res, next) {
 
       if (!req.is('multipart/form-data')) return next();
@@ -236,18 +291,9 @@ module.exports = function(app, security) {
     '/api/events/:eventId/forms',
     passport.authenticate('bearer'),
     access.authorize('UPDATE_EVENT'),
-    parseEventQueryParams,
+    parseForm,
     function(req, res, next) {
-      var form = req.body || {};
-      var fields = form.fields || [];
-      var userFields = form.userFields || [];
-      fields.forEach(function(field) {
-        // remove userFields chocies, these are set dynamically
-        if (userFields.indexOf(field.name) !== -1) {
-          field.choices = [];
-        }
-      });
-
+      var form = req.form;
       Event.addForm(req.event._id, form, function(err, form) {
         if (err) return next(err);
 
@@ -276,18 +322,9 @@ module.exports = function(app, security) {
     '/api/events/:eventId/forms/:formId',
     passport.authenticate('bearer'),
     access.authorize('UPDATE_EVENT'),
-    parseEventQueryParams,
+    parseForm,
     function(req, res, next) {
-      var form = req.body || {};
-      var fields = form.fields || [];
-      var userFields = form.userFields || [];
-      fields.forEach(function(field) {
-        // remove userFields chocies, these are set dynamically
-        if (userFields.indexOf(field.name) !== -1) {
-          field.choices = [];
-        }
-      });
-
+      var form = req.form;
       form._id = parseInt(req.params.formId);
       Event.updateForm(req.event._id, form, function(err, form) {
         if (err) return next(err);
