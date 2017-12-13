@@ -41,9 +41,9 @@ module.exports = function(options) {
    * @param {Funtion} callback Signature: err, encryptedPassword
    */
   function encryptPassword(password, callback) {
-    var salt = crypto.randomBytes(saltLength).toString('base64').slice(0, saltLength);
+    var salt = crypto.randomBytes(saltLength).toString('base64');
 
-    crypto.pbkdf2(password, salt, iterations, derivedKeyLength, function (err, derivedKey) {
+    crypto.pbkdf2(password, salt, iterations, derivedKeyLength, 'sha1', function (err, derivedKey) {
       if (err) { return callback(err); }
 
       var encryptedPassword = serializePassword({
@@ -73,7 +73,7 @@ module.exports = function(options) {
     }
 
     // Use the encrypted password's parameter to hash the candidate password
-    crypto.pbkdf2(password, encryptedPassword.salt, encryptedPassword.iterations, encryptedPassword.derivedKeyLength, function (err, derivedKey) {
+    crypto.pbkdf2(password, encryptedPassword.salt, encryptedPassword.iterations, encryptedPassword.derivedKeyLength, 'sha1', function (err, derivedKey) {
       if (err) { return callback(err); }
 
       callback(null, derivedKey.toString('base64') === encryptedPassword.derivedKey);
