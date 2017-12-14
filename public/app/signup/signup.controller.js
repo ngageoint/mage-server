@@ -60,19 +60,22 @@ function SignupController($scope, $location, UserService, Api) {
     }
   };
 
-  function onFail(z){ alert('Fail' + JSON.stringify(z)); }
-function onWin(googleUser){
-  var basicProfile = googleUser.getBasicProfile();
-  var id_token = googleUser.getAuthResponse().id_token;
-  $scope.thirdPartyUser = {
-    type: 'google',
-    displayName: basicProfile.getName(),
-    email: basicProfile.getEmail(),
-    imageUrl: basicProfile.getImageUrl(),
-    token: id_token
-  };
-  $scope.$apply();
-}
+  function onFail(z) {
+    alert('Fail' + JSON.stringify(z));
+  }
+
+  function onWin(googleUser) {
+    var basicProfile = googleUser.getBasicProfile();
+    var id_token = googleUser.getAuthResponse().id_token;
+    $scope.thirdPartyUser = {
+      type: 'google',
+      displayName: basicProfile.getName(),
+      email: basicProfile.getEmail(),
+      imageUrl: basicProfile.getImageUrl(),
+      token: id_token
+    };
+    $scope.$apply();
+  }
 
   $scope.initializeGoogleButton = function(strategy) {
     gapi.load('auth2', function() {

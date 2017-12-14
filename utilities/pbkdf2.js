@@ -34,13 +34,13 @@ module.exports = function(options) {
   }
 
   /**
-   * Encrypt a password using node.js' crypto's PBKDF2
+   * Hash a password using node.js' crypto's PBKDF2
    * Description here: http://en.wikipedia.org/wiki/PBKDF2
    * Number of iterations are saved in case we change the setting in the future
    * @param {String} password
    * @param {Funtion} callback Signature: err, encryptedPassword
    */
-  function encryptPassword(password, callback) {
+  function hashPassword(password, callback) {
     var salt = crypto.randomBytes(saltLength).toString('base64');
 
     crypto.pbkdf2(password, salt, iterations, derivedKeyLength, 'sha1', function (err, derivedKey) {
@@ -81,7 +81,7 @@ module.exports = function(options) {
   }
 
   return {
-    encryptPassword: encryptPassword,
+    hashPassword: hashPassword,
     validPassword: validPassword
   };
 

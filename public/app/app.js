@@ -296,8 +296,10 @@ function config($provide, $httpProvider, $routeProvider, $animateProvider) {
 run.$inject = ['$rootScope', '$route', '$uibModal', 'UserService', '$location', 'authService', 'LocalStorageService', 'Api'];
 
 function run($rootScope, $route, $uibModal, UserService, $location, authService, LocalStorageService, Api) {
-  $rootScope.$on('event:auth-loginRequired', function() {
-    if (!$rootScope.loginDialogPresented && $location.path() !== '/' && $location.path() !== '/signin' && $location.path() !== '/signup' && $location.path() !== '/setup') {
+  $rootScope.$on('event:auth-loginRequired', function(e, response) {
+    var pathExceptions = ['/', '/signin', '/signup', '/setup'];
+    var requestExceptions = ['/api/users/myself/password'];
+    if (!$rootScope.loginDialogPresented && !_(pathExceptions).contains($location.path()) && !_(requestExceptions).contains(response.config.url)) {
       $rootScope.loginDialogPresented = true;
       var modalInstance = $uibModal.open({
         templateUrl: 'app/signin/signin-modal.html',

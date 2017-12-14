@@ -5,6 +5,7 @@ angular
 UserController.$inject =  ['$scope', '$location', '$timeout', 'Api', 'UserService', 'user'];
 
 function UserController($scope, $location, $timeout, Api, UserService, user) {
+  $scope.authentication = {};
   $scope.user = user;
   $scope.originalUser = angular.copy(user);
   $scope.passwordStatus = {};
@@ -81,34 +82,69 @@ function UserController($scope, $location, $timeout, Api, UserService, user) {
     $location.path('/map');
   };
 
-  $scope.updatePassword = function() {
-    if (!this.user.password) {
-      $scope.passwordStatus = {status: "error", msg: "password cannot be blank"};
-      return;
-    }
+  $scope.$watch('authentication.password', function() {
+    $scope.form.authentication.password.$setValidity('invalid', true);
+  });
 
-    if (this.user.password !== this.user.passwordconfirm) {
-      $scope.passwordStatus = {status: "error", msg: "passwords do not match"};
-      return;
+  var passwordStrengthMap = {
+    0: {
+      type: 'danger',
+      text: 'Weak'
+    },
+    1: {
+      type: 'danger',
+      text: 'Weak'
+    },
+    2: {
+      type: 'warning',
+      text: 'Fair'
+    },
+    3: {
+      type: 'primary',
+      text: 'Good'
+    },
+    4: {
+      type: 'success',
+      text: 'Excellent'
     }
+  };
 
-    var user = {
-      password: this.user.password,
-      passwordconfirm: this.user.passwordconfirm
+  $scope.passwordStrengthScore = 0;
+  $scope.$watch('authentication.newPassword', function(password) {
+    var score = password && password.length ? zxcvbn(password).score : 0;
+    $scope.passwordStrengthScore = score;
+    $scope.passwordStrengthType = passwordStrengthMap[score].type;
+    $scope.passwordStrength = passwordStrengthMap[score].text;
+  });
+
+  $scope.updatePassword = function(form) {
+    if (!form.$valid) return;
+
+    var authentication = {
+      username: this.user.username,
+      password: this.authentication.password,
+      newPassword: this.authentication.newPassword,
+      newPasswordConfirm: this.authentication.newPasswordConfirm
     };
 
-    UserService.updateMyPassword(user)
+    UserService.updateMyPassword(authentication)
       .success(function() {
-        $scope.user.password = "";
-        $scope.user.passwordconfirm = "";
-        $scope.passwordStatus = {status: "success", msg: "password successfully updated, redirecting to the login page"};
+        $scope.authentication.password = "";
+        $scope.authentication.newPassword = "";
+        $scope.authentication.newPasswordConfirm = "";
+        $scope.form.authentication.$setPristine();
+        $scope.passwordStatus = {status: "success", msg: "Password successfully updated, you will be redirected to the login page."};
 
         $timeout(function() {
           $location.path('/signin');
         }, 5000);
       })
-      .error(function(data) {
-        $scope.passwordStatus = {status: "error", msg: data};
+      .error(function(data, status) {
+        if (status === 401) {
+          form.password.$setValidity('invalid', false);
+        } else {
+          $scope.passwordStatus = {status: "danger", msg: data};
+        }
       });
   };
 

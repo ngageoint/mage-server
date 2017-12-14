@@ -85,16 +85,40 @@ UserSchema.pre('save', function(next) {
   var user = this;
 
   // only hash the password if it has been modified (or is new)
-  if (user.authentication.type === 'local' && user.isModified('authentication.password')) {
-    hasher.encryptPassword(user.authentication.password, function(err, encryptedPassword) {
-      if (err) return next(err);
-
-      user.authentication.password = encryptedPassword;
-      next();
-    });
-  } else {
-    next();
+  if (user.authentication.type !== 'local' || !user.isModified('authentication.password')) {
+    return next();
   }
+
+  var self = this;
+  async.waterfall([
+    function(done) {
+      self.constructor.findById(user._id, done);
+    },
+    function(existingUser, done) {
+      // Verify that the new password is different from the existing password
+      hasher.validPassword(user.authentication.password, existingUser.authentication.password, function(err, isValid) {
+        if (err) return done(err);
+
+        if (isValid) {
+          err = new Error('Password cannot be the same as previous password');
+          err.status = 400;
+        }
+
+        done(err);
+      });
+    },
+    function(done) {
+      // Finally hash the password
+      hasher.hashPassword(user.authentication.password, function(err, hashedPassword) {
+        if (err) return next(err);
+
+        user.authentication.password = hashedPassword;
+        done();
+      });
+    }
+  ], function(err) {
+    return next(err);
+  });
 });
 
 UserSchema.pre('save', function(next) {

@@ -723,6 +723,16 @@ textarea {
   margin-left: 10px;
 }
 
+.admin-password-container {
+  display: flex;
+  align-items: center;
+}
+
+.admin-password-text {
+  margin-left: 5px;
+  flex: 1;
+}
+
 .admin-option-container {
   display: flex;
   align-items: center;

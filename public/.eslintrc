@@ -8,7 +8,8 @@
       "moment": true,
       "WebFont": true,
       "EXIF": true,
-      "Papa": true
+      "Papa": true,
+      "zxcvbn": true
     },
     "rules": {
       "no-console": [1]

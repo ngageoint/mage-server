@@ -197,8 +197,8 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     }, success, error, progress);
   }
 
-  function updateMyPassword(user) {
-    var promise = $http.put('/api/users/myself', $.param(user), {
+  function updateMyPassword(authentication) {
+    var promise = $http.put('/api/users/myself/password', $.param(authentication), {
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
     });
 

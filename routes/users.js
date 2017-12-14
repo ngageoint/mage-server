@@ -245,9 +245,23 @@ module.exports = function(app, security) {
         }];
       }
 
+      new api.User().update(req.user, {avatar: req.files.avatar}, function(err, updatedUser) {
+        if (err) return next(err);
+
+        updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
+        res.json(updatedUser);
+      });
+    }
+  );
+
+  app.put(
+    '/api/users/myself/password',
+    passport.authenticate('local'),
+    function(req, res, next) {
+      console.log('authenticate user for password reset');
       if (req.user.authentication.type === 'local') {
-        var password = req.param('password');
-        var passwordconfirm = req.param('passwordconfirm');
+        var password = req.param('newPassword');
+        var passwordconfirm = req.param('newPasswordConfirm');
         if (password && passwordconfirm) {
           if (password !== passwordconfirm) {
             return res.status(400).send('passwords do not match');
@@ -259,14 +273,16 @@ module.exports = function(app, security) {
 
           req.user.authentication.password = password;
         }
+
+        new api.User().update(req.user, function(err, updatedUser) {
+          if (err) return next(err);
+
+          updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
+          res.json(updatedUser);
+        });
+      } else {
+        return res.status(400).send('no local password, cannot update.');
       }
-
-      new api.User().update(req.user, {avatar: req.files.avatar}, function(err, updatedUser) {
-        if (err) return next(err);
-
-        updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
-        res.json(updatedUser);
-      });
     }
   );
 

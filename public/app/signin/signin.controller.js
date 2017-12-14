@@ -48,30 +48,33 @@ function SigninController($scope, $rootScope, UserService, api) {
     });
   };
 
-  function onFail(z){ alert('Fail' + JSON.stringify(z)); }
-function onWin(googleUser){
-  var basicProfile = googleUser.getBasicProfile();
-  var id_token = googleUser.getAuthResponse().id_token;
-  UserService.googleSignin({uid: $scope.uid, token: id_token}).then(function() {
-    // success
-  }, function(data) {
-    $scope.showStatus = true;
+  function onFail(z) {
+    alert('Fail' + JSON.stringify(z));
+  }
 
-    if (data.device && !data.device.registered) {
-      $scope.statusTitle = 'Device Pending Registration';
-      $scope.statusMessage = data.errorMessage;
-      $scope.statusLevel = 'alert-warning';
-    } else {
-      $scope.statusTitle = 'Error signing in';
-      $scope.statusMessage = data.data;
-      $scope.statusLevel = 'alert-danger';
-    }
-  });
-}
+  function onWin(googleUser){
+    var basicProfile = googleUser.getBasicProfile();
+    var id_token = googleUser.getAuthResponse().id_token;
+    UserService.googleSignin({uid: $scope.uid, token: id_token}).then(function() {
+      // success
+    }, function(data) {
+      $scope.showStatus = true;
 
-var updateSignIn = function() {
-  console.log('update sign in state' + auth2.isSignedIn.get());
-}
+      if (data.device && !data.device.registered) {
+        $scope.statusTitle = 'Device Pending Registration';
+        $scope.statusMessage = data.errorMessage;
+        $scope.statusLevel = 'alert-warning';
+      } else {
+        $scope.statusTitle = 'Error signing in';
+        $scope.statusMessage = data.data;
+        $scope.statusLevel = 'alert-danger';
+      }
+    });
+  }
+
+  var updateSignIn = function() {
+    console.log('update sign in state' + auth2.isSignedIn.get());
+  }
 
   $scope.initializeGoogleButton = function(strategy) {
     gapi.load('auth2', function() {

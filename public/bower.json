@@ -45,6 +45,7 @@
     "exif-js": "2.1.1",
     "papaparse": "4.1.4",
     "turfjs": "*",
-    "leaflet.editable": "~1.1.0"
+    "leaflet.editable": "~1.1.0",
+    "zxcvbn": "4.4.2"
   }
 }

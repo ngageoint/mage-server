@@ -1,12 +1,11 @@
-var expect = require("chai").expect
-  , crypto = require('crypto')
+var crypto = require('crypto')
   , pbkdf2 = require('../utilities/pbkdf2.js');
 
 describe("PBKDF2 tests", function() {
   var hasher = new pbkdf2();
 
   it("should hash password", function(done) {
-    hasher.encryptPassword("password", function(err, hash) {
+    hasher.hashPassword("password", function(err, hash) {
       hash.should.be.a('string');
       var items = hash.split('::');
       items.should.have.length(4);
@@ -14,7 +13,7 @@ describe("PBKDF2 tests", function() {
       items[3].should.equal('12000');
 
       done(err);
-    })
+    });
   });
 
   it("should validate password", function(done) {
@@ -25,9 +24,9 @@ describe("PBKDF2 tests", function() {
       12000,
     ].join("::");
 
-    hasher.validPassword("password", hash, function(err, hash) {
+    hasher.validPassword("password", hash, function(err) {
       done(err);
-    })
+    });
   });
 
 });
