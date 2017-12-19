@@ -241,11 +241,6 @@ exports.getObservations = function(event, o, callback) {
   observationModel(event).find(conditions, fields, options, callback);
 };
 
-// DEPRECATED backwards compat for creating an observation.  Will be removed in version 5.x.x
-exports.createObservation = function(event, observation, callback) {
-  observationModel(event).create(observation, callback);
-};
-
 exports.createObservationId = function(callback) {
   ObservationId.create({}, callback);
 };
@@ -323,7 +318,7 @@ exports.addState = function(event, id, state, callback) {
     }
   };
 
-  observationModel(event).update(condition, update, {upsert: true}, function(err) {
+  observationModel(event).update(condition, update, {upsert: false}, function(err) {
     callback(err, state);
   });
 };

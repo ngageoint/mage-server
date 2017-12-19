@@ -92,16 +92,16 @@ function UserController($scope, $location, $timeout, Api, UserService, user) {
       text: 'Weak'
     },
     1: {
-      type: 'danger',
-      text: 'Weak'
-    },
-    2: {
       type: 'warning',
       text: 'Fair'
     },
+    2: {
+      type: 'info',
+      text: 'Good'
+    },
     3: {
       type: 'primary',
-      text: 'Good'
+      text: 'Strong'
     },
     4: {
       type: 'success',
@@ -111,8 +111,8 @@ function UserController($scope, $location, $timeout, Api, UserService, user) {
 
   $scope.passwordStrengthScore = 0;
   $scope.$watch('authentication.newPassword', function(password) {
-    var score = password && password.length ? zxcvbn(password).score : 0;
-    $scope.passwordStrengthScore = score;
+    var score = password && password.length ? zxcvbn(password, [$scope.user.username, $scope.user.displayName, $scope.user.email]).score : 0;
+    $scope.passwordStrengthScore = score + 1;
     $scope.passwordStrengthType = passwordStrengthMap[score].type;
     $scope.passwordStrength = passwordStrengthMap[score].text;
   });

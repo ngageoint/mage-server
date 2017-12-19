@@ -99,29 +99,6 @@ module.exports = function(app, security) {
       }];
     }
 
-    var password = req.param('password');
-    if (!password) {
-      return res.status(400).send(invalidResponse('password'));
-    }
-
-    var passwordconfirm = req.param('passwordconfirm');
-    if (!passwordconfirm) {
-      return res.status(400).send(invalidResponse('passwordconfirm'));
-    }
-
-    if (password !== passwordconfirm) {
-      return res.status(400).send('passwords do not match');
-    }
-
-    if (password.length < passwordLength) {
-      return res.status(400).send('password does not meet minimum length requirement of ' + passwordLength + ' characters');
-    }
-
-    user.authentication = {
-      type: 'local',
-      password: password
-    };
-
     req.newUser = user;
 
     next();
@@ -258,10 +235,18 @@ module.exports = function(app, security) {
     '/api/users/myself/password',
     passport.authenticate('local'),
     function(req, res, next) {
-      console.log('authenticate user for password reset');
       if (req.user.authentication.type === 'local') {
         var password = req.param('newPassword');
         var passwordconfirm = req.param('newPasswordConfirm');
+
+        if (!password) {
+          return res.status(400).send('newPassword is required');
+        }
+
+        if (!passwordconfirm) {
+          return res.status(400).send('newPasswordConfirm is required');
+        }
+
         if (password && passwordconfirm) {
           if (password !== passwordconfirm) {
             return res.status(400).send('passwords do not match');
@@ -271,7 +256,10 @@ module.exports = function(app, security) {
             return res.status(400).send('password does not meet minimum length requirment of ' + passwordLength + ' characters');
           }
 
-          req.user.authentication.password = password;
+          req.user.authentication = {
+            type: 'local',
+            password: password
+          };
         }
 
         new api.User().update(req.user, function(err, updatedUser) {
