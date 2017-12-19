@@ -4,6 +4,7 @@ module.exports = function(app, passport, provisioning) {
     , LocalStrategy = require('passport-local').Strategy
     , User = require('../models/user')
     , api = require('../api')
+    , config = require('../config.js')
     , userTransformer = require('../transformers/user');
 
   function parseLoginMetadata(req, res, next) {
@@ -57,7 +58,8 @@ module.exports = function(app, passport, provisioning) {
         res.json({
           token: token.token,
           expirationDate: token.expirationDate,
-          user: userTransformer.transform(req.user, {path: req.getRoot()})
+          user: userTransformer.transform(req.user, {path: req.getRoot()}),
+          api: config.api
         });
       });
     }

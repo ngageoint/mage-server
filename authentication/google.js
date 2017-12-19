@@ -6,6 +6,7 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
     , Device = require('../models/device')
     , Role = require('../models/role')
     , api = require('../api')
+    , config = require('../config.js')
     , userTransformer = require('../transformers/user');
 
   var auth = new GoogleAuth();
@@ -28,18 +29,15 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
     googleClient.verifyIdToken(
       req.param('token'),
       googleStrategy.clientID,
-      function(e, login) {
-        if (e) {
+      function(err) {
+        if (err) {
           // user token did not validate so do not proceed
-          return next(e);
+          return next(err);
         }
-        console.log('e', e);
-        var payload = login.getPayload();
-        var userId = payload['sub'];
-        console.log('payload', payload);
+
         User.getUserByAuthenticationId('google', req.param('userID'), function(err, user) {
-          console.log('user', user);
           if (err) return next(err);
+
           if (!user) {
             var error = new Error('User does not exist, please create an account first');
             error.status = 400;
@@ -47,15 +45,16 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
           }
 
           if (!user.active) {
-            var error = new Error('User is not approved, please contact your MAGE administrator');
-            error.status = 400;
-            return next(error);
+            var inactiveError = new Error('User is not approved, please contact your MAGE administrator');
+            inactiveError.status = 400;
+            return next(inactiveError);
           }
+
           req.user = user;
           next();
         });
       }
-    )
+    );
   }
 
   function provisionDevice(req, res, next) {
@@ -69,7 +68,6 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
 
       if (provisioning.strategy === 'uid' && (!device || !device.registered)) {
         Device.createDevice({ uid: req.param('uid'), userId: req.user._id, appVersion: req.loginOptions.appVersion, userAgent: req.loginOptions.userAgent}, function(err, newDevice) {
-          var msg = 'Your device needs to be registered, please contact your MAGE administrator.';
           return res.json({device: newDevice, errorMessage: 'Your device needs to be registered, please contact your MAGE administrator.'});
         });
       } else {
@@ -212,10 +210,13 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
     provisionDevice,
     function(req, res, next) {
       new api.User().login(req.user,  req.provisionedDevice, req.loginOptions, function(err, token) {
+        if (err) return next(err);
+
         res.json({
           token: token.token,
           expirationDate: token.expirationDate,
-          user: userTransformer.transform(req.user, {path: req.getRoot()})
+          user: userTransformer.transform(req.user, {path: req.getRoot()}),
+          api: config.api
         });
       });
     }
@@ -224,7 +225,6 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
   app.get(
     '/auth/google/callback',
     authenticate,
-
     function(req, res, next) {
       var state = JSON.parse(req.query.state);
       if (state.type === 'signup') {
