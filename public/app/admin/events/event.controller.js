@@ -268,6 +268,26 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     $scope.event.$save();
   };
 
+  $scope.preview = function($event, form) {
+    $event.stopPropagation();
+
+    $uibModal.open({
+      templateUrl: '/app/admin/events/event-form-preview.html',
+      resolve: {
+        form: function () {
+          return form;
+        }
+      },
+      controller: ['$scope', '$uibModalInstance', 'form', function ($scope, $uibModalInstance, form) {
+        $scope.form = form;
+
+        $scope.close = function () {
+          $uibModalInstance.dismiss('cancel');
+        };
+      }]
+    });
+  };
+
   $scope.deleteEvent = function() {
     var modalInstance = $uibModal.open({
       templateUrl: '/app/admin/events/event-delete.html',

@@ -1,0 +1,14 @@
+<div class="modal-header">
+  <i class="fa fa-close pull-right pointer modal-title" ng-click="close()"></i>
+  <h3 class="modal-title">{{form.name}}</h3>
+</div>
+
+<div class="modal-body">
+  <div class="row">
+    <div class="col-sm-12">
+      <div ng-repeat="field in form.fields | filter:{archived: '!true'} | orderBy: 'id'">
+        <field-directive field="field" field-observation="observation" field-form="aForm"></field-directive>
+      </div>
+    </div>
+  </div>
+</div>

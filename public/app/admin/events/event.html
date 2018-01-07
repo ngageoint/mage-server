@@ -315,8 +315,9 @@
                       </div>
                       <span>{{form.name}}</span><span ng-if="form.archived" class="text-danger"> (Archived)</span>
 
-                      <i class="pull-right fa fa-arrow-up" ng-if="!$first" ng-click="moveFormUp($event, form)"></i>
-                      <i class="pull-right fa fa-arrow-down" ng-if="!$last" ng-click="moveFormDown($event, form)"></i>
+                      <i class="pull-right fa fa-arrow-up clearfix" ng-if="!$first" ng-click="moveFormUp($event, form)" uib-tooltip="Move form up" tooltip-placement="right" tooltip-append-to-body="true"></i>
+                      <i class="pull-right fa fa-arrow-down" ng-if="!$last" ng-click="moveFormDown($event, form)" uib-tooltip="Move form down" tooltip-placement="right" tooltip-append-to-body="true"></i>
+                      <button class="btn btn-info btn-xs pull-right right-gap" ng-click="preview($event, form)">Preview</button>
                     </div>
                   </div>
                   <div class="row" ng-if="layer.description">
