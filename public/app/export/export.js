@@ -1,6 +1,8 @@
-angular
-  .module('mage')
-  .controller('ExportController', ExportController);
+var $ = require('jquery')
+  , angular = require('angular')
+  , moment = require('moment');
+
+module.exports = ExportController;
 
 ExportController.$inject = ['$scope', '$uibModalInstance', 'LocalStorageService', 'FilterService', 'events'];
 

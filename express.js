@@ -33,7 +33,7 @@ app.use(require('body-parser')({ keepExtensions: true}));
 app.use(require('method-override')());
 app.use(require('multer')());
 app.use(passport.initialize());
-app.use(express.static(path.join(__dirname, process.env.NODE_ENV === 'production' ? 'public/dist' : 'public')));
+app.use(express.static(path.join(__dirname, 'public/dist')));
 app.use('/api/swagger', express.static('./public/vendor/swagger-ui/'));
 app.use('/private',
   passport.authenticate('bearer'),

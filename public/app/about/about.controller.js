@@ -1,6 +1,4 @@
-angular
-  .module('mage')
-  .controller('AboutController', AboutController);
+module.exports = AboutController;
 
 AboutController.$inject = ['$scope', 'Api'];
 

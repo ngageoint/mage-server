@@ -1,8 +1,8 @@
-angular
-  .module('mage')
-  .filter('geometry', geometryFilter);
+var turfCenter = require('@turf/center');
 
-function geometryFilter() {
+module.exports = GeometryFilter;
+
+function GeometryFilter() {
   function filter(input, format) {
     if (!input) return null;
 
@@ -12,7 +12,7 @@ function geometryFilter() {
       geometry: input
     };
 
-    var center = turf.center(feature);
+    var center = turfCenter(feature);
     return center.geometry.coordinates[0].toFixed(format) + ', ' + center.geometry.coordinates[1].toFixed(format);
   }
 

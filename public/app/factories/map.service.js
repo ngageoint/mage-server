@@ -1,6 +1,6 @@
-angular
-  .module('mage')
-  .factory('MapService', MapService);
+var _ = require('underscore');
+
+module.exports = MapService;
 
 MapService.$inject = [];
 

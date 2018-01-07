@@ -1,11 +1,9 @@
-angular
-  .module('mage')
-  .directive('locationPopup', locationPopup);
+var moment = require('moment');
 
-function locationPopup() {
+module.exports = function locationPopup() {
   var directive = {
     restrict: "A",
-    templateUrl:  "app/user/user-popup.directive.html",
+    template: require('./user-popup.directive.html'),
     scope: {
       user: '=locationPopup',
       userPopupInfo: '&',
@@ -15,7 +13,7 @@ function locationPopup() {
   };
 
   return directive;
-}
+};
 
 LocationPopupController.$inject = ['$scope', 'LocalStorageService'];
 
@@ -25,7 +23,7 @@ function LocationPopupController($scope, LocalStorageService) {
   if ($scope.user.avatarUrl) {
     $scope.avatarUrl = $scope.user.avatarUrl + "?access_token=" + LocalStorageService.getToken();
   } else {
-    $scope.avatarUrl = "img/missing_photo.png";
+    $scope.avatarUrl = "images/missing_photo.png";
   }
 
   $scope.onInfoClicked = function() {

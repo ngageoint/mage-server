@@ -1,6 +1,4 @@
-angular
-  .module('mage')
-  .controller('NotInEventController', NotInEventController);
+module.exports = NotInEventController;
 
 NotInEventController.$inject = ['$scope', '$uibModalInstance', 'title'];
 

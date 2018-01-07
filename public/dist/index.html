@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html ng-app="mage">
+<head>
+  <title>MAGE</title>
+
+  <link rel="shortcut icon" href="favicon.ico"/>
+  <meta id="view" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+
+  <link rel="stylesheet" href="styles.css"/>
+
+  <link rel="apple-touch-icon" href="img/touch-icon-iphone.png" />
+  <link rel="apple-touch-icon" sizes="72x72" href="img/touch-icon-ipad.png" />
+  <link rel="apple-touch-icon" sizes="114x114" href="img/touch-icon-iphone-retina.png" />
+  <link rel="apple-touch-icon" sizes="144x144" href="img/touch-icon-ipad-retina.png" />
+
+</head>
+
+<body>
+
+  <div banner="header"></div>
+
+  <!-- TODO possibly move this -->
+  <div class="navbar navbar-default navbar-flex" ng-controller="NavController">
+      <!-- We use the fluid option here to avoid overriding the fixed width of a normal container within the narrow content columns. -->
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".main-navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+
+          <a class="navbar-brand visible-xs-block" href="#/map" data-toggle="collapse" data-target=".main-navbar-collapse">
+            <i class="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
+          </a>
+          <a class="navbar-brand hidden-xs" href="#/map">
+            <i class="icon-magic icon-brand" style="margin-right:10px;"></i>MAGE
+          </a>
+        </div>
+
+        <div class="collapse navbar-collapse main-navbar-collapse" ng-cloak>
+          <ul class="nav navbar-nav" ng-if="location.path() === '/map'" ng-cloak>
+            <li class="dropdown">
+              <a class="pointer dropdown-toggle visible-xs-block" ng-click="onFilterClick()" data-toggle="collapse" data-target=".main-navbar-collapse">
+                <i class="fa fa-filter icon-spacer"></i> Filter
+              </a>
+              <a class="pointer dropdown-toggle hidden-xs" ng-click="onFilterClick()">
+                <i class="fa fa-filter icon-spacer"></i> Filter
+              </a>
+            </li>
+            <li class="dropdown">
+              <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown">
+                <i style="margin-right: 3px;" ng-class="pollingInterval == 0 ? 'fa fa-square-o' : 'fa fa-check-square-o'"></i> Live Update ({{pollingInterval | polling}})
+                <b class="caret"></b>
+              </a>
+              <ul class="dropdown-menu">
+                <li role="presentation" class="dropdown-header">Refresh Interval</li>
+                <li>
+                  <a ng-click="onPollingIntervalChanged('5000')" class="pointer">
+                    <i ng-class="pollingInterval == 5000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
+                    {{5000 | polling}}
+                  </a>
+                </li>
+                <li>
+                  <a ng-click="onPollingIntervalChanged('30000')" class="pointer">
+                    <i ng-class="pollingInterval == 30000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
+                    {{30000 | polling}}
+                  </a>
+                </li>
+                <li>
+                  <a ng-click="onPollingIntervalChanged('120000')" class="pointer">
+                    <i ng-class="pollingInterval == 120000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
+                    {{120000 | polling}}
+                  </a>
+                </li>
+                <li>
+                  <a ng-click="onPollingIntervalChanged('300000')" class="pointer">
+                    <i ng-class="pollingInterval == 300000 ? 'fa fa-check-square-o' : 'fa fa-square-o'"></i>
+                    {{300000 | polling}}
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li class="dropdown">
+              <a class="pointer dropdown-toggle visible-xs-block" data-toggle="collapse" data-target=".main-navbar-collapse" ng-click="onExportClick()">
+                <i class="fa fa-download icon-spacer"></i> Export
+              </a>
+              <a class="pointer dropdown-toggle hidden-xs" ng-click="onExportClick()">
+                <i class="fa fa-download icon-spacer"></i> Export
+              </a>
+            </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right" ng-show="myself" ng-cloak>
+            <li ng-show="myself">
+              <a href="#/user" data-toggle="collapse" data-target=".main-navbar-collapse" class="nav-link visible-xs-block" style="padding-top: 14px; padding-bottom: 10px;">
+                <span avatar-user="myself" avatar-width="25" avatar-height="25"></span>
+                <i class="fa fa-icon-info icon-spacer"></i> {{myself.displayName}}
+              </a>
+              <a href="#/user" class="nav-link hidden-xs" style="padding-top: 14px; padding-bottom: 10px;" uib-tooltip="My&nbsp;Profile" tooltip-placement="bottom">
+                <span avatar-user="myself" avatar-width="25" avatar-height="25"></span>
+                <i class="fa fa-icon-info icon-spacer"></i> {{myself.displayName}}
+              </a>
+            </li>
+            <li ng-show="amAdmin">
+              <a ng-href="#/admin" data-toggle="collapse" data-target=".main-navbar-collapse" class="nav-link visible-xs-block">
+                <i class="icon-cogs icon-spacer"></i> Admin
+              </a>
+              <a ng-href="#/admin" class="nav-link hidden-xs" uib-tooltip="Admin" tooltip-placement="bottom">
+                <i class="icon-cogs icon-spacer"></i>
+              </a>
+            </li>
+            <li>
+              <a href="#/about" data-toggle="collapse" data-target=".main-navbar-collapse" class="nav-link visible-xs-block">
+                <i class="fa fa-info-circle icon-spacer"></i> About MAGE
+              </a>
+              <a href="#/about" class="nav-link hidden-xs" uib-tooltip="About&nbsp;MAGE" tooltip-placement="bottom">
+                <i class="fa fa-info-circle icon-spacer"></i>
+              </a>
+            </li>
+            <li>
+              <a ng-click="logout()" data-toggle="collapse" data-target=".main-navbar-collapse" class="nav-link pointer visible-xs-block">
+                <i class="fa fa-sign-out icon-spacer"></i> Sign out
+              </a>
+              <a ng-click="logout()" class="nav-link pointer hidden-xs" uib-tooltip="Sign&nbsp;out" tooltip-placement="bottom">
+                <i class="fa fa-sign-out icon-spacer"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+  <div data-ng-view class="route-content"></div>
+
+  <div banner="footer"></div>
+
+  <script type="text/javascript" src="vendor.js"></script>
+  <script type="text/javascript" src="app.js"></script>
+
+</body>
+
+</html>

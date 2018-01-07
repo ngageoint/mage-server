@@ -1,6 +1,6 @@
-angular
-  .module('mage')
-  .controller('AdminLayerController', AdminLayerController);
+var _ = require('underscore');
+
+module.exports = AdminLayerController;
 
 AdminLayerController.$inject = ['$scope', '$uibModal', '$routeParams', '$location', '$filter', 'Layer', 'Event', 'LocalStorageService', 'UserService'];
 
@@ -32,7 +32,7 @@ function AdminLayerController($scope, $uibModal, $routeParams, $location, $filte
           return $scope.layer.id === layer.id;
         });
       });
-      
+
       var nonLayerEvents = _.chain(events);
       if (!_.contains(UserService.myself.role.permissions, 'UPDATE_EVENT')) {
         // filter teams based on acl
@@ -85,7 +85,7 @@ function AdminLayerController($scope, $uibModal, $routeParams, $location, $filte
 
   $scope.deleteLayer = function() {
     var modalInstance = $uibModal.open({
-      templateUrl: '/app/admin/layers/layer-delete.html',
+      template: require('./layer-delete.html'),
       resolve: {
         layer: function () {
           return $scope.layer;

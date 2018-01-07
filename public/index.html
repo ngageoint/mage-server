@@ -8,27 +8,17 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <script src="https://apis.google.com/js/platform.js" async defer></script>
 
-  <!-- build:css vendor/css/vendor.min.css -->
-  <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css"/>
-  <link rel="stylesheet" href="bower_components/jquery-minicolors/jquery.minicolors.css"/>
-  <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css"/>
-  <link rel="stylesheet" href="bower_components/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="bower_components/Leaflet.awesome-markers/dist/leaflet.awesome-markers.css"/>
-  <link rel="stylesheet" href="bower_components/leaflet.markercluster/dist/MarkerCluster.css"/>
-  <link rel="stylesheet" href="bower_components/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
-  <link rel="stylesheet" href="bower_components/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
-  <link rel="stylesheet" href="bower_components/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.css"/>
-  <link rel="stylesheet" href="bower_components/leaflet-geosearch/src/css/l.geosearch.css"/>
-  <link rel="stylesheet" href="bower_components/angular-ui-select/dist/select.min.css"/>
-  <link rel="stylesheet" href="bower_components/videogular-themes-default/videogular.min.css"/>
-  <!-- endbuild -->
+  <link rel="stylesheet" href="styles.css"/>
 
-  <!-- build:css css/app.min.css -->
-  <link rel="stylesheet" href="css/roboto.css"/>
-  <link rel="stylesheet" href="css/roboto-mono.css"/>
-  <link rel="stylesheet" href="css/icomoon.css"/>
-  <link rel="stylesheet" href="css/style.css"/>
-  <link rel="stylesheet" href="css/map.css"/>
+  <!-- build:css vendor/css/vendor.min.css -->
+  <!-- <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css"/> -->
+  <!-- <link rel="stylesheet" href="bower_components/jquery-minicolors/jquery.minicolors.css"/> -->
+  <!-- <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css"/> -->
+  <!-- <link rel="stylesheet" href="bower_components/leaflet.markercluster/dist/MarkerCluster.css"/>
+  <link rel="stylesheet" href="bower_components/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
+  <link rel="stylesheet" href="bower_components/leaflet.markercluster/dist/MarkerCluster.Default.css"/> -->
+  <!-- <link rel="stylesheet" href="bower_components/angular-ui-select/dist/select.min.css"/> -->
+  <!-- <link rel="stylesheet" href="bower_components/videogular-themes-default/videogular.min.css"/> -->
   <!-- endbuild -->
 
   <link rel="apple-touch-icon" href="img/touch-icon-iphone.png" />
@@ -164,154 +154,8 @@
 
   <div banner="footer"></div>
 
-  <!-- build:vendorjs vendor/js/vendor.js -->
-  <script type="text/javascript" src="bower_components/bower-webfontloader/webfont.js"></script>
-  <script type="text/javascript" src="bower_components/jquery/jquery.min.js"></script>
-  <script type="text/javascript" src="bower_components/underscore/underscore-min.js"></script>
-  <script type="text/javascript" src="bower_components/angular/angular.js"></script>
-  <script type="text/javascript" src="bower_components/angular-animate/angular-animate.min.js"></script>
-  <script type="text/javascript" src="bower_components/angular-resource/angular-resource.min.js"></script>
-  <script type="text/javascript" src="bower_components/angular-sanitize/angular-sanitize.min.js"></script>
-  <script type="text/javascript" src="bower_components/angular-messages/angular-messages.min.js"></script>
-  <script type="text/javascript" src="bower_components/angular-route/angular-route.min.js"></script>
-  <script type="text/javascript" src="bower_components/leaflet/dist/leaflet-src.js"></script>
-  <script type="text/javascript" src="bower_components/Leaflet.awesome-markers/dist/leaflet.awesome-markers.min.js"></script>
-  <script type="text/javascript" src="bower_components/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
-  <script type="text/javascript" src="bower_components/leaflet.editable/src/Leaflet.Editable.js"></script>
-  <script type="text/javascript" src="bower_components/leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.js"></script>
-  <script type="text/javascript" src="bower_components/leaflet-geosearch/src/js/l.control.geosearch.js"></script>
-  <script type="text/javascript" src="bower_components/leaflet-geosearch/src/js/l.geosearch.provider.openstreetmap.js"></script>
-  <script type="text/javascript" src="bower_components/angular-ui-select/dist/select.min.js"></script>
-  <script type="text/javascript" src="bower_components/moment/min/moment.min.js"></script>
-  <script type="text/javascript" src="bower_components/jquery-file-download/src/Scripts/jquery.fileDownload.js"></script>
-  <script type="text/javascript" src="bower_components/jquery-minicolors/jquery.minicolors.min.js"></script>
-  <script type="text/javascript" src="bower_components/angular-minicolors/angular-minicolors.js"></script>
-  <script type="text/javascript" src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
-  <script type="text/javascript" src="bower_components/videogular/videogular.js"></script>
-  <script type="text/javascript" src="bower_components/videogular-controls/vg-controls.js"></script>
-  <script type="text/javascript" src="bower_components/videogular-overlay-play/vg-overlay-play.js"></script>
-  <script type="text/javascript" src="bower_components/exif-js/exif.js"></script>
-  <script type="text/javascript" src="bower_components/papaparse/papaparse.min.js"></script>
-  <script type="text/javascript" src="bower_components/turfjs/turf.min.js"></script>
-  <script type="text/javascript" src="bower_components/zxcvbn/dist/zxcvbn.js"></script>
-  <script type="text/javascript" src="vendor/bootstrap/js/bootstrap.min.js"></script>
-  <!-- endbuild -->
-
-  <!-- build:js app.min.js -->
-  <script type="text/javascript" src="app/app.js"></script>
-
-  <script type="text/javascript" src="app/setup/setup.controller.js"></script>
-
-  <script type="text/javascript" src="app/mage/equals.directive.js"></script>
-  <script type="text/javascript" src="app/mage/mage.controller.js"></script>
-  <script type="text/javascript" src="app/mage/mage-nav.controller.js"></script>
-  <script type="text/javascript" src="app/mage/leaflet.directive.js"></script>
-  <script type="text/javascript" src="app/mage/feed.directive.js"></script>
-  <script type="text/javascript" src="app/mage/color.picker.directive.js"></script>
-  <script type="text/javascript" src="app/mage/banner.directive.js"></script>
-  <script type="text/javascript" src="app/mage/style-preview.directive.js"></script>
-
-  <script type="text/javascript" src="app/error/not.in.event.controller.js"></script>
-
-  <script type="text/javascript" src="app/export/export.js"></script>
-  <script type="text/javascript" src="app/filter/filter.js"></script>
-
-  <script type="text/javascript" src="app/auth/http-auth-interceptor.js"></script>
-
-  <script type="text/javascript" src="app/about/about.controller.js"></script>
-
-  <script type="text/javascript" src="app/disclaimer/disclaimer.controller.js"></script>
-
-  <script type="text/javascript" src="app/admin/admin.controller.js"></script>
-  <script type="text/javascript" src="app/admin/settings/settings.controller.js"></script>
-  <script type="text/javascript" src="app/admin/settings/settings.resource.js"></script>
-  <script type="text/javascript" src="app/admin/devices/devices.controller.js"></script>
-  <script type="text/javascript" src="app/admin/devices/device.controller.js"></script>
-  <script type="text/javascript" src="app/admin/devices/device.edit.controller.js"></script>
-  <script type="text/javascript" src="app/admin/events/events.controller.js"></script>
-  <script type="text/javascript" src="app/admin/events/event.controller.js"></script>
-  <script type="text/javascript" src="app/admin/events/event.edit.controller.js"></script>
-  <script type="text/javascript" src="app/admin/events/event.access.controller.js"></script>
-  <script type="text/javascript" src="app/admin/events/event.edit.form.controller.js"></script>
-  <script type="text/javascript" src="app/admin/events/events.filter.js"></script>
-  <script type="text/javascript" src="app/admin/users/user.controller.js"></script>
-  <script type="text/javascript" src="app/admin/users/user.edit.controller.js"></script>
-  <script type="text/javascript" src="app/admin/users/user.bulk.controller.js"></script>
-  <script type="text/javascript" src="app/admin/users/users.controller.js"></script>
-  <script type="text/javascript" src="app/admin/users/map.icon.directive.js"></script>
-  <script type="text/javascript" src="app/admin/teams/teams.controller.js"></script>
-  <script type="text/javascript" src="app/admin/teams/team.controller.js"></script>
-  <script type="text/javascript" src="app/admin/teams/team.edit.controller.js"></script>
-  <script type="text/javascript" src="app/admin/teams/team.delete.controller.js"></script>
-  <script type="text/javascript" src="app/admin/teams/team.access.controller.js"></script>
-  <script type="text/javascript" src="app/admin/layers/layers.controller.js"></script>
-  <script type="text/javascript" src="app/admin/layers/layer.controller.js"></script>
-  <script type="text/javascript" src="app/admin/layers/layer.edit.controller.js"></script>
-
-  <script type="text/javascript" src="app/signin/signin.controller.js"></script>
-  <script type="text/javascript" src="app/signup/signup.controller.js"></script>
-
-  <script type="text/javascript" src="app/admin/admin.tab.directive.js"></script>
-  <script type="text/javascript" src="app/observation/observation-feed.directive.js"></script>
-  <script type="text/javascript" src="app/observation/observation-attachment.directive.js"></script>
-  <script type="text/javascript" src="app/observation/observation-map-clip.directive.js"></script>
-  <script type="text/javascript" src="app/observation/observation-popup.directive.js"></script>
-  <script type="text/javascript" src="app/observation/form/form.directive.js"></script>
-  <script type="text/javascript" src="app/observation/form/field.directive.js"></script>
-  <script type="text/javascript" src="app/observation/property/property.directive.js"></script>
-
-  <script type="text/javascript" src="app/user/user.controller.js"></script>
-  <script type="text/javascript" src="app/user/user.reset.password.controller.js"></script>
-  <script type="text/javascript" src="app/user/user-feed.directive.js"></script>
-  <script type="text/javascript" src="app/user/user-avatar.directive.js"></script>
-  <script type="text/javascript" src="app/user/user-avatar-edit.directive.js"></script>
-  <script type="text/javascript" src="app/user/user-icon.directive.js"></script>
-  <script type="text/javascript" src="app/user/user-icon-edit.directive.js"></script>
-  <script type="text/javascript" src="app/user/user-popup.directive.js"></script>
-
-  <script type="text/javascript" src="app/leaflet-extensions/LocationMarker.js"></script>
-  <script type="text/javascript" src="app/leaflet-extensions/LocationMarker.Popup.js"></script>
-  <script type="text/javascript" src="app/leaflet-extensions/NewIcon.js"></script>
-  <script type="text/javascript" src="app/leaflet-extensions/FixedWidthIcon.js"></script>
-  <script type="text/javascript" src="app/leaflet-extensions/FixedWidthMarker.js"></script>
-  <script type="text/javascript" src="app/leaflet-extensions/MageControls.js"></script>
-  <script type="text/javascript" src="app/leaflet-extensions/WorldExtentControl.js"></script>
-
-  <script type="text/javascript" src="app/factories/api.resource.js"></script>
-  <script type="text/javascript" src="app/factories/geometry.service.js"></script>
-  <script type="text/javascript" src="app/factories/device.service.js"></script>
-  <script type="text/javascript" src="app/factories/event.service.js"></script>
-  <script type="text/javascript" src="app/factories/feature.service.js"></script>
-  <script type="text/javascript" src="app/factories/filter.service.js"></script>
-  <script type="text/javascript" src="app/factories/layer.service.js"></script>
-  <script type="text/javascript" src="app/factories/local-storage.service.js"></script>
-  <script type="text/javascript" src="app/factories/location.service.js"></script>
-  <script type="text/javascript" src="app/factories/map.service.js"></script>
-  <script type="text/javascript" src="app/factories/observation.service.js"></script>
-  <script type="text/javascript" src="app/factories/polling.service.js"></script>
-  <script type="text/javascript" src="app/factories/user.service.js"></script>
-  <script type="text/javascript" src="app/factories/user.icon.service.js"></script>
-  <script type="text/javascript" src="app/factories/login.service.js"></script>
-
-  <script type="text/javascript" src="app/factories/observation.resource.js"></script>
-  <script type="text/javascript" src="app/factories/layer.resource.js"></script>
-  <script type="text/javascript" src="app/factories/event.resource.js"></script>
-  <script type="text/javascript" src="app/factories/form.resource.js"></script>
-  <script type="text/javascript" src="app/factories/team.resource.js"></script>
-  <script type="text/javascript" src="app/factories/location.resource.js"></script>
-
-  <script type="text/javascript" src="app/file-upload/file-browser.directive.js"></script>
-  <script type="text/javascript" src="app/file-upload/file-upload.directive.js"></script>
-
-  <script type="text/javascript" src="app/filters/filename.filter.js"></script>
-  <script type="text/javascript" src="app/filters/geometry.filter.js"></script>
-  <script type="text/javascript" src="app/filters/moment.filter.js"></script>
-  <script type="text/javascript" src="app/filters/paging-offset.filter.js"></script>
-  <script type="text/javascript" src="app/filters/password.filter.js"></script>
-  <script type="text/javascript" src="app/filters/polling.filter.js"></script>
-  <script type="text/javascript" src="app/filters/user.filter.js"></script>
-
-  <!-- endbuild -->
+  <script type="text/javascript" src="vendor.js"></script>
+  <script type="text/javascript" src="app.js"></script>
 
 </body>
 

@@ -1,6 +1,7 @@
-angular
-  .module('mage')
-  .controller('AdminUserEditController', AdminUserEditController);
+var angular = require('angular')
+  , zxcvbn = require('zxcvbn');
+
+module.exports = AdminUserEditController;
 
 AdminUserEditController.$inject = ['$scope', '$filter', '$routeParams', '$location', 'Api', 'LocalStorageService', 'UserService', 'UserIconService'];
 

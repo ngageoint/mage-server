@@ -28,7 +28,7 @@
         <span class="observation-action">
           <i ng-if="canEditImportant || observation.important" class="fa fa-flag observation-action-important pointer" ng-class="{'observation-action-important-active': observation.important}"
           uib-tooltip="{{canEditImportant && !observation.important ? 'Flag As Important' : 'Flagged as Important'}}"
-          uib-popover-template="'/app/observation/observation-important.html'"
+          uib-popover-template="'observation/observation-important.html'"
           popover-placement="auto"
           popover-is-open="importantPopover.isOpen"></i>
         </span>
@@ -53,10 +53,7 @@
       </div>
 
       <div class="top-gap" ng-repeat="form in observationForm.forms">
-        <h4 ng-if="filteredFields.length > 0">{{form.name}}</h4>
-        <div class="top-gap" ng-repeat="field in filteredFields = (form.fields | filter:filterHidden) | orderBy: 'id'">
-          <property-view field="field">
-        </div>
+        <observation-form-view form="form"></observation-form-view>
       </div>
 
       <div class="attachments">

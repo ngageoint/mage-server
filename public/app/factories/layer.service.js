@@ -1,6 +1,4 @@
-angular
-  .module('mage')
-  .factory('LayerService', LayerService);
+module.exports = LayerService;
 
 LayerService.$inject = ['$q', 'Layer'];
 

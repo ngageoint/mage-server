@@ -1,6 +1,7 @@
-angular
-  .module('mage')
-  .factory('LoginService', LoginService);
+var $ = require('jquery')
+  , moment = require('moment');
+
+module.exports = LoginService;
 
 LoginService.$inject = ['$http'];
 

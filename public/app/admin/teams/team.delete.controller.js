@@ -1,6 +1,6 @@
-angular
-  .module('mage')
-  .controller('AdminTeamDeleteController', AdminTeamDeleteController);
+var _ = require('underscore');
+
+module.exports = AdminTeamDeleteController;
 
 AdminTeamDeleteController.$inject = ['$scope', '$q', '$uibModalInstance', 'UserService', 'team'];
 
@@ -32,8 +32,6 @@ function AdminTeamDeleteController($scope, $q, $uibModalInstance, UserService, t
     });
 
     $q.all(promises).then(function() {
-      // TODO done
-      console.log('deleted all users that were part of the team.');
       $uibModalInstance.close(team);
     });
   }

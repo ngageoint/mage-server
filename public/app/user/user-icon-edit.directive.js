@@ -1,11 +1,7 @@
-angular
-  .module('mage')
-  .directive('iconUserEdit', iconUserEdit);
-
-function iconUserEdit() {
+module.exports = function iconUserEdit() {
   var directive = {
     restrict: "A",
-    templateUrl: '/app/user/user-icon-edit.directive.html',
+    template: require('./user-icon-edit.directive.html'),
     scope: {
       user: '=iconUserEdit'
     },
@@ -13,7 +9,7 @@ function iconUserEdit() {
   };
 
   return directive;
-}
+};
 
 IconUserEditController.$inject = ['$scope', '$element'];
 

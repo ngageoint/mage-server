@@ -1,6 +1,6 @@
-angular
-  .module('mage')
-  .controller('AdminSettingsController', AdminSettingsController);
+var _ = require('underscore');
+
+module.exports = AdminSettingsController;
 
 AdminSettingsController.$inject = ['$scope', 'Settings', 'LocalStorageService'];
 

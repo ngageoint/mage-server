@@ -1,8 +1,7 @@
-angular
-  .module('mage')
-  .directive('avatarUser', avatarUser);
+var $ = require('jquery')
+  , EXIF = require('exif-js');
 
-function avatarUser() {
+module.exports = function avatarUser() {
   var directive = {
     restrict: "A",
     replace: true,
@@ -15,7 +14,7 @@ function avatarUser() {
   };
 
   return directive;
-}
+};
 
 AvatarUserController.$inject = ['$scope', '$element', '$http', 'LocalStorageService'];
 
@@ -34,11 +33,11 @@ function AvatarUserController($scope, $element, $http, LocalStorageService) {
     var url = $scope.user.avatarUrl + '?_dc=' + $scope.user.lastUpdated;
     getAvatar(url);
   } else {
-    image.src = "img/missing_photo.png";
+    image.src = "images/missing_photo.png";
   }
 
-  $scope.$watch('user.avatarUrl', function(newUrl, oldUrl) {
-    if (!newUrl || $scope.user.avatarData || newUrl === oldUrl) return;
+  $scope.$watch('user.avatarUrl', function(newUrl) {
+    if (!newUrl || $scope.user.avatarData) return;
 
     getAvatar(avatarUrl($scope.user, LocalStorageService.getToken()));
   });
@@ -84,6 +83,6 @@ function avatarUrl(user) {
   if (user && user.avatarUrl) {
     return user.avatarUrl + '?_dc=' + user.lastUpdated;
   } else {
-    return "img/missing_photo.png";
+    return "images/missing_photo.png";
   }
 }

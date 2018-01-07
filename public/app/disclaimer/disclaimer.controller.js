@@ -1,6 +1,4 @@
-angular
-  .module('mage')
-  .controller('DisclaimerController', DisclaimerController);
+module.exports = DisclaimerController;
 
 DisclaimerController.$inject = ['$scope', '$uibModalInstance', 'disclaimer'];
 

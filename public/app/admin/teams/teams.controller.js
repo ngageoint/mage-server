@@ -1,6 +1,6 @@
-angular
-  .module('mage')
-  .controller('AdminTeamsController', AdminTeamsController);
+var _ = require('underscore');
+
+module.exports = AdminTeamsController;
 
 AdminTeamsController.$inject = ['$scope', '$uibModal', '$filter', '$location', 'Team', 'UserService'];
 
@@ -61,7 +61,7 @@ function AdminTeamsController($scope, $uibModal, $filter, $location, Team, UserS
     $event.stopPropagation();
 
     var modalInstance = $uibModal.open({
-      templateUrl: '/app/admin/teams/team-delete.html',
+      template: require('./team-delete.html'),
       resolve: {
         team: function () {
           return team;

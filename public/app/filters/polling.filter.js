@@ -1,8 +1,6 @@
-angular
-  .module('mage')
-  .filter('polling', pollingFilter);
+module.exports = PollingFilter;
 
-function pollingFilter() {
+function PollingFilter() {
   function filter(input) {
     input = Number(input);
     if (input === 0) return 'No Polling';
@@ -11,7 +9,6 @@ function pollingFilter() {
     } else {
       return input / 60000 + ' minutes';
     }
-    return '';
   }
 
   filter.$stateful = true;

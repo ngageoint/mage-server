@@ -1,7 +1,7 @@
-angular
-  .module('mage')
-  .factory('Team', Team)
-  .factory('TeamAccess', TeamAccess);
+module.exports = {
+  Team: Team,
+  TeamAccess: TeamAccess
+};
 
 Team.$inject = ['$resource'];
 

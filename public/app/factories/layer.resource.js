@@ -1,6 +1,4 @@
-angular
-	.module('mage')
-	.factory('Layer', Layer);
+module.exports = Layer;
 
 Layer.$inject = ['$resource'];
 

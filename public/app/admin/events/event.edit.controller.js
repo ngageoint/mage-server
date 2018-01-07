@@ -1,8 +1,6 @@
-angular
-  .module('mage')
-  .controller('AdminEventEditController', AdminEventEditController);
-
 AdminEventEditController.$inject = ['$scope', '$location', '$routeParams', 'Event'];
+
+module.exports = AdminEventEditController;
 
 function AdminEventEditController($scope, $location, $routeParams, Event) {
   if ($routeParams.eventId) {

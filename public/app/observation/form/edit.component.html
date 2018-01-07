@@ -1,0 +1,16 @@
+<h4>{{$ctrl.form.name}}</h4>
+<div ng-repeat="field in $ctrl.form.fields | filter:{archived: '!true'} | orderBy: 'id'">
+  <div ng-switch on="field.type">
+    <checkbox-edit ng-switch-when="checkbox" field="field"></checkbox-edit>
+    <date-edit ng-switch-when="date" field="field" ></date-edit>
+    <dropdown-edit ng-switch-when="dropdown" field="field"></dropdown-edit>
+    <email-edit ng-switch-when="email" field="field"></email-edit>
+    <geometry-edit ng-switch-when="geometry" field="field"></geometry-edit>
+    <multiselectdropdown-edit ng-switch-when="multiselectdropdown" field="field"></multiselectdropdown-edit>
+    <number-edit ng-switch-when="numberfield" field="field"></number-edit>
+    <password-edit ng-switch-when="password" field="field"></password-edit>
+    <radio-edit ng-switch-when="radio" field="field"></radio-edit>
+    <text-edit ng-switch-when="textfield" field="field"></text-edit>
+    <textarea-edit ng-switch-when="textarea" field="field"></textarea-edit>
+  </div>
+</div>

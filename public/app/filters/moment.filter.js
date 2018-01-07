@@ -1,8 +1,8 @@
-angular
-  .module('mage')
-  .filter('moment', momentFilter);
+var moment = require('moment');
 
-function momentFilter() {
+module.exports = MomentFilter;
+
+function MomentFilter() {
   function filter(input, format) {
     if (!input) return null;
 

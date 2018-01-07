@@ -1,6 +1,6 @@
-angular
-  .module('mage')
-  .controller('FilterController', FilterController);
+var moment = require('moment');
+
+module.exports = FilterController;
 
 FilterController.$inject = ['$scope', '$uibModalInstance', 'EventService', 'FilterService', 'Event', 'events'];
 

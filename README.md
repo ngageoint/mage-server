@@ -37,7 +37,7 @@ If you are considering building your own iOS or Android application based on the
 MAGE runs on most *nix operating systems, such as OSX, CentOS, and Ubuntu.  Although not currently supported, MAGE will run on Windows systems with some minor configuration (mainly paths) work.
 
 MAGE depends the following software:
-* [Node.js](https://nodejs.org/) >= 0.12.0
+* [Node.js](https://nodejs.org/) >= 6 an <= 8
 * [MongoDB](https://www.mongodb.org/) >= 2.6.0
 * [Apache HTTP Server](https://httpd.apache.org/) >= 2.2.15
 * [GraphicsMagick](http://www.graphicsmagick.org/) (optional, but recommended for image rotation and tumbnails) >= 1.3
@@ -53,7 +53,7 @@ $ source ~/.bashrc
 
 #### Install [Node.js](https://nodejs.org/) with Node Version Manager
 ```bash
-$  nvm install v0.12.2
+$  nvm install 8
 $ node --version
 ```
 
@@ -180,7 +180,7 @@ $ npm run migrate
 
 ### Web dependencies and build
 
-Initially you will need to pull down the web dependencies (via bower).   Make sure you run this again if you add any new dependencies in bower.
+Initially you will need to pull down the web dependencies (via npm).   Make sure you run this again if you add any new dependencies in the web client.
 
 ```bash
 $ npm run build
@@ -211,6 +211,16 @@ $ forever start app.js
 
 For a full list of forever commands please refer to the [forever docs](https://github.com/foreverjs/forever/blob/master/README.md).
 
+### Running Web in 'debug'
+
+If you are developing or debugging the web it might be helpful to run a non production build.  Open another terminal and navigate to the public directory from your MAGE root directory
+
+```bash
+$ cd public
+$ npm run start
+```
+This will run a webpack dev server that provides ilve reloading as you make change as well as a source map.
+
 ### Configuring and Customizing MAGE
 
 MAGE configuration lies within the config.js file located at the servers root directory.
@@ -240,18 +250,13 @@ Configuration:
   "api": {
     "name": "MAGE (Mobile Awareness GEOINT Environment)",
     "version": {
-      "major": 4,
+      "major": 5,
       "minor": 0,
       "micro": 0
     },
     "authenticationStrategies": {
       "local": {
         "passwordMinLength": 14
-      },
-      "google": {
-        "callbackURL": " ",
-        "clientID": " ",
-        "clientSecret": " "
       }
     },
     "provision": {
@@ -274,7 +279,6 @@ IMPORTANT, if you make changes to this file after you have [installed mage depen
 
 ```bash
 $ rm -rf node_modules/environment
-$ rm -rf node_modules/local-environment
 $ npm install
 ```
 

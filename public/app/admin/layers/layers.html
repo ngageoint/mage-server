@@ -16,10 +16,10 @@
         <div class="row">
           <div class="col-md-3">
             <ul class="nav nav-pills nav-stacked">
-              <li ng-click="page = 0; filter='all'" ng-class="{active: filter=='all'}"><a href="javascript:void(0);">All Layers <span class="badge pull-right">{{filteredLayers.length}}</span></a></li>
-              <li ng-click="page = 0; filter='base'" ng-class="{active: filter=='base'}"><a href="javascript:void(0);">Base Layers <span class="badge pull-right">{{filteredLayers.length}}</span></a></li>
-              <li ng-click="page = 0; filter='imagery'" ng-class="{active: filter=='imagery'}"><a href="javascript:void(0);">Imagery Layers <span class="badge pull-right">{{(filteredLayers | filter:{active: true}).length}}</span></a></li>
-              <li ng-click="page = 0; filter='feature'" ng-class="{active: filter=='feature'}"><a href="javascript:void(0);">Feature Layers <span class="badge pull-right">{{(filteredLayers | filter:{active: !true}).length}}</span></a></li>
+              <li ng-click="page = 0; filter='all'" ng-class="{active: filter == 'all'}"><a href="javascript:void(0);">All Layers <span class="badge pull-right">{{filteredLayers.length}}</span></a></li>
+              <li ng-click="page = 0; filter='base'" ng-class="{active: filter == 'base'}"><a href="javascript:void(0);">Base Layers <span class="badge pull-right">{{(filteredLayers | filter: {base: true}).length}}</span></a></li>
+              <li ng-click="page = 0; filter='imagery'" ng-class="{active: filter == 'imagery'}"><a href="javascript:void(0);">Imagery Layers <span class="badge pull-right">{{(filteredLayers | filter:{type: 'Imagery', base: false}).length}}</span></a></li>
+              <li ng-click="page = 0; filter='feature'" ng-class="{active: filter == 'feature'}"><a href="javascript:void(0);">Feature Layers <span class="badge pull-right">{{(filteredLayers | filter:{type: 'Feature'}).length}}</span></a></li>
             </ul>
 
             <hr>

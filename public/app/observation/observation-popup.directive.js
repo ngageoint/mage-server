@@ -1,11 +1,10 @@
-angular
-  .module('mage')
-  .directive('observationPopup', observationPopup);
+var _ = require('underscore')
+  , moment = require('moment');
 
-function observationPopup() {
+module.exports = function observationPopup() {
   var directive = {
     restrict: "A",
-    templateUrl:  "/app/observation/observation-popup.directive.html",
+    template:  require('./observation-popup.directive.html'),
     scope: {
       observation: '=observationPopup',
       observationPopupInfo: '&',
@@ -15,7 +14,7 @@ function observationPopup() {
   };
 
   return directive;
-}
+};
 
 ObservationPopupDirective.$inject = ['$scope', 'EventService'];
 

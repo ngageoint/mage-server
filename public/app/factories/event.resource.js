@@ -1,11 +1,11 @@
-angular
-  .module('mage')
-  .factory('Event', Event)
-  .factory('EventAccess', EventAccess);
+module.exports = {
+  Event: Event,
+  EventAccess: EventAccess
+};
 
-Event.$inject = ['$rootScope', '$resource', '$http', 'LocalStorageService'];
+Event.$inject = ['$rootScope', '$resource'];
 
-function Event($rootScope, $resource, $http, LocalStorageService) {
+function Event($rootScope, $resource) {
   var Event = $resource('/api/events/:id', {
     id: '@id'
   },{

@@ -1,8 +1,6 @@
-angular
-  .module('mage')
-  .controller('AdminLayerEditController', AdminLayerEditController);
-
 AdminLayerEditController.$inject = ['$scope', '$location', '$routeParams', 'LocalStorageService', 'Layer'];
+
+module.exports = AdminLayerEditController;
 
 function AdminLayerEditController($scope, $location, $routeParams, LocalStorageService, Layer) {
   $scope.wmsFormats = ['image/jpeg', 'image/png'];

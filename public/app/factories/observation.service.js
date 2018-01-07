@@ -1,6 +1,7 @@
-angular
-  .module('mage')
-  .factory('ObservationService', ObservationService);
+var _ = require('underscore')
+  , $ = require('jquery');
+
+module.exports = ObservationService;
 
 ObservationService.$inject = ['$q', 'Observation', 'ObservationAttachment', 'ObservationState', 'ObservationImportant', 'ObservationFavorite', 'LocalStorageService'];
 

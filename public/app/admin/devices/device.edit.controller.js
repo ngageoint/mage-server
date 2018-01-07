@@ -1,6 +1,7 @@
-angular
-  .module('mage')
-  .controller('AdminDeviceEditController', AdminDeviceEditController);
+var _ = require('underscore')
+  , angular = require('angular');
+
+module.exports = AdminDeviceEditController;
 
 AdminDeviceEditController.$inject = ['$scope', '$filter', '$routeParams', '$location', 'LocalStorageService', 'DeviceService', 'UserService'];
 
@@ -45,12 +46,6 @@ function AdminDeviceEditController($scope, $filter, $routeParams, $location, Loc
 
     return device.iconClass;
   };
-
-  $scope.$watch('device.user', function(user) {
-    if (!user) return;
-    
-    console.log('user changed', user.displayName);
-  });
 
   $scope.cancel = function() {
     var path = $scope.device.id ? '/admin/devices/' + $scope.device.id : '/admin/devices';

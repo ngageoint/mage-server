@@ -1,6 +1,7 @@
-angular
-  .module('mage')
-  .controller('UserController', UserController);
+var angular = require('angular')
+  , zxcvbn = require('zxcvbn');
+
+module.exports = UserController;
 
 UserController.$inject =  ['$scope', '$location', '$timeout', 'Api', 'UserService', 'user'];
 

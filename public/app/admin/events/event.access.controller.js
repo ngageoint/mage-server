@@ -1,6 +1,6 @@
-angular
-  .module('mage')
-  .controller('AdminEventAccessController', AdminEventAccessController);
+var _ = require('underscore');
+
+module.exports = AdminEventAccessController;
 
 AdminEventAccessController.$inject = ['$scope', '$location', '$routeParams', '$q', '$filter', 'Event', 'EventAccess', 'UserService'];
 

@@ -1,6 +1,4 @@
-angular
-  .module('mage')
-  .service('UserIconService', UserIconService);
+module.exports = UserIconService;
 
 UserIconService.$inject = [];
 

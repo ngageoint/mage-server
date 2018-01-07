@@ -1,5 +1,14 @@
-angular.module('mage').factory('Observation', ['$resource', function($resource) {
+module.exports = {
+  Observation: Observation,
+  ObservationFavorite: ObservationFavorite,
+  ObservationImportant: ObservationImportant,
+  ObservationState: ObservationState,
+  ObservationAttachment: ObservationAttachment
+};
 
+Observation.$inject = ['$resource'];
+
+function Observation($resource) {
   var ObservationId = $resource('/api/events/:eventId/observations/id/', {
     eventId: '@eventId'
   }, {
@@ -42,9 +51,11 @@ angular.module('mage').factory('Observation', ['$resource', function($resource) 
   };
 
   return Observation;
-}])
-.factory('ObservationFavorite', ['$resource', function($resource) {
+}
 
+ObservationFavorite.$inject = ['$resource'];
+
+function ObservationFavorite($resource) {
   var ObservationFavorite = $resource('/api/events/:eventId/observations/:observationId/favorite', {
     id: '@id',
     observationId: '@observationId',
@@ -59,9 +70,12 @@ angular.module('mage').factory('Observation', ['$resource', function($resource) 
   });
 
   return ObservationFavorite;
-}])
-.factory('ObservationImportant', ['$resource', function($resource) {
+}
 
+
+ObservationImportant.$inject = ['$resource'];
+
+function ObservationImportant($resource) {
   var ObservationImportant = $resource('/api/events/:eventId/observations/:observationId/important', {
     id: '@id',
     observationId: '@observationId',
@@ -76,9 +90,11 @@ angular.module('mage').factory('Observation', ['$resource', function($resource) 
   });
 
   return ObservationImportant;
-}])
-.factory('ObservationState', ['$resource', function($resource) {
+}
 
+ObservationState.$inject = ['$resource'];
+
+function ObservationState($resource) {
   var ObservationState = $resource('/api/events/:eventId/observations/:observationId/states/:id', {
     id: '@id',
     observationId: '@observationId',
@@ -99,8 +115,11 @@ angular.module('mage').factory('Observation', ['$resource', function($resource) 
   });
 
   return ObservationState;
-}])
-.factory('ObservationAttachment', ['$resource', function($resource) {
+}
+
+ObservationAttachment.$inject = ['$resource'];
+
+function ObservationAttachment($resource) {
   var ObservationAttachment = $resource('/api/events/:eventId/observations/:observationId/attachments/:id', {
 
   }, {
@@ -109,6 +128,5 @@ angular.module('mage').factory('Observation', ['$resource', function($resource) 
     }
   });
 
-
   return ObservationAttachment;
-}]);
+}

@@ -1,6 +1,4 @@
-angular
-  .module('mage')
-  .controller('SetupController', SetupController);
+module.exports = SetupController;
 
 SetupController.$inject = ['$scope', '$http', '$location', 'UserService', 'api'];
 
@@ -10,7 +8,7 @@ function SetupController($scope, $http, $location, UserService, api) {
   var pages = ['account', 'device'];
   $scope.page = pages[0];
 
-  $scope.passwordRequirements = {}
+  $scope.passwordRequirements = {};
 
   var localAuthenticationStrategy = api.authenticationStrategies.local;
   if (localAuthenticationStrategy) {
@@ -26,15 +24,13 @@ function SetupController($scope, $http, $location, UserService, api) {
 
     var index = pages.indexOf($scope.page);
     $scope.page = pages[index + 1];
-  }
+  };
 
   $scope.finish = function() {
     $http.post('/api/setup', $scope.account, {headers: { 'Content-Type': 'application/json' }}).success(function() {
       // login the user
       UserService.login({username: $scope.account.username, password: $scope.account.password, uid: $scope.account.uid});
-    })
-    .error(function() {
-      console.log('error creating intial account');
+    }).error(function() {
     });
-  }
+  };
 }

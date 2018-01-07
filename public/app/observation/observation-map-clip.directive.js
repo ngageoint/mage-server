@@ -1,8 +1,6 @@
-angular
-  .module('mage')
-  .directive('mapClip', mapClip);
+var L = require('leaflet');
 
-function mapClip() {
+module.exports = function mapClip() {
   var directive = {
     restrict: 'A',
     scope: {
@@ -14,7 +12,7 @@ function mapClip() {
   };
 
   return directive;
-}
+};
 
 MapClipController.$inject = ['$rootScope', '$scope', '$element', 'MapService'];
 

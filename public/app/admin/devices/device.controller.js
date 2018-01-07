@@ -1,6 +1,7 @@
-angular
-  .module('mage')
-  .controller('AdminDeviceController', AdminDeviceController);
+var _ = require('underscore')
+  , moment = require('moment');
+
+module.exports = AdminDeviceController;
 
 AdminDeviceController.$inject = ['$scope', '$uibModal', '$filter', '$routeParams', '$location', 'LocalStorageService', 'DeviceService', 'UserService', 'LoginService'];
 
@@ -65,7 +66,7 @@ function AdminDeviceController($scope, $uibModal, $filter, $routeParams, $locati
 
   $scope.deleteDevice = function(device) {
     var modalInstance = $uibModal.open({
-      templateUrl: '/app/admin/devices/device-delete.html',
+      template: require('./device-delete.html'),
       resolve: {
         device: function () {
           return device;

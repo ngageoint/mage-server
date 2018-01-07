@@ -1,8 +1,6 @@
-angular
-  .module('mage')
-  .controller('AdminTeamEditController', AdminTeamEditController);
-
 AdminTeamEditController.$inject = ['$scope', '$location', '$routeParams', 'Team'];
+
+module.exports = AdminTeamEditController;
 
 function AdminTeamEditController($scope, $location, $routeParams, Team) {
   if ($routeParams.teamId) {

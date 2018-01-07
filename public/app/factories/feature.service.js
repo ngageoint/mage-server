@@ -1,6 +1,6 @@
-angular
-  .module('mage')
-  .factory('FeatureService', FeatureService);
+var _ = require('underscore');
+
+module.exports = FeatureService;
 
 FeatureService.$inject = ['$q', '$http'];
 

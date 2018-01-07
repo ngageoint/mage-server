@@ -1,3 +1,5 @@
+var L = require('leaflet');
+
 L.Control.worldExtent = L.Control.extend({
   options: {
     position: 'topright',

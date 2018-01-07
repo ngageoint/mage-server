@@ -1,6 +1,7 @@
-angular
-  .module('mage')
-  .factory('DeviceService', DeviceService);
+var $ = require('jquery')
+  , _ = require('underscore');
+
+module.exports = DeviceService;
 
 DeviceService.$inject = ['$http', '$q'];
 

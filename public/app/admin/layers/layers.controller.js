@@ -1,6 +1,6 @@
-angular
-  .module('mage')
-  .controller('AdminLayersController', AdminLayersController);
+var _ = require('underscore');
+
+module.exports = AdminLayersController;
 
 AdminLayersController.$inject = ['$scope', '$filter', '$uibModal', '$location', 'Layer', 'UserService'];
 
@@ -56,7 +56,7 @@ function AdminLayersController($scope, $filter, $uibModal, $location, Layer, Use
     $event.stopPropagation();
 
     var modalInstance = $uibModal.open({
-      templateUrl: '/app/admin/layers/layer-delete.html',
+      template: require('./layer-delete.html'),
       resolve: {
         layer: function () {
           return layer;

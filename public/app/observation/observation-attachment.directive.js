@@ -1,11 +1,7 @@
-angular
-  .module('mage')
-  .directive('attachment', attachment);
-
-function attachment() {
+module.exports = function attachment() {
   var directive = {
     restrict: "A",
-    templateUrl: '/app/observation/observation-attachment.directive.html',
+    template: require('./observation-attachment.directive.html'),
     scope: {
       attachment: '=',
       attachmentObservation: '=',
@@ -16,7 +12,7 @@ function attachment() {
   };
 
   return directive;
-}
+};
 
 AttachmentController.$inject = ['$scope', '$filter', 'UserService', 'LocalStorageService'];
 

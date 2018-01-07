@@ -1,11 +1,9 @@
-angular
-  .module('mage')
-  .directive('fileUpload', fileUpload);
+var $ = require('jquery');
 
-function fileUpload() {
+module.exports = function fileUpload() {
   var directive = {
     restrict: "A",
-    templateUrl: '/app/file-upload/file-upload.directive.html',
+    template: require('./file-upload.directive.html'),
     scope: {
       type: '@',
       url: '@',
@@ -20,7 +18,7 @@ function fileUpload() {
   };
 
   return directive;
-}
+};
 
 FileUploadController.$inject = ['$scope', '$element'];
 

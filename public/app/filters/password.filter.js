@@ -1,8 +1,6 @@
-angular
-  .module('mage')
-  .filter('password', passwordFilter);
+module.exports = PasswordFilter;
 
-function passwordFilter() {
+function PasswordFilter() {
   return function(text) {
     if (!text) return null;
 

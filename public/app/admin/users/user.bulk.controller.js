@@ -1,18 +1,7 @@
-angular
-  .module('mage')
-  .directive('fileChange', function() {
-    return {
-      restrict: 'A',
-      link: function (scope, element, attrs) {
-        var fileChangeFunc = scope.$eval(attrs.fileChange);
-        element.bind('change', fileChangeFunc);
-      }
-    };
-  });
+var _ = require('underscore')
+  , Papa = require('papaparse');
 
-angular
-  .module('mage')
-  .controller('AdminUserBulkController', AdminUserBulkController);
+module.exports = AdminUserBulkController;
 
 AdminUserBulkController.$inject = ['$scope', '$filter', '$routeParams', '$location', '$q', 'LocalStorageService', 'UserService', 'Team', 'UserIconService'];
 

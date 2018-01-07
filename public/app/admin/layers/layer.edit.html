@@ -46,7 +46,7 @@
                 <input class="form-control" type="text" placeholder="i.e. HurricaneSandy" ng-model="layer.name"/>
               </div>
 
-              <div class="form-group" ng-show="layer.type == 'Imagery'">
+              <div class="form-group" ng-show="layer.type === 'Imagery'">
                 <label class="control-label">Layer URL</label>
                 <input class="form-control" type="text" class="input-xxlarge" placeholder="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" ng-model="layer.url"/>
               </div>
@@ -56,7 +56,7 @@
                 <textarea class="form-control" type="text" placeholder="Brief description of the layer." ng-model="layer.description"/>
               </div>
 
-              <div class="form-group" ng-show="layer.type == 'Imagery'">
+              <div class="form-group" ng-show="layer.type === 'Imagery'">
                <div class="checkbox">
                  <label>
                    <input type="checkbox" name="layer-type" ng-model="layer.base"> Base Layer
@@ -64,7 +64,7 @@
                </div>
              </div>
 
-              <div class="form-group" ng-show="layer.type == 'Imagery'">
+              <div class="form-group" ng-show="layer.type === 'Imagery'">
                 <label class="radio-inline">
                   <input type="radio" name="layer-format" value="XYZ" ng-model="layer.format"> XYZ
                 </label>
@@ -76,22 +76,22 @@
                 </label>
               </div>
 
-              <div class="form-group" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+              <div class="form-group" ng-show="layer.format === 'WMS' && layer.type === 'Imagery'">
                 <label class="control-label">Layers</label>
                 <input class="form-control" class="input-xlarge" type="text" placeholder="Comma seperated list of layer names" ng-model="layer.wms.layers"/>
               </div>
 
-              <div class="form-group" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+              <div class="form-group" ng-show="layer.format === 'WMS' && layer.type === 'Imagery'">
                 <label class="control-label">Styles</label>
                 <input class="form-control" class="input-xlarge" type="text" placeholder="Comma seperated list of layer styles" ng-model="layer.wms.styles"/>
               </div>
 
-              <div class="form-group" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+              <div class="form-group" ng-show="layer.format === 'WMS' && layer.type === 'Imagery'">
                 <label class="control-label" for="type">Format</label>
                 <select class="form-control" ng-model="layer.wms.format" ng-options="format for format in wmsFormats"></select>
               </div>
 
-              <div class="form-group" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+              <div class="form-group" ng-show="layer.format === 'WMS' && layer.type === 'Imagery'">
                <div class="checkbox">
                  <label>
                    <input type="checkbox" name="layer-wms-transparency" ng-model="layer.wms.transparent"> Transparent
@@ -99,7 +99,7 @@
                </div>
              </div>
 
-              <div class="form-group" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+              <div class="form-group" ng-show="layer.format === 'WMS' && layer.type === 'Imagery'">
                 <label class="control-label" for="type">Version</label>
                 <select class="form-control" ng-model="layer.wms.version" ng-options="version for version in wmsVersions"></select>
               </div>

@@ -1,6 +1,7 @@
-angular
-  .module('mage')
-  .factory('UserService', UserService);
+var _ = require('underscore')
+  , $ = require('jquery');
+
+module.exports = UserService;
 
 UserService.$inject = ['$rootScope', '$q', '$http', '$location', '$timeout', '$window', 'LocalStorageService'];
 

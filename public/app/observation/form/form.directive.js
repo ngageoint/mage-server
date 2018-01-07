@@ -1,10 +1,9 @@
-angular
-  .module('mage')
-  .directive('formDirective', formDirective);
+var angular = require('angular')
+  , _ = require('underscore');
 
-function formDirective() {
+module.exports = function formDirective() {
   var directive = {
-    templateUrl: 'app/observation/form/form.directive.html',
+    template: require('./form.directive.html'),
     restrict: 'E',
     transclude: true,
     scope: {
@@ -16,7 +15,7 @@ function formDirective() {
   };
 
   return directive;
-}
+};
 
 FormDirectiveController.$inject = ['$scope', 'EventService', 'FilterService', 'Observation', 'ObservationService', 'UserService', 'LocalStorageService'];
 
@@ -81,6 +80,18 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
   $scope.getToken = LocalStorageService.getToken;
   $scope.canDeleteObservation = hasEventUpdatePermission() || isCurrentUsersObservation() || hasUpdatePermissionsInEventAcl();
   $scope.attachmentUploads = {};
+
+  $scope.$watch('form.geometryField', function(field) {
+    $scope.$emit('observation:geometryChanged', {id: $scope.observation.id, geometry: angular.copy(field.value)});
+  });
+
+  $scope.$watch('form.geometryField.value.type', function(shapeType) {
+    // Disable save if line/polygon until line/polygon edit is complete
+    var geometryValid = shapeType === 'LineString' || shapeType === 'Polygon' ? false : true;
+    $scope.observationForm.$setValidity('geometry', geometryValid);
+
+    $scope.$emit('observation:shapeChanged', {id: $scope.observation.id, type: 'Feature', geometry: {type: shapeType}});
+  });
 
   function hasEventUpdatePermission() {
     return _.contains(UserService.myself.role.permissions, 'DELETE_OBSERVATION');
@@ -205,18 +216,6 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
   $scope.removeFileUpload = function(id) {
     delete $scope.attachmentUploads[id];
   };
-
-  $scope.$on('observation:moved', function(e, observation, geometry) {
-    $scope.$emit('observation:geometryChanged', {id: observation.id, geometry: angular.copy(geometry)});
-  });
-
-  $scope.$on('observation:shapechanged', function(e, observation, shapeType) {
-    // Disable save if line/polygon until line/polygon edit is complete
-    var geometryValid = shapeType === 'LineString' || shapeType === 'Polygon' ? false : true;
-    $scope.observationForm.$setValidity('geometry', geometryValid);
-
-    $scope.$emit('observation:shapeChanged', {id: observation.id, type: "Feature", geometry: {type: shapeType}});
-  });
 
   $scope.$on('uploadFile', function(e, id) {
     $scope.attachmentUploads[id] = true;

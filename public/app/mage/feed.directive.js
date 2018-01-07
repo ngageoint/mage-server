@@ -1,11 +1,13 @@
-angular
-  .module('mage')
-  .directive('newsFeed', newsFeed);
+var $ = require('jquery')
+  , _ = require('underscore')
+  , moment = require('moment');
 
-function newsFeed() {
+module.exports = NewsFeed;
+
+function NewsFeed() {
   var directive = {
     restrict: "A",
-    templateUrl:  "app/mage/feed.directive.html",
+    template:  require('./feed.directive.html'),
     scope: {
       observations: '=feedObservations',
       feedObservationsChanged: '=',

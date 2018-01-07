@@ -1,6 +1,6 @@
-angular
-  .module('mage')
-  .controller('AdminUsersController', AdminUsersController);
+var _ = require('underscore');
+
+module.exports = AdminUsersController;
 
 AdminUsersController.$inject = ['$scope', '$uibModal', '$filter', '$location', 'LocalStorageService', 'UserService'];
 
@@ -11,7 +11,7 @@ function AdminUsersController($scope, $uibModal, $filter, $location, LocalStorag
   $scope.page = 0;
   $scope.itemsPerPage = 10;
 
-  $scope.hasUserEditPermission =  _.contains(UserService.myself.role.permissions, 'CREATE_USER');
+  $scope.hasUserCreatePermission =  _.contains(UserService.myself.role.permissions, 'CREATE_USER');
   $scope.hasUserEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
   $scope.hasUserDeletePermission =  _.contains(UserService.myself.role.permissions, 'DELETE_USER');
 
@@ -59,7 +59,7 @@ function AdminUsersController($scope, $uibModal, $filter, $location, LocalStorag
     $event.stopPropagation();
 
     var modalInstance = $uibModal.open({
-      templateUrl: '/app/admin/users/user-delete.html',
+      template: require('./user-delete.html'),
       resolve: {
         user: function () {
           return user;

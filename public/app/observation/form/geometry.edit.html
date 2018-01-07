@@ -1,0 +1,31 @@
+<div class="field form-group">
+  <label>{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required && !$ctrl.field.value">*</span>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="btn-group">
+         <div class="btn-group" role="group">
+          <button type="button" class="btn btn-default" ng-class="{'active':$ctrl.shape.type === 'Point'}" ng-click="$ctrl.shapeTypeChanged('Point')">Point</button>
+          <button type="button" class="btn btn-default" ng-class="{'active':$ctrl.shape.type === 'LineString'}" ng-click="$ctrl.shapeTypeChanged('LineString')">Line</button>
+          <button type="button" class="btn btn-default" ng-class="{'active':$ctrl.shape.type === 'Polygon'}" ng-click="$ctrl.shapeTypeChanged('Polygon')">Polygon</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row top-gap" ng-if="$ctrl.field.value.type === 'Point'">
+    <div class="col-md-5">
+      <input class="form-control" type="number" ng-model="$ctrl.field.value.coordinates[0]" ng-required="$ctrl.field.required">
+    </div>
+    <div class="col-md-5">
+      <input class="form-control" type="number" ng-model="$ctrl.field.value.coordinates[1]" value="{{$ctrl.field.value.coordinates[1]}}" ng-required="$ctrl.field.required" ng-change="$ctrl.onLatLngChange()">
+    </div>
+  </div>
+  <div class="row top-gap" ng-if="$ctrl.field.value.type !== 'Point'">
+    <div class="col-md-5">
+      <input class="form-control" type="number" ng-model="$ctrl.field.edit[0]" value="{{$ctrl.field.edit[0]}}" ng-required="$ctrl.field.required" ng-change="$ctrl.onLatLngChange()">
+    </div>
+    <div class="col-md-5">
+      <input class="form-control" type="number" ng-model="$ctrl.field.edit[1]" value="{{$ctrl.field.edit[1]}}" ng-required="$ctrl.field.required" ng-change="$ctrl.onLatLngChange()">
+    </div>
+  </div>
+</div>

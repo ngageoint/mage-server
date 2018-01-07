@@ -1,10 +1,8 @@
-angular
-  .module('mage')
-  .filter('offset', offsetFilter);
+OffsetFilter.$inject = [];
 
-offsetFilter.$inject = [];
+module.exports = OffsetFilter;
 
-function offsetFilter() {
+function OffsetFilter() {
   return function(input, start) {
     start = parseInt(start, 10);
     return input.slice(start);

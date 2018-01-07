@@ -1,0 +1,9 @@
+<div class="field form-group">
+  <label>{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required && !$ctrl.field.value">*</span>
+  <p class="input-group">
+    <input type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy HH:mm:ss" ng-model="$ctrl.field.value" ng-required="$ctrl.field.required" is-open="$ctrl.datePopup.open" close-text="Close" />
+    <span class="input-group-btn">
+      <button type="button" class="btn btn-default" ng-click="$ctrl.openDate($event)"><i class="fa fa-calendar"></i></button>
+    </span>
+  </p>
+</div>

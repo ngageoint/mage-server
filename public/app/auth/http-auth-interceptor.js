@@ -1,8 +1,9 @@
-(function () {
-  'use strict';
+var angular = require('angular');
 
-  angular.module('http-auth-interceptor', ['http-auth-interceptor-buffer'])
+module.exports = 'http-auth-interceptor';
 
+angular
+  .module('http-auth-interceptor', ['http-auth-interceptor-buffer'])
   .factory('authService', ['$rootScope','httpBuffer', function($rootScope, httpBuffer) {
     return {
       /**
@@ -58,11 +59,11 @@
     $httpProvider.interceptors.push(interceptor);
   }]);
 
-  /**
-   * Private module, a utility, required internally by 'http-auth-interceptor'.
-   */
-  angular.module('http-auth-interceptor-buffer', [])
-
+/**
+ * Private module, a utility, required internally by 'http-auth-interceptor'.
+ */
+angular
+  .module('http-auth-interceptor-buffer', [])
   .factory('httpBuffer', ['$injector', function($injector) {
     /** Holds all the requests, so they can be re-requested in future. */
     var buffer = [];
@@ -118,4 +119,3 @@
       }
     };
   }]);
-})();

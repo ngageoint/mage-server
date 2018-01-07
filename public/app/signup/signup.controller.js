@@ -1,6 +1,4 @@
-angular
-  .module('mage')
-  .controller('SignupController', SignupController);
+var _ = require('underscore');
 
 SignupController.$inject = ['$scope', '$location', 'UserService', 'Api'];
 
@@ -223,3 +221,5 @@ function SignupController($scope, $location, UserService, Api) {
     return name === 'local';
   }
 }
+
+module.exports = SignupController;

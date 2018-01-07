@@ -1,6 +1,7 @@
-angular
-  .module('mage')
-  .factory('FilterService', FilterService);
+var _ = require('underscore')
+  , moment = require('moment');
+
+module.exports = FilterService;
 
 FilterService.$inject = ['UserService', 'LocalStorageService'];
 

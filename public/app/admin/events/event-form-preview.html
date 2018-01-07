@@ -6,9 +6,7 @@
 <div class="modal-body">
   <div class="row">
     <div class="col-sm-12">
-      <div ng-repeat="field in form.fields | filter:{archived: '!true'} | orderBy: 'id'">
-        <field-directive field="field" field-observation="observation" field-form="aForm"></field-directive>
-      </div>
+      <observation-form-edit form="form"></observation-form-edit>
     </div>
   </div>
 </div>

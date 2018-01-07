@@ -1,3 +1,6 @@
+var L = require('leaflet')
+  , $ = require('jquery');
+
 L.FixedWidthMarker = L.Marker.extend({
 
   initialize: function(latlng, options) {

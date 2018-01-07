@@ -1,6 +1,4 @@
-angular
-	.module('mage')
-	.factory('Location', Location);
+module.exports = Location;
 
 Location.$inject = ['$resource'];
 

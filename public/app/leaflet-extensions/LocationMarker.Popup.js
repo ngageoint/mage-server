@@ -1,3 +1,5 @@
+var L = require('leaflet');
+
 L.LocationMarker.include({
   openPopup: function () {
     if (this._iconMarker) {

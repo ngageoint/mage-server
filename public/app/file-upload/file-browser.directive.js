@@ -1,17 +1,13 @@
-angular
-  .module('mage')
-  .directive('fileBrowser', fileBrowser);
-
-function fileBrowser() {
+module.exports = function fileBrowser() {
   var directive = {
     restrict: "A",
     scope: {},
-    templateUrl: '/app/file-upload/file-browser.directive.html',
+    template: require('./file-browser.directive.html'),
     controller: FileBrowserController
   };
 
   return directive;
-}
+};
 
 FileBrowserController.$inject = ['$scope', '$element'];
 

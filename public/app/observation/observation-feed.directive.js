@@ -1,11 +1,11 @@
-angular
-  .module('mage')
-  .directive('observationNewsItem', observationNewsItem);
+var _ = require('underscore')
+  , $ = require('jquery')
+  , moment = require('moment');
 
-function observationNewsItem() {
+module.exports = function observationNewsItem() {
   var directive = {
     restrict: "A",
-    templateUrl:  "/app/observation/observation-feed.directive.html",
+    template:  require('./observation-feed.directive.html'),
     scope: {
       observation: '=observationNewsItem'
     },
@@ -13,14 +13,13 @@ function observationNewsItem() {
   };
 
   return directive;
-}
+};
 
 ObservationNewsItemController.$inject = ['$scope', '$window', '$uibModal', 'EventService', 'UserService', 'FilterService', 'LocalStorageService'];
 
 function ObservationNewsItemController($scope, $window, $uibModal, EventService, UserService, FilterService, LocalStorageService) {
   $scope.edit = false;
   $scope.isUserFavorite = _.contains($scope.observation.favoriteUserIds, UserService.myself.id);
-  $scope.importantPopoverIsOpen = false;
   $scope.fromNow = moment($scope.observation.properties.timestamp).fromNow();
   $scope.canEdit = UserService.hasPermission('UPDATE_OBSERVATION_EVENT') || UserService.hasPermission('UPDATE_OBSERVATION_ALL');
 
@@ -48,7 +47,7 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
 
   $scope.showFavoriteUsers = function() {
     $uibModal.open({
-      templateUrl: '/app/observation/observation-favorites.html',
+      template: require('./observation-favorites.html'),
       scope: $scope,
       openedClass: 'observation-favorite-modal-content',
       controller: ['$scope', '$uibModalInstance', 'UserService', function ($scope, $uibModalInstance, UserService) {
@@ -68,7 +67,8 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
 
   $scope.importantPopover = {
     isOpen: false,
-    description: $scope.observation.important ? $scope.observation.important.description : null
+    description: $scope.observation.important ? $scope.observation.important.description : null,
+    template: require('./observation-important.html')
   };
 
   $scope.closeImportantPopover = function() {

@@ -1,3 +1,9 @@
+@import "../vendor/bootstrap/css/bootstrap.min.css";
+@import "~ui-select/dist/select.min.css";
+@import "~font-awesome/css/font-awesome.min.css";
+@import "~jquery-minicolors/jquery.minicolors.css";
+@import "~videogular-themes-default/videogular.min.css";
+
 /*
   Allow angular.js to be loaded in body, hiding cloaked elements until
   templates compile.  The !important is important given that there may be
@@ -1032,35 +1038,6 @@ h4.image-delete {
 
 .attachment-media-sm videogular vg-controls .controls-container, [videogular] vg-controls .controls-container {
     height: 30px;
-}
-
-/* Leaflet controls overrides */
-.leaflet-bar a, .leaflet-bar a:hover {
-    color: #365F8C;
-}
-
-/* Leaflet geosearch overrides */
-.leaflet-control-geosearch a.glass {
-  background-image: none;
-  background-size: 0;
-}
-
-.leaflet-control-geosearch a.alert {
-  background-image: none;
-  background-size: 0;
-  padding: 0;
-}
-
-a.glass:before {
-  font-family: FontAwesome;
-  content: '\f002';
-}
-
-a.alert:after {
-  font-family: FontAwesome;
-  content: '\f06a';
-  color: red;
-  font-size: 1.2em;
 }
 
 .field {

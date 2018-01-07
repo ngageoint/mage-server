@@ -1,9 +1,5 @@
-angular
-  .module('mage')
-  .directive('equals', equals);
-
-function equals() {
-  return {
+module.exports = function equals() {
+  var directive = {
     restrict: 'A',
     require: '?ngModel',
     link: function(scope, elem, attrs, ngModel) {
@@ -15,7 +11,9 @@ function equals() {
 
       ngModel.$validators.equals = function(value) {
         return value === attrs.equals;
-      }
+      };
     }
-  }
-}
+  };
+
+  return directive;
+};

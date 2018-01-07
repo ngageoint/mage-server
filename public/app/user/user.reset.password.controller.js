@@ -1,6 +1,4 @@
-angular
-  .module('mage')
-  .controller('UserResetPasswordController', UserResetPasswordController);
+module.exports = UserResetPasswordController;
 
 UserResetPasswordController.$inject =  ['$scope', '$timeout', '$location', 'Api', 'UserService', 'user'];
 
@@ -41,8 +39,7 @@ function UserResetPasswordController($scope, $timeout, $location, Api, UserServi
       $timeout(function() {
         $location.path('/signin');
       }, 3000);
-    })
-    .error(function() {
+    }).error(function() {
       $scope.showStatus = true;
       $scope.statusTitle = 'Password Reset Failed';
       $scope.statusMessage = 'Please ensure your password is correct and that your new password meets the minimum requirements';

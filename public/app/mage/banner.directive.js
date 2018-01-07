@@ -1,19 +1,15 @@
-angular
-  .module('mage')
-  .directive('banner', banner);
-
-function banner() {
+module.exports = function banner() {
   var directive = {
     restrict: "A",
     scope: {
       type: '@banner'
     },
-    templateUrl: '/app/mage/banner.directive.html',
+    template: require('./banner.directive.html'),
     controller: BannerController
   };
 
   return directive;
-}
+};
 
 BannerController.$inject = ['$scope', '$element', 'Settings'];
 

@@ -1,3 +1,5 @@
+var L = require('leaflet');
+
 L.Control.MageFeature = L.Control.extend({
   options: {
     position: 'topleft',

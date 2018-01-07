@@ -1,6 +1,6 @@
-angular
-  .module('mage')
-  .service('PollingService', PollingService);
+var _ = require('underscore');
+
+module.exports = PollingService;
 
 PollingService.$inject = ['LocalStorageService'];
 

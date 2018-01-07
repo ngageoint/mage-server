@@ -1,8 +1,4 @@
-angular
-  .module('mage')
-  .directive('colorPicker', colorPicker);
-
-function colorPicker() {
+module.exports = function colorPicker() {
   var directive = {
     restrict: "A",
     scope: {
@@ -12,7 +8,8 @@ function colorPicker() {
   };
 
   return directive;
-}
+};
+
 
 ColorPickerController.$inject = ['$scope', '$element'];
 
