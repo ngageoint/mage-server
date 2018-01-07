@@ -152,9 +152,6 @@ function compareDisplayName(a, b) {
 }
 
 function populateUserFields(event, callback) {
-  var userFields = getUserFields(event.form);
-  if (!userFields.length) return callback();
-
   // Get all users in this event
   Team.getTeams({teamIds: event.teamIds}, function(err, teams) {
     if (err) return callback(err);
@@ -178,12 +175,17 @@ function populateUserFields(event, callback) {
       });
     }
 
-    userFields.forEach(function(userField) {
-      userField.choices = choices;
+    event.forms.forEach(function(form) {
+      var userFields = getUserFields(form);
+      if (!userFields.length) return;
 
-      if (!userField.required && userField.type === 'dropdown') {
-        userField.choices.unshift("");
-      }
+      userFields.forEach(function(userField) {
+        userField.choices = choices;
+
+        if (!userField.required && userField.type === 'dropdown') {
+          userField.choices.unshift("");
+        }
+      });
     });
 
     callback();
@@ -191,7 +193,7 @@ function populateUserFields(event, callback) {
 }
 
 EventSchema.pre('init', function(next, event) {
-  if (event.form) {
+  if (event.forms) {
     populateUserFields(event, function() {
       next();
     });
