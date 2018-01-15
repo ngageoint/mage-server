@@ -10,7 +10,7 @@ function AdminEventsController($scope, $location, $filter, $uibModal, Event, Use
   $scope.page = 0;
   $scope.itemsPerPage = 10;
 
-  var projection = {name: true, description: true};
+  var projection = {name: true, description: true, acl: true};
   Event.query({state: 'all',  populate: false, projection: JSON.stringify(projection)}, function(events) {
     $scope.events = events;
   });
