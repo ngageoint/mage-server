@@ -36,25 +36,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     editable: true // turn on Leaflet.Editable
   });
 
-  // TODO why are we calling back into the map service to do this, cause don't
-  MapService.createVectorLayer({
-    name: 'New',
-    group: 'MAGE',
-    type: 'geojson',
-    options: {
-      selected: true
-    }
-  });
-
-  MapService.createVectorLayer({
-    name: 'Edit',
-    group: 'MAGE',
-    type: 'geojson',
-    options: {
-      selected: true
-    }
-  });
-
   // Create a map pane for our base layers
   var BASE_LAYER_PANE = 'baseLayerPane';
   map.createPane(BASE_LAYER_PANE);
@@ -109,6 +90,16 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   map.on('overlayadd', function(overlay) {
     var layer = layers[overlay.name];
     MapService.overlayAdded(layer);
+  });
+
+  // Edit layer, houses features that are being created or modified
+  createGeoJsonLayer({
+    name: 'Edit',
+    type: 'geojson',
+    options: {
+      selected: true,
+      hidden: true
+    }
   });
 
   function onLocation(location, broadcast) {
@@ -326,8 +317,11 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     layers[data.name] = layerInfo;
     if (data.options.temporal) temporalLayers.push(layerInfo);
 
-    layerControl.addOverlay(layerInfo.layer, data.name, data.group);
     if (data.options.selected) layerInfo.layer.addTo(map);
+
+    if (!data.options.hidden) {
+      layerControl.addOverlay(layerInfo.layer, data.name, data.group);
+    }
   }
 
   function onEdit(edit) {
