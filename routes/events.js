@@ -34,7 +34,6 @@ module.exports = function(app, security) {
     if (projection) {
       parameters.projection = JSON.parse(projection);
     }
-    console.log('params projection', parameters.projection);
 
     var state = req.param('state');
     if (!state || state === 'active') {

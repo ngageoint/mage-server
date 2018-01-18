@@ -16,10 +16,12 @@ function mapObservationProperties(observation, event) {
     if (Object.keys(observationForm).length === 0) return;
 
     var form = event.formMap[observationForm.formId];
+    var formPrefix = event.forms.length > 1 ? form.name + '.' : '';
+
     for (var name in observationForm) {
       var field = form.fieldNameToField[name];
       if (field && !field.archived) {
-        observation.properties[form.name + "." + field.title] = observationForm[name];
+        observation.properties[formPrefix + field.title] = observationForm[name];
         delete observation.properties[name];
       }
     }

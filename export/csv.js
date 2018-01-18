@@ -34,11 +34,12 @@ Csv.prototype.export = function(streamable) {
   var fieldNames = ['id', 'User', 'Device', 'Shape Type', 'Latitude', 'Longitude', 'Date (ISO8601)', 'Excel Timestamp (UTC)', 'Well Known Text'];
 
   self._event.forms.forEach(function(form) {
+    var formPrefix = self._event.forms.length > 1 ? form.name + '.' : '';
     form.fields.forEach(function(field) {
       if (field.archived) return;
 
-      fields.push(form.name + '.' + field.name);
-      fieldNames.push(form.name + '.' + field.title);
+      fields.push(formPrefix + field.name);
+      fieldNames.push(formPrefix + field.title);
     });
   });
 
@@ -116,10 +117,11 @@ Csv.prototype.flattenObservations = function(observations, archive) {
 
     properties.forms.forEach(function(observationForm) {
       var form = event.formMap[observationForm.formId];
+      var formPrefix = event.forms.length > 1 ? form.name + '.' : '';
       for (var name in observationForm) {
         var field = form.fieldNameToField[name];
         if (field) {
-          properties[form.name + "." + field.name] = observationForm[name];
+          properties[formPrefix + field.name] = observationForm[name];
           delete observationForm[name];
         }
       }
