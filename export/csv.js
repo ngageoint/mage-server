@@ -33,11 +33,15 @@ Csv.prototype.export = function(streamable) {
   var fields = ['id', 'user', 'device', 'shapeType', 'latitude', 'longitude', 'timestamp', 'excelTimestamp', 'wkt'];
   var fieldNames = ['id', 'User', 'Device', 'Shape Type', 'Latitude', 'Longitude', 'Date (ISO8601)', 'Excel Timestamp (UTC)', 'Well Known Text'];
 
-  self._event.form.fields.forEach(function(field) {
-    if (field.title === 'Location' || field.name === 'timestamp' || field.archived) return;
-    fields.push(field.name);
-    fieldNames.push(field.title);
+  self._event.forms.forEach(function(form) {
+    form.fields.forEach(function(field) {
+      if (field.archived) return;
+
+      fields.push(form.name + '.' + field.name);
+      fieldNames.push(form.name + '.' + field.title);
+    });
   });
+
   fields.push('attachment');
   fieldNames.push('Attachment');
 
@@ -100,6 +104,7 @@ Csv.prototype.streamObservations = function(stream, archive, fields, fieldNames,
 };
 
 Csv.prototype.flattenObservations = function(observations, archive) {
+  var event = this._event;
   var users = this._users;
   var devices = this._devices;
 
@@ -108,6 +113,18 @@ Csv.prototype.flattenObservations = function(observations, archive) {
   observations.forEach(function(observation) {
     var properties = observation.properties;
     properties.id = observation.id;
+
+    properties.forms.forEach(function(observationForm) {
+      var form = event.formMap[observationForm.formId];
+      for (var name in observationForm) {
+        var field = form.fieldNameToField[name];
+        if (field) {
+          properties[form.name + "." + field.name] = observationForm[name];
+          delete observationForm[name];
+        }
+      }
+    });
+    delete properties.forms;
 
     if (users[observation.userId]) properties.user = users[observation.userId].username;
     if (devices[observation.deviceId]) properties.device = devices[observation.deviceId].uid;

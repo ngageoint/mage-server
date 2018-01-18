@@ -17,6 +17,7 @@ function ExportController($scope, $uibModalInstance, LocalStorageService, Filter
   $scope.exportObservations = {value: true};
   $scope.exportFavoriteObservations = {value: false};
   $scope.exportImportantObservations = {value: false};
+  $scope.exportObservationsWithAttachments = {value: false};
 
   $scope.localOffset = moment().format('Z');
   $scope.localTime = true;

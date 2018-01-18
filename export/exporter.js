@@ -8,21 +8,24 @@ function Exporter(options) {
   this._filter = options.filter;
 }
 
-function mapObservationProperties(observation, form) {
+function mapObservationProperties(observation, event) {
   observation.properties = observation.properties || {};
-  for (var name in observation.properties) {
-    if (name === 'type') continue;
+  observation.properties.timestamp = moment(observation.properties.timestamp).toISOString();
 
-    if (name === 'timestamp') {
-      observation.properties.timestamp = moment(observation.properties.timestamp).toISOString();
-    }
+  observation.properties.forms.forEach(function(observationForm) {
+    if (Object.keys(observationForm).length === 0) return;
 
-    var field = form.fieldNameToField[name];
-    if (field) {
-      observation.properties[field.title] = observation.properties[name];
-      delete observation.properties[name];
+    var form = event.formMap[observationForm.formId];
+    for (var name in observationForm) {
+      var field = form.fieldNameToField[name];
+      if (field) {
+        observation.properties[form.name + "." + field.title] = observationForm[name];
+        delete observation.properties[name];
+      }
     }
-  }
+  });
+
+  delete observation.properties.forms;
 
   observation.properties.id = observation._id;
 }
@@ -33,7 +36,7 @@ Exporter.prototype.mapObservations = function(observations) {
   if (!Array.isArray(observations)) observations = [observations];
 
   observations.forEach(function(o) {
-    mapObservationProperties(o, self._event.form);
+    mapObservationProperties(o, self._event);
 
     if (self._users[o.userId]) o.properties.user = self._users[o.userId].username;
     if (self._devices[o.deviceId]) o.properties.device = self._devices[o.deviceId].uid;

@@ -49,7 +49,7 @@ Shapefile.prototype.observationsToShapefile = function(archive, done) {
   new api.Observation(self._event).getAll(self._filter, function(err, observations) {
     if (err) return done(err);
 
-    self.mapObservations(observations);
+    mapObservations.call(self, observations);
 
     write(observations, function(err, files) {
       if (err) return done(err);
@@ -143,6 +143,48 @@ function write(geojson, callback, doneCallback) {
           }
         );
       }
-  });
+    });
   doneCallback();
+}
+
+function mapObservationProperties(observation) {
+  var event = this._event;
+
+  observation.properties = observation.properties || {};
+  observation.properties.timestamp = moment(observation.properties.timestamp).toISOString();
+
+  observation.properties.forms.forEach(function(observationForm) {
+    if (Object.keys(observationForm).length === 0) return;
+
+    var form = event.formMap[observationForm.formId];
+    for (var name in observationForm) {
+      var field = form.fieldNameToField[name];
+      if (field) {
+        // Shapfiles attribute column names don't allow more than 10 characters
+        // Lets try to shorten the properties field names by using form id instead of form name
+        observation.properties[form.id + "." + field.title] = observationForm[name];
+        delete observation.properties[name];
+      }
+    }
+  });
+
+  delete observation.properties.forms;
+
+  observation.properties.id = observation._id;
+}
+
+function mapObservations(observations) {
+  var self = this;
+
+  if (!Array.isArray(observations)) observations = [observations];
+
+  observations.forEach(function(o) {
+    mapObservationProperties.call(self, o);
+
+    if (self._users[o.userId]) o.properties.user = self._users[o.userId].username;
+    if (self._devices[o.deviceId]) o.properties.device = self._devices[o.deviceId].uid;
+
+    delete o.deviceId;
+    delete o.userId;
+  });
 }

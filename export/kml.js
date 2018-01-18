@@ -81,11 +81,18 @@ Kml.prototype.streamObservations = function(stream, archive, done) {
       stream.write(writer.generateKMLFolderStart(self._event.name, false));
 
       observations.forEach(function(o) {
-        var variant = o.properties[self._event.form.variantField];
-        var timestamp = o.properties.timestamp;
-        var type = o.properties.type;
+        var form = null;
+        var primary = null;
+        var secondary = null;
+        if (o.properties.forms.length) {
+          form = self._event.formMap[o.properties.forms[0].formId];
+          primary = o.properties.forms[0][form.primaryField];
+          secondary = o.properties.forms[0][form.variantField];
+        }
+
         self.mapObservations(o);
-        stream.write(writer.generateObservationPlacemark(type, o, timestamp, self._event, variant));
+        var name = primary || form.name || self._event.name;
+        stream.write(writer.generateObservationPlacemark(name, o, form, primary, secondary));
 
         o.attachments.forEach(function(attachment) {
           archive.file(path.join(attachmentBase, attachment.relativePath), {name: attachment.relativePath});

@@ -10,6 +10,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+* Fix exporters to work with multiple forms
 
 ## 5.0.0 (TBD)
 

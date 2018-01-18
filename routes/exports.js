@@ -94,12 +94,20 @@ function getEvent(req, res, next) {
   Event.getById(req.parameters.filter.eventId, {}, function(err, event) {
     req.event = event;
 
+    // form map
+    event.formMap = {};
+
     // create a field by name map, I will need this later
-    var fieldNameToField = {};
-    event.form.fields.forEach(function(field) {
-      fieldNameToField[field.name] = field;
+    event.forms.forEach(function(form) {
+      event.formMap[form.id] = form;
+
+      var fieldNameToField = {};
+      form.fields.forEach(function(field) {
+        fieldNameToField[field.name] = field;
+      });
+
+      form.fieldNameToField = fieldNameToField;
     });
-    event.form.fieldNameToField = fieldNameToField;
 
     next(err);
   });
