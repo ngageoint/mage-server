@@ -422,7 +422,6 @@ exports.getEvents = function(options, callback) {
 
   var projection = {};
   if (options.projection) {
-    console.log('projection is', options.projection);
     projection = convertProjection(options.projection);
   }
 

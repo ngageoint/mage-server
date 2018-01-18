@@ -159,7 +159,7 @@ function mapObservationProperties(observation) {
     var form = event.formMap[observationForm.formId];
     for (var name in observationForm) {
       var field = form.fieldNameToField[name];
-      if (field) {
+      if (field && !field.archived) {
         // Shapfiles attribute column names don't allow more than 10 characters
         // Lets try to shorten the properties field names by using form id instead of form name
         observation.properties[form.id + "." + field.title] = observationForm[name];

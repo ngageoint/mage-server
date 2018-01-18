@@ -65,8 +65,26 @@ GeoJson.prototype.streamObservations = function(stream, archive, done) {
     if (err) return err;
 
     self.mapObservations(observations);
+    observations = observations.map(function(o) {
+      return {
+        geometry: o.geometry,
+        properties: o.properties,
+        attachments: o.attachments
+      };
+    });
 
     observations.forEach(function(o) {
+      o.attachments = o.attachments.map(function(attachment) {
+        return {
+          name: attachment.name,
+          relativePath: attachment.relativePath,
+          size: attachment.size,
+          contentType: attachment.contentType,
+          width: attachment.width,
+          height: attachment.height,
+        };
+      });
+
       o.attachments.forEach(function(attachment) {
         archive.file(path.join(attachmentBase, attachment.relativePath), {name: attachment.relativePath});
       });
@@ -74,12 +92,12 @@ GeoJson.prototype.streamObservations = function(stream, archive, done) {
 
     stream.write(JSON.stringify({
       type: 'FeatureCollection',
-      features: geojson.transform(observations)
+      features: observations
     }));
 
     // throw in icons
     archive.directory(new api.Icon(self._event._id).getBasePath(), 'mage-export/icons', {date: new Date()});
-    
+
     done();
   });
 };

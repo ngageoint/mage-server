@@ -18,7 +18,7 @@ function mapObservationProperties(observation, event) {
     var form = event.formMap[observationForm.formId];
     for (var name in observationForm) {
       var field = form.fieldNameToField[name];
-      if (field) {
+      if (field && !field.archived) {
         observation.properties[form.name + "." + field.title] = observationForm[name];
         delete observation.properties[name];
       }
