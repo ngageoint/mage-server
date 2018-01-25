@@ -60,7 +60,7 @@ function rolesWithPermission(permission) {
 }
 
 var FormSchema = new Schema({
-  _id: { type: Number, required: true, unique: true, sparse: true },
+  _id: { type: Number, required: true, sparse: true },
   name: { type: String, required: true },
   description: { type: String, required: false },
   color: {type: String, required: true},
@@ -74,7 +74,7 @@ var FormSchema = new Schema({
 
 // Creates the Schema for the Attachments object
 var EventSchema = new Schema({
-  _id: { type: Number, required: true, unique: true },
+  _id: { type: Number, required: true },
   name: { type: String, required: true, unique: true },
   description: { type: String, required: false },
   complete: { type: Boolean },
