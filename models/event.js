@@ -60,7 +60,7 @@ function rolesWithPermission(permission) {
 }
 
 var FormSchema = new Schema({
-  _id: { type: Number, required: true, unique: true },
+  _id: { type: Number, required: true, unique: true, sparse: true },
   name: { type: String, required: true },
   description: { type: String, required: false },
   color: {type: String, required: true},
@@ -311,6 +311,11 @@ EventSchema.set("toObject", {
 // Creates the Model for the Layer Schema
 var Event = mongoose.model('Event', EventSchema);
 exports.Model = Event;
+
+// Recreate forms _id index to be sparse
+Event.collection.dropIndex('forms._id_1', function(err) {
+  console.log('Dropped index', err);
+});
 
 function convertProjection(field, keys, projection) {
   keys = keys || [];
