@@ -46,12 +46,16 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     $scope.event = result.event;
 
     var eventTeamId = _.find($scope.event.teamIds, function(teamId) {
-      return teamsById[teamId].teamEventId === $scope.event.id;
+      if (teamsById[teamId]) {
+        return teamsById[teamId].teamEventId === $scope.event.id;
+      }
     });
     eventTeam = teamsById[eventTeamId];
 
     var teamIdsInEvent = _.filter($scope.event.teamIds, function(teamId) {
-      return teamsById[teamId].teamEventId !== $scope.event.id;
+      if (teamsById[teamId]) {
+        return teamsById[teamId].teamEventId !== $scope.event.id;
+      }
     });
     var teamsInEvent = _.map(teamIdsInEvent, function(teamId) { return teamsById[teamId]; });
 
