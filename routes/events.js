@@ -347,11 +347,11 @@ module.exports = function(app, security) {
   );
 
   app.delete(
-    '/api/events/:eventId/teams/:id',
+    '/api/events/:eventId/teams/:teamId',
     passport.authenticate('bearer'),
     authorizeAccess('UPDATE_EVENT', 'update'),
     function(req, res, next) {
-      Event.removeTeam(req.event, {id: req.params.id}, function(err, event) {
+      Event.removeTeam(req.event, req.team, function(err, event) {
         if (err) return next(err);
 
         res.json(event);

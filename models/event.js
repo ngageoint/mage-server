@@ -689,6 +689,12 @@ exports.addTeam = function(event, team, callback) {
 };
 
 exports.removeTeam = function(event, team, callback) {
+  if (event._id === team.teamEventId) {
+    var err = new Error("Cannot remove an events team, event '" + event.name);
+    err.status = 405;
+    return callback(err);
+  }
+
   var update = {
     $pull: {
       teamIds: { $in: [mongoose.Types.ObjectId(team.id)] }
