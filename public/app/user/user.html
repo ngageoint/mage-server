@@ -110,10 +110,10 @@
               <div class="form-group">
                 <label class="control-label col-sm-2">Re-type new</label>
                 <div class="col-sm-10" ng-class="{'has-error': form.authentication.$submitted && form.authentication.newPasswordConfirm.$invalid}">
-                  <input type="password" ng-model="authentication.newPasswordConfirm" name="newPasswordConfirm" placeholder="{{passwordPlaceholder}}" class="form-control" ng-pattern="^{{authentication.newPassword}}$" required>
+                  <input type="password" ng-model="authentication.newPasswordConfirm" name="newPasswordConfirm" placeholder="{{passwordPlaceholder}}" class="form-control" required>
                   <div class="help-block" ng-messages="form.authentication.newPasswordConfirm.$error" ng-if="form.authentication.$submitted && form.authentication.newPasswordConfirm.$invalid">
                     <div ng-message="required">New password confirmation is required</div>
-                    <div ng-messages="pattern">Passwords do not match</div>
+                    <div ng-messages="nomatch">Passwords do not match</div>
                   </div>
                 </div>
               </div>

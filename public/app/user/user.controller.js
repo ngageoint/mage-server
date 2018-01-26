@@ -118,6 +118,8 @@ function UserController($scope, $location, $timeout, Api, UserService, user) {
   });
 
   $scope.updatePassword = function(form) {
+    form.newPasswordConfirm.$setValidity("nomatch", this.authentication.newPassword === this.authentication.newPasswordConfirm);
+
     if (!form.$valid) return;
 
     var authentication = {
