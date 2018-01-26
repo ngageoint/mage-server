@@ -146,7 +146,7 @@ module.exports = function(app, security) {
         if (err) return next(err);
 
         res.json(events.map(function(event) {
-          return event.toObject({access: req.access});
+          return event.toObject({access: req.access, projection: req.parameters.projection});
         }));
       });
     }
@@ -165,7 +165,7 @@ module.exports = function(app, security) {
         if (err) return next(err);
         if (!event) return res.sendStatus(404);
 
-        res.json(event.toObject({access: req.access}));
+        res.json(event.toObject({access: req.access, projection: req.parameters.projection}));
       });
     }
   );
@@ -248,7 +248,7 @@ module.exports = function(app, security) {
   app.post(
     '/api/events/:eventId/forms',
     passport.authenticate('bearer'),
-    access.authorize('UPDATE_EVENT'),
+    authorizeAccess('UPDATE_EVENT', 'update'),
     function(req, res, next) {
 
       if (!req.is('multipart/form-data')) return next();
@@ -286,7 +286,7 @@ module.exports = function(app, security) {
   app.post(
     '/api/events/:eventId/forms',
     passport.authenticate('bearer'),
-    access.authorize('UPDATE_EVENT'),
+    authorizeAccess('UPDATE_EVENT', 'update'),
     parseForm,
     function(req, res, next) {
       var form = req.form;
@@ -307,7 +307,6 @@ module.exports = function(app, security) {
           }
         ], function(err) {
           if (err) return next(err);
-          console.log('return new form', form.toJSON());
           res.status(201).json(form.toJSON());
         });
       });
@@ -317,7 +316,7 @@ module.exports = function(app, security) {
   app.put(
     '/api/events/:eventId/forms/:formId',
     passport.authenticate('bearer'),
-    access.authorize('UPDATE_EVENT'),
+    authorizeAccess('UPDATE_EVENT', 'update'),
     parseForm,
     function(req, res, next) {
       var form = req.form;
@@ -423,7 +422,6 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     authorizeAccess('READ_EVENT_ALL', 'read'),
     function(req, res, next) {
-      console.log('get icon for formId: ', req.params.formId);
       new api.Icon(req.event._id, req.params.formId, req.params.primary, req.params.variant).getIcon(function(err, iconPath) {
         if (err || !iconPath) return next();
 

@@ -4,6 +4,7 @@ var mongoose = require('mongoose')
   , User = require('./user')
   , Team = require('./team')
   , api = require('../api')
+  , whitelist = require('../utilities/whitelist')
   , log = require('winston');
 
 // Creates a new Mongoose Schema object
@@ -181,10 +182,6 @@ function populateUserFields(event, callback) {
 
       userFields.forEach(function(userField) {
         userField.choices = choices;
-
-        if (!userField.required && userField.type === 'dropdown') {
-          userField.choices.unshift("");
-        }
       });
     });
 
@@ -288,6 +285,13 @@ function transform(event, ret, options) {
         role: ret.acl[userId],
         permissions: permissions[ret.acl[userId]]
       };
+    }
+
+    // make sure only projected fields are returned
+    if (options.projection) {
+      var projection = convertProjection(options.projection);
+      projection.id = true; // always keep id
+      whitelist.project(ret, projection);
     }
   }
 }
@@ -428,6 +432,10 @@ exports.getEvents = function(options, callback) {
   var projection = {};
   if (options.projection) {
     projection = convertProjection(options.projection);
+
+    // Need these to check event access
+    projection.acl = true;
+    projection.teamIds = true;
   }
 
   Event.find(query, projection, function (err, events) {
@@ -608,7 +616,6 @@ exports.update = function(id, event, options, callback) {
       form._id = form.id;
     });
   }
-
 
   Event.findByIdAndUpdate(id, update, {new: true, runValidators: true, context: 'query'}, function(err, updatedEvent) {
     if (err) return callback(err);
