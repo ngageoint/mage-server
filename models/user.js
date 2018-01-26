@@ -57,7 +57,7 @@ var UserSchema = new Schema({
 
 UserSchema.method('validPassword', function(password, callback) {
   var user = this;
-  if (user.authentication.type !== 'local') return callback(null, true);
+  if (user.authentication.type !== 'local') return callback(null, false);
 
   hasher.validPassword(password, user.authentication.password, callback);
 });

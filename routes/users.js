@@ -99,6 +99,29 @@ module.exports = function(app, security) {
       }];
     }
 
+    var password = req.param('password');
+    if (!password) {
+      return res.status(400).send(invalidResponse('password'));
+    }
+
+    var passwordconfirm = req.param('passwordconfirm');
+    if (!passwordconfirm) {
+      return res.status(400).send(invalidResponse('passwordconfirm'));
+    }
+
+    if (password !== passwordconfirm) {
+      return res.status(400).send('passwords do not match');
+    }
+
+    if (password.length < passwordLength) {
+      return res.status(400).send('password does not meet minimum length requirement of ' + passwordLength + ' characters');
+    }
+
+    user.authentication = {
+      type: 'local',
+      password: password
+    };
+
     req.newUser = user;
 
     next();
