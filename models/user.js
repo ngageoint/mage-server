@@ -95,6 +95,11 @@ UserSchema.pre('save', function(next) {
       self.constructor.findById(user._id, done);
     },
     function(existingUser, done) {
+      if (!existingUser) {
+        // Creating new user, don't check previous password
+        return done();
+      }
+
       // Verify that the new password is different from the existing password
       hasher.validPassword(user.authentication.password, existingUser.authentication.password, function(err, isValid) {
         if (err) return done(err);
