@@ -89,7 +89,7 @@
 
         <div class="row">
           <div class="col-md-12">
-            <form id="new-user-form" class="form-horizontal">
+            <form class="form-horizontal" name="account" ng-submit="signup(thirdPartyUser.type || 'local', account)" novalidate>
 
               <div class="form-group">
                 <label class="control-label col-sm-3">Avatar</label>
@@ -100,15 +100,21 @@
 
               <div class="form-group">
                 <label class="control-label col-sm-3">Username</label>
-                <div class="col-sm-8">
-                  <input type="text" placeholder="i.e. jappleseed" ng-model="user.username" autocapitalize="off" class="form-control"/>
+                <div class="col-sm-8" ng-class="{'has-error': account.$submitted && account.password.$invalid}">
+                  <input type="text" ng-model="user.username" autocapitalize="off" name="username" placeholder="i.e. jappleseed" class="form-control" required>
+                  <div class="help-block" ng-messages="account.$submitted && account.username.$error" ng-if="account.username.$invalid">
+                    <div ng-message="required">Username is required</div>
+                  </div>
                 </div>
               </div>
 
               <div class="form-group">
-                <label class="control-label col-sm-3" for="type">Display Name</label>
-                <div class="col-sm-8">
-                  <input type="text" placeholder="Johnny Appleseed" ng-model="user.displayName" class="form-control">
+                <label class="control-label col-sm-3">Display Name</label>
+                <div class="col-sm-8" ng-class="{'has-error': account.$submitted && account.displayName.$invalid}">
+                  <input type="text" ng-model="user.displayName" autocapitalize="off" name="displayName" placeholder="Johnny Appleseed" class="form-control" required>
+                  <div class="help-block" ng-messages="account.$submitted && account.displayName.$error" ng-if="account.displayName.$invalid">
+                    <div ng-message="required">Display Name is required</div>
+                  </div>
                 </div>
               </div>
 
@@ -125,19 +131,38 @@
                   <input type="text" ng-model="user.phone" autocapitalize="off" class="form-control">
                 </div>
               </div>
-            </form>
 
               <div class="form-group">
-                <label class="control-label col-sm-3" for="type">Password</label>
-                <div class="col-sm-8">
-                  <input type="password" placeholder="{{passwordPlaceholder}}" ng-model="user.password" class="form-control">
+                <label class="control-label col-sm-3">Password</label>
+                <div class="col-sm-8" ng-class="{'has-error': account.$submitted && account.password.$invalid}">
+                  <input type="password" ng-model="user.password" name="password" placeholder="{{passwordPlaceholder}}" class="form-control" required>
+                  <div class="help-block" ng-messages="account.$submitted && account.password.$error" ng-if="account.password.$invalid">
+                    <div ng-message="required">Password is required</div>
+                  </div>
                 </div>
               </div>
 
               <div class="form-group">
-                <label class="control-label col-sm-3" for="type">Confirm Password</label>
-                <div class="col-sm-8">
-                  <input type="password" placeholder="{{passwordPlaceholder}}" ng-model="user.passwordconfirm" class="form-control">
+                <label class="control-label col-sm-3">Re-type new</label>
+                <div class="col-sm-8" ng-class="{'has-error': account.$submitted && account.passwordconfirm.$invalid}">
+                  <input type="password" ng-model="user.passwordconfirm" name="passwordconfirm" placeholder="{{passwordPlaceholder}}" class="form-control" required>
+                  <div class="help-block" ng-messages="account.passwordconfirm.$error" ng-if="account.$submitted && account.passwordconfirm.$invalid">
+                    <div ng-message="required">New password confirmation is required</div>
+                    <div ng-messages="nomatch">Passwords do not match</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <div class="col-md-offset-3 col-sm-8">
+                  <div><strong class="muted">Password Strength: <span class="text-{{passwordStrengthType}}">{{passwordStrength}}<span></strong></div>
+                  <uib-progressbar max="5" value="passwordStrengthScore" type="{{passwordStrengthType}}"></uib-progressbar>
+                </div>
+              </div>
+
+              <div class="row top-gap">
+                <div class="col-sm-8 col-sm-offset-3">
+                  <button type="submit" class="btn btn-default pull-right">Create my account</button>
                 </div>
               </div>
 
@@ -146,15 +171,9 @@
         </div>
       </div>
 
-      <div class="row">
+      <div class="row top-gap">
         <div class="col-sm-9 col-sm-offset-3">
           <p class="help-block">Your account will have to be approved by an admin before it becomes active</p>
-        </div>
-      </div>
-
-      <div class="row top-gap">
-        <div class="col-sm-8 col-sm-offset-3">
-          <button type="submit" class="btn btn-default pull-right" ng-click="signup(thirdPartyUser.type || 'local')">Create my account</button>
         </div>
       </div>
 

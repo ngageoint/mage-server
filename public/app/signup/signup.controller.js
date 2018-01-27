@@ -43,6 +43,37 @@ function SignupController($scope, $location, UserService, Api) {
     }
   });
 
+  var passwordStrengthMap = {
+    0: {
+      type: 'danger',
+      text: 'Weak'
+    },
+    1: {
+      type: 'warning',
+      text: 'Fair'
+    },
+    2: {
+      type: 'info',
+      text: 'Good'
+    },
+    3: {
+      type: 'primary',
+      text: 'Strong'
+    },
+    4: {
+      type: 'success',
+      text: 'Excellent'
+    }
+  };
+
+  $scope.passwordStrengthScore = 0;
+  $scope.$watch('user.password', function(password) {
+    var score = password && password.length ? zxcvbn(password, [$scope.user.username, $scope.user.displayName, $scope.user.email]).score : 0;
+    $scope.passwordStrengthScore = score + 1;
+    $scope.passwordStrengthType = passwordStrengthMap[score].type;
+    $scope.passwordStrength = passwordStrengthMap[score].text;
+  });
+
   $scope.showStatusMessage = function (title, message, statusLevel) {
     $scope.statusTitle = title;
     $scope.statusMessage = message;
@@ -50,13 +81,13 @@ function SignupController($scope, $location, UserService, Api) {
     $scope.showStatus = true;
   };
 
-  $scope.signup = function(strategy) {
-    if (strategy == 'local') {
-      localSignup();
-    } else if (strategy == 'google') {
-      googleSignup();
+  $scope.signup = function(strategy, form) {
+    if (strategy === 'local') {
+      localSignup(form);
+    } else if (strategy === 'google') {
+      googleSignup(form);
     } else {
-      oauthSignup(strategy);
+      oauthSignup(form, strategy);
     }
   };
 
@@ -95,9 +126,9 @@ function SignupController($scope, $location, UserService, Api) {
         });
       });
     });
-  }
+  };
 
-  function oauthSignup(strategy) {
+  function oauthSignup(form, strategy) {
     UserService.oauthSignup(strategy).then(function() {
       $scope.showStatus = true;
       $scope.statusTitle = 'Account successfully created';
@@ -146,7 +177,11 @@ function SignupController($scope, $location, UserService, Api) {
     UserService.googleSignup(user, complete, failed, progress);
   }
 
-  function localSignup() {
+  function localSignup(form) {
+    form.passwordconfirm.$setValidity("nomatch", $scope.user.password === $scope.user.passwordconfirm);
+
+    if (!form.$valid) return;
+
     var user = {
       username: $scope.user.username,
       displayName: $scope.user.displayName,
@@ -169,6 +204,7 @@ function SignupController($scope, $location, UserService, Api) {
 
     var complete = function() {
       $scope.$apply(function() {
+        form.$submitted = false;
         $scope.user = {};
         $scope.showStatusMessage("Success", "Account created, contact an administrator to activate your account.", "alert-success");
       });
