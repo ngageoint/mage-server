@@ -1,6 +1,11 @@
 language: node_js
 node_js:
-  - "6"
-  - "7"
+- '0.12'
 script:
-  - "npm test"
+- npm test
+notifications:
+  slack:
+    rooms:
+      secure: MS6ti/0qB9Nn/izMhhZeXmj2uTCiX2Ma7XmOYtpNhUAZS+dicrGduP96bjmbd0SZOTX/wYMTPiIvthwX1KW7WX50VT0UVYhsdlRgWonwre/1FzaORWSOJpmS9tWcX7xpWq1GCpB8yiFhKO2NtcnbD91pCpJnuLcAyRKC8xiFbEPzsJ2BsjgRpmyuXPuvvp8YAkUjvqye/wpFOPnuanxf9jr1MmR8vIur3tdZsLMEqVIhY34quQZ6+gBLWXuDemjRx29yqsF5AiULfRVsoURqpEwo/F2rh2xheCUplWYOiAgzJtPQU6ZsW1uLeaM9B74DuA/tJK9ZDNwZveyEk8sZhMQRu2sFSQlCTMQg+lvI3EpQy+e2Y14eMlYA/3QkTp1k37We6NWqeuMFOdzmpt+AHtBL4wG8al8FgU2wNSkBwwNceaGee0LMPPHAUk3lZjaiJ26GHfEQSTiUpCznrEHVUakXEkKFqLjwnaRgPCFrolGiZtdO+h6pVTT+4ZgynKajHGeg6oGseg3jo1mpim005ZmA5ydX2vXtjL1ANO/fcSGf+/v05v23l4PDVy6CzFSMwg6AYyaRkUYnp3ZkcO9oNK4YHKH6btRt/uOoXHhWZAor05YwLZuO9Q659/FVIdMglX+fRkPWvd8rCQ3ODDDHc7VEdwnV3FYT19uUbgMOr/0=
+    on_success: change
+    on_failure: always
