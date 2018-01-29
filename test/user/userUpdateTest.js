@@ -79,9 +79,7 @@ describe("user update tests", function() {
         username: 'test',
         displayName: 'test',
         email: 'test@test.com',
-        phone: '000-000-0000',
-        password: 'passwordpassword',
-        passwordconfirm: 'passwordpassword'
+        phone: '000-000-0000'
       })
       .expect(200)
       .expect('Content-Type', /json/)
@@ -104,26 +102,19 @@ describe("user update tests", function() {
       }
     });
 
-    var token = {
-      _id: '1',
-      token: '12345',
-      deviceId: '123',
-      userId: {
-        populate: function(field, callback) {
-          callback(null, mockUser);
-        }
-      }
-    };
-
-    sandbox.mock(TokenModel)
+    sandbox.mock(UserModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
-      .chain('populate', 'userId')
+      .withArgs({ username: 'test' })
+      .chain('populate', 'roleId')
       .chain('exec')
-      .yields(null, token);
+      .yields(null, mockUser);
+
+    sandbox.mock(UserModel.prototype)
+      .expects('validPassword')
+      .yields(null, true);
 
     request(app)
-      .put('/api/users/myself')
+      .put('/api/users/myself/password')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -132,7 +123,8 @@ describe("user update tests", function() {
         email: 'test@test.com',
         phone: '000-000-0000',
         password: 'password',
-        passwordconfirm: 'passwordconfirm'
+        newPassword: 'password',
+        newPasswordConfirm: 'passwordconfirm'
       })
       .expect(400)
       .expect(function(res) {
@@ -153,26 +145,19 @@ describe("user update tests", function() {
       }
     });
 
-    var token = {
-      _id: '1',
-      token: '12345',
-      deviceId: '123',
-      userId: {
-        populate: function(field, callback) {
-          callback(null, mockUser);
-        }
-      }
-    };
-
-    sandbox.mock(TokenModel)
+    sandbox.mock(UserModel)
       .expects('findOne')
-      .withArgs({token: "12345"})
-      .chain('populate', 'userId')
+      .withArgs({ username: 'test' })
+      .chain('populate', 'roleId')
       .chain('exec')
-      .yields(null, token);
+      .yields(null, mockUser);
+
+    sandbox.mock(UserModel.prototype)
+      .expects('validPassword')
+      .yields(null, true);
 
     request(app)
-      .put('/api/users/myself')
+      .put('/api/users/myself/password')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
@@ -181,7 +166,8 @@ describe("user update tests", function() {
         email: 'test@test.com',
         phone: '000-000-0000',
         password: 'password',
-        passwordconfirm: 'password'
+        newPassword: 'password',
+        newPasswordConfirm: 'password'
       })
       .expect(400)
       .expect(function(res) {
