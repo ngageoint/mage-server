@@ -2,7 +2,7 @@ language: node_js
 node_js:
 - '0.12'
 script:
-- npm test
+- npm coverage && npm run coveralls
 notifications:
   slack:
     rooms:
