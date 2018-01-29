@@ -1,3 +1,6 @@
+[![Build Status Master Branch](https://travis-ci.org/ngageoint/mage-server.svg?branch=master)](https://travis-ci.org/ngageoint/mage-server/branches)
+[![Build Status Develop Branch](https://travis-ci.org/ngageoint/mage-server.svg?branch=develop)](https://travis-ci.org/ngageoint/mage-server/branches)
+
 # MAGE Server & Web Client
 
 The **M**obile **A**wareness **G**EOINT **E**nvironment, or MAGE, provides mobile situational awareness capabilities. The MAGE web client can be accessed over the internet and is optimized for desktop and mobile web browsers.  The MAGE web client allows you to create geotagged field reports that contain media such as photos, videos, and voice recordings and share them instantly with who you want. Using the HTML Geolocation API, MAGE can also track users locations in real time. Your locations can be automatically shared with the other members of your team.
