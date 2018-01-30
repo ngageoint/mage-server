@@ -24,7 +24,7 @@ function AdminTabController($scope, $location, UserService, DeviceService) {
   };
 
   $scope.onTabChanged = function(tab) {
-    $location.path('/admin/' + tab);
+    $location.path('/admin' + tab);
   };
 
   UserService.getAllUsers().then(function(users) {
