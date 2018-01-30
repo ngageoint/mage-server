@@ -13,14 +13,15 @@ html
       .property-header-icon { margin-right: 5px; }
       .property-header-icon > img { height: 65px; }
       .property-header-content {flex: 1; min-width: 0; }
-      .property { margin-bottom: 5px; }
-      .property-type { color: #555; font-size: 22px; }
+      .property { margin-bottom: 12px; margin-left: 8px; }
+      .property-primary { color: #555; font-size: 22px; }
       .property-variant { color: #555; font-size: 18px; font-style: italic; }
       .property-user { color: #555; text-align: right; }
       .property-date { color: #555; text-align: right; }
       .property-geometry { color: #555; text-align: right; }
-      .properties {margin-top: 30px; }
-      .property-title { margin-right: 5px; color: #555; }
+      .properties {margin-top: 8px; }
+      .form-title { color: #555; font-size: 1.2em; margin-top: 16px; font-weight: bold;}
+      .property-title { margin-right: 5px; color: #777; }
       .attachments { margin-top: 35px; display: flex; flex-direction: row; flex-wrap: wrap; }
       .attachment { margin-right: 15px; margin-bottom: 15px; }
       .attachment-image { height: 200px; width: 200px; object-fit: cover }
@@ -49,21 +50,25 @@ html
                 span #{observation.geometry.coordinates[0]},&nbsp
                 span= observation.geometry.coordinates[1]
 
-            .property.property-type
-              strong= observation.properties.type
+            if observation.properties.forms.length && formMap[observation.properties.forms[0].formId].primaryField && observation.properties.forms[0][formMap[observation.properties.forms[0].formId].primaryField]
+              .property.property-primary
+                strong= observation.properties.forms[0][formMap[observation.properties.forms[0].formId].primaryField]
 
-            if form.variantField && observation.properties[form.variantField]
+            if observation.properties.forms.length && formMap[observation.properties.forms[0].formId].variantField && observation.properties.forms[0][formMap[observation.properties.forms[0].formId].variantField]
               .property.property-variant
-                div= observation.properties[form.variantField]
+                strong= observation.properties.forms[0][formMap[observation.properties.forms[0].formId].variantField]
 
         #map.hide
+        .form
+          each observationForm in observation.properties.forms
+            .form-title= formMap[observationForm.formId].name
 
-        .properties
-          each property, key in observation.properties
-            if property && (key !== 'type' && key !== 'timestamp' && key !== form.variantField && fieldsByName[key] != null)
-              .property
-                strong.property-title #{fieldsByName[key].title}:
-                div= property
+            .properties
+              each property, key in observationForm
+                if property && (key !== 'formId' && key !== 'timestamp' && formMap[observationForm.formId].fieldsByName[key] != null)
+                  .property
+                    strong.property-title #{formMap[observationForm.formId].fieldsByName[key].title}:
+                    div= property
 
         .attachments
           each attachment in observation.attachments
