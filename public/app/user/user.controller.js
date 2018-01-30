@@ -63,9 +63,7 @@ function UserController($scope, $location, $timeout, Api, UserService, user) {
     };
 
     var complete = function() {
-      $scope.$apply(function() {
-        $scope.status("Success", "Your account information has been updated.", "alert-success");
-      });
+      $scope.status("Success", "Your account information has been updated.", "alert-success");
     };
 
     var failed = function(data) {

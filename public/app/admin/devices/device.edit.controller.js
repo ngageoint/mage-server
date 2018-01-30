@@ -46,6 +46,12 @@ function AdminDeviceEditController($scope, $filter, $routeParams, $location, Loc
     return device.iconClass;
   };
 
+  $scope.$watch('device.user', function(user) {
+    if (!user) return;
+    
+    console.log('user changed', user.displayName);
+  });
+
   $scope.cancel = function() {
     var path = $scope.device.id ? '/admin/devices/' + $scope.device.id : '/admin/devices';
     $location.path(path);
@@ -56,20 +62,21 @@ function AdminDeviceEditController($scope, $filter, $routeParams, $location, Loc
     $scope.error = false;
 
     var device = $scope.device;
+    if (device.user.id) {
+      device.userId = device.user.id;
+    }
 
     if (device.id) {
-      DeviceService.updateDevice(device).success(function() {
+      DeviceService.updateDevice(device).then(function() {
         $location.path('/admin/devices/' + device.id);
-      })
-      .error(function(response) {
+      }, function(response) {
         $scope.saving = false;
         $scope.error = response.responseText;
       });
     } else {
-      DeviceService.createDevice(device).success(function (newDevice) {
+      DeviceService.createDevice(device).then(function (newDevice) {
         $location.path('/admin/devices/' + newDevice.id);
-      })
-      .error(function (response) {
+      }, function (response) {
         $scope.saving = false;
         $scope.error = response.responseText;
       });

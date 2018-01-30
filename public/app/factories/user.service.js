@@ -5,8 +5,6 @@ angular
 UserService.$inject = ['$rootScope', '$q', '$http', '$location', '$timeout', '$window', 'LocalStorageService'];
 
 function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalStorageService) {
-  var userDeferred = $q.defer();
-  var resolvedUsers = {};
 
   var service = {
     myself: null,
@@ -52,21 +50,19 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
   }
 
   function googleSignin(data) {
-    userDeferred = $q.defer();
-
     var oldUsername = service.myself && service.myself.username || null;
 
     data.appVersion = 'Web Client';
     var promise = $http.post('/auth/google/signin', $.param(data), {
-     headers: {"Content-Type": "application/x-www-form-urlencoded"},
-     ignoreAuthModule:true
+      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+      ignoreAuthModule:true
     });
 
     promise.success(function(data) {
-     setUser(data.user);
-     LocalStorageService.setToken(data.token);
-     $rootScope.$broadcast('event:auth-login', {token: data.token, newUser: data.user.username !== oldUsername});
-     $rootScope.$broadcast('event:user', {user: data.user, token: data.token, isAdmin: service.amAdmin});
+      setUser(data.user);
+      LocalStorageService.setToken(data.token);
+      $rootScope.$broadcast('event:auth-login', {token: data.token, newUser: data.user.username !== oldUsername});
+      $rootScope.$broadcast('event:user', {user: data.user, token: data.token, isAdmin: service.amAdmin});
     });
 
     return promise;
@@ -140,8 +136,6 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
   }
 
   function login(data) {
-    userDeferred = $q.defer();
-
     var oldUsername = service.myself && service.myself.username || null;
 
     data.appVersion = 'Web Client';
@@ -175,26 +169,17 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     var theDeferred = $q.defer();
     $http.get('/api/users/myself',{
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
-    })
-    .success(function(user) {
+    }).success(function(user) {
       setUser(user);
 
       $rootScope.$broadcast('event:user', {user: user, token: LocalStorageService.getToken(), isAdmin: service.amAdmin});
 
       theDeferred.resolve(user);
-    })
-    .error(function() {
+    }).error(function() {
       theDeferred.resolve({});
     });
 
     return theDeferred.promise;
-  }
-
-  function updateMyself(user, success, error, progress) {
-    saveUser(user, {
-      url: '/api/users/myself?access_token=' + LocalStorageService.getToken(),
-      type: 'PUT'
-    }, success, error, progress);
   }
 
   function updateMyPassword(authentication) {
@@ -210,38 +195,81 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
   }
 
   function checkLoggedInUser() {
-    $http.get('/api/users/myself', {ignoreAuthModule: true})
-    .success(function(user) {
-      setUser(user);
-      userDeferred.resolve(user);
-    })
-    .error(function() {
-      userDeferred.resolve({});
-    });
+    var deferred = $q.defer();
 
-    return userDeferred.promise;
+    $http.get('/api/users/myself', {ignoreAuthModule: true})
+      .success(function(user) {
+        setUser(user);
+        deferred.resolve(user);
+      })
+      .error(function() {
+        deferred.resolve({});
+      });
+
+    return deferred.promise;
   }
 
   function getUserCount() {
     return $http.get('/api/users/count');
   }
 
+  var deferredUsers;
+  function getUserMap(options) {
+    options = options || {};
+
+    if (options.forceRefresh || !deferredUsers) {
+      deferredUsers = $q.defer();
+
+      var parameters = {};
+      if (options && options.populate) {
+        parameters.populate = options.populate;
+      }
+
+      $http.get('/api/users', {params: parameters})
+        .success(function(users) {
+          deferredUsers.resolve(_.indexBy(users, 'id'));
+        });
+    }
+
+    return deferredUsers.promise;
+  }
+
   function getUser(id, options) {
     options = options || {};
-    var parameters = {};
-    if (options.populate) {
-      parameters.populate = options.populate;
-    }
 
     var deferred = $q.defer();
 
-    if (options.forceRefresh || !resolvedUsers[id]) {
+    if (options.forceRefresh) {
+      var parameters = {};
+      if (options.populate) {
+        parameters.populate = options.populate;
+      }
+
+      // Go get user again
       $http.get('/api/users/' + id, {params: parameters}).success(function(user) {
-        resolvedUsers[id] = user;
-        deferred.resolve(user);
+        // Grab my map of users without a refresh and update with new user
+        getUserMap().then(function(userMap) {
+          userMap[user.id] = user;
+          deferred.resolve(user);
+        });
       });
     } else {
-      deferred.resolve(resolvedUsers[id]);
+      getUserMap().then(function(userMap) {
+        if (!userMap[id]) {
+          // could be our cache of users is stale, lets check the server for this user
+          $http.get('/api/users/' + id, {params: parameters}).success(function(user) {
+            // Grab my map of users without a refresh and update with new user
+            getUserMap().then(function(userMap) {
+              userMap[id] = user;
+              deferred.resolve(user);
+            }).error(function() {
+              deferred.resolve(null);
+            });
+          });
+        } else {
+          deferred.resolve(userMap[id]);
+        }
+      });
     }
 
     return deferred.promise;
@@ -250,25 +278,11 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
   function getAllUsers(options) {
     options = options || {};
 
-
-    if (options.forceRefresh) {
-      resolvedUsers = {};
-    }
-
-    var parameters = {};
-    if (options.populate) {
-      parameters.populate = options.populate;
-    }
-
     var deferred = $q.defer();
-    if (options.forceRefresh || _.values(resolvedUsers).length === 0) {
-      $http.get('/api/users', {params: parameters}).success(function(users) {
-        deferred.resolve(users);
-        resolvedUsers = _.indexBy(users, 'id');
-      });
-    } else {
-      deferred.resolve(_.values(resolvedUsers));
-    }
+
+    getUserMap(options).then(function(userMap) {
+      deferred.resolve(_.values(userMap));
+    });
 
     return deferred.promise;
   }
@@ -278,8 +292,26 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
       url: '/api/users?access_token=' + LocalStorageService.getToken(),
       type: 'POST'
     }, function(user) {
-      resolvedUsers[user.id] = user;
-      if (_.isFunction(success)) success(user);
+      if (_.isFunction(success)) {
+        getUserMap().then(function(userMap) {
+          userMap[user.id] = user;
+          success(user);
+        });
+      }
+    }, error, progress);
+  }
+
+  function updateMyself(user, success, error, progress) {
+    saveUser(user, {
+      url: '/api/users/myself?access_token=' + LocalStorageService.getToken(),
+      type: 'PUT'
+    }, function(user) {
+      if (_.isFunction(success)) {
+        getUserMap().then(function(userMap) {
+          userMap[user.id] = user;
+          success(user);
+        });
+      }
     }, error, progress);
   }
 
@@ -288,15 +320,27 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
       url: '/api/users/' + id + '?access_token=' + LocalStorageService.getToken(),
       type: 'PUT'
     }, function(user) {
-      resolvedUsers[user.id] = user;
-      if (_.isFunction(success)) success(user);
+      if (_.isFunction(success)) {
+        getUserMap().then(function(userMap) {
+          userMap[user.id] = user;
+          success(user);
+        });
+      }
     }, error, progress);
   }
 
   function deleteUser(user) {
-    return $http.delete('/api/users/' + user.id).success(function(){
-      delete resolvedUsers[user.id];
-    });
+    var deferred = $q.defer();
+
+    $http.delete('/api/users/' + user.id)
+      .success(function() {
+        getUserMap().then(function(userMap) {
+          delete userMap[user.id];
+          deferred.resolve();
+        });
+      });
+
+    return deferred.promise;
   }
 
   // TODO is this really used in this service or just internal
@@ -352,7 +396,6 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
         return myXhr;
       },
       success: function(data) {
-        resolvedUsers[data.id] = data;
         success(data);
       },
       error: error,

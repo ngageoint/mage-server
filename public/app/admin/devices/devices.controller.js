@@ -117,8 +117,7 @@ function AdminDevicesController($scope, $uibModal, $filter, $location, LocalStor
     $event.stopPropagation();
 
     device.registered = true;
-    DeviceService.updateDevice(device).success(function(data) {
-      angular.copy(data, device);
+    DeviceService.updateDevice(device).then(function() {
       $scope.saved = true;
       $scope.$broadcast('device:registered', device);
     }, function(response) {

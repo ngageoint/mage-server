@@ -20,7 +20,7 @@ function AdminTeamController($scope, $uibModal, $filter, $location, $routeParams
     users: []
   };
 
-  UserService.getAllUsers({forceRefresh: true}).then(function(users) {
+  UserService.getAllUsers().then(function(users) {
     $scope.users = users;
     $scope.usersIdMap = _.indexBy(users, 'id');
 

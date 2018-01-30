@@ -538,7 +538,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       e.cancel();
     });
 
-    editLayer.on('editable:drawing:clicked', function(e) {
+    editLayer.on('editable:drawing:clicked', function() {
       if (GeometryService.featureHasIntersections(editLayer.toGeoJSON())) {
         editLayer.editor.pop();
       }

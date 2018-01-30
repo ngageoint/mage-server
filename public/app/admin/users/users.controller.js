@@ -15,7 +15,7 @@ function AdminUsersController($scope, $uibModal, $filter, $location, LocalStorag
   $scope.hasUserEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_USER');
   $scope.hasUserDeletePermission =  _.contains(UserService.myself.role.permissions, 'DELETE_USER');
 
-  UserService.getAllUsers({populate: 'roleId'}).then(function(users) {
+  UserService.getAllUsers().then(function(users) {
     $scope.users = users;
   });
 
@@ -92,10 +92,8 @@ function AdminUsersController($scope, $uibModal, $filter, $location, LocalStorag
 
     user.active = true;
     UserService.updateUser(user.id, user, function() {
-      $scope.$apply(function() {
-        $scope.$broadcast('user:activated', user);
-        $scope.saved = true;
-      });
+      $scope.$broadcast('user:activated', user);
+      $scope.saved = true;
     }, function(response) {
       $scope.$apply(function() {
         $scope.error = response.responseText;

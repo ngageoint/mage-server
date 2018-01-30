@@ -46,7 +46,7 @@
 
               <div class="form-group">
                 <label class="control-label">Point of Contact</label>
-                <select ng-model="device.userId" ng-options="user.id as user.displayName for user in users" class="form-control"></select>
+                <select ng-model="device.user" ng-options="user.displayName for user in users track by user.id" class="form-control"></select>
               </div>
 
               <span class="pull-right">

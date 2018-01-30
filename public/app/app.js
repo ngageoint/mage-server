@@ -39,11 +39,22 @@ function config($provide, $httpProvider, $routeProvider, $animateProvider) {
         var deferred = $q.defer();
 
         UserService.getMyself().then(function(myself) {
-          // TODO don't just check for these 2 roles
+          // TODO don't just check for these 2 roles, this should be permission based
+          // Important when doing this the admin page also has to be permission based
+          // and only show what each user can see.
+          // Possible that each role should have an 'admin' permission to abstract this
           myself.role.name === 'ADMIN_ROLE' || myself.role.name === 'EVENT_MANAGER_ROLE' ? deferred.resolve(myself) : deferred.reject();
         });
 
         return deferred.promise;
+      }],
+      users: ['UserService', function(UserService) {
+        // Pull fresh set of users from server before admin page
+        return UserService.getAllUsers({forceRefresh: true, populate: 'roleId'});
+      }],
+      devices: ['DeviceService', function(DeviceService) {
+        // Pull fresh set of users from server before admin page
+        return DeviceService.getAllDevices({forceRefresh: true});
       }]
     };
   }

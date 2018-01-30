@@ -96,10 +96,8 @@ function AdminController($scope, $routeParams, $location, $filter, UserService, 
 
     user.active = true;
     UserService.updateUser(user.id, user, function(data) {
-      $scope.$apply(function() {
-        $scope.$broadcast('user:activated', data);
-        $scope.inactiveUsers = _.reject($scope.inactiveUsers, function(u) { return u.id === data.id; });
-      });
+      $scope.$broadcast('user:activated', data);
+      $scope.inactiveUsers = _.reject($scope.inactiveUsers, function(u) { return u.id === data.id; });
     });
   };
 
@@ -127,8 +125,8 @@ function AdminController($scope, $routeParams, $location, $filter, UserService, 
     $event.stopPropagation();
 
     device.registered = true;
-    DeviceService.updateDevice(device).success(function(data) {
-      $scope.unregisteredDevices = _.reject($scope.unregisteredDevices, function(d) { return d.id === data.id; });
+    DeviceService.updateDevice(device).then(function(device) {
+      $scope.unregisteredDevices = _.reject($scope.unregisteredDevices, function(d) { return d.id === device.id; });
       $scope.$broadcast('device:registered', device);
     });
   };

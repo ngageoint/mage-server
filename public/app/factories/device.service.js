@@ -5,7 +5,6 @@ angular
 DeviceService.$inject = ['$http', '$q'];
 
 function DeviceService($http, $q) {
-  var resolvedDevices = {};
 
   var service = {
     count: count,
@@ -22,38 +21,64 @@ function DeviceService($http, $q) {
     return $http.get('/api/devices/count');
   }
 
-  function getAllDevices() {
-    var parameters = {
-      expand: 'user'
-    };
+  var deferredDevices;
+  function getDeviceMap(options) {
+    options = options || {};
+
+    if (options.forceRefresh || !deferredDevices) {
+      deferredDevices = $q.defer();
+
+      $http.get('/api/devices', { params: { expand: 'user' } })
+        .success(function(devices) {
+          deferredDevices.resolve(_.indexBy(devices, 'id'));
+        });
+    }
+
+    return deferredDevices.promise;
+  }
+
+  function getAllDevices(options) {
+    options = options || {};
 
     var deferred = $q.defer();
 
-    if (_.values(resolvedDevices).length === 0) {
-      $http.get('/api/devices/', {params: parameters}).success(function(devices) {
-        deferred.resolve(devices);
-        resolvedDevices = _.indexBy(devices, 'id');
-      });
-    } else {
-      deferred.resolve(_.values(resolvedDevices));
-    }
+    getDeviceMap(options).then(function(deviceMap) {
+      deferred.resolve(_.values(deviceMap));
+    });
 
     return deferred.promise;
   }
 
-  function getDevice(id) {
-    var parameters = {
-      expand: 'user'
-    };
+  function getDevice(id, options) {
+    options = options || {};
 
     var deferred = $q.defer();
 
-    if (resolvedDevices[id]) {
-      deferred.resolve(resolvedDevices[id]);
+    if (options.forceRefresh) {
+      // Go get device again
+      $http.get('/api/devices/' + id, { params: { expand: 'user' } }).success(function(device) {
+        // Grab my map of devices without a refresh and update with new device
+        getDeviceMap().then(function(deviceMap) {
+          deviceMap[device.id] = device;
+          deferred.resolve(device);
+        });
+      });
     } else {
-      $http.get('/api/devices/' + id, {params: parameters}).success(function(device) {
-        resolvedDevices[id] = device;
-        deferred.resolve(device);
+      getDeviceMap().then(function(deviceMap) {
+        if (!deviceMap[id]) {
+          // could be our cache of users is stale, lets check the server for this device
+          $http.get('/api/devices/' + id, { params: { expand: 'user' } }).success(function(device) {
+            // Grab my map of users without a refresh and update with new user
+            getDeviceMap().then(function(deviceMap) {
+              deviceMap[id] = device;
+              deferred.resolve(device);
+            }, function() {
+              deferred.resolve(null);
+            });
+          });
+        } else {
+          deferred.resolve(deviceMap[id]);
+        }
       });
     }
 
@@ -61,36 +86,50 @@ function DeviceService($http, $q) {
   }
 
   function createDevice(device) {
-    var promise = $http.post('/api/devices', $.param(device),{
+    var deferred = $q.defer();
+
+    $http.post('/api/devices', $.param(device),{
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
+    }).success(function(updatedDevice) {
+      getDeviceMap().then(function(deviceMap) {
+        updatedDevice.user = device.user;
+        deviceMap[device.id] = updatedDevice;
+        deferred.resolve(updatedDevice);
+      });
+    }).error(function() {
+      deferred.reject();
     });
 
-    promise.then(function(data) {
-      resolvedDevices[device.id] = $.when(data);
-    });
-
-    return promise;
+    return deferred.promise;
   }
 
   function updateDevice(device) {
-    var promise = $http.put('/api/devices/' + device.id, $.param(device), {
+    var deferred = $q.defer();
+
+    $http.put('/api/devices/' + device.id, $.param(device), {
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
+    }).success(function() {
+      getDeviceMap().then(function(deviceMap) {
+        deviceMap[device.id] = device;
+        deferred.resolve(device);
+      });
+    }).error(function() {
+      deferred.reject();
     });
 
-    promise.then(function(response) {
-      resolvedDevices[response.data.id] = response.data;
-    });
-
-    return promise;
+    return deferred.promise;
   }
 
   function deleteDevice(device) {
-    var promise = $http.delete('/api/devices/' + device.id);
+    var deferred = $q.defer();
 
-    promise.then(function() {
-      delete resolvedDevices[device.id];
+    $http.delete('/api/devices/' + device.id).success(function() {
+      getDeviceMap.then(function(deviceMap) {
+        delete deviceMap[device.id];
+        deferred.resolve(device);
+      });
     });
 
-    return promise;
+    return deferred.promise;
   }
 }

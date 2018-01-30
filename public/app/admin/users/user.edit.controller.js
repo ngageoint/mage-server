@@ -152,15 +152,11 @@ function AdminUserEditController($scope, $filter, $routeParams, $location, Api, 
 
     if ($scope.user.id) {
       UserService.updateUser($scope.user.id, user, function() {
-        $scope.$apply(function() {
-          $location.path('/admin/users/' + $scope.user.id);
-        });
+        $location.path('/admin/users/' + $scope.user.id);
       }, failure, progress);
     } else {
       UserService.createUser(user, function(newUser) {
-        $scope.$apply(function() {
-          $location.path('/admin/users/' + newUser.id);
-        });
+        $location.path('/admin/users/' + newUser.id);
       }, failure, progress);
     }
   };
@@ -207,9 +203,10 @@ function AdminUserEditController($scope, $filter, $routeParams, $location, Api, 
     };
 
     UserService.updateUser($scope.user.id, user, function() {
-      $scope.$apply(function() {
-        $location.path('/admin/users/' + $scope.user.id);
-      });
+      $scope.user.password = "";
+      $scope.user.passwordconfirm = "";
+      form.$setPristine(true);
+      $scope.passwordStatus = {status: 'success', msg: "Password successfully updated."};
     }, function(data) {
       $scope.$apply(function() {
         $scope.passwordStatus = {status: "danger", msg: data.responseText};
