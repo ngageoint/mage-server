@@ -408,6 +408,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     }
 
     layer.disableEdit();
+    map.removeLayer(layer);
     layers['Edit'].layer.removeLayer(layer);
 
     if (edit.feature.geometry.type === 'Point') {
@@ -428,7 +429,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
       $scope.$broadcast('feature:moved', layer.feature, layer.toGeoJSON().geometry);
     } else {
-      layer.feature.geometry = edit.geometry;
       initiateShapeDraw(edit.feature);
     }
   }
@@ -509,12 +509,15 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
   function initiateShapeDraw(feature) {
     var editLayer = feature.geometry.type === 'Polygon' ? map.editTools.startPolygon() : map.editTools.startPolyline();
+    editLayer.feature = feature;
+    layers['Edit'].featureIdToLayer[feature.id] = editLayer;
+
     editLayer.on('editable:drawing:commit', function(e) {
       e.layer.disableEdit();
       map.removeLayer(e.layer);
 
       var geojson = e.layer.toGeoJSON();
-      geojson.id = feature.id;
+      geojson.id = editLayer.feature.id;
 
       createGeoJsonForLayer(geojson, layers['Edit'], true);
       var newLayer = layers['Edit'].featureIdToLayer[geojson.id];

@@ -39,6 +39,11 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
     $scope.$on('feature:moved', function(e, feature, geometry) {
       if (!$scope.observation || !geometry) return;
 
+      // Disable save if line/polygon until line/polygon edit is complete
+      if (geometry.type === 'LineString' || geometry.type === 'Polygon') {
+        $scope.observationForm.$setValidity('geometry', true);
+      }
+
       var geometryField = $scope.form.geometryField;
       geometryField.value = angular.copy(geometry);
       updateGeometryEdit(geometryField, editedVertex);
@@ -206,7 +211,11 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
   });
 
   $scope.$on('observation:shapechanged', function(e, observation, shapeType) {
-    $scope.$emit('observation:shapeChanged', {id: observation.id, geometry: {type: shapeType}});
+    // Disable save if line/polygon until line/polygon edit is complete
+    var geometryValid = shapeType === 'LineString' || shapeType === 'Polygon' ? false : true;
+    $scope.observationForm.$setValidity('geometry', geometryValid);
+
+    $scope.$emit('observation:shapeChanged', {id: observation.id, type: "Feature", geometry: {type: shapeType}});
   });
 
   $scope.$on('uploadFile', function(e, id) {
