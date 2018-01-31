@@ -99,7 +99,7 @@ module.exports = function(app, security) {
             if (form.style[primary][secondary] !== undefined && typeof form.style[primary][secondary] === 'object') {
               whitelistStyle[primary][secondary] = reduceStyle(form.style[primary][secondary]);
             }
-          }, o[primary]);
+          }, whitelistStyle[primary]);
         }
 
       }, whitelistStyle);
