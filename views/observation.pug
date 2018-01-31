@@ -1,7 +1,7 @@
 html
   head
 
-    link(rel="stylesheet" href="https://unpkg.com/leaflet@0.7.7/dist/leaflet.css")
+    link(rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css")
     style.
       body { margin-top: 15px; background-color: #47688c; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";}
       h1 { color: #fff; text-align: center; }
@@ -47,8 +47,8 @@ html
                 div= observation.properties.timestamp
 
               .property.property-geometry
-                span #{observation.geometry.coordinates[0]},&nbsp
-                span= observation.geometry.coordinates[1]
+                span #{center.coordinates[0]},&nbsp
+                span= center.coordinates[1]
 
             if observation.properties.forms.length && formMap[observation.properties.forms[0].formId].primaryField && observation.properties.forms[0][formMap[observation.properties.forms[0].formId].primaryField]
               .property.property-primary
@@ -81,10 +81,12 @@ html
                   a(href="media/" + attachment.name) download video
 
   script.
+    var observationEvent = !{JSON.stringify(event)};
+    var formMap = !{JSON.stringify(formMap)};
+    var observation = !{JSON.stringify(observation)};
     var geometry = !{JSON.stringify(observation.geometry)};
     function loadMap() {
-      var latLng = L.GeoJSON.coordsToLatLng(geometry.coordinates);
-      var map = L.map('map').setView(latLng, 13);
+      var map = L.map('map');
       L.DomUtil.removeClass(L.DomUtil.get('map'), 'hide');
       map.invalidateSize();
 
@@ -92,8 +94,44 @@ html
           attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(map);
 
-      L.marker(latLng).addTo(map)
-        .bindPopup('A pretty CSS3 popup.<br> Easily customizable.');
+      var geojson = L.geoJSON(observation, {
+        style: style(observation)
+      });
+      map.fitBounds(geojson.getBounds());
+      geojson.addTo(map);
     }
 
-  script(type="text/javascript" src="https://npmcdn.com/leaflet@0.7.7/dist/leaflet.js" onload ="loadMap()")
+    function style(observation) {
+      var formStyle = null;
+      var primary = null;
+      var variant = null;
+
+      if (observation.properties.forms.length) {
+        var firstForm = observation.properties.forms[0];
+        var form = formMap[firstForm.formId];
+        formStyle = form.style;
+        primary = firstForm[form.primaryField];
+        variant = firstForm[form.variantField];
+      }
+
+      var style = observationEvent.style;
+      if (formStyle) {
+        if (primary && formStyle[primary] && variant && formStyle[primary][variant]) {
+          style = formStyle[primary][variant];
+        } else if (primary && formStyle[primary]) {
+          style = formStyle[primary];
+        } else {
+          style = formStyle;
+        }
+      }
+
+      return {
+        color: style.stroke,
+        fillColor: style.fill,
+        fillOpacity: style.fillOpacity,
+        opacity: style.strokeOpacity,
+        weight: style.strokeWidth
+      };
+    }
+
+  script(type="text/javascript" src="https://unpkg.com/leaflet@1.3.1/dist/leaflet-src.js" onload ="loadMap()")

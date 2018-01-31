@@ -12,6 +12,7 @@ module.exports = function(app, security) {
     , Event = require('../models/event')
     , Team = require('../models/team')
     , access = require('../access')
+    , turfCentroid = require('@turf/centroid')
     , geometryFormat = require('../format/geoJsonFormat')
     , observationXform = require('../transformers/observation')
     , passport = security.authentication.passport;
@@ -321,6 +322,7 @@ module.exports = function(app, security) {
         event: req.event,
         formMap: formMap,
         observation: req.observation,
+        center: turfCentroid(req.observation).geometry,
         user: req.observationUser
       });
       archive.append(html, { name: req.observation._id + '/index.html' });

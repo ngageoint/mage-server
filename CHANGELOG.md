@@ -10,7 +10,8 @@ Adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
-* Fix bug when trying to set form line/polygon style
+* Fix bug when trying to set form line/polygon style.
+* Add line and polygon support for observation export from news feed.
 
 ## [5.0.1](https://github.com/ngageoint/mage-server/releases/tag/5.0.1) (01-30-2018)
 
