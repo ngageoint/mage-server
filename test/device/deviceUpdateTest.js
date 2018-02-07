@@ -67,6 +67,36 @@ describe("device update tests", function() {
       .end(done);
   });
 
+  it("should update empty device", function(done) {
+    mockTokenWithPermission('UPDATE_DEVICE');
+
+    var userId = mongoose.Types.ObjectId();
+    sandbox.mock(DeviceModel)
+      .expects('findByIdAndUpdate')
+      .withArgs('123', {})
+      .yields(null, {
+        uid: '12345',
+        name: 'Test Device',
+        registered: true,
+        description: 'Some description',
+        userId: userId.toString()
+      });
+
+    request(app)
+      .put('/api/devices/123')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({})
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(function(res) {
+        var device = res.body;
+        should.exist(device);
+      })
+      .end(done);
+  });
+
+
   it("should remove token for unregistered device", function(done) {
     mockTokenWithPermission('UPDATE_DEVICE');
 

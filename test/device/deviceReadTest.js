@@ -158,6 +158,7 @@ describe("device read tests", function() {
       .get('/api/devices/123')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
+      .query({expand: 'user'})
       .expect(200)
       .expect('Content-Type', /json/)
       .expect(function(res) {
