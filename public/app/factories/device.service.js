@@ -125,7 +125,7 @@ function DeviceService($http, $q) {
     var deferred = $q.defer();
 
     $http.delete('/api/devices/' + device.id).success(function() {
-      getDeviceMap.then(function(deviceMap) {
+      getDeviceMap().then(function(deviceMap) {
         delete deviceMap[device.id];
         deferred.resolve(device);
       });

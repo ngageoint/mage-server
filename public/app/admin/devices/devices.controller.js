@@ -97,7 +97,7 @@ function AdminDevicesController($scope, $uibModal, $filter, $location, LocalStor
         $scope.device = device;
 
         $scope.deleteDevice = function(device) {
-          DeviceService.deleteDevice(device).success(function() {
+          DeviceService.deleteDevice(device).then(function() {
             $uibModalInstance.close(device);
           });
         };
