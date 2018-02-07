@@ -116,8 +116,8 @@ describe("device create tests", function() {
         description: "Some description",
         name: "Test Device",
         userId: userId.toString(),
-        appVersion: undefined,
-        userAgent: undefined
+        appVersion: 'Some Version',
+        userAgent: sinon.match.typeOf('string')
       })
       .yields(null, {
         uid: '12345',
@@ -136,6 +136,7 @@ describe("device create tests", function() {
         uid: '12345',
         name: 'Test Device',
         description: 'Some description',
+        appVersion: 'Some Version',
         userId: userId.toString()
       })
       .expect(200)
