@@ -12,6 +12,8 @@ Adheres to [Semantic Versioning](http://semver.org/).
 ##### Bug Fixes
 * Fix bug when trying to set form line/polygon style.
 * Add line and polygon support for observation export from news feed.
+* Handle historic form import for pre 5.x forms.  This will remove the timestamp and geometry fields from the imported form definition as
+  those fields belong to the observation, not the form.
 
 ## [5.0.1](https://github.com/ngageoint/mage-server/releases/tag/5.0.1) (01-30-2018)
 

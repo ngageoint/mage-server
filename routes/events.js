@@ -254,7 +254,16 @@ module.exports = function(app, security) {
       if (!req.is('multipart/form-data')) return next();
 
       function validateForm(callback) {
-        new api.Form().validate(req.files.form, callback);
+        new api.Form().validate(req.files.form, function(err, form) {
+          if (err) return callback(err);
+
+          // Handle historic form that may contain timestamp and geometry fields
+          form.fields = form.fields.filter(function(field) {
+            return field.name !== 'timestamp' && field.name !== 'geometry';
+          });
+
+          callback(null, form);
+        });
       }
 
       function updateEvent(form, callback) {
