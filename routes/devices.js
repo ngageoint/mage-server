@@ -83,6 +83,8 @@ DeviceResource.prototype.create = function(req, res, next) {
     name: req.param('name'),
     registered: false,
     description: req.param('description'),
+    userAgent: req.headers['user-agent'],
+    appVersion: req.param('appVersion'),
     userId: req.user.id
   };
 
