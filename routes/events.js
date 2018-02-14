@@ -80,16 +80,16 @@ module.exports = function(app, security) {
       var primaryField = form.fields.filter(function(field) {
         return field.name === form.primaryField;
       }).shift();
-      var primaryChoices = primaryField.choices.map(function(item) {
+      var primaryChoices = primaryField ? primaryField.choices.map(function(item) {
         return item.title;
-      });
+      }) : [];
 
       var secondaryField = form.fields.filter(function(field) {
         return field.name === form.variantField;
       }).shift();
-      var secondaryChoices = secondaryField.choices.map(function(choice) {
+      var secondaryChoices = secondaryField ? secondaryField.choices.map(function(choice) {
         return choice.title;
-      });
+      }) : [];
 
       primaryChoices.reduce(function(o, primary) {
         if (form.style[primary] !== undefined && typeof form.style[primary] === 'object') {
