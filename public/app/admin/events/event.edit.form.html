@@ -407,22 +407,11 @@
           <div class="col-sm-12">
             <div class="admin-table admin-table-content">
               <div class="row">
-                <a href="javascript:void(0)" ng-click="updateSymbology()">
-                  <div class="col-md-2">
-                    <div class="card symbology-card">
-                      <div class="row">
-                        <div class="col-md-12"><strong>Default Symbology<strong></div>
-                      </div>
-                      <img class="preview-image" width="100%" ng-src="{{'/api/events/' + event.id + '/icons/' + form.id + '?access_token=' + token + '&_dc=' + savedTime}}"/>
-                      <div class="shape-style">
-                        <div style-preview="form.style || event.style" type="Polygon"></div>
-                      </div>
-                      <div class="shape-style">
-                        <div style-preview="form.style || event.style" type="LineString" event-style="event.style"></div>
-                      </div>
-                    </div>
-                  </div>
-                </a>
+                <form-style title="Default Symbology"
+                  style="styleMap.style"
+                  icon="iconMap.icon"
+                  on-style-changed="onStyleChanged($event)"
+                  on-icon-added="onIconAdded($event)"></form-style>
               </div>
               <hr>
 
@@ -517,50 +506,21 @@
                   </div>
                 </div>
                 <div class="row bottom-gap-l">
-                  <a href="javascript:void(0)" ng-click="updateSymbology(option.title)">
-                    <div class="col-md-2">
-                      <div class="card symbology-card">
-                        <div class="row">
-                          <div class="col-md-12">Default</div>
-                        </div>
-                        <img class="preview-image" width="100%" ng-src="{{ getIcon(option.title) || '/api/events/' + event.id + '/icons/' + form.id + '/' + option.title + '?access_token=' + token + '&_dc=' + savedTime}}"/>
-                        <div class="shape-style">
-                          <div style-preview="form.style || event.style" type="Polygon" primary="option.title"></div>
-                        </div>
-                        <div class="shape-style">
-                          <div style-preview="form.style || event.style" type="LineString" primary="option.title"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </a>
+                  <form-style title="Default"
+                    style="styleMap[option.title].style"
+                    icon="iconMap[option.title].icon"
+                    primary="{{option.title}}"
+                    on-style-changed="onStyleChanged($event)"
+                    on-icon-added="onIconAdded($event)"></form-style>
+
                   <div ng-repeat="variant in variants">
-                    <a href="javascript:void(0)" ng-click="updateSymbology(option.title, variant.title)">
-                      <div class="col-md-2">
-                        <div class="card symbology-card">
-                          <div class="row">
-                            <div class="col-md-12">
-                              <span>
-                                {{variant.title}}
-                                <span ng-show="variantField.type == 'date'">
-                                <span ng-show="variants[$index+1]">
-                                - {{variants[$index+1].title}}
-                                </span>
-                                <span ng-hide="variants[$index+1]">+</span>
-                                minutes old
-                                </span>
-                              </span>
-                            </div>
-                          </div>
-                          <img class="preview-image" width="100%" ng-src="{{ getIcon(option.title, variant.title) || '/api/events/' + event.id + '/icons/' + form.id + '/' + option.title + '/' + variant.title + '?access_token=' + token + '&_dc=' + savedTime}}"/>
-                          <div class="shape-style">
-                            <div style-preview="form.style || event.style" type="Polygon" primary="option.title" variant="variant.title"></div>
-                          </div>
-                          <div class="shape-style">
-                            <div style-preview="form.style || event.style" type="LineString" primary="option.title" variant="variant.title"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </a>
+                    <form-style title="{{variant.title}}"
+                      style="styleMap[option.title][variant.title].style"
+                      icon="iconMap[option.title][variant.title].icon"
+                      primary="{{option.title}}"
+                      variant="{{variant.title}}"
+                      on-style-changed="onStyleChanged($event)"
+                      on-icon-added="onIconAdded($event)"></form-style>
                   </div>
                 </div>
                 <hr>

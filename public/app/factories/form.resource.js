@@ -1,7 +1,10 @@
 var _ = require('underscore')
   , $ = require('jquery');
 
-module.exports = Form;
+module.exports = {
+  Form: Form,
+  FormIcon: FormIcon
+};
 
 Form.$inject = ['$rootScope', '$resource', 'LocalStorageService'];
 
@@ -75,4 +78,12 @@ function Form($rootScope, $resource, LocalStorageService) {
   };
 
   return Form;
+}
+
+FormIcon.$inject = ['$resource'];
+
+function FormIcon($resource) {
+  var FormIcon = $resource('/api/events/:eventId/icons/:formId', {});
+
+  return FormIcon;
 }

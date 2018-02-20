@@ -3,7 +3,9 @@ module.exports = function(app, security) {
     , access = require('../access')
     , api = require('../api')
     , fs = require('fs-extra')
-    , async = require('async');
+    , async = require('async')
+    , util = require('util')
+    , fileType = require('file-type');
 
   var passport = security.authentication.passport;
 
@@ -425,16 +427,62 @@ module.exports = function(app, security) {
     }
   );
 
+  app.get(
+    '/api/events/:eventId/icons/:id',
+    passport.authenticate('bearer'),
+    authorizeAccess('READ_EVENT_ALL', 'read'),
+    function(req, res, next) {
+      new api.Icon(req.event._id, req.params.id).getIcons(function(err, icons) {
+        if (err) return next();
+
+        async.map(icons, function(icon, done) {
+          fs.readFile(icon.path, function(err, data) {
+            if (err) return done(err);
+
+            done(null, {
+              eventId: icon.eventId,
+              formId: icon.formId,
+              primary: icon.primary,
+              variant: icon.variant,
+              icon: util.format('data:%s;base64,%s', fileType(data).mime, Buffer(data).toString('base64'))
+            });
+          });
+        }, function(err, icons) {
+          if (err) return next(err);
+
+          res.json(icons);
+        });
+      });
+    }
+  );
+
   // get icon
   app.get(
     '/api/events/:eventId/icons/:formId?/:primary?/:variant?',
     passport.authenticate('bearer'),
     authorizeAccess('READ_EVENT_ALL', 'read'),
     function(req, res, next) {
-      new api.Icon(req.event._id, req.params.formId, req.params.primary, req.params.variant).getIcon(function(err, iconPath) {
-        if (err || !iconPath) return next();
+      new api.Icon(req.event._id, req.params.formId, req.params.primary, req.params.variant).getIcon(function(err, icon) {
+        if (err || !icon) return next();
 
-        res.sendFile(iconPath);
+        res.format({
+          'image/*': function() {
+            res.sendFile(icon.path);
+          },
+          'application/json': function() {
+            fs.readFile(icon.path, function(err, data) {
+              if (err) return next(err);
+
+              res.json({
+                eventId: icon.eventId,
+                formId: icon.formId,
+                primary: icon.primary,
+                variant: icon.variant,
+                icon: util.format('data:%s;base64,%s', fileType(data).mime, Buffer(data).toString('base64'))
+              });
+            });
+          }
+        });
       });
     }
   );

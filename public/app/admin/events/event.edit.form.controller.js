@@ -4,17 +4,19 @@ var _ = require('underscore')
 
 module.exports = AdminEventEditFormController;
 
-AdminEventEditFormController.$inject = ['$rootScope', '$scope', '$location', '$filter', '$routeParams', '$q', '$timeout', '$uibModal', 'LocalStorageService', 'EventService', 'Event', 'Form'];
+AdminEventEditFormController.$inject = ['$rootScope', '$scope', '$location', '$filter', '$routeParams', '$q', '$timeout', '$uibModal', 'LocalStorageService', 'EventService', 'Event', 'Form', 'FormIcon'];
 
-function AdminEventEditFormController($rootScope, $scope, $location, $filter, $routeParams, $q, $timeout, $uibModal, LocalStorageService, EventService, Event, Form) {
+function AdminEventEditFormController($rootScope, $scope, $location, $filter, $routeParams, $q, $timeout, $uibModal, LocalStorageService, EventService, Event, Form, FormIcon) {
   $scope.unSavedChanges = false;
   $scope.unSavedUploads = false;
   $scope.token = LocalStorageService.getToken();
 
+  var icons = {};
+  $scope.iconMap = {};
+  $scope.styleMap = {};
+
   var formSaved = false;
-  var unsavedIcons = 0;
-  $scope.uploadIcons = false;
-  $scope.filesToUpload = {};
+  $scope.filesToUpload = [];
   $scope.saveTime = 0;
 
   Event.get({id: $routeParams.eventId}, function(event) {
@@ -38,24 +40,51 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
       $scope.form.fields = [];
       $scope.form.userFields = [];
     }
+
+    mapStyles();
+    fetchIcons($routeParams.eventId, $routeParams.formId);
   });
+
+  function fetchIcons() {
+    if (!$routeParams.formId) {
+      FormIcon.get({eventId: $routeParams.eventId}, function(icon) {
+        icons = icon;
+        mapIcons();
+      });
+    } else {
+      FormIcon.query({eventId: $routeParams.eventId, formId: $routeParams.formId || 'new'}, function(formIcons) {
+        _.each(formIcons, function(icon) {
+          if (icon.primary && icon.variant) {
+            if (!icons[icon.primary]) {
+              icons[icon.primary] = {};
+            }
+
+            icons[icon.primary][icon.variant] = _.extend(icons[icon.primary][icon.variant] || {}, icon);
+          } else if (icon.primary) {
+            icons[icon.primary] = _.extend(icons[icon.primary] || {}, icon);
+          } else {
+            icons = icon;
+          }
+        });
+
+        mapIcons();
+      });
+    }
+  }
 
   $scope.$watch('form', function(newForm, oldForm) {
     if (!newForm || !oldForm) return;
 
     if ($scope.saving) return;
 
-    if (newForm.id && !oldForm.id) {
-      $location.path('/admin/events/' + $scope.event.id + '/forms/' + newForm.id);
-      return;
+    if (!newForm.id || oldForm.id) {
+      $scope.unSavedChanges = true;
     }
 
-    $scope.unSavedChanges = true;
   }, true);
 
   $scope.$watchCollection('filesToUpload', function() {
-    if ($scope.filesToUpload && Object.keys($scope.filesToUpload).length > 0) {
-      unsavedIcons = Object.keys($scope.filesToUpload).length;
+    if ($scope.filesToUpload && $scope.filesToUpload.length > 0) {
       $scope.unSavedUploads = true;
     } else {
       if (!$scope.saving) {
@@ -217,19 +246,143 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     }
   };
 
+  function mapIcons() {
+    if ($scope.primaryField) {
+      _.each($scope.primaryField.choices, function(primary) {
+        $scope.iconMap[primary.title] = {
+          icon: getIcon(primary.title)
+        };
+
+        _.each($scope.variants, function(variant) {
+          $scope.iconMap[primary.title][variant.title] = {
+            icon: getIcon(primary.title, variant.title)
+          };
+        });
+      });
+    }
+
+    $scope.iconMap.icon = getIcon();
+  }
+
+  function getIcon(primary, variant) {
+    if (primary && icons[primary] && variant && icons[primary][variant] && icons[primary][variant].icon) {
+      return icons[primary][variant].icon;
+    } else if (primary && icons[primary] && icons[primary].icon) {
+      return icons[primary].icon;
+    } else {
+      return icons.icon;
+    }
+  }
+
+  function mapStyles() {
+    if ($scope.primaryField) {
+      _.each($scope.primaryField.choices, function(primary) {
+        $scope.styleMap[primary.title] = {
+          style: getStyle(primary.title)
+        };
+
+        _.each($scope.variants, function(variant) {
+          $scope.styleMap[primary.title][variant.title] = {
+            style: getStyle(primary.title, variant.title)
+          };
+        });
+      });
+    }
+
+    $scope.styleMap.style = getStyle();
+  }
+
+  var styleKeys = ['fill', 'fillOpacity', 'stroke', 'strokeOpacity', 'strokeWidth'];
+  function getStyle(primary, variant) {
+    if (!$scope.event || !$scope.form) return;
+
+    var style = $scope.form.style || $scope.event.style;
+
+    if (primary && style[primary] && variant && style[primary][variant]) {
+      return _.pick(style[primary][variant], styleKeys);
+    } else if (primary && style[primary]) {
+      return _.pick(style[primary], styleKeys);
+    } else {
+      return _.pick(style, styleKeys);
+    }
+  }
+
+  $scope.onIconAdded = function(event) {
+    var icon = event.icon;
+    var primary = event.primary;
+    var variant = event.varaint;
+
+    this.filesToUpload.push({
+      file: event.file,
+      primary: primary,
+      variant: variant
+    });
+
+    if (primary && variant) {
+      icons[primary] = icons[primary] || {};
+      icons[primary][variant] = _.extend(icons[primary][variant] || {}, {icon: icon});
+
+      $scope.iconMap[primary][variant].icon = getIcon(primary, variant);
+    } else if (primary) {
+      icons[primary] = _.extend(icons[primary] || {}, {icon: icon});
+
+      _.each($scope.variants, function(variant) {
+        $scope.iconMap[primary][variant.title].icon = getIcon(primary, variant.title);
+      });
+    } else {
+      icons = _.extend(icons || {}, {icon: icon});
+
+      if ($scope.primaryField) {
+        _.each($scope.primaryField.choices, function(primary) {
+          _.each($scope.variants, function(variant) {
+            $scope.iconMap[primary.title][variant.title].icon = getIcon(primary.title, variant.title);
+          });
+
+          $scope.iconMap[primary.title].icon = getIcon(primary.title);
+        });
+      }
+    }
+  };
+
+  $scope.onStyleChanged = function(event) {
+    var style = event.style;
+    var primary = event.primary;
+    var variant = event.variant;
+
+    $scope.form.style = $scope.form.style || angular.copy($scope.event.style);
+
+    if (primary && variant) {
+      if (!$scope.form.style[primary]) {
+        $scope.form.style[primary] = angular.copy($scope.form.style);
+      }
+      $scope.form.style[primary][variant] = _.extend($scope.form.style[primary][variant] || {}, style);
+
+      $scope.styleMap[primary][variant.title].style = getStyle(primary, variant.title);
+    } else if (primary) {
+      $scope.form.style[primary] = _.extend($scope.form.style[primary] || {}, style);
+
+      _.each($scope.variants, function(variant) {
+        $scope.styleMap[primary][variant.title].style = getStyle(primary, variant.title);
+      });
+    } else {
+      $scope.form.style = _.extend($scope.form.style || {}, style);
+    }
+  };
+
   var debouncedAutoSave = _.debounce(function() {
     $scope.$apply(function() {
-      for (var url in $scope.filesToUpload) {
-        var file = $scope.filesToUpload[url];
-        upload(url, file);
-      }
-
       $scope.form.$save({eventId: $scope.event.id, id: $scope.form.id}, function() {
         _.each($scope.form.fields, function(field) {
           if ($scope.isMemberField(field)) {
             field.choices = [];
           }
         });
+
+        // Upload icons if any
+        _.each($scope.filesToUpload, function(fileUpload) {
+          upload(fileUpload);
+        });
+
         $scope.saving = false;
         formSaved = true;
         completeSave();
@@ -237,37 +390,38 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     });
   }, 1000);
 
-  var upload = function(url, file) {
+  function upload(fileUpload) {
+    var url = '/api/events/' + $scope.event.id + '/icons/' + $scope.form.id +
+      (fileUpload.primary ? '/' + fileUpload.primary : '') +
+      (fileUpload.variant ? '/' + fileUpload.variant : '');
 
     var formData = new FormData();
-    formData.append('icon', file);
+    formData.append('icon', fileUpload.file);
 
     $.ajax({
       url: url,
       type: 'POST',
+      headers: {
+        'Authorization':'Bearer ' + LocalStorageService.getToken(),
+      },
       xhr: function() {
         var myXhr = $.ajaxSettings.xhr();
         return myXhr;
       },
       success: function() {
-        $scope.$apply(function(){
-          delete $scope.filesToUpload[url];
-          unsavedIcons--;
+        $scope.$apply(function() {
+          $scope.filesToUpload = _.reject($scope.filesToUpload, function(upload) {
+            return fileUpload.file === upload.file;
+          });
           completeSave();
-          $scope.savedTime = Date.now();
         });
       },
-      // error: uploadFailed,
       data: formData,
       cache: false,
       contentType: false,
       processData: false
     });
-  };
-
-  $scope.$on('uploadComplete', function() {
-    $scope.savedTime = Date.now();
-  });
+  }
 
   $scope.groupLayerByType = function (layer) {
     return layer.type;
@@ -297,16 +451,22 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
 
     formSaved = false;
     $scope.saving = true;
-    $scope.uploadIcons = true;
     debouncedAutoSave();
   };
 
   function completeSave() {
-    if (unsavedIcons === 0 && formSaved) {
+    if ($scope.filesToUpload.length === 0 && formSaved) {
       $scope.saving = false;
       $scope.unSavedChanges = false;
-      $scope.uploadIcons = false;
       delete $scope.exportError;
+
+      if ($location.path().indexOf('/forms/new') !== -1) {
+        $location.path('/admin/events/' + $scope.event.id + '/forms/' + $scope.form.id);
+        return;
+      }
+
+      fetchIcons();
+      mapStyles();
     }
   }
 
@@ -327,6 +487,8 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
       $scope.variants = [];
       $scope.form.primaryField = null;
       $scope.form.variantField = null;
+      mapIcons();
+      mapStyles();
 
       return;
     }
@@ -335,9 +497,12 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
       // they do not want a variant
       $scope.variants = [];
       $scope.form.variantField = null;
+      mapIcons();
+      mapStyles();
 
       return;
     }
+
     if ($scope.variantField.type === 'dropdown') {
       $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
       $scope.showNumberVariants = false;
@@ -346,6 +511,9 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
       $scope.variants = $filter('orderBy')($scope.variantField.choices, 'value');
       $scope.showNumberVariants = true;
     }
+
+    mapIcons();
+    mapStyles();
   };
 
   $scope.$watch('form.primaryField', function(primaryField) {
@@ -368,11 +536,6 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
         $scope.primaryField = field;
       }
     });
-  });
-
-  $scope.$on('uploadFile', function(e, uploadFile) {
-    // TODO what is this?
-    $scope.event.formArchiveFile = uploadFile;
   });
 
   $scope.primaryChanged = function() {
@@ -462,135 +625,6 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     modalInstance.result.then(function (choices) {
       field.choices = choices;
     });
-  };
-
-  $scope.updateSymbology = function(primary, variant) {
-    $scope.form.style = $scope.form.style || angular.copy($scope.event.style);
-
-    var eventId = $scope.event.id;
-    var formId = $scope.form.id;
-    var token = $scope.token;
-    var style = $scope.form.style;
-    var icon = {};
-    var filesToUpload = $scope.filesToUpload;
-
-    if (primary && $scope.form.style) {
-      $scope.form.style[primary] = $scope.form.style[primary] || {
-        fill: $scope.form.style.fill,
-        stroke: $scope.form.style.stroke,
-        fillOpacity: $scope.form.style.fillOpacity,
-        strokeOpacity: $scope.form.style.strokeOpacity,
-        strokeWidth: $scope.form.style.strokeWidth
-      };
-      style = $scope.form.style[primary];
-    }
-    if (variant && $scope.form.style) {
-      $scope.form.style[primary][variant] = $scope.form.style[primary][variant] || {
-        fill: $scope.form.style[primary].fill,
-        stroke: $scope.form.style[primary].stroke,
-        fillOpacity: $scope.form.style[primary].fillOpacity,
-        strokeOpacity: $scope.form.style[primary].strokeOpacity,
-        strokeWidth: $scope.form.style[primary].strokeWidth
-      };
-      style = $scope.form.style[primary][variant];
-    }
-
-    var styleProps = {
-      fill: style.fill,
-      stroke: style.stroke,
-      fillOpacity: style.fillOpacity,
-      strokeOpacity: style.strokeOpacity,
-      strokeWidth: style.strokeWidth
-    };
-
-    var modalInstance = $uibModal.open({
-      template: require('./event.symbology.chooser.html'),
-      scope: $scope,
-      size: 'lg',
-      controller: ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
-        var fileToUpload;
-        $scope.model = {
-          primary: primary,
-          variant: variant,
-          style: styleProps
-        };
-        $scope.minicolorSettings = {
-          position: 'bottom left'
-        };
-        $scope.uploadUrl = '/api/events/' + eventId + '/icons' + (formId ? '/' + formId : '') + (primary ? '/' + primary : '') + (variant ? '/' + variant : '')  + '?access_token=' + token;
-        $scope.icon = $scope.getIcon(primary, variant);
-
-        $scope.$on('uploadFile', function(e, uploadId, file) {
-          fileToUpload = file;
-        });
-
-        $scope.done = function() {
-          $scope.styleForm.$submitted = true;
-          if ($scope.styleForm.$invalid) {
-            return;
-          }
-
-          $uibModalInstance.close({
-            icon: icon,
-            style: $scope.model.style,
-            file: fileToUpload,
-            uploadUrl: $scope.uploadUrl
-          });
-        };
-
-        $scope.cancel = function () {
-          $uibModalInstance.dismiss({reason:'cancel', url:$scope.uploadUrl});
-        };
-      }]
-    });
-
-    modalInstance.result.then(function (result) {
-      var updatedStyle = result.style;
-      var file = result.file;
-      var url = result.uploadUrl;
-
-      style.fill = updatedStyle.fill;
-      style.stroke = updatedStyle.stroke;
-      style.fillOpacity = updatedStyle.fillOpacity;
-      style.strokeOpacity = updatedStyle.strokeOpacity;
-      style.strokeWidth = updatedStyle.strokeWidth;
-
-      if (result.file) {
-        var reader = new FileReader();
-
-        reader.onload = (function() {
-          return function(e) {
-            $scope.uploadImageMissing = false;
-            $scope.$apply();
-            var img = $('img[src*="' + url + '"]').first();
-            img.attr('src',e.target.result);
-            style.icon = e.target.result;
-          };
-        })(file);
-
-        reader.readAsDataURL(file);
-      }
-    }, function(result) {
-      // rejected
-      delete filesToUpload[result.url];
-    });
-  };
-
-  $scope.$on('uploadFile', function(e, uploadId, file, url) {
-    $scope.filesToUpload[url] = file;
-  });
-
-  $scope.getIcon = function(primary, secondary) {
-    var style = $scope.form.style || {};
-    if (style[primary] && style[primary][secondary] && style[primary][secondary].icon) {
-      return style[primary][secondary].icon;
-    } else if (style[primary] && style[primary].icon) {
-      return style[primary].icon;
-    } else if (style.icon) {
-      return style.icon;
-    } else {
-      return null;
-    }
   };
 
   // delete particular option

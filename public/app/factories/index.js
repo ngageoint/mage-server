@@ -1,6 +1,7 @@
 var angular = require('angular')
   , EventResource = require('./event.resource')
   , TeamResource = require('./team.resource')
+  , FormResource = require('./form.resource')
   , ObservationResource = require('./observation.resource');
 
 angular.module('mage')
@@ -15,7 +16,8 @@ angular.module('mage')
   .factory('TeamAccess', TeamResource.TeamAccess)
   .factory('FeatureService', require('./feature.service'))
   .factory('GeometryService', require('./geometry.service'))
-  .factory('Form', require('./form.resource'))
+  .factory('Form', FormResource.Form)
+  .factory('FormIcon', FormResource.FormIcon)
   .factory('Event', EventResource.Event)
   .factory('EventAccess', EventResource.EventAccess)
   .factory('EventService', require('./event.service'))

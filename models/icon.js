@@ -20,6 +20,7 @@ exports.Model = Icon;
 exports.getAll = function(options, callback) {
   var conditions = {};
   if (options.eventId) conditions.eventId = options.eventId;
+  if (options.formId) conditions.formId = options.formId;
 
   Icon.find(conditions, function(err, icons) {
     callback(err, icons);

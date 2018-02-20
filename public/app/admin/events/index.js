@@ -7,4 +7,5 @@ angular.module('mage')
   .controller('AdminEventsController', require('./events.controller'))
   .controller('AdminEventAccessController', require('./event.access.controller'))
   .directive('stylePreview', require('./style-preview.directive'))
+  .component('formStyle', require('./style.component'))
   .filter('events', require('./events.filter'));

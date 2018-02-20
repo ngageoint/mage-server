@@ -31,6 +31,7 @@
     "dbf": "0.1.0",
     "environment": "file:environment",
     "express": "4.10.6",
+    "file-type": "7.6.0",
     "fs-extra": "0.30.0",
     "geojson-validation": "0.1.6",
     "gm": "1.17.x",

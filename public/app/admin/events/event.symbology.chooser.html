@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <h4 class="modal-title">Symbology<span ng-if="model.primary"> for {{model.primary}} {{model.variant}}</span></h4>
+  <h4 class="modal-title">Symbology<span ng-if="vm.primary"> for {{vm.primary}} {{vm.variant}}</span></h4>
 </div>
 <div class="modal-body admin-option-modal-content">
   <div class="row" style="min-height: 200px">
@@ -8,11 +8,7 @@
       <form
         type="button"
         enctype="multipart/form-data"
-        file-upload url="{{uploadUrl}}"
-        icon="{{icon}}"
-        allow-upload="updateStyle"
-        preview="true"
-        upload-file-form-name="'icon'">
+        file-upload icon="{{vm.icon}}" allow-upload="updateStyle" preview="true" upload-file-form-name="'icon'">
       </form>
     </div>
 
@@ -21,7 +17,7 @@
         <div>
           <strong>Line Color</strong>
           <div>
-            <input minicolors="minicolorSettings" class="form-control" type="text" name="lineColor" ng-min="0" ng-max="1" ng-model="model.style.stroke" required="true">
+            <input minicolors="vm.minicolorSettings" class="form-control" type="text" name="lineColor" ng-min="0" ng-max="1" ng-model="vm.style.stroke" required="true">
           </div>
 
           <div ng-messages="styleForm.lineColor.$error" class="has-error" ng-if="styleForm.lineColor.$invalid && styleForm.$submitted">
@@ -32,7 +28,7 @@
         <div class="top-gap-s">
           <strong>Line Opacity (0.0 - 1.0)</strong>
           <div>
-            <input class="form-control" type="number" name="lineOpacity" ng-model="model.style.strokeOpacity" ng-min="0" ng-max="1" required="true">
+            <input class="form-control" type="number" name="lineOpacity" ng-model="vm.style.strokeOpacity" ng-min="0" ng-max="1" required="true">
           </div>
 
           <div ng-messages="styleForm.lineOpacity.$error" class="has-error" ng-if="styleForm.lineOpacity.$invalid && styleForm.$submitted">
@@ -45,7 +41,7 @@
         <div class="top-gap-s">
           <strong>Line Width</strong>
           <div>
-            <input class="form-control" type="number" name="lineWidth" ng-model="model.style.strokeWidth" ng-min="0" required="true">
+            <input class="form-control" type="number" name="lineWidth" ng-model="vm.style.strokeWidth" ng-min="0" required="true">
           </div>
 
           <div ng-messages="styleForm.lineWidth.$error" class="has-error" ng-if="styleForm.lineWidth.$invalid && styleForm.$submitted">
@@ -58,7 +54,7 @@
         <div>
           <strong>Fill Color</strong>
           <div>
-            <input minicolors="minicolorSettings" class="form-control" type="text" name="fillColor" ng-model="model.style.fill" required="true">
+            <input minicolors="vm.minicolorSettings" class="form-control" type="text" name="fillColor" ng-model="vm.style.fill" required="true">
           </div>
 
           <div ng-messages="styleForm.fillColor.$error" class="has-error" ng-if="styleForm.fillColor.$invalid && styleForm.$submitted">
@@ -69,7 +65,7 @@
         <div class="top-gap-s">
           <strong>Fill Opacity (0.0 - 1.0)</strong>
           <div>
-            <input class="form-control" type="number" name="fillOpacity" ng-model="model.style.fillOpacity" ng-min="0" ng-max="1" required="true">
+            <input class="form-control" type="number" name="fillOpacity" ng-model="vm.style.fillOpacity" ng-min="0" ng-max="1" required="true">
           </div>
 
           <div ng-messages="styleForm.fillOpacity.$error" class="has-error" ng-if="styleForm.fillOpacity.$invalid && styleForm.$submitted">
@@ -85,6 +81,6 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-default" ng-click="cancel()" ngm-tap="cancel()">Cancel</button>
-  <button class="btn btn-primary" ng-click="done()">Set Symbology</button>
+  <button class="btn btn-default" ng-click="vm.cancel()">Cancel</button>
+  <button class="btn btn-primary" ng-click="vm.done(styleForm)">Set Symbology</button>
 </div>

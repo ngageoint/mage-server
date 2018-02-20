@@ -8,6 +8,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 * TBD
 
 ##### Features
+* Updated admin icons and styles to properly cascade defaults.
 
 ##### Bug Fixes
 * Fix bug when trying to set form line/polygon style.

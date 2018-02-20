@@ -64,6 +64,23 @@ Icon.prototype.getZipPath = function(callback) {
   }.bind(this));
 };
 
+Icon.prototype.getIcons = function(callback) {
+  var options = {
+    eventId: this._eventId,
+    formId: this._formId
+  };
+
+  IconModel.getAll(options, function(err, icons) {
+    if (err) return callback(err);
+
+    icons.forEach(function(icon) {
+      icon.path = path.join(iconBase, icon.relativePath);
+    });
+
+    callback(null, icons);
+  });
+};
+
 Icon.prototype.getIcon = function(callback) {
   var options = {
     eventId: this._eventId,
@@ -75,7 +92,8 @@ Icon.prototype.getIcon = function(callback) {
   IconModel.getIcon(options, function(err, icon) {
     if (err || !icon) return callback(err);
 
-    callback(null, path.join(iconBase, icon.relativePath));
+    icon.path = path.join(iconBase, icon.relativePath);
+    callback(err, icon);
   });
 };
 
