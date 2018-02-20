@@ -3,11 +3,13 @@ All notable changes to this project will be documented in this file.
 Adheres to [Semantic Versioning](http://semver.org/).
 
 ---
-## 5.0.2 (TBD)
+## 5.1.0 (TBD)
 
 * TBD
 
 ##### Features
+* Upgraded min/max nodejs version 6/8.
+* Upgraded web from bower/grunt to npm/webpack.
 * Updated admin icons and styles to properly cascade defaults.
 
 ##### Bug Fixes
