@@ -808,3 +808,23 @@ exports.remove = function(event, callback) {
     return callback(err);
   });
 };
+
+exports.getTeams = function(eventId, options, callback) {
+  var projection = {
+    teamIds: 1
+  };
+
+  var populate = {
+    path: 'teamIds'
+  };
+
+  if (options.populate && options.populate.includes('users')) {
+    populate['populate'] = {
+      path: 'userIds',
+    };
+  }
+console.log('try to read teams');
+  Event.findById(eventId, projection).populate(populate).exec(function(err, event) {
+    callback(err, event.teamIds);
+  });
+};

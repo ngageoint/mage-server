@@ -11,6 +11,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 * Upgraded min/max nodejs version 6/8.
 * Upgraded web from bower/grunt to npm/webpack.
 * Updated admin icons and styles to properly cascade defaults.
+* Added route to get teams including users for a specific event. Clients should use this as a performance boost to get only users that are part of an event.
 
 ##### Bug Fixes
 * Fix bug when trying to set form line/polygon style.

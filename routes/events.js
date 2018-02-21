@@ -5,7 +5,8 @@ module.exports = function(app, security) {
     , fs = require('fs-extra')
     , async = require('async')
     , util = require('util')
-    , fileType = require('file-type');
+    , fileType = require('file-type')
+    , userTransformer = require('../transformers/user');
 
   var passport = security.authentication.passport;
 
@@ -168,6 +169,28 @@ module.exports = function(app, security) {
         if (!event) return res.sendStatus(404);
 
         res.json(event.toObject({access: req.access, projection: req.parameters.projection}));
+      });
+    }
+  );
+
+  app.get(
+    '/api/events/:id/teams',
+    passport.authenticate('bearer'),
+    authorizeAccess('READ_EVENT_ALL', 'read'),
+    determineReadAccess,
+    function (req, res, next) {
+      // TODO figure out what I need to populate on users, if anything
+      var populate = null;
+      if (req.query.populate) {
+        populate = req.query.populate.split(",");
+      }
+
+      Event.getTeams(req.params.id, {populate: populate}, function(err, teams) {
+        if (err) return next(err);
+
+        res.json(teams.map(function(team) {
+          return team.toObject({access: req.access});
+        }));
       });
     }
   );
