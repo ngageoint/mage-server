@@ -3,9 +3,15 @@ All notable changes to this project will be documented in this file.
 Adheres to [Semantic Versioning](http://semver.org/).
 
 ---
-## 5.1.0 (TBD)
+## 5.1.1 (TBD)
 
 * TBD
+
+##### Features
+
+##### Bug Fixes
+
+## [5.1.0](https://github.com/ngageoint/mage-server/releases/tag/5.1.0) (02-27-2018)
 
 ##### Features
 * Upgraded min/max nodejs version 6/8.
