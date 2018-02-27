@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "version": "4.5.0",
+        "version": "5.1.0",
         "title": "MAGE (Mobile Awareness GEOINT Environment)",
         "description": "MAGE API",
         "contact": {
@@ -851,6 +851,36 @@
             }
         },
         "/api/events/{id}/teams": {
+            "get": {
+                "description": "get teams for an event",
+                "operationId": "getTeamsForEvent",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of event to update",
+                        "required": true,
+                        "type": "number"
+                    },
+                    {
+                        "name": "populate",
+                        "in": "query",
+                        "description": "populate parameter",
+                        "type": "string"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "teams response",
+                        "schema": {
+                            "$ref": "#/definitions/Team"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "add a team to an event",
                 "operationId": "addTeamToEvent",
@@ -880,6 +910,32 @@
                         "description": "event update response",
                         "schema": {
                             "$ref": "#/definitions/Event"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/events/{id}/users": {
+            "get": {
+                "description": "get users for an event",
+                "operationId": "getUsersForEvent",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id of event to update",
+                        "required": true,
+                        "type": "number"
+                    }
+                ],
+                "tags": [
+                    "Event"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "users response",
+                        "schema": {
+                            "$ref": "#/definitions/User"
                         }
                     }
                 }

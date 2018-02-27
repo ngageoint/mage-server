@@ -809,6 +809,31 @@ exports.remove = function(event, callback) {
   });
 };
 
+exports.getUsers = function(eventId, callback) {
+  var populate = {
+    path: 'teamIds',
+    populate: {
+      path: 'userIds'
+    }
+  };
+
+  Event.findById(eventId).populate(populate).exec(function(err, event) {
+    if (err) return callback(err);
+
+    if (!event) {
+      err = new Error("Event does not exist");
+      err.status = 404;
+      return callback(err);
+    }
+
+    var users = event.teamIds.reduce(function(users, team) {
+      return users.concat(team.userIds);
+    }, []);
+
+    callback(err, users);
+  });
+};
+
 exports.getTeams = function(eventId, options, callback) {
   var projection = {
     teamIds: 1
@@ -823,8 +848,16 @@ exports.getTeams = function(eventId, options, callback) {
       path: 'userIds',
     };
   }
-console.log('try to read teams');
+
   Event.findById(eventId, projection).populate(populate).exec(function(err, event) {
+    if (err) return callback(err);
+
+    if (!event) {
+      err = new Error("Event does not exist");
+      err.status = 404;
+      return callback(err);
+    }
+
     callback(err, event.teamIds);
   });
 };

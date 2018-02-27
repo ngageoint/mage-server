@@ -10,9 +10,6 @@ var request = require('supertest')
 require('chai').should();
 require('sinon-mongoose');
 
-require('../../models/team');
-var TeamModel = mongoose.model('Team');
-
 require('../../models/event');
 var EventModel = mongoose.model('Event');
 
@@ -309,6 +306,30 @@ describe("event read tests", function() {
 
     request(app)
       .get('/api/events/1/teams')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .end(done);
+  });
+
+  it("should read users in event", function(done) {
+    mockTokenWithPermission('READ_EVENT_ALL');
+
+    var eventId = 1;
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event'
+    });
+
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .chain('populate')
+      .withArgs({ path: "teamIds", populate: { path: "userIds" } })
+      .chain('exec')
+      .yields(null, mockEvent);
+
+    request(app)
+      .get('/api/events/1/users')
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)

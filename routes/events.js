@@ -179,7 +179,6 @@ module.exports = function(app, security) {
     authorizeAccess('READ_EVENT_ALL', 'read'),
     determineReadAccess,
     function (req, res, next) {
-      // TODO figure out what I need to populate on users, if anything
       var populate = null;
       if (req.query.populate) {
         populate = req.query.populate.split(",");
@@ -191,6 +190,21 @@ module.exports = function(app, security) {
         res.json(teams.map(function(team) {
           return team.toObject({access: req.access});
         }));
+      });
+    }
+  );
+
+  app.get(
+    '/api/events/:id/users',
+    passport.authenticate('bearer'),
+    authorizeAccess('READ_EVENT_ALL', 'read'),
+    determineReadAccess,
+    function (req, res, next) {
+      Event.getUsers(req.params.id, function(err, users) {
+        if (err) return next(err);
+
+        users = userTransformer.transform(users, {path: req.getRoot()});
+        res.json(users);
       });
     }
   );
