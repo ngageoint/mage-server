@@ -10,6 +10,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+* Allow user with event access to update recent event
 
 ## [5.1.0](https://github.com/ngageoint/mage-server/releases/tag/5.1.0) (02-27-2018)
 

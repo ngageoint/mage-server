@@ -14,12 +14,6 @@ var RoleModel = mongoose.model('Role');
 require('../../models/user');
 var UserModel = mongoose.model('User');
 
-require('../../models/team');
-var TeamModel = mongoose.model('Team');
-
-require('../../models/event');
-var EventModel = mongoose.model('Event');
-
 require('sinon-mongoose');
 
 describe("user create tests", function() {
@@ -354,65 +348,6 @@ describe("user create tests", function() {
       .expect(400)
       .expect(function(res) {
         res.text.should.equal('password does not meet minimum length requirement of 14 characters');
-      })
-      .end(done);
-  });
-
-  it('should create recent event for user', function(done) {
-    mockTokenWithPermission('READ_USER');
-
-    sandbox.mock(UserModel)
-      .expects('findById')
-      .chain('exec')
-      .yields(null, new UserModel({
-        _id: userId,
-        username: 'test'
-      }));
-
-    var mockEvent = new EventModel({
-      _id: 1,
-      name: 'Event 1',
-      teamIds: [new TeamModel({
-        name: 'Team 1',
-        userIds: [userId]
-      })]
-    });
-
-    sandbox.mock(EventModel)
-      .expects('findById')
-      .yields(null, mockEvent);
-
-    sandbox.mock(EventModel)
-      .expects('populate')
-      .yields(null, {
-        name: 'Event 1',
-        teamIds: [{
-          name: 'Team 1',
-          userIds: [userId]
-        }]
-      });
-
-    var mockUser = new UserModel({
-      _id: userId,
-      username: 'test',
-      displayName: 'test'
-    });
-
-    sandbox.mock(UserModel)
-      .expects('findByIdAndUpdate')
-      .withArgs(userId, {recentEventIds: [1]})
-      .yields(null, mockUser);
-
-    request(app)
-      .post('/api/users/' + userId + '/events/1/recent')
-      .set('Accept', 'application/json')
-      .set('Authorization', 'Bearer 12345')
-      .expect(200)
-      .expect('Content-Type', /json/)
-      .expect(function(res) {
-        var user = res.body;
-        should.exist(user);
-        user.should.have.property('id').that.equals(userId.toString());
       })
       .end(done);
   });

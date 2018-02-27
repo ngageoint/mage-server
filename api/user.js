@@ -245,17 +245,7 @@ User.prototype.icon = function(user, callback) {
 };
 
 User.prototype.addRecentEvent = function(user, event, callback) {
-  // Ensure user is part of the event
-  EventModel.userHasEventPermission(event, user._id, 'read', function(err, hasPermission) {
-    if (err) return callback(err);
-
-    if (!hasPermission) {
-      return callback(new Error("User is not part of event '" + event.name + "'."));
-    }
-
-    UserModel.addRecentEventForUser(user, event, callback);
-  });
-
+  UserModel.addRecentEventForUser(user, event, callback);
 };
 
 module.exports = User;
