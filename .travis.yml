@@ -19,12 +19,12 @@ before_deploy:
 - npm install
 - npm run build
 - mkdir release_artifact
-- tar --exclude='./release_artifact' -czf release_artifact/mage_${TRAVIS_TAG}_node${TRAVIS_NODE_VERSION}.tar.gz .
+- tar --exclude='./release_artifact' -czf release_artifact/mage_${TRAVIS_TAG}_node${TRAVIS_NODE_VERSION}.tar.gz
+  .
 deploy:
   provider: releases
-  skip_cleanup: true
   api_key:
-    secure: Y1pfNbHOU1IcGvfh5Nz7dWmbNNffrqott8h2X6uTi6NeQdS0ic5zoktjIxA+NfJVAYZUgSfI0iYMUFpPj8yrkdogPTDsIFqRilKZfnuR3wS/4UKrcAhEja5At/VWweJJSdK9dj29+ywJMOY7ICi+Cgyt2+h6qyCVrCaniM2EUGTRe6ZnN4BCxQrcUNnYBPgvcDbJaq+E9lRoGMs1PxT45QFbhbhkp6RX+DzTCdM9gmeHolQr4IQuiBXAiLIfibmJCKlbjRGvY2wABTNbR/Rq4E18wwZOsf0C/Y5aSfJFx0RU4heDxZErFeScrlhz3BSuRrE8YduTBE4a/ruEHmX2OPa3c5ozaO+Z9mkwdZlZZFxD0iFHajZINxM44VcGJpSkBuZ49cVEal0gkvr37+CKbBw/+eL+krIjsWazo87XhV32mcxu80OIdyQwZf26E2ZgRwB8x0cnVXqDCLeYLq9Wkz0TzL5SzN4p4fU7H5dN6hZCjX53GWfvCuHy5lv6/HKgSCoKM4wtNbgZKR59fBYvBkVTHFsqs18eYP9geHF/Srv5gKBzyUFxDrNL93lp/Y0sFt414bnTuKayiRh+UeHb4aYzRwGpfXy7PUzWfUGBCPu0Ik+G+kLGraVd4SZbMuchWnhehfM0zSRXRGtaA4PQXQmEDN4/d+Q6ydvW3EhLpY8=
+    secure: wAJFMWKsp/QNVxW9eItefmpphGj8Re1dqrInZwkhwXcQNXj58s8DQUqGzur09dWpEP+FvJhFgVd8WCOWnf5XaL+qaMAv8aOWoeUwFOTEbsqnt2qKN0ukagiVUR/183Uns4t4fGq3jKJSMQ7bFaeeixP4yd6KU4n0Y5Du1DbyjPnLS9ggodagbxe0lTh3r0GGnbN2Q/FnrtCBeWoSGmNhSaMNZHjyQfuh17U7vO885qbqwLl9uclgXUyLAud16AfODntbcB5g6WeWIE2+zVmGsn+taj+1mR3LvAI0wnCfCLqjv51t1XYelKgNxNZ8DURWl6j3189luOgh4klPI/+zQCy9rsV3aERRub1ZhlUIKV62d3WL2HD35wjTG7b58f5GxyQdz7gE2HS3B9IbS69WDRBfgMpwFwLz2cxjwDsryhAfwsiE3KMQ4JHqMmn+hzj60GD0RfIsoZwzbbLj/2ehNMkJ1yH3HLnBvkE2zFlROQUAMSucqQwnFtG4g11YEPWCMXR6dYig52/1O/n8ONtnhxlW+1l7gwQuLJCBZxkJEDHPE1B5A9JG3UavCPqyoxBUEVDTvnblSp83UKFzL66U3bVZt7UNYyI/y1Y3R94UnVi+0QAa2ypYjohLJH5OdV0C8HhqYup3E3g4CiTqmHHtJZ1GU57rIFM3u8yEwa5Dv4U=
   file: release_artifact/mage_${TRAVIS_TAG}_node${TRAVIS_NODE_VERSION}.tar.gz
   on:
     tags: true
