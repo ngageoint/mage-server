@@ -37,7 +37,7 @@ module.exports = {
       test: /\.(eot|svg|ttf|woff|woff2)$/,
       loader: 'file-loader?name=fonts/[name].[ext]'
     },{
-      test: /\.(png|jpg)$/,
+      test: /\.(png|jpg|ico)$/,
       loader: 'file-loader?name=images/[name].[ext]'
     },{
       test: /\.html$/, loader: 'raw-loader'
