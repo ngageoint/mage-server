@@ -465,7 +465,7 @@ module.exports = function(app, security) {
   );
 
   app.get(
-    '/api/events/:eventId/icons/:id',
+    '/api/events/:eventId/icons/:id.json',
     passport.authenticate('bearer'),
     authorizeAccess('READ_EVENT_ALL', 'read'),
     function(req, res, next) {

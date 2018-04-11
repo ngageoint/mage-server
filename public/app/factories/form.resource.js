@@ -83,7 +83,7 @@ function Form($rootScope, $resource, LocalStorageService) {
 FormIcon.$inject = ['$resource'];
 
 function FormIcon($resource) {
-  var FormIcon = $resource('/api/events/:eventId/icons/:formId', {});
+  var FormIcon = $resource('/api/events/:eventId/icons/:formId.json', {});
 
   return FormIcon;
 }
