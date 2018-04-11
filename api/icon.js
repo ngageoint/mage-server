@@ -1,14 +1,15 @@
-var IconModel = require('../models/icon')
+const IconModel = require('../models/icon')
   , mongoose = require('mongoose')
   , log = require('winston')
   , path = require('path')
   , fs = require('fs-extra')
   , os = require('os')
   , archiver = require('archiver')
-  , environment = require('environment');
+  , environment = require('../environment/env');
 
-var appRoot = path.dirname(require.main.filename);
-var iconBase = environment.iconBaseDirectory;
+const appRoot = path.resolve(__dirname, '..');
+const iconBase = environment.iconBaseDirectory;
+const defaultIconPath = path.join(appRoot, 'public/img/default-icon.png');
 
 function Icon(eventId, formId, primary, variant) {
   this._eventId = eventId || null;
@@ -90,31 +91,28 @@ Icon.prototype.getIcon = function(callback) {
   };
 
   IconModel.getIcon(options, function(err, icon) {
-    if (err || !icon) return callback(err);
-
+    if (err || !icon) {
+      return callback(err);
+    } 
     icon.path = path.join(iconBase, icon.relativePath);
     callback(err, icon);
   });
 };
 
-Icon.prototype.setDefaultIcon = function(callback) {
-  var relativePath = createIconPath(this, 'default-icon.png');
-  var newIcon = {
+Icon.prototype.saveDefaultIconToEventForm = function(callback) {
+  const relativePath = createIconPath(this, 'default-icon.png');
+  const targetPath = path.join(iconBase, relativePath);
+  const newIcon = {
     eventId: this._eventId,
     formId: this._formId,
     relativePath: relativePath
   };
-
-  var iconPath = path.join(iconBase, relativePath);
-  fs.copy(path.join(appRoot, '/public/img/default-icon.png'), iconPath, function(err) {
-    if (err) return callback(err);
-
+  fs.copy(defaultIconPath, targetPath, function(err) {
+    if (err) {
+      return callback(err);
+    } 
     IconModel.create(newIcon, callback);
   });
-};
-
-Icon.prototype.getDefaultIcon = function(callback) {
-  return callback(null, path.join(appRoot, '/public/img/default-icon.png'));
 };
 
 Icon.prototype.create = function(icon, callback) {
@@ -201,5 +199,9 @@ Icon.prototype.delete = function(callback) {
     });
   });
 };
+
+Object.defineProperty(Icon, 'defaultIconPath', {
+  value: defaultIconPath
+});
 
 module.exports = Icon;

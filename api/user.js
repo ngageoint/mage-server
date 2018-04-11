@@ -7,7 +7,7 @@ var UserModel = require('../models/user')
   , path = require('path')
   , fs = require('fs-extra')
   , async = require('async')
-  , environment = require('environment');
+  , environment = require('../environment/env');
 
 var userBase = environment.userBaseDirectory;
 

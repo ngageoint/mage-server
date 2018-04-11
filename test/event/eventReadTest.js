@@ -92,7 +92,7 @@ describe("event read tests", function() {
       .expect(200)
       .expect(function(res) {
         should.exist(res.body);
-        res.body.should.be.array;
+        res.body.should.be.an('array');
         expect(res.body).to.have.lengthOf(1);
       })
       .end(done);
@@ -138,7 +138,7 @@ describe("event read tests", function() {
       .expect(function(res) {
         console.log('res.body', res.body);
         should.exist(res.body);
-        res.body.should.be.array;
+        res.body.should.be.an('array');
         expect(res.body).to.have.lengthOf(1);
       })
       .end(done);
@@ -178,7 +178,7 @@ describe("event read tests", function() {
       .expect(function(res) {
         console.log('res.body', res.body);
         should.exist(res.body);
-        res.body.should.be.array;
+        res.body.should.be.an('array');
         expect(res.body).to.have.lengthOf(0);
       })
       .end(done);

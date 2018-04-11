@@ -9,7 +9,7 @@ var util = require('util')
   , Icon = require('../models/icon')
   , Exporter = require('./exporter')
   , writer = require('./kmlWriter')
-  , environment = require('environment');
+  , environment = require('../environment/env');
 
 var userBase = environment.userBaseDirectory;
 var attachmentBase = environment.attachmentBaseDirectory;

@@ -8,7 +8,7 @@ var util = require('util')
   , path = require('path')
   , Exporter = require('./exporter')
   , geojson = require('../transformers/geojson')
-  , attachmentBase = require('environment').attachmentBaseDirectory;
+  , attachmentBase = require('../environment/env').attachmentBaseDirectory;
 
 function GeoJson(options) {
   GeoJson.super_.call(this, options);

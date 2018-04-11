@@ -1,21 +1,23 @@
 var mongoose = require('mongoose')
-  , config = require('../config.js');
+  , config = require('../config.js')
+  , Location = require('./location');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
-var LocationSchema = mongoose.model('Location').schema;
 var locationLimit = config.server.locationServices.userCollectionLocationLimit;
 
 // Creates the Schema for FFT Locations
 var CappedLocationSchema = new Schema({
   userId: {type: Schema.Types.ObjectId, required: false, sparse: true, ref: 'User'},
   eventId: {type: Number, required: false, sparse: true, ref:'Event'},
-  locations: [LocationSchema]
+  locations: [Location.Model.schema]
 },{
   versionKey: false
 });
 
+// TODO: this seems superfluous - probably remove because there's already an index on eventId in the field definition
 CappedLocationSchema.index({'eventId': 1});
+// TODO: this seems superflous because there's already an index on properties.timestamp in LocationSchema. do child-schema indexes get created on parent collections?
 CappedLocationSchema.index({'locations.properties.timestamp': 1});
 CappedLocationSchema.index({'locations.properties.timestamp': 1, 'eventId': 1});
 

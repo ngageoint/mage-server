@@ -1,6 +1,6 @@
 var log = require('../../logger')
   , config = require('./config.json')
-  , environment = require('environment')
+  , environment = require('../environment/env')
   , async = require('async')
   , request = require('request')
   , path = require('path')

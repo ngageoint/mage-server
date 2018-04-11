@@ -1,4 +1,4 @@
-var mongoose = require('mongoose')
+const mongoose = require('mongoose')
   , async = require('async')
   , Counter = require('./counter')
   , User = require('./user')
@@ -8,9 +8,9 @@ var mongoose = require('mongoose')
   , log = require('winston');
 
 // Creates a new Mongoose Schema object
-var Schema = mongoose.Schema;
+const Schema = mongoose.Schema;
 
-var OptionSchema = new Schema({
+const OptionSchema = new Schema({
   id: { type: Number, required: true },
   title: {type: String, required: false, default: ''},
   value: { type: Number, required: true },
@@ -19,7 +19,7 @@ var OptionSchema = new Schema({
   _id: false
 });
 
-var FieldSchema = new Schema({
+const FieldSchema = new Schema({
   id: { type: Number, required: true },
   archived: { type: Boolean, required: false},
   title: { type: String, required: true },
@@ -61,11 +61,11 @@ function rolesWithPermission(permission) {
 }
 
 var FormSchema = new Schema({
-  _id: { type: Number, required: true, sparse: true },
+  _id: { type: Number, required: true, unique: true, sparse: true },
   name: { type: String, required: true },
   description: { type: String, required: false },
-  color: {type: String, required: true},
-  archived: {type: Boolean, required: true, default: false},
+  color: { type: String, required: true },
+  archived: { type: Boolean, required: true, default: false },
   primaryField: { type: String, required: false },
   variantField: { type: String, required: false },
   userFields: [String],
@@ -74,31 +74,34 @@ var FormSchema = new Schema({
 });
 
 // Creates the Schema for the Attachments object
-var EventSchema = new Schema({
-  _id: { type: Number, required: true },
-  name: { type: String, required: true, unique: true },
-  description: { type: String, required: false },
-  complete: { type: Boolean },
-  collectionName: { type: String, required: true },
-  teamIds: [{type: Schema.Types.ObjectId, ref: 'Team'}],
-  layerIds: [{type: Number, ref: 'Layer'}],
-  forms: [FormSchema],
-  style: {
-    type: Schema.Types.Mixed,
-    required: true,
-    default: {
-      fill: '#5278A2',
-      stroke: '#5278A2',
-      fillOpacity: 0.2,
-      strokeOpacity: 1,
-      strokeWidth: 2
-    }
+const EventSchema = new Schema(
+  {
+    _id: { type: Number, required: true },
+    name: { type: String, required: true, unique: true },
+    description: { type: String, required: false },
+    complete: { type: Boolean },
+    collectionName: { type: String, required: true },
+    teamIds: [{ type: Schema.Types.ObjectId, ref: 'Team' }],
+    layerIds: [{ type: Number, ref: 'Layer' }],
+    forms: [FormSchema],
+    style: {
+      type: Schema.Types.Mixed,
+      required: true,
+      default: {
+        fill: '#5278A2',
+        stroke: '#5278A2',
+        fillOpacity: 0.2,
+        strokeOpacity: 1,
+        strokeWidth: 2
+      }
+    },
+    acl: {}
   },
-  acl: {}
-},{
-  minimize: false,
-  versionKey: false
-});
+  {
+    autoIndex: false,
+    minimize: false,
+    versionKey: false
+  });
 
 FormSchema.path('fields').validate(hasAtLeastOneField, 'Form must have at least one field.');
 FormSchema.path('color').validate(validateColor, 'Form color must be valid hex string.');
@@ -315,11 +318,6 @@ EventSchema.set("toObject", {
 // Creates the Model for the Layer Schema
 var Event = mongoose.model('Event', EventSchema);
 exports.Model = Event;
-
-// Recreate forms _id index to be sparse
-Event.collection.dropIndex('forms._id_1', function(err) {
-  console.log('Dropped index', err);
-});
 
 function convertProjection(field, keys, projection) {
   keys = keys || [];

@@ -2,7 +2,7 @@ var ObservationModel = require('../models/observation')
   , log = require('winston')
   , path = require('path')
   , fs = require('fs-extra')
-  , environment = require('environment');
+  , environment = require('../environment/env');
 
 var attachmentBase = environment.attachmentBaseDirectory;
 

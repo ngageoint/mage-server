@@ -1,6 +1,6 @@
 var crypto = require('crypto')
   , mongoose = require('mongoose')
-  , environment = require('environment');
+  , environment = require('../environment/env');
 
 // Token expiration in msecs
 var tokenExpiration = environment.tokenExpiration * 1000;

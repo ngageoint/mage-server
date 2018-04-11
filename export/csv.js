@@ -11,7 +11,7 @@ var util = require('util')
   , Exporter = require('./exporter')
   , turfCentroid = require('@turf/centroid')
   , wkx = require('wkx')
-  , attachmentBase = require('environment').attachmentBaseDirectory;
+  , attachmentBase = require('../environment/env').attachmentBaseDirectory;
 
 function Csv(options) {
   Csv.super_.call(this, options);

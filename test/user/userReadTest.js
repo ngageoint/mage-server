@@ -80,7 +80,7 @@ describe("user read tests", function() {
         var users = res.body;
         should.exist(users);
         users.should.be.an('array');
-        users.should.have.length.of(2);
+        users.should.have.lengthOf(2);
         users.should.deep.include.members(mockUsers);
       })
       .end(done);

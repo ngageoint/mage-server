@@ -18,12 +18,14 @@ require('../../models/team');
 var TeamModel = mongoose.model('Team');
 
 require('../../models/event');
-var EventModel = mongoose.model('Event');
+const EventModel = mongoose.model('Event');
 
 require('../../models/icon');
-var IconModel = mongoose.model('Icon');
+const IconModel = mongoose.model('Icon');
 
 describe("event create tests", function() {
+
+  this.timeout(300000);
 
   var sandbox;
   before(function() {
@@ -34,7 +36,7 @@ describe("event create tests", function() {
     sandbox.restore();
   });
 
-  var userId = mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
 
   it("should create event", function(done) {
     sandbox.mock(TokenModel)
@@ -44,17 +46,17 @@ describe("event create tests", function() {
       .chain('exec').atLeast(1)
       .yields(null, MockToken(userId, ['CREATE_EVENT']));
 
-    var eventId = 1;
+    const eventId = 1;
     sandbox.mock(CounterModel)
       .expects('findOneAndUpdate')
       .yields(null, { sequence: eventId });
 
-    var mockEvent = new EventModel({
+    const mockEvent = new EventModel({
       _id: eventId,
       name: 'Mock Event'
     });
 
-    var eventAcl = {};
+    const eventAcl = {};
     eventAcl[userId.toString()] = 'OWNER';
     sandbox.mock(EventModel)
       .expects('create')
@@ -67,14 +69,14 @@ describe("event create tests", function() {
       .expects('createCollection')
       .yields(null);
 
-    var teamId = mongoose.Types.ObjectId();
-    var mockTeam = {
+    const teamId = mongoose.Types.ObjectId();
+    const mockTeam = {
       _id: teamId,
       name: 'Mock Team',
       teamEventId: eventId
     };
 
-    var teamAcl = {};
+    const teamAcl = {};
     teamAcl[userId.toString()] = 'OWNER';
     sandbox.mock(TeamModel)
       .expects('create')
@@ -93,8 +95,8 @@ describe("event create tests", function() {
       .expects('findByIdAndUpdate').withArgs(eventId)
       .yields(null, mockEvent);
 
-    var defaultIcon = path.join(path.dirname(require.main.filename), '/public/img/default-icon.png');
-    var fs = {
+    const defaultIcon = require('../../api/icon').defaultIconPath;
+    const fs = {
       '/var/lib/mage': {}
     };
     fs[defaultIcon] = new Buffer([8, 6, 7, 5, 3, 0, 9]);
@@ -138,12 +140,12 @@ describe("event create tests", function() {
       .chain('exec').atLeast(1)
       .yields(null, MockToken(userId, ['CREATE_EVENT']));
 
-    var eventId = 1;
+    const eventId = 1;
     sandbox.mock(CounterModel)
       .expects('findOneAndUpdate')
       .yields(null, { sequence: eventId });
 
-    var mockEvent = new EventModel({
+    const mockEvent = new EventModel({
       _id: eventId
     });
     sandbox.mock(EventModel.collection)
@@ -170,12 +172,12 @@ describe("event create tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        var error = res.text;
+        let error = res.text;
         should.exist(error);
         error.should.be.a('string');
         error = JSON.parse(error);
         error.should.have.property('message').that.contains("Event validation failed");
-        var errors = error.errors;
+        const errors = error.errors;
         should.exist(errors.name);
         errors.name.should.have.property('path').that.equals('name');
         errors.name.should.have.property('message').that.equals('Path `name` is required.');

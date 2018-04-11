@@ -1,30 +1,39 @@
-## MAGE Web Application
+# MAGE Web Application
 
-The MAGE web application is built with [AngularJS](https://angularjs.org/).
+The MAGE web client is built on [AngularJS](https://angularjs.org/).
 
-### Installing dependencies
+## Building
 
-MAGE dependencies are managed using [Bower](http://bower.io/).  Although the package.json file has a postinstall section that will install all bower dependencies when you run npm install at the root of the MAGE project, you can also install bower dependencies separately.
-
-To install bower dependencies run:
+The MAGE web client uses [npm](https://www.npmjs.com/) and [webpack](https://webpack.js.org/) to manage dependencies and bundle assets.
+From the MAGE base directory, run
 ```bash
-$ cd public
-$ bower install
+$ npm run build
+```
+or from the `public` directory
+```bash
+$ npm install
+$ npm run build
 ```
 
-### Running MAGE Web in Production
+## Running MAGE web client
 
-Once you fire up your node server you are all set to start using MAGE Web.  However you will be running with non minified, non uglified code, which means page loads within the web application could be slow.
+For the web client to be useful, you'll want to [start a local MAGE server](../README.md#running-the-server).
 
-To concat, minify and uglify css and JavaScript for MAGE web we are using [Grunt](http://gruntjs.com/).  The main grunt script is located in the root MAGE directory (not the public directory).  The sole reason for this is to be able to run the grunt script on npm installs postinstall step.  Grunt will only look for the Gruntfile.js file in the working directory that the task is run in.
+### Debug build
 
-To concat, minify and uglify css (from MAGE root directory):
+From the `public` directory run
 ```bash
-$ grunt build
+$ npm run start
 ```
+This command uses the [development](webpack.dev.js) webpack config to start a server running on http://localhost:3000.  That 
+configuration also proxies all requests for `/api` to the local MAGE server, which the configuration assumes is bound to
+http://localhost:4242.  This debug webpack server will watch and hot-load any changes to the resources in the `public` 
+directory, and apply source maps so you can inspect the content in your browser's development console.
 
-This will build a dist folder containing all minified and uglified resources, along with all other public resources.  The use this folder simply set the NODE_ENV environment variable to 'production':
+### Production build
 
-```bash
-export NODE_ENV=production
-```
+The `npm run build` command you ran earlier uses the webpack [production](webpack.prod.js) to minify, obfuscate, and bundle 
+all of the MAGE web app's JavaScript and CSS assets into the `dist` directory.  The MAGE server [Express](../express.js) 
+configuration will serve the assets from that directory.  You can also potentially serve the contents of that directory 
+from a separate reverse proxy server, such as nginx or Apache httpd, as they are just static web resources.
+

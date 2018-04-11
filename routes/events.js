@@ -216,14 +216,13 @@ module.exports = function(app, security) {
     parseEventQueryParams,
     function(req, res, next) {
       Event.create(req.body, req.user, function(err, event) {
-        if (err) return next(err);
-
-        //copy default icon into new event directory
-        new api.Icon(event._id).setDefaultIcon(function(err) {
+        if (err) {
+          return next(err);
+        }
+        new api.Icon(event._id).saveDefaultIconToEventForm(function(err) {
           if (err) {
             return next(err);
           }
-
           res.status(201).json(event);
         });
       });
@@ -343,8 +342,7 @@ module.exports = function(app, security) {
 
         async.parallel([
           function(done) {
-            //copy default icon into new event directory
-            new api.Icon(req.event._id, form._id).setDefaultIcon(function(err) {
+            new api.Icon(req.event._id, form._id).saveDefaultIconToEventForm(function(err) {
               done(err);
             });
           },
@@ -529,13 +527,7 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     authorizeAccess('READ_EVENT_ALL', 'read'),
     function(req, res, next) {
-      new api.Icon().getDefaultIcon(function(err, iconPath) {
-        if (err) return next(err);
-
-        if (!iconPath) return res.status(404).send();
-
-        res.sendFile(iconPath);
-      });
+      res.sendFile(api.Icon.defaultIconPath);
     }
   );
 

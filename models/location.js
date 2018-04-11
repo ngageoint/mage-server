@@ -11,7 +11,7 @@ var LocationSchema = new Schema({
   type: { type: String, required: true },
   geometry: {
     type: { type: String, required: true },
-    coordinates: { type: Array, required: true}
+    coordinates: { type: Array, required: true }
   },
   properties: Schema.Types.Mixed
 },{
@@ -21,6 +21,7 @@ var LocationSchema = new Schema({
 LocationSchema.index({geometry: "2dsphere"});
 LocationSchema.index({'properties.timestamp': 1});
 LocationSchema.index({'properties.timestamp': 1, _id: 1});
+// TODO: this seems superfluous - probably remove because there's already an index on userId in the field definition
 LocationSchema.index({'userId': 1});
 LocationSchema.index({'properties.user': 1, 'properties.timestamp': 1});
 

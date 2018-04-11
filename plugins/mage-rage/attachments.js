@@ -1,6 +1,6 @@
 var config = require('./config.js')
   , log = require('winston')
-  , environment = require('environment')
+  , environment = require('../environment/env')
   , async = require('async')
   , request = require('request')
   , moment = require('moment')

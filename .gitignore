@@ -1,10 +1,12 @@
 # Dependency directory
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
 node_modules
-
+.vscode
 public/.tmp
-
 public/dist/*
 !public/dist/index.html
-
 coverage
+npm-debug.log
+scratch
+docker/database
+docker/server/resources

@@ -1,6 +1,7 @@
 {
-  "name": "MAGE",
+  "name": "mage-server",
   "version": "5.1.2",
+  "displayName": "MAGE Server",
   "description": "Geospatial situation awareness application.",
   "keywords": [
     "NGA",
@@ -9,10 +10,12 @@
   "author": {
     "name": "NGA"
   },
-  "contributors": {
-    "name": "Billy Newman",
-    "email": "newmanw10@gmail.com"
-  },
+  "contributors": [
+    {
+      "name": "Billy Newman",
+      "email": "newmanw10@gmail.com"
+    }
+  ],
   "homepage": "https://www1.nga.mil",
   "engines": {
     "node": ">= 6.12.3 < 9",
@@ -29,7 +32,6 @@
     "bower": "1.8.0",
     "cfenv": "1.0.3",
     "dbf": "0.1.0",
-    "environment": "file:environment",
     "express": "4.10.6",
     "file-type": "7.6.0",
     "fs-extra": "0.30.0",
@@ -62,16 +64,17 @@
   },
   "devDependencies": {
     "assert": "1.3.0",
-    "chai": "3.3.0",
+    "chai": "~4.1.2",
     "coveralls": "3.0.0",
     "http": "0.0.0",
     "istanbul": "0.4.5",
     "mocha": "3.2.0",
     "mock-fs": "4.4.2",
     "nock": "2.15.0",
-    "sinon": "1.17.1",
-    "sinon-chai": "2.8.0",
-    "sinon-mongoose": "1.2.1",
+    "proxyquire": "~2.0.1",
+    "sinon": "~4.5.0",
+    "sinon-chai": "~3.0.0",
+    "sinon-mongoose": "~2.1.1",
     "superagent": "1.4.0",
     "supertest": "1.1.0"
   },
@@ -79,10 +82,11 @@
     "test": "mocha --reporter spec",
     "coverage": "istanbul cover _mocha",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
+    "create-migration": "mm create --config=mm-config.js",
     "build": "npm --prefix public install && npm --prefix public run build",
     "prestart": "sh bin/prestart.sh",
     "poststop": "sh bin/poststop.sh",
-    "migrate": "mm --config=migrations/mm-config.js",
+    "migrate": "node -e \"require('./migrate').runDatabaseMigrations().then(() => process.exit(0), err => {throw err})\"",
     "start": "node app.js"
   },
   "bundleDependencies": [],

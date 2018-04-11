@@ -1,16 +1,23 @@
 # Change Log
 All notable changes to this project will be documented in this file.
-Adheres to [Semantic Versioning](http://semver.org/).
+MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ---
-## 5.1.3 (TBD)
-
-* TBD
+## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+* Replace local [environment](environment) NPM packages with a single Node module
+** No more manually deleting the local module from the `node_modules` directory for script changes
+* Load values from [environment variables](README.md#mage-environment-settings) instead of only from the script
+** No more copying the modified environment script when [upgrading](README.md#upgrading-mage-server) the server
+* Continuously attempt to connect to MongoDB when the server app starts, exiting after a [configured](environment/magerc.sh) timeout
+* Automatically run [database migrations](README.md#mage-database-setup) when the server starts, after connecting to MongoDB successfully
+* Do not accept HTTP client connections until the database connection is successful and all migrations have run
+* Added a [`docker-compose`](docker/docker-compose.yml) file and [`Dockerfile`](docker/server/Dockerfile) to [run MAGE](docker/README.md) as a Docker app 
 
 ##### Bug Fixes
 * Fixed secondary icon uploading for in event/form admin
+* Removed inadvisable indexing workaround from the [`Event`](models/event.js) mongoose model on `forms._id` and added a [migration](migrations/013-ensure-event-indexes.js) to ensure the correct indexes on the `events` collection
 
 ## [5.1.2](https://github.com/ngageoint/mage-server/releases/tag/5.1.2) (04-20-2018)
 

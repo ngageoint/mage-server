@@ -2,7 +2,7 @@ var async = require('async')
   , fs = require('fs-extra')
   , mongoose = require('mongoose')
   , path = require('path')
-  , environment = require('environment')
+  , environment = require('../environment/env')
   , Counter = require('../models/counter')
   , Observation = require('../models/observation');
 
