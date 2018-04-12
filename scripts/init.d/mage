@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# chkconfig: 35 95 5
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+logFile=/var/log/mage/mage.log 
+pidFile=/var/run/mage/mage.pid 
+
+user=mage
+sourceDir=/opt/mage/mage
+applicationFile=app.js
+scriptId=$sourceDir/$applicationFile
+
+start() {
+    echo "Starting $scriptId"
+
+    # Start our MAGE app through forever
+    # Notice that we change the PATH because on reboot
+    # the PATH does not include the path to node.
+    # Launching forever or coffee with a full path
+    # does not work unless we set the PATH.
+    PATH=/usr/local/bin:$PATH
+    runuser -l $user -c "forever restart $sourceDir/$applicationFile || forever -l $logFile -a --workingDir $sourceDir start $sourceDir/$applicationFile"
+    
+    RETVAL=$?
+}
+
+restart() {
+    echo -n "Restarting $scriptId"
+    daemon --user $user forever restart $scriptId
+    RETVAL=$?
+}
+
+stop() {
+    echo -n "Shutting down $scriptId"
+    daemon --user $user forever stop $scriptId
+    RETVAL=$?
+}
+
+status() {
+    echo -n "Status $scriptId"
+    daemon --user $user forever list
+    RETVAL=$?
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+        status
+        ;;
+    restart)
+        restart
+        ;;
+    *)
+        echo "Usage:  {start|stop|status|restart}"
+        exit 1
+        ;;
+esac
+exit $RETVAL

@@ -8,6 +8,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 * TBD
 
 ##### Features
+* Added init.d script for mage application
 
 ##### Bug Fixes
 * Allow user with event access to update recent event
