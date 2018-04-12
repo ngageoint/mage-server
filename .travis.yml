@@ -1,12 +1,32 @@
 language: node_js
+env:
+  matrix:
+  - NODE="6"
+  - NODE="8"
 node_js:
-- '6'
-- '8'
+- "$NODE"
 script:
-- npm run coverage && npm run coveralls
+- npm run coverage
+after_script:
+- npm run coveralls
 notifications:
   slack:
     rooms:
       secure: o/eg7lWsX5qAgjNLKik2krQZcA9TsYx2iw3865IhJY4AaikNNmo5ZE8amARvF8Z4ZtAeAZGlL+KHKMQTFN2o3ZdyStJw55rhjzaYHEREBuyUi95VLjKcM8Znhe5/6iTYwLpi/eC6zMbYKTJsLC9cOrKkf637OUuLhaQntC2RtVH2s7tmGYl+LZgrJ4quSw3WuvSlMXXPTD803mzuLJzjie7KJKrcHpWBzH9DVhBdwqfsngZPBRdCfsuoRgxuXr2AMbWRHXJ5sxaFdt2SNIiKrDwzg4wGDdE0mlAHMQpiWgQg0KIwMPHQMcM9lvyJLEUNXj8BuY4PXuAqYeotxDF/b39zwcY4+yj6MLNNP/Sw1O4AL6s14IYIpI1KbVwBccBNKijjIMvqtdMcRJCAYqvoD4adkXnbJCAT48hSSsUUrqWhr/2O8ieSsNXtBnOHpvITwiA8avtqeVq0nugOwqtvAWwhgATYxCSd+4ToRQx1ttF8z+xzaek7UzqIliG5UTR6bN/xgxKzRtvrUkpsl05AF+Fl9RimW0ccqURMXmG5HiYON8g85LzBGeZp4cwSgekTKEc7CJsrltZ32rl+3JxxfaZ95sZwLdhJgDl7C6tIQlKuLzaZvEcikjbY7TCbdFh6oegqUj/ssY0SQIK4JokjdKJaYfFmxtQ+eoGmWl6LDlk=
     on_success: change
     on_failure: always
+before_deploy:
+- npm install
+- npm run build
+- mkdir release_artifact
+- tar --exclude='./release_artifact' -czf release_artifact/mage_${TRAVIS_TAG}_node${TRAVIS_NODE_VERSION}.tar.gz
+  .
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    secure: wAJFMWKsp/QNVxW9eItefmpphGj8Re1dqrInZwkhwXcQNXj58s8DQUqGzur09dWpEP+FvJhFgVd8WCOWnf5XaL+qaMAv8aOWoeUwFOTEbsqnt2qKN0ukagiVUR/183Uns4t4fGq3jKJSMQ7bFaeeixP4yd6KU4n0Y5Du1DbyjPnLS9ggodagbxe0lTh3r0GGnbN2Q/FnrtCBeWoSGmNhSaMNZHjyQfuh17U7vO885qbqwLl9uclgXUyLAud16AfODntbcB5g6WeWIE2+zVmGsn+taj+1mR3LvAI0wnCfCLqjv51t1XYelKgNxNZ8DURWl6j3189luOgh4klPI/+zQCy9rsV3aERRub1ZhlUIKV62d3WL2HD35wjTG7b58f5GxyQdz7gE2HS3B9IbS69WDRBfgMpwFwLz2cxjwDsryhAfwsiE3KMQ4JHqMmn+hzj60GD0RfIsoZwzbbLj/2ehNMkJ1yH3HLnBvkE2zFlROQUAMSucqQwnFtG4g11YEPWCMXR6dYig52/1O/n8ONtnhxlW+1l7gwQuLJCBZxkJEDHPE1B5A9JG3UavCPqyoxBUEVDTvnblSp83UKFzL66U3bVZt7UNYyI/y1Y3R94UnVi+0QAa2ypYjohLJH5OdV0C8HhqYup3E3g4CiTqmHHtJZ1GU57rIFM3u8yEwa5Dv4U=
+  file: release_artifact/mage_${TRAVIS_TAG}_node${TRAVIS_NODE_VERSION}.tar.gz
+  on:
+    tags: true
+    repo: ngageoint/mage-server
