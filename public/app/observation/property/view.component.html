@@ -1,5 +1,5 @@
 <h4 ng-if="filteredFields.length > 0">{{$ctrl.form.name}}</h4>
-<div class="top-gap" ng-repeat="field in filteredFields = ($ctrl.form.fields | filter:filterHidden) | orderBy: 'id'">
+<div class="top-gap" ng-repeat="field in filteredFields = ($ctrl.form.fields | filter:$ctrl.filterHidden) | orderBy: 'id'">
   <div ng-switch on="field.type">
     <checkbox-view ng-switch-when="checkbox" field="field"></checkbox-view>
     <date-view ng-switch-when="date" field="field"></date-view>

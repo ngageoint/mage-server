@@ -97,21 +97,6 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
       });
   };
 
-  $scope.filterHidden = function(field) {
-    return !field.archived &&
-      field.name !== 'geometry' &&
-      field.name !== 'timestamp' &&
-      field.value &&
-      (isSelectField(field) ? field.value.length : true);
-  };
-
-  function isSelectField(field) {
-    return field.type === 'dropdown' ||
-      field.type === 'multiselectdropdown' ||
-      field.type === 'userDropdown' ||
-      field.type === 'multiSelectUserDropdown';
-  }
-
   $scope.editObservation = function() {
     $scope.onObservationLocationClick($scope.observation);
     $scope.edit = true;

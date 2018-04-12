@@ -156,7 +156,11 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
         formId: observationForm.id
       };
 
-      _.each(observationForm.fields, function(field) {
+      var fields = _.filter(observationForm.fields, function(field) {
+        return !field.archived;
+      });
+
+      _.each(fields, function(field) {
         propertiesForm[field.name] = field.value;
       });
 

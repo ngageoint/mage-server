@@ -13,6 +13,8 @@ Adheres to [Semantic Versioning](http://semver.org/).
 * Allow user with event access to update recent event
 * Show default icon on web when creating an observation if no primary/secondary fields selected
 * Add favicon in webpack build
+* Don't show observation properties that are archived
+* Don't submit observation properties that are archived
 
 ## [5.1.0](https://github.com/ngageoint/mage-server/releases/tag/5.1.0) (02-27-2018)
 
