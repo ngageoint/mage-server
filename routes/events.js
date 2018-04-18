@@ -174,7 +174,7 @@ module.exports = function(app, security) {
   );
 
   app.get(
-    '/api/events/:id/teams',
+    '/api/events/:eventId/teams',
     passport.authenticate('bearer'),
     authorizeAccess('READ_EVENT_ALL', 'read'),
     determineReadAccess,
@@ -184,7 +184,7 @@ module.exports = function(app, security) {
         populate = req.query.populate.split(",");
       }
 
-      Event.getTeams(req.params.id, {populate: populate}, function(err, teams) {
+      Event.getTeams(req.event._id, {populate: populate}, function(err, teams) {
         if (err) return next(err);
 
         res.json(teams.map(function(team) {
@@ -195,12 +195,12 @@ module.exports = function(app, security) {
   );
 
   app.get(
-    '/api/events/:id/users',
+    '/api/events/:eventId/users',
     passport.authenticate('bearer'),
     authorizeAccess('READ_EVENT_ALL', 'read'),
     determineReadAccess,
     function (req, res, next) {
-      Event.getUsers(req.params.id, function(err, users) {
+      Event.getUsers(req.event._id, function(err, users) {
         if (err) return next(err);
 
         users = userTransformer.transform(users, {path: req.getRoot()});
