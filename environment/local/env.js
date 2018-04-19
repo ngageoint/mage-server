@@ -19,6 +19,8 @@ var mongoConfig = {
 var credentials = (mongoConfig.username || mongoConfig.password) ?  util.format('%s:%s@', mongoConfig.username, mongoConfig.password) : '';
 environment.mongo = {
   uri: mongoConfig.scheme + '://' + credentials + mongoConfig.host +  ':' + mongoConfig.port + '/' + mongoConfig.db + "?" + util.format('ssl=%s', mongoConfig.ssl),
+  username: mongoConfig.username,
+  password: mongoConfig.password,
   scheme: mongoConfig.scheme,
   host: mongoConfig.host,
   port: mongoConfig.port,
