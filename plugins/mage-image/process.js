@@ -17,10 +17,10 @@ var timeout = config.image.interval * 1000;
 var observationTimes = {};
 var lastObservationTimes = {orient: {}, thumbnail: {}};
 
-var mongodbConfig = config.mongodb;
-mongoose.connect(mongodbConfig.url, {server: {poolSize: mongodbConfig.poolSize}}, function(err) {
+var mongo = environment.mongo;
+mongoose.connect(mongo.uri, mongo.options, function(err) {
   if (err) {
-    log.error('Error connecting to mongo database, please make sure mongodbConfig is running...');
+    log.error('Error connecting to mongo database, please make sure mongodb is running...');
     throw err;
   }
 });

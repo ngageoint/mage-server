@@ -8,6 +8,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 * TBD
 
 ##### Features
+* mage-image plugin now uses mongo environment config.
 
 ##### Bug Fixes
 * Fix a bug when user with EVENT_MANAGER_ROLE queries for users or teams in an event.
