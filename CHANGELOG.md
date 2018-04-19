@@ -11,6 +11,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 * Fix a bug when user with EVENT_MANAGER_ROLE queries for users or teams in an event.
+* mage-image plugin now processes each attachment asynchronously.
 
 ## [5.1.1](https://github.com/ngageoint/mage-server/releases/tag/5.1.1) (04-12-2018)
 
