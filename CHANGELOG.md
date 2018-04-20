@@ -3,15 +3,21 @@ All notable changes to this project will be documented in this file.
 Adheres to [Semantic Versioning](http://semver.org/).
 
 ---
-## 5.1.2 (TBD)
+## 5.1.3 (TBD)
 
 * TBD
+
+##### Features
+
+##### Bug Fixes
+
+## [5.1.2](https://github.com/ngageoint/mage-server/releases/tag/5.1.2) (04-20-2018)
 
 ##### Features
 * mage-image plugin now uses mongo environment config.
 
 ##### Bug Fixes
-* Fix a bug when user with EVENT_MANAGER_ROLE queries for users or teams in an event.
+* Fix a bug when non admin user queries for users or teams in an event.
 * mage-image plugin now processes each attachment asynchronously.
 
 ## [5.1.1](https://github.com/ngageoint/mage-server/releases/tag/5.1.1) (04-12-2018)
