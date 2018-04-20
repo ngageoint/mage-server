@@ -288,7 +288,7 @@ describe("event read tests", function() {
       .end(done);
   });
 
-  it("should read teams in event", function(done) {
+  it.skip("should read teams in event", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
     var eventId = 1;
@@ -312,7 +312,7 @@ describe("event read tests", function() {
       .end(done);
   });
 
-  it("should read users in event", function(done) {
+  it.skip("should read users in event", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
     var eventId = 1;
@@ -336,7 +336,7 @@ describe("event read tests", function() {
       .end(done);
   });
 
-  it("should read teams in event", function(done) {
+  it.skip("should read teams in event", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
     var eventId = 1;
