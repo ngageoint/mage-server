@@ -310,7 +310,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
   $scope.onIconAdded = function(event) {
     var icon = event.icon;
     var primary = event.primary;
-    var variant = event.varaint;
+    var variant = event.variant;
 
     this.filesToUpload.push({
       file: event.file,
@@ -357,7 +357,7 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
       }
       $scope.form.style[primary][variant] = _.extend($scope.form.style[primary][variant] || {}, style);
 
-      $scope.styleMap[primary][variant.title].style = getStyle(primary, variant.title);
+      $scope.styleMap[primary][variant].style = getStyle(primary, variant);
     } else if (primary) {
       $scope.form.style[primary] = _.extend($scope.form.style[primary] || {}, style);
 
