@@ -40,7 +40,7 @@ MAGE depends the following software:
 * [Node.js](https://nodejs.org/) >= 6 an <= 8
 * [MongoDB](https://www.mongodb.org/) >= 2.6.0
 * [Apache HTTP Server](https://httpd.apache.org/) >= 2.2.15
-* [GraphicsMagick](http://www.graphicsmagick.org/) (optional, but recommended for image rotation and tumbnails) >= 1.3
+* [GraphicsMagick](http://www.graphicsmagick.org/) (optional, but recommended for image rotation and thumbnails) >= 1.3
 
 ### Node.js Setup
 
