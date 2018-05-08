@@ -3,7 +3,8 @@ module.exports = function avatarUserEdit() {
     restrict: "A",
     template: require('./user-avatar-edit.directive.html'),
     scope: {
-      user: '=avatarUserEdit'
+      user: '=avatarUserEdit',
+      onAvatar: '&'
     },
     controller: AvatarUserEditController
   };
@@ -20,13 +21,17 @@ function AvatarUserEditController($scope, $element) {
     $scope.file = this.files[0];
     $scope.fileName = $scope.file.name;
     $scope.$emit('userAvatar', $scope.file);
+    $scope.onAvatar({
+      $event: {
+        avatar: $scope.file
+      }
+    });
   });
 
   $scope.$watch('user.avatar', function(avatar) {
     if (!avatar) {
       $scope.file = null;
       $scope.fileName = 'Choose an avatar image...';
-      $scope.$emit('userAvatar', null);
     }
   });
 }

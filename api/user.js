@@ -36,6 +36,8 @@ User.prototype.login = function(user, device, options, callback) {
     options = {};
   }
 
+  console.log('userId is: ', user._id);
+
   TokenModel.createToken({userId: user._id, device: device}, function(err, token) {
     if (err) return callback(err);
 

@@ -34,6 +34,15 @@ module.exports = function(app, security) {
         api.initial = true;
       }
 
+      let whitelist = ['url', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
+      Object.keys(api.authenticationStrategies).forEach(function (strategyName) {
+        if (strategyName === 'local') return;
+
+        api.authenticationStrategies[strategyName] = Object.keys(api.authenticationStrategies[strategyName])
+          .filter((key) => whitelist.includes(key))
+          .reduce((newObj, key) => Object.assign(newObj, { [key]: api.authenticationStrategies[strategyName][key] }), {});
+      });
+
       res.json(api);
     });
   });

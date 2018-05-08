@@ -3,9 +3,9 @@ var _ = require('underscore')
 
 module.exports = UserService;
 
-UserService.$inject = ['$rootScope', '$q', '$http', '$location', '$timeout', '$window', 'LocalStorageService'];
+UserService.$inject = ['$rootScope', '$q', '$uibModal', '$http', '$location', '$timeout', '$window', 'LocalStorageService'];
 
-function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalStorageService) {
+function UserService($rootScope, $q, $uibModal, $http, $location, $timeout, $window, LocalStorageService) {
 
   var service = {
     myself: null,
@@ -15,6 +15,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     googleSignup: googleSignup,
     oauthSignin: oauthSignin,
     oauthSignup: oauthSignup,
+    authorize: authorize,
     login: login,
     logout: logout,
     getMyself: getMyself,
@@ -69,7 +70,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     return promise;
   }
 
-  function oauthSignin(strategy, data) {
+  function oauthSignin(strategy) {
     var deferred = $q.defer();
 
     var oldUsername = service.myself && service.myself.username || null;
@@ -81,7 +82,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     var top = windowTop + (window.innerHeight / 2) - (300);
     var strWindowFeatures = 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=600, height=600, top=' + top + ',left=' + left;
 
-    var url = "/auth/" + strategy + "/signin?" + $.param({uid: data.uid});
+    var url = "/auth/" + strategy + "/signin";
     var authWindow = $window.open(url, "", strWindowFeatures);
 
     function onMessage(event) {
@@ -91,7 +92,9 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
         return;
       }
 
-      var data = event.data;
+      deferred.resolve({success: event.data.success, user: event.data.user, oauth: event.data.oauth});
+
+      /*
       if (data.token) {
         LocalStorageService.setToken(data.token);
         setUser(data.user);
@@ -101,6 +104,7 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
       } else {
         deferred.reject(data);
       }
+      */
 
       authWindow.close();
     }
@@ -124,7 +128,6 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     $window.addEventListener('message', function(event) {
       var data = event.data;
       if (data.user) {
-        setUser(event.data.user);
         deferred.resolve({user: event.data.user});
       } else {
         deferred.reject(data);
@@ -134,6 +137,30 @@ function UserService($rootScope, $q, $http, $location, $timeout, $window, LocalS
     }, false);
 
     return deferred.promise;
+  }
+
+  function authorize(strategy, user, newUser, authData) {
+    var data = {
+      access_token: authData.access_token,
+      uid: authData.uid,
+      appVersion: 'Web Client'
+    };
+ 
+    var promise = $http.post('/auth/' + strategy + '/authorize', $.param(data), {
+      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+      ignoreAuthModule:true
+    });
+
+    promise.success(function(data) {
+      if (data.device.registered) {
+        setUser(data.user);
+        LocalStorageService.setToken(data.token);
+        $rootScope.$broadcast('event:auth-login', {token: data.token, newUser: newUser});
+        $rootScope.$broadcast('event:user', {user: data.user, token: data.token, isAdmin: service.amAdmin});
+      }
+    });
+
+    return promise;
   }
 
   function login(data) {

@@ -18,6 +18,7 @@ module.exports = function(app, passport, provision, strategies) {
     passReqToCallback: true
   },
   function(req, token, done) {
+    console.log('----------------------Verify token in bearer startegy req', req.path);
     Token.getToken(token, function(err, credentials) {
       if (err) { return done(err); }
 

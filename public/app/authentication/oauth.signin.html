@@ -1,0 +1,32 @@
+<div class="row" ng-if="$ctrl.strategy.name === 'google'">
+  <div class="col-md-12 text-center">
+    <div style="display:inline-block;" ng-init="$ctrl.initializeGoogleButton(strategy)" id="google-signin" class="g-signin2"></div>
+  </div>
+</div>
+
+<div class="row" ng-if="$ctrl.strategy.name !== 'google'">
+  <div class="col-md-8 col-md-offset-2 text-center">
+    <button class="btn btn-danger btn-lg btn-block" ng-style="{'background-color': $ctrl.strategy.buttonColor, 'border-color': $ctrl.strategy.buttonColor}" ng-click="$ctrl.signin(strategy)">
+      <span ng-if="!$ctrl.strategy.icon" class="logo">
+        <i class="fa fa-lg fa-shield" ng-style="{'color': $ctrl.strategy.buttonColor}"></i>
+      </span>
+
+      <span ng-if="$ctrl.strategy.icon" class="logo">
+        <img data-ng-src="data:image/png;base64,{{$ctrl.strategy.icon}}"></img>
+      </span>
+
+      <span>{{$ctrl.buttonText}}</span>
+    </button>
+  </div>
+</div>
+
+<!-- Status message area -->
+<div class="row top-gap" ng-show="$ctrl.showStatus">
+  <div class="col-md-8 col-md-offset-2">
+    <div class="alert" ng-class="$ctrl.statusLevel">
+      <button type="button" class="close" ng-click="$ctrl.showStatus = false">&times;</button>
+      <h4>{{$ctrl.statusTitle}}</h4>
+      {{$ctrl.statusMessage}}
+    </div>
+  </div>
+</div>

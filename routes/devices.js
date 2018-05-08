@@ -19,10 +19,10 @@ module.exports = function(app, security) {
   // Create a new device
   // Any authenticated user can create a new device, the registered field
   // will be set to false.
-  app.post('/api/devices',
-    passport.authenticate('local'),
-    resource.create
-  );
+  //app.post('/api/devices',
+  //  passport.authenticate('local'),
+  //  resource.create
+  //);
 
   app.get('/api/devices/count',
     passport.authenticate('bearer'),

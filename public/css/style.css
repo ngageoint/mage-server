@@ -510,6 +510,17 @@ a {
     border-bottom: 0;
 }
 
+.brand-title {
+  margin-left: 10px;
+  color: #365F8C;
+  font-size: 2em;
+  font-weight: 500;
+}
+
+.brand-subtitle {
+  color: #808080;
+}
+
 .icon-brand-s {
 	font-size: 75px;
 	color: #365F8C;
@@ -1077,6 +1088,27 @@ h4.image-delete {
 }
 
 .preferences-form {
-  padding: 16px;
-  min-width: 180px;
+    padding: 16px;
+    min-width: 180px;
+}
+
+.btn .logo {
+  position: absolute;
+  left: 17px;
+  top: 2px;
+  bottom: 2px;
+  background-color: #FFFFFF;
+  border-radius: 4px;
+  width: 42px;
+}
+
+.btn .logo img {
+  position: relative;
+  top: 9px;
+  width: 60%
+}
+
+.btn .logo i {
+  position: relative;
+  top: 9px;
 }

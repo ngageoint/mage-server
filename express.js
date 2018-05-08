@@ -1,4 +1,5 @@
 var express = require("express")
+  , session = require('express-session')
   , passport = require('passport')
   , path = require('path')
   , config = require('./config.js')
@@ -29,9 +30,32 @@ app.use(function(req, res, next) {
   };
   return next();
 });
+
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'identity-oidc-expressjs-secret',
+  name: 'identity-oidc-expressjs-session',
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    maxAge: 300000
+  }
+}));
+
+passport.serializeUser(function(user, done) { 
+  console.log('------------Attempt to serialize user', user.username);
+  done(null, user); 
+});
+
+passport.deserializeUser(function(user, done) { 
+  console.log('------------Attempt to deserialize user', user.username);
+  user._id = user.id;
+  done( null, user); 
+}); // this is where you might fetch a user record from the database. see http://www.passportjs.org/docs/configure/#sessions
+
 app.use(require('body-parser')({ keepExtensions: true}));
 app.use(require('multer')());
 app.use(passport.initialize());
+app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public/dist')));
 app.use('/api/swagger', express.static('./public/vendor/swagger-ui/'));
 app.use('/private',

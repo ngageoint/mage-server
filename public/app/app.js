@@ -12,8 +12,6 @@ angular
   .controller('MageController', require('./mage/mage.controller'))
   .controller('ExportController', require('./export/export'))
   .controller('SetupController', require('./setup/setup.controller'))
-  .controller('SigninController', require('./signin/signin.controller'))
-  .controller('SignupController', require('./signup/signup.controller'))
   .controller('UserController', require('./user/user.controller'))
   .controller('AboutController', require('./about/about.controller'))
   .controller('DisclaimerController', require('./disclaimer/disclaimer.controller'))
@@ -26,6 +24,7 @@ require('./factories');
 require('./filters');
 require('./leaflet-extensions');
 require('./mage');
+require('./authentication');
 require('./observation');
 require('./user');
 require('./admin');
@@ -110,7 +109,7 @@ function config($provide, $httpProvider, $routeProvider, $animateProvider) {
   });
 
   $routeProvider.when('/signin', {
-    template: require('./signin/signin.html'),
+    template: require('./authentication/signin.html'),
     controller: 'SigninController',
     resolve: {
       api: ['$q', '$location', 'Api', function($q, $location, Api) {
@@ -129,7 +128,7 @@ function config($provide, $httpProvider, $routeProvider, $animateProvider) {
   });
 
   $routeProvider.when('/signup', {
-    template: require('./signup/signup.html'),
+    template: require('./authentication/signup.html'),
     controller: 'SignupController',
     resolve: {
       api: ['$q', '$location', 'Api', function($q, $location, Api) {
@@ -145,6 +144,11 @@ function config($provide, $httpProvider, $routeProvider, $animateProvider) {
         return deferred.promise;
       }]
     }
+  });
+
+  $routeProvider.when('/authorize', {
+    template: require('./authentication/authorize.html'),
+    controller:  'AuthorizeController'
   });
 
   $routeProvider.when('/admin', {
@@ -318,12 +322,12 @@ function run($rootScope, $route, $uibModal, $templateCache, UserService, $locati
   $templateCache.put("observation/observation-important.html", require("./observation/observation-important.html"));
 
   $rootScope.$on('event:auth-loginRequired', function(e, response) {
-    var pathExceptions = ['/', '/signin', '/signup', '/setup'];
+    var pathExceptions = ['/', '/signin', '/signup', '/setup', '/authorize'];
     var requestExceptions = ['/api/users/myself/password'];
     if (!$rootScope.loginDialogPresented && !_(pathExceptions).contains($location.path()) && !_(requestExceptions).contains(response.config.url)) {
       $rootScope.loginDialogPresented = true;
       var modalInstance = $uibModal.open({
-        template: require('./signin/signin-modal.html'),
+        template: require('./authentication/signin-modal.html'),
         controller: ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
           Api.get(function(api) {
             function localStrategyFilter(strategy, name) {
@@ -338,41 +342,14 @@ function run($rootScope, $route, $uibModal, $templateCache, UserService, $locati
             $scope.localAuthenticationStrategy = api.authenticationStrategies.local;
           });
 
-          var oldUsername = UserService.myself && UserService.myself.username || undefined;
-
-          $scope.googleSignin = function() {
-            UserService.oauthSignin('google', {uid: this.uid}).then(function(data) {
-              if (data.username !== oldUsername) {
-                data.newUser = true;
-              }
-
-              $rootScope.loginDialogPresented = false;
-              $uibModalInstance.close($scope);
-            }, function(data) {
-              $scope.showStatus = true;
-
-              if (data.device && !data.device.registered) {
-                $scope.statusTitle = 'Device Pending Registration';
-                $scope.statusMessage = data.errorMessage;
-                $scope.statusLevel = 'alert-warning';
-              } else {
-                $scope.statusTitle = 'Error signing in';
-                $scope.statusMessage = data.errorMessage;
-                $scope.statusLevel = 'alert-danger';
-              }
-            });
+          $scope.onAuthenticate = function() {
+            $rootScope.loginDialogPresented = false;
+            $uibModalInstance.close($scope);
           };
 
-          $scope.login = function (data) {
-            UserService.login(data).success(function() {
-              if (data.username !== oldUsername) {
-                data.newUser = true;
-              }
-              $rootScope.loginDialogPresented = false;
-              $uibModalInstance.close($scope);
-            }).error(function (data, status) {
-              $scope.status = status;
-            });
+          $scope.onSignin = function() {
+            $rootScope.loginDialogPresented = false;
+            $uibModalInstance.close($scope);
           };
 
           $scope.cancel = function () {
@@ -392,7 +369,7 @@ function run($rootScope, $route, $uibModal, $templateCache, UserService, $locati
     function confirmLogin() {
       authService.loginConfirmed(data);
 
-      if ($location.path() === '/signin' || $location.path() === '/setup') {
+      if ($location.path() === '/signin' || $location.path() === '/signup' || $location.path() === '/setup' || $location.path() === '/authorize') {
         $location.path('/map');
       }
     }
