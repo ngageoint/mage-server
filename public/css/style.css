@@ -123,6 +123,10 @@ a {
   overflow: auto;
 }
 
+.disclaimer {
+  white-space: pre-wrap;
+}
+
 .filter-banner {
   display: flex;
   flex-direction: row;

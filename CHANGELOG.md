@@ -13,11 +13,11 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Continuously attempt to connect to MongoDB when the server app starts, exiting after a [configured](environment/magerc.sh) timeout
 * Automatically run [database migrations](README.md#mage-database-setup) when the server starts, after connecting to MongoDB successfully
 * Do not accept HTTP client connections until the database connection is successful and all migrations have run
-* Added a [`docker-compose`](docker/docker-compose.yml) file and [`Dockerfile`](docker/server/Dockerfile) to [run MAGE](docker/README.md) as a Docker app 
+* Added a [`docker-compose`](docker/docker-compose.yml) file and [`Dockerfile`](docker/server/Dockerfile) to [run MAGE](docker/README.md) as a Docker app
 
 ##### Bug Fixes
 * Fixed secondary icon uploading for in event/form admin
-* Removed inadvisable indexing workaround from the [`Event`](models/event.js) mongoose model on `forms._id` and added a [migration](migrations/013-ensure-event-indexes.js) to ensure the correct indexes on the `events` collection
+* Show line breaks in disclaimer dialog.
 
 ## [5.1.2](https://github.com/ngageoint/mage-server/releases/tag/5.1.2) (04-20-2018)
 
