@@ -13,6 +13,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 * Fixed secondary icon uploading for in event/form admin
 * Don't allow EVENT_MANAGER_ROLE to change user roles
 * Fix password strength meter on signup page
+* Fix bug where confirmation modal does not disappear after deleting user
 
 ## [5.1.2](https://github.com/ngageoint/mage-server/releases/tag/5.1.2) (04-20-2018)
 

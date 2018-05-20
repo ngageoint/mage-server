@@ -69,7 +69,7 @@ function AdminUsersController($scope, $uibModal, $filter, $location, LocalStorag
         $scope.user = user;
 
         $scope.deleteUser = function(user) {
-          UserService.deleteUser(user).success(function() {
+          UserService.deleteUser(user).then(function() {
             $uibModalInstance.close(user);
           });
         };
