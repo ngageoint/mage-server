@@ -390,7 +390,11 @@ module.exports = function(app, security) {
       if (req.param('displayName')) user.displayName = req.param('displayName');
       if (req.param('email')) user.email = req.param('email');
       if (req.param('active') === 'true' || req.param('active') === 'false') user.active = req.param('active');
-      if (req.param('roleId')) user.roleId = req.param('roleId');
+
+      // Need UPDATE_USER_ROLE to change a users role
+      if (req.param('roleId') && access.userHasPermission(req.user, 'UPDATE_USER_ROLE')) {
+        user.roleId = req.param('roleId');
+      }
 
       var phone = req.param('phone');
       if (phone) {

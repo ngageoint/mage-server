@@ -11,6 +11,7 @@ Adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 * Fixed secondary icon uploading for in event/form admin
+* Don't allow EVENT_MANAGER_ROLE to change user roles
 
 ## [5.1.2](https://github.com/ngageoint/mage-server/releases/tag/5.1.2) (04-20-2018)
 
