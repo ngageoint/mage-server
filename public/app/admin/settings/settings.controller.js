@@ -25,13 +25,8 @@ function AdminSettingsController($scope, Settings, LocalStorageService) {
   Settings.query(function(settings) {
     $scope.settings = _.indexBy(settings, 'type');
 
-    if ($scope.settings.banner) {
-      $scope.banner = $scope.settings.banner.settings || {};
-    }
-
-    if ($scope.settings.disclaimer) {
-      $scope.disclaimer = $scope.settings.disclaimer.settings || {};
-    }
+    $scope.banner = $scope.settings.banner ? $scope.settings.banner.settings : {};
+    $scope.disclaimer = $scope.settings.disclaimer ? $scope.settings.disclaimer.settings : {};
   });
 
   $scope.saveBanner = function() {
