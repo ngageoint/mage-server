@@ -10,6 +10,9 @@ var request = require('supertest')
 require('chai').should();
 require('sinon-mongoose');
 
+require('../../models/team');
+var TeamModel = mongoose.model('Team');
+
 require('../../models/event');
 var EventModel = mongoose.model('Event');
 
@@ -288,7 +291,7 @@ describe("event read tests", function() {
       .end(done);
   });
 
-  it.skip("should read teams in event", function(done) {
+  it("should read teams in event", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
     var eventId = 1;
@@ -297,8 +300,13 @@ describe("event read tests", function() {
       name: 'Mock Event'
     });
 
-    sandbox.mock(EventModel)
-      .expects('findById')
+    var eventMock = sandbox.mock(EventModel);
+
+    eventMock.expects('findById')
+      .withArgs("1")
+      .yields(null, mockEvent);
+
+    eventMock.expects('findById')
       .chain('populate')
       .withArgs({path: 'teamIds'})
       .chain('exec')
@@ -312,7 +320,7 @@ describe("event read tests", function() {
       .end(done);
   });
 
-  it.skip("should read users in event", function(done) {
+  it("should read users in event", function(done) {
     mockTokenWithPermission('READ_EVENT_ALL');
 
     var eventId = 1;
@@ -321,10 +329,15 @@ describe("event read tests", function() {
       name: 'Mock Event'
     });
 
-    sandbox.mock(EventModel)
-      .expects('findById')
+    var eventMock = sandbox.mock(EventModel);
+
+    eventMock.expects('findById')
+      .withArgs("1")
+      .yields(null, mockEvent);
+
+    eventMock.expects('findById')
       .chain('populate')
-      .withArgs({ path: "teamIds", populate: { path: "userIds" } })
+      .withArgs({path: 'teamIds', populate: { path: 'userIds' }})
       .chain('exec')
       .yields(null, mockEvent);
 
@@ -336,17 +349,87 @@ describe("event read tests", function() {
       .end(done);
   });
 
-  it.skip("should read teams in event", function(done) {
-    mockTokenWithPermission('READ_EVENT_ALL');
+  it("should read users in event with team access", function(done) {
+    mockTokenWithPermission('');
 
     var eventId = 1;
-    var mockEvent = new EventModel({
-      _id: eventId,
-      name: 'Mock Event'
+
+    var mockTeam = new TeamModel({
+      userIds: [userId],
+      acl: {}
     });
 
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event 123',
+      teamIds: [],
+      acl: {
+        1: 'NONE'
+      }
+    });
+    mockEvent.teamIds[0] = mockTeam;
+
+    var eventMock = sandbox.mock(EventModel);
+
+    eventMock.expects('findById')
+      .withArgs("1")
+      .yields(null, mockEvent);
+
     sandbox.mock(EventModel)
-      .expects('findById')
+      .expects('populate')
+      .yields(null, mockEvent);
+
+    eventMock.expects('findById')
+      .chain('populate')
+      .withArgs({
+        path: 'teamIds',
+        populate: {
+          path: 'userIds'
+        }
+      })
+      .chain('exec')
+      .yields(null, mockEvent);
+
+    request(app)
+      .get('/api/events/1/users')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .query({populate: 'users'})
+      .expect(200)
+      .end(done);
+  });
+
+  it("should read teams in event with team access", function(done) {
+    mockTokenWithPermission('');
+
+    var eventId = 1;
+
+    var mockTeam = new TeamModel({
+      userIds: [userId],
+      acl: {}
+    });
+
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event 123',
+      teamIds: [],
+      acl: {
+        1: 'NONE'
+      }
+    });
+    mockEvent.teamIds[0] = mockTeam;
+
+    var eventMock = sandbox.mock(EventModel);
+
+    eventMock.expects('findById')
+      .withArgs("1")
+      .yields(null, mockEvent);
+
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, mockEvent);
+
+    eventMock.expects('findById')
       .chain('populate')
       .withArgs({
         path: 'teamIds',
