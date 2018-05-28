@@ -62,7 +62,7 @@
 
                         <div class="form-group" ng-class="{error: 'has-error', success: 'hs-success'}[passwordStatus.status]" ng-if="!user.id">
                           <label class="control-label col-sm-2">Password</label>
-                          <div class="col-sm-8">
+                          <div class="col-sm-10">
                             <input type="password" placeholder="{{passwordPlaceholder}}" ng-model="user.password" name="password" class="form-control">
                             <span class="help-inline" ng-show="passwordStatus.status">{{passwordStatus.msg}}</span>
                           </div>
@@ -70,7 +70,7 @@
 
                         <div class="form-group" ng-class="{error: 'has-error', success: 'has-success'}[passwordStatus.status]" ng-if="!user.id">
                           <label class="control-label col-sm-2">Confirm Password</label>
-                          <div class="col-sm-8">
+                          <div class="col-sm-10">
                             <input type="password" placeholder="{{passwordPlaceholder}}" ng-model="user.passwordconfirm" name="passwordconfirm" class="form-control">
                             <span class="help-inline" ng-show="passwordStatus.status">{{passwordStatus.msg}}</span>
                           </div>
@@ -78,8 +78,8 @@
 
                         <div class="form-group">
                           <label class="control-label col-sm-2" for="type">Role</label>
-                          <div class="col-sm-8">
-                            <select class="form-control" ng-model="user.role.id" ng-options="role.id as role.name for role in roles"></select>
+                          <div class="col-sm-10">
+                            <select class="form-control" ng-model="user.role.id" ng-options="role.id as role.name for role in roles" ng-disabled="!canEditRole"></select>
                           </div>
                         </div>
 

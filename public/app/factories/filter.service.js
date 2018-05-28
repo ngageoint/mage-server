@@ -46,8 +46,8 @@ function FilterService(UserService, LocalStorageService) {
     removeListener: removeListener,
     setFilter: setFilter,
     removeFilters: removeFilters,
-    isContainedWithinFilter: isContainedWithinFilter,
-    areTeamsInFilter: areTeamsInFilter,
+    observationInFilter: observationInFilter,
+    isUserInTeamFilter: isUserInTeamFilter,
     getEvent: getEvent,
     getTeams: getTeams,
     getTeamsById: getTeamsById,
@@ -217,19 +217,13 @@ function FilterService(UserService, LocalStorageService) {
     return true;
   }
 
-  function isContainedWithinFilter(o) {
-    if (!areTeamsInFilter(o.teamIds)) return false;
+  function observationInFilter(o) {
+    if (!isUserInTeamFilter(o.userId)) {
+      return false;
+    }
 
-    var time = formatInterval(interval);
-    if (time) {
-      var properties = o.properties;
-      if (time.start && time.end) {
-        if (!moment(properties.timestamp).isBetween(time.start, time.end)) return false;
-      } else if (time.start) {
-        if (!moment(properties.timestamp).isAfter(time.start)) return false;
-      } else if (time.end) {
-        if (!moment(properties.timestamp).isBefore(time.start)) return false;
-      }
+    if (!isObservationInTimeFilter(o)) {
+      return false;
     }
 
     // remove observations that are not part of action filter
@@ -248,15 +242,28 @@ function FilterService(UserService, LocalStorageService) {
     return true;
   }
 
-  function areTeamsInFilter(teamIds) {
-    if (_.isEmpty(teamsById)) return true;
-
-    for (var i = 0; i < teamIds.length; i++) {
-      var teamId = teamIds[i];
-      if (teamsById[teamId]) return true;
+  function isObservationInTimeFilter(o) {
+    var time = formatInterval(interval);
+    if (time) {
+      var properties = o.properties;
+      if (time.start && time.end) {
+        if (!moment(properties.timestamp).isBetween(time.start, time.end)) return false;
+      } else if (time.start) {
+        if (!moment(properties.timestamp).isAfter(time.start)) return false;
+      } else if (time.end) {
+        if (!moment(properties.timestamp).isBefore(time.start)) return false;
+      }
     }
 
-    return false;
+    return true;
+  }
+
+  function isUserInTeamFilter(userId) {
+    if (_.isEmpty(teamsById)) return true;
+
+    return _.some(teamsById, function(team) {
+      return _.contains(team.userIds, userId);
+    });
   }
 
   function formatInterval(interval) {

@@ -1,6 +1,6 @@
 {
   "name": "mage-server",
-  "version": "5.1.2",
+  "version": "5.1.3",
   "displayName": "MAGE Server",
   "description": "Geospatial situation awareness application.",
   "keywords": [

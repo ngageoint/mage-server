@@ -19,6 +19,18 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Fixed secondary icon uploading for in event/form admin
 * Show line breaks in disclaimer dialog.
 
+## [5.1.3](https://github.com/ngageoint/mage-server/releases/tag/5.1.3) (05-28-2018)
+
+##### Features
+
+##### Bug Fixes
+* Fixed secondary icon uploading for in event/form admin
+* Don't allow EVENT_MANAGER_ROLE to change user roles
+* Fix password strength meter on signup page
+* Fix bug where confirmation modal does not disappear after deleting user
+* Fix team filter on map page
+* Initial save for banner/disclaimer settings fixed
+
 ## [5.1.2](https://github.com/ngageoint/mage-server/releases/tag/5.1.2) (04-20-2018)
 
 ##### Features

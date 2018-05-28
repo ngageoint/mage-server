@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore')
+  , zxcvbn = require('zxcvbn');
 
 SignupController.$inject = ['$scope', '$location', 'UserService', 'Api'];
 

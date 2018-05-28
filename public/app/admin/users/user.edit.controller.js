@@ -1,4 +1,5 @@
-var angular = require('angular')
+var _ = require('underscore')
+  , angular = require('angular')
   , zxcvbn = require('zxcvbn');
 
 module.exports = AdminUserEditController;
@@ -8,6 +9,7 @@ AdminUserEditController.$inject = ['$scope', '$filter', '$routeParams', '$locati
 function AdminUserEditController($scope, $filter, $routeParams, $location, Api, LocalStorageService, UserService, UserIconService) {
   $scope.token = LocalStorageService.getToken();
   $scope.roles = [];
+  $scope.canEditRole = _.contains(UserService.myself.role.permissions, 'UPDATE_USER_ROLE');
 
   Api.get(function(api) {
     var authenticationStrategies = api.authenticationStrategies || {};

@@ -49,6 +49,7 @@ angular
             var deferred = $q.defer();
             httpBuffer.append(response.config, deferred);
             $rootScope.$broadcast('event:auth-loginRequired', response);
+            return deferred.promise;
           }
           // otherwise, default behaviour
           return $q.reject(response);
