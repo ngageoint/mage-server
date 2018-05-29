@@ -9,12 +9,12 @@ module.exports = function fileBrowser() {
   return directive;
 };
 
-FileBrowserController.$inject = ['$scope', '$element'];
+FileBrowserController.$inject = ['$scope', '$timeout', '$element'];
 
-function FileBrowserController($scope, $element) {
+function FileBrowserController($scope, $timeout, $element) {
   $element.find(':file').bind('change', function() {
     var file = this.files[0];
-    $scope.$apply(function() {
+    $timeout(function() {
       $scope.file = file;
       $scope.$emit('uploadFile', file);
     });

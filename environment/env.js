@@ -1,14 +1,13 @@
-
-const path = require('path');
-const cfenv = require('cfenv');
+const path = require('path')
+  , cfenv = require('cfenv');
 
 if (!(process.env.MAGE_PORT || process.env.PORT || process.env.CF_INSTANCE_PORT || process.env.VCAP_APP_PORT)) {
   // bit of whitebox to cfenv lib here, because it provides no
   // way to override the port value in options at construction,
   // and uses the ports (https://www.npmjs.com/package/ports) package
-  // to attempt to read or set a default port from a file based on 
+  // to attempt to read or set a default port from a file based on
   // the current app's name. this always ends up being 6001, and once
-  // ports assigns that, it writes the value out to ~/.ports.json, 
+  // ports assigns that, it writes the value out to ~/.ports.json,
   // which i think is undesirable behavior.
   process.env.MAGE_PORT = '4242';
 }
@@ -46,6 +45,7 @@ const environment = {
   userBaseDirectory: path.resolve(process.env.MAGE_USER_DIR || '/var/lib/mage/users'),
   iconBaseDirectory: path.resolve(process.env.MAGE_ICON_DIR || '/var/lib/mage/icons'),
   attachmentBaseDirectory: path.resolve(process.env.MAGE_ATTACHMENT_DIR || '/var/lib/mage/attachments'),
+  layerBaseDirectory: path.resolve(process.env.MAGE_LAYER_DIR || '/var/lib/mage/layers'),
   tokenExpiration: parseInt(process.env.MAGE_TOKEN_EXPIRATION) || 28800,
   mongo: {
     uri: mongoConfig.url,

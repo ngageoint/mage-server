@@ -6,10 +6,12 @@ export MAGE_ADDRESS=0.0.0.0
 export MAGE_PORT=4242
 # directory where mage stores user icons and avatars
 export MAGE_USER_DIR=/var/lib/mage/users
-# directory where mage stores map symbology icons 
+# directory where mage stores map symbology icons
 export MAGE_ICON_DIR=/var/lib/mage/icons
 # directory where mage stores observation attachments
 export MAGE_ATTACHEMENT_DIR=/var/lib/mage/attachments
+# directory where mage stores layers
+export MAGE_LAYER_DIR=/var/lib/mage/layers
 # number of seconds an authentication token is valid; default 28800 (8 hours)
 export MAGE_TOKEN_EXPIRATION=28800
 # the URL that specifies MAGE's connection to mongodb

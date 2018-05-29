@@ -9,7 +9,6 @@ module.exports = function(app, security) {
     , Team = require('../models/team')
     , Role = require('../models/role')
     , Device = require('../models/device')
-    , Layer = require('../models/layer')
     , Icon = require('../models/icon')
     , Setting = require('../models/setting');
 
@@ -119,14 +118,16 @@ module.exports = function(app, security) {
 
   // Grab the layer for any endpoint that uses layerId
   app.param('layerId', function(req, res, next, layerId) {
-    Layer.getById(layerId, function(layer) {
-      if (!layer) {
-        return res.status(404).send("Layer not found: ");
-      }
+    new api.Layer().getLayer(layerId)
+      .then(layer => {
+        if (!layer) {
+          return res.status(404).send("Layer not found");
+        }
 
-      req.layer = layer;
-      next();
-    });
+        req.layer = layer;
+        next();
+      })
+      .catch(err => next(err));
   });
 
   // Grab the feature for any endpoint that uses observationId

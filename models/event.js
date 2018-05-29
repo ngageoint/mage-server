@@ -553,9 +553,9 @@ exports.create = function(event, user, options, callback) {
 
   async.waterfall([
     function(done) {
-      Counter.getNext('event', function(id) {
-        done(null, id);
-      });
+      Counter.getNext('event')
+        .then(id => done(null, id))
+        .catch(err => done(err));
     },
     function(id, done) {
       event._id = id;

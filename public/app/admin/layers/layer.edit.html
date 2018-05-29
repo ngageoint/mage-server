@@ -31,14 +31,27 @@
           <div class="col-md-6" ng-show="layer">
 
             <form ng-submit="saveLayer()" class="form">
+              <div ng-show="layer.id == undefined" class="bottom-gap">
+                <div class="radio">
+                  <label>
+                    <input type="radio" name="layer-type" value="Imagery" ng-model="layer.type"> Imagery <span class="muted"> (WMS, XYZ or TMS Layers)</span>
+                  </label>
+                </div>
+                <div class="radio">
+                  <label>
+                    <input type="radio" name="layer-type" value="Feature" ng-model="layer.type"> Static <span class="muted"> (KML)</span>
+                  </label>
+                </div>
+                <div class="radio">
+                  <label>
+                    <input type="radio" name="layer-type" value="GeoPackage" ng-model="layer.type"> GeoPackage
+                  </label>
+                </div>
+              </div>
 
-              <div class="form-group top-gap-l" ng-show="layer.id == undefined">
-                <label class="radio-inline">
-                  <input type="radio" name="layer-type" value="Imagery" ng-model="layer.type"> Imagery
-                </label>
-                <label class="radio-inline">
-                  <input type="radio" name="layer-type" value="Feature" ng-model="layer.type"> Static
-                </label>
+              <div class="form-group" ng-if="layer.type === 'GeoPackage'">
+                <label class="control-label">Choose GeoPackage File</label>
+                <div enctype="multipart/form-data" file-browser></div>
               </div>
 
               <div class="form-group">
@@ -104,10 +117,16 @@
                 <select class="form-control" ng-model="layer.wms.version" ng-options="version for version in wmsVersions"></select>
               </div>
 
-              <span class="pull-right">
-                <a class="btn btn-default" ng-class="{'disabled': saving}" ng-click="cancel()">Cancel</a>
-                <a class="btn btn-success" ng-class="{'disabled': saving}" ng-click="saveLayer(layer)"><i class="fa fa-check"></i> Save</a>
-              </span>
+              <div class="clearfix">
+                <span class="pull-right">
+                  <a class="btn btn-default" ng-class="{'disabled': saving}" ng-click="cancel()">Cancel</a>
+                  <a class="btn btn-success" ng-class="{'disabled': saving}" ng-click="saveLayer(layer)"><i class="fa fa-check"></i> Save</a>
+                </span>
+              </div>
+
+              <div ng-if="saving && layer.type === 'GeoPackage' && layer.geopackage" class="top-gap">
+                <uib-progressbar max="total" value="progress"><span style="color:white; white-space:nowrap;">{{progress | filesize}} / {{total | filesize}}</span></uib-progressbar>
+              </div>
 
             </form>
           </div>

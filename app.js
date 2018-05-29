@@ -1,9 +1,8 @@
-const 
-mongoose = require('mongoose'),
-waitForMongooseConnection = require('./utilities/waitForMongooseConnection'),
-fs = require('fs-extra'),
-environment = require('./environment/env'),
-log = require('./logger');
+const mongoose = require('mongoose'),
+  waitForMongooseConnection = require('./utilities/waitForMongooseConnection'),
+  fs = require('fs-extra'),
+  environment = require('./environment/env'),
+  log = require('./logger');
 
 const mongooseLogger = log.loggers.get('mongoose');
 
@@ -36,10 +35,10 @@ fs.mkdirp(iconBase, function(err) {
 });
 
 require('./migrate').runDatabaseMigrations()
-  .then(function() {
+  .then(() => {
     log.info('database initialized; loading plugins ...');
     require('./plugins');
-    log.info('opening app for connections ...')
+    log.info('opening app for connections ...');
     app.emit('comingOfMage');
   })
   .catch(err => {

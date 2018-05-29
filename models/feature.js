@@ -42,18 +42,11 @@ function featureModel(layer) {
 
 exports.featureModel = featureModel;
 
-exports.getFeatures = function(layer, callback) {
-  featureModel(layer).find({}, function(err, features) {
-    callback(err, features);
-  });
+exports.getFeatures = function(layer) {
+  return featureModel(layer).find({}).exec();
 };
 
-exports.createFeatures = function(layer, features, callback) {
-  features.forEach(function(feature) {
-    feature.properties = feature.properties || {};
-  });
-
-  featureModel(layer).create(features, function(err) {
-    callback(err, features);
-  });
+exports.createFeatures = function(layer, features) {
+  features.forEach(feature => feature.properties = feature.properties || {});
+  return featureModel(layer).create(features);
 };
