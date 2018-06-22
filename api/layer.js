@@ -55,6 +55,7 @@ class Layer {
 
 function createFeatureLayer(id, layer) {
   log.info('Creating feature collection for id: ' + id);
+  layer.collectionName = `features${id}`;
   return LayerModel.createFeatureCollection('features' + id)
     .then(() => LayerModel.create(id, layer));
 }
@@ -75,7 +76,7 @@ function createGeoPackageLayer(id, layer) {
   };
 
   const targetPath = path.join(environment.layerBaseDirectory, layer.file.relativePath);
-  return fs.move(layer.geopackage.path, targetPath, {clobber: true})
+  return fs.copy(layer.geopackage.path, targetPath, {clobber: true})
     .then(() => LayerModel.create(id, layer));
 }
 

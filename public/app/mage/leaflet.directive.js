@@ -25,11 +25,12 @@ require('leaflet-editable');
 require('leaflet-groupedlayercontrol');
 require('leaflet.markercluster');
 
-LeafletController.$inject = ['$rootScope', '$scope', '$interval', '$timeout', 'MapService', 'LocalStorageService', 'GeometryService'];
+LeafletController.$inject = ['$rootScope', '$scope', '$interval', '$timeout', 'MapService', 'LocalStorageService', 'GeometryService', 'Layer'];
 
-function LeafletController($rootScope, $scope, $interval, $timeout, MapService, LocalStorageService, GeometryService) {
+function LeafletController($rootScope, $scope, $interval, $timeout, MapService, LocalStorageService, GeometryService, Layer) {
 
   var layers = {};
+  var geopackageLayers = {};
   var temporalLayers = [];
   var spiderfyState = null;
   var currentLocation = null;
@@ -53,14 +54,93 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   map.createPane(BASE_LAYER_PANE);
   map.getPane(BASE_LAYER_PANE).style.zIndex = 100;
 
+  var TILE_LAYER_PANE = 'tileLayerPane';
+  map.createPane(TILE_LAYER_PANE);
+  map.getPane(TILE_LAYER_PANE).style.zIndex = 200;
+
+  var FEATURE_LAYER_PANE = 'featureLayerPane';
+  map.createPane(FEATURE_LAYER_PANE);
+  map.getPane(FEATURE_LAYER_PANE).style.zIndex = 300;
+
   L.Icon.Default.imagePath = 'images/';
 
   map.on('moveend', saveMapPosition);
+  map.on('singleclick', onMapClick);
 
   function saveMapPosition() {
     LocalStorageService.setMapPosition({
       center: map.getCenter(),
       zoom: map.getZoom()
+    });
+  }
+
+  function onMapClick(e) {
+    queryTileForClick(e);
+  }
+
+  function queryTileForClick(e) {
+    var eventId;
+    var visibleLayers = _.reduce(geopackageLayers, function(layers, layer) {
+      var tables = _.chain(layer.tables)
+        .filter(function(table) {
+          return table.type === 'feature' && map.hasLayer(table.layer);
+        })
+        .map(function(table) {
+          return table.name;
+        })
+        .value();
+
+      if (tables.length) {
+        eventId = layer.eventId;
+        layers[layer.id] = {
+          tables: tables
+        };
+      }
+
+      return layers;
+    }, {});
+
+    if (!eventId) {
+      return;
+    }
+
+    var bounds = L.latLngBounds(
+      map.layerPointToLatLng(L.point(e.layerPoint.x - 5, e.layerPoint.y - 5)),
+      map.layerPointToLatLng(L.point(e.layerPoint.x + 5, e.layerPoint.y + 5)));
+
+    var body = {
+      layers: visibleLayers,
+      bbox: bounds.toBBoxString()
+    };
+
+    Layer.features({eventId: eventId}, body).$promise.then(function(features) {
+      if (features.length < 1) return;
+      var feature = features[0];
+
+      var layer = L.geoJSON(feature.geometry, {
+        style: function() {
+          return { color: '#00FF00' };
+        }
+      });
+      layer.addTo(map);
+
+      var content = '<b>' + feature.table + '</b><br><br>';
+      var pairs = _.pairs(feature.properties);
+      if (pairs.length) {
+        content += '<table class="table table-striped">';
+        _.each(pairs, function(pair) {
+          content += '<tr>' + '<td>' + pair[0] + '</td>' +'<td>' + pair[1] + '</td>' + '</tr>';
+        });
+        content += '</table>';
+      }
+
+      L.popup()
+        .setLatLng(e.latlng)
+        .setContent(content)
+        .openOn(map)
+        .on('remove', function() {
+          map.removeLayer(layer);
+        });
     });
   }
 
@@ -199,6 +279,21 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     if (marker.geometry && marker.geometry.type === 'Point') {
       layer.layer.setLatLng([marker.geometry.coordinates[1], marker.geometry.coordinates[0]]);
     }
+  }
+
+  function createGeoPackageLayer(layerInfo) {
+    _.each(layerInfo.tables, function(table) {
+      var tileUrl = 'api/events/' + $scope.filteredEvent.id + '/layers/' + layerInfo.id + '/' + table.name +'/{z}/{x}/{y}.png?access_token=' + LocalStorageService.getToken();
+      table.layer = new L.TileLayer(tileUrl, {
+        minZoom: table.minZoom,
+        maxZoom: table.maxZoom,
+        pane: table.type === 'tile' ? TILE_LAYER_PANE : FEATURE_LAYER_PANE
+      });
+
+      layers[table.name] = layerInfo;
+      geopackageLayers[table.name] = layerInfo;
+      layerControl.addOverlay(table.layer, table.name, layerInfo.name);
+    });
   }
 
   // TODO move into leaflet service, this and map clip both use it
@@ -630,6 +725,9 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   function onLayersChanged(changed) {
     _.each(changed.added, function(added) {
       switch(added.type) {
+      case 'GeoPackage':
+        createGeoPackageLayer(added);
+        break;
       case 'Feature':
         createMarker(added);
         break;

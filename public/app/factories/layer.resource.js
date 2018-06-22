@@ -34,6 +34,14 @@ function Layer($resource) {
       headers: {
         'Content-Type': 'application/json'
       }
+    },
+    features: {
+      method: 'POST',
+      url: '/api/events/:eventId/features',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      isArray: true
     }
   });
 

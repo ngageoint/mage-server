@@ -24,7 +24,7 @@ function AdminLayerEditController($scope, $location, $routeParams, LocalStorageS
   });
 
   $scope.saveLayer = function (layer) {
-    if (layer.type === 'GeoPackage') {
+    if (layer.type === 'GeoPackage' && !layer.id) {
       var geopackage = {
         geopackage: layer.geopackage,
         type: layer.type,

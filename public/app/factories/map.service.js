@@ -23,8 +23,6 @@ function MapService() {
     updateShapeType: updateShapeType,
     edit: edit,
     create: create,
-    // startedMarkerEdit: startedMarkerEdit,
-    // stopEditing: stopEditing,
     updateIcon: updateIcon,
     addFeaturesToLayer: addFeaturesToLayer,
     updateFeatureForLayer: updateFeatureForLayer,

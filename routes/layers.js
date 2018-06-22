@@ -1,18 +1,18 @@
 module.exports = function(app, security) {
-  var fs = require('fs-extra')
+  const fs = require('fs-extra')
     , path = require('path')
     , Event = require('../models/event')
     , access = require('../access')
     , api = require('../api')
     , environment = require('../environment/env')
     , layerXform = require('../transformers/layer')
-    , geopackage = require('@ngageoint/geopackage');
+    , geopackage = require('../utilities/geopackage');
 
-  var passport = security.authentication.passport;
+  const passport = security.authentication.passport;
   app.all('/api/layers*', passport.authenticate('bearer'));
 
   function validateLayerParams(req, res, next) {
-    var layer = req.body;
+    const layer = req.body;
 
     if (!layer.type) {
       return res.status(400).send('cannot create layer "type" param not specified');
@@ -37,11 +37,12 @@ module.exports = function(app, security) {
       return res.send(400, 'cannot create layer "geopackage" file not specified');
     }
 
-    geopackage.openGeoPackage(req.files.geopackage.path, err => {
-      if (err) return res.send(400, 'cannot create layer, geopackage is not valid');
+    geopackage.open(req.files.geopackage, (err, result) => {
+      if (err) return res.status(400).send('cannot create layer, geopackage is not valid');
 
       req.newLayer.geopackage = req.files.geopackage;
-      next();
+      req.newLayer.tables = result.metadata.tables;
+      next(err);
     });
   }
 
@@ -63,10 +64,9 @@ module.exports = function(app, security) {
   }
 
   function parseQueryParams(req, res, next) {
-    var parameters = {};
-    parameters.type = req.param('type');
-
-    req.parameters = parameters;
+    req.parameters = {
+      type: req.param('type')
+    };
 
     next();
   }
@@ -116,7 +116,6 @@ module.exports = function(app, security) {
     }
   );
 
-
   app.get(
     '/api/events/:eventId/layers',
     passport.authenticate('bearer'),
@@ -138,7 +137,7 @@ module.exports = function(app, security) {
     access.authorize('READ_LAYER_ALL'),
     function (req, res) {
       if (req.accepts('application/json')) {
-        var response = layerXform.transform(req.layer, {path: req.getPath()});
+        const response = layerXform.transform(req.layer, {path: req.getPath()});
         res.json(response);
       } else if (req.accepts('application/octet-stream') && req.layer.file) {
         var stream = fs.createReadStream(path.join(environment.layerBaseDirectory, req.layer.file.relativePath));
@@ -158,7 +157,7 @@ module.exports = function(app, security) {
     validateEventAccess,
     function (req, res) {
       if (req.accepts('application/json')) {
-        var response = layerXform.transform(req.layer, {path: req.getPath()});
+        const response = layerXform.transform(req.layer, {path: req.getPath()});
         res.json(response);
       } else if (req.accepts('application/octet-stream') && req.layer.file) {
         var stream = fs.createReadStream(path.join(environment.layerBaseDirectory, req.layer.file.relativePath));
@@ -168,6 +167,38 @@ module.exports = function(app, security) {
           stream.pipe(res);
         });
       }
+    }
+  );
+
+  app.get(
+    '/api/events/:eventId/layers/:layerId/:tableName/:z/:x/:y.:format',
+    passport.authenticate('bearer'),
+    function(req, res, next) {
+      geopackage.tile(req.layer, req.params.tableName, req.params, function(err, tile) {
+        if (err) return next(err);
+        if (!tile) return res.status(404);
+        res.end(tile, 'binary');
+      });
+    }
+  );
+
+  app.post(
+    '/api/events/:eventId/features',
+    passport.authenticate('bearer'),
+    validateEventAccess,
+    function(req, res, next) {
+      const layerParams = req.body.layers;
+      const bbox = req.body.bbox.split(',').map(point => Number(point));
+
+      new api.Layer().getLayers({layerIds: Object.keys(layerParams)})
+        .then(layers => {
+          geopackage.closestFeature(bbox, layers, layerParams, function(err, feature) {
+            if (err) return next(err);
+            res.json(feature ? [feature] : []);
+          });
+        })
+        .catch(err => next(err));
+
     }
   );
 

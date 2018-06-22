@@ -49,7 +49,7 @@
                 </div>
               </div>
 
-              <div class="form-group" ng-if="layer.type === 'GeoPackage'">
+              <div class="form-group" ng-if="layer.type === 'GeoPackage' && !layer.id">
                 <label class="control-label">Choose GeoPackage File</label>
                 <div enctype="multipart/form-data" file-browser></div>
               </div>

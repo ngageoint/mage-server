@@ -8,19 +8,16 @@ let Schema = mongoose.Schema;
 // Creates the Schema for the Attachments object
 let LayerSchema = new Schema({
   _id: { type: Number, required: true, unique: true },
-  type: { type: String, required: true },
-  base: { type: Boolean, required: false },
   name: { type: String, required: true, unique: true },
-  format: { type: String, required: false },
-  file: {
-    name: {type: String, required: false },
-    contentType: {type: String, required: false },
-    size: {type: String, required: false },
-    relativePath: {type: String, required: false }
-  },
+  description: { type: String, required: false }
+},{
+  discriminatorKey: 'type'
+});
+
+let ImagerySchema = new Schema({
   url: { type: String, required: false },
-  description: { type: String, required: false },
-  formId: {type: Schema.Types.ObjectId, required: false },
+  base: { type: Boolean, required: false },
+  format: { type: String, required: false },
   wms: {
     layers: { type: String },
     styles: { type: String },
@@ -28,9 +25,26 @@ let LayerSchema = new Schema({
     transparent: { type: Boolean },
     version: { type: String }
   },
+});
+
+let FeatureSchema = new Schema({
   collectionName: { type: String, required: false }
-},{
-  versionKey: false
+});
+
+let GeoPackageSchema = new Schema({
+  file: {
+    name: {type: String, required: false },
+    contentType: {type: String, required: false },
+    size: {type: String, required: false },
+    relativePath: {type: String, required: false }
+  },
+  tables: [{
+    _id: false,
+    name: {type: String},
+    type: {type: String, enum : ['tile', 'feature']},
+    minZoom: {type: Number},
+    maxZoom: {type: Number}
+  }]
 });
 
 function transform(layer, ret, options) {
@@ -63,8 +77,12 @@ LayerSchema.pre('remove', function(next) {
 });
 
 // Creates the Model for the Layer Schema
-var Layer = mongoose.model('Layer', LayerSchema);
+let Layer = mongoose.model('Layer', LayerSchema);
 exports.Model = Layer;
+
+Layer.discriminator('Imagery', ImagerySchema);
+Layer.discriminator('Feature', FeatureSchema);
+Layer.discriminator('GeoPackage', GeoPackageSchema);
 
 exports.getLayers = function(filter) {
   let conditions = {};

@@ -248,6 +248,9 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
             }
           });
         });
+      } else if (layer.type === 'GeoPackage') {
+        layer.eventId = $scope.filteredEvent.id;
+        MapService.createRasterLayer(layer);
       }
     });
 
