@@ -134,13 +134,19 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
         content += '</table>';
       }
 
-      L.popup()
+      var popup = L.popup()
         .setLatLng(e.latlng)
         .setContent(content)
-        .openOn(map)
         .on('remove', function() {
           map.removeLayer(layer);
         });
+
+      if (feature.geometry.type === 'Point') {
+        layer.bindPopup(popup).openPopup();
+      } else {
+        popup.openOn(map);
+      }
+
     });
   }
 
@@ -290,8 +296,9 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
         pane: table.type === 'tile' ? TILE_LAYER_PANE : FEATURE_LAYER_PANE
       });
 
-      layers[table.name] = layerInfo;
-      geopackageLayers[table.name] = layerInfo;
+      var name = layerInfo.name + table.name;
+      layers[name] = layerInfo;
+      geopackageLayers[name] = layerInfo;
       layerControl.addOverlay(table.layer, table.name, layerInfo.name);
     });
   }

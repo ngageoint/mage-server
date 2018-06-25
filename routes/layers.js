@@ -174,7 +174,8 @@ module.exports = function(app, security) {
     '/api/events/:eventId/layers/:layerId/:tableName/:z/:x/:y.:format',
     passport.authenticate('bearer'),
     function(req, res, next) {
-      geopackage.tile(req.layer, req.params.tableName, req.params, function(err, tile) {
+      const {x, y, z} = req.params;
+      geopackage.tile(req.layer, req.params.tableName, {x, y, z}, function(err, tile) {
         if (err) return next(err);
         if (!tile) return res.status(404);
         res.end(tile, 'binary');
