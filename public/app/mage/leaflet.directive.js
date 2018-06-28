@@ -21,6 +21,7 @@ require('leaflet/dist/images/marker-icon.png');
 require('leaflet/dist/images/marker-icon-2x.png');
 require('leaflet/dist/images/marker-shadow.png');
 
+require('leaflet.vectorgrid');
 require('leaflet-editable');
 require('leaflet-groupedlayercontrol');
 require('leaflet.markercluster');
@@ -65,88 +66,12 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   L.Icon.Default.imagePath = 'images/';
 
   map.on('moveend', saveMapPosition);
-  map.on('singleclick', onMapClick);
+  // map.on('singleclick', onMapClick);
 
   function saveMapPosition() {
     LocalStorageService.setMapPosition({
       center: map.getCenter(),
       zoom: map.getZoom()
-    });
-  }
-
-  function onMapClick(e) {
-    queryTileForClick(e);
-  }
-
-  function queryTileForClick(e) {
-    var eventId;
-    var visibleLayers = _.reduce(geopackageLayers, function(layers, layer) {
-      var tables = _.chain(layer.tables)
-        .filter(function(table) {
-          return table.type === 'feature' && map.hasLayer(table.layer);
-        })
-        .map(function(table) {
-          return table.name;
-        })
-        .value();
-
-      if (tables.length) {
-        eventId = layer.eventId;
-        layers[layer.id] = {
-          tables: tables
-        };
-      }
-
-      return layers;
-    }, {});
-
-    if (!eventId) {
-      return;
-    }
-
-    var bounds = L.latLngBounds(
-      map.layerPointToLatLng(L.point(e.layerPoint.x - 5, e.layerPoint.y - 5)),
-      map.layerPointToLatLng(L.point(e.layerPoint.x + 5, e.layerPoint.y + 5)));
-
-    var body = {
-      layers: visibleLayers,
-      bbox: bounds.toBBoxString()
-    };
-
-    Layer.features({eventId: eventId}, body).$promise.then(function(features) {
-      if (features.length < 1) return;
-      var feature = features[0];
-
-      var layer = L.geoJSON(feature.geometry, {
-        style: function() {
-          return { color: '#00FF00' };
-        }
-      });
-      layer.addTo(map);
-
-      var content = '<b>' + feature.table + '</b><br><br>';
-      var pairs = _.pairs(feature.properties);
-      if (pairs.length) {
-        content += '<table class="table table-striped">';
-        _.each(pairs, function(pair) {
-          content += '<tr>' + '<td>' + pair[0] + '</td>' +'<td>' + pair[1] + '</td>' + '</tr>';
-        });
-        content += '</table>';
-      }
-
-      var popup = L.popup()
-        .setLatLng(e.latlng)
-        .setContent(content)
-        .on('remove', function() {
-          map.removeLayer(layer);
-        });
-
-      if (feature.geometry.type === 'Point') {
-        layer.bindPopup(popup).openPopup();
-      } else {
-        popup.openOn(map);
-      }
-
     });
   }
 
@@ -289,12 +214,58 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
   function createGeoPackageLayer(layerInfo) {
     _.each(layerInfo.tables, function(table) {
-      var tileUrl = 'api/events/' + $scope.filteredEvent.id + '/layers/' + layerInfo.id + '/' + table.name +'/{z}/{x}/{y}.png?access_token=' + LocalStorageService.getToken();
-      table.layer = new L.TileLayer(tileUrl, {
-        minZoom: table.minZoom,
-        maxZoom: table.maxZoom,
-        pane: table.type === 'tile' ? TILE_LAYER_PANE : FEATURE_LAYER_PANE
-      });
+      if (table.type === 'feature') {
+        var styles = {};
+        styles[table.name] = {
+          weight: 2,
+          radius: 3
+        };
+
+        table.layer = L.vectorGrid.protobuf('api/events/' + $scope.filteredEvent.id + '/layers/' + layerInfo.id + '/' + table.name +'/{z}/{x}/{y}.pbf?access_token={token}', {
+          token: LocalStorageService.getToken(),
+          maxNativeZoom: 18,
+          pane: FEATURE_LAYER_PANE,
+          vectorTileLayerStyles: styles,
+          interactive: true,
+          getFeatureId: function(feature) {
+            feature.properties.id = layerInfo.id + table.name + feature.id;
+            return feature.properties.id;
+          }
+        });
+
+        table.layer.on('click', function(e) {
+          var layer = e.layer;
+          table.layer.setFeatureStyle(layer.properties.id, {
+            color: '#00FF00'
+          });
+
+          var content = '<b>' + table.name + '</b><br><br>';
+          var pairs = _.chain(layer.properties).omit('id').pairs().value();
+          if (pairs.length) {
+            content += '<table class="table table-striped">';
+            _.each(pairs, function(pair) {
+              content += '<tr>' + '<td>' + pair[0] + '</td>' +'<td>' + pair[1] + '</td>' + '</tr>';
+            });
+            content += '</table>';
+          }
+
+          var popup = L.popup()
+            .setLatLng(e.latlng)
+            .setContent(content)
+            .on('remove', function() {
+              table.layer.resetFeatureStyle(layer.properties.id);
+            });
+
+          popup.openOn(map);
+        });
+      } else {
+        table.layer = L.tileLayer('api/events/' + $scope.filteredEvent.id + '/layers/' + layerInfo.id + '/' + table.name +'/{z}/{x}/{y}.png?access_token={token}', {
+          token: LocalStorageService.getToken(),
+          minZoom: table.minZoom,
+          maxZoom: table.maxZoom,
+          pane: TILE_LAYER_PANE
+        });
+      }
 
       var name = layerInfo.name + table.name;
       layers[name] = layerInfo;

@@ -1,6 +1,8 @@
 module.exports = function(app, security) {
   const fs = require('fs-extra')
     , path = require('path')
+    , geojsonvt = require('geojson-vt')
+    , vtpbf = require('vt-pbf')
     , Event = require('../models/event')
     , access = require('../access')
     , api = require('../api')
@@ -39,6 +41,7 @@ module.exports = function(app, security) {
 
     geopackage.open(req.files.geopackage, (err, result) => {
       if (err) return res.status(400).send('cannot create layer, geopackage is not valid');
+      result.geopackage.close();
 
       req.newLayer.geopackage = req.files.geopackage;
       req.newLayer.tables = result.metadata.tables;
@@ -171,35 +174,47 @@ module.exports = function(app, security) {
   );
 
   app.get(
-    '/api/events/:eventId/layers/:layerId/:tableName/:z/:x/:y.:format',
+    '/api/events/:eventId/layers/:layerId/:tableName/:z(\\d+)/:x(\\d+)/:y(\\d+).:format',
     passport.authenticate('bearer'),
     function(req, res, next) {
-      const {x, y, z} = req.params;
-      geopackage.tile(req.layer, req.params.tableName, {x, y, z}, function(err, tile) {
-        if (err) return next(err);
-        if (!tile) return res.status(404);
-        res.end(tile, 'binary');
-      });
-    }
-  );
+      const tileBuffer = 8;
+      const tileParams = {
+        x: Number(req.params.x),
+        y: Number(req.params.y),
+        z: Number(req.params.z)
+      };
 
-  app.post(
-    '/api/events/:eventId/features',
-    passport.authenticate('bearer'),
-    validateEventAccess,
-    function(req, res, next) {
-      const layerParams = req.body.layers;
-      const bbox = req.body.bbox.split(',').map(point => Number(point));
+      const table = req.layer.tables.find(table => table.name === req.params.tableName);
+      if (!table) {
+        return res.status(404).send('Table does not exist in layer.');
+      }
 
-      new api.Layer().getLayers({layerIds: Object.keys(layerParams)})
-        .then(layers => {
-          geopackage.closestFeature(bbox, layers, layerParams, function(err, feature) {
-            if (err) return next(err);
-            res.json(feature ? [feature] : []);
-          });
-        })
-        .catch(err => next(err));
+      if (req.params.format === 'pbf') {
+        if (table.type !== 'feature') {
+          return res.status(400).send('Cannot request vector tile from a tile layer');
+        }
 
+        geopackage.features(req.layer, req.params.tableName, tileParams, tileBuffer, function(err, featureCollection) {
+          if (err) return next(err);
+          let tile = {features: []};
+
+          if (featureCollection.features.length) {
+            const tileIndex = geojsonvt(featureCollection, {buffer: tileBuffer * 8});
+            tile = tileIndex.getTile(tileParams.z, tileParams.x, tileParams.y);
+          }
+
+          const vectorTile = vtpbf.fromGeojsonVt({ [table.name]: tile });
+          res.contentType('application/x-protobuf');
+          res.send(Buffer.from(vectorTile));
+        });
+      } else {
+        geopackage.tile(req.layer, req.params.tableName, tileParams, function(err, tile) {
+          if (err) return next(err);
+          if (!tile) return res.status(404);
+          res.contentType('image/jpeg');
+          res.send(tile);
+        });
+      }
     }
   );
 
