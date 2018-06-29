@@ -23,7 +23,7 @@ require('leaflet/dist/images/marker-shadow.png');
 
 require('leaflet.vectorgrid/dist/Leaflet.VectorGrid.js');
 require('leaflet-editable');
-// require('leaflet-groupedlayercontrol');
+require('leaflet-groupedlayercontrol/src/leaflet.groupedlayercontrol.js');
 require('leaflet.markercluster');
 
 LeafletController.$inject = ['$rootScope', '$scope', '$interval', '$timeout', 'MapService', 'LocalStorageService', 'GeometryService'];
@@ -103,8 +103,9 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   });
   map.addControl(feedControl);
 
-  var layerControl = L.control.layers([], [], {
-    autoZIndex: false
+  var layerControl = L.control.groupedLayers([], [], {
+    autoZIndex: false,
+    collapsed: false
   });
   layerControl.addTo(map);
   map.on('baselayerchange', function(baseLayer) {
