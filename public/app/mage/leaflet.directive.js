@@ -21,14 +21,14 @@ require('leaflet/dist/images/marker-icon.png');
 require('leaflet/dist/images/marker-icon-2x.png');
 require('leaflet/dist/images/marker-shadow.png');
 
-require('leaflet.vectorgrid');
+require('leaflet.vectorgrid/dist/Leaflet.VectorGrid.js');
 require('leaflet-editable');
-require('leaflet-groupedlayercontrol');
+// require('leaflet-groupedlayercontrol');
 require('leaflet.markercluster');
 
-LeafletController.$inject = ['$rootScope', '$scope', '$interval', '$timeout', 'MapService', 'LocalStorageService', 'GeometryService', 'Layer'];
+LeafletController.$inject = ['$rootScope', '$scope', '$interval', '$timeout', 'MapService', 'LocalStorageService', 'GeometryService'];
 
-function LeafletController($rootScope, $scope, $interval, $timeout, MapService, LocalStorageService, GeometryService, Layer) {
+function LeafletController($rootScope, $scope, $interval, $timeout, MapService, LocalStorageService, GeometryService) {
 
   var layers = {};
   var geopackageLayers = {};
@@ -66,7 +66,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   L.Icon.Default.imagePath = 'images/';
 
   map.on('moveend', saveMapPosition);
-  // map.on('singleclick', onMapClick);
 
   function saveMapPosition() {
     LocalStorageService.setMapPosition({
@@ -104,7 +103,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   });
   map.addControl(feedControl);
 
-  var layerControl = L.control.groupedLayers([], [], {
+  var layerControl = L.control.layers([], [], {
     autoZIndex: false
   });
   layerControl.addTo(map);
@@ -227,6 +226,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
           pane: FEATURE_LAYER_PANE,
           vectorTileLayerStyles: styles,
           interactive: true,
+          rendererFactory: L.canvas.tile,
           getFeatureId: function(feature) {
             feature.properties.id = layerInfo.id + table.name + feature.id;
             return feature.properties.id;

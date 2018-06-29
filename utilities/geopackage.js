@@ -22,20 +22,20 @@ function open(file, done) {
 
       async.parallel([
         function(done) {
-          async.each(tileTables, (tileTable, done) => {
+          async.eachSeries(tileTables, (tileTable, done) => {
             geopackage.getTileDaoWithTableName(tileTable.name, (err, tileDao) => {
               tileTable.minZoom = tileDao.minWebMapZoom;
               tileTable.maxZoom = tileDao.maxWebMapZoom;
               done();
             });
-          }, err => done(err));
+          }, done);
         },
         function(done) {
-          async.each(featureTables, (featureTable, done) => {
+          async.eachSeries(featureTables, (featureTable, done) => {
             geopackage.getFeatureDaoWithTableName(featureTable.name, (err, featureDao) => {
-              featureDao.featureTableIndex.indexWithForce(true, () => {}, done);
+              featureDao.featureTableIndex.indexWithForce(false, () => {}, done);
             });
-          }, err => done(err));
+          }, done);
         }
       ], err => {
         if (err) return done(err);

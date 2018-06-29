@@ -196,14 +196,10 @@ module.exports = function(app, security) {
 
         geopackage.features(req.layer, req.params.tableName, tileParams, tileBuffer, function(err, featureCollection) {
           if (err) return next(err);
-          let tile = {features: []};
 
-          if (featureCollection.features.length) {
-            const tileIndex = geojsonvt(featureCollection, {buffer: tileBuffer * 8});
-            tile = tileIndex.getTile(tileParams.z, tileParams.x, tileParams.y);
-          }
-
-          const vectorTile = vtpbf.fromGeojsonVt({ [table.name]: tile });
+          const tileIndex = geojsonvt(featureCollection, {buffer: tileBuffer * 8, maxZoom: tileParams.z});
+          const tile = tileIndex.getTile(tileParams.z, tileParams.x, tileParams.y);
+          const vectorTile = vtpbf.fromGeojsonVt({ [table.name]: tile || { features: [] } });
           res.contentType('application/x-protobuf');
           res.send(Buffer.from(vectorTile));
         });
