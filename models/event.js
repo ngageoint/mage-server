@@ -629,23 +629,25 @@ exports.update = function(id, event, options, callback) {
 };
 
 exports.addForm = function(eventId, form, callback) {
-  Counter.getNext('form', function(id) {
-    form._id = id;
+  Counter.getNext('form')
+    .then(id => {
+      form._id = id;
 
-    var update = {
-      $push: {forms: form}
-    };
+      var update = {
+        $push: {forms: form}
+      };
 
-    Event.findByIdAndUpdate(eventId, update, {new: true, runValidators: true}, function(err, event) {
-      if (err) return callback(err);
+      Event.findByIdAndUpdate(eventId, update, {new: true, runValidators: true}, function(err, event) {
+        if (err) return callback(err);
 
-      var forms = event.forms.filter(function(f) {
-        return f._id === form._id;
+        var forms = event.forms.filter(function(f) {
+          return f._id === form._id;
+        });
+
+        callback(err, forms.length ? forms[0] : null);
       });
-
-      callback(err, forms.length ? forms[0] : null);
-    });
-  });
+    })
+    .catch(err => callback(err));
 };
 
 exports.updateForm = function(event, form, callback) {
