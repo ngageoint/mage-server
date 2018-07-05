@@ -104,8 +104,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   map.addControl(feedControl);
 
   var layerControl = L.control.groupedLayers([], [], {
-    autoZIndex: false,
-    collapsed: false
+    autoZIndex: false
   });
   layerControl.addTo(map);
   map.on('baselayerchange', function(baseLayer) {
