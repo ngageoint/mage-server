@@ -250,7 +250,9 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
             content += '</table>';
           }
 
-          var popup = L.popup()
+          var popup = L.popup({
+            maxHeight: 250
+          })
             .setLatLng(e.latlng)
             .setContent(content)
             .on('remove', function() {
