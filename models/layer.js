@@ -80,9 +80,9 @@ LayerSchema.pre('remove', function(next) {
 let Layer = mongoose.model('Layer', LayerSchema);
 exports.Model = Layer;
 
-Layer.discriminator('Imagery', ImagerySchema);
-Layer.discriminator('Feature', FeatureSchema);
-Layer.discriminator('GeoPackage', GeoPackageSchema);
+const ImageryLayer = Layer.discriminator('Imagery', ImagerySchema);
+const FeatureLayer = Layer.discriminator('Feature', FeatureSchema);
+const GeoPackageLayer = Layer.discriminator('GeoPackage', GeoPackageSchema);
 
 exports.getLayers = function(filter) {
   let conditions = {};
@@ -118,7 +118,20 @@ exports.create = function(id, layer) {
 };
 
 exports.update = function(id, layer) {
-  return Layer.findByIdAndUpdate(id, layer, {new: true}).exec();
+  let model;
+  switch (layer.type) {
+  case 'Imagery':
+    model = ImageryLayer;
+    break;
+  case 'Feature':
+    model = FeatureLayer;
+    break;
+  case 'GeoPackage':
+    model = GeoPackageLayer;
+    break;
+  }
+
+  return model.findByIdAndUpdate(id, layer, {new: true}).exec();
 };
 
 exports.remove = function(layer) {
