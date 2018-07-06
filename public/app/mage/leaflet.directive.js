@@ -841,12 +841,33 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   }
 
   function onLayerRemoved(layer) {
+    switch (layer.type) {
+    case 'GeoPackage':
+      removeGeoPackageLayer(layer);
+      break;
+    default:
+      removeLayer(layer);
+    }
+  }
+
+  function removeLayer(layer) {
     var layerInfo = layers[layer.name];
+
     if (layerInfo) {
       map.removeLayer(layerInfo.layer);
       layerControl.removeLayer(layerInfo.layer);
       delete layers[layer.name];
     }
+  }
+
+  function removeGeoPackageLayer(layer) {
+    _.each(layer.tables, function(table) {
+      var name = layer.name + table.name;
+      map.removeLayer(table.layer);
+      layerControl.removeLayer(table.layer);
+      delete layers[name];
+      delete geopackageLayers[name];
+    });
   }
 
   function onHideFeed(hide) {
