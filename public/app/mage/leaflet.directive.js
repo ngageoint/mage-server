@@ -23,7 +23,7 @@ require('leaflet/dist/images/marker-shadow.png');
 
 require('leaflet.vectorgrid/dist/Leaflet.VectorGrid.js');
 require('leaflet-editable');
-require('leaflet-groupedlayercontrol/src/leaflet.groupedlayercontrol.js');
+require('leaflet-groupedlayercontrol');
 require('leaflet.markercluster');
 
 LeafletController.$inject = ['$rootScope', '$scope', '$interval', '$timeout', 'MapService', 'LocalStorageService', 'GeometryService'];
