@@ -134,7 +134,7 @@
                     <nav class="navbar navbar-default admin-dashboard-navbar">
                       <div class="container-fluid">
                         <div class="navbar-header">
-                          <a class="navbar-brand">Add user to a team</a>
+                          <a class="navbar-brand">Add User to a <i class="fa fa-users fa-small"></i> Team or <i class="fa fa-calendar fa-small"></i> Event</a>
                         </div>
                       </div>
                     </nav>
@@ -148,7 +148,7 @@
                         <ui-select ng-model="team.selected" theme="bootstrap">
                           <ui-select-match placeholder="Select a team">{{$select.selected.name}}</ui-select-match>
                           <ui-select-choices repeat="team in nonTeams | orderBy: 'name' | filter: $select.search">
-                            <div ng-bind-html="team.name | highlight: $select.search"></div>
+                            <span><i class="fa" ng-class="{'fa-users': !team.teamEventId, 'fa-calendar': team.teamEventId}"></i> </span><span ng-bind-html="team.name | highlight: $select.search"></span>
                           </ui-select-choices>
                         </ui-select>
                       </div>
