@@ -31,19 +31,19 @@ module.exports = function(app, security) {
     readImportFile,
     function(req, res, next) {
       var features = toGeoJson.kml(req.importData);
-      new api.Feature(req.layer).createFeatures(features, function(err, newFeatures) {
-        if (err) return next(err);
+      new api.Feature(req.layer).createFeatures(features)
+        .then(newFeatures => {
+          var response = {
+            files: [{
+              name: req.files.file.originalname,
+              size: req.files.file.size,
+              features: newFeatures.length
+            }]
+          };
 
-        var response = {
-          files: [{
-            name: req.files.file.originalname,
-            size: req.files.file.size,
-            features: newFeatures.length
-          }]
-        };
-
-        res.json(response);
-      });
+          res.json(response);
+        })
+        .catch(err => next(err));
     }
   );
 };
