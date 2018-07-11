@@ -6,7 +6,7 @@
         </h4>
 
         <date-edit field="form.timestampField"></date-edit>
-        <geometry-edit field="form.geometryField"></geometry-edit>
+        <geometry-edit form="observationForm" field="form.geometryField"></geometry-edit>
 
         <div ng-repeat="observationForm in form.forms" class="bottom-gap-l">
           <observation-form-edit form="observationForm"></observation-form-edit>

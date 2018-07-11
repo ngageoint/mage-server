@@ -3,6 +3,7 @@ var angular = require('angular');
 module.exports = {
   template: require('./geometry.edit.html'),
   bindings: {
+    form: '<',
     field: '<',
     onFieldChanged: '&',
     onShapeChanged: '&'

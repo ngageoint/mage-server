@@ -13,11 +13,19 @@
   </div>
 
   <div class="row top-gap" ng-if="$ctrl.field.value.type === 'Point'">
-    <div class="col-md-5">
-      <input class="form-control" type="number" ng-model="$ctrl.field.value.coordinates[0]" ng-required="$ctrl.field.required">
+    <div class="col-md-5" ng-class="{'has-error': $ctrl.form[$ctrl.field.name + '-longitude'].$invalid}">
+      <input class="form-control" type="number" min="-180" max="180" name="{{$ctrl.field.name}}-longitude" ng-model="$ctrl.field.value.coordinates[0]" ng-required="$ctrl.field.required">
+      <div class="help-block" ng-messages="$ctrl.form[$ctrl.field.name + '-longitude'].$error">
+        <div ng-message="min" uib-tooltip="Longitude cannot be less than -180" tooltip-placement="bottom">Invalid Longitude</div>
+        <div ng-message="max" uib-tooltip="Longitude cannot be greater than 180" tooltip-placement="bottom">Invalid Longitude</div>
+      </div>
     </div>
-    <div class="col-md-5">
-      <input class="form-control" type="number" ng-model="$ctrl.field.value.coordinates[1]" value="{{$ctrl.field.value.coordinates[1]}}" ng-required="$ctrl.field.required" ng-change="$ctrl.onLatLngChange()">
+    <div class="col-md-5" ng-class="{'has-error': $ctrl.form[$ctrl.field.name + '-latitude'].$invalid}">
+      <input class="form-control" type="number" min="-90" max="90" name="{{$ctrl.field.name}}-latitude" ng-model="$ctrl.field.value.coordinates[1]" value="{{$ctrl.field.value.coordinates[1]}}" ng-required="$ctrl.field.required" ng-change="$ctrl.onLatLngChange()">
+      <div class="help-block" ng-messages="$ctrl.form[$ctrl.field.name + '-latitude'].$error">
+        <div ng-message="min" uib-tooltip="Latitude cannot be less than -90" tooltip-placement="bottom">Invalid Latitude</div>
+        <div ng-message="max" uib-tooltip="Latitude cannot be greater than 90" tooltip-placement="bottom">Invalid Latitude</div>
+      </div>
     </div>
   </div>
   <div class="row top-gap" ng-if="$ctrl.field.value.type !== 'Point'">
