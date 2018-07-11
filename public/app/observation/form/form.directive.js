@@ -89,12 +89,14 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
     $scope.$emit('observation:geometryChanged', {id: $scope.observation.id, geometry: angular.copy(field.value)});
   });
 
-  $scope.$watch('form.geometryField.value.type', function(shapeType) {
+  $scope.$watch('form.geometryField.value.type', function(newShapeType, oldShapeType) {
+    if (newShapeType === oldShapeType) return;
+
     // Disable save if line/polygon until line/polygon edit is complete
-    var geometryValid = shapeType === 'LineString' || shapeType === 'Polygon' ? false : true;
+    var geometryValid = newShapeType === 'LineString' || newShapeType === 'Polygon' ? false : true;
     $scope.observationForm.$setValidity('geometry', geometryValid);
 
-    $scope.$emit('observation:shapeChanged', {id: $scope.observation.id, type: 'Feature', geometry: {type: shapeType}});
+    $scope.$emit('observation:shapeChanged', {id: $scope.observation.id, type: 'Feature', geometry: {type: newShapeType}});
   });
 
   function hasEventUpdatePermission() {
