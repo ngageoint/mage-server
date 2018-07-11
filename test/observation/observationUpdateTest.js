@@ -219,6 +219,90 @@ describe("observation update tests", function() {
       .end(done);
   });
 
+  it("should deny update observation for id w/o geometry", function(done) {
+    mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
+
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, {
+        name: 'Event 1',
+        teamIds: [{
+          name: 'Team 1',
+          userIds: [userId]
+        }]
+      });
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .yields(null, {});
+
+    request(app)
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        type: 'Feature',
+        properties: {
+          timestamp: '2014-01-01T00:00:00'
+        }
+      })
+      .expect(400)
+      .expect(function(res) {
+        res.text.should.equal("'geometry' param required but not specified");
+      })
+      .end(done);
+  });
+
+  it("should deny update observation for id with invalid geometry", function(done) {
+    mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
+
+    sandbox.mock(EventModel)
+      .expects('populate')
+      .yields(null, {
+        name: 'Event 1',
+        teamIds: [{
+          name: 'Team 1',
+          userIds: [userId]
+        }]
+      });
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .yields(null, {});
+
+    request(app)
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        type: 'Feature',
+        geometry: {
+          type: "Point",
+          coordinates: [-181, 0]
+        },
+        properties: {
+          timestamp: '2014-01-01T00:00:00'
+        }
+      })
+      .expect(400)
+      .expect(function(res) {
+        res.text.should.equal("Cannot create observation, 'geometry' property must be a valid GeoJson geometry");
+      })
+      .end(done);
+  });
+
   it("should deny update observation for id that does not exist", function(done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
