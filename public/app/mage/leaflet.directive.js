@@ -493,7 +493,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
   function onEditShape(edit) {
     var layer = layers['Edit'].featureIdToLayer[edit.feature.id];
-    if (!layer) {
+    if (!layer || edit.feature.geometry.type === layer.feature.geometry.type) {
       return;
     }
 

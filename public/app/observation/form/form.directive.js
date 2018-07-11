@@ -58,6 +58,10 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
 
     // TODO update this to watch primary, secondary and geometry type
     $scope.$watch('form', function() {
+      if ($scope.form.geometryField.value.type !== 'Point') {
+        return;
+      }
+
       var formId = null;
       var primary = null;
       var variant = null;
