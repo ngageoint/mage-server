@@ -278,6 +278,48 @@ describe("observation create tests", function() {
       .end(done);
   });
 
+  it("should reject new observation with invalid geometry", function(done) {
+    mockTokenWithPermission('CREATE_OBSERVATION');
+
+    sandbox.mock(TeamModel)
+      .expects('find')
+      .yields(null, [{ name: 'Team 1' }]);
+
+    sandbox.mock(ObservationIdModel)
+      .expects('findById')
+      .yields(null, {_id: 1});
+
+    var ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+
+    sandbox.mock(ObservationModel)
+      .expects('findById')
+      .yields(null, null);
+
+    request(app)
+      .put('/api/events/1/observations/' + mongoose.Types.ObjectId())
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: [-181, 0]
+        },
+        properties: {
+          timestamp: '2016-01-01T00:00:00'
+        }
+      })
+      .expect(400)
+      .expect(function(res) {
+        res.text.should.equal("Cannot create observation, 'geometry' property must be a valid GeoJson geometry");
+      })
+      .end(done);
+  });
+
   it("should reject new observation w/o properties", function(done) {
     mockTokenWithPermission('CREATE_OBSERVATION');
 

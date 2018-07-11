@@ -27,7 +27,7 @@ GeometryField.prototype.validate = function() {
   if (!this.value) return;
 
   if (!geoJsonValidator.isGeometryObject(this.value)) {
-    throw new Error("cannot create observation, '" + this.definition.title + "' property must be a valid GeoJson geometry");
+    throw new Error("Cannot create observation, '" + this.definition.title + "' property must be a valid GeoJson geometry");
   }
 
   if (this.value.type === 'Polygon') {
