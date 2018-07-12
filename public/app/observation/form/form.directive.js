@@ -219,6 +219,10 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
     });
   };
 
+  $scope.dismissError = function() {
+    $scope.error = null;
+  };
+
   $scope.deleteObservation = function() {
     EventService.archiveObservation($scope.observation).then(function() {
       $scope.$emit('observation:delete',  $scope.observation);

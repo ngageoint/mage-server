@@ -48,6 +48,7 @@
             </div>
 
             <div ng-if="error" class="alert alert-danger top-gap">
+              <button type="button" class="close" ng-click="dismissError()"><span>&times;</span></button>
               <div><strong>Failed To Save Observation</strong></div>
               <div>{{error.message}}</div>
             </div>
