@@ -671,6 +671,78 @@ describe("user update tests", function() {
       .end(done);
   });
 
+  it.only('should limit recent events for acl user', function(done) {
+    // mockTokenWithPermission('NO_ADMIN_PERMISSION');
+
+    var mockUser = new UserModel({
+      _id: userId,
+      username: 'test',
+      displayName: 'test',
+      active: true,
+      recentEventIds: [5,4,3,2,1],
+      authentication: {
+        type: 'local'
+      }
+    });
+
+    var token = {
+      _id: '1',
+      token: '12345',
+      deviceId: '123',
+      userId: {
+        populate: function(field, callback) {
+          callback(null, mockUser);
+        }
+      }
+    };
+
+    sandbox.mock(TokenModel)
+      .expects('findOne')
+      .withArgs({token: "12345"})
+      .chain('populate', 'userId')
+      .chain('exec')
+      .yields(null, token);
+
+    sandbox.mock(UserModel)
+      .expects('findById')
+      .chain('exec')
+      .yields(null, mockUser);
+
+    var eventAcl = {};
+    eventAcl[userId.toString()] = 'OWNER';
+    var mockEvent = new EventModel({
+      _id: 6,
+      name: 'Mock Event',
+      acl: eventAcl
+    });
+
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .twice()
+      .onFirstCall()
+      .yields(null, mockEvent)
+      .onSecondCall()
+      .yields(null, mockEvent);
+
+    sandbox.mock(UserModel)
+      .expects('findByIdAndUpdate')
+      .withArgs(userId, {recentEventIds: [6,5,4,3,2]}, {new: true})
+      .yields(null, mockUser);
+
+    request(app)
+      .post('/api/users/' + userId.toString() + '/events/6/recent' )
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(function(res) {
+        var user = res.body;
+        should.exist(user);
+        user.should.have.property('id').that.equals(userId.toString());
+      })
+      .end(done);
+  });
+
   it('should add recent event for acl user', function(done) {
     mockTokenWithPermission('NO_ADMIN_PERMISSION');
 
