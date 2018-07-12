@@ -298,7 +298,7 @@ describe("observation update tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal("Cannot create observation, 'geometry' property must be a valid GeoJson geometry");
+        res.text.should.equal("Cannot create observation, 'geometry' is not valid.");
       })
       .end(done);
   });

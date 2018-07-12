@@ -183,6 +183,8 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
       delete $scope.observation.id;
     }
     EventService.saveObservation($scope.observation).then(function() {
+      $scope.error = null;
+
       if (_.some(_.values($scope.attachmentUploads), function(v) {return v;})) {
         $scope.uploadAttachments = true;
       } else {
@@ -199,6 +201,11 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
         $scope.$emit('observation:editDone', $scope.observation);
         $scope.saving = false;
       }
+    }, function(err) {
+      $scope.saving = false;
+      $scope.error = {
+        message: err.data
+      };
     });
   };
 

@@ -37,13 +37,21 @@
           </div>
 
           <div class="top-gap-l">
-            <span class="pull-right">
-              <button class="btn btn-default" ng-click="cancelEdit()">Cancel</button>
-              <button class="btn btn-primary" ng-click="save()" ng-disabled="observationForm.$invalid || saving"><i ng-class="{true: 'fa fa-spinner fa-spin', false: 'icon-save'}[saving]"></i> Save</button>
-            </span>
-            <span>
-              <button class="btn btn-danger pull-left" ng-show="observation.id && canDeleteObservation" ng-click="deleteObservation(observation)"><i class="icon-trash"></i> Delete Observation</button>
-            </span>
+            <div class="clearfix">
+              <span class="pull-right">
+                <button class="btn btn-default" ng-click="cancelEdit()">Cancel</button>
+                <button class="btn btn-primary" ng-click="save()" ng-disabled="observationForm.$invalid || saving"><i ng-class="{true: 'fa fa-spinner fa-spin', false: 'icon-save'}[saving]"></i> Save</button>
+              </span>
+              <span>
+                <button class="btn btn-danger pull-left" ng-show="observation.id && canDeleteObservation" ng-click="deleteObservation(observation)"><i class="icon-trash"></i> Delete Observation</button>
+              </span>
+            </div>
+
+            <div ng-if="error" class="alert alert-danger top-gap">
+              <div><strong>Failed To Save Observation</strong></div>
+              <div>{{error.message}}</div>
+            </div>
+
           </div>
         </div>
     </form>
