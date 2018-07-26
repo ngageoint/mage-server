@@ -671,9 +671,7 @@ describe("user update tests", function() {
       .end(done);
   });
 
-  it.only('should limit recent events for acl user', function(done) {
-    // mockTokenWithPermission('NO_ADMIN_PERMISSION');
-
+  it('should limit recent events for acl user', function(done) {
     var mockUser = new UserModel({
       _id: userId,
       username: 'test',
