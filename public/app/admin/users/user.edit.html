@@ -30,7 +30,7 @@
 
                 <div class="row top-gap-l">
                   <div class="col-md-12">
-                    <form ng-submit="saveUser(user)" class="form-horizontal" name="account">
+                    <form ng-submit="saveUser(user)" class="form-horizontal" name="account" method="post" autocomplete="off">
 
                         <div class="form-group" ng-show="!user.id || user.authentication.type == 'local'">
                           <label class="control-label col-sm-2">Username</label>
@@ -161,7 +161,7 @@
 
                 <div ng-show="editPassword">
                   <hr>
-                  <form ng-submit="updatePassword(authentication)" name="authentication" class="form-horizontal clearfix" novalidate>
+                  <form ng-submit="updatePassword(authentication)" name="authentication" class="form-horizontal clearfix" autocomplete="off" method="post" novalidate>
 
                     <div class="form-group">
                       <label class="control-label col-sm-2">Password</label>

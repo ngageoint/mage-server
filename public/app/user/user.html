@@ -85,7 +85,7 @@
 
           <div ng-show="editPassword">
             <hr>
-            <form ng-submit="updatePassword(form.authentication)" name="form.authentication" class="form-horizontal clearfix" novalidate>
+            <form ng-submit="updatePassword(form.authentication)" name="form.authentication" class="form-horizontal clearfix" method="post" autocomplete="off" novalidate>
               <div class="form-group">
                 <label class="control-label col-sm-2">Current</label>
                 <div class="col-sm-10" ng-class="{'has-error': form.authentication.$submitted && form.authentication.password.$invalid}">
