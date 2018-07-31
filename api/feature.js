@@ -1,17 +1,17 @@
 var FeatureModel = require('../models/feature');
 
-function Feature(layer) {
-  this._layer = layer;
+class Feature {
+  constructor(layer) {
+    this._layer = layer;
+  }
+
+  getAll() {
+    return FeatureModel.getFeatures(this._layer);
+  }
+
+  createFeatures(features) {
+    return FeatureModel.createFeatures(this._layer, features);
+  }
 }
-
-Feature.prototype.getAll = function(callback) {
-  FeatureModel.getFeatures(this._layer, callback);
-};
-
-Feature.prototype.createFeatures = function(features, callback) {
-  FeatureModel.createFeatures(this._layer, features, function(err, newFeatures) {
-    callback(err, newFeatures);
-  });
-};
 
 module.exports = Feature;

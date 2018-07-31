@@ -1,6 +1,5 @@
-const 
-fs = require('fs-extra'),
-log = require('winston');
+const fs = require('fs-extra')
+  , log = require('winston');
 
 module.exports.initializeModels = function () {
   log.info('intializing database models ...');

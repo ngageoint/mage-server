@@ -93,7 +93,7 @@ Icon.prototype.getIcon = function(callback) {
   IconModel.getIcon(options, function(err, icon) {
     if (err || !icon) {
       return callback(err);
-    } 
+    }
     icon.path = path.join(iconBase, icon.relativePath);
     callback(err, icon);
   });
@@ -110,7 +110,7 @@ Icon.prototype.saveDefaultIconToEventForm = function(callback) {
   fs.copy(defaultIconPath, targetPath, function(err) {
     if (err) {
       return callback(err);
-    } 
+    }
     IconModel.create(newIcon, callback);
   });
 };

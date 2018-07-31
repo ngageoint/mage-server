@@ -8,6 +8,7 @@ module.exports = function fileUpload() {
       type: '@',
       url: '@',
       icon: '@',
+      placeholder: '@',
       allowUpload: '=',
       preview: '=',
       uploadId: '=',
@@ -24,6 +25,7 @@ FileUploadController.$inject = ['$scope', '$element'];
 
 function FileUploadController($scope, $element) {
   if (!$scope.type) $scope.type = 'detail';
+  if (!$scope.placeholder) $scope.placeholder = 'Choose a file...';
 
   $scope.uploadImageMissing = true;
   $element.find("img").error(function() {
@@ -34,8 +36,6 @@ function FileUploadController($scope, $element) {
   }).load(function() {
     $scope.uploadImageMissing = false;
   });
-
-  $element.find('.file-custom').attr('data-filename', 'Choose a file...');
 
   $element.find(':file').bind('change', function() {
     $scope.file = this.files[0];

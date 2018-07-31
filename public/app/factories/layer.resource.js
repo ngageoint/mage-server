@@ -6,6 +6,11 @@ function Layer($resource) {
   var Layer = $resource('/api/layers/:id', {
     id: '@id'
   },{
+    get: {
+      headers: {
+        'Accept': 'application/json'
+      }
+    },
     create: {
       method: 'POST',
       headers: {

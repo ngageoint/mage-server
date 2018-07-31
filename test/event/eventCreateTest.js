@@ -2,7 +2,6 @@ var request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
   , mongoose = require('mongoose')
-  , path = require('path')
   , mockfs = require('mock-fs')
   , MockToken = require('../mockToken')
   , app = require('../../express')
@@ -49,7 +48,8 @@ describe("event create tests", function() {
     const eventId = 1;
     sandbox.mock(CounterModel)
       .expects('findOneAndUpdate')
-      .yields(null, { sequence: eventId });
+      .chain('exec')
+      .resolves({sequence: eventId });
 
     const mockEvent = new EventModel({
       _id: eventId,
@@ -143,7 +143,8 @@ describe("event create tests", function() {
     const eventId = 1;
     sandbox.mock(CounterModel)
       .expects('findOneAndUpdate')
-      .yields(null, { sequence: eventId });
+      .chain('exec')
+      .resolves({ sequence: eventId });
 
     const mockEvent = new EventModel({
       _id: eventId

@@ -1,21 +1,23 @@
-var mongoose = require('mongoose')
-  , Counter = require('./counter')
+let mongoose = require('mongoose')
   , Event = require('./event')
   , log = require('winston');
 
 // Creates a new Mongoose Schema object
-var Schema = mongoose.Schema;
+let Schema = mongoose.Schema;
 
 // Creates the Schema for the Attachments object
-var LayerSchema = new Schema({
+let LayerSchema = new Schema({
   _id: { type: Number, required: true, unique: true },
-  type: { type: String, required: true },
-  base: { type: Boolean, required: false },
   name: { type: String, required: true, unique: true },
-  format: { type: String, required: false },
+  description: { type: String, required: false }
+},{
+  discriminatorKey: 'type'
+});
+
+let ImagerySchema = new Schema({
   url: { type: String, required: false },
-  description: { type: String, required: false },
-  formId: {type: Schema.Types.ObjectId, required: false },
+  base: { type: Boolean, required: false },
+  format: { type: String, required: false },
   wms: {
     layers: { type: String },
     styles: { type: String },
@@ -23,9 +25,26 @@ var LayerSchema = new Schema({
     transparent: { type: Boolean },
     version: { type: String }
   },
+});
+
+let FeatureSchema = new Schema({
   collectionName: { type: String, required: false }
-},{
-  versionKey: false
+});
+
+let GeoPackageSchema = new Schema({
+  file: {
+    name: {type: String, required: false },
+    contentType: {type: String, required: false },
+    size: {type: String, required: false },
+    relativePath: {type: String, required: false }
+  },
+  tables: [{
+    _id: false,
+    name: {type: String},
+    type: {type: String, enum : ['tile', 'feature']},
+    minZoom: {type: Number},
+    maxZoom: {type: Number}
+  }]
 });
 
 function transform(layer, ret, options) {
@@ -58,90 +77,63 @@ LayerSchema.pre('remove', function(next) {
 });
 
 // Creates the Model for the Layer Schema
-var Layer = mongoose.model('Layer', LayerSchema);
+let Layer = mongoose.model('Layer', LayerSchema);
 exports.Model = Layer;
 
-exports.getLayers = function(filter, callback) {
-  if (typeof filter === 'function') {
-    callback = filter;
-    filter = {};
-  }
+const ImageryLayer = Layer.discriminator('Imagery', ImagerySchema);
+const FeatureLayer = Layer.discriminator('Feature', FeatureSchema);
+const GeoPackageLayer = Layer.discriminator('GeoPackage', GeoPackageSchema);
 
-  var conditions = {};
+exports.getLayers = function(filter) {
+  let conditions = {};
   if (filter.type) conditions.type = filter.type;
   if (filter.layerIds) conditions._id = {$in: filter.layerIds};
 
-  Layer.find(conditions, function (err, layers) {
-    callback(err, layers);
+  return Layer.find(conditions).exec();
+};
+
+exports.count = function() {
+  return Layer.count({}).exec();
+};
+
+exports.getById = function(id) {
+  return Layer.findById(id).exec();
+};
+
+exports.createFeatureCollection = function(name) {
+  return mongoose.connection.db.createCollection(name).then(function() {
+    log.info("Successfully created feature collection for layer " + name);
   });
 };
 
-exports.count = function(callback) {
-  Layer.count({}, function(err, count) {
-    callback(err, count);
-  });
-};
-
-exports.getById = function(id, callback) {
-  Layer.findById(id, function (err, layer) {
-    callback(layer);
-  });
-};
-
-var createFeatureCollection = function(layer) {
-  log.info("Creating collection: " + layer.collectionName + ' for layer ' + layer.name);
-  mongoose.connection.db.createCollection(layer.collectionName, function(err) {
-    if (err) {
-      log.error(err);
-      return;
-    }
-
-    log.info("Successfully created feature collection for layer " + layer.name);
-  });
-};
-
-var dropFeatureCollection = function(layer, callback) {
-  log.info("Dropping collection: " + layer.collectionName);
-  mongoose.connection.db.dropCollection(layer.collectionName, function(err) {
-    if (err) return callback(err);
-
+exports.dropFeatureCollection = function(layer) {
+  return mongoose.connection.db.dropCollection(layer.collectionName).then(function() {
     log.info('Dropped collection ' + layer.collectionName);
-    callback();
   });
 };
 
-exports.create = function(layer, callback) {
-  Counter.getNext('layer', function(id) {
-    layer._id = id;
-
-    if (layer.type === 'Feature') {
-      layer.collectionName = 'features' + id;
-    }
-
-    Layer.create(layer, function(err, newLayer) {
-      if (err) return callback(err);
-
-      if (layer.type === 'Feature') {
-        createFeatureCollection(newLayer);
-      }
-
-      callback(err, newLayer);
-    });
-  });
+exports.create = function(id, layer) {
+  layer._id = id;
+  return Layer.create(layer);
 };
 
-exports.update = function(id, layer, callback) {
-  Layer.findByIdAndUpdate(id, layer, {new: true}, function(err, updatedLayer) {
-    callback(err, updatedLayer);
-  });
+exports.update = function(id, layer) {
+  let model;
+  switch (layer.type) {
+  case 'Imagery':
+    model = ImageryLayer;
+    break;
+  case 'Feature':
+    model = FeatureLayer;
+    break;
+  case 'GeoPackage':
+    model = GeoPackageLayer;
+    break;
+  }
+
+  return model.findByIdAndUpdate(id, layer, {new: true}).exec();
 };
 
-exports.remove = function(layer, callback) {
-  layer.remove(function(err) {
-    if (err) return callback(err);
-
-    dropFeatureCollection(layer, function(err) {
-      callback(err, layer);
-    });
-  });
+exports.remove = function(layer) {
+  return layer.remove();
 };

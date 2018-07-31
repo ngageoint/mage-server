@@ -12,9 +12,9 @@
     </div>
 
     <div class="admin-content">
-      <div class="container bottom-gap-l">
+      <div class="container-fluid bottom-gap-l">
         <div class="row">
-          <div class="col-md-12" ng-show="user">
+          <div class="col-md-offset-1 col-md-10" ng-show="user">
 
             <div class="row">
               <div class="col-md-10">
@@ -134,7 +134,7 @@
                     <nav class="navbar navbar-default admin-dashboard-navbar">
                       <div class="container-fluid">
                         <div class="navbar-header">
-                          <a class="navbar-brand">Add user to a team</a>
+                          <a class="navbar-brand">Add User to a <i class="fa fa-users fa-small"></i> Team or <i class="fa fa-calendar fa-small"></i> Event</a>
                         </div>
                       </div>
                     </nav>
@@ -148,7 +148,7 @@
                         <ui-select ng-model="team.selected" theme="bootstrap">
                           <ui-select-match placeholder="Select a team">{{$select.selected.name}}</ui-select-match>
                           <ui-select-choices repeat="team in nonTeams | orderBy: 'name' | filter: $select.search">
-                            <div ng-bind-html="team.name | highlight: $select.search"></div>
+                            <span><i class="fa" ng-class="{'fa-users': !team.teamEventId, 'fa-calendar': team.teamEventId}"></i> </span><span ng-bind-html="team.name | highlight: $select.search"></span>
                           </ui-select-choices>
                         </ui-select>
                       </div>
@@ -169,7 +169,7 @@
                     <nav class="navbar navbar-default admin-dashboard-navbar">
                       <div class="container-fluid">
                         <div class="navbar-header">
-                          <a class="navbar-brand">Teams for {{user.displayName}}</a>
+                          <a class="navbar-brand">Current Teams and Events</a>
                         </div>
 
                         <form class="navbar-form navbar-left">
@@ -193,7 +193,7 @@
                         <div class="row pointer" ng-click="gotoTeam(team)">
                           <div class="col-md-12">
                             <div class="right-gap pull-left">
-                              <i class="fa fa-users"></i>
+                              <i class="fa" ng-class="{'fa-users': !team.teamEventId, 'fa-calendar': team.teamEventId}"></i>
                             </div>
                             <span>{{team.name}}</span>
 
@@ -202,7 +202,7 @@
                             </span>
                           </div>
                         </div>
-                        <div class="row" ng-if="team.description">
+                        <div class="row" ng-if="team.description &&!team.teamEventId">
                           <div class="col-md-12">
                             <span class="muted">{{team.description}}</span>
                           </div>

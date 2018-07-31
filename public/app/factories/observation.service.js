@@ -42,8 +42,9 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
 
     observation.$save({}, function(updatedObservation) {
       transformObservations(updatedObservation, event);
-
       deferred.resolve(updatedObservation);
+    }, function(err) {
+      deferred.reject(err);
     });
 
     return deferred.promise;

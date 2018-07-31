@@ -21,6 +21,7 @@ require('leaflet/dist/images/marker-icon.png');
 require('leaflet/dist/images/marker-icon-2x.png');
 require('leaflet/dist/images/marker-shadow.png');
 
+require('leaflet.vectorgrid/dist/Leaflet.VectorGrid.js');
 require('leaflet-editable');
 require('leaflet-groupedlayercontrol');
 require('leaflet.markercluster');
@@ -30,6 +31,7 @@ LeafletController.$inject = ['$rootScope', '$scope', '$interval', '$timeout', 'M
 function LeafletController($rootScope, $scope, $interval, $timeout, MapService, LocalStorageService, GeometryService) {
 
   var layers = {};
+  var geopackageLayers = {};
   var temporalLayers = [];
   var spiderfyState = null;
   var currentLocation = null;
@@ -52,6 +54,14 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   var BASE_LAYER_PANE = 'baseLayerPane';
   map.createPane(BASE_LAYER_PANE);
   map.getPane(BASE_LAYER_PANE).style.zIndex = 100;
+
+  var TILE_LAYER_PANE = 'tileLayerPane';
+  map.createPane(TILE_LAYER_PANE);
+  map.getPane(TILE_LAYER_PANE).style.zIndex = 200;
+
+  var FEATURE_LAYER_PANE = 'featureLayerPane';
+  map.createPane(FEATURE_LAYER_PANE);
+  map.getPane(FEATURE_LAYER_PANE).style.zIndex = 300;
 
   L.Icon.Default.imagePath = 'images/';
 
@@ -199,6 +209,71 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     if (marker.geometry && marker.geometry.type === 'Point') {
       layer.layer.setLatLng([marker.geometry.coordinates[1], marker.geometry.coordinates[0]]);
     }
+  }
+
+  function createGeoPackageLayer(layerInfo) {
+    _.each(layerInfo.tables, function(table) {
+      if (table.type === 'feature') {
+        var styles = {};
+        styles[table.name] = {
+          weight: 2,
+          radius: 3
+        };
+
+        table.layer = L.vectorGrid.protobuf('api/events/' + $scope.filteredEvent.id + '/layers/' + layerInfo.id + '/' + table.name +'/{z}/{x}/{y}.pbf?access_token={token}', {
+          token: LocalStorageService.getToken(),
+          maxNativeZoom: 18,
+          pane: FEATURE_LAYER_PANE,
+          vectorTileLayerStyles: styles,
+          interactive: true,
+          rendererFactory: L.canvas.tile,
+          getFeatureId: function(feature) {
+            feature.properties.id = layerInfo.id + table.name + feature.id;
+            return feature.properties.id;
+          }
+        });
+
+        table.layer.on('click', function(e) {
+          var layer = e.layer;
+          table.layer.setFeatureStyle(layer.properties.id, {
+            color: '#00FF00'
+          });
+
+          var content = '<b>' + table.name + '</b><br><br>';
+          var pairs = _.chain(layer.properties).omit('id').pairs().value();
+          if (pairs.length) {
+            content += '<table class="table table-striped">';
+            _.each(pairs, function(pair) {
+              content += '<tr>' + '<td>' + pair[0] + '</td>' +'<td>' + pair[1] + '</td>' + '</tr>';
+            });
+            content += '</table>';
+          }
+
+          var popup = L.popup({
+            maxHeight: 250
+          })
+            .setLatLng(e.latlng)
+            .setContent(content)
+            .on('remove', function() {
+              table.layer.resetFeatureStyle(layer.properties.id);
+            });
+
+          popup.openOn(map);
+        });
+      } else {
+        table.layer = L.tileLayer('api/events/' + $scope.filteredEvent.id + '/layers/' + layerInfo.id + '/' + table.name +'/{z}/{x}/{y}.png?access_token={token}', {
+          token: LocalStorageService.getToken(),
+          minZoom: table.minZoom,
+          maxZoom: table.maxZoom,
+          pane: TILE_LAYER_PANE
+        });
+      }
+
+      var name = layerInfo.name + table.name;
+      layers[name] = layerInfo;
+      geopackageLayers[name] = layerInfo;
+      layerControl.addOverlay(table.layer, table.name, layerInfo.name);
+    });
   }
 
   // TODO move into leaflet service, this and map clip both use it
@@ -630,6 +705,9 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   function onLayersChanged(changed) {
     _.each(changed.added, function(added) {
       switch(added.type) {
+      case 'GeoPackage':
+        createGeoPackageLayer(added);
+        break;
       case 'Feature':
         createMarker(added);
         break;
@@ -763,12 +841,33 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   }
 
   function onLayerRemoved(layer) {
+    switch (layer.type) {
+    case 'GeoPackage':
+      removeGeoPackageLayer(layer);
+      break;
+    default:
+      removeLayer(layer);
+    }
+  }
+
+  function removeLayer(layer) {
     var layerInfo = layers[layer.name];
+
     if (layerInfo) {
       map.removeLayer(layerInfo.layer);
       layerControl.removeLayer(layerInfo.layer);
       delete layers[layer.name];
     }
+  }
+
+  function removeGeoPackageLayer(layer) {
+    _.each(layer.tables, function(table) {
+      var name = layer.name + table.name;
+      map.removeLayer(table.layer);
+      layerControl.removeLayer(table.layer);
+      delete layers[name];
+      delete geopackageLayers[name];
+    });
   }
 
   function onHideFeed(hide) {

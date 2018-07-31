@@ -368,19 +368,19 @@ exports.removeRoleFromUsers = function(role, callback) {
 };
 
 exports.addRecentEventForUser = function(user, event, callback) {
-  var eventIds = user.recentEventIds.slice();
+  let eventIds = Array.from(user.recentEventIds);
 
-  // push new event on from of list
+  // push new event onto front of the list
   eventIds.unshift(event._id);
 
-  // remove dupes
+  // remove duplicates
   eventIds = eventIds.filter(function(eventId, index) {
     return eventIds.indexOf(eventId) === index;
   });
 
   // limit to 5
   if (eventIds.length > 5) {
-    eventIds = user.recentEventIds.slice(0, 4);
+    eventIds = eventIds.slice(0, 5);
   }
 
   User.findByIdAndUpdate(user._id, {recentEventIds: eventIds}, {new: true}, function(err, user) {

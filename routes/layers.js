@@ -1,28 +1,52 @@
 module.exports = function(app, security) {
-  var Layer = require('../models/layer')
+  const fs = require('fs-extra')
+    , path = require('path')
+    , geojsonvt = require('geojson-vt')
+    , vtpbf = require('vt-pbf')
     , Event = require('../models/event')
     , access = require('../access')
     , api = require('../api')
-    , layerXform = require('../transformers/layer');
+    , environment = require('../environment/env')
+    , layerXform = require('../transformers/layer')
+    , geopackage = require('../utilities/geopackage');
 
-  var passport = security.authentication.passport;
+  const passport = security.authentication.passport;
   app.all('/api/layers*', passport.authenticate('bearer'));
 
   function validateLayerParams(req, res, next) {
-    var layer = req.body;
+    const layer = req.body;
 
     if (!layer.type) {
-      return res.send(400, "cannot create layer 'type' param not specified");
+      return res.status(400).send('cannot create layer "type" param not specified');
     }
 
     if (!layer.name) {
-      return res.send(400, "cannot create layer 'name' param not specified");
+      return res.status(400).send('cannot create layer "name" param not specified');
     }
 
     // TODO error check / validate that if WMS proper things are provided
 
     req.newLayer = layer;
     next();
+  }
+
+  function validateGeopackage(req, res, next) {
+    if (req.body.type !== 'GeoPackage') {
+      return next();
+    }
+
+    if (!req.files.geopackage) {
+      return res.send(400, 'cannot create layer "geopackage" file not specified');
+    }
+
+    geopackage.open(req.files.geopackage, (err, result) => {
+      if (err) return res.status(400).send('cannot create layer, geopackage is not valid');
+      result.geopackage.close();
+
+      req.newLayer.geopackage = req.files.geopackage;
+      req.newLayer.tables = result.metadata.tables;
+      next(err);
+    });
   }
 
   function validateEventAccess(req, res, next) {
@@ -43,10 +67,9 @@ module.exports = function(app, security) {
   }
 
   function parseQueryParams(req, res, next) {
-    var parameters = {};
-    parameters.type = req.param('type');
-
-    req.parameters = parameters;
+    req.parameters = {
+      type: req.param('type')
+    };
 
     next();
   }
@@ -57,12 +80,12 @@ module.exports = function(app, security) {
     access.authorize('READ_LAYER_ALL'),
     parseQueryParams,
     function (req, res, next) {
-      Layer.getLayers({type: req.parameters.type}, function (err, layers) {
-        if (err) return next(err);
-
-        var response = layerXform.transform(layers, {path: req.getPath()});
-        res.json(response);
-      });
+      new api.Layer().getLayers()
+        .then(layers => {
+          var response = layerXform.transform(layers, {path: req.getPath()});
+          res.json(response);
+        })
+        .catch(err => next(err));
     }
   );
 
@@ -70,11 +93,11 @@ module.exports = function(app, security) {
     '/api/layers/count',
     access.authorize('READ_LAYER_ALL'),
     function (req, res, next) {
-      Layer.count(function (err, count) {
-        if (err) return next(err);
-
-        res.json({count: count});
-      });
+      new api.Layer().count()
+        .then(count => res.json({count: count}))
+        .catch(function(err) {
+          next(err);
+        });
     }
   );
 
@@ -82,19 +105,19 @@ module.exports = function(app, security) {
   app.get(
     '/api/layers/:layerId/features',
     access.authorize('READ_LAYER_ALL'),
-    function (req, res) {
+    function (req, res, next) {
       if (req.layer.type !== 'Feature') return res.status(400).send('cannot get features, layer type is not "Feature"');
 
-      new api.Feature(req.layer).getAll(function(err, features) {
-        features = features.map(function(f) { return f.toJSON(); });
-        res.json({
-          type: 'FeatureCollection',
-          features: features
-        });
-      });
+      new api.Feature(req.layer).getAll()
+        .then(features => {
+          res.json({
+            type: 'FeatureCollection',
+            features: features.map(f => f.toJSON())
+          });
+        })
+        .catch(err => next(err));
     }
   );
-
 
   app.get(
     '/api/events/:eventId/layers',
@@ -102,12 +125,12 @@ module.exports = function(app, security) {
     validateEventAccess,
     parseQueryParams,
     function(req, res, next) {
-      Layer.getLayers({layerIds: req.event.layerIds, type: req.parameters.type}, function(err, layers) {
-        if (err) return next(err);
-
-        var response = layerXform.transform(layers, {path: req.getPath()});
-        res.json(response);
-      });
+      new api.Layer().getLayers({layerIds: req.event.layerIds, type: req.parameters.type})
+        .then(layers => {
+          var response = layerXform.transform(layers, {path: req.getPath()});
+          res.json(response);
+        })
+        .catch(err => next(err));
     }
   );
 
@@ -116,8 +139,78 @@ module.exports = function(app, security) {
     '/api/layers/:layerId',
     access.authorize('READ_LAYER_ALL'),
     function (req, res) {
-      var response = layerXform.transform(req.layer, {path: req.getPath()});
-      res.json(response);
+      if (req.accepts('application/json')) {
+        const response = layerXform.transform(req.layer, {path: req.getPath()});
+        res.json(response);
+      } else if (req.accepts('application/octet-stream') && req.layer.file) {
+        var stream = fs.createReadStream(path.join(environment.layerBaseDirectory, req.layer.file.relativePath));
+        stream.on('open', () => {
+          res.type(req.layer.file.contentType);
+          res.header('Content-Length', req.layer.file.size);
+          stream.pipe(res);
+        });
+      }
+    }
+  );
+
+  // get layer
+  app.get(
+    '/api/events/:eventId/layers/:layerId',
+    passport.authenticate('bearer'),
+    validateEventAccess,
+    function (req, res) {
+      if (req.accepts('application/json')) {
+        const response = layerXform.transform(req.layer, {path: req.getPath()});
+        res.json(response);
+      } else if (req.accepts('application/octet-stream') && req.layer.file) {
+        var stream = fs.createReadStream(path.join(environment.layerBaseDirectory, req.layer.file.relativePath));
+        stream.on('open', () => {
+          res.type(req.layer.file.contentType);
+          res.header('Content-Length', req.layer.file.size);
+          stream.pipe(res);
+        });
+      }
+    }
+  );
+
+  app.get(
+    '/api/events/:eventId/layers/:layerId/:tableName/:z(\\d+)/:x(\\d+)/:y(\\d+).:format',
+    passport.authenticate('bearer'),
+    function(req, res, next) {
+      const tileBuffer = 8;
+      const tileParams = {
+        x: Number(req.params.x),
+        y: Number(req.params.y),
+        z: Number(req.params.z)
+      };
+
+      const table = req.layer.tables.find(table => table.name === req.params.tableName);
+      if (!table) {
+        return res.status(404).send('Table does not exist in layer.');
+      }
+
+      if (req.params.format === 'pbf') {
+        if (table.type !== 'feature') {
+          return res.status(400).send('Cannot request vector tile from a tile layer');
+        }
+
+        geopackage.features(req.layer, req.params.tableName, tileParams, tileBuffer, function(err, featureCollection) {
+          if (err) return next(err);
+
+          const tileIndex = geojsonvt(featureCollection, {buffer: tileBuffer * 8, maxZoom: tileParams.z});
+          const tile = tileIndex.getTile(tileParams.z, tileParams.x, tileParams.y);
+          const vectorTile = vtpbf.fromGeojsonVt({ [table.name]: tile || { features: [] } });
+          res.contentType('application/x-protobuf');
+          res.send(Buffer.from(vectorTile));
+        });
+      } else {
+        geopackage.tile(req.layer, req.params.tableName, tileParams, function(err, tile) {
+          if (err) return next(err);
+          if (!tile) return res.status(404);
+          res.contentType('image/jpeg');
+          res.send(tile);
+        });
+      }
     }
   );
 
@@ -126,17 +219,18 @@ module.exports = function(app, security) {
     '/api/events/:eventId/layers/:layerId/features',
     passport.authenticate('bearer'),
     validateEventAccess,
-    function (req, res) {
+    function (req, res, next) {
       if (req.layer.type !== 'Feature') return res.status(400).send('cannot get features, layer type is not "Feature"');
       if (req.event.layerIds.indexOf(req.layer._id) === -1) return res.status(400).send('layer requested is not in event ' + req.event.name);
 
-      new api.Feature(req.layer).getAll(function(err, features) {
-        features = features.map(function(f) { return f.toJSON(); });
-        res.json({
-          type: 'FeatureCollection',
-          features: features
-        });
-      });
+      new api.Feature(req.layer).getAll()
+        .then(features => {
+          res.json({
+            type: 'FeatureCollection',
+            features: features.map(f => f.toJSON())
+          });
+        })
+        .catch(err => next(err));
     }
   );
 
@@ -145,50 +239,40 @@ module.exports = function(app, security) {
     '/api/layers',
     access.authorize('CREATE_LAYER'),
     validateLayerParams,
+    validateGeopackage,
     function(req, res, next) {
-      Layer.create(req.newLayer, function(err, layer) {
-        if (err) return next(err);
-
-        var response = layerXform.transform(layer, {path: req.getPath()});
-        res.location(layer._id.toString()).json(response);
-      });
+      new api.Layer().create(req.newLayer)
+        .then(layer => {
+          var response = layerXform.transform(layer, {path: req.getPath()});
+          res.location(layer._id.toString()).json(response);
+        })
+        .catch(err => next(err));
     }
   );
 
-  // Update a layer
   app.put(
     '/api/layers/:layerId',
     access.authorize('UPDATE_LAYER'),
     validateLayerParams,
     function(req, res, next) {
-      Layer.update(req.layer.id, req.newLayer, function(err, layer) {
-        if (err) return next(err);
-
-        var response = layerXform.transform(layer, {path: req.getPath()});
-        res.json(response);
-      });
+      new api.Layer(req.layer.id).update(req.newLayer)
+        .then(layer => {
+          var response = layerXform.transform(layer, {path: req.getPath()});
+          res.json(response);
+        })
+        .catch(err => next(err));
     }
   );
 
-  // Archive a layer
   app.delete(
     '/api/layers/:layerId',
     access.authorize('DELETE_LAYER'),
-    function(req, res) {
-      var layer = req.layer;
-
-      Layer.remove(layer, function(err, layer) {
-        var response = {};
-        if (err) {
-          response.success = false;
-          response.message = err;
-        } else {
-          response.succes = true;
-          response.message = 'Layer ' + layer.name + ' has been removed.';
-        }
-
-        res.json(response);
-      });
+    function(req, res, next) {
+      new api.Layer().remove(req.layer)
+        .then(function() {
+          res.sendStatus(200);
+        })
+        .catch(err => next(err));
     }
   );
 };

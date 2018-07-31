@@ -39,9 +39,6 @@ function AdminUserController($scope, $uibModal, $filter, $routeParams, $location
     $scope.team = {};
 
     $scope.userTeams = _.chain(result.teams)
-      .reject(function(team) {
-        return team.teamEventId;
-      })
       .filter(function(team) {
         return _.some(team.users, function(user) {
           return $scope.user.id === user.id;

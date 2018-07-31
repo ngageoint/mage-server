@@ -58,6 +58,10 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
 
     // TODO update this to watch primary, secondary and geometry type
     $scope.$watch('form', function() {
+      if ($scope.form.geometryField.value.type !== 'Point') {
+        return;
+      }
+
       var formId = null;
       var primary = null;
       var variant = null;
@@ -85,12 +89,14 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
     $scope.$emit('observation:geometryChanged', {id: $scope.observation.id, geometry: angular.copy(field.value)});
   });
 
-  $scope.$watch('form.geometryField.value.type', function(shapeType) {
+  $scope.$watch('form.geometryField.value.type', function(newShapeType, oldShapeType) {
+    if (newShapeType === oldShapeType) return;
+
     // Disable save if line/polygon until line/polygon edit is complete
-    var geometryValid = shapeType === 'LineString' || shapeType === 'Polygon' ? false : true;
+    var geometryValid = newShapeType === 'LineString' || newShapeType === 'Polygon' ? false : true;
     $scope.observationForm.$setValidity('geometry', geometryValid);
 
-    $scope.$emit('observation:shapeChanged', {id: $scope.observation.id, type: 'Feature', geometry: {type: shapeType}});
+    $scope.$emit('observation:shapeChanged', {id: $scope.observation.id, type: 'Feature', geometry: {type: newShapeType}});
   });
 
   function hasEventUpdatePermission() {
@@ -177,6 +183,8 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
       delete $scope.observation.id;
     }
     EventService.saveObservation($scope.observation).then(function() {
+      $scope.error = null;
+
       if (_.some(_.values($scope.attachmentUploads), function(v) {return v;})) {
         $scope.uploadAttachments = true;
       } else {
@@ -193,6 +201,11 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
         $scope.$emit('observation:editDone', $scope.observation);
         $scope.saving = false;
       }
+    }, function(err) {
+      $scope.saving = false;
+      $scope.error = {
+        message: err.data
+      };
     });
   };
 
@@ -204,6 +217,10 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
       delete attachment.markedForDelete;
       return attachment;
     });
+  };
+
+  $scope.dismissError = function() {
+    $scope.error = null;
   };
 
   $scope.deleteObservation = function() {
