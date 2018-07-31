@@ -1,12 +1,300 @@
-var xmldom = require('xmldom')
+const DOMParser = require('xmldom').DOMParser
   , xpath = require('xpath')
   , log = require('winston');
 
-var DOMParser = xmldom.DOMParser;
+exports.kml = kml;
 
-var removeSpace = (/\s*/g),
-  trimSpace = (/^\s*|\s*$/g),
-  splitSpace = (/\s+/);
+function kml(data, o) {
+  o = o || {};
+  log.info('Generate KML with options', o);
+
+  const document = new DOMParser().parseFromString(data);
+  const styleIndex = getStyles(document);
+
+  // Pull all placemarks regards of depth level
+  let placemarks = xpath.select("//*[local-name()='Placemark']", document);
+
+  log.info('Style index ', styleIndex);
+  log.info('Found ' + placemarks.length + ' placemarks in the KML document');
+
+  let features = [];
+  placemarks.forEach(placemark => {
+    features = features.concat(getPlacemark(placemark, styleIndex));
+  });
+
+  return features;
+}
+
+function getProperties(node, styleIndex) {
+  let properties = {};
+
+  let name = nodeVal(get1(node, 'name'));
+  if (name) properties.name = name;
+
+  let description = nodeVal(get1(node, 'description'));
+  if (description) properties.description = description;
+
+  const extendedData = get1(node, 'ExtendedData');
+  if (extendedData) {
+    const datas = get(extendedData, 'Data'),
+      simpleDatas = get(extendedData, 'SimpleData');
+
+    for (let i = 0; i < datas.length; i++) {
+      properties[datas[i].getAttribute('name')] = nodeVal(get1(datas[i], 'value'));
+    }
+
+    for (let i = 0; i < simpleDatas.length; i++) {
+      properties[simpleDatas[i].getAttribute('name')] = nodeVal(simpleDatas[i]);
+    }
+  }
+
+  let styleUrl = nodeVal(get1(node, 'styleUrl'));
+  if (styleUrl && styleIndex[styleUrl]) {
+    properties.style = styleIndex[styleUrl];
+  } else {
+    // Check if placemark has style
+    const styleElement = get1(node, 'Style');
+    if (styleElement) {
+      properties.style = {
+        icon: getIconStyle(styleElement),
+        lineStyle: getLineStyle(styleElement),
+        labelStyle: getLabelStyle(styleElement),
+        polyStyle: getPolygonStyle(styleElement)
+      };
+    }
+  }
+
+  return properties;
+}
+
+function getPlacemark(node, styleIndex) {
+  const geometries = getGeometry(node);
+  if (!geometries.length) return [];
+
+  const properties = getProperties(node, styleIndex);
+
+  return geometries.map(geometry => {
+    return {
+      type: 'Feature',
+      geometry: geometry,
+      properties: properties
+    };
+  });
+}
+
+function getGeometry(node) {
+  if (get1(node, 'MultiGeometry')){
+    return getGeometry(get1(node, 'MultiGeometry'));
+  }
+
+  if (get1(node, 'MultiTrack')) {
+    return getGeometry(get1(node, 'MultiTrack'));
+  }
+
+  let geometries = [];
+  ['Polygon', 'LineString', 'Point', 'Track'].forEach(geometryType => {
+    let geometryNodes = get(node, geometryType);
+    if (geometryNodes) {
+      for (let i = 0; i < geometryNodes.length; i++) {
+        let geometryNode = geometryNodes[i];
+
+        switch(geometryType) {
+        case 'Point':
+          geometries.push(getPoint(geometryNode));
+          break;
+        case 'LineString':
+          geometries.push(getLineString(geometryNode));
+          break;
+        case 'Track':
+          geometries.push(getTrack(geometryNode));
+          break;
+        case 'Polygon':
+          geometries.push(getPolygon(geometryNode));
+          break;
+        }
+      }
+    }
+  });
+
+  return geometries;
+}
+
+function getPoint(node) {
+  return {
+    type: 'Point',
+    coordinates: coord1(nodeVal(get1(node, 'coordinates')))
+  };
+}
+
+function getLineString(node) {
+  return {
+    type: 'LineString',
+    coordinates: coord(nodeVal(get1(node, 'coordinates')))
+  };
+}
+
+function getTrack(node) {
+  return {
+    type: 'LineString',
+    coordinates: gxCoords(node)
+  };
+}
+
+function getPolygon(node) {
+  const rings = get(node, 'LinearRing');
+
+  let coords = [];
+  for (let i = 0; i < rings.length; i++) {
+    coords.push(coord(nodeVal(get1(rings[i], 'coordinates'))));
+  }
+
+  return {
+    type: 'Polygon',
+    coordinates: coords
+  };
+}
+
+function gxCoords(node) {
+  let elems = get(node, 'coord', 'gx');
+  if (elems.length === 0) {
+    elems = get(node, 'gx:coord');
+  }
+
+  let coords = [];
+  for (let i = 0; i < elems.length; i++) {
+    coords.push(gxCoord(nodeVal(elems[i])));
+  }
+
+  let times = [];
+  const timeElems = get(node, 'when');
+  for (let i = 0; i < timeElems.length; i++) {
+    times.push(nodeVal(timeElems[i]));
+  }
+
+  return {
+    coords: coords,
+    times: times
+  };
+}
+
+function gxCoord(v) {
+  return numarray(v.split(' '));
+}
+
+function getStyles(node) {
+  let styleIndex = {};
+
+  const styles = get(node, 'Style');
+  for (let i = 0; i < styles.length; i++) {
+    const kmlStyle = styles[i];
+    const styleId = '#' + attr(kmlStyle, 'id');
+    styleIndex[styleId] = {
+      icon: getIconStyle(kmlStyle),
+      lineStyle: getLineStyle(kmlStyle),
+      labelStyle: getLabelStyle(kmlStyle),
+      polyStyle: getPolygonStyle(kmlStyle)
+    };
+  }
+
+  const styleMaps = get(node, 'StyleMap');
+  for (let i = 0; i < styleMaps.length; i++) {
+    const styleMap = styleMaps[i];
+    const pairs = xpath.select("*[local-name()='Pair']", styleMap);
+    for (let p = 0; p < pairs.length; p++) {
+      const key = get(pairs[p], 'key');
+      if (key) {
+        const keyName = nodeVal(key[0]);
+        if (keyName === 'normal') {
+          const styleUrl = get(pairs[p], 'styleUrl');
+          if (styleUrl) {
+            const styleUrlName = nodeVal(styleUrl[0]);
+            const styleMapId = '#' + attr(styleMap, 'id');
+            styleIndex[styleMapId] = styleIndex[styleUrlName];
+          }
+        }
+      }
+    }
+  }
+
+  return styleIndex;
+}
+
+function getIconStyle(node) {
+  const iconStyle = get(node, 'IconStyle');
+  if (iconStyle[0]) {
+    let style = {};
+    const iconScale = get(iconStyle[0], 'scale');
+    const icon = get(iconStyle[0], 'Icon');
+
+    if (iconScale[0]) {
+      style.scale = nodeVal(iconScale[0]);
+    }
+
+    if (icon) {
+      style.icon = {};
+      const href = get(icon[0], 'href');
+
+      if (href[0]) {
+        style.icon.href = nodeVal(href[0]);
+      }
+    }
+
+    return style;
+  }
+}
+
+function getLineStyle(node) {
+  const lineStyle = get(node, 'LineStyle');
+  if (lineStyle[0]) {
+    let style = {};
+
+    const lineColor = get(lineStyle[0], 'color');
+    if (lineColor[0]) {
+      style.color = parseColor(nodeVal(lineColor[0]));
+    }
+
+    const width = get(lineStyle[0], 'width');
+    if (width[0]) {
+      style.width = nodeVal(width[0]);
+    }
+
+    return style;
+  }
+}
+
+function getLabelStyle(node) {
+  const labelStyle = get(node, 'LabelStyle');
+  if (labelStyle[0]) {
+    let style = {};
+
+    const labelColor = get(labelStyle[0], 'color');
+    if (labelColor[0]) {
+      style.color = parseColor(nodeVal(labelColor[0]));
+    }
+
+    const labelScale = get(labelStyle[0], 'scale');
+    if (labelScale[0]) {
+      style.color = nodeVal(labelScale[0]);
+    }
+
+    return style;
+  }
+}
+
+function getPolygonStyle(node) {
+
+  const polyStyle = get(node, 'PolyStyle');
+  if (polyStyle[0]) {
+    let style = {};
+
+    const color = get(polyStyle[0], 'color');
+    if (color[0]) {
+      style.color = parseColor(nodeVal(color[0]));
+    }
+
+    return style;
+  }
+}
 
 // all Y children of X
 function get(x, y) {
@@ -16,250 +304,78 @@ function get(x, y) {
 function attr(x, y) { return x.getAttribute(y); }
 
 // one Y child of X, if any, otherwise null
-function get1(x, y) { var n = get(x, y); return n.length ? n[0] : null; }
+function get1(x, y) {
+  let n = get(x, y);
+  return n.length ? n[0] : null;
+}
 
 // https://developer.mozilla.org/en-US/docs/Web/API/Node.normalize
-function norm(el) { if (el.normalize) { el.normalize(); } return el; }
+function norm(el) {
+  if (el.normalize) {
+    el.normalize();
+  }
+
+  return el;
+}
 
 // cast array x into numbers
 function numarray(x) {
-  for (var j = 0, o = []; j < x.length; j++) { o[j] = parseFloat(x[j]); }
+  let o = [];
+  for (let i = 0; i < x.length; i++) {
+    o[i] = parseFloat(x[i]);
+  }
+
   return o;
 }
 
 // cast array x into numbers
 function coordinateArray(x) {
-  for (var j = 0, o = []; j < x.length; j++) o[j] = parseFloat(x[j]);
+  let o = [];
+  for (let i = 0; i < x.length; i++) {
+    o[i] = parseFloat(x[i]);
+  }
+
   return o.splice(0,2);
 }
 
 // get the content of a text node, if any
-function nodeVal(x) { if (x) {norm(x);} return x && x.firstChild && x.firstChild.nodeValue; }
+function nodeVal(x) {
+  if (x) {
+    norm(x);
+  }
+
+  return x && x.firstChild && x.firstChild.nodeValue;
+}
 
 // get one coordinate from a coordinate array, if any
-function coord1(v) { return coordinateArray(v.replace(removeSpace, '').split(',')); }
+function coord1(v) {
+  const removeSpace = (/\s*/g);
+  return coordinateArray(v.replace(removeSpace, '').split(','));
+}
 
 // get all coordinates from a coordinate array as [[],[]]
 function coord(v) {
-  var coords = v.replace(trimSpace, '').split(splitSpace),
+  const trimSpace = (/^\s*|\s*$/g);
+  const splitSpace = (/\s+/);
+
+  let coords = v.replace(trimSpace, '').split(splitSpace),
     o = [];
-  for (var i = 0; i < coords.length; i++) {
+
+  for (let i = 0; i < coords.length; i++) {
     o.push(coord1(coords[i]));
   }
+
   return o;
 }
 
-var parseColor = function(color) {
-  var r = color.slice(6,8);
-  var g = color.slice(4,6);
-  var b = color.slice(2,4);
-  var a = color.slice(0,2);
+function parseColor(color) {
+  const r = color.slice(6,8);
+  const g = color.slice(4,6);
+  const b = color.slice(2,4);
+  const a = color.slice(0,2);
 
   return {
-    rgb: "#" + r + g + b,
+    rgb: '#' + r + g + b,
     opacity: parseInt(a, 16)
   };
-};
-
-var kml = function(data, o) {
-  o = o || {};
-
-  var doc = new DOMParser().parseFromString(data);
-
-  var features = [],
-    // styleindex keeps track of hashed styles in order to match features
-    styleIndex = {},
-    // atomic geospatial types supported by KML - MultiGeometry is
-    // handled separately
-    geotypes = ['Polygon', 'LineString', 'Point', 'Track'],
-    styles = get(doc, 'Style'),
-    styleMaps = get(doc, 'StyleMap');
-
-  for (var k = 0; k < styles.length; k++) {
-    var kmlStyle = styles[k];
-    var styleId = '#' + attr(kmlStyle, 'id');
-
-    var style = {};
-    var iconStyle = get(kmlStyle, 'IconStyle');
-    if (iconStyle[0]) {
-      var iconScale = get(iconStyle[0], 'scale');
-      var icon = get(iconStyle[0], 'Icon');
-
-      style.iconStyle = {};
-      if (iconScale[0]) style.iconStyle.scale = nodeVal(iconScale[0]);
-
-      if (icon) {
-        style.iconStyle.icon = {};
-        var href = get(icon[0], 'href');
-
-        if (href[0]) {
-          style.iconStyle.icon.href = nodeVal(href[0]);
-        }
-      }
-    }
-
-    var lineStyle = get(kmlStyle, 'LineStyle');
-    if (lineStyle[0]) {
-      style.lineStyle = {};
-      var lineColor = get(lineStyle[0], 'color');
-      if (lineColor[0]) {
-        style.lineStyle.color = parseColor(nodeVal(lineColor[0]));
-      }
-
-      var width = get(lineStyle[0], 'width');
-      if (width[0]) {
-        style.lineStyle.width = nodeVal(width[0]);
-      }
-    }
-
-    var labelStyle = get(kmlStyle, 'LabelStyle');
-    if (labelStyle[0]) {
-      style.labelStyle = {};
-      var labelColor = get(labelStyle[0], 'color');
-      if (labelColor[0]) {
-        style.labelStyle.color = parseColor(nodeVal(labelColor[0]));
-      }
-
-      var labelScale = get(labelStyle[0], 'scale');
-      if (labelScale[0]) {
-        style.labelStyle.color = nodeVal(labelScale[0]);
-      }
-    }
-
-    var polyStyle = get(kmlStyle, 'PolyStyle');
-    if (polyStyle[0]) {
-      style.polyStyle = {};
-      var color = get(polyStyle[0], 'color');
-      if (color[0]) {
-        style.polyStyle.color = parseColor(nodeVal(color[0]));
-      }
-    }
-
-    styleIndex[styleId] = style;
-  }
-
-  for (var j = 0; j < styleMaps.length; j++) {
-    var styleMap = styleMaps[j];
-    var pairs = xpath.select("*[local-name()='Pair']", styleMap);
-    for (var p = 0; p < pairs.length; p++) {
-      var key = get(pairs[p], 'key');
-      if (key) {
-        var keyName = nodeVal(key[0]);
-        if (keyName === 'normal') {
-          var styleUrl = get(pairs[p], 'styleUrl');
-          if (styleUrl) {
-            var styleUrlName = nodeVal(styleUrl[0]);
-            var styleMapId = '#' + attr(styleMap, 'id');
-            styleIndex[styleMapId] = styleIndex[styleUrlName];
-          }
-        }
-      }
-    }
-  }
-  log.info('Style index ', styleIndex);
-
-  // only ever get placemarks.
-  // I.E. pull all placemarks regards of depth level
-  var placemarks = xpath.select("//*[local-name()='Placemark']", doc);
-  log.info('Found ' + placemarks.length + ' placemarks in the KML document');
-
-  placemarks.forEach(function(placemark) {
-    features = features.concat(getPlacemark(placemark));
-  });
-
-  function gxCoord(v) {
-    return numarray(v.split(' '));
-  }
-
-  function gxCoords(root) {
-    var elems = get(root, 'coord', 'gx'), coords = [], times = [];
-    if (elems.length === 0) elems = get(root, 'gx:coord');
-    for (var i = 0; i < elems.length; i++) coords.push(gxCoord(nodeVal(elems[i])));
-    var timeElems = get(root, 'when');
-    for (var j = 0; j < timeElems.length; j++) times.push(nodeVal(timeElems[j]));
-    return {
-      coords: coords,
-      times: times
-    };
-  }
-
-  function getGeometry(root) {
-    var geomNode, geomNodes, i, j, k, geoms = [];
-    if (get1(root, 'MultiGeometry')) return getGeometry(get1(root, 'MultiGeometry'));
-    if (get1(root, 'MultiTrack')) return getGeometry(get1(root, 'MultiTrack'));
-    for (i = 0; i < geotypes.length; i++) {
-      geomNodes = get(root, geotypes[i]);
-      if (geomNodes) {
-        for (j = 0; j < geomNodes.length; j++) {
-          geomNode = geomNodes[j];
-          if (geotypes[i] === 'Point') {
-            geoms.push({
-              type: 'Point',
-              coordinates: coord1(nodeVal(get1(geomNode, 'coordinates')))
-            });
-          } else if (geotypes[i] === 'LineString') {
-            geoms.push({
-              type: 'LineString',
-              coordinates: coord(nodeVal(get1(geomNode, 'coordinates')))
-            });
-          } else if (geotypes[i] === 'Polygon') {
-            var rings = get(geomNode, 'LinearRing'),
-              coords = [];
-            for (k = 0; k < rings.length; k++) {
-              coords.push(coord(nodeVal(get1(rings[k], 'coordinates'))));
-            }
-            geoms.push({
-              type: 'Polygon',
-              coordinates: coords
-            });
-          } else if (geotypes[i] === 'Track') {
-            geoms.push({
-              type: 'LineString',
-              coordinates: gxCoords(geomNode)
-            });
-          }
-        }
-      }
-    }
-
-    return geoms;
-  }
-
-  function getPlacemark(root) {
-    var geoms = getGeometry(root), i, properties = {},
-      name = nodeVal(get1(root, 'name')),
-      styleUrl = nodeVal(get1(root, 'styleUrl')),
-      description = nodeVal(get1(root, 'description')),
-      extendedData = get1(root, 'ExtendedData');
-
-    if (!geoms.length) return [];
-    if (name) properties.name = name;
-    if (styleUrl && styleIndex[styleUrl]) {
-      properties.style = styleIndex[styleUrl];
-    }
-    if (description) properties.description = description;
-    if (extendedData) {
-      var datas = get(extendedData, 'Data'),
-        simpleDatas = get(extendedData, 'SimpleData');
-
-      for (i = 0; i < datas.length; i++) {
-        properties[datas[i].getAttribute('name')] = nodeVal(get1(datas[i], 'value'));
-      }
-      for (i = 0; i < simpleDatas.length; i++) {
-        properties[simpleDatas[i].getAttribute('name')] = nodeVal(simpleDatas[i]);
-      }
-    }
-    return [{
-      type: 'Feature',
-      geometry: (geoms.length === 1) ? geoms[0] : {
-        type: 'GeometryCollection',
-        geometries: geoms
-      },
-      properties: properties
-    }];
-  }
-
-  return features;
-};
-
-exports.kml = kml;
+}
