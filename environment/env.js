@@ -12,6 +12,24 @@ if (!(process.env.MAGE_PORT || process.env.PORT || process.env.CF_INSTANCE_PORT 
   process.env.MAGE_PORT = '4242';
 }
 
+var x509Key = process.env.MAGE_MONGO_X509_KEY;
+var x509Cert = process.env.MAGE_MONGO_X509_CERT;
+var x509CaCert = process.env.MAGE_MONGO_X509_CA_CERT;
+var x509KeyPath = process.env.MAGE_MONGO_X509_KEY_FILE;
+var x509CertPath = process.env.MAGE_MONGO_X509_CERT_FILE;
+var x509CaCertPath = process.env.MAGE_MONGO_X509_CA_CERT_FILE;
+if (x509Key) {
+  x509Key = Buffer.from(x509Key);
+  x509Cert = Buffer.from(x509Cert);
+  x509CaCert = Buffer.from(x509CaCert);
+}
+else if (x509KeyPath) {
+  const fs = require('fs');
+  x509Key = fs.readFileSync(x509KeyPath);
+  x509Cert = fs.readFileSync(x509CertPath);
+  x509CaCert = fs.readFileSync(x509CaCertPath);
+}
+
 const appEnv = cfenv.getAppEnv({
   vcap: {
     services: {
@@ -21,10 +39,13 @@ const appEnv = cfenv.getAppEnv({
           plan: 'unlimited',
           credentials: {
             url: process.env.MAGE_MONGO_URL || 'mongodb://127.0.0.1:27017/magedb',
+            poolSize: parseInt(process.env.MAGE_MONGO_POOL_SIZE) || 5,
             username: process.env.MAGE_MONGO_USER,
             password: process.env.MAGE_MONGO_PASSWORD,
             ssl: process.env.MAGE_MONGO_SSL,
-            poolSize: parseInt(process.env.MAGE_MONGO_POOL_SIZE) || 5
+            x509Key: x509Key || null,
+            x509Cert: x509Cert || null,
+            x509CaCert: x509CaCert || null
           }
         }
       ]
@@ -61,33 +82,22 @@ const environment = {
 
 const user = mongoConfig.user || mongoConfig.username;
 const password = mongoConfig.password;
-if (user && password) {
+if (mongoConfig.x509Key) {
+  Object.assign(environment.mongo.options, {
+    sslKey: mongoConfig.x509Key,
+    sslPass: password,
+    sslCert: mongoConfig.x509Cert,
+    sslCA: mongoConfig.x509CaCert,
+    authSource: '$external',
+    ssl: true,
+    checkServerIdentity: false,
+    auth: { authMechanism: 'MONGODB-X509' }
+  });
+}
+else if (user && password) {
   environment.mongo.options.auth = {
     user: user, password: password
   }
 }
-
-/*
-SSL configuration
-Comment out as nessecary to setup ssl between MAGE application MongoDB server
-Refer to the nodejs mongo driver docs for more information about these options
-http://mongodb.github.io/node-mongodb-native/2.0/tutorials/enterprise_features/
-You will also need to setup SSL on the mongodb side: https://docs.mongodb.com/v3.0/tutorial/configure-ssl/
-
-2-way ssl configuration with x509 certificate
-
-Object.assign(environment.mongo.options, {
-  ssl: true,
-  sslValidate: false,
-  sslCA: fs.readFileSync('/etc/ssl/mongodb-cert.crt'),
-  sslKey: fs.readFileSync('/etc/ssl/mongodb.pem'),
-  sslCert: fs.readFileSync('/etc/ssl/mongodb-cert.crt'),
-  auth: {
-    user: '',
-    authdb: '$external' ,
-    authMechanism: 'MONGODB-X509'
-  }
-});
-*/
 
 module.exports = environment;

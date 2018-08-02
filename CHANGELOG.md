@@ -15,6 +15,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Automatically run [database migrations](README.md#mage-database-setup) when the server starts, after connecting to MongoDB successfully
 * Do not accept HTTP client connections until the database connection is successful and all migrations have run
 * Added a [`docker-compose`](docker/docker-compose.yml) file and [`Dockerfile`](docker/server/Dockerfile) to [run MAGE](docker/README.md) as a Docker app
+* Added environment [support](environment/env.js) and [placeholders](environment/magerc.sh) configuration for MongoDB [x509 authentication](https://docs.mongodb.com/v3.6/core/security-x.509/) and 2-way [SSL](https://docs.mongodb.com/v3.6/tutorial/configure-ssl/) between MAGE Server and MongoDB
 
 ##### Bug Fixes
 * Fixed secondary icon uploading for in event/form admin

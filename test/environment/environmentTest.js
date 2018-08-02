@@ -1,5 +1,6 @@
 const
 expect = require('chai').expect,
+path = require('path'),
 proxyquire = require('proxyquire').noPreserveCache();
 
 describe("environment", function() {
@@ -16,6 +17,9 @@ describe("environment", function() {
       'MAGE_MONGO_SSL',
       'MAGE_MONGO_USER',
       'MAGE_MONGO_PASSWORD',
+      'MAGE_MONGO_X509_PEM',
+      'MAGE_MONGO_X509_PASSWORD',
+      'MAGE_MONGO_X509_CA_PEM',
       'MAGE_MONGO_POOL_SIZE',
       'MAGE_MONGO_CONN_TIMEOUT',
       'MAGE_MONGO_CONN_RETRY_DELAY',
@@ -83,6 +87,79 @@ describe("environment", function() {
       expect(options).to.have.property('poolSize', 87);
       expect(options).to.have.property('ssl', true);
       expect(options).to.have.deep.property('auth', { "user": "mage_test", "password": "test_mage" });
+    });
+
+    it("prefers x509 authentication when present", function() {
+
+      const keyFile = path.resolve(__dirname, 'test.key.pem');
+      const certFile = path.resolve(__dirname, 'test.crt.pem');
+      const caCertFile = path.resolve(__dirname, 'test.ca.crt.pem');
+
+      Object.assign(process.env, {
+        MAGE_MONGO_URL: 'mongodb-test://db.test.mage:54545/magedbtest',
+        MAGE_MONGO_SSL: 'false',
+        MAGE_MONGO_USER: 'mage_test',
+        MAGE_MONGO_PASSWORD: 'test_key_pass',
+        MAGE_MONGO_X509_KEY_FILE: keyFile,
+        MAGE_MONGO_X509_CERT_FILE: certFile,
+        MAGE_MONGO_X509_CA_CERT_FILE: caCertFile
+      });
+
+      const env = proxyquire('../../environment/env', {});
+      const mongo = env.mongo;
+      const options = mongo.options;
+
+      expect(mongo).to.have.property('uri', 'mongodb-test://db.test.mage:54545/magedbtest');
+      expect(options).to.have.property('ssl', true);
+      expect(options).to.have.property('sslCA').that.is.instanceOf(Buffer);
+      expect(options.sslCA.toString()).to.equal('TEST CA CERTIFICATE');
+      expect(options).to.have.property('sslKey').that.is.instanceOf(Buffer);
+      expect(options.sslKey.toString()).to.equal('TEST PRIVATE KEY');
+      expect(options).to.have.property('sslCert').that.is.instanceOf(Buffer);
+      expect(options.sslCert.toString()).to.equal('TEST PUBLIC CERTIFICATE');
+      expect(options).to.have.property('sslPass', 'test_key_pass');
+      expect(options).to.have.property('checkServerIdentity', false);
+      expect(options).to.have.property('authSource', '$external');
+      expect(options).to.have.deep.property('auth', { authMechanism: 'MONGODB-X509' });
+      expect(options).to.not.have.property('user');
+    });
+
+    it("uses x509 environment values when present", function() {
+
+      const keyFile = path.resolve(__dirname, 'test.key.pem');
+      const certFile = path.resolve(__dirname, 'test.crt.pem');
+      const caCertFile = path.resolve(__dirname, 'test.ca.crt.pem');
+
+      Object.assign(process.env, {
+        MAGE_MONGO_URL: 'mongodb-test://db.test.mage:54545/magedbtest',
+        MAGE_MONGO_SSL: 'false',
+        MAGE_MONGO_USER: 'mage_test',
+        MAGE_MONGO_PASSWORD: 'test_key_pass',
+        MAGE_MONGO_X509_KEY: 'ENV KEY',
+        MAGE_MONGO_X509_CERT: 'ENV CERT',
+        MAGE_MONGO_X509_CA_CERT: 'ENV CA CERT',
+        MAGE_MONGO_X509_KEY_FILE: keyFile,
+        MAGE_MONGO_X509_CERT_FILE: certFile,
+        MAGE_MONGO_X509_CA_CERT_FILE: caCertFile
+      });
+
+      const env = proxyquire('../../environment/env', {});
+      const mongo = env.mongo;
+      const options = mongo.options;
+
+      expect(mongo).to.have.property('uri', 'mongodb-test://db.test.mage:54545/magedbtest');
+      expect(options).to.have.property('ssl', true);
+      expect(options).to.have.property('sslCA').that.is.instanceOf(Buffer);
+      expect(options.sslCA.toString()).to.equal('ENV CA CERT');
+      expect(options).to.have.property('sslKey').that.is.instanceOf(Buffer);
+      expect(options.sslKey.toString()).to.equal('ENV KEY');
+      expect(options).to.have.property('sslCert').that.is.instanceOf(Buffer);
+      expect(options.sslCert.toString()).to.equal('ENV CERT');
+      expect(options).to.have.property('sslPass', 'test_key_pass');
+      expect(options).to.have.property('checkServerIdentity', false);
+      expect(options).to.have.property('authSource', '$external');
+      expect(options).to.have.deep.property('auth', { authMechanism: 'MONGODB-X509' });
+      expect(options).to.not.have.property('user');
     });
   });
 
