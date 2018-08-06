@@ -27,7 +27,8 @@ describe("api route tests", function() {
     sandbox.mock(SettingModel)
       .expects('findOne')
       .withArgs({type: 'disclaimer'})
-      .yields(null, {
+      .chain('exec')
+      .resolves({
         type : "banner",
         settings : {
           footerText : "Footer Text",
@@ -65,7 +66,8 @@ describe("api route tests", function() {
     sandbox.mock(SettingModel)
       .expects('findOne')
       .withArgs({type: 'disclaimer'})
-      .yields(null, {});
+      .chain('exec')
+      .resolves({});
 
     sandbox.mock(UserModel)
       .expects('count')
@@ -88,7 +90,8 @@ describe("api route tests", function() {
     sandbox.mock(SettingModel)
       .expects('findOne')
       .withArgs({type: 'disclaimer'})
-      .yields(null, {});
+      .chain('exec')
+      .resolves({});
 
     sandbox.mock(UserModel)
       .expects('count')

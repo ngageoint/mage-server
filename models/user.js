@@ -1,13 +1,15 @@
 var mongoose = require('mongoose')
   , async = require("async")
   , hasher = require('../utilities/pbkdf2')()
-  , Token = require('../models/token')
-  , Login = require('../models/login')
-  , Event = require('../models/event')
-  , Team = require('../models/team')
-  , Observation = require('../models/observation')
-  , Location = require('../models/location')
-  , CappedLocation = require('../models/cappedLocation');
+  , moment = require('moment')
+  , Setting = require('./setting')
+  , Token = require('./token')
+  , Login = require('./login')
+  , Event = require('./event')
+  , Team = require('./team')
+  , Observation = require('./observation')
+  , Location = require('./location')
+  , CappedLocation = require('./cappedLocation');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -40,13 +42,20 @@ var UserSchema = new Schema({
     relativePath: { type: String, required: false }
   },
   active: { type: Boolean, required: true },
+  enabled: { type: Boolean, default: true, required: true },
   roleId: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
   status: { type: String, required: false, index: 'sparse' },
   recentEventIds: [{type: Number, ref: 'Event'}],
   authentication: {
     type: { type: String, required: false },
     id: { type: String, required: false },
-    password: { type: String, required: false }
+    password: { type: String, required: false },
+    security: {
+      locked: { type: Boolean },
+      lockedUntil: { type: Date },
+      invalidLoginAttempts: { type: Number, default: 0 },
+      numberOfTimesLocked: { type: Number, default: 0 }
+    }
   }
 },{
   versionKey: false,
@@ -183,7 +192,6 @@ UserSchema.pre('remove', function(next) {
     },
     eventAcl: function(done) {
       Event.removeUserFromAllAcls(user, function(err) {
-        console.log('event acl remove', err);
         done(err);
       });
     },
@@ -192,7 +200,6 @@ UserSchema.pre('remove', function(next) {
     }
   },
   function(err) {
-    console.log('remove all user stuff with err', err);
     next(err);
   });
 });
@@ -332,12 +339,42 @@ exports.updateUser = function(user, callback) {
 };
 
 exports.deleteUser = function(user, callback) {
-  console.log('delete user', user._id);
   user.remove(function(err, removedUser) {
-    // console.log('deleted user', err);
-
     callback(err, removedUser);
   });
+};
+
+exports.invalidLogin = function(user) {
+  return Setting.getSetting('security')
+    .then(securitySettings => {
+      let {max, interval, threshold} = securitySettings.settings.accountLock;
+      let security = user.authentication.security;
+      const invalidLoginAttempts = security.invalidLoginAttempts + 1;
+      if (invalidLoginAttempts >= threshold) {
+        const numberOfTimesLocked = security.numberOfTimesLocked + 1;
+        if (numberOfTimesLocked >= max) {
+          user.enabled = false;
+          user.authentication.security = {};
+        } else {
+          user.authentication.security = {
+            locked: true,
+            numberOfTimesLocked: numberOfTimesLocked,
+            lockedUntil: moment().add(interval, 'seconds').toDate()
+          };
+        }
+      } else {
+        security.invalidLoginAttempts = invalidLoginAttempts;
+        security.locked = undefined;
+        security.lockedUntil = undefined;
+      }
+
+      return user.save();
+    });
+};
+
+exports.validLogin = function(user) {
+  user.authentication.security = {};
+  return user.save();
 };
 
 exports.setStatusForUser = function(user, status, callback) {

@@ -169,18 +169,15 @@ function AdminUserController($scope, $uibModal, $filter, $routeParams, $location
     });
   };
 
-  /* shortcut for giving a user the USER_ROLE */
-  $scope.activateUser = function(user) {
-    user.active = true;
+  $scope.enableUser = function(user) {
+    user.enabled = true;
     UserService.updateUser(user.id, user, function() {
-      $scope.$broadcast('user:activated', user);
     });
   };
 
-  $scope.deactivateUser = function (user) {
-    user.active = false;
+  $scope.disableUser = function (user) {
+    user.enabled = false;
     UserService.updateUser(user.id, user, function() {
-      $scope.$broadcast('user:inactivated', user);
     });
   };
 

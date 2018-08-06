@@ -201,7 +201,6 @@ describe("user create tests", function() {
       .expect('Content-Type', /json/)
       .expect(function(res) {
         var user = res.body;
-        console.log('user', user);
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
       })

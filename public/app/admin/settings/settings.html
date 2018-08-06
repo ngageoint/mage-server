@@ -18,15 +18,117 @@
 
             <div class="row" ng-controller="AdminSettingsController">
               <div class="col-md-3">
-                <ul class="nav nav-pills nav-stacked">
-                  <li ng-class="{active: pill == 'banner'}"><a ng-click="pill = 'banner'" href="javascript:void(0);">Banner</a></li>
+                <ul class="nav nav-pills nav-stacked" ng-if="local">
+                  <li ng-class="{active: pill === 'security'}"><a ng-click="pill = 'security'" href="javascript:void(0);">Security</a></li>
                 </ul>
                 <ul class="nav nav-pills nav-stacked">
-                  <li ng-class="{active: pill == 'disclaimer'}"><a ng-click="pill = 'disclaimer'" href="javascript:void(0);">Disclaimer</a></li>
+                  <li ng-class="{active: pill === 'banner'}"><a ng-click="pill = 'banner'" href="javascript:void(0);">Banner</a></li>
+                </ul>
+                <ul class="nav nav-pills nav-stacked">
+                  <li ng-class="{active: pill === 'disclaimer'}"><a ng-click="pill = 'disclaimer'" href="javascript:void(0);">Disclaimer</a></li>
                 </ul>
               </div>
 
               <div class="col-md-9">
+                <div ng-if="pill == 'security'">
+                  <h2 class="bottom-gap-l"><i class="fa fa-shield"></i> Security Settings</h2>
+
+                  <form ng-submit="saveSecurity()" id="security-form" class="form">
+
+                    <div class="row">
+                      <div class="col-sm-11">
+                        <div class="card">
+                          <div class="card-content">
+                            <div class="row">
+                              <div class="col-md-12 bottom-gap">
+                                <h3>Account Lock</h3>
+                                <hr>
+                              </div>
+                            </div>
+
+                            <div class="row">
+                              <div class="col-sm-12">
+                                <div class="form-group">
+                                  <label class="control-label" for="type">Enabled</label>
+                                  <ui-select ng-model="security.accountLock.enabled" theme="bootstrap">
+                                    <ui-select-match>{{$select.selected.title}}</ui-select-match>
+                                    <ui-select-choices repeat="accountLockChoice.value as accountLockChoice in accountLockChoices">
+                                      <div ng-bind-html="accountLockChoice.title"></div>
+                                      <small ng-bind-html="accountLockChoice.description"></small>
+                                    </ui-select-choices>
+                                  </ui-select>
+                                  <p class="help-block">MAGE can lock user accounts after a number of invalid login attempts for a certain amount of time.</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div ng-show="security.accountLock.enabled">
+                              <div class="row">
+                                <div class="col-sm-12">
+                                  <label class="control-label" for="type">Account Lockout Threshold</label>
+                                  <div class="form-group">
+                                    <input type="number" ng-model="security.accountLock.threshold" class="form-control">
+                                    <p class="help-block">Number of invalid login attempts, after which the users account will be locked.</p>
+                                  </div>
+
+                                </div>
+                              </div>
+
+                              <div class="row">
+                                <div class="col-sm-12">
+                                  <label class="control-label" for="type">Account Lockout Interval (Seconds)</label>
+                                  <div class="form-group">
+                                    <input type="number" ng-model="security.accountLock.interval" class="form-control"></input>
+                                    <p class="help-block">Amount of time in seconds a users account will remain locked after reaching number of invalid login attempts.</p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div class="row">
+                                <div class="col-sm-12">
+                                  <div class="form-group">
+                                    <label class="control-label" for="type">Enable Max Lockout</label>
+                                    <ui-select ng-model="maxLock.enabled" theme="bootstrap">
+                                      <ui-select-match>{{$select.selected.title}}</ui-select-match>
+                                      <ui-select-choices repeat="maxLockChoice.value as maxLockChoice in maxLockChoices">
+                                        <div ng-bind-html="maxLockChoice.title"></div>
+                                        <small ng-bind-html="maxLockChoice.description"></small>
+                                      </ui-select-choices>
+                                    </ui-select>
+                                    <p class="help-block">MAGE can disable user accounts if a user locks their account a certain number of times.</p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div class="row" ng-if="maxLock.enabled">
+                                <div class="col-sm-12">
+                                  <label class="control-label" for="type">Max Lockout Threshold</label>
+                                  <div class="form-group">
+                                    <input type="number" ng-model="security.accountLock.max" class="form-control"></input>
+                                    <p class="help-block">Number of times a user account can be locked before it is disabled. Disabled accounts must be re-enabled by an admin. If left blank this feature is disabled.</p>
+                                  </div>
+                                </div>
+                              </div>
+
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+
+                    <div class="row top-gap-l">
+                      <div class="col-sm-2">
+                        <a class="btn btn-success" ng-class="{'disabled': saving}" ng-click="saveSecurity()"> <i class="fa fa-check"></i> Save</a>
+                      </div>
+                      <div class="col-sm-10">
+                        <div class="fade alert alert-success" ng-class="{'in': saved, 'out': !saved}">{{saveStatus}}</div>
+                        <div class="fade alert alert-error" ng-class="{'in': error, 'out': !error}">{{saveStatus}}</div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+
                 <div ng-if="pill == 'banner'">
                   <form ng-submit="saveBanner()" id="banner-form" class="form">
 
