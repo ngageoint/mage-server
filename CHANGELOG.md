@@ -6,6 +6,12 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+
+##### Bug Fixes
+
+## [5.1.4](https://github.com/ngageoint/mage-server/releases/tag/5.1.4) (08-06-2018)
+
+##### Features
 * Added GeoPackage layer support. Added server side XYZ urls to retrieve imagery from GeoPackages. The web client will use these URLs to display imagery tiles from a GeoPackage.  Added server side url to retrieve vector tiles from feature GeoPackages. The web client will use these to display vector tiles (with the aid of a leaflet plugin).
 * User account lock settings.  Admins can now configure account lock/disable settings for local accounts.
 * Replace local [environment](environment) NPM packages with a single Node module
