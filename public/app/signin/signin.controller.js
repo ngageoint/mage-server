@@ -17,15 +17,19 @@ function SigninController($scope, $rootScope, UserService, api) {
 
   $scope.localAuthenticationStrategy = api.authenticationStrategies.local;
 
+  $scope.hideStatus = function() {
+    $scope.showStatus = false;
+  };
+
   $scope.signin = function () {
     UserService.login({username: this.username, uid: this.uid, password: this.password})
       .then(function () {
         // success
       },
-      function () {
+      function (response) {
         $scope.showStatus = true;
         $scope.statusTitle = 'Failed login';
-        $scope.statusMessage = 'Please check your username, UID, and password and try again.';
+        $scope.statusMessage = response.data || 'Please check your username, UID, and password and try again.';
         $scope.statusLevel = 'alert-danger';
       });
   };

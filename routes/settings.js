@@ -10,35 +10,29 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     access.authorize('READ_SETTINGS'),
     function (req, res, next) {
-      Setting.getSettings(function(err, settings) {
-        if (err) return next(err);
-
-        return res.json(settings);
-      });
+      Setting.getSettings()
+        .then(settings => res.json(settings))
+        .catch(err => next(err));
     }
   );
 
   app.get(
-    '/api/settings/:type(banner|disclaimer)',
+    '/api/settings/:type(banner|disclaimer|security)',
     function (req, res, next) {
-      Setting.getSettingByType(req.params.type, function(err, settingType) {
-        if (err) return next(err);
-
-        return res.json(settingType);
-      });
+      Setting.getSettingByType(req.params.type)
+        .then(setting => res.json(setting))
+        .catch(err => next(err));
     }
   );
 
   app.put(
-    '/api/settings/:type(banner|disclaimer)',
+    '/api/settings/:type(banner|disclaimer|security)',
     passport.authenticate('bearer'),
     access.authorize('UPDATE_SETTINGS'),
     function(req, res, next) {
-      Setting.updateSettingByType(req.params.type, {settings: req.body}, function(err, setting) {
-        if (err) return next(err);
-
-        res.json(setting);
-      });
+      Setting.updateSettingByType(req.params.type, {settings: req.body})
+        .then(setting => res.json(setting))
+        .catch(err => next(err));
     }
   );
 };

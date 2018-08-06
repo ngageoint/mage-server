@@ -1,5 +1,7 @@
 var request = require('supertest')
   , sinon = require('sinon')
+  , expect = require('chai').expect
+  , moment = require('moment')
   , MockToken = require('../mockToken')
   , app = require('../../express')
   , mongoose = require('mongoose');
@@ -15,6 +17,9 @@ var DeviceModel = mongoose.model('Device');
 
 require('../../models/user');
 var UserModel = mongoose.model('User');
+
+require('../../models/setting');
+var SettingModel = mongoose.model('Setting');
 
 require('sinon-mongoose');
 
@@ -45,6 +50,7 @@ describe("user authentication tests", function() {
       username: 'test',
       displayName: 'test',
       active: true,
+      roleId: mongoose.Types.ObjectId(),
       authentication: {
         type: 'local'
       }
@@ -82,6 +88,10 @@ describe("user authentication tests", function() {
         deviceId: '1'
       })
       .yields(null, {});
+
+    sandbox.mock(mockUser)
+      .expects('save')
+      .resolves(mockUser);
 
     request(app)
       .post('/api/login')
@@ -134,6 +144,7 @@ describe("user authentication tests", function() {
       _id: userId,
       username: 'test',
       displayName: 'test',
+      roleId: mongoose.Types.ObjectId(),
       active: true,
       authentication: {}
     });
@@ -144,6 +155,24 @@ describe("user authentication tests", function() {
       .chain('populate', 'roleId')
       .chain('exec')
       .yields(null, mockUser);
+
+    sandbox.mock(SettingModel)
+      .expects('findOne')
+      .withArgs({ type: 'security' })
+      .chain('exec')
+      .resolves({
+        settings: {
+          accountLock: {
+            threshold: 3,
+            max: 3,
+            interval: 60
+          }
+        }
+      });
+
+    sandbox.mock(mockUser)
+      .expects('save')
+      .resolves(mockUser);
 
     request(app)
       .post('/api/login')
@@ -164,6 +193,7 @@ describe("user authentication tests", function() {
       username: 'test',
       displayName: 'test',
       active: true,
+      roleId: mongoose.Types.ObjectId(),
       authentication: {
         type: 'local'
       }
@@ -208,6 +238,7 @@ describe("user authentication tests", function() {
       username: 'test',
       displayName: 'test',
       active: true,
+      roleId: mongoose.Types.ObjectId(),
       authentication: {
         type: 'local'
       }
@@ -231,6 +262,10 @@ describe("user authentication tests", function() {
         uid: '1',
         registered: false
       });
+
+    sandbox.mock(mockUser)
+      .expects('save')
+      .resolves(mockUser);
 
     request(app)
       .post('/api/login')
@@ -275,6 +310,230 @@ describe("user authentication tests", function() {
         res.text.should.equal('successfully logged out');
       })
       .end(done);
+  });
+
+  it("should increment number of times locked on invalid login", function(done) {
+    var userId = mongoose.Types.ObjectId();
+    var mockUser = new UserModel({
+      _id: userId,
+      username: 'test',
+      displayName: 'test',
+      active: true,
+      authentication: {
+        security: {
+          invalidLoginAttempts: 1
+        }
+      }
+    });
+
+    sandbox.mock(UserModel)
+      .expects('findOne')
+      .withArgs({ username: 'test' })
+      .chain('populate', 'roleId')
+      .chain('exec')
+      .yields(null, mockUser);
+
+
+    sandbox.mock(SettingModel)
+      .expects('findOne')
+      .withArgs({ type: 'security' })
+      .chain('exec')
+      .resolves({
+        settings: {
+          accountLock: {
+            threshold: 3,
+            max: 3,
+            interval: 60
+          }
+        }
+      });
+
+    let userSpy = sandbox.mock(mockUser)
+      .expects('save')
+      .resolves(mockUser);
+
+    request(app)
+      .post('/api/login')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        username: 'test',
+        password: 'none'
+      })
+      .expect(401)
+      .end(function(err) {
+        expect(userSpy.callCount).to.equal(1);
+        expect(userSpy.thisValues[0].authentication.security.invalidLoginAttempts).to.equal(2);
+        done(err);
+      });
+  });
+
+  it("should lock account after invalid logins pass threshold", function(done) {
+    var userId = mongoose.Types.ObjectId();
+    var mockUser = new UserModel({
+      _id: userId,
+      username: 'test',
+      displayName: 'test',
+      active: true,
+      authentication: {
+        security: {
+          invalidLoginAttempts: 2
+        }
+      }
+    });
+
+    sandbox.mock(UserModel)
+      .expects('findOne')
+      .withArgs({ username: 'test' })
+      .chain('populate', 'roleId')
+      .chain('exec')
+      .yields(null, mockUser);
+
+
+    sandbox.mock(SettingModel)
+      .expects('findOne')
+      .withArgs({ type: 'security' })
+      .chain('exec')
+      .resolves({
+        settings: {
+          accountLock: {
+            threshold: 3,
+            max: 3,
+            interval: 60
+          }
+        }
+      });
+
+    let userSpy = sandbox.mock(mockUser)
+      .expects('save')
+      .resolves(mockUser);
+
+    request(app)
+      .post('/api/login')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        username: 'test',
+        password: 'none'
+      })
+      .expect(401)
+      .end(function(err) {
+        expect(userSpy.callCount).to.equal(1);
+        expect(userSpy.thisValues[0].authentication.security.locked).to.equal(true);
+        expect(userSpy.thisValues[0].authentication.security.numberOfTimesLocked).to.equal(1);
+        expect(userSpy.thisValues[0].authentication.security.lockedUntil).to.be.a('date');
+        expect(userSpy.thisValues[0].authentication.security.lockedUntil).to.be.above(new Date());
+        done(err);
+      });
+  });
+
+  it("should failed to login with locked account", function(done) {
+    var userId = mongoose.Types.ObjectId();
+    var mockUser = new UserModel({
+      _id: userId,
+      username: 'test',
+      displayName: 'test',
+      active: true,
+      authentication: {
+        security: {
+          locked: true,
+          lockedUntil: moment().add(5, 'minutes')
+        }
+      }
+    });
+
+    sandbox.mock(UserModel)
+      .expects('findOne')
+      .withArgs({ username: 'test' })
+      .chain('populate', 'roleId')
+      .chain('exec')
+      .yields(null, mockUser);
+
+
+    sandbox.mock(SettingModel)
+      .expects('findOne')
+      .withArgs({ type: 'security' })
+      .chain('exec')
+      .resolves({
+        settings: {
+          accountLock: {
+            threshold: 3,
+            max: 3,
+            interval: 60
+          }
+        }
+      });
+
+    sandbox.mock(mockUser)
+      .expects('save')
+      .resolves(mockUser);
+
+    request(app)
+      .post('/api/login')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        username: 'test',
+        password: 'none'
+      })
+      .expect(401)
+      .end(function(err, response) {
+        expect(response.text).to.equal('Your account has been temporarily locked, please try again later or contact a MAGE administrator for assistance.');
+        done(err);
+      });
+  });
+
+  it("should failed to login with disabled account", function(done) {
+    var userId = mongoose.Types.ObjectId();
+    var mockUser = new UserModel({
+      _id: userId,
+      username: 'test',
+      displayName: 'test',
+      active: true,
+      enabled: false,
+      authentication: {
+      }
+    });
+
+    sandbox.mock(UserModel)
+      .expects('findOne')
+      .withArgs({ username: 'test' })
+      .chain('populate', 'roleId')
+      .chain('exec')
+      .yields(null, mockUser);
+
+
+    sandbox.mock(SettingModel)
+      .expects('findOne')
+      .withArgs({ type: 'security' })
+      .chain('exec')
+      .resolves({
+        settings: {
+          accountLock: {
+            threshold: 3,
+            max: 3,
+            interval: 60
+          }
+        }
+      });
+
+    sandbox.mock(mockUser)
+      .expects('save')
+      .resolves(mockUser);
+
+    request(app)
+      .post('/api/login')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        username: 'test',
+        password: 'none'
+      })
+      .expect(401)
+      .end(function(err, response) {
+        expect(response.text).to.equal('Your account has been disabled, please contact a MAGE administrator for assistance.');
+        done(err);
+      });
   });
 
 });

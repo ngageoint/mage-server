@@ -84,6 +84,8 @@ describe("device create tests", function() {
     var mockUser = new UserModel({
       _id: userId,
       username: 'test',
+      displayName: 'test',
+      roleId: mongoose.Types.ObjectId(),
       active: true,
       authentication: {
         type: 'local'
@@ -126,6 +128,10 @@ describe("device create tests", function() {
         userId: userId.toString()
       });
 
+    sandbox.mock(mockUser)
+      .expects('save')
+      .resolves(mockUser);
+
     request(app)
       .post('/api/devices')
       .set('Accept', 'application/json')
@@ -155,7 +161,9 @@ describe("device create tests", function() {
     var mockUser = new UserModel({
       _id: userId,
       username: 'test',
+      displayName: 'test',
       active: true,
+      roleId: mongoose.Types.ObjectId(),
       authentication: {
         type: 'local'
       }
@@ -171,6 +179,10 @@ describe("device create tests", function() {
       .chain('populate')
       .chain('exec')
       .yields(null, mockUser);
+
+    sandbox.mock(mockUser)
+      .expects('save')
+      .resolves(mockUser);
 
     sandbox.mock(DeviceModel)
       .expects('findOne')
