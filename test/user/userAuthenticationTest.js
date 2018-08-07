@@ -163,6 +163,7 @@ describe("user authentication tests", function() {
       .resolves({
         settings: {
           accountLock: {
+            enabled: true,
             threshold: 3,
             max: 3,
             interval: 60
@@ -341,6 +342,7 @@ describe("user authentication tests", function() {
       .resolves({
         settings: {
           accountLock: {
+            enabled: true,
             threshold: 3,
             max: 3,
             interval: 60
@@ -397,6 +399,7 @@ describe("user authentication tests", function() {
       .resolves({
         settings: {
           accountLock: {
+            enabled: true,
             threshold: 3,
             max: 3,
             interval: 60
@@ -457,6 +460,7 @@ describe("user authentication tests", function() {
       .resolves({
         settings: {
           accountLock: {
+            enabled: true,
             threshold: 3,
             max: 3,
             interval: 60
@@ -510,6 +514,7 @@ describe("user authentication tests", function() {
       .resolves({
         settings: {
           accountLock: {
+            enabled: true,
             threshold: 3,
             max: 3,
             interval: 60
