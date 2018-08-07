@@ -24,6 +24,7 @@ function AdminUsersController($scope, $uibModal, $filter, $location, LocalStorag
     case 'all': return true;
     case 'active': return user.active;
     case 'inactive': return !user.active;
+    case 'disabled': return !user.enabled;
     }
   };
 
@@ -86,7 +87,6 @@ function AdminUsersController($scope, $uibModal, $filter, $location, LocalStorag
     });
   };
 
-  /* shortcut for giving a user the USER_ROLE */
   $scope.activateUser = function ($event, user) {
     $event.stopPropagation();
 
@@ -98,6 +98,14 @@ function AdminUsersController($scope, $uibModal, $filter, $location, LocalStorag
       $scope.$apply(function() {
         $scope.error = response.responseText;
       });
+    });
+  };
+
+  $scope.enableUser = function ($event, user) {
+    $event.stopPropagation();
+
+    user.enabled = true;
+    UserService.updateUser(user.id, user, function() {
     });
   };
 }

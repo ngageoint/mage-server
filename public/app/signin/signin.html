@@ -81,7 +81,7 @@
       <!-- Status message area -->
       <div class="row top-gap" ng-show="showStatus">
         <div class="col-md-12 alert" ng-class="statusLevel">
-          <button type="button" class="close" ng-click="setShowStatus(false)">&times;</button>
+          <button type="button" class="close" ng-click="hideStatus()">&times;</button>
           <h4>{{statusTitle}}</h4>
           {{statusMessage}}
         </div>

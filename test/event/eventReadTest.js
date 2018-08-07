@@ -139,7 +139,6 @@ describe("event read tests", function() {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect(function(res) {
-        console.log('res.body', res.body);
         should.exist(res.body);
         res.body.should.be.an('array');
         expect(res.body).to.have.lengthOf(1);

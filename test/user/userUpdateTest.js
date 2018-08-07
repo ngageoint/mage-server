@@ -100,6 +100,7 @@ describe("user update tests", function() {
       username: 'test',
       displayName: 'test',
       active: true,
+      roleId: mongoose.Types.ObjectId(),
       authentication: {
         type: 'local'
       }
@@ -115,6 +116,10 @@ describe("user update tests", function() {
     sandbox.mock(UserModel.prototype)
       .expects('validPassword')
       .yields(null, true);
+
+    sandbox.mock(mockUser)
+      .expects('save')
+      .resolves(mockUser);
 
     request(app)
       .put('/api/users/myself/password')
@@ -158,6 +163,10 @@ describe("user update tests", function() {
     sandbox.mock(UserModel.prototype)
       .expects('validPassword')
       .yields(null, true);
+
+    sandbox.mock(mockUser)
+      .expects('save')
+      .resolves(mockUser);
 
     request(app)
       .put('/api/users/myself/password')
@@ -367,7 +376,7 @@ describe("user update tests", function() {
       .end(done);
   });
 
-  it('should deactivate user', function(done) {
+  it('should disable user', function(done) {
     mockTokenWithPermission('UPDATE_USER');
 
     var id = mongoose.Types.ObjectId();
@@ -387,7 +396,7 @@ describe("user update tests", function() {
 
     sandbox.mock(User)
       .expects('updateUser')
-      .withArgs(sinon.match({active: false}))
+      .withArgs(sinon.match({enabled: false}))
       .yields(null, mockUser);
 
     request(app)
@@ -395,7 +404,7 @@ describe("user update tests", function() {
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .send({
-        active: 'false'
+        enabled: 'false'
       })
       .expect(200)
       .expect('Content-Type', /json/)

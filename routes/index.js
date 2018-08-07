@@ -20,9 +20,9 @@ module.exports = function(app, security) {
         });
       },
       disclaimer: function(done) {
-        Setting.getSetting('disclaimer', function(err, disclaimer) {
-          done(err, disclaimer || {});
-        });
+        Setting.getSetting('disclaimer')
+          .then(disclaimer => done(null, disclaimer || {}))
+          .catch(err => done(err));
       }
     }, function(err, results) {
       if (err) return next(err);
