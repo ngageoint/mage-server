@@ -10,14 +10,13 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
     , Device = require('../models/device')
     , Role = require('../models/role')
     , api = require('../api')
-    , config = require('../config.js')
-    , userTransformer = require('../transformers/user');
+    , config = require('../config.js');
 
   Issuer.useRequest();
 
-  var strategyConfig = config.api.authenticationStrategies['login-gov']
+  var strategyConfig = config.api.authenticationStrategies['login-gov'];
   console.log('Configuring login.gov authentication', strategyConfig);
-  loginGov = {};
+  let loginGov = {};
 
   var key = fs.readFileSync(strategyConfig.keyFile, 'ascii');
   var jwk = pem2jwk(key);
@@ -89,7 +88,7 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
       });
     }));
 
-    console.log("login.gov configuration success");      
+    console.log("login.gov configuration success");
   }).catch(function(err) {
     console.log('login.gov configuration error', err);
   });
@@ -114,37 +113,34 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
   }
 
   function authorizeUser(req, res, next) {
-     var token = req.param('access_token');
-     client.userinfo(token)
-       .then(function(userinfo) {
-         console.log('got userinfo from login.gov');
-         User.getUserByAuthenticationId('login-gov', userinfo.email, function(err, user) {
-           if (err) return next(err);
+    var token = req.param('access_token');
+    client.userinfo(token)
+      .then(function(userinfo) {
+        console.log('got userinfo from login.gov');
+        User.getUserByAuthenticationId('login-gov', userinfo.email, function(err, user) {
+          if (err) return next(err);
 
-           if (!user || !user.active) {
-             return res.sendStatus(403);
-           } 
+          if (!user || !user.active) {
+            return res.sendStatus(403);
+          }
 
-           req.user = user;
-           next();
-         });
-       })
-       .catch(function() {
-         console.log('not authenticated based on login.gov access token');
-         res.sendStatus(403);
-       });
+          req.user = user;
+          next();
+        });
+      })
+      .catch(function() {
+        console.log('not authenticated based on login.gov access token');
+        res.sendStatus(403);
+      });
   }
 
   function authorizeDevice(req, res, next) {
-    console.log('lets try to authorize the device', req.param('uid'));
     provisioning.provision.check(provisioning.strategy, {uid: req.param('uid')}, function(err, device) {
       if (err) return next(err);
 
       if (provisioning.strategy === 'uid' && (!device || !device.registered)) {
-        console.log('device not authorized');
         return res.sendStatus(403);
       } else {
-        console.log('device is good');
         req.device = device;
         next();
       }
@@ -176,20 +172,18 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
         userId: req.user.id
       };
 
-      Device.getDeviceByUid(newDevice.uid, function(err, device) {
-        if (err) return next(err);
+      Device.getDeviceByUid(newDevice.uid)
+        .then(device => {
+          if (device) {
+            // already exists, do not register
+            return res.json(device);
+          }
 
-        if (device) {
-          // already exists, do not register
-          return res.json(device);
-        }
-
-        Device.createDevice(newDevice, function(err, newDevice) {
-          if (err) return next(err);
-
-          res.json(newDevice);
-        });
-      });
+          Device.createDevice(newDevice)
+            .then(device => res.json(device))
+            .catch(err => next(err));
+        })
+        .catch(err => next(err));
     }
   );
 
@@ -212,10 +206,10 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
           icon: api.authenticationStrategies['login-gov'].icon
         };
 
-        res.json({ 
-          user: req.user, 
-          device: req.device, 
-          token: token.token, 
+        res.json({
+          user: req.user,
+          device: req.device,
+          token: token.token,
           expirationDate: token.expirationDate ,
           api: api
         });
@@ -228,7 +222,7 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
   app.get(
     '/auth/login-gov/callback/loa-1',
     authenticate,
-    function(req, res, next) {
+    function(req, res) {
       res.render('authentication', { host: req.getRoot(), success: true, login: {user: req.user, oauth: { access_token: req.info.access_token}}});
     }
   );

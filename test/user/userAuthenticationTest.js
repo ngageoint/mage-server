@@ -70,7 +70,8 @@ describe("user authentication tests", function() {
     sandbox.mock(DeviceModel)
       .expects('findOne')
       .withArgs({uid: '1'})
-      .yields(null, {
+      .chain('exec')
+      .resolves({
         uid: '1',
         registered: true
       });
@@ -214,7 +215,8 @@ describe("user authentication tests", function() {
     sandbox.mock(DeviceModel)
       .expects('findOne')
       .withArgs({uid: '1'})
-      .yields(null, {
+      .chain('exec')
+      .resolves({
         uid: '1',
         registered: true
       });
@@ -259,7 +261,8 @@ describe("user authentication tests", function() {
     sandbox.mock(DeviceModel)
       .expects('findOne')
       .withArgs({uid: '1'})
-      .yields(null, {
+      .chain('exec')
+      .resolves({
         uid: '1',
         registered: false
       });

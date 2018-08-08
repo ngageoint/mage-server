@@ -9,23 +9,21 @@ module.exports = function(provision) {
   provision.use(new UidStrategy(
     function(uid, done) {
       log.info('Authenticating device: ' + uid);
-      Device.getDeviceByUid(uid, function(err, device) {
-        if (err) {
-          return done(err);
-        }
+      Device.getDeviceByUid(uid)
+        .then(device => {
+          if (!device) {
+            log.warn('Failed device provision attempt: Device uid ' + uid + ' does not exist');
+            return done(null, false);
+          }
 
-        if (!device) {
-          log.warn('Failed device provision attempt: Device uid ' + uid + ' does not exist');
-          return done(null, false);
-        }
+          if (!device.registered) {
+            log.warn('Failed device provision attempt: Device uid ' + uid + ' is not registered');
+            return done(null, false);
+          }
 
-        if (!device.registered) {
-          log.warn('Failed device provision attempt: Device uid ' + uid + ' is not registered');
-          return done(null, false);
-        }
-
-        return done(null, device);
-      });
+          done(null, device);
+        })
+        .catch(err => done(err));
     }
   ));
 

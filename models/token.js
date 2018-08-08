@@ -24,10 +24,7 @@ TokenSchema.index({'expirationDate': 1}, {expireAfterSeconds: 0});
 var Token = mongoose.model('Token', TokenSchema);
 
 exports.getToken = function(token, callback) {
-  Token.findOne({token: token}).populate('userId').exec(function(err, token) {
-    console.log("got token with error", err);
-    console.log("got token", token);
-    
+  Token.findOne({token: token}).populate('userId').exec(function(err, token) {    
     if (err) return callback(err);
 
     if (!token || !token.userId) {

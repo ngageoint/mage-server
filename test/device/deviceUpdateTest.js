@@ -39,7 +39,8 @@ describe("device update tests", function() {
     var userId = mongoose.Types.ObjectId();
     sandbox.mock(DeviceModel)
       .expects('findByIdAndUpdate')
-      .yields(null, {
+      .chain('exec')
+      .resolves({
         uid: '12345',
         name: 'Test Device',
         registered: true,
@@ -74,7 +75,8 @@ describe("device update tests", function() {
     sandbox.mock(DeviceModel)
       .expects('findByIdAndUpdate')
       .withArgs('123', {})
-      .yields(null, {
+      .chain('exec')
+      .resolves({
         uid: '12345',
         name: 'Test Device',
         registered: true,

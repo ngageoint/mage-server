@@ -41,16 +41,14 @@ app.use(session({
   }
 }));
 
-passport.serializeUser(function(user, done) { 
-  console.log('------------Attempt to serialize user', user.username);
-  done(null, user); 
+passport.serializeUser(function(user, done) {
+  done(null, user);
 });
 
-passport.deserializeUser(function(user, done) { 
-  console.log('------------Attempt to deserialize user', user.username);
+passport.deserializeUser(function(user, done) {
   user._id = user.id;
-  done( null, user); 
-}); // this is where you might fetch a user record from the database. see http://www.passportjs.org/docs/configure/#sessions
+  done( null, user);
+});
 
 app.use(require('body-parser')({ keepExtensions: true}));
 app.use(require('multer')());

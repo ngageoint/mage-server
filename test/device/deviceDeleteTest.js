@@ -45,11 +45,13 @@ describe("device delete tests", function() {
     });
     sandbox.mock(DeviceModel)
       .expects('findById')
-      .yields(null, mockDevice);
+      .chain('exec')
+      .resolves(mockDevice);
 
     sandbox.mock(mockDevice)
       .expects('remove')
-      .yields(null, mockDevice);
+      .chain('exec')
+      .resolves(mockDevice);
 
     request(app)
       .delete('/api/devices/123')
@@ -69,7 +71,8 @@ describe("device delete tests", function() {
 
     sandbox.mock(DeviceModel)
       .expects('findById')
-      .yields(null, null);
+      .chain('exec')
+      .resolves(null);
 
     request(app)
       .delete('/api/devices/123')

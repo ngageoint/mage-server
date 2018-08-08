@@ -10,19 +10,11 @@ module.exports = function(app, security) {
 
   // Create a new device, requires CREATE_DEVICE role
   app.post('/api/devices',
-    resource.isAuthenticated(passport, 'bearer'),
+    passport.authenticate('bearer'),
     resource.parseDeviceParams,
     resource.validateDeviceParams,
     resource.createWithAccess
   );
-
-  // Create a new device
-  // Any authenticated user can create a new device, the registered field
-  // will be set to false.
-  //app.post('/api/devices',
-  //  passport.authenticate('local'),
-  //  resource.create
-  //);
 
   app.get('/api/devices/count',
     passport.authenticate('bearer'),
@@ -70,46 +62,19 @@ DeviceResource.prototype.createWithAccess = function(req, res, next) {
   // Automatically register any device created by an ADMIN
   req.newDevice.registered = true;
 
-  DeviceModel.createDevice(req.newDevice, function(err, device) {
-    if (err) return next(err);
-
-    res.json(device);
-  });
-};
-
-DeviceResource.prototype.create = function(req, res, next) {
-  var newDevice = {
-    uid: req.param('uid'),
-    name: req.param('name'),
-    registered: false,
-    description: req.param('description'),
-    userAgent: req.headers['user-agent'],
-    appVersion: req.param('appVersion'),
-    userId: req.user.id
-  };
-
-  DeviceModel.getDeviceByUid(newDevice.uid, function(err, device) {
-    if (err) return next(err);
-
-    if (device) {
-      // already exists, do not register
-      return res.json(device);
-    }
-
-    DeviceModel.createDevice(newDevice, function(err, newDevice) {
-      if (err) return next(err);
-
-      res.json(newDevice);
-    });
-  });
+  console.log('create ADMIN device');
+  DeviceModel.createDevice(req.newDevice)
+    .then(device => {
+      console.log('created a ADMIN device');
+      res.json(device);
+    })
+    .catch(err => next(err));
 };
 
 DeviceResource.prototype.count = function (req, res, next) {
-  DeviceModel.count(function (err, count) {
-    if (err) return next(err);
-
-    res.json({count: count});
-  });
+  DeviceModel.count()
+    .then(count => res.json({count: count}))
+    .catch(err => next(err));
 };
 
 DeviceResource.prototype.getDevices = function (req, res, next) {
@@ -126,11 +91,9 @@ DeviceResource.prototype.getDevices = function (req, res, next) {
     }
   }
 
-  DeviceModel.getDevices({filter: filter, expand: expand}, function (err, devices) {
-    if (err) return next(err);
-
-    res.json(devices);
-  });
+  DeviceModel.getDevices({filter: filter, expand: expand})
+    .then(devices => res.json(devices))
+    .catch(err => next(err));
 };
 
 DeviceResource.prototype.getDevice = function(req, res, next) {
@@ -142,11 +105,9 @@ DeviceResource.prototype.getDevice = function(req, res, next) {
     }
   }
 
-  DeviceModel.getDeviceById(req.params.id, {expand: expand}, function (err, device) {
-    if (err) return next(err);
-
-    res.json(device);
-  });
+  DeviceModel.getDeviceById(req.params.id, {expand: expand})
+    .then(device => res.json(device))
+    .catch(err => next(err));
 };
 
 DeviceResource.prototype.updateDevice = function(req, res, next) {
@@ -157,34 +118,19 @@ DeviceResource.prototype.updateDevice = function(req, res, next) {
   if (req.newDevice.registered !== undefined) update.registered = req.newDevice.registered;
   if (req.newDevice.userId) update.userId = req.newDevice.userId;
 
-  DeviceModel.updateDevice(req.param('id'), update, function(err, device) {
-    if (err) return next(err);
-
-    res.json(device);
-  });
+  DeviceModel.updateDevice(req.param('id'), update)
+    .then(device => res.json(device))
+    .catch(err => next(err));
 };
 
 DeviceResource.prototype.deleteDevice = function(req, res, next) {
-  DeviceModel.deleteDevice(req.param('id'), function(err, device) {
-    if (err) return next(err);
+  DeviceModel.deleteDevice(req.param('id'))
+    .then(device => {
+      if (!device) return res.sendStatus(404);
 
-    if (!device) return res.sendStatus(404);
-
-    res.json(device);
-  });
-};
-
-DeviceResource.prototype.isAuthenticated = function(passport, strategy) {
-  return function(req, res, next) {
-    passport.authenticate(strategy, function(err, user) {
-      if (err) return next(err);
-
-      if (user) req.user = user;
-
-      next();
-
-    })(req, res, next);
-  };
+      res.json(device);
+    })
+    .catch(err => next(err));
 };
 
 DeviceResource.prototype.parseDeviceParams = function(req, res, next) {

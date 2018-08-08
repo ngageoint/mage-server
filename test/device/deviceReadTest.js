@@ -37,7 +37,8 @@ describe("device read tests", function() {
 
     sandbox.mock(DeviceModel)
       .expects('find')
-      .yields(null, [{
+      .chain('exec')
+      .resolves([{
         uid: '123'
       },{
         uid: '456'
@@ -66,7 +67,8 @@ describe("device read tests", function() {
     }];
     sandbox.mock(DeviceModel)
       .expects('find')
-      .yields(null, mockDevices);
+      .chain('exec')
+      .resolves(mockDevices);
 
     sandbox.mock(DeviceModel)
       .expects('populate')
@@ -99,7 +101,8 @@ describe("device read tests", function() {
     sandbox.mock(DeviceModel)
       .expects('find')
       .withArgs({ registered: true })
-      .yields(null, [{
+      .chain('exec')
+      .resolves([{
         uid: '123'
       },{
         uid: '456'
@@ -125,7 +128,8 @@ describe("device read tests", function() {
     sandbox.mock(DeviceModel)
       .expects('find')
       .withArgs({ registered: false })
-      .yields(null, [{
+      .chain('exec')
+      .resolves([{
         uid: '123'
       },{
         uid: '456'
@@ -150,7 +154,8 @@ describe("device read tests", function() {
 
     sandbox.mock(DeviceModel)
       .expects('findById')
-      .yields(null, {
+      .chain('exec')
+      .resolves({
         uid: '123'
       });
 
@@ -174,7 +179,8 @@ describe("device read tests", function() {
 
     sandbox.mock(DeviceModel)
       .expects('count')
-      .yields(null, 2);
+      .chain('exec')
+      .resolves(2);
 
     request(app)
       .get('/api/devices/count')

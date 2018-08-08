@@ -48,9 +48,10 @@ User.prototype.login = function(user, device, options, callback) {
     });
 
     // set user-agent and mage version on device
-    DeviceModel.updateDevice(device._id, {userAgent: options.userAgent, appVersion: options.appVersion}, function(err) {
-      if (err) log.error('could not add metadata to device', err);
-    });
+    DeviceModel.updateDevice(device._id, {userAgent: options.userAgent, appVersion: options.appVersion})
+      .catch(err => {
+        log.error('could not add metadata to device', err);
+      });
 
   });
 };

@@ -4,6 +4,7 @@ module.exports = function(app, passport, provisioning) {
     , moment = require('moment')
     , LocalStrategy = require('passport-local').Strategy
     , User = require('../models/user')
+    , Device = require('../models/device')
     , api = require('../api')
     , config = require('../config.js')
     , userTransformer = require('../transformers/user');
@@ -77,6 +78,49 @@ module.exports = function(app, passport, provisioning) {
       });
     }
   ));
+
+
+  // Create a new device
+  // Any authenticated user can create a new device, the registered field
+  // will be set to false.
+  app.post('/api/devices',
+    function authenticate(req, res, next) {
+      passport.authenticate('local', function(err, user) {
+        if (err) return next(err);
+        if (user) {
+          req.user = user;
+          next();
+        } else {
+          // skip to next route
+          return next('route');
+        }
+      })(req, res, next);
+    },
+    function(req, res, next) {
+      var newDevice = {
+        uid: req.param('uid'),
+        name: req.param('name'),
+        registered: false,
+        description: req.param('description'),
+        userAgent: req.headers['user-agent'],
+        appVersion: req.param('appVersion'),
+        userId: req.user.id
+      };
+
+      Device.getDeviceByUid(newDevice.uid)
+        .then(device => {
+          if (device) {
+            // already exists, do not register
+            return res.json(device);
+          }
+
+          Device.createDevice(newDevice)
+            .then(newDevice => res.json(newDevice))
+            .catch(err => next(err));
+        })
+        .catch(err => next(err));
+    }
+  );
 
   app.post(
     '/api/login',

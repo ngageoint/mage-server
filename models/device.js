@@ -84,73 +84,53 @@ DeviceSchema.set("toJSON", {
 var Device = mongoose.model('Device', DeviceSchema);
 exports.Model = Device;
 
-exports.getDeviceById = function(id, options, callback) {
-  if (typeof options === 'function') {
-    callback = options;
-    options = {};
+exports.getDeviceById = function(id, options) {
+  options = options || {};
+
+  const query = Device.findById(id);
+
+  if (options.expand && options.expand.user) {
+    query.populate('userId');
   }
-  
-  Device.findById(id, function(err, device) {
-    var expand = options.expand || {};
-    if (expand.user) {
-      Device.populate(device, 'userId', callback);
-    } else {
-      callback(err, device);
-    }
-  });
+
+  return query.exec();
 };
 
-exports.getDeviceByUid = function(uid, options, callback) {
-  if (typeof options === 'function') {
-    callback = options;
-    options = {};
+exports.getDeviceByUid = function(uid, { expand = {} } = {}) {
+  const query = Device.findOne({ uid: uid.toLowerCase() });
+
+  if (expand.user) {
+    query.populate('userId');
   }
 
-  var conditions = {uid: uid.toLowerCase()};
-  Device.findOne(conditions, function(err, device) {
-    var expand = options.expand || {};
-    if (expand.user) {
-      Device.populate(device, 'userId', callback);
-    } else {
-      callback(err, device);
-    }
-  });
+  return query.exec();
 };
 
-exports.getDevices = function(options, callback) {
-  if (typeof options === 'function') {
-    callback = options;
-    options = {};
-  }
+exports.getDevices = function({expand = {}, filter = {}} = {}) {
+  var condition = {};
 
-  var conditions = {};
-
-  var filter = options.filter || {};
   if (filter.registered === true) {
-    conditions.registered = true;
+    condition.registered = true;
   }
 
   if (filter.registered === false) {
-    conditions.registered = false;
+    condition.registered = false;
   }
 
-  Device.find(conditions, function (err, devices) {
-    var expand = options.expand || {};
-    if (expand.user) {
-      Device.populate(devices, 'userId', callback);
-    } else {
-      callback(err, devices);
-    }
-  });
+  const query = Device.find(condition);
+
+  if (expand.user) {
+    query.populate('userId');
+  }
+
+  return query.exec();
 };
 
-exports.count = function(callback) {
-  Device.count({}, function(err, count) {
-    callback(err, count);
-  });
+exports.count = function() {
+  return Device.count({}).exec();
 };
 
-exports.createDevice = function(device, callback) {
+exports.createDevice = function(device) {
   // TODO there is a ticket in mongooose that is currently open
   // to add support for running setters on findOneAndUpdate
   // once that happens there is no need to do this
@@ -166,28 +146,21 @@ exports.createDevice = function(device, callback) {
 
   if (device.registered) update.registered = device.registered;
 
-  Device.findOneAndUpdate({uid: device.uid}, update, {new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true}, function(err, newDevice) {
-    callback(err, newDevice);
-  });
+  return Device.findOneAndUpdate({uid: device.uid}, update, {new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true}).exec();
 };
 
-exports.updateDevice = function(id, update, callback) {
+exports.updateDevice = function(id, update) {
   // TODO there is a ticket in mongooose that is currently open
   // to add support for running setters on findOneAndUpdate
   // once that happens there is no need to do this
   if (update.uid) update.uid = update.uid.toLowerCase();
 
-  Device.findByIdAndUpdate(id, update, {new: true, setDefaultsOnInsert: true, runValidators: true}, function(err, updatedDevice) {
-    callback(err, updatedDevice);
-  });
+  return Device.findByIdAndUpdate(id, update, {new: true, setDefaultsOnInsert: true, runValidators: true}).exec();
 };
 
-exports.deleteDevice = function(id, callback) {
-  Device.findById(id, function(err, device) {
-    if (!device) return callback(null, null);
-
-    device.remove(function(err, removedDevice) {
-      callback(err, removedDevice);
+exports.deleteDevice = function(id) {
+  return Device.findById(id).exec()
+    .then(device => {
+      return device ? device.remove() : Promise.resolve(device);
     });
-  });
 };

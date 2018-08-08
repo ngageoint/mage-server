@@ -67,9 +67,11 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
       if (err) return next(err);
 
       if (provisioning.strategy === 'uid' && (!device || !device.registered)) {
-        Device.createDevice({ uid: req.param('uid'), userId: req.user._id, appVersion: req.loginOptions.appVersion, userAgent: req.loginOptions.userAgent}, function(err, newDevice) {
-          return res.json({device: newDevice, errorMessage: 'Your device needs to be registered, please contact your MAGE administrator.'});
-        });
+        Device.createDevice({ uid: req.param('uid'), userId: req.user._id, appVersion: req.loginOptions.appVersion, userAgent: req.loginOptions.userAgent})
+          .then(device => {
+            res.json({device: device, errorMessage: 'Your device needs to be registered, please contact your MAGE administrator.'});
+          })
+          .catch(err => next(err));
       } else {
         req.device = device;
         next();

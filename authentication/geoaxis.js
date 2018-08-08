@@ -2,13 +2,11 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
 
   var GeoaxisStrategy = require('passport-geoaxis-oauth20').Strategy
     , crypto = require('crypto')
-    , fs = require('fs')
     , User = require('../models/user')
     , Device = require('../models/device')
     , Role = require('../models/role')
     , api = require('../api')
-    , config = require('../config.js')
-    , userTransformer = require('../transformers/user');
+    , config = require('../config.js');
 
   console.log('configuring GeoAxis authentication');
 
@@ -81,23 +79,23 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
   }
 
   function authorizeUser(req, res, next) {
-     let token = req.param('access_token');
-     strategy.userProfile(token, function(err, profile) {
-       if (err) {
-         console.log('not authenticated based on geoaxis access token');
-         return res.sendStatus(403);
-       }
- 
-       let geoaxisUser = profile._json;
-       User.getUserByAuthenticationId('geoaxis', geoaxisUser.email, function(err, user) {
-         if (err) return next(err);
+    let token = req.param('access_token');
+    strategy.userProfile(token, function(err, profile) {
+      if (err) {
+        console.log('not authenticated based on geoaxis access token');
+        return res.sendStatus(403);
+      }
 
-         if (!user || !user.active) {
-           return res.sendStatus(403);
-         } 
+      let geoaxisUser = profile._json;
+      User.getUserByAuthenticationId('geoaxis', geoaxisUser.email, function(err, user) {
+        if (err) return next(err);
 
-         req.user = user;
-         next();
+        if (!user || !user.active) {
+          return res.sendStatus(403);
+        }
+
+        req.user = user;
+        next();
       });
     });
   }
@@ -107,10 +105,8 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
       if (err) return next(err);
 
       if (provisioning.strategy === 'uid' && (!device || !device.registered)) {
-        console.log('device not authorized');
         return res.sendStatus(403);
       } else {
-        console.log('device is good');
         req.device = device;
         next();
       }
@@ -118,7 +114,7 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
   }
 
   app.get(
-    '/auth/geoaxis/signup', 
+    '/auth/geoaxis/signup',
     function(req, res, next) {
       passport.authenticate('geoaxis', {
         state: JSON.stringify({type: 'signup', id: crypto.randomBytes(32).toString('hex')})
@@ -142,24 +138,22 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
         userId: req.user.id
       };
 
-      Device.getDeviceByUid(newDevice.uid, function(err, device) {
-        if (err) return next(err);
+      Device.getDeviceByUid(newDevice.uid)
+        .then(device => {
+          if (device) {
+            // already exists, do not register
+            return res.json(device);
+          }
 
-        if (device) {
-          // already exists, do not register
-          return res.json(device);
-        }
-
-        Device.createDevice(newDevice, function(err, newDevice) {
-          if (err) return next(err);
-
-          res.json(newDevice);
-        });
-      });
+          Device.createDevice(newDevice)
+            .then(device => res.json(device))
+            .catch(err => next(err));
+        })
+        .catch(err => next(err));
     }
   );
- 
-   app.post(
+
+  app.post(
     '/auth/geoaxis/authorize',
     authorizeUser,
     authorizeDevice,
@@ -178,10 +172,10 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
           icon: api.authenticationStrategies['geoaxis'].icon
         };
 
-        res.json({ 
-          user: req.user, 
-          device: req.device, 
-          token: token.token, 
+        res.json({
+          user: req.user,
+          device: req.device,
+          token: token.token,
           expirationDate: token.expirationDate ,
           api: api
         });
@@ -194,7 +188,7 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
   app.get(
     '/auth/geoaxis/callback',
     authenticate,
-    function(req, res, next) {
+    function(req, res) {
       res.render('authentication', { host: req.getRoot(), success: true, login: {user: req.user, oauth: { access_token: req.info.access_token}}});
     }
   );
