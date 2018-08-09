@@ -67,18 +67,18 @@
   },
   "devDependencies": {
     "assert": "1.3.0",
-    "chai": "~4.1.2",
+    "chai": "4.1.2",
     "coveralls": "3.0.0",
     "http": "0.0.0",
     "istanbul": "0.4.5",
     "mocha": "3.2.0",
     "mock-fs": "4.5.0",
     "nock": "2.15.0",
-    "proxyquire": "~2.0.1",
-    "sinon": "~4.5.0",
-    "sinon-chai": "~3.0.0",
+    "proxyquire": "2.0.1",
+    "sinon": "4.5.0",
+    "sinon-chai": "3.0.0",
     "sinon-mongoose": "2.2.1",
-    "superagent": "1.4.0",
+    "superagent": "3.8.3",
     "supertest": "1.1.0"
   },
   "scripts": {
