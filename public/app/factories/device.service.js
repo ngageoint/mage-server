@@ -89,7 +89,7 @@ function DeviceService($http, $q) {
   function createDevice(device) {
     var deferred = $q.defer();
 
-    $http.post('/api/devices', $.param(device),{
+    $http.post('/api/devices', $.param(device), {
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
     }).success(function(updatedDevice) {
       getDeviceMap().then(function(deviceMap) {

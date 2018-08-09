@@ -1,5 +1,4 @@
 var $ = require('jquery')
-  , angular = require('angular')
   , moment = require('moment');
 
 module.exports = ExportController;
@@ -9,11 +8,6 @@ ExportController.$inject = ['$scope', '$uibModalInstance', 'LocalStorageService'
 function ExportController($scope, $uibModalInstance, LocalStorageService, FilterService, events) {
   $scope.exportEvent = {selected: FilterService.getEvent()};
   $scope.events = events;
-
-  var fileExport = angular.element('#file-export');
-  fileExport.load(function() {
-    alert('file download is complete');
-  });
 
   $scope.exportLocations = {value: true};
   $scope.exportObservations = {value: true};

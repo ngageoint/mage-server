@@ -28,13 +28,15 @@ function FileUploadController($scope, $element) {
   if (!$scope.placeholder) $scope.placeholder = 'Choose a file...';
 
   $scope.uploadImageMissing = true;
-  $element.find("img").error(function() {
+  var img = $element.find('img');
+  img.on('load', function() {
+    $scope.uploadImageMissing = false;
+  });
+  img.on('error', function() {
     $scope.uploadImageMissing = true;
     $scope.$apply();
     if (!$scope.defaultImageUrl) return;
     $(this).attr('src', $scope.defaultImageUrl);
-  }).load(function() {
-    $scope.uploadImageMissing = false;
   });
 
   $element.find(':file').bind('change', function() {
