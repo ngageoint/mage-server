@@ -65,7 +65,7 @@ describe("field validation tests", function() {
     };
 
     var form = {
-      field1: new Date()
+      field1: 'invalid'
     };
 
     var field = factory.createField(definition, form);
