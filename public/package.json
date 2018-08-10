@@ -52,7 +52,7 @@
     "leaflet-groupedlayercontrol": "https://github.com/newmanw/leaflet-groupedlayercontrol.git#master",
     "leaflet.markercluster": "1.0.3",
     "leaflet.vectorgrid": "https://github.com/newmanw/Leaflet.VectorGrid.git",
-    "moment": "2.9.0",
+    "moment": "^2.22.2",
     "papaparse": "4.1.4",
     "ui-select": "0.17.1",
     "underscore": "1.8.3",
