@@ -48,7 +48,7 @@
     "mongodb-migrations": "0.8.5",
     "mongoose": "4.13.14",
     "multer": "0.1.x",
-    "openid-client": "1.20.0",
+    "openid-client": "^2.2.1",
     "passport": "0.1.x",
     "passport-anonymous": "1.0.1",
     "passport-geoaxis-oauth20": "0.1.1",
