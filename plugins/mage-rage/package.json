@@ -1,0 +1,15 @@
+{
+  "name": "mage-rage",
+  "version": "0.0.1",
+  "description": "Plugin to sync all MAGE data to another MAGE server.",
+  "author": "NGA",
+  "contributors": {
+    "name": "Billy Newman",
+    "email": "newmanw10@gmail.com"
+  },
+  "homepage": "https://www1.nga.mil",
+  "dependencies": {
+    "request": "2.88.0"
+  },
+  "main": "index.js"
+}
