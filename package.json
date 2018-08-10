@@ -43,7 +43,6 @@
     "json2csv": "2.2.1",
     "json2csv-stream": "0.1.2",
     "jszip": "2.5.0",
-    "method-override": "1.0.x",
     "moment": "2.22.2",
     "mongodb-migrations": "0.8.5",
     "mongoose": "4.13.14",

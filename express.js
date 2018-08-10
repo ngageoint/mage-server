@@ -30,7 +30,6 @@ app.use(function(req, res, next) {
   return next();
 });
 app.use(require('body-parser')({ keepExtensions: true}));
-app.use(require('method-override')());
 app.use(require('multer')());
 app.use(passport.initialize());
 app.use(express.static(path.join(__dirname, 'public/dist')));
