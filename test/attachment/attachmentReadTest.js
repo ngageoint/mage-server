@@ -163,7 +163,7 @@ describe("attachment read tests", function() {
       .set('Authorization', 'Bearer 12345')
       .expect(200)
       .expect('Content-Type', 'image/jpeg')
-      .expect('Content-Length', 4096)
+      .expect('Content-Length', "4096")
       .end(function(err) {
         mockfs.restore();
         done(err);
@@ -265,7 +265,7 @@ describe("attachment read tests", function() {
       .set('Range', 'bytes=0-8')
       .expect(206)
       .expect('Content-Type', 'image/jpeg')
-      .expect('Content-Length', 9)
+      .expect('Content-Length', "9")
       .expect('Content-Range', 'bytes 0-8/4096')
       .end(done);
   });
