@@ -70,7 +70,7 @@ module.exports = function(app, passport, provisioning) {
           } else {
             log.warn('Failed login attempt: User with username ' + username + ' provided an invalid password');
             User.invalidLogin(user)
-              .then(() => done(null, false, {message: 'Please check your username, UID, and password and try again.'}))
+              .then(() => done(null, false, {message: 'Please check your username and password and try again.'}))
               .catch(err => done(err));
           }
         });
