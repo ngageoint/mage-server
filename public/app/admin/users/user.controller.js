@@ -169,6 +169,13 @@ function AdminUserController($scope, $uibModal, $filter, $routeParams, $location
     });
   };
 
+  $scope.activateUser = function(user) {
+    user.active = true;
+    UserService.updateUser(user.id, user, function() {
+      $scope.$broadcast('user:activated', user);
+    });
+  };
+
   $scope.enableUser = function(user) {
     user.enabled = true;
     UserService.updateUser(user.id, user, function() {
