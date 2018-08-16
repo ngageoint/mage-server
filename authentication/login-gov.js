@@ -106,33 +106,42 @@ module.exports = function(app, passport, provisioning) {
   function authenticate(req, res, next) {
     passport.authenticate('oidc-loa-1', function(err, user, info) {
       if (err) return next(err);
-      req.user = user;
       req.info = info || {};
 
-      next();
+      req.login(user, next);
     })(req, res, next);
   }
 
   function authorizeUser(req, res, next) {
     var token = req.param('access_token');
-    client.userinfo(token)
-      .then(function(userinfo) {
-        log.debug('Got userinfo from login.gov');
-        User.getUserByAuthenticationId('login-gov', userinfo.email, function(err, user) {
-          if (err) return next(err);
 
-          if (!user || !user.active) {
-            return res.sendStatus(403);
-          }
+    if (req.user) {
+      // We have a session, user has already authenticated
+      return next();
+    } else if (token) {
+      log.warn('DEPRECATED - authorization with access_token has been deprecated, please use a session');
 
-          req.user = user;
-          next();
+      client.userinfo(token)
+        .then(function(userinfo) {
+          log.debug('Got userinfo from login.gov');
+          User.getUserByAuthenticationId('login-gov', userinfo.email, function(err, user) {
+            if (err) return next(err);
+
+            if (!user || !user.active) {
+              return res.sendStatus(403);
+            }
+
+            req.user = user;
+            next();
+          });
+        })
+        .catch(function(err) {
+          log.error('not authenticated based on login.gov access token', err);
+          res.sendStatus(403);
         });
-      })
-      .catch(function(err) {
-        log.error('not authenticated based on login.gov access token', err);
-        res.sendStatus(403);
-      });
+    } else {
+      return res.sendStatus(403);
+    }
   }
 
   function authorizeDevice(req, res, next) {

@@ -73,33 +73,41 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
     passport.authenticate('geoaxis', function(err, user, info = {}) {
       if (err) return next(err);
 
-      req.user = user;
       req.info = info;
 
-      next();
+      req.login(user, next);
     })(req, res, next);
   }
 
   function authorizeUser(req, res, next) {
     let token = req.param('access_token');
-    strategy.userProfile(token, function(err, profile) {
-      if (err) {
-        log.error('Not authenticated based on geoaxis access token', err);
-        return res.sendStatus(403);
-      }
 
-      let geoaxisUser = profile._json;
-      User.getUserByAuthenticationId('geoaxis', geoaxisUser.email, function(err, user) {
-        if (err) return next(err);
+    if (req.user) {
+      next();
+    } else if (token) {
+      log.warn('DEPRECATED - authorization with access_token has been deprecated, please use a session');
 
-        if (!user || !user.active) {
+      strategy.userProfile(token, function(err, profile) {
+        if (err) {
+          log.error('Not authenticated based on geoaxis access token', err);
           return res.sendStatus(403);
         }
 
-        req.user = user;
-        next();
+        let geoaxisUser = profile._json;
+        User.getUserByAuthenticationId('geoaxis', geoaxisUser.email, function(err, user) {
+          if (err) return next(err);
+
+          if (!user || !user.active) {
+            return res.sendStatus(403);
+          }
+
+          req.user = user;
+          next();
+        });
       });
-    });
+    } else {
+      return res.sendStatus(403);
+    }
   }
 
   function authorizeDevice(req, res, next) {
