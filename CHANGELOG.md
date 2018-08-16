@@ -9,6 +9,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Users can view or edit coordinates as MGRS.
 * Users can edit observation time in GMT or Local time.
 * Users can view observation and location time as relative or absolute local or GMT.
+* Separate authentication from authorization.  Users will now be prompted to enter a device after after successful authentication.
 
 ##### Bug Fixes
 

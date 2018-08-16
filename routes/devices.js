@@ -11,9 +11,10 @@ module.exports = function(app, security) {
   // Create a new device, requires CREATE_DEVICE role
   app.post('/api/devices',
     passport.authenticate('bearer'),
+    resource.ensurePermission('CREATE_DEVICE'),
     resource.parseDeviceParams,
     resource.validateDeviceParams,
-    resource.createWithAccess
+    resource.create
   );
 
   app.get('/api/devices/count',
@@ -52,20 +53,18 @@ module.exports = function(app, security) {
   );
 };
 
-DeviceResource.prototype.createWithAccess = function(req, res, next) {
-  // If I did not authenticate a user go to the next route
-  // '/api/devices' route which does not require authentication
-  if (!access.userHasPermission(req.user, 'CREATE_DEVICE')) {
-    return next();
-  }
+DeviceResource.prototype.ensurePermission = function(permission) {
+  return function(req, res, next) {
+    access.userHasPermission(req.user, permission) ? next() : res.sendStatus(403);
+  };
+};
 
+DeviceResource.prototype.create = function(req, res, next) {
   // Automatically register any device created by an ADMIN
   req.newDevice.registered = true;
 
-  console.log('create ADMIN device');
   DeviceModel.createDevice(req.newDevice)
     .then(device => {
-      console.log('created a ADMIN device');
       res.json(device);
     })
     .catch(err => next(err));

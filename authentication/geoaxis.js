@@ -6,9 +6,10 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
     , Device = require('../models/device')
     , Role = require('../models/role')
     , api = require('../api')
-    , config = require('../config.js');
+    , config = require('../config.js')
+    , log = require('../logger');
 
-  console.log('configuring GeoAxis authentication');
+  log.info('Configuring GeoAxis authentication');
 
   let strategy = new GeoaxisStrategy({
     authorizationURL: strategyConfig.url + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
@@ -60,19 +61,20 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
   app.get('/auth/geoaxis/signin', passport.authenticate('geoaxis'));
 
   function parseLoginMetadata(req, res, next) {
-    var options = {};
-    options.userAgent = req.headers['user-agent'];
-    options.appVersion = req.param('appVersion');
+    req.loginOptions = {
+      userAgent: req.header['user-agent'],
+      appVersion: req.param('appVersion')
+    };
 
-    req.loginOptions = options;
     next();
   }
 
   function authenticate(req, res, next) {
-    passport.authenticate('geoaxis', function(err, user, info) {
+    passport.authenticate('geoaxis', function(err, user, info = {}) {
       if (err) return next(err);
+
       req.user = user;
-      req.info = info || {};
+      req.info = info;
 
       next();
     })(req, res, next);
@@ -82,7 +84,7 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
     let token = req.param('access_token');
     strategy.userProfile(token, function(err, profile) {
       if (err) {
-        console.log('not authenticated based on geoaxis access token');
+        log.error('Not authenticated based on geoaxis access token', err);
         return res.sendStatus(403);
       }
 

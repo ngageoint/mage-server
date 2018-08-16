@@ -1,4 +1,4 @@
-module.exports = function(app, passport, provisioning, googleStrategy) {
+module.exports = function(app, passport, provisioning) {
 
   var fs = require('fs')
     , crypto = require('crypto')
@@ -10,12 +10,13 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
     , Device = require('../models/device')
     , Role = require('../models/role')
     , api = require('../api')
-    , config = require('../config.js');
+    , config = require('../config.js')
+    , log = require('../logger');
 
   Issuer.useRequest();
 
   var strategyConfig = config.api.authenticationStrategies['login-gov'];
-  console.log('Configuring login.gov authentication', strategyConfig);
+  log.info('Configuring login.gov authentication', strategyConfig);
   let loginGov = {};
 
   var key = fs.readFileSync(strategyConfig.keyFile, 'ascii');
@@ -88,9 +89,9 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
       });
     }));
 
-    console.log("login.gov configuration success");
+    log.info("login.gov configuration success");
   }).catch(function(err) {
-    console.log('login.gov configuration error', err);
+    log.error('login.gov configuration error', err);
   });
 
   function parseLoginMetadata(req, res, next) {
@@ -116,7 +117,7 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
     var token = req.param('access_token');
     client.userinfo(token)
       .then(function(userinfo) {
-        console.log('got userinfo from login.gov');
+        log.debug('Got userinfo from login.gov');
         User.getUserByAuthenticationId('login-gov', userinfo.email, function(err, user) {
           if (err) return next(err);
 
@@ -128,8 +129,8 @@ module.exports = function(app, passport, provisioning, googleStrategy) {
           next();
         });
       })
-      .catch(function() {
-        console.log('not authenticated based on login.gov access token');
+      .catch(function(err) {
+        log.error('not authenticated based on login.gov access token', err);
         res.sendStatus(403);
       });
   }

@@ -4,7 +4,8 @@ var express = require("express")
   , path = require('path')
   , config = require('./config.js')
   , provision = require('./provision')
-  , log = require('./logger');
+  , log = require('./logger')
+  , api = require('./api');
 
 var app = express();
 app.use(function(req, res, next) {
@@ -31,9 +32,12 @@ app.use(function(req, res, next) {
   return next();
 });
 
+// Since we are using an in memory session store generating the key each time the
+// server spins up is fine as all sessions will be lost anyways.
+const secret = require('crypto').randomBytes(64).toString('hex');
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'identity-oidc-expressjs-secret',
-  name: 'identity-oidc-expressjs-session',
+  secret: secret,
+  name: 'mage-session',
   resave: false,
   saveUninitialized: true,
   cookie: {
@@ -42,12 +46,13 @@ app.use(session({
 }));
 
 passport.serializeUser(function(user, done) {
-  done(null, user);
+  done(null, user._id);
 });
 
-passport.deserializeUser(function(user, done) {
-  user._id = user.id;
-  done( null, user);
+passport.deserializeUser(function(id, done) {
+  new api.User().getById(id, function(err, user) {
+    done(err, user);
+  });
 });
 
 app.use(require('body-parser')({ keepExtensions: true}));

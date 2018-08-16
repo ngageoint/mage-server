@@ -11,12 +11,12 @@ function UserService($rootScope, $q, $uibModal, $http, $location, $timeout, $win
     myself: null,
     amAdmin: false,
     signup: signup,
+    signin: signin,
     googleSignin: googleSignin,
     googleSignup: googleSignup,
     oauthSignin: oauthSignin,
     oauthSignup: oauthSignup,
     authorize: authorize,
-    login: login,
     logout: logout,
     getMyself: getMyself,
     updateMyPassword: updateMyPassword,
@@ -94,18 +94,6 @@ function UserService($rootScope, $q, $uibModal, $http, $location, $timeout, $win
 
       deferred.resolve({success: event.data.success, user: event.data.user, oauth: event.data.oauth});
 
-      /*
-      if (data.token) {
-        LocalStorageService.setToken(data.token);
-        setUser(data.user);
-        $rootScope.$broadcast('event:auth-login', {token: data.token, newUser: data.user.username !== oldUsername});
-        $rootScope.$broadcast('event:user', {user: data.user, token: data.token, isAdmin: service.amAdmin});
-        deferred.resolve({user: event.data.user, token: data.token, isAdmin: service.amAdmin});
-      } else {
-        deferred.reject(data);
-      }
-      */
-
       authWindow.close();
     }
 
@@ -145,7 +133,7 @@ function UserService($rootScope, $q, $uibModal, $http, $location, $timeout, $win
       uid: authData.uid,
       appVersion: 'Web Client'
     };
- 
+
     var promise = $http.post('/auth/' + strategy + '/authorize', $.param(data), {
       headers: {"Content-Type": "application/x-www-form-urlencoded"},
       ignoreAuthModule:true
@@ -163,23 +151,20 @@ function UserService($rootScope, $q, $uibModal, $http, $location, $timeout, $win
     return promise;
   }
 
-  function login(data) {
-    var oldUsername = service.myself && service.myself.username || null;
+  function signin(data) {
+    var deferred = $q.defer();
 
     data.appVersion = 'Web Client';
-    var promise = $http.post('/api/login', $.param(data), {
+    $http.post('/auth/local/signin', $.param(data), {
       headers: {"Content-Type": "application/x-www-form-urlencoded"},
       ignoreAuthModule:true
+    }).then(function(response) {
+      deferred.resolve({user: response.data.user});
+    }).catch(function(response) {
+      deferred.reject(response);
     });
 
-    promise.success(function(data) {
-      setUser(data.user);
-      LocalStorageService.setToken(data.token);
-      $rootScope.$broadcast('event:auth-login', {token: data.token, newUser: data.user.username !== oldUsername});
-      $rootScope.$broadcast('event:user', {user: data.user, token: data.token, isAdmin: service.amAdmin});
-    });
-
-    return promise;
+    return deferred.promise;
   }
 
   function logout() {

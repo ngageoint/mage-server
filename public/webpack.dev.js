@@ -7,8 +7,9 @@ module.exports = merge(common, {
     contentBase: './dist',
     inline: true,
     port: 3000,
-    proxy: {
-      '/api': 'http://localhost:4242/'
-    }
+    proxy: [{
+      context: ['/auth', '/api'],
+      target: 'http://localhost:4242/',
+    }]
   }
 });
