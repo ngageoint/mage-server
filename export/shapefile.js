@@ -1,12 +1,14 @@
-var util = require('util')
+const util = require('util')
   , api = require('../api')
   , async = require('async')
   , archiver = require('archiver')
+  , mgrs = require('mgrs')
   , moment = require('moment')
   , log = require('winston')
   , shpwrite = require('shp-write')
   , shpgeojson = require('shp-write/src/geojson')
-  , Exporter = require('./exporter');
+  , Exporter = require('./exporter')
+  , turfCentroid = require('@turf/centroid');
 
 function Shapefile(options) {
   Shapefile.super_.call(this, options);
@@ -85,6 +87,9 @@ Shapefile.prototype.locationsToShapefiles = function(archive, done) {
         if (self._users[l.properties.user]) l.properties.user = self._users[l.properties.user].username;
         if (self._users[l.properties.deviceId]) l.properties.device = self._users[l.properties.deviceId].uid;
 
+        const centroid = turfCentroid(l);
+        l.properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
+
         delete l.properties.deviceId;
       });
 
@@ -152,6 +157,9 @@ function mapObservationProperties(observation) {
 
   observation.properties = observation.properties || {};
   observation.properties.timestamp = moment(observation.properties.timestamp).toISOString();
+
+  const centroid = turfCentroid(observation);
+  observation.properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
 
   observation.properties.forms.forEach(function(observationForm) {
     if (Object.keys(observationForm).length === 0) return;

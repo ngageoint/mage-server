@@ -2,6 +2,7 @@ var util = require('util')
   , api = require('../api')
   , async = require('async')
   , archiver = require('archiver')
+  , mgrs = require('mgrs')
   , moment = require('moment')
   , log = require('winston')
   , stream = require('stream')
@@ -30,8 +31,8 @@ Csv.prototype.export = function(streamable) {
   streamable.type('application/zip');
   streamable.attachment('mage-csv.zip');
 
-  var fields = ['id', 'user', 'device', 'shapeType', 'latitude', 'longitude', 'timestamp', 'excelTimestamp', 'wkt'];
-  var fieldNames = ['id', 'User', 'Device', 'Shape Type', 'Latitude', 'Longitude', 'Date (ISO8601)', 'Excel Timestamp (UTC)', 'Well Known Text'];
+  var fields = ['id', 'user', 'device', 'shapeType', 'latitude', 'longitude', 'mgrs', 'timestamp', 'excelTimestamp', 'wkt'];
+  var fieldNames = ['id', 'User', 'Device', 'Shape Type', 'Latitude', 'Longitude', 'MGRS', 'Date (ISO8601)', 'Excel Timestamp (UTC)', 'Well Known Text'];
 
   self._event.forms.forEach(function(form) {
     var formPrefix = self._event.forms.length > 1 ? form.name + '.' : '';
@@ -70,7 +71,7 @@ Csv.prototype.export = function(streamable) {
       if (!self._filter.exportLocations) return done();
 
       var locationStream = new json2csvStream({
-        keys: ['user', 'device', 'timestamp', 'latitude', 'longitude', 'accuracy', 'bearing', 'speed', 'altitude']
+        keys: ['user', 'device', 'timestamp', 'latitude', 'longitude', 'mgrs', 'accuracy', 'bearing', 'speed', 'altitude']
       });
       archive.append(locationStream, {name: 'locations.csv'});
       self.streamLocations(locationStream, function(err) {
@@ -131,12 +132,14 @@ Csv.prototype.flattenObservations = function(observations, archive) {
     if (users[observation.userId]) properties.user = users[observation.userId].username;
     if (devices[observation.deviceId]) properties.device = devices[observation.deviceId].uid;
 
+    var centroid = turfCentroid(observation);
+    properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
+
     properties.shapeType = observation.geometry.type;
     if (observation.geometry.type === 'Point') {
       properties.longitude = observation.geometry.coordinates[0];
       properties.latitude = observation.geometry.coordinates[1];
     } else {
-      var centroid = turfCentroid(observation);
       properties.longitude = centroid.geometry.coordinates[0];
       properties.latitude = centroid.geometry.coordinates[1];
     }
@@ -230,6 +233,9 @@ Csv.prototype.flattenLocations = function(locations) {
 
     properties.longitude = location.geometry.coordinates[0];
     properties.latitude = location.geometry.coordinates[1];
+
+    var centroid = turfCentroid(location);
+    properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
 
     return properties;
   });

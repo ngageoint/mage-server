@@ -306,6 +306,20 @@ a {
   flex-direction: column;
 }
 
+.observation-geometry {
+  display: flex;
+  margin-top: 16px;
+}
+
+.observation-geometry-coordinate {
+  flex: 1 0 0;
+  padding-right: 16px;
+}
+
+.observation-geometry-control {
+  margin-top: 7px;
+}
+
 .map {
   flex: 2;
   position: relative;
@@ -1060,4 +1074,9 @@ h4.image-delete {
 
 .role-popover {
   max-width: 100;
+}
+
+.preferences-form {
+  padding: 16px;
+  min-width: 180px;
 }

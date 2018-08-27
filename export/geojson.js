@@ -2,12 +2,13 @@ var util = require('util')
   , api = require('../api')
   , async = require('async')
   , archiver = require('archiver')
+  , mgrs = require('mgrs')
   , moment = require('moment')
   , log = require('winston')
   , stream = require('stream')
   , path = require('path')
   , Exporter = require('./exporter')
-  , geojson = require('../transformers/geojson')
+  , turfCentroid = require('@turf/centroid')
   , attachmentBase = require('../environment/env').attachmentBaseDirectory;
 
 function GeoJson(options) {
@@ -119,6 +120,11 @@ GeoJson.prototype.streamLocations = function(stream, done) {
       if (err) return done(err);
 
       locations = requestedLocations;
+
+      locations.forEach(location => {
+        var centroid = turfCentroid(location);
+        location.properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
+      });
 
       if (locations.length) {
         if (lastLocationId) stream.write(",");  // not first time through

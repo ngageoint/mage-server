@@ -8,6 +8,8 @@ function LocalStorageService() {
   var timeIntervalKey = 'timeInterval';
   var teamsKey = 'teams';
   var mapPositionKey = 'mapPosition';
+  var coordinateSystemViewKey = 'coordinateSystemView';
+  var coordinateSystemEditKey = 'coordinateSystemEdit';
 
   var service = {
     getToken: getToken,
@@ -21,7 +23,11 @@ function LocalStorageService() {
     setTeams: setTeams,
     removeTeams: removeTeams,
     getMapPosition: getMapPosition,
-    setMapPosition: setMapPosition
+    setMapPosition: setMapPosition,
+    getCoordinateSystemView: getCoordinateSystemView,
+    setCoordinateSystemView: setCoordinateSystemView,
+    getCoordinateSystemEdit: getCoordinateSystemEdit,
+    setCoordinateSystemEdit: setCoordinateSystemEdit
   };
 
   return service;
@@ -81,6 +87,22 @@ function LocalStorageService() {
 
   function getMapPosition() {
     return JSON.parse(getLocalItem(mapPositionKey));
+  }
+
+  function getCoordinateSystemView() {
+    return getLocalItem(coordinateSystemViewKey) || 'wgs84';
+  }
+
+  function setCoordinateSystemView(coordinateSystem) {
+    return setLocalItem(coordinateSystemViewKey, coordinateSystem);
+  }
+
+  function getCoordinateSystemEdit() {
+    return getLocalItem(coordinateSystemEditKey) || 'wgs84';
+  }
+
+  function setCoordinateSystemEdit(coordinateSystem) {
+    return setLocalItem(coordinateSystemEditKey, coordinateSystem);
   }
 
   function getLocalItem(key) {
