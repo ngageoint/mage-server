@@ -83,6 +83,24 @@
                 </li>
               </ul>
             </li>
+            <li class="dropdown" uib-dropdown auto-close="outsideClick">
+              <a class="dropdown-toggle pointer" uib-dropdown-toggle>
+                <i style="margin-right: 3px;" class="fa fa-wrench"></i> Preferences
+                <b class="caret"></b>
+              </a>
+              <ul class="dropdown-menu preferences-form" uib-dropdown-menu>
+                <div class="form-group">
+                  <label class="muted">
+                    <i class="fa fa-globe"></i> Coordinate System
+                  </label>
+
+                  <div class="btn-group">
+                    <label class="btn btn-default btn-xs" ng-model="preferences.coordinateSystem" ng-change="onCoordinateSystemChange('wgs84')" uib-btn-radio="'wgs84'">WGS84</label>
+                    <label class="btn btn-default btn-xs" ng-model="preferences.coordinateSystem" ng-change="onCoordinateSystemChange('mgrs')" uib-btn-radio="'mgrs'">MGRS</label>
+                  </div>
+                </div>
+              </ul>
+            </li>
             <li class="dropdown">
               <a class="pointer dropdown-toggle visible-xs-block" data-toggle="collapse" data-target=".main-navbar-collapse" ng-click="onExportClick()">
                 <i class="fa fa-download icon-spacer"></i> Export

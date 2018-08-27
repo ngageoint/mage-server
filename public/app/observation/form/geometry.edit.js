@@ -1,4 +1,5 @@
-var angular = require('angular');
+var angular = require('angular')
+  , mgrs= require('mgrs');
 
 module.exports = {
   template: require('./geometry.edit.html'),
@@ -11,9 +12,9 @@ module.exports = {
   controller: GeometryEditController
 };
 
-GeometryEditController.$inject = ['GeometryService'];
+GeometryEditController.$inject = ['GeometryService', 'LocalStorageService'];
 
-function GeometryEditController(GeometryService) {
+function GeometryEditController(GeometryService, LocalStorageService) {
 
   this.shapes = [{
     display: 'Point',
@@ -28,6 +29,14 @@ function GeometryEditController(GeometryService) {
 
   this.shape = {
     type: this.field.value.type
+  };
+
+  this.coordinateSystem = LocalStorageService.getCoordinateSystemEdit();
+
+  this.$onChanges = function() {
+    if (this.field && this.coordinateSystem === 'mgrs') {
+      this.mgrs = toMgrs(this.field);
+    }
   };
 
   this.validateShapeChange = function() {
@@ -56,8 +65,24 @@ function GeometryEditController(GeometryService) {
     this.validateShapeChange();
   };
 
-  this.onLatLngChange = function() {
+  this.onCoordinateSystemChange = function(coordinateSystem) {
+    LocalStorageService.setCoordinateSystemEdit(coordinateSystem);
 
+    if (coordinateSystem === 'mgrs') {
+      this.mgrs = toMgrs(this.field);
+    }
+  };
+
+  this.onMgrsChange = function() {
+    try {
+      toLatLng(this.mgrs, this.field);
+      this.form.mgrs.$setValidity('invalid', true);
+    } catch(e) {
+      this.form.mgrs.$setValidity('invalid', false);
+    }
+  };
+
+  this.onLatLngChange = function() {
     var coordinates = angular.copy(this.field.value.coordinates);
 
     // copy edit field lat/lng in coordinates at correct index
@@ -79,6 +104,40 @@ function GeometryEditController(GeometryService) {
 
     this.field.value.coordinates = coordinates;
   };
+
+  function toMgrs(field) {
+    switch (field.value.type) {
+    case 'Point':
+      return mgrs.forward(field.value.coordinates);
+    case 'LineString':
+      return mgrs.forward(field.value.coordinates[field.editedVertex]);
+    case 'Polygon':
+      return mgrs.forward(field.value.coordinates[0][field.editedVertex]);
+    }
+  }
+
+  function toLatLng(mgrsString, field) {
+    var coordinates = angular.copy(field.value.coordinates);
+
+    switch (field.value.type) {
+    case 'Point':
+      coordinates = mgrs.toPoint(mgrsString);
+      break;
+    case 'LineString':
+      coordinates[field.editedVertex] = mgrs.toPoint(mgrsString);
+      break;
+    case 'Polygon':
+      coordinates[0][field.editedVertex] = mgrs.toPoint(mgrsString);
+      break;
+    }
+
+    // Check for polygon for intersections
+    if (hasIntersections(this.field, coordinates)) {
+      return;
+    }
+
+    field.value.coordinates = coordinates;
+  }
 
   function toGeoJSON(field, coordinates) {
     // Ensure first and last points are the same for polygon

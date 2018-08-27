@@ -1,4 +1,6 @@
-var moment = require('moment')
+const mgrs = require('mgrs')
+  , moment = require('moment')
+  , turfCentroid = require('@turf/centroid')
   , Location = require('../models/location');
 
 function Exporter(options) {
@@ -11,6 +13,9 @@ function Exporter(options) {
 function mapObservationProperties(observation, event) {
   observation.properties = observation.properties || {};
   observation.properties.timestamp = moment(observation.properties.timestamp).toISOString();
+
+  var centroid = turfCentroid(observation);
+  observation.properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
 
   observation.properties.forms.forEach(function(observationForm) {
     if (Object.keys(observationForm).length === 0) return;

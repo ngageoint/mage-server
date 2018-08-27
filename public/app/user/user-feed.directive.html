@@ -16,7 +16,7 @@
       <div class="small muted">{{fromNow}}</div>
       <div>
         <a href="javascript:void(0)" class="small muted" ng-click="onUserLocationClick(user)">
-          {{user.location.geometry.coordinates[1] | number: 3}}, {{user.location.geometry.coordinates[0] | number: 3}}
+          {{user.location.geometry | geometry:5}}
         </a>
       </div>
       <div>

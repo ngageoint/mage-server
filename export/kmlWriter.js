@@ -1,6 +1,7 @@
-var moment = require('moment')
-  , path = require('path');
-
+const moment = require('moment')
+  , path = require('path')
+  , mgrs = require('mgrs')
+  , turfCentroid = require('@turf/centroid');
 
 function KmlWriter() {}
 module.exports = new KmlWriter();
@@ -200,18 +201,23 @@ function generateDescription(geojson) {
 
   description += '<table style="font-family:Arial,Verdana,Times;font-size:12px;text-align:left;width:100%;border-collapse:collapse;padding:3px 3px 3px 3px">';
 
-  if (geojson.geometry.type === 'Point') {
-    description +=
-      '<tr bgcolor="#D4E4F3">' +
-        '<td>Lat</td>' + '<td>' + geojson.geometry.coordinates[1] + '</td>' +
-      '<tr>';
-    description +=
-      '<tr>' +
-        '<td>Lon</td>' + '<td>' + geojson.geometry.coordinates[0] + '</td>' +
-      '<tr>';
-  }
+  const centroid = turfCentroid(geojson);
 
-  var odd = true;
+  description +=
+    '<tr bgcolor="#D4E4F3">' +
+      '<td>Lat</td>' + '<td>' + centroid.geometry.coordinates[1] + '</td>' +
+    '<tr>';
+  description +=
+    '<tr>' +
+      '<td>Lon</td>' + '<td>' + centroid.geometry.coordinates[0] + '</td>' +
+    '<tr>';
+
+  description +=
+    '<tr bgcolor="#D4E4F3">' +
+      '<td>MGRS</td>' + '<td>' + mgrs.forward(centroid.geometry.coordinates) + '</td>' +
+    '<tr>';
+
+  var odd = false;
   Object.keys(geojson.properties).forEach(function(key) {
     var color = "";
     if (odd) color = "#D4E4F3";

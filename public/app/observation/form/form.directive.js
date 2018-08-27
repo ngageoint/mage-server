@@ -43,17 +43,17 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
         $scope.observationForm.$setValidity('geometry', true);
       }
 
-      var geometryField = $scope.form.geometryField;
-      geometryField.value = angular.copy(geometry);
-      updateGeometryEdit(geometryField, editedVertex);
+      $scope.form.geometryField.value = geometry;
+      $scope.form.geometryField = angular.copy($scope.form.geometryField);
+      updateGeometryEdit($scope.form.geometryField, editedVertex);
     });
 
     $scope.$on('mage:map:edit:vertex', function(e, observation, geometry, index) {
       editedVertex = index;
 
-      var geometryField = $scope.form.geometryField;
-      geometryField.value = angular.copy(geometry);
-      updateGeometryEdit($scope.form.geometryField, index);
+      $scope.form.geometryField.value = geometry;
+      $scope.form.geometryField = angular.copy($scope.form.geometryField);
+      updateGeometryEdit($scope.form.geometryField, editedVertex);
     });
 
     // TODO update this to watch primary, secondary and geometry type
@@ -87,7 +87,7 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
 
   $scope.$watch('form.geometryField', function(field) {
     $scope.$emit('observation:geometryChanged', {id: $scope.observation.id, geometry: angular.copy(field.value)});
-  });
+  }, true);
 
   $scope.$watch('form.geometryField.value.type', function(newShapeType, oldShapeType) {
     if (newShapeType === oldShapeType) return;
@@ -115,6 +115,7 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
 
   function updateGeometryEdit(geometryField, index) {
     if (!geometryField.value.coordinates) return;
+
     geometryField.editedVertex = index;
     if (geometryField.value.type === 'LineString') {
       geometryField.edit = angular.copy(geometryField.value.coordinates[index]);

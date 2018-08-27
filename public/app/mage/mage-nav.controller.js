@@ -2,11 +2,15 @@ var _ = require('underscore');
 
 module.exports = NavController;
 
-NavController.$inject =  ['$rootScope', '$scope', '$q', '$location', '$uibModal', 'UserService', 'FilterService', 'PollingService', 'Event', 'Settings'];
+NavController.$inject =  ['$rootScope', '$scope', '$q', '$location', '$uibModal', 'UserService', 'FilterService', 'PollingService', 'Event', 'Settings', 'LocalStorageService'];
 
-function NavController($rootScope, $scope, $q, $location, $uibModal, UserService, FilterService, PollingService, Event, Settings) {
+function NavController($rootScope, $scope, $q, $location, $uibModal, UserService, FilterService, PollingService, Event, Settings, LocalStorageService) {
   var events = [];
   $scope.location = $location;
+
+  $scope.preferences = {
+    coordinateSystem: LocalStorageService.getCoordinateSystemView()
+  };
 
   $scope.pollingInterval = PollingService.getPollingInterval();
 
@@ -67,6 +71,10 @@ function NavController($rootScope, $scope, $q, $location, $uibModal, UserService
         }
       }
     });
+  };
+
+  $scope.onCoordinateSystemChange = function(coordinateSystem) {
+    LocalStorageService.setCoordinateSystemView(coordinateSystem);
   };
 
   $scope.onExportClick = function() {
