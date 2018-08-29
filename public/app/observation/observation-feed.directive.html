@@ -11,7 +11,7 @@
         </div>
 
         <div class="observation-item-actions">
-          <div class="pull-right news-feed-item-support small muted">{{fromNow}}</div>
+          <div class="pull-right news-feed-item-support small muted">{{observation.properties.timestamp | moment}}</div>
           <div>
             <a href="javascript:void(0)" class="small muted" ng-click="onObservationLocationClick(observation)">
               {{observation.geometry | geometry:5}}

@@ -10,6 +10,9 @@ function LocalStorageService() {
   var mapPositionKey = 'mapPosition';
   var coordinateSystemViewKey = 'coordinateSystemView';
   var coordinateSystemEditKey = 'coordinateSystemEdit';
+  var timeZoneViewKey = 'timeZoneView';
+  var timeZoneEditKey = 'timeZoneEdit';
+  var timeFormatKey = 'timeFormat';
 
   var service = {
     getToken: getToken,
@@ -27,7 +30,13 @@ function LocalStorageService() {
     getCoordinateSystemView: getCoordinateSystemView,
     setCoordinateSystemView: setCoordinateSystemView,
     getCoordinateSystemEdit: getCoordinateSystemEdit,
-    setCoordinateSystemEdit: setCoordinateSystemEdit
+    setCoordinateSystemEdit: setCoordinateSystemEdit,
+    getTimeZoneView: getTimeZoneView,
+    setTimeZoneView: setTimeZoneView,
+    getTimeZoneEdit: getTimeZoneEdit,
+    setTimeZoneEdit: setTimeZoneEdit,
+    getTimeFormat: getTimeFormat,
+    setTimeFormat: setTimeFormat
   };
 
   return service;
@@ -98,11 +107,35 @@ function LocalStorageService() {
   }
 
   function getCoordinateSystemEdit() {
-    return getLocalItem(coordinateSystemEditKey) || 'wgs84';
+    return getLocalItem(coordinateSystemEditKey) || getCoordinateSystemView();
   }
 
   function setCoordinateSystemEdit(coordinateSystem) {
     return setLocalItem(coordinateSystemEditKey, coordinateSystem);
+  }
+
+  function getTimeZoneView() {
+    return getLocalItem(timeZoneViewKey) || 'local';
+  }
+
+  function setTimeZoneView(timeZone) {
+    return setLocalItem(timeZoneViewKey, timeZone);
+  }
+
+  function getTimeZoneEdit() {
+    return getLocalItem(timeZoneEditKey) || getLocalItem(timeZoneViewKey);
+  }
+
+  function setTimeZoneEdit(timeZone) {
+    return setLocalItem(timeZoneEditKey, timeZone);
+  }
+
+  function getTimeFormat() {
+    return getLocalItem(timeFormatKey) || 'absolute';
+  }
+
+  function setTimeFormat(timeFormat) {
+    return setLocalItem(timeFormatKey, timeFormat);
   }
 
   function getLocalItem(key) {

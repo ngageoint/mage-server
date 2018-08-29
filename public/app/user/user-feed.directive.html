@@ -13,7 +13,7 @@
     </div>
 
     <div class="user-item-actions">
-      <div class="small muted">{{fromNow}}</div>
+      <div class="small muted">{{user.location.properties.timestamp | moment}}</div>
       <div>
         <a href="javascript:void(0)" class="small muted" ng-click="onUserLocationClick(user)">
           {{user.location.geometry | geometry:5}}

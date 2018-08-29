@@ -9,6 +9,8 @@ function NavController($rootScope, $scope, $q, $location, $uibModal, UserService
   $scope.location = $location;
 
   $scope.preferences = {
+    timeZone: LocalStorageService.getTimeZoneView(),
+    timeFormat: LocalStorageService.getTimeFormat(),
     coordinateSystem: LocalStorageService.getCoordinateSystemView()
   };
 
@@ -75,6 +77,14 @@ function NavController($rootScope, $scope, $q, $location, $uibModal, UserService
 
   $scope.onCoordinateSystemChange = function(coordinateSystem) {
     LocalStorageService.setCoordinateSystemView(coordinateSystem);
+  };
+
+  $scope.onTimeZoneChange = function(timeZone) {
+    LocalStorageService.setTimeZoneView(timeZone);
+  };
+
+  $scope.onTimeFormatChange = function(timeFormat) {
+    LocalStorageService.setTimeFormat(timeFormat);
   };
 
   $scope.onExportClick = function() {
