@@ -90,9 +90,38 @@
               </a>
               <ul class="dropdown-menu preferences-form" uib-dropdown-menu>
                 <div class="form-group">
-                  <label class="muted">
-                    <i class="fa fa-globe"></i> Coordinate System
-                  </label>
+                  <div>
+                    <label class="muted">
+                      <i class="fa fa-clock-o"></i>  Time Format
+                    </label>
+                  </div>
+
+                  <div class="btn-group">
+                    <label class="btn btn-default btn-xs" ng-model="preferences.timeFormat" ng-change="onTimeFormatChange('absolute')" uib-btn-radio="'absolute'">Absolute</label>
+                    <label class="btn btn-default btn-xs" ng-model="preferences.timeFormat" ng-change="onTimeFormatChange('relative')" uib-btn-radio="'relative'">Relative</label>
+                  </div>
+                </div>
+                <div class="form-group" ng-if="preferences.timeFormat !== 'relative'">
+                  <div>
+                    <label class="muted">
+                      <i class="fa fa-globe"></i>  Time Zone
+                    </label>
+                  </div>
+
+                  <div class="btn-group">
+                    <label class="btn btn-default btn-xs" ng-model="preferences.timeZone" ng-change="onTimeZoneChange('local')" uib-btn-radio="'local'">Local</label>
+                    <label class="btn btn-default btn-xs" ng-model="preferences.timeZone" ng-change="onTimeZoneChange('gmt')" uib-btn-radio="'gmt'">GMT</label>
+                  </div>
+                </div>
+
+                <li role="separator" class="divider"></li>
+
+                <div class="form-group">
+                  <div>
+                    <label class="muted">
+                      <i class="fa fa-map-o"></i> Coordinate System
+                    </label>
+                  </div>
 
                   <div class="btn-group">
                     <label class="btn btn-default btn-xs" ng-model="preferences.coordinateSystem" ng-change="onCoordinateSystemChange('wgs84')" uib-btn-radio="'wgs84'">WGS84</label>

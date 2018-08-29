@@ -7,6 +7,8 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Features
 * Users can view or edit coordinates as MGRS.
+* Users can edit observation time in GMT or Local time.
+* Users can view observation and location time as relative or absolute local or GMT.
 
 ##### Bug Fixes
 

@@ -1,5 +1,3 @@
-var moment = require('moment');
-
 module.exports = function userNewsItem() {
   var directive = {
     restrict: "A",
@@ -18,7 +16,6 @@ UserNewsItemController.$inject = ['$scope', 'LocalStorageService'];
 
 function UserNewsItemController($scope, LocalStorageService) {
   $scope.followingUserId = null;
-  $scope.fromNow = moment($scope.user.location.properties.timestamp).fromNow();
 
   if ($scope.user.avatarUrl) {
     $scope.avatarUrl = $scope.user.avatarUrl + "?access_token=" + LocalStorageService.getToken();
@@ -34,9 +31,5 @@ function UserNewsItemController($scope, LocalStorageService) {
   $scope.onUserLocationClick = function(user) {
     $scope.$emit('user:zoom', user, {panToLocation: true, zoomToLocation: true});
   };
-
-  $scope.$on('user:poll', function() {
-    $scope.fromNow = moment($scope.user.location.properties.timestamp).fromNow();
-  });
 
 }

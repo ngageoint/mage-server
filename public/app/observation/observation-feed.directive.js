@@ -20,7 +20,6 @@ ObservationNewsItemController.$inject = ['$scope', '$window', '$uibModal', 'Even
 function ObservationNewsItemController($scope, $window, $uibModal, EventService, UserService, FilterService, LocalStorageService) {
   $scope.edit = false;
   $scope.isUserFavorite = _.contains($scope.observation.favoriteUserIds, UserService.myself.id);
-  $scope.fromNow = moment($scope.observation.properties.timestamp).fromNow();
   $scope.canEdit = UserService.hasPermission('UPDATE_OBSERVATION_EVENT') || UserService.hasPermission('UPDATE_OBSERVATION_ALL');
 
   var myAccess = FilterService.getEvent().acl[UserService.myself.id];
@@ -112,6 +111,7 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
       timestampField: {
         title: 'Date',
         type: 'date',
+        name: 'timestamp',
         value: moment($scope.observation.properties.timestamp).toDate()
       },
       forms: []
@@ -133,10 +133,6 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
   $scope.$on('observation:editDone', function() {
     $scope.edit = false;
     $scope.editForm = null;
-  });
-
-  $scope.$on('observation:poll', function() {
-    $scope.fromNow = moment($scope.observation.properties.timestamp).fromNow();
   });
 
   $scope.$watch('observation', function(observation) {

@@ -2,19 +2,23 @@ var moment = require('moment');
 
 module.exports = MomentFilter;
 
-function MomentFilter() {
-  function filter(input, format) {
+MomentFilter.$inject = ['LocalStorageService'];
+
+function MomentFilter(LocalStorageService) {
+  function filter(input) {
     if (!input) return null;
 
-    if (format === 'fromNow') {
-      return  moment(input).fromNow();
-    } else if (format === 'humanize') {
-      return moment.duration(Number(input), 'milliseconds').humanize();
-    } else if (format) {
-      return moment(input).format(format);
+    switch(LocalStorageService.getTimeFormat()) {
+    case 'relative':
+      return moment(input).fromNow();
+    default:
+      var timeZone = LocalStorageService.getTimeZoneView();
+      if (timeZone === 'gmt') {
+        return moment(input).utc().format('MMM D YYYY h:mm A z');
+      } else {
+        return moment(input).format('MMM D YYYY h:mm A');
+      }
     }
-
-    return input;
   }
 
   filter.$stateful = true;
