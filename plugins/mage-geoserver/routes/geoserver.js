@@ -1,4 +1,4 @@
-var fs = require('fs')
+const fs = require('fs')
   , path = require('path')
   , util = require('util')
   , querystring = require('querystring')
@@ -13,8 +13,8 @@ function GeoServerResource() {}
 
 module.exports = function(app, authentication) {
 
-  var passport = authentication.passport;
-  var resource = new GeoServerResource(passport);
+  const passport = authentication.passport;
+  const resource = new GeoServerResource(passport);
 
   app.get(
     '/sld',
@@ -22,13 +22,13 @@ module.exports = function(app, authentication) {
     resource.sld
   );
 
-  app.get('/svg/observation/:eventId/:type?/:variant?',
+  app.get('/svg/observation/:eventId/:formId?/:type?/:variant?',
     passport.authenticate('geoserver-bearer', { session: false }),
     resource.getObservationSvg
   );
 
   app.get(
-    '/icons/observation/:eventId/:type?/:variant?',
+    '/icons/observation/:eventId/:formId?/:type?/:variant?',
     passport.authenticate('geoserver-bearer', { session: false }),
     resource.getObservationIcon
   );
@@ -71,7 +71,7 @@ GeoServerResource.prototype.sld = function(req, res, next) {
 };
 
 GeoServerResource.prototype.getObservationSvg = function(req, res) {
-  var svg = xmlbuilder.create({
+  const svg = xmlbuilder.create({
     svg: {
       '@xmlns': 'http://www.w3.org/2000/svg',
       '@xmlns:xlink': 'http://www.w3.org/1999/xlink',
@@ -82,9 +82,10 @@ GeoServerResource.prototype.getObservationSvg = function(req, res) {
         '@y': 0,
         '@width': '42px',
         '@height': '42px',
-        '@xlink:href': util.format('%s/ogc/icons/observation/%s/%s/%s?access_token=%s',
+        '@xlink:href': util.format('%s/ogc/icons/observation/%s/%s/%s/%s?access_token=%s',
           req.getRoot(),
           querystring.escape(req.params.eventId),
+          querystring.escape(req.params.formId),
           querystring.escape(req.params.type),
           querystring.escape(req.params.variant),
           config.token)
@@ -96,17 +97,17 @@ GeoServerResource.prototype.getObservationSvg = function(req, res) {
 };
 
 GeoServerResource.prototype.getObservationIcon = function(req, res, next) {
-  new api.Icon(req.event._id, req.params.type, req.params.variant).getIcon(function(err, iconPath) {
-    if (err || !iconPath) {
+  new api.Icon(req.event._id, req.params.formId, req.params.type, req.params.variant).getIcon(function(err, icon) {
+    if (err || !icon) {
       return next();
     }
 
-    res.sendFile(iconPath);
+    res.sendFile(icon.path);
   });
 };
 
 GeoServerResource.prototype.getUserSvg = function(req, res) {
-  var svg = xmlbuilder.create({
+  const svg = xmlbuilder.create({
     svg: {
       '@xmlns': 'http://www.w3.org/2000/svg',
       '@xmlns:xlink': 'http://www.w3.org/1999/xlink',
@@ -142,7 +143,7 @@ GeoServerResource.prototype.getUserIcon = function(req, res, next) {
 };
 
 GeoServerResource.prototype.getAttachments = function(req, res) {
-  var fieldsByName = {};
+  let fieldsByName = {};
   req.event.form.fields.forEach(function(field) {
     fieldsByName[field.name] = field;
   });
@@ -157,7 +158,7 @@ GeoServerResource.prototype.getAttachment = function(req, res, next) {
   new api.Attachment(req.event, req.observation).getById(req.params.attachmentId, {}, function(err, attachment) {
     if (err) return next(err);
 
-    var stream = fs.createReadStream(attachment.path);
+    const stream = fs.createReadStream(attachment.path);
 
     stream.on('open', function() {
       res.writeHead(200, {

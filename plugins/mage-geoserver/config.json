@@ -1,8 +1,8 @@
 {
-  "enable": false,
+  "enable": true,
   "context": "ogc",
   "geoserver": {
-    "url": "http://localhost:5454",
+    "url": "http://localhost:8080",
     "workspace": "mage",
     "datastore": "mage",
     "username": "admin",

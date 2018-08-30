@@ -39,7 +39,7 @@ exports.updateLayer = function(event) {
 
   async.parallel([
     function(done) {
-      var descriptors = mapper.descriptorsFromForm(event.form);
+      var descriptors = mapper.descriptorsForEvent(event);
       SchemaModel.updateAttributeDescriptors(event, descriptors, done);
     },
     function(done) {
@@ -68,7 +68,7 @@ exports.updateLayer = function(event) {
             name: 'cite:mage'
           },
           cqlFilter: "\"event.id\" = " + event._id,
-          attributes: mapper.attributesFromForm(event.form)
+          attributes: mapper.attributesForEvent(event)
         }
       };
       geoserverRequest.put({
@@ -122,7 +122,7 @@ function createLayer(event, callback) {
   log.info('Creating geoserver observation layer %s.', event.name);
 
   // Geoserver expects that the collection exists for the created,
-  // his will ensure that the observation collection exists
+  // this will ensure that the observation collection exists
   require('../models/observation');
 
   async.series([
@@ -141,7 +141,7 @@ function createLayer(event, callback) {
             }
           }
         },
-        attributeDescriptors: mapper.descriptorsFromForm(event.form)
+        attributeDescriptors: mapper.descriptorsForEvent(event)
       };
 
       SchemaModel.createSchema(schema, done);
@@ -172,7 +172,7 @@ function createLayer(event, callback) {
             name: 'cite:mage'
           },
           cqlFilter: "\"event.id\" = " + event._id,
-          attributes: mapper.attributesFromForm(event.form)
+          attributes: mapper.attributesForEvent(event)
         }
       };
 

@@ -94,6 +94,7 @@ Icon.prototype.getIcon = function(callback) {
     if (err || !icon) {
       return callback(err);
     }
+
     icon.path = path.join(iconBase, icon.relativePath);
     callback(err, icon);
   });

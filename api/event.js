@@ -47,9 +47,9 @@ Event.prototype.createEvent = function(event, user, callback) {
     if (err) return callback(err);
 
     // copy default icon into new event directory
-    new api.Icon(event._id).setDefaultIcon(function(err) {
+    new api.Icon(event._id).saveDefaultIconToEventForm(function(err) {
       if (!err) {
-        EventEmitter.emit(EventEvents.events.add, event);
+        EventEmitter.emit(EventEvents.events.add, newEvent);
       }
 
       callback(err, newEvent);
@@ -122,6 +122,26 @@ Event.prototype.deleteEvent = function(callback) {
   });
 };
 
+Event.prototype.addForm = function(form, callback) {
+  EventModel.addForm(this._event._id, form, function(err, event, form) {
+    if (!err) {
+      EventEmitter.emit(EventEvents.events.update, event);
+    }
+
+    callback(err, form);
+  });
+};
+
+Event.prototype.updateForm = function(form, callback) {
+  EventModel.updateForm(this._event._id, form, function(err, event, form) {
+    if (!err) {
+      EventEmitter.emit(EventEvents.events.update, event);
+    }
+
+    callback(err, form);
+  });
+};
+
 Event.prototype.addTeam = function(team, callback) {
   EventModel.addTeam(this._event, team, function(err, event) {
     if (!err) {
@@ -161,6 +181,5 @@ Event.prototype.removeLayer = function(layer, callback) {
     callback(err, event);
   });
 };
-
 
 module.exports = Event;

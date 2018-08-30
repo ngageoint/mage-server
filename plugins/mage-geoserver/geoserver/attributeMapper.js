@@ -1,4 +1,4 @@
-var util = require('util')
+const util = require('util')
   , log = require('winston')
   , cname = require('../cname');
 
@@ -6,8 +6,8 @@ function fieldFilter(field) {
   return !field.archived && field.name !== 'geometry';
 }
 
-exports.attributesFromForm = function(form) {
-  var attributes = {
+exports.attributesForEvent = function(event) {
+  let attributes = {
     attribute: [{
       name: 'geometry',
       minOccurs: 0,
@@ -22,6 +22,12 @@ exports.attributesFromForm = function(form) {
       binding: 'java.lang.String'
     },{
       name: 'event.id',
+      minOccurs: 0,
+      maxOccurs: 1,
+      nillable: true,
+      binding: 'java.lang.Integer'
+    },{
+      name: 'form.id',
       minOccurs: 0,
       maxOccurs: 1,
       nillable: true,
@@ -47,15 +53,17 @@ exports.attributesFromForm = function(form) {
     }]
   };
 
-  form.fields.filter(fieldFilter).forEach(function(field) {
-    attributes.attribute.push(attributeForField(field));
+  event.forms.forEach(form => {
+    form.fields.filter(fieldFilter).forEach(field => {
+      attributes.attribute.push(attributeForField(field, form));
+    });
   });
 
   return attributes;
 };
 
-exports.descriptorsFromForm = function(form) {
-  var descriptors = [{
+exports.descriptorsForEvent = function(event) {
+  let descriptors = [{
     localName: 'geometry',
     type: {
       binding: 'com.vividsolutions.jts.geom.Geometry'
@@ -83,6 +91,16 @@ exports.descriptorsFromForm = function(form) {
     },
     userData: {
       mapping: 'properties.event._id'
+    }
+  },{
+    localName: 'form.id',
+    minOccurs: 0,
+    maxOccurs: 1,
+    type: {
+      binding: 'java.lang.Integer'
+    },
+    userData: {
+      mapping: 'properties.formId'
     }
   },{
     localName: 'event.name',
@@ -116,16 +134,18 @@ exports.descriptorsFromForm = function(form) {
     }
   }];
 
-  form.fields.filter(fieldFilter).forEach(function(field) {
-    descriptors.push(descriptorForField(field));
+  event.forms.forEach(form => {
+    form.fields.filter(fieldFilter).forEach(field => {
+      descriptors.push(descriptorForField(field, form));
+    });
   });
 
   return descriptors;
 };
 
-function attributeForField(field) {
+function attributeForField(field, form) {
   return {
-    name: cname.generateCName(field.title),
+    name: cname.generateCName(`${form.name}.${field.title}`),
     minOccurs: 0,
     maxOccurs: 1,
     nillable: true,
@@ -133,16 +153,16 @@ function attributeForField(field) {
   };
 }
 
-function descriptorForField(field) {
+function descriptorForField(field, form) {
   return {
-    localName: cname.generateCName(field.title),
+    localName: cname.generateCName(`${form.name}.${field.title}`),
     minOccurs: 0,
     maxOccurs: 1,
     type: {
       binding: binding(field)
     },
     userData: {
-      mapping: util.format('properties.%s', field.name)
+      mapping: util.format('properties.forms.%s.%s', form._id, field.name)
     }
   };
 }
@@ -164,7 +184,7 @@ var bindingMap = {
 };
 
 function binding(field) {
-  var type = bindingMap[field.type];
+  let type = bindingMap[field.type];
 
   if (!type) {
     log.warn('No java binding for type ' + field.type);

@@ -1,6 +1,5 @@
 var xmlbuilder = require('xmlbuilder')
   , async = require('async')
-  , util = require('util')
   , moment = require('moment')
   , Event = require('../../../models/event')
   , config = require('../config')
@@ -23,42 +22,94 @@ function getField(fieldName, form) {
 }
 
 function addNamedObservationLayer(sld, baseUrl, layer, event) {
-  var typeField = getField("type", event.form);
-  var href = util.format('%s/ogc/svg/observation/%s/${strUrlEncode("%s")}', baseUrl, event._id, cname.generateCName(typeField.title));
-  var variantField = getField(event.form.variantField, event.form);
-  if (variantField) {
-    href += util.format('/${strURLEncode("%s")}', cname.generateCName(variantField.title));
-  }
-  href += util.format('?access_token=%s', token);
+  let rules = [{
+    Name: {
+      '#text': 'default'
+    },
+    Filter: {
+      PropertyIsNull: {
+        PropertyName: {
+          '#text': 'form.id'
+        }
+      }
+    },
+    PointSymbolizer: {
+      Graphic: {
+        ExternalGraphic: {
+          OnlineResource: {
+            '@xlink:type': 'simple',
+            '@xlink:href': `${baseUrl}/ogc/svg/observation/${event._id}?access_token=${token}`
+          },
+          Format: {
+            '#text': 'image/svg+xml'
+          }
+        },
+        Size: {
+          '#text': '84'
+        }
+      }
+    }
+  }];
+
+  event.forms.forEach(form => {
+    let href = `${baseUrl}/ogc/svg/observation/${event._id}/${form._id}`;
+
+    var typeField = getField(form.primaryField, form);
+    if (typeField) {
+      href += `/\${strUrlEncode("${cname.generateCName(`${form.name}.${typeField.title}`)}")}`;
+
+      var variantField = getField(form.variantField, form);
+      if (variantField) {
+        href += `/\${strUrlEncode("${cname.generateCName(`${form.name}.${variantField.title}`)}")}`;
+      }
+    }
+
+    href += `?access_token=${token}`;
+
+    rules.push({
+      Name: {
+        '#text': form._id
+      },
+      Filter: {
+        PropertyIsEqualTo: {
+          PropertyName: {
+            '#text': 'form.id'
+          },
+          Literal: {
+            '#text': form._id
+          }
+        }
+      },
+      PointSymbolizer: {
+        Graphic: {
+          ExternalGraphic: {
+            OnlineResource: {
+              '@xlink:type': 'simple',
+              '@xlink:href': href
+            },
+            Format: {
+              '#text': 'image/svg+xml'
+            }
+          },
+          Size: {
+            '#text': '84'
+          }
+        }
+      }
+    });
+  });
 
   sld.ele({
     NamedLayer: {
       Name: {
-        '#text': util.format('%s:observations%d', workspace, event._id)
+        '#text': `${workspace}:observations${event._id}`
       },
       UserStyle: {
         Title: {
-          '#text': util.format('%s Observations', event.name)
+          '#text': `${event.name} Observations`
         },
         FeatureTypeStyle: {
-          Rule: {
-            PointSymbolizer: {
-              Graphic: {
-                ExternalGraphic: {
-                  OnlineResource: {
-                    '@xlink:type': 'simple',
-                    '@xlink:href': href
-                  },
-                  Format: {
-                    '#text': 'image/svg+xml'
-                  }
-                },
-                Size: {
-                  '#text': '84'
-                }
-              }
-            }
-          }
+          Rule: rules
         }
       }
     }
@@ -66,16 +117,16 @@ function addNamedObservationLayer(sld, baseUrl, layer, event) {
 }
 
 function addNamedLocationLayer(sld, baseUrl, event, collection) {
-  var iconHref = util.format('%s/ogc/svg/users/${"user.id"}?access_token=%s', baseUrl, token);
+  var iconHref = `${baseUrl}/ogc/svg/users/\${"user.id"}?access_token=${token}`;
 
   sld.ele({
     NamedLayer: {
       Name: {
-        '#text': util.format('%s:%s%d', workspace, collection, event._id)
+        '#text': `${workspace}:${collection}${event._id}`
       },
       UserStyle: {
         Title: {
-          '#text': util.format('%s People', event.name)
+          '#text': `${event.name} People`
         },
         FeatureTypeStyle: {
           Rule: [{

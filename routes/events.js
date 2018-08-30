@@ -298,7 +298,9 @@ module.exports = function(app, security) {
       function updateEvent(form, callback) {
         form.name = req.param('name');
         form.color = req.param('color');
-        Event.addForm(req.event._id, form, callback);
+        new api.Event(req.event).addForm(form, function(err, form) {
+          callback(err, form);
+        });
       }
 
       function importIcons(form, callback) {
@@ -328,7 +330,7 @@ module.exports = function(app, security) {
     parseForm,
     function(req, res, next) {
       var form = req.form;
-      Event.addForm(req.event._id, form, function(err, form) {
+      new api.Event(req.event).addForm(form, function(err, form) {
         if (err) return next(err);
 
         async.parallel([
@@ -358,7 +360,7 @@ module.exports = function(app, security) {
     function(req, res, next) {
       var form = req.form;
       form._id = parseInt(req.params.formId);
-      Event.updateForm(req.event._id, form, function(err, form) {
+      new api.Event(req.event).updateForm(form, function(err, form) {
         if (err) return next(err);
 
         new api.Form(req.event, form).populateUserFields(function(err) {

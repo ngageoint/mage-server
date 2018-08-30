@@ -1,9 +1,8 @@
-var mongoose = require('mongoose')
+const mongoose = require('mongoose')
   , log = require('winston')
-  , util = require('util')
   , config = require('../config.json');
 
-var Schema = mongoose.Schema;
+const Schema = mongoose.Schema;
 
 // TODO Attachments
 // Not sure what to do here to secure attachment URLs
@@ -31,7 +30,7 @@ ObservationSchema.index({'properties.event._id': 1});
 var ObservationModel = mongoose.model('Observation', ObservationSchema);
 
 function createOrUpdateObservation(observation, event, user, callback) {
-  observation.properties.url = util.format('%s/%s/events/%d/observations/%s?access_token=%s', config.mage.baseUrl, config.context, event._id, observation.id, config.token);
+  observation.properties.url = `${config.mage.baseUrl}/${config.context}/events/${event._id}/observations/${observation.id}?access_token=${config.token}`;
 
   observation.properties.event = {
     _id: event._id,
@@ -47,7 +46,14 @@ function createOrUpdateObservation(observation, event, user, callback) {
     };
   }
 
-  var options = {
+  const forms = observation.properties.forms;
+  observation.properties.forms = {};
+  forms.forEach(form => {
+    observation.properties.forms[form.formId] = form;
+    observation.properties.formId = form.formId;
+  });
+
+  const options = {
     upsert: true,
     new: true
   };
@@ -87,7 +93,7 @@ exports.getLastObservation = function(event, callback) {
   ObservationModel.find({'properties.event._id': event._id}, {}, {limit: 1, sort: {lastModified: -1}}, function(err, observations) {
     if (err) return callback(err);
 
-    var observation = observations.length ? observations[0] : null;
+    const observation = observations.length ? observations[0] : null;
     callback(err, observation);
   });
 };
