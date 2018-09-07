@@ -1,4 +1,4 @@
-var Layer = require('../models/layer');
+var api = require('../api');
 
 exports.id = 'create-initial-osm-layer';
 
@@ -13,9 +13,13 @@ exports.up = function(done) {
     url: "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
   };
 
-  Layer.create(osm, done);
+  new api.Layer().create(osm)
+    .then(() => done())
+    .catch(err => done(err));
 };
 
 exports.down = function(done) {
-  Layer.Model.remove({name: "Open Street Map"}, done);
+  new api.Layer().remove({name: "Open Street Map"})
+    .then(() => done())
+    .catch(err => done(err));
 };
