@@ -29,7 +29,17 @@ function SetupController($scope, $http, $location, UserService, api) {
   $scope.finish = function() {
     $http.post('/api/setup', $scope.account, {headers: { 'Content-Type': 'application/json' }}).success(function() {
       // login the user
-      UserService.login({username: $scope.account.username, password: $scope.account.password, uid: $scope.account.uid});
+      var self = this;
+      UserService.signin({username: $scope.account.username, password: $scope.account.password}).then(function(response) {
+        var user = response.user;
+
+        UserService.authorize('local', user, false, {uid: $scope.account.uid});
+      }, function(response) {
+        self.showStatus = true;
+        self.statusTitle = 'Error signing in';
+        self.statusMessage = response.data || 'Please check your username and password and try again.';
+        self.statusLevel = 'alert-danger';
+      });
     }).error(function() {
     });
   };

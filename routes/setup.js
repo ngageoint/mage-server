@@ -89,9 +89,9 @@ module.exports = function(app, security) {
           });
         },
         function(user, done) {
-          Device.createDevice(req.device, function(err, device) {
-            done(err, user, device);
-          });
+          Device.createDevice(req.device)
+            .then(device => done(null, user, device))
+            .catch(err => done(err));
         }
       ], function(err, user, device) {
         if (err) return next(err);
