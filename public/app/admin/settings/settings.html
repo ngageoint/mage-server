@@ -18,7 +18,7 @@
 
             <div class="row" ng-controller="AdminSettingsController">
               <div class="col-md-3">
-                <ul class="nav nav-pills nav-stacked" ng-if="local">
+                <ul class="nav nav-pills nav-stacked" ng-show="local">
                   <li ng-class="{active: pill === 'security'}"><a ng-click="pill = 'security'" href="javascript:void(0);">Security</a></li>
                 </ul>
                 <ul class="nav nav-pills nav-stacked">
