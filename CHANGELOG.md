@@ -6,6 +6,12 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+
+##### Bug Fixes
+
+## [5.2.0](https://github.com/ngageoint/mage-server/releases/tag/5.2.0) (09-17-2018)
+
+##### Features
 * Users can view or edit coordinates as MGRS.
 * Users can edit observation time in GMT or Local time.
 * Users can view observation and location time as relative or absolute local or GMT.
