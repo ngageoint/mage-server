@@ -34,12 +34,5 @@ function toWgs84(input, format) {
 }
 
 function toMgrs(input) {
-  var mgrsString = mgrs.forward(input.coordinates);
-
-  var gzd = mgrsString.substring(0, 2);
-  var hundredKmGrid  = mgrsString.substring(2, 4);
-  var easting = mgrsString.substring(4, 9);
-  var northing = mgrsString.substring(9, 14);
-
-  return [gzd, hundredKmGrid, easting, northing].join(" ");
+  return mgrs.forward(input.coordinates);
 }
