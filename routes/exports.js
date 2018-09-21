@@ -128,13 +128,14 @@ function mapUsers(req, res, next) {
 
 function mapDevices(req, res, next) {
   //get users for lookup
-  Device.getDevices(function (err, devices) {
-    var map = {};
-    devices.forEach(function(device) {
-      map[device._id] = device;
-    });
-    req.devices = map;
-
-    next(err);
-  });
+  Device.getDevices()
+    .then(devices => {
+      var map = {};
+      devices.forEach(function(device) {
+        map[device._id] = device;
+      });
+      req.devices = map;
+      next();
+    })
+    .catch(err => next(err));
 }
