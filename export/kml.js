@@ -91,7 +91,7 @@ Kml.prototype.streamObservations = function(stream, archive, done) {
         }
 
         self.mapObservations(o);
-        var name = primary || form.name || self._event.name;
+        var name = primary || form ? form.name : null || self._event.name;
         stream.write(writer.generateObservationPlacemark(name, o, form, primary, secondary));
 
         o.attachments.forEach(function(attachment) {

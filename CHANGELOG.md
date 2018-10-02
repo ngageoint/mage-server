@@ -8,6 +8,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+* Fix KML export for events with no forms.
 
 ## [5.2.0](https://github.com/ngageoint/mage-server/releases/tag/5.2.0) (09-17-2018)
 
