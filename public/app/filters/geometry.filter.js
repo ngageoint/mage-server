@@ -23,16 +23,21 @@ function GeometryFilter(LocalStorageService) {
 }
 
 function toWgs84(input, format) {
+  var coordinates = center(input);
+  return coordinates[0].toFixed(format) + ', ' + coordinates[1].toFixed(format);
+}
+
+function toMgrs(input) {
+  var coordinates = center(input).geometry.coordinates;
+  return mgrs.forward(coordinates);
+}
+
+function center(input) {
   var feature = {
     type: 'Feature',
     properties: {},
     geometry: input
   };
 
-  var center = turfCenter(feature);
-  return center.geometry.coordinates[0].toFixed(format) + ', ' + center.geometry.coordinates[1].toFixed(format);
-}
-
-function toMgrs(input) {
-  return mgrs.forward(input.coordinates);
+  return turfCenter(feature);
 }
