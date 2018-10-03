@@ -346,7 +346,7 @@ exports.deleteUser = function(user, callback) {
 
 exports.invalidLogin = function(user) {
   return Setting.getSetting('security')
-    .then(securitySettings => {
+    .then((securitySettings = {settings: {accountLock: {}}}) => {
       let {enabled, max, interval, threshold} = securitySettings.settings.accountLock;
       if (!enabled) return Promise.resolve(user);
 

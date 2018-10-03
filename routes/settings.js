@@ -19,7 +19,7 @@ module.exports = function(app, security) {
   app.get(
     '/api/settings/:type(banner|disclaimer|security)',
     function (req, res, next) {
-      Setting.getSettingByType(req.params.type)
+      Setting.getSetting(req.params.type)
         .then(setting => res.json(setting))
         .catch(err => next(err));
     }

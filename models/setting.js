@@ -29,11 +29,16 @@ exports.getSettings = function() {
 };
 
 exports.getSetting = function(type) {
-  return Setting.findOne({type: type}).exec();
-};
+  const promise = new Promise(function(resolve, reject) {
+    Setting.findOne({type: type})
+      .exec()
+      .then(type => {
+        resolve(type ? type : undefined);
+      })
+      .catch(err => reject(err));
+  });
 
-exports.getSettingByType = function(type) {
-  return Setting.findOne({type: type}).exec();
+  return promise;
 };
 
 exports.updateSettingByType = function(type, update) {
