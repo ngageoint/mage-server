@@ -58,6 +58,7 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
       timestampField: {
         title: 'Date',
         type: 'date',
+        name:'timestamp',
         value: moment(newObservation.properties.timestamp).toDate()
       },
       forms: []

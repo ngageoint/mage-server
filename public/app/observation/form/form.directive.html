@@ -5,7 +5,7 @@
           <strong class="muted">{{event.name}}</strong>
         </h4>
 
-        <date-edit form="observationForm" field="form.timestampField"></date-edit>
+        <date-edit field="form.timestampField" form-field="observationForm[form.timestampField.name]"></date-edit>
         <geometry-edit form="observationForm" field="form.geometryField"></geometry-edit>
 
         <div ng-repeat="observationForm in form.forms" class="bottom-gap-l">

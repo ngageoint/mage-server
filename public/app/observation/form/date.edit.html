@@ -4,7 +4,7 @@
       <label>{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required && !$ctrl.field.value">*</span>
 
       <p class="input-group">
-        <input type="text" name="timestamp" class="form-control" uib-datepicker-popup="MMM d yyyy HH:mm:ss" ng-model="$ctrl.date" ng-change="$ctrl.onDateChanged()" ng-required="$ctrl.field.required" is-open="$ctrl.datePopup.open" close-text="Close" />
+        <input type="text" name="{{$ctrl.field.name}}" class="form-control" uib-datepicker-popup="MMM d yyyy HH:mm:ss" ng-model="$ctrl.date" ng-change="$ctrl.onDateChanged()" ng-required="$ctrl.field.required" is-open="$ctrl.datePopup.open" close-text="Close" />
         <span class="input-group-btn">
           <button type="button" class="btn btn-default" ng-click="$ctrl.openDate($event)"><i class="fa fa-calendar"></i></button>
         </span>

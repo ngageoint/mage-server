@@ -4,7 +4,7 @@ var  angular = require('angular')
 module.exports = {
   template: require('./date.edit.html'),
   bindings: {
-    form: '<',
+    formField: '<',
     field: '<'
   },
   controller: DateEditController
@@ -22,6 +22,12 @@ function DateEditController(LocalStorageService) {
     this.datePopup = { open: false };
 
     this.formatDate();
+  };
+
+  this.$onChanges = function(changes) {
+    if (changes.formField) {
+      this.formatDate();
+    }
   };
 
   this.onTimeZoneChange = function() {
@@ -42,7 +48,7 @@ function DateEditController(LocalStorageService) {
   };
 
   this.formatDate = function() {
-    if (this.form[this.field.name].$valid) {
+    if (this.formField && this.formField.$valid) {
       var date = moment(this.date);
       if (this.timeZone === 'gmt') {
         date.add(date.utcOffset(), 'minutes');
