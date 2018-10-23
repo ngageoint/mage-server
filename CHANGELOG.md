@@ -12,6 +12,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Fix bug in MGRS display for lines and polygons.
 * Fix username/password error message on invalid login when account lock is disabled.
 * Fix bug in observation edit where initial timezone format was not being picked up.
+* Fix bug in shapefile column name that esri could not read.
 
 ## [5.2.0](https://github.com/ngageoint/mage-server/releases/tag/5.2.0) (09-17-2018)
 
