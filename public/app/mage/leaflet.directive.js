@@ -1,8 +1,7 @@
 var _ = require('underscore')
   , L = require('leaflet')
   , angular = require('angular')
-  , moment = require('moment')
-  , geosearch = require('leaflet-geosearch');
+  , moment = require('moment');
 
 module.exports = function leaflet() {
   var directive = {
@@ -75,10 +74,8 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   }
 
   // toolbar  and controls config
-  new geosearch.GeoSearchControl({
-    provider: new geosearch.OpenStreetMapProvider(),
-    showMarker: false,
-    autoClose: true
+  L.Control.clearableGeocoder({
+    position: 'topleft'
   }).addTo(map);
 
   new L.Control.MageFeature({

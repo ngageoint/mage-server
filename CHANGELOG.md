@@ -8,6 +8,13 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+
+## [5.2.1](https://github.com/ngageoint/mage-server/releases/tag/5.2.1) (10-23-2018)
+
+##### Features
+* New more featureful geocoder control
+
+##### Bug Fixes
 * Fix KML export for events with no forms.
 * Fix bug in MGRS display for lines and polygons.
 * Fix username/password error message on invalid login when account lock is disabled.

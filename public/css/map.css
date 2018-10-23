@@ -3,26 +3,48 @@
 @import "~leaflet.markercluster/dist/MarkerCluster.Default.css";
 @import "~leaflet-geosearch/assets/css/leaflet.css";
 @import "~leaflet-groupedlayercontrol/dist/leaflet.groupedlayercontrol.min.css";
+@import "~leaflet-control-geocoder/dist/Control.Geocoder.css";
 
-.leaflet-control-geosearch .leaflet-bar-part {
-  border-radius: 2px;
+.leaflet-control-geocoder-icon {
+  border-radius: 4px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background-color: white;
+  background-image: none;
+  background-repeat: no-repeat;
+  background-position: center;
+  cursor: pointer;
+  color: #365F8C;
 }
 
-.leaflet-control-geosearch a.leaflet-bar-part:before {
-    top: 19px;
-    left: 16px;
-    width: 6px;
-    border-top: 2px solid #365F8C;
-    transform: rotateZ(45deg);
+
+.leaflet-control-geocoder-icon::before {
+   font-family: "FontAwesome";
+   content: "\f002";
+   font-size: 1.1em;
+   margin-left: 2px;
 }
 
-.leaflet-control-geosearch a.leaflet-bar-part:after {
-    top: 9px;
-    left: 9px;
-    height: 10px;
-    width: 10px;
-    border-radius: 50%;
-    border: 2px solid #365F8C;
+.leaflet-control-geocoder-throbber .leaflet-control-geocoder-icon {
+ background-image: none;
+}
+
+.leaflet-control-geocoder-throbber .leaflet-control-geocoder-icon::before {
+  font-family: "FontAwesome";
+  font-size: 1.1em;
+  content: "\f110";
+  display: block;
+  margin-top: 4px;
+  -webkit-animation: fa-spin 1s infinite steps(8);
+  animation: fa-spin 1s infinite steps(8);
+}
+
+.leaflet-control-geocoder-clear {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
 }
 
 .leaflet-bar a, .leaflet-bar a:hover {
