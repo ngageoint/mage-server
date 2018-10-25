@@ -38,7 +38,7 @@ function migrateEvents(events, callback) {
   console.log('migrate events');
 
   async.eachSeries(events, function(event, done) {
-    Counter.getNext('form', function(formId) {
+    Counter.getNext('form').then(formId => {
       migrateEvent(event, formId, done);
     });
   }, function(err) {
