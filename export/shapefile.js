@@ -48,7 +48,7 @@ Shapefile.prototype.observationsToShapefile = function(archive, done) {
   if (!self._filter.exportObservations) return done(null, []);
 
   self._filter.states = ['active'];
-  new api.Observation(self._event).getAll(self._filter, function(err, observations) {
+  new api.Observation(self._event).getAll({filter: self._filter}, function(err, observations) {
     if (err) return done(err);
 
     mapObservations.call(self, observations);
@@ -135,7 +135,11 @@ function write(geojson, callback, doneCallback) {
   };
   [shpgeojson.polygon(gj), shpgeojson.point(gj), shpgeojson.line(gj)]
     .forEach(function(l) {
+      console.log('type', l.type);
+      console.log('geometries', l.geometries);
+      console.log('properties', l.properties);
       if (l.geometries.length && l.geometries[0].length) {
+        console.log('write type', l.type);
         shpwrite.write(l.properties, l.type, l.geometries,
           function(err, files) {
             callback(err, {
