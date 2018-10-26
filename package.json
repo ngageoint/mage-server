@@ -58,7 +58,7 @@
     "pem-jwk": "1.5.1",
     "pem2jwk": "1.0.1",
     "pug": "2.0.0-beta11",
-    "shp-write": "0.3.2",
+    "shp-write": "https://github.com/newmanw/shp-write.git#fix-polygon-export",
     "terraformer": "1.0.4",
     "terraformer-arcgis-parser": "1.0.4",
     "vt-pbf": "3.1.1",

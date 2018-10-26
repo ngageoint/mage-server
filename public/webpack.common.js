@@ -1,6 +1,7 @@
 var webpack = require('webpack')
-  , ExtractTextPlugin = require("extract-text-webpack-plugin")
   , CleanWebpackPlugin = require('clean-webpack-plugin');
+
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
   context: __dirname,
@@ -23,16 +24,13 @@ module.exports = {
   module: {
     rules: [{
       test: /\.css$/,
-      use: ExtractTextPlugin.extract({
-        fallback: 'style-loader',
-        use: [{
-          loader: 'css-loader',
-          options: {
-            minify: true,
-            sourceMap: true
-          }
-        }]
-      })
+      use: [
+        {
+          loader: MiniCssExtractPlugin.loader,
+          options: {}
+        },
+        'css-loader'
+      ]
     },{
       test: /\.(eot|svg|ttf|woff|woff2)$/,
       loader: 'file-loader?name=fonts/[name].[ext]'
@@ -47,14 +45,12 @@ module.exports = {
     new CleanWebpackPlugin(['dist'], {
       exclude: ['index.html']
     }),
-    new ExtractTextPlugin("styles.css"),
+    new MiniCssExtractPlugin({
+      filename: "styles.css"
+    }),
     new webpack.ProvidePlugin({
       'window.jQuery': 'jquery',
       "jQuery": "jquery"
-    }),
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor',
-      file: 'vendor.bundle.js'
     })
   ]
 };
