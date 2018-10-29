@@ -1,8 +1,9 @@
-<h4>{{$ctrl.form.name}}</h4>
-<div ng-repeat="field in $ctrl.form.fields | filter:{archived: '!true'} | orderBy: 'id'">
+<h4>{{$ctrl.formDefinition.name}}</h4>
+
+<div ng-repeat="field in $ctrl.formDefinition.fields | filter:{archived: '!true'} | orderBy: 'id'">
   <div ng-switch on="field.type">
     <checkbox-edit ng-switch-when="checkbox" field="field"></checkbox-edit>
-    <date-edit ng-switch-when="date" field="field" ></date-edit>
+    <date-edit ng-switch-when="date" field="field" form-field="$ctrl.form[field.name]"></date-edit>
     <dropdown-edit ng-switch-when="dropdown" field="field"></dropdown-edit>
     <email-edit ng-switch-when="email" field="field"></email-edit>
     <geometry-edit ng-switch-when="geometry" field="field"></geometry-edit>
