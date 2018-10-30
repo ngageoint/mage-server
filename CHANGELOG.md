@@ -8,6 +8,12 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+
+## [5.2.2](https://github.com/ngageoint/mage-server/releases/tag/5.2.2) (10-30-2018)
+
+##### Features
+
+##### Bug Fixes
 * Fixed bug with date/time fields not saving.
 
 ## [5.2.1](https://github.com/ngageoint/mage-server/releases/tag/5.2.1) (10-23-2018)
