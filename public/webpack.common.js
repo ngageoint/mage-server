@@ -1,21 +1,12 @@
-var webpack = require('webpack')
-  , CleanWebpackPlugin = require('clean-webpack-plugin');
-
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const webpack = require('webpack'),
+  CleanWebpackPlugin = require('clean-webpack-plugin'),
+  MiniCssExtractPlugin = require("mini-css-extract-plugin"),
+  HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   context: __dirname,
   entry: {
-    app: './main.js',
-    vendor: [
-      'angular',
-      'angular-animate',
-      'angular-messages',
-      'angular-resource',
-      'angular-route',
-      'angular-sanitize',
-      'leaflet'
-    ]
+    app: './main.js'
   },
   output: {
     path: __dirname + '/dist',
@@ -25,10 +16,7 @@ module.exports = {
     rules: [{
       test: /\.css$/,
       use: [
-        {
-          loader: MiniCssExtractPlugin.loader,
-          options: {}
-        },
+        MiniCssExtractPlugin.loader,
         'css-loader'
       ]
     },{
@@ -41,16 +29,33 @@ module.exports = {
       test: /\.html$/, loader: 'raw-loader'
     }]
   },
+  optimization: {
+    splitChunks: {
+      chunks: 'all',
+      cacheGroups: {
+        vendor: {
+          test: /node_modules/,
+          chunks: 'initial',
+          name: 'vendor',
+          enforce: true
+        }
+      }
+    }
+  },
   plugins: [
-    new CleanWebpackPlugin(['dist'], {
-      exclude: ['index.html']
-    }),
+    new CleanWebpackPlugin(
+      ['dist']
+    ),
     new MiniCssExtractPlugin({
-      filename: "styles.css"
+      filename: '[name].css'
+    }),
+    new HtmlWebpackPlugin({
+      filename: 'index.html',
+      template: './index.html'
     }),
     new webpack.ProvidePlugin({
       'window.jQuery': 'jquery',
-      "jQuery": "jquery"
+      'jQuery': 'jquery'
     })
   ]
 };

@@ -23,5 +23,5 @@ angular.module('mage', [
 ]);
 
 require('./img');
-require ('./css');
+require('./css');
 require('./app/app');

@@ -4,7 +4,6 @@ node_modules
 .vscode
 public/.tmp
 public/dist/*
-!public/dist/index.html
 coverage
 npm-debug.log
 scratch
