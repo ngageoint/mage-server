@@ -1,3 +1,4 @@
+require('./GridLayer');
 require('./FixedWidthIcon');
 require('./FixedWidthMarker');
 require('./LocationMarker');

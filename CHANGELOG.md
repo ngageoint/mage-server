@@ -8,6 +8,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+* Work around for leaflet GridLayer space between tiles.
 
 ## [5.2.1](https://github.com/ngageoint/mage-server/releases/tag/5.2.1) (10-23-2018)
 
