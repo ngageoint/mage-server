@@ -97,10 +97,6 @@ a {
  display: block;
 }
 
-.navbar {
-	margin-bottom: 0;
-}
-
 .content-flex {
   flex: 1 1 0;
   position: relative;
@@ -366,9 +362,15 @@ a {
   }
 }
 
-@media(max-width:768px){
+@media(max-width:768px) {
   .filter-interval {
     padding-left: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .navbar-nav .open .dropdown-menu .dropdown-header {
+      color: rgb(221, 221, 221, .87);
   }
 }
 
@@ -605,6 +607,8 @@ textarea {
 
 .navbar {
   flex: auto;
+  min-height: auto;
+  margin-bottom: 0;
 }
 
 .navbar-default .admin-navbar-toggle {
@@ -621,6 +625,13 @@ textarea {
 
 .navbar-default .navbar-text-inverse {
     color: #777;
+}
+
+.navbar-divider {
+  height: 1px;
+  width: 100%;
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.54);
 }
 
 .admin-dashboard-navbar .btn-link {

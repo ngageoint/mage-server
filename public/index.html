@@ -42,15 +42,15 @@
           <ul class="nav navbar-nav" ng-if="location.path() === '/map'" ng-cloak>
             <li class="dropdown">
               <a class="pointer dropdown-toggle visible-xs-block" ng-click="onFilterClick()" data-toggle="collapse" data-target=".main-navbar-collapse">
-                <i class="fa fa-filter icon-spacer"></i> Filter
+                <i class="fa fa-fw fa-filter"></i> Filter
               </a>
               <a class="pointer dropdown-toggle hidden-xs" ng-click="onFilterClick()">
-                <i class="fa fa-filter icon-spacer"></i> Filter
+                <i class="fa fa-fw fa-filter"></i> Filter
               </a>
             </li>
             <li class="dropdown">
               <a href="javascript:void(0)" class="dropdown-toggle" data-toggle="dropdown">
-                <i style="margin-right: 3px;" ng-class="pollingInterval == 0 ? 'fa fa-square-o' : 'fa fa-check-square-o'"></i> Live Update ({{pollingInterval | polling}})
+                <i ng-class="pollingInterval == 0 ? 'fa fa-square-o' : 'fa fa-check-square-o'"></i> Live Update ({{pollingInterval | polling}})
                 <b class="caret"></b>
               </a>
               <ul class="dropdown-menu">
@@ -83,93 +83,112 @@
             </li>
             <li class="dropdown" uib-dropdown auto-close="outsideClick">
               <a class="dropdown-toggle pointer" uib-dropdown-toggle>
-                <i style="margin-right: 3px;" class="fa fa-wrench"></i> Preferences
+                <i class="fa fa-fw fa-wrench"></i> Preferences
                 <b class="caret"></b>
               </a>
-              <ul class="dropdown-menu preferences-form" uib-dropdown-menu>
-                <div class="form-group">
-                  <div>
-                    <label class="muted">
-                      <i class="fa fa-clock-o"></i>  Time Format
-                    </label>
-                  </div>
+              <ul class="dropdown-menu" uib-dropdown-menu>
+                <li class="bottom-gap-s">
+                  <a>
+                    <i class="fa fa-fw fa-clock-o"></i>
+                    Time Format
+                  </a>
 
-                  <div class="btn-group">
-                    <label class="btn btn-default btn-xs" ng-model="preferences.timeFormat" ng-change="onTimeFormatChange('absolute')" uib-btn-radio="'absolute'">Absolute</label>
-                    <label class="btn btn-default btn-xs" ng-model="preferences.timeFormat" ng-change="onTimeFormatChange('relative')" uib-btn-radio="'relative'">Relative</label>
-                  </div>
-                </div>
-                <div class="form-group" ng-if="preferences.timeFormat !== 'relative'">
-                  <div>
-                    <label class="muted">
-                      <i class="fa fa-globe"></i>  Time Zone
-                    </label>
-                  </div>
+                  <a>
+                    <div>
+                      <div class="btn-group">
+                        <label class="btn btn-default btn-xs" ng-model="preferences.timeFormat" ng-change="onTimeFormatChange('absolute')" uib-btn-radio="'absolute'">Absolute</label>
+                        <label class="btn btn-default btn-xs" ng-model="preferences.timeFormat" ng-change="onTimeFormatChange('relative')" uib-btn-radio="'relative'">Relative</label>
+                      </div>
+                    </div>
+                  </a>
+                </li>
 
-                  <div class="btn-group">
-                    <label class="btn btn-default btn-xs" ng-model="preferences.timeZone" ng-change="onTimeZoneChange('local')" uib-btn-radio="'local'">Local</label>
-                    <label class="btn btn-default btn-xs" ng-model="preferences.timeZone" ng-change="onTimeZoneChange('gmt')" uib-btn-radio="'gmt'">GMT</label>
-                  </div>
-                </div>
+                <li  class="bottom-gap-s" ng-if="preferences.timeFormat !== 'relative'">
+                  <a>
+                    <i class="fa fa-fw fa-globe"></i>
+                    Time Zone
+                  </a>
+
+                  <a>
+                    <div>
+                      <div class="btn-group">
+                        <label class="btn btn-default btn-xs" ng-model="preferences.timeZone" ng-change="onTimeZoneChange('local')" uib-btn-radio="'local'">Local</label>
+                        <label class="btn btn-default btn-xs" ng-model="preferences.timeZone" ng-change="onTimeZoneChange('gmt')" uib-btn-radio="'gmt'">GMT</label>
+                      </div>
+                    </div>
+                  </a>
+                </li>
 
                 <li role="separator" class="divider"></li>
 
-                <div class="form-group">
-                  <div>
-                    <label class="muted">
-                      <i class="fa fa-map-o"></i> Coordinate System
-                    </label>
-                  </div>
+                <li>
+                  <a>
+                    <i class="fa fa-fw fa-map-o"></i>
+                    Coordinate System
+                  </a>
 
-                  <div class="btn-group">
-                    <label class="btn btn-default btn-xs" ng-model="preferences.coordinateSystem" ng-change="onCoordinateSystemChange('wgs84')" uib-btn-radio="'wgs84'">Lat/Lng</label>
-                    <label class="btn btn-default btn-xs" ng-model="preferences.coordinateSystem" ng-change="onCoordinateSystemChange('mgrs')" uib-btn-radio="'mgrs'">MGRS</label>
-                  </div>
-                </div>
+                  <a>
+                    <div>
+                      <div class="btn-group">
+                        <label class="btn btn-default btn-xs" ng-model="preferences.coordinateSystem" ng-change="onCoordinateSystemChange('wgs84')" uib-btn-radio="'wgs84'">Lat/Lng</label>
+                        <label class="btn btn-default btn-xs" ng-model="preferences.coordinateSystem" ng-change="onCoordinateSystemChange('mgrs')" uib-btn-radio="'mgrs'">MGRS</label>
+                      </div>
+                    </div>
+                  </a>
+                </li>
               </ul>
             </li>
             <li class="dropdown">
               <a class="pointer dropdown-toggle visible-xs-block" data-toggle="collapse" data-target=".main-navbar-collapse" ng-click="onExportClick()">
-                <i class="fa fa-download icon-spacer"></i> Export
+                <i class="fa fa-fw fa-download"></i> Export
               </a>
               <a class="pointer dropdown-toggle hidden-xs" ng-click="onExportClick()">
-                <i class="fa fa-download icon-spacer"></i> Export
+                <i class="fa fa-fw fa-download"></i> Export
               </a>
+            </li>
+
+            <li class="visible-xs-block">
+              <div class="navbar-divider"/>
             </li>
           </ul>
           <ul class="nav navbar-nav navbar-right" ng-show="myself" ng-cloak>
+
             <li ng-show="myself">
               <a href="#/user" data-toggle="collapse" data-target=".main-navbar-collapse" class="nav-link visible-xs-block" style="padding-top: 14px; padding-bottom: 10px;">
-                <span avatar-user="myself" avatar-width="25" avatar-height="25"></span>
-                <i class="fa fa-icon-info icon-spacer"></i> {{myself.displayName}}
+                <i class="fa fa-fw fa-user"></i> {{myself.displayName}}
               </a>
               <a href="#/user" class="nav-link hidden-xs" style="padding-top: 14px; padding-bottom: 10px;" uib-tooltip="My&nbsp;Profile" tooltip-placement="bottom">
                 <span avatar-user="myself" avatar-width="25" avatar-height="25"></span>
-                <i class="fa fa-icon-info icon-spacer"></i> {{myself.displayName}}
+                {{myself.displayName}}
               </a>
             </li>
             <li ng-show="amAdmin">
               <a ng-href="#/admin" data-toggle="collapse" data-target=".main-navbar-collapse" class="nav-link visible-xs-block">
-                <i class="icon-cogs icon-spacer"></i> Admin
+                <i class="fa fa-fw fa-cogs"></i> Admin
               </a>
               <a ng-href="#/admin" class="nav-link hidden-xs" uib-tooltip="Admin" tooltip-placement="bottom">
-                <i class="icon-cogs icon-spacer"></i>
+                <i class="fa fa-fw fa-cogs"></i>
               </a>
             </li>
             <li>
               <a href="#/about" data-toggle="collapse" data-target=".main-navbar-collapse" class="nav-link visible-xs-block">
-                <i class="fa fa-info-circle icon-spacer"></i> About MAGE
+                <i class="fa fa-fw fa-info-circle"></i> About MAGE
               </a>
               <a href="#/about" class="nav-link hidden-xs" uib-tooltip="About&nbsp;MAGE" tooltip-placement="bottom">
-                <i class="fa fa-info-circle icon-spacer"></i>
+                <i class="fa fa-fw fa-info-circle"></i>
               </a>
             </li>
+
+            <li class="visible-xs-block">
+              <div class="navbar-divider"/>
+            </li>
+
             <li>
               <a ng-click="logout()" data-toggle="collapse" data-target=".main-navbar-collapse" class="nav-link pointer visible-xs-block">
-                <i class="fa fa-sign-out icon-spacer"></i> Sign out
+                <i class="fa fa-fw fa-sign-out"></i> Sign out
               </a>
               <a ng-click="logout()" class="nav-link pointer hidden-xs" uib-tooltip="Sign&nbsp;out" tooltip-placement="bottom">
-                <i class="fa fa-sign-out icon-spacer"></i>
+                <i class="fa fa-fw fa-sign-out"></i>
               </a>
             </li>
           </ul>
