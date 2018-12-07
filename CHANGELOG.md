@@ -6,7 +6,13 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
-* Added new environment varaible and configuration to support secure login session cookie.  NOTE:
+
+##### Bug Fixes
+
+## [5.2.3](https://github.com/ngageoint/mage-server/releases/tag/5.2.3) (12-07-2018)
+
+##### Features
+* Added new environment variable and configuration to support secure login session cookie.  NOTE:
  the MAGE login session is a very short lived session that exists between valid authentication and
  device id authorization.
 
