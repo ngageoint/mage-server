@@ -68,6 +68,9 @@ const environment = {
   attachmentBaseDirectory: path.resolve(process.env.MAGE_ATTACHMENT_DIR || '/var/lib/mage/attachments'),
   layerBaseDirectory: path.resolve(process.env.MAGE_LAYER_DIR || '/var/lib/mage/layers'),
   tokenExpiration: parseInt(process.env.MAGE_TOKEN_EXPIRATION) || 28800,
+  cookies: {
+    secure: process.env.MAGE_SESSION_COOKIE_SECURE !== 'false'
+  },
   mongo: {
     uri: mongoConfig.url,
     connectTimeout: parseInt(process.env.MAGE_MONGO_CONN_TIMEOUT) * 1000 || 300000,
@@ -97,7 +100,7 @@ if (mongoConfig.x509Key) {
 else if (user && password) {
   environment.mongo.options.auth = {
     user: user, password: password
-  }
+  };
 }
 
 module.exports = environment;

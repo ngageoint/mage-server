@@ -4,6 +4,8 @@
 export MAGE_ADDRESS=0.0.0.0
 # the port on which the web server will listen for connections
 export MAGE_PORT=4242
+# indicates whether the mage session cookie used during authentication is only to be sent over HTTPS
+export MAGE_SESSION_COOKIE_SECURE=true
 # directory where mage stores user icons and avatars
 export MAGE_USER_DIR=/var/lib/mage/users
 # directory where mage stores map symbology icons
@@ -28,7 +30,7 @@ export MAGE_MONGO_PASSWORD=
 # when either of these values are present, they override MAGE_MONGO_USER, and MAGE will attempt to use mongodb x509 authentication
 # (https://docs.mongodb.com/v3.6/core/security-x.509/), rather than user/password authentication.  a literal value present in
 # MAGE_MONGO_X509_KEY takes precedence over the file counterpart, and MAGE will assume the same arrangement for the other X509 variables.
-# one cannot therefore mix MAGE_MONGO_X509_KEY with MAGE_MONGO_X509_CERT_FILE to create a valid configuration.  if the key is 
+# one cannot therefore mix MAGE_MONGO_X509_KEY with MAGE_MONGO_X509_CERT_FILE to create a valid configuration.  if the key is
 # encrypted with a password, MAGE uses the value of MAGE_MONGO_PASSWORD to decrypt the key.
 export MAGE_MONGO_X509_KEY=
 export MAGE_MONGO_X509_KEY_FILE=

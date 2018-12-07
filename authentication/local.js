@@ -228,7 +228,7 @@ module.exports = function(app, passport, provisioning) {
         });
       });
 
-      req.session.destroy();
+      req.session = null;
     }
   );
 };

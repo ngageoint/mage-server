@@ -6,6 +6,9 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+* Added new environment varaible and configuration to support secure login session cookie.  NOTE:
+ the MAGE login session is a very short lived session that exists between valid authentication and
+ device id authorization.
 
 ##### Bug Fixes
 * Work around for leaflet GridLayer space between tiles.

@@ -1,11 +1,12 @@
 var express = require("express")
-  , session = require('express-session')
+  , cookieSession = require('cookie-session')
   , passport = require('passport')
   , path = require('path')
   , config = require('./config.js')
   , provision = require('./provision')
   , log = require('./logger')
-  , api = require('./api');
+  , api = require('./api')
+  , env = require('./environment/env');
 
 var app = express();
 app.use(function(req, res, next) {
@@ -32,17 +33,13 @@ app.use(function(req, res, next) {
   return next();
 });
 
-// Since we are using an in memory session store generating the key each time the
-// server spins up is fine as all sessions will be lost anyways.
 const secret = require('crypto').randomBytes(64).toString('hex');
-app.use(session({
+app.use(cookieSession({
   secret: secret,
   name: 'mage-session',
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    maxAge: 300000
-  }
+  maxAge: 2 * 60 * 1000, // 2 minutes
+  secure: env.cookies.secure,
+  sameSite: true
 }));
 
 passport.serializeUser(function(user, done) {
