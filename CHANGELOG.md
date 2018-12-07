@@ -14,6 +14,13 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Work around for leaflet GridLayer space between tiles.
 * Fixed bug preventing navbar options from displaying all elements on mobile.
 
+## [5.2.2](https://github.com/ngageoint/mage-server/releases/tag/5.2.2) (10-30-2018)
+
+##### Features
+
+##### Bug Fixes
+* Fixed bug with date/time fields not saving.
+
 ## [5.2.1](https://github.com/ngageoint/mage-server/releases/tag/5.2.1) (10-23-2018)
 
 ##### Features
