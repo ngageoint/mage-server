@@ -28,7 +28,7 @@
     "build": "webpack --mode=production --config webpack.prod.js"
   },
   "dependencies": {
-    "@ngageoint/geopackage": "1.1.4",
+    "@ngageoint/geopackage": "1.1.5",
     "@turf/center": "4.3.0",
     "@turf/helpers": "4.3.0",
     "@turf/kinks": "4.3.0",
