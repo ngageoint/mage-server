@@ -1,6 +1,6 @@
 <div class="row top-gap-s" ng-show="$ctrl.field.value">
   <div class="col-md-12">
     <strong class="muted">{{$ctrl.field.title}}</strong>
-    <span class="field">{{$ctrl.field.value.x}}, {{$ctrl.field.value.y}}</span>
+    <span class="field">{{$ctrl.field.value | geometry:5}}</span>
   </div>
 </div>

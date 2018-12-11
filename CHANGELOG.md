@@ -8,6 +8,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+* Fix geometry view/edit field.
 
 ## [5.2.3](https://github.com/ngageoint/mage-server/releases/tag/5.2.3) (12-07-2018)
 

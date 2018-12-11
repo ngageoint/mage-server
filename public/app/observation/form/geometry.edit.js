@@ -27,6 +27,8 @@ function GeometryEditController(GeometryService, LocalStorageService) {
     value: 'Polygon'
   }];
 
+  this.field.value = this.field.value || {type: 'Point', coordinates: []};
+
   this.shape = {
     type: this.field.value.type
   };
