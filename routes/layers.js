@@ -39,9 +39,8 @@ module.exports = function(app, security) {
       return res.send(400, 'cannot create layer "geopackage" file not specified');
     }
 
-    geopackage.open(req.files.geopackage, (err, result) => {
+    geopackage.validate(req.files.geopackage, (err, result) => {
       if (err) return res.status(400).send('cannot create layer, geopackage is not valid');
-      result.geopackage.close();
 
       req.newLayer.geopackage = req.files.geopackage;
       req.newLayer.tables = result.metadata.tables;

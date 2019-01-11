@@ -7,12 +7,12 @@ const async = require('async')
 const tileSize = 256;
 
 module.exports = {
-  open: open,
+  validate: validate,
   tile: tile,
   features: features
 };
 
-function open(file, done) {
+function validate(file, done) {
   geopackageManager.openGeoPackage(file.path, (err, geopackage) => {
     if (err) return done(err);
 
@@ -20,8 +20,8 @@ function open(file, done) {
       const tileTables = tables.tiles.map(tableName => ({name: tableName, type: 'tile'}));
       const featureTables = tables.features.map(tableName => ({name: tableName, type: 'feature'}));
 
-      async.parallel([
-        function(done) {
+      async.series([
+        function extractTileMetadata(done) {
           async.eachSeries(tileTables, (tileTable, done) => {
             geopackage.getTileDaoWithTableName(tileTable.name, (err, tileDao) => {
               tileTable.minZoom = tileDao.minWebMapZoom;
@@ -30,18 +30,28 @@ function open(file, done) {
             });
           }, done);
         },
-        function(done) {
+        function indexFeatureTables(done) {
           async.eachSeries(featureTables, (featureTable, done) => {
             geopackage.getFeatureDaoWithTableName(featureTable.name, (err, featureDao) => {
               featureDao.featureTableIndex.indexWithForce(false, () => {}, done);
             });
           }, done);
+        },
+        function cleanup(done) {
+          // GeoPackage file size may have changed after index, update the metadata
+          geopackage.connection.getDBConnection().on('close', function() {
+            fs.stat(file.path)
+              .then((stats) => {
+                file.size = stats.size;
+                done();
+              });
+          });
+          geopackage.close();
         }
       ], err => {
         if (err) return done(err);
 
         done(null, {
-          geopackage: geopackage,
           metadata: {
             tables: tileTables.concat(featureTables)
           }

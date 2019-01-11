@@ -9,6 +9,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 * Fix geometry view/edit field.
+* Update file size metadata for uploaded GeoPackage after it is indexed.
 
 ## [5.2.3](https://github.com/ngageoint/mage-server/releases/tag/5.2.3) (12-07-2018)
 
