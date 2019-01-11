@@ -1,6 +1,7 @@
 var mongoose = require('mongoose')
   , async = require('async')
-  , Event = require('./event');
+  , Event = require('./event')
+  , userTransformer = require('../transformers/user');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -62,7 +63,7 @@ function transform(team, ret, options) {
   delete ret._id;
 
   if (team.populated('userIds')) {
-    ret.users = ret.userIds;
+    ret.users = userTransformer.transform(ret.userIds, {path: options.path});
     delete ret.userIds;
   }
 

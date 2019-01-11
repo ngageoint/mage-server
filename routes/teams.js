@@ -60,7 +60,7 @@ module.exports = function(app, security) {
         if (err) return next(err);
 
         res.json(teams.map(function(team) {
-          return team.toObject({access: req.access});
+          return team.toObject({access: req.access, path: req.getRoot()});
         }));
       });
     }
@@ -71,7 +71,7 @@ module.exports = function(app, security) {
     '/api/teams/:teamId',
     authorizeAccess('READ_TEAM', 'read'),
     function (req, res) {
-      res.json(req.team.toObject({access: req.access}));
+      res.json(req.team.toObject({access: req.access, path: req.getRoot()}));
     }
   );
 
