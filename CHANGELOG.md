@@ -12,6 +12,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Fix geometry view/edit field.
 * Update file size metadata for uploaded GeoPackage after it is indexed.
 * Add baseUrl to avatar and icon for team route when populating users.
+* Upgrade GeoPackageJS libs to fix a problem creating vector tiles.
 
 ## [5.2.3](https://github.com/ngageoint/mage-server/releases/tag/5.2.3) (12-07-2018)
 
