@@ -6,6 +6,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+* Added user create permission to EVENT_ADMIN_ROLE.
 
 ##### Bug Fixes
 * Fix geometry view/edit field.
