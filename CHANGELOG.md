@@ -6,6 +6,12 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+
+##### Bug Fixes
+
+## [5.2.4](https://github.com/ngageoint/mage-server/releases/tag/5.2.4) (01-14-2019)
+
+##### Features
 * Added user create permission to EVENT_ADMIN_ROLE.
 
 ##### Bug Fixes
