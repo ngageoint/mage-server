@@ -474,12 +474,18 @@ module.exports = function(app, security) {
           fs.readFile(icon.path, function(err, data) {
             if (err) return done(err);
 
+            var base64;
+            var metadata = fileType(data);
+            if (metadata) {
+              base64 = util.format('data:%s;base64,%s', metadata.mime, Buffer(data).toString('base64'));
+            }
+
             done(null, {
               eventId: icon.eventId,
               formId: icon.formId,
               primary: icon.primary,
               variant: icon.variant,
-              icon: util.format('data:%s;base64,%s', fileType(data).mime, Buffer(data).toString('base64'))
+              icon: base64
             });
           });
         }, function(err, icons) {
