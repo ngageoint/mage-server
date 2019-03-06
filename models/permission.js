@@ -10,7 +10,8 @@ var userPermissions = [
   'READ_USER',
   'UPDATE_USER',
   'DELETE_USER',
-  'UPDATE_USER_ROLE'
+  'UPDATE_USER_ROLE',
+  'UPDATE_USER_PASSWORD'
 ];
 
 var rolePermissions = [

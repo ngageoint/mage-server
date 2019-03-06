@@ -419,7 +419,10 @@ module.exports = function(app, security) {
           return res.status(400).send('password does not meet minimum length requirment of ' + passwordLength + ' characters');
         }
 
-        user.authentication.password = password;
+        // Need UPDATE_USER_PASSWORD to change a users password
+        if (access.userHasPermission(req.user, 'UPDATE_USER_PASSWORD')) {
+          user.authentication.password = password;
+        }
       }
 
       new api.User().update(user, {avatar: req.files.avatar, icon: req.files.icon}, function(err, updatedUser) {

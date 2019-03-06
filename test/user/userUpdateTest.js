@@ -29,12 +29,13 @@ describe("user update tests", function() {
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
+    var permissions = Array.isArray(permission) ? permission : [permission];
     sandbox.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
       .chain('exec')
-      .yields(null, MockToken(userId, [permission]));
+      .yields(null, MockToken(userId, permissions));
   }
 
   it('should update myself', function(done) {
@@ -225,8 +226,6 @@ describe("user update tests", function() {
         email: 'test@test.com',
         phone: '000-000-0000',
         active: true,
-        password: 'passwordpassword',
-        passwordconfirm: 'passwordpassword',
         roleId: mongoose.Types.ObjectId()
       })
       .expect(200)
@@ -279,8 +278,6 @@ describe("user update tests", function() {
         email: 'test@test.com',
         phone: '000-000-0000',
         active: true,
-        password: 'passwordpassword',
-        passwordconfirm: 'passwordpassword',
         roleId: roleId
       })
       .expect(200)
@@ -292,6 +289,103 @@ describe("user update tests", function() {
       })
       .end(done);
   });
+
+  it('should update user password with UPDATE_PASSWORD', function(done) {
+    mockTokenWithPermission(['UPDATE_USER', 'UPDATE_USER_PASSWORD']);
+
+    var id = mongoose.Types.ObjectId();
+    var mockUser = new UserModel({
+      _id: id,
+      username: 'test',
+      displayName: 'test',
+      active: true,
+      authentication: {
+        type: 'local'
+      }
+    });
+
+    sandbox.mock(UserModel)
+      .expects('findById')
+      .chain('exec')
+      .yields(null, mockUser);
+
+    sandbox.mock(User)
+      .expects('updateUser')
+      .withArgs(sinon.match.has('authentication', sinon.match.has('password', 'passwordpassword')))
+      .yields(null, mockUser);
+
+    request(app)
+      .put('/api/users/' + id.toString())
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        username: 'test',
+        displayName: 'test',
+        email: 'test@test.com',
+        phone: '000-000-0000',
+        active: true,
+        password: 'passwordpassword',
+        passwordconfirm: 'passwordpassword'
+      })
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(function(res) {
+        var user = res.body;
+        console.log('user is', user);
+        should.exist(user);
+        user.should.have.property('id').that.equals(id.toString());
+      })
+      .end(done);
+  });
+
+  it('should fail to update user password w/o UPDATE_PASSWORD', function(done) {
+    mockTokenWithPermission('UPDATE_USER');
+
+    var id = mongoose.Types.ObjectId();
+    var mockUser = new UserModel({
+      _id: id,
+      username: 'test',
+      displayName: 'test',
+      active: true,
+      authentication: {
+        type: 'local'
+      }
+    });
+
+    sandbox.mock(UserModel)
+      .expects('findById')
+      .chain('exec')
+      .yields(null, mockUser);
+
+    sandbox.mock(User)
+      .expects('updateUser')
+      .withArgs(sinon.match.has('authentication', sinon.match.has('password', sinon.match.typeOf("undefined"))))
+      .yields(null, mockUser);
+
+    request(app)
+      .put('/api/users/' + id.toString())
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        username: 'test',
+        displayName: 'test',
+        email: 'test@test.com',
+        phone: '000-000-0000',
+        active: true,
+        password: 'passwordpassword',
+        passwordconfirm: 'passwordpassword'
+      })
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(function(res) {
+        var user = res.body;
+        console.log('user is', user);
+        should.exist(user);
+        user.should.have.property('id').that.equals(id.toString());
+      })
+      .end(done);
+  });
+
 
   it('should fail to update user role w/o UPDATE_USER_ROLE', function(done) {
     mockTokenWithPermission('UPDATE_USER');
