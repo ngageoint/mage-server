@@ -9,6 +9,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Added Ubuntu upstart scripts
 
 ##### Bug Fixes
+* Catch 'disconnect' event on mage-image child process and shutdown.  This should prevent the mage-image process from being orphaned.
 
 ## [5.2.4](https://github.com/ngageoint/mage-server/releases/tag/5.2.4) (01-14-2019)
 
