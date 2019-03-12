@@ -31,7 +31,7 @@ mongoose.set('debug', function(collection, method, query, doc, options) {
 });
 
 process.on('disconnect', function() {
-  log.info('image plugin parent was disconnected, shutting down...');
+  log.info('Image plugin orphaned, parent process disconnected. Shutting down...');
   process.exit();
 });
 
