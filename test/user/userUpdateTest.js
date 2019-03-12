@@ -290,8 +290,8 @@ describe("user update tests", function() {
       .end(done);
   });
 
-  it('should update user password with UPDATE_PASSWORD', function(done) {
-    mockTokenWithPermission(['UPDATE_USER', 'UPDATE_USER_PASSWORD']);
+  it('should update user password with UPDATE_USER_ROLE permission', function(done) {
+    mockTokenWithPermission(['UPDATE_USER', 'UPDATE_USER_ROLE']);
 
     var id = mongoose.Types.ObjectId();
     var mockUser = new UserModel({
@@ -338,7 +338,7 @@ describe("user update tests", function() {
       .end(done);
   });
 
-  it('should fail to update user password w/o UPDATE_PASSWORD', function(done) {
+  it('should fail to update user password w/o UPDATE_USER_ROLE permission', function(done) {
     mockTokenWithPermission('UPDATE_USER');
 
     var id = mongoose.Types.ObjectId();

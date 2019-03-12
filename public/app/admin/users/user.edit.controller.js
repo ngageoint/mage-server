@@ -10,7 +10,7 @@ function AdminUserEditController($scope, $filter, $routeParams, $location, Api, 
   $scope.token = LocalStorageService.getToken();
   $scope.roles = [];
   $scope.canEditRole = _.contains(UserService.myself.role.permissions, 'UPDATE_USER_ROLE');
-  $scope.canUpdatePassword = _.contains(UserService.myself.role.permissions, 'UPDATE_USER_PASSWORD');
+  $scope.canUpdatePassword = _.contains(UserService.myself.role.permissions, 'UPDATE_USER_ROLE');
 
   Api.get(function(api) {
     var authenticationStrategies = api.authenticationStrategies || {};

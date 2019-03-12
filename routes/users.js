@@ -420,7 +420,8 @@ module.exports = function(app, security) {
         }
 
         // Need UPDATE_USER_PASSWORD to change a users password
-        if (access.userHasPermission(req.user, 'UPDATE_USER_PASSWORD')) {
+        // TODO this needs to be update to use the UPDATE_USER_PASSWORD permission when Android is updated to handle that permission
+        if (access.userHasPermission(req.user, 'UPDATE_USER_ROLE')) {
           user.authentication.password = password;
         }
       }
