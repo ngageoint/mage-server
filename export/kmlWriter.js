@@ -65,13 +65,38 @@ KmlWriter.prototype.generateKMLFolderStart = function(name) {
   return "<Folder>" + "<name>" + name + "</name>";
 };
 
-KmlWriter.prototype.generateObservationPlacemark = function(name, observation, form, primary, secondary) {
+KmlWriter.prototype.generateObservationPlacemark = function(name, observation, forms, primary, secondary) {
   var observationTimestamp = generateTimestamp(observation.properties.timestamp);
-  var description = generateDescription(observation);
+
+  var sections = observation.properties.forms.map(observationForm => {
+    var form = forms[observationForm.formId];
+    var fields = form.fields
+      .filter(field => !field.archived)
+      .filter(field => field.type !== 'password')
+      .filter(field => field.type !== 'geometry')
+      .sort((a, b) => a.id - b.id);
+
+    var properties = [];
+    fields.forEach(field => {
+      if (observationForm[field.name]) {
+        properties.push({
+          key: field.title,
+          value: observationForm[field.name]
+        });
+      }
+    });
+
+    return {
+      title: form.name,
+      properties: properties
+    };
+  });
+
+  var description = generateDescription(observation, sections);
 
   var styles = [];
-  if (form) {
-    styles.push(form._id.toString());
+  if (forms && forms.length) {
+    styles.push(forms[0]._id.toString());
     if (primary) {
       styles.push(primary);
       if (secondary) {
@@ -88,11 +113,23 @@ KmlWriter.prototype.generateObservationPlacemark = function(name, observation, f
 
 KmlWriter.prototype.generateLocationPlacemark = function(user, location) {
   var timestamp = generateTimestamp(location.properties.timestamp);
-  var description = generateDescription(location);
   var style = '#user-' + user._id.toString();
   var coordinates = generatePlacemarkCoordinates(location);
 
-  return generatePlacemarkElement(user.displayName, style, coordinates, timestamp, description);
+  var properties = [];
+  Object.entries(location.properties).forEach(([key, value]) => {
+    properties.push({
+      key: key,
+      value: value
+    });
+  });
+
+  var sections = [{
+    properties: properties
+  }];
+  var description = generateDescription(location, sections);
+
+  return generatePlacemarkElement(timestamp, style, coordinates, timestamp, description);
 };
 
 KmlWriter.prototype.generateKMLDocumentClose = function() {
@@ -191,7 +228,7 @@ function generateTimestamp(timestamp) {
     "</TimeStamp>";
 }
 
-function generateDescription(geojson) {
+function generateDescription(geometry, sections, attachments) {
   var description = "<description>" +
     '<![CDATA[<html xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:msxsl="urn:schemas-microsoft-com:xslt">' +
       '<head>' +
@@ -201,7 +238,7 @@ function generateDescription(geojson) {
 
   description += '<table style="font-family:Arial,Verdana,Times;font-size:12px;text-align:left;width:100%;border-collapse:collapse;padding:3px 3px 3px 3px">';
 
-  const centroid = turfCentroid(geojson);
+  const centroid = turfCentroid(geometry);
 
   description +=
     '<tr bgcolor="#D4E4F3">' +
@@ -217,25 +254,31 @@ function generateDescription(geojson) {
       '<td>MGRS</td>' + '<td>' + mgrs.forward(centroid.geometry.coordinates) + '</td>' +
     '<tr>';
 
-  var odd = false;
-  Object.keys(geojson.properties).forEach(function(key) {
-    var color = "";
-    if (odd) color = "#D4E4F3";
-    odd = !odd;
+  sections.forEach(section => {
+    if (section.title) {
+      description += '<h3>' + section.title + '</h3>';
+    }
 
-    description +=
-    '<tr bgcolor="' + color + '">' +
-      '<td>' + key + '</td>' + '<td>' + geojson.properties[key] + '</td>' +
-    '</tr>';
+    var odd = false;
+    section.properties.forEach(property => {
+      var color = "";
+      if (odd) color = "#D4E4F3";
+      odd = !odd;
+
+      description +=
+      '<tr bgcolor="' + color + '">' +
+        '<td>' + property.key + '</td>' + '<td>' + property.value + '</td>' +
+      '</tr>';
+    });
   });
 
   description += '</table>';
 
   //does this feature have media
-  if (geojson.attachments && geojson.attachments.length) {
+  if (attachments && attachments.length) {
     description += '<div>';
 
-    geojson.attachments.forEach(function(attachment) {
+    attachments.forEach(attachment => {
       description += '<div style="padding-top:15px;"><a href="' + attachment.relativePath + '">' + attachment.name + '</a></div>';
 
       //determine media type (image or other)

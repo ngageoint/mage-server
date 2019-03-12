@@ -80,21 +80,21 @@ Kml.prototype.streamObservations = function(stream, archive, done) {
       stream.write(writer.generateObservationStyles(self._event, icons));
       stream.write(writer.generateKMLFolderStart(self._event.name, false));
 
-      observations.forEach(function(o) {
+      observations.forEach(observation => {
         var form = null;
         var primary = null;
         var secondary = null;
-        if (o.properties.forms.length) {
-          form = self._event.formMap[o.properties.forms[0].formId];
-          primary = o.properties.forms[0][form.primaryField];
-          secondary = o.properties.forms[0][form.variantField];
+        if (observation.properties.forms.length) {
+          form = self._event.formMap[observation.properties.forms[0].formId];
+          primary = observation.properties.forms[0][form.primaryField];
+          secondary = observation.properties.forms[0][form.variantField];
         }
 
-        self.mapObservations(o);
-        var name = primary || form ? form.name : null || self._event.name;
-        stream.write(writer.generateObservationPlacemark(name, o, form, primary, secondary));
+        var name = primary || self._event.name;
 
-        o.attachments.forEach(function(attachment) {
+        stream.write(writer.generateObservationPlacemark(name, observation, self._event.formMap, primary, secondary));
+
+        observation.attachments.forEach(attachment => {
           archive.file(path.join(attachmentBase, attachment.relativePath), {name: attachment.relativePath});
         });
       });
@@ -126,7 +126,7 @@ Kml.prototype.streamUserLocations = function(stream, archive, user, done) {
       locations = requestedLocations;
 
       if (!lastLocationId && locations.length) { // first time through
-        stream.write(writer.generateKMLFolderStart('user: ' + user.username, false));
+        stream.write(writer.generateKMLFolderStart(user.displayName, false));
       }
 
       var locationString = "";
