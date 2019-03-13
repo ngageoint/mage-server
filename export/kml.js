@@ -92,7 +92,7 @@ Kml.prototype.streamObservations = function(stream, archive, done) {
 
         var name = primary || self._event.name;
 
-        stream.write(writer.generateObservationPlacemark(name, observation, self._event.formMap, primary, secondary));
+        stream.write(writer.generateObservationPlacemark(name, observation, self._event, primary, secondary));
 
         observation.attachments.forEach(attachment => {
           archive.file(path.join(attachmentBase, attachment.relativePath), {name: attachment.relativePath});

@@ -43,7 +43,7 @@ function convert(integer) {
 }
 
 KmlWriter.prototype.generateObservationStyles = function(event, icons) {
-  var styles = [];
+  var styles = [generateEventStyle(event, icons)];
 
   event.forms.forEach(function(form) {
     var formIcons = icons.filter(function(icon) {
@@ -65,8 +65,9 @@ KmlWriter.prototype.generateKMLFolderStart = function(name) {
   return "<Folder>" + "<name>" + name + "</name>";
 };
 
-KmlWriter.prototype.generateObservationPlacemark = function(name, observation, forms, primary, secondary) {
+KmlWriter.prototype.generateObservationPlacemark = function(name, observation, event, primary, secondary) {
   var observationTimestamp = generateTimestamp(observation.properties.timestamp);
+  var forms = event.formMap;
 
   var sections = observation.properties.forms.map(observationForm => {
     var form = forms[observationForm.formId];
@@ -76,15 +77,14 @@ KmlWriter.prototype.generateObservationPlacemark = function(name, observation, f
       .filter(field => field.type !== 'geometry')
       .sort((a, b) => a.id - b.id);
 
-    var properties = [];
-    fields.forEach(field => {
-      if (observationForm[field.name]) {
-        properties.push({
+    var properties = fields
+      .filter(field => observationForm.hasOwnProperty(field.name))
+      .map(field => {
+        return {
           key: field.title,
           value: observationForm[field.name]
-        });
-      }
-    });
+        };
+      });
 
     return {
       title: form.name,
@@ -92,11 +92,12 @@ KmlWriter.prototype.generateObservationPlacemark = function(name, observation, f
     };
   });
 
-  var description = generateDescription(observation, sections);
+  var description = generateDescription(observation, sections, observation.attachments);
 
-  var styles = [];
-  if (forms && forms.length) {
-    styles.push(forms[0]._id.toString());
+  var styles = [event._id.toString()];
+  if (observation.properties.forms && observation.properties.forms.length) {
+    var form = forms[observation.properties.forms[0].formId];
+    styles.push(form._id.toString());
     if (primary) {
       styles.push(primary);
       if (secondary) {
@@ -144,6 +145,20 @@ KmlWriter.prototype.generateKMLClose = function() {
   return "</kml>";
 };
 
+function generateEventStyle(event, icons) {
+  var style = event.style;
+
+  var defaultIcon = icons.find(icon => !icon.formId && !icon.primary && !icon.variant);
+
+  var strokeParts = hexToParts(style.stroke);
+  var fillParts = hexToParts(style.fill);
+  var strokeOpacity = convert(~~(style.strokeOpacity * 255));
+  var fillOpacity = convert(~~(style.fillOpacity * 255));
+  var defaultStyle = '<LineStyle><width>'+style.strokeWidth+'</width><color>' + strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r +'</color></LineStyle><PolyStyle><color>'+ fillOpacity + fillParts.b + fillParts.g + fillParts.r +'</color></PolyStyle>';
+
+  return "<Style id='" + event._id.toString() + "'>" + defaultStyle + "<IconStyle><Icon><href>" + path.join("icons", defaultIcon.relativePath) + "</href></Icon></IconStyle></Style>";
+}
+
 function generateFormStyles(event, form, icons) {
   var styles = [];
 
@@ -170,8 +185,8 @@ function generateFormStyles(event, form, icons) {
     }
   });
 
-  // default icon style
-  styles.push("<Style id='" + form._id + "'>"+defaultStyle+"<IconStyle><Icon><href>" + path.join("icons", defaultIconPath) + "</href></Icon></IconStyle></Style>");
+  // default form style
+  styles.push("<Style id='" + [event._id.toString(), form._id.toString()].join("-") + "'>"+defaultStyle+"<IconStyle><Icon><href>" + path.join("icons", defaultIconPath) + "</href></Icon></IconStyle></Style>");
 
   var typeField = getFieldByName(form, form.primaryField);
 
@@ -190,7 +205,7 @@ function generateFormStyles(event, form, icons) {
         styleTypeMap[choice.title] = '<LineStyle><width>'+style[choice.title].strokeWidth+'</width><color>' + strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r +'</color></LineStyle><PolyStyle><color>' + fillOpacity + fillParts.b + fillParts.g + fillParts.r +'</color></PolyStyle>';
       }
       styleVariantMap[choice.title] = {};
-      styles.push("<Style id='" + [form._id.toString(), choice.title].join("-") + "'>"+styleTypeMap[choice.title]+"<IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
+      styles.push("<Style id='" + [event._id.toString(), form._id.toString(), choice.title].join("-") + "'>"+styleTypeMap[choice.title]+"<IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
 
       // variant styles for each type
       var variantField = getFieldByName(form, form.variantField);
@@ -212,7 +227,7 @@ function generateFormStyles(event, form, icons) {
             fillOpacity = convert(~~(style[choice.title][variantChoice.title].fillOpacity * 255));
             styleVariantMap[choice.title][variantChoice.title] = '<LineStyle><width>'+style[choice.title][variantChoice.title].strokeWidth+'</width><color>' + strokeOpacity + strokeParts.b + strokeParts.g + strokeParts.r +'</color></LineStyle><PolyStyle><color>' + fillOpacity + fillParts.b + fillParts.g + fillParts.r +'</color></PolyStyle>';
           }
-          styles.push("<Style id='" + [form._id.toString(), choice.title, variantChoice.title].join("-") + "'>"+styleVariantMap[choice.title][variantChoice.title]+"<IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
+          styles.push("<Style id='" + [event._id.toString(), form._id.toString(), choice.title, variantChoice.title].join("-") + "'>"+styleVariantMap[choice.title][variantChoice.title]+"<IconStyle><Icon><href>" + path.join('icons', iconPath) + "</href></Icon></IconStyle></Style>");
         });
       }
     });
