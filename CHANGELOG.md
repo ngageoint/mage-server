@@ -6,11 +6,18 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+
+##### Bug Fixes
+
+## [5.2.5](https://github.com/ngageoint/mage-server/releases/tag/5.2.5) (03-13-2019)
+
+##### Features
 * Added Ubuntu upstart scripts
 
 ##### Bug Fixes
+* Fix form preview in admin event page.
+* Sort observation form fields in KML export.
 * Catch 'disconnect' event on mage-image child process and shutdown.  This should prevent the mage-image process from being orphaned.
-* Fix form preview.
 
 ## [5.2.4](https://github.com/ngageoint/mage-server/releases/tag/5.2.4) (01-14-2019)
 
