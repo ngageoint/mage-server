@@ -66,38 +66,10 @@ function Event($rootScope, $resource) {
     }
   });
 
-  function defaultForm() {
-    return {
-      userFields: [],
-      fields: [{
-        id: 1,
-        title: 'Date',
-        type: 'date',
-        required: true,
-        name: "timestamp"
-      },{
-        id: 2,
-        title: 'Location',
-        type: 'geometry',
-        required: true,
-        name: 'geometry'
-      },{
-        id: 3,
-        title: 'Type',
-        type: 'dropdown',
-        required: true,
-        name: "type",
-        choices: []
-      }]
-    };
-  }
-
   Event.prototype.$save = function(success, error) {
     if (this.id) {
       this.$update(success, error);
     } else {
-      // TODO default form???  this is probably dropped on server side
-      this.form = defaultForm();
       this.$create(success, error);
     }
   };

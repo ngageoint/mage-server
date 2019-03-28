@@ -36,6 +36,64 @@ describe("event update tests", function() {
       .yields(null, MockToken(userId, [permission]));
   }
 
+  it("should update event", function(done) {
+    mockTokenWithPermission('UPDATE_EVENT');
+
+    var eventId = 1;
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event'
+    });
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    sandbox.mock(EventModel)
+      .expects('findByIdAndUpdate')
+      .withArgs(eventId, { name: 'Mock Event', description: 'Mock Event Description' })
+      .yields(null, mockEvent);
+
+    request(app)
+      .put('/api/events/' + eventId)
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        name: 'Mock Event',
+        description: 'Mock Event Description'
+      })
+      .expect(200)
+      .end(done);
+  });
+
+  it("should remove event description", function(done) {
+    mockTokenWithPermission('UPDATE_EVENT');
+
+    var eventId = 1;
+    var mockEvent = new EventModel({
+      _id: eventId,
+      name: 'Mock Event'
+    });
+    sandbox.mock(EventModel)
+      .expects('findById')
+      .yields(null, mockEvent);
+
+    sandbox.mock(EventModel)
+      .expects('findByIdAndUpdate')
+      .withArgs(eventId, { name: 'Mock Event', description: null })
+      .yields(null, mockEvent);
+
+    request(app)
+      .put('/api/events/' + eventId)
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        name: 'Mock Event',
+        description: null
+      })
+      .expect(200)
+      .end(done);
+  });
+
   it("should reject event with no fields", function(done) {
     mockTokenWithPermission('UPDATE_EVENT');
 
@@ -87,8 +145,6 @@ describe("event update tests", function() {
       })
       .end(done);
   });
-
-
 
   it("should reject event with invalid field in form", function(done) {
     mockTokenWithPermission('UPDATE_EVENT');

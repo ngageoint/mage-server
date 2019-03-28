@@ -52,7 +52,10 @@ passport.deserializeUser(function(id, done) {
   });
 });
 
-app.use(require('body-parser')({ keepExtensions: true}));
+app.use(require('body-parser')({
+  limit: '16mb',
+  keepExtensions: true
+}));
 app.use(require('multer')());
 app.use(passport.initialize());
 app.use(passport.session());

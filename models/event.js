@@ -77,7 +77,7 @@ var FormSchema = new Schema({
 const EventSchema = new Schema(
   {
     _id: { type: Number, required: true },
-    name: { type: String, required: true, unique: true },
+    name: { type: String, required: true, unique: 'Event with name "{VALUE}" already exists.' },
     description: { type: String, required: false },
     complete: { type: Boolean },
     collectionName: { type: String, required: true },
@@ -103,7 +103,9 @@ const EventSchema = new Schema(
     versionKey: false
   });
 
-FormSchema.path('fields').validate(hasAtLeastOneField, 'Form must have at least one field.');
+EventSchema.plugin(require('mongoose-beautiful-unique-validation'));
+
+FormSchema.path('fields').validate(hasAtLeastOneField, 'Form must contain at least one field.');
 FormSchema.path('color').validate(validateColor, 'Form color must be valid hex string.');
 
 function validateTeamIds(eventId, teamIds, next) {
@@ -603,8 +605,10 @@ exports.update = function(id, event, options, callback) {
     options = {};
   }
 
+  console.log('event is', event);
+
   var update = ['name', 'description', 'complete', 'forms'].reduce(function(o, k) {
-    if (event[k] !== undefined) o[k] = event[k];
+    if (event.hasOwnProperty(k)) o[k] = event[k];
     return o;
   }, {});
 

@@ -186,4 +186,62 @@ describe("event create tests", function() {
       })
       .end(done);
   });
+
+  it("should reject event with duplicate name", function(done) {
+    sandbox.mock(TokenModel)
+      .expects('findOne').atLeast(1)
+      .withArgs({token: "12345"})
+      .chain('populate').atLeast(1)
+      .chain('exec').atLeast(1)
+      .yields(null, MockToken(userId, ['CREATE_EVENT']));
+
+    const eventId = 1;
+    sandbox.mock(CounterModel)
+      .expects('findOneAndUpdate')
+      .chain('exec')
+      .resolves({ sequence: eventId });
+
+    const uniqueError = new Error('E11000 duplicate key error collection: magedb.events index: name_1 dup key: { : "Foo" }');
+    uniqueError.name = 'MongoError';
+    uniqueError.code = 11000;
+
+    sandbox.mock(EventModel.collection)
+      .expects('indexInformation')
+      .yields(null, {
+        name_1: [['name', 1 ]]
+      });
+
+    sandbox.mock(EventModel.collection)
+      .expects('insert')
+      .yields(uniqueError, null);
+
+    request(app)
+      .post('/api/events')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        name: 'Test',
+        form: {
+          fields: [{
+            name: 'timestamp',
+            required: true
+          },{
+            name: 'geometry',
+            required: true
+          },{
+            name: 'type',
+            required: true
+          }]
+        }
+      })
+      .expect(400)
+      .expect(function(res) {
+        should.exist(res.body);
+        res.body.should.have.property('message').that.equals('Validation failed');
+        res.body.should.have.property('errors').that.is.an('object');
+        res.body.errors.should.have.property('name').that.is.an('object');
+        res.body.errors.name.should.have.property('message').that.equals('Event with name "Test" already exists.');
+      })
+      .end(done);
+  });
 });

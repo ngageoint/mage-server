@@ -5,7 +5,11 @@ module.exports = AdminEventEditController;
 function AdminEventEditController($scope, $location, $routeParams, Event) {
   if ($routeParams.eventId) {
     Event.get({id: $routeParams.eventId}, function(event) {
-      $scope.event = event;
+      $scope.event = new Event({
+        id: event.id,
+        name: event.name,
+        description: event.description
+      });
     });
   } else {
     $scope.event = new Event();
@@ -14,15 +18,15 @@ function AdminEventEditController($scope, $location, $routeParams, Event) {
   $scope.saveEvent = function(event) {
     event.$save(function() {
       $location.path('/admin/events/' + event.id);
-    }, function(response) {
-      if (response.responseJSON) {
+    }, function(res) {
+      if (res.status === 500) {
         $scope.error = {
-          message: response.responseJSON.message,
-          errors: response.responseJSON.errors
+          message: res.data
         };
-      } else {
+      } else if (res.data && res.data.message) {
         $scope.error = {
-          message: response.responseText
+          message: 'Error Saving Event Information',
+          errors: res.data.errors
         };
       }
     });
