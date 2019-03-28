@@ -6,8 +6,10 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+* Increase JSON upload limit.
 
 ##### Bug Fixes
+* Select field option delete now removes correct option.
 
 ## [5.2.5](https://github.com/ngageoint/mage-server/releases/tag/5.2.5) (03-13-2019)
 

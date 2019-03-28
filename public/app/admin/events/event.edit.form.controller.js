@@ -581,10 +581,12 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
   // add new option to the field
   $scope.addOption = function (field, optionTitle) {
     field.choices = field.choices || new Array();
+
+    var choiceId = _.isEmpty(field.choices) ? 1 : _.max(field.choices, function(choice) { return choice.id; }).id + 1;
     field.choices.push({
-      "id" : field.choices.length,
-      "title" : optionTitle,
-      "value" : field.choices.length
+      id: choiceId,
+      title: optionTitle,
+      value: field.choices.length
     });
 
     $scope.populateVariants();
@@ -627,10 +629,10 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
     });
   };
 
-  // delete particular option
+  // delete select option
   $scope.deleteOption = function (field, option) {
     for (var i = 0; i < field.choices.length; i++) {
-      if(field.choices[i].id === option.id) {
+      if (field.choices[i].title === option.title) {
         field.choices.splice(i, 1);
         break;
       }
