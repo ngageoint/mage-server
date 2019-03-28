@@ -113,11 +113,10 @@ KmlWriter.prototype.generateObservationPlacemark = function(name, observation, e
 };
 
 KmlWriter.prototype.generateLocationPlacemark = function(user, location) {
-  var timestamp = generateTimestamp(location.properties.timestamp);
-  var style = '#user-' + user._id.toString();
-  var coordinates = generatePlacemarkCoordinates(location);
+  const style = '#user-' + user._id.toString();
+  const coordinates = generatePlacemarkCoordinates(location);
 
-  var properties = [];
+  const properties = [];
   Object.entries(location.properties).forEach(([key, value]) => {
     properties.push({
       key: key,
@@ -130,7 +129,9 @@ KmlWriter.prototype.generateLocationPlacemark = function(user, location) {
   }];
   var description = generateDescription(location, sections);
 
-  return generatePlacemarkElement(timestamp, style, coordinates, timestamp, description);
+  const name = moment(location.properties.timestamp).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z';
+  const timestamp = generateTimestamp(location.properties.timestamp);
+  return generatePlacemarkElement(name, style, coordinates, timestamp, description);
 };
 
 KmlWriter.prototype.generateKMLDocumentClose = function() {
