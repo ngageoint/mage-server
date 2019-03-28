@@ -1,4 +1,4 @@
 <div class="field form-group">
-  <label>{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required && !$ctrl.field.value">*</span>
+  <label>{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required">*</span>
   <input class="form-control" type="text" ng-model="$ctrl.field.value" value="{{$ctrl.field.value}}" ng-required="$ctrl.field.required">
 </div>

@@ -1,5 +1,5 @@
 <div class="field form-group">
-  <label>{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required && !$ctrl.field.value">*</span>
+  <label>{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required">*</span>
 
   <ui-select ng-model="$ctrl.field.value" theme="bootstrap" ng-required="$ctrl.field.required" on-select="$ctrl.onSelect($item, $model)">
     <ui-select-match allow-clear>{{$select.selected.title}}</ui-select-match>

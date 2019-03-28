@@ -1,6 +1,6 @@
 <form name="numberForm">
   <div class="field form-group" ng-class="{'has-error': form.{{$ctrl.field.name}}.$invalid}">
-    <label>{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required && !$ctrl.field.value">*</span>
+    <label>{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required">*</span>
     <input class="form-control" type="number" ng-model="$ctrl.field.value" name="{{$ctrl.field.name}}" value="{{$ctrl.field.value}}" min="{{$ctrl.field.min}}" max="{{$ctrl.field.max}}" ng-required="$ctrl.field.required">
     <div class="has-error" ng-messages="numberForm[$ctrl.field.name].$error" ng-if="numberForm[$ctrl.field.name].$invalid">
       <p class="help-block" ng-message="min">min value is {{$ctrl.field.min}}</p>

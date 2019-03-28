@@ -1,7 +1,7 @@
 <div class="field form-group">
   <div class="row">
     <div class="col-md-7">
-      <label>{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required && !$ctrl.field.value">*</span>
+      <label>{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required">*</span>
 
       <p class="input-group">
         <input type="text" name="{{$ctrl.field.name}}" class="form-control" uib-datepicker-popup="MMM d yyyy HH:mm:ss" ng-model="$ctrl.date" ng-change="$ctrl.onDateChanged()" ng-required="$ctrl.field.required" is-open="$ctrl.datePopup.open" close-text="Close" />

@@ -1,6 +1,6 @@
 <div class="field checkbox">
   <label>
     <input ng-model="$ctrl.field.value" ng-change="$ctrl.onCheckChange()" id="{{field.id}}" type="checkbox" ng-checked="$ctrl.field.value" ng-required="field.required"/> {{$ctrl.field.title}}
-    <span class="required-error" ng-show="$ctrl.field.required && !$ctrl.field.value">*</span>
+    <span class="required-error" ng-show="$ctrl.field.required">*</span>
   </label>
 </div>

@@ -1,5 +1,5 @@
 <div class="field form-group">
-  <label class="control-label">{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required && !$ctrl.field.value">*</span>
+  <label class="control-label">{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required">*</span>
   <div ng-repeat="option in $ctrl.field.choices" class="radio">
     <label>
         <input type="radio" value="{{option.title}}" ng-model="$ctrl.field.value" ng-required="$ctrl.field.required"/>
