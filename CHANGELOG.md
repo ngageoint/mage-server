@@ -17,6 +17,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Bug Fixes
 * Select field option delete now removes correct option.
 * Don't hide required asterisk on form field title if field has a value.
+* Remove user token when user is disabled.
 
 ## [5.2.5](https://github.com/ngageoint/mage-server/releases/tag/5.2.5) (03-13-2019)
 

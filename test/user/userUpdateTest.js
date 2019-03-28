@@ -1,6 +1,7 @@
 var request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
+  , expect = require('chai').expect
   , MockToken = require('../mockToken')
   , app = require('../../express')
   , mongoose = require('mongoose');
@@ -502,6 +503,118 @@ describe("user update tests", function() {
       })
       .expect(200)
       .expect('Content-Type', /json/)
+      .end(done);
+  });
+
+  it('should remove token if user is inactive', function(done) {
+    mockTokenWithPermission('UPDATE_USER');
+
+    var id = mongoose.Types.ObjectId();
+    var mockUser = new UserModel({
+      _id: id,
+      username: 'test',
+      displayName: 'test',
+      active: false,
+      enabled: true,
+      roleId: mongoose.Types.ObjectId(),
+      authentication: {
+        type: 'local'
+      }
+    });
+
+    // mock variable used by mongoose to determine if this is a create or update
+    mockUser.isNew = false;
+    // mock mongoose populate call
+    mockUser.populate = function(field, callback) {
+      callback(null, mockUser);
+    };
+
+    sandbox.mock(UserModel)
+      .expects('findById')
+      .chain('exec')
+      .yields(null, mockUser);
+
+    sandbox.mock(UserModel.collection)
+      .expects('update')
+      .yields(null, {});
+
+    sandbox.mock(UserModel.collection)
+      .expects('findOne')
+      .yields(null, null);
+
+    const tokenStub = sandbox.mock(TokenModel)
+      .expects('remove')
+      .withArgs(sinon.match({userId: id}))
+      .yields(null);
+
+    request(app)
+      .put('/api/users/' + id.toString())
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        active: 'false'
+      })
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(function() {
+        expect(tokenStub.called).to.be.true;
+      })
+      .end(done);
+  });
+
+  it('should remove token if user is disabled', function(done) {
+    mockTokenWithPermission('UPDATE_USER');
+
+    var id = mongoose.Types.ObjectId();
+    var mockUser = new UserModel({
+      _id: id,
+      username: 'test',
+      displayName: 'test',
+      active: true,
+      enabled: true,
+      roleId: mongoose.Types.ObjectId(),
+      authentication: {
+        type: 'local'
+      }
+    });
+
+    // mock variable used by mongoose to determine if this is a create or update
+    mockUser.isNew = false;
+    // mock mongoose populate call
+    mockUser.populate = function(field, callback) {
+      callback(null, mockUser);
+    };
+
+    sandbox.mock(UserModel)
+      .expects('findById')
+      .chain('exec')
+      .yields(null, mockUser);
+
+    sandbox.mock(UserModel.collection)
+      .expects('update')
+      .yields(null, {});
+
+    sandbox.mock(UserModel.collection)
+      .expects('findOne')
+      .yields(null, null);
+
+    const tokenStub = sandbox.mock(TokenModel)
+      .expects('remove')
+      .withArgs(sinon.match({userId: id}))
+      .yields(null);
+
+    request(app)
+      .put('/api/users/' + id.toString())
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        enabled: 'false'
+      })
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(function() {
+        expect(tokenStub.called).to.be.true;
+      })
       .end(done);
   });
 

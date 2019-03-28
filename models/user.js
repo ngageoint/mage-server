@@ -137,7 +137,7 @@ UserSchema.pre('save', function(next) {
 
 UserSchema.pre('save', function(next) {
   var user = this;
-  if (user.active === false) {
+  if (user.active === false || user.enabled === false) {
     Token.removeTokensForUser(user, function(err) {
       next(err);
     });
