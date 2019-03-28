@@ -16,6 +16,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 * Select field option delete now removes correct option.
+* Select field reorder now correctly highlights reordered field.
 * Don't hide required asterisk on form field title if field has a value.
 * Remove user token when user is disabled.
 

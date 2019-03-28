@@ -9,18 +9,18 @@
 
   <div ng-repeat="choice in model.choices">
     <div class="row" ng-if="$first">
-      <div class="col-md-1"><i class="fa pointer text-primary admin-option-reorder" ng-click="move($index)" ng-class="choice.id !== model.option.id ? 'fa-long-arrow-right pointer' : ''"></i></div>
+      <div class="col-md-1"><i class="fa pointer text-primary admin-option-reorder" ng-click="move($index)" ng-class="choice.title !== model.option.title ? 'fa-long-arrow-right pointer' : ''"></i></div>
       <div class="col-md-11 admin-option-border"></div>
     </div>
     <div class="row">
       <div class="col-md-offset-1 col-md-11">
-        <strong ng-if="choice.id === model.option.id">{{choice.title}}</strong>
-        <span ng-if="choice.id !== model.option.id" class="pointer admin-option-model-text" ng-click="model.option = choice">{{choice.title}}</span>
+        <strong ng-if="choice.title === model.option.title">{{choice.title}}</strong>
+        <span ng-if="choice.title !== model.option.title" class="pointer admin-option-model-text" ng-click="model.option = choice">{{choice.title}}</span>
       </div>
     </div>
     <div class="row">
       <div class="col-md-1">
-        <i class="fa pointer text-primary admin-option-reorder" ng-click="move($index + 1)" ng-class="(choice.id !== model.option.id && ($last || model.choices[$index + 1].id !== model.option.id)) ? 'fa-long-arrow-right pointer' : ''"></i>
+        <i class="fa pointer text-primary admin-option-reorder" ng-click="move($index + 1)" ng-class="(choice.title !== model.option.title && ($last || model.choices[$index + 1].title !== model.option.title)) ? 'fa-long-arrow-right pointer' : ''"></i>
       </div>
       <div class="col-md-11 admin-option-border"></div>
     </div>
