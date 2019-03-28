@@ -6,6 +6,12 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+
+##### Bug Fixes
+
+## [5.2.6](https://github.com/ngageoint/mage-server/releases/tag/5.2.6) (TBD)
+
+##### Features
 * Increase JSON upload limit.
 
 ##### Bug Fixes
