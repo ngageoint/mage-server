@@ -292,16 +292,7 @@ module.exports = function(app, security) {
       if (!req.is('multipart/form-data')) return next();
 
       function validateForm(callback) {
-        new api.Form().validate(req.files.form, function(err, form) {
-          if (err) return callback(err);
-
-          // Handle historic form that may contain timestamp and geometry fields
-          form.fields = form.fields.filter(function(field) {
-            return field.name !== 'timestamp' && field.name !== 'geometry';
-          });
-
-          callback(null, form);
-        });
+        new api.Form().validate(req.files.form, callback);
       }
 
       function updateEvent(form, callback) {
@@ -532,7 +523,7 @@ module.exports = function(app, security) {
     '/api/events/:eventId/form/icons*',
     passport.authenticate('bearer'),
     authorizeAccess('READ_EVENT_ALL', 'read'),
-    function(req, res, next) {
+    function(req, res) {
       res.sendFile(api.Icon.defaultIconPath);
     }
   );

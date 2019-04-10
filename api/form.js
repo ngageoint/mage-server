@@ -153,6 +153,8 @@ Form.prototype.validate = function(file, callback) {
     callback(err);
   }
 
+  form = cleanForm(form);
+
   callback(null, form);
 };
 
@@ -190,5 +192,67 @@ Form.prototype.importIcons = function(file, form, callback) {
     callback(null);
   }
 };
+
+function cleanForm(form) {
+  // clean the form
+  let fields = form.fields
+    .filter(field => {
+      // Handle historic form that may contain timestamp and geometry fields
+      return field.name !== 'timestamp' && field.name !== 'geometry';
+    })
+    .filter(field => {
+      // remove archived fields, used for historical reasons and not needed in a new form
+      return !field.archived;
+    })
+    .sort((a, b) => {
+      // reorder fields array in acsending order
+      return a.id - b.id;
+    })
+    .map((field, index) => {
+      // id is used for sorting, remap based on sorted array index
+      field.id = index;
+      return field;
+    });
+
+  const primaryFields = fields.filter(field => {
+    return field.name === form.primaryField;
+  });
+
+  const secondaryFields = fields.filter(field => {
+    return field.name === form.variantField;
+  });
+
+  const userFields = fields.filter(field => {
+    return form.userFields.includes(field.name);
+  });
+
+  if (primaryFields.length === 1) {
+    form.primaryField = fieldName(primaryFields[0].id);
+  }
+  if (secondaryFields.length === 1) {
+    form.variantField = fieldName(secondaryFields[0].id);
+  }
+
+  form.userFields =  [...userFields.reduce((fields, field) => {
+    if (form.userFields.includes(field.name)) {
+      fields.add(fieldName(field.id));
+    }
+
+    return fields;
+  }, new Set())];
+
+  // Re-map the field names based on index
+  // This will ensure we elimnate non-unique field names
+  form.fields = fields.map((field, index) => {
+    field.name = fieldName(index);
+    return field;
+  });
+
+  return form;
+}
+
+function fieldName(id) {
+  return 'field' + id;
+}
 
 module.exports = Form;

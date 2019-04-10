@@ -386,9 +386,32 @@ function AdminEventEditFormController($rootScope, $scope, $location, $filter, $r
         $scope.saving = false;
         formSaved = true;
         completeSave();
+      }, function(response) {
+        var data = response.data || {};
+        showError({
+          title:  'Error Saving Form',
+          message: data.errors ?
+            "If the problem persists please contact your MAGE administrator for help." :
+            "Please try again later, if the problem persists please contact your MAGE administrator for help.",
+          errors: data.errors
+        });
+        $scope.saving = false;
       });
     });
   }, 1000);
+
+  function showError(error) {
+    $uibModal.open({
+      template: require('./event.edit.form.error.html'),
+      controller: ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
+        $scope. model = error;
+
+        $scope.ok = function() {
+          $uibModalInstance.dismiss();
+        };
+      }]
+    });
+  }
 
   function upload(fileUpload) {
     var url = '/api/events/' + $scope.event.id + '/icons/' + $scope.form.id +

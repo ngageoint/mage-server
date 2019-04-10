@@ -38,6 +38,15 @@ function hasAtLeastOneField(fields) {
   return fields.length > 0;
 }
 
+function fieldNamesAreUnique(fields) {
+  let names = new Set();
+  var hasDuplicates = fields.some(function(field) {
+    return names.size === names.add(field.name).size;
+  });
+
+  return !hasDuplicates;
+}
+
 function validateColor(color) {
   return /^#[0-9A-F]{6}$/i.test(color);
 }
@@ -106,6 +115,7 @@ const EventSchema = new Schema(
 EventSchema.plugin(require('mongoose-beautiful-unique-validation'));
 
 FormSchema.path('fields').validate(hasAtLeastOneField, 'Form must contain at least one field.');
+FormSchema.path('fields').validate(fieldNamesAreUnique, 'Form contains non unique field names');
 FormSchema.path('color').validate(validateColor, 'Form color must be valid hex string.');
 
 function validateTeamIds(eventId, teamIds, next) {
@@ -604,8 +614,6 @@ exports.update = function(id, event, options, callback) {
     callback = options;
     options = {};
   }
-
-  console.log('event is', event);
 
   var update = ['name', 'description', 'complete', 'forms'].reduce(function(o, k) {
     if (event.hasOwnProperty(k)) o[k] = event[k];

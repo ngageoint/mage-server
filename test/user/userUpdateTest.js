@@ -332,7 +332,6 @@ describe("user update tests", function() {
       .expect('Content-Type', /json/)
       .expect(function(res) {
         var user = res.body;
-        console.log('user is', user);
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
       })
@@ -380,7 +379,6 @@ describe("user update tests", function() {
       .expect('Content-Type', /json/)
       .expect(function(res) {
         var user = res.body;
-        console.log('user is', user);
         should.exist(user);
         user.should.have.property('id').that.equals(id.toString());
       })
