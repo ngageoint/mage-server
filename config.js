@@ -21,7 +21,8 @@ module.exports = {
       //   "clientSecret": " "
       // },
       // "geoaxis": {
-      //   "url": 'https://geoaxis.gxaccess.com',
+      //   "authorizationUrl": 'https://geoaxis.gxaccess.com',
+      //   "apiUrl": 'https://gxisapi.gxaccess.com',
       //   "clientID": '',
       //   "clientSecret": '',
       //   "callbackUrl": '',

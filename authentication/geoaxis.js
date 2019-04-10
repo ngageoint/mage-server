@@ -12,9 +12,9 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
   log.info('Configuring GeoAxis authentication');
 
   let strategy = new GeoaxisStrategy({
-    authorizationURL: strategyConfig.url + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
-    tokenURL: strategyConfig.url + '/ms_oauth/oauth2/endpoints/oauthservice/tokens',
-    userProfileURL: strategyConfig.url + '/ms_oauth/resources/userprofile/me',
+    authorizationURL: strategyConfig.authorizationUrl + '/ms_oauth/oauth2/endpoints/oauthservice/authorize',
+    tokenURL: strategyConfig.apiUrl + '/ms_oauth/oauth2/endpoints/oauthservice/tokens',
+    userProfileURL: strategyConfig.apiUrl + '/ms_oauth/resources/userprofile/me',
     clientID: strategyConfig.clientID,
     clientSecret: strategyConfig.clientSecret,
     callbackURL: strategyConfig.callbackUrl,
