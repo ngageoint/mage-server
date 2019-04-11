@@ -191,7 +191,7 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
         });
       });
 
-      req.session.destroy();
+      req.session = null;
     }
   );
 
