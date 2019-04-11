@@ -13,12 +13,14 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Features
 * Increase JSON upload limit.
+* Form import now supports historical forms.
 
 ##### Bug Fixes
 * Select field option delete now removes correct option.
 * Select field reorder now correctly highlights reordered field.
 * Don't hide required asterisk on form field title if field has a value.
 * Remove user token when user is disabled.
+* Separated geoaxis authentication url from api url
 
 ## [5.2.5](https://github.com/ngageoint/mage-server/releases/tag/5.2.5) (03-13-2019)
 
