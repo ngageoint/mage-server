@@ -8,6 +8,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+* Fix kml to geojson icon style.
 
 ## [5.2.6](https://github.com/ngageoint/mage-server/releases/tag/5.2.6) (TBD)
 

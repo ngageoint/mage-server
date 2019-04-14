@@ -56,7 +56,7 @@ function getProperties(node, styleIndex) {
     const styleElement = get1(node, 'Style');
     if (styleElement) {
       properties.style = {
-        icon: getIconStyle(styleElement),
+        iconStyle: getIconStyle(styleElement),
         lineStyle: getLineStyle(styleElement),
         labelStyle: getLabelStyle(styleElement),
         polyStyle: getPolygonStyle(styleElement)
@@ -189,7 +189,7 @@ function getStyles(node) {
     const kmlStyle = styles[i];
     const styleId = '#' + attr(kmlStyle, 'id');
     styleIndex[styleId] = {
-      icon: getIconStyle(kmlStyle),
+      iconStyle: getIconStyle(kmlStyle),
       lineStyle: getLineStyle(kmlStyle),
       labelStyle: getLabelStyle(kmlStyle),
       polyStyle: getPolygonStyle(kmlStyle)
