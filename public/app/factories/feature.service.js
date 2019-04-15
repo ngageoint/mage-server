@@ -31,7 +31,7 @@ function FeatureService($q, $http) {
         if (!style) return;
 
         feature.style = {};
-        if (style.iconStyle) {
+        if (style.iconStyle && style.iconStyle.icon) {
           feature.style.iconUrl = style.iconStyle.icon.href;
         }
 

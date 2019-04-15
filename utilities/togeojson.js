@@ -223,17 +223,17 @@ function getIconStyle(node) {
   const iconStyle = get(node, 'IconStyle');
   if (iconStyle[0]) {
     let style = {};
-    const iconScale = get(iconStyle[0], 'scale');
-    const icon = get(iconStyle[0], 'Icon');
 
-    if (iconScale[0]) {
+    const iconScale = get(iconStyle[0], 'scale');
+    if (iconScale && iconScale[0]) {
       style.scale = nodeVal(iconScale[0]);
     }
 
-    if (icon) {
+    const icon = get(iconStyle[0], 'Icon');
+    if (icon && icon[0]) {
       style.icon = {};
-      const href = get(icon[0], 'href');
 
+      const href = get(icon[0], 'href');
       if (href[0]) {
         style.icon.href = nodeVal(href[0]);
       }
