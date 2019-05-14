@@ -169,7 +169,7 @@ function createLayer(event, callback) {
           },
           projectionPolicy: 'FORCE_DECLARED',
           store: {
-            name: 'cite:mage'
+            name: 'mage:mage'
           },
           cqlFilter: "\"event.id\" = " + event._id,
           attributes: mapper.attributesForEvent(event)

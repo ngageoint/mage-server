@@ -13,7 +13,13 @@ exports.attributesForEvent = function(event) {
       minOccurs: 0,
       maxOccurs: 1,
       nillable: true,
-      binding: 'com.vividsolutions.jts.geom.Geometry'
+      binding: 'org.locationtech.jts.geom.Geometry'
+    },{
+      name: 'timestamp',
+      minOccurs: 0,
+      maxOccurs: 1,
+      nillable: true,
+      binding: 'java.util.Date'
     },{
       name: 'url',
       minOccurs: 0,
@@ -66,11 +72,21 @@ exports.descriptorsForEvent = function(event) {
   let descriptors = [{
     localName: 'geometry',
     type: {
-      binding: 'com.vividsolutions.jts.geom.Geometry'
+      binding: 'org.locationtech.jts.geom.Geometry'
     },
     userData: {
       mapping: 'geometry',
       encoding: "GeoJSON"
+    }
+  },{
+    localName: 'timestamp',
+    minOccurs: 0,
+    maxOccurs: 1,
+    type: {
+      binding: 'java.util.Date'
+    },
+    userData: {
+      mapping: 'properties.timestamp'
     }
   },{
     localName: 'url',
@@ -169,7 +185,7 @@ function descriptorForField(field, form) {
 
 var bindingMap = {
   date:  'java.util.Date',
-  geometry: 'com.vividsolutions.jts.geom.Geometry',
+  geometry: 'org.locationtech.jts.geom.Geometry',
   dropdown: 'java.lang.String',
   userDropdown: 'java.lang.String',
   multiselectdropdown: 'java.lang.String',

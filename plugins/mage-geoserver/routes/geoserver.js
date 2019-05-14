@@ -22,13 +22,13 @@ module.exports = function(app, authentication) {
     resource.sld
   );
 
-  app.get('/svg/observation/:eventId/:formId?/:type?/:variant?',
+  app.get('/svg/observation/:eventId',
     passport.authenticate('geoserver-bearer', { session: false }),
     resource.getObservationSvg
   );
 
   app.get(
-    '/icons/observation/:eventId/:formId?/:type?/:variant?',
+    '/icons/observation/:eventId',
     passport.authenticate('geoserver-bearer', { session: false }),
     resource.getObservationIcon
   );
@@ -82,13 +82,13 @@ GeoServerResource.prototype.getObservationSvg = function(req, res) {
         '@y': 0,
         '@width': '42px',
         '@height': '42px',
-        '@xlink:href': util.format('%s/ogc/icons/observation/%s/%s/%s/%s?access_token=%s',
+        '@xlink:href': util.format('%s/ogc/icons/observation/%s?access_token=%s%s%s%s',
           req.getRoot(),
           querystring.escape(req.params.eventId),
-          querystring.escape(req.params.formId),
-          querystring.escape(req.params.type),
-          querystring.escape(req.params.variant),
-          config.token)
+          config.token,
+          req.query.formId ? '&formId=' + querystring.escape(req.query.formId) : "",
+          req.query.primary ? '&primary=' + querystring.escape(req.query.primary) : "",
+          req.query.secondary ? '&secondary=' + querystring.escape(req.query.secondary) : "")
       }
     }
   }).end();
@@ -97,7 +97,7 @@ GeoServerResource.prototype.getObservationSvg = function(req, res) {
 };
 
 GeoServerResource.prototype.getObservationIcon = function(req, res, next) {
-  new api.Icon(req.event._id, req.params.formId, req.params.type, req.params.variant).getIcon(function(err, icon) {
+  new api.Icon(req.event._id, req.query.formId, req.query.primary, req.query.secondary).getIcon(function(err, icon) {
     if (err || !icon) {
       return next();
     }

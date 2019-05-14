@@ -24,7 +24,7 @@ function getField(fieldName, form) {
 function addNamedObservationLayer(sld, baseUrl, layer, event) {
   let rules = [{
     Name: {
-      '#text': 'default'
+      '#text': 'Default'
     },
     Filter: {
       PropertyIsNull: {
@@ -52,51 +52,260 @@ function addNamedObservationLayer(sld, baseUrl, layer, event) {
   }];
 
   event.forms.forEach(form => {
-    let href = `${baseUrl}/ogc/svg/observation/${event._id}/${form._id}`;
+    let href = `${baseUrl}/ogc/svg/observation/${event._id}?formId=${form._id}&access_token=${token}`;
 
-    var typeField = getField(form.primaryField, form);
-    if (typeField) {
-      href += `/\${strUrlEncode("${cname.generateCName(`${form.name}.${typeField.title}`)}")}`;
+    const primaryField = getField(form.primaryField, form);
+    const secondaryField = getField(form.variantField, form);
+    if (primaryField && secondaryField) {
+      const primaryProperty = cname.generateCName(`${form.name}.${primaryField.title}`);
+      const secondaryProperty = cname.generateCName(`${form.name}.${secondaryField.title}`);
 
-      var variantField = getField(form.variantField, form);
-      if (variantField) {
-        href += `/\${strUrlEncode("${cname.generateCName(`${form.name}.${variantField.title}`)}")}`;
-      }
-    }
-
-    href += `?access_token=${token}`;
-
-    rules.push({
-      Name: {
-        '#text': form._id
-      },
-      Filter: {
-        PropertyIsEqualTo: {
-          PropertyName: {
-            '#text': 'form.id'
-          },
-          Literal: {
-            '#text': form._id
-          }
-        }
-      },
-      PointSymbolizer: {
-        Graphic: {
-          ExternalGraphic: {
-            OnlineResource: {
-              '@xlink:type': 'simple',
-              '@xlink:href': href
+      rules.push({
+        Name: {
+          '#text': `PrimaryAndSecondary_${form.id}`
+        },
+        Filter: {
+          And: {
+            PropertyIsEqualTo: {
+              PropertyName: {
+                '#text': 'form.id'
+              },
+              Literal: {
+                '#text': form._id
+              }
             },
-            Format: {
-              '#text': 'image/svg+xml'
+            Not: [{
+              PropertyIsNull: {
+                PropertyName: {
+                  '#text': primaryProperty
+                }
+              }
+            },{
+              PropertyIsNull: {
+                PropertyName: {
+                  '#text': secondaryProperty
+                }
+              }
+            }]
+          }
+        },
+        PointSymbolizer: {
+          Graphic: {
+            ExternalGraphic: {
+              OnlineResource: {
+                '@xlink:type': 'simple',
+                '@xlink:href': `${href}&primary=\${strUrlEncode("${primaryProperty}")}&secondary=\${strUrlEncode("${secondaryProperty}")}`
+              },
+              Format: {
+                '#text': 'image/svg+xml'
+              }
+            },
+            Size: {
+              '#text': '84'
             }
-          },
-          Size: {
-            '#text': '84'
           }
         }
-      }
-    });
+      },{
+        Name: {
+          '#text': `Primary_${form.id}`
+        },
+        Filter: {
+          And: {
+            PropertyIsEqualTo: {
+              PropertyName: {
+                '#text': 'form.id'
+              },
+              Literal: {
+                '#text': form._id
+              }
+            },
+            Not: {
+              PropertyIsNull: {
+                PropertyName: {
+                  '#text': primaryProperty
+                }
+              }
+            },
+            PropertyIsNull: {
+              PropertyName: {
+                '#text': secondaryProperty
+              }
+            }
+          }
+        },
+        PointSymbolizer: {
+          Graphic: {
+            ExternalGraphic: {
+              OnlineResource: {
+                '@xlink:type': 'simple',
+                '@xlink:href': `${href}&primary=\${strUrlEncode("${primaryProperty}")}`
+              },
+              Format: {
+                '#text': 'image/svg+xml'
+              }
+            },
+            Size: {
+              '#text': '84'
+            }
+          }
+        }
+      },{
+        Name: {
+          '#text': `Default_${form.id}`
+        },
+        Filter: {
+          And: {
+            PropertyIsEqualTo: {
+              PropertyName: {
+                '#text': 'form.id'
+              },
+              Literal: {
+                '#text': form._id
+              }
+            },
+            PropertyIsNull: [{
+              PropertyName: {
+                '#text': primaryProperty
+              }
+            },{
+              PropertyName: {
+                '#text': secondaryProperty
+              }
+            }]
+          }
+        },
+        PointSymbolizer: {
+          Graphic: {
+            ExternalGraphic: {
+              OnlineResource: {
+                '@xlink:type': 'simple',
+                '@xlink:href': href
+              },
+              Format: {
+                '#text': 'image/svg+xml'
+              }
+            },
+            Size: {
+              '#text': '84'
+            }
+          }
+        }
+      });
+    } else if (primaryField) {
+      const primaryProperty = cname.generateCName(`${form.name}.${primaryField.title}`);
+
+      rules.push({
+        Name: {
+          '#text': `Primary_${form.id}`
+        },
+        Filter: {
+          And: {
+            PropertyIsEqualTo: {
+              PropertyName: {
+                '#text': 'form.id'
+              },
+              Literal: {
+                '#text': form._id
+              }
+            },
+            Not: {
+              PropertyIsNull: {
+                PropertyName: {
+                  '#text': primaryProperty
+                }
+              }
+            }
+          }
+        },
+        PointSymbolizer: {
+          Graphic: {
+            ExternalGraphic: {
+              OnlineResource: {
+                '@xlink:type': 'simple',
+                '@xlink:href': `${href}&primary=\${strUrlEncode("${primaryProperty}")}`
+              },
+              Format: {
+                '#text': 'image/svg+xml'
+              }
+            },
+            Size: {
+              '#text': '84'
+            }
+          }
+        }
+      },{
+        Name: {
+          '#text': `Default__${form.id}`
+        },
+        Filter: {
+          And: {
+            PropertyIsEqualTo: {
+              PropertyName: {
+                '#text': 'form.id'
+              },
+              Literal: {
+                '#text': form._id
+              }
+            },
+            PropertyIsNull: {
+              PropertyName: {
+                '#text': primaryProperty
+              }
+            }
+          }
+        },
+        PointSymbolizer: {
+          Graphic: {
+            ExternalGraphic: {
+              OnlineResource: {
+                '@xlink:type': 'simple',
+                '@xlink:href': `${href}&primary=\${strUrlEncode("${primaryProperty}")}`
+              },
+              Format: {
+                '#text': 'image/svg+xml'
+              }
+            },
+            Size: {
+              '#text': '84'
+            }
+          }
+        }
+      });
+    } else {
+      rules.push({
+        Name: {
+          '#text': `Default_${form.id}`
+        },
+        Filter: {
+          And: {
+            PropertyIsEqualTo: {
+              PropertyName: {
+                '#text': 'form.id'
+              },
+              Literal: {
+                '#text': form._id
+              }
+            }
+          }
+        },
+        PointSymbolizer: {
+          Graphic: {
+            ExternalGraphic: {
+              OnlineResource: {
+                '@xlink:type': 'simple',
+                '@xlink:href': href
+              },
+              Format: {
+                '#text': 'image/svg+xml'
+              }
+            },
+            Size: {
+              '#text': '84'
+            }
+          }
+        }
+      });
+    }
   });
 
   sld.ele({

@@ -63,7 +63,7 @@ function createSchema(event) {
     attributeDescriptors: [{
       localName : "geometry",
       type : {
-        binding : "com.vividsolutions.jts.geom.Geometry"
+        binding : "org.locationtech.jts.geom.Geometry"
       },
       userData : {
         encoding : "GeoJSON",
@@ -283,7 +283,7 @@ function createLayerBody(event) {
           minOccurs: 0,
           maxOccurs: 1,
           nillable: true,
-          binding: 'com.vividsolutions.jts.geom.Geometry'
+          binding: 'org.locationtech.jts.geom.Geometry'
         },{
           name: 'timestamp',
           minOccurs: 0,

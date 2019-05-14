@@ -30,11 +30,6 @@ exports.initialize = function(app, callback) {
     }
   });
 
-  // var mongooseLogger = log.loggers.get('mongoose');
-  // mongoose.set('debug', function(collection, method, query, doc, options) {
-  //   mongooseLogger.log('mongoose', "%s.%s(%s, %s, %s)", collection, method, this.$format(query), this.$format(doc), this.$format(options));
-  // });
-
   var geoserver = setupGeoserverProxy();
 
   // include routes
@@ -57,9 +52,7 @@ function setupGeoserverProxy() {
   var urlFilter = new RegExp('^/' + config.context + '/' + config.token + '/(.*)');
 
   function filter(pathname) {
-    var filter = urlFilter.exec(pathname);
-
-    return filter;
+    return urlFilter.exec(pathname);
   }
 
   function pathRewrite(path, req) {
