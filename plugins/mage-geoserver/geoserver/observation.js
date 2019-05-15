@@ -68,7 +68,22 @@ exports.updateLayer = function(event) {
             name: 'cite:mage'
           },
           cqlFilter: "\"event.id\" = " + event._id,
-          attributes: mapper.attributesForEvent(event)
+          attributes: mapper.attributesForEvent(event),
+          metadata: {
+            entry: [{
+              '@key': 'time',
+              dimensionInfo: {
+                enabled: true,
+                attribute: 'timestamp',
+                presentation: 'LIST',
+                units: 'ISO8601',
+                defaultValue: {
+                  'strategy': 'MINIMUM'
+                },
+                nearestMatchEnabled: false
+              }
+            }]
+          }
         }
       };
       geoserverRequest.put({
@@ -147,6 +162,7 @@ function createLayer(event, callback) {
       SchemaModel.createSchema(schema, done);
     },
     function(done) {
+      // TODO add time dimension
       var layer =  {
         featureType: {
           name: 'observations' + event._id,
@@ -172,7 +188,22 @@ function createLayer(event, callback) {
             name: 'mage:mage'
           },
           cqlFilter: "\"event.id\" = " + event._id,
-          attributes: mapper.attributesForEvent(event)
+          attributes: mapper.attributesForEvent(event),
+          metadata: {
+            entry: [{
+              '@key': 'time',
+              dimensionInfo: {
+                enabled: true,
+                attribute: 'timestamp',
+                presentation: 'LIST',
+                units: 'ISO8601',
+                defaultValue: {
+                  'strategy': 'MINIMUM'
+                },
+                nearestMatchEnabled: false
+              }
+            }]
+          }
         }
       };
 
