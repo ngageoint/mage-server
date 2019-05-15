@@ -240,8 +240,10 @@ User.prototype.avatar = function(user, callback) {
 User.prototype.icon = function(user, callback) {
   if (!user.icon.relativePath) return callback();
 
-  var icon = user.icon;
+  var icon = user.icon.toObject();
   icon.path = path.join(userBase, user.icon.relativePath);
+
+  console.log('got user icon as', icon);
 
   callback(null, icon);
 };

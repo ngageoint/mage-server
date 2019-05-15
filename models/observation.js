@@ -97,6 +97,7 @@ function transform(observation, ret, options) {
   if ('function' !== typeof observation.ownerDocument) {
     ret.id = ret._id;
     delete ret._id;
+    delete ret.__v;
 
     ret.eventId = options.eventId;
 
@@ -120,7 +121,11 @@ ObservationIdSchema.set("toJSON", {
   transform: transform
 });
 
-ObservationSchema.set("toJSON", {
+ObservationSchema.set('toJSON', {
+  transform: transform
+});
+
+ObservationSchema.set('toObject', {
   transform: transform
 });
 

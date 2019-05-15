@@ -85,6 +85,7 @@
     "supertest": "3.1.0"
   },
   "scripts": {
+    "postinstall": "node bin/postinstall",
     "test": "mocha --reporter spec",
     "coverage": "istanbul cover _mocha",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",

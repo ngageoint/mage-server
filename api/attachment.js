@@ -1,4 +1,5 @@
 var ObservationModel = require('../models/observation')
+  , AttachmentEvents = require('./events/attachment.js')
   , log = require('winston')
   , path = require('path')
   , fs = require('fs-extra')
@@ -20,6 +21,9 @@ function Attachment(event, observation) {
   this._event = event;
   this._observation = observation;
 }
+
+var EventEmitter = new AttachmentEvents();
+Attachment.on = EventEmitter;
 
 Attachment.prototype.getById = function(attachmentId, options, callback) {
   var size = options.size ? Number(options.size) : null;
@@ -45,6 +49,7 @@ Attachment.prototype.getById = function(attachmentId, options, callback) {
 
 Attachment.prototype.create = function(observationId, attachment, callback) {
   var event = this._event;
+  var observation = this._observation;
 
   var relativePath = createAttachmentPath(event);
   // move file upload to its new home
@@ -60,6 +65,10 @@ Attachment.prototype.create = function(observationId, attachment, callback) {
       if (err) return callback(err);
 
       ObservationModel.addAttachment(event, observationId, attachment, function(err, newAttachment) {
+        if (!err) {
+          EventEmitter.emit(AttachmentEvents.events.add, newAttachment.toObject(), observation, event);
+        }
+
         callback(err, newAttachment);
       });
     });

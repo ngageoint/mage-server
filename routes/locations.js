@@ -1,13 +1,12 @@
 module.exports = function(app, security) {
-  var async = require('async')
-    , moment = require('moment')
-    , Location = require('../models/location')
-    , CappedLocation = require('../models/cappedLocation')
+  var moment = require('moment')
+    , Location = require('../api').Location
     , Team = require('../models/team')
     , Event = require('../models/event')
     , access = require('../access');
 
   var passport = security.authentication.passport;
+  var location = new Location();
 
   function validateEventAccess(req, res, next) {
     if (access.userHasPermission(req.user, 'READ_LOCATION_ALL')) {
@@ -27,7 +26,11 @@ module.exports = function(app, security) {
   }
 
   function parseQueryParams(req, res, next) {
-    var parameters = {filter: {}};
+    var parameters = {
+      filter: {
+        eventId: req.event._id
+      }
+    };
 
     var startDate = req.param('startDate');
     if (startDate) {
@@ -108,9 +111,13 @@ module.exports = function(app, security) {
     validateEventAccess,
     parseQueryParams,
     function(req, res) {
-      var filter = req.parameters.filter;
-      filter.eventId = req.event._id;
-      CappedLocation.getLocations({filter: filter, limit: req.parameters.limit}, function(err, users) {
+      var options = {
+        groupByUser: true,
+        filter: req.parameters.filter,
+        limit: req.parameters.limit
+      };
+
+      location.getLocations(options, function(err, users) {
         res.json(users);
       });
     }
@@ -124,9 +131,12 @@ module.exports = function(app, security) {
     validateEventAccess,
     parseQueryParams,
     function(req, res) {
-      var filter = req.parameters.filter;
-      filter.eventId = req.event._id;
-      Location.getLocations({filter: req.parameters.filter, limit: req.parameters.limit}, function(err, locations) {
+      var options = {
+        filter: req.parameters.filter,
+        limit: req.parameters.limit
+      };
+
+      location.getLocations(options, function(err, locations) {
         res.json(locations);
       });
     }
@@ -139,21 +149,10 @@ module.exports = function(app, security) {
     access.authorize('CREATE_LOCATION'),
     validateLocations,
     function(req, res, next) {
-      async.parallel({
-        locations: function(done) {
-          Location.createLocations(req.locations, function(err, locations) {
-            done(err, locations);
-          });
-        },
-        cappedLocations: function(done) {
-          CappedLocation.addLocations(req.user, req.event, req.locations, function(err) {
-            done(err);
-          });
-        }
-      }, function(err, results) {
+      location.createLocations(req.locations, req.user, req.event, function(err, locations) {
         if (err) return next(err);
 
-        res.json(results.locations);
+        res.json(locations);
       });
     }
   );

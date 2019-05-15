@@ -2,9 +2,20 @@ var child = require('child_process')
   , config = require('./config.json')
   , log = require('winston');
 
-if (!config.enable) return;
+exports.initialize = function(app, callback) {
+  if (!config.enable) {
+    return callback();
+  }
 
-log.info('activating epic plugin');
+  log.info('activating epic plugin');
+  startObservations();
+  startAttachments();
+
+  // nothing async happening in setup
+  setImmediate(function() {
+    callback();
+  });
+};
 
 function startObservations() {
   var observations = config.esri.observations;
@@ -36,7 +47,6 @@ function startObservations() {
     });
   }
 }
-startObservations();
 
 function startAttachments() {
   var attachments = config.esri.attachments;
@@ -66,4 +76,3 @@ function startAttachments() {
     });
   }
 }
-startAttachments();

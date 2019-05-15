@@ -6,6 +6,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+* GeoServer plugin which creates OGC WMS/WFS endpoints from MAGE.
 
 ##### Bug Fixes
 * Fix kml to geojson icon style.

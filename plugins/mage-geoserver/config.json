@@ -1,0 +1,18 @@
+{
+  "enable": false,
+  "context": "ogc",
+  "geoserver": {
+    "url": "http://localhost:8080",
+    "workspace": "mage",
+    "datastore": "mage",
+    "username": "admin",
+    "password": "geoserver"
+  },
+  "mage": {
+    "baseUrl": "http://localhost:4242"
+  },
+  "mongo": {
+    "uri": "mongodb://localhost:27017/geoserverdb"
+  },
+  "token": "changeit"
+}

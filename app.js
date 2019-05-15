@@ -37,9 +37,17 @@ fs.mkdirp(iconBase, function(err) {
 require('./migrate').runDatabaseMigrations()
   .then(() => {
     log.info('database initialized; loading plugins ...');
-    require('./plugins');
-    log.info('opening app for connections ...');
-    app.emit('comingOfMage');
+    
+    var plugins = require('./plugins');
+    plugins.initialize(app, function(err) {
+      if (err) {
+        throw err;
+      }
+
+      log.info('opening app for connections ...');
+      app.emit('comingOfMage');
+    });
+
   })
   .catch(err => {
     log.error('error initializing database: ' + err);
