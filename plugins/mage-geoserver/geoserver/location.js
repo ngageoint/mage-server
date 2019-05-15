@@ -219,8 +219,8 @@ function getLayer(event, callback) {
 function createLayer(event, callback) {
   log.info('Creating geoserver location layer for event', event.name);
 
-  // Geoserver expects that the collection exists for the created,
-  // his will ensure that the observation collection exists
+  // Geoserver expects that the collection exists for the created layer,
+  // this will ensure that the observation collection exists
   require('../models/location');
 
   async.series([
