@@ -1,5 +1,5 @@
 {
-  "enable": true,
+  "enable": false,
   "context": "ogc",
   "geoserver": {
     "url": "http://localhost:8080",
