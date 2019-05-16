@@ -5,6 +5,7 @@ node_modules
 public/.tmp
 public/dist/*
 coverage
+.test_run
 npm-debug.log
 scratch
 docker/database
