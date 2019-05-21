@@ -9,6 +9,7 @@ function NewsFeed() {
     restrict: "A",
     template:  require('./feed.directive.html'),
     scope: {
+      event: '=',
       observations: '=feedObservations',
       feedObservationsChanged: '=',
       users: '=feedUsers',

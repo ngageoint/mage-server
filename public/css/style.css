@@ -895,6 +895,30 @@ textarea {
   align-items: center;
 }
 
+/* form edit styles */
+.form-section-card {
+  width: 100%;
+  position: relative;
+  padding: 25px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer; cursor: hand;
+  color: #365F8C;
+  font-size: 2.5rem;
+}
+
+.form-section-card .fa {
+  font-size: 45px;
+  margin-bottom: 15px;
+}
+
+.form-section-card .card-content {
+  text-align: center;
+}
+
 .cssFade {
     transition: 0.5s linear all;
     opacity: 1;

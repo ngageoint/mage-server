@@ -136,10 +136,10 @@ function MapClipController($rootScope, $scope, $element, MapService) {
       }
     });
 
-    $scope.$watch('feature.style.iconUrl', function(iconUrl) {
-      marker.setIcon(L.fixedWidthIcon({
-        iconUrl: iconUrl
-      }));
-    });
+    // $scope.$watch('feature.style.iconUrl', function(iconUrl) {
+    //   marker.setIcon(L.fixedWidthIcon({
+    //     iconUrl: iconUrl
+    //   }));
+    // });
   }
 }

@@ -3,10 +3,10 @@
     <div ng-if="edit === false">
       <div class="observation-item">
         <div class="observation-item-content">
-          <div class="observation-type" ng-if="primaryField">
-            <strong class="muted">{{primaryField.value}}</strong>
+          <div class="observation-type" ng-if="primaryFeedField">
+            <strong class="muted">{{primaryFeedField.value}}</strong>
           </div>
-          <div class="observation-variant muted" ng-if="variantField">{{variantField.value}}</div>
+          <div class="observation-variant muted" ng-if="secondaryFeedField">{{secondaryFeedField.value}}</div>
           <div class="observation-user muted" title="{{observationUser.displayName}}">{{observationUser.displayName}}</div>
         </div>
 

@@ -73,7 +73,7 @@
       <div id="{{observation.id}}"
         ng-class="(selectedObservation.id && selectedObservation.id !== observation.id) && 'inactive-feed-card'"
         ng-repeat="observation in observationPages[currentObservationPage] track by observation.id">
-        <div observation-news-item="observation" selectedobservation-form="event.form" container-element="side-bar"></div>
+        <div event="event" observation-news-item="observation" selectedobservation-form="event.form" container-element="side-bar"></div>
       </div>
     </div>
 

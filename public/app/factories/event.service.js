@@ -162,6 +162,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     deleteAttachmentForObservation: deleteAttachmentForObservation,
     getFormField: getFormField,
     getForms: getForms,
+    getFormsForEvent: getFormsForEvent,
     createForm: createForm,
     exportForm: exportForm,
     isUserInEvent: isUserInEvent
@@ -312,9 +313,12 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
   }
 
   function getForms(observation, options) {
-    options = options || {};
     var event = eventsById[observation.eventId];
+    return getFormsForEvent(event, options)
+  }
 
+  function getFormsForEvent(event, options) {
+    options = options || {};
     var forms = event.forms;
     if (options.archived === false) {
       forms = _.filter(forms, function(form) {

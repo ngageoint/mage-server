@@ -48,6 +48,17 @@
               </div>
             </form>
 
+            <div>
+              <div ng-if="event">
+                <div class="row">
+                  <div class="col-xs-12">
+                    <button class="btn btn-success pull-right" ng-if="(unSavedChanges || unSavedUploads) && !saving" ng-click="saveForm(event)" ng-disabled="form.fields.$invalid">Save Form</button>
+                    <button class="btn btn-success pull-right" ng-if="!unSavedUploads && !unSavedChanges && !saving" disabled="disabled">Save Form</button>
+                    <button class="btn btn-success pull-right" ng-if="saving" disabled="disabled"><i class="fa fa-spinner fa-spin"></i> Saving Form</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="col-md-6">
@@ -84,6 +95,45 @@
         <hr>
 
         <div class="row top-gap-l">
+          <div class="col-md-4">
+            <a ng-href="#/admin/events/{{event.id}}/forms/{{form.id}}/fields">
+            <div class="card form-section-card">
+              <div class="card-content">
+                <i class="fa fa-file"></i>
+                <div>
+                  Fields
+                </div>
+              </div>
+            </div>
+            </a>
+          </div>
+          <div class="col-md-4">
+            <a ng-href="#/admin/events/{{event.id}}/forms/{{form.id}}/map">
+              <div class="card form-section-card">
+                <div class="card-content">
+                  <i class="fa fa-map"></i>
+                  <div>
+                    Map
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+          <div class="col-md-4">
+            <a ng-href="#/admin/events/{{event.id}}/forms/{{form.id}}/feed">
+              <div class="card form-section-card">
+                <div class="card-content">
+                  <i class="fa fa-rss"></i>
+                  <div>
+                    Feed
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+<!--
+         <div class="row top-gap-l">
           <div class="col-md-12">
             <nav class="navbar navbar-default admin-dashboard-navbar">
               <div class="container-fluid">
@@ -527,10 +577,11 @@
               </div>
             </div>
           </div>
+        -->
         </div>
       </div>
     </div>
-
+<!--
     <div class="bottom-gap-l top-gap-xl">
       <div class="container" ng-if="event">
         <div class="row">
@@ -542,6 +593,6 @@
         </div>
       </div>
     </div>
-
+  -->
   </div>
 </div>

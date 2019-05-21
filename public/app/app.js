@@ -247,6 +247,21 @@ function config($provide, $httpProvider, $routeProvider, $animateProvider) {
     controller: "AdminEventEditFormController",
     resolve: resolveAdmin()
   });
+  $routeProvider.when('/admin/events/:eventId/forms/:formId/fields', {
+    template: require('./admin/events/event.edit.form.fields.html'),
+    controller: "AdminEventEditFormFieldsController",
+    resolve: resolveAdmin()
+  });
+  $routeProvider.when('/admin/events/:eventId/forms/:formId/map', {
+    template: require('./admin/events/event.edit.form.map-symbology.html'),
+    controller: "AdminEventEditFormMapSymbologyController",
+    resolve: resolveAdmin()
+  });
+  $routeProvider.when('/admin/events/:eventId/forms/:formId/feed', {
+    template: require('./admin/events/event.edit.form.feed.html'),
+    controller: "AdminEventEditFormFeedController",
+    resolve: resolveAdmin()
+  });
 
   // Admin device routes
   $routeProvider.when('/admin/devices', {
