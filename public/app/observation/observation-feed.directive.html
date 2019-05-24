@@ -1,7 +1,122 @@
-<div class="feed-card">
-  <div class="feed-card-content" ng-cloak>
-    <div ng-if="edit === false">
-      <div class="observation-item">
+<div class="observation-card mdc-card__primary-action mdc-typography">
+  <div class="observation-header">
+    <div class="observation-thumbnail">
+      <img ng-src="{{observation.style.iconUrl}}"/>
+    </div>
+    <div class="observation-header-content">
+      <div class="observation-header-text">
+        {{primaryFeedField.value}}
+      </div>
+      <div class="observation-subhead">
+        {{secondaryFeedField.value}}
+      </div>
+      <div class="observation-subhead">
+        {{observationUser.displayName}}
+      </div>
+    </div>
+  </div>
+  <div ng-if="observation.attachments && observation.attachments.length > 0" class="mdc-card__media observation-media">
+    <div ng-repeat="attachment in observation.attachments track by attachment.id">
+      <div attachment="attachment" attachment-observation="observation" edit="false"></div>
+    </div>
+    <div ng-if="observation.attachments.length > 1" class="attachment-number mdc-card__media-content">
+      <div class="mdc-chip">
+        <div class="mdc-chip__text">1 of {{observation.attachments.length}}</div>
+      </div>
+    </div>
+  </div>
+  <div ng-if="observation.important" class="observation-supporting-text-container">
+    <span>
+      <i class="material-icons observation-action-important-active">flag</i>
+      <span class="observation-subhead">{{observationImportantUser.displayName}} flagged on {{observation.important.timestamp | moment}}</span>
+    </span>
+    <div>
+      {{observation.important.description}}
+    </div>
+  </div>
+  <div class="mdc-card__actions">
+    <div class="mdc-card__action-buttons">
+    </div>
+    <div class="mdc-card__action-icons">
+      <button ng-if="canEditImportant || observation.important"
+        ng-class="{'observation-action-important-active mdc-icon-button--on': observation.important}"
+        class="mdc-icon-button mdc-card__action mdc-card__action--icon"
+        aria-pressed="false"
+        aria-label="Flag as Important"
+        title="Flag as Important"
+        uib-tooltip="{{canEditImportant && !observation.important ? 'Flag As Important' : 'Flagged as Important'}}"
+      uib-popover-template="'observation/observation-important.html'"
+      popover-placement="auto"
+      popover-is-open="importantPopover.isOpen">
+        <i class="material-icons mdc-icon-button__icon mdc-icon-button__icon--on">flag</i>
+        <i class="material-icons mdc-icon-button__icon">outlined_flag</i>
+      </button>
+      <button 
+        ng-class="{'observation-action-favorite-active mdc-icon-button--on': isUserFavorite}"
+        ng-click="toggleFavorite()"
+        class="mdc-icon-button mdc-card__action mdc-card__action--icon"
+        aria-pressed="false"
+        aria-label="Add to favorites"
+        title="Add to favorites">
+      <i class="material-icons mdc-icon-button__icon mdc-icon-button__icon--on">favorite</i>
+      <i class="material-icons mdc-icon-button__icon">favorite_border</i>
+    </button>
+    <button class="material-icons mdc-icon-button mdc-card__action mdc-card__action--icon"
+      title="Download" 
+      ng-click="download()">save_alt</button>
+   </div>
+  </div>
+
+  <div class="mdc-list-divider"></div>
+
+  <!-- <div class="top-gap observation-actions">
+    <span class="observation-action">
+      <i ng-if="canEditImportant || observation.important" class="fa fa-flag observation-action-important pointer" ng-class="{'observation-action-important-active': observation.important}"
+      uib-tooltip="{{canEditImportant && !observation.important ? 'Flag As Important' : 'Flagged as Important'}}"
+      uib-popover-template="'observation/observation-important.html'"
+      popover-placement="auto"
+      popover-is-open="importantPopover.isOpen"></i>
+    </span>
+
+    <span class="observation-action">
+      <i class="fa fa-heart observation-action-favorite pointer"
+      ng-class="{'observation-action-favorite-active': isUserFavorite}"
+      ng-click="toggleFavorite()"
+      uib-tooltip="{{isUserFavorite ? 'Unfavorite' : 'Favorite'}}"></i>
+
+      <span class="observation-action-favorite-count pointer"
+        ng-if="observation.favoriteUserIds.length"
+        ng-class="{'observation-action-favorite-active': isUserFavorite}"
+        ng-click="showFavoriteUsers()">{{observation.favoriteUserIds.length}}
+      </span>
+
+    </span>
+
+    <span class="observation-action observation-action-email">
+      <i class="fa fa-download observation-action-email pointer" uib-tooltip="Download" ng-click="download()"></i>
+    </span>
+  </div>
+
+    <div class="observation-feed-item-container">
+      <div class="observation-marker-container">
+        <img ng-src="{{observation.style.iconUrl}}"/>
+      </div>
+      <div class="observataion-feed-content-container">
+        <div class="primary-row-container">
+          <div class="observation-type" ng-if="primaryFeedField">
+            <strong class="muted">{{primaryFeedField.value}}</strong>
+          </div>
+          <div class="observation-shape-type"></div>
+          <div class="observation-time">{{observation.properties.timestamp | moment}}</div>
+        </div>
+        <div class="observation-variant muted" ng-if="secondaryFeedField">{{secondaryFeedField.value}}</div>
+        <div class="observation-user muted" title="{{observationUser.displayName}}">{{observationUser.displayName}}</div>
+
+      </div>
+    </div> -->
+
+    <!-- <div ng-show="edit === false">
+      <div class="observation-item top-gap-xl">
         <div class="observation-item-content">
           <div class="observation-type" ng-if="primaryFeedField">
             <strong class="muted">{{primaryFeedField.value}}</strong>
@@ -65,12 +180,8 @@
       <div ng-if="canEdit" class="clearfix">
         <button class="btn btn-sm btn-primary pull-right" ng-click="editObservation()">Edit</button>
       </div>
-    </div>
-
+    </div> -->
     <div ng-if="edit === true">
       <form-directive form="editForm" form-observation="observation" class="row"></form-directive>
     </div>
-
-  </div>
-
 </div>

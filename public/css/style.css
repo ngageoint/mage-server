@@ -4,6 +4,40 @@
 @import "~jquery-minicolors/jquery.minicolors.css";
 @import "~videogular-themes-default/videogular.min.css";
 
+:root {
+  --floating-action-button:#FFAB40;
+  --mdc-theme-primary:#1E88E5;
+  --mdc-theme-primary-dark: #1565C0;
+  --mdc-theme-primary-on-background: rgba(30, 136, 229, 0.87);
+  --mdc-theme-secondary: #1E88E5;
+  --mdc-theme-background: #FFFFFF;
+  --mdc-theme-surface: #FFFFFF;
+  --mdc-theme-error: #b00020;
+  --mdc-theme-on-primary: #fff;
+  --mdc-theme-on-secondary: #fff;
+  --mdc-theme-on-surface: #000;
+  --mdc-theme-on-error: #fff;
+  --mdc-theme-text-primary-on-background: rgba(0, 0, 0, 0.87);
+  --mdc-theme-text-secondary-on-background: rgba(0, 0, 0, 0.54);
+  --mdc-theme-text-hint-on-background: rgba(0, 0, 0, 0.38);
+  --mdc-theme-text-disabled-on-background: rgba(0, 0, 0, 0.38);
+  --mdc-theme-text-icon-on-background: rgba(0, 0, 0, 0.38);
+  --mdc-theme-text-primary-on-light: rgba(0, 0, 0, 0.87);
+  --mdc-theme-text-secondary-on-light: rgba(0, 0, 0, 0.54);
+  --mdc-theme-text-hint-on-light: rgba(0, 0, 0, 0.38);
+  --mdc-theme-text-disabled-on-light: rgba(0, 0, 0, 0.38);
+  --mdc-theme-text-icon-on-light: rgba(0, 0, 0, 0.38);
+  --mdc-theme-text-primary-on-dark: white;
+  --mdc-theme-text-secondary-on-dark: rgba(255, 255, 255, 0.7);
+  --mdc-theme-text-hint-on-dark: rgba(255, 255, 255, 0.5);
+  --mdc-theme-text-disabled-on-dark: rgba(255, 255, 255, 0.5);
+  --mdc-theme-text-icon-on-dark: rgba(255, 255, 255, 0.5);
+}
+
+@import "~material-components-web/dist/material-components-web.css";
+@import "./observation-item.css";
+@import "./feed.css";
+
 /*
   Allow angular.js to be loaded in body, hiding cloaked elements until
   templates compile.  The !important is important given that there may be
@@ -29,20 +63,21 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
-  font-family: Roboto;
-  font-weight: 400;
+  /* font-family: Roboto;
+  font-weight: 400; */
 }
 
 html {
   height: 100%;
+  font-size: unset;
 }
 
 h1, h2, h3, h4, h5 {
-	color: #365F8C;
+	color: var(--mdc-theme-primary);
 }
 
 a {
-	color: #365F8C;
+	color: var(--mdc-theme-primary);
 }
 
 .right-gap-s {
@@ -130,7 +165,7 @@ a {
   align-items: center;
   z-index: 1029;
   font-size: 16px;
-  background-color: #555;
+  background-color: var(--mdc-theme-primary-dark);
   color: #fff;
   padding: 10px 0px;
 }
@@ -164,130 +199,29 @@ a {
   overflow: auto;
 }
 
-.feed {
-  order: 1;
+.observation-feed-item-container {
   display: flex;
+  flex-direction: row;
+}
+
+.observation-marker-container {
+  width: 37px;
+  padding-right: 10px;
+}
+
+.observation-marker-container img {
+  width: 100%;
+}
+
+.observation-feed-content-container {
+  display:flex;
   flex-direction: column;
-  min-width: 450px;
-  max-width: 500px;
-  flex:1;
-  background-color: #5278a2;
-  transition: margin-left 0.3s linear;
 }
 
-.feed.ng-hide {
-  margin-left: -500px;
-}
-
-.feed-tabs {
-  flex: 0 0 53px;
+.primary-row-container {
   display: flex;
-  color: #345477;
-  font-size: 17.5px;
-  line-height: 20px;
-  background-color: #fff;
-}
-
-.feed-tab:last-child {
-	margin-left: 0;
-}
-
-.feed-tab {
-  flex: 1 1 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 3px 3px 0 0;
-  margin: 10px 10px 0 10px;
-  box-shadow: 3px -5px 5px -5px rgba(0,0,0,.35),
-              5px 0px 5px -5px rgba(0,0,0,.35);
-}
-
-.feed-tab:hover a {
-	text-decoration: none;
-	color: #EEE;
-}
-
-.feed-tab-active {
-	background-color: #5278a2;
-}
-
-.feed-tab-inactive {
-	background-color: #7C9DC2;
-}
-
-.feed-tab-active a {
-	color: #fff;
-}
-
-.feed-tab-inactive a {
-	color: #fff;
-}
-
-.feed-badge {
-  margin-left: 5px;
-  background: #666;
-}
-
-.feed-filter {
-  display: flex;
-  justify-content: space-between;
-}
-
-.feed-filter-action {
-  flex: 0 0 24%;
-  padding: 5px 0;
-  align-items: center;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.0);
-  border-color: #fff;
-  border-style: solid;
-  border-width: 2px;
-  text-align: center;
-  border-radius: 3px 3px 3px 3px;
-  cursor: pointer; cursor: hand;
-}
-
-.feed-filter-action:active, .feed-filter-action.active{
-  border-color: #fff;
-  color: #5278a2;
-  background: rgba(255, 255, 255, 1.0);
-}
-
-.badge-accent {
-   background: #F8A173;
-}
-
-.badge-notif {
-   position: absolute;
-   top: -6px;
-   right: -17px;
-}
-
-.feed-items {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  min-height: 0px;
-  margin-top: 10px;
-}
-
-.feed-page {
-  margin: 7px 6px 0;
-  flex: 0 0 34px;
-}
-
-.feed-card {
-  background-color: #fff;
-  margin: 0 7px 10px;
-  box-shadow: 0 3px 7px rgba(0,0,0,.35);
-}
-
-.inactive-feed-card {
-  opacity: .2;
-}
-
-.feed-card-content {
-  padding: 10px;
+  flex-direction: row;
+  align-items: baseline;
 }
 
 .observation-form {
@@ -447,7 +381,7 @@ a {
 }
 
 .modal-header {
-  background: #5278A2;
+  background: var(--mdc-theme-primary);
   color: #91BDEE;
 }
 
@@ -461,7 +395,7 @@ a {
 
 .modal-footer {
   background: #FFF;
-  color: #6389b3;
+  color: var(--mdc-theme-primary)
 }
 
 .modal-content, .observation-favorite-modal-content {
@@ -514,7 +448,7 @@ a {
 
 .brand-title {
   margin-left: 10px;
-  color: #365F8C;
+  color: var(--mdc-theme-primary);
   font-size: 2em;
   font-weight: 500;
 }
@@ -525,17 +459,17 @@ a {
 
 .icon-brand-s {
 	font-size: 75px;
-	color: #365F8C;
+	color: var(--mdc-theme-primary);
 }
 
 .icon-brand-m {
 	font-size: 125px;
-  color: #365F8C;
+  color: var(--mdc-theme-primary);
 }
 
 .icon-brand-l {
 	font-size: 300px;
-	color: #365F8C;
+	color: var(--mdc-theme-primary);
 }
 
 /* Overrides */
@@ -579,7 +513,7 @@ textarea {
 }
 
 .icon-mage {
-  color: #365F8C;
+  color: var(--mdc-theme-primary);
   font-size: 1.2em;
   background-image: none;
 }
@@ -643,7 +577,7 @@ textarea {
 }
 
 .admin-dashboard {
-  color: #365F8C;
+  color: var(--mdc-theme-primary);
   margin-right: 5px;
 }
 
@@ -731,7 +665,7 @@ textarea {
 
 .nav-pills>li.active>a, .nav-pills>li.active>a:hover, .nav-pills>li.active>a:focus {
     color: #fff;
-    background-color: #5278a2;
+    background-color: var(--mdc-theme-primary);
 }
 
 .admin-dashboard-content {
@@ -906,7 +840,7 @@ textarea {
   align-items: center;
   justify-content: center;
   cursor: pointer; cursor: hand;
-  color: #365F8C;
+  color: var(--mdc-theme-primary);
   font-size: 2.5rem;
 }
 
@@ -1017,19 +951,19 @@ h4.image-delete {
 }
 
 .observation-action-important-active {
-  color: #D0021B;
+  color: #D0021B !important;
 }
 
 .observation-action-important:hover {
-  color: #D0021B;
+  color: #D0021B !important;
 }
 
 .observation-action-favorite-active {
-  color: #7ED321;
+  color: #7ED321 !important;
 }
 
 .observation-action-favorite:hover {
-  color: #7ED321;
+  color: #7ED321 !important;
 }
 
 .observation-action-favorite-count {

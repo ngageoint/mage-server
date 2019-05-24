@@ -20,9 +20,20 @@ ObservationNewsItemController.$inject = ['$scope', '$window', '$uibModal', 'Even
 
 function ObservationNewsItemController($scope, $window, $uibModal, EventService, UserService, LocalStorageService) {
 
+  $scope.edit = false;
+  $scope.isUserFavorite = false;
+  $scope.canEdit = false;
+  $scope.canEditImportant = false;
+
   UserService.getUser($scope.observation.userId).then(function(user) {
     $scope.observationUser = user;
   });
+
+  if ($scope.observation.important) {
+    UserService.getUser($scope.observation.important.userId).then(function(user) {
+      $scope.observationImportantUser = user;
+    });
+  }
 
   $scope.toggleFavorite = function() {
     if ($scope.isUserFavorite) {
@@ -118,6 +129,8 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
     });
 
     $scope.editForm = form;
+    console.log('editform', $scope.editForm)
+    console.log('$scope.edit', $scope.edit)
   };
 
   $scope.onObservationLocationClick = function(observation) {
@@ -134,7 +147,6 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
 
   function observationOrEventChanged() {
     if (!$scope.observation || !$scope.event) return;
-    $scope.edit = false;
     $scope.isUserFavorite = _.contains($scope.observation.favoriteUserIds, UserService.myself.id);
     $scope.canEdit = UserService.hasPermission('UPDATE_OBSERVATION_EVENT') || UserService.hasPermission('UPDATE_OBSERVATION_ALL');
 

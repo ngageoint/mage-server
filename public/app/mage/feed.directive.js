@@ -1,6 +1,9 @@
 var $ = require('jquery')
   , _ = require('underscore')
-  , moment = require('moment');
+  , moment = require('moment')
+  , MDCTabBar = require('material-components-web').tabBar.MDCTabBar
+  , MDCChipSet = require('material-components-web').chips.MDCChipSet
+  , MDCSelect = require('material-components-web').select.MDCSelect;
 
 module.exports = NewsFeed;
 
@@ -24,6 +27,17 @@ function NewsFeed() {
 NewsFeedController.$inject = ['$rootScope', '$scope', '$element', '$filter', '$timeout', 'EventService', 'UserService', 'FilterService'];
 
 function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, EventService, UserService, FilterService) {
+  const tabBar = new MDCTabBar($element.find('.mdc-tab-bar')[0])
+  var contentEls = $element.find('.content');
+
+  tabBar.listen('MDCTabBar:activated', function(event) {
+    // Hide currently-active content
+    document.querySelector('.content--active').classList.remove('content--active');
+    // Show content for newly-activated tab
+    contentEls[event.detail.index].classList.add('content--active');
+  });
+
+  const chipSet = new MDCChipSet($element.find('.mdc-chip-set')[0])
 
   $scope.currentFeedPanel = 'observationsTab';
 
@@ -32,7 +46,7 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
   $scope.currentObservationPage = 0;
   $scope.observationsChanged = 0;
   $scope.observationPages = null;
-  var observationsPerPage = 25;
+  var observationsPerPage = 1;
 
   $scope.currentUserPage = 0;
   $scope.usersChanged = 0;
@@ -41,6 +55,7 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
   var usersPerPage = 25;
 
   calculateObservationPages($scope.observations);
+
   calculateUserPages($scope.users);
 
   var newObservation;
@@ -225,6 +240,15 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
     $scope.observationPages = pages;
     $scope.currentObservationPage = $scope.currentObservationPage || 0;
   }
+
+  $scope.$watch('observationPages', function() {
+    const select = new MDCSelect($element.find('.mdc-select')[0])
+    select.listen('MDCSelect:change', () => {
+      $scope.$apply(() => {
+        $scope.currentObservationPage = select.selectedIndex
+      })
+    })
+  })
 
   function calculateUserPages(users) {
     if (!users) return;

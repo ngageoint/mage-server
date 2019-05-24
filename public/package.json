@@ -51,6 +51,7 @@
     "leaflet-groupedlayercontrol": "https://github.com/newmanw/leaflet-groupedlayercontrol.git#master",
     "leaflet.markercluster": "1.0.3",
     "leaflet.vectorgrid": "https://github.com/newmanw/Leaflet.VectorGrid.git",
+    "material-components-web": "^2.2.0",
     "mgrs": "1.0.0",
     "moment": "2.22.2",
     "papaparse": "4.1.4",
