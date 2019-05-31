@@ -24,9 +24,9 @@ function NewsFeed() {
   return directive;
 }
 
-NewsFeedController.$inject = ['$rootScope', '$scope', '$element', '$filter', '$timeout', 'EventService', 'UserService', 'FilterService'];
+NewsFeedController.$inject = ['$rootScope', '$scope', '$element', '$filter', '$timeout', 'EventService', 'UserService', 'FilterService', 'LocalStorageService'];
 
-function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, EventService, UserService, FilterService) {
+function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, EventService, UserService, FilterService, LocalStorageService) {
   const tabBar = new MDCTabBar($element.find('.mdc-tab-bar')[0])
   var contentEls = $element.find('.content');
 
@@ -38,6 +38,7 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
   });
 
   const chipSet = new MDCChipSet($element.find('.mdc-chip-set')[0])
+  let selectMdc;
 
   $scope.currentFeedPanel = 'observationsTab';
 
@@ -46,13 +47,13 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
   $scope.currentObservationPage = 0;
   $scope.observationsChanged = 0;
   $scope.observationPages = null;
-  var observationsPerPage = 1;
+  var observationsPerPage = 50;
 
   $scope.currentUserPage = 0;
   $scope.usersChanged = 0;
   $scope.userPages = null;
   $scope.followUserId = null;
-  var usersPerPage = 25;
+  var usersPerPage = 50;
 
   calculateObservationPages($scope.observations);
 
@@ -87,10 +88,57 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
     }
   };
 
+  $scope.createNewObservation = function() {
+    const mapPos = LocalStorageService.getMapPosition();
+    $scope.$emit('observation:latlng', mapPos.center);
+  }
+
   $scope.cancelNewObservation = function() {
     $scope.newObservationForms = null;
     $scope.$emit('observation:cancel');
   };
+
+  $scope.$on('observation:view', function(e, observation) {
+    console.log('view the observation', observation)
+    $scope.viewObservation = observation
+  });
+
+  $scope.$on('observation:viewDone', function(e, observation) {
+    $scope.viewObservation = null;
+  })
+
+  $scope.$on('observation:edit', function(e, observation) {
+    console.log('edit the observation', observation)
+    $scope.edit = true;
+
+    var formMap = _.indexBy(EventService.getForms(observation), 'id');
+    var form = {
+      geometryField: {
+        title: 'Location',
+        type: 'geometry',
+        name: 'geometry',
+        value: observation.geometry
+      },
+      timestampField: {
+        title: 'Date',
+        type: 'date',
+        name: 'timestamp',
+        value: moment(observation.properties.timestamp).toDate()
+      },
+      forms: []
+    };
+
+    _.each(observation.properties.forms, function(propertyForm) {
+      var observationForm = EventService.createForm(observation, formMap[propertyForm.formId]);
+      observationForm.name = formMap[propertyForm.formId].name;
+      form.forms.push(observationForm);
+    });
+
+    $scope.editForm = form;
+    console.log('editform', $scope.editForm)
+    console.log('$scope.edit', $scope.edit)
+    $scope.editObservation = observation;
+  });
 
   $scope.$on('observation:feed', function(e, observation) {
     newObservation = observation;
@@ -107,6 +155,7 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
 
   $scope.$on('observation:editDone', function(event, observation) {
     $scope.newObservation = null;
+    $scope.editObservation = null;
     $timeout(function() {
       // scroll to observation in that page
       var offset = $($element.find(".feed-items-container")).prop('offsetTop');
@@ -241,13 +290,15 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
     $scope.currentObservationPage = $scope.currentObservationPage || 0;
   }
 
-  $scope.$watch('observationPages', function() {
-    const select = new MDCSelect($element.find('.mdc-select')[0])
-    select.listen('MDCSelect:change', () => {
-      $scope.$apply(() => {
-        $scope.currentObservationPage = select.selectedIndex
+  $scope.$watch('observationPages', function(newObsPages, oldObsPages) {
+    if (!selectMdc) {
+      selectMdc = new MDCSelect($element.find('.mdc-select')[0])
+      selectMdc.listen('MDCSelect:change', () => {
+        $scope.$apply(() => {
+          $scope.currentObservationPage = selectMdc.selectedIndex
+        })
       })
-    })
+    }
   })
 
   function calculateUserPages(users) {

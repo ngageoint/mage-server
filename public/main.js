@@ -5,6 +5,7 @@ var angular = require('angular');
 require('jquery-file-download');
 require('jquery-minicolors');
 require('angular-minicolors');
+require('select2')
 require('./vendor/bootstrap/js/bootstrap.min.js');
 
 angular.module('mage', [

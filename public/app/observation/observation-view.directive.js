@@ -2,24 +2,23 @@ var _ = require('underscore')
   , $ = require('jquery')
   , moment = require('moment');
 
-module.exports = function observationNewsItem() {
+module.exports = function observationView() {
   var directive = {
-    restrict: "A",
-    template:  require('./observation-feed.directive.html'),
+    restrict: "E",
+    template:  require('./observation-view.directive.html'),
     scope: {
-      observation: '=observationNewsItem',
+      observation: '=observation',
       event: '=event'
     },
-    controller: ObservationNewsItemController
+    controller: ObservationViewController
   };
 
   return directive;
 };
+ObservationViewController.$inject = ['$scope', '$window', '$uibModal', 'EventService', 'UserService', 'LocalStorageService'];
 
-ObservationNewsItemController.$inject = ['$scope', '$window', '$uibModal', 'EventService', 'UserService', 'LocalStorageService'];
-
-function ObservationNewsItemController($scope, $window, $uibModal, EventService, UserService, LocalStorageService) {
-
+function ObservationViewController($scope, $window, $uibModal, EventService, UserService, LocalStorageService) {
+console.log('observation view directive controller')
   $scope.edit = false;
   $scope.isUserFavorite = false;
   $scope.canEdit = false;
@@ -74,6 +73,10 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
     description: $scope.observation.important ? $scope.observation.important.description : null,
     template: require('./observation-important.html')
   };
+
+  $scope.closeObservationView = function() {
+    $scope.$emit('observation:viewDone', $scope.observation);
+  }
 
   $scope.closeImportantPopover = function() {
     $scope.importantPopover.isOpen = false;

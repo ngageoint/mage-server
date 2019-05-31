@@ -1,5 +1,6 @@
 var angular = require('angular')
-  , _ = require('underscore');
+  , _ = require('underscore')
+  , MDCTopAppBar = require('material-components-web').topAppBar.MDCTopAppBar;
 
 module.exports = function formDirective() {
   var directive = {
@@ -17,9 +18,10 @@ module.exports = function formDirective() {
   return directive;
 };
 
-FormDirectiveController.$inject = ['$scope', 'EventService', 'FilterService', 'Observation', 'ObservationService', 'UserService', 'LocalStorageService'];
+FormDirectiveController.$inject = ['$scope', 'EventService', 'FilterService', 'Observation', 'ObservationService', 'UserService', 'LocalStorageService', '$element'];
 
-function FormDirectiveController($scope, EventService, FilterService, Observation, ObservationService, UserService, LocalStorageService) {
+function FormDirectiveController($scope, EventService, FilterService, Observation, ObservationService, UserService, LocalStorageService, $element) {
+  // const topAppBar = new MDCTopAppBar($element.find('.mdc-top-app-bar')[0])
   var uploadId = 0;
   var initialObservation;
 

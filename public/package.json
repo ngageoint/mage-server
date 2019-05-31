@@ -28,6 +28,7 @@
     "build": "webpack --config webpack.prod.js"
   },
   "dependencies": {
+    "@ng-select/ng-select": "^2.20.0",
     "@ngageoint/geopackage": "1.1.6",
     "@turf/center": "4.3.0",
     "@turf/helpers": "4.3.0",
@@ -55,6 +56,7 @@
     "mgrs": "1.0.0",
     "moment": "2.22.2",
     "papaparse": "4.1.4",
+    "select2": "4.0.7",
     "ui-select": "0.17.1",
     "underscore": "1.8.3",
     "videogular": "1.4.4",
@@ -71,7 +73,9 @@
     "html-loader": "0.5.5",
     "html-webpack-plugin": "^3.2.0",
     "mini-css-extract-plugin": "0.4.4",
+    "node-sass": "^4.12.0",
     "raw-loader": "0.5.1",
+    "sass-loader": "^7.1.0",
     "style-loader": "0.23.1",
     "uglifyjs-webpack-plugin": "2.0.1",
     "url-loader": "1.1.2",

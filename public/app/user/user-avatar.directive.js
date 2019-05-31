@@ -19,8 +19,8 @@ module.exports = function avatarUser() {
 AvatarUserController.$inject = ['$scope', '$element', '$http', 'LocalStorageService'];
 
 function AvatarUserController($scope, $element, $http, LocalStorageService) {
-  if (!$scope.avatarWidth) $scope.avatarWidth = 60;
-  if (!$scope.avatarHeight) $scope.avatarHeight = 60;
+  if (!$scope.avatarWidth) $scope.avatarWidth = 40;
+  if (!$scope.avatarHeight) $scope.avatarHeight = 40;
 
   var image = new Image();
   var imageElement = $(image);

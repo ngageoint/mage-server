@@ -1,5 +1,49 @@
-<div class="feed-card">
-  <div class="user-item feed-card-content">
+<div class="user-card mdc-card__primary-action mdc-typography">
+  <div class="user-header">
+    <div class="user-thumbnail">
+      <div avatar-user="user" avatar-width="40" avatar-height="40"></div>
+    </div>
+    <div class="user-header-content">
+      <div class="user-header-text">
+        <div>
+        {{user.displayName}}
+        </div>
+      </div>
+      <div class="user-subhead ellipsis">
+        {{user.email}}
+      </div>
+      <div class="user-subhead">
+        {{user.phones[0].number}}
+      </div>
+    </div>
+    <div class="user-header-content-right">
+      <div class="user-time user-subhead">{{user.location.properties.timestamp | moment}}</div>
+      <div class="user-time user-subhead">{{user.location.geometry | geometry:5}}</div>
+    </div>
+  </div>
+  <div class="mdc-card__actions">
+    <div class="mdc-card__action-buttons">
+      <button class="mdc-button mdc-card__action mdc-card__action--button" ng-class="{'mdc-button--raised':followUserId == user.id}" ng-click="followUser($event, user)">
+        <span class="mdc-button__label" ng-show="followUserId == user.id">Following</span>
+        <span class="mdc-button__label" ng-hide="followUserId == user.id">Follow</span>
+      </button>
+      <!-- <button class="mdc-button mdc-card__action mdc-card__action--button" ng-click="onUserLocationClick(user)">
+        <span class="mdc-button__label">{{user.location.geometry | geometry:5}}</span>
+      </button> -->
+    </div>
+    <div class="mdc-card__action-icons">
+      <button class="material-icons mdc-icon-button mdc-card__action mdc-card__action--icon" ng-click="onUserLocationClick(user)">
+        <i class="material-icons mdc-icon-button__icon">my_location</i>
+      </button>
+      <!-- <button class="mdc-button mdc-card__action mdc-card__action--button mdc-button--raised mdc-button--dense" ng-click="followUser($event, user)">
+        <span class="mdc-button__label" ng-show="followUserId == user.id">Following...</span>
+        <span class="mdc-button__label" ng-hide="followUserId == user.id">Follow</span>
+      </button> -->
+    </div>
+  </div>
+  <div class="mdc-list-divider"></div>
+
+    <!-- <div class="user-item feed-card-content">
 
     <div>
       <div class="pull-left right-gap" avatar-user="user" avatar-width="60" avatar-height="60"></div>
@@ -26,5 +70,5 @@
         </button>
       </div>
     </div>
-  </div>
+  </div> -->
 </div>

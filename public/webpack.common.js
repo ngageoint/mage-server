@@ -14,10 +14,15 @@ module.exports = {
   },
   module: {
     rules: [{
-      test: /\.css$/,
+      test: /\.(css|scss)$/,
       use: [
         MiniCssExtractPlugin.loader,
-        'css-loader'
+        {
+          loader: 'css-loader'
+        },
+        {
+          loader: 'sass-loader'
+        }
       ]
     },{
       test: /\.(eot|svg|ttf|woff|woff2)$/,

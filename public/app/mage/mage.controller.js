@@ -477,7 +477,7 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
 
     $scope.$broadcast('observation:feed', newObservation);
 
-    $scope.$apply();
+    // $scope.$apply();
   });
 
   $scope.$on('observation:editStarted', function(e, observation) {

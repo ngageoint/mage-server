@@ -1,11 +1,13 @@
 <div class="observation-card mdc-card__primary-action mdc-typography">
-  <div class="observation-header">
+  <div class="observation-header" ng-click="viewObservation()">
     <div class="observation-thumbnail">
       <img ng-src="{{observation.style.iconUrl}}"/>
     </div>
     <div class="observation-header-content">
       <div class="observation-header-text">
+        <div>
         {{primaryFeedField.value}}
+        </div>
       </div>
       <div class="observation-subhead">
         {{secondaryFeedField.value}}
@@ -14,11 +16,13 @@
         {{observationUser.displayName}}
       </div>
     </div>
+    <div class="observation-header-content-right">
+      <div class="observation-time user-subhead">{{observation.properties.timestamp | moment}}</div>
+      <div class="observation-time user-subhead">{{observation.geometry | geometry:5}}</div>
+    </div>
   </div>
   <div ng-if="observation.attachments && observation.attachments.length > 0" class="mdc-card__media observation-media">
-    <div ng-repeat="attachment in observation.attachments track by attachment.id">
-      <div attachment="attachment" attachment-observation="observation" edit="false"></div>
-    </div>
+    <div attachment="observation.attachments[0]" attachment-observation="observation" edit="false"></div>
     <div ng-if="observation.attachments.length > 1" class="attachment-number mdc-card__media-content">
       <div class="mdc-chip">
         <div class="mdc-chip__text">1 of {{observation.attachments.length}}</div>

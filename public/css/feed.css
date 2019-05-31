@@ -3,10 +3,13 @@
   order: 1;
   display: flex;
   flex-direction: column;
-  min-width: 450px;
-  max-width: 500px;
+  min-width: var(--feed-width);
+  max-width: var(--feed-width);
+  width: var(--feed-width);
   flex:1;
+  position: relative;
   transition: margin-left 0.3s linear;
+  z-index: 1;
 }
 
 .content {
@@ -15,10 +18,35 @@
 
 .content--active {
   display: block;
+  overflow-y: auto;
 }
 
 .feed.ng-hide {
   margin-left: -500px;
+}
+
+.edit-panel {
+  background: var(--mdc-theme-background);
+  order: 1;
+  display: flex;
+  flex-direction: column;
+  /* min-width: 450px;
+  max-width: 500px; */
+  width: 0;
+  flex:1;
+  position: relative;
+  transition: width 0.3s linear;
+}
+
+.edit-panel.ng-show {
+  width: var(--feed-width);
+}
+
+.app-fab--absolute {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 2;
 }
 
 .feed-tab:last-child {
@@ -113,7 +141,7 @@
   background-color: #fff;
   /* margin: 0 7px 10px; */
   /* box-shadow: 0 3px 7px rgba(0,0,0,.35); */
-  padding: 16px;
+  /* padding: 16px; */
   /* width: 344px; */
 }
 

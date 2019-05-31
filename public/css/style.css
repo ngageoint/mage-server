@@ -1,10 +1,13 @@
 @import "../vendor/bootstrap/css/bootstrap.min.css";
-@import "~ui-select/dist/select.min.css";
+/* @import "~ui-select/dist/select.min.css"; */
 @import "~font-awesome/css/font-awesome.min.css";
 @import "~jquery-minicolors/jquery.minicolors.css";
 @import "~videogular-themes-default/videogular.min.css";
+@import "~select2/dist/css/select2.min.css";
 
 :root {
+  --feed-width: 450px;
+  --background-behind-card: #E0E0E0;
   --floating-action-button:#FFAB40;
   --mdc-theme-primary:#1E88E5;
   --mdc-theme-primary-dark: #1565C0;
@@ -36,7 +39,19 @@
 
 @import "~material-components-web/dist/material-components-web.css";
 @import "./observation-item.css";
+@import "./people-item.css";
 @import "./feed.css";
+@import "./observation-edit.css";
+@import "./observation-view.css";
+@import "./material-select-theme.scss";
+
+.material-icons-sm {
+  font-size: 1rem;
+}
+
+.shadow-app-bar {
+  box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
+}
 
 /*
   Allow angular.js to be loaded in body, hiding cloaked elements until
@@ -63,6 +78,8 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
+  font-size: 14px;
+  line-height: unset;
   /* font-family: Roboto;
   font-weight: 400; */
 }
@@ -97,7 +114,7 @@ a {
 }
 
 .top-gap {
-    margin-top: 15px;
+    margin-top: 16px;
 }
 
 .top-gap-l {
@@ -113,7 +130,7 @@ a {
 }
 
 .bottom-gap {
-    margin-bottom: 15px;
+    margin-bottom: 16px;
 }
 
 .bottom-gap-l {
@@ -304,20 +321,18 @@ a {
 
 @media (max-width: 767px) {
   .navbar-nav .open .dropdown-menu .dropdown-header {
-      color: rgb(221, 221, 221, .87);
+      color: rgba(221, 221, 221, .87);
   }
 }
 
 .attachments {
   flex-flow: row wrap;
   display: flex;
-  margin-top: 10px;
 }
 
 .attachment {
   position: relative;
-  width: 32%;
-  margin-bottom: 2%;
+  flex: 1 0 48%;
 }
 
 .attachment-delete {
@@ -347,11 +362,6 @@ a {
 
 .image-delete {
 	opacity: 0.5;
-}
-
-.attachment:nth-child(3n-1) {
-  margin-left: 2%;
-  margin-right: 2%;
 }
 
 .attachment:before {
@@ -1039,7 +1049,7 @@ h4.image-delete {
 }
 
 .field {
-  padding-left: 7px;
+  /* padding-left: 7px; */
   font-size: 1.1em;
 }
 
