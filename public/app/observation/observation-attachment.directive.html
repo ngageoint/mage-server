@@ -18,18 +18,15 @@
     <div ng-switch-when="video/mp4">
       <div class="attachment-media" ng-class="{'attachment-media-sm': !fullscreen}">
         <video controls width="100%">
-          <source src="{{attachment.url + '?access_token=' + token}}"
+          <source ng-src="{{attachment.url + '?access_token=' + token}}"
           type="video/mp4">
-        </video>
-        <div ng-if="videoError">
           <div class="attachment-media attachment-icon" ng-class="{'attachment-media-sm': !fullscreen}">
             <a target="_blank" ng-href="{{attachment.url + '?access_token=' + token}}">
-                <i class="fa fa-file-video-o attachment-icon"></i>
-                <div class="top-gap-s">{{attachment.name | filename:6}}</div>
+              <i class="fa fa-file-video-o attachment-icon"></i>
+              <div class="top-gap-s">{{attachment.name | filename:6}}</div>
             </a>
           </div>
-        </div>
-
+        </video>
       </div>
     </div>
 
