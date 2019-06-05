@@ -17,9 +17,6 @@ angular.module('mage', [
   require('angular-route'),
   require('angular-resource'),
   require('angular-messages'),
-  require('videogular'),
-  require('videogular-controls'),
-  require('videogular-overlay-play'),
   require('./app/auth/http-auth-interceptor')
 ]);
 

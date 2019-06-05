@@ -2,7 +2,6 @@
 /* @import "~ui-select/dist/select.min.css"; */
 @import "~font-awesome/css/font-awesome.min.css";
 @import "~jquery-minicolors/jquery.minicolors.css";
-@import "~videogular-themes-default/videogular.min.css";
 @import "~select2/dist/css/select2.min.css";
 
 :root {
@@ -1038,14 +1037,6 @@ h4.image-delete {
 
 .dropdown-menu {
     z-index: 1031;
-}
-
-.attachment-media-sm videogular vg-controls, [videogular] vg-controls {
-    height: 30px;
-}
-
-.attachment-media-sm videogular vg-controls .controls-container, [videogular] vg-controls .controls-container {
-    height: 30px;
 }
 
 .field {

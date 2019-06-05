@@ -17,24 +17,10 @@
 
     <div ng-switch-when="video/mp4">
       <div class="attachment-media" ng-class="{'attachment-media-sm': !fullscreen}">
-        <videogular vg-player-ready="onPlayerReady($API)" vg-error="onVideoError">
-            <vg-media vg-src="[{src: attachment.url + '?access_token=' + token, type: attachment.contentType}, {src: null, type: 'none'}]"></vg-media>
-
-            <vg-controls>
-              <vg-play-pause-button></vg-play-pause-button>
-              <vg-time-display ng-show="fullscreen">{{ currentTime | date:'mm:ss' }}</vg-time-display>
-              <vg-scrub-bar ng-show="fullscreen">
-                <vg-scrub-bar-current-time></vg-scrub-bar-current-time>
-              </vg-scrub-bar>
-              <vg-time-display ng-show="fullscreen">{{ timeLeft | date:'mm:ss' }}</vg-time-display>
-              <vg-volume>
-                <vg-mute-button></vg-mute-button>
-                <vg-volume-bar></vg-volume-bar>
-              </vg-volume>
-              <vg-fullscreen-button></vg-fullscreen-button>
-            </vg-controls>
-        </videogular>
-
+        <video controls width="100%">
+          <source src="{{attachment.url + '?access_token=' + token}}"
+          type="video/mp4">
+        </video>
         <div ng-if="videoError">
           <div class="attachment-media attachment-icon" ng-class="{'attachment-media-sm': !fullscreen}">
             <a target="_blank" ng-href="{{attachment.url + '?access_token=' + token}}">
