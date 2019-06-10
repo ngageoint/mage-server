@@ -10,10 +10,10 @@
         </div>
       </div>
       <div class="user-subhead ellipsis">
-        {{user.email}}
+        <a ng-href="mailto:{{user.email}}">{{user.email}}</a>
       </div>
       <div class="user-subhead">
-        {{user.phones[0].number}}
+        <a ng-href="tel:{{user.phones[0].number}}">{{user.phones[0].number}}</a>
       </div>
     </div>
     <div class="user-header-content-right">
