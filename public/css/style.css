@@ -300,6 +300,7 @@ a {
   flex: 2;
   position: relative;
   order: 2;
+  z-index: 4;
 }
 
 .leaflet-map {
