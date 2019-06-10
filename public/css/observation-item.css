@@ -95,6 +95,39 @@
   right: 5px;
 }
 
+.image-text-protection {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, .6);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-left: 16px;
+  padding-right: 4px;
+}
+
+.image-text-label {
+  color: var(--mdc-theme-text-secondary-on-dark);
+  margin-top: auto;
+  margin-bottom: auto;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.image-action-icons {
+  margin-top: auto;
+  margin-bottom: auto;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  color: var(--mdc-theme-text-secondary-on-dark);
+}
+
+.delete-button:not(:disabled) {
+  color: rgba(255, 0, 0, .9) !important;
+}
+
 .edit-button {
   font-size: 1rem;
 }

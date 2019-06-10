@@ -1,4 +1,4 @@
-<header id="edit-app-bar" class="mdc-top-app-bar mdc-elevation--z4">
+<header id="edit-app-bar" class="mdc-top-app-bar mdc-elevation--z4 feed-top-bar">
   <div class="mdc-top-app-bar__row">
     <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
       <i ng-click="closeObservationView()" class="material-icons mdc-top-app-bar__navigation-icon">arrow_back</i>
@@ -14,6 +14,7 @@
     </section>
   </div>
 </header>
+<div class="header-spacer"></div>
 <div class="mdc-card observation-view-card">
   <div class="observation-header">
     <div class="observation-thumbnail">
@@ -83,7 +84,7 @@
   </div>
 </div>
 
-<div class="mdc-card top-gap media-card">
+<div class="mdc-card top-gap media-card"  ng-if="observation.attachments && observation.attachments.length > 0">
     <div ng-if="observation.attachments && (observation.attachments.length % 2) === 1" class="mdc-card__media observation-media media-tile">
         <div attachment="observation.attachments[0]" attachment-observation="observation" edit="false"></div>
       </div>

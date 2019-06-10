@@ -22,12 +22,7 @@
     </div>
   </div>
   <div ng-if="observation.attachments && observation.attachments.length > 0" class="mdc-card__media observation-media">
-    <div attachment="observation.attachments[0]" attachment-observation="observation" edit="false"></div>
-    <div ng-if="observation.attachments.length > 1" class="attachment-number mdc-card__media-content">
-      <div class="mdc-chip">
-        <div class="mdc-chip__text">1 of {{observation.attachments.length}}</div>
-      </div>
-    </div>
+    <div attachment="observation.attachments[0]" attachment-observation="observation" edit="false" label="observation.attachments.length > 1 ? '1 of ' + observation.attachments.length : false"></div>
   </div>
   <div ng-if="observation.important" class="observation-supporting-text-container">
     <span>

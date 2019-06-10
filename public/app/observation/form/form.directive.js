@@ -181,7 +181,7 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
     $scope.saving = true;
     var markedForDelete = _.filter($scope.observation.attachments, function(a){ return a.markedForDelete; });
     formToObservation($scope.form, $scope.observation);
-    // this is a hack that will be corrected when we pull ids from the server
+    // TODO look at this: this is a hack that will be corrected when we pull ids from the server
     if ($scope.observation.id === 'new') {
       delete $scope.observation.id;
     }
@@ -222,10 +222,6 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
     });
   };
 
-  $scope.dismissError = function() {
-    $scope.error = null;
-  };
-
   $scope.deleteObservation = function() {
     EventService.archiveObservation($scope.observation).then(function() {
       $scope.$emit('observation:delete',  $scope.observation);
@@ -237,9 +233,9 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
     $scope.attachmentUploads[uploadId] = false;
   };
 
-  $scope.removeFileUpload = function(id) {
+  $scope.$on('removeUpload', function(e, id) {
     delete $scope.attachmentUploads[id];
-  };
+  });
 
   $scope.$on('uploadFile', function(e, id) {
     $scope.attachmentUploads[id] = true;

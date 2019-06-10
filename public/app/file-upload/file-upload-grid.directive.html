@@ -1,0 +1,39 @@
+<div class="media-tile mdc-card__media observation-media" ng-if="(attachmentsToUpload % 2) === 1">
+  <div class="attachment-media">
+    <img class="center-crop attachment-media" ng-src="{{firstFile.preview}}"/>
+    <div class="image-text-protection">
+      <span class="image-text-label mdc-typography--subtitle1">{{firstFile.uploadProgress}}</span>
+      <div class="image-action-icons mdc-typography--subtitle1">
+        <button class="mdc-button undefined mdc-ripple-upgraded delete-button"
+          title="Delete" 
+          ng-disabled="attachment.markedForDelete"
+          ng-click="removeAttachment(firstFile.fileId)">
+          <i class="material-icons mdc-button__icon">delete</i><span class="mdc-button__label">Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="attachments">
+  <div class="attachment media-tile" ng-repeat="(id, fileInfo) in files" ng-if="!$first || ((attachmentsToUpload % 2) === 0)">
+    <img class="center-crop attachment-media" ng-src="{{fileInfo.preview}}"/>
+    <div class="image-text-protection">
+      <span class="image-text-label mdc-typography--subtitle1">{{fileInfo.uploadProgress}}</span>
+      <div class="image-action-icons mdc-typography--subtitle1">
+        <button class="mdc-button undefined mdc-ripple-upgraded delete-button"
+          title="Delete" 
+          ng-disabled="attachment.markedForDelete"
+          ng-click="removeAttachment(id)">
+          <i class="material-icons mdc-button__icon">delete</i><span class="mdc-button__label">Delete</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="add-attachment-button-container">
+  <input name="attachment-input" id="attachment-input" class="add-attachment-input" type="file" multiple>
+  <label class="mdc-button add-attachment-button" for="attachment-input">
+    Add Attachments
+  </label>
+</div>

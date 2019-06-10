@@ -17,6 +17,7 @@ angular
   .controller('DisclaimerController', require('./disclaimer/disclaimer.controller'))
   .directive('fileBrowser', require('./file-upload/file-browser.directive'))
   .directive('fileUpload', require('./file-upload/file-upload.directive'))
+  .directive('fileUploadGrid', require('./file-upload/file-upload-grid.directive'))
   .config(config)
   .run(run);
 

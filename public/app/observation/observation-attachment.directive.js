@@ -5,7 +5,8 @@ module.exports = function attachment() {
     scope: {
       attachment: '=',
       attachmentObservation: '=',
-      edit: '='
+      edit: '=',
+      label: '='
     },
     controller: AttachmentController,
     replace: true

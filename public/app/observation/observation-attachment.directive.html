@@ -1,5 +1,4 @@
 <div ng-switch on="attachment.contentType">
-
   <div ng-class="{'image-delete': attachment.markedForDelete}">
     <a ng-switch-when="image/jpg"  ng-href="{{attachment.url + '?access_token=' + token}}" target="_blank"><img class="center-crop attachment-media" ng-class="{'image-delete': attachment.markedForDelete}" ng-src="{{attachment.url + '?access_token=' + token + '&size=394' + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
     <a ng-switch-when="image/jpeg" ng-href="{{attachment.url + '?access_token=' + token}}" target="_blank"><img class="center-crop attachment-media" ng-class="{'image-delete': attachment.markedForDelete}" ng-src="{{attachment.url + '?access_token=' + token + '&size=394' + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
@@ -17,9 +16,17 @@
 
     <div ng-switch-when="video/mp4">
       <div class="attachment-media" ng-class="{'attachment-media-sm': !fullscreen}">
-        <video controls width="100%">
-          <source ng-src="{{attachment.url + '?access_token=' + token}}"
-          type="video/mp4">
+        <video ng-if="!edit || !amAdmin" controls width="100%" height="100%">
+          <source ng-src="{{attachment.url + '?access_token=' + token + '&synced=' + attachment.synced}}" type="video/mp4">
+          <div class="attachment-media attachment-icon" ng-class="{'attachment-media-sm': !fullscreen}">
+            <a target="_blank" ng-href="{{attachment.url + '?access_token=' + token}}">
+              <i class="fa fa-file-video-o attachment-icon"></i>
+              <div class="top-gap-s">{{attachment.name | filename:6}}</div>
+            </a>
+          </div>
+        </video>
+        <video ng-if="edit && amAdmin" width="100%" height="100%">
+          <source ng-src="{{attachment.url + '?access_token=' + token + '&synced=' + attachment.synced}}" type="video/mp4">
           <div class="attachment-media attachment-icon" ng-class="{'attachment-media-sm': !fullscreen}">
             <a target="_blank" ng-href="{{attachment.url + '?access_token=' + token}}">
               <i class="fa fa-file-video-o attachment-icon"></i>
@@ -37,7 +44,10 @@
         <a ng-switch-when="png"  ng-href="{{attachment.url + '?access_token=' + token}}" target="_blank"><img class="center-crop attachment-media" ng-class="{'image-delete': attachment.markedForDelete}" ng-src="{{attachment.url + '?access_token=' + token + '&size=394' + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
         <a ng-switch-when="gif"  ng-href="{{attachment.url + '?access_token=' + token}}" target="_blank"><img class="center-crop attachment-media" ng-class="{'image-delete': attachment.markedForDelete}" ng-src="{{attachment.url + '?access_token=' + token + '&size=394' + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img></a>
         <div ng-switch-when="mp4">
-          <video class="feed-video" controls="attachment-media">
+          <video ng-if="!edit || !amAdmin" class="feed-video" controls width="100%" height="100%">
+            <source ng-src="{{attachment.url + '?access_token=' + token + '&synced=' + attachment.synced}}" type="video/mp4">
+          </video>
+          <video ng-if="edit && amAdmin" class="feed-video">
             <source ng-src="{{attachment.url + '?access_token=' + token + '&synced=' + attachment.synced}}" type="video/mp4">
           </video>
           <i class="icon-mage icon-facetime-video"></i><a target="_blank" ng-href="{{attachment.url + '?access_token=' + token}}"> Download video</a>
@@ -54,9 +64,15 @@
        </div>
     </div>
   </div>
-
-  <div class="attachment-delete" ng-show="edit && amAdmin">
-    <button class="btn btn-danger btn-sm" ng-class="{'disabled': attachment.markedForDelete}" ng-click="deleteAttachment()"><span ng-show="attachment.markedForDelete">Marked for Delete</span><span ng-hide="attachment.markedForDelete"><i class="fa fa-trash"></i> Delete</span></button>
+  <div ng-show="(edit && amAdmin) || label" class="image-text-protection">
+    <span class="image-text-label mdc-typography--subtitle1">{{label}}</span>
+    <div class="image-action-icons mdc-typography--subtitle1">
+      <button ng-if="edit && amAdmin" class="mdc-button undefined mdc-ripple-upgraded delete-button"
+        title="Delete" 
+        ng-disabled="attachment.markedForDelete"
+        ng-click="deleteAttachment()">
+        <i class="material-icons mdc-button__icon">delete</i><span class="mdc-button__label">Delete</span>
+      </button>
+    </div>
   </div>
-
 </div>

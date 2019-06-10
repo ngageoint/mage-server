@@ -38,9 +38,19 @@
 .record.ng-anchor-out {
   background:blue;
 }
-
-.new-obs-form {
-  padding-top: 64px;
-  padding-left: 16px;
-  padding-right: 16px;
+.add-attachment-button {
+  background-color: var(--mdc-theme-primary) !important;
+  width: 100%;
+}
+.add-attachment-button-container {
+  padding-right: 4px;
+  margin: 16px;
+}
+.add-attachment-input {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
 }

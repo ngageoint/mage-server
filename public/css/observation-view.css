@@ -7,7 +7,7 @@
 }
 
 .observation-view-card {
-  margin-top: 80px;
+  margin-top: 16px;
 }
 
 .map-clip {
@@ -15,6 +15,7 @@
   height: 194px;
   display: flex;
   position: relative;
+  z-index: 1;
 }
 
 .observation-form-card {
@@ -29,4 +30,8 @@
 .media-tile {
   margin-right: 4px;
   margin-bottom: 4px;
+}
+
+.feed-top-bar {
+  z-index: 2;
 }

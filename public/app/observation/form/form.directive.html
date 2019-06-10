@@ -10,68 +10,53 @@
     <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
       <button class="mdc-button mdc-card__action mdc-card__action--button"
         ng-click="save()" ng-disabled="observationForm.$invalid || saving">
+        <i ng-if="saving" class="mdc-button__icon material-icons spin-ccw">sync</i>
         <span class="mdc-button__label">Save</span>
       </button>
     </section>
   </div>
 </header>
-<div>
-  <div>
-    <form name="observationForm" id="myForm" class="form new-obs-form" novalidate>
-        <h4 class="text-center">
-          <strong class="muted">{{event.name}}</strong>
-        </h4>
-
-        <date-edit field="form.timestampField" form-field="observationForm[form.timestampField.name]"></date-edit>
-        <geometry-edit form="observationForm" field="form.geometryField"></geometry-edit>
-
-        <div ng-repeat="formDefinition in form.forms" class="bottom-gap-l">
-          <observation-form-edit form-definition="formDefinition" form="observationForm"></observation-form-edit>
-        </div>
-
-        <span>* required</span>
-
-        <div class="top-gap" ng-if="preview !== true">
-          <h4 class="muted">Attachments</h4>
-
-          <div class="attachments">
-            <div class="attachment" ng-repeat="attachment in observation.attachments track by attachment.id">
-                <div attachment="attachment" attachment-observation="observation" edit="true"></div>
-            </div>
-          </div>
-
-          <div ng-repeat="(id, file) in attachmentUploads" class="row bottom-gap">
-            <div class="col-md-10" enctype="multipart/form-data" file-upload url="{{observation.url + '/attachments?access_token=' + getToken()}}" allow-upload="uploadAttachments" upload-file-form-name="'attachment'" preview="true" upload-id="id"></div>
-            <span>
-              <button class="btn btn-danger btn-xs top-gap-s" ng-click="removeFileUpload(id)"><i class="fa fa-minus"></i></button>
-            </span>
-          </div>
-
-          <div class="row top-gap-s">
-            <div class="col-md-12">
-              <button class="btn btn-primary" ng-click="addAttachment()" >Add Attachment</button>
-            </div>
-          </div>
-
-          <div class="top-gap-l">
-            <div class="clearfix">
-              <span class="pull-right">
-                <button class="btn btn-default" ng-click="cancelEdit()">Cancel</button>
-                <button class="btn btn-primary" ng-click="save()" ng-disabled="observationForm.$invalid || saving"><i ng-class="{true: 'fa fa-spinner fa-spin', false: 'icon-save'}[saving]"></i> Save</button>
-              </span>
-              <span>
-                <button class="btn btn-danger pull-left" ng-show="observation.id && canDeleteObservation" ng-click="deleteObservation(observation)"><i class="icon-trash"></i> Delete Observation</button>
-              </span>
-            </div>
-
-            <div ng-if="error" class="alert alert-danger top-gap">
-              <button type="button" class="close" ng-click="dismissError()"><span>&times;</span></button>
-              <div><strong>Failed To Save Observation</strong></div>
-              <div>{{error.message}}</div>
-            </div>
-
-          </div>
-        </div>
-    </form>
-  </div>
+<div class="header-spacer"></div>
+<div ng-if="error" class="alert alert-danger">
+  <div><strong>Failed To Save Observation</strong></div>
+  <div>{{error.message}}</div>
 </div>
+
+<form name="observationForm" id="myForm" class="form" novalidate>
+  <div class="mdc-card observation-view-card observation-form-card">
+    <date-edit field="form.timestampField" form-field="observationForm[form.timestampField.name]"></date-edit>
+    <geometry-edit form="observationForm" field="form.geometryField"></geometry-edit>
+  </div>
+  <div ng-repeat="formDefinition in form.forms">
+    <observation-form-edit form-definition="formDefinition" form="observationForm"></observation-form-edit>
+  </div>
+  <div class="top-gap" ng-if="preview !== true">
+    <div class="mdc-card top-gap media-card">
+      <div ng-if="observation.attachments && (observation.attachments.length % 2) === 1" class="mdc-card__media observation-media media-tile">
+        <div attachment="observation.attachments[0]" attachment-observation="observation" edit="true"></div>
+      </div>
+      <div class="attachments">
+        <div class="attachment media-tile" ng-repeat="attachment in observation.attachments track by attachment.id" ng-if="!$first || (observation.attachments.length % 2 === 0)">
+          <div attachment="attachment" attachment-observation="observation" edit="true"></div>
+        </div>
+      </div>
+      <div enctype="multipart/form-data" 
+      file-upload-grid 
+      url="{{observation.url + '/attachments?access_token=' + getToken()}}" 
+      allow-upload="uploadAttachments" 
+      upload-file-form-name="'attachment'" 
+      preview="true" upload-id="id"></div>
+    </div>
+    <div class="top-gap-l">
+      <div class="clearfix">
+        <span class="pull-right">
+          <button class="btn btn-default" ng-click="cancelEdit()">Cancel</button>
+          <button class="btn btn-primary" ng-click="save()" ng-disabled="observationForm.$invalid || saving"><i ng-class="{true: 'fa fa-spinner fa-spin', false: 'icon-save'}[saving]"></i> Save</button>
+        </span>
+        <span>
+          <button class="btn btn-danger pull-left" ng-show="observation.id && canDeleteObservation" ng-click="deleteObservation(observation)"><i class="icon-trash"></i> Delete Observation</button>
+        </span>
+      </div>
+    </div>
+  </div>
+</form>
