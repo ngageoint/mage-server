@@ -10,6 +10,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 * Fix kml to geojson icon style.
+* Export observations based on timestamp, not last updated.
 
 ## [5.2.6](https://github.com/ngageoint/mage-server/releases/tag/5.2.6) (TBD)
 

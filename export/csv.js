@@ -1,5 +1,4 @@
 var util = require('util')
-  , api = require('../api')
   , async = require('async')
   , archiver = require('archiver')
   , mgrs = require('mgrs')
@@ -91,9 +90,7 @@ Csv.prototype.export = function(streamable) {
 
 Csv.prototype.streamObservations = function(stream, archive, fields, fieldNames, done) {
   var self = this;
-
-  self._filter.states = ['active'];
-  new api.Observation(self._event).getAll({filter: self._filter}, function(err, observations) {
+  self.requestObservations(self._filter, function(err, observations) {
     var data = self.flattenObservations(observations, archive);
 
     json2csv({data: data, fields: fields, fieldNames: fieldNames}, function(err, csv) {

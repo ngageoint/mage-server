@@ -60,9 +60,7 @@ GeoJson.prototype.export = function(streamable) {
 
 GeoJson.prototype.streamObservations = function(stream, archive, done) {
   var self = this;
-
-  self._filter.states = ['active'];
-  new api.Observation(self._event).getAll({filter: self._filter}, function(err, observations) {
+  self.requestObservations(self._filter, function(err, observations) {
     if (err) return err;
 
     self.mapObservations(observations);
