@@ -1,6 +1,7 @@
 var _ = require('underscore')
   , $ = require('jquery')
-  , moment = require('moment');
+  , moment = require('moment')
+  , MDCRipple = require('material-components-web').ripple.MDCRipple;
 
 module.exports = function observationNewsItem() {
   var directive = {
@@ -19,7 +20,8 @@ module.exports = function observationNewsItem() {
 ObservationNewsItemController.$inject = ['$scope', '$window', '$uibModal', 'EventService', 'UserService', 'LocalStorageService'];
 
 function ObservationNewsItemController($scope, $window, $uibModal, EventService, UserService, LocalStorageService) {
-
+  const iconButtonRipple = new MDCRipple(document.querySelector('.mdc-icon-button'));
+  iconButtonRipple.unbounded = true;
   $scope.edit = false;
   $scope.isUserFavorite = false;
   $scope.canEdit = false;
@@ -109,34 +111,6 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
   $scope.editObservation = function() {
     $scope.onObservationLocationClick($scope.observation);
     $scope.$emit('observation:edit', $scope.observation);
-    // $scope.edit = true;
-
-    // var formMap = _.indexBy(EventService.getForms($scope.observation), 'id');
-    // var form = {
-    //   geometryField: {
-    //     title: 'Location',
-    //     type: 'geometry',
-    //     name: 'geometry',
-    //     value: $scope.observation.geometry
-    //   },
-    //   timestampField: {
-    //     title: 'Date',
-    //     type: 'date',
-    //     name: 'timestamp',
-    //     value: moment($scope.observation.properties.timestamp).toDate()
-    //   },
-    //   forms: []
-    // };
-
-    // _.each($scope.observation.properties.forms, function(propertyForm) {
-    //   var observationForm = EventService.createForm($scope.observation, formMap[propertyForm.formId]);
-    //   observationForm.name = formMap[propertyForm.formId].name;
-    //   form.forms.push(observationForm);
-    // });
-
-    // $scope.editForm = form;
-    // console.log('editform', $scope.editForm)
-    // console.log('$scope.edit', $scope.edit)
   };
 
   $scope.onObservationLocationClick = function(observation) {
@@ -148,10 +122,10 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
     $scope.editForm = null;
   });
 
-  $scope.$watch('event', observationOrEventChanged, true)
+  $scope.$watch('event', observationOrEventChanged)
   $scope.$watch('observation', observationOrEventChanged, true)
 
-  function observationOrEventChanged() {
+  function observationOrEventChanged(now, old) {
     if (!$scope.observation || !$scope.event) return;
     $scope.isUserFavorite = _.contains($scope.observation.favoriteUserIds, UserService.myself.id);
     $scope.canEdit = UserService.hasPermission('UPDATE_OBSERVATION_EVENT') || UserService.hasPermission('UPDATE_OBSERVATION_ALL');

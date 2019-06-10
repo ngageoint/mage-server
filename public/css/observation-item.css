@@ -124,7 +124,7 @@
   color: var(--mdc-theme-text-secondary-on-dark);
 }
 
-.delete-button:not(:disabled) {
+.delete-attachment-button:not(:disabled) {
   color: rgba(255, 0, 0, .9) !important;
 }
 

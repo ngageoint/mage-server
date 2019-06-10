@@ -2,6 +2,7 @@ var angular = require('angular');
 
 angular.module('mage')
   .directive('formDirective', require('./form.directive'))
+  .controller('DeleteObservationController', require('./delete-observation.controller'))
   .component('observationFormEdit', require('./edit.component'))
   .component('checkboxEdit', require('./checkbox.edit'))
   .component('dateEdit', require('./date.edit'))

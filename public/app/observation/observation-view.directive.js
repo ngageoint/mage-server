@@ -1,6 +1,7 @@
 var _ = require('underscore')
   , $ = require('jquery')
-  , moment = require('moment');
+  , moment = require('moment')
+  , MDCRipple = require('material-components-web').ripple.MDCRipple;
 
 module.exports = function observationView() {
   var directive = {
@@ -18,7 +19,9 @@ module.exports = function observationView() {
 ObservationViewController.$inject = ['$scope', '$window', '$uibModal', 'EventService', 'UserService', 'LocalStorageService'];
 
 function ObservationViewController($scope, $window, $uibModal, EventService, UserService, LocalStorageService) {
-console.log('observation view directive controller')
+  const iconButtonRipple = new MDCRipple(document.querySelector('.mdc-icon-button'));
+  iconButtonRipple.unbounded = true;
+
   $scope.edit = false;
   $scope.isUserFavorite = false;
   $scope.canEdit = false;

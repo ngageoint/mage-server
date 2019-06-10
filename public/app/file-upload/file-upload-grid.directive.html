@@ -4,7 +4,7 @@
     <div class="image-text-protection">
       <span class="image-text-label mdc-typography--subtitle1">{{firstFile.uploadProgress}}</span>
       <div class="image-action-icons mdc-typography--subtitle1">
-        <button class="mdc-button undefined mdc-ripple-upgraded delete-button"
+        <button class="mdc-button mdc-ripple-upgraded delete-attachment-button"
           title="Delete" 
           ng-disabled="attachment.markedForDelete"
           ng-click="removeAttachment(firstFile.fileId)">
@@ -20,7 +20,7 @@
     <div class="image-text-protection">
       <span class="image-text-label mdc-typography--subtitle1">{{fileInfo.uploadProgress}}</span>
       <div class="image-action-icons mdc-typography--subtitle1">
-        <button class="mdc-button undefined mdc-ripple-upgraded delete-button"
+        <button class="mdc-button mdc-ripple-upgraded delete-attachment-button"
           title="Delete" 
           ng-disabled="attachment.markedForDelete"
           ng-click="removeAttachment(id)">

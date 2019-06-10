@@ -98,6 +98,13 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
     $scope.$emit('observation:cancel');
   };
 
+  $scope.$on('observation:delete', function() {
+    $scope.newObservation = null;
+    $scope.editObservation = null;
+    $scope.viewObservation = null;
+    console.log('observation deleted')
+  })
+
   $scope.$on('observation:view', function(e, observation) {
     console.log('view the observation', observation)
     $scope.viewObservation = observation
@@ -156,12 +163,12 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
   $scope.$on('observation:editDone', function(event, observation) {
     $scope.newObservation = null;
     $scope.editObservation = null;
-    $timeout(function() {
-      // scroll to observation in that page
-      var offset = $($element.find(".feed-items-container")).prop('offsetTop');
-      var feedElement = $($element.find(".feed-items"));
-      feedElement.animate({scrollTop: $('#' + observation.id).prop('offsetTop') - offset}, "slow");
-    });
+    // $timeout(function() {
+    //   // scroll to observation in that page
+    //   var offset = $($element.find(".feed-items-container")).prop('offsetTop');
+    //   var feedElement = $($element.find(".feed-items"));
+    //   feedElement.animate({scrollTop: $('#' + observation.id).prop('offsetTop') - offset}, "slow");
+    // });
   });
 
   $scope.$on('observation:cancel', function() {

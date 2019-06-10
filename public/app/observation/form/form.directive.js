@@ -18,9 +18,9 @@ module.exports = function formDirective() {
   return directive;
 };
 
-FormDirectiveController.$inject = ['$scope', 'EventService', 'FilterService', 'Observation', 'ObservationService', 'UserService', 'LocalStorageService', '$element'];
+FormDirectiveController.$inject = ['$scope', 'EventService', 'FilterService', 'Observation', 'ObservationService', 'UserService', 'LocalStorageService', '$element', '$uibModal'];
 
-function FormDirectiveController($scope, EventService, FilterService, Observation, ObservationService, UserService, LocalStorageService, $element) {
+function FormDirectiveController($scope, EventService, FilterService, Observation, ObservationService, UserService, LocalStorageService, $element, $uibModal) {
   // const topAppBar = new MDCTopAppBar($element.find('.mdc-top-app-bar')[0])
   var uploadId = 0;
   var initialObservation;
@@ -223,8 +223,16 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
   };
 
   $scope.deleteObservation = function() {
-    EventService.archiveObservation($scope.observation).then(function() {
-      $scope.$emit('observation:delete',  $scope.observation);
+    $uibModal.open({
+      template: require('./delete-observation.html'),
+      controller: 'DeleteObservationController',
+      backdrop: 'static',
+      scope: $scope,
+      resolve: {
+        observation: function () {
+          return $scope.observation;
+        }
+      }
     });
   };
 

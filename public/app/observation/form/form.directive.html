@@ -47,16 +47,11 @@
       upload-file-form-name="'attachment'" 
       preview="true" upload-id="id"></div>
     </div>
-    <div class="top-gap-l">
-      <div class="clearfix">
-        <span class="pull-right">
-          <button class="btn btn-default" ng-click="cancelEdit()">Cancel</button>
-          <button class="btn btn-primary" ng-click="save()" ng-disabled="observationForm.$invalid || saving"><i ng-class="{true: 'fa fa-spinner fa-spin', false: 'icon-save'}[saving]"></i> Save</button>
-        </span>
-        <span>
-          <button class="btn btn-danger pull-left" ng-show="observation.id && canDeleteObservation" ng-click="deleteObservation(observation)"><i class="icon-trash"></i> Delete Observation</button>
-        </span>
-      </div>
+
+    <div ng-show="observation.id && canDeleteObservation" class="delete-observation-button-container">
+      <button class="mdc-button delete-observation-button" ng-click="deleteObservation(observation)">
+        Delete Observation
+      </button>
     </div>
   </div>
 </form>
