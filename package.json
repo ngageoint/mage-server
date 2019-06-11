@@ -94,7 +94,7 @@
     "report": "nyc report",
     "test": "nyc mocha",
     "coverage": "nyc mocha",
-    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
+    "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "create-migration": "mm create --config=mm-config.js",
     "build": "npm --prefix public install && npm --prefix public run build",
     "prestart": "sh bin/prestart.sh",
