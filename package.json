@@ -92,7 +92,7 @@
   "scripts": {
     "postinstall": "node bin/postinstall",
     "report": "nyc report",
-    "test": "nyc --no-clean mocha",
+    "test": "nyc mocha",
     "coverage": "nyc mocha",
     "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "create-migration": "mm create --config=mm-config.js",
