@@ -35,3 +35,11 @@
 .feed-top-bar {
   z-index: 2;
 }
+
+.mage-field-value {
+  padding-left: 4px;
+}
+
+.mage-field-title {
+  color: var(--mdc-theme-text-secondary-on-background);
+}

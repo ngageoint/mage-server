@@ -1,6 +1,11 @@
-<div class="row top-gap-s" ng-show="$ctrl.field.value">
-  <div class="col-md-12">
-    <strong class="muted">{{$ctrl.field.title}}</strong>
-    <span class="field"><i class="fa fa-check-square-o"></i></span>
+<div class="mage-checkbox-field" ng-show="$ctrl.field.value">
+  <div class="mage-field-title mdc-typography--caption">{{$ctrl.field.title}}</div>
+  <div class="mdc-switch mdc-switch--checked">
+    <div class="mdc-switch__track"></div>
+    <div class="mdc-switch__thumb-underlay">
+      <div class="mdc-switch__thumb">
+          <input type="checkbox" id="basic-switch" class="mdc-switch__native-control" role="switch" checked>
+      </div>
+    </div>
   </div>
 </div>
