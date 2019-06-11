@@ -20,29 +20,24 @@ var observationModel = Observation.observationModel;
 
 describe("attachment read tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   beforeEach(function() {
     var mockEvent = new EventModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
   });
 
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -53,11 +48,11 @@ describe("attachment read tests", function() {
   it("should get attachments for event I am a part of", function(done) {
     mockTokenWithPermission('READ_OBSERVATION_EVENT');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('populate')
       .yields(null, {
         name: 'Event 1',
@@ -94,7 +89,7 @@ describe("attachment read tests", function() {
       }]
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
       .yields(null, mockObservation);
@@ -120,7 +115,7 @@ describe("attachment read tests", function() {
       '/var/lib/mage/attachments/mock/path/attachment.jpeg': new Buffer([8, 6, 7, 5, 3, 0, 9])
     });
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -147,12 +142,12 @@ describe("attachment read tests", function() {
       }]
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
       .yields(null, mockObservation);
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findOne')
       .withArgs({_id: observationId})
       .yields(null, mockObservation);
@@ -173,7 +168,7 @@ describe("attachment read tests", function() {
   it("should fail to get attachment that does not exist", function(done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -196,12 +191,12 @@ describe("attachment read tests", function() {
       attachments: []
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
       .yields(null, mockObservation);
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findOne')
       .withArgs({_id: observationId})
       .yields(null, mockObservation);
@@ -221,7 +216,7 @@ describe("attachment read tests", function() {
       '/var/lib/mage/attachments/mock/path/attachment.jpeg': new Buffer([8, 6, 7, 5, 3, 0, 9])
     });
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -248,12 +243,12 @@ describe("attachment read tests", function() {
       }]
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
       .yields(null, mockObservation);
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findOne')
       .withArgs({_id: observationId})
       .yields(null, mockObservation);

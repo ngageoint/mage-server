@@ -1,6 +1,5 @@
 var request = require('supertest')
   , sinon = require('sinon')
-  , should = require('chai').should()
   , MockToken = require('../mockToken')
   , app = require('../../express')
   , mongoose = require('mongoose');
@@ -15,18 +14,13 @@ require('sinon-mongoose');
 
 describe("user delete tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -45,12 +39,12 @@ describe("user delete tests", function() {
       active: true
     });
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('findById')
       .chain('exec')
       .yields(null, mockUser);
 
-    sandbox.mock(mockUser)
+    sinon.mock(mockUser)
       .expects('remove')
       .yields(null, mockUser);
 

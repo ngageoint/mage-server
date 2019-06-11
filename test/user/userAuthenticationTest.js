@@ -25,13 +25,8 @@ require('sinon-mongoose');
 
 describe("user authentication tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   beforeEach(function() {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -40,7 +35,7 @@ describe("user authentication tests", function() {
   });
 
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   it("should login user", function(done) {
@@ -56,18 +51,18 @@ describe("user authentication tests", function() {
       }
     });
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
       .chain('exec')
       .yields(null, mockUser);
 
-    sandbox.mock(UserModel.prototype)
+    sinon.mock(UserModel.prototype)
       .expects('validPassword')
       .yields(null, true);
 
-    sandbox.mock(DeviceModel)
+    sinon.mock(DeviceModel)
       .expects('findOne')
       .withArgs({uid: '1'})
       .chain('exec')
@@ -76,13 +71,13 @@ describe("user authentication tests", function() {
         registered: true
       });
 
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOneAndUpdate')
       .yields(null, {
         token: 'token'
       });
 
-    sandbox.mock(LoginModel)
+    sinon.mock(LoginModel)
       .expects('create')
       .withArgs({
         userId: userId.toString(),
@@ -90,7 +85,7 @@ describe("user authentication tests", function() {
       })
       .yields(null, {});
 
-    sandbox.mock(mockUser)
+    sinon.mock(mockUser)
       .expects('save')
       .resolves(mockUser);
 
@@ -119,7 +114,7 @@ describe("user authentication tests", function() {
       }
     });
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
@@ -150,14 +145,14 @@ describe("user authentication tests", function() {
       authentication: {}
     });
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
       .chain('exec')
       .yields(null, mockUser);
 
-    sandbox.mock(SettingModel)
+    sinon.mock(SettingModel)
       .expects('findOne')
       .withArgs({ type: 'security' })
       .chain('exec')
@@ -172,7 +167,7 @@ describe("user authentication tests", function() {
         }
       });
 
-    sandbox.mock(mockUser)
+    sinon.mock(mockUser)
       .expects('save')
       .resolves(mockUser);
 
@@ -201,18 +196,18 @@ describe("user authentication tests", function() {
       }
     });
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
       .chain('exec')
       .yields(null, mockUser);
 
-    sandbox.mock(UserModel.prototype)
+    sinon.mock(UserModel.prototype)
       .expects('validPassword')
       .yields(null, true);
 
-    sandbox.mock(DeviceModel)
+    sinon.mock(DeviceModel)
       .expects('findOne')
       .withArgs({uid: '1'})
       .chain('exec')
@@ -247,18 +242,18 @@ describe("user authentication tests", function() {
       }
     });
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
       .chain('exec')
       .yields(null, mockUser);
 
-    sandbox.mock(UserModel.prototype)
+    sinon.mock(UserModel.prototype)
       .expects('validPassword')
       .yields(null, true);
 
-    sandbox.mock(DeviceModel)
+    sinon.mock(DeviceModel)
       .expects('findOne')
       .withArgs({uid: '1'})
       .chain('exec')
@@ -267,7 +262,7 @@ describe("user authentication tests", function() {
         registered: false
       });
 
-    sandbox.mock(mockUser)
+    sinon.mock(mockUser)
       .expects('save')
       .resolves(mockUser);
 
@@ -285,7 +280,7 @@ describe("user authentication tests", function() {
   });
 
   it("should logout without token", function(done) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findByIdAndRemove')
       .withArgs("1")
       .yields(null);
@@ -299,7 +294,7 @@ describe("user authentication tests", function() {
   });
 
   it("should logout with token", function(done) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findByIdAndRemove')
       .withArgs("1")
       .yields(null);
@@ -330,7 +325,7 @@ describe("user authentication tests", function() {
       }
     });
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
@@ -338,7 +333,7 @@ describe("user authentication tests", function() {
       .yields(null, mockUser);
 
 
-    sandbox.mock(SettingModel)
+    sinon.mock(SettingModel)
       .expects('findOne')
       .withArgs({ type: 'security' })
       .chain('exec')
@@ -353,7 +348,7 @@ describe("user authentication tests", function() {
         }
       });
 
-    let userSpy = sandbox.mock(mockUser)
+    let userSpy = sinon.mock(mockUser)
       .expects('save')
       .resolves(mockUser);
 
@@ -387,7 +382,7 @@ describe("user authentication tests", function() {
       }
     });
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
@@ -395,7 +390,7 @@ describe("user authentication tests", function() {
       .yields(null, mockUser);
 
 
-    sandbox.mock(SettingModel)
+    sinon.mock(SettingModel)
       .expects('findOne')
       .withArgs({ type: 'security' })
       .chain('exec')
@@ -410,7 +405,7 @@ describe("user authentication tests", function() {
         }
       });
 
-    let userSpy = sandbox.mock(mockUser)
+    let userSpy = sinon.mock(mockUser)
       .expects('save')
       .resolves(mockUser);
 
@@ -448,7 +443,7 @@ describe("user authentication tests", function() {
       }
     });
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
@@ -456,7 +451,7 @@ describe("user authentication tests", function() {
       .yields(null, mockUser);
 
 
-    sandbox.mock(SettingModel)
+    sinon.mock(SettingModel)
       .expects('findOne')
       .withArgs({ type: 'security' })
       .chain('exec')
@@ -471,7 +466,7 @@ describe("user authentication tests", function() {
         }
       });
 
-    sandbox.mock(mockUser)
+    sinon.mock(mockUser)
       .expects('save')
       .resolves(mockUser);
 
@@ -502,7 +497,7 @@ describe("user authentication tests", function() {
       }
     });
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({ username: 'test' })
       .chain('populate', 'roleId')
@@ -510,7 +505,7 @@ describe("user authentication tests", function() {
       .yields(null, mockUser);
 
 
-    sandbox.mock(SettingModel)
+    sinon.mock(SettingModel)
       .expects('findOne')
       .withArgs({ type: 'security' })
       .chain('exec')
@@ -525,7 +520,7 @@ describe("user authentication tests", function() {
         }
       });
 
-    sandbox.mock(mockUser)
+    sinon.mock(mockUser)
       .expects('save')
       .resolves(mockUser);
 

@@ -16,11 +16,6 @@ var observationModel = Observation.observationModel;
 
 describe("observation favorite tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   beforeEach(function() {
     var mockEvent = new EventModel({
       _id: 1,
@@ -51,19 +46,19 @@ describe("observation favorite tests", function() {
         userFields: []
       }
     });
-    
-    sandbox.mock(EventModel)
+
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
   });
 
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -94,7 +89,7 @@ describe("observation favorite tests", function() {
       favoriteUserIds: [userId]
     });
 
-    var observationMock = sandbox.mock(ObservationModel)
+    var observationMock = sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .withArgs(observationId.toString(), sinon.match( { '$addToSet': {favoriteUserIds: userId} } ), sinon.match.any)
       .yields(null, mockObservation);
@@ -151,7 +146,7 @@ describe("observation favorite tests", function() {
       favoriteUserIds: []
     });
 
-    var observationMock = sandbox.mock(ObservationModel)
+    var observationMock = sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .withArgs(observationId.toString(), sinon.match( { '$pull': {favoriteUserIds: userId} } ), sinon.match.any)
       .yields(null, mockObservation);

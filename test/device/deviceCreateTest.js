@@ -15,19 +15,14 @@ require('../../models/user');
 var UserModel = mongoose.model('User');
 
 describe("device create tests", function() {
-
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
+  
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate')
@@ -39,7 +34,7 @@ describe("device create tests", function() {
     mockTokenWithPermission('CREATE_DEVICE');
 
     var userId = mongoose.Types.ObjectId();
-    sandbox.mock(DeviceModel)
+    sinon.mock(DeviceModel)
       .expects('findOneAndUpdate')
       .withArgs({
         uid: '12345'
@@ -93,18 +88,18 @@ describe("device create tests", function() {
       }
     });
 
-    sandbox.mock(mockUser)
+    sinon.mock(mockUser)
       .expects('validPassword')
       .yields(null, true);
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({username: 'test'})
       .chain('populate')
       .chain('exec')
       .yields(null, mockUser);
 
-    sandbox.mock(DeviceModel)
+    sinon.mock(DeviceModel)
       .expects('findOne')
       .withArgs({
         uid: '12345'
@@ -112,7 +107,7 @@ describe("device create tests", function() {
       .chain('exec')
       .resolves(null);
 
-    sandbox.mock(DeviceModel)
+    sinon.mock(DeviceModel)
       .expects('findOneAndUpdate')
       .withArgs({
         uid: '12345'
@@ -131,7 +126,7 @@ describe("device create tests", function() {
         userId: userId.toString()
       });
 
-    sandbox.mock(mockUser)
+    sinon.mock(mockUser)
       .expects('save')
       .resolves(mockUser);
 
@@ -172,22 +167,22 @@ describe("device create tests", function() {
       }
     });
 
-    sandbox.mock(mockUser)
+    sinon.mock(mockUser)
       .expects('validPassword')
       .yields(null, true);
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('findOne')
       .withArgs({username: 'test'})
       .chain('populate')
       .chain('exec')
       .yields(null, mockUser);
 
-    sandbox.mock(mockUser)
+    sinon.mock(mockUser)
       .expects('save')
       .resolves(mockUser);
 
-    sandbox.mock(DeviceModel)
+    sinon.mock(DeviceModel)
       .expects('findOne')
       .withArgs({
         uid: '12345'
