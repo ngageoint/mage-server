@@ -218,13 +218,7 @@ module.exports = function(app, security) {
       new api.Event().createEvent(req.body, req.user, function(err, event) {
         if (err) return next(err);
 
-        //copy default icon into new event directory
-        new api.Icon(event._id).saveDefaultIconToEventForm(function(err) {
-          if (err) {
-            return next(err);
-          }
-          res.status(201).json(event);
-        });
+        res.status(201).json(event);
       });
     }
   );

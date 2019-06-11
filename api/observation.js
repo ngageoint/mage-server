@@ -130,7 +130,7 @@ Observation.prototype.update = function(observationId, observation, callback) {
 
   var self = this;
   ObservationModel.updateObservation(this._event, observationId, observation, function(err, observation) {
-    if (!err) {
+    if (observation) {
       EventEmitter.emit(ObservationEvents.events.update, observation.toObject(), self._event, self._user);
     }
 

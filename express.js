@@ -73,7 +73,7 @@ var authentication = require('./authentication')(app, passport, provisioning, co
 require('./routes')(app, {authentication: authentication, provisioning: provisioning});
 
 app.use(function(err, req, res, next) { // eslint-disable-line no-unused-vars
-  if (process.env.NODE_ENV !== 'test') {
+  if (process.env.NODE_ENV === 'test') {
     log.error(err.message);
     log.error(err.stack);
   }
