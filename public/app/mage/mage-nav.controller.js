@@ -63,17 +63,14 @@ function NavController($rootScope, $scope, $q, $location, $uibModal, UserService
   };
 
   $scope.onFilterClick = function() {
-    $uibModal.open({
-      template: require('../filter/filter.html'),
-      controller: 'FilterController',
-      backdrop: 'static',
-      resolve: {
-        events: function () {
-          return events;
-        }
-      }
-    });
+    $scope.events = events;
+    $scope.filterOpen = {opened: true};
   };
+
+  $scope.onFilterClose = function() {
+    $scope.filterOpen = {opened: false};
+    console.log('filter open false')
+  }
 
   $scope.onCoordinateSystemChange = function(coordinateSystem) {
     LocalStorageService.setCoordinateSystemView(coordinateSystem);

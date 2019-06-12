@@ -1,0 +1,30 @@
+<label>TEAM</label>
+<!-- <div ng-repeat="event in $ctrl.events">Event: {{event}}</div> -->
+<div id="select" class="mdc-select mdc-select--outlined page-select-width">
+  <input type="hidden" name="enhanced-select">
+  <i class="mdc-select__dropdown-icon"></i>
+  <div class="mdc-select__selected-text"></div>
+  <div class="mdc-select__menu mdc-menu mdc-menu-surface page-select-width">
+    <ul class="mdc-list" >
+      <li
+        ng-repeat="event in $ctrl.events"
+        class="mdc-list-item"
+        data-value="event.id">
+        {{event.name}}
+      </li>
+      <!-- <li class="mdc-list-item"
+        ng-if="!$first"
+        ng-repeat="observationPage in observationPages track by observationPage[0].id"
+        data-value="observationPage[0].id">
+        {{observationPage[0].properties.timestamp | moment: 'fromNow'}}
+      </li> -->
+    </ul>
+  </div>
+  <div class="mdc-notched-outline">
+  <div class="mdc-notched-outline__leading"></div>
+  <div class="mdc-notched-outline__notch">
+    <label class="mdc-floating-label">Team</label>
+  </div>
+  <div class="mdc-notched-outline__trailing"></div>  
+  </div>
+</div>

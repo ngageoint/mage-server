@@ -6,7 +6,8 @@ if (!Date.now) { Date.now = function() { return +(new Date); }; }
 
 angular
   .module('mage')
-  .controller('FilterController', require('./filter/filter'))
+  .component('filterPanel', require('./filter/filter'))
+  .component('eventFilter', require('./filter/event.filter.component'))
   .controller('NavController', require('./mage/mage-nav.controller'))
   .controller('NotInEventController', require('./error/not.in.event.controller'))
   .controller('MageController', require('./mage/mage.controller'))

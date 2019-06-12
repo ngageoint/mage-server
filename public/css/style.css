@@ -82,6 +82,15 @@
   animation: spinccw 2s infinite linear;
 }
 
+.filter-dropdown {
+  width: 450px;
+}
+
+.filter-panel .set-filter-button:not(:disabled) {
+  background-color: var(--mdc-theme-primary) !important;
+  color: white;
+}
+
 /*
   Allow angular.js to be loaded in body, hiding cloaked elements until
   templates compile.  The !important is important given that there may be
