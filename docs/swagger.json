@@ -1,12 +1,12 @@
 {
     "swagger": "2.0",
     "info": {
-        "version": "5.1.0",
+        "version": "5.2.6",
         "title": "MAGE (Mobile Awareness GEOINT Environment)",
         "description": "MAGE API",
         "contact": {
-            "name": "Benjamin Tuttle",
-            "email": "benjamin.t.tuttle@nga.mil"
+            "name": "Billy Newman",
+            "email": "newmanw10@gmail.com"
         },
         "license": {
             "name": "Apache2",
@@ -20,12 +20,12 @@
         "application/json"
     ],
     "paths": {
-        "/api/login": {
+        "/auth/local/signin": {
             "post": {
-                "description": "login",
+                "description": "Authenticate username and password against local MAGE database",
                 "operationId": "login",
                 "tags": [
-                    "Authentication"
+                    "Local Authentication"
                 ],
                 "parameters": [
                     {
@@ -40,7 +40,38 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "login response",
+                        "description": "authentication response"
+                    }
+                }
+            }
+        },
+        "/auth/local/authorize": {
+            "post": {
+                "description": "Authorize device id",
+                "operationId": "authorize",
+                "tags": [
+                    "Local Authentication"
+                ],
+                "parameters": [
+                    {
+                        "name": "uid",
+                        "in": "body",
+                        "description": "devive id to authorize",
+                        "required": true,
+                        "schema": {
+                          "type": "object",
+                          "required": ["uid"],
+                          "properties": {
+                            "uid": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Authorize response",
                         "schema": {
                             "$ref": "#/definitions/LoginResponse"
                         }
@@ -2470,14 +2501,10 @@
         "LoginRequest": {
             "required": [
                 "username",
-                "uid",
                 "password"
             ],
             "properties": {
                 "username": {
-                    "type": "string"
-                },
-                "uid": {
                     "type": "string"
                 },
                 "password": {
@@ -2547,7 +2574,10 @@
                 "active": {
                     "type": "boolean"
                 },
-                "role": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "roleId": {
                     "type": "string"
                 },
                 "password": {
@@ -2564,6 +2594,7 @@
                 "username",
                 "displayName",
                 "active",
+                "enabled",
                 "role"
             ],
             "properties": {
@@ -2579,7 +2610,16 @@
                 "email": {
                     "type": "string"
                 },
+                "phones": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Phone"
+                    }
+                },
                 "active": {
+                    "type": "boolean"
+                },
+                "enabled": {
                     "type": "boolean"
                 },
                 "role": {
@@ -2590,6 +2630,60 @@
                 },
                 "iconUrl": {
                     "type": "string"
+                },
+                "icon": {
+                  "$ref": "#/definitions/UserIcon"
+                },
+                "recentEventIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "authentication": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "dateTime"
+                },
+                "lastUpdated": {
+                    "type": "string",
+                    "format": "dateTime"
+                }
+            }
+        },
+        "Phone": {
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "number": {
+                "type": "string"
+              }
+            }
+        },
+        "UserIcon": {
+            "properties": {
+                "color": {
+                    "type": "string"
+                },
+                "contentType": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "number"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "type": {
+                  "type": "string"
                 }
             }
         },
