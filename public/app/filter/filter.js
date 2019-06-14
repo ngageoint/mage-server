@@ -1,6 +1,7 @@
 var moment = require('moment')
   , MDCDialog = require('material-components-web').dialog.MDCDialog
-  , MDCSelect = require('material-components-web').select.MDCSelect;
+  , MDCSelect = require('material-components-web').select.MDCSelect
+  , MDDateTimePicker = require('md-date-time-picker');
 
 module.exports = {
   template: require('./filter.html'),
@@ -18,71 +19,84 @@ function FilterController(EventService, FilterService, Event, $element, $timeout
   var filterPanel;
 
   var teamSelectMdc;
-  var timeSelectMdc;
+  var intervalSelectMdc;
   var eventSelectMdc;
   this.teamsUpdated = true;
   this.$onChanges = function() {
-    if (this.open && this.open.opened && !filterPanel.isOpen) {
-      filterPanel.open();
+    if (this.events) {
+      if (this.open && this.open.opened && !filterPanel.isOpen) {
+        filterPanel.open();
+      }
     }
 
     console.log('FilterController $onChanges')
-    if (this.events) {
-      this.filterEvent = {selected: FilterService.getEvent()};
-      this.filterTeams = {selected: FilterService.getTeams()};
-      if (!eventSelectMdc) {
-        eventSelectMdc = new MDCSelect($element.find('.event-select')[0])
-        eventSelectMdc.listen('MDCSelect:change', function(event) {
-          var eventId = event.detail.value;
-          this.onEventChange(eventId)
-        }.bind(this))
-
-        teamSelectMdc = new MDCSelect($element.find('.team-select')[0])
-        teamSelectMdc.listen('MDCSelect:change', function() {
-          console.log('team selected', teamSelectMdc.selectedIndex);
-          // this.onEventChange(this.events[selectMdc.selectedIndex])
-        }.bind(this))
-
-        timeSelectMdc = new MDCSelect($element.find('.time-select')[0])
-        timeSelectMdc.listen('MDCSelect:change', function() {
-          console.log('time selected', timeSelectMdc.selectedIndex);
-          $timeout(function() {
-            this.intervalChoice = this.intervalChoices[timeSelectMdc.selectedIndex];
-          }.bind(this))
-        }.bind(this))
-      }
-
-      console.log('this.filterEvent', this.filterEvent)
-    }
+    
   }.bind(this)
 
   this.$onInit = function() {
     filterPanel = new MDCDialog(angular.element.find('.filter-panel')[0])
     filterPanel.listen('MDCDialog:closing', function() {
-      console.log('closing')
       this.onFilterClose()
     }.bind(this))
-  
-    this.interval = FilterService.getInterval();
+    filterPanel.listen('MDCDialog:opening', function() {
+      this.filterEvent = {selected: FilterService.getEvent()};
+      this.filterTeams = {selected: FilterService.getTeams()};
+      this.interval = FilterService.getInterval();
     
-    this.intervalChoices = FilterService.intervals;
-    this.intervalChoice = FilterService.getIntervalChoice();
-    this.localTime = true;
-    this.localOffset = moment().format('Z');
+      this.intervalChoices = FilterService.intervals;
+      this.intervalChoice = FilterService.getIntervalChoice();
+      this.localTime = true;
+  
+      if (this.interval.options && this.interval.options.startDate) {
+        this.startDate = this.interval.options.startDate;
+      } else {
+        this.startDate = moment().startOf('day').toDate();
+      }
+      if (this.interval.options && this.interval.options.endDate) {
+        this.endDate = this.interval.options.endDate;
+      } else {
+        this.endDate = moment().endOf('day').toDate();
+      }
+      if (!eventSelectMdc) {
+        $timeout(function() {
+          intervalSelectMdc = new MDCSelect($element.find('.interval-select')[0])
+          intervalSelectMdc.listen('MDCSelect:change', function(event) {
+            $timeout(function() {
+              this.intervalChoice = this.intervalChoices.find(function(choice) {
+                return choice.label === event.detail.value
+              })
+            }.bind(this))
+          }.bind(this))
 
-    if (this.interval.options && this.interval.options.startDate) {
-      this.startDate = this.interval.options.startDate;
-    } else {
-      this.startDate = moment().startOf('day').toDate();
-    }
-    if (this.interval.options && this.interval.options.endDate) {
-      this.endDate = this.interval.options.endDate;
-    } else {
-      this.endDate = moment().endOf('day').toDate();
-    }
+          eventSelectMdc = new MDCSelect($element.find('.event-select')[0])
+          eventSelectMdc.listen('MDCSelect:change', function(event) {
+            var eventId = event.detail.value;
+            this.onEventChange(eventId)
+          }.bind(this))
 
-    this.startDatePopup = {open: false};
-    this.endDatePopup = {open: false};
+          teamSelectMdc = new MDCSelect($element.find('.team-select')[0])
+          teamSelectMdc.listen('MDCSelect:change', function(event) {
+            console.log('team selected', event.detail.value);
+            this.filterTeams.selected = this.filterEvent.selected.teams.find(function(team) {
+              return team.id === event.detail.value
+            })
+          }.bind(this))
+
+        }.bind(this))
+      }
+
+      console.log('this.filterEvent', this.filterEvent)
+    }.bind(this))
+  }
+
+  this.onStartDate = function(date, localTime) {
+    this.startDate = date;
+    this.localTime = localTime;
+  }
+
+  this.onEndDate = function(date, localTime) {
+    this.endDate = date;
+    this.localTime = localTime;
   }
 
   this.onEventChange = function(eventId) {
@@ -113,19 +127,5 @@ function FilterController(EventService, FilterService, Event, $element, $timeout
       }
     });
 
-  };
-
-  this.openStartDate = function($event) {
-    $event.preventDefault();
-    $event.stopPropagation();
-
-    this.startDatePopup.open = true;
-  };
-
-  this.openEndDate = function($event) {
-    $event.preventDefault();
-    $event.stopPropagation();
-
-    this.endDatePopup.open = true;
   };
 }

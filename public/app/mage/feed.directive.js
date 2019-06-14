@@ -47,7 +47,7 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
   $scope.currentObservationPage = 0;
   $scope.observationsChanged = 0;
   $scope.observationPages = null;
-  var observationsPerPage = 50;
+  var observationsPerPage = 100;
 
   $scope.currentUserPage = 0;
   $scope.usersChanged = 0;

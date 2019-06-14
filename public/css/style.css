@@ -3,7 +3,8 @@
 @import "~font-awesome/css/font-awesome.min.css";
 @import "~jquery-minicolors/jquery.minicolors.css";
 @import "~select2/dist/css/select2.min.css";
-
+@import "../vendor/md-date-time-picker/dist/css/mdDateTimePicker.css";
+ 
 :root {
   --feed-width: 450px;
   --background-behind-card: #E0E0E0;
@@ -43,6 +44,7 @@
 @import "./observation-edit.css";
 @import "./observation-view.css";
 @import "./material-select-theme.scss";
+@import "./mdDateTimePicker-overrides.css";
 
 .material-icons-sm {
   font-size: 1rem;
@@ -89,6 +91,21 @@
 .filter-panel .set-filter-button:not(:disabled) {
   background-color: var(--mdc-theme-primary) !important;
   color: white;
+}
+
+.filter-panel .date-time-picker {
+  width: 450px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.filter-panel .date-picker-input {
+  margin-right: 8px;
+  width: 230px;
+}
+
+.time-zone-button {
+  height: 56px;
 }
 
 /*

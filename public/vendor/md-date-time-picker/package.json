@@ -1,0 +1,120 @@
+{
+  "_from": "md-date-time-picker@2.3.0",
+  "_id": "md-date-time-picker@2.3.0",
+  "_inBundle": false,
+  "_integrity": "sha1-sClQa/rmJR7hzEq7L+ls0UFzcyg=",
+  "_location": "/md-date-time-picker",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "md-date-time-picker@2.3.0",
+    "name": "md-date-time-picker",
+    "escapedName": "md-date-time-picker",
+    "rawSpec": "2.3.0",
+    "saveSpec": null,
+    "fetchSpec": "2.3.0"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/md-date-time-picker/-/md-date-time-picker-2.3.0.tgz",
+  "_shasum": "b029506bfae6251ee1cc4abb2fe96cd141737328",
+  "_spec": "md-date-time-picker@2.3.0",
+  "_where": "/data/github/mage-server/public",
+  "author": {
+    "name": "Puranjay Jain",
+    "email": "me+npm@puranjayjain.com"
+  },
+  "bugs": {
+    "url": "https://github.com/puranjayjain/md-date-time-picker/issues"
+  },
+  "bundleDependencies": false,
+  "contributors": [
+    {
+      "name": "Seth Westphal",
+      "url": "https://github.com/westy92"
+    },
+    {
+      "name": "Robert Schönthal",
+      "url": "https://github.com/digitalkaoz"
+    },
+    {
+      "name": "Daniel",
+      "url": "https://github.com/db-dblank"
+    },
+    {
+      "name": "Saban Ünlü",
+      "url": "https://github.com/netTrek"
+    }
+  ],
+  "dependencies": {
+    "draggabilly": "^2.1.1",
+    "moment": "^2.17.1"
+  },
+  "deprecated": false,
+  "description": "An implementation of the Material Design Picker components in vanilla CSS, JS and HTML",
+  "devDependencies": {
+    "babel-core": "^6.23.1",
+    "babel-eslint": "^7.1.1",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-transform-es2015-modules-umd": "^6.23.0",
+    "babel-plugin-transform-member-expression-literals": "^6.8.1",
+    "babel-plugin-transform-merge-sibling-variables": "^6.8.2",
+    "babel-plugin-transform-minify-booleans": "^6.8.0",
+    "babel-plugin-transform-property-literals": "^6.8.1",
+    "babel-preset-es2015": "^6.22.0",
+    "browser-sync": "^2.18.8",
+    "chokidar": "^1.6.1",
+    "del": "^2.2.2",
+    "eslint": "^3.17.1",
+    "eslint-config-standard": "^7.0.1",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^2.1.1",
+    "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^3.1.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-cache": "^0.4.6",
+    "gulp-concat": "^2.6.1",
+    "gulp-imagemin": "^3.1.1",
+    "gulp-minify-css": "1.2.4",
+    "gulp-plumber": "1.1.0",
+    "gulp-rename": "^1.2.0",
+    "gulp-replace": "^0.5.4",
+    "gulp-sass": "^3.1.0",
+    "gulp-uglify": "^2.1.0",
+    "node-sass": "^4.5.0",
+    "require-dir": "^0.3.1",
+    "run-sequence": "^1.2.2"
+  },
+  "homepage": "https://puranjayjain.github.io/md-date-time-picker",
+  "keywords": [
+    "material",
+    "design",
+    "date",
+    "time",
+    "picker",
+    "pickers",
+    "dialog",
+    "calendar",
+    "clock",
+    "input"
+  ],
+  "license": "MIT",
+  "main": "dist/js/mdDateTimePicker.js",
+  "name": "md-date-time-picker",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/puranjayjain/md-date-time-picker.git"
+  },
+  "scripts": {
+    "cs": "npm run cs:js && npm run cs:scss",
+    "cs:js": "eslint -c .eslintrc --fix src",
+    "cs:scss": "scss-lint",
+    "gulp": "gulp",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "2.3.0"
+}

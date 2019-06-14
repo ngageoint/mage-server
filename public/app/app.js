@@ -8,6 +8,7 @@ angular
   .module('mage')
   .component('filterPanel', require('./filter/filter'))
   .component('eventFilter', require('./filter/event.filter.component'))
+  .component('dateTime', require('./datetime/datetime.component'))
   .controller('NavController', require('./mage/mage-nav.controller'))
   .controller('NotInEventController', require('./error/not.in.event.controller'))
   .controller('MageController', require('./mage/mage.controller'))

@@ -9,71 +9,71 @@ aria-describedby="my-dialog-content">
         <h3 class="modal-title"><i class="fa fa-filter"></i> Filter</h3>
       </div>
       <div class="mdc-dialog__content" id="my-dialog-content">
-      <form>
-        <div class="form-group">
-          <div class="event-select mdc-select mdc-select--outlined filter-dropdown">
-            <input type="hidden" name="enhanced-select">
-            <i class="mdc-select__dropdown-icon"></i>
-            <div class="mdc-select__selected-text">{{$ctrl.filterEvent.selected.name}}</div>
-            <div class="mdc-select__menu mdc-menu mdc-menu-surface filter-dropdown">
-              <ul class="mdc-list" >
-                <li
-                  ng-repeat="event in $ctrl.events | orderBy: 'name'"
-                  class="mdc-list-item"
-                  ng-class="{'mdc-list-item--selected': $ctrl.filterEvent.selected.id === event.id}"
-                  data-value="{{event.id}}">
-                  {{event.name}}
-                </li>
-              </ul>
-            </div>
-            <div class="mdc-notched-outline">
-            <div class="mdc-notched-outline__leading"></div>
-            <div class="mdc-notched-outline__notch">
-              <label class="mdc-floating-label">Event</label>
-            </div>
-            <div class="mdc-notched-outline__trailing"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <div class="team-select mdc-select mdc-select--outlined filter-dropdown">
-            <input type="hidden" name="enhanced-select">
-            <i class="mdc-select__dropdown-icon"></i>
-            <div class="mdc-select__selected-text">{{$ctrl.filterTeams.selected.name}}</div>
-            <div class="mdc-select__menu mdc-menu mdc-menu-surface filter-dropdown">
-              <ul class="mdc-list" >
-                <li
-                  ng-repeat="team in $ctrl.filterEvent.selected.teams | orderBy: 'name'"
-                  ng-class="{'mdc-list-item--selected': $ctrl.filterTeams.selected.name === team.name}"
-                  class="mdc-list-item"
-                  data-value="team.id">
-                  {{team.name}}
-                </li>
-              </ul>
-            </div>
-            <div class="mdc-notched-outline">
-            <div class="mdc-notched-outline__leading"></div>
-            <div class="mdc-notched-outline__notch">
-              <label class="mdc-floating-label">Team</label>
-            </div>
-            <div class="mdc-notched-outline__trailing"></div>  
+        <form>
+          <div class="form-group">
+            <div class="event-select mdc-select mdc-select--outlined filter-dropdown">
+              <input type="hidden" name="enhanced-select">
+              <i class="mdc-select__dropdown-icon"></i>
+              <div class="mdc-select__selected-text">{{$ctrl.filterEvent.selected.name}}</div>
+              <div class="mdc-select__menu mdc-menu mdc-menu-surface filter-dropdown">
+                <ul class="mdc-list" >
+                  <li
+                    ng-repeat="event in $ctrl.events | orderBy: 'name'"
+                    class="mdc-list-item"
+                    ng-class="{'mdc-list-item--selected': $ctrl.filterEvent.selected.id === event.id}"
+                    data-value="{{event.id}}">
+                    {{event.name}}
+                  </li>
+                </ul>
+              </div>
+              <div class="mdc-notched-outline">
+              <div class="mdc-notched-outline__leading"></div>
+              <div class="mdc-notched-outline__notch">
+                <label class="mdc-floating-label">Event</label>
+              </div>
+              <div class="mdc-notched-outline__trailing"></div>
+              </div>
             </div>
           </div>
-        </div>
 
           <div class="form-group">
-            <div class="time-select mdc-select mdc-select--outlined filter-dropdown">
+            <div class="team-select mdc-select mdc-select--outlined filter-dropdown">
+              <input type="hidden" name="enhanced-select">
+              <i class="mdc-select__dropdown-icon"></i>
+              <div class="mdc-select__selected-text">{{$ctrl.filterTeams.selected.name}}</div>
+              <div class="mdc-select__menu mdc-menu mdc-menu-surface filter-dropdown">
+                <ul class="mdc-list" >
+                  <li
+                    ng-repeat="team in $ctrl.filterEvent.selected.teams | orderBy: 'name'"
+                    ng-class="{'mdc-list-item--selected': $ctrl.filterTeams.selected.name === team.name}"
+                    class="mdc-list-item"
+                    data-value="{{team.id}}">
+                    {{team.name}}
+                  </li>
+                </ul>
+              </div>
+              <div class="mdc-notched-outline">
+              <div class="mdc-notched-outline__leading"></div>
+              <div class="mdc-notched-outline__notch">
+                <label class="mdc-floating-label">Team</label>
+              </div>
+              <div class="mdc-notched-outline__trailing"></div>  
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="interval-select mdc-select mdc-select--outlined filter-dropdown">
               <input type="hidden" name="enhanced-select">
               <i class="mdc-select__dropdown-icon"></i>
               <div class="mdc-select__selected-text">{{$ctrl.intervalChoice.label}}</div>
               <div class="mdc-select__menu mdc-menu mdc-menu-surface filter-dropdown">
                 <ul class="mdc-list" >
                   <li
-                    ng-repeat="intervalChoice in $ctrl.intervalChoices track by intervalChoice.filter"
+                    ng-repeat="intervalChoice in $ctrl.intervalChoices"
                     ng-class="{'mdc-list-item--selected': $ctrl.intervalChoice.label === intervalChoice.label}"
                     class="mdc-list-item"
-                    data-value="intervalChoice.label">
+                    data-value="{{intervalChoice.label}}">
                     {{intervalChoice.label}}
                   </li>
                 </ul>
@@ -86,56 +86,13 @@ aria-describedby="my-dialog-content">
               <div class="mdc-notched-outline__trailing"></div>  
               </div>
             </div>
-            <!-- <select ng-model="$ctrl.intervalChoice" ng-options="intervalChoice as intervalChoice.label for intervalChoice in $ctrl.intervalChoices track by intervalChoice.filter" class="form-control"></select> -->
-            <div ng-show="$ctrl.intervalChoice.filter == 'custom'">
-              <div class="form-group">
-                <div class="row">
-                  <div class="col-md-6">
-                    <label>Start Date/Time</label>
-                    <p class="input-group">
-                      <input type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy HH:mm:ss" ng-model="$ctrl.startDate" is-open="$ctrl.startDatePopup.open" close-text="Close" />
-                      <span class="input-group-btn">
-                        <button type="button" class="btn btn-default" ng-click="$ctrl.openStartDate($event)"><i class="fa fa-calendar"></i></button>
-                      </span>
-                    </p>
-                  </div>
-                  <div class="col-md-6">
-                    <label class="control-label">&nbsp;</label>
-
-                    <p class="input-group">
-                      <button type="button" ng-click="$ctrl.localTime = !$ctrl.localTime" class="btn btn-default">
-                        <i class="fa fa-clock-o"></i>
-                        <span ng-show="$ctrl.localTime"> Local (GMT {{localOffset}})</span>
-                        <span ng-show="!$ctrl.localTime"> GMT (GMT +00:00)</span>
-                      </button>
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div class="form-group">
-                <div class="row">
-                  <div class="col-md-6">
-                    <label>End Date/Time</label>
-                    <p class="input-group">
-                      <input type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy HH:mm:ss" ng-model="$ctrl.endDate" is-open="$ctrl.endDatePopup.open" close-text="Close" />
-                      <span class="input-group-btn">
-                        <button type="button" class="btn btn-default" ng-click="$ctrl.openEndDate($event)"><i class="fa fa-calendar"></i></button>
-                      </span>
-                    </p>
-                  </div>
-                  <div class="col-md-6">
-                    <label class="control-label">&nbsp;</label>
-
-                    <p class="input-group">
-                      <button type="button" ng-click="$ctrl.localTime = !$ctrl.localTime" class="btn btn-default">
-                        <i class="fa fa-clock-o"></i>
-                        <span ng-show="$ctrl.localTime"> Local (GMT {{localOffset}})</span>
-                        <span ng-show="!$ctrl.localTime"> GMT (GMT +00:00)</span>
-                      </button>
-                    </p>
-                  </div>
-                </div>
-              </div>
+          </div>
+          <div ng-show="$ctrl.intervalChoice.filter === 'custom'">
+            <div class="form-group">
+              <date-time field-name="Start Date/Time" date="$ctrl.startDate" local-time="$ctrl.localTime" on-date-picked="$ctrl.onStartDate(date, localTime)"></date-time>
+            </div>
+            <div class="form-group">
+              <date-time field-name="End Date/Time" date="$ctrl.endDate" local-time="$ctrl.localTime" on-date-picked="$ctrl.onEndDate(date, localTime)"></date-time>
             </div>
           </div>
         </div>
