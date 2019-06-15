@@ -1003,6 +1003,63 @@ describe("user update tests", function() {
       .end(done);
   });
 
+  it('should add recent event for user in event', function(done) {
+    mockTokenWithPermission('NO_ADMIN_PERMISSION');
+
+    var mockUser = new UserModel({
+      _id: userId,
+      username: 'test',
+      displayName: 'test',
+      active: true,
+      authentication: {
+        type: 'local'
+      }
+    });
+
+    sinon.mock(UserModel)
+      .expects('findById')
+      .chain('exec')
+      .yields(null, mockUser);
+
+    var mockEvent1 = new EventModel({
+      _id: 1,
+      name: 'Mock Event 12345',
+      acl: {}
+    });
+
+    sinon.mock(EventModel)
+      .expects('findById')
+      .twice()
+      .onFirstCall()
+      .yields(null, mockEvent1);
+
+    sinon.mock(EventModel)
+      .expects('populate')
+      .yields(null, {
+        teamIds: [{
+          userIds: [userId]
+        }]
+      });
+
+    sinon.mock(UserModel)
+      .expects('findByIdAndUpdate')
+      .withArgs(userId, {recentEventIds: [1]}, {new: true})
+      .yields(null, mockUser);
+
+    request(app)
+      .post('/api/users/' + userId.toString() + '/events/1/recent' )
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .expect(function(res) {
+        var user = res.body;
+        should.exist(user);
+        user.should.have.property('id').that.equals(userId.toString());
+      })
+      .end(done);
+  });
+
   it('should fail to add recent event for user not in event', function(done) {
     mockTokenWithPermission('NO_ADMIN_PERMISSION');
 

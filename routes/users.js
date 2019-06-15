@@ -459,7 +459,7 @@ module.exports = function(app, security) {
       if (access.userHasPermission(req.user, 'UPDATE_EVENT')) {
         next();
       } else {
-        Event.userHasEventPermission(req.event, req.user._id, 'update', function(err, hasPermission) {
+        Event.userHasEventPermission(req.event, req.user._id, 'read', function(err, hasPermission) {
           hasPermission ? next() : res.sendStatus(403);
         });
       }
