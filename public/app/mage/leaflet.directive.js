@@ -78,12 +78,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     position: 'topleft'
   }).addTo(map);
 
-  new L.Control.MageFeature({
-    onClick: function(latlng) {
-      $scope.$emit('observation:latlng', latlng.wrap());
-    }
-  }).addTo(map);
-
   var userLocationControl = new L.Control.MageUserLocation({
     onBroadcastLocationClick: function(callback) {
       MapService.onBroadcastLocation(callback);

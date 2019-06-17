@@ -74,19 +74,54 @@ function FilterController(EventService, FilterService, Event, $element, $timeout
             this.onEventChange(eventId)
           }.bind(this))
 
+          $element.find('.js-select2').select2({
+            placeholder: 'Pick things',
+            theme: 'material',
+            allowClear: true
+          })
+          $element.find('.select2-selection__arrow')
+            .addClass('material-icons')
+            .html('arrow_drop_down');
+          
+          $element.find('.js-select2').on('select2:unselecting', function(ev) {
+            if (ev.params.args.originalEvent) {
+              // When unselecting (in multiple mode)
+              ev.params.args.originalEvent.stopPropagation();
+            } else {
+                // When clearing (in single mode)
+              $(this).one('select2:opening', function(ev) { ev.preventDefault(); });
+            }
+          });
+
           teamSelectMdc = new MDCSelect($element.find('.team-select')[0])
           teamSelectMdc.listen('MDCSelect:change', function(event) {
-            console.log('team selected', event.detail.value);
-            this.filterTeams.selected = this.filterEvent.selected.teams.find(function(team) {
-              return team.id === event.detail.value
-            })
+            console.log('team selected', event.detail);
+            if (event.detail.index === -1) return;
+            $timeout(function() {
+              this.filterTeams.selected.push(this.filterEvent.selected.teams.find(function(team) {
+                return team.id === event.detail.value
+              }))
+            }.bind(this))
           }.bind(this))
-
         }.bind(this))
       }
 
       console.log('this.filterEvent', this.filterEvent)
     }.bind(this))
+  }
+
+  this.removeTeam = function(index) {
+    this.filterTeams.selected.splice(index, 1);
+    if (!this.filterTeams.selected.length) {
+      teamSelectMdc.selectedIndex = -1;
+    }
+    console.log('this.filterTeams.selected', this.filterTeams.selected)
+  }
+
+  this.isTeamChosen = function(teamId) {
+    return this.filterTeams.selected.find(function(team) {
+      return team.id === teamId;
+    })
   }
 
   this.onStartDate = function(date, localTime) {
@@ -106,7 +141,7 @@ function FilterController(EventService, FilterService, Event, $element, $timeout
         return value.id === eventId;
       })
       teamSelectMdc.selectedIndex = -1;
-      this.filterTeams = {};
+      this.filterTeams.selected = [];
     }.bind(this))
   };
 
