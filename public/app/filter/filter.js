@@ -93,21 +93,26 @@ function FilterController(EventService, FilterService, Event, $element, $timeout
             }
           });
 
-          teamSelectMdc = new MDCSelect($element.find('.team-select')[0])
-          teamSelectMdc.listen('MDCSelect:change', function(event) {
-            console.log('team selected', event.detail);
-            if (event.detail.index === -1) return;
-            $timeout(function() {
-              this.filterTeams.selected.push(this.filterEvent.selected.teams.find(function(team) {
-                return team.id === event.detail.value
-              }))
-            }.bind(this))
-          }.bind(this))
+          // teamSelectMdc = new MDCSelect($element.find('.team-select')[0])
+          // teamSelectMdc.listen('MDCSelect:change', function(event) {
+          //   console.log('team selected', event.detail);
+          //   if (event.detail.index === -1) return;
+          //   $timeout(function() {
+          //     this.filterTeams.selected.push(this.filterEvent.selected.teams.find(function(team) {
+          //       return team.id === event.detail.value
+          //     }))
+          //   }.bind(this))
+          // }.bind(this))
         }.bind(this))
       }
 
       console.log('this.filterEvent', this.filterEvent)
     }.bind(this))
+  }
+
+  this.teamsSelected = function(teams) {
+    this.filterTeams.selected = teams;
+    console.log('this.filterTeams', this.filterTeams)
   }
 
   this.removeTeam = function(index) {
@@ -140,7 +145,6 @@ function FilterController(EventService, FilterService, Event, $element, $timeout
       this.filterEvent.selected = this.events.find(function(value, index) {
         return value.id === eventId;
       })
-      teamSelectMdc.selectedIndex = -1;
       this.filterTeams.selected = [];
     }.bind(this))
   };

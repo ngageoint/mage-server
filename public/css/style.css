@@ -43,6 +43,7 @@
 @import "./feed.css";
 @import "./observation-edit.css";
 @import "./observation-view.css";
+@import "./form-chooser.css";
 @import "./material-select-theme.scss";
 @import "./mdDateTimePicker-overrides.css";
 
@@ -106,6 +107,38 @@
 
 .time-zone-button {
   height: 56px;
+}
+
+.multi-select {
+  height: unset;
+  min-height: 56px;
+}
+
+.multi-select .mdc-select__selected-text {
+  min-height: 56px;
+  height: 100%;
+  position: absolute;
+  color: white !important;
+  z-index: 0;
+}
+
+.multi-select .mdc-select__selected-text-mine {
+  min-height: 62px;
+  padding-top: 8px;
+  padding-bottom: 4px;
+  margin-bottom: 2px;
+  margin-top: -8px;
+}
+
+.multi-select .mdc-chip-set {
+  padding-top: 10px;
+  padding-bottom: 0px;
+  margin-bottom: 0px;
+  margin-top: 0px;
+}
+
+.multi-select-list .mdc-list .mdc-list-item--disabled {
+  color: var(--mdc-theme-text-disabled-on-background, rgba(0, 0, 0, 0.38));
 }
 
 /*

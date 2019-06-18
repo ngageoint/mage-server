@@ -37,38 +37,12 @@ aria-describedby="my-dialog-content">
           </div>
 
           <div class="form-group">
-            <div class="mage-multi-select team-select mdc-select mdc-select--outlined filter-dropdown">
-              <input type="hidden" name="enhanced-select">
-              <i class="mdc-select__dropdown-icon"></i>
-              <div class="mdc-select__selected-text"></div>
-              <div class="mdc-select__selected-text-mine">
-                  <div class="mdc-chip-set mdc-chip-set--input">
-                      <div class="mdc-chip" ng-repeat="team in $ctrl.filterTeams.selected">
-                        <div class="mdc-chip__text">{{team.name}}</div>
-                        <i class="material-icons mdc-chip__icon mdc-chip__icon--trailing" tabindex="0" role="button" ng-click="$ctrl.removeTeam($index)">cancel</i>
-                      </div>
-                    </div>
-                </div>
-              <div class="mdc-select__menu mdc-menu mdc-menu-surface filter-dropdown">
-                <ul class="mdc-list" >
-                  <li
-                    ng-repeat="team in $ctrl.filterEvent.selected.teams | orderBy: 'name'"
-                    ng-class="{'mdc-list-item--selected': $ctrl.filterTeams.selected.name === team.name}"
-                    ng-disabled="$ctrl.isTeamChosen(team.id)"
-                    class="mdc-list-item"
-                    data-value="{{team.id}}">
-                    {{team.name}}
-                  </li>
-                </ul>
-              </div>
-              <div class="mdc-notched-outline">
-              <div class="mdc-notched-outline__leading"></div>
-              <div class="mdc-notched-outline__notch">
-                <label class="mdc-floating-label">Team</label>
-              </div>
-              <div class="mdc-notched-outline__trailing"></div>  
-              </div>
-            </div>
+            <multiselect 
+              options="$ctrl.filterEvent.selected.teams"
+              field-label="Team New"
+              display-property="name"
+              id-property="id"
+              on-select="$ctrl.teamsSelected(options)"/>
           </div>
 
           <div class="form-group">

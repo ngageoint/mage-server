@@ -9,6 +9,7 @@ angular
   .component('filterPanel', require('./filter/filter'))
   .component('eventFilter', require('./filter/event.filter.component'))
   .component('dateTime', require('./datetime/datetime.component'))
+  .component('multiselect', require('./multiselect/multiselect.component'))
   .component('observationFormChooser', require('./observation/observation-form-chooser.component'))
   .controller('NavController', require('./mage/mage-nav.controller'))
   .controller('NotInEventController', require('./error/not.in.event.controller'))
