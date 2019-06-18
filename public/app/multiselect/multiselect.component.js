@@ -76,7 +76,6 @@ function MultiselectController($element, $timeout) {
   }
 
   this.isOptionChosen = function(optionId) {
-    console.log('isOptionChosen', optionId)
     return this.optionsSelected.find(function(option) {
       return option.id === optionId;
     })
