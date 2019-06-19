@@ -29,7 +29,7 @@ Csv.prototype.export = function(streamable) {
   streamable.type('application/zip');
   streamable.attachment('mage-csv.zip');
 
-  const fields = [{
+  const observationFields = [{
     label: 'id',
     value: 'id'
   },{
@@ -61,27 +61,46 @@ Csv.prototype.export = function(streamable) {
     value: 'Well Known Text'
   }];
 
-  self._event.forms.forEach(function(form) {
-    var formPrefix = self._event.forms.length > 1 ? form.name + '.' : '';
-    form.fields.forEach(function(field) {
-      if (field.archived) return;
+  self._event.forms
+    .filter(form => !form.archived)
+    .forEach(function(form) {
+      var formPrefix = self._event.forms.length > 1 ? form.name + '.' : '';
 
-      fields.push({
-        label: formPrefix + field.title,
-        value: formPrefix + field.name
-      });
+      form.fields
+        .filter(field => !field.archived)
+        .sort((a, b) => a.id - b.id)
+        .forEach(function(field) {
+          observationFields.push({
+            label: formPrefix + field.title,
+            value: formPrefix + field.name
+          });
+        });
     });
-  });
 
-  fields.push({
+  observationFields.push({
     label: 'Attachment',
     value: 'attachment'
   });
 
-  fields.push({
+  observationFields.push({
     label: 'Attachment Excel Link',
     value: 'attachmentExcelLink'
   });
+
+  const locationFields = [
+    'user',
+    'timestamp',
+    'latitude',
+    'longitude',
+    'altitude',
+    'provider',
+    'mgrs',
+    'accuracy',
+    'speed',
+    'bearing',
+    'battery_level',
+    'device'
+  ];
 
   streamable.type('application/zip');
   streamable.attachment("mage-export-csv.zip");
@@ -95,7 +114,7 @@ Csv.prototype.export = function(streamable) {
 
       var observationStream = new stream.PassThrough();
       archive.append(observationStream, { name:'observations.csv' });
-      self.streamObservations(observationStream, archive, fields, function(err) {
+      self.streamObservations(observationStream, archive, observationFields, function(err) {
         observationStream.end();
         done(err);
       });
@@ -103,10 +122,9 @@ Csv.prototype.export = function(streamable) {
     function(done) {
       if (!self._filter.exportLocations) return done();
 
-      const asyncParser = new json2csv.AsyncParser();
-      archive.append(asyncParser.input, {name: 'locations.csv'});
-      self.streamLocations(asyncParser, function(err) {
-        asyncParser.input.push(null); // close stream
+      const asyncParser = new json2csv.AsyncParser({ fields: locationFields }, { readableObjectMode: true, writableObjectMode: true });
+      archive.append(asyncParser.processor, {name: 'locations.csv'});
+      self.streamLocations(asyncParser.input, function(err) {
         done(err);
       });
     }
@@ -116,6 +134,7 @@ Csv.prototype.export = function(streamable) {
       log.info(err);
     }
 
+    console.log('done writing csv, finalize archive');
     archive.finalize();
   });
 };
@@ -201,9 +220,7 @@ Csv.prototype.flattenObservations = function(observations, archive) {
   return flattened;
 };
 
-Csv.prototype.streamLocations = function(asyncParser, done) {
-  log.info('writing locations...');
-
+Csv.prototype.streamLocations = function(stream, done) {
   var self = this;
   var limit = 2000;
 
@@ -218,10 +235,9 @@ Csv.prototype.streamLocations = function(asyncParser, done) {
       if (err) return done(err);
       locations = requestedLocations;
 
-      if (locations.length) {
-        const data = self.flattenLocations(locations);
-        asyncParser.input.push(data);
-      }
+      self.flattenLocations(locations).forEach(location => {
+        stream.push(location);
+      });
 
       log.info('Successfully wrote ' + locations.length + ' locations to CSV');
       var last = locations.slice(-1).pop();
@@ -241,6 +257,7 @@ Csv.prototype.streamLocations = function(asyncParser, done) {
   },
   function(err) {
     log.info('done writing locations');
+    stream.push(null);
     done(err);
   });
 };
