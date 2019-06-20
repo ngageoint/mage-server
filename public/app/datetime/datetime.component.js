@@ -25,7 +25,9 @@ function DateTimeController($element, $timeout) {
     if (this.date) {
       this.pickedDate = this.date;
       if (dateInputField) {
-        dateInputField.value = this.dateInputValue = moment(this.date).format('MM/DD/YYYY hh:mm:ss');
+        $timeout(function() {
+          dateInputField.value = this.dateInputValue = moment(this.date).format('MM/DD/YYYY hh:mm:ss');
+        }.bind(this))
       }
     }
     this.localOffset = moment().format('Z');
@@ -35,7 +37,9 @@ function DateTimeController($element, $timeout) {
     if (this.date) {
       this.pickedDate = this.date;
       if (dateInputField) {
-        dateInputField.value = this.dateInputValue = moment(this.date).format('MM/DD/YYYY hh:mm:ss');
+        $timeout(function() {
+          dateInputField.value = this.dateInputValue = moment(this.date).format('MM/DD/YYYY hh:mm:ss');
+        }.bind(this));
       }
     }
   }
