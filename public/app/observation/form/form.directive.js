@@ -1,6 +1,5 @@
 var angular = require('angular')
-  , _ = require('underscore')
-  , MDCTopAppBar = require('material-components-web').topAppBar.MDCTopAppBar;
+  , _ = require('underscore');
 
 module.exports = function formDirective() {
   var directive = {

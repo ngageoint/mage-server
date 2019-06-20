@@ -22,6 +22,13 @@ function DateTimeController($element, $timeout) {
   
   this.$onInit = function() {
     dateInputField = new MDCTextField($element.find('.mdc-text-field')[0]);
+    if (this.date) {
+      this.pickedDate = this.date;
+      if (dateInputField) {
+        dateInputField.value = this.dateInputValue = moment(this.date).format('MM/DD/YYYY hh:mm:ss');
+      }
+    }
+    this.localOffset = moment().format('Z');
   }
 
   this.$onChanges = function() {

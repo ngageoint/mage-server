@@ -4,25 +4,25 @@ module.exports = {
     field: '<'
   },
   controller: function($scope, $element) {
-    this.$onInit = function() {
-      $element.find('.js-select2').select2({
-        placeholder: 'Pick things',
-        theme: 'material',
-        allowClear: true
-      })
-      $element.find('.select2-selection__arrow')
-        .addClass('material-icons')
-        .html('arrow_drop_down');
-      
-      $element.find('.js-select2').on('select2:unselecting', function(ev) {
-          if (ev.params.args.originalEvent) {
-              // When unselecting (in multiple mode)
-              ev.params.args.originalEvent.stopPropagation();
-          } else {
-              // When clearing (in single mode)
-              $(this).one('select2:opening', function(ev) { ev.preventDefault(); });
+    this.$onChanges = function() {
+      this.initialSelectedOptions = []
+      if (this.field.value) {
+        this.field.value.forEach(function(value) {
+          for (var i = 0; i < this.field.choices.length; i++) {
+            if (this.field.choices[i].title === value) {
+              this.initialSelectedOptions.push(this.field.choices[i]);
+            }
           }
+        }.bind(this))
+      }
+    }
+
+    this.optionsSelected = function(options) {
+      var values = [];
+      options.forEach(function(option) {
+        values.push(option.title);
       });
+      this.field.value = values;
     }
   }
 };

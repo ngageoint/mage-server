@@ -1,4 +1,4 @@
-<div class="multi-select team-select mdc-select mdc-select--outlined filter-dropdown">
+<div ng-style="{width: $ctrl.width}" class="multi-select team-select mdc-select mdc-select--outlined filter-dropdown">
   <input type="hidden" name="enhanced-select">
   <i class="mdc-select__dropdown-icon"></i>
   <div class="mdc-select__selected-text"></div>
@@ -10,10 +10,10 @@
           </div>
         </div>
     </div>
-  <div class="mdc-select__menu mdc-menu mdc-menu-surface multi-select-list filter-dropdown">
+  <div ng-style="{width: $ctrl.width}" class="mdc-select__menu mdc-menu mdc-menu-surface multi-select-list filter-dropdown">
     <ul class="mdc-list" >
       <li
-        ng-repeat="option in $ctrl.filteredOptions() | orderBy: 'name'"
+        ng-repeat="option in $ctrl.filteredOptions()"
         ng-class="{'mdc-list-item--disabled': $ctrl.isOptionChosen(option[$ctrl.idProperty])}"
         class="mdc-list-item"
         data-value="{{option[$ctrl.idProperty]}}">

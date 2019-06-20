@@ -12,8 +12,8 @@
   </div>
   <button class="mdc-button mdc-button--outlined time-zone-button" ng-click="$ctrl.updateTimeZone()">
     <span class="mdc-button__label">
-      <span ng-show="$ctrl.localTime">Local (GMT {{$ctrl.localOffset}})</span>
-      <span ng-show="!$ctrl.localTime">GMT (GMT +00:00)</span>
+      <span ng-show="$ctrl.localTime">Local ({{$ctrl.localOffset}})</span>
+      <span ng-show="!$ctrl.localTime">GMT (+00:00)</span>
     </span>
     <i class="material-icons mdc-button__icon" aria-hidden="true">access_time</i>
   </button>

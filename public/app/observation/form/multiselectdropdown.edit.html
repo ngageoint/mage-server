@@ -1,14 +1,11 @@
 <div class="field form-group">
-  <label>{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required">*</span>
-  <select class="js-select2" ng-model="$ctrl.field.value" multiple>
-    <option ng-repeat="choice in $ctrl.field.choices track by choice.id">{{choice.title}}</option>
-  </select>
-
-  <!-- <ui-select multiple ng-model="$ctrl.field.value" theme="bootstrap" ng-required="$ctrl.field.required">
-    <ui-select-match>{{$item.title}}</ui-select-match>
-    <ui-select-choices repeat="choice.title as choice in $ctrl.field.choices | filter: $select.search">
-      <div ng-bind-html="choice.title | highlight: $select.search"></div>
-    </ui-select-choices>
-  </ui-select> -->
-
+  <multiselect
+    ng-if="$ctrl.field"
+    options="$ctrl.field.choices"
+    initial-values="$ctrl.initialSelectedOptions"
+    field-label="{{$ctrl.field.title + ($ctrl.field.required ? '*' : '')}}"
+    display-property="title"
+    id-property="id"
+    width="400px"
+    on-select="$ctrl.optionsSelected(options)"/>
 </div>

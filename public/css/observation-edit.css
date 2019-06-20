@@ -11,7 +11,7 @@
 .feed .mdc-top-app-bar {
   width: var(--feed-width);
 }
-.feed .mdc-button:not(:disabled) {
+.feed .mdc-top-app-bar .mdc-button:not(:disabled) {
   color: white;
 }
 
@@ -51,8 +51,9 @@
 .record.ng-anchor-out {
   background:blue;
 }
-.add-attachment-button {
+.add-attachment-button.mdc-button:not(:disabled) {
   background-color: var(--mdc-theme-primary) !important;
+  color: white;
   width: 100%;
 }
 .add-attachment-button-container {
@@ -73,6 +74,5 @@
 }
 
 .delete-observation-button {
-  background-color: var(--mdc-theme-error) !important;
   width: 100%;
 }

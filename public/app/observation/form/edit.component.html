@@ -1,5 +1,5 @@
 <div class="mdc-card observation-form-card">
-  <div class="observation-header-text">
+  <div class="observation-header-text bottom-gap">
     {{$ctrl.formDefinition.name}}
   </div>
 
@@ -14,7 +14,7 @@
       <number-edit ng-switch-when="numberfield" field="field"></number-edit>
       <password-edit ng-switch-when="password" field="field"></password-edit>
       <radio-edit ng-switch-when="radio" field="field"></radio-edit>
-      <text-edit ng-switch-when="textfield" field="field"></text-edit>
+      <text-edit ng-switch-when="textfield" field="field"></text-edit> 
       <textarea-edit ng-switch-when="textarea" field="field"></textarea-edit>
     </div>
   </div>

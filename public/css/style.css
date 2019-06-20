@@ -51,6 +51,12 @@
   font-size: 1rem;
 }
 
+/* Fixing what bootstrap is doing */
+.mdc-form-field > label {
+  margin-bottom: unset;
+  font-weight: unset;
+}
+
 .shadow-app-bar {
   box-shadow: 0px 2px 4px -1px rgba(0, 0, 0, 0.2), 0px 4px 5px 0px rgba(0, 0, 0, 0.14), 0px 1px 10px 0px rgba(0, 0, 0, 0.12);
 }
@@ -107,6 +113,9 @@
 
 .time-zone-button {
   height: 56px;
+  padding-left: 12px;
+  padding-right: 12px;
+  margin-bottom: 2px;
 }
 
 .multi-select {
@@ -268,7 +277,7 @@ a {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  z-index: 1029;
+  z-index: 0;
   font-size: 16px;
   background-color: var(--mdc-theme-primary-dark);
   color: #fff;
@@ -1139,6 +1148,10 @@ h4.image-delete {
   padding-left: 0;
 }
 
+.text-area-field {
+  width: 100%;
+}
+
 .export-actions {
   margin-left: 15px;
 }
@@ -1150,6 +1163,11 @@ h4.image-delete {
 .preferences-form {
     padding: 16px;
     min-width: 180px;
+}
+
+.time-zone-button .mdc-button__label,
+.time-zone-button .mdc-button__icon {
+  color: var(--mdc-theme-primary, #6200ee);
 }
 
 .btn .logo {

@@ -1,9 +1,29 @@
 <div class="field form-group">
-  <label>{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required">*</span>
-  <select class="js-select2" ng-model="$ctrl.field.value">
-    <option></option>
-    <option value="{{choice.title}}" ng-repeat="choice in $ctrl.field.choices track by choice.id">{{choice.title}}</option>
-  </select>
+  <div style="width: 400px;" class="event-select mdc-select mdc-select--outlined filter-dropdown">
+    <input type="hidden" name="enhanced-select">
+    <i class="mdc-select__dropdown-icon"></i>
+    <div class="mdc-select__selected-text"></div>
+    <div style="width: 400px;" class="mdc-select__menu mdc-menu mdc-menu-surface filter-dropdown">
+      <ul class="mdc-list">
+        <li class="mdc-list-item" data-value=""></li>
+        <li
+          ng-repeat="choice in $ctrl.field.choices"
+          ng-class="{'mdc-list-item--selected': $ctrl.field.value === choice.title}"
+          class="mdc-list-item"
+          data-value="{{choice.title}}">
+          {{choice.title}}
+        </li>
+      </ul>
+    </div>
+    <div class="mdc-notched-outline">
+    <div class="mdc-notched-outline__leading"></div>
+    <div class="mdc-notched-outline__notch">
+      <label
+        class="mdc-floating-label">{{$ctrl.field.title + ($ctrl.field.required ? '*' : '')}}</label>
+    </div>
+    <div class="mdc-notched-outline__trailing"></div>
+    </div>
+  </div>
 
   <!-- <div class="ui-select">
     <ui-select ng-model="$ctrl.field.value" theme="bootstrap" ng-required="$ctrl.field.required" on-select="$ctrl.onSelect($item, $model)">

@@ -47,9 +47,8 @@
       upload-file-form-name="'attachment'" 
       preview="true" upload-id="id"></div>
     </div>
-
-    <div ng-show="observation.id && canDeleteObservation" class="delete-observation-button-container">
-      <button class="mdc-button delete-observation-button" ng-click="deleteObservation(observation)">
+    <div ng-if="observation.id && canDeleteObservation" class="delete-observation-button-container">
+      <button class="mdc-button delete-button delete-observation-button" ng-click="deleteObservation(observation)">
         Delete Observation
       </button>
     </div>

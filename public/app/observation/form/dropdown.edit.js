@@ -1,28 +1,34 @@
+var MDCSelect = require('material-components-web').select.MDCSelect;
+
 module.exports = {
   template: require('./dropdown.edit.html'),
   bindings: {
     field: '<',
     onFieldChanged: '&'
   },
-  controller: function($scope, $element) {
-    this.$onInit = function() {
-      $element.find('.js-select2').select2({
-        placeholder: this.field.title,
-        theme: 'material',
-        allowClear: true
-      })
-      $element.find('.select2-selection__arrow')
-        .addClass('material-icons')
-        .html('arrow_drop_down');
-      $element.find('.js-select2').on('select2:unselecting', function(ev) {
-        if (ev.params.args.originalEvent) {
-            // When unselecting (in multiple mode)
-            ev.params.args.originalEvent.stopPropagation();
-        } else {
-            // When clearing (in single mode)
-            $(this).one('select2:opening', function(ev) { ev.preventDefault(); });
-        }
-      });
+  controller: function($timeout, $element) {
+
+    this.$postLink = function() {
+      this.initializeDropDown();
+    }
+    
+    this.initializeDropDown = function() {
+      $timeout(function() {
+        console.log('this.field.choices', this.field.choices)
+        if (!this.select && this.field)
+        this.select = new MDCSelect($element.find('.mdc-select')[0]);
+        
+        this.select.listen('MDCSelect:change', function() {
+          $timeout(function() {
+            console.log('select changed to', this.select.value)
+            if (this.select.value && this.select.value !== '') {
+              this.field.value = this.select.value;
+            } else {
+              this.field.value = undefined;
+            }
+          }.bind(this))
+        }.bind(this));
+      }.bind(this))
     }
   }
 };

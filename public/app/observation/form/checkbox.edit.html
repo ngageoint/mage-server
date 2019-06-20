@@ -1,6 +1,22 @@
-<div class="field checkbox">
-  <label>
-    <input ng-model="$ctrl.field.value" ng-change="$ctrl.onCheckChange()" id="{{field.id}}" type="checkbox" ng-checked="$ctrl.field.value" ng-required="field.required"/> {{$ctrl.field.title}}
-    <span class="required-error" ng-show="$ctrl.field.required">*</span>
-  </label>
+<div class="field form-group">
+  <div class="mdc-form-field">
+    <div class="mdc-checkbox">
+      <input 
+        type="checkbox"
+        value="{{$ctrl.field.value}}" 
+        class="mdc-checkbox__native-control"
+        id="{{$ctrl.field.name}}"/>
+      <div class="mdc-checkbox__background">
+        <svg class="mdc-checkbox__checkmark"
+            viewBox="0 0 24 24">
+          <path 
+            class="mdc-checkbox__checkmark-path"
+            fill="none"
+            d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+        </svg>
+        <div class="mdc-checkbox__mixedmark"></div>
+      </div>
+    </div>
+    <label for="{{$ctrl.field.name}}">{{$ctrl.field.title}} <span ng-if="$ctrl.field.required">*</span></label>
+  </div>
 </div>

@@ -1,9 +1,21 @@
 <div class="field form-group">
-  <label class="control-label">{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required">*</span>
-  <div ng-repeat="option in $ctrl.field.choices" class="radio">
-    <label>
-        <input type="radio" value="{{option.title}}" ng-model="$ctrl.field.value" ng-required="$ctrl.field.required"/>
-        &nbsp;<span ng-bind="option.title"></span>
-    </label>
+  <div class="mdc-typeography--subtitle">{{$ctrl.field.title}} <span class="required-error" ng-show="$ctrl.field.required">*</span></div>
+  <div class="mdc-form-field" ng-repeat="option in $ctrl.field.choices">
+    <div class="mdc-radio">
+      <input 
+        class="mdc-radio__native-control" 
+        type="radio" 
+        ng-model="$ctrl.field.value" 
+        ng-required="$ctrl.field.required"
+        value="{{option.title}}" 
+        id="{{$ctrl.field.name + '_' + option.title}}" 
+        name="{{$ctrl.field.name}}">
+      <div class="mdc-radio__background">
+        <div class="mdc-radio__outer-circle"></div>
+        <div class="mdc-radio__inner-circle"></div>
+      </div>
+    </div>
+    <label for="{{$ctrl.field.name + '_' + option.title}}">{{option.title}}</label>
   </div>
+
 </div>
