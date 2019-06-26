@@ -1,5 +1,50 @@
 <div class="field form-group">
-  <label>{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required">*</span>
+  <div
+    class="mdc-select mdc-select--outlined location-field-select"
+    ng-click="$ctrl.editGeometry($event)">
+    <div class="mdc-select__selected-text-mine">
+      <div class="map-clip" id="map-outlined">
+        <div
+          map-clip="{type: 'Feature', geometry: $ctrl.field.value}"
+          feature-style="$ctrl.geometryStyle"
+          disable-interaction="true"></div>
+      </div>
+    </div>
+    <select class="mdc-select__native-control">
+        <option value=" " selected> </option>
+    </select>
+    <div class="mdc-notched-outline">
+    <div class="mdc-notched-outline__leading"></div>
+    <div class="mdc-notched-outline__notch">
+      <label class="mdc-floating-label mdc-floating-label--float-above">{{$ctrl.field.title}}</label>
+    </div>
+    <div class="mdc-notched-outline__trailing"></div>  
+    </div>
+  </div>
+
+    <!-- <div ng-style="{width: '400px', height: '200px'}" ng-click="$ctrl.editGeometry($event)" class="multi-select team-select mdc-select mdc-select--outlined filter-dropdown">
+    <i class="mdc-select__dropdown-icon"></i>
+    <div class="mdc-select__selected-text">Test</div>
+    <div class="mdc-select__selected-text-mine">
+      <div class="map-clip geometry-edit" id="map-outlined">
+        <div map-clip="{type: 'Feature', geometry: $ctrl.field.value}" feature-style="$ctrl.geometryStyle"></div>
+      </div>
+    </div>
+    <select class="mdc-select__native-control">
+      <option value="" disabled selected></option>
+    </select>
+    <div class="mdc-notched-outline">
+    <div class="mdc-notched-outline__leading"></div>
+    <div class="mdc-notched-outline__notch">
+      <label class="mdc-floating-label mdc-floating-label--float-above">{{$ctrl.field.title}}</label>
+    </div>
+    <div class="mdc-notched-outline__trailing"></div>  
+    </div>
+  </div> -->
+
+
+
+  <!-- <label>{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required">*</span>
   <div class="row">
     <div class="col-md-12">
       <div class="btn-group">
@@ -74,5 +119,5 @@
         <label class="btn btn-default btn-xs" ng-model="$ctrl.coordinateSystem" ng-change="$ctrl.onCoordinateSystemChange('mgrs')" uib-btn-radio="'mgrs'">MGRS</label>
       </div>
     </div>
-  </div>
+  </div> -->
 </div>

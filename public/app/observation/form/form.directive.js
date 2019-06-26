@@ -24,6 +24,29 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
   var uploadId = 0;
   var initialObservation;
 
+  $scope.$on('geometry:edit:start', function(e, field) {
+    console.log('start geometry edit from event', field)
+    $scope.editLocationField = field;
+    $scope.editGeometryStyle = $scope.observation.style
+  })
+
+  $scope.startGeometryEdit = function(field) {
+    console.log('start editnig field', field)
+    $scope.editLocationField = field;
+    $scope.editGeometryStyle = $scope.observation.style
+  }
+
+  $scope.saveLocationEdit = function(value) {
+    console.log('value is', value)
+    $scope.editLocationField.value = value;
+    $scope.editLocationField = undefined;
+  }
+
+  $scope.cancelLocationEdit = function() {
+    console.log('cancel')
+    $scope.editLocationField = undefined;
+  }
+
   if ($scope.observation) {
     initialObservation = JSON.parse(JSON.stringify($scope.observation));
     $scope.iconUrl = $scope.observation.style.iconUrl;
@@ -91,13 +114,13 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
   }, true);
 
   $scope.$watch('form.geometryField.value.type', function(newShapeType, oldShapeType) {
-    if (newShapeType === oldShapeType) return;
+    // if (newShapeType === oldShapeType) return;
 
-    // Disable save if line/polygon until line/polygon edit is complete
-    var geometryValid = newShapeType === 'LineString' || newShapeType === 'Polygon' ? false : true;
-    $scope.observationForm.$setValidity('geometry', geometryValid);
+    // // Disable save if line/polygon until line/polygon edit is complete
+    // var geometryValid = newShapeType === 'LineString' || newShapeType === 'Polygon' ? false : true;
+    // $scope.observationForm.$setValidity('geometry', geometryValid);
 
-    $scope.$emit('observation:shapeChanged', {id: $scope.observation.id, type: 'Feature', geometry: {type: newShapeType}});
+    // $scope.$emit('observation:shapeChanged', {id: $scope.observation.id, type: 'Feature', geometry: {type: newShapeType}});
   });
 
   function hasEventUpdatePermission() {

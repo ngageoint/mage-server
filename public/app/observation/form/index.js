@@ -14,4 +14,5 @@ angular.module('mage')
   .component('passwordEdit', require('./password.edit'))
   .component('radioEdit', require('./radio.edit'))
   .component('textEdit', require('./text.edit'))
-  .component('textareaEdit', require('./textarea.edit'));
+  .component('textareaEdit', require('./textarea.edit'))
+  .component('locationEdit', require('./location-edit.component'));

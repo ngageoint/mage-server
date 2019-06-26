@@ -4,7 +4,9 @@ module.exports = function mapClip() {
   var directive = {
     restrict: 'A',
     scope: {
-      feature: '=mapClip'
+      feature: '=mapClip',
+      featureStyle: '=',
+      disableInteraction: '='
     },
     replace: true,
     template: '<div id="map" class="leaflet-map"></div>',
@@ -75,13 +77,13 @@ function MapClipController($rootScope, $scope, $element, MapService) {
   }
 
   function addObservation(feature) {
-
+    console.log('feature', feature)
     if(feature.geometry){
       if(feature.geometry.type === 'Point'){
         observation= L.geoJson(feature, {
           pointToLayer: function (feature, latlng) {
             return L.fixedWidthMarker(latlng, {
-              iconUrl: feature.style.iconUrl
+              iconUrl: feature.style ? feature.style.iconUrl : ($scope.featureStyle ? $scope.featureStyle.iconUrl : '')
             });
           }
         });
@@ -90,7 +92,7 @@ function MapClipController($rootScope, $scope, $element, MapService) {
       }else{
         observation = L.geoJson(feature, {
           style: function(feature) {
-            return feature.style;
+            return feature.style || $scope.featureStyle;
           }
         });
         observation.addTo(map);
@@ -120,8 +122,17 @@ function MapClipController($rootScope, $scope, $element, MapService) {
       addObservation($scope.feature);
     }
 
+    if ($scope.disableInteraction) {
+      map.scrollWheelZoom.disable()
+      map.dragging.disable()
+      map.touchZoom.disable()
+      map.doubleClickZoom.disable()
+      map.boxZoom.disable()
+      map.keyboard.disable()
+    }
+
     map.on('mouseover', function() {
-      if (!controlsOn) {
+      if (!controlsOn && !$scope.disableInteraction) {
         controlsOn = true;
         map.addControl(zoomControl);
         map.addControl(worldExtentControl);
@@ -129,7 +140,7 @@ function MapClipController($rootScope, $scope, $element, MapService) {
     });
 
     map.on('mouseout', function() {
-      if (controlsOn) {
+      if (controlsOn && !$scope.disableInteraction) {
         map.removeControl(zoomControl);
         map.removeControl(worldExtentControl);
         controlsOn = false;

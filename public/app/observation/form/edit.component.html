@@ -9,7 +9,7 @@
       <date-edit ng-switch-when="date" field="field" form-field="$ctrl.form[field.name]"></date-edit>
       <dropdown-edit ng-switch-when="dropdown" field="field"></dropdown-edit>
       <email-edit ng-switch-when="email" field="field"></email-edit>
-      <geometry-edit ng-switch-when="geometry" field="field"></geometry-edit>
+      <geometry-edit ng-switch-when="geometry" form="$ctrl.formDefinition" field="field" start-geometry-edit="$ctrl.startGeometryEdit(field)"></geometry-edit>
       <multiselectdropdown-edit ng-switch-when="multiselectdropdown" field="field"></multiselectdropdown-edit>
       <number-edit ng-switch-when="numberfield" field="field"></number-edit>
       <password-edit ng-switch-when="password" field="field"></password-edit>

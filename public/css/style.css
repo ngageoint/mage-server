@@ -7,7 +7,7 @@
  
 :root {
   --feed-width: 450px;
-  --background-behind-card: #E0E0E0;
+  --background-behind-card: #E1E2E1;
   --floating-action-button:#FFAB40;
   --mdc-theme-primary:#1E88E5;
   --mdc-theme-primary-dark: #1565C0;
@@ -148,6 +148,28 @@
 
 .multi-select-list .mdc-list .mdc-list-item--disabled {
   color: var(--mdc-theme-text-disabled-on-background, rgba(0, 0, 0, 0.38));
+}
+
+ .location-field-select .map-clip{
+  width: 368px;
+  margin: 16px;
+  height: 150px;
+}
+
+.location-field-select .mdc-select__native-control {
+  display: none;
+}
+
+.location-field-select.mdc-select--outlined:not(.mdc-select--disabled):not(.mdc-select--focused) .mdc-select__selected-text-mine:hover~.mdc-notched-outline .mdc-notched-outline__leading,
+.location-field-select.mdc-select--outlined:not(.mdc-select--disabled):not(.mdc-select--focused) .mdc-select__selected-text-mine:hover~.mdc-notched-outline .mdc-notched-outline__trailing,
+.location-field-select.mdc-select--outlined:not(.mdc-select--disabled):not(.mdc-select--focused) .mdc-select__selected-text-mine:hover~.mdc-notched-outline .mdc-notched-outline__notch
+{
+  border-color: rgba(0,0,0,.87);
+}
+
+.location-field-select.mdc-select {
+  height: unset;
+  cursor: pointer;
 }
 
 /*

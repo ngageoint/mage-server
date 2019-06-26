@@ -109,14 +109,14 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   });
 
   // Edit layer, houses features that are being created or modified
-  createGeoJsonLayer({
-    name: 'Edit',
-    type: 'geojson',
-    options: {
-      selected: true,
-      hidden: true
-    }
-  });
+  // createGeoJsonLayer({
+  //   name: 'Edit',
+  //   type: 'geojson',
+  //   options: {
+  //     selected: true,
+  //     hidden: true
+  //   }
+  // });
 
   function onLocation(location, broadcast) {
     // no need to do anything if the location has not changed
@@ -152,7 +152,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     onLayersChanged: onLayersChanged,
     onFeaturesChanged: onFeaturesChanged,
     onCreate: onCreate,
-    onEdit: onEdit,
+    // onEdit: onEdit,
     onFeatureZoom: onFeatureZoom,
     onPoll: onPoll,
     onLocationStop: onLocationStop,
@@ -313,7 +313,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
   function createGeoJsonForLayer(json, layerInfo, editMode) {
     var popup = layerInfo.options.popup;
-
     var geojson = L.geoJson(json, {
       onEachFeature: function (feature, layer) {
         if (popup) {
@@ -345,7 +344,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
             layer.setAccuracy(null);
           });
         }
-
         layerInfo.featureIdToLayer[feature.id] = layer;
       },
       pointToLayer: function (feature, latlng) {
@@ -379,6 +377,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   function createGeoJsonLayer(data) {
     var layerInfo = {
       type: 'geojson',
+      name: data.name,
       featureIdToLayer: {},
       options: data.options
     };
@@ -391,8 +390,10 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
           spiderfyState.layer.openPopup();
         }
       });
+      console.log('layerInfo', layerInfo)
     } else {
       layerInfo.layer = geojson;
+      
     }
 
     layers[data.name] = layerInfo;
@@ -406,54 +407,55 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   }
 
   function onEdit(edit) {
-    switch(edit.type) {
-    case 'start':
-      onEditStarted(edit);
-      break;
-    case 'geometry':
-      onEditGeometry(edit);
-      break;
-    case 'shape':
-      onEditShape(edit);
-      break;
-    case 'icon':
-      onEditIcon(edit);
-      break;
-    case 'complete':
-    case 'delete':
-      onEditComplete(edit);
-      break;
-    }
+    // switch(edit.type) {
+    // case 'start':
+    //   onEditStarted(edit);
+    //   break;
+    // case 'geometry':
+    //   onEditGeometry(edit);
+    //   break;
+    // case 'shape':
+    //   onEditShape(edit);
+    //   break;
+    // case 'icon':
+    //   onEditIcon(edit);
+    //   break;
+    // case 'complete':
+    // case 'delete':
+    //   onEditComplete(edit);
+    //   break;
+    // }
   }
 
   function onEditStarted(edit) {
+    console.log('edit started', edit)
     var layer = layers[edit.name].featureIdToLayer[edit.feature.id];
     delete layers[edit.name].featureIdToLayer[edit.feature.id];
     layers[edit.name].layer.removeLayer(layer);
 
-    if (layers['Edit'].featureIdToLayer[layer.feature.id]) return;
+    // if (layers['Edit'].featureIdToLayer[layer.feature.id]) return;
 
     layers['Observations'].layer.removeLayer(layer);
 
-    layers['Edit'].layer.addLayer(layer);
-    layers['Edit'].featureIdToLayer[layer.feature.id] = layer;
+    // layers['Edit'].layer.addLayer(layer);
+    // layers['Edit'].featureIdToLayer[layer.feature.id] = layer;
 
-    if (layer.feature.geometry.type === 'Point') {
-      layer.setZIndexOffset(1000);
+    // if (layer.feature.geometry.type === 'Point') {
+    //   layer.setZIndexOffset(1000);
 
-      layer.setIcon(L.fixedWidthIcon({
-        iconUrl: layer.feature.style.iconUrl,
-        tooltip: true
-      }));
+    //   layer.setIcon(L.fixedWidthIcon({
+    //     iconUrl: layer.feature.style.iconUrl,
+    //     tooltip: true
+    //   }));
 
-      layer.dragging.enable();
-      layer.on('dragend', function(event) {
-        $scope.$broadcast('feature:moved', layer.feature, event.target.toGeoJSON().geometry);
-        $scope.$apply();
-      });
-    } else {
-      initiateShapeEdit(layer);
-    }
+    //   layer.dragging.enable();
+    //   layer.on('dragend', function(event) {
+    //     $scope.$broadcast('feature:moved', layer.feature, event.target.toGeoJSON().geometry);
+    //     $scope.$apply();
+    //   });
+    // } else {
+    //   initiateShapeEdit(layer);
+    // }
   }
 
   function onEditGeometry(edit) {
@@ -515,6 +517,8 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   }
 
   function onEditIcon(edit) {
+    console.log('edit icon', edit)
+    console.log('layers[edit', layers['Edit'])
     var feature = edit.feature;
     if (feature.geometry.type !== 'Point') return;
 

@@ -1,20 +1,24 @@
 var angular = require('angular')
-  , mgrs= require('mgrs');
+  , mgrs= require('mgrs')
+  , MDCSelect = require('material-components-web').select.MDCSelect;
+
 
 module.exports = {
   template: require('./geometry.edit.html'),
   bindings: {
     form: '<',
     field: '<',
+    geometryStyle: '<',
     onFieldChanged: '&',
-    onShapeChanged: '&'
+    onShapeChanged: '&',
+    startGeometryEdit: '&'
   },
   controller: GeometryEditController
 };
 
-GeometryEditController.$inject = ['GeometryService', 'LocalStorageService'];
+GeometryEditController.$inject = ['GeometryService', 'LocalStorageService', '$timeout', '$element'];
 
-function GeometryEditController(GeometryService, LocalStorageService) {
+function GeometryEditController(GeometryService, LocalStorageService, $timeout, $element) {
 
   this.shapes = [{
     display: 'Point',
@@ -34,6 +38,27 @@ function GeometryEditController(GeometryService, LocalStorageService) {
   };
 
   this.coordinateSystem = LocalStorageService.getCoordinateSystemEdit();
+
+  this.editGeometry = function(event) {
+    event.stopPropagation();
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    this.startGeometryEdit({field: this.field})
+  }
+
+  this.$postLink = function() {
+    this.initializeDropDown();
+  }
+  
+  this.initializeDropDown = function() {
+    $timeout(function() {
+      if (!this.select)
+      this.select = new MDCSelect($element.find('.mdc-select')[0]);
+      $timeout(function() {
+        this.select.selectedIndex = 0;
+      })
+    }.bind(this))
+  }
 
   this.$onChanges = function() {
     if (this.field && this.coordinateSystem === 'mgrs') {

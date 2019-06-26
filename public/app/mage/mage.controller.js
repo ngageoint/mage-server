@@ -59,11 +59,15 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
     name: 'Observations',
     group: 'MAGE',
     type: 'geojson',
+    featureIdToLayer: {},
     options: {
       selected: true,
       cluster: true,
       style: function() {
         return {};
+      },
+      onEachFeature: function(feature, layer) {
+        observationLayer.featureIdToLayer[feature.id] = layer
       },
       popup: {
         html: function(observation) {

@@ -8,6 +8,13 @@
   z-index: 3;
   overflow-y: auto;
 }
+.edit-location-card {
+  z-index: 4;
+}
+.map-container {
+  width: 100%;
+  height: 400px;
+}
 .feed .mdc-top-app-bar {
   width: var(--feed-width);
 }

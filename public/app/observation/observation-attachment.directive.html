@@ -64,8 +64,10 @@
        </div>
     </div>
   </div>
-  <div ng-show="(edit && amAdmin) || label" class="image-text-protection">
-    <span class="image-text-label mdc-typography--subtitle1">{{label}}</span>
+  <div ng-if="label" class="mdc-chip label-chip">
+    <div class="mdc-chip__text">{{label}}</div>
+  </div>
+  <div ng-show="(edit && amAdmin)" class="image-text-protection">
     <div class="image-action-icons mdc-typography--subtitle1">
       <button ng-if="edit && amAdmin" class="mdc-button undefined mdc-ripple-upgraded delete-attachment-button"
         title="Delete" 

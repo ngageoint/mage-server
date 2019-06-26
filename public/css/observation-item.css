@@ -95,6 +95,12 @@
   right: 5px;
 }
 
+.label-chip {
+  float: right;
+  margin-right: 10px;
+  margin-top: 10px;
+}
+
 .image-text-protection {
   position: absolute;
   bottom: 0;

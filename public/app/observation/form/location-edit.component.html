@@ -1,0 +1,34 @@
+<header id="edit-app-bar" class="mdc-top-app-bar mdc-elevation--z4 feed-top-bar">
+  <div class="mdc-top-app-bar__row">
+    <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+      <i ng-click="$ctrl.cancel()" class="material-icons mdc-top-app-bar__navigation-icon">close</i>
+      <span class="mdc-top-app-bar__title">
+        <span>{{$ctrl.field.title}}</span>
+      </span>
+    </section>
+    <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
+      <button class="mdc-button mdc-card__action mdc-card__action--button"
+        ng-click="$ctrl.saveLocation()">
+        <span class="mdc-button__label">Save</span>
+      </button>
+    </section>
+  </div>
+</header>
+<div class="header-spacer"></div>
+<div class="mdc-card">
+  <div class="map-container">
+  </div>
+  <div class="mdc-chip-set mdc-chip-set--choice">
+    <div class="mdc-chip" ng-click="$ctrl.shapeTypeChanged('Point')" ng-class="{'mdc-chip--selected': $ctrl.value.type === 'Point'}">
+      <span>Point</span>
+    </div>
+    <div class="mdc-chip" ng-click="$ctrl.shapeTypeChanged('LineString')" ng-class="{'mdc-chip--selected': $ctrl.value.type === 'LineString'}">
+      <span>Line</span>
+    </div>
+    <div class="mdc-chip" ng-click="$ctrl.shapeTypeChanged('Polygon')" ng-class="{'mdc-chip--selected': $ctrl.value.type === 'Polygon'}">
+      <span>Polygon</span>
+    </div>
+  </div>
+  {{$ctrl.shape.type}}
+  {{$ctrl.value}}
+</div>

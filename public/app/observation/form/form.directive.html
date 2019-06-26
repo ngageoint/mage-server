@@ -22,10 +22,10 @@
   <div>{{error.message}}</div>
 </div>
 
-<form name="observationForm" id="myForm" class="form" novalidate>
+<form name="observationForm" id="myForm" class="form" novalidate ng-if="!editLocationField">
   <div class="mdc-card observation-view-card observation-form-card">
     <date-edit field="form.timestampField" form-field="observationForm[form.timestampField.name]"></date-edit>
-    <geometry-edit form="observationForm" field="form.geometryField"></geometry-edit>
+    <geometry-edit geometry-style="observation.style" form="observationForm" field="form.geometryField" start-geometry-edit="startGeometryEdit(field)"></geometry-edit>
   </div>
   <div ng-repeat="formDefinition in form.forms">
     <observation-form-edit form-definition="formDefinition" form="observationForm"></observation-form-edit>
@@ -54,3 +54,7 @@
     </div>
   </div>
 </form>
+
+<div class="edit-location-card new-obs-card view-obs-card feed-card ng-animatable" ng-if="editLocationField">
+  <location-edit field="editLocationField" geometry-style="editGeometryStyle" save-edit="saveLocationEdit(value)" cancel-edit="cancelLocationEdit()"></location-edit>
+</div>
