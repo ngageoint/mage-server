@@ -46,7 +46,7 @@ MageFeatureEdit.prototype.stopEdit = function() {
   this.editedFeature = undefined;
 }
 
-MageFeatureEdit.prototype.startEdit = function(layerToEdit) {
+MageFeatureEdit.prototype.startEdit = function(layerToEdit, selectedVertexIndex) {
   if (this.editedFeature) {
     return;
   }
@@ -65,11 +65,12 @@ MageFeatureEdit.prototype.startEdit = function(layerToEdit) {
       console.log('dragend', event)
       this.newGeometry = event.target.toGeoJSON().geometry;
       console.log('newGeometry', this.newGeometry)
+      this.geometryChangedListener(this.newGeometry)
       // $scope.$broadcast('feature:moved', layer.feature, event.target.toGeoJSON().geometry);
       // $scope.$apply();
     }.bind(this));
   } else {
-    this.initiateShapeEdit(layerToEdit);
+    this.initiateShapeEdit(layerToEdit, selectedVertexIndex);
   }
 }
 
@@ -95,6 +96,7 @@ MageFeatureEdit.prototype.initiateShapeDraw = function(feature) {
     // $scope.$broadcast('feature:moved', newLayer.feature, geojson.geometry);
     // $scope.$apply();
     this.newGeometry = e.layer.toGeoJSON().geometry;
+    this.geometryChangedListener(this.newGeometry)
     console.log('commited the drawing', this.newGeometry)
   }.bind(this));
 
@@ -117,25 +119,27 @@ MageFeatureEdit.prototype.initiateShapeDraw = function(feature) {
   }.bind(this));
 }
 
-MageFeatureEdit.prototype.initiateShapeEdit = function(layer) {
+MageFeatureEdit.prototype.initiateShapeEdit = function(layer, selectVertexIndex) {
   layer.enableEdit();
-  layer.selectedVertex = layer.editor.editLayer.getLayers()[0];
+  layer.selectedVertex = layer.editor.editLayer.getLayers()[selectVertexIndex || 0];
   L.DomUtil.addClass(layer.selectedVertex.getElement(), 'selected-marker');
 
   geometryChanged = function(e) {
-    this.value = e.layer.toGeoJSON().geometry
+    this.newGeometry = e.layer.toGeoJSON().geometry
+    this.geometryChangedListener(this.newGeometry)
     // $scope.$broadcast('feature:moved', e.layer.feature, e.layer.toGeoJSON().geometry);
     // $scope.$apply();
   }.bind(this)
 
-  function selectVertex(vertex) {
+  selectVertex = function(vertex) {
     layer.editor.editLayer.eachLayer(function(layer) {
       L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
     });
 
     L.DomUtil.addClass(vertex.getElement(), 'selected-marker');
     layer.selectedVertex = vertex;
-  }
+    this.vertexClickListener(vertex);
+  }.bind(this)
 
   layer.on('editable:vertex:new', geometryChanged);
   layer.on('editable:vertex:deleted', geometryChanged);
@@ -148,7 +152,7 @@ MageFeatureEdit.prototype.initiateShapeEdit = function(layer) {
   });
 
   layer.on('editable:vertex:rawclick', function(e) {
-    e.cancel(); // turn of delete when clicking a vertex
+    e.cancel(); // turn off delete when clicking a vertex
     selectVertex(e.vertex);
 
     // $scope.$broadcast('mage:map:edit:vertex', layer.feature, layer.toGeoJSON().geometry, e.vertex.getIndex());
@@ -177,15 +181,18 @@ MageFeatureEdit.prototype.initiateShapeEdit = function(layer) {
       return;
     }
     this.newGeometry = layer.toGeoJSON().geometry
+    this.geometryChangedListener(this.newGeometry)
     // $scope.$broadcast('mage:map:edit:vertex', layer.feature, layer.toGeoJSON().geometry, e.vertex.getIndex());
     // $scope.$apply();
   }.bind(this));
 }
 
-function MageFeatureEdit(map, MapService, GeometryService) {
+function MageFeatureEdit(map, MapService, GeometryService, geometryChangedListener, vertexClickListener) {
   this.map = map;
   this.MapService = MapService;
   this.GeometryService = GeometryService;
+  this.geometryChangedListener = geometryChangedListener || function() {};
+  this.vertexClickListener = vertexClickListener || function() {};
   this.createEditLayer();
 }
 

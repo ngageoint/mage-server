@@ -24,7 +24,7 @@ function GeometryFilter(LocalStorageService) {
 
 function toWgs84(input, format) {
   var coordinates = center(input).geometry.coordinates;
-  return coordinates[0].toFixed(format) + ', ' + coordinates[1].toFixed(format);
+  return coordinates[1].toFixed(format) + ', ' + coordinates[0].toFixed(format);
 }
 
 function toMgrs(input) {

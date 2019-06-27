@@ -16,19 +16,96 @@
 </header>
 <div class="header-spacer"></div>
 <div class="mdc-card">
+    <div class="mdc-chip-set mdc-chip-set--choice">
+        <div
+          class="mdc-chip" 
+          ng-click="$ctrl.shapeTypeChanged('Point')" 
+          ng-class="{'mdc-chip--selected': $ctrl.value.type === 'Point'}">
+          <span>Point</span>
+        </div>
+        <div
+          class="mdc-chip" 
+          ng-click="$ctrl.shapeTypeChanged('LineString')" 
+          ng-class="{'mdc-chip--selected': $ctrl.value.type === 'LineString'}">
+          <span>Line</span>
+        </div>
+        <div 
+          class="mdc-chip" 
+          ng-click="$ctrl.shapeTypeChanged('Polygon')" 
+          ng-class="{'mdc-chip--selected': $ctrl.value.type === 'Polygon'}">
+          <span>Polygon</span>
+        </div>
+      </div>
   <div class="map-container">
   </div>
   <div class="mdc-chip-set mdc-chip-set--choice">
-    <div class="mdc-chip" ng-click="$ctrl.shapeTypeChanged('Point')" ng-class="{'mdc-chip--selected': $ctrl.value.type === 'Point'}">
-      <span>Point</span>
+    <div
+      class="mdc-chip"
+      ng-click="$ctrl.coordinateSystemChange('wgs84')" 
+      ng-class="{'mdc-chip--selected': $ctrl.coordinateSystem === 'wgs84'}">
+      <span>Lat/Lng</span>
     </div>
-    <div class="mdc-chip" ng-click="$ctrl.shapeTypeChanged('LineString')" ng-class="{'mdc-chip--selected': $ctrl.value.type === 'LineString'}">
-      <span>Line</span>
-    </div>
-    <div class="mdc-chip" ng-click="$ctrl.shapeTypeChanged('Polygon')" ng-class="{'mdc-chip--selected': $ctrl.value.type === 'Polygon'}">
-      <span>Polygon</span>
+    <div
+      class="mdc-chip" 
+      ng-click="$ctrl.coordinateSystemChange('mgrs')" 
+      ng-class="{'mdc-chip--selected': $ctrl.coordinateSystem === 'mgrs'}">
+      <span>MGRS</span>
     </div>
   </div>
-  {{$ctrl.shape.type}}
-  {{$ctrl.value}}
+  <div ng-show="$ctrl.coordinateSystem === 'mgrs'"  class="coordinate-editor">
+    <div class="mdc-text-field mdc-text-field--outlined mgrs-text-field">
+      <input 
+        type="text"
+        id="mgrs"
+        ng-model="$ctrl.mgrs"
+        ng-change="$ctrl.onMgrsChange()"
+        class="mdc-text-field__input">
+      <div class="mdc-notched-outline">
+        <div class="mdc-notched-outline__leading"></div>
+        <div class="mdc-notched-outline__notch">
+          <label for="mgrs" class="mdc-floating-label">MGRS</label>
+        </div>
+        <div class="mdc-notched-outline__trailing"></div>
+      </div>
+    </div>
+  </div>
+  <div ng-show="$ctrl.coordinateSystem === 'wgs84'" class="coordinate-editor">
+    <div class="mdc-text-field mdc-text-field--outlined latitude-text-field">
+      <input 
+        type="number"
+        id="latitude"
+        step="any"
+        min="-90"
+        max="90"
+        ng-model="$ctrl.latitudeFieldEdit"
+        ng-change="$ctrl.onLatLngChange()"
+        class="mdc-text-field__input">
+      <div class="mdc-notched-outline">
+        <div class="mdc-notched-outline__leading"></div>
+        <div class="mdc-notched-outline__notch">
+          <label for="latitude" class="mdc-floating-label">Latitude</label>
+        </div>
+        <div class="mdc-notched-outline__trailing"></div>
+      </div>
+    </div>
+    <div class="mdc-text-field mdc-text-field--outlined longitude-text-field">
+      <input 
+        type="number"
+        id="longitude"
+        step="any"
+        min="-180"
+        max="180"
+        ng-model="$ctrl.longitudeFieldEdit"
+        ng-change="$ctrl.onLatLngChange()"
+        class="mdc-text-field__input">
+      <div class="mdc-notched-outline">
+        <div class="mdc-notched-outline__leading"></div>
+        <div class="mdc-notched-outline__notch">
+          <label for="latitude" class="mdc-floating-label">Longitude</label>
+        </div>
+        <div class="mdc-notched-outline__trailing"></div>
+      </div>
+    </div>
+  </div>
+  
 </div>

@@ -172,6 +172,24 @@
   cursor: pointer;
 }
 
+.coordinate-editor {
+  display: flex;
+  flex-direction: row;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+.coordinate-editor > div {
+  margin-right: 8px;
+  margin-left: 8px;
+}
+/* .coordinate-editor > div:last-child {
+  margin-left: 8px;
+} */
+
+.mgrs-text-field {
+  width: 100%;
+}
+
 /*
   Allow angular.js to be loaded in body, hiding cloaked elements until
   templates compile.  The !important is important given that there may be
