@@ -88,7 +88,7 @@ module.exports = function(app, passport, provisioning, strategyConfig) {
           });
         });
       } else if (!user.active) {
-        return done(null, user, { message: "User is not approved, please contact your MAGE administrator to approve your account."} );
+        return done(null, user, { message: 'User account is not approved, please contact your MAGE administrator to approve your account.'});
       } else {
         return done(null, user);
       }
