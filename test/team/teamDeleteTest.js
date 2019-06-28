@@ -15,18 +15,13 @@ var EventModel = mongoose.model('Event');
 
 describe("team delete tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -45,19 +40,19 @@ describe("team delete tests", function() {
       teamEventId: eventId
     });
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findOne').withArgs({_id: teamId.toString()})
       .chain('populate').withArgs('userIds')
       .chain('exec')
       .yields(null, mockTeam);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById').withArgs(eventId)
       .yields(null, new EventModel({
         name: 'Mock Event'
       }));
 
-    sandbox.mock(mockTeam)
+    sinon.mock(mockTeam)
       .expects('remove')
       .yields(null);
 
@@ -84,19 +79,19 @@ describe("team delete tests", function() {
       acl: acl
     });
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findOne').withArgs({_id: teamId.toString()})
       .chain('populate').withArgs('userIds')
       .chain('exec')
       .yields(null, mockTeam);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById').withArgs(eventId)
       .yields(null, new EventModel({
         name: 'Mock Event'
       }));
 
-    sandbox.mock(mockTeam)
+    sinon.mock(mockTeam)
       .expects('remove')
       .yields(null);
 
@@ -123,7 +118,7 @@ describe("team delete tests", function() {
       acl: acl
     });
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findOne').withArgs({_id: teamId.toString()})
       .chain('populate').withArgs('userIds')
       .chain('exec')
@@ -148,13 +143,13 @@ describe("team delete tests", function() {
       teamEventId: eventId
     });
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findOne').withArgs({_id: teamId.toString()})
       .chain('populate').withArgs('userIds')
       .chain('exec')
       .yields(null, mockTeam);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById').withArgs(eventId)
       .yields(null, new EventModel({
         name: 'Mock Event'

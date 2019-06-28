@@ -244,7 +244,7 @@ function generateTimestamp(timestamp) {
     "</TimeStamp>";
 }
 
-function generateDescription(geometry, sections, attachments) {
+function generateDescription(geojson, sections, attachments) {
   var description = "<description>" +
     '<![CDATA[<html xmlns:fo="http://www.w3.org/1999/XSL/Format" xmlns:msxsl="urn:schemas-microsoft-com:xslt">' +
       '<head>' +
@@ -254,19 +254,24 @@ function generateDescription(geometry, sections, attachments) {
 
   description += '<table style="font-family:Arial,Verdana,Times;font-size:12px;text-align:left;width:100%;border-collapse:collapse;padding:3px 3px 3px 3px">';
 
-  const centroid = turfCentroid(geometry);
-
   description +=
     '<tr bgcolor="#D4E4F3">' +
+      '<td>Timestamp</td>' + '<td>' + moment(geojson.properties.timestamp).utc().format('YYYY-MM-DDTHH:mm:ss') + 'Z' + '</td>' +
+    '<tr>';
+
+  const centroid = turfCentroid(geojson);
+
+  description +=
+    '<tr>' +
       '<td>Lat</td>' + '<td>' + centroid.geometry.coordinates[1] + '</td>' +
     '<tr>';
   description +=
-    '<tr>' +
+    '<tr bgcolor="#D4E4F3">' +
       '<td>Lon</td>' + '<td>' + centroid.geometry.coordinates[0] + '</td>' +
     '<tr>';
 
   description +=
-    '<tr bgcolor="#D4E4F3">' +
+    '<tr>' +
       '<td>MGRS</td>' + '<td>' + mgrs.forward(centroid.geometry.coordinates) + '</td>' +
     '<tr>';
 
@@ -275,7 +280,7 @@ function generateDescription(geometry, sections, attachments) {
       description += '<h3>' + section.title + '</h3>';
     }
 
-    var odd = false;
+    var odd = true;
     section.properties.forEach(property => {
       var color = "";
       if (odd) color = "#D4E4F3";

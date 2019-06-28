@@ -7,9 +7,13 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Features
 * GeoServer plugin which creates OGC WMS/WFS endpoints from MAGE.
+* Sort observation fields in CSV export in form order.
 
 ##### Bug Fixes
 * Fix kml to geojson icon style.
+* Export observations based on timestamp, not last updated.
+* CSV export properly handles commas in values.
+* Fix permission error when event user posts recent event.
 
 ## [5.2.6](https://github.com/ngageoint/mage-server/releases/tag/5.2.6) (TBD)
 

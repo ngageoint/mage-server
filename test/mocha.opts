@@ -1,3 +1,4 @@
 --recursive
+--require iconv-lite/encodings
 --require mock-fs
 --require test/env.js

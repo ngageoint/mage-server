@@ -19,11 +19,6 @@ var observationModel = Observation.observationModel;
 
 describe("observation update tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   beforeEach(function() {
     var mockEvent = new EventModel({
       _id: 1,
@@ -31,18 +26,18 @@ describe("observation update tests", function() {
       collectionName: 'observations1',
       acl: {}
     });
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
   });
 
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -53,7 +48,7 @@ describe("observation update tests", function() {
   it("should update observation for id with event permission", function(done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('populate')
       .yields(null, {
         name: 'Event 1',
@@ -81,11 +76,11 @@ describe("observation update tests", function() {
       }
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .yields(null, mockObservation);
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .yields(null, mockObservation);
 
@@ -116,7 +111,7 @@ describe("observation update tests", function() {
   it("should update observation for id with all permission", function(done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_ALL');
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('populate')
       .yields(null, {
         name: 'Event 1',
@@ -144,11 +139,11 @@ describe("observation update tests", function() {
       }
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .yields(null, mockObservation);
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .yields(null, mockObservation);
 
@@ -179,7 +174,7 @@ describe("observation update tests", function() {
   it("should deny update observation for id w/o timestamp", function(done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('populate')
       .yields(null, {
         name: 'Event 1',
@@ -195,7 +190,7 @@ describe("observation update tests", function() {
       collectionName: 'observations1'
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .yields(null, {});
 
@@ -222,7 +217,7 @@ describe("observation update tests", function() {
   it("should deny update observation for id w/o geometry", function(done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('populate')
       .yields(null, {
         name: 'Event 1',
@@ -238,7 +233,7 @@ describe("observation update tests", function() {
       collectionName: 'observations1'
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .yields(null, {});
 
@@ -262,7 +257,7 @@ describe("observation update tests", function() {
   it("should deny update observation for id with invalid geometry", function(done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('populate')
       .yields(null, {
         name: 'Event 1',
@@ -278,7 +273,7 @@ describe("observation update tests", function() {
       collectionName: 'observations1'
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .yields(null, {});
 
@@ -306,7 +301,7 @@ describe("observation update tests", function() {
   it("should deny update observation for id that does not exist", function(done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('populate')
       .yields(null, {
         name: 'Event 1',
@@ -323,11 +318,11 @@ describe("observation update tests", function() {
     });
 
     var observationId = mongoose.Types.ObjectId();
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .yields(null, {_id: observationId});
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .yields(null, null);
 
@@ -355,7 +350,7 @@ describe("observation update tests", function() {
   it("should deny update observation for event I am not part of", function(done) {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -368,7 +363,7 @@ describe("observation update tests", function() {
       acl: {}
     };
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('populate')
       .withArgs(sinon.match.any, 'teamIds')
       .yields(null, mockEvent);
@@ -379,7 +374,7 @@ describe("observation update tests", function() {
       collectionName: 'observations1'
     });
     var observationId = mongoose.Types.ObjectId();
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .yields(null, {_id: observationId});
 
@@ -394,7 +389,7 @@ describe("observation update tests", function() {
         timestamp: Date.now()
       }
     });
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .yields(null, mockObservation);
 

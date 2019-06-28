@@ -20,11 +20,6 @@ var ObservationIdModel = mongoose.model('ObservationId');
 
 describe("observation create tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   beforeEach(function() {
     var mockEvent = EventModel({
       _id: 1,
@@ -57,18 +52,18 @@ describe("observation create tests", function() {
 
     });
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
   });
 
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -79,12 +74,12 @@ describe("observation create tests", function() {
   it("should create an observation id", function(done) {
     mockTokenWithPermission('CREATE_OBSERVATION');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
     var mockObservation = new ObservationIdModel({_id: mongoose.Types.ObjectId()});
-    sandbox.mock(ObservationIdModel)
+    sinon.mock(ObservationIdModel)
       .expects('create')
       .withArgs({})
       .yields(null, mockObservation);
@@ -106,12 +101,12 @@ describe("observation create tests", function() {
   it("should create an observation for an event", function(done) {
     mockTokenWithPermission('CREATE_OBSERVATION');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
     var observationId = mongoose.Types.ObjectId();
-    sandbox.mock(ObservationIdModel)
+    sinon.mock(ObservationIdModel)
       .expects('findById')
       .yields(null, {_id: observationId});
 
@@ -133,11 +128,11 @@ describe("observation create tests", function() {
       }
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .yields(null, null);
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .withArgs(observationId.toString(), sinon.match.any, {new: true, upsert: true})
       .yields(null, mockObservation);
@@ -172,7 +167,7 @@ describe("observation create tests", function() {
     mockTokenWithPermission('CREATE_OBSERVATION');
 
     var observationId = mongoose.Types.ObjectId();
-    sandbox.mock(ObservationIdModel)
+    sinon.mock(ObservationIdModel)
       .expects('findById')
       .yields(null, null);
 
@@ -182,7 +177,7 @@ describe("observation create tests", function() {
       collectionName: 'observations1'
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .yields(null, null);
 
@@ -214,7 +209,7 @@ describe("observation create tests", function() {
       collectionName: 'observations1'
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .yields(null, null);
 
@@ -243,11 +238,11 @@ describe("observation create tests", function() {
   it("should reject new observation w/o geometry", function(done) {
     mockTokenWithPermission('CREATE_OBSERVATION');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
-    sandbox.mock(ObservationIdModel)
+    sinon.mock(ObservationIdModel)
       .expects('findById')
       .yields(null, {_id: 1});
 
@@ -257,7 +252,7 @@ describe("observation create tests", function() {
       collectionName: 'observations1'
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .yields(null, null);
 
@@ -281,11 +276,11 @@ describe("observation create tests", function() {
   it("should reject new observation with invalid geometry", function(done) {
     mockTokenWithPermission('CREATE_OBSERVATION');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
-    sandbox.mock(ObservationIdModel)
+    sinon.mock(ObservationIdModel)
       .expects('findById')
       .yields(null, {_id: 1});
 
@@ -295,7 +290,7 @@ describe("observation create tests", function() {
       collectionName: 'observations1'
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .yields(null, null);
 
@@ -323,11 +318,11 @@ describe("observation create tests", function() {
   it("should reject new observation w/o properties", function(done) {
     mockTokenWithPermission('CREATE_OBSERVATION');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
-    sandbox.mock(ObservationIdModel)
+    sinon.mock(ObservationIdModel)
       .expects('findById')
       .yields(null, {_id: 1});
 
@@ -337,7 +332,7 @@ describe("observation create tests", function() {
       collectionName: 'observations1'
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .yields(null, null);
 
@@ -359,11 +354,11 @@ describe("observation create tests", function() {
   it("should reject new observation w/o timestamp", function(done) {
     mockTokenWithPermission('CREATE_OBSERVATION');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
-    sandbox.mock(ObservationIdModel)
+    sinon.mock(ObservationIdModel)
       .expects('findById')
       .yields(null, {_id: 1});
 
@@ -373,7 +368,7 @@ describe("observation create tests", function() {
       collectionName: 'observations1'
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .yields(null, null);
 
@@ -400,11 +395,11 @@ describe("observation create tests", function() {
   it("should reject new observation with invalid timestamp", function(done) {
     mockTokenWithPermission('CREATE_OBSERVATION');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
-    sandbox.mock(ObservationIdModel)
+    sinon.mock(ObservationIdModel)
       .expects('findById')
       .yields(null, {_id: 1});
 
@@ -414,7 +409,7 @@ describe("observation create tests", function() {
       collectionName: 'observations1'
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .yields(null, null);
 
@@ -442,7 +437,7 @@ describe("observation create tests", function() {
   it("should reject new observation for event you are not part of", function(done) {
     mockTokenWithPermission('CREATE_OBSERVATION');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, []);
 

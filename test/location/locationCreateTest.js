@@ -22,11 +22,6 @@ var CappedLocationModel = mongoose.model('CappedLocation');
 
 describe("location create tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   beforeEach(function() {
     var mockEvent = EventModel({
       _id: 1,
@@ -39,18 +34,18 @@ describe("location create tests", function() {
 
     });
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
   });
 
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -61,7 +56,7 @@ describe("location create tests", function() {
   it("should create locations for an event", function(done) {
     mockTokenWithPermission('CREATE_LOCATION');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -86,11 +81,11 @@ describe("location create tests", function() {
         "accuracy": 10
       }
     }];
-    sandbox.mock(LocationModel)
+    sinon.mock(LocationModel)
       .expects('create')
       .yields(null, mockLocations);
 
-    sandbox.mock(CappedLocationModel)
+    sinon.mock(CappedLocationModel)
       .expects('findOneAndUpdate')
       .yields(null, {});
 
@@ -133,7 +128,7 @@ describe("location create tests", function() {
   it("should create a location for an event", function(done) {
     mockTokenWithPermission('CREATE_LOCATION');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -148,11 +143,11 @@ describe("location create tests", function() {
         "accuracy": 39
       }
     };
-    sandbox.mock(LocationModel)
+    sinon.mock(LocationModel)
       .expects('create')
       .yields(null, mockLocations);
 
-    sandbox.mock(CappedLocationModel)
+    sinon.mock(CappedLocationModel)
       .expects('findOneAndUpdate')
       .yields(null, {});
 
@@ -184,7 +179,7 @@ describe("location create tests", function() {
   it("should fail to create a location for an event when not part of that event", function(done) {
     mockTokenWithPermission('CREATE_LOCATION');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, []);
 
@@ -210,7 +205,7 @@ describe("location create tests", function() {
   it("should reject new location w/o geometry", function(done) {
     mockTokenWithPermission('CREATE_LOCATION');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -235,7 +230,7 @@ describe("location create tests", function() {
   it("should reject new location w/o properties", function(done) {
     mockTokenWithPermission('CREATE_LOCATION');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -260,7 +255,7 @@ describe("location create tests", function() {
   it("should reject new location w/o timestamp", function(done) {
     mockTokenWithPermission('CREATE_LOCATION');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 

@@ -20,11 +20,6 @@ var observationModel = Observation.observationModel;
 
 describe("observation read tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   beforeEach(function() {
     var mockEvent = new EventModel({
       _id: 1,
@@ -32,18 +27,18 @@ describe("observation read tests", function() {
       collectionName: 'observations1',
       acl: {}
     });
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
   });
 
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -54,7 +49,7 @@ describe("observation read tests", function() {
   it("should get observations for any event", function(done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -74,7 +69,7 @@ describe("observation read tests", function() {
         timestamp: Date.now()
       }
     });
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('find')
       .yields(null, [mockObservation]);
 
@@ -95,11 +90,11 @@ describe("observation read tests", function() {
   it("should get observations for event I am a part of", function(done) {
     mockTokenWithPermission('READ_OBSERVATION_EVENT');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('populate')
       .yields(null, {
         name: 'Event 1',
@@ -125,7 +120,7 @@ describe("observation read tests", function() {
         timestamp: Date.now()
       }
     });
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('find')
       .yields(null, [mockObservation]);
 
@@ -146,7 +141,7 @@ describe("observation read tests", function() {
   it("should get observations and filter on start and end date", function(done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -170,7 +165,7 @@ describe("observation read tests", function() {
 
     var startDate = moment("2016-01-01T00:00:00");
     var endDate = moment("2016-02-01T00:00:00");
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('find')
       .withArgs({
         lastModified: {
@@ -196,7 +191,7 @@ describe("observation read tests", function() {
   it("should get observations and filter on observationStartDate and observationEndDate", function(done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -220,7 +215,7 @@ describe("observation read tests", function() {
 
     var startDate = moment("2016-01-01T00:00:00");
     var endDate = moment("2016-02-01T00:00:00");
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('find')
       .withArgs({
         "properties.timestamp": {
@@ -246,7 +241,7 @@ describe("observation read tests", function() {
   it("should get observations and filter on bbox", function(done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -269,7 +264,7 @@ describe("observation read tests", function() {
     });
 
     var bbox = [0, 0, 10, 10];
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('find')
       .withArgs({
         geometry: {
@@ -299,7 +294,7 @@ describe("observation read tests", function() {
   it("should get observations and filter on geometry", function(done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -325,7 +320,7 @@ describe("observation read tests", function() {
       type: "Polygon",
       coordinates: [[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]]
     };
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('find')
       .withArgs({
         geometry: {
@@ -355,7 +350,7 @@ describe("observation read tests", function() {
   it("should get observations and filter on states", function(done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -378,7 +373,7 @@ describe("observation read tests", function() {
     });
 
     var states = 'active,archive';
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('find')
       .withArgs({
         "states.0.name": { $in: ['active', 'archive'] }
@@ -420,7 +415,7 @@ describe("observation read tests", function() {
     });
 
     var sort = 'lastModified';
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('find')
       .withArgs(sinon.match.any, sinon.match.any, { sort: { lastModified: 1 } })
       .yields(null, mockObservation);
@@ -460,7 +455,7 @@ describe("observation read tests", function() {
     });
 
     var sort = 'lastModified+DESC';
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('find')
       .withArgs(sinon.match.any, sinon.match.any, { sort: { lastModified: -1 } })
       .yields(null, mockObservation);
@@ -496,11 +491,11 @@ describe("observation read tests", function() {
   it("should deny observations for event I am not part of", function(done) {
     mockTokenWithPermission('READ_OBSERVATION_EVENT');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('populate')
       .yields(null, {
         name: 'Event 1',
@@ -526,7 +521,7 @@ describe("observation read tests", function() {
         timestamp: Date.now()
       }
     });
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('find')
       .yields(null, [mockObservation]);
 
@@ -544,7 +539,7 @@ describe("observation read tests", function() {
   it("should get observation for any event by id", function(done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -568,7 +563,7 @@ describe("observation read tests", function() {
         name: 'active'
       }]
     });
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .yields(null, mockObservation);
 
@@ -587,7 +582,7 @@ describe("observation read tests", function() {
   it("should fail to get observation by id that does not exist", function(done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -596,7 +591,7 @@ describe("observation read tests", function() {
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .yields(null, null);
 
@@ -611,7 +606,7 @@ describe("observation read tests", function() {
   it("should get observation and filter fields for any event by id", function(done) {
     mockTokenWithPermission('READ_OBSERVATION_ALL');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -632,7 +627,7 @@ describe("observation read tests", function() {
         timestamp: Date.now()
       }
     });
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs('123', { geometry: 1, id: true, "properties.timestamp": 1, type: true })
       .yields(null, mockObservation);

@@ -18,18 +18,13 @@ require('sinon-mongoose');
 
 describe("user create tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -51,17 +46,17 @@ describe("user create tests", function() {
       roleId: roleId
     });
 
-    sandbox.mock(mockUser)
+    sinon.mock(mockUser)
       .expects('populate')
       .twice()
       .withArgs('roleId')
       .yields(null, mockUser);
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('create')
       .yields(null, mockUser);
 
-    sandbox.mock(mockUser)
+    sinon.mock(mockUser)
       .expects('save')
       .yields(null, mockUser);
 
@@ -109,7 +104,7 @@ describe("user create tests", function() {
   it('should create user', function(done) {
     mockTokenWithPermission('NO_PERMISSIONS');
 
-    sandbox.mock(RoleModel)
+    sinon.mock(RoleModel)
       .expects('findOne')
       .withArgs({ name: 'USER_ROLE' })
       .yields(null, new RoleModel({
@@ -125,12 +120,12 @@ describe("user create tests", function() {
       passwordconfirm: 'passwordpassword'
     });
 
-    sandbox.mock(mockUser)
+    sinon.mock(mockUser)
       .expects('populate')
       .withArgs('roleId')
       .yields(null, mockUser);
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('create')
       .yields(null, mockUser);
 
@@ -159,7 +154,7 @@ describe("user create tests", function() {
   it('should create user with no whitespace', function(done) {
     mockTokenWithPermission('NO_PERMISSIONS');
 
-    sandbox.mock(RoleModel)
+    sinon.mock(RoleModel)
       .expects('findOne')
       .withArgs({ name: 'USER_ROLE' })
       .yields(null, new RoleModel({
@@ -175,12 +170,12 @@ describe("user create tests", function() {
       passwordconfirm: 'passwordpassword'
     });
 
-    sandbox.mock(mockUser)
+    sinon.mock(mockUser)
       .expects('populate')
       .withArgs('roleId')
       .yields(null, mockUser);
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('create')
       .withArgs(sinon.match.has('username', 'test'))
       .yields(null, mockUser);
@@ -327,7 +322,7 @@ describe("user create tests", function() {
   it('should fail to create user when passsord does not meet complexity', function(done) {
     mockTokenWithPermission('NO_PERMISSIONS');
 
-    sandbox.mock(RoleModel)
+    sinon.mock(RoleModel)
       .expects('findOne')
       .withArgs({ name: 'USER_ROLE' })
       .yields(null, new RoleModel({

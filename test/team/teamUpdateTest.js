@@ -11,19 +11,14 @@ require('../../models/team');
 var TeamModel = mongoose.model('Team');
 
 describe("team update tests", function() {
-
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
+  
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -42,13 +37,13 @@ describe("team update tests", function() {
       teamEventId: eventId
     });
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findOne').withArgs({_id: teamId.toString()})
       .chain('populate').withArgs('userIds')
       .chain('exec')
       .yields(null, mockTeam);
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findByIdAndUpdate')
       .yields(null, mockTeam);
 
@@ -77,13 +72,13 @@ describe("team update tests", function() {
       acl: acl
     });
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findOne').withArgs({_id: teamId.toString()})
       .chain('populate').withArgs('userIds')
       .chain('exec')
       .yields(null, mockTeam);
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findByIdAndUpdate')
       .yields(null, mockTeam);
 
@@ -112,7 +107,7 @@ describe("team update tests", function() {
       acl: acl
     });
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findOne').withArgs({_id: teamId.toString()})
       .chain('populate').withArgs('userIds')
       .chain('exec')
@@ -141,7 +136,7 @@ describe("team update tests", function() {
       name: 'Mock Team',
       acl: acl
     });
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findOne')
       .chain('populate')
       .chain('exec')
@@ -149,7 +144,7 @@ describe("team update tests", function() {
 
     var update = {};
     update['acl.' + aclUserId.toString()] = 'OWNER';
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findOneAndUpdate')
       .withArgs({_id: teamId}, update)
       .yields(null, mockTeam);
@@ -177,7 +172,7 @@ describe("team update tests", function() {
       name: 'Mock Team',
       acl: acl
     });
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findOne')
       .chain('populate')
       .chain('exec')
@@ -185,7 +180,7 @@ describe("team update tests", function() {
 
     var args = { $unset: {} };
     args.$unset['acl.' + aclUserId.toString()] = true;
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findOneAndUpdate')
       .withArgs({_id: teamId}, args)
       .yields(null, mockTeam);
@@ -211,7 +206,7 @@ describe("team update tests", function() {
       name: 'Mock Team',
       acl: acl
     });
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findOne')
       .chain('populate')
       .chain('exec')
@@ -219,7 +214,7 @@ describe("team update tests", function() {
 
     var update = {};
     update['acl.' + aclUserId.toString()] = 'MANAGER';
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findOneAndUpdate')
       .withArgs({_id: teamId}, update)
       .yields(null, mockTeam);
@@ -247,7 +242,7 @@ describe("team update tests", function() {
       name: 'Mock Team',
       acl: acl
     });
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findOne')
       .chain('populate')
       .chain('exec')
@@ -255,7 +250,7 @@ describe("team update tests", function() {
 
     var update = {};
     update['acl.' + aclUserId.toString()] = 'MANAGER';
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findOneAndUpdate')
       .withArgs({_id: teamId}, update)
       .yields(null, mockTeam);

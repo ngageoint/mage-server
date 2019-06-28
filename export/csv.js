@@ -1,5 +1,4 @@
-var util = require('util')
-  , api = require('../api')
+const util = require('util')
   , async = require('async')
   , archiver = require('archiver')
   , mgrs = require('mgrs')
@@ -8,7 +7,6 @@ var util = require('util')
   , stream = require('stream')
   , path = require('path')
   , json2csv = require('json2csv')
-  , json2csvStream = require('json2csv-stream')
   , Exporter = require('./exporter')
   , turfCentroid = require('@turf/centroid')
   , wkx = require('wkx')
@@ -31,24 +29,78 @@ Csv.prototype.export = function(streamable) {
   streamable.type('application/zip');
   streamable.attachment('mage-csv.zip');
 
-  var fields = ['id', 'user', 'device', 'shapeType', 'latitude', 'longitude', 'mgrs', 'timestamp', 'excelTimestamp', 'wkt'];
-  var fieldNames = ['id', 'User', 'Device', 'Shape Type', 'Latitude', 'Longitude', 'MGRS', 'Date (ISO8601)', 'Excel Timestamp (UTC)', 'Well Known Text'];
+  const observationFields = [{
+    label: 'id',
+    value: 'id'
+  },{
+    label: 'User',
+    value: 'user'
+  },{
+    label: 'Device',
+    value: 'device'
+  },{
+    label: 'Shape Type',
+    value: 'shapeType'
+  },{
+    label: 'Latitude',
+    value: 'latitude'
+  },{
+    label: 'Longitude',
+    value: 'longitude'
+  },{
+    label: 'MGRS',
+    value: 'mgrs'
+  },{
+    label: 'Date (ISO8601)',
+    value: 'timestamp'
+  },{
+    label: 'excelTimestamp',
+    value: 'Excel Timestamp (UTC)'
+  },{
+    label: 'wkt',
+    value: 'Well Known Text'
+  }];
 
-  self._event.forms.forEach(function(form) {
-    var formPrefix = self._event.forms.length > 1 ? form.name + '.' : '';
-    form.fields.forEach(function(field) {
-      if (field.archived) return;
+  self._event.forms
+    .filter(form => !form.archived)
+    .forEach(function(form) {
+      var formPrefix = self._event.forms.length > 1 ? form.name + '.' : '';
 
-      fields.push(formPrefix + field.name);
-      fieldNames.push(formPrefix + field.title);
+      form.fields
+        .filter(field => !field.archived)
+        .sort((a, b) => a.id - b.id)
+        .forEach(function(field) {
+          observationFields.push({
+            label: formPrefix + field.title,
+            value: formPrefix + field.name
+          });
+        });
     });
+
+  observationFields.push({
+    label: 'Attachment',
+    value: 'attachment'
   });
 
-  fields.push('attachment');
-  fieldNames.push('Attachment');
+  observationFields.push({
+    label: 'Attachment Excel Link',
+    value: 'attachmentExcelLink'
+  });
 
-  fields.push('attachmentExcelLink');
-  fieldNames.push('Attachment Excel Link');
+  const locationFields = [
+    'user',
+    'timestamp',
+    'latitude',
+    'longitude',
+    'altitude',
+    'provider',
+    'mgrs',
+    'accuracy',
+    'speed',
+    'bearing',
+    'battery_level',
+    'device'
+  ];
 
   streamable.type('application/zip');
   streamable.attachment("mage-export-csv.zip");
@@ -62,7 +114,7 @@ Csv.prototype.export = function(streamable) {
 
       var observationStream = new stream.PassThrough();
       archive.append(observationStream, { name:'observations.csv' });
-      self.streamObservations(observationStream, archive, fields, fieldNames, function(err) {
+      self.streamObservations(observationStream, archive, observationFields, function(err) {
         observationStream.end();
         done(err);
       });
@@ -70,12 +122,9 @@ Csv.prototype.export = function(streamable) {
     function(done) {
       if (!self._filter.exportLocations) return done();
 
-      var locationStream = new json2csvStream({
-        keys: ['user', 'device', 'timestamp', 'latitude', 'longitude', 'mgrs', 'accuracy', 'bearing', 'speed', 'altitude']
-      });
-      archive.append(locationStream, {name: 'locations.csv'});
-      self.streamLocations(locationStream, function(err) {
-        locationStream.end();
+      const asyncParser = new json2csv.AsyncParser({ fields: locationFields }, { readableObjectMode: true, writableObjectMode: true });
+      archive.append(asyncParser.processor, {name: 'locations.csv'});
+      self.streamLocations(asyncParser.input, function(err) {
         done(err);
       });
     }
@@ -85,23 +134,23 @@ Csv.prototype.export = function(streamable) {
       log.info(err);
     }
 
+    console.log('done writing csv, finalize archive');
     archive.finalize();
   });
 };
 
-Csv.prototype.streamObservations = function(stream, archive, fields, fieldNames, done) {
+Csv.prototype.streamObservations = function(stream, archive, fields, done) {
   var self = this;
+  self.requestObservations(self._filter, function(err, observations) {
+    var json = self.flattenObservations(observations, archive);
 
-  self._filter.states = ['active'];
-  new api.Observation(self._event).getAll({filter: self._filter}, function(err, observations) {
-    var data = self.flattenObservations(observations, archive);
-
-    json2csv({data: data, fields: fields, fieldNames: fieldNames}, function(err, csv) {
-      if (err) return done(err);
-
+    try {
+      const csv = json2csv.parse(json, {fields});
       stream.write(csv);
       done();
-    });
+    } catch (err) {
+      done(err);
+    }
   });
 };
 
@@ -172,8 +221,6 @@ Csv.prototype.flattenObservations = function(observations, archive) {
 };
 
 Csv.prototype.streamLocations = function(stream, done) {
-  log.info('writing locations...');
-
   var self = this;
   var limit = 2000;
 
@@ -182,23 +229,15 @@ Csv.prototype.streamLocations = function(stream, done) {
   var lastLocationId = null;
 
   var locations = [];
-  stream.write('[');
 
   async.doUntil(function(done) {
     self.requestLocations({startDate: startDate, endDate: endDate, lastLocationId: lastLocationId, limit: limit}, function(err, requestedLocations) {
       if (err) return done(err);
       locations = requestedLocations;
 
-      if (locations.length) {
-        if (lastLocationId) {
-          stream.write(",");  // not first time through
-        }
-
-        var data = JSON.stringify(self.flattenLocations(locations));
-        stream.write(data.substr(1, data.length - 2));
-      } else {
-        stream.write(']');
-      }
+      self.flattenLocations(locations).forEach(location => {
+        stream.push(location);
+      });
 
       log.info('Successfully wrote ' + locations.length + ' locations to CSV');
       var last = locations.slice(-1).pop();
@@ -218,6 +257,7 @@ Csv.prototype.streamLocations = function(stream, done) {
   },
   function(err) {
     log.info('done writing locations');
+    stream.push(null);
     done(err);
   });
 };
@@ -233,9 +273,7 @@ Csv.prototype.flattenLocations = function(locations) {
 
     properties.longitude = location.geometry.coordinates[0];
     properties.latitude = location.geometry.coordinates[1];
-
-    var centroid = turfCentroid(location);
-    properties.mgrs = mgrs.forward(centroid.geometry.coordinates);
+    properties.mgrs = mgrs.forward(location.geometry.coordinates);
 
     return properties;
   });

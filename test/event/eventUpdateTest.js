@@ -17,18 +17,13 @@ var EventModel = mongoose.model('Event');
 
 describe("event update tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -44,11 +39,11 @@ describe("event update tests", function() {
       _id: eventId,
       name: 'Mock Event'
     });
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findByIdAndUpdate')
       .withArgs(eventId, { name: 'Mock Event', description: 'Mock Event Description' })
       .yields(null, mockEvent);
@@ -73,11 +68,11 @@ describe("event update tests", function() {
       _id: eventId,
       name: 'Mock Event'
     });
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findByIdAndUpdate')
       .withArgs(eventId, { name: 'Mock Event', description: null })
       .yields(null, mockEvent);
@@ -98,7 +93,7 @@ describe("event update tests", function() {
     mockTokenWithPermission('UPDATE_EVENT');
 
     var eventId = 1;
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, new EventModel({
         _id: eventId,
@@ -111,14 +106,14 @@ describe("event update tests", function() {
       name: 'Mock Team'
     }];
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .withArgs({ _id: { $in: [teamId.toString()] }})
       .chain('populate')
       .chain('exec')
       .yields(null, mockTeams);
 
-    sandbox.mock(EventModel.collection)
+    sinon.mock(EventModel.collection)
       .expects('findAndModify')
       .yields(null);
 
@@ -150,14 +145,14 @@ describe("event update tests", function() {
     mockTokenWithPermission('UPDATE_EVENT');
 
     var eventId = 1;
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, new EventModel({
         _id: eventId,
         name: 'testEvent'
       }));
 
-    sandbox.mock(EventModel.collection)
+    sinon.mock(EventModel.collection)
       .expects('findAndModify')
       .yields(null);
 
@@ -209,12 +204,12 @@ describe("event update tests", function() {
       _id: eventId,
       name: 'Mock Event'
     });
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 
     var teamId = mongoose.Types.ObjectId();
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findByIdAndUpdate')
       .yields(null, mockEvent);
 
@@ -250,7 +245,7 @@ describe("event update tests", function() {
       _id: eventId,
       name: 'Mock Event'
     });
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 
@@ -261,7 +256,7 @@ describe("event update tests", function() {
       teamEventId: 2
     }];
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .chain('populate')
       .chain('exec')
@@ -289,11 +284,11 @@ describe("event update tests", function() {
       _id: eventId,
       name: 'Mock Event'
     });
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findByIdAndUpdate')
       .withArgs(eventId, sinon.match({ complete: true }))
       .yields(null, mockEvent);
@@ -330,11 +325,11 @@ describe("event update tests", function() {
       _id: eventId,
       name: 'Mock Event'
     });
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findByIdAndUpdate')
       .withArgs(eventId, sinon.match({ complete: false }))
       .yields(null, mockEvent);
@@ -374,11 +369,11 @@ describe("event update tests", function() {
       name: 'Mock Event',
       acl: acl
     });
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findByIdAndUpdate')
       .withArgs(eventId)
       .yields(null, mockEvent);
@@ -404,7 +399,7 @@ describe("event update tests", function() {
       name: 'Mock Event',
       acl: {}
     });
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 
@@ -431,7 +426,7 @@ describe("event update tests", function() {
       acl: acl
     });
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 
@@ -456,7 +451,7 @@ describe("event update tests", function() {
       name: 'Mock Team'
     }];
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .withArgs({ _id: { $in: [teamId.toString()] }})
       .chain('populate')
@@ -472,13 +467,13 @@ describe("event update tests", function() {
       acl: acl
     });
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 
     var eventUpdate = {};
     eventUpdate['acl.' + aclUserId.toString()] = 'OWNER';
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findOneAndUpdate')
       .withArgs({_id: eventId}, eventUpdate)
       .yields(null, mockTeam);
@@ -486,14 +481,14 @@ describe("event update tests", function() {
     var mockTeam = new TeamModel({
       name: 'Mock Team'
     });
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findOne')
       .withArgs({teamEventId: eventId})
       .yields(null, mockTeam);
 
     var teamUpdate = {};
     teamUpdate['acl.' + aclUserId.toString()] = 'OWNER';
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findOneAndUpdate')
       .withArgs({teamEventId: eventId}, teamUpdate)
       .yields(null, mockTeam);
@@ -519,7 +514,7 @@ describe("event update tests", function() {
       name: 'Mock Team'
     }];
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .withArgs({ _id: { $in: [teamId.toString()] }})
       .chain('populate')
@@ -535,13 +530,13 @@ describe("event update tests", function() {
       acl: acl
     });
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 
     var eventUpdate = { $unset: {} };
     eventUpdate.$unset['acl.' + aclUserId.toString()] = true;
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findOneAndUpdate')
       .withArgs({_id: eventId}, eventUpdate)
       .yields(null, mockTeam);
@@ -549,14 +544,14 @@ describe("event update tests", function() {
     var mockTeam = new TeamModel({
       name: 'Mock Team'
     });
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findOne')
       .withArgs({teamEventId: eventId})
       .yields(null, mockTeam);
 
     var teamUpdate = { $unset: {} };
     teamUpdate.$unset['acl.' + aclUserId.toString()] = true;
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('findOneAndUpdate')
       .withArgs({teamEventId: eventId}, teamUpdate)
       .yields(null, mockTeam);
@@ -579,7 +574,7 @@ describe("event update tests", function() {
       name: 'Mock Team'
     }];
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .withArgs({ _id: { $in: [teamId.toString()] }})
       .chain('populate')
@@ -595,7 +590,7 @@ describe("event update tests", function() {
       acl: acl
     });
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 
@@ -619,7 +614,7 @@ describe("event update tests", function() {
       name: 'Mock Team'
     }];
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .withArgs({ _id: { $in: [teamId.toString()] }})
       .chain('populate')
@@ -635,7 +630,7 @@ describe("event update tests", function() {
       acl: acl
     });
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 

@@ -18,18 +18,13 @@ var EventModel = mongoose.model('Event');
 
 describe("event read tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -45,7 +40,7 @@ describe("event read tests", function() {
       _id: eventId,
       name: 'Mock Event'
     });
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('find')
       .withArgs({ complete: { $ne: true } })
       .yields(null, [mockEvent]);
@@ -83,7 +78,7 @@ describe("event read tests", function() {
       }
     };
 
-    sandbox.mock(EventModel.collection)
+    sinon.mock(EventModel.collection)
       .expects('find')
       .withArgs({ complete: { $ne: true } })
       .yields(null, mockCursor);
@@ -124,11 +119,11 @@ describe("event read tests", function() {
       acl: {}
     });
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('populate')
       .yields(null, [mockEvent1, mockEvent2]);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('find')
       .withArgs({ complete: { $ne: true } })
       .yields(null);
@@ -163,11 +158,11 @@ describe("event read tests", function() {
       acl: {}
     });
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('populate')
       .yields(null, [mockEvent1, mockEvent2]);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('find')
       .withArgs({ complete: { $ne: true } })
       .yields(null);
@@ -194,12 +189,12 @@ describe("event read tests", function() {
       _id: eventId,
       name: 'Mock Event'
     });
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('find')
       .withArgs({ complete: true })
       .yields(null, [mockEvent]);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('populate')
       .yields(null, [mockEvent]);
 
@@ -220,12 +215,12 @@ describe("event read tests", function() {
       _id: eventId,
       name: 'Mock Event'
     });
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('find')
       .withArgs({})
       .yields(null, [mockEvent]);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('populate')
       .yields(null, [mockEvent]);
 
@@ -247,7 +242,7 @@ describe("event read tests", function() {
       name: 'Mock Event'
     });
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .twice()
       .onFirstCall()
@@ -273,7 +268,7 @@ describe("event read tests", function() {
       name: 'Mock Event'
     });
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .twice()
       .onFirstCall()
@@ -299,7 +294,7 @@ describe("event read tests", function() {
       name: 'Mock Event'
     });
 
-    var eventMock = sandbox.mock(EventModel);
+    var eventMock = sinon.mock(EventModel);
 
     eventMock.expects('findById')
       .withArgs("1")
@@ -328,7 +323,7 @@ describe("event read tests", function() {
       name: 'Mock Event'
     });
 
-    var eventMock = sandbox.mock(EventModel);
+    var eventMock = sinon.mock(EventModel);
 
     eventMock.expects('findById')
       .withArgs("1")
@@ -368,13 +363,13 @@ describe("event read tests", function() {
     });
     mockEvent.teamIds[0] = mockTeam;
 
-    var eventMock = sandbox.mock(EventModel);
+    var eventMock = sinon.mock(EventModel);
 
     eventMock.expects('findById')
       .withArgs("1")
       .yields(null, mockEvent);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('populate')
       .yields(null, mockEvent);
 
@@ -418,13 +413,13 @@ describe("event read tests", function() {
     });
     mockEvent.teamIds[0] = mockTeam;
 
-    var eventMock = sandbox.mock(EventModel);
+    var eventMock = sinon.mock(EventModel);
 
     eventMock.expects('findById')
       .withArgs("1")
       .yields(null, mockEvent);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('populate')
       .yields(null, mockEvent);
 

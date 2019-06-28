@@ -1,5 +1,4 @@
 const util = require('util')
-  , api = require('../api')
   , async = require('async')
   , archiver = require('archiver')
   , mgrs = require('mgrs')
@@ -47,8 +46,7 @@ Shapefile.prototype.observationsToShapefile = function(archive, done) {
 
   if (!self._filter.exportObservations) return done(null, []);
 
-  self._filter.states = ['active'];
-  new api.Observation(self._event).getAll({filter: self._filter}, function(err, observations) {
+  self.requestObservations(self._filter, function(err, observations) {
     if (err) return done(err);
 
     mapObservations.call(self, observations);
@@ -63,7 +61,6 @@ Shapefile.prototype.observationsToShapefile = function(archive, done) {
     }, done);
   });
 };
-
 
 Shapefile.prototype.locationsToShapefiles = function(archive, done) {
   var self = this;

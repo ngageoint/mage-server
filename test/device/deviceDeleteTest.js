@@ -13,18 +13,13 @@ var DeviceModel = mongoose.model('Device');
 
 describe("device delete tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate')
@@ -43,12 +38,12 @@ describe("device delete tests", function() {
       description: 'Some description',
       userId: userId.toString()
     });
-    sandbox.mock(DeviceModel)
+    sinon.mock(DeviceModel)
       .expects('findById')
       .chain('exec')
       .resolves(mockDevice);
 
-    sandbox.mock(mockDevice)
+    sinon.mock(mockDevice)
       .expects('remove')
       .chain('exec')
       .resolves(mockDevice);
@@ -69,7 +64,7 @@ describe("device delete tests", function() {
   it("should fail to delete device that does not exist", function(done) {
     mockTokenWithPermission('DELETE_DEVICE');
 
-    sandbox.mock(DeviceModel)
+    sinon.mock(DeviceModel)
       .expects('findById')
       .chain('exec')
       .resolves(null);

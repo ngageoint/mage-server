@@ -1,6 +1,7 @@
 const mgrs = require('mgrs')
   , moment = require('moment')
   , turfCentroid = require('@turf/centroid')
+  , api = require('../api')
   , Location = require('../models/location');
 
 function Exporter(options) {
@@ -53,6 +54,18 @@ Exporter.prototype.mapObservations = function(observations) {
   });
 };
 
+Exporter.prototype.requestObservations = function(filter, done) {
+  filter.states = ['active'];
+
+  filter.observationStartDate = filter.startDate;
+  delete filter.startDate;
+
+  filter.observationEndDate = filter.endDate;
+  delete filter.endDate;
+
+  new api.Observation(this._event).getAll({filter: filter}, done);
+};
+
 Exporter.prototype.requestLocations = function(options, done) {
   var filter = {
     eventId: this._event._id
@@ -63,10 +76,7 @@ Exporter.prototype.requestLocations = function(options, done) {
   if (options.startDate) filter.startDate = options.startDate.toDate();
   if (options.endDate) filter.endDate = options.endDate.toDate();
 
-  Location.getLocations({filter: filter, limit: options.limit}, function(err, locations) {
-    if(err) return done(err);
-    done(null, locations);
-  });
+  Location.getLocations({filter: filter, limit: options.limit}, done);
 };
 
 module.exports = Exporter;

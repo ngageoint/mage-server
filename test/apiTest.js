@@ -14,17 +14,12 @@ require('chai').should();
 
 describe("api route tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   it("api should return configuration", function(done) {
-    sandbox.mock(SettingModel)
+    sinon.mock(SettingModel)
       .expects('findOne')
       .withArgs({type: 'disclaimer'})
       .chain('exec')
@@ -42,7 +37,7 @@ describe("api route tests", function() {
         }
       });
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('count')
       .withArgs({})
       .yields(null, 1);
@@ -63,13 +58,13 @@ describe("api route tests", function() {
   });
 
   it("api should return initial", function(done) {
-    sandbox.mock(SettingModel)
+    sinon.mock(SettingModel)
       .expects('findOne')
       .withArgs({type: 'disclaimer'})
       .chain('exec')
       .resolves({});
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('count')
       .withArgs({})
       .yields(null, 0);
@@ -87,13 +82,13 @@ describe("api route tests", function() {
   });
 
   it("api should not return initial", function(done) {
-    sandbox.mock(SettingModel)
+    sinon.mock(SettingModel)
       .expects('findOne')
       .withArgs({type: 'disclaimer'})
       .chain('exec')
       .resolves({});
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('count')
       .withArgs({})
       .yields(null, 2);

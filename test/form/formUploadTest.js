@@ -8,13 +8,8 @@ describe("form upload tests", function() {
 
   this.timeout(300000);
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   it("should remove archived fields in uploaded form", function(done) {
@@ -37,8 +32,8 @@ describe("form upload tests", function() {
       userFields: []
     };
 
-    let jsonStub = sandbox.stub().returns(JSON.stringify(form));
-    let iconsStub = sandbox.stub().withArgs('form/icons/').returns(true);
+    let jsonStub = sinon.stub().returns(JSON.stringify(form));
+    let iconsStub = sinon.stub().withArgs('form/icons/').returns(true);
     function Zip() {
       return {
         readAsText: jsonStub,
@@ -81,8 +76,8 @@ describe("form upload tests", function() {
       userFields: []
     };
 
-    let jsonStub = sandbox.stub().returns(JSON.stringify(form));
-    let iconsStub = sandbox.stub().withArgs('form/icons/').returns(true);
+    let jsonStub = sinon.stub().returns(JSON.stringify(form));
+    let iconsStub = sinon.stub().withArgs('form/icons/').returns(true);
     function Zip() {
       return {
         readAsText: jsonStub,
@@ -127,8 +122,8 @@ describe("form upload tests", function() {
       userFields: []
     };
 
-    let jsonStub = sandbox.stub().returns(JSON.stringify(form));
-    let iconsStub = sandbox.stub().withArgs('form/icons/').returns(true);
+    let jsonStub = sinon.stub().returns(JSON.stringify(form));
+    let iconsStub = sinon.stub().withArgs('form/icons/').returns(true);
     function Zip() {
       return {
         readAsText: jsonStub,
@@ -173,8 +168,8 @@ describe("form upload tests", function() {
       userFields: []
     };
 
-    let jsonStub = sandbox.stub().returns(JSON.stringify(form));
-    let iconsStub = sandbox.stub().withArgs('form/icons/').returns(true);
+    let jsonStub = sinon.stub().returns(JSON.stringify(form));
+    let iconsStub = sinon.stub().withArgs('form/icons/').returns(true);
     function Zip() {
       return {
         readAsText: jsonStub,
@@ -216,8 +211,8 @@ describe("form upload tests", function() {
       userFields: []
     };
 
-    let jsonStub = sandbox.stub().returns(JSON.stringify(form));
-    let iconsStub = sandbox.stub().withArgs('form/icons/').returns(true);
+    let jsonStub = sinon.stub().returns(JSON.stringify(form));
+    let iconsStub = sinon.stub().withArgs('form/icons/').returns(true);
     function Zip() {
       return {
         readAsText: jsonStub,
@@ -259,8 +254,8 @@ describe("form upload tests", function() {
       userFields: ['first', 'first']
     };
 
-    let jsonStub = sandbox.stub().returns(JSON.stringify(form));
-    let iconsStub = sandbox.stub().withArgs('form/icons/').returns(true);
+    let jsonStub = sinon.stub().returns(JSON.stringify(form));
+    let iconsStub = sinon.stub().withArgs('form/icons/').returns(true);
     function Zip() {
       return {
         readAsText: jsonStub,
