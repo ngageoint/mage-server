@@ -34,7 +34,15 @@ function LocationPopupController($scope, LocalStorageService) {
     $scope.userZoom({user: $scope.user});
   };
 
+  $scope.followUser = function() {
+    $scope.$emit('user:follow', $scope.user);
+  }
+
   $scope.$watch('user', function() {
     $scope.date = moment($scope.user.location.properties.timestamp).format("YYYY-MM-DD HH:mm:ss");
+  });
+
+  $scope.$on('user:follow', function(e, user) {
+    $scope.followUserId = user.id;
   });
 }

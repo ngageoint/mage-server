@@ -49,6 +49,11 @@
   z-index: 2;
 }
 
+.card-background-container {
+  background: var(--background-behind-card);
+  padding-top: 1px;
+}
+
 .feed-tab:last-child {
 	margin-left: 0;
 }

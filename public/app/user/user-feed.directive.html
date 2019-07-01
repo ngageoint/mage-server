@@ -27,48 +27,12 @@
         <span class="mdc-button__label" ng-show="followUserId == user.id">Following</span>
         <span class="mdc-button__label" ng-hide="followUserId == user.id">Follow</span>
       </button>
-      <!-- <button class="mdc-button mdc-card__action mdc-card__action--button" ng-click="onUserLocationClick(user)">
-        <span class="mdc-button__label">{{user.location.geometry | geometry:5}}</span>
-      </button> -->
     </div>
     <div class="mdc-card__action-icons">
       <button class="material-icons mdc-icon-button mdc-card__action mdc-card__action--icon" ng-click="onUserLocationClick(user)">
         <i class="material-icons mdc-icon-button__icon">my_location</i>
       </button>
-      <!-- <button class="mdc-button mdc-card__action mdc-card__action--button mdc-button--raised mdc-button--dense" ng-click="followUser($event, user)">
-        <span class="mdc-button__label" ng-show="followUserId == user.id">Following...</span>
-        <span class="mdc-button__label" ng-hide="followUserId == user.id">Follow</span>
-      </button> -->
     </div>
   </div>
   <div class="mdc-list-divider"></div>
-
-    <!-- <div class="user-item feed-card-content">
-
-    <div>
-      <div class="pull-left right-gap" avatar-user="user" avatar-width="60" avatar-height="60"></div>
-    </div>
-
-    <div class="user-item-content">
-      <div class="observation-type">
-        <strong class="muted">{{user.displayName}}</strong>
-      </div>
-  		<div class="observation-variant ellipsis muted" title="{{user.email}}">{{user.email}}</div>
-    </div>
-
-    <div class="user-item-actions">
-      <div class="small muted">{{user.location.properties.timestamp | moment}}</div>
-      <div>
-        <a href="javascript:void(0)" class="small muted" ng-click="onUserLocationClick(user)">
-          {{user.location.geometry | geometry:5}}
-        </a>
-      </div>
-      <div>
-        <button ng-class="{active: followUserId == user.id}" class="btn btn-xs btn-primary top-gap-s" data-toggle="button" ng-click="followUser($event, user)">
-          <span ng-show="followUserId == user.id">Following...</span>
-          <span ng-hide="followUserId == user.id">Follow</span>
-        </button>
-      </div>
-    </div>
-  </div> -->
 </div>

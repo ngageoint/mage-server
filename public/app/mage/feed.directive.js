@@ -35,10 +35,20 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
     document.querySelector('.content--active').classList.remove('content--active');
     // Show content for newly-activated tab
     contentEls[event.detail.index].classList.add('content--active');
+    if (!userSelectMdc && event.detail.index === 1) {
+      userSelectMdc = new MDCSelect($element.find('.user-select')[0])
+      userSelectMdc.listen('MDCSelect:change', () => {
+        $scope.$apply(() => {
+          $scope.currentUserPage = userSelectMdc.selectedIndex
+        })
+      })
+    }
+    userSelectMdc.value = $scope.currentUserPage;
   });
 
   const chipSet = new MDCChipSet($element.find('.mdc-chip-set')[0])
-  let selectMdc;
+  let observationSelectMdc;
+  let userSelectMdc;
 
   $scope.currentFeedPanel = 'observationsTab';
 
@@ -225,8 +235,8 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
 
     $timeout(function() {
       // scroll to observation in that page
-      var offset = $($element.find(".feed-items-container")).prop('offsetTop');
-      var feedElement = $($element.find(".feed-items"));
+      var offset = $($element.find(".observation-card-background-container")).prop('offsetTop');
+      var feedElement = $($element.find(".observation-feed-container"));
       feedElement.animate({scrollTop: $('#' + observation.id).prop('offsetTop') - offset}, "slow");
     });
   });
@@ -249,14 +259,15 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
       }
     }
 
+    tabBar.activateTab(1)
     $scope.currentUserPage = page;
     $scope.currentFeedPanel = 'peopleTab';
     $scope.hideFeed = false;
 
     $timeout(function() {
       // scroll to observation in that page
-      var offset = $($element.find(".feed-items-container")).prop('offsetTop');
-      var feedElement = $($element.find(".feed-items"));
+      var offset = $($element.find(".people-card-background-container")).prop('offsetTop');
+      var feedElement = $($element.find(".people-feed-container"));
       feedElement.animate({scrollTop: $('#' + user.id).prop('offsetTop') - offset}, "slow");
     });
   });
@@ -268,7 +279,7 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
   });
 
   $scope.$on('user:follow', function(e, user) {
-    $scope.followUserId = $scope.followUserId === user.id ? null : user.id;
+    // $scope.followUserId = $scope.followUserId === user.id ? null : user.id;
   });
 
   $scope.$watch('observations', function(observations) {
@@ -298,14 +309,18 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
   }
 
   $scope.$watch('observationPages', function(newObsPages, oldObsPages) {
-    if (!selectMdc) {
-      selectMdc = new MDCSelect($element.find('.mdc-select')[0])
-      selectMdc.listen('MDCSelect:change', () => {
+    if (!observationSelectMdc) {
+      observationSelectMdc = new MDCSelect($element.find('.observation-select')[0])
+      observationSelectMdc.listen('MDCSelect:change', () => {
         $scope.$apply(() => {
-          $scope.currentObservationPage = selectMdc.selectedIndex
+          $scope.currentObservationPage = observationSelectMdc.selectedIndex
         })
       })
     }
+  })
+
+  $scope.$watch('userPages', function() {
+    
   })
 
   function calculateUserPages(users) {
