@@ -150,10 +150,16 @@
   color: var(--mdc-theme-text-disabled-on-background, rgba(0, 0, 0, 0.38));
 }
 
- .location-field-select .map-clip{
-  width: 368px;
+ .location-field-select .map-clip {
+  width: 370px;
   margin: 16px;
   height: 150px;
+}
+
+.location-field-select .map-spacer {
+  width: 370px;
+  margin: 16px;
+  height: 24px;
 }
 
 .location-field-select .mdc-select__native-control {
@@ -169,6 +175,10 @@
 
 .location-field-select.mdc-select {
   height: unset;
+  cursor: pointer;
+}
+
+.location-field-select.mdc-select label {
   cursor: pointer;
 }
 
@@ -317,7 +327,7 @@ a {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  z-index: 0;
+  z-index: 2;
   font-size: 16px;
   background-color: var(--mdc-theme-primary-dark);
   color: #fff;

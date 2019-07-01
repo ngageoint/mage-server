@@ -9,11 +9,15 @@ module.exports = {
   controller: function($element, $timeout) {
     this.$postLink = function() {
       this.textField = new MDCTextField($element.find('.mdc-text-field')[0]);
+      if (this.field.value)
+        this.textField.value = this.field.value;
     }
 
     this.$onChanges = function() {
       $timeout(function() {
-        this.textField.value = this.field.value;
+        if (this.textField && this.field.value) {
+          this.textField.value = this.field.value;
+        }
       }.bind(this));
     }
   }

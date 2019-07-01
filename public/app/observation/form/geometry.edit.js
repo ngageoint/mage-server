@@ -31,10 +31,10 @@ function GeometryEditController(GeometryService, LocalStorageService, $timeout, 
     value: 'Polygon'
   }];
 
-  this.field.value = this.field.value || {type: 'Point', coordinates: []};
+  // this.field.value = this.field.value || {type: 'Point', coordinates: []};
 
   this.shape = {
-    type: this.field.value.type
+    type: 'Point'
   };
 
   this.coordinateSystem = LocalStorageService.getCoordinateSystemEdit();
@@ -43,7 +43,11 @@ function GeometryEditController(GeometryService, LocalStorageService, $timeout, 
     event.stopPropagation();
     event.preventDefault();
     event.stopImmediatePropagation();
-    this.startGeometryEdit({field: this.field})
+    var editField = angular.copy(this.field);
+    const mapPos = LocalStorageService.getMapPosition();
+    console.log('mapPos', mapPos)
+    editField.value = editField.value || {type: 'Point', coordinates: [mapPos.center.lng, mapPos.center.lat]}
+    this.startGeometryEdit({field: editField})
   }
 
   this.$postLink = function() {
@@ -52,11 +56,10 @@ function GeometryEditController(GeometryService, LocalStorageService, $timeout, 
   
   this.initializeDropDown = function() {
     $timeout(function() {
-      if (!this.select)
-      this.select = new MDCSelect($element.find('.mdc-select')[0]);
-      $timeout(function() {
+      if (!this.select && this.field.value && this.field.value.coordinates.length) {
+        this.select = new MDCSelect($element.find('.mdc-select')[0]);
         this.select.selectedIndex = 0;
-      })
+      }
     }.bind(this))
   }
 
@@ -133,6 +136,7 @@ function GeometryEditController(GeometryService, LocalStorageService, $timeout, 
   };
 
   function toMgrs(field) {
+    if (!field.value) return;
     switch (field.value.type) {
     case 'Point':
       return mgrs.forward(field.value.coordinates);

@@ -12,7 +12,9 @@ module.exports = {
     }
     this.$onChanges = function() {
       $timeout(function() {
-        this.textField.value = this.field.value;
+        if (this.field.value) {
+          this.textField.value = this.field.value;
+        }
       }.bind(this))
     }
   }

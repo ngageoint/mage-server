@@ -39,8 +39,9 @@ function MapClipController($rootScope, $scope, $element, MapService) {
   });
 
   $scope.$watch('feature', function() {
-
-    map.removeLayer(observation);
+    if (observation) {
+      map.removeLayer(observation);
+    }
     addObservation($scope.feature);
 
   }, true);
@@ -77,6 +78,7 @@ function MapClipController($rootScope, $scope, $element, MapService) {
   }
 
   function addObservation(feature) {
+    if (!feature || !feature.geometry || !feature.geometry.coordinates.length) return;
     console.log('feature', feature)
     if(feature.geometry){
       if(feature.geometry.type === 'Point'){
@@ -118,7 +120,7 @@ function MapClipController($rootScope, $scope, $element, MapService) {
       attributionControl: false
     });
 
-    if ($scope.feature) {
+    if ($scope.feature && $scope.feature.geometry && $scope.feature.geometry.coordinates.length) {
       addObservation($scope.feature);
     }
 
