@@ -318,7 +318,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
         if (popup) {
           if (_.isFunction(popup.html)) {
             var options = {autoPan: false, maxWidth: 400};
-            if (popup.closeButton) options.closeButton = popup.closeButton;
+            if (popup.closeButton !== undefined) options.closeButton = popup.closeButton;
             layer.bindPopup(popup.html(feature), options);
           }
 
