@@ -11,6 +11,10 @@
   padding-bottom: 16px;
 }
 
+.leaflet-popup-content .observation-header {
+  padding-bottom: 0px;
+}
+
 .observation-header-content {
   display: flex;
   flex-direction: column;
@@ -22,6 +26,15 @@
   padding-right: 16px;
   width: 150px;
   text-align: right;
+}
+
+.leaflet-popup-content .observation-header-content-right {
+  padding-right: 0px;
+  padding-top: 6px;
+}
+
+.leaflet-popup-content .mdc-card__actions {
+  padding-right: 0px;
 }
 
 .observation-thumbnail {

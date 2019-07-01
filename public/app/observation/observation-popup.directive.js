@@ -16,9 +16,9 @@ module.exports = function observationPopup() {
   return directive;
 };
 
-ObservationPopupDirective.$inject = ['$scope', 'EventService'];
+ObservationPopupDirective.$inject = ['$scope', 'EventService', 'UserService'];
 
-function ObservationPopupDirective($scope, EventService) {
+function ObservationPopupDirective($scope, EventService, UserService) {
 
   if ($scope.observation.properties.forms.length > 0) {
     var form = _.find(EventService.getForms($scope.observation), function(form) {
@@ -48,5 +48,8 @@ function ObservationPopupDirective($scope, EventService) {
 
   $scope.$watch('observation', function() {
     $scope.date = moment($scope.observation.properties.timestamp).format("YYYY-MM-DD HH:mm:ss");
+    UserService.getUser($scope.observation.userId).then(function(user) {
+      $scope.observationUser = user;
+    });
   });
 }

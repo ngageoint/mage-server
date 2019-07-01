@@ -46,6 +46,7 @@
 @import "./form-chooser.css";
 @import "./material-select-theme.scss";
 @import "./mdDateTimePicker-overrides.css";
+@import "./leaflet-overrides.css";
 
 .material-icons-sm {
   font-size: 1rem;

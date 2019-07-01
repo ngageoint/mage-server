@@ -387,11 +387,11 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
   }
 
   function onObservationSelected(observation, options) {
-    $scope.$broadcast('observation:select', observation, options);
-    if (options.scrollTo) {
-      $scope.hideFeed = false;
-      MapService.hideFeed(false);
-    }
+    $scope.$broadcast('observation:view', observation, options);
+    // if (options.scrollTo) {
+    //   $scope.hideFeed = false;
+    //   MapService.hideFeed(false);
+    // }
   }
 
   function onObservationDeselected(observation) {
