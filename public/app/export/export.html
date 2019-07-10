@@ -1,131 +1,132 @@
-<div class="modal-header">
-  <h3 class="modal-title"><i class="icon-download"></i> Export</h3>
-</div>
-
-<div class="modal-body">
-  <form>
-    <div ng-show="showEventError" class="alert-error" bs-alert>
-      <span>Please Select an Event</span>
-    </div>
-
-    <div class="form-group">
-      <div class="row">
-        <div class="col-md-6">
-          <label>Event</label>
-          <ui-select ng-model="exportEvent.selected" theme="bootstrap">
-            <ui-select-match placeholder="Select an event to export">{{$select.selected.name}}</ui-select-match>
-            <ui-select-choices repeat="event in events | orderBy: 'name' | filter: $select.search">
-              <div ng-bind-html="event.name | highlight: $select.search"></div>
-            </ui-select-choices>
-          </ui-select>
-        </div>
+<div class="export-panel mdc-dialog" role="alertdialog" aria-modal="true" aria-labelledby="my-dialog-title"
+  aria-describedby="my-dialog-content">
+  <div class="mdc-dialog__container">
+    <div class="mdc-dialog__surface">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="icon-download"></i> Export</h3>
       </div>
-    </div>
-
-    <div class="form-group">
-      <div class="checkbox">
-        <label>
-          <input type="checkbox" ng-model="exportObservations.value">Observations
-        </label>
-      </div>
-
-      <div class="checkbox export-actions" ng-show="exportObservations.value">
-        <label>
-          <input type="checkbox" ng-model="exportObservationsWithAttachments.value">Attachments
-        </label>
-        <p class="help-block">Export only observations with attachments.</p>
-      </div>
-
-      <div class="checkbox export-actions" ng-show="exportObservations.value">
-        <label>
-          <input type="checkbox" ng-model="exportFavoriteObservations.value">Favorites
-        </label>
-        <p class="help-block">Export only your favorite observations.</p>
-      </div>
-
-      <div class="checkbox export-actions" ng-show="exportObservations.value">
-        <label>
-          <input type="checkbox" ng-model="exportImportantObservations.value">Important
-        </label>
-        <p class="help-block">Export only observations flagged as important.</p>
-      </div>
-    </div>
-
-    <div class="checkbox">
-      <label>
-        <input type="checkbox" ng-model="exportLocations.value">Locations
-      </label>
-    </div>
-
-    <div class="form-group">
-
-      <div class="row">
-        <div class="col-md-6">
-          <label>Time Interval</label>
-          <select class="form-control" ng-model="exportTime" ng-options="o.label for o in exportOptions"></select>
-        </div>
-      </div>
-    </div>
-
-    <div ng-show="exportTime.custom">
-      <div class="form-group">
-
-        <div class="row">
-          <div class="col-md-6">
-            <label class="control-label">Start Date/Time</label>
-            <p class="input-group">
-              <input type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy HH:mm:ss" ng-model="startDate" is-open="startDatePopup.open" close-text="Close" />
-              <span class="input-group-btn">
-                <button type="button" class="btn btn-default" ng-click="openStartDate($event)"><i class="fa fa-calendar"></i></button>
-              </span>
-            </p>
+      <div class="mdc-dialog__content" id="my-dialog-content">
+        <form>
+          <div ng-show="showEventError" class="alert-error" bs-alert>
+            <span>Please Select an Event</span>
           </div>
-          <div class="col-md-6">
-            <label class="control-label">&nbsp;</label>
 
-            <p class="input-group">
-              <button type="button" ng-click="exportLocalTime = !exportLocalTime" class="btn btn-default">
-                <i class="fa fa-clock-o"></i>
-                <span ng-show="exportLocalTime"> Local (GMT {{localOffset}})</span>
-                <span ng-show="!exportLocalTime"> GMT (GMT +00:00)</span>
-              </button>
-            </p>
+          <div class="form-group">
+            <div class="event-select mdc-select mdc-select--outlined filter-dropdown">
+              <input type="hidden" name="enhanced-select">
+              <i class="mdc-select__dropdown-icon"></i>
+              <div class="mdc-select__selected-text">{{$ctrl.exportEvent.selected.name}}</div>
+              <div class="mdc-select__menu mdc-menu mdc-menu-surface filter-dropdown">
+                <ul class="mdc-list">
+                  <li ng-repeat="event in $ctrl.events | orderBy: 'name'" class="mdc-list-item"
+                    ng-class="{'mdc-list-item--selected': $ctrl.exportEvent.selected.id === event.id}"
+                    data-value="{{event.id}}">
+                    {{event.name}}
+                  </li>
+                </ul>
+              </div>
+              <div class="mdc-notched-outline">
+                <div class="mdc-notched-outline__leading"></div>
+                <div class="mdc-notched-outline__notch">
+                  <label class="mdc-floating-label">Event</label>
+                </div>
+                <div class="mdc-notched-outline__trailing"></div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div class="row">
-          <div class="col-md-6">
-            <label class="control-label">End Date/Time</label>
-            <p class="input-group">
-              <input type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy HH:mm:ss" ng-model="endDate" is-open="endDatePopup.open" close-text="Close" />
-              <span class="input-group-btn">
-                <button type="button" class="btn btn-default" ng-click="openEndDate($event)"><i class="fa fa-calendar"></i></button>
-              </span>
-            </p>
-          </div>
-          <div class="col-md-6">
-            <label class="control-label">&nbsp;</label>
+          <div class="form-group">
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" ng-model="$ctrl.exportObservations.value">Observations
+              </label>
+            </div>
 
-            <p class="input-group">
-              <button type="button" ng-click="exportLocalTime = !exportLocalTime" class="btn btn-default">
-                <i class="fa fa-clock-o"></i>
-                <span ng-show="exportLocalTime"> Local (GMT {{localOffset}})</span>
-                <span ng-show="!exportLocalTime"> GMT (GMT +00:00)</span>
-              </button>
-            </p>
+            <div class="checkbox export-actions" ng-show="$ctrl.exportObservations.value">
+              <label>
+                <input type="checkbox" ng-model="$ctrl.exportObservationsWithAttachments.value">Attachments
+              </label>
+              <p class="help-block">Export only observations with attachments.</p>
+            </div>
+
+            <div class="checkbox export-actions" ng-show="$ctrl.exportObservations.value">
+              <label>
+                <input type="checkbox" ng-model="$ctrl.exportFavoriteObservations.value">Favorites
+              </label>
+              <p class="help-block">Export only your favorite observations.</p>
+            </div>
+
+            <div class="checkbox export-actions" ng-show="$ctrl.exportObservations.value">
+              <label>
+                <input type="checkbox" ng-model="$ctrl.exportImportantObservations.value">Important
+              </label>
+              <p class="help-block">Export only observations flagged as important.</p>
+            </div>
           </div>
-        </div>
+
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" ng-model="$ctrl.exportLocations.value">Locations
+            </label>
+          </div>
+
+          <div class="form-group">
+            <div class="interval-select mdc-select mdc-select--outlined filter-dropdown">
+              <input type="hidden" name="enhanced-select">
+              <i class="mdc-select__dropdown-icon"></i>
+              <div class="mdc-select__selected-text">{{$ctrl.intervalChoice.label}}</div>
+              <div class="mdc-select__menu mdc-menu mdc-menu-surface filter-dropdown">
+                <ul class="mdc-list">
+                  <li ng-repeat="intervalChoice in $ctrl.exportOptions"
+                    ng-class="{'mdc-list-item--selected': $ctrl.exportTime.label === intervalChoice.label}"
+                    class="mdc-list-item" data-value="{{intervalChoice.label}}">
+                    {{intervalChoice.label}}
+                  </li>
+                </ul>
+              </div>
+              <div class="mdc-notched-outline">
+                <div class="mdc-notched-outline__leading"></div>
+                <div class="mdc-notched-outline__notch">
+                  <label class="mdc-floating-label">Time</label>
+                </div>
+                <div class="mdc-notched-outline__trailing"></div>
+              </div>
+            </div>
+          </div>
+          <div ng-if="$ctrl.exportTime.custom">
+            <div class="form-group">
+              <date-time field-name="Start Date/Time" date="$ctrl.startDate" local-time="$ctrl.localTime"
+                on-date-picked="$ctrl.onStartDate(date, localTime)"></date-time>
+            </div>
+            <div class="form-group">
+              <date-time field-name="End Date/Time" date="$ctrl.endDate" local-time="$ctrl.localTime"
+                on-date-picked="$ctrl.onEndDate(date, localTime)"></date-time>
+            </div>
+          </div>
+        </form>
       </div>
+      <footer class="mdc-dialog__actions">
+        <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
+          <span class="mdc-button__label">Close</span>
+        </button>
+        <button type="button" class="mdc-button mdc-dialog__button export-button" data-mdc-dialog-action="yes"
+          ng-click="$ctrl.exportData($event, 'kml')">
+          <span class="mdc-button__label">KML</span>
+        </button>
+        <button type="button" class="mdc-button mdc-dialog__button export-button" data-mdc-dialog-action="yes"
+          ng-click="$ctrl.exportData($event, 'geojson')">
+          <span class="mdc-button__label">GeoJSON</span>
+        </button>
+        <button type="button" class="mdc-button mdc-dialog__button export-button" data-mdc-dialog-action="yes"
+          ng-click="$ctrl.exportData($event, 'csv')">
+          <span class="mdc-button__label">CSV</span>
+        </button>
+        <button type="button" class="mdc-button mdc-dialog__button export-button" data-mdc-dialog-action="yes"
+          ng-click="$ctrl.exportData($event, 'shapefile')">
+          <span class="mdc-button__label">Shapefile</span>
+        </button>
+      </footer>
     </div>
-
-  </form>
-</div>
-
-<div class="modal-footer ng-scope">
-  <button class="btn btn-default pull-left" ng-click="closeModal()">Close</button>
-
-  <button class="btn btn-primary" ng-click="exportData($event, 'kml')">KML</button>
-  <button class="btn btn-primary" ng-click="exportData($event, 'geojson')">GeoJSON</button>
-  <button class="btn btn-primary" ng-click="exportData($event, 'csv')">CSV</button>
-  <button class="btn btn-primary" ng-click="exportData($event, 'shapefile')">Shapefile</button>
+  </div>
+  <div class="mdc-dialog__scrim"></div>
 </div>

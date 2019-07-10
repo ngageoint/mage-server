@@ -15,6 +15,5 @@ function FilterButtonController(Event) {
 
   this.onFilterClose = function() {
     this.filterOpen = {opened: false};
-    console.log('filter open false')
   }
 }

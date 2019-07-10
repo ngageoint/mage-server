@@ -7,6 +7,7 @@ if (!Date.now) { Date.now = function() { return +(new Date); }; }
 angular
   .module('mage')
   .component('filterPanel', require('./filter/filter'))
+  .component('exportPanel', require('./export/export'))
   .component('eventFilter', require('./filter/event.filter.component'))
   .component('dateTime', require('./datetime/datetime.component'))
   .component('multiselect', require('./multiselect/multiselect.component'))
@@ -14,7 +15,7 @@ angular
   .controller('NavController', require('./mage/mage-nav.controller'))
   .controller('NotInEventController', require('./error/not.in.event.controller'))
   .controller('MageController', require('./mage/mage.controller'))
-  .controller('ExportController', require('./export/export'))
+  // .controller('ExportController', require('./export/export'))
   .controller('SetupController', require('./setup/setup.controller'))
   .controller('UserController', require('./user/user.controller'))
   .controller('AboutController', require('./about/about.controller'))

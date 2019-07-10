@@ -5,19 +5,16 @@ module.exports = {
   controller: ExportButtonController
 };
 
-ExportButtonController.$inject = ['$uibModal', 'Event'];
+ExportButtonController.$inject = ['Event'];
 
-function ExportButtonController($uibModal, Event) {
+function ExportButtonController(Event) {
+
   this.export = function() {
-    $uibModal.open({
-      template: require('../../export/export.html'),
-      controller: 'ExportController',
-      backdrop: 'static',
-      resolve: {
-        events: function () {
-          return Event.query();
-        }
-      }
-    });
+    this.events = Event.query();
+    this.exportOpen = {opened: true};
   };
+
+  this.onExportClose = function() {
+    this.exportOpen = {opened: false};
+  }
 }

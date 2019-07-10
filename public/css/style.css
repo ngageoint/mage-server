@@ -193,6 +193,11 @@
   width: 230px;
 }
 
+.export-panel .export-button:not(:disabled) {
+  background-color: var(--mdc-theme-primary) !important;
+  color: white;
+}
+
 .time-zone-button {
   height: 56px;
   padding-left: 12px;

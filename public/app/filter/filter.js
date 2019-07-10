@@ -1,7 +1,6 @@
 var moment = require('moment')
   , MDCDialog = require('material-components-web').dialog.MDCDialog
-  , MDCSelect = require('material-components-web').select.MDCSelect
-  , MDDateTimePicker = require('md-date-time-picker');
+  , MDCSelect = require('material-components-web').select.MDCSelect;
 
 module.exports = {
   template: require('./filter.html'),
@@ -13,9 +12,9 @@ module.exports = {
   controller: FilterController
 };
 
-FilterController.$inject = ['EventService', 'FilterService', 'Event', '$element', '$timeout'];
+FilterController.$inject = ['FilterService', '$element', '$timeout'];
 
-function FilterController(EventService, FilterService, Event, $element, $timeout) {
+function FilterController(FilterService, $element, $timeout) {
   var filterPanel;
 
   var teamSelectMdc;
@@ -76,7 +75,6 @@ function FilterController(EventService, FilterService, Event, $element, $timeout
         }.bind(this))
       }
 
-      console.log('this.filterEvent', this.filterEvent)
     }.bind(this))
   }
 
