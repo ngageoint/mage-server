@@ -1,0 +1,37 @@
+var MDCMenuSurface = require('material-components-web').menuSurface.MDCMenuSurface;
+
+module.exports = {
+  template: require('./preferences-button.component.html'),
+  bindings: {
+  },
+  controller: PreferencesButtonController
+};
+
+PreferencesButtonController.$inject = ['$element', 'LocalStorageService'];
+
+function PreferencesButtonController($element, LocalStorageService) {
+
+  this.preferences = {
+    timeZone: LocalStorageService.getTimeZoneView(),
+    timeFormat: LocalStorageService.getTimeFormat(),
+    coordinateSystem: LocalStorageService.getCoordinateSystemView()
+  };
+  var preferencesMenu;
+
+  this.openPreferencesChooser = function() {
+    preferencesMenu = preferencesMenu || new MDCMenuSurface($element.find('.preferences-menu')[0]);
+    preferencesMenu.open = true;
+  }
+
+  this.onCoordinateSystemChange = function(coordinateSystem) {
+    LocalStorageService.setCoordinateSystemView(coordinateSystem);
+  };
+
+  this.onTimeZoneChange = function(timeZone) {
+    LocalStorageService.setTimeZoneView(timeZone);
+  };
+
+  this.onTimeFormatChange = function(timeFormat) {
+    LocalStorageService.setTimeFormat(timeFormat);
+  };
+}

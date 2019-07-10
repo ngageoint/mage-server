@@ -28,7 +28,7 @@ module.exports = {
       test: /\.(eot|svg|ttf|woff|woff2)$/,
       loader: 'file-loader?name=fonts/[name].[ext]'
     },{
-      test: /\.(png|jpg|ico|gif)$/,
+      test: /\.(png|jpg|ico|gif|svg)$/,
       loader: 'file-loader?name=images/[name].[ext]'
     },{
       test: /\.html$/, loader: 'raw-loader'

@@ -27,13 +27,14 @@ function AvatarUserController($scope, $element, $http, LocalStorageService) {
   imageElement.addClass('center-crop');
   imageElement.attr('width', $scope.avatarWidth);
   imageElement.attr('height', $scope.avatarHeight);
+  imageElement.addClass('circle-avatar');
   $element.replaceWith(image);
 
   if ($scope.user && $scope.user.avatarUrl) {
     var url = $scope.user.avatarUrl + '?_dc=' + $scope.user.lastUpdated;
     getAvatar(url);
   } else {
-    image.src = "images/missing_photo.png";
+    image.src = "images/baseline-account_circle-24px.svg";
   }
 
   $scope.$watch('user.avatarUrl', function(newUrl) {

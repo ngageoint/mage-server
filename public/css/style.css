@@ -1,5 +1,5 @@
 @import "../vendor/bootstrap/css/bootstrap.min.css";
-/* @import "~ui-select/dist/select.min.css"; */
+@import "~ui-select/dist/select.min.css";
 @import "~font-awesome/css/font-awesome.min.css";
 @import "~jquery-minicolors/jquery.minicolors.css";
 @import "~select2/dist/css/select2.min.css";
@@ -48,8 +48,89 @@
 @import "./mdDateTimePicker-overrides.css";
 @import "./leaflet-overrides.css";
 
+.top-app-bar-button:not(:disabled) {
+  color: var(--mdc-theme-on-primary);
+}
+
+.map-app-bar-section > * {
+  padding-right: 30px;
+}
+
+.mdc-top-app-bar {
+  position: unset;
+}
+
+.app-bar-container {
+  z-index: 5;
+}
+
+.app-bar-brand-icon {
+  margin-right: 10px;
+  font-size: 24px;
+  vertical-align: text-bottom;
+}
+
+.mage-tooltip { /* Container for our tooltip */
+  position: relative; 
+  display: inline-block;
+ }
+
+.mage-tooltip .tooltiptext { /* This is for the tooltip text */
+  visibility: hidden;
+  opacity: 0;
+  background-color: #555;
+  color: white;
+  text-align: center;
+  border-radius: 4px;
+  position: absolute;
+  z-index: 1;
+  padding-right: 8px;
+  font-size: 10px;
+  height: 24px;
+  padding-left: 8px;
+  padding-top: 5px;
+  white-space: nowrap;
+  left: 50%;
+  transform: translateX(-50%) scale(.5);
+  transition: all .075s ease-in-out;
+} 
+ 
+.mage-tooltip:hover .tooltiptext { /* Makes tooltip text visible when hovered on */
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) scale(1.0);
+  transition: all .15s ease-in-out;
+  animation: hideAnimation .075s ease-in 1.5s forwards;
+}
+
+@keyframes hideAnimation {
+  to {
+      visibility: hidden;
+      opacity: 0;
+  }
+}
+
+.mage-tooltip .tooltiptext::after {
+  content: " ";
+  position: absolute;
+  bottom: 100%; /* At the bottom of the tooltip */
+  right: 50%;
+  margin-right: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent #555 transparent;
+}
+
+.polling-menu {
+  left: 50%;
+}
+
 .material-icons-sm {
   font-size: 1rem;
+}
+
+.text-center {
+  text-align: center;
 }
 
 /* Fixing what bootstrap is doing */
@@ -239,6 +320,16 @@ html {
 
 h1, h2, h3, h4, h5 {
 	color: var(--mdc-theme-primary);
+}
+
+.nav>li>a {
+  color: var(--mdc-theme-on-primary);
+}
+
+.nav>li>a:hover, .nav>li>a:focus {
+  text-decoration: none;
+  color: var(--mdc-theme-primary-dark);
+  background: transparent;
 }
 
 a {
@@ -1075,6 +1166,11 @@ h4.image-delete {
 
 .center-crop {
   object-fit: cover;
+}
+
+.circle-avatar {
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 .observation-type {

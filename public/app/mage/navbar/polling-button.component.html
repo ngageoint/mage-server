@@ -1,0 +1,34 @@
+<div>
+  <button class="mdc-button top-app-bar-button" ng-click="$ctrl.openPollingIntervalChooser()">
+    <i ng-if="pollingInterval === 0" class="material-icons">check_box_outline</i>
+    <i ng-if="pollingInterval !== 0" class="material-icons">check_box</i>
+    <span style="padding-left: 10px;" class="mdc-button__label">Live Update {{$ctrl.pollingInterval}} ({{$ctrl.pollingInterval | polling}})</span>
+    <i class="material-icons">arrow_drop_down</i>
+  </button>
+  <div class="mdc-menu-surface--anchor">
+    <div class="polling-menu mdc-menu-surface">
+      <div class="mdc-list-group">
+        <h3 class="mdc-list-group__subheader">Refresh Interval</h3>
+        <ul class="polling-list mdc-list" role="radiogroup" aria-label="Refresh Interval">
+          <li ng-repeat="interval in $ctrl.pollingIntervals" class="mdc-list-item" role="radio" aria-checked="{{$ctrl.pollingInterval == interval}}">
+            <span class="mdc-list-item__graphic">
+              <div class="mdc-radio">
+                <input class="mdc-radio__native-control"
+                      type="radio"
+                      id="{{'polling-interval-' + interval}}"
+                      name="demo-list-radio-item-group"
+                      value="{{interval}}"
+                      ng-checked="{{$ctrl.pollingInterval === interval}}">
+                <div class="mdc-radio__background">
+                  <div class="mdc-radio__outer-circle"></div>
+                  <div class="mdc-radio__inner-circle"></div>
+                </div>
+              </div>
+            </span>
+            <label class="mdc-list-item__text" for="{{'polling-interval-' + interval}}">{{interval | polling}}</label>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
