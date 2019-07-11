@@ -25,21 +25,21 @@
           <div class="col-md-6 col-xs-12">
 
             <form name="generalForm" class="form-horizontal" >
-              <div class="form-group" ng-class="{'has-error': generalForm.$submitted && generalForm.name.$invalid}">
+              <div class="top-gap" ng-class="{'has-error': generalForm.$submitted && generalForm.name.$invalid}">
                 <label class="control-label col-sm-2">Name</label>
                 <div class="col-sm-10">
                   <input class="form-control" type="text" placeholder="Form name" name="name" ng-model="form.name" ng-required="true"/>
                   <span class="help-block" ng-if="generalForm.$submitted && generalForm.name.$invalid">Name is required</span>
                 </div>
               </div>
-              <div class="form-group">
+              <div class="top-gap">
                 <label class="control-label col-sm-2">Description</label>
                 <div class="col-sm-10">
                   <textarea class="form-control" type="text" placeholder="Brief description of the form." ng-model="form.description"/>
                 </div>
               </div>
 
-              <div class="form-group" ng-class="{'has-error': generalForm.$submitted && generalForm.color.$invalid}">
+              <div class="top-gap" ng-class="{'has-error': generalForm.$submitted && generalForm.color.$invalid}">
                 <label class="control-label col-sm-2">Color</label>
                 <div class="col-sm-10">
                   <input minicolors="{letterCase: 'uppercase'}" class="form-control" type="text" ng-model="form.color" name="color" ng-required="true">
@@ -161,7 +161,7 @@
                     <form name="eventForm" novalidate>
                       <div class="row">
                         <div class="col-md-6">
-                          <div class="form-group">
+                          <div class="top-gap">
                             <label>Type</label>
                             <input type="text" value="{{getTypeValue(field)}}" class="form-control" disabled>
                             <p class="help-block" ng-if="isMemberField(field)">The 'User Select' type is a dynamic list of all users that are part of the event.  As such you cannot add/remove choices, users will be automatically populated.</p>
@@ -170,7 +170,7 @@
                       </div>
                       <div class="row">
                         <div class="col-md-6">
-                          <div class="form-group">
+                          <div class="top-gap">
                             <label>Title</label>
                             <input type="text" ng-model="field.title" value="{{field.title}}" class="form-control">
                           </div>
@@ -178,7 +178,7 @@
                       </div>
                       <div class="row" ng-hide="showAddOptions(field) || field.type === 'numberfield' || field.type === 'checkbox' || field.type === 'textarea'">
                         <div class="col-md-6">
-                          <div class="form-group">
+                          <div class="top-gap">
                             <label>Default Value</label>
                             <input type="text" ng-model="field.value" value="{{field.value}}" class="form-control">
                           </div>
@@ -186,7 +186,7 @@
                       </div>
                       <div class="row" ng-show="field.type === 'textarea'">
                         <div class="col-md-6">
-                          <div class="form-group">
+                          <div class="top-gap">
                             <label>Default Value</label>
                             <textarea class="form-control" type="text" ng-model="field.value" value="{{field.value}}"></textarea>
                           </div>
@@ -195,7 +195,7 @@
 
                       <div class="row" ng-show="showAddOptions(field) && !isMemberField(field)">
                         <div class="col-md-6" ng-if="field.type === 'dropdown'">
-                          <div class="form-group">
+                          <div class="top-gap">
                             <label>Default Value</label>
                             <select ng-model="field.value" ng-options="choice.title as choice.title for choice in field.choices" class="form-control">
                               <option value="">No Default</option>
@@ -204,7 +204,7 @@
                         </div>
 
                         <div class="col-md-6" ng-if="field.type === 'multiselectdropdown'">
-                          <div class="form-group">
+                          <div class="top-gap">
                             <label>Default Value</label>
                             <ui-select multiple ng-model="field.value" theme="bootstrap">
                               <ui-select-match>{{$item.title}}</ui-select-match>
@@ -218,7 +218,7 @@
                       </div>
                       <div class="row" ng-if="field.type === 'numberfield'">
                         <div class="col-md-6">
-                          <div class="form-group" ng-class="{'has-error': form.fields.{{field.name}}.$invalid}">
+                          <div class="top-gap" ng-class="{'has-error': form.fields.{{field.name}}.$invalid}">
                             <label>Default Value</label>
                             <input type="number" ng-model="field.value" name="{{field.name}}" value="{{field.value}}" min="{{field.min}}" max="{{field.max}}" class="form-control">
                             <div class="help-block" ng-messages="form.fields[field.name].$error" ng-if="form.fields[field.name].$invalid">
@@ -235,13 +235,13 @@
                       </div>
                       <div class="row" ng-show="field.type === 'numberfield'">
                         <div class="col-md-6">
-                          <div class="form-group">
+                          <div class="top-gap">
                             <label>Min</label>
                             <input type="number" ng-model="field.min" value="{{field.min}}" class="form-control">
                           </div>
                         </div>
                         <div class="col-md-6">
-                          <div class="form-group">
+                          <div class="top-gap">
                             <label>Max</label>
                             <input type="number" ng-model="field.max" value="{{field.max}}" class="form-control">
                           </div>
@@ -249,7 +249,7 @@
                       </div>
                       <div class="row">
                         <div class="col-md-6">
-                          <div class="form-group" ng-show="showAddOptions(field) && !isMemberField(field)">
+                          <div class="top-gap" ng-show="showAddOptions(field) && !isMemberField(field)">
                             <label>Field Options</label>
                             <div ng-repeat="option in field.choices" class="row bottom-gap">
                               <div class="col-sm-12">
@@ -301,7 +301,7 @@
                 <form name="newFieldForm" novalidate>
                   <div class="row">
                     <div class="col-md-6">
-                      <div class="form-group">
+                      <div class="top-gap">
                         <label>Type</label>
                         <select ng-model="newField.type" ng-options="type.name as type.title for type in fieldTypes | filter: {hidden: '!'}" class="form-control"></select>
                         <p class="help-block" ng-if="isUserDropdown(newField)">The 'User Select' type is a dynamic list of all users that are part of the event.  As such you cannot add/remove options from this list, users will be automatically populated.</p>
@@ -310,7 +310,7 @@
                   </div>
                   <div class="row">
                     <div class="col-md-6">
-                      <div class="form-group">
+                      <div class="top-gap">
                         <label>Title</label>
                         <input type="text" ng-model="newField.title" value="{{newField.title}}" class="form-control">
                       </div>
@@ -330,7 +330,7 @@
 
                   <div class="row" ng-if="newField.type !== 'checkbox' && newField.type !== 'numberfield' && newField.type !== 'textarea'">
                     <div class="col-md-6">
-                      <div class="form-group" ng-hide="hideAddOptions(newField)">
+                      <div class="top-gap" ng-hide="hideAddOptions(newField)">
                         <label>Default Value</label>
                         <input type="text" ng-model="newField.value" value="{{newField.value}}" class="form-control">
                       </div>
@@ -339,7 +339,7 @@
 
                   <div class="row" ng-show="newField.type === 'textarea'">
                     <div class="col-md-6">
-                      <div class="form-group">
+                      <div class="top-gap">
                         <label>Default Value</label>
                         <textarea class="form-control" type="text" ng-model="newField.value" value="{{newField.value}}"></textarea>
                       </div>
@@ -348,7 +348,7 @@
 
                   <div class="row" ng-if="newField.type === 'numberfield'">
                     <div class="col-md-6">
-                      <div class="form-group" ng-class="{'has-error': form.newField.value.$invalid}">
+                      <div class="top-gap" ng-class="{'has-error': form.newField.value.$invalid}">
                         <label>Default Value</label>
                         <input type="number" ng-model="newField.value" name="value" value="{{newField.value}}" min="{{newField.min}}" max="{{newField.max}}" class="form-control">
                         <div class="help-block" ng-messages="form.newField.value.$error" ng-if="form.newField.value.$invalid">
@@ -360,13 +360,13 @@
                   </div>
                   <div class="row" ng-show="newField.type === 'numberfield'">
                     <div class="col-md-6">
-                      <div class="form-group">
+                      <div class="top-gap">
                         <label>Min</label>
                         <input type="number" ng-model="newField.min" value="{{newField.min}}" class="form-control">
                       </div>
                     </div>
                     <div class="col-md-6">
-                      <div class="form-group">
+                      <div class="top-gap">
                         <label>Max</label>
                         <input type="number" ng-model="newField.max" value="{{newField.max}}" class="form-control">
                       </div>
@@ -379,7 +379,7 @@
                   </div>
                   <div class="row" ng-if="showAddOptions(newField)">
                     <div class="col-md-6" ng-if="!newField.$multiselect">
-                      <div class="form-group">
+                      <div class="top-gap">
                         <label>Default Value</label>
                         <select ng-model="newField.value" ng-options="choice.title as choice.title for choice in newField.choices" class="form-control">
                           <option value="">No Default</option>
@@ -388,7 +388,7 @@
                     </div>
 
                     <div class="col-md-6" ng-if="newField.$multiselect">
-                      <div class="form-group">
+                      <div class="top-gap">
                         <label>Default Value</label>
                         <ui-select multiple ng-model="newField.value" theme="bootstrap">
                           <ui-select-match>{{$item.title}}</ui-select-match>
@@ -401,7 +401,7 @@
                   </div>
                   <div class="row">
                     <div class="col-md-6">
-                      <div class="form-group" ng-show="showAddOptions(newField)">
+                      <div class="top-gap" ng-show="showAddOptions(newField)">
                         <label>Field Options</label>
                         <div ng-repeat="option in newField.choices" class="row bottom-gap">
                           <div class="col-sm-12">
@@ -490,13 +490,13 @@
                 <div class="row">
                   <div class="col-md-12">
                     <form class="form-inline">
-                      <div class="form-group">
+                      <div class="top-gap">
                         <p class="form-control-static">More than</p>
                       </div>
-                      <div class="form-group">
+                      <div class="top-gap">
                         <input type="number" ng-model="newVariantMin" class="form-control"/>
                       </div>
-                      <div class="form-group">
+                      <div class="top-gap">
                         <p class="form-control-static">minutes old</p>
                       </div>
                       <button class="btn btn-sm btn-primary" ng-click="addVariantOption(newVariantMin)">Add Variant</button>
@@ -531,13 +531,13 @@
                   <div class="row">
                     <div class="col-md-12">
                       <form class="form-inline">
-                        <div class="form-group">
+                        <div class="top-gap">
                           <p class="form-control-static">More than</p>
                         </div>
-                        <div class="form-group">
+                        <div class="top-gap">
                           <input type="number" ng-model="newVariantMin" class="form-control"/>
                         </div>
-                        <div class="form-group">
+                        <div class="top-gap">
                           <p class="form-control-static">minutes old</p>
                         </div>
                         <button class="btn btn-sm btn-primary" ng-click="addVariantOption(newVariantMin)">Add Variant</button>

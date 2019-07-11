@@ -6,11 +6,11 @@ aria-describedby="my-dialog-content">
   <div class="mdc-dialog__container">
     <div class="mdc-dialog__surface">
       <div class="modal-header">
-        <h3 class="modal-title"><i class="fa fa-filter"></i> Filter</h3>
+          <h2 style="color: white;" class="mdc-dialog__title"><i class="fa fa-filter"></i> Filter</h2>
       </div>
       <div class="mdc-dialog__content" id="my-dialog-content">
         <form>
-          <div class="form-group">
+          <div class="top-gap">
             <div class="event-select mdc-select mdc-select--outlined filter-dropdown">
               <input type="hidden" name="enhanced-select">
               <i class="mdc-select__dropdown-icon"></i>
@@ -36,7 +36,7 @@ aria-describedby="my-dialog-content">
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="top-gap">
             <multiselect 
               options="$ctrl.filterEvent.selected.teams"
               field-label="Team"
@@ -45,7 +45,7 @@ aria-describedby="my-dialog-content">
               on-select="$ctrl.teamsSelected(options)"/>
           </div>
 
-          <div class="form-group">
+          <div class="top-gap">
             <div class="interval-select mdc-select mdc-select--outlined filter-dropdown">
               <input type="hidden" name="enhanced-select">
               <i class="mdc-select__dropdown-icon"></i>
@@ -71,10 +71,10 @@ aria-describedby="my-dialog-content">
             </div>
           </div>
           <div ng-show="$ctrl.intervalChoice.filter === 'custom'">
-            <div class="form-group">
+            <div class="top-gap">
               <date-time field-name="Start Date/Time" date="$ctrl.startDate" local-time="$ctrl.localTime" on-date-picked="$ctrl.onStartDate(date, localTime)"></date-time>
             </div>
-            <div class="form-group">
+            <div class="top-gap">
               <date-time field-name="End Date/Time" date="$ctrl.endDate" local-time="$ctrl.localTime" on-date-picked="$ctrl.onEndDate(date, localTime)"></date-time>
             </div>
           </div>

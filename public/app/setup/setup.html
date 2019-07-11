@@ -23,14 +23,14 @@
         <div class="row">
           <div class="col-md-6 col-md-offset-3 top-gap-l">
             <form name="form.account" class="form" method="post" autocomplete="off" novalidate>
-              <div class="form-group" ng-class="{'has-error': form.account.$submitted && form.account.username.$invalid}">
+              <div class="top-gap" ng-class="{'has-error': form.account.$submitted && form.account.username.$invalid}">
                 <input type="text" ng-model="account.username" name="username" placeholder="Username" class="form-control" required>
                 <div class="help-block" ng-messages="form.account.username.$error" ng-if="form.account.$submitted && form.account.username.$invalid">
                   <div ng-message="required">Username is required</div>
                 </div>
               </div>
 
-              <div class="form-group" ng-class="{'has-error': form.account.$submitted && form.account.password.$invalid}">
+              <div class="top-gap" ng-class="{'has-error': form.account.$submitted && form.account.password.$invalid}">
                 <input type="password" ng-model="account.password" name="password" placeholder="Password" class="form-control" ng-minlength="{{passwordRequirements.minLength}}" required>
                 <div class="help-block" ng-messages="form.account.password.$error" ng-if="form.account.$submitted && form.account.password.$invalid">
                   <p ng-message="required">Password is required</p>
@@ -38,7 +38,7 @@
                 </div>
               </div>
 
-              <div class="form-group" ng-class="{'has-error': form.account.$submitted && form.account.passwordconfirm.$invalid}">
+              <div class="top-gap" ng-class="{'has-error': form.account.$submitted && form.account.passwordconfirm.$invalid}">
                 <input type="password" ng-model="account.passwordconfirm" name="passwordconfirm" placeholder="Confirm Password"class="form-control" equals="{{account.password}}" ng-minlength="{{passwordRequirements.minLength}}" required>
                 <div class="help-block" ng-messages="form.account.passwordconfirm.$error" ng-if="form.account.$submitted && form.account.passwordconfirm.$invalid">
                   <p ng-message="required">Confirm Passwordis required</p>
@@ -65,7 +65,7 @@
         <div class="row">
           <div class="col-md-6 col-md-offset-3 top-gap-l">
             <form name="form.device" class="form" novalidate>
-              <div class="form-group" ng-class="{'has-error': form.device.$submitted && form.device.uid.$invalid}">
+              <div class="top-gap" ng-class="{'has-error': form.device.$submitted && form.device.uid.$invalid}">
                 <input type="text" ng-model="account.uid" name="uid" placeholder="UID" class="form-control" required>
                 <div class="help-block" ng-messages="form.device.uid.$error" ng-if="form.device.$submitted && form.device.uid.$invalid">
                   <div ng-message="required">Device ID is required</div>

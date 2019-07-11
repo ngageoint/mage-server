@@ -38,6 +38,7 @@
 }
 
 @import "~material-components-web/dist/material-components-web.css";
+@import "./auth.css";
 @import "./observation-item.css";
 @import "./people-item.css";
 @import "./feed.css";
@@ -135,6 +136,10 @@
 
 .text-center {
   text-align: center;
+}
+
+.text-right {
+  text-align: right;
 }
 
 /* Fixing what bootstrap is doing */
