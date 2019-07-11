@@ -36,38 +36,121 @@
           </div>
 
           <div class="form-group">
-            <div class="checkbox">
-              <label>
-                <input type="checkbox" ng-model="$ctrl.exportObservations.value">Observations
-              </label>
+            <div class="mdc-form-field">
+              <div class="mdc-checkbox">
+                <input 
+                  type="checkbox"
+                  ng-model="$ctrl.exportObservations.value"
+                  value="{{$ctrl.exportObservations.value}}" 
+                  class="mdc-checkbox__native-control"
+                  id="observation-export"/>
+                <div class="mdc-checkbox__background">
+                  <svg class="mdc-checkbox__checkmark"
+                      viewBox="0 0 24 24">
+                    <path 
+                      class="mdc-checkbox__checkmark-path"
+                      fill="none"
+                      d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+                  </svg>
+                  <div class="mdc-checkbox__mixedmark"></div>
+                </div>
+              </div>
+              <label for="observation-export">Observations</label>
             </div>
 
-            <div class="checkbox export-actions" ng-show="$ctrl.exportObservations.value">
-              <label>
-                <input type="checkbox" ng-model="$ctrl.exportObservationsWithAttachments.value">Attachments
-              </label>
-              <p class="help-block">Export only observations with attachments.</p>
+            <div class="export-actions" ng-show="$ctrl.exportObservations.value">
+              <div class="mdc-form-field">
+                <div class="mdc-checkbox">
+                  <input 
+                    type="checkbox"
+                    ng-model="$ctrl.exportObservationsWithAttachments.value"
+                    value="{{$ctrl.exportObservationsWithAttachments.value}}" 
+                    class="mdc-checkbox__native-control"
+                    id="observation-attachments-export"/>
+                  <div class="mdc-checkbox__background">
+                    <svg class="mdc-checkbox__checkmark"
+                        viewBox="0 0 24 24">
+                      <path 
+                        class="mdc-checkbox__checkmark-path"
+                        fill="none"
+                        d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+                    </svg>
+                    <div class="mdc-checkbox__mixedmark"></div>
+                  </div>
+                </div>
+                <label for="observation-attachments-export">Export only observations with attachments</label>
+              </div>
             </div>
 
-            <div class="checkbox export-actions" ng-show="$ctrl.exportObservations.value">
-              <label>
-                <input type="checkbox" ng-model="$ctrl.exportFavoriteObservations.value">Favorites
-              </label>
-              <p class="help-block">Export only your favorite observations.</p>
+            <div class="export-actions" ng-show="$ctrl.exportObservations.value">
+              <div class="mdc-form-field">
+                <div class="mdc-checkbox">
+                  <input 
+                    type="checkbox"
+                    ng-model="$ctrl.exportFavoriteObservations.value"
+                    value="{{$ctrl.exportFavoriteObservations.value}}" 
+                    class="mdc-checkbox__native-control"
+                    id="observation-favorites-export"/>
+                  <div class="mdc-checkbox__background">
+                    <svg class="mdc-checkbox__checkmark"
+                        viewBox="0 0 24 24">
+                      <path 
+                        class="mdc-checkbox__checkmark-path"
+                        fill="none"
+                        d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+                    </svg>
+                    <div class="mdc-checkbox__mixedmark"></div>
+                  </div>
+                </div>
+                <label for="observation-favorites-export">Export only your favorite observations</label>
+              </div>
             </div>
 
-            <div class="checkbox export-actions" ng-show="$ctrl.exportObservations.value">
-              <label>
-                <input type="checkbox" ng-model="$ctrl.exportImportantObservations.value">Important
-              </label>
-              <p class="help-block">Export only observations flagged as important.</p>
+            <div class="export-actions" ng-show="$ctrl.exportObservations.value">
+              <div class="mdc-form-field">
+                <div class="mdc-checkbox">
+                  <input 
+                    type="checkbox"
+                    ng-model="$ctrl.exportImportantObservations.value"
+                    value="{{$ctrl.exportImportantObservations.value}}" 
+                    class="mdc-checkbox__native-control"
+                    id="observation-important-export"/>
+                  <div class="mdc-checkbox__background">
+                    <svg class="mdc-checkbox__checkmark"
+                        viewBox="0 0 24 24">
+                      <path 
+                        class="mdc-checkbox__checkmark-path"
+                        fill="none"
+                        d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+                    </svg>
+                    <div class="mdc-checkbox__mixedmark"></div>
+                  </div>
+                </div>
+                <label for="observation-important-export">Export only observations flagged as important</label>
+              </div>
             </div>
           </div>
 
-          <div class="checkbox">
-            <label>
-              <input type="checkbox" ng-model="$ctrl.exportLocations.value">Locations
-            </label>
+          <div class="mdc-form-field">
+            <div class="mdc-checkbox">
+              <input 
+                type="checkbox"
+                ng-model="$ctrl.exportLocations.value"
+                value="{{$ctrl.exportLocations.value}}" 
+                class="mdc-checkbox__native-control"
+                id="location-export"/>
+              <div class="mdc-checkbox__background">
+                <svg class="mdc-checkbox__checkmark"
+                    viewBox="0 0 24 24">
+                  <path 
+                    class="mdc-checkbox__checkmark-path"
+                    fill="none"
+                    d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+                </svg>
+                <div class="mdc-checkbox__mixedmark"></div>
+              </div>
+            </div>
+            <label for="location-export">Locations</label>
           </div>
 
           <div class="form-group">

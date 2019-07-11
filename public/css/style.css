@@ -48,6 +48,10 @@
 @import "./mdDateTimePicker-overrides.css";
 @import "./leaflet-overrides.css";
 
+.mdc-dialog__content .mdc-checkbox::before {
+  z-index: auto;
+}
+
 .top-app-bar-button:not(:disabled) {
   color: var(--mdc-theme-on-primary);
 }

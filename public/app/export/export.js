@@ -1,6 +1,8 @@
 var $ = require('jquery')
   , MDCDialog = require('material-components-web').dialog.MDCDialog
   , MDCSelect = require('material-components-web').select.MDCSelect
+  , MDCCheckbox = require('material-components-web').checkbox.MDCCheckbox
+  , MDCFormField = require('material-components-web').formField.MDCFormField
   , moment = require('moment');
 
   module.exports = {
@@ -155,7 +157,6 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
       params.favorites = this.exportFavoriteObservations.value;
       params.important = this.exportImportantObservations.value;
     }
-
     var url = "api/" + type + "?" + $.param(params);
     $.fileDownload(url)
       .done(function() {
