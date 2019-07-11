@@ -1,91 +1,145 @@
-var request = require('supertest')
-  , sinon = require('sinon')
-  , mongoose = require('mongoose')
-  , MockToken = require('../mockToken')
-  , app = require('../../express')
-  , TokenModel = mongoose.model('Token');
-
+const request = require('supertest');
+const sinon = require('sinon');
+const expect = require('chai').expect;
+const mongoose = require('mongoose');
+const MockToken = require('../mockToken');
+const app = require('../../express');
 require('sinon-mongoose');
-
 require('../../models/team');
-var TeamModel = mongoose.model('Team');
-
 require('../../models/event');
-var EventModel = mongoose.model('Event');
+const Observation = require('../../models/observation');
+const observationModel = Observation.observationModel;
+const TokenModel = mongoose.model('Token');
+const TeamModel = mongoose.model('Team');
+const EventModel = mongoose.model('Event');
 
-var Observation = require('../../models/observation');
-var observationModel = Observation.observationModel;
+describe("deleting attachments", function() {
 
-describe("attachment delete tests", function() {
-  
+  const userId = mongoose.Types.ObjectId();
+  const attachmentId = mongoose.Types.ObjectId();
+  const observationId = mongoose.Types.ObjectId();
+  const eventDoc = {
+    _id: 1,
+    name: 'Event 1',
+    collectionName: 'observations1',
+    acl: {}
+  };
+  const observationDoc = {
+    _id: observationId,
+    type: 'Feature',
+    geometry: {
+      type: "Point",
+      coordinates: [0, 0]
+    },
+    properties: {
+      timestamp: Date.now()
+    },
+    userId: mongoose.Types.ObjectId()
+  };
+  const ObservationModel = observationModel(eventDoc);
+
+  function mockTokenWithPermission(permission) {
+    sinon.mock(TokenModel)
+      .expects('findOne')
+      .withArgs({ token: '12345' })
+      .chain('populate', 'userId')
+      .chain('exec')
+      .yields(null, MockToken(userId, [permission]));
+  }
+
+  let mockEvent;
+  let mockObservation;
+  let mockObservationModel;
+
   beforeEach(function() {
-    var mockEvent = new EventModel({
-      _id: 1,
-      name: 'Event 1',
-      collectionName: 'observations1'
-    });
+    mockEvent = new EventModel(eventDoc);
+    mockObservation = new ObservationModel(observationDoc);
+
     sinon.mock(EventModel)
       .expects('findById')
+      .withArgs(sinon.match(eventDoc._id), sinon.match.any)
       .yields(null, mockEvent);
+
+    mockObservationModel = sinon.mock(ObservationModel)
+      .expects('findById')
+      .withArgs(observationId.toString())
+      .yields(null, mockObservation);
   });
 
   afterEach(function() {
     sinon.restore();
   });
 
-  var userId = mongoose.Types.ObjectId();
-  function mockTokenWithPermission(permission) {
-    sinon.mock(TokenModel)
-      .expects('findOne')
-      .withArgs({token: "12345"})
-      .chain('populate', 'userId')
-      .chain('exec')
-      .yields(null, MockToken(userId, [permission]));
-  }
+  describe('required permissions', function() {
 
-  it("should delete attachment", function(done) {
-    mockTokenWithPermission('DELETE_OBSERVATION');
-
-    sinon.mock(TeamModel)
-      .expects('find')
-      .yields(null, [{ name: 'Team 1' }]);
-
-    var ObservationModel = observationModel({
-      _id: 1,
-      name: 'Event 1',
-      collectionName: 'observations1'
+    beforeEach(function() {
+      mockObservationModel = sinon.mock(ObservationModel);
+      mockObservationModel
+        .expects('update')
+        .withArgs({ _id: observationId }, { $pull: { attachments: { _id: attachmentId.toString() }}})
+        .yields(null, mockObservation);
     });
 
-    var attachmentId = mongoose.Types.ObjectId();
+    it("succeeds when the user has global event update permission", async function() {
 
-    var observationId = mongoose.Types.ObjectId();
-    var mockObservation = new ObservationModel({
-      _id: observationId,
-      type: 'Feature',
-      geometry: {
-        type: "Point",
-        coordinates: [0, 0]
-      },
-      properties: {
-        timestamp: Date.now()
-      }
+      mockTokenWithPermission('UPDATE_EVENT');
+
+      const res = await request(app)
+        .delete('/api/events/1/observations/' + observationId + '/attachments/' + attachmentId)
+        .set('Accept', 'application/json')
+        .set('Authorization', 'Bearer 12345');
+
+      expect(res.status).to.equal(204);
+      mockObservationModel.verify();
     });
 
-    sinon.mock(ObservationModel)
-      .expects('findById')
-      .withArgs(observationId.toString())
-      .yields(null, mockObservation);
+    it('succeeds when the user has update permission in the event acl', async function() {
 
-    sinon.mock(ObservationModel)
-      .expects('update')
-      .withArgs({ _id: observationId }, { $pull: { attachments: { _id: attachmentId.toString() } } })
-      .yields(null, mockObservation);
+      mockTokenWithPermission('NA');
+      mockEvent.acl[userId.toString()] = 'MANAGER';
 
-    request(app)
-      .delete('/api/events/1/observations/' + observationId + '/attachments/' + attachmentId)
+      sinon.mock(EventModel)
+        .expects('populate')
+        .withArgs(mockEvent)
+        .yields(null, Object.assign(
+          { teamIds: [ { name: 'Attachment Deleters', userIds: [ userId ] } ] },
+          eventDoc));
+
+      const res = await request(app)
+        .delete(`/api/events/1/observations/${observationId}/attachments/${attachmentId}`)
+        .set('Accept', 'application/json')
+        .set('Authorization', 'Bearer 12345');
+
+      expect(res.status).to.equal(204);
+      mockObservationModel.verify();
+    });
+
+    it('succeeds when the user owns the observation', async function() {
+
+      mockObservation.userId = userId;
+      mockTokenWithPermission('NA')
+
+      const res = await request(app)
+        .delete(`/api/events/1/observations/${observationId}/attachments/${attachmentId}`)
+        .set('Accept', 'application/json')
+        .set('Authorization', 'Bearer 12345');
+
+      expect(res.status).to.equal(204);
+      mockObservationModel.verify();
+    });
+  });
+
+  it('fails without correct permission', async function() {
+
+    sinon.mock(ObservationModel).expects('update').never();
+
+    mockTokenWithPermission('READ_OBSERVATION_ALL');
+
+    const res = await request(app)
+      .delete(`/api/events/1/observations/${observationId}/attachments/${attachmentId}`)
       .set('Accept', 'application/json')
-      .set('Authorization', 'Bearer 12345')
-      .expect(200)
-      .end(done);
+      .set('Authorization', 'Bearer 12345');
+
+    expect(res.status).to.equal(403);
   });
 });

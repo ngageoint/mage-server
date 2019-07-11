@@ -175,6 +175,7 @@ Form.prototype.importIcons = function(file, form, callback) {
       var variant = null;
       var regex = new RegExp(iconPath + path.sep + "+(.*)");
       var match = regex.exec(filePath);
+      // TODO: what if there's a slash in the select field value?
       if (match && match[1]) {
         var variants = match[1].split("/");
         primary = variants.shift();

@@ -122,14 +122,15 @@ module.exports = function(app, security) {
 
   function populateUserFields(req, res, next) {
     new api.Form(req.event).populateUserFields(function(err) {
-      if (err) return next(err);
-
+      if (err) {
+        return next(err);
+      }
       next();
     });
   }
 
-  function getObservation(req, res, next) {
-    new api.Observation(req.event).getById(req.param('id'), function(err, observation) {
+  function fetchExistingObservation(req, res, next) {
+    new api.Observation(req.event).getById(req.params.existingObservationId, function (err, observation) {
       req.existingObservation = observation;
       next(err);
     });
@@ -139,14 +140,18 @@ module.exports = function(app, security) {
     req.observation = {};
 
     if (!req.existingObservation) {
-      var userId = req.user ? req.user._id : null;
-      if (userId) req.observation.userId = userId;
-
-      var deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
-      if (deviceId) req.observation.deviceId = deviceId;
-
-      var state = { name: 'active' };
-      if (userId) state.userId = userId;
+      const userId = req.user ? req.user._id : null;
+      if (userId) {
+        req.observation.userId = userId;
+      }
+      const deviceId = req.provisionedDeviceId ? req.provisionedDeviceId : null;
+      if (deviceId) {
+        req.observation.deviceId = deviceId;
+      }
+      const state = { name: 'active' };
+      if (userId) {
+        state.userId = userId;
+      }
       req.observation.states = [state];
     }
 
@@ -202,75 +207,72 @@ module.exports = function(app, security) {
 
   function parseQueryParams(req, res, next) {
     // setup defaults
-    var parameters = {
+    const parameters = {
       filter: {
       }
     };
 
-    var fields = req.param('fields');
+    const fields = req.query.fields;
     if (fields) {
       parameters.fields = JSON.parse(fields);
     }
 
-    var startDate = req.param('startDate');
+    const startDate = req.query.startDate;
     if (startDate) {
       parameters.filter.startDate = moment(startDate).utc().toDate();
     }
 
-    var endDate = req.param('endDate');
+    const endDate = req.query.endDate;
     if (endDate) {
       parameters.filter.endDate = moment(endDate).utc().toDate();
     }
 
-    var observationStartDate = req.param('observationStartDate');
+    const observationStartDate = req.query.observationStartDate;
     if (observationStartDate) {
       parameters.filter.observationStartDate = moment(observationStartDate).utc().toDate();
     }
 
-    var observationEndDate = req.param('observationEndDate');
+    const observationEndDate = req.query.observationEndDate;
     if (observationEndDate) {
       parameters.filter.observationEndDate = moment(observationEndDate).utc().toDate();
     }
 
-    var bbox = req.param('bbox');
+    const bbox = req.query.bbox;
     if (bbox) {
       parameters.filter.geometries = geometryFormat.parse('bbox', bbox);
     }
 
-    var geometry = req.param('geometry');
+    const geometry = req.query.geometry;
     if (geometry) {
       parameters.filter.geometries = geometryFormat.parse('geometry', geometry);
     }
 
-    var states = req.param('states');
+    const states = req.query.states;
     if (states) {
       parameters.filter.states = states.split(',');
     }
 
-    var sort = req.param('sort');
-
+    const sort = req.query.sort;
     if (sort) {
-      var columns = {};
-      var err = null;
+      const columns = {};
+      let err = null;
       sort.split(',').every(function(column) {
-        var sortParams = column.split('+');
+        const sortParams = column.split('+');
         // Check sort column is in whitelist
         if (sortColumnWhitelist.indexOf(sortParams[0]) === -1) {
-          err = "Cannot sort on column '" + sortParams[0] + "'";
+          err = `Cannot sort on column '${sortParams[0]}'`;
           return false; // break
         }
-
         // Order can be nothing (ASC by default) or ASC, DESC
-        var direction = 1; //ASC
+        let direction = 1; // ASC
         if (sortParams.length > 1 && sortParams[1] === 'DESC') {
           direction = -1; // DESC
         }
-
         columns[sortParams[0]] = direction;
       });
-
-      if (err) return res.status(400).send(err);
-
+      if (err) {
+        return res.status(400).send(err);
+      }
       parameters.sort = columns;
     }
 
@@ -279,21 +281,58 @@ module.exports = function(app, security) {
     next();
   }
 
+  // TODO: set a location header for the created observation
+  app.post(
+    '/api/events/:eventId/observations/id',
+    passport.authenticate('bearer'),
+    validateObservationCreateAccess(false),
+    function (req, res, next) {
+      new api.Observation().createObservationId(function(err, doc) {
+        if (err) return next(err);
+
+        var response = observationXform.transform(doc, transformOptions(req));
+        res.status(201).json(response);
+      });
+    }
+  );
+
+  app.put(
+    '/api/events/:eventId/observations/:existingObservationId',
+    passport.authenticate('bearer'),
+    fetchExistingObservation,
+    validateCreateOrUpdateAccess,
+    populateObservation,
+    populateUserFields,
+    function (req, res, next) {
+      new api.Observation(req.event).update(req.params.existingObservationId, req.observation, function(err, updatedObservation) {
+        if (err) {
+          return next(err);
+        }
+        if (!updatedObservation) {
+          return res.status(404).send(`Observation with ID ${req.params.existingObservationId} does not exist`);
+        }
+        const body = observationXform.transform(updatedObservation, transformOptions(req));
+        res.json(body);
+      });
+    }
+  );
+
   app.get(
-    '/api/events/:eventId/observations',
+    '/api/events/:eventId/observations/:observationIdInPath',
     passport.authenticate('bearer'),
     validateObservationReadAccess,
     parseQueryParams,
     function (req, res, next) {
-      var options = {
-        filter: req.parameters.filter,
-        fields: req.parameters.fields,
-        sort: req.parameters.sort
-      };
-
-      new api.Observation(req.event).getAll(options, function(err, observations) {
-        if (err) return next(err);
-        res.json(observationXform.transform(observations, transformOptions(req)));
+      const options = { fields: req.parameters.fields };
+      new api.Observation(req.event).getById(req.params.observationIdInPath, options, function(err, observation) {
+        if (err) {
+          return next(err);
+        }
+        if (!observation) {
+          return res.sendStatus(404);
+        }
+        const response = observationXform.transform(observation, transformOptions(req));
+        res.json(response);
       });
     }
   );
@@ -343,78 +382,51 @@ module.exports = function(app, security) {
   );
 
   app.get(
-    '/api/events/:eventId/observations/:id',
+    '/api/events/:eventId/observations',
     passport.authenticate('bearer'),
     validateObservationReadAccess,
     parseQueryParams,
     function (req, res, next) {
-      var options = {fields: req.parameters.fields};
-      new api.Observation(req.event).getById(req.param('id'), options, function(err, observation) {
+      var options = {
+        filter: req.parameters.filter,
+        fields: req.parameters.fields,
+        sort: req.parameters.sort
+      };
+
+      new api.Observation(req.event).getAll(options, function(err, observations) {
         if (err) return next(err);
-
-        if (!observation) return res.sendStatus(404);
-
-        var response = observationXform.transform(observation, transformOptions(req));
-        res.json(response);
-      });
-    }
-  );
-
-  app.post(
-    '/api/events/:eventId/observations/id',
-    passport.authenticate('bearer'),
-    validateObservationCreateAccess(false),
-    function (req, res, next) {
-      new api.Observation().createObservationId(function(err, doc) {
-        if (err) return next(err);
-
-        var response = observationXform.transform(doc, transformOptions(req));
-        res.status(201).json(response);
+        res.json(observationXform.transform(observations, transformOptions(req)));
       });
     }
   );
 
   app.put(
-    '/api/events/:eventId/observations/:id',
+    '/api/events/:eventId/observations/:observationIdInPath/favorite',
     passport.authenticate('bearer'),
-    getObservation,
-    validateCreateOrUpdateAccess,
-    populateObservation,
-    populateUserFields,
+    validateObservationUpdateAccess,
     function (req, res, next) {
-      new api.Observation(req.event).update(req.param('id'), req.observation, function(err, updatedObservation) {
-        if (err) return next(err);
-
-        if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.id + " does not exist");
-
-        var response = observationXform.transform(updatedObservation, transformOptions(req));
-        res.json(response);
-      });
-    }
-  );
-
-  app.put(
-    '/api/events/:eventId/observations/:id/favorite',
-    passport.authenticate('bearer'),
-    function (req, res, next) {
-      new api.Observation(req.event).addFavorite(req.params.id, req.user, function(err, updatedObservation) {
-        if (err) return next(err);
-        if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.id + " does not exist");
-
-        var response = observationXform.transform(updatedObservation, transformOptions(req));
+      new api.Observation(req.event).addFavorite(req.params.observationIdInPath, req.user, function(err, updatedObservation) {
+        if (err) {
+          return next(err);
+        }
+        if (!updatedObservation) {
+          return res.status(404).send(`Observation with ID ${req.params.observationIdInPath} does not exist`);
+        }
+        const response = observationXform.transform(updatedObservation, transformOptions(req));
         res.json(response);
       });
     }
   );
 
   app.delete(
-    '/api/events/:eventId/observations/:id/favorite',
+    '/api/events/:eventId/observations/:observationIdInPath/favorite',
     passport.authenticate('bearer'),
+    validateObservationUpdateAccess,
     function (req, res, next) {
 
-      new api.Observation(req.event).removeFavorite(req.params.id, req.user, function(err, updatedObservation) {
+      new api.Observation(req.event).removeFavorite(req.params.observationIdInPath, req.user, function(err, updatedObservation) {
         if (err) return next(err);
-        if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.id + " does not exist");
+        if (!updatedObservation) return res.status(404).send('Observation with id ' + req.params.observationIdInPath + " does not exist");
 
         var response = observationXform.transform(updatedObservation, transformOptions(req));
         res.json(response);
@@ -464,38 +476,79 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     authorizeDeleteAccess,
     function(req, res) {
-      var state = req.body;
-      if (!state) return res.send(400);
-      if (!state.name) return res.status(400).send('name required');
-      if (state.name !== 'active' && state.name !== 'complete' && state.name !== 'archive') {
+      let state = req.body;
+      if (!state) {
+        return res.send(400);
+      }
+      if (!state.name) {
+        return res.status(400).send('name required');
+      }
+      if (state.name !== 'active' && state.name !== 'archive') {
         return res.status(400).send("state name must be one of 'active', 'complete', 'archive'");
       }
-
       state = { name: state.name };
-      if (req.user) state.userId = req.user._id;
-
+      if (req.user) {
+        state.userId = req.user._id;
+      }
       new api.Observation(req.event).addState(req.observation._id, state, function(err, state) {
         if (err) {
           return res.status(400).send('state is already ' + "'" + state.name + "'");
         }
-
         res.status(201).json(state);
       });
     }
   );
 
+  app.post(
+    '/api/events/:eventId/observations/:observationId/attachments',
+    passport.authenticate('bearer'),
+    validateObservationUpdateAccess,
+    upload.single('attachment'),
+    function(req, res, next) {
+      if (!req.file) {
+        return res.status(400).send('no attachment');
+      }
+      new api.Attachment(req.event, req.observation).create(req.observationId, req.file, function(err, attachment) {
+        if (err) {
+          return next(err);
+        }
+        const observation = req.observation;
+        observation.attachments = [attachment.toObject()];
+        return res.json(observationXform.transform(observation, transformOptions(req)).attachments[0]);
+      });
+    }
+  );
+
   app.get(
-    '/api/events/:eventId/observations/:id/attachments',
+    '/api/events/:eventId/observations/:observationIdInPath/attachments',
     passport.authenticate('bearer'),
     validateObservationReadAccess,
     function(req, res, next) {
       var fields = {attachments: true};
       var options = {fields: fields};
-      new api.Observation(req.event).getById(req.param('id'), options, function(err, observation) {
-        if (err) return next(err);
-
+      new api.Observation(req.event).getById(req.params.observationIdInPath, options, function(err, observation) {
+        if (err) {
+          return next(err);
+        }
         var response = observationXform.transform(observation, transformOptions(req));
         res.json(response.attachments);
+      });
+    }
+  );
+
+  app.put(
+    '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
+    passport.authenticate('bearer'),
+    validateObservationUpdateAccess,
+    upload.single('attachment'),
+    function(req, res, next) {
+      new api.Attachment(req.event, req.observation).update(req.params.attachmentId, req.file, function(err, attachment) {
+        if (err) {
+          return next(err);
+        }
+        const observation = req.observation;
+        observation.attachments = [attachment.toObject()];
+        return res.json(observationXform.transform(observation, transformOptions(req)).attachments[0]);
       });
     }
   );
@@ -505,7 +558,7 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     validateObservationReadAccess,
     function(req, res, next) {
-      new api.Attachment(req.event, req.observation).getById(req.param('attachmentId'), {size: req.param('size')}, function(err, attachment) {
+      new api.Attachment(req.event, req.observation).getById(req.params.attachmentId, {size: req.query.size}, function(err, attachment) {
         if (err) return next(err);
 
         if (!attachment) return res.sendStatus(404);
@@ -557,49 +610,16 @@ module.exports = function(app, security) {
     }
   );
 
-  app.post(
-    '/api/events/:eventId/observations/:observationId/attachments',
-    passport.authenticate('bearer'),
-    access.authorize('CREATE_OBSERVATION'),
-    upload.single('attachment'),
-    function(req, res, next) {
-      if (!req.file) return res.status(400).send('no attachment');
-
-      new api.Attachment(req.event, req.observation).create(req.observationId, req.file, function(err, attachment) {
-        if (err) return next(err);
-
-        var observation = req.observation;
-        observation.attachments = [attachment.toObject()];
-        return res.json(observationXform.transform(observation, transformOptions(req)).attachments[0]);
-      });
-    }
-  );
-
-  app.put(
-    '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
-    passport.authenticate('bearer'),
-    validateObservationUpdateAccess,
-    upload.single('attachment'),
-    function(req, res, next) {
-      new api.Attachment(req.event, req.observation).update(req.params.attachmentId, req.file, function(err, attachment) {
-        if (err) return next(err);
-
-        var observation = req.observation;
-        observation.attachments = [attachment.toObject()];
-        return res.json(observationXform.transform(observation, transformOptions(req)).attachments[0]);
-      });
-    }
-  );
-
   app.delete(
     '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
     passport.authenticate('bearer'),
-    access.authorize('DELETE_OBSERVATION'),
+    authorizeDeleteAccess,
     function(req, res, next) {
-      new api.Attachment(req.event, req.observation).delete(req.param('attachmentId'), function(err) {
-        if (err) return next(err);
-
-        res.sendStatus(200);
+      new api.Attachment(req.event, req.observation).delete(req.params.attachmentId, function(err) {
+        if (err) {
+          return next(err);
+        }
+        res.sendStatus(204);
       });
     }
   );

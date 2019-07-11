@@ -1,6 +1,7 @@
-var request = require('supertest')
+const request = require('supertest')
   , sinon = require('sinon')
   , should = require('chai').should()
+  , expect = require('chai').expect
   , mongoose = require('mongoose')
   , MockToken = require('../mockToken')
   , app = require('../../express')
@@ -14,10 +15,12 @@ var EventModel = mongoose.model('Event');
 var Observation = require('../../models/observation');
 var observationModel = Observation.observationModel;
 
-describe("observation favorite tests", function() {
+describe("marking favorite observations", function() {
+
+  const userId = mongoose.Types.ObjectId();
 
   beforeEach(function() {
-    var mockEvent = new EventModel({
+    const mockEvent = new EventModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1',
@@ -44,8 +47,10 @@ describe("observation favorite tests", function() {
           required: true
         }],
         userFields: []
-      }
+      },
+      acl: {}
     });
+    mockEvent.acl[userId] = 'GUEST';
 
     sinon.mock(EventModel)
       .expects('findById')
@@ -56,7 +61,6 @@ describe("observation favorite tests", function() {
     sinon.restore();
   });
 
-  var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
@@ -66,17 +70,16 @@ describe("observation favorite tests", function() {
       .yields(null, MockToken(userId, [permission]));
   }
 
-  it("should favorite observation", function(done) {
-    mockTokenWithPermission('CREATE_OBSERVATION');
+  it("favorites an observation", function(done) {
+    mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
-    var ObservationModel = observationModel({
+    const ObservationModel = observationModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1'
     });
-
-    var observationId = mongoose.Types.ObjectId();
-    var mockObservation = new ObservationModel({
+    const observationId = mongoose.Types.ObjectId();
+    const mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
       geometry: {
@@ -86,36 +89,25 @@ describe("observation favorite tests", function() {
       properties: {
         timestamp: '2016-01-01T00:00:00'
       },
-      favoriteUserIds: [userId]
+      favoriteUserIds: [ userId ]
     });
 
-    var observationMock = sinon.mock(ObservationModel)
+    const observationMock = sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
-      .withArgs(observationId.toString(), sinon.match( { '$addToSet': {favoriteUserIds: userId} } ), sinon.match.any)
+      .withArgs(observationId.toString(), sinon.match( { '$addToSet': { favoriteUserIds: userId } } ), sinon.match.any)
       .yields(null, mockObservation);
 
     request(app)
-      .put('/api/events/1/observations/' + observationId + '/favorite')
+      .put(`/api/events/1/observations/${observationId}/favorite`)
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
-      .send({
-        type: 'Feature',
-        geometry: {
-          type: "Point",
-          coordinates: [0, 0]
-        },
-        properties: {
-          type: 'test',
-          timestamp: '2016-01-01T00:00:00'
-        }
-      })
       .expect(200)
       .expect('Content-Type', /json/)
       .expect(function(res) {
         observationMock.verify();
-        var observation = res.body;
+        const observation = res.body;
         should.exist(observation);
-        var favoriteUserIds = observation.favoriteUserIds;
+        const favoriteUserIds = observation.favoriteUserIds;
         should.exist(favoriteUserIds);
         favoriteUserIds.should.be.a('array');
         favoriteUserIds.should.contain(userId.toString());
@@ -123,8 +115,8 @@ describe("observation favorite tests", function() {
       .end(done);
   });
 
-  it("should unfavorite observation", function(done) {
-    mockTokenWithPermission('CREATE_OBSERVATION');
+  it("unfavorites an observation", function(done) {
+    mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
     var ObservationModel = observationModel({
       _id: 1,
@@ -146,13 +138,13 @@ describe("observation favorite tests", function() {
       favoriteUserIds: []
     });
 
-    var observationMock = sinon.mock(ObservationModel)
+    const observationMock = sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .withArgs(observationId.toString(), sinon.match( { '$pull': {favoriteUserIds: userId} } ), sinon.match.any)
       .yields(null, mockObservation);
 
     request(app)
-      .delete('/api/events/1/observations/' + observationId + '/favorite')
+      .delete(`/api/events/1/observations/${observationId}/favorite`)
       .set('Accept', 'application/json')
       .set('Authorization', 'Bearer 12345')
       .expect(200)
@@ -166,5 +158,30 @@ describe("observation favorite tests", function() {
         favoriteUserIds.should.be.empty;
       })
       .end(done);
+  });
+
+  it('requires observation update permission', async function() {
+
+    mockTokenWithPermission('READ_OBSERVATION_ALL');
+
+    const ObservationModel = observationModel({
+      _id: 1,
+      name: 'Event 1',
+      collectionName: 'observations1'
+    });
+
+    const observationId = mongoose.Types.ObjectId();
+    const observationMock = sinon.mock(ObservationModel)
+      .expects('findByIdAndUpdate')
+      .never();
+
+    const res = await request(app)
+      .put('/api/events/1/observations/' + observationId + '/favorite')
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345');
+
+    expect(res.status).to.equal(403);
+
+    observationMock.verify();
   });
 });

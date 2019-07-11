@@ -61,7 +61,7 @@ app.use(require('body-parser')({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public/dist')));
-app.use('/api/swagger', express.static('./public/vendor/swagger-ui/'));
+app.use('/api/docs', express.static(path.join(__dirname, 'docs')));
 app.use('/private',
   passport.authenticate('bearer'),
   express.static(path.join(__dirname, 'private')));
