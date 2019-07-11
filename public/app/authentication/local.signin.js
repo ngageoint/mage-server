@@ -1,3 +1,5 @@
+const MDCTextField = require('material-components-web').textField.MDCTextField;
+
 module.exports = {
   template: require('./local.signin.html'),
   bindings: {
@@ -8,9 +10,14 @@ module.exports = {
   controller: LocalSigninController
 };
 
-LocalSigninController.$inject = ['$uibModal', 'UserService'];
+LocalSigninController.$inject = ['$uibModal', 'UserService', '$element'];
 
-function LocalSigninController($uibModal, UserService) {
+function LocalSigninController($uibModal, UserService, $element) {
+
+  this.$postLink = function() {
+    this.usernameField = new MDCTextField($element.find('.mdc-text-field')[0]);
+    this.passwordField = new MDCTextField($element.find('.mdc-text-field')[1]);
+  }
 
   this.signin = function() {
     var self = this;
