@@ -4,6 +4,7 @@ var MDCMenu = require('material-components-web').menu.MDCMenu;
 module.exports = {
   template: require('./polling-button.component.html'),
   bindings: {
+    drawer: '<'
   },
   controller: PollingButtonController
 };
@@ -16,22 +17,30 @@ function PollingButtonController($element, $timeout, PollingService) {
   this.pollingIntervals = ['5000', '30000', '120000', '300000']
   this.pollingInterval = PollingService.getPollingInterval();
 
-  this.openPollingIntervalChooser = function() {
+  PollingService.addListener(this)
+
+  this.$postLink = function() {
     if (!pollingList) {
       pollingList = new MDCList($element.find('.polling-list')[0]);
       pollingList.listen('MDCList:action', function(event) {
         $timeout(function() {
-          this.onPollingIntervalChanged(this.pollingIntervals[event.detail.index])
+          this.onPollingIntervalChangedByUser(this.pollingIntervals[event.detail.index])
         }.bind(this))
       }.bind(this))
-    }    
+    }
+  }
+
+  this.openPollingIntervalChooser = function() {
     pollingMenu = pollingMenu || new MDCMenu($element.find('.polling-menu')[0]);
-    pollingMenu.open = true;
+    pollingMenu.open = !pollingMenu.open;
   }
 
 
-  this.onPollingIntervalChanged = function(pollingInterval) {
-    this.pollingInterval = pollingInterval;
+  this.onPollingIntervalChangedByUser = function(pollingInterval) {
     PollingService.setPollingInterval(pollingInterval);
   };
+
+  this.onPollingIntervalChanged = function(pollingInterval) {
+    this.pollingInterval = pollingInterval;
+  }
 }

@@ -33,7 +33,7 @@ function FilterController(FilterService, $element, $timeout) {
   }.bind(this)
 
   this.$onInit = function() {
-    filterPanel = new MDCDialog(angular.element.find('.filter-panel')[0])
+    filterPanel = new MDCDialog($element.find('.filter-panel')[0])
     filterPanel.listen('MDCDialog:closing', function() {
       this.onFilterClose()
     }.bind(this))

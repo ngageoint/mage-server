@@ -3,6 +3,7 @@ var MDCMenuSurface = require('material-components-web').menuSurface.MDCMenuSurfa
 module.exports = {
   template: require('./preferences-button.component.html'),
   bindings: {
+    drawer: '<'
   },
   controller: PreferencesButtonController
 };
@@ -20,7 +21,7 @@ function PreferencesButtonController($element, LocalStorageService) {
 
   this.openPreferencesChooser = function() {
     preferencesMenu = preferencesMenu || new MDCMenuSurface($element.find('.preferences-menu')[0]);
-    preferencesMenu.open = true;
+    preferencesMenu.open = !preferencesMenu.open;
   }
 
   this.onCoordinateSystemChange = function(coordinateSystem) {

@@ -49,17 +49,41 @@
 @import "./mdDateTimePicker-overrides.css";
 @import "./leaflet-overrides.css";
 
+@media(min-width:900px) {
+  .mobile-only {
+    visibility: hidden;
+    width: 0;
+    padding: 0;
+  }
+}
+
+@media(max-width: 1160px) {
+  .mdc-top-app-bar__row .mdc-button {
+    font-size: .7rem;
+  }
+}
+
+@media(max-width: 900px) {
+  .mdc-top-app-bar__row .map-app-bar-section {
+    visibility: hidden;
+  }
+}
+
+a:hover, a:focus {
+  text-decoration: none;
+}
+
 .mdc-dialog__content .mdc-checkbox::before {
   z-index: auto;
 }
 
-.top-app-bar-button:not(:disabled) {
+.mdc-top-app-bar .top-app-bar-button:not(:disabled) {
   color: var(--mdc-theme-on-primary);
 }
 
-.map-app-bar-section > * {
+/* .map-app-bar-section > * {
   padding-right: 30px;
-}
+} */
 
 .mdc-top-app-bar {
   position: unset;
@@ -422,6 +446,7 @@ a {
   flex-direction: column;
   height: 100%;
   overflow: auto;
+  z-index: 0;
 }
 
 .disclaimer {

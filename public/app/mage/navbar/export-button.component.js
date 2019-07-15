@@ -1,6 +1,7 @@
 module.exports = {
   template: require('./export-button.component.html'),
   bindings: {
+    drawer: '<'
   },
   controller: ExportButtonController
 };

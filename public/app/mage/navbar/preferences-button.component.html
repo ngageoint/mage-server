@@ -1,11 +1,12 @@
 <div>
-  <button class="mdc-button top-app-bar-button" ng-click="$ctrl.openPreferencesChooser()">
+  <button ng-if="!$ctrl.drawer" class="mdc-button top-app-bar-button" 
+    ng-click="$ctrl.openPreferencesChooser()">
     <i class="material-icons">build</i>
     <span style="padding-left: 10px;" class="mdc-button__label">Preferences</span>
     <i class="material-icons">arrow_drop_down</i>
   </button>
-  <div class="mdc-menu-surface--anchor">
-    <div class="preferences-menu mdc-menu-surface">
+  <div ng-class="{'mdc-menu-surface--anchor': !$ctrl.drawer}">
+    <div  ng-class="{'preferences-menu': !$ctrl.drawer, 'mdc-menu-surface': !$ctrl.drawer}">
       <ul class="mdc-list" role="menu">
         <li>
           <div class="mdc-list-group">

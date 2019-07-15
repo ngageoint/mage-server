@@ -2,9 +2,9 @@ var _ = require('underscore');
 
 module.exports = NavController;
 
-NavController.$inject =  ['$rootScope', '$scope', '$q', '$location', '$uibModal', 'UserService', 'FilterService', 'PollingService', 'Event', 'Settings'];
+NavController.$inject =  ['$rootScope', '$scope', '$location', 'UserService', 'FilterService', 'PollingService', 'Event', 'Settings'];
 
-function NavController($rootScope, $scope, $q, $location, $uibModal, UserService, FilterService, PollingService, Event, Settings) {
+function NavController($rootScope, $scope, $location, UserService, FilterService, PollingService, Event, Settings) {
   var events = [];
   $scope.location = $location;
 
@@ -44,8 +44,4 @@ function NavController($rootScope, $scope, $q, $location, $uibModal, UserService
       PollingService.setPollingInterval(0);
     }
   });
-
-  $scope.logout = function() {
-    UserService.logout();
-  };
 }

@@ -1,6 +1,7 @@
 module.exports = {
   template: require('./filter-button.component.html'),
   bindings: {
+    drawer: '<'
   },
   controller: FilterButtonController
 };

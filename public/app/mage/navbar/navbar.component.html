@@ -1,0 +1,56 @@
+<header class="mdc-top-app-bar">
+  <div class="mdc-top-app-bar__row">
+    <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+      <a class="material-icons mdc-top-app-bar__navigation-icon mobile-only" ng-click="$ctrl.openDrawer()">menu</a>
+      <div class="mdc-menu-surface--anchor mobile-only">
+        <div class="nav-menu mdc-menu-surface" style="width: 256px;">
+          <ul class="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical" tabindex="-1">
+            <filter-button drawer="true"></filter-button>
+            <li class="mdc-list-divider" role="separator"></li>
+            <polling-button drawer="true"></polling-button>
+            <li class="mdc-list-divider" role="separator"></li>
+            <preferences-button drawer="true"></preferences-button>
+            <li class="mdc-list-divider" role="separator"></li>
+            <export-button drawer="true"></export-button>
+          </ul>
+        </div>
+      </div>
+      <button class="mdc-button top-app-bar-button" onclick="window.location.href='#/map'">
+        <span class="mdc-top-app-bar__title"><i class="icon-magic icon-brand app-bar-brand-icon"></i>MAGE</span>
+      </button>
+    </section>
+    <section class="mdc-top-app-bar__section map-app-bar-section" ng-if="$ctrl.location.path() === '/map'" ng-cloak>
+      <filter-button></filter-button>
+      <polling-button></polling-button>
+      <preferences-button></preferences-button>
+      <export-button></export-button>
+    </section>
+    <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end">
+      <div class="mage-tooltip">
+        <button class="mdc-button top-app-bar-button" onclick="window.location.href='#/user'">
+          <span class="mdc-button__icon">
+          <span avatar-user="$ctrl.myself" avatar-width="25" avatar-height="25"></span>
+          </span>
+          <span style="padding-left: 10px;" class="mdc-button__label">{{$ctrl.myself.displayName}}</span>
+        </button>
+        <span class="tooltiptext">My Profile</span>
+      </div>
+      <div class="mage-tooltip">
+        <button class="material-icons mdc-icon-button"
+          aria-label="Admin" 
+          data-tooltip="Admin" 
+          onclick="window.location.href='#/admin'">settings
+        </button>
+        <span class="tooltiptext">Administration Options</span>
+      </div>
+      <div class="mage-tooltip">
+        <button class="material-icons mdc-icon-button" aria-label="About" onclick="window.location.href='#/about'">info</button>
+        <span class="tooltiptext">About MAGE</span>
+      </div>
+      <div class="mage-tooltip">
+        <button class="material-icons mdc-icon-button" aria-label="Log Out" ng-click="$ctrl.logout()">exit_to_app</button>
+        <span class="tooltiptext">Logout</span>
+      </div>
+    </section>
+  </div>
+</header>
