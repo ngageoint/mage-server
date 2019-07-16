@@ -52,6 +52,7 @@
 @media(min-width:900px) {
   .mobile-only {
     visibility: hidden;
+    display: none;
     width: 0;
     padding: 0;
   }
@@ -66,6 +67,7 @@
 @media(max-width: 900px) {
   .mdc-top-app-bar__row .map-app-bar-section {
     visibility: hidden;
+    display: none;
   }
 }
 
