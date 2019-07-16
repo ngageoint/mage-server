@@ -17,13 +17,11 @@ function NavbarController($element, $location, UserService) {
   this.location = $location;
 
   this.$postLink = function() {
-    // this.drawer = new MDCDrawer($element.find('.mdc-drawer')[0]);
   }
 
   this.openDrawer = function() {
-    // this.drawer.open = true;
     pollingMenu = pollingMenu || new MDCMenuSurface($element.find('.nav-menu')[0]);
-    pollingMenu.open = true;
+    pollingMenu.open = !pollingMenu.open;
   }
 
   this.logout = function() {
