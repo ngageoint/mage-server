@@ -166,6 +166,9 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
       $scope.observationForm.forms.push(observationForm);
     });
 
+    $scope.primaryFeedField = {};
+    $scope.secondaryFeedField = {};
+
     if ($scope.observation.properties.forms.length > 0) {
       var firstForm = $scope.observation.properties.forms[0];
       var observationForm = $scope.observationForm.forms.find(function(observationForm) {
