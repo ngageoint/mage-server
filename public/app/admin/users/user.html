@@ -181,7 +181,7 @@
                         </div>
 
                         <form class="navbar-form navbar-left">
-                          <div class="top-gap">
+                          <div class="form-group">
                             <input type="text" class="form-control" placeholder="Search" ng-model="teamSearch">
                           </div>
                         </form>
@@ -251,7 +251,7 @@
                     </div>
                     <div class="collapse navbar-collapse admin-navbar-collapse" id="login-nav">
                       <form class="navbar-form navbar-left fixed-width-navbar">
-                        <div class="top-gap">
+                        <div class="form-group">
                           <ui-select ng-model="device.selected" theme="bootstrap" on-select="filterLogins()" style="width: 330px;">
                             <ui-select-match allow-clear placeholder="Filter on device">{{$select.selected.uid}}</ui-select-match>
                             <ui-select-choices group-by="groupLayerByType" repeat="device in devices | orderBy: 'uid' | filter: $select.search">
@@ -262,7 +262,7 @@
                             </ui-select-choices>
                           </ui-select>
                         </div>
-                        <div class="top-gap">
+                        <div class="form-group">
                           <div class="input-group">
                             <input type="text" placeholder="Start Date" class="form-control" uib-datepicker-popup="MM-dd-yyyy" ng-model="login.startDate" is-open="login.startDateOpened" close-text="Close" />
                             <span class="input-group-btn">
@@ -270,10 +270,10 @@
                             </span>
                           </div>
                         </div>
-                        <div class="top-gap">
+                        <div class="form-group">
                           <span class="navbar-text-inverse">&nbsp;to&nbsp;</span>
                         </div>
-                        <div class="top-gap">
+                        <div class="form-group">
                           <div class="input-group">
                             <input type="text" placeholder="End Date" class="form-control" uib-datepicker-popup="MM-dd-yyyy" ng-model="login.endDate" is-open="login.endDateOpened"  close-text="Close" />
                             <span class="input-group-btn">
@@ -283,7 +283,7 @@
                         </div>
                       </form>
                       <form class="navbar-form navbar-right">
-                        <div class="top-gap">
+                        <div class="form-group">
                           <span class="navbar-text-inverse">Results: </span>
                           <select class="form-control" ng-init="loginResultsLimit = 10" ng-model="loginResultsLimit" ng-change="loginResultsLimitChanged()" ng-options="o as o for o in [10, 25, 50, 100]"></select>
                         </div>

@@ -10,35 +10,35 @@
             <div class="col-md-12">
               <form ng-submit="saveUser()" class="form-horizontal">
 
-                  <div class="top-gap">
+                  <div class="form-group">
                     <label class="control-label col-sm-2">Avatar</label>
                     <div class="col-sm-8">
                       <div avatar-user-edit="user"/>
                     </div>
                   </div>
 
-                  <div class="top-gap" ng-show="user.authentication.type == 'local'">
+                  <div class="form-group" ng-show="user.authentication.type == 'local'">
                     <label class="control-label col-sm-2">Username</label>
                     <div class="col-sm-10">
                       <input type="text" placeholder="i.e. jappleseed" ng-model="user.username" autocapitalize="off" class="form-control" disabled/>
                     </div>
                   </div>
 
-                  <div class="top-gap">
+                  <div class="form-group">
                     <label class="control-label col-sm-2" for="type">Display Name</label>
                     <div class="col-sm-10">
                       <input type="text" placeholder="Johnny Appleseed" ng-model="user.displayName" name="displayName" class="form-control">
                     </div>
                   </div>
 
-                  <div class="top-gap">
+                  <div class="form-group">
                     <label class="control-label col-sm-2" for="type">Email</label>
                     <div class="col-sm-10">
                       <input type="text" placeholder="johnny@appleseed.com" ng-model="user.email" name="email" class="form-control">
                     </div>
                   </div>
 
-                  <div class="top-gap">
+                  <div class="form-group">
                     <label class="control-label col-sm-2" for="type">Phone</label>
                     <div class="col-sm-10">
                       <input type="text" placeholder="(xxx) xxx-xxxx" ng-model="user.phones[0].number" name="phone" class="form-control">
@@ -52,7 +52,7 @@
               </form>
             </div>
 
-            <div class="col-md-10 col-md-offset-2 top-gap" ng-show="showUserStatus">
+            <div class="col-md-10 col-md-offset-2 form-group" ng-show="showUserStatus">
               <div class="alert alert-block" ng-class="statusLevel">
                 <button type="button" class="close" ng-click="showUserStatus = false">&times;</button>
                 <h4>{{statusTitle}}</h4>
@@ -86,7 +86,7 @@
           <div ng-show="editPassword">
             <hr>
             <form ng-submit="updatePassword(form.authentication)" name="form.authentication" class="form-horizontal clearfix" method="post" autocomplete="off" novalidate>
-              <div class="top-gap">
+              <div class="form-group">
                 <label class="control-label col-sm-2">Current</label>
                 <div class="col-sm-10" ng-class="{'has-error': form.authentication.$submitted && form.authentication.password.$invalid}">
                   <input type="password" ng-model="authentication.password" name="password" placeholder="Current" class="form-control" required>
@@ -97,7 +97,7 @@
                 </div>
               </div>
 
-              <div class="top-gap">
+              <div class="form-group">
                 <label class="control-label col-sm-2">New</label>
                 <div class="col-sm-10" ng-class="{'has-error': form.authentication.$submitted && form.authentication.newPassword.$invalid}">
                   <input type="password" ng-model="authentication.newPassword" name="newPassword" placeholder="{{passwordPlaceholder}}" class="form-control" required>
@@ -107,7 +107,7 @@
                 </div>
               </div>
 
-              <div class="top-gap">
+              <div class="form-group">
                 <label class="control-label col-sm-2">Re-type new</label>
                 <div class="col-sm-10" ng-class="{'has-error': form.authentication.$submitted && form.authentication.newPasswordConfirm.$invalid}">
                   <input type="password" ng-model="authentication.newPasswordConfirm" name="newPasswordConfirm" placeholder="{{passwordPlaceholder}}" class="form-control" required>
@@ -118,7 +118,7 @@
                 </div>
               </div>
 
-              <div class="top-gap">
+              <div class="form-group">
                 <div class="col-md-offset-2 col-sm-10">
                   <div><strong class="muted">Password Strength: <span class="text-{{passwordStrengthType}}">{{passwordStrength}}<span></strong></div>
                   <uib-progressbar max="5" value="passwordStrengthScore" type="{{passwordStrengthType}}"></uib-progressbar>
@@ -129,8 +129,8 @@
                 <button type="submit" class="btn btn-primary pull-right">Change password</button>
               </span>
 
-              <div class="top-gap">
-                <div class="top-gap clearfix col-md-offset-2 col-sm-10" ng-if="passwordStatus.msg">
+              <div class="form-group">
+                <div class="form-group clearfix col-md-offset-2 col-sm-10" ng-if="passwordStatus.msg">
                   <div class="alert alert-{{passwordStatus.status}}">
                     <p>{{passwordStatus.msg}}<p>
                   </div>

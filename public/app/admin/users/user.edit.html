@@ -32,35 +32,35 @@
                   <div class="col-md-12">
                     <form ng-submit="saveUser(user)" class="form-horizontal" name="account" method="post" autocomplete="off">
 
-                        <div class="top-gap" ng-show="!user.id || user.authentication.type == 'local'">
+                        <div class="form-group" ng-show="!user.id || user.authentication.type == 'local'">
                           <label class="control-label col-sm-2">Username</label>
                           <div class="col-sm-10">
                             <input type="text" ng-model="user.username" class="form-control" ng-disabled="user.id && user.authentication.type === local"/>
                           </div>
                         </div>
 
-                        <div class="top-gap">
+                        <div class="form-group">
                           <label class="control-label col-sm-2" for="type">Display Name</label>
                           <div class="col-sm-10">
                             <input type="text" placeholder="Johnny Appleseed" ng-model="user.displayName" name="displayName" class="form-control">
                           </div>
                         </div>
 
-                        <div class="top-gap">
+                        <div class="form-group">
                           <label class="control-label col-sm-2" for="type">Email</label>
                           <div class="col-sm-10">
                             <input type="text" placeholder="johnny@appleseed.com" ng-model="user.email" name="email" class="form-control">
                           </div>
                         </div>
 
-                        <div class="top-gap">
+                        <div class="form-group">
                           <label class="control-label col-sm-2" for="type">Phone</label>
                           <div class="col-sm-10">
                             <input type="text" placeholder="(xxx) xxx-xxxx" ng-model="user.phones[0].number" name="phone" class="form-control">
                           </div>
                         </div>
 
-                        <div class="top-gap" ng-class="{error: 'has-error', success: 'hs-success'}[passwordStatus.status]" ng-if="!user.id">
+                        <div class="form-group" ng-class="{error: 'has-error', success: 'hs-success'}[passwordStatus.status]" ng-if="!user.id">
                           <label class="control-label col-sm-2">Password</label>
                           <div class="col-sm-10">
                             <input type="password" placeholder="{{passwordPlaceholder}}" ng-model="user.password" name="password" class="form-control">
@@ -68,7 +68,7 @@
                           </div>
                         </div>
 
-                        <div class="top-gap" ng-class="{error: 'has-error', success: 'has-success'}[passwordStatus.status]" ng-if="!user.id">
+                        <div class="form-group" ng-class="{error: 'has-error', success: 'has-success'}[passwordStatus.status]" ng-if="!user.id">
                           <label class="control-label col-sm-2">Confirm Password</label>
                           <div class="col-sm-10">
                             <input type="password" placeholder="{{passwordPlaceholder}}" ng-model="user.passwordconfirm" name="passwordconfirm" class="form-control">
@@ -76,21 +76,21 @@
                           </div>
                         </div>
 
-                        <div class="top-gap">
+                        <div class="form-group">
                           <label class="control-label col-sm-2" for="type">Role</label>
                           <div class="col-sm-10">
                             <select class="form-control" ng-model="user.role.id" ng-options="role.id as role.name for role in roles" ng-disabled="!canEditRole"></select>
                           </div>
                         </div>
 
-                        <div class="top-gap">
+                        <div class="form-group">
                           <label class="control-label col-sm-2">Avatar</label>
                           <div class="col-sm-8">
                             <div avatar-user-edit="user"/>
                           </div>
                         </div>
 
-                        <div class="top-gap">
+                        <div class="form-group">
                           <label class="control-label col-sm-2">Map Icon</label>
                           <div class="col-sm-8">
                             <label class="radio-inline">
@@ -105,7 +105,7 @@
                           </div>
                         </div>
 
-                        <div class="top-gap" ng-if="iconMetadata.type === 'create'">
+                        <div class="form-group" ng-if="iconMetadata.type === 'create'">
                           <div class="col-sm-8 col-sm-offset-2">
                             <div class="user-icon-container">
                               <div class="user-icon">
@@ -121,7 +121,7 @@
                           </div>
                         </div>
 
-                        <div class="top-gap" ng-if="iconMetadata.type === 'upload'">
+                        <div class="form-group" ng-if="iconMetadata.type === 'upload'">
                           <div class="col-sm-8 col-sm-offset-2">
                             <div icon-user-edit="user"></div>
                           </div>
@@ -163,7 +163,7 @@
                   <hr>
                   <form ng-submit="updatePassword(authentication)" name="authentication" class="form-horizontal clearfix" autocomplete="off" method="post" novalidate>
 
-                    <div class="top-gap">
+                    <div class="form-group">
                       <label class="control-label col-sm-2">Password</label>
                       <div class="col-sm-10" ng-class="{'has-error': authentication.$submitted && authentication.password.$invalid}">
                         <input type="password" ng-model="user.password" name="password" placeholder="{{passwordPlaceholder}}" class="form-control" required>
@@ -173,7 +173,7 @@
                       </div>
                     </div>
 
-                    <div class="top-gap">
+                    <div class="form-group">
                       <label class="control-label col-sm-2">Re-type Password</label>
                       <div class="col-sm-10" ng-class="{'has-error': authentication.$submitted && authentication.passwordconfirm.$invalid}">
                         <input type="password" ng-model="user.passwordconfirm" name="passwordconfirm" placeholder="{{passwordPlaceholder}}" class="form-control" required>
@@ -184,20 +184,20 @@
                       </div>
                     </div>
 
-                    <div class="top-gap">
+                    <div class="form-group">
                       <div class="col-md-offset-2 col-sm-10">
                         <div><strong class="muted">Password Strength: <span class="text-{{passwordStrengthType}}">{{passwordStrength}}<span></strong></div>
                         <uib-progressbar max="5" value="passwordStrengthScore" type="{{passwordStrengthType}}"></uib-progressbar>
                       </div>
                     </div>
 
-                    <div class="top-gap">
+                    <div class="form-group">
                       <div class="col-md-offset-2 col-sm-10">
                         <button type="submit" class="btn btn-primary pull-right">Change password</button>
                       </div>
                     </div>
 
-                    <div class="top-gap">
+                    <div class="form-group">
                       <div class="top-gap clearfix col-md-offset-2 col-sm-10" ng-if="passwordStatus.msg">
                         <div class="alert alert-{{passwordStatus.status}}">
                           <p>{{passwordStatus.msg}}<p>

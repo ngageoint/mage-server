@@ -10,7 +10,8 @@ module.exports = function observationNewsItem() {
     template:  require('./observation-feed.directive.html'),
     scope: {
       observation: '=observationNewsItem',
-      event: '=event'
+      event: '=event',
+      form: '=selectedObservationForm'
     },
     controller: ObservationNewsItemController
   };
@@ -132,9 +133,10 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
   });
 
   $scope.$watch('event', observationOrEventChanged)
+  $scope.$watch('form', observationOrEventChanged, true)
   $scope.$watch('observation', observationOrEventChanged, true)
 
-  function observationOrEventChanged(now, old) {
+  function observationOrEventChanged() {
     if (!$scope.observation || !$scope.event) return;
     $scope.isUserFavorite = _.contains($scope.observation.favoriteUserIds, UserService.myself.id);
     $scope.canEdit = UserService.hasPermission('UPDATE_OBSERVATION_EVENT') || UserService.hasPermission('UPDATE_OBSERVATION_ALL');

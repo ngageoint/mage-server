@@ -48,7 +48,7 @@
 
                             <div class="row">
                               <div class="col-sm-12">
-                                <div class="top-gap">
+                                <div class="form-group">
                                   <label class="control-label" for="type">Enabled</label>
                                   <ui-select ng-model="security.accountLock.enabled" theme="bootstrap">
                                     <ui-select-match>{{$select.selected.title}}</ui-select-match>
@@ -66,7 +66,7 @@
                               <div class="row">
                                 <div class="col-sm-12">
                                   <label class="control-label" for="type">Account Lockout Threshold</label>
-                                  <div class="top-gap">
+                                  <div class="form-group">
                                     <input type="number" ng-model="security.accountLock.threshold" class="form-control">
                                     <p class="help-block">Number of invalid login attempts, after which the users account will be locked.</p>
                                   </div>
@@ -77,7 +77,7 @@
                               <div class="row">
                                 <div class="col-sm-12">
                                   <label class="control-label" for="type">Account Lockout Interval (Seconds)</label>
-                                  <div class="top-gap">
+                                  <div class="form-group">
                                     <input type="number" ng-model="security.accountLock.interval" class="form-control"></input>
                                     <p class="help-block">Amount of time in seconds a users account will remain locked after reaching number of invalid login attempts.</p>
                                   </div>
@@ -86,7 +86,7 @@
 
                               <div class="row">
                                 <div class="col-sm-12">
-                                  <div class="top-gap">
+                                  <div class="form-group">
                                     <label class="control-label" for="type">Enable Max Lockout</label>
                                     <ui-select ng-model="maxLock.enabled" theme="bootstrap">
                                       <ui-select-match>{{$select.selected.title}}</ui-select-match>
@@ -103,7 +103,7 @@
                               <div class="row" ng-if="maxLock.enabled">
                                 <div class="col-sm-12">
                                   <label class="control-label" for="type">Max Lockout Threshold</label>
-                                  <div class="top-gap">
+                                  <div class="form-group">
                                     <input type="number" ng-model="security.accountLock.max" class="form-control"></input>
                                     <p class="help-block">Number of times a user account can be locked before it is disabled. Disabled accounts must be re-enabled by an admin. If left blank this feature is disabled.</p>
                                   </div>
@@ -155,7 +155,7 @@
                     <div class="row">
                       <div class="col-sm-11 col-sm-offset-1">
                         <label class="control-label" for="type">Header Text</label>
-                        <div class="top-gap">
+                        <div class="form-group">
                           <input type="text" placeholder="Header text" ng-model="banner.headerText" class="form-control" ng-disabled="!banner.showHeader">
                         </div>
                       </div>
@@ -164,7 +164,7 @@
                     <div class="row">
                       <div class="col-sm-4 col-sm-offset-1">
                         <label>Header Text Color</label>
-                        <div class="top-gap">
+                        <div class="form-group">
                           <div><input minicolors="minicolorSettings" class="form-control" type="text" ng-model="banner.headerTextColor"></div>
                         </div>
                       </div>
@@ -173,7 +173,7 @@
                     <div class="row">
                       <div class="col-sm-4 col-sm-offset-1">
                         <label>Header Background Color</label>
-                        <div class="top-gap">
+                        <div class="form-group">
                           <div><input minicolors="minicolorSettings" class="form-control" type="text" ng-model="banner.headerBackgroundColor"></div>
                         </div>
                       </div>
@@ -194,7 +194,7 @@
                     <div class="row">
                       <div class="col-sm-11 col-sm-offset-1">
                         <label class="control-label" for="type">Footer Text</label>
-                        <div class="top-gap">
+                        <div class="form-group">
                           <input type="text" placeholder="Footer text" ng-model="banner.footerText" class="form-control" ng-disabled="!banner.showFooter">
                         </div>
                       </div>
@@ -203,7 +203,7 @@
                     <div class="row">
                       <div class="col-sm-4 col-sm-offset-1">
                         <label class="control-label">Footer Text Color</label>
-                        <div class="top-gap">
+                        <div class="form-group">
                           <div><input minicolors="minicolorSettings" class="form-control" type="text" ng-model="banner.footerTextColor"></div>
                         </div>
                       </div>
@@ -212,7 +212,7 @@
                     <div class="row">
                       <div class="col-sm-4 col-sm-offset-1">
                         <label>Footer Background Color</label>
-                        <div class="top-gap">
+                        <div class="form-group">
                           <div><input minicolors="minicolorSettings" class="form-control" type="text" ng-model="banner.footerBackgroundColor"></div>
                         </div>
                       </div>
@@ -256,7 +256,7 @@
                     <div class="row">
                       <div class="col-sm-11 col-sm-offset-1">
                         <label class="control-label" for="type">Disclaimer Title</label>
-                        <div class="top-gap">
+                        <div class="form-group">
                           <input type="text" placeholder="Disclaimer title" ng-model="disclaimer.title" class="form-control" ng-disabled="!disclaimer.show">
                         </div>
                       </div>
@@ -265,7 +265,7 @@
                     <div class="row">
                       <div class="col-sm-11 col-sm-offset-1">
                         <label class="control-label" for="type">Disclaimer Text</label>
-                        <div class="top-gap">
+                        <div class="form-group">
                           <textarea placeholder="Disclaimer text" ng-model="disclaimer.text" class="form-control" ng-disabled="!disclaimer.show"></textarea>
                         </div>
                       </div>

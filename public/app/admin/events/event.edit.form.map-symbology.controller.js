@@ -474,11 +474,6 @@ function AdminEventEditFormMapSymbologyController($rootScope, $scope, $location,
       $scope.unSavedChanges = false;
       delete $scope.exportError;
 
-      if ($location.path().indexOf('/forms/new') !== -1) {
-        $location.path('/admin/events/' + $scope.event.id + '/forms/' + $scope.form.id);
-        return;
-      }
-
       fetchIcons();
       mapStyles();
     }

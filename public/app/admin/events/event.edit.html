@@ -31,11 +31,11 @@
           <div class="col-md-12" ng-show="event">
 
             <form ng-submit="saveEvent()" class="form">
-              <div class="top-gap">
+              <div class="form-group">
                 <label class="control-label">Name</label>
                 <input class="form-control" type="text" placeholder="Event name" ng-model="event.name"/>
               </div>
-              <div class="top-gap">
+              <div class="form-group">
                 <label class="control-label">Description</label>
                 <textarea class="form-control" type="text" placeholder="Brief description of the event." ng-model="event.description"/>
               </div>
@@ -48,7 +48,7 @@
               </span>
             </div>
 
-            <div class="alert alert-danger top-gap" ng-show="error">
+            <div class="alert alert-danger form-group" ng-show="error">
               <strong>{{error.message}}</strong>
               <div ng-if="error.errors">
                 <li ng-repeat="(key, value) in error.errors">{{value.message}}</li>
