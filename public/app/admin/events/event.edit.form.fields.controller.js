@@ -10,6 +10,7 @@ function AdminEventEditFormFieldsController($rootScope, $scope, $location, $filt
   $scope.unSavedChanges = false;
   $scope.unSavedUploads = false;
   $scope.token = LocalStorageService.getToken();
+  var locationForm = $location.search().form;
 
   var icons = {};
   $scope.iconMap = {};
@@ -22,7 +23,7 @@ function AdminEventEditFormFieldsController($rootScope, $scope, $location, $filt
   Event.get({id: $routeParams.eventId}, function(event) {
     $scope.event = event;
 
-    if ($routeParams.formId) {
+    if ($routeParams.formId && $routeParams.formId !== 'new') {
       var form = _.find(event.forms, function(form) {
         return form.id.toString() === $routeParams.formId;
       });
@@ -33,6 +34,15 @@ function AdminEventEditFormFieldsController($rootScope, $scope, $location, $filt
           $scope.primaryField = field;
         }
       });
+    } else if (locationForm) {
+      locationForm = JSON.parse(locationForm)
+      $scope.form = new Form();
+      $scope.form.archived = false;
+      $scope.form.color = locationForm.color;
+      $scope.form.name = locationForm.name;
+      $scope.form.description = locationForm.description;
+      $scope.form.fields = [];
+      $scope.form.userFields = [];
     } else {
       $scope.form = new Form();
       $scope.form.archived = false;

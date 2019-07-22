@@ -11,4 +11,5 @@ angular.module('mage')
   .controller('AdminEventAccessController', require('./event.access.controller'))
   .directive('stylePreview', require('./style-preview.directive'))
   .component('formStyle', require('./style.component'))
+  .component('formCreatePanel', require('./event.form-upload.component'))
   .filter('events', require('./events.filter'));
