@@ -56,14 +56,12 @@
                   </div>
                 </div>
   
-                <div ng-show="form.primaryField">
-                  <strong>Choose a secondary field to be used in the feed:</strong>
-                  <div class="row bottom-gap">
-                    <div class="col-md-2">
-                      <select ng-model="form.secondaryFeedField" ng-options="field.name as field.title for field in form.fields" class="form-control">
-                        <option value="">None</option>
-                      </select>
-                    </div>
+                <strong>Choose a secondary field to be used in the feed:</strong>
+                <div class="row bottom-gap">
+                  <div class="col-md-2">
+                    <select ng-model="form.secondaryFeedField" ng-options="field.name as field.title for field in form.fields" class="form-control">
+                      <option value="">None</option>
+                    </select>
                   </div>
                 </div>
               </div>
