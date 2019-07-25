@@ -26,13 +26,6 @@ app.enable('trust proxy');
 
 app.set('view engine', 'pug');
 
-app.use(function(req, res, next) {
-  req.getRoot = function() {
-    return req.protocol + "://" + req.get('host');
-  };
-  return next();
-});
-
 const secret = require('crypto').randomBytes(64).toString('hex');
 app.use(cookieSession({
   secret: secret,
