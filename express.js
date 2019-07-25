@@ -11,7 +11,7 @@ var express = require("express")
 var app = express();
 app.use(function(req, res, next) {
   req.getRoot = function() {
-    return req.protocol + "://" + req.get('host');
+    return "//" + req.get('host');
   };
 
   req.getPath = function() {
