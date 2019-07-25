@@ -51,6 +51,22 @@
   display: flex;
 }
 
+@media(max-width:900px) {
+  .mddtp-picker__pickers {
+    flex-direction: column;
+  }
+
+  .mddtp-picker__dateHolder {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .mddtp-picker-datetime .mddtp-picker__circularHolder {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
 .mddtp-picker__pickers .mddtp-picker__landscape {
   flex-direction: column;
 }

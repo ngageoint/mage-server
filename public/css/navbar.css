@@ -1,0 +1,13 @@
+.menu-drawer {
+  height: 100%;
+}
+
+.menu-drawer-scrim {
+  height: 100%;
+  background-color: var(--scrim-background);
+}
+
+.menu-drawer-content {
+  background-color: var(--mdc-theme-surface);
+  color: var(--mdc-theme-primary);
+}

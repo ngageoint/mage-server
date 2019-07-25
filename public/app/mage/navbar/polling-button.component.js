@@ -31,8 +31,12 @@ function PollingButtonController($element, $timeout, PollingService) {
   }
 
   this.openPollingIntervalChooser = function() {
-    pollingMenu = pollingMenu || new MDCMenu($element.find('.polling-menu')[0]);
-    pollingMenu.open = !pollingMenu.open;
+    if (!this.drawer) {
+      pollingMenu = pollingMenu || new MDCMenu($element.find('.polling-menu')[0]);
+      pollingMenu.open = !pollingMenu.open;
+    } else {
+      this.expandMenu = !this.expandMenu;
+    }
   }
 
 

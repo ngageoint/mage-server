@@ -1,13 +1,4 @@
 
-.new-obs-card {
-  position:absolute;
-  top:0;
-  left:0;
-  width: 100%;
-  bottom: 0;
-  z-index: 3;
-  overflow-y: auto;
-}
 .edit-location-card {
   z-index: 4;
 }
@@ -34,26 +25,13 @@
   margin-right: 16px;
 }
 
-.observation-feed-container > .new-obs-card.ng-animate {
+.observation-feed-container > .slide-left.ng-animate {
   position:relative;
   /* top:0;
   left:0; */
   width: 100%;
   flex:1;
   height:100%;
-}
-.new-obs-card.ng-enter, .new-obs-card.ng-leave,
-.record.ng-anchor {
-  transition:0.3s linear all;
-}
-.new-obs-card.ng-enter {
-  transform:translateX(100%);
-}
-.new-obs-card.ng-enter.ng-enter-active, .new-obs-card.ng-leave {
-  transform:translateX(0%);
-}
-.new-obs-card.ng-leave.ng-leave-active {
-  transform:translateX(100%);
 }
 .record.ng-anchor-out {
   background:blue;

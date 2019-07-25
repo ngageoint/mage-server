@@ -1,4 +1,4 @@
-<div class="new-obs-card form-chooser feed-card ng-animatable" ng-if="newObservationForms">
+<div class="slide-left new-obs-card form-chooser feed-card ng-animatable" ng-if="newObservationForms">
   <div class="feed-card-content">
     <observation-form-chooser 
       forms="newObservationForms" 
@@ -8,17 +8,17 @@
   </div>
 </div>
 
-<div class="new-obs-card view-obs-card feed-card ng-animatable" ng-if="newObservation">
+<div class="slide-left new-obs-card view-obs-card feed-card ng-animatable" ng-if="newObservation">
   <div class="feed-card-content">
     <form-directive form="newObservationForm" form-observation="newObservation"></form-directive>
   </div>
 </div>
 
-<div class="new-obs-card view-obs-card feed-card ng-animatable" ng-if="viewObservation">
+<div class="slide-left new-obs-card view-obs-card feed-card ng-animatable" ng-if="viewObservation">
   <observation-view observation="viewObservation" event="event"></observation-view>
 </div>
 
-<div class="new-obs-card view-obs-card feed-card ng-animatable" ng-if="editObservation">
+<div class="slide-left new-obs-card view-obs-card feed-card ng-animatable" ng-if="editObservation">
   <form-directive form="editForm" form-observation="editObservation"></form-directive>
 </div>
 

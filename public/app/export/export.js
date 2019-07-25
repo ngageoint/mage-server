@@ -24,7 +24,7 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
 
   this.$onChanges = function() {
     if (this.events) {
-      if (this.open && this.open.opened && !exportPanel.isOpen) {
+      if (this.open && this.open.opened && exportPanel && !exportPanel.isOpen) {
         exportPanel.open();
       }
     }    
@@ -40,6 +40,12 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
       this.exportEvent = {selected: FilterService.getEvent()};
       this.initializeEventPanel()
     }.bind(this))
+
+    if (this.events) {
+      if (this.open && this.open.opened && !exportPanel.isOpen) {
+        exportPanel.open();
+      }
+    }  
   }
 
   this.initializeEventPanel = function() {

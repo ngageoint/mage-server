@@ -112,11 +112,9 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
     $scope.newObservation = null;
     $scope.editObservation = null;
     $scope.viewObservation = null;
-    console.log('observation deleted')
   })
 
   $scope.$on('observation:view', function(e, observation) {
-    console.log('view the observation', observation)
     $scope.viewObservation = observation
   });
 
@@ -125,7 +123,6 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
   })
 
   $scope.$on('observation:edit', function(e, observation) {
-    console.log('edit the observation', observation)
     $scope.edit = true;
 
     var formMap = _.indexBy(EventService.getForms(observation), 'id');
@@ -152,8 +149,6 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
     });
 
     $scope.editForm = form;
-    console.log('editform', $scope.editForm)
-    console.log('$scope.edit', $scope.edit)
     $scope.editObservation = observation;
   });
 

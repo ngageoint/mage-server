@@ -1,20 +1,7 @@
 <header class="mdc-top-app-bar">
   <div class="mdc-top-app-bar__row">
     <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
-      <a class="material-icons mdc-top-app-bar__navigation-icon mobile-only" ng-click="$ctrl.openDrawer()">menu</a>
-      <div class="mdc-menu-surface--anchor mobile-only">
-        <div class="nav-menu mdc-menu-surface" style="width: 256px;">
-          <ul class="mdc-list" role="menu" aria-hidden="true" aria-orientation="vertical" tabindex="-1">
-            <filter-button drawer="true"></filter-button>
-            <li class="mdc-list-divider" role="separator"></li>
-            <polling-button drawer="true"></polling-button>
-            <li class="mdc-list-divider" role="separator"></li>
-            <preferences-button drawer="true"></preferences-button>
-            <li class="mdc-list-divider" role="separator"></li>
-            <export-button drawer="true"></export-button>
-          </ul>
-        </div>
-      </div>
+      <a class="material-icons mdc-top-app-bar__navigation-icon mobile-only" ng-click="$ctrl.openMenu = !$ctrl.openMenu">menu</a>
       <button class="mdc-button top-app-bar-button" onclick="window.location.href='#/map'">
         <span class="mdc-top-app-bar__title"><i class="icon-magic icon-brand app-bar-brand-icon"></i>MAGE</span>
       </button>
@@ -52,5 +39,24 @@
         <span class="tooltiptext">Logout</span>
       </div>
     </section>
+  </div>
+  <div class="slide-left menu-drawer ng-animatable" ng-if="$ctrl.openMenu">
+    <header id="edit-app-bar" class="mdc-top-app-bar mdc-elevation--z4 feed-top-bar">
+      <div class="mdc-top-app-bar__row">
+        <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+          <i ng-click="$ctrl.openMenu = false" class="material-icons mdc-top-app-bar__navigation-icon">arrow_back</i>
+          <span class="mdc-top-app-bar__title"><i class="icon-magic icon-brand app-bar-brand-icon"></i>MAGE</span>
+        </section>
+      </div>
+    </header>
+    <div class="menu-drawer-content">
+      <ul class="mdc-list">
+        <filter-button drawer="true"></filter-button>
+        <polling-button drawer="true"></polling-button>
+        <preferences-button drawer="true"></preferences-button>
+        <export-button drawer="true"></export-button>
+      </ul>
+    </div>
+    <div class="menu-drawer-scrim"></div>
   </div>
 </header>

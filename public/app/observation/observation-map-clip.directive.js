@@ -79,7 +79,6 @@ function MapClipController($rootScope, $scope, $element, MapService) {
 
   function addObservation(feature) {
     if (!feature || !feature.geometry || !feature.geometry.coordinates.length) return;
-    console.log('feature', feature)
     if(feature.geometry){
       if(feature.geometry.type === 'Point'){
         observation= L.geoJson(feature, {

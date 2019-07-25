@@ -1,14 +1,17 @@
 <div>
-  <button ng-if="!$ctrl.drawer" class="mdc-button top-app-bar-button" 
+  <li class="mdc-list-divider" role="separator" ng-if="$ctrl.expandMenu"></li>
+  <a ng-class="{'mdc-button': !$ctrl.drawer, 'top-app-bar-button': !$ctrl.drawer, 'mdc-list-item': $ctrl.drawer}"
     ng-click="$ctrl.openPollingIntervalChooser()">
     <i ng-if="pollingInterval === 0" class="material-icons">check_box_outline</i>
     <i ng-if="pollingInterval !== 0" class="material-icons">check_box</i>
     <span style="padding-left: 10px;" class="mdc-button__label">
       Live Update ({{$ctrl.pollingInterval | polling}})
     </span>
-    <i class="material-icons">arrow_drop_down</i>
-  </button>
-  <div ng-class="{'mdc-menu-surface--anchor': !$ctrl.drawer}">
+    <i ng-if="!$ctrl.drawer" class="material-icons">arrow_drop_down</i>
+    <i ng-if="$ctrl.drawer && !$ctrl.expandMenu" class="material-icons">keyboard_arrow_down</i>
+    <i ng-if="$ctrl.drawer && $ctrl.expandMenu" class="material-icons">keyboard_arrow_up</i>
+  </a>
+  <div ng-class="{'mdc-menu-surface--anchor': !$ctrl.drawer}" ng-show="!$ctrl.drawer || $ctrl.expandMenu">
     <div ng-class="{'polling-menu': !$ctrl.drawer, 'mdc-menu-surface': !$ctrl.drawer}">
       <h3 class="mdc-list-group__subheader">Data Refresh Interval</h3>
       <ul class="polling-list mdc-list" role="radiogroup" aria-label="Refresh Interval">
@@ -36,4 +39,5 @@
       </ul>
     </div>
   </div>
+  <li class="mdc-list-divider" role="separator" ng-if="$ctrl.expandMenu"></li>
 </div>

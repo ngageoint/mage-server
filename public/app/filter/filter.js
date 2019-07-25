@@ -15,51 +15,49 @@ module.exports = {
 FilterController.$inject = ['FilterService', '$element', '$timeout'];
 
 function FilterController(FilterService, $element, $timeout) {
-  var filterPanel;
+  this.filterPanel;
 
-  var teamSelectMdc;
-  var intervalSelectMdc;
-  var eventSelectMdc;
+  this.teamSelectMdc;
+  this.intervalSelectMdc;
+  this.eventSelectMdc;
   this.teamsUpdated = true;
-  this.$onChanges = function() {
-    if (this.events) {
-      if (this.open && this.open.opened && !filterPanel.isOpen) {
-        filterPanel.open();
-      }
-    }
 
-    console.log('FilterController $onChanges')
-    
+  this.$onChanges = function() {
+    this.filterEvent = {selected: FilterService.getEvent()};
+    this.filterTeams = {selected: FilterService.getTeams()};
+    this.interval = FilterService.getInterval();
+  
+    this.intervalChoices = FilterService.intervals;
+    this.intervalChoice = FilterService.getIntervalChoice();
+    this.localTime = true;
+
+    if (this.interval.options && this.interval.options.startDate) {
+      this.startDate = this.interval.options.startDate;
+    } else {
+      this.startDate = moment().startOf('day').toDate();
+    }
+    if (this.interval.options && this.interval.options.endDate) {
+      this.endDate = this.interval.options.endDate;
+    } else {
+      this.endDate = moment().endOf('day').toDate();
+    }
+    if (this.events) {
+      if (this.open && this.open.opened && !this.filterPanel.isOpen) {
+        this.filterPanel.open();
+      }
+    }    
   }.bind(this)
 
   this.$onInit = function() {
-    filterPanel = new MDCDialog($element.find('.filter-panel')[0])
-    filterPanel.listen('MDCDialog:closing', function() {
+    this.filterPanel = new MDCDialog($element.find('.filter-panel')[0])
+    this.filterPanel.listen('MDCDialog:closing', function() {
       this.onFilterClose()
     }.bind(this))
-    filterPanel.listen('MDCDialog:opening', function() {
-      this.filterEvent = {selected: FilterService.getEvent()};
-      this.filterTeams = {selected: FilterService.getTeams()};
-      this.interval = FilterService.getInterval();
-    
-      this.intervalChoices = FilterService.intervals;
-      this.intervalChoice = FilterService.getIntervalChoice();
-      this.localTime = true;
-  
-      if (this.interval.options && this.interval.options.startDate) {
-        this.startDate = this.interval.options.startDate;
-      } else {
-        this.startDate = moment().startOf('day').toDate();
-      }
-      if (this.interval.options && this.interval.options.endDate) {
-        this.endDate = this.interval.options.endDate;
-      } else {
-        this.endDate = moment().endOf('day').toDate();
-      }
-      if (!eventSelectMdc) {
+    this.filterPanel.listen('MDCDialog:opening', function() {
+      if (!this.eventSelectMdc) {
         $timeout(function() {
-          intervalSelectMdc = new MDCSelect($element.find('.interval-select')[0])
-          intervalSelectMdc.listen('MDCSelect:change', function(event) {
+          this.intervalSelectMdc = new MDCSelect($element.find('.interval-select')[0])
+          this.intervalSelectMdc.listen('MDCSelect:change', function(event) {
             $timeout(function() {
               this.intervalChoice = this.intervalChoices.find(function(choice) {
                 return choice.label === event.detail.value
@@ -67,14 +65,14 @@ function FilterController(FilterService, $element, $timeout) {
             }.bind(this))
           }.bind(this))
 
-          eventSelectMdc = new MDCSelect($element.find('.event-select')[0])
-          eventSelectMdc.listen('MDCSelect:change', function(event) {
+          this.eventSelectMdc = new MDCSelect($element.find('.event-select')[0])
+          this.eventSelectMdc.listen('MDCSelect:change', function(event) {
             var eventId = event.detail.value;
             this.onEventChange(eventId)
           }.bind(this))
+          this.eventSelectMdc.value = this.filterEvent.selected.id;
         }.bind(this))
       }
-
     }.bind(this))
   }
 
@@ -85,7 +83,7 @@ function FilterController(FilterService, $element, $timeout) {
   this.removeTeam = function(index) {
     this.filterTeams.selected.splice(index, 1);
     if (!this.filterTeams.selected.length) {
-      teamSelectMdc.selectedIndex = -1;
+      this.teamSelectMdc.selectedIndex = -1;
     }
   }
 

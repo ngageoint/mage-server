@@ -37,7 +37,7 @@
   </div>
   <div ng-show="importantEditor.isOpen" class="important-editor observation-supporting-text-container slide-animate">
     <div class="mdc-text-field mdc-text-field--textarea mdc-text-field--fullwidth important-textarea">
-      <textarea id="textarea" 
+      <textarea id="fav-textarea" 
         class="mdc-text-field__input" 
         type="text" 
         ng-model="importantEditor.description" 
@@ -45,13 +45,16 @@
       <div class="mdc-notched-outline">
         <div class="mdc-notched-outline__leading"></div>
         <div class="mdc-notched-outline__notch">
-          <label for="textarea" class="mdc-floating-label">Description</label>
+          <label for="fav-textarea" class="mdc-floating-label">Description</label>
         </div>
         <div class="mdc-notched-outline__trailing"></div>
       </div>
     </div>
     <div class="text-right top-gap">
-    <button class="mdc-button" ng-click="clearImportant()">Remove</button>
+    <button class="mdc-button" ng-click="clearImportant()">
+      <span ng-if="observation.important">Remove</span>
+      <span ng-if="!observation.important">Cancel</span>
+    </button>
     <button class="mdc-button mdc-button--raised" ng-click="markAsImportant()">{{observation.important ? 'Update' : 'Flag As Important'}}</button>
     </div>
   </div>

@@ -1,8 +1,11 @@
-<export-panel open="$ctrl.exportOpen" 
+<export-panel 
+  ng-if="$ctrl.exportOpen" 
+  open="$ctrl.exportOpen" 
   on-export-close="$ctrl.onExportClose()" 
   events="$ctrl.events"></export-panel>
 <a ng-class="{'mdc-button': !$ctrl.drawer, 'top-app-bar-button': !$ctrl.drawer, 'mdc-list-item': $ctrl.drawer}"
-  ng-click="$ctrl.export()">
+  ng-click="$ctrl.export()"
+  tabindex="0">
   <i class="material-icons">save_alt</i>
   <span style="padding-left: 10px;" class="mdc-button__label">Export</span>
 </a>

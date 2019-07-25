@@ -9,6 +9,7 @@
   --feed-width: 450px;
   --background-behind-card: #E1E2E1;
   --floating-action-button:#FFAB40;
+  --scrim-background: rgba(0, 0, 0, 0.32);
   --mdc-theme-primary:#1E88E5;
   --mdc-theme-primary-dark: #1565C0;
   --mdc-theme-primary-on-background: rgba(30, 136, 229, 0.87);
@@ -38,6 +39,7 @@
 }
 
 @import "~material-components-web/dist/material-components-web.css";
+@import "./animations.css";
 @import "./auth.css";
 @import "./observation-item.css";
 @import "./people-item.css";
@@ -45,6 +47,7 @@
 @import "./observation-edit.css";
 @import "./observation-view.css";
 @import "./form-chooser.css";
+@import "./navbar.css";
 @import "./material-select-theme.scss";
 @import "./mdDateTimePicker-overrides.css";
 @import "./leaflet-overrides.css";
@@ -93,7 +96,7 @@ a:hover, a:focus {
 }
 
 .mdc-top-app-bar .top-app-bar-button:not(:disabled) {
-  color: var(--mdc-theme-on-primary);
+  color: inherit;
 }
 
 /* .map-app-bar-section > * {
@@ -238,7 +241,7 @@ a:hover, a:focus {
 }
 
 .filter-dropdown {
-  width: 450px;
+  width: 350px;
 }
 
 .filter-panel .set-filter-button:not(:disabled) {
@@ -247,7 +250,7 @@ a:hover, a:focus {
 }
 
 .filter-panel .date-time-picker {
-  width: 450px;
+  width: 350px;
   display: flex;
   justify-content: space-between;
 }

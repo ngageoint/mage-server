@@ -20,8 +20,12 @@ function PreferencesButtonController($element, LocalStorageService) {
   var preferencesMenu;
 
   this.openPreferencesChooser = function() {
-    preferencesMenu = preferencesMenu || new MDCMenuSurface($element.find('.preferences-menu')[0]);
-    preferencesMenu.open = !preferencesMenu.open;
+    if (!this.drawer) {
+      preferencesMenu = preferencesMenu || new MDCMenuSurface($element.find('.preferences-menu')[0]);
+      preferencesMenu.open = !preferencesMenu.open;
+    } else {
+      this.expandMenu = !this.expandMenu;
+    }
   }
 
   this.onCoordinateSystemChange = function(coordinateSystem) {
