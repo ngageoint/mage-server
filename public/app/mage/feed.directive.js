@@ -168,17 +168,17 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
   $scope.$on('observation:editDone', function(event, observation) {
     $scope.newObservation = null;
     $scope.editObservation = null;
-    // $timeout(function() {
-    //   // scroll to observation in that page
-    //   var offset = $($element.find(".feed-items-container")).prop('offsetTop');
-    //   var feedElement = $($element.find(".feed-items"));
-    //   feedElement.animate({scrollTop: $('#' + observation.id).prop('offsetTop') - offset}, "slow");
-    // });
   });
 
   $scope.$on('observation:cancel', function() {
     $scope.newObservation = null;
   });
+
+  $scope.$watch('event', function() {
+    $scope.newObservation = null;
+    $scope.editObservation = null;
+    $scope.viewObservation = null;
+  })
 
   $scope.$watch('currentFeedPanel', function(currentFeedPanel) {
     if (currentFeedPanel === 'observationsTab') {
