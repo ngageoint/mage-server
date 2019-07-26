@@ -130,7 +130,7 @@ Icon.prototype.create = function(icon, callback) {
   fs.mkdirp(path.dirname(iconPath), function(err) {
     if (err) return callback(err);
 
-    fs.move(icon.path, iconPath, { overwrite: true }, function(err) {
+    fs.move(icon.path, iconPath, {clobber: true}, function(err) {
       if (err) return callback(err);
 
       IconModel.create(newIcon, function(err, oldIcon) {
