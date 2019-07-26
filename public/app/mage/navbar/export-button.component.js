@@ -11,7 +11,9 @@ ExportButtonController.$inject = ['Event'];
 function ExportButtonController(Event) {
 
   this.export = function() {
-    this.events = Event.query();
+    Event.query().$promise.then(function(events) {
+      this.events = events; 
+    }.bind(this))
     this.exportOpen = {opened: true};
   };
 

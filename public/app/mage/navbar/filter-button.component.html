@@ -1,7 +1,6 @@
 <a ng-class="{'mdc-button': !$ctrl.drawer, 'top-app-bar-button': !$ctrl.drawer, 'mdc-list-item': $ctrl.drawer}"
    ng-click="$ctrl.onFilterClick()" tabindex="0">
   <i style="font-size: 24px;" class="fa fa-fw fa-filter"></i>
-  <!-- <i class="material-icons">filter_list</i> -->
   <span style="padding-left: 10px;" class="mdc-button__label">Filter</span>
 </a>
 <filter-panel ng-show="$ctrl.filterOpen" 

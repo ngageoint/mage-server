@@ -11,7 +11,6 @@ FilterButtonController.$inject = ['Event'];
 function FilterButtonController(Event) {
   this.onFilterClick = function() {
     Event.query().$promise.then(function(events) {
-      console.log('events', events)
       this.events = events; 
     }.bind(this))
     this.filterOpen = {opened: true};
