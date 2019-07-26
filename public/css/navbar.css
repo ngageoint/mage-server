@@ -1,9 +1,12 @@
 .menu-drawer {
   height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .menu-drawer-scrim {
-  height: 100%;
+  flex: 1;
   background-color: var(--scrim-background);
 }
 

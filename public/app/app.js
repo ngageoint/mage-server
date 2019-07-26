@@ -23,6 +23,16 @@ angular
   .directive('fileBrowser', require('./file-upload/file-browser.directive'))
   .directive('fileUpload', require('./file-upload/file-upload.directive'))
   .directive('fileUploadGrid', require('./file-upload/file-upload-grid.directive'))
+  .animation('.slide-down', function() {
+    return {
+      enter: function(element, done) {
+        element.hide().slideDown();
+      },
+      leave: function(element, done) {
+        element.slideUp();
+      }
+    }
+  })
   .config(config)
   .run(run);
 

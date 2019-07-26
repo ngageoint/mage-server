@@ -19,17 +19,6 @@ function PollingButtonController($element, $timeout, PollingService) {
 
   PollingService.addListener(this)
 
-  this.$postLink = function() {
-    if (!pollingList) {
-      pollingList = new MDCList($element.find('.polling-list')[0]);
-      pollingList.listen('MDCList:action', function(event) {
-        $timeout(function() {
-          this.onPollingIntervalChangedByUser(this.pollingIntervals[event.detail.index])
-        }.bind(this))
-      }.bind(this))
-    }
-  }
-
   this.openPollingIntervalChooser = function() {
     if (!this.drawer) {
       pollingMenu = pollingMenu || new MDCMenu($element.find('.polling-menu')[0]);
@@ -37,6 +26,15 @@ function PollingButtonController($element, $timeout, PollingService) {
     } else {
       this.expandMenu = !this.expandMenu;
     }
+    $timeout(function() {
+      
+      pollingList = new MDCList($element.find('.polling-list')[0]);
+      pollingList.listen('MDCList:action', function(event) {
+        $timeout(function() {
+          this.onPollingIntervalChangedByUser(this.pollingIntervals[event.detail.index])
+        }.bind(this))
+      }.bind(this))
+    }.bind(this))
   }
 
 

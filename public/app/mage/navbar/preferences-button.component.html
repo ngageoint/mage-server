@@ -9,7 +9,7 @@
     <i ng-if="$ctrl.drawer && !$ctrl.expandMenu" class="material-icons">keyboard_arrow_down</i>
     <i ng-if="$ctrl.drawer && $ctrl.expandMenu" class="material-icons">keyboard_arrow_up</i>
   </a>
-  <div ng-class="{'mdc-menu-surface--anchor': !$ctrl.drawer}" ng-if="!$ctrl.drawer || $ctrl.expandMenu">
+  <div ng-class="{'mdc-menu-surface--anchor': !$ctrl.drawer}" ng-if="!$ctrl.drawer || $ctrl.expandMenu" class="ng-animatable slide-down">
     <div  ng-class="{'preferences-menu': !$ctrl.drawer, 'mdc-menu-surface': !$ctrl.drawer}">
       <ul class="mdc-list" role="menu">
         <li>

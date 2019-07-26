@@ -18,3 +18,22 @@
 .slide-left.ng-leave.ng-leave-active {
   transform:translateX(100%);
 }
+
+/* .slide-down {
+  opacity: 1;
+}
+.slide-down.ng-hide {
+  opacity: 0;
+}
+.slide-down.ng-enter, .slide-down.ng-leave {
+  transition:0.3s linear all;
+}
+.slide-down.ng-enter {
+  transform:translateY(100%);
+}
+.slide-down.ng-enter.ng-enter-active, .slide-down.ng-leave {
+  transform:translateY(0%);
+}
+.slide-down.ng-leave.ng-leave-active {
+  transform:translateY(100%);
+} */
