@@ -48,6 +48,7 @@
 @import "./observation-view.css";
 @import "./form-chooser.css";
 @import "./navbar.css";
+@import "./tooltip.css";
 @import "./material-select-theme.scss";
 @import "./mdDateTimePicker-overrides.css";
 @import "./leaflet-overrides.css";
@@ -115,73 +116,6 @@ a:hover, a:focus {
   margin-right: 10px;
   font-size: 24px;
   vertical-align: text-bottom;
-}
-
-.mage-tooltip {
-  position: relative; 
-  display: inline-block;
-}
-
-.mage-tooltip span:last-child.tooltiptext,
-.mage-tooltip span:first-child.tooltiptext {
-  visibility: hidden;
-  opacity: 0;
-  background-color: #555;
-  color: white;
-  text-align: center;
-  border-radius: 4px;
-  position: absolute;
-  z-index: 1;
-  padding-right: 8px;
-  font-size: 10px;
-  height: 24px;
-  padding-left: 8px;
-  padding-top: 5px;
-  white-space: nowrap;
-  left: 50%;
-  transform: translateX(-50%) scale(.5);
-  transition: all .075s ease-in-out;
-}
-
-.mage-tooltip span:first-child.tooltiptext {
-  bottom: 100%;
-} 
-
-.mage-tooltip:hover span.tooltiptext {
-  visibility: visible;
-  opacity: 1;
-  transform: translateX(-50%) scale(1.0);
-  transition: all .15s ease-in-out;
-  animation: hideAnimation .075s ease-in 1.5s forwards;
-}
-
-.mage-tooltip span:last-child.tooltiptext::after {
-  content: " ";
-  position: absolute;
-  bottom: 100%;
-  right: 50%;
-  margin-right: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: transparent transparent #555 transparent;
-}
-
-.mage-tooltip span:first-child.tooltiptext::after {
-  content: " ";
-  position: absolute;
-  right: 50%;
-  margin-right: -5px;
-  border-width: 5px;
-  border-style: solid;
-  top: 100%;
-  border-color: #555 transparent transparent transparent;
-}
-
-@keyframes hideAnimation {
-  to {
-      visibility: hidden;
-      opacity: 0;
-  }
 }
 
 .polling-menu {
