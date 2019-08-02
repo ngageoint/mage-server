@@ -304,11 +304,13 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
   }
 
   $scope.$watch('observationPages', function(newObsPages, oldObsPages) {
-    if (!observationSelectMdc) {
-      observationSelectMdc = new MDCSelect($element.find('.observation-select')[0])
-      observationSelectMdc.listen('MDCSelect:change', () => {
-        $scope.$apply(() => {
-          $scope.currentObservationPage = observationSelectMdc.selectedIndex
+    if (!observationSelectMdc && newObsPages.length) {
+      $timeout(function() {
+        observationSelectMdc = new MDCSelect($element.find('.observation-select')[0])
+        observationSelectMdc.listen('MDCSelect:change', () => {
+          $scope.$apply(() => {
+            $scope.currentObservationPage = observationSelectMdc.selectedIndex
+          })
         })
       })
     }
