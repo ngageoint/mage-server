@@ -9,7 +9,6 @@ module.exports = {
   controller: function($element, $timeout) {
     this.$postLink = function() {
       this.textField = new MDCTextField($element.find('.mdc-text-field')[0]);
-      
       if (this.field.hasOwnProperty('min') && !this.field.hasOwnProperty('max')) {
         this.helperText = `Must be greater than ${this.field.min}`;
       } else if (!this.field.hasOwnProperty('min') && this.field.hasOwnProperty('max')) {
@@ -26,5 +25,6 @@ module.exports = {
         }
       }.bind(this));
     }
+
   }
 };
