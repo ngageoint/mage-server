@@ -26,13 +26,13 @@ function ObservationPopupDirective($scope, EventService, UserService) {
     });
 
     $scope.primary = null;
-    if (form.primaryField) {
-      $scope.primary = $scope.observation.properties.forms[0][form.primaryField];
+    if (form.primaryFeedField) {
+      $scope.primary = $scope.observation.properties.forms[0][form.primaryFeedField];
     }
 
     $scope.variant = null;
-    if (form.variantField) {
-      $scope.variant = $scope.observation.properties.forms[0][form.variantField];
+    if (form.secondaryFeedField) {
+      $scope.variant = $scope.observation.properties.forms[0][form.secondaryFeedField];
     }
   }
 

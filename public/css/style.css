@@ -709,7 +709,7 @@ a {
 
 .brand-title {
   margin-left: 10px;
-  color: var(--mdc-theme-primary);
+  color: var(--mdc-theme-primary-dark);
   font-size: 2em;
   font-weight: 500;
 }
@@ -720,17 +720,17 @@ a {
 
 .icon-brand-s {
 	font-size: 75px;
-	color: var(--mdc-theme-primary);
+	color: var(--mdc-theme-primary-dark);
 }
 
 .icon-brand-m {
 	font-size: 125px;
-  color: var(--mdc-theme-primary);
+  color: var(--mdc-theme-primary-dark);
 }
 
 .icon-brand-l {
 	font-size: 300px;
-	color: var(--mdc-theme-primary);
+	color: var(--mdc-theme-primary-dark);
 }
 
 /* Overrides */
