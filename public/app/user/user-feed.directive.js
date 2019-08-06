@@ -32,6 +32,11 @@ function UserNewsItemController($scope, LocalStorageService) {
     $scope.$emit('user:zoom', user, {panToLocation: true, zoomToLocation: true});
   };
 
+  $scope.viewUser = function() {
+    $scope.onUserLocationClick($scope.user);
+    $scope.$emit('user:view', $scope.user);
+  }
+
   $scope.$on('user:follow', function(e, user) {
     $scope.followUserId = user ? user.id : null;
   });

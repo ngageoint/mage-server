@@ -78,7 +78,7 @@ class mdDateTimePicker {
     this._sDialog = {}
 
     // attach the dialog if not present
-    if (typeof document !== 'undefined' && !document.getElementById(`mddtp-picker__${this._type}`)) {
+    if (typeof document !== 'undefined' && !document.getElementById('mddtp-picker__' + this._type)) {
       this._buildDialog()
     }
   }
@@ -200,7 +200,7 @@ class mdDateTimePicker {
 
   _selectDialog () {
     // now do what you normally would do
-    this._sDialog.picker = document.getElementById(`mddtp-picker__${[this._type]}`)
+    this._sDialog.picker = document.getElementById('mddtp-picker__' + [this._type])
     /**
     * [sDialogEls stores all inner components of the selected dialog or sDialog to be later getElementById]
     *
@@ -211,7 +211,7 @@ class mdDateTimePicker {
     ]
     let i = sDialogEls.length
     while (i--) {
-      this._sDialog[sDialogEls[i]] = document.getElementById(`mddtp-${this._type}__${sDialogEls[i]}`)
+      this._sDialog[sDialogEls[i]] = document.getElementById('mddtp-' + this._type + '__' + sDialogEls[i])
     }
 
     this._sDialog.tDate = this._init.clone()
@@ -319,9 +319,9 @@ class mdDateTimePicker {
     const cancel = document.createElement('button')
     const ok = document.createElement('button')
     // ... add properties to them
-    container.id = `mddtp-picker__${type}`
+    container.id = 'mddtp-picker__' + type
     container.classList.add('mddtp-picker')
-    container.classList.add(`mddtp-picker-${type}`)
+    container.classList.add('mddtp-picker-' + type)
     container.classList.add('mddtp-picker--inactive')
     container.classList.add('animated')
     this._addId(header, 'header')
@@ -729,17 +729,17 @@ class mdDateTimePicker {
       const currentDay = i - firstDayOfMonth + 1
       if ((i >= firstDayOfMonth) && (i <= lastDayOfMonth)) {
         if (i > future || i < past) {
-          cell.classList.add(`${cellClass}--disabled`)
+          cell.classList.add(cellClass + '--disabled')
         } else {
           cell.classList.add(cellClass)
         }
         this._fillText(cell, currentDay)
       }
       if (today === i) {
-        cell.classList.add(`${cellClass}--today`)
+        cell.classList.add(cellClass + '--today')
       }
       if (selected === i) {
-        cell.classList.add(`${cellClass}--selected`)
+        cell.classList.add(cellClass + '--selected')
         cell.id = 'mddtp-date__selected'
       }
       docfrag.appendChild(cell)
@@ -808,7 +808,7 @@ class mdDateTimePicker {
         setTimeout(() => {
           const hOffset = circularHolder.getBoundingClientRect()
           const cOffset = circle.getBoundingClientRect()
-          fakeNeedle.setAttribute('style', `left:${cOffset.left - hOffset.left}px;top:${cOffset.top - hOffset.top}px`)
+          fakeNeedle.setAttribute('style', 'left:' + cOffset.left - hOffset.left + 'px;top:' + cOffset.top - hOffset.top + 'px')
         }, 300)
       }
     } else if (me._mode) {
@@ -1271,7 +1271,7 @@ class mdDateTimePicker {
       const sMinute = 'mddtp-minute__selected'
       const selectedMinute = document.getElementById(sMinute)
       const cOffset = circle.getBoundingClientRect()
-      fakeNeedle.setAttribute('style', `left:${cOffset.left - hOffset.left}px;top:${cOffset.top - hOffset.top}px`)
+      fakeNeedle.setAttribute('style', 'left:' + cOffset.left - hOffset.left + 'px;top:' + cOffset.top - hOffset.top + 'px')
       needle.classList.remove(quick)
       let select = divides
       if (select === 1) {
@@ -1389,7 +1389,7 @@ class mdDateTimePicker {
   * @return {String}     [description]
   */
   _numWithZero (n) {
-    return n > 9 ? `${n}` : `0${n}`
+    return n > 9 ? '' + n : '0' + n
   }
 
   /**
@@ -1419,7 +1419,7 @@ class mdDateTimePicker {
   * @param  {string} id [the id]
   */
   _addId (el, id) {
-    el.id = `mddtp-${this._type}__${id}`
+    el.id = 'mddtp-' + this._type + '__' + id
   }
 
   /**
@@ -1432,7 +1432,7 @@ class mdDateTimePicker {
   * @param  {type}  more [description]
   */
   _addClass (el, aClass, more) {
-    el.classList.add(`mddtp-picker__${aClass}`)
+    el.classList.add('mddtp-picker__' + aClass)
     let i = 0
     if (more) {
       i = more.length
@@ -1503,7 +1503,7 @@ class mdDateTimePicker {
     if (spoke === 60 && value === 0) {
       value = 120
     }
-    return `mddtp-picker__cell--rotate-${value}`
+    return 'mddtp-picker__cell--rotate-' + value
   }
 }
 

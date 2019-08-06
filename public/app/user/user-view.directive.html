@@ -1,0 +1,56 @@
+<div class="user-view-scroll">
+  <header class="mdc-top-app-bar mdc-elevation--z4 feed-top-bar">
+    <div class="mdc-top-app-bar__row">
+      <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+        <i ng-click="closeUserView()" class="material-icons mdc-top-app-bar__navigation-icon">arrow_back</i>
+        <span class="mdc-top-app-bar__title">
+          <span>{{user.displayName}}</span>
+        </span>
+      </section>
+    </div>
+  </header>
+  <div class="mdc-card user-view-body">
+    <div class="map-clip">
+      <div map-clip="user.location"></div>
+    </div>
+    <div class="user-view-avatar">
+      <div class="user-avatar-border" avatar-user="user" avatar-width="125" avatar-height="125"></div>
+    </div>
+    <div class="user-view-name-row mdc-typography--headline4">
+      {{user.displayName}}
+    </div>
+    <div class="user-view-divider-row mdc-list-divider">
+    </div>
+    <div class="user-view-row">
+      <div class="user-view-icon user-view-location-icon">
+        <i class="material-icons">my_location</i>
+      </div>
+      <div class="user-view-row-text">
+        {{user.location.geometry | geometry:5}}
+      </div>
+    </div>
+    <div class="user-view-row">
+      <div class="user-view-icon user-view-phone-icon">
+        <i class="material-icons">phone</i>
+      </div>
+      <div class="user-view-row-text">
+        <a ng-href="tel:{{user.phones[0].number}}">{{user.phones[0].number}}</a>
+      </div>
+    </div>
+    <div class="user-view-row">
+      <div class="user-view-icon user-view-email-icon">
+        <i class="material-icons">email</i>
+      </div>
+      <div class="user-view-row-text">
+        <a ng-href="mailto:{{user.email}}">{{user.email}}</a>
+      </div>
+    </div>
+  </div>
+
+  <div
+    id="{{observation.id}}"
+    class="mdc-card"
+    ng-repeat="observation in userObservations track by observation.id">
+    <div event="event" observation-news-item="observation" selectedobservation-form="event.form" container-element="side-bar"></div>
+  </div>
+</div>

@@ -208,10 +208,10 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
   $scope.onFormCreateClose = function(form) {
     $scope.formCreateOpen = {opened: false};
     if (form.id) {
-      $location.path(`/admin/events/${$scope.event.id}/forms/${form.id}`);
+      $location.path('/admin/events/' + $scope.event.id + '/forms/' + form.id);
     } else {
       $location.search('form', JSON.stringify(form))
-      $location.path(`/admin/events/${$scope.event.id}/forms/new/fields`);
+      $location.path('/admin/events/' + $scope.event.id + '/forms/new/fields');
     }
   }
 

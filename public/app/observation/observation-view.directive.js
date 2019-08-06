@@ -1,7 +1,8 @@
 var _ = require('underscore')
   , $ = require('jquery')
   , moment = require('moment')
-  , MDCRipple = require('material-components-web').ripple.MDCRipple;
+  , MDCRipple = require('material-components-web').ripple.MDCRipple
+  , MDCTopAppBar = require('material-components-web').topAppBar.MDCTopAppBar;
 
 module.exports = function observationView() {
   var directive = {
@@ -16,11 +17,15 @@ module.exports = function observationView() {
 
   return directive;
 };
-ObservationViewController.$inject = ['$scope', '$window', '$uibModal', 'EventService', 'UserService', 'LocalStorageService'];
+ObservationViewController.$inject = ['$scope', '$element', '$uibModal', 'EventService', 'UserService', 'LocalStorageService'];
 
-function ObservationViewController($scope, $window, $uibModal, EventService, UserService, LocalStorageService) {
+function ObservationViewController($scope, $element, $uibModal, EventService, UserService, LocalStorageService) {
   const iconButtonRipple = new MDCRipple(document.querySelector('.mdc-icon-button'));
   iconButtonRipple.unbounded = true;
+
+  var scrollElement = $element[0].parentElement;
+  const topAppBar = new MDCTopAppBar($element.find('.mdc-top-app-bar')[0]);
+  topAppBar.setScrollTarget(scrollElement)
 
   $scope.edit = false;
   $scope.isUserFavorite = false;

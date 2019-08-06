@@ -10,11 +10,11 @@ module.exports = {
     this.$postLink = function() {
       this.textField = new MDCTextField($element.find('.mdc-text-field')[0]);
       if (this.field.hasOwnProperty('min') && !this.field.hasOwnProperty('max')) {
-        this.helperText = `Must be greater than ${this.field.min}`;
+        this.helperText = 'Must be greater than ' + this.field.min;
       } else if (!this.field.hasOwnProperty('min') && this.field.hasOwnProperty('max')) {
-        this.helperText = `Must be less than ${this.field.max}`;
+        this.helperText = 'Must be less than ' + this.field.max;
       } else if (this.field.hasOwnProperty('min') && this.field.hasOwnProperty('max')) {
-        this.helperText = `Must be between ${this.field.min} and ${this.field.max}`
+        this.helperText = 'Must be between ' + this.field.min + ' and ' + this.field.max
       }
     }
 

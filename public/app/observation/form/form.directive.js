@@ -1,5 +1,6 @@
 var angular = require('angular')
-  , _ = require('underscore');
+  , _ = require('underscore')
+  , MDCTopAppBar = require('material-components-web').topAppBar.MDCTopAppBar;
 
 module.exports = function formDirective() {
   var directive = {
@@ -17,10 +18,13 @@ module.exports = function formDirective() {
   return directive;
 };
 
-FormDirectiveController.$inject = ['$scope', 'EventService', 'FilterService', 'Observation', 'ObservationService', 'UserService', 'LocalStorageService', '$element', '$uibModal'];
+FormDirectiveController.$inject = ['$scope', 'EventService', 'FilterService', 'ObservationService', 'UserService', 'LocalStorageService', '$element', '$uibModal'];
 
-function FormDirectiveController($scope, EventService, FilterService, Observation, ObservationService, UserService, LocalStorageService, $element, $uibModal) {
-  // const topAppBar = new MDCTopAppBar($element.find('.mdc-top-app-bar')[0])
+function FormDirectiveController($scope, EventService, FilterService, ObservationService, UserService, LocalStorageService, $element, $uibModal) {
+  var scrollElement = $element[0].parentElement;
+  const topAppBar = new MDCTopAppBar($element.find('.mdc-top-app-bar')[0]);
+  topAppBar.setScrollTarget(scrollElement)
+
   var uploadId = 0;
   var initialObservation;
 

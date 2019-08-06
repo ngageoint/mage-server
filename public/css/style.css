@@ -39,6 +39,7 @@
 }
 
 @import "~material-components-web/dist/material-components-web.css";
+@import "./colors.css";
 @import "./animations.css";
 @import "./auth.css";
 @import "./observation-item.css";
@@ -46,6 +47,7 @@
 @import "./feed.css";
 @import "./observation-edit.css";
 @import "./observation-view.css";
+@import "./user-view.css";
 @import "./form-chooser.css";
 @import "./navbar.css";
 @import "./tooltip.css";

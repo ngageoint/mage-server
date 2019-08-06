@@ -114,6 +114,14 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
     $scope.viewObservation = null;
   })
 
+  $scope.$on('user:view', function(e, user) {
+    $scope.viewUser = user
+  });
+
+  $scope.$on('user:viewDone', function(e, user) {
+    $scope.viewUser = null;
+  })
+
   $scope.$on('observation:view', function(e, observation) {
     $scope.viewObservation = observation
   });
@@ -178,6 +186,7 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
     $scope.newObservation = null;
     $scope.editObservation = null;
     $scope.viewObservation = null;
+    $scope.viewUser = null;
   })
 
   $scope.$watch('currentFeedPanel', function(currentFeedPanel) {

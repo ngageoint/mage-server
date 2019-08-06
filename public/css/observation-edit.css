@@ -8,6 +8,7 @@
 }
 .feed .mdc-top-app-bar {
   width: var(--feed-width);
+  position: sticky;
 }
 .feed .mdc-top-app-bar .mdc-button:not(:disabled) {
   color: white;
