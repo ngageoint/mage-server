@@ -14,16 +14,16 @@
   </div>
 </div>
 
+<div class="slide-left new-obs-card view-obs-card feed-card ng-animatable" ng-if="viewUser">
+  <user-view user="viewUser" event="event" observations="observations"></user-view>
+</div>
+
 <div class="slide-left new-obs-card view-obs-card feed-card ng-animatable" ng-if="viewObservation">
   <observation-view observation="viewObservation" event="event"></observation-view>
 </div>
 
 <div class="slide-left new-obs-card view-obs-card feed-card ng-animatable" ng-if="editObservation">
   <form-directive form="editForm" form-observation="editObservation"></form-directive>
-</div>
-
-<div class="slide-left new-obs-card view-obs-card feed-card ng-animatable" ng-if="viewUser">
-  <user-view user="viewUser" event="event" observations="observations"></user-view>
 </div>
 
 <div class="mdc-tab-bar" role="tablist">

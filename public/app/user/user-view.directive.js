@@ -31,4 +31,8 @@ function UserViewController($scope, $element) {
   $scope.userObservations = _.filter($scope.observations, function(observation) {
     return observation.userId === $scope.user.id;
   });
+
+  $scope.viewObservation = function(observation) {
+    $scope.$emit('observation:view', observation);
+  }
 }

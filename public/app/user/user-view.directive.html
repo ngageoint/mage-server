@@ -50,7 +50,8 @@
   <div
     id="{{observation.id}}"
     class="mdc-card"
-    ng-repeat="observation in userObservations track by observation.id">
+    ng-repeat="observation in userObservations track by observation.id"
+    ng-click="viewObservation(observation)">
     <div event="event" observation-news-item="observation" selectedobservation-form="event.form" container-element="side-bar"></div>
   </div>
 </div>

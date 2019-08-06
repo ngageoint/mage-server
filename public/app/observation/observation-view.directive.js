@@ -120,34 +120,6 @@ function ObservationViewController($scope, $element, $uibModal, EventService, Us
   $scope.editObservation = function() {
     $scope.onObservationLocationClick($scope.observation);
     $scope.$emit('observation:edit', $scope.observation);
-    // $scope.edit = true;
-
-    // var formMap = _.indexBy(EventService.getForms($scope.observation), 'id');
-    // var form = {
-    //   geometryField: {
-    //     title: 'Location',
-    //     type: 'geometry',
-    //     name: 'geometry',
-    //     value: $scope.observation.geometry
-    //   },
-    //   timestampField: {
-    //     title: 'Date',
-    //     type: 'date',
-    //     name: 'timestamp',
-    //     value: moment($scope.observation.properties.timestamp).toDate()
-    //   },
-    //   forms: []
-    // };
-
-    // _.each($scope.observation.properties.forms, function(propertyForm) {
-    //   var observationForm = EventService.createForm($scope.observation, formMap[propertyForm.formId]);
-    //   observationForm.name = formMap[propertyForm.formId].name;
-    //   form.forms.push(observationForm);
-    // });
-
-    // $scope.editForm = form;
-    // console.log('editform', $scope.editForm)
-    // console.log('$scope.edit', $scope.edit)
   };
 
   $scope.onObservationLocationClick = function(observation) {
