@@ -61,6 +61,7 @@
     "videogular-overlay-play": "1.4.4",
     "videogular-themes-default": "1.4.4",
     "webfontloader": "1.6.6",
+    "xml2js": "^0.4.19",
     "zxcvbn": "4.4.2"
   },
   "devDependencies": {

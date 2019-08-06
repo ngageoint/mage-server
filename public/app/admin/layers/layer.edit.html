@@ -89,33 +89,7 @@
                 </label>
               </div>
 
-              <div class="form-group" ng-show="layer.format === 'WMS' && layer.type === 'Imagery'">
-                <label class="control-label">Layers</label>
-                <input class="form-control" class="input-xlarge" type="text" placeholder="Comma seperated list of layer names" ng-model="layer.wms.layers"/>
-              </div>
-
-              <div class="form-group" ng-show="layer.format === 'WMS' && layer.type === 'Imagery'">
-                <label class="control-label">Styles</label>
-                <input class="form-control" class="input-xlarge" type="text" placeholder="Comma seperated list of layer styles" ng-model="layer.wms.styles"/>
-              </div>
-
-              <div class="form-group" ng-show="layer.format === 'WMS' && layer.type === 'Imagery'">
-                <label class="control-label" for="type">Format</label>
-                <select class="form-control" ng-model="layer.wms.format" ng-options="format for format in wmsFormats"></select>
-              </div>
-
-              <div class="form-group" ng-show="layer.format === 'WMS' && layer.type === 'Imagery'">
-               <div class="checkbox">
-                 <label>
-                   <input type="checkbox" name="layer-wms-transparency" ng-model="layer.wms.transparent"> Transparent
-                 </label>
-               </div>
-             </div>
-
-              <div class="form-group" ng-show="layer.format === 'WMS' && layer.type === 'Imagery'">
-                <label class="control-label" for="type">Version</label>
-                <select class="form-control" ng-model="layer.wms.version" ng-options="version for version in wmsVersions"></select>
-              </div>
+              <wms-layer ng-if="layer.format === 'WMS' && layer.type === 'Imagery'" layer="layer"></wms-layer>
 
               <div class="clearfix">
                 <span class="pull-right">
