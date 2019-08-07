@@ -67,7 +67,7 @@ function orient(event, observationId, attachment, callback) {
 
     var end = new Date().valueOf();
     log.info("orientation of attachment " + attachment.name + " complete in " + (end - start)/1000 + " seconds");
-    fs.rename(outputFile, file, function(err) {
+    fs.move(outputFile, file, {overwrite: true}, function(err) {
       if (err) return callback(err);
 
       gm(file).size(function(err, size) {
