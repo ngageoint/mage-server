@@ -21,30 +21,30 @@
     </div>
     <div class="user-view-divider-row mdc-list-divider">
     </div>
-    <div class="user-view-row">
+    <a class="user-view-row" href="javascript:void()" ng-click="onUserLocationClick(user)">
       <div class="user-view-icon user-view-location-icon">
         <i class="material-icons">my_location</i>
       </div>
-      <div class="user-view-row-text">
+      <div class="user-view-row-text" >
         {{user.location.geometry | geometry:5}}
       </div>
-    </div>
-    <div class="user-view-row">
+    </a>
+    <a class="user-view-row" ng-href="tel:{{user.phones[0].number}}">
       <div class="user-view-icon user-view-phone-icon">
         <i class="material-icons">phone</i>
       </div>
       <div class="user-view-row-text">
-        <a ng-href="tel:{{user.phones[0].number}}">{{user.phones[0].number}}</a>
+        {{user.phones[0].number}}
       </div>
-    </div>
-    <div class="user-view-row">
+    </a>
+    <a ng-href="mailto:{{user.email}}" class="user-view-row">
       <div class="user-view-icon user-view-email-icon">
         <i class="material-icons">email</i>
       </div>
       <div class="user-view-row-text">
-        <a ng-href="mailto:{{user.email}}">{{user.email}}</a>
+        {{user.email}}
       </div>
-    </div>
+    </a>
   </div>
 
   <div

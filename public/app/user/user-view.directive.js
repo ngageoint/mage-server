@@ -35,4 +35,8 @@ function UserViewController($scope, $element) {
   $scope.viewObservation = function(observation) {
     $scope.$emit('observation:view', observation);
   }
+
+  $scope.onUserLocationClick = function(user) {
+    $scope.$emit('user:zoom', user, {panToLocation: true, zoomToLocation: true});
+  };
 }
