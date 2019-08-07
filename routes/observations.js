@@ -559,7 +559,7 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     access.authorize('CREATE_OBSERVATION'),
     function(req, res, next) {
-      var attachment = req.files.find(o => o.fieldname === "attachment");
+      var attachment = req.files && req.files.find(o => o.fieldname === "attachment");
       if (!attachment) return res.status(400).send("no attachment");
 
       new api.Attachment(req.event, req.observation).create(req.observationId, attachment, function(err, attachment) {
@@ -577,7 +577,7 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     validateObservationUpdateAccess,
     function(req, res, next) {
-      var attachment = req.files.find(o => o.fieldname === "attachment");
+      var attachment = req.files && req.files.find(o => o.fieldname === "attachment");
       new api.Attachment(req.event, req.observation).update(req.params.attachmentId, attachment, function(err, attachment) {
         if (err) return next(err);
 

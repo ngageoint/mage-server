@@ -41,7 +41,7 @@ module.exports = function(app, security) {
       iconMetadata = JSON.parse(iconMetadata);
     }
 
-    var icon = req.files.find(o => o.fieldname === "icon");
+    var icon = req.files && req.files.find(o => o.fieldname === "icon");
     if (icon) {
       // default type to upload
       if (!iconMetadata.type) iconMetadata.type = 'upload';
@@ -247,7 +247,7 @@ module.exports = function(app, security) {
         }];
       }
 
-      var avatar = req.files.find(o => o.fieldname === "avatar");
+      var avatar = req.files && req.files.find(o => o.fieldname === "avatar");
       new api.User().update(req.user, {avatar}, function(err, updatedUser) {
         if (err) return next(err);
 
@@ -323,8 +323,8 @@ module.exports = function(app, security) {
       // Authorized to update users, activate account by default
       req.newUser.active = true;
 
-      var avatar = req.files.find(o => o.fieldname === "avatar");
-      var icon = req.files.find(o => o.fieldname === "icon");
+      var avatar = req.files && req.files.find(o => o.fieldname === "avatar");
+      var icon = req.files && req.files.find(o => o.fieldname === "icon");
       new api.User().create(req.newUser, {avatar, icon}, function(err, newUser) {
         if (err) return next(err);
 
@@ -344,7 +344,7 @@ module.exports = function(app, security) {
       req.newUser.active = false;
       req.newUser.roleId = req.role._id;
 
-      var avatar = req.files.find(o => o.fieldname === "avatar");
+      var avatar = req.files && req.files.find(o => o.fieldname === "avatar");
       new api.User().create(req.newUser, {avatar}, function(err, newUser) {
         if (err) return next(err);
 
@@ -435,8 +435,8 @@ module.exports = function(app, security) {
         }
       }
 
-      var avatar = req.files.find(o => o.fieldname === "avatar");
-      var icon = req.files.find(o => o.fieldname === "icon");
+      var avatar = req.files && req.files.find(o => o.fieldname === "avatar");
+      var icon = req.files && req.files.find(o => o.fieldname === "icon");
       new api.User().update(user, {avatar, icon}, function(err, updatedUser) {
         if (err) return next(err);
 

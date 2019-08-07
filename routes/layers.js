@@ -35,7 +35,7 @@ module.exports = function(app, security) {
       return next();
     }
 
-    var file = req.files.find(o => o.fieldname === "geopackage");
+    var file = req.files && req.files.find(o => o.fieldname === "geopackage");
     if (!file) {
       return res.send(400, 'cannot create layer "geopackage" file not specified');
     }
