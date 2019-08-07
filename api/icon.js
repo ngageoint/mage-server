@@ -117,7 +117,7 @@ Icon.prototype.saveDefaultIconToEventForm = function(callback) {
 };
 
 Icon.prototype.create = function(icon, callback) {
-  var relativePath = createIconPath(this, icon.name);
+  var relativePath = createIconPath(this, icon.originalname);
   var newIcon = {
     eventId: this._eventId,
     formId: this._formId,
