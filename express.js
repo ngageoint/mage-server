@@ -60,7 +60,7 @@ app.use(require('body-parser')({
 }));
 app.use(multer({
   storage: multer.diskStorage({
-    destination: '/tmp',
+    destination: env.tempDirectory,
     filename: function(req, file, cb) {
       // multer does not save the temp file w/the file extension which causes issues when processing e.g. geopackages
       crypto.pseudoRandomBytes(16, function(err, raw) {
