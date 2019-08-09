@@ -14,6 +14,8 @@ export MAGE_ICON_DIR=/var/lib/mage/icons
 export MAGE_ATTACHEMENT_DIR=/var/lib/mage/attachments
 # directory where mage stores layers
 export MAGE_LAYER_DIR=/var/lib/mage/layers
+# directory where mage stores temporary files
+export MAGE_TEMP_DIR=/tmp
 # number of seconds an authentication token is valid; default 28800 (8 hours)
 export MAGE_TOKEN_EXPIRATION=28800
 # the URL that specifies MAGE's connection to mongodb

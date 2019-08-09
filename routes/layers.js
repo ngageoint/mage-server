@@ -35,14 +35,15 @@ module.exports = function(app, security) {
       return next();
     }
 
-    if (!req.files.geopackage) {
+    var file = req.files && req.files.find(o => o.fieldname === "geopackage");
+    if (!file) {
       return res.send(400, 'cannot create layer "geopackage" file not specified');
     }
 
-    geopackage.validate(req.files.geopackage, (err, result) => {
+    geopackage.validate(file, (err, result) => {
       if (err) return res.status(400).send('cannot create layer, geopackage is not valid');
 
-      req.newLayer.geopackage = req.files.geopackage;
+      req.newLayer.geopackage = file;
       req.newLayer.tables = result.metadata.tables;
       next(err);
     });

@@ -286,7 +286,8 @@ module.exports = function(app, security) {
       if (!req.is('multipart/form-data')) return next();
 
       function validateForm(callback) {
-        new api.Form().validate(req.files.form, callback);
+        var form = req.files && req.files.find(o => o.fieldname === "form");
+        new api.Form().validate(form, callback);
       }
 
       function updateEvent(form, callback) {
@@ -298,7 +299,8 @@ module.exports = function(app, security) {
       }
 
       function importIcons(form, callback) {
-        new api.Form(req.event).importIcons(req.files.form, form, function(err) {
+        var icon = req.files && req.files.find(o => o.fieldname === "form");
+        new api.Form(req.event).importIcons(icon, form, function(err) {
           callback(err, form);
         });
       }
@@ -530,7 +532,8 @@ module.exports = function(app, security) {
     passport.authenticate('bearer'),
     authorizeAccess('UPDATE_EVENT', 'update'),
     function(req, res, next) {
-      new api.Icon(req.event._id, req.params.formId, req.params.primary, req.params.variant).create(req.files.icon, function(err, icon) {
+      var icon = req.files && req.files.find(o => o.fieldname === "icon");
+      new api.Icon(req.event._id, req.params.formId, req.params.primary, req.params.variant).create(icon, function(err, icon) {
         if (err) return next(err);
 
         return res.json(icon);

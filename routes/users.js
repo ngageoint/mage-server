@@ -41,7 +41,8 @@ module.exports = function(app, security) {
       iconMetadata = JSON.parse(iconMetadata);
     }
 
-    if (req.files.icon) {
+    var icon = req.files && req.files.find(o => o.fieldname === "icon");
+    if (icon) {
       // default type to upload
       if (!iconMetadata.type) iconMetadata.type = 'upload';
 
@@ -49,12 +50,12 @@ module.exports = function(app, security) {
         return res.status(400).send('invalid icon metadata');
       }
 
-      req.files.icon.type = iconMetadata.type;
-      req.files.icon.text = iconMetadata.text;
-      req.files.icon.color = iconMetadata.color;
+      icon.type = iconMetadata.type;
+      icon.text = iconMetadata.text;
+      icon.color = iconMetadata.color;
     } else {
       if (iconMetadata.type === 'none') {
-        req.files.icon = {
+        icon = {
           type: 'none'
         };
       }
@@ -246,7 +247,8 @@ module.exports = function(app, security) {
         }];
       }
 
-      new api.User().update(req.user, {avatar: req.files.avatar}, function(err, updatedUser) {
+      var avatar = req.files && req.files.find(o => o.fieldname === "avatar");
+      new api.User().update(req.user, {avatar}, function(err, updatedUser) {
         if (err) return next(err);
 
         updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
@@ -314,13 +316,16 @@ module.exports = function(app, security) {
       }
 
       var roleId = req.param('roleId');
+
       if (!roleId) return res.status(400).send('roleId is a required field');
       req.newUser.roleId = roleId;
 
       // Authorized to update users, activate account by default
       req.newUser.active = true;
 
-      new api.User().create(req.newUser, {avatar: req.files.avatar, icon: req.files.icon}, function(err, newUser) {
+      var avatar = req.files && req.files.find(o => o.fieldname === "avatar");
+      var icon = req.files && req.files.find(o => o.fieldname === "icon");
+      new api.User().create(req.newUser, {avatar, icon}, function(err, newUser) {
         if (err) return next(err);
 
         newUser = userTransformer.transform(newUser, {path: req.getRoot()});
@@ -339,7 +344,8 @@ module.exports = function(app, security) {
       req.newUser.active = false;
       req.newUser.roleId = req.role._id;
 
-      new api.User().create(req.newUser, {avatar: req.files.avatar}, function(err, newUser) {
+      var avatar = req.files && req.files.find(o => o.fieldname === "avatar");
+      new api.User().create(req.newUser, {avatar}, function(err, newUser) {
         if (err) return next(err);
 
         newUser = userTransformer.transform(newUser, {path: req.getRoot()});
@@ -429,7 +435,9 @@ module.exports = function(app, security) {
         }
       }
 
-      new api.User().update(user, {avatar: req.files.avatar, icon: req.files.icon}, function(err, updatedUser) {
+      var avatar = req.files && req.files.find(o => o.fieldname === "avatar");
+      var icon = req.files && req.files.find(o => o.fieldname === "icon");
+      new api.User().update(user, {avatar, icon}, function(err, updatedUser) {
         if (err) return next(err);
 
         updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});

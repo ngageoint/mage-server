@@ -1,4 +1,6 @@
 var express = require("express")
+  , crypto = require('crypto')
+  , multer = require('multer')
   , cookieSession = require('cookie-session')
   , passport = require('passport')
   , path = require('path')
@@ -33,7 +35,7 @@ app.use(function(req, res, next) {
   return next();
 });
 
-const secret = require('crypto').randomBytes(64).toString('hex');
+const secret = crypto.randomBytes(64).toString('hex');
 app.use(cookieSession({
   secret: secret,
   name: 'mage-session',
@@ -56,7 +58,19 @@ app.use(require('body-parser')({
   limit: '16mb',
   keepExtensions: true
 }));
-app.use(require('multer')());
+app.use(multer({
+  storage: multer.diskStorage({
+    destination: env.tempDirectory,
+    filename: function(req, file, cb) {
+      // multer does not save the temp file w/the file extension which causes issues when processing e.g. geopackages
+      crypto.pseudoRandomBytes(16, function(err, raw) {
+        if (err) return cb(err);
+
+        cb(null, raw.toString('hex') + path.extname(file.originalname));
+      })
+    }
+  })
+}).any());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public/dist')));

@@ -17,7 +17,8 @@ module.exports = function(app, security) {
   function readImportFile(req, res, next) {
     // TODO at some point open file and determine type (KML, shapefile, geojson, csv)
 
-    fs.readFile(req.files.file.path, 'utf8', function(err, data) {
+    var file = req.files && req.files.find(o => o.fieldname === "file");
+    fs.readFile(file.path, 'utf8', function(err, data) {
       req.importData = data;
       return next(err);
     });
@@ -33,10 +34,11 @@ module.exports = function(app, security) {
       var features = toGeoJson.kml(req.importData);
       new api.Feature(req.layer).createFeatures(features)
         .then(newFeatures => {
+          var file = req.files && req.files.find(o => o.fieldname === "file");
           var response = {
             files: [{
-              name: req.files.file.originalname,
-              size: req.files.file.size,
+              name: file.originalname,
+              size: file.size,
               features: newFeatures.length
             }]
           };
