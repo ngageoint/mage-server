@@ -14,21 +14,30 @@
   </div>
 </div>
 
-<div class="slide-left new-obs-card view-obs-card feed-card ng-animatable" ng-if="viewUser">
-  <user-view user="viewUser" event="event" observations="observations"></user-view>
-</div>
+<user-view 
+    class="slide-left new-obs-card view-obs-card feed-card ng-animatable" 
+    ng-if="viewUser" 
+    user="viewUser" 
+    event="event" 
+    observations="observations"></user-view>
 
-<div class="slide-left new-obs-card view-obs-card feed-card ng-animatable" ng-if="viewObservation">
-  <observation-view observation="viewObservation" event="event"></observation-view>
-</div>
+<observation-view
+    class="slide-left new-obs-card view-obs-card feed-card ng-animatable"
+    ng-if="viewObservation"
+    observation="viewObservation" 
+    event="event"></observation-view>
 
-<div class="slide-left new-obs-card view-obs-card feed-card ng-animatable" ng-if="editObservation">
-  <form-directive form="editForm" form-observation="editObservation"></form-directive>
-</div>
+<form-directive
+    class="slide-left new-obs-card view-obs-card feed-card ng-animatable"
+    ng-if="editObservation"
+    form="editForm"
+    form-observation="editObservation"></form-directive>
 
 <tab-list on-tab-switch="onTabSwitched(index)" tabs="tabs"></tab-list>
 <div class="observation-feed-container content content--active">
-  <observation-feed ng-if="currentFeedPanel === 'observations'"></observation-feed>
+  <observation-feed
+    ng-if="currentFeedPanel === 'observations'"
+    on-create-new-observation="createNewObservation()"></observation-feed>
 </div>
 
 <div class="people-feed-container content">

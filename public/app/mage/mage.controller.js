@@ -372,10 +372,6 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
 
   function onObservationSelected(observation, options) {
     $scope.$broadcast('observation:view', observation, options);
-    // if (options.scrollTo) {
-    //   $scope.hideFeed = false;
-    //   MapService.hideFeed(false);
-    // }
   }
 
   function onObservationDeselected(observation) {
@@ -423,50 +419,6 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
     } else {
       followingUserId = null;
     }
-  });
-
-  $scope.$on('observation:latlng', function(e, latlng) {
-    if (newObservation) {
-      // already creating a new observation
-      return;
-    }
-
-    $scope.hideFeed = false;
-    MapService.hideFeed(false);
-
-    var event = FilterService.getEvent();
-    if (!EventService.isUserInEvent(UserService.myself, event)) {
-      $uibModal.open({
-        template: require('../error/not.in.event.html'),
-        controller: 'NotInEventController',
-        resolve: {
-          title: function() {
-            return 'Cannot Create Observation';
-          }
-        }
-      });
-
-      return;
-    }
-
-    newObservation = new Observation({
-      eventId: event.id,
-      type: 'Feature',
-      id: 'new',
-      geometry: {
-        type: 'Point',
-        coordinates: [latlng.lng, latlng.lat]
-      },
-      properties: {
-        timestamp: new Date(),
-        forms: []
-      },
-      style: {}
-    });
-
-    $scope.$broadcast('observation:feed', newObservation);
-
-    // $scope.$apply();
   });
 
   $scope.$on('observation:editStarted', function(e, observation) {

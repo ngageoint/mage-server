@@ -5,12 +5,15 @@ var _ = require('underscore')
 
 module.exports = {
   template: require('./observation-feed.component.html'),
-  controller: ObservationFeedController
+  controller: ObservationFeedController,
+  bindings: {
+    onCreateNewObservation: '&'
+  }
 };
 
-ObservationFeedController.$inject = ['$element', '$timeout', 'EventService', '$filter', 'FilterService'];
+ObservationFeedController.$inject = ['$element', '$timeout', 'EventService', '$filter', 'FilterService', '$rootScope', 'LocalStorageService'];
 
-function ObservationFeedController($element, $timeout, EventService, $filter, FilterService) {
+function ObservationFeedController($element, $timeout, EventService, $filter, FilterService, $rootScope, LocalStorageService) {
 
   let observationSelectMdc;
 
@@ -54,6 +57,14 @@ function ObservationFeedController($element, $timeout, EventService, $filter, Fi
       })
     })
   }
+
+  // this.createNewObservation = function() {
+    
+
+  //   $scope.$broadcast('observation:feed', newObservation);
+
+  //   $rootScope.$emit('observation:latlng', mapPos.center);
+  // }
 
   this.onObservationsChanged = function(changed) {
     this.event = FilterService.getEvent();
