@@ -1115,8 +1115,9 @@ h4.image-delete {
 
 .btn .logo img {
   position: relative;
-  top: 9px;
-  width: 60%
+  top: 50%;
+  transform: translateY(-50%);
+  width: 70%
 }
 
 .btn .logo i {

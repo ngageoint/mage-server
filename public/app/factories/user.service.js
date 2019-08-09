@@ -14,8 +14,8 @@ function UserService($rootScope, $q, $uibModal, $http, $location, $timeout, $win
     signin: signin,
     googleSignin: googleSignin,
     googleSignup: googleSignup,
+    ldapSignin: ldapSignin,
     oauthSignin: oauthSignin,
-    oauthSignup: oauthSignup,
     authorize: authorize,
     logout: logout,
     getMyself: getMyself,
@@ -70,6 +70,22 @@ function UserService($rootScope, $q, $uibModal, $http, $location, $timeout, $win
     return promise;
   }
 
+  function ldapSignin(data) {
+    var deferred = $q.defer();
+
+    data.appVersion = 'Web Client';
+    $http.post('/auth/ldap/signin', data, {
+      headers: {"Content-Type": "application/json"},
+      ignoreAuthModule:true
+    }).then(function(response) {
+      deferred.resolve({user: response.data.user});
+    }).catch(function(response) {
+      deferred.reject(response);
+    });
+
+    return deferred.promise;
+  }
+
   function oauthSignin(strategy) {
     var deferred = $q.defer();
 
@@ -98,31 +114,6 @@ function UserService($rootScope, $q, $uibModal, $http, $location, $timeout, $win
     }
 
     $window.addEventListener('message', onMessage, false);
-
-    return deferred.promise;
-  }
-
-  function oauthSignup(strategy) {
-    var deferred = $q.defer();
-
-    var windowLeft = window.screenLeft ? window.screenLeft : window.screenX;
-    var windowTop = window.screenTop ? window.screenTop : window.screenY;
-
-    var left = windowLeft + (window.innerWidth / 2) - (300);
-    var top = windowTop + (window.innerHeight / 2) - (300);
-    var strWindowFeatures = 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=600, height=600, top=' + top + ',left=' + left;
-
-    var authWindow = $window.open("/auth/" +  strategy + "/signup", "", strWindowFeatures);
-    $window.addEventListener('message', function(event) {
-      var data = event.data;
-      if (data.user) {
-        deferred.resolve({user: event.data.user});
-      } else {
-        deferred.reject(data);
-      }
-
-      authWindow.close();
-    }, false);
 
     return deferred.promise;
   }
