@@ -29,7 +29,7 @@
         {{user.location.geometry | geometry:5}}
       </div>
     </a>
-    <a class="user-view-row" ng-href="tel:{{user.phones[0].number}}">
+    <a class="user-view-row" ng-href="tel:{{user.phones[0].number}}" ng-if="user.phones.length">
       <div class="user-view-icon user-view-phone-icon">
         <i class="material-icons">phone</i>
       </div>
@@ -37,7 +37,7 @@
         {{user.phones[0].number}}
       </div>
     </a>
-    <a ng-href="mailto:{{user.email}}" class="user-view-row">
+    <a ng-href="mailto:{{user.email}}" class="user-view-row" ng-if="user.email">
       <div class="user-view-icon user-view-email-icon">
         <i class="material-icons">email</i>
       </div>

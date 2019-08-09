@@ -289,16 +289,6 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
         delete popupScopes[removed.id];
       }
     });
-
-    // update the news feed observations
-    $scope.feedObservations = _.values(observationsById);
-
-    if (!firstObservationChange) {
-      if (changed.added) $scope.feedChangedObservations.count += changed.added.length;
-      if (changed.updated) $scope.feedChangedObservations.count += changed.updated.length;
-    }
-
-    firstObservationChange = false;
   }
 
   function onUsersChanged(changed) {
@@ -321,7 +311,6 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
         if (user.id === followingUserId) MapService.zoomToFeatureInLayer(user, 'People');
       }
 
-      if (!firstUserChange) $scope.feedChangedUsers[updated.id] = true;
     });
 
     _.each(changed.removed, function(removed) {
@@ -335,11 +324,6 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
         delete popupScopes[removed.id];
       }
     });
-
-    // update the news feed observations
-    $scope.feedUsers = _.values(usersById);
-
-    firstUserChange = false;
   }
 
   function onLocation(l) {

@@ -1184,6 +1184,11 @@ h4.image-delete {
 .circle-avatar {
   border-radius: 50%;
   overflow: hidden;
+  background: var(--mdc-theme-surface);
+}
+
+.circle-avatar-no-border {
+  border: 0px;
 }
 
 .observation-type {

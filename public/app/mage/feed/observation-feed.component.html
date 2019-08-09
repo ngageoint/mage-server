@@ -1,0 +1,54 @@
+<div class="mdc-chip-set mdc-chip-set--choice">
+  <div class="mdc-chip mdc-chip--selected" ng-click="$ctrl.actionFilterChanged('all')" ng-class="{'active': $ctrl.actionFilter === 'all'}">
+    <span>All</span>
+  </div>
+  <div class="mdc-chip" ng-click="$ctrl.actionFilterChanged('favorite')" ng-class="{'active': $ctrl.actionFilter === 'favorite'}">
+    <span>Favorites</span>
+  </div>
+  <div class="mdc-chip" ng-click="$ctrl.actionFilterChanged('important')" ng-class="{'active': $ctrl.actionFilter === 'important'}">
+    <span>Important</span>
+  </div>
+  <div class="mdc-chip" ng-click="$ctrl.actionFilterChanged('attachments')" ng-class="{'active': $ctrl.actionFilter === 'attachments'}">
+    <span>Attachments</span>
+  </div>
+</div>
+<div class="feed-content-padding-container">
+  <div id="select" class="observation-select mdc-select mdc-select--outlined page-select-width">
+    <input type="hidden" name="enhanced-select">
+    <i class="mdc-select__dropdown-icon"></i>
+    <div class="mdc-select__selected-text">{{$ctrl.observationPages[0][0].properties.timestamp | moment: 'fromNow'}}</div>
+    <div class="mdc-select__menu mdc-menu mdc-menu-surface page-select-width">
+      <ul class="mdc-list">
+          <li class="mdc-list-item mdc-list-item--selected"
+          data-value="$ctrl.observationPages[0[0].id">
+          {{$ctrl.observationPages[0][0].properties.timestamp | moment: 'fromNow'}}
+        </li>
+        <li class="mdc-list-item"
+          ng-if="!$first"
+          ng-repeat="observationPage in $ctrl.observationPages track by observationPage[0].id"
+          data-value="$ctrl.observationPage[0].id">
+          {{$ctrl.observationPage[0].properties.timestamp | moment: 'fromNow'}}
+        </li>
+      </ul>
+    </div>
+    <div class="mdc-notched-outline">
+    <div class="mdc-notched-outline__leading"></div>
+    <div class="mdc-notched-outline__notch">
+      <label class="mdc-floating-label">Observation Page</label>
+    </div>
+    <div class="mdc-notched-outline__trailing"></div>  
+    </div>
+  </div>
+</div>
+<div class="observation-card-background-container card-background-container">
+  <div
+    id="{{observation.id}}"
+    class="mdc-card"
+    ng-class="($ctrl.selectedObservation.id && $ctrl.selectedObservation.id !== observation.id) && 'inactive-feed-card'"
+    ng-repeat="observation in $ctrl.observationPages[$ctrl.currentObservationPage] track by observation.id">
+    <div event="$ctrl.event" observation-news-item="observation" selectedobservation-form="$ctrl.event.form" container-element="side-bar"></div>
+  </div>
+</div>
+<button class="mdc-fab app-fab--absolute" aria-label="New Observation" ng-click="$ctrl.createNewObservation()">
+  <span class="mdc-fab__icon material-icons record">add</span>
+</button>

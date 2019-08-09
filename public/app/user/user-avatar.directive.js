@@ -39,6 +39,7 @@ function AvatarUserController($scope, $element, $http, LocalStorageService) {
     getAvatar(url);
   } else {
     image.src = "images/baseline-account_circle-24px.svg";
+    imageElement.addClass('circle-avatar-no-border');
   }
 
   $scope.$watch('user.avatarUrl', function(newUrl) {

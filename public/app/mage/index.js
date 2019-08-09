@@ -8,3 +8,4 @@ angular.module('mage')
   .directive('leaflet', require('./leaflet.directive'));
 
 require('./navbar');
+require('./feed');
