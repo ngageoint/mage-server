@@ -15,6 +15,7 @@ module.exports = function(app, security) {
     , turfCentroid = require('@turf/centroid')
     , geometryFormat = require('../format/geoJsonFormat')
     , observationXform = require('../transformers/observation')
+    , {default: upload} = require('../upload')
     , passport = security.authentication.passport;
 
   var sortColumnWhitelist = ["lastModified"];
@@ -558,11 +559,11 @@ module.exports = function(app, security) {
     '/api/events/:eventId/observations/:observationId/attachments',
     passport.authenticate('bearer'),
     access.authorize('CREATE_OBSERVATION'),
+    upload.single('attachment'),
     function(req, res, next) {
-      var attachment = req.files && req.files.find(o => o.fieldname === "attachment");
-      if (!attachment) return res.status(400).send("no attachment");
+      if (!req.file) return res.status(400).send("no attachment");
 
-      new api.Attachment(req.event, req.observation).create(req.observationId, attachment, function(err, attachment) {
+      new api.Attachment(req.event, req.observation).create(req.observationId, req.file, function(err, attachment) {
         if (err) return next(err);
 
         var observation = req.observation;
@@ -576,9 +577,9 @@ module.exports = function(app, security) {
     '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
     passport.authenticate('bearer'),
     validateObservationUpdateAccess,
+    upload.single('attachment'),
     function(req, res, next) {
-      var attachment = req.files && req.files.find(o => o.fieldname === "attachment");
-      new api.Attachment(req.event, req.observation).update(req.params.attachmentId, attachment, function(err, attachment) {
+      new api.Attachment(req.event, req.observation).update(req.params.attachmentId, req.file, function(err, attachment) {
         if (err) return next(err);
 
         var observation = req.observation;

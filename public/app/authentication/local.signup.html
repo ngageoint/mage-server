@@ -3,11 +3,6 @@
     <form name="account" ng-submit="$ctrl.signup(account)" method="post" autocomplete="off" novalidate>
 
       <div class="form-group">
-        <label class="control-label">Avatar</label>
-        <div avatar-user-edit="$ctrl.user" on-avatar="$ctrl.onAvatar($event)"/>
-      </div>
-
-      <div class="form-group">
         <label class="control-label">Username</label>
         <div ng-class="{'has-error': account.$submitted && account.password.$invalid}">
           <input type="text" ng-model="$ctrl.user.username" autocapitalize="off" name="username" placeholder="i.e. jappleseed" class="form-control" required>

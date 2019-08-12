@@ -36,8 +36,6 @@ User.prototype.login = function(user, device, options, callback) {
     options = {};
   }
 
-  console.log('userId is: ', user._id);
-
   TokenModel.createToken({userId: user._id, device: device}, function(err, token) {
     if (err) return callback(err);
 
@@ -242,8 +240,6 @@ User.prototype.icon = function(user, callback) {
 
   var icon = user.icon.toObject();
   icon.path = path.join(userBase, user.icon.relativePath);
-
-  console.log('got user icon as', icon);
 
   callback(null, icon);
 };

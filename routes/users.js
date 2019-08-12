@@ -6,6 +6,7 @@ module.exports = function(app, security) {
     , access = require('../access')
     , fs = require('fs-extra')
     , userTransformer = require('../transformers/user')
+    , {default: upload} = require('../upload')
     , passport = security.authentication.passport;
 
   var passwordLength = null;
@@ -41,7 +42,8 @@ module.exports = function(app, security) {
       iconMetadata = JSON.parse(iconMetadata);
     }
 
-    var icon = req.files && req.files.find(o => o.fieldname === "icon");
+    let files = req.files || {};
+    let [icon] = files.icon || [];
     if (icon) {
       // default type to upload
       if (!iconMetadata.type) iconMetadata.type = 'upload';
@@ -53,12 +55,10 @@ module.exports = function(app, security) {
       icon.type = iconMetadata.type;
       icon.text = iconMetadata.text;
       icon.color = iconMetadata.color;
-    } else {
-      if (iconMetadata.type === 'none') {
-        icon = {
-          type: 'none'
-        };
-      }
+    } else if (iconMetadata.type === 'none') {
+      icon = {
+        type: 'none'
+      };
     }
 
     next();
@@ -234,6 +234,7 @@ module.exports = function(app, security) {
   app.put(
     '/api/users/myself',
     passport.authenticate('bearer'),
+    upload.single('avatar'),
     function(req, res, next) {
       if (req.param('username')) req.user.username = req.param('username');
       if (req.param('displayName')) req.user.displayName = req.param('displayName');
@@ -247,8 +248,7 @@ module.exports = function(app, security) {
         }];
       }
 
-      var avatar = req.files && req.files.find(o => o.fieldname === "avatar");
-      new api.User().update(req.user, {avatar}, function(err, updatedUser) {
+      new api.User().update(req.user, {avatar: req.file}, function(err, updatedUser) {
         if (err) return next(err);
 
         updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
@@ -306,6 +306,7 @@ module.exports = function(app, security) {
   app.post(
     '/api/users',
     isAuthenticated('bearer'),
+    upload.fields([{name: 'avatar'}, {name: 'icon'}]),
     validateUser,
     parseIconUpload,
     function(req, res, next) {
@@ -315,7 +316,7 @@ module.exports = function(app, security) {
         return next();
       }
 
-      var roleId = req.param('roleId');
+      const roleId = req.param('roleId');
 
       if (!roleId) return res.status(400).send('roleId is a required field');
       req.newUser.roleId = roleId;
@@ -323,8 +324,9 @@ module.exports = function(app, security) {
       // Authorized to update users, activate account by default
       req.newUser.active = true;
 
-      var avatar = req.files && req.files.find(o => o.fieldname === "avatar");
-      var icon = req.files && req.files.find(o => o.fieldname === "icon");
+      const files = req.files || {};
+      const [avatar] = files.avatar || [];
+      const [icon] = files.icon || [];
       new api.User().create(req.newUser, {avatar, icon}, function(err, newUser) {
         if (err) return next(err);
 
@@ -344,8 +346,7 @@ module.exports = function(app, security) {
       req.newUser.active = false;
       req.newUser.roleId = req.role._id;
 
-      var avatar = req.files && req.files.find(o => o.fieldname === "avatar");
-      new api.User().create(req.newUser, {avatar}, function(err, newUser) {
+      new api.User().create(req.newUser, {}, function(err, newUser) {
         if (err) return next(err);
 
         newUser = userTransformer.transform(newUser, {path: req.getRoot()});
@@ -388,6 +389,7 @@ module.exports = function(app, security) {
     '/api/users/:userId',
     passport.authenticate('bearer'),
     access.authorize('UPDATE_USER'),
+    upload.fields([{name: 'avatar'}, {name: 'icon'}]),
     parseIconUpload,
     function(req, res, next) {
       var user = req.userParam;
@@ -435,8 +437,9 @@ module.exports = function(app, security) {
         }
       }
 
-      var avatar = req.files && req.files.find(o => o.fieldname === "avatar");
-      var icon = req.files && req.files.find(o => o.fieldname === "icon");
+      const files = req.files || {};
+      const [avatar] = files.avatar || [];
+      const [icon] = files.icon || [];
       new api.User().update(user, {avatar, icon}, function(err, updatedUser) {
         if (err) return next(err);
 

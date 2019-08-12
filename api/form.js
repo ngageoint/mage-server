@@ -124,8 +124,8 @@ Form.prototype.export = function(formId, callback) {
 Form.prototype.validate = function(file, callback) {
   var err;
 
-  if (!/\.zip$/.test(file.originalname)) {
-    err = new Error('Form import attachment must be of type "zip"');
+  if (file.mimetype !== 'application/zip') {
+    err = new Error('Form import file must be of type "zip"');
     err.status = 400;
     return callback(err);
   }
