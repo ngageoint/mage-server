@@ -11,15 +11,15 @@
       </div>
       <div class="map-spacer" ng-if="!$ctrl.field.value || !$ctrl.field.value.coordinates.length"></div>
     </div>
-    <select class="mdc-select__native-control">
+    <select class="mdc-select__native-control" ng-required="$ctrl.field.required">
       <option disabled selected value=" "> </option>
     </select>
     <div class="mdc-notched-outline">
-    <div class="mdc-notched-outline__leading"></div>
-    <div class="mdc-notched-outline__notch">
-      <label class="mdc-floating-label">{{$ctrl.field.title}}</label>
-    </div>
-    <div class="mdc-notched-outline__trailing"></div>  
+      <div class="mdc-notched-outline__leading"></div>
+      <div class="mdc-notched-outline__notch">
+        <label class="mdc-floating-label">{{$ctrl.field.title}}</label>
+      </div>
+      <div class="mdc-notched-outline__trailing"></div>  
     </div>
   </div>
 </div>

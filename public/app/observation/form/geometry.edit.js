@@ -43,11 +43,12 @@ function GeometryEditController(GeometryService, LocalStorageService, $timeout, 
     event.stopPropagation();
     event.preventDefault();
     event.stopImmediatePropagation();
-    var editField = angular.copy(this.field);
+    // var editField = angular.copy(this.field);
     const mapPos = LocalStorageService.getMapPosition();
     console.log('mapPos', mapPos)
-    editField.value = editField.value || {type: 'Point', coordinates: [mapPos.center.lng, mapPos.center.lat]}
-    this.startGeometryEdit({field: editField})
+    this.field.value = this.field.value || {type: 'Point', coordinates: [mapPos.center.lng, mapPos.center.lat]}
+    this.startGeometryEdit({field: this.field})
+    this.select.selectedIndex = 0;
   }
 
   this.$postLink = function() {
@@ -56,14 +57,24 @@ function GeometryEditController(GeometryService, LocalStorageService, $timeout, 
   
   this.initializeDropDown = function() {
     $timeout(function() {
-      if (!this.select && this.field.value && this.field.value.coordinates.length) {
+      if (!this.select) {
         this.select = new MDCSelect($element.find('.mdc-select')[0]);
+      }
+      if (this.field.value && this.field.value.coordinates.length) {
         this.select.selectedIndex = 0;
+        this.select.value = " ";
       }
     }.bind(this))
   }
 
+  this.$doCheck = function() {
+    if (!this.field.value && this.select) {
+      this.select.selectedIndex = -1;
+    }
+  }
+
   this.$onChanges = function() {
+    console.log('on changes')
     if (this.field && this.coordinateSystem === 'mgrs') {
       this.mgrs = toMgrs(this.field);
     }

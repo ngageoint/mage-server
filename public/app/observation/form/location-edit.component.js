@@ -8,6 +8,7 @@ module.exports = {
   bindings: {
     field: '<',
     geometryStyle: '<',
+    clearable: '<',
     onFieldChanged: '&',
     cancelEdit: '&',
     saveEdit: '&'
@@ -47,6 +48,10 @@ module.exports = {
 
     this.saveLocation = function() {
       this.saveEdit({value: this.currentGeometry.geometry})
+    }
+
+    this.clearLocation = function() {
+      this.saveEdit({value: undefined})
     }
     
     this.cancel = function() {
@@ -113,7 +118,8 @@ module.exports = {
 
     this.onLatLngChange = function() {
       var coordinates = angular.copy(this.shape.coordinates);
-  
+      console.log('lat lng change', coordinates)
+
       // copy edit field lat/lng in coordinates at correct index
       if (this.shape.type === 'LineString') {
         coordinates[this.selectedVertexIndex] = angular.copy([Number(this.longitudeField.value), Number(this.latitudeField.value)]);
@@ -232,6 +238,8 @@ module.exports = {
     this.geometryChangedListener = function(geometry) {
       $timeout(function() {
         this.currentGeometry.geometry = geometry;
+        this.shape = geometry;
+        this.updateSelectedVertex()
       }.bind(this))
     }
 
@@ -314,23 +322,31 @@ module.exports = {
     this.$onChanges = function() {
       this.shape = angular.copy(this.field.value)
       this.value = angular.copy(this.field.value)
+      console.log('this.shape', this.shape)
       this.selectedVertexIndex = 0;
       this.mgrs = this.toMgrs(this.field)
+      this.updateSelectedVertex()
+      this.initializeTextFields()
+    }
+
+    this.updateSelectedVertex = function() {
       if (this.shape.type === 'Point') {
         this.selectedVertex = [this.shape.coordinates[0], this.shape.coordinates[1]]
       } else if (this.shape.type === 'Polygon') {
-        this.selectedVertex = [this.shape.coordinates[0][0][0], this.shape.coordinates[0][0][1]]
+        this.selectedVertex = [this.shape.coordinates[0][this.selectedVertexIndex][0], this.shape.coordinates[0][this.selectedVertexIndex][1]]
       } else if (this.shape.type === 'LineString') {
-        this.selectedVertex = [this.shape.coordinates[0][0], this.shape.coordinates[0][1]]
+        this.selectedVertex = [this.shape.coordinates[this.selectedVertexIndex][0], this.shape.coordinates[this.selectedVertexIndex][1]]
       }
-      this.initializeTextFields()
     }
 
     this.initializeTextFields = function() {
       if (!this.latitudeField && this.coordinateSystem === 'wgs84') {
+        var sv = this.selectedVertex;
         $timeout(function() {
           this.latitudeField = new MDCTextField($element.find('.latitude-text-field')[0]);
           this.longitudeField = new MDCTextField($element.find('.longitude-text-field')[0]);
+          console.log('this.selectedVertex', this.selectedVertex)
+          console.log('sv', sv)
           this.longitudeField.value = this.selectedVertex[0];
           this.latitudeField.value = this.selectedVertex[1];
         }.bind(this))

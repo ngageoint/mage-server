@@ -1,3 +1,11 @@
+<location-edit 
+    class="slide-left edit-location-card feed-card ng-animatable" 
+    ng-if="editLocationField" 
+    field="editLocationField" 
+    geometry-style="editGeometryStyle" 
+    save-edit="saveLocationEdit(value)"
+    cancel-edit="cancelLocationEdit()"></location-edit>
+
 <header id="edit-app-bar" class="mdc-top-app-bar mdc-elevation--z4">
   <div class="mdc-top-app-bar__row">
     <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
@@ -20,11 +28,14 @@
   <div><strong>Failed To Save Observation</strong></div>
   <div>{{error.message}}</div>
 </div>
-
-<form name="observationForm" id="myForm" class="form" novalidate ng-if="!editLocationField">
+<form name="observationForm" id="myForm" class="form" novalidate>
   <div class="mdc-card observation-view-card observation-form-card">
     <date-edit field="form.timestampField" form-field="observationForm[form.timestampField.name]"></date-edit>
-    <geometry-edit geometry-style="observation.style" form="observationForm" field="form.geometryField" start-geometry-edit="startGeometryEdit(field)"></geometry-edit>
+    <geometry-edit 
+        geometry-style="observation.style"
+        form="observationForm"
+        field="form.geometryField"
+        start-geometry-edit="startGeometryEdit(form.geometryField)"></geometry-edit>
   </div>
   <div ng-repeat="formDefinition in form.forms">
     <observation-form-edit form-definition="formDefinition" form="observationForm"></observation-form-edit>
@@ -53,7 +64,3 @@
     </div>
   </div>
 </form>
-
-<div class="slide-left edit-location-card view-obs-card feed-card ng-animatable" ng-if="editLocationField">
-  <location-edit field="editLocationField" geometry-style="editGeometryStyle" save-edit="saveLocationEdit(value)" cancel-edit="cancelLocationEdit()"></location-edit>
-</div>

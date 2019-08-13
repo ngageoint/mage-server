@@ -8,13 +8,16 @@
     </section>
     <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
       <button class="mdc-button mdc-card__action mdc-card__action--button"
+        ng-click="$ctrl.clearLocation()">
+        <span class="mdc-button__label">Clear</span>
+      </button>
+      <button class="mdc-button mdc-card__action mdc-card__action--button"
         ng-click="$ctrl.saveLocation()">
         <span class="mdc-button__label">Save</span>
       </button>
     </section>
   </div>
 </header>
-<div class="header-spacer"></div>
 <div class="mdc-card">
     <div class="mdc-chip-set mdc-chip-set--choice">
         <div
@@ -77,7 +80,7 @@
         step="any"
         min="-90"
         max="90"
-        ng-model="$ctrl.latitudeFieldEdit"
+        ng-model="$ctrl.selectedVertex[1]"
         ng-change="$ctrl.onLatLngChange()"
         class="mdc-text-field__input">
       <div class="mdc-notched-outline">
@@ -95,7 +98,7 @@
         step="any"
         min="-180"
         max="180"
-        ng-model="$ctrl.longitudeFieldEdit"
+        ng-model="$ctrl.selectedVertex[0]"
         ng-change="$ctrl.onLatLngChange()"
         class="mdc-text-field__input">
       <div class="mdc-notched-outline">

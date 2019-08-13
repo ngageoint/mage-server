@@ -64,6 +64,7 @@ MageFeatureEdit.prototype.startEdit = function(layerToEdit, selectedVertexIndex)
     layerToEdit.on('dragend', function(event) {
       console.log('dragend', event)
       this.newGeometry = event.target.toGeoJSON().geometry;
+      
       console.log('newGeometry', this.newGeometry)
       this.geometryChangedListener(this.newGeometry)
       // $scope.$broadcast('feature:moved', layer.feature, event.target.toGeoJSON().geometry);
@@ -110,6 +111,14 @@ MageFeatureEdit.prototype.initiateShapeDraw = function(feature) {
   this.editedFeature.on('editable:vertex:rawclick', function(e) {
     // don't delete on click
     e.cancel();
+    let vertex = e.vertex;
+    this.editLayer.editor.editLayer.eachLayer(function(layer) {
+      L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
+    });
+
+    L.DomUtil.addClass(vertex.getElement(), 'selected-marker');
+    this.editLayer.selectedVertex = vertex;
+    this.vertexClickListener(vertex);
   });
 
   this.editedFeature.on('editable:drawing:clicked', function() {
