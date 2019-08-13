@@ -44,6 +44,10 @@ function ObservationViewController($scope, $element, $uibModal, EventService, Us
     });
   }
 
+  $scope.closeObservationView = function() {
+    $scope.$emit('observation:viewDone', $scope.observation);
+  }
+
   $scope.toggleFavorite = function() {
     if ($scope.isUserFavorite) {
       EventService.removeObservationFavorite($scope.observation).then(function(observation) {
