@@ -2,7 +2,8 @@ var _ = require('underscore')
   , $ = require('jquery')
   , moment = require('moment')
   , MDCRipple = require('material-components-web').ripple.MDCRipple
-  , MDCTopAppBar = require('material-components-web').topAppBar.MDCTopAppBar;
+  , MDCTopAppBar = require('material-components-web').topAppBar.MDCTopAppBar
+  , MDCTextField = require('material-components-web').textField.MDCTextField;
 
 module.exports = function observationView() {
   var directive = {
@@ -17,9 +18,9 @@ module.exports = function observationView() {
 
   return directive;
 };
-ObservationViewController.$inject = ['$scope', '$element', '$uibModal', 'EventService', 'UserService', 'LocalStorageService'];
+ObservationViewController.$inject = ['$scope', '$element', '$uibModal', 'EventService', 'UserService', 'LocalStorageService', '$timeout'];
 
-function ObservationViewController($scope, $element, $uibModal, EventService, UserService, LocalStorageService) {
+function ObservationViewController($scope, $element, $uibModal, EventService, UserService, LocalStorageService, $timeout) {
   const iconButtonRipple = new MDCRipple(document.querySelector('.mdc-icon-button'));
   iconButtonRipple.unbounded = true;
 
@@ -31,6 +32,7 @@ function ObservationViewController($scope, $element, $uibModal, EventService, Us
   $scope.isUserFavorite = false;
   $scope.canEdit = false;
   $scope.canEditImportant = false;
+  var importantEditField;
 
   UserService.getUser($scope.observation.userId).then(function(user) {
     $scope.observationUser = user;
@@ -76,30 +78,29 @@ function ObservationViewController($scope, $element, $uibModal, EventService, Us
     });
   };
 
-  $scope.importantPopover = {
+  $scope.importantEditor = {
     isOpen: false,
     description: $scope.observation.important ? $scope.observation.important.description : null,
     template: require('./observation-important.html')
   };
 
-  $scope.closeObservationView = function() {
-    $scope.$emit('observation:viewDone', $scope.observation);
+  $scope.onFlagAsImportant = function() {
+    $scope.importantEditor.isOpen = true;
+    $timeout(function() {
+      importantEditField = importantEditField || new MDCTextField($element.find('.important-textarea')[0])
+    })
   }
 
-  $scope.closeImportantPopover = function() {
-    $scope.importantPopover.isOpen = false;
-  };
-
   $scope.markAsImportant = function() {
-    EventService.markObservationAsImportant($scope.observation, {description: $scope.importantPopover.description}).then(function() {
-      $scope.importantPopover.isOpen = false;
+    EventService.markObservationAsImportant($scope.observation, {description: $scope.importantEditor.description}).then(function() {
+      $scope.importantEditor.isOpen = false;
     });
   };
 
   $scope.clearImportant = function() {
     EventService.clearObservationAsImportant($scope.observation).then(function() {
-      $scope.importantPopover.isOpen = false;
-      delete $scope.importantPopover.description;
+      $scope.importantEditor.isOpen = false;
+      delete $scope.importantEditor.description;
     });
   };
 
@@ -189,7 +190,7 @@ function ObservationViewController($scope, $element, $uibModal, EventService, Us
   $scope.$watch('observation.important', function(important) {
     if (!important) return;
 
-    $scope.importantPopover.description = important.description;
+    $scope.importantEditor.description = important.description;
     UserService.getUser(important.userId).then(function(user) {
       $scope.importantUser = user;
     });

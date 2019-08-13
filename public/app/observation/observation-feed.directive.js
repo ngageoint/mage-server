@@ -87,10 +87,6 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
     })
   }
 
-  // $scope.closeImportantPopover = function() {
-  //   $scope.importantPopover.isOpen = !$scope.importantPopover.isOpen;
-  // };
-
   $scope.markAsImportant = function() {
     EventService.markObservationAsImportant($scope.observation, {description: $scope.importantEditor.description}).then(function() {
       $scope.importantEditor.isOpen = false;

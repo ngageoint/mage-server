@@ -29,29 +29,24 @@ function FormDirectiveController($scope, EventService, FilterService, Observatio
   var initialObservation;
 
   $scope.$on('geometry:edit:start', function(e, field) {
-    console.log('start geometry edit from event', field)
     $scope.editLocationField = field;
     $scope.editGeometryStyle = $scope.observation.style
     $element[0].style['overflow-y'] = 'hidden'
   })
 
   $scope.startGeometryEdit = function(field) {
-    console.log('start editnig field', field)
     $scope.editLocationField = field;
     $scope.editGeometryStyle = $scope.observation.style
     $element[0].style['overflow-y'] = 'hidden'
   }
 
   $scope.saveLocationEdit = function(value) {
-    console.log('save location edit', value)
-    console.log('editLocationField', $scope.editLocationField)
     $scope.editLocationField.value = value;
     $scope.editLocationField = undefined;
     $element[0].style['overflow-y'] = 'auto'
   }
 
   $scope.cancelLocationEdit = function() {
-    console.log('cancel')
     $scope.editLocationField = undefined;
     $element[0].style['overflow-y'] = 'auto'
   }
