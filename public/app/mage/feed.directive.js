@@ -10,9 +10,6 @@ function NewsFeed() {
     template:  require('./feed.directive.html'),
     scope: {
       event: '=',
-      observations: '=feedObservations',
-      feedObservationsChanged: '=',
-      users: '=feedUsers',
       feedUsersChanged: '='
     },
     controller: NewsFeedController
@@ -200,7 +197,6 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
 
   $scope.$watch('currentFeedPanel', function(currentFeedPanel) {
     if (currentFeedPanel === 'observations') {
-      $scope.feedObservationsChanged = {count: 0};
       $scope.observationsChanged = 0;
       $scope.$broadcast('map:visible');
     } else if (currentFeedPanel === 'people') {

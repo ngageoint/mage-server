@@ -89,7 +89,7 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
           html: function(observation) {
             var el = angular.element('<div observation-popup="observation" observation-popup-info="onInfo(observation)" observation-zoom="onZoom(observation)"></div>');
             var compiled = $compile(el);
-            var newScope = $scope.$new(true);
+            var newScope = $rootScope.$new(true);
             newScope.observation = observation;
             newScope.onInfo = function(observation) {
               $rootScope.$broadcast('observation:view', observation)
@@ -106,7 +106,7 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
           },
           closeButton: false,
           onClose: function(observation) {
-            $scope.$broadcast('observation:deselect', observation);
+            $rootScope.$broadcast('observation:deselect', observation);
           }
         }
       }
@@ -130,7 +130,7 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
             var user = usersById[location.userId];
             var el = angular.element('<div location-popup="user" user-popup-info="onInfo(user)" user-zoom="onZoom(user)"></div>');
             var compiled = $compile(el);
-            var newScope = $scope.$new(true);
+            var newScope = $rootScope.$new(true);
             newScope.user = user;
             newScope.onInfo = function(user) {
               $rootScope.$broadcast('user:select', user);

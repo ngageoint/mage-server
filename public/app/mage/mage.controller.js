@@ -1,12 +1,9 @@
-var _ = require('underscore')
-  , angular = require('angular');
+var _ = require('underscore');
 
 module.exports = MageController;
 
 MageController.$inject = [
   '$scope',
-  '$compile',
-  '$timeout',
   '$animate',
   '$document',
   '$uibModal',
@@ -14,25 +11,15 @@ MageController.$inject = [
   'FilterService',
   'EventService',
   'MapService',
-  'LocalStorageService',
-  'Observation',
-  'Location',
-  'LocationService',
-  'FeatureService'
+  'Location'
 ];
 
-function MageController($scope, $compile, $timeout, $animate, $document, $uibModal, UserService, FilterService, EventService, MapService, LocalStorageService, Observation, Location, LocationService, FeatureService) {
+function MageController($scope, $animate, $document, $uibModal, UserService, FilterService, EventService, MapService, Location) {
   $scope.hideFeed = false;
 
-  var observationsById = {};
   var firstObservationChange = true;
-  $scope.feedObservations = [];
-  $scope.feedChangedObservations = {count: 0};
 
-  var usersById = {};
-  var followingUserId = null;
   var firstUserChange = true;
-  $scope.feedUsers = [];
   $scope.feedChangedUsers = {};
 
   $scope.filteredEvent = FilterService.getEvent();
@@ -64,7 +51,6 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
   MapService.addListener(locationListener);
 
   function onFilterChanged(filter) {
-    $scope.feedChangedObservations = {count: 0};
     $scope.feedChangedUsers = {};
 
     firstUserChange = true;
@@ -132,8 +118,6 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
 
   function onPoll() {
     // The event service just polled, lets update times and marker colors
-    $scope.$broadcast('observation:poll');
-    $scope.$broadcast('user:poll');
     MapService.onPoll();
   }
 
