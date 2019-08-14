@@ -25,9 +25,9 @@ require('leaflet-editable');
 require('leaflet-groupedlayercontrol');
 require('leaflet.markercluster');
 
-LeafletController.$inject = ['$rootScope', '$scope', '$interval', '$timeout', 'MapService', 'LocalStorageService', 'GeometryService'];
+LeafletController.$inject = ['$scope', 'MapService', 'LocalStorageService', 'EventService'];
 
-function LeafletController($rootScope, $scope, $interval, $timeout, MapService, LocalStorageService, GeometryService) {
+function LeafletController($scope, MapService, LocalStorageService, EventService) {
 
   var layers = {};
   var geopackageLayers = {};
@@ -141,14 +141,15 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     onLayerRemoved: onLayerRemoved,
     onLayersChanged: onLayersChanged,
     onFeaturesChanged: onFeaturesChanged,
-    // onCreate: onCreate,
-    // onEdit: onEdit,
     onFeatureZoom: onFeatureZoom,
-    onPoll: onPoll,
     onLocationStop: onLocationStop,
     onHideFeed: onHideFeed
   };
   MapService.addListener(listener);
+
+  EventService.addPollListener({
+    onPoll: onPoll
+  });
 
   $scope.$on('$destroy', function() {
     MapService.removeListener(listener);

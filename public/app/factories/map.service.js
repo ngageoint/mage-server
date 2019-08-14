@@ -37,7 +37,6 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
     onLocation: onLocation,
     onLocationStop: onLocationStop,
     onBroadcastLocation: onBroadcastLocation,
-    onPoll: onPoll,
     hideFeed: hideFeed,
     followedFeature: followedFeature
   };
@@ -439,14 +438,6 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
     _.each(listeners, function(listener) {
       if (_.isFunction(listener.onBroadcastLocation)) {
         listener.onBroadcastLocation(callback);
-      }
-    });
-  }
-
-  function onPoll() {
-    _.each(listeners, function(listener) {
-      if (_.isFunction(listener.onPoll)) {
-        listener.onPoll();
       }
     });
   }

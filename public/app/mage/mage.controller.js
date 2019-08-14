@@ -39,11 +39,6 @@ function MageController($scope, $animate, $document, $uibModal, UserService, Fil
   };
   FilterService.addListener(filterChangedListener);
 
-  var pollListener = {
-    onPoll: onPoll
-  };
-  EventService.addPollListener(pollListener);
-
   var locationListener = {
     onLocation: onLocation,
     onBroadcastLocation: onBroadcastLocation
@@ -114,11 +109,6 @@ function MageController($scope, $animate, $document, $uibModal, UserService, Fil
     } else {
       callback(true);
     }
-  }
-
-  function onPoll() {
-    // The event service just polled, lets update times and marker colors
-    MapService.onPoll();
   }
 
   $scope.$on('$destroy', function() {
