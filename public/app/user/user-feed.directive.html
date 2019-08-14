@@ -23,9 +23,9 @@
   </div>
   <div class="mdc-card__actions">
     <div class="mdc-card__action-buttons">
-      <button class="mdc-button mdc-card__action mdc-card__action--button" ng-class="{'mdc-button--raised':followUserId == user.id}" ng-click="followUser($event, user)">
-        <span class="mdc-button__label" ng-show="followUserId == user.id">Following</span>
-        <span class="mdc-button__label" ng-hide="followUserId == user.id">Follow</span>
+      <button class="mdc-button mdc-card__action mdc-card__action--button" ng-class="{'mdc-button--raised':followingUser.id == user.id}" ng-click="followUser($event, user)">
+        <span class="mdc-button__label" ng-show="followingUser.id == user.id">Following</span>
+        <span class="mdc-button__label" ng-hide="followingUser.id == user.id">Follow</span>
       </button>
     </div>
     <div class="mdc-card__action-icons">

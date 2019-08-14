@@ -15,7 +15,7 @@ module.exports = function userNewsItem() {
 UserNewsItemController.$inject = ['$scope', 'LocalStorageService', 'MapService'];
 
 function UserNewsItemController($scope, LocalStorageService, MapService) {
-  $scope.followingUserId = null;
+  $scope.followingUser = MapService.followedFeature;
 
   if ($scope.user.avatarUrl) {
     $scope.avatarUrl = $scope.user.avatarUrl + "?access_token=" + LocalStorageService.getToken();
@@ -25,7 +25,7 @@ function UserNewsItemController($scope, LocalStorageService, MapService) {
 
   $scope.followUser = function(e, user) {
     e.stopPropagation();
-    $scope.$emit('user:follow', user.id === $scope.followUserId ? null : user);
+    MapService.followFeatureInLayer(user, 'People')
   };
 
   $scope.onUserLocationClick = function(user) {
@@ -36,9 +36,5 @@ function UserNewsItemController($scope, LocalStorageService, MapService) {
     $scope.onUserLocationClick($scope.user);
     $scope.$emit('user:view', $scope.user);
   }
-
-  $scope.$on('user:follow', function(e, user) {
-    $scope.followUserId = user ? user.id : null;
-  });
 
 }

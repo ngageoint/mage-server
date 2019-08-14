@@ -114,7 +114,7 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
       },
       popup: {
         html: function(location) {
-          var user = usersById[location.id];
+          var user = location.user;
           var el = angular.element('<div location-popup="user" user-popup-info="onInfo(user)" user-zoom="onZoom(user)"></div>');
           var compiled = $compile(el);
           var newScope = $scope.$new(true);
@@ -145,11 +145,6 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
   };
   MapService.createVectorLayer(peopleLayer);
 
-  var observationsChangedListener = {
-    onObservationsChanged: onObservationsChanged
-  };
-  EventService.addObservationsChangedListener(observationsChangedListener);
-
   var layersChangedListener = {
     onLayersChanged: onLayersChanged
   };
@@ -159,11 +154,6 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
     onFilterChanged: onFilterChanged
   };
   FilterService.addListener(filterChangedListener);
-
-  var usersChangedListener = {
-    onUsersChanged: onUsersChanged
-  };
-  EventService.addUsersChangedListener(usersChangedListener);
 
   var pollListener = {
     onPoll: onPoll
@@ -258,69 +248,6 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
     });
   }
 
-  function onObservationsChanged(changed) {
-    _.each(changed.added, function(added) {
-      observationsById[added.id] = added;
-    });
-    if (changed.added.length) MapService.addFeaturesToLayer(changed.added, 'Observations');
-
-    _.each(changed.updated, function(updated) {
-      var observation = observationsById[updated.id];
-      if (observation) {
-        observationsById[updated.id] = updated;
-        popupScopes[updated.id].user = updated;
-        MapService.updateFeatureForLayer(updated, 'Observations');
-      }
-    });
-
-    _.each(changed.removed, function(removed) {
-      delete observationsById[removed.id];
-
-      MapService.removeFeatureFromLayer(removed, 'Observations');
-
-      var scope = popupScopes[removed.id];
-      if (scope) {
-        scope.$destroy();
-        delete popupScopes[removed.id];
-      }
-    });
-  }
-
-  function onUsersChanged(changed) {
-    _.each(changed.added, function(added) {
-      usersById[added.id] = added;
-
-      MapService.addFeaturesToLayer([added.location], 'People');
-
-      if (!firstUserChange) $scope.feedChangedUsers[added.id] = true;
-    });
-
-    _.each(changed.updated, function(updated) {
-      var user = usersById[updated.id];
-      if (user) {
-        usersById[updated.id] = updated;
-        popupScopes[updated.id].user = updated;
-        MapService.updateFeatureForLayer(updated.location, 'People');
-
-        // pan/zoom map to user if this is the user we are following
-        if (user.id === followingUserId) MapService.zoomToFeatureInLayer(user, 'People');
-      }
-
-    });
-
-    _.each(changed.removed, function(removed) {
-      delete usersById[removed.id];
-
-      MapService.removeFeatureFromLayer(removed.location, 'People');
-
-      var scope = popupScopes[removed.id];
-      if (scope) {
-        scope.$destroy();
-        delete popupScopes[removed.id];
-      }
-    });
-  }
-
   function onLocation(l) {
     var event = FilterService.getEvent();
     Location.create({
@@ -392,16 +319,6 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
     EventService.removeUsersChangedListener(usersChangedListener);
     EventService.removePollListener(pollListener);
     MapService.destroy();
-  });
-
-  $scope.$on('user:follow', function(e, user) {
-    if (user && user.id !== followingUserId) {
-      followingUserId = user.id;
-      $scope.$broadcast('user:follow', user)
-      MapService.zoomToFeatureInLayer(user, 'People');
-    } else {
-      followingUserId = null;
-    }
   });
 
   $scope.$on('feed:toggle', function() {

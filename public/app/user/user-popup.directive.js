@@ -15,9 +15,10 @@ module.exports = function locationPopup() {
   return directive;
 };
 
-LocationPopupController.$inject = ['$scope', 'LocalStorageService'];
+LocationPopupController.$inject = ['$scope', 'LocalStorageService', 'MapService'];
 
-function LocationPopupController($scope, LocalStorageService) {
+function LocationPopupController($scope, LocalStorageService, MapService) {
+  $scope.followingUser = MapService.followedFeature;
   $scope.date = moment($scope.user.location.properties.timestamp).format("YYYY-MM-DD HH:mm:ss");
 
   if ($scope.user.avatarUrl) {
@@ -35,14 +36,10 @@ function LocationPopupController($scope, LocalStorageService) {
   };
 
   $scope.followUser = function() {
-    $scope.$emit('user:follow', $scope.user);
+    MapService.followFeatureInLayer($scope.user, 'People')
   }
 
   $scope.$watch('user', function() {
     $scope.date = moment($scope.user.location.properties.timestamp).format("YYYY-MM-DD HH:mm:ss");
-  });
-
-  $scope.$on('user:follow', function(e, user) {
-    $scope.followUserId = user.id;
   });
 }

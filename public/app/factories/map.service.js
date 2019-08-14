@@ -2,9 +2,14 @@ var _ = require('underscore');
 
 module.exports = MapService;
 
-MapService.$inject = [];
+MapService.$inject = ['EventService'];
 
-function MapService() {
+function MapService(EventService) {
+
+  var followedFeature = {
+    id: undefined,
+    layer: undefined
+  };
 
   var service = {
     addListener: addListener,
@@ -28,19 +33,98 @@ function MapService() {
     updateFeatureForLayer: updateFeatureForLayer,
     removeFeatureFromLayer: removeFeatureFromLayer,
     zoomToFeatureInLayer: zoomToFeatureInLayer,
+    followFeatureInLayer: followFeatureInLayer,
     onLocation: onLocation,
     onLocationStop: onLocationStop,
     onBroadcastLocation: onBroadcastLocation,
     onPoll: onPoll,
-    hideFeed: hideFeed
+    hideFeed: hideFeed,
+    followedFeature: followedFeature
   };
 
   var baseLayer = null;
   var rasterLayers = {};
   var vectorLayers = {};
   var listeners = [];
+  var observationsById = {};
+  var usersById = {};
+  var popupScopes = {};
+
+  var observationsChangedListener = {
+    onObservationsChanged: onObservationsChanged
+  };
+  EventService.addObservationsChangedListener(observationsChangedListener);
+
+  var usersChangedListener = {
+    onUsersChanged: onUsersChanged
+  };
+  EventService.addUsersChangedListener(usersChangedListener);
 
   return service;
+
+  function onObservationsChanged(changed) {
+    _.each(changed.added, function(added) {
+      observationsById[added.id] = added;
+    });
+    if (changed.added.length) service.addFeaturesToLayer(changed.added, 'Observations');
+
+    _.each(changed.updated, function(updated) {
+      var observation = observationsById[updated.id];
+      if (observation) {
+        observationsById[updated.id] = updated;
+        popupScopes[updated.id].user = updated;
+        service.updateFeatureForLayer(updated, 'Observations');
+      }
+    });
+
+    _.each(changed.removed, function(removed) {
+      delete observationsById[removed.id];
+
+      service.removeFeatureFromLayer(removed, 'Observations');
+
+      var scope = popupScopes[removed.id];
+      if (scope) {
+        scope.$destroy();
+        delete popupScopes[removed.id];
+      }
+    });
+  }
+
+  function onUsersChanged(changed) {
+    _.each(changed.added, function(added) {
+      usersById[added.id] = added;
+      added.location.user = added;
+      service.addFeaturesToLayer([added.location], 'People');
+
+      // if (!firstUserChange) $scope.feedChangedUsers[added.id] = true;
+    });
+
+    _.each(changed.updated, function(updated) {
+      var user = usersById[updated.id];
+      if (user) {
+        usersById[updated.id] = updated;
+        popupScopes[updated.id].user = updated;
+        updated.location.user = updated;
+        service.updateFeatureForLayer(updated.location, 'People');
+
+        // pan/zoom map to user if this is the user we are following
+        if (followFeatureInLayer.layer === 'People' && user.id === followFeatureInLayer.id)
+          service.zoomToFeatureInLayer(user, 'People');
+      }
+
+    });
+
+    _.each(changed.removed, function(removed) {
+      delete usersById[removed.id];
+      service.removeFeatureFromLayer(removed.location, 'People');
+
+      var scope = popupScopes[removed.id];
+      if (scope) {
+        scope.$destroy();
+        delete popupScopes[removed.id];
+      }
+    });
+  }
 
   function addListener(listener) {
     listeners.push(listener);
@@ -181,6 +265,17 @@ function MapService() {
         });
       }
     });
+  }
+
+  function followFeatureInLayer(feature, layerId) {
+    if (feature && (followedFeature.id !== feature.id || followedFeature.layer !== layerId)) {
+      followedFeature.id = feature.id;
+      followedFeature.layer = layerId;
+      service.zoomToFeatureInLayer(feature, layerId);
+    } else {
+      followedFeature.id = undefined;
+      followedFeature.layer = undefined;
+    }
   }
 
   function onLocation(location) {
