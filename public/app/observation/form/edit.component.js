@@ -2,7 +2,8 @@ module.exports = {
   template: require('./edit.component.html'),
   bindings: {
     form: '=',
-    formDefinition: '='
+    formDefinition: '=',
+    geometryStyle: '='
   },
   controller: function($scope) {
     this.startGeometryEdit = function(field) {

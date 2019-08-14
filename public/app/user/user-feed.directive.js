@@ -12,9 +12,9 @@ module.exports = function userNewsItem() {
   return directive;
 };
 
-UserNewsItemController.$inject = ['$scope', 'LocalStorageService'];
+UserNewsItemController.$inject = ['$scope', 'LocalStorageService', 'MapService'];
 
-function UserNewsItemController($scope, LocalStorageService) {
+function UserNewsItemController($scope, LocalStorageService, MapService) {
   $scope.followingUserId = null;
 
   if ($scope.user.avatarUrl) {
@@ -29,7 +29,7 @@ function UserNewsItemController($scope, LocalStorageService) {
   };
 
   $scope.onUserLocationClick = function(user) {
-    $scope.$emit('user:zoom', user, {panToLocation: true, zoomToLocation: true});
+    MapService.zoomToFeatureInLayer(user, 'People');
   };
 
   $scope.viewUser = function() {

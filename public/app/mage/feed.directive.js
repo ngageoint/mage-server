@@ -80,10 +80,15 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
     $scope.$emit('observation:cancel');
   };
 
-  $scope.$on('observation:delete', function() {
+  $scope.$on('observation:delete', function(e, observation) {
     $scope.newObservation = null;
     $scope.editObservation = null;
     $scope.viewObservation = null;
+    MapService.edit({
+      type: 'delete',
+      name: 'Observations',
+      feature: observation
+    });
   })
 
   $scope.$on('user:view', function(e, user) {

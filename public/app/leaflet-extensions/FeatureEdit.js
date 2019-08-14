@@ -30,12 +30,6 @@ MageFeatureEdit.prototype.createEditLayer = function() {
 
   editObservationLayer.layer = this.editLayer;
   this.editLayer.addTo(this.map)
-
-
-  // this.MapService.createVectorLayer(editObservationLayer);
-  // this.MapService.addListener({
-  //   onEdit: this.onEdit.bind(this)
-  // })
 }
 
 MageFeatureEdit.prototype.stopEdit = function() {
@@ -62,13 +56,9 @@ MageFeatureEdit.prototype.startEdit = function(layerToEdit, selectedVertexIndex)
 
     layerToEdit.dragging.enable();
     layerToEdit.on('dragend', function(event) {
-      console.log('dragend', event)
       this.newGeometry = event.target.toGeoJSON().geometry;
       
-      console.log('newGeometry', this.newGeometry)
       this.geometryChangedListener(this.newGeometry)
-      // $scope.$broadcast('feature:moved', layer.feature, event.target.toGeoJSON().geometry);
-      // $scope.$apply();
     }.bind(this));
   } else {
     this.initiateShapeEdit(layerToEdit, selectedVertexIndex);
@@ -77,28 +67,10 @@ MageFeatureEdit.prototype.startEdit = function(layerToEdit, selectedVertexIndex)
 
 MageFeatureEdit.prototype.initiateShapeDraw = function(feature) {
   this.editedFeature = feature.geometry.type === 'Polygon' ? this.map.editTools.startPolygon() : this.map.editTools.startPolyline();
-  // this.editedFeature.feature = feature;
-  // layers['Edit'].featureIdToLayer[feature.id] = editLayer;
 
   this.editedFeature.on('editable:drawing:commit', function(e) {
-    console.log('drawing commit', e)
-    // e.layer.disableEdit();
-    // map.removeLayer(e.layer);
-
-    // var geojson = e.layer.toGeoJSON();
-    // geojson.id = editLayer.feature.id;
-
-    // createGeoJsonForLayer(geojson, layers['Edit'], true);
-    // var newLayer = layers['Edit'].featureIdToLayer[geojson.id];
-    // layers['Edit'].layer.addLayer(newLayer);
-
-    // initiateShapeEdit(newLayer);
-
-    // $scope.$broadcast('feature:moved', newLayer.feature, geojson.geometry);
-    // $scope.$apply();
     this.newGeometry = e.layer.toGeoJSON().geometry;
     this.geometryChangedListener(this.newGeometry)
-    console.log('commited the drawing', this.newGeometry)
   }.bind(this));
 
   this.editedFeature.on('editable:vertex:contextmenu', function(e) {
@@ -136,8 +108,6 @@ MageFeatureEdit.prototype.initiateShapeEdit = function(layer, selectVertexIndex)
   geometryChanged = function(e) {
     this.newGeometry = e.layer.toGeoJSON().geometry
     this.geometryChangedListener(this.newGeometry)
-    // $scope.$broadcast('feature:moved', e.layer.feature, e.layer.toGeoJSON().geometry);
-    // $scope.$apply();
   }.bind(this)
 
   selectVertex = function(vertex) {
@@ -163,9 +133,6 @@ MageFeatureEdit.prototype.initiateShapeEdit = function(layer, selectVertexIndex)
   layer.on('editable:vertex:rawclick', function(e) {
     e.cancel(); // turn off delete when clicking a vertex
     selectVertex(e.vertex);
-
-    // $scope.$broadcast('mage:map:edit:vertex', layer.feature, layer.toGeoJSON().geometry, e.vertex.getIndex());
-    // $scope.$apply();
   }.bind(this));
 
   var previousLatLngs;
@@ -191,8 +158,6 @@ MageFeatureEdit.prototype.initiateShapeEdit = function(layer, selectVertexIndex)
     }
     this.newGeometry = layer.toGeoJSON().geometry
     this.geometryChangedListener(this.newGeometry)
-    // $scope.$broadcast('mage:map:edit:vertex', layer.feature, layer.toGeoJSON().geometry, e.vertex.getIndex());
-    // $scope.$apply();
   }.bind(this));
 }
 

@@ -18,9 +18,9 @@ module.exports = function observationView() {
 
   return directive;
 };
-ObservationViewController.$inject = ['$scope', '$element', '$uibModal', 'EventService', 'UserService', 'LocalStorageService', '$timeout'];
+ObservationViewController.$inject = ['$scope', '$element', '$uibModal', 'EventService', 'UserService', 'LocalStorageService', '$timeout', 'MapService'];
 
-function ObservationViewController($scope, $element, $uibModal, EventService, UserService, LocalStorageService, $timeout) {
+function ObservationViewController($scope, $element, $uibModal, EventService, UserService, LocalStorageService, $timeout, MapService) {
   const iconButtonRipple = new MDCRipple(document.querySelector('.mdc-icon-button'));
   iconButtonRipple.unbounded = true;
 
@@ -128,7 +128,7 @@ function ObservationViewController($scope, $element, $uibModal, EventService, Us
   };
 
   $scope.onObservationLocationClick = function(observation) {
-    $scope.$emit('observation:zoom', observation, {panToLocation: true, zoomToLocation: true});
+    MapService.zoomToFeatureInLayer(observation, 'Observations');
   };
 
   $scope.$on('observation:editDone', function() {

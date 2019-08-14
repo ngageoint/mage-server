@@ -25,7 +25,6 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
   $scope.hideFeed = false;
 
   var observationsById = {};
-  var newObservation = null;
   var firstObservationChange = true;
   $scope.feedObservations = [];
   $scope.feedChangedObservations = {count: 0};
@@ -186,10 +185,6 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
 
     if (filter.event) {
       $scope.filteredEvent = FilterService.getEvent();
-
-      // Close the new observation panel if its open
-      // If it was open it was open for a different event
-      $scope.$broadcast('observation:cancel');
 
       // Stop broadcasting location if the event switches
       MapService.onLocationStop();
@@ -399,18 +394,6 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
     MapService.destroy();
   });
 
-  $scope.$on('observation:selected', function(e, observation, options) {
-    onObservationSelected(observation, options);
-  });
-
-  $scope.$on('observation:zoom', function(e, observation) {
-    MapService.zoomToFeatureInLayer(observation, 'Observations');
-  });
-
-  $scope.$on('user:zoom', function(e, user) {
-    MapService.zoomToFeatureInLayer(user, 'People');
-  });
-
   $scope.$on('user:follow', function(e, user) {
     if (user && user.id !== followingUserId) {
       followingUserId = user.id;
@@ -419,79 +402,6 @@ function MageController($scope, $compile, $timeout, $animate, $document, $uibMod
     } else {
       followingUserId = null;
     }
-  });
-
-  $scope.$on('observation:editStarted', function(e, observation) {
-    if (newObservation === observation) {
-      MapService.create({
-        type: 'start',
-        name: 'Observations',
-        feature: newObservation
-      });
-    } else {
-      MapService.edit({
-        type: 'start',
-        name: 'Observations',
-        feature: observation
-      });
-    }
-  });
-
-  $scope.$on('observation:iconEdited', function(e, observation, iconUrl) {
-    MapService.edit({
-      type: 'icon',
-      name: 'Observations',
-      feature: observation,
-      iconUrl: iconUrl
-    });
-  });
-
-  $scope.$on('observation:shapeChanged', function(e, observation) {
-    MapService.edit({
-      type: 'shape',
-      name: 'Observations',
-      feature: observation
-    });
-  });
-
-  $scope.$on('observation:geometryChanged', function(e, observation) {
-    MapService.edit({
-      type: 'geometry',
-      name: 'Observations',
-      feature: observation
-    });
-  });
-
-  $scope.$on('observation:editDone', function(e, observation) {
-    if (newObservation === observation) {
-      MapService.create({
-        type: 'complete',
-        name: 'Observations',
-        feature: observation
-      });
-    } else {
-      MapService.edit({
-        type: 'complete',
-        name: 'Observations',
-        feature: observation
-      });
-    }
-
-    newObservation = null;
-  });
-
-  $scope.$on('observation:delete', function(e, observation) {
-    MapService.edit({
-      type: 'delete',
-      name: 'Observations',
-      feature: observation
-    });
-
-    newObservation = null;
-  });
-
-  $scope.$on('observation:cancel', function() {
-    newObservation = null;
   });
 
   $scope.$on('feed:toggle', function() {

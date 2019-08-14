@@ -10,8 +10,7 @@ module.exports = {
     field: '<',
     geometryStyle: '<',
     onFieldChanged: '&',
-    onShapeChanged: '&',
-    startGeometryEdit: '&'
+    onShapeChanged: '&'
   },
   controller: GeometryEditController
 };
@@ -31,23 +30,40 @@ function GeometryEditController(GeometryService, LocalStorageService, $timeout, 
     value: 'Polygon'
   }];
 
-  // this.field.value = this.field.value || {type: 'Point', coordinates: []};
-
   this.shape = {
     type: 'Point'
   };
 
   this.coordinateSystem = LocalStorageService.getCoordinateSystemEdit();
 
+  this.startGeometryEdit = function(field) {
+    this.editLocationField = angular.copy(field);
+    this.editGeometryStyle = this.geometryStyle
+    this.scrollTop = $element[0].closest('.feed-scroll').scrollTop;
+    $element[0].closest('.feed-scroll').scrollTop = 0;
+    $element[0].closest('.feed-scroll').style['overflow-y'] = 'hidden'
+  }
+
+  this.saveLocationEdit = function(value) {
+    this.field.value = value;
+    this.editLocationField = undefined;
+    $element[0].closest('.feed-scroll').scrollTop = this.scrollTop;
+    $element[0].closest('.feed-scroll').style['overflow-y'] = 'auto'
+  }
+
+  this.cancelLocationEdit = function() {
+    this.editLocationField = undefined;
+    $element[0].closest('.feed-scroll').scrollTop = this.scrollTop;
+    $element[0].closest('.feed-scroll').style['overflow-y'] = 'auto'
+  }
+
   this.editGeometry = function(event) {
     event.stopPropagation();
     event.preventDefault();
     event.stopImmediatePropagation();
-    // var editField = angular.copy(this.field);
     const mapPos = LocalStorageService.getMapPosition();
-    console.log('mapPos', mapPos)
     this.field.value = this.field.value || {type: 'Point', coordinates: [mapPos.center.lng, mapPos.center.lat]}
-    this.startGeometryEdit({field: this.field})
+    this.startGeometryEdit(this.field)
     this.select.selectedIndex = 0;
   }
 

@@ -17,9 +17,9 @@ module.exports = function userView() {
 
   return directive;
 };
-UserViewController.$inject = ['$scope', '$element'];
+UserViewController.$inject = ['$scope', '$element', 'MapService'];
 
-function UserViewController($scope, $element) {
+function UserViewController($scope, $element, MapService) {
   var scrollElement = $element[0].parentElement;
   const topAppBar = new MDCTopAppBar($element.find('.mdc-top-app-bar')[0]);
   topAppBar.setScrollTarget(scrollElement)
@@ -37,6 +37,6 @@ function UserViewController($scope, $element) {
   }
 
   $scope.onUserLocationClick = function(user) {
-    $scope.$emit('user:zoom', user, {panToLocation: true, zoomToLocation: true});
+    MapService.zoomToFeatureInLayer(user, 'People');
   };
 }

@@ -1,3 +1,11 @@
+<location-edit 
+  class="slide-left edit-location-card feed-card ng-animatable" 
+  ng-if="$ctrl.editLocationField" 
+  field="$ctrl.editLocationField" 
+  geometry-style="$ctrl.editGeometryStyle" 
+  save-edit="$ctrl.saveLocationEdit(value)"
+  cancel-edit="$ctrl.cancelLocationEdit()"></location-edit>
+
 <div class="field top-gap">
   <div
     class="mdc-select mdc-select--outlined location-field-select"

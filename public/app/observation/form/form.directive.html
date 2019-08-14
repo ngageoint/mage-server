@@ -1,11 +1,3 @@
-<location-edit 
-    class="slide-left edit-location-card feed-card ng-animatable" 
-    ng-if="editLocationField" 
-    field="editLocationField" 
-    geometry-style="editGeometryStyle" 
-    save-edit="saveLocationEdit(value)"
-    cancel-edit="cancelLocationEdit()"></location-edit>
-
 <header id="edit-app-bar" class="mdc-top-app-bar mdc-elevation--z4">
   <div class="mdc-top-app-bar__row">
     <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
@@ -38,7 +30,10 @@
         start-geometry-edit="startGeometryEdit(form.geometryField)"></geometry-edit>
   </div>
   <div ng-repeat="formDefinition in form.forms">
-    <observation-form-edit form-definition="formDefinition" form="observationForm"></observation-form-edit>
+    <observation-form-edit
+        form-definition="formDefinition"
+        form="observationForm"
+        geometry-style="observation.style"></observation-form-edit>
   </div>
   <div class="top-gap" ng-if="preview !== true">
     <div class="mdc-card top-gap media-card">
