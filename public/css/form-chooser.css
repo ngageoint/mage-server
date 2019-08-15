@@ -1,5 +1,6 @@
 .form-chooser {
   background-color: var(--background-behind-card);
+  height: 100%;
 }
 
 .form-icon {
