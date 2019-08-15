@@ -196,7 +196,7 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
           });
         });
       } else if (layer.type === 'GeoPackage') {
-        layer.eventId = $scope.filteredEvent.id;
+        layer.eventId = event.id;
         service.createRasterLayer(layer);
       }
     });

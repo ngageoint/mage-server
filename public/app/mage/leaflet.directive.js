@@ -147,12 +147,14 @@ function LeafletController($scope, MapService, LocalStorageService, EventService
   };
   MapService.addListener(listener);
 
-  EventService.addPollListener({
+  var pollListener = {
     onPoll: onPoll
-  });
+  };
+  EventService.addPollListener(pollListener);
 
   $scope.$on('$destroy', function() {
     MapService.removeListener(listener);
+    EventService.removePollListener(pollListener);
   });
 
   function createMarker(marker) {
