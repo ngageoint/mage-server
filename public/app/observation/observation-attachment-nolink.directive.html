@@ -1,20 +1,15 @@
 <div ng-switch on="attachment.contentType">
   <div ng-class="{'image-delete': attachment.markedForDelete}">
-    <a ng-switch-when="image/jpg|image/jpeg|image/png|image/gif" 
-       ng-switch-when-separator="|"
-       ng-href="{{attachment.url + '?access_token=' + token}}"
-       target="_blank">
-      <img class="center-crop attachment-media" 
-          ng-class="{'image-delete': attachment.markedForDelete}" 
-          ng-src="{{attachment.url + '?access_token=' + token + '&size=394' + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img>
-    </a>
+    <img class="center-crop attachment-media" 
+        ng-switch-when="image/jpg|image/jpeg|image/png|image/gif" 
+        ng-switch-when-separator="|"
+        ng-class="{'image-delete': attachment.markedForDelete}" 
+        ng-src="{{attachment.url + '?access_token=' + token + '&size=394' + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img>
     
     <div ng-switch-when="audio/mp4"  ng-class="{'image-delete': attachment.markedForDelete}">
       <div class="attachment-media attachment-icon" ng-class="{'attachment-media-sm': !fullscreen}">
-        <a target="_blank" ng-href="{{attachment.url + '?access_token=' + token}}">
-            <i class="fa fa-play attachment-icon"></i>
-            <div class="top-gap-s">{{attachment.name | filename:6}}</div>
-        </a>
+        <i class="fa fa-play attachment-icon"></i>
+        <div class="top-gap-s">{{attachment.name | filename:6}}</div>
       </div>
     </div>
 
@@ -23,19 +18,15 @@
         <video ng-if="!edit || !amAdmin" controls width="100%" height="100%">
           <source ng-src="{{attachment.url + '?access_token=' + token + '&synced=' + attachment.synced}}" type="video/mp4">
           <div class="attachment-media attachment-icon" ng-class="{'attachment-media-sm': !fullscreen}">
-            <a target="_blank" ng-href="{{attachment.url + '?access_token=' + token}}">
-              <i class="fa fa-file-video-o attachment-icon"></i>
-              <div class="top-gap-s">{{attachment.name | filename:6}}</div>
-            </a>
+            <i class="fa fa-file-video-o attachment-icon"></i>
+            <div class="top-gap-s">{{attachment.name | filename:6}}</div>
           </div>
         </video>
         <video ng-if="edit && amAdmin" width="100%" height="100%">
           <source ng-src="{{attachment.url + '?access_token=' + token + '&synced=' + attachment.synced}}" type="video/mp4">
           <div class="attachment-media attachment-icon" ng-class="{'attachment-media-sm': !fullscreen}">
-            <a target="_blank" ng-href="{{attachment.url + '?access_token=' + token}}">
-              <i class="fa fa-file-video-o attachment-icon"></i>
-              <div class="top-gap-s">{{attachment.name | filename:6}}</div>
-            </a>
+            <i class="fa fa-file-video-o attachment-icon"></i>
+            <div class="top-gap-s">{{attachment.name | filename:6}}</div>
           </div>
         </video>
       </div>
@@ -43,13 +34,11 @@
 
     <div ng-switch-default>
        <div ng-switch on="attachment.name.substr(attachment.name.lastIndexOf('.') + 1)" ng-switch-when-separator="|">
-        <a ng-switch-when="jpg|jpeg|png|gif" 
-           ng-switch-when-separator="|"
-           ng-href="{{attachment.url + '?access_token=' + token}}" target="_blank">
-           <img class="center-crop attachment-media" 
-              ng-class="{'image-delete': attachment.markedForDelete}" 
-              ng-src="{{attachment.url + '?access_token=' + token + '&size=394' + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img>
-        </a>
+          <img class="center-crop attachment-media" 
+            ng-switch-when="jpg|jpeg|png|gif" 
+            ng-switch-when-separator="|"
+            ng-class="{'image-delete': attachment.markedForDelete}" 
+            ng-src="{{attachment.url + '?access_token=' + token + '&size=394' + '&synced=' + attachment.synced + '&oriented=' + attachment.oriented}}"></img>
         <div ng-switch-when="mp4">
           <video ng-if="!edit || !amAdmin" class="feed-video" controls width="100%" height="100%">
             <source ng-src="{{attachment.url + '?access_token=' + token + '&synced=' + attachment.synced}}" type="video/mp4">
@@ -62,10 +51,8 @@
 
         <div ng-switch-default  ng-class="{'image-delete': attachment.markedForDelete}">
           <div class="attachment-media attachment-icon" ng-class="{'attachment-media-sm': !fullscreen}">
-            <a target="_blank" ng-href="{{attachment.url + '?access_token=' + token}}">
-                <i class="fa fa-paperclip attachment-icon"></i>
-                <div class="top-gap-s">{{attachment.name | filename:6}}</div>
-            </a>
+            <i class="fa fa-paperclip attachment-icon"></i>
+            <div class="top-gap-s">{{attachment.name | filename:6}}</div>
           </div>
         </div>
        </div>

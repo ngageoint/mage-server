@@ -1,9 +1,9 @@
 module.exports = function attachment() {
   var directive = {
     restrict: "A",
-    template: require('./observation-attachment.directive.html'),
+    template: require('./observation-attachment-nolink.directive.html'),
     scope: {
-      attachment: '=',
+      attachment: '=attachmentNoLink',
       attachmentObservation: '=',
       edit: '=',
       label: '=',
