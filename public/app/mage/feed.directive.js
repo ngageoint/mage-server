@@ -93,6 +93,7 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
     $scope.newObservation = null;
     $scope.editObservation = null;
     $scope.viewObservation = null;
+    $scope.$emit('feed:show');
   });
 
   $scope.$on('user:viewDone', function(e, user) {
@@ -104,6 +105,7 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
     $scope.newObservation = null;
     $scope.editObservation = null;
     $scope.viewUser = null;
+    $scope.$emit('feed:show');
   });
 
   $scope.$on('observation:viewDone', function(e, observation) {
@@ -232,5 +234,6 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
     $scope.viewObservation = null;
     $scope.editObservation = null;
     $scope.newObservation = null;
+    $scope.$emit('feed:show');
   });
 }

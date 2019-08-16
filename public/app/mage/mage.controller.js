@@ -117,6 +117,11 @@ function MageController($scope, $animate, $document, $uibModal, UserService, Fil
     MapService.destroy();
   });
 
+  $scope.$on('feed:show', function() {
+    $scope.hideFeed = false;
+    $scope.$apply();
+  })
+
   $scope.$on('feed:toggle', function() {
     $scope.hideFeed = !$scope.hideFeed;
     $scope.$apply();
