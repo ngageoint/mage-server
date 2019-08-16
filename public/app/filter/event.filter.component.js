@@ -20,22 +20,9 @@ function EventFilterController($element) {
     console.log('picker.events', this.events)
     if (this.events) {
       const selectMdc = new MDCSelect($element.find('.mdc-select')[0])
-      selectMdc.listen('MDCSelect:change', () => {
-        // $scope.$apply(() => {
-          console.log('selected', selectMdc.selectedIndex);
-          this.onEventChosen(this.events[selectMdc.selectedIndex])
-          // $scope.filterEvent.selected = selectMdc.selectedIndex
-        // })
-      })
+      selectMdc.listen('MDCSelect:change', function() {
+        this.onEventChosen(this.events[selectMdc.selectedIndex])
+      }.bind(this))
     }
   }
-  // this.$onInit = function() {
-  //   const selectMdc = new MDCSelect($element.find('.mdc-select')[0])
-  //   selectMdc.listen('MDCSelect:change', () => {
-  //     // $scope.$apply(() => {
-  //       console.log('selected', selectMdc.selectedIndex);
-  //       // $scope.filterEvent.selected = selectMdc.selectedIndex
-  //     // })
-  //   })
-  // };
 }

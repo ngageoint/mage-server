@@ -49,17 +49,17 @@ function ObservationFeedController($element, $timeout, EventService, $filter, Fi
     this.observationPages = pages;
     this.currentObservationPage = this.currentObservationPage || 0;
     this.currentObservationPage = Math.min(this.currentObservationPage, pages.length - 1)
-    $timeout(() => {
+    $timeout(function() {
       if (!observationSelectMdc) {
         observationSelectMdc = new MDCSelect($element.find('.observation-select')[0])
-        observationSelectMdc.listen('MDCSelect:change', () => {
-          $timeout(() => {
+        observationSelectMdc.listen('MDCSelect:change', function() {
+          $timeout(function() {
             this.currentObservationPage = observationSelectMdc.selectedIndex
-          })
-        })
+          }.bind(this))
+        }.bind(this))
       }
       observationSelectMdc.selectedIndex = this.currentObservationPage;
-    })
+    }.bind(this))
   }
 
   this.onObservationsChanged = function(changed) {
