@@ -113,7 +113,6 @@ function MageController($scope, $animate, $document, $uibModal, UserService, Fil
 
   $scope.$on('$destroy', function() {
     FilterService.removeListener(filterChangedListener);
-    EventService.removePollListener(pollListener);
     MapService.destroy();
   });
 

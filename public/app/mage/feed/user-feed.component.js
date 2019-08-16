@@ -48,17 +48,17 @@ function UserFeedController($element, $timeout, EventService, $filter) {
     this.userPages = pages;
     this.currentUserPage = this.currentUserPage || 0;
 
-    $timeout(function() {
+    $timeout(() => {
       if (!userSelectMdc) {
         userSelectMdc = new MDCSelect($element.find('.user-select')[0])
-        userSelectMdc.listen('MDCSelect:change', function() {
-          $timeout(function() {
+        userSelectMdc.listen('MDCSelect:change', () => {
+          $timeout(() => {
             this.currentUserPage = userSelectMdc.selectedIndex
-          }.bind(this))
-        }.bind(this))
+          })
+        })
       }
       userSelectMdc.selectedIndex = this.currentUserPage
-    }.bind(this))
+    })
   }
 
   this.onUsersChanged = function(changed) {

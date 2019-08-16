@@ -64,6 +64,10 @@
     "zxcvbn": "4.4.2"
   },
   "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "@babel/preset-es2015": "^7.0.0-beta.53",
+    "babel-loader": "^8.0.6",
     "clean-webpack-plugin": "0.1.17",
     "css-loader": "0.28.8",
     "file-loader": "2.0.0",
@@ -71,6 +75,8 @@
     "html-webpack-plugin": "^3.2.0",
     "mini-css-extract-plugin": "0.4.4",
     "node-sass": "^4.12.0",
+    "postcss-custom-properties": "^9.0.2",
+    "postcss-loader": "^3.0.0",
     "raw-loader": "0.5.1",
     "sass-loader": "^7.1.0",
     "style-loader": "0.23.1",

@@ -1,7 +1,8 @@
 const webpack = require('webpack'),
   CleanWebpackPlugin = require('clean-webpack-plugin'),
   MiniCssExtractPlugin = require("mini-css-extract-plugin"),
-  HtmlWebpackPlugin = require('html-webpack-plugin');
+  HtmlWebpackPlugin = require('html-webpack-plugin'),
+  postcssCustomProperties = require('postcss-custom-properties');
 
 module.exports = {
   context: __dirname,
@@ -14,6 +15,14 @@ module.exports = {
   },
   module: {
     rules: [{
+      test: /\.js$/,
+      use: {
+        loader: 'babel-loader',
+        options: {
+          presets: ['@babel/preset-env']
+        }
+      }
+    },{
       test: /\.(css|scss)$/,
       use: [
         MiniCssExtractPlugin.loader,
@@ -22,6 +31,15 @@ module.exports = {
         },
         {
           loader: 'sass-loader'
+        },
+        {
+          loader: 'postcss-loader',
+          options: {
+            ident: 'postcss',
+            plugins: () => [
+              postcssCustomProperties(/* pluginOptions */)
+            ]
+          }
         }
       ]
     },{

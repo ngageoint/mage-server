@@ -56,7 +56,7 @@ function ObservationFeedController($element, $timeout, EventService, $filter, Fi
           $timeout(function() {
             this.currentObservationPage = observationSelectMdc.selectedIndex
           }.bind(this))
-        }.bind(this))
+        }.bind(this)) 
       }
       observationSelectMdc.selectedIndex = this.currentObservationPage;
     }.bind(this))
