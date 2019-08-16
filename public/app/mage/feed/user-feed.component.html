@@ -1,9 +1,9 @@
 <div class="feed-content-padding-container">
-  <div id="select" class="user-select mdc-select mdc-select--outlined page-select-width">
+  <div id="select" class="user-select mdc-select mdc-select--outlined feed-select-width">
     <input type="hidden" name="enhanced-select">
     <i class="mdc-select__dropdown-icon"></i>
     <div class="mdc-select__selected-text">{{$ctrl.userPages[0][0].location.properties.timestamp | moment: 'fromNow'}}</div>
-    <div class="mdc-select__menu mdc-menu mdc-menu-surface page-select-width">
+    <div class="mdc-select__menu mdc-menu mdc-menu-surface feed-select-width">
       <ul class="mdc-list">
           <li class="mdc-list-item mdc-list-item--selected"
           data-value="0">
@@ -13,7 +13,7 @@
           ng-if="!$first"
           ng-repeat="userPage in $ctrl.userPages track by $index"
           data-value="$index">
-          {{$ctrl.userPage[0].properties.timestamp | moment: 'fromNow'}}
+          {{userPage[0].properties.timestamp | moment: 'fromNow'}}
         </li>
       </ul>
     </div>

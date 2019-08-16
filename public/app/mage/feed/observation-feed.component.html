@@ -13,11 +13,11 @@
   </div>
 </div>
 <div class="feed-content-padding-container">
-  <div id="select" class="observation-select mdc-select mdc-select--outlined page-select-width">
+  <div id="select" class="observation-select mdc-select mdc-select--outlined feed-select-width">
     <input type="hidden" name="enhanced-select">
     <i class="mdc-select__dropdown-icon"></i>
     <div class="mdc-select__selected-text">{{$ctrl.observationPages[0][0].properties.timestamp | moment: 'fromNow'}}</div>
-    <div class="mdc-select__menu mdc-menu mdc-menu-surface page-select-width">
+    <div class="mdc-select__menu mdc-menu mdc-menu-surface feed-select-width">
       <ul class="mdc-list">
           <li class="mdc-list-item mdc-list-item--selected"
           data-value="$ctrl.observationPages[0[0].id">
@@ -26,8 +26,8 @@
         <li class="mdc-list-item"
           ng-if="!$first"
           ng-repeat="observationPage in $ctrl.observationPages track by observationPage[0].id"
-          data-value="$ctrl.observationPage[0].id">
-          {{$ctrl.observationPage[0].properties.timestamp | moment: 'fromNow'}}
+          data-value="observationPage[0].id">
+          {{observationPage[0].properties.timestamp | moment: 'fromNow'}}
         </li>
       </ul>
     </div>

@@ -162,6 +162,10 @@
   padding: 8px;
 }
 
+.feed-select-width {
+  width: 430px;
+}
+
 .page-select-width {
   width: 100%;
 }
