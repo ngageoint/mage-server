@@ -90,6 +90,9 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
 
   $scope.$on('user:view', function(e, user) {
     $scope.viewUser = user
+    $scope.newObservation = null;
+    $scope.editObservation = null;
+    $scope.viewObservation = null;
   });
 
   $scope.$on('user:viewDone', function(e, user) {
@@ -98,6 +101,9 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
 
   $scope.$on('observation:view', function(e, observation) {
     $scope.viewObservation = observation
+    $scope.newObservation = null;
+    $scope.editObservation = null;
+    $scope.viewUser = null;
   });
 
   $scope.$on('observation:viewDone', function(e, observation) {
@@ -223,5 +229,8 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
 
   $scope.$on('user:select', function(e, user) {
     $scope.viewUser = user;
+    $scope.viewObservation = null;
+    $scope.editObservation = null;
+    $scope.newObservation = null;
   });
 }
