@@ -96,7 +96,6 @@ function FileUploadController($scope, $element) {
             fileInfo.preview = e.target.result
             $scope.$apply();
             resolve()
-            // element.find('.preview').html(['<img class="preview-image" src="', e.target.result,'" title="', theFile.name, '"/>'].join(''));
           };
         })(fileInfo.file);
   

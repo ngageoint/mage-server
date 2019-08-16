@@ -127,11 +127,12 @@
 }
 
 .image-text-label {
-  color: var(--mdc-theme-text-secondary-on-dark);
+  color: var(--mdc-theme-text-primary-on-dark);
   margin-top: auto;
   margin-bottom: auto;
   padding-top: 16px;
   padding-bottom: 16px;
+  z-index: 1;
 }
 
 .image-action-icons {
@@ -140,6 +141,16 @@
   padding-top: 16px;
   padding-bottom: 16px;
   color: var(--mdc-theme-text-secondary-on-dark);
+}
+
+.upload-progress-bar {
+  background-color: var(--mdc-theme-primary-on-background);
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  content: ''
 }
 
 .delete-attachment-button:not(:disabled) {

@@ -2,10 +2,12 @@
   <div class="attachment-media">
     <img class="center-crop attachment-media" ng-src="{{firstFile.preview}}"/>
     <div class="image-text-protection">
-      <span class="image-text-label mdc-typography--subtitle1">{{firstFile.uploadProgress}}</span>
+      <div class="upload-progress-bar" ng-style="{width: firstFile.uploadProgress+'%'}"></div>
+      <span class="image-text-label mdc-typography--subtitle1"><span ng-if="firstFile.uploading">Upload Progress: {{firstFile.uploadProgress | number: 0}}%</span></span>
       <div class="image-action-icons mdc-typography--subtitle1">
         <button class="mdc-button mdc-ripple-upgraded delete-attachment-button"
           title="Delete" 
+          ng-if="!firstFile.uploading"
           ng-disabled="attachment.markedForDelete"
           ng-click="removeAttachment(firstFile.fileId)">
           <i class="material-icons mdc-button__icon">delete</i><span class="mdc-button__label">Delete</span>
@@ -18,7 +20,8 @@
   <div class="attachment media-tile" ng-repeat="(id, fileInfo) in files" ng-if="!$first || ((attachmentsToUpload % 2) === 0)">
     <img class="center-crop attachment-media" ng-src="{{fileInfo.preview}}"/>
     <div class="image-text-protection">
-      <span class="image-text-label mdc-typography--subtitle1">{{fileInfo.uploadProgress}}</span>
+      <div class="upload-progress-bar" ng-style="{width: fileInfo.uploadProgress+'%'}"></div>
+      <span class="image-text-label mdc-typography--subtitle1"><span ng-if="fileInfo.uploading">Upload Progress: {{fileInfo.uploadProgress | number: 0}}%</span></span>
       <div class="image-action-icons mdc-typography--subtitle1">
         <button class="mdc-button mdc-ripple-upgraded delete-attachment-button"
           title="Delete" 
