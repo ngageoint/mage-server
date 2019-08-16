@@ -13,7 +13,7 @@
           ng-if="!$first"
           ng-repeat="userPage in $ctrl.userPages track by $index"
           data-value="$index">
-          {{userPage[0].properties.timestamp | moment: 'fromNow'}}
+          {{userPage[0].location.properties.timestamp | moment: 'fromNow'}}
         </li>
       </ul>
     </div>

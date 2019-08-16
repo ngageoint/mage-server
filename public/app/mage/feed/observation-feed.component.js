@@ -48,23 +48,19 @@ function ObservationFeedController($element, $timeout, EventService, $filter, Fi
 
     this.observationPages = pages;
     this.currentObservationPage = this.currentObservationPage || 0;
+    this.currentObservationPage = Math.min(this.currentObservationPage, pages.length - 1)
     $timeout(() => {
-      observationSelectMdc = new MDCSelect($element.find('.observation-select')[0])
-      observationSelectMdc.listen('MDCSelect:change', () => {
-        $timeout(() => {
-          this.currentObservationPage = observationSelectMdc.selectedIndex
+      if (!observationSelectMdc) {
+        observationSelectMdc = new MDCSelect($element.find('.observation-select')[0])
+        observationSelectMdc.listen('MDCSelect:change', () => {
+          $timeout(() => {
+            this.currentObservationPage = observationSelectMdc.selectedIndex
+          })
         })
-      })
+      }
+      observationSelectMdc.selectedIndex = this.currentObservationPage;
     })
   }
-
-  // this.createNewObservation = function() {
-    
-
-  //   $scope.$broadcast('observation:feed', newObservation);
-
-  //   $rootScope.$emit('observation:latlng', mapPos.center);
-  // }
 
   this.onObservationsChanged = function(changed) {
     this.event = FilterService.getEvent();

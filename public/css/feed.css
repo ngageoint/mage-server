@@ -154,6 +154,11 @@
   opacity: .2;
 }
 
+.people-feed-container,
+.people-card-background-container {
+  height: 100%;
+}
+
 .feed-card-content {
   /* padding: 16px; */
 }

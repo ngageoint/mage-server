@@ -1,16 +1,17 @@
 var _ = require('underscore')
   , moment = require('moment')
-  , MDCSelect = require('material-components-web').select.MDCSelect
-  , MDCChipSet = require('material-components-web').chips.MDCChipSet;
+  , MDCSelect = require('material-components-web').select.MDCSelect;
 
 module.exports = {
   template: require('./user-feed.component.html'),
   controller: UserFeedController
 };
 
-UserFeedController.$inject = ['$element', '$timeout', 'EventService', '$filter', 'FilterService'];
+UserFeedController.$inject = ['$element', '$timeout', 'EventService', '$filter'];
 
-function UserFeedController($element, $timeout, EventService, $filter, FilterService) {
+function UserFeedController($element, $timeout, EventService, $filter) {
+  let userSelectMdc;
+
   this.currentUserPage = 0;
   this.usersChanged = 0;
   this.userPages = null;
@@ -48,17 +49,19 @@ function UserFeedController($element, $timeout, EventService, $filter, FilterSer
     this.currentUserPage = this.currentUserPage || 0;
 
     $timeout(() => {
-    userSelectMdc = new MDCSelect($element.find('.user-select')[0])
-      userSelectMdc.listen('MDCSelect:change', () => {
-        $timeout(() => {
-          this.currentUserPage = userSelectMdc.selectedIndex
+      if (!userSelectMdc) {
+        userSelectMdc = new MDCSelect($element.find('.user-select')[0])
+        userSelectMdc.listen('MDCSelect:change', () => {
+          $timeout(() => {
+            this.currentUserPage = userSelectMdc.selectedIndex
+          })
         })
-      })
+      }
+      userSelectMdc.selectedIndex = this.currentUserPage
     })
   }
 
   this.onUsersChanged = function(changed) {
-    console.log('users changed', changed)
     _.each(changed.added, function(added) {
       usersById[added.id] = added;
 
@@ -69,9 +72,6 @@ function UserFeedController($element, $timeout, EventService, $filter, FilterSer
       var user = usersById[updated.id];
       if (user) {
         usersById[updated.id] = updated;
-
-        // // pan/zoom map to user if this is the user we are following
-        // if (user.id === followingUserId) MapService.zoomToFeatureInLayer(user, 'People');
       }
 
       if (!firstUserChange) this.feedChangedUsers[updated.id] = true;
