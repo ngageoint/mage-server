@@ -327,9 +327,10 @@ module.exports = function(app, security) {
         user: req.observationUser
       });
       archive.append(html, { name: req.observation._id + '/index.html' });
-
+      
       if (req.observationIcon) {
-        archive.file(req.observationIcon, {name: req.observation._id + '/media/icon.png'});
+        const iconPath = path.join(environment.iconBaseDirectory, req.observationIcon.relativePath);
+        archive.file(iconPath, {name: req.observation._id + '/media/icon.png'});
       }
 
       req.observation.attachments.forEach(function(attachment) {

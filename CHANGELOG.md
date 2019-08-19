@@ -15,6 +15,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Export observations based on timestamp, not last updated.
 * CSV export properly handles commas in values.
 * Fix permission error when event user posts recent event.
+* Fix bug preventing single observation download from web.
 
 ## [5.2.6](https://github.com/ngageoint/mage-server/releases/tag/5.2.6) (TBD)
 
