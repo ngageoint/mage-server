@@ -1,5 +1,5 @@
 .user-card {
-  background-color: var(--mdc-theme-background);
+  background-color: #FFFFFF;
   display: flex;
   flex-direction: column;
 }
@@ -54,7 +54,7 @@
 
 .user-header-text {
   font-size: 1.2rem;
-  color: var(--mdc-theme-text-primary-on-background);
+  color: rgba(30, 136, 229, 0.87);
   font-weight: 500;
   display: flex;
   flex-direction: row;
@@ -62,7 +62,7 @@
 }
 
 .user-subhead {
-  color: var(--mdc-theme-text-secondary-on-background);
+  color: rgba(0, 0, 0, 0.54)
 }
 
 .user-supporting-text-container {
@@ -73,7 +73,7 @@
 }
 
 .user-supporting-text {
-  color: var(--mdc-theme-text-secondary-on-background);
+  color: rgba(0, 0, 0, 0.54)
 }
 
 .user-time {

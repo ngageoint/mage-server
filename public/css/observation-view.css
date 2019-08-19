@@ -1,5 +1,5 @@
 .view-obs-card {
-  background-color: var(--background-behind-card);
+  background-color: #E1E2E1;
   position:absolute;
   top:0;
   width: 100%;
@@ -47,5 +47,5 @@
 }
 
 .mage-field-title {
-  color: var(--mdc-theme-text-secondary-on-background);
+  color: rgba(0, 0, 0, 0.54)
 }

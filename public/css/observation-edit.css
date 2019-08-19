@@ -1,6 +1,6 @@
 
 .edit-location-card {
-  background-color: var(--background-behind-card);
+  background-color: #E1E2E1;
   position: absolute;
   top: 0;
   width: 100%;
@@ -13,7 +13,7 @@
   height: 400px;
 }
 .feed .mdc-top-app-bar {
-  width: var(--feed-width);
+  width: 450px;
   position: sticky;
 }
 .feed .mdc-top-app-bar .mdc-button:not(:disabled) {
@@ -28,7 +28,7 @@
 
 .delete-button.mdc-button:not(:disabled) {
   color: white;
-  background-color: var(--mdc-theme-error) !important;
+  background-color: #D32F2F !important;
   margin-right: 16px;
 }
 
@@ -44,7 +44,7 @@
   background:blue;
 }
 .add-attachment-button.mdc-button:not(:disabled) {
-  background-color: var(--mdc-theme-primary) !important;
+  background-color: #1E88E5 !important;
   color: white;
   width: 100%;
 }

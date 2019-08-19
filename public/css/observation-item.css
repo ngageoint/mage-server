@@ -1,5 +1,6 @@
+
 .observation-card {
-  background-color: var(--mdc-theme-background);
+  background-color: #FFFFFF;
   display: flex;
   flex-direction: column;
 }
@@ -51,7 +52,7 @@
 
 .observation-header-text {
   font-size: 1.2rem;
-  color: var(--mdc-theme-text-primary-on-background);
+  color: rgba(30, 136, 229, 0.87);
   font-weight: 500;
   display: flex;
   flex-direction: row;
@@ -59,7 +60,7 @@
 }
 
 .observation-subhead {
-  color: var(--mdc-theme-text-secondary-on-background);
+  color: rgba(0, 0, 0, 0.54)
 }
 
 .observation-supporting-text-container {
@@ -70,7 +71,7 @@
 }
 
 .observation-supporting-text {
-  color: var(--mdc-theme-text-secondary-on-background);
+  color: rgba(0, 0, 0, 0.54)
 }
 
 .observation-time {
@@ -127,7 +128,7 @@
 }
 
 .image-text-label {
-  color: var(--mdc-theme-text-primary-on-dark);
+  color: #FFFFFF;
   margin-top: auto;
   margin-bottom: auto;
   padding-top: 16px;
@@ -140,11 +141,11 @@
   margin-bottom: auto;
   padding-top: 16px;
   padding-bottom: 16px;
-  color: var(--mdc-theme-text-secondary-on-dark);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .upload-progress-bar {
-  background-color: var(--mdc-theme-primary-on-background);
+  background-color: rgba(0, 0, 0, 0.87);
   content: '';
   position: absolute;
   top: 0;
@@ -164,13 +165,13 @@
 .placeholder-observation-card .observation-header-text,
 .placeholder-observation-card .observation-subhead,
 .placeholder-observation-card .observation-time {
-  color: var(--background-behind-card);
-  background-color: var(--background-behind-card);
+  color: #E1E2E1;
+  background-color: #E1E2E1;
   margin-bottom: 8px;
 }
 
 .placeholder-observation-card .observation-thumbnail .material-icons {
-  color: var(--background-behind-card);
+  color: #E1E2E1;
   font-size: 38px;
 }
 

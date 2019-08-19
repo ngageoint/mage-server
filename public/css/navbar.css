@@ -7,10 +7,10 @@
 
 .menu-drawer-scrim {
   flex: 1;
-  background-color: var(--scrim-background);
+  background-color: rgba(0, 0, 0, 0.32);
 }
 
 .menu-drawer-content {
-  background-color: var(--mdc-theme-surface);
-  color: var(--mdc-theme-primary);
+  background-color: #FFFFFF;
+  color: #1E88E5;
 }

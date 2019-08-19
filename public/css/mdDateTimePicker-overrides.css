@@ -1,26 +1,26 @@
 .mddtp-button {
-  color: var(--mdc-theme-primary);
+  color: #1E88E5;
 }
 
 .mddtp-picker .mddtp-picker__header {
-  background-color: var(--mdc-theme-primary);
+  background-color: #1E88E5;
 }
 
 .mddtp-picker__body .mddtp-picker__viewHolder .mddtp-picker__grid span.mddtp-picker__cell--today {
-  color: var(--mdc-theme-primary);
+  color: #1E88E5;
 }
 
 .mddtp-picker__body .mddtp-picker__viewHolder .mddtp-picker__grid span.mddtp-picker__cell--selected, .mddtp-picker__body .mddtp-picker__viewHolder .mddtp-picker__grid .mddtp-picker__tr span.mddtp-picker__cell:hover {
-  background-color: var(--mdc-theme-primary);
+  background-color: #1E88E5;
   color: white;
 }
 
 .mddtp-picker__years .mddtp-picker__li--current {
-  color: var(--mdc-theme-primary);
+  color: #1E88E5;
 }
 
 .mddtp-picker__selection span {
-  background-color: var(--mdc-theme-primary);
+  background-color: #1E88E5;
 }
 
 .container-element .mddtp-picker {

@@ -14,7 +14,7 @@
   background-repeat: no-repeat;
   background-position: center;
   cursor: pointer;
-  color: var(--mdc-theme-primary);
+  color: #1E88E5;
 }
 
 
@@ -47,11 +47,11 @@
 }
 
 .leaflet-bar a, .leaflet-bar a:hover {
-    color: var(--mdc-theme-primary);
+    color: #1E88E5;
 }
 
 .leaflet-control-inverse, a.leaflet-control-inverse {
-  background: var(--mdc-theme-primary);
+  background: #1E88E5;
 }
 
 @-ms-viewport {
@@ -175,17 +175,17 @@
 }
 
 .location-popup {
-	color: var(--mdc-theme-primary);
+	color: #1E88E5;
 	width: 265px;
 }
 
 .location-popup-info i {
 	font-size: 17px;
-	color: var(--mdc-theme-primary);
+	color: #1E88E5;
 }
 
 .leaflet-mage-icon {
-  color: var(--mdc-theme-primary);
+  color: #1E88E5;
   font-size: 1.6em;
   background-image: none;
   line-height: unset;

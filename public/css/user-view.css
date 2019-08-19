@@ -6,11 +6,11 @@
 }
 
 .user-avatar-border {
-  border: 5px var(--mdc-theme-surface) solid;
+  border: 5px #FFFFFF solid;
 }
 
 .user-view-body {
-  background-color: var(--mdc-theme-surface);
+  background-color: #FFFFFF;
 }
 
 .user-view-row {
@@ -32,18 +32,18 @@
   margin-top: auto;
   margin-bottom: auto;
   font-size: 1.2em;
-  color: var(--mdc-theme-text-primary-on-background);
+  color: rgba(30, 136, 229, 0.87);
 }
 
 .user-view-row-text a {
-  color: var(--mdc-theme-text-primary-on-background);
+  color: rgba(30, 136, 229, 0.87);
 }
 
 .user-view-name-row {
   padding-left: 72px;
   font-weight: 500;
   margin-top: 16px;
-  color: var(--mdc-theme-text-secondary-on-background);
+  color: rgba(0, 0, 0, 0.54)
 }
 
 .user-view-divider-row {
@@ -53,13 +53,16 @@
 }
 
 .user-view-location-icon {
+  color: #1E88E5;
   color: var(--md-blue-600);
 }
 
 .user-view-email-icon {
+  color: #00B0FF;
   color: var(--md-light-blue-a400);
 }
 
 .user-view-phone-icon {
+  color: #43A047;
   color: var(--md-green-600);
 }

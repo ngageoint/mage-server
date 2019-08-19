@@ -1,11 +1,13 @@
+@import "./variables.css";
+
 .feed {
-  background: var(--mdc-theme-background);
+  background: #FFFFFF;
   order: 1;
   display: flex;
   flex-direction: column;
-  min-width: var(--feed-width);
-  max-width: var(--feed-width);
-  width: var(--feed-width);
+  min-width: 450px;
+  max-width: 450px;
+  width: 450px;
   flex:1;
   position: relative;
   transition: margin-left 0.3s linear;
@@ -26,7 +28,7 @@
 }
 
 .edit-panel {
-  background: var(--mdc-theme-background);
+  background: #FFFFFF;
   order: 1;
   display: flex;
   flex-direction: column;
@@ -39,7 +41,7 @@
 }
 
 .edit-panel.ng-show {
-  width: var(--feed-width);
+  width: 450px;
 }
 
 .app-fab--absolute {
@@ -50,7 +52,7 @@
 }
 
 .card-background-container {
-  background: var(--background-behind-card);
+  background: #E1E2E1;
   padding-top: 1px;
 }
 

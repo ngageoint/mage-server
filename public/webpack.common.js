@@ -32,14 +32,16 @@ module.exports = {
         {
           loader: 'sass-loader',
           options: {
-            includePaths: ['./node_modules']
+            includePaths: ['./css', './node_modules']
           }
         },
         {
           loader: 'postcss-loader',
           options: {
             plugins: () => [
-              postcssCustomProperties()
+              postcssCustomProperties({
+                importFrom: ['./css/variables.css']
+              })
             ]
           }
         }
