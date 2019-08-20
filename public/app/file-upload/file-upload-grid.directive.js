@@ -62,7 +62,12 @@ function FileUploadController($scope, $element) {
         $scope.$apply(function() {
           $scope.$emit('uploadFile', newId, $scope.files[newId], $scope.url);
         });
-        return previewFile($scope.files[newId])
+        console.log('file', file)
+        if (file.type.match('image')) {
+          return previewImage($scope.files[newId])
+        } else if (file.type.match('video')) {
+          return previewVideo($scope.files[newId])
+        }
       })
     }, Promise.resolve())
   });
@@ -85,7 +90,56 @@ function FileUploadController($scope, $element) {
     $element.find('.preview').html(['<img class="preview-image" src="', $scope.icon || $scope.url, '"/>'].join(''));
   });
 
-  var previewFile = function(fileInfo) {
+  var previewVideo = function(fileInfo) {
+    return new Promise(function(resolve) {
+      if (window.FileReader) {
+        var reader = new FileReader();
+  
+        reader.onload = (function(theFile) {
+          return function(e) {
+            $scope.uploadImageMissing = false;
+            var blob = new Blob([reader.result], {type: fileInfo.file.type})
+            var url = URL.createObjectURL(blob)
+
+            var video = document.createElement('video');
+            var timeupdate = function() {
+              if (snapImage()) {
+                video.removeEventListener('timeupdate', timeupdate);
+                video.pause();
+              }
+            };
+            video.addEventListener('loadeddata', function() {
+              if (snapImage()) {
+                video.removeEventListener('timeupdate', timeupdate);
+              }
+            });
+            var snapImage = function() {
+              var canvas = document.createElement('canvas');
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+              canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+              var image = canvas.toDataURL();
+              fileInfo.preview = image;
+              URL.revokeObjectURL(url);
+              $scope.$apply();
+              resolve()
+              return true;
+            };
+            video.addEventListener('timeupdate', timeupdate);
+            video.preload = 'metadata';
+            video.src = url;
+            video.muted = true;
+            video.playsInline = true;
+            video.play();
+          };
+        })(fileInfo.file);
+  
+        reader.readAsArrayBuffer(fileInfo.file);
+      }
+    })
+  }
+
+  var previewImage = function(fileInfo) {
     return new Promise(function(resolve) {
       if (window.FileReader) {
         var reader = new FileReader();
