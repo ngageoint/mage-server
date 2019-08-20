@@ -6,7 +6,7 @@ module.exports = {
   bindings: {
     field: '<'
   },
-  controller: function($element, $timeout, $scope) {
+  controller: ['$element', function($element) {
     this.$postLink = function() {
       // $timeout(function() {
         var checkbox = new MDCCheckbox($element.find('.mdc-checkbox')[0])
@@ -14,5 +14,5 @@ module.exports = {
         formField.input = checkbox;
       // }.bind(this))
     }
-  }
+  }]
 };

@@ -18,9 +18,9 @@ module.exports = function formDirective() {
   return directive;
 };
 
-FormDirectiveController.$inject = ['$scope', 'EventService', 'FilterService', 'ObservationService', 'UserService', 'LocalStorageService', '$element', '$uibModal'];
+FormDirectiveController.$inject = ['$scope', 'EventService', 'FilterService', 'UserService', 'LocalStorageService', '$element', '$uibModal'];
 
-function FormDirectiveController($scope, EventService, FilterService, ObservationService, UserService, LocalStorageService, $element, $uibModal) {
+function FormDirectiveController($scope, EventService, FilterService, UserService, LocalStorageService, $element, $uibModal) {
   var scrollElement = $element[0].parentElement;
   const topAppBar = new MDCTopAppBar($element.find('.mdc-top-app-bar')[0]);
   topAppBar.setScrollTarget(scrollElement)

@@ -3,7 +3,7 @@ module.exports = {
   bindings: {
     field: '<'
   },
-  controller: function($scope, $element) {
+  controller: function() {
     this.$onChanges = function() {
       this.initialSelectedOptions = []
       if (this.field.value) {

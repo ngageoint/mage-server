@@ -13,7 +13,8 @@ module.exports = {
     cancelEdit: '&',
     saveEdit: '&'
   },
-  controller: function($element, $timeout, MapService, GeometryService, LocalStorageService) {
+  controller: ['$element', '$timeout', 'MapService', 'GeometryService', 'LocalStorageService',
+  function($element, $timeout, MapService, GeometryService, LocalStorageService) {
     var layers = {};
     var map;
 
@@ -360,5 +361,5 @@ module.exports = {
         }.bind(this))
       }
     }
-  }
+  }]
 };

@@ -5,10 +5,10 @@ module.exports = {
     formDefinition: '=',
     geometryStyle: '='
   },
-  controller: function($scope) {
+  controller: ['$scope', function($scope) {
     this.startGeometryEdit = function(field) {
       console.log('start geometry edit', field);
       $scope.$emit('geometry:edit:start', field)
     }
-  }
+  }]
 };

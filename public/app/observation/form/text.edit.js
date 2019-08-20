@@ -6,7 +6,7 @@ module.exports = {
     field: '<',
     onFieldChanged: '&'
   },
-  controller: function($element, $timeout) {
+  controller: ['$element', '$timeout', function($element, $timeout) {
     this.$postLink = function() {
       this.textField = new MDCTextField($element.find('.mdc-text-field')[0]);
     }

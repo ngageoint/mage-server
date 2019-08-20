@@ -6,7 +6,7 @@ module.exports = {
     field: '<',
     onFieldChanged: '&'
   },
-  controller: function($timeout, $element) {
+  controller: ['$timeout', '$element', function($timeout, $element) {
 
     this.$postLink = function() {
       this.initializeDropDown();
@@ -28,5 +28,5 @@ module.exports = {
         }.bind(this));
       }.bind(this))
     }
-  }
+  }]
 };
