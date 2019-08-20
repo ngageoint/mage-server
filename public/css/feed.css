@@ -45,7 +45,7 @@
 }
 
 .app-fab--absolute {
-  position: absolute;
+  position: absolute !important;
   bottom: 1rem;
   right: 1rem;
   z-index: 2;

@@ -85,6 +85,10 @@ function ObservationFeedController($element, $timeout, EventService, $filter, Fi
     this.calculateObservationPages(this.feedObservations);
   }
 
+  this.onFilterChanged = function() {
+    this.currentObservationPage = 0;
+  }
+
   this.actionFilterChanged = function(actionFilter) {
     this.actionFilter = actionFilter;
     FilterService.setFilter({actionFilter: actionFilter});
@@ -98,5 +102,9 @@ function ObservationFeedController($element, $timeout, EventService, $filter, Fi
     };
     EventService.addObservationsChangedListener(observationsChangedListener);
 
+    var filterChangedListener = {
+      onFilterChanged: this.onFilterChanged.bind(this)
+    };
+    FilterService.addListener(filterChangedListener);
   }
 }

@@ -41,7 +41,7 @@
   </div>
 </div>
 <div class="observation-card-background-container card-background-container">
-  <div ng-if="!$ctrl.observationPages || $ctrl.observationPages.length === 0">
+  <div ng-if="!$ctrl.observationPages">
     <div ng-repeat="i in [].constructor(20) track by $index" class="mdc-card loading">
       <div class="placeholder-observation-card observation-card mdc-typography">
         <div class="mdc-card__primary-action">

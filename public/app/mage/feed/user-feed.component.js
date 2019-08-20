@@ -29,6 +29,15 @@ function UserFeedController($element, $timeout, EventService, $filter) {
       onUsersChanged: this.onUsersChanged.bind(this)
     };
     EventService.addUsersChangedListener(usersChangedListener);
+
+    var filterChangedListener = {
+      onFilterChanged: this.onFilterChanged.bind(this)
+    };
+    FilterService.addListener(filterChangedListener);
+  }
+
+  this.filterChangedListener = function() {
+    this.currentUserPage = 0;
   }
 
   this.calculateUserPages = function(users) {
