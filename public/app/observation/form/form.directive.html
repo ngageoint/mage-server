@@ -24,7 +24,7 @@
   <div class="mdc-card observation-view-card observation-form-card">
     <date-edit field="form.timestampField" form-field="observationForm[form.timestampField.name]"></date-edit>
     <geometry-edit 
-        geometry-style="observation.style"
+        geometry-style="currentObservationStyle"
         form="observationForm"
         field="form.geometryField"
         start-geometry-edit="startGeometryEdit(form.geometryField)"></geometry-edit>
@@ -33,7 +33,7 @@
     <observation-form-edit
         form-definition="formDefinition"
         form="observationForm"
-        geometry-style="observation.style"></observation-form-edit>
+        geometry-style="currentObservationStyle"></observation-form-edit>
   </div>
   <div class="top-gap" ng-if="preview !== true">
     <div class="mdc-card top-gap media-card">

@@ -18,9 +18,9 @@ module.exports = function formDirective() {
   return directive;
 };
 
-FormDirectiveController.$inject = ['$scope', 'EventService', 'FilterService', 'UserService', 'LocalStorageService', '$element', '$uibModal'];
+FormDirectiveController.$inject = ['$scope', 'ObservationService', 'EventService', 'FilterService', 'UserService', 'LocalStorageService', '$element', '$uibModal'];
 
-function FormDirectiveController($scope, EventService, FilterService, UserService, LocalStorageService, $element, $uibModal) {
+function FormDirectiveController($scope, ObservationService, EventService, FilterService, UserService, LocalStorageService, $element, $uibModal) {
   var scrollElement = $element[0].parentElement;
   const topAppBar = new MDCTopAppBar($element.find('.mdc-top-app-bar')[0]);
   topAppBar.setScrollTarget(scrollElement)
@@ -36,6 +36,8 @@ function FormDirectiveController($scope, EventService, FilterService, UserServic
     $scope.shape = geometryField.value.type;
     var copy = JSON.parse(JSON.stringify(geometryField.value));
     geometryField.value = copy;
+
+    $scope.currentObservationStyle = angular.copy($scope.observation.style);
   }
 
   $scope.getToken = LocalStorageService.getToken;
@@ -104,6 +106,15 @@ function FormDirectiveController($scope, EventService, FilterService, UserServic
       observation.properties.forms.push(propertiesForm);
     });
   }
+  $scope.$watch('form.forms', function() {
+    var newPrimary = _.find($scope.form.forms[0].fields, function(field) {
+      return field.name === $scope.form.forms[0].primaryField;
+    })
+    var newSecondary = _.find($scope.form.forms[0].fields, function(field) {
+      return field.name === $scope.form.forms[0].variantField;
+    })
+    $scope.currentObservationStyle.iconUrl = ObservationService.getObservationIconUrlForEvent($scope.observation.eventId, $scope.form.forms[0].id, newPrimary.value, newSecondary.value);
+  }, true);
 
   $scope.save = function() {
     if (!$scope.form.geometryField.value) {

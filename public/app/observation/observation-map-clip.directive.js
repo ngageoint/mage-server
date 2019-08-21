@@ -9,7 +9,7 @@ module.exports = function mapClip() {
       disableInteraction: '='
     },
     replace: true,
-    template: '<div id="map" class="leaflet-map"></div>',
+    template: '<div class="leaflet-map"></div>',
     controller: MapClipController
   };
 
@@ -26,6 +26,7 @@ function MapClipController($rootScope, $scope, $element, MapService) {
   var controlsOn = false;
   var layers = {};
   var observation = null;
+  var marker = null;
 
   initialize();
 
@@ -41,6 +42,9 @@ function MapClipController($rootScope, $scope, $element, MapService) {
   $scope.$watch('feature', function() {
     if (observation) {
       map.removeLayer(observation);
+    }
+    if (marker) {
+      map.removeLayer(marker)
     }
     addObservation($scope.feature);
 
@@ -77,15 +81,23 @@ function MapClipController($rootScope, $scope, $element, MapService) {
     return baseLayer;
   }
 
+  $scope.$watch('featureStyle.iconUrl', function() {
+    if (!$scope.featureStyle || !$scope.featureStyle.iconUrl) return;
+    marker.setIcon(L.fixedWidthIcon({
+      iconUrl: $scope.featureStyle.iconUrl
+    }));
+  })
+
   function addObservation(feature) {
     if (!feature || !feature.geometry || !feature.geometry.coordinates.length) return;
     if(feature.geometry){
       if(feature.geometry.type === 'Point'){
-        observation= L.geoJson(feature, {
+        observation = L.geoJson(feature, {
           pointToLayer: function (feature, latlng) {
-            return L.fixedWidthMarker(latlng, {
+            marker = L.fixedWidthMarker(latlng, {
               iconUrl: feature.style ? feature.style.iconUrl : ($scope.featureStyle ? $scope.featureStyle.iconUrl : '')
             });
+            return marker;
           }
         });
         observation.addTo(map);
@@ -119,10 +131,6 @@ function MapClipController($rootScope, $scope, $element, MapService) {
       attributionControl: false
     });
 
-    if ($scope.feature && $scope.feature.geometry && $scope.feature.geometry.coordinates.length) {
-      addObservation($scope.feature);
-    }
-
     if ($scope.disableInteraction) {
       map.scrollWheelZoom.disable()
       map.dragging.disable()
@@ -148,10 +156,6 @@ function MapClipController($rootScope, $scope, $element, MapService) {
       }
     });
 
-    // $scope.$watch('feature.style.iconUrl', function(iconUrl) {
-    //   marker.setIcon(L.fixedWidthIcon({
-    //     iconUrl: iconUrl
-    //   }));
-    // });
+
   }
 }

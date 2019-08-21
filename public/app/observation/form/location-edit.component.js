@@ -119,7 +119,6 @@ module.exports = {
 
     this.onLatLngChange = function() {
       var coordinates = angular.copy(this.shape.coordinates);
-      console.log('lat lng change', coordinates)
 
       // copy edit field lat/lng in coordinates at correct index
       if (this.shape.type === 'LineString') {
@@ -323,7 +322,6 @@ module.exports = {
     this.$onChanges = function() {
       this.shape = angular.copy(this.field.value)
       this.value = angular.copy(this.field.value)
-      console.log('this.shape', this.shape)
       this.selectedVertexIndex = 0;
       this.mgrs = this.toMgrs(this.field)
       this.updateSelectedVertex()
@@ -346,8 +344,6 @@ module.exports = {
         $timeout(function() {
           this.latitudeField = new MDCTextField($element.find('.latitude-text-field')[0]);
           this.longitudeField = new MDCTextField($element.find('.longitude-text-field')[0]);
-          console.log('this.selectedVertex', this.selectedVertex)
-          console.log('sv', sv)
           this.longitudeField.value = this.selectedVertex[0];
           this.latitudeField.value = this.selectedVertex[1];
         }.bind(this))

@@ -90,7 +90,6 @@ function GeometryEditController(GeometryService, LocalStorageService, $timeout, 
   }
 
   this.$onChanges = function() {
-    console.log('on changes')
     if (this.field && this.coordinateSystem === 'mgrs') {
       this.mgrs = toMgrs(this.field);
     }
