@@ -7,21 +7,22 @@ module.exports = {
   template: require('./datetime.component.html'),
   bindings: {
     date: '<',
-    localTime: '<',
     fieldName: '@',
     onDatePicked: '&'
   },
   controller: DateTimeController
 };
 
-DateTimeController.$inject = ['$element', '$timeout'];
+DateTimeController.$inject = ['$element', '$timeout', 'LocalStorageService'];
 
-function DateTimeController($element, $timeout) {
+function DateTimeController($element, $timeout, LocalStorageService) {
   var dateInputField;
-  var filterPanel;
+
+  this.timeZone = LocalStorageService.getTimeZoneEdit();
   
   this.$onInit = function() {
     dateInputField = new MDCTextField($element.find('.mdc-text-field')[0]);
+
     if (this.date) {
       this.pickedDate = this.date;
       if (dateInputField) {
@@ -44,6 +45,17 @@ function DateTimeController($element, $timeout) {
     }
   }
 
+  this.inputChanged = function() {
+    var isValid = moment(this.dateInputValue).isValid()
+    if (isValid) {
+      this.pickedDate = moment(this.dateInputValue).format('MM/DD/YYYY hh:mm:ss');
+      this.onDatePicked({
+        date: this.pickedDate,
+        timeZone: this.timeZone
+      })
+    }
+  }
+
   this.openPicker = function() {
     var dialog = new MDDateTimePicker.default({
       type: 'datetime',
@@ -57,19 +69,18 @@ function DateTimeController($element, $timeout) {
       dateInputField.value = this.dateInputValue = dialog.time.format('MM/DD/YYYY hh:mm:ss');
       this.onDatePicked({
         date: this.pickedDate,
-        localTime: this.localTime
+        timeZone: this.timeZone
       });
     }.bind(this))
     dialog.show();
   }
 
   this.updateTimeZone = function() {
-    this.localTime = !this.localTime
+    this.timeZone = this.timeZone === 'gmt' ? 'local' : 'gmt';
     this.onDatePicked({
       date: this.pickedDate,
-      localTime: this.localTime
+      timeZone: this.timeZone
     });
-    console.log('date picked', this.localTime)
   }
 
 }

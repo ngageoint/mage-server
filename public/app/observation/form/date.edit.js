@@ -10,24 +10,20 @@ module.exports = {
   controller: DateEditController
 };
 
-DateEditController.$inject = ['LocalStorageService'];
+DateEditController.$inject = [];
 
-function DateEditController(LocalStorageService) {
+function DateEditController() {
 
   this.$onChanges = function() {
     this.date = angular.copy(this.field.value);
-
-    this.timeZone = LocalStorageService.getTimeZoneEdit();
-    if (this.timeZome === 'local') this.localTime = true;
   };
 
-  this.onDateChanged = function() {
-    this.formatDate();
-  };
-
-  this.formatDate = function(date, localTime) {
-    LocalStorageService.setTimeZoneEdit(localTime ? 'local' : 'gmt');
-    this.field.value = date;
+  this.formatDate = function(date, timeZone) {
+    var momentDate = moment(date)
+    if (timeZone === 'gmt') {
+      momentDate.add(momentDate.utcOffset(), 'minutes')
+    }
+    this.field.value = momentDate.toDate();
   };
 
   this.today = function() {

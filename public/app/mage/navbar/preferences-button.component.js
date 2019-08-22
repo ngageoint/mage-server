@@ -22,7 +22,7 @@ function PreferencesButtonController($element, LocalStorageService) {
   this.openPreferencesChooser = function() {
     if (!this.drawer) {
       preferencesMenu = preferencesMenu || new MDCMenuSurface($element.find('.preferences-menu')[0]);
-      preferencesMenu.open = !preferencesMenu.open;
+      preferencesMenu.open(true);
     } else {
       this.expandMenu = !this.expandMenu;
     }
