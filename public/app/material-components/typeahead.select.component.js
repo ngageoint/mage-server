@@ -5,7 +5,7 @@ module.exports = {
   template: require('./typeahead.select.component.html'),
   bindings: {
     options: '<',
-    initialValues: '<',
+    initialValue: '<',
     fieldLabel: '@',
     idProperty: '@',
     displayProperty: '@',
@@ -30,10 +30,10 @@ function TypeaheadSelectController($element, $timeout) {
 
   this.$postLink = function() {
     $timeout(function() {
-      this.initializeMultiSelect()
+      this.initializeTypeahead()
     }.bind(this))
   }
-  this.initializeMultiSelect = function() {
+  this.initializeTypeahead = function() {
     this.idPropery = this.idProperty|| 'id';
     this.displayProperty = this.displayProperty || 'name';
     textField = new MDCTextField($element.find('.mdc-text-field')[0])
@@ -74,16 +74,11 @@ function TypeaheadSelectController($element, $timeout) {
         if (a[this.displayProperty] > b[this.displayProperty]) return 1;
         return 0;
       }.bind(this))
-      this.optionsSelected = this.optionsSelected || (this.initialValues || []);
-      this.optionsSelected = this.optionsSelected.filter(function(selectedOption, index) {
-        for (var i = 0; i < this.filteredOptions().length; i++) {
-          if (selectedOption[this.idProperty] === this.filteredOptions()[i][this.idProperty]) {
-            finalIndex = i;
-            return true;
-          }
-        }
-        return false;
-      }.bind(this))
+      if (this.initialValue) {
+        this.setSelectedOption(this.filteredOptions().find(function(option) {
+          return this.initialValue[this.displayProperty] === option[this.displayProperty]
+        }.bind(this)))
+      }
     }
   }
 

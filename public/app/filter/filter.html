@@ -14,6 +14,7 @@ aria-describedby="my-dialog-content">
             <typeahead-select
               options="$ctrl.events"
               field-label="Events"
+              initial-value="$ctrl.filterEvent.selected"
               display-property="name"
               id-property="id"
               on-select="$ctrl.eventSelected(event)"/>
