@@ -19,7 +19,6 @@ function FilterController(FilterService, $element, $timeout) {
 
   this.teamSelectMdc;
   this.intervalSelectMdc;
-  this.eventSelectMdc;
   this.teamsUpdated = true;
 
   this.$onChanges = function() {
@@ -54,7 +53,7 @@ function FilterController(FilterService, $element, $timeout) {
       this.onFilterClose()
     }.bind(this))
     this.filterPanel.listen('MDCDialog:opening', function() {
-      if (!this.eventSelectMdc) {
+      if (!this.intervalSelectMdc) {
         $timeout(function() {
           this.intervalSelectMdc = new MDCSelect($element.find('.interval-select')[0])
           this.intervalSelectMdc.listen('MDCSelect:change', function(event) {
