@@ -11,6 +11,16 @@ aria-describedby="my-dialog-content">
       <div class="mdc-dialog__content" id="my-dialog-content">
         <form>
           <div class="top-gap">
+            <typeahead-select
+              options="$ctrl.events"
+              field-label="Events"
+              display-property="name"
+              id-property="id"
+              on-select="$ctrl.eventSelected(event)"/>
+          </div>
+
+
+          <!-- <div class="top-gap">
             <div class="event-select mdc-select mdc-select--outlined filter-dropdown">
               <input type="hidden" name="enhanced-select">
               <i class="mdc-select__dropdown-icon"></i>
@@ -34,7 +44,7 @@ aria-describedby="my-dialog-content">
               <div class="mdc-notched-outline__trailing"></div>
               </div>
             </div>
-          </div>
+          </div> -->
 
           <div class="top-gap">
             <multiselect 

@@ -64,16 +64,14 @@ function FilterController(FilterService, $element, $timeout) {
               })
             }.bind(this))
           }.bind(this))
-
-          this.eventSelectMdc = new MDCSelect($element.find('.event-select')[0])
-          this.eventSelectMdc.listen('MDCSelect:change', function(event) {
-            var eventId = event.detail.value;
-            this.onEventChange(eventId)
-          }.bind(this))
-          this.eventSelectMdc.value = this.filterEvent.selected.id;
         }.bind(this))
       }
     }.bind(this))
+  }
+
+  this.eventSelected = function(event) {
+    this.filterEvent.selected = event;
+    this.filterTeams.selected = [];
   }
 
   this.teamsSelected = function(teams) {
