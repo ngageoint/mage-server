@@ -33,7 +33,6 @@ class TypeaheadSelectController {
 
   typeaheadChange() {
     this.openDropdown()
-    this._$element.find('.mdc-text-field')[0].focus()
     var lowerCaseOption = this.selectedOptionDisplay.toLowerCase()
     this.sortedOptions = this.options.filter(option => option[this.displayProperty].toLowerCase().indexOf(lowerCaseOption) !== -1)
   }
@@ -79,6 +78,7 @@ bindings = {
   fieldLabel: '@',
   idProperty: '@',
   displayProperty: '@',
+  secondaryDisplayProperty: '@',
   width: '@',
   onSelect: '&'
 },

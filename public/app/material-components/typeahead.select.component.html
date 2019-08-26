@@ -19,11 +19,14 @@
       <ul class="mdc-list" role="menu">
         <li
           ng-repeat="option in $ctrl.filteredOptions()"
-          ng-class="{'mdc-list-item--disabled': $ctrl.isOptionChosen(option[$ctrl.idProperty])}"
           class="mdc-list-item"
+          ng-class="{'mdc-list-item--two-line': option[$ctrl.secondaryDisplayProperty]}"
           data-value="{{option[$ctrl.idProperty]}}"
           ng-click="$ctrl.setSelectedOption(option)">
-          {{option[$ctrl.displayProperty]}}
+          <span class="mdc-list-item__text">
+            <span ng-class="{'mdc-list-item__primary-text': option[$ctrl.secondaryDisplayProperty], 'mdc-list-item__text': !option[$ctrl.secondaryDisplayProperty]}">{{option[$ctrl.displayProperty]}}</span>
+            <span class="mdc-list-item__secondary-text" ng-if="option[$ctrl.secondaryDisplayProperty]">{{option[$ctrl.secondaryDisplayProperty]}}</span>
+          </span>
         </li>
       </ul>
     </div>

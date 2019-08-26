@@ -1,8 +1,8 @@
 @import "./variables.css";
+@import "../vendor/bootstrap/css/bootstrap.min.css";
 @import "./material-theme.scss";
 @import "material-components-web/material-components-web.scss";
 
-@import "../vendor/bootstrap/css/bootstrap.min.css";
 @import "~ui-select/dist/select.min.css";
 @import "~font-awesome/css/font-awesome.min.css";
 @import "~jquery-minicolors/jquery.minicolors.css";
@@ -60,6 +60,20 @@
 a:hover, a:focus {
   text-decoration: none;
 }
+
+/** Start fix for allowing double and single line list items in the same list **/
+.mdc-list-item--two-line .mdc-list-item__text {
+  align-self: flex-start;
+}
+
+.mdc-list-item--two-line.mdc-list-item {
+  height: 72px;
+}
+
+.mdc-list--dense .mdc-list-item.mdc-list-item--two-line {
+  height: 60px;
+}
+/** End fix */
 
 .mdc-dialog .mdc-dialog__title {
   color: #FFFFFF;
