@@ -34,6 +34,8 @@ function MageController($scope, $animate, $document, $uibModal, UserService, Fil
     }
   }
 
+  MapService.initialize();
+
   var filterChangedListener = {
     onFilterChanged: onFilterChanged
   };

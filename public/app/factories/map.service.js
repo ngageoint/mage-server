@@ -19,6 +19,7 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
     overlayAdded: overlayAdded,
     removeLayer: removeLayer,
     destroy: destroy,
+    initialize: initialize,
     getVectorLayers: getVectorLayers,
     createRasterLayer: createRasterLayer,
     createVectorLayer: createVectorLayer,
@@ -49,25 +50,24 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
   var usersById = {};
   var popupScopes = {};
 
-  initialize();
+  var layersChangedListener = {
+    onLayersChanged: onLayersChanged
+  };
+  var usersChangedListener = {
+    onUsersChanged: onUsersChanged
+  };
+  var observationsChangedListener = {
+    onObservationsChanged: onObservationsChanged
+  };
+
+  // initialize();
 
   return service;
 
   function initialize() {
 
-    var observationsChangedListener = {
-      onObservationsChanged: onObservationsChanged
-    };
     EventService.addObservationsChangedListener(observationsChangedListener);
-  
-    var usersChangedListener = {
-      onUsersChanged: onUsersChanged
-    };
     EventService.addUsersChangedListener(usersChangedListener);
-
-    var layersChangedListener = {
-      onLayersChanged: onLayersChanged
-    };
     EventService.addLayersChangedListener(layersChangedListener);
 
     var observationLayer = {
