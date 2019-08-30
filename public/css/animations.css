@@ -19,21 +19,17 @@
   transform:translateX(100%);
 }
 
-/* .slide-down {
-  opacity: 1;
+.fade-in.ng-enter {
+  -webkit-animation: zoomIn 0.5s;
+  -moz-animation: zoomIn 0.5s;
+  -ms-animation: zoomIn 0.5s;
+  animation: zoomIn 0.5s;
 }
-.slide-down.ng-hide {
-  opacity: 0;
+
+.fade-in.ng-leave {
+  display: none;
+  -webkit-animation: zoomOut 0.5s;
+  -moz-animation: zoomOut 0.5s;
+  -ms-animation: zoomOut 0.5s;
+  animation: zoomOut 0.5s;
 }
-.slide-down.ng-enter, .slide-down.ng-leave {
-  transition:0.3s linear all;
-}
-.slide-down.ng-enter {
-  transform:translateY(100%);
-}
-.slide-down.ng-enter.ng-enter-active, .slide-down.ng-leave {
-  transform:translateY(0%);
-}
-.slide-down.ng-leave.ng-leave-active {
-  transform:translateY(100%);
-} */

@@ -2,7 +2,7 @@
 <html ng-app="mage">
 <head>
   <title>MAGE</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone">
   <link rel="shortcut icon" href="images/favicon.ico"/>
   <meta id="view" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,10 +16,10 @@
 </head>
   <body class="mdc-typography" ng-controller="NavController">
 
-    <div banner="header"></div>
+    <div class="banner" banner="header"></div>
     <navbar myself="myself" ng-show="myself"></navbar>
     <div data-ng-view class="route-content"></div>
-    <div banner="footer"></div>
+    <div class="banner" banner="footer"></div>
 
   </body>
 </html>

@@ -1,5 +1,272 @@
-.signin-container {
+.authentication-container {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+
+.sliding-bg {
+  width: 100%;
+  background-size: cover;
+  position:absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  animation: bg-slide 500s linear infinite;
+  z-index: -1;
+}
+
+.olympic-park-bg {
+  background-image: url('../img/olympic-park.png');
+}
+
+.burkina-faso-bg {
+  background-image: url('../img/burkina-faso.jpg');
+}
+
+.philadelphia-bg {
+  background-image: url('../img/philadelphia.jpg');
+}
+
+.rio-olympics-bg {
+  background-image: url('../img/rio-olympics.jpg');
+}
+
+.mage-info-container {
+  height: 100%;
   width: 50%;
-  margin-right: auto;
-  margin-left: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(16, 69, 130, .5)
+}
+
+.mage-info-inner {
+  width: 60%;
+  color: white;
+}
+
+.mage-info-title-container {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.mage-info-title {
+  font-size: 8rem;
+  letter-spacing: 1rem;
+}
+
+.mage-info-subtitle {
+  margin-top: -10px;
+  font-size: 1.5rem;
+}
+
+.mage-info-feature {
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 30px;
+  padding-top: 30px;
+}
+
+.mage-info-feature-icon {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-right: 16px;
+}
+
+.mage-info-feature-icon i {
+  font-size: 3.5rem;
+  stroke: white;
+}
+
+.mage-info-feature-description {
+  display: flex;
+  flex-direction: column;
+}
+
+.mage-info-feature-title {
+  font-size: 1.6rem;
+  font-weight: 400;
+  margin-bottom: 10px;
+}
+
+.mage-info-feature-subtitle {
+  font-size: 1rem;
+}
+
+.about-link {
+  padding: 16px;
+}
+
+.app-store-container {
+  padding: 16px;
+  text-align: center;
+}
+
+.app-store-badges {
+  flex-direction: row;
+  display: flex;
+  justify-content: center;
+}
+
+.app-store-badge {
+  margin: 8px;
+}
+
+.section-container {
+  flex: 1;
+  text-align: center;
+  display: flex;
+}
+
+.disclaimer-info-container,
+.device-id-container {
+  width: 75%;
+  min-width: 285px;
+}
+
+.about-container {
+  width: 90%;
+  height: 100%;
+  overflow-y: scroll;
+  color: black;
+}
+
+.authentication-info-container {
+  height: 100%;
+  width: 50%;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.signin-container,
+.signup-container{
+  width: 285px;
+  margin: auto;
+  text-align: left;
+}
+
+.wand-container .mage-wand {
+  width: 97px;
+  height: 97px;
+  margin-bottom: 36px;
+}
+
+.wand-container {
+  text-align: center;
+}
+
+.auth-button-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.device-id-button-container {
+  justify-content: flex-end;
+}
+
+.signup-container .mdc-snackbar,
+.signin-container .mdc-snackbar,
+.device-id-container .mdc-snackbar {
+  transform: translateX(25%)
+}
+
+.mdc-button--raised:not(:disabled).return-to-login-button {
+  background-color: #1565C0;
+  width: 100%;
+}
+
+.mdc-button--raised:not(:disabled).primary-button {
+  background-color: #1565C0;
+  width: 48%;
+}
+
+.mdc-button--raised:not(:disabled).secondary-button {
+  background-color: white;
+  color: #1565C0;
+  width: 48%;
+}
+
+.or-container {
+  text-align: center;
+  margin-top: 50px;
+  margin-bottom: 30px;
+  color: #808080;
+  font-variant: small-caps;
+}
+
+.or-hr {
+  margin-bottom: -23px;
+  height: 0;
+  border: 0;
+  border-top: 2px solid #e6e6e6;
+}
+
+#or {
+  display: inline-block;
+  position: relative;
+  padding-left: 20px;
+  padding-right: 20px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background-color: #fff;
+}
+
+.third-party-button {
+  flex-direction: row;
+  justify-content: space-between !important;
+  width: 100%;
+}
+
+.third-party-logo {
+  margin-left: -10px;
+  margin-right: 10px;
+  background-color: #FFFFFF;
+  border-radius: 4px;
+  width: 42px;
+}
+
+.third-party-logo img {
+  width: 60%;
+}
+
+.third-party-logo i {
+  padding-top: 8px;
+  padding-bottom: 4px;
+}
+
+.third-party-button-text {
+  text-align: center;
+  flex: 1;
+}
+
+.progress-bar-danger .mdc-linear-progress__bar-inner {
+  background-color: #d9534f;
+}
+
+.progress-bar-warning .mdc-linear-progress__bar-inner {
+  background-color: #f0ad4e;
+}
+
+.progress-bar-info .mdc-linear-progress__bar-inner {
+  background-color: #5bc0de;
+}
+
+.progress-bar-primary .mdc-linear-progress__bar-inner {
+  background-color: #1E88E5;
+}
+
+.progress-bar-success .mdc-linear-progress__bar-inner {
+  background-color: #5cb85c;
+}
+
+@keyframes bg-slide {
+  from { transform: translateX(0); }
+  50% { transform: translateX(-50%); }
+  to { transform: translateX(0); }
 }

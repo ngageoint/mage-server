@@ -11,6 +11,7 @@ angular
   .component('eventFilter', require('./filter/event.filter.component'))
   .component('dateTime', require('./datetime/datetime.component'))
   .component('observationFormChooser', require('./observation/observation-form-chooser.component'))
+  .component('about', require('./about/about.component'))
   .controller('NavController', require('./mage/mage-nav.controller'))
   .controller('NotInEventController', require('./error/not.in.event.controller'))
   .controller('MageController', require('./mage/mage.controller'))
@@ -125,8 +126,9 @@ function config($provide, $httpProvider, $routeProvider, $animateProvider) {
   });
 
   $routeProvider.when('/signin', {
-    template: require('./authentication/signin.html'),
-    controller: 'SigninController',
+    template: require('./authentication/authentication.html'),
+    controller: 'AuthenticationController',
+    controllerAs: '$ctrl',
     resolve: {
       api: ['$q', '$location', 'Api', function($q, $location, Api) {
         var deferred = $q.defer();
@@ -398,19 +400,22 @@ function run($rootScope, $route, $uibModal, $templateCache, UserService, $locati
 
   $rootScope.$on('event:auth-login', function(event, data) {
     function confirmLogin() {
+      UserService.acceptDisclaimer();
       authService.loginConfirmed(data);
 
       if ($location.path() === '/signin' || $location.path() === '/signup' || $location.path() === '/setup' || $location.path() === '/authorize') {
         $location.path('/map');
       }
     }
-
+    
     Api.get(function(api) {
       var disclaimer = api.disclaimer || {};
       if (!disclaimer.show) {
         confirmLogin();
         return;
       }
+
+      if ($location.path() === '/signin') return;
 
       var modalInstance = $uibModal.open({
         template: require('./disclaimer/disclaimer.html'),

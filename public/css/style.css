@@ -9,6 +9,7 @@
 @import "~select2/dist/css/select2.min.css";
 @import "../vendor/md-date-time-picker/dist/css/mdDateTimePicker.css";
 
+@import "./animate.css";
 
 @import "./colors.css";
 @import "./animations.css";
@@ -191,6 +192,10 @@ a:hover, a:focus {
   padding-left: 12px;
   padding-right: 12px;
   margin-bottom: 2px;
+}
+
+.banner {
+  z-index: 1;
 }
 
 .multi-select {
@@ -1235,27 +1240,6 @@ h4.image-delete {
 
 .observation-action-email:hover {
   color: #4A90E2;
-}
-
-.or-container {
-    text-align: center;
-    margin-top: 20px;
-    color: #808080;
-    font-variant: small-caps;
-}
-
-.or-hr {
-    margin-bottom: -20px;
-    height: 0;
-    border: 0;
-    border-top: 1px solid #e6e6e6;
-}
-
-#or {
-    display: inline-block;
-    position: relative;
-    padding: 10px;
-    background-color: #fff;
 }
 
 .btn-google {

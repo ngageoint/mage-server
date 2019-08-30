@@ -10,29 +10,30 @@ function UserService($rootScope, $q, $uibModal, $http, $location, $timeout, $win
   var service = {
     myself: null,
     amAdmin: false,
-    signup: signup,
-    signin: signin,
-    googleSignin: googleSignin,
-    googleSignup: googleSignup,
-    oauthSignin: oauthSignin,
-    oauthSignup: oauthSignup,
-    authorize: authorize,
-    logout: logout,
-    getMyself: getMyself,
-    updateMyPassword: updateMyPassword,
-    updateMyself: updateMyself,
-    checkLoggedInUser: checkLoggedInUser,
-    getUserCount: getUserCount,
-    getUser: getUser,
-    getAllUsers: getAllUsers,
-    createUser: createUser,
-    updateUser: updateUser,
-    deleteUser: deleteUser,
-    clearUser: clearUser,
-    getRoles: getRoles,
-    hasPermission: hasPermission,
-    addRecentEvent: addRecentEvent,
-    getRecentEventId: getRecentEventId
+    signup,
+    signin,
+    googleSignin,
+    googleSignup,
+    oauthSignin,
+    oauthSignup,
+    authorize,
+    acceptDisclaimer,
+    logout,
+    getMyself,
+    updateMyPassword,
+    updateMyself,
+    checkLoggedInUser,
+    getUserCount,
+    getUser,
+    getAllUsers,
+    createUser,
+    updateUser,
+    deleteUser,
+    clearUser,
+    getRoles,
+    hasPermission,
+    addRecentEvent,
+    getRecentEventId
   };
 
   return service;
@@ -144,11 +145,15 @@ function UserService($rootScope, $q, $uibModal, $http, $location, $timeout, $win
         setUser(data.user);
         LocalStorageService.setToken(data.token);
         $rootScope.$broadcast('event:auth-login', {token: data.token, newUser: newUser});
-        $rootScope.$broadcast('event:user', {user: data.user, token: data.token, isAdmin: service.amAdmin});
+        return data;
       }
     });
 
     return promise;
+  }
+
+  function acceptDisclaimer() {
+    $rootScope.$broadcast('event:user', {user: service.myself, token: LocalStorageService.getToken(), isAdmin: service.amAdmin});
   }
 
   function signin(data) {
