@@ -1,3 +1,4 @@
+<div class="outer-container">
 <div class="authentication-container">
   <div class="mage-info-container">
     <div class="sliding-bg" ng-class="$ctrl.backgroundClass"></div>
@@ -6,7 +7,8 @@
         <div class="mage-info-title" ng-click="$ctrl.showAbout()">MAGE</div>
         <div class="mage-info-subtitle">Mobile Awareness GEOINT Environment</div>
       </div>
-      <div class="mage-info-feature">
+      <div class="mage-feature-list">
+        <div class="mage-info-feature">
         <div class="mage-info-feature-icon">
           <i class="material-icons-outlined">photo_camera</i>
         </div>
@@ -33,6 +35,7 @@
           <div class="mage-info-feature-subtitle">Keep collecting observations even when you have no service</div>
         </div>
       </div>
+    </div>
     </div>
   </div>
   <div class="authentication-info-container">
@@ -99,4 +102,5 @@
         <a class="about-link" href="javascript:void(0)" ng-click="$ctrl.showAbout()">About MAGE v{{$ctrl.api.version.major}}.{{$ctrl.api.version.minor}}.{{$ctrl.api.version.micro}}</a>
       </div>
   </div>
+</div>
 </div>

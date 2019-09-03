@@ -1,9 +1,3 @@
-.authentication-container {
-  display: flex;
-  flex-direction: row;
-  height: 100%;
-}
-
 .sliding-bg {
   width: 100%;
   background-size: cover;
@@ -31,23 +25,90 @@
   background-image: url('../img/rio-olympics.jpg');
 }
 
+.outer-container {
+  display:inline;
+  min-height: 100%;
+  overflow-y: auto;
+}
+
+.authentication-container {
+  display: flex;
+  flex-direction: row;
+  min-height: 100%;
+}
+
 .mage-info-container {
-  height: 100%;
+  min-height: 100%;
   width: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
+  color: white;
   background-color: rgba(16, 69, 130, .5)
 }
 
 .mage-info-inner {
+  width: 80%;
+}
+
+.authentication-info-container {
+  min-height: 100%;
+  width: 50%;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.mage-info-feature {
+  display: flex;
+  flex-direction: row;
+  padding-bottom: 30px;
+  padding-top: 30px;
+}
+
+@media all and (max-width: 1025px) {
+  .sliding-bg {
+    animation: none;
+  }
+
+  .authentication-container {
+    display: inline;
+    /* flex-direction: column; */
+    /* height: auto; */
+  }
+
+  .mage-info-container {
+    width: 100%;
+    height: auto;
+    min-height: auto;
+    position: relative;
+  }
+
+  .authentication-info-container {
+    width: 100%;
+    min-height: auto;
+    height: auto;
+    flex: 1;
+    overflow: auto;
+  }
+
+  .mage-feature-list {
+    display: none;
+  }
+}
+
+.mage-feature-list {
+  margin-top: 44px;
+  margin-left: auto;
+  margin-right: auto;
   width: 60%;
-  color: white;
 }
 
 .mage-info-title-container {
+  margin-bottom: 16px;
   text-align: center;
-  margin-bottom: 60px;
 }
 
 .mage-info-title {
@@ -60,17 +121,10 @@
   font-size: 1.5rem;
 }
 
-.mage-info-feature {
-  display: flex;
-  flex-direction: row;
-  padding-bottom: 30px;
-  padding-top: 30px;
-}
-
 .mage-info-feature-icon {
   display: flex;
   justify-content: center;
-  align-items: flex-end;
+  align-items: center;
   padding-right: 16px;
 }
 
@@ -99,7 +153,8 @@
 }
 
 .app-store-container {
-  padding: 16px;
+  padding-top: 64px;
+  padding-bottom: 16px;
   text-align: center;
 }
 
@@ -123,6 +178,7 @@
 .device-id-container {
   width: 75%;
   min-width: 285px;
+  padding-bottom: 16px;
 }
 
 .about-container {
@@ -130,16 +186,6 @@
   height: 100%;
   overflow-y: scroll;
   color: black;
-}
-
-.authentication-info-container {
-  height: 100%;
-  width: 50%;
-  background-color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
 }
 
 .signin-container,
@@ -150,6 +196,7 @@
 }
 
 .wand-container .mage-wand {
+  margin-top: 36px;
   width: 97px;
   height: 97px;
   margin-bottom: 36px;
