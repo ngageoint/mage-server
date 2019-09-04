@@ -8,10 +8,6 @@ function NavController($rootScope, $scope, $location, UserService, FilterService
   var events = [];
   $scope.location = $location;
 
-  Settings.get({type: 'banner'}, function(banner) {
-    $scope.banner = banner.settings;
-  });
-
   $rootScope.$on('event:user', function(e, login) {
     $scope.token = login.token;
     $scope.myself = login.user;

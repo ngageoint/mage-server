@@ -1,3 +1,15 @@
+$bg-mask-color: rgba(16, 69, 130, .5);
+$primary-dark: #1565C0;
+$password-strengths: ('danger': #d9534f, 'warning': #f0ad4e, 'info': #5bc0de, 'primary': #1E88E5, 'success': #5cb85c);
+$background-images: 'olympic-park', 'burkina-faso', 'philadelphia', 'rio-olympics';
+$small-screen-breakpoint: 1025px;
+
+@each $image in $background-images {
+  .#{$image}-bg {
+    background-image: url('../img/#{$image}.jpg');
+  }
+}
+
 .sliding-bg {
   width: 100%;
   background-size: cover;
@@ -5,24 +17,8 @@
   top: 0;
   bottom: 0;
   left: 0;
-  animation: bg-slide 500s linear infinite;
+  animation: bg-slide 400s linear infinite;
   z-index: -1;
-}
-
-.olympic-park-bg {
-  background-image: url('../img/olympic-park.png');
-}
-
-.burkina-faso-bg {
-  background-image: url('../img/burkina-faso.jpg');
-}
-
-.philadelphia-bg {
-  background-image: url('../img/philadelphia.jpg');
-}
-
-.rio-olympics-bg {
-  background-image: url('../img/rio-olympics.jpg');
 }
 
 .outer-container {
@@ -44,7 +40,7 @@
   justify-content: center;
   align-items: center;
   color: white;
-  background-color: rgba(16, 69, 130, .5)
+  background-color: $bg-mask-color;
 }
 
 .mage-info-inner {
@@ -68,15 +64,13 @@
   padding-top: 30px;
 }
 
-@media all and (max-width: 1025px) {
+@media all and (max-width: $small-screen-breakpoint) {
   .sliding-bg {
     animation: none;
   }
 
   .authentication-container {
     display: inline;
-    /* flex-direction: column; */
-    /* height: auto; */
   }
 
   .mage-info-container {
@@ -126,11 +120,10 @@
   justify-content: center;
   align-items: center;
   padding-right: 16px;
-}
-
-.mage-info-feature-icon i {
-  font-size: 3.5rem;
-  stroke: white;
+  i {
+    font-size: 3.5rem;
+    stroke: white;
+  }
 }
 
 .mage-info-feature-description {
@@ -195,15 +188,14 @@
   text-align: left;
 }
 
-.wand-container .mage-wand {
-  margin-top: 36px;
-  width: 97px;
-  height: 97px;
-  margin-bottom: 36px;
-}
-
 .wand-container {
   text-align: center;
+  .mage-wand {
+    margin-top: 36px;
+    width: 97px;
+    height: 97px;
+    margin-bottom: 36px;
+  }
 }
 
 .auth-button-container {
@@ -224,19 +216,35 @@
 }
 
 .mdc-button--raised:not(:disabled).return-to-login-button {
-  background-color: #1565C0;
+  background-color: $primary-dark;
   width: 100%;
 }
 
 .mdc-button--raised:not(:disabled).primary-button {
-  background-color: #1565C0;
+  background-color: $primary-dark;
   width: 48%;
 }
 
 .mdc-button--raised:not(:disabled).secondary-button {
   background-color: white;
-  color: #1565C0;
+  color: $primary-dark;
   width: 48%;
+}
+
+.mdc-button--raised:not(:disabled) {
+  &.return-to-login-button {
+    background-color: $primary-dark;
+    width: 100%;
+  }
+  &.primary-button {
+    background-color: $primary-dark;
+    width: 48%;
+  }
+  &.secondary-button {
+    background-color: white;
+    color: $primary-dark;
+    width: 48%;
+  }
 }
 
 .or-container {
@@ -276,15 +284,13 @@
   background-color: #FFFFFF;
   border-radius: 4px;
   width: 42px;
-}
-
-.third-party-logo img {
-  width: 60%;
-}
-
-.third-party-logo i {
-  padding-top: 8px;
-  padding-bottom: 4px;
+  img {
+    width: 60%;
+  }
+  i {
+    padding-top: 8px;
+    padding-bottom: 4px;
+  }
 }
 
 .third-party-button-text {
@@ -292,24 +298,10 @@
   flex: 1;
 }
 
-.progress-bar-danger .mdc-linear-progress__bar-inner {
-  background-color: #d9534f;
-}
-
-.progress-bar-warning .mdc-linear-progress__bar-inner {
-  background-color: #f0ad4e;
-}
-
-.progress-bar-info .mdc-linear-progress__bar-inner {
-  background-color: #5bc0de;
-}
-
-.progress-bar-primary .mdc-linear-progress__bar-inner {
-  background-color: #1E88E5;
-}
-
-.progress-bar-success .mdc-linear-progress__bar-inner {
-  background-color: #5cb85c;
+@each $name, $color in $password-strengths {
+  .progress-bar-#{$name} .mdc-linear-progress__bar-inner {
+    background-color: $color;
+  }
 }
 
 @keyframes bg-slide {

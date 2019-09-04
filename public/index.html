@@ -10,10 +10,10 @@
 </head>
   <body class="mdc-typography" ng-controller="NavController">
 
-    <div class="banner" banner="header"></div>
+    <div ng-if="myself" class="banner" banner="header"></div>
     <navbar myself="myself" ng-show="myself"></navbar>
     <div data-ng-view class="route-content"></div>
-    <div class="banner" banner="footer"></div>
+    <div ng-if="myself" class="banner" banner="footer"></div>
 
   </body>
 </html>

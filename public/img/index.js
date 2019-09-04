@@ -10,7 +10,7 @@ require('./missing_photo.png');
 require('./login-gov-badge.png');
 require('./baseline-mood-24px.svg');
 require('./baseline-account_circle-24px.svg');
-require('./olympic-park.png');
+require('./olympic-park.jpg');
 require('./burkina-faso.jpg');
 require('./rio-olympics.jpg');
 require('./philadelphia.jpg');
