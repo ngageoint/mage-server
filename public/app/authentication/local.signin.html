@@ -1,5 +1,4 @@
-
-<form class="form" method="post" autocomplete="off" ng-submit="$ctrl.signin()">
+<form class="form" method="post" ng-submit="$ctrl.signin()">
   <div class="top-gap">
     <div class="mdc-text-field mdc-text-field--outlined" style="width: 100%">
       <input type="text" 
@@ -9,7 +8,7 @@
         autocomplete="username" 
         autocapitalize="off"
         ng-model="$ctrl.username" 
-        value="{{$ctrl.username}}" 
+        ng-value="$ctrl.username"
         class="mdc-text-field__input">
       <div class="mdc-notched-outline">
         <div class="mdc-notched-outline__leading"></div>
@@ -30,7 +29,7 @@
         autocomplete="password" 
         autocapitalize="off"
         ng-model="$ctrl.password" 
-        value="{{$ctrl.password}}" 
+        ng-value="$ctrl.password"
         class="mdc-text-field__input">
       <div class="mdc-notched-outline">
         <div class="mdc-notched-outline__leading"></div>
@@ -41,9 +40,9 @@
       </div>
     </div>
   </div>
-
   <div class="auth-button-container">
-    <button ng-if="$ctrl.signinType === 'main'" class="top-gap mdc-button mdc-button--raised secondary-button" ng-click="$ctrl.onSignup()" type="button">Sign Up</button>
+    <div ng-if="$ctrl.hideSignup"></div>
+    <button ng-if="!$ctrl.hideSignup" class="top-gap mdc-button mdc-button--raised secondary-button" ng-click="$ctrl.onSignup()" type="button">Sign Up</button>
     <button class="top-gap mdc-button mdc-button--raised primary-button" type="submit">Sign In</button>
   </div>
 </form>

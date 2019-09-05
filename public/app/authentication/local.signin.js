@@ -2,9 +2,10 @@ import {textField, snackbar} from 'material-components-web'
 
 class LocalSigninController {
 
-  constructor(UserService, $element) {
+  constructor(UserService, $element, $timeout) {
     this._UserService = UserService;
     this._$element = $element;
+    this._$timeout = $timeout;
   }
 
   $postLink() {
@@ -33,11 +34,12 @@ var bindings = {
   strategy: '<',
   signinType: '@',
   onSignin: '&',
-  onSignup: '&'
+  onSignup: '&',
+  hideSignup: '<'
 };
 var controller = LocalSigninController
 
-LocalSigninController.$inject = ['UserService', '$element'];
+LocalSigninController.$inject = ['UserService', '$element', '$timeout'];
 
 export {
   template,

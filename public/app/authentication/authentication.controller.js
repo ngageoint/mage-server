@@ -14,21 +14,10 @@ class AuthenticationController {
       'burkina-faso-bg',
       'philadelphia-bg',
       'rio-olympics-bg'
-    ]
+    ];
   
-    this.backgroundClass = backgrounds[Math.floor(Math.random() * 4)]
-
-    this.localAuthenticationStrategy = this.api.authenticationStrategies.local;
-    this.thirdPartyStrategies = _.map(_.omit(this.api.authenticationStrategies, this.localStrategyFilter), function(strategy, name) {
-      strategy.name = name;
-      return strategy;
-    });
-
+    this.backgroundClass = backgrounds[Math.floor(Math.random() * 4)];
     this.action = $routeParams.action;
-  }
-
-  localStrategyFilter(strategy, name) {
-    return name === 'local';
   }
 
   hideStatus() {
@@ -40,7 +29,7 @@ class AuthenticationController {
     this.action = 'signin';
   }
 
-  localSignup() {
+  onSignup(strategy) {
     this.action = 'signup';
   }
 
@@ -55,7 +44,6 @@ class AuthenticationController {
   authorized() {
     var disclaimer = this.api.disclaimer || {}
     if (!disclaimer.show) {
-      if (this._$location.path() === '/signin') return;
       this._authService.loginConfirmed()
       this._UserService.acceptDisclaimer();
       this._$location.path('/map');
@@ -69,7 +57,7 @@ class AuthenticationController {
     this._$location.path('/map');
   }
 
-  localSignin(user) {
+  onSignin(user, strategy) {
     this.user = user;
     this.action = 'device-id';
   }

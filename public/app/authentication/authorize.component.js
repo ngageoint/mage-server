@@ -41,7 +41,6 @@ class AuthorizeController {
 
 var template = require('./authorize.html')
 var bindings = {
-  strategy: '<',
   user: '<',
   onCancel: '&',
   onAuthorized: '&'

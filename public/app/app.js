@@ -12,6 +12,7 @@ angular
   .component('dateTime', require('./datetime/datetime.component'))
   .component('observationFormChooser', require('./observation/observation-form-chooser.component'))
   .component('about', require('./about/about.component'))
+  .component('disclaimer', require('./disclaimer/disclaimer.controller'))
   .controller('NavController', require('./mage/mage-nav.controller'))
   .controller('NotInEventController', require('./error/not.in.event.controller'))
   .controller('MageController', require('./mage/mage.controller'))
@@ -19,7 +20,7 @@ angular
   .controller('SetupController', require('./setup/setup.controller'))
   .controller('UserController', require('./user/user.controller'))
   .controller('AboutController', require('./about/about.controller'))
-  .controller('DisclaimerController', require('./disclaimer/disclaimer.controller'))
+  // .controller('DisclaimerController', require('./disclaimer/disclaimer.controller'))
   .directive('fileBrowser', require('./file-upload/file-browser.directive'))
   .directive('fileUpload', require('./file-upload/file-upload.directive'))
   .directive('fileUploadGrid', require('./file-upload/file-upload-grid.directive'))
@@ -359,10 +360,15 @@ function run($rootScope, $route, $uibModal, $templateCache, UserService, $locati
     var requestExceptions = ['/api/users/myself/password'];
     if (!$rootScope.loginDialogPresented && !_(pathExceptions).contains($location.path()) && !_(requestExceptions).contains(response.config.url)) {
       $rootScope.loginDialogPresented = true;
-      var modalInstance = $uibModal.open({
-        template: require('./authentication/signin-modal.html'),
-        controller: ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
-          Api.get(function(api) {
+      Api.get(function(api) {
+        var successful = false;
+        var options = {
+          template: require('./authentication/signin-modal.html'),
+          controller: ['$scope', '$uibModalInstance', 'authService', function ($scope, $uibModalInstance, authService) {
+            $uibModalInstance.scope = $scope;
+            $scope.api = api;
+            $scope.hideSignup = true;
+            $scope.action = 'signin';
             function localStrategyFilter(strategy, name) {
               return name === 'local';
             }
@@ -373,65 +379,51 @@ function run($rootScope, $route, $uibModal, $templateCache, UserService, $locati
             });
 
             $scope.localAuthenticationStrategy = api.authenticationStrategies.local;
-          });
 
-          $scope.onAuthenticate = function() {
-            $rootScope.loginDialogPresented = false;
-            $uibModalInstance.close($scope);
-          };
+            $scope.onAuthenticate = function() {
+              var disclaimer = $scope.api.disclaimer || {}
+              if (!disclaimer.show) {
+                authService.loginConfirmed()
+                UserService.acceptDisclaimer();
+                $location.path('/map');
+                $rootScope.loginDialogPresented = false;
+                successful = true;
+                $uibModalInstance.close($scope);
+                return;
+              }
+              $scope.action = 'disclaimer';
+            };
 
-          $scope.onSignin = function() {
-            $rootScope.loginDialogPresented = false;
-            $uibModalInstance.close($scope);
-          };
+            $scope.acceptDisclaimer = function() {
+              authService.loginConfirmed()
+              UserService.acceptDisclaimer();
+              $location.path('/map');
+              $rootScope.loginDialogPresented = false;
+              successful = true;
+              $uibModalInstance.close($scope);
+            }
 
-          $scope.cancel = function () {
-            $rootScope.loginDialogPresented = false;
-            $uibModalInstance.dismiss('cancel');
-          };
-        }]
-      });
+            $scope.onSignin = function(user) {
+              $scope.user = user;
+              $scope.action = 'device-id';
+            };
 
-      modalInstance.result.then(function () {
-      });
-    }
-
-  });
-
-  $rootScope.$on('event:auth-login', function(event, data) {
-    function confirmLogin() {
-      UserService.acceptDisclaimer();
-      authService.loginConfirmed(data);
-
-      if ($location.path() === '/signin' || $location.path() === '/signup' || $location.path() === '/setup' || $location.path() === '/authorize') {
-        $location.path('/map');
-      }
-    }
-    
-    Api.get(function(api) {
-      var disclaimer = api.disclaimer || {};
-      if (!disclaimer.show) {
-        confirmLogin();
-        return;
-      }
-
-      if ($location.path() === '/signin') return;
-
-      var modalInstance = $uibModal.open({
-        template: require('./disclaimer/disclaimer.html'),
-        controller: 'DisclaimerController',
-        resolve: {
-          disclaimer: function() {
-            return api.disclaimer;
+            $scope.cancel = function () {
+              $rootScope.loginDialogPresented = false;
+              $uibModalInstance.dismiss('cancel');
+            };
+          }]
+        };
+        var modalInstance = $uibModal.open(options);
+        var modalClosed = function() {
+          if (!successful) {
+            modalInstance = $uibModal.open(options)
+            modalInstance.closed.then(modalClosed);
           }
         }
+        modalInstance.closed.then(modalClosed);
+        
       });
-
-      modalInstance.result.then(function () {
-        confirmLogin();
-      }, function() {
-        UserService.logout();
-      });
-    });
+    }
   });
 }

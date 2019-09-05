@@ -40,15 +40,12 @@
   </div>
   <div class="authentication-info-container">
       <div ng-if="$ctrl.action === 'disclaimer'" class="disclaimer-info-container ng-animatable fade-in">
-        <h2>{{$ctrl.api.disclaimer.title}}</h2>
-        <p class="top-gap">{{$ctrl.api.disclaimer.text}}</p>
-        <div class="auth-button-container disclaimer-button-container">
-          <button class="top-gap mdc-button mdc-button--raised secondary-button" ng-click="$ctrl.returnToSignin()">Exit</button>
-          <button class="top-gap mdc-button mdc-button--raised primary-button" ng-click="$ctrl.acceptDisclaimer()">Accept</button>
-        </div>
+        <disclaimer disclaimer="$ctrl.api.disclaimer" 
+          on-accept="$ctrl.acceptDisclaimer()" 
+          on-cancel="$ctrl.returnToSignin()"></disclaimer>
       </div>
       <div ng-if="$ctrl.action === 'device-id'" class="device-id-container ng-animatable fade-in">
-        <authorize user="$ctrl.user" strategy="$ctrl.strategy" on-authorized="$ctrl.authorized(device)" on-cancel="$ctrl.returnToSignin()"></authorize>
+        <authorize user="$ctrl.user" on-authorized="$ctrl.authorized(device)" on-cancel="$ctrl.returnToSignin()"></authorize>
       </div>
       <div ng-if="$ctrl.action === 'signup'" class="section-container ng-animatable fade-in">
         <div class="signup-container">
@@ -71,21 +68,7 @@
         </div>
       </div>
       <div ng-if="$ctrl.action === 'signin' || !$ctrl.action" class="section-container ng-animatable fade-in">
-        <div class="signin-container">
-          <div class="wand-container">
-            <img class="mage-wand" src="images/bluewand.png"/>
-          </div>
-          <local-signin strategy="$ctrl.localAuthenticationStrategy" signin-type="main" on-signup="$ctrl.localSignup()" on-signin="$ctrl.localSignin(user)"></local-signin>
-          <div ng-if="$ctrl.thirdPartyStrategies.length">
-            <div class="or-container">
-              <hr class="or-hr">
-              <div id="or">or</div>
-            </div>
-          </div>
-          <div ng-repeat="strategy in $ctrl.thirdPartyStrategies">
-            <oauth-signin strategy="strategy" strategy-type="signin"></oauth-signin>
-          </div>
-        </div>
+        <signin api="$ctrl.api" on-signin="$ctrl.onSignin(user, strategy)" on-signup="$ctrl.onSignup(strategy)"></signin>
       </div>
       <div ng-if="$ctrl.action === 'about'" class="about-container ng-animatable fade-in">
         <about></about>
