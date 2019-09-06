@@ -1,5 +1,3 @@
-import _ from 'underscore'
-
 class AuthenticationController {
 
   constructor(api, $location) {
