@@ -1,0 +1,39 @@
+.slide-left {
+  position:absolute;
+  left:0;
+  width: 100%;
+  z-index: 3;
+  overflow-y: auto;
+}
+.slide-left.ng-enter, .slide-left.ng-leave,
+.record.ng-anchor {
+  transition:0.3s linear all;
+}
+.slide-left.ng-enter {
+  transform:translateX(100%);
+}
+.slide-left.ng-enter.ng-enter-active, .slide-left.ng-leave {
+  transform:translateX(0%);
+}
+.slide-left.ng-leave.ng-leave-active {
+  transform:translateX(100%);
+}
+
+/* .slide-down {
+  opacity: 1;
+}
+.slide-down.ng-hide {
+  opacity: 0;
+}
+.slide-down.ng-enter, .slide-down.ng-leave {
+  transition:0.3s linear all;
+}
+.slide-down.ng-enter {
+  transform:translateY(100%);
+}
+.slide-down.ng-enter.ng-enter-active, .slide-down.ng-leave {
+  transform:translateY(0%);
+}
+.slide-down.ng-leave.ng-leave-active {
+  transform:translateY(100%);
+} */

@@ -1,17 +1,27 @@
-<h4>{{$ctrl.formDefinition.name}}</h4>
-
-<div ng-repeat="field in $ctrl.formDefinition.fields | filter:{archived: '!true'} | orderBy: 'id'">
-  <div ng-switch on="field.type">
-    <checkbox-edit ng-switch-when="checkbox" field="field"></checkbox-edit>
-    <date-edit ng-switch-when="date" field="field" form-field="$ctrl.form[field.name]"></date-edit>
-    <dropdown-edit ng-switch-when="dropdown" field="field"></dropdown-edit>
-    <email-edit ng-switch-when="email" field="field"></email-edit>
-    <geometry-edit ng-switch-when="geometry" field="field"></geometry-edit>
-    <multiselectdropdown-edit ng-switch-when="multiselectdropdown" field="field"></multiselectdropdown-edit>
-    <number-edit ng-switch-when="numberfield" field="field"></number-edit>
-    <password-edit ng-switch-when="password" field="field"></password-edit>
-    <radio-edit ng-switch-when="radio" field="field"></radio-edit>
-    <text-edit ng-switch-when="textfield" field="field"></text-edit>
-    <textarea-edit ng-switch-when="textarea" field="field"></textarea-edit>
+<div class="mdc-card observation-form-card">
+  <div class="observation-header-text bottom-gap">
+    {{$ctrl.formDefinition.name}}
   </div>
+
+  <div ng-repeat="field in $ctrl.formDefinition.fields | filter:{archived: '!true'} | orderBy: 'id'">
+    <div ng-switch on="field.type">
+      <checkbox-edit ng-switch-when="checkbox" field="field"></checkbox-edit>
+      <date-edit ng-switch-when="date" field="field" form-field="$ctrl.form[field.name]"></date-edit>
+      <dropdown-edit ng-switch-when="dropdown" field="field"></dropdown-edit>
+      <email-edit ng-switch-when="email" field="field"></email-edit>
+      <geometry-edit 
+        ng-switch-when="geometry" 
+        form="$ctrl.formDefinition" 
+        field="field" 
+        geometry-style="$ctrl.geometryStyle"
+        start-geometry-edit="$ctrl.startGeometryEdit(field)"></geometry-edit>
+      <multiselectdropdown-edit ng-switch-when="multiselectdropdown" field="field"></multiselectdropdown-edit>
+      <number-edit ng-switch-when="numberfield" field="field"></number-edit>
+      <password-edit ng-switch-when="password" field="field"></password-edit>
+      <radio-edit ng-switch-when="radio" field="field"></radio-edit>
+      <text-edit ng-switch-when="textfield" field="field"></text-edit> 
+      <textarea-edit ng-switch-when="textarea" field="field"></textarea-edit>
+    </div>
+  </div>
+  <span>* required</span>
 </div>

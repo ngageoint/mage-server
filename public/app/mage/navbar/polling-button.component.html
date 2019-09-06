@@ -1,0 +1,43 @@
+<div>
+  <li class="mdc-list-divider" role="separator" ng-if="$ctrl.expandMenu"></li>
+  <a ng-class="{'mdc-button': !$ctrl.drawer, 'top-app-bar-button': !$ctrl.drawer, 'mdc-list-item': $ctrl.drawer}"
+    ng-click="$ctrl.openPollingIntervalChooser()">
+    <i ng-if="pollingInterval === 0" class="material-icons">check_box_outline</i>
+    <i ng-if="pollingInterval !== 0" class="material-icons">check_box</i>
+    <span style="padding-left: 10px;" class="mdc-button__label">
+      Live Update ({{$ctrl.pollingInterval | polling}})
+    </span>
+    <i ng-if="!$ctrl.drawer" class="material-icons">arrow_drop_down</i>
+    <i ng-if="$ctrl.drawer && !$ctrl.expandMenu" class="material-icons">keyboard_arrow_down</i>
+    <i ng-if="$ctrl.drawer && $ctrl.expandMenu" class="material-icons">keyboard_arrow_up</i>
+  </a>
+  <div ng-class="{'mdc-menu-surface--anchor': !$ctrl.drawer}" ng-if="!$ctrl.drawer || $ctrl.expandMenu" class="ng-animatable slide-down">
+    <div ng-class="{'polling-menu': !$ctrl.drawer, 'mdc-menu-surface': !$ctrl.drawer}">
+      <h3 class="mdc-list-group__subheader">Data Refresh Interval</h3>
+      <ul class="polling-list mdc-list" role="radiogroup" aria-label="Refresh Interval">
+        <li ng-repeat="interval in $ctrl.pollingIntervals" 
+          class="mdc-list-item" role="radio"
+          aria-checked="{{$ctrl.pollingInterval == interval}}">
+          <span class="mdc-list-item__graphic mdc-menu__selection-group-icon">
+            <div class="mdc-radio">
+              <input class="mdc-radio__native-control"
+                    type="radio"
+                    id="{{($ctrl.drawer ? 'drawer-' : 'menu-') + 'polling-interval-' + interval}}"
+                    name="demo-list-radio-item-group"
+                    value="{{interval}}"
+                    ng-checked="{{$ctrl.pollingInterval === interval}}">
+              <div class="mdc-radio__background">
+                <div class="mdc-radio__outer-circle"></div>
+                <div class="mdc-radio__inner-circle"></div>
+              </div>
+            </div>
+          </span>
+          <label class="mdc-list-item__text" for="{{($ctrl.drawer ? 'drawer-' : 'menu-') + 'polling-interval-' + interval}}">
+            {{interval | polling}}
+          </label>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <li class="mdc-list-divider" role="separator" ng-if="$ctrl.expandMenu"></li>
+</div>

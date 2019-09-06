@@ -1,0 +1,119 @@
+.mddtp-button {
+  color: #1E88E5;
+}
+
+.mddtp-picker .mddtp-picker__header {
+  background-color: #1E88E5;
+}
+
+.mddtp-picker__body .mddtp-picker__viewHolder .mddtp-picker__grid span.mddtp-picker__cell--today {
+  color: #1E88E5;
+}
+
+.mddtp-picker__body .mddtp-picker__viewHolder .mddtp-picker__grid span.mddtp-picker__cell--selected, .mddtp-picker__body .mddtp-picker__viewHolder .mddtp-picker__grid .mddtp-picker__tr span.mddtp-picker__cell:hover {
+  background-color: #1E88E5;
+  color: white;
+}
+
+.mddtp-picker__years .mddtp-picker__li--current {
+  color: #1E88E5;
+}
+
+.mddtp-picker__selection span {
+  background-color: #1E88E5;
+}
+
+.container-element .mddtp-picker {
+  box-shadow: 0px 5px 5px -3px rgba(0, 0, 0, 0.2), 0px 8px 10px 1px rgba(0, 0, 0, 0.14), 0px 3px 14px 2px rgba(0, 0, 0, 0.12);
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif !important;
+  min-width: 280px;
+  position: relative;
+  top: unset;
+  left: unset;
+  -webkit-transform: unset;
+  transform: unset;
+  -webkit-transform-origin: unset;
+  -ms-transform-origin: unset;
+  transform-origin: unset;
+  display: table;
+  border-radius: 3px;
+  line-height: normal;
+  overflow: hidden;
+  z-index: 99999;
+}
+
+.container-element .mddtp-picker.zoomIn {
+  -webkit-animation-name: none;
+  animation-name: none;
+}
+
+.mddtp-picker__pickers {
+  display: flex;
+}
+
+@media(max-width:900px) {
+  .mddtp-picker__pickers {
+    flex-direction: column;
+  }
+
+  .mddtp-picker__dateHolder {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .mddtp-picker-datetime .mddtp-picker__circularHolder {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.mddtp-picker__pickers .mddtp-picker__landscape {
+  flex-direction: column;
+}
+
+.mddtp-picker .mddtp-picker__header-wrap, .mddtp-picker .mddtp-picker__body {
+  display: table-row;
+}
+
+.mddtp-picker__pickers .mddtp-picker__portrait {
+  flex-direction: column;
+}
+
+.mddtp-picker__dateHolder {
+  position: relative;
+}
+
+.mddtp-picker-datetime .mddtp-picker__header, .mddtp-picker-time .mddtp-picker__header {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: space-around;
+  padding: 16px 0;
+}
+
+#mddtp-datetime__timeHeader,
+#mddtp-datetime__dateHeader {
+  display: flex;
+}
+
+#mddtp-datetime__timeHeader .mddtp-picker__subtitle,
+#mddtp-datetime__dateHeader .mddtp-picker__subtitle {
+  margin-top: auto;
+  margin-bottom: 3px;
+  margin-right: 16px;
+  margin-left: 16px;
+}
+
+#mddtp-datetime__timeHeader .mddtp-picker__title,
+#mddtp-datetime__dateHeader .mddtp-picker__title {
+  margin-top: auto;
+  display: flex;
+}
+
+#mddtp-datetime__dateHeader .mddtp-picker__title > div:first-child {
+  margin-right: 8px;
+}
+
+#mddtp-datetime__years {
+  top: 60px;
+}

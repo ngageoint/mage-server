@@ -9,7 +9,8 @@ L.Control.MageFeature = L.Control.extend({
   onAdd: function () {
     var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
     this._link = L.DomUtil.create('a', '', container);
-    this._icon = L.DomUtil.create('i', 'fa fa-map-marker icon-mage', this._link);
+    this._icon = L.DomUtil.create('i', 'material-icons leaflet-mage-icon', this._link);
+    this._icon.innerHTML = 'add_location'
 
     this._link.href = '#';
     this._link.title = 'New Observation';
@@ -39,7 +40,8 @@ L.Control.MageUserLocation = L.Control.extend({
     var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
 
     this._locateLink = L.DomUtil.create('a', '', container);
-    this._locateIcon = L.DomUtil.create('i', 'fa fa-location-arrow icon-mage', this._locateLink);
+    this._locateIcon = L.DomUtil.create('i', 'material-icons leaflet-mage-icon', this._locateLink);
+    this._locateIcon.innerHTML = 'near_me'
     this._locateLink.href = '#';
     this._locateLink.title = 'Locate Me';
     this._locate = false;
@@ -52,7 +54,8 @@ L.Control.MageUserLocation = L.Control.extend({
       .on(this._locateLink, 'click', this._onLocateClick, this);
 
     this._broadcastLink = L.DomUtil.create('a', '', container);
-    this._broadcastIcon = L.DomUtil.create('i', 'icon-megaphone icon-mage', this._broadcastLink);
+    this._broadcastIcon = L.DomUtil.create('i', 'material-icons leaflet-mage-icon', this._broadcastLink);
+    this._broadcastIcon.innerHTML = 'my_location'
     this._broadcastLink.href = '#';
     this._broadcastLink.title = 'Report Location';
     this._broadcast = false;
@@ -73,16 +76,16 @@ L.Control.MageUserLocation = L.Control.extend({
     this.startLocate();
 
     L.DomUtil.addClass(this._broadcastLink, 'leaflet-control-inverse');
-    L.DomUtil.addClass(this._broadcastIcon, 'icon-mage-inverse');
-    L.DomUtil.removeClass(this._broadcastIcon, 'icon-mage');
+    L.DomUtil.addClass(this._broadcastIcon, 'leaflet-mage-icon-inverse');
+    L.DomUtil.removeClass(this._broadcastIcon, 'leaflet-mage-icon');
   },
 
   stopBroadcast: function() {
     if (!this._broadcast) return; // broadcast already off
 
     L.DomUtil.removeClass(this._broadcastLink, 'leaflet-control-inverse');
-    L.DomUtil.addClass(this._broadcastIcon, 'icon-mage');
-    L.DomUtil.removeClass(this._broadcastIcon, 'icon-mage-inverse');
+    L.DomUtil.addClass(this._broadcastIcon, 'leaflet-mage-icon');
+    L.DomUtil.removeClass(this._broadcastIcon, 'leaflet-mage-icon-inverse');
 
     this._broadcast = false;
   },
@@ -98,8 +101,8 @@ L.Control.MageUserLocation = L.Control.extend({
     });
 
     L.DomUtil.addClass(this._locateLink, 'leaflet-control-inverse');
-    L.DomUtil.addClass(this._locateIcon, 'icon-mage-inverse');
-    L.DomUtil.removeClass(this._locateIcon, 'icon-mage');
+    L.DomUtil.addClass(this._locateIcon, 'leaflet-mage-icon-inverse');
+    L.DomUtil.removeClass(this._locateIcon, 'leaflet-mage-icon');
   },
 
   stopLocate: function() {
@@ -115,8 +118,8 @@ L.Control.MageUserLocation = L.Control.extend({
     }
 
     L.DomUtil.removeClass(this._locateLink, 'leaflet-control-inverse');
-    L.DomUtil.addClass(this._locateIcon, 'icon-mage');
-    L.DomUtil.removeClass(this._locateIcon, 'icon-mage-inverse');
+    L.DomUtil.addClass(this._locateIcon, 'leaflet-mage-icon');
+    L.DomUtil.removeClass(this._locateIcon, 'leaflet-mage-icon-inverse');
 
     this.stopBroadcast();
   },
@@ -164,8 +167,9 @@ L.Control.MageListTools = L.Control.extend({
     var linkClass = this.options.enabled ? 'leaflet-control-inverse' : '';
     this._link = L.DomUtil.create('a', linkClass, container);
 
-    var iconClass = this.options.enabled ? 'fa fa-bars icon-mage-inverse' : 'fa fa-bars icon-mage';
+    var iconClass = this.options.enabled ? 'material-icons leaflet-mage-icon-inverse' : 'material-icons leaflet-mage-icon';
     this._icon = L.DomUtil.create('i', iconClass, this._link);
+    this._icon.innerHTML = 'menu'
 
     this._link.href = '#';
     this._link.title = 'Feed';
@@ -183,30 +187,30 @@ L.Control.MageListTools = L.Control.extend({
   },
 
   hideFeed: function(hide) {
-    var hidden = L.DomUtil.hasClass(this._icon, 'icon-mage');
+    var hidden = L.DomUtil.hasClass(this._icon, 'leaflet-mage-icon');
     if (hidden === hide) return;
 
     if (hidden) {
       L.DomUtil.addClass(this._link, 'leaflet-control-inverse');
-      L.DomUtil.addClass(this._icon, 'icon-mage-inverse');
-      L.DomUtil.removeClass(this._icon, 'icon-mage');
+      L.DomUtil.addClass(this._icon, 'leaflet-mage-icon-inverse');
+      L.DomUtil.removeClass(this._icon, 'leaflet-mage-icon');
     } else {
       L.DomUtil.removeClass(this._link, 'leaflet-control-inverse');
-      L.DomUtil.addClass(this._icon, 'icon-mage');
-      L.DomUtil.removeClass(this._icon, 'icon-mage-inverse');
+      L.DomUtil.addClass(this._icon, 'leaflet-mage-icon');
+      L.DomUtil.removeClass(this._icon, 'leaflet-mage-icon-inverse');
     }
   },
 
   _toggle: function () {
-    var on = L.DomUtil.hasClass(this._icon, 'icon-mage-inverse');
+    var on = L.DomUtil.hasClass(this._icon, 'leaflet-mage-icon-inverse');
     if (on) {
       L.DomUtil.removeClass(this._link, 'leaflet-control-inverse');
-      L.DomUtil.addClass(this._icon, 'icon-mage');
-      L.DomUtil.removeClass(this._icon, 'icon-mage-inverse');
+      L.DomUtil.addClass(this._icon, 'leaflet-mage-icon');
+      L.DomUtil.removeClass(this._icon, 'leaflet-mage-icon-inverse');
     } else {
       L.DomUtil.addClass(this._link, 'leaflet-control-inverse');
-      L.DomUtil.addClass(this._icon, 'icon-mage-inverse');
-      L.DomUtil.removeClass(this._icon, 'icon-mage');
+      L.DomUtil.addClass(this._icon, 'leaflet-mage-icon-inverse');
+      L.DomUtil.removeClass(this._icon, 'leaflet-mage-icon');
     }
 
     if (this.options.onToggle) {

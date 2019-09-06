@@ -2,6 +2,7 @@ var angular = require('angular');
 
 angular.module('mage')
   .directive('formDirective', require('./form.directive'))
+  .controller('DeleteObservationController', require('./delete-observation.controller'))
   .component('observationFormEdit', require('./edit.component'))
   .component('checkboxEdit', require('./checkbox.edit'))
   .component('dateEdit', require('./date.edit'))
@@ -13,4 +14,5 @@ angular.module('mage')
   .component('passwordEdit', require('./password.edit'))
   .component('radioEdit', require('./radio.edit'))
   .component('textEdit', require('./text.edit'))
-  .component('textareaEdit', require('./textarea.edit'));
+  .component('textareaEdit', require('./textarea.edit'))
+  .component('locationEdit', require('./location-edit.component'));

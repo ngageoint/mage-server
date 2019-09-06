@@ -1,30 +1,38 @@
-<div class="feed-card">
-  <div class="user-item feed-card-content">
-
-    <div>
-      <div class="pull-left right-gap" avatar-user="user" avatar-width="60" avatar-height="60"></div>
+<div class="user-card mdc-card__primary-action mdc-typography">
+  <div class="user-header" ng-click="viewUser()">
+    <div class="user-thumbnail">
+      <div avatar-user="user" avatar-width="40" avatar-height="40"></div>
     </div>
-
-    <div class="user-item-content">
-      <div class="observation-type">
-        <strong class="muted">{{user.displayName}}</strong>
+    <div class="user-header-content">
+      <div class="user-header-text">
+        <div>
+        {{user.displayName}}
+        </div>
       </div>
-  		<div class="observation-variant ellipsis muted" title="{{user.email}}">{{user.email}}</div>
+      <div class="user-subhead ellipsis">
+        <a ng-href="mailto:{{user.email}}">{{user.email}}</a>
+      </div>
+      <div class="user-subhead">
+        <a ng-href="tel:{{user.phones[0].number}}">{{user.phones[0].number}}</a>
+      </div>
     </div>
-
-    <div class="user-item-actions">
-      <div class="small muted">{{user.location.properties.timestamp | moment}}</div>
-      <div>
-        <a href="javascript:void(0)" class="small muted" ng-click="onUserLocationClick(user)">
-          {{user.location.geometry | geometry:5}}
-        </a>
-      </div>
-      <div>
-        <button ng-class="{active: followUserId == user.id}" class="btn btn-xs btn-primary top-gap-s" data-toggle="button" ng-click="followUser($event, user)">
-          <span ng-show="followUserId == user.id">Following...</span>
-          <span ng-hide="followUserId == user.id">Follow</span>
-        </button>
-      </div>
+    <div class="user-header-content-right">
+      <div class="user-time user-subhead">{{user.location.properties.timestamp | moment}}</div>
+      <div class="user-time user-subhead">{{user.location.geometry | geometry:5}}</div>
     </div>
   </div>
+  <div class="mdc-card__actions">
+    <div class="mdc-card__action-buttons">
+      <button class="mdc-button mdc-card__action mdc-card__action--button" ng-class="{'mdc-button--raised':followingUser.id == user.id}" ng-click="followUser($event, user)">
+        <span class="mdc-button__label" ng-show="followingUser.id == user.id">Following</span>
+        <span class="mdc-button__label" ng-hide="followingUser.id == user.id">Follow</span>
+      </button>
+    </div>
+    <div class="mdc-card__action-icons">
+      <button class="material-icons mdc-icon-button mdc-card__action mdc-card__action--icon" ng-click="onUserLocationClick(user)">
+        <i class="material-icons mdc-icon-button__icon">my_location</i>
+      </button>
+    </div>
+  </div>
+  <div class="mdc-list-divider"></div>
 </div>

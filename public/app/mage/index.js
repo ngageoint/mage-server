@@ -6,3 +6,6 @@ angular.module('mage')
   .directive('equals', require('./equals.directive'))
   .directive('newsFeed', require('./feed.directive'))
   .directive('leaflet', require('./leaflet.directive'));
+
+require('./navbar');
+require('./feed');

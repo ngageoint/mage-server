@@ -1,99 +1,86 @@
-<div class="modal-header">
-  <h3 class="modal-title"><i class="fa fa-filter"></i> Filter</h3>
-</div>
-
-<div class="modal-body">
-  <form>
-
-    <div class="form-group">
-      <label>Event</label>
-      <div class="row">
-        <div class="col-md-12">
-          <ui-select ng-model="filterEvent.selected" theme="bootstrap" ng-change="onEventChange()">
-            <ui-select-match placeholder="Select an event">{{$select.selected.name}}</ui-select-match>
-            <ui-select-choices repeat="event in events | orderBy: 'name' | filter: $select.search">
-              <div ng-bind-html="event.name | highlight: $select.search"></div>
-            </ui-select-choices>
-          </ui-select>
-         </div>
-       </div>
-     </div>
-
-     <div class="form-group">
-       <label>Teams</label>
-       <div class="row">
-         <div class="col-md-12">
-           <ui-select multiple ng-model="filterTeams.selected" theme="bootstrap">
-             <ui-select-match placeholder="No team filter set">{{$item.name}}</ui-select-match>
-             <ui-select-choices repeat="team in filterEvent.selected.teams | filter: $select.search">
-               <div ng-bind-html="team.name | highlight: $select.search"></div>
-             </ui-select-choices>
-           </ui-select>
+<div class="filter-panel mdc-dialog"
+role="alertdialog"
+aria-modal="true"
+aria-labelledby="my-dialog-title"
+aria-describedby="my-dialog-content">
+  <div class="mdc-dialog__container">
+    <div class="mdc-dialog__surface">
+      <div class="modal-header">
+          <h2 style="color: white;" class="mdc-dialog__title"><i class="fa fa-filter"></i> Filter</h2>
+      </div>
+      <div class="mdc-dialog__content" id="my-dialog-content">
+        <form>
+          <div class="top-gap">
+            <typeahead-select
+              options="$ctrl.events"
+              field-label="Events"
+              initial-value="$ctrl.filterEvent.selected"
+              display-property="name"
+              secondary-display-property="description"
+              id-property="id"
+              on-select="$ctrl.eventSelected(event)"
+              width="350px"/>
           </div>
-        </div>
-      </div>
+          <div class="top-gap">
+            <multiselect 
+              options="$ctrl.filterEvent.selected.teams"
+              field-label="Team"
+              display-property="name"
+              id-property="id"
+              on-select="$ctrl.teamsSelected(options)"/>
+          </div>
 
-      <div class="form-group">
-        <label>Time</label>
-        <select ng-model="intervalChoice" ng-options="intervalChoice as intervalChoice.label for intervalChoice in intervalChoices track by intervalChoice.filter" class="form-control"></select>
-      </div>
-
-      <div ng-show="intervalChoice.filter == 'custom'">
-        <div class="form-group">
-          <div class="row">
-            <div class="col-md-6">
-              <label>Start Date/Time</label>
-              <p class="input-group">
-                <input type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy HH:mm:ss" ng-model="startDate" is-open="startDatePopup.open" close-text="Close" />
-                <span class="input-group-btn">
-                  <button type="button" class="btn btn-default" ng-click="openStartDate($event)"><i class="fa fa-calendar"></i></button>
-                </span>
-              </p>
-            </div>
-            <div class="col-md-6">
-              <label class="control-label">&nbsp;</label>
-
-              <p class="input-group">
-                <button type="button" ng-click="localTime = !localTime" class="btn btn-default">
-                  <i class="fa fa-clock-o"></i>
-                  <span ng-show="localTime"> Local (GMT {{localOffset}})</span>
-                  <span ng-show="!localTime"> GMT (GMT +00:00)</span>
-                </button>
-              </p>
+          <div class="top-gap">
+            <div class="interval-select mdc-select mdc-select--outlined filter-dropdown">
+              <input type="hidden" name="enhanced-select">
+              <i class="mdc-select__dropdown-icon"></i>
+              <div class="mdc-select__selected-text">{{$ctrl.intervalChoice.label}}</div>
+              <div class="mdc-select__menu mdc-menu mdc-menu-surface filter-dropdown">
+                <ul class="mdc-list" >
+                  <li
+                    ng-repeat="intervalChoice in $ctrl.intervalChoices"
+                    ng-class="{'mdc-list-item--selected': $ctrl.intervalChoice.label === intervalChoice.label}"
+                    class="mdc-list-item"
+                    data-value="{{intervalChoice.label}}">
+                    {{intervalChoice.label}}
+                  </li>
+                </ul>
+              </div>
+              <div class="mdc-notched-outline">
+              <div class="mdc-notched-outline__leading"></div>
+              <div class="mdc-notched-outline__notch">
+                <label class="mdc-floating-label">Time</label>
+              </div>
+              <div class="mdc-notched-outline__trailing"></div>  
+              </div>
             </div>
           </div>
-        </div>
-        <div class="form-group">
-          <div class="row">
-            <div class="col-md-6">
-              <label>End Date/Time</label>
-              <p class="input-group">
-                <input type="text" class="form-control" uib-datepicker-popup="MM/dd/yyyy HH:mm:ss" ng-model="endDate" is-open="endDatePopup.open" close-text="Close" />
-                <span class="input-group-btn">
-                  <button type="button" class="btn btn-default" ng-click="openEndDate($event)"><i class="fa fa-calendar"></i></button>
-                </span>
-              </p>
+          <div ng-show="$ctrl.intervalChoice.filter === 'custom'">
+            <div class="top-gap">
+              <date-time field-name="Start Date/Time" date="$ctrl.startDate" local-time="$ctrl.localTime" on-date-picked="$ctrl.onStartDate(date, localTime)"></date-time>
             </div>
-            <div class="col-md-6">
-              <label class="control-label">&nbsp;</label>
-
-              <p class="input-group">
-                <button type="button" ng-click="localTime = !localTime" class="btn btn-default">
-                  <i class="fa fa-clock-o"></i>
-                  <span ng-show="localTime"> Local (GMT {{localOffset}})</span>
-                  <span ng-show="!localTime"> GMT (GMT +00:00)</span>
-                </button>
-              </p>
+            <div class="top-gap">
+              <date-time field-name="End Date/Time" date="$ctrl.endDate" local-time="$ctrl.localTime" on-date-picked="$ctrl.onEndDate(date, localTime)"></date-time>
             </div>
           </div>
-        </div>
+        </form>
       </div>
+
+      <footer class="mdc-dialog__actions">
+        <button type="button" 
+          class="mdc-button mdc-dialog__button" 
+          data-mdc-dialog-action="close">
+          <span class="mdc-button__label">Cancel</span>
+        </button>
+        <button type="button" 
+          class="mdc-button mdc-dialog__button set-filter-button" 
+          data-mdc-dialog-action="yes" 
+          ng-click="$ctrl.performFilter()"
+          tabindex="1">
+          <span class="mdc-button__label">Filter</span>
+        </button>
+      </footer>
     </div>
-
-  </form>
-</div>
-
-<div class="modal-footer ng-scope">
-  <button class="btn btn-default" ng-click="closeModal()">Cancel</button>
-  <button class="btn btn-primary" ng-click="performFilter()">Filter</button>
+  </div>
+  <div class="mdc-dialog__scrim"></div>
 </div>

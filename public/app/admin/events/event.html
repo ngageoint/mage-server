@@ -1,4 +1,8 @@
 <div class="admin">
+    <form-create-panel ng-show="formCreateOpen" 
+    open="formCreateOpen" 
+    on-form-create-close="onFormCreateClose(form)" 
+    event="event"></form-create-panel>
   <div admin-tab="'events'"></div>
 
   <div class="admin-main">
@@ -282,9 +286,7 @@
                 </div>
               </div>
             </div>
-
             <hr>
-
           <div class="row top-gap-l">
             <div class="col-md-12">
               <nav class="navbar navbar-default admin-dashboard-navbar">
@@ -328,8 +330,7 @@
                 </div>
 
                 <div class="well-item">
-                  <button class="btn btn-success pull-left right-gap" ng-click="addForm($event, event)"><i class="fa fa-plus"></i> New Form</button>
-                  <button class="btn btn-success" ng-click="importForm($event, event)"><i class="fa fa-upload"></i> Import Form</button>
+                  <button class="btn btn-success" ng-click="createForm($event, event)"><i class="fa fa-plus"></i> Create Form</button>
                 </div>
               </div>
             </div>

@@ -6,17 +6,32 @@ if (!Date.now) { Date.now = function() { return +(new Date); }; }
 
 angular
   .module('mage')
-  .controller('FilterController', require('./filter/filter'))
+  .component('filterPanel', require('./filter/filter'))
+  .component('exportPanel', require('./export/export'))
+  .component('eventFilter', require('./filter/event.filter.component'))
+  .component('dateTime', require('./datetime/datetime.component'))
+  .component('observationFormChooser', require('./observation/observation-form-chooser.component'))
   .controller('NavController', require('./mage/mage-nav.controller'))
   .controller('NotInEventController', require('./error/not.in.event.controller'))
   .controller('MageController', require('./mage/mage.controller'))
-  .controller('ExportController', require('./export/export'))
+  // .controller('ExportController', require('./export/export'))
   .controller('SetupController', require('./setup/setup.controller'))
   .controller('UserController', require('./user/user.controller'))
   .controller('AboutController', require('./about/about.controller'))
   .controller('DisclaimerController', require('./disclaimer/disclaimer.controller'))
   .directive('fileBrowser', require('./file-upload/file-browser.directive'))
   .directive('fileUpload', require('./file-upload/file-upload.directive'))
+  .directive('fileUploadGrid', require('./file-upload/file-upload-grid.directive'))
+  .animation('.slide-down', function() {
+    return {
+      enter: function(element, done) {
+        element.hide().slideDown();
+      },
+      leave: function(element, done) {
+        element.slideUp();
+      }
+    }
+  })
   .config(config)
   .run(run);
 
@@ -28,6 +43,7 @@ require('./authentication');
 require('./observation');
 require('./user');
 require('./admin');
+require('./material-components');
 
 config.$inject = ['$provide', '$httpProvider', '$routeProvider', '$animateProvider'];
 
@@ -245,6 +261,21 @@ function config($provide, $httpProvider, $routeProvider, $animateProvider) {
   $routeProvider.when('/admin/events/:eventId/forms/:formId', {
     template: require('./admin/events/event.edit.form.html'),
     controller: "AdminEventEditFormController",
+    resolve: resolveAdmin()
+  });
+  $routeProvider.when('/admin/events/:eventId/forms/:formId/fields', {
+    template: require('./admin/events/event.edit.form.fields.html'),
+    controller: "AdminEventEditFormFieldsController",
+    resolve: resolveAdmin()
+  });
+  $routeProvider.when('/admin/events/:eventId/forms/:formId/map', {
+    template: require('./admin/events/event.edit.form.map-symbology.html'),
+    controller: "AdminEventEditFormMapSymbologyController",
+    resolve: resolveAdmin()
+  });
+  $routeProvider.when('/admin/events/:eventId/forms/:formId/feed', {
+    template: require('./admin/events/event.edit.form.feed.html'),
+    controller: "AdminEventEditFormFeedController",
     resolve: resolveAdmin()
   });
 

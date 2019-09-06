@@ -1,4 +1,12 @@
-<div class="field form-group">
-  <label>{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required">*</span>
-  <textarea class="form-control" type="text" ng-model="$ctrl.field.value" value="{{$ctrl.field.value}}" ng-required="$ctrl.field.required"></textarea>
+<div class="field top-gap text-area-field">
+  <div class="mdc-text-field mdc-text-field--textarea text-area-field">
+    <textarea id="textarea" class="mdc-text-field__input" type="text" ng-model="$ctrl.field.value" value="{{$ctrl.field.value}}" ng-required="$ctrl.field.required"></textarea>
+    <div class="mdc-notched-outline">
+      <div class="mdc-notched-outline__leading"></div>
+      <div class="mdc-notched-outline__notch">
+        <label for="textarea" class="mdc-floating-label">{{$ctrl.field.title}}</label>
+      </div>
+      <div class="mdc-notched-outline__trailing"></div>
+    </div>
+  </div>
 </div>

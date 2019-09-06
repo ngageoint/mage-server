@@ -2,7 +2,7 @@
   <div class="col-md-12">
     <form name="account" ng-submit="$ctrl.signup(account)" method="post" autocomplete="off" novalidate>
 
-      <div class="form-group">
+      <div class="top-gap">
         <label class="control-label">Username</label>
         <div ng-class="{'has-error': account.$submitted && account.password.$invalid}">
           <input type="text" ng-model="$ctrl.user.username" autocapitalize="off" name="username" placeholder="i.e. jappleseed" class="form-control" required>
@@ -12,7 +12,7 @@
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="top-gap">
         <label class="control-label">Display Name</label>
         <div ng-class="{'has-error': account.$submitted && account.displayName.$invalid}">
           <input type="text" ng-model="$ctrl.user.displayName" autocapitalize="off" name="displayName" placeholder="Johnny Appleseed" class="form-control" required>
@@ -22,17 +22,17 @@
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="top-gap">
         <label class="control-label" for="type">Email</label>
         <input type="text" placeholder="johnny@appleseed.com" ng-model="$ctrl.user.email" autocapitalize="off" class="form-control">
       </div>
 
-      <div class="form-group">
+      <div class="top-gap">
         <label class="control-label" for="type">Phone</label>
         <input type="text" ng-model="$ctrl.user.phone" autocapitalize="off" class="form-control">
       </div>
 
-      <div class="form-group">
+      <div class="top-gap">
         <label class="control-label">Password</label>
         <div ng-class="{'has-error': account.$submitted && account.password.$invalid}">
           <input type="password" ng-model="$ctrl.user.password" ng-change="$ctrl.onPasswordChange()" name="password" placeholder="{{$ctrl.passwordPlaceholder}}" class="form-control" required>
@@ -42,7 +42,7 @@
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="top-gap">
         <label class="control-label">Re-type new</label>
         <div ng-class="{'has-error': account.$submitted && account.passwordconfirm.$invalid}">
           <input type="password" ng-model="$ctrl.user.passwordconfirm" name="passwordconfirm" placeholder="{{$ctrl.passwordPlaceholder}}" class="form-control" required>
@@ -53,7 +53,7 @@
         </div>
       </div>
 
-      <div class="form-group">
+      <div class="top-gap">
         <div><strong class="muted">Password Strength: <span class="text-{{$ctrl.passwordStrengthType}}">{{$ctrl.passwordStrength}}<span></strong></div>
         <uib-progressbar max="5" value="$ctrl.passwordStrengthScore" type="{{$ctrl.passwordStrengthType}}"></uib-progressbar>
       </div>

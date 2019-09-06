@@ -1,7 +1,8 @@
 const webpack = require('webpack'),
   CleanWebpackPlugin = require('clean-webpack-plugin'),
   MiniCssExtractPlugin = require("mini-css-extract-plugin"),
-  HtmlWebpackPlugin = require('html-webpack-plugin');
+  HtmlWebpackPlugin = require('html-webpack-plugin'),
+  postcssCustomProperties = require('postcss-custom-properties');
 
 module.exports = {
   context: __dirname,
@@ -14,16 +15,42 @@ module.exports = {
   },
   module: {
     rules: [{
-      test: /\.css$/,
+      test: /\.js$/,
+      use: {
+        loader: 'babel-loader',
+        options: {
+          presets: ['@babel/preset-env']
+        }
+      }
+    },{
+      test: /\.(css|scss)$/,
       use: [
         MiniCssExtractPlugin.loader,
-        'css-loader'
+        {
+          loader: 'css-loader'
+        },
+        {
+          loader: 'sass-loader',
+          options: {
+            includePaths: ['./css', './node_modules']
+          }
+        },
+        {
+          loader: 'postcss-loader',
+          options: {
+            plugins: () => [
+              postcssCustomProperties({
+                importFrom: ['./css/variables.css']
+              })
+            ]
+          }
+        }
       ]
     },{
       test: /\.(eot|svg|ttf|woff|woff2)$/,
       loader: 'file-loader?name=fonts/[name].[ext]'
     },{
-      test: /\.(png|jpg|ico|gif)$/,
+      test: /\.(png|jpg|ico|gif|svg)$/,
       loader: 'file-loader?name=images/[name].[ext]'
     },{
       test: /\.html$/, loader: 'raw-loader'

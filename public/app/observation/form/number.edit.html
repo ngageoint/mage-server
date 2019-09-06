@@ -1,10 +1,24 @@
-<form name="numberForm">
-  <div class="field form-group" ng-class="{'has-error': form.{{$ctrl.field.name}}.$invalid}">
-    <label>{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required">*</span>
-    <input class="form-control" type="number" ng-model="$ctrl.field.value" name="{{$ctrl.field.name}}" value="{{$ctrl.field.value}}" min="{{$ctrl.field.min}}" max="{{$ctrl.field.max}}" ng-required="$ctrl.field.required">
-    <div class="has-error" ng-messages="numberForm[$ctrl.field.name].$error" ng-if="numberForm[$ctrl.field.name].$invalid">
-      <p class="help-block" ng-message="min">min value is {{$ctrl.field.min}}</p>
-      <p class="help-block" ng-message="max">max value is {{$ctrl.field.max}}</p>
+<div class="field top-gap">
+  <div class="mdc-text-field mdc-text-field--outlined" style="width: 100%">
+    <input 
+      type="number" 
+      id="{{$ctrl.field.name}}" 
+      ng-model="$ctrl.field.value" 
+      ng-value="$ctrl.field.value" 
+      class="mdc-text-field__input" 
+      min="{{$ctrl.field.min}}" 
+      max="{{$ctrl.field.max}}" 
+      ng-required="$ctrl.field.required">
+    <div class="mdc-notched-outline">
+      <div class="mdc-notched-outline__leading"></div>
+      <div class="mdc-notched-outline__notch">
+        <label for="{{$ctrl.field.name}}" class="mdc-floating-label">{{$ctrl.field.title}}</label>
+      </div>
+      <div class="mdc-notched-outline__trailing"></div>
     </div>
   </div>
-</form>
+  <div class="mdc-text-field-helper-line">
+    <div class="mdc-text-field-helper-text">{{$ctrl.helperText}}</div>
+    <div class="mdc-text-field-helper-text mdc-text-field-helper-text--validation-msg">Invalid number</div>
+  </div>
+</div>

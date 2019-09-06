@@ -1,27 +1,53 @@
-<div class="row">
-  <div class="col-md-12">
-    <form class="form" method="post" autocomplete="off">
-      <div class="form-group" ng-class="{'has-error': status > 399}">
-        <input ng-model="$ctrl.username" class="form-control" name="username" placeholder="Username" autocomplete="username" type="text" autocapitalize="off"/>
+<form class="form" method="post" autocomplete="off">
+  <div class="top-gap" ng-class="{'has-error': $ctrl.status > 399}">
+    <div class="mdc-text-field mdc-text-field--outlined" style="width: 100%">
+      <input type="text" 
+        id="username" 
+        name="username" 
+        placeholder="Username" 
+        autocomplete="username" 
+        autocapitalize="off"
+        ng-model="$ctrl.username" 
+        value="{{$ctrl.username}}" 
+        class="mdc-text-field__input">
+      <div class="mdc-notched-outline">
+        <div class="mdc-notched-outline__leading"></div>
+        <div class="mdc-notched-outline__notch">
+          <label for="username" class="mdc-floating-label">Username</label>
+        </div>
+        <div class="mdc-notched-outline__trailing"></div>
       </div>
-
-      <div class="form-group" ng-class="{'has-error': status > 399}">
-        <input ng-model="$ctrl.password" class="form-control" name="password" placeholder="Password" autocomplete="password" type="password" autocapitalize="off"/>
-      </div>
-
-      <span>
-        <button class="btn btn-default pull-right" ng-click="$ctrl.signin()">Sign In</button>
-      </span>
-    </form>
-  </div>
-</div>
-
-<div class="top-gap-l" ng-if="$ctrl.signinType === 'main'">
-  <div class="row">
-    <div class="col-md-12">
-      <span class="pull-right"><p class="muted">Don't have a MAGE account?&nbsp&nbsp<a href="/#/signup">Create one here</a></p></span>
     </div>
   </div>
+
+  <div class="top-gap" ng-class="{'has-error': $ctrl.status > 399}">
+    <div class="mdc-text-field mdc-text-field--outlined" style="width: 100%">
+      <input type="password" 
+        id="password" 
+        name="password" 
+        placeholder="Password" 
+        autocomplete="password" 
+        autocapitalize="off"
+        ng-model="$ctrl.password" 
+        value="{{$ctrl.password}}" 
+        class="mdc-text-field__input">
+      <div class="mdc-notched-outline">
+        <div class="mdc-notched-outline__leading"></div>
+        <div class="mdc-notched-outline__notch">
+          <label for="password" class="mdc-floating-label">Password</label>
+        </div>
+        <div class="mdc-notched-outline__trailing"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-right">
+    <button class="top-gap mdc-button mdc-button--raised" ng-click="$ctrl.signin()">Sign In</button>
+  </div>
+</form>
+
+<div class="top-gap" ng-if="$ctrl.signinType === 'main'">
+  <span class="pull-right"><p class="muted">Don't have a MAGE account?&nbsp&nbsp<a href="/#/signup">Create one here</a></p></span>
 </div>
 
 <!-- Status message area -->

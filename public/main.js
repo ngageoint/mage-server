@@ -5,6 +5,7 @@ var angular = require('angular');
 require('jquery-file-download');
 require('jquery-minicolors');
 require('angular-minicolors');
+require('select2')
 require('./vendor/bootstrap/js/bootstrap.min.js');
 
 angular.module('mage', [
@@ -16,9 +17,6 @@ angular.module('mage', [
   require('angular-route'),
   require('angular-resource'),
   require('angular-messages'),
-  require('videogular'),
-  require('videogular-controls'),
-  require('videogular-overlay-play'),
   require('./app/auth/http-auth-interceptor')
 ]);
 
