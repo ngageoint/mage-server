@@ -9,6 +9,8 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * GeoServer plugin which creates OGC WMS/WFS endpoints from MAGE.
 * Sort observation fields in CSV export in form order.
 * Upgrade multer, file uploads are now configured per route.
+* Display for the feed can now be configured per form
+* Updated to use material design
 
 ##### Bug Fixes
 * Fix kml to geojson icon style.
