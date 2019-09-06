@@ -13,18 +13,13 @@ var TeamModel = mongoose.model('Team');
 
 describe("team read tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -40,7 +35,7 @@ describe("team read tests", function() {
       _id: teamId,
       name: 'Mock Team'
     });
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .withArgs({})
       .chain('populate').withArgs('userIds')
@@ -74,7 +69,7 @@ describe("team read tests", function() {
     var aclGuest= {};
     aclGuest['acl.' + userId.toString()] = 'GUEST';
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .withArgs({$or: [{ userIds: { $in: [userId] } }, aclOwner, aclManager, aclGuest]})
       .chain('populate').withArgs('userIds')

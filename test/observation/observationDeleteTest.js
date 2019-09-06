@@ -19,18 +19,13 @@ var observationModel = Observation.observationModel;
 
 describe("observation delete tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -41,7 +36,7 @@ describe("observation delete tests", function() {
   it("should update observation state to archived with UPDATE_EVENT role", function(done) {
     mockTokenWithPermission('UPDATE_EVENT');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -52,7 +47,7 @@ describe("observation delete tests", function() {
       acl: {}
     });
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 
@@ -75,12 +70,12 @@ describe("observation delete tests", function() {
       userId: mongoose.Types.ObjectId()
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
       .yields(null, mockObservation);
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('update')
       .yields(null, mockObservation);
 
@@ -103,7 +98,7 @@ describe("observation delete tests", function() {
   it("should update observation state to archived with acl update role", function(done) {
     mockTokenWithPermission('');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -115,7 +110,7 @@ describe("observation delete tests", function() {
     });
     mockEvent.acl[userId] = 'MANAGER';
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 
@@ -138,12 +133,12 @@ describe("observation delete tests", function() {
       userId: mongoose.Types.ObjectId()
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
       .yields(null, mockObservation);
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('update')
       .yields(null, mockObservation);
 
@@ -166,7 +161,7 @@ describe("observation delete tests", function() {
   it("should update observation state to archived if observation owner", function(done) {
     mockTokenWithPermission('');
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
@@ -177,7 +172,7 @@ describe("observation delete tests", function() {
       acl: {}
     });
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 
@@ -200,12 +195,12 @@ describe("observation delete tests", function() {
       userId: userId
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
       .yields(null, mockObservation);
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('update')
       .yields(null, mockObservation);
 
@@ -234,7 +229,7 @@ describe("observation delete tests", function() {
       collectionName: 'observations1',
       acl: {}
     });
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 
@@ -258,7 +253,7 @@ describe("observation delete tests", function() {
       userId: userId
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
       .yields(null, mockObservation);
@@ -286,7 +281,7 @@ describe("observation delete tests", function() {
       acl: {}
     });
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 
@@ -311,7 +306,7 @@ describe("observation delete tests", function() {
       userId: userId
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
       .yields(null, mockObservation);
@@ -340,15 +335,15 @@ describe("observation delete tests", function() {
       acl: {}
     });
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('populate')
       .yields(null, {
         name: 'Event 1',
@@ -378,12 +373,12 @@ describe("observation delete tests", function() {
       userId: userId
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
       .yields(null, mockObservation);
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('update')
       .yields(new Error("some mock error"), null);
 

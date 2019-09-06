@@ -72,7 +72,7 @@ function createGeoPackageLayer(id, layer) {
     name: layer.geopackage.originalname,
     contentType: layer.geopackage.mimetype,
     size: layer.geopackage.size,
-    relativePath: path.join(id.toString(), layer.geopackage.name)
+    relativePath: path.join(id.toString(), layer.geopackage.filename)
   };
 
   const targetPath = path.join(environment.layerBaseDirectory, layer.file.relativePath);

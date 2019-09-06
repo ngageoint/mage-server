@@ -21,29 +21,24 @@ var observationModel = Observation.observationModel;
 
 describe("attachment create tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   beforeEach(function() {
     var mockEvent = new EventModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
   });
 
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -62,11 +57,11 @@ describe("attachment create tests", function() {
     fs[tmp] = {};
     mockfs(fs);
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('populate')
       .yields(null, {
         name: 'Event 1',
@@ -94,12 +89,12 @@ describe("attachment create tests", function() {
       }
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
       .yields(null, mockObservation);
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('update')
       .yields(null, mockObservation);
 
@@ -125,11 +120,11 @@ describe("attachment create tests", function() {
     fs[tmp] = {};
     mockfs(fs);
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .yields(null, [{ name: 'Team 1' }]);
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('populate')
       .yields(null, {
         name: 'Event 1',
@@ -157,12 +152,12 @@ describe("attachment create tests", function() {
       }
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
       .yields(null, mockObservation);
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('update')
       .yields(null, mockObservation);
 

@@ -8,7 +8,8 @@ module.exports = function(app, security) {
     , api = require('../api')
     , environment = require('../environment/env')
     , layerXform = require('../transformers/layer')
-    , geopackage = require('../utilities/geopackage');
+    , geopackage = require('../utilities/geopackage')
+    , {default: upload} = require('../upload');
 
   const passport = security.authentication.passport;
   app.all('/api/layers*', passport.authenticate('bearer'));
@@ -35,14 +36,14 @@ module.exports = function(app, security) {
       return next();
     }
 
-    if (!req.files.geopackage) {
+    if (!req.file) {
       return res.send(400, 'cannot create layer "geopackage" file not specified');
     }
 
-    geopackage.validate(req.files.geopackage, (err, result) => {
+    geopackage.validate(req.file, (err, result) => {
       if (err) return res.status(400).send('cannot create layer, geopackage is not valid');
 
-      req.newLayer.geopackage = req.files.geopackage;
+      req.newLayer.geopackage = req.file;
       req.newLayer.tables = result.metadata.tables;
       next(err);
     });
@@ -237,6 +238,7 @@ module.exports = function(app, security) {
   app.post(
     '/api/layers',
     access.authorize('CREATE_LAYER'),
+    upload.single('geopackage'),
     validateLayerParams,
     validateGeopackage,
     function(req, res, next) {

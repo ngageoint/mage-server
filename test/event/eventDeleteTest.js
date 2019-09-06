@@ -23,18 +23,13 @@ var UserModel = mongoose.model('User');
 
 describe("event delete tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -51,7 +46,7 @@ describe("event delete tests", function() {
       name: 'Mock Event',
       collectionName: 'observations1'
     });
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .twice()
       .onFirstCall()
@@ -59,21 +54,21 @@ describe("event delete tests", function() {
       .onSecondCall()
       .yields(null, null);
 
-    sandbox.mock(EventModel.collection)
+    sinon.mock(EventModel.collection)
       .expects('remove')
       .yields(null);
 
-    mongoose.connection.db = sandbox.stub();
+    mongoose.connection.db = sinon.stub();
     mongoose.connection.db.dropCollection = function() {};
-    sandbox.mock(mongoose.connection.db)
+    sinon.mock(mongoose.connection.db)
       .expects('dropCollection')
       .yields(null);
 
-    sandbox.mock(IconModel)
+    sinon.mock(IconModel)
       .expects('findOne')
       .yields(null);
 
-    sandbox.mock(IconModel)
+    sinon.mock(IconModel)
       .expects('remove')
       .yields(null);
 
@@ -84,7 +79,7 @@ describe("event delete tests", function() {
       teamEventId: 1
     });
 
-    var removeEventsFromUserExpectation = sandbox.mock(UserModel)
+    var removeEventsFromUserExpectation = sinon.mock(UserModel)
       .expects('update')
       .withArgs({}, { $pull: { recentEventIds: eventId } }, { multi: true })
       .yields(null);
@@ -93,18 +88,18 @@ describe("event delete tests", function() {
       '/var/lib/mage': {}
     });
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .chain('populate')
       .chain('exec')
       .yields(null, [mockTeam]);
 
-    var removeTeamsFromEventExpectation = sandbox.mock(EventModel)
+    var removeTeamsFromEventExpectation = sinon.mock(EventModel)
       .expects('update')
       .withArgs({}, { $pull: { teamIds: teamId } })
       .yields(null, [mockTeam]);
 
-    var removeTeamExpectation = sandbox.mock(TeamModel.collection)
+    var removeTeamExpectation = sinon.mock(TeamModel.collection)
       .expects('remove')
       .yields(null);
 
@@ -135,7 +130,7 @@ describe("event delete tests", function() {
     });
     mockEvent.acl[userId] = 'OWNER';
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .twice()
       .onFirstCall()
@@ -143,21 +138,21 @@ describe("event delete tests", function() {
       .onSecondCall()
       .yields(null, null);
 
-    sandbox.mock(EventModel.collection)
+    sinon.mock(EventModel.collection)
       .expects('remove')
       .yields(null);
 
-    mongoose.connection.db = sandbox.stub();
+    mongoose.connection.db = sinon.stub();
     mongoose.connection.db.dropCollection = function() {};
-    sandbox.mock(mongoose.connection.db)
+    sinon.mock(mongoose.connection.db)
       .expects('dropCollection')
       .yields(null);
 
-    sandbox.mock(IconModel)
+    sinon.mock(IconModel)
       .expects('findOne')
       .yields(null);
 
-    sandbox.mock(IconModel)
+    sinon.mock(IconModel)
       .expects('remove')
       .yields(null);
 
@@ -168,7 +163,7 @@ describe("event delete tests", function() {
       teamEventId: 1
     });
 
-    var removeEventsFromUserExpectation = sandbox.mock(UserModel)
+    var removeEventsFromUserExpectation = sinon.mock(UserModel)
       .expects('update')
       .withArgs({}, { $pull: { recentEventIds: eventId } }, { multi: true })
       .yields(null);
@@ -177,18 +172,18 @@ describe("event delete tests", function() {
       '/var/lib/mage': {}
     });
 
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('find')
       .chain('populate')
       .chain('exec')
       .yields(null, [mockTeam]);
 
-    var removeTeamsFromEventExpectation = sandbox.mock(EventModel)
+    var removeTeamsFromEventExpectation = sinon.mock(EventModel)
       .expects('update')
       .withArgs({}, { $pull: { teamIds: teamId } })
       .yields(null, [mockTeam]);
 
-    var removeTeamExpectation = sandbox.mock(TeamModel.collection)
+    var removeTeamExpectation = sinon.mock(TeamModel.collection)
       .expects('remove')
       .yields(null);
 
@@ -220,7 +215,7 @@ describe("event delete tests", function() {
         userId: userId
       }]
     });
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
 

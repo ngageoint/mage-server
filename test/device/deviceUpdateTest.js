@@ -14,18 +14,13 @@ var DeviceModel = mongoose.model('Device');
 
 describe("device update tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate')
@@ -37,7 +32,7 @@ describe("device update tests", function() {
     mockTokenWithPermission('UPDATE_DEVICE');
 
     var userId = mongoose.Types.ObjectId();
-    sandbox.mock(DeviceModel)
+    sinon.mock(DeviceModel)
       .expects('findByIdAndUpdate')
       .chain('exec')
       .resolves({
@@ -72,7 +67,7 @@ describe("device update tests", function() {
     mockTokenWithPermission('UPDATE_DEVICE');
 
     var userId = mongoose.Types.ObjectId();
-    sandbox.mock(DeviceModel)
+    sinon.mock(DeviceModel)
       .expects('findByIdAndUpdate')
       .withArgs('123', {})
       .chain('exec')
@@ -105,19 +100,19 @@ describe("device update tests", function() {
     var userId = mongoose.Types.ObjectId();
 
     var deviceId = mongoose.Types.ObjectId();
-    sandbox.mock(TokenModel.collection)
+    sinon.mock(TokenModel.collection)
       .expects('remove')
       .withArgs({ deviceId: deviceId})
       .yields(null);
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('findById')
       .withArgs(userId)
       .chain('populate')
       .chain('exec')
       .yields(null, {});
 
-    sandbox.mock(DeviceModel.collection)
+    sinon.mock(DeviceModel.collection)
       .expects('findAndModify')
       .yields(null, {
         value: {

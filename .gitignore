@@ -4,7 +4,9 @@ node_modules
 .vscode
 public/.tmp
 public/dist/*
+.test_run
 coverage
+.test_run
 npm-debug.log
 scratch
 docker/database
