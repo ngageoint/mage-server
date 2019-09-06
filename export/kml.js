@@ -72,10 +72,9 @@ Kml.prototype.export = function(streamable) {
 Kml.prototype.streamObservations = function(stream, archive, done) {
   var self = this;
 
-  if (!self._filter.exportObservations) return done(null);
+  if (!self._filter.exportObservations) return done();
 
-  self._filter.states = ['active'];
-  new api.Observation(self._event).getAll({filter: self._filter}, function(err, observations) {
+  self.requestObservations(self._filter, function(err, observations) {
     Icon.getAll({eventId: self._event._id}, function(err, icons) {
       stream.write(writer.generateObservationStyles(self._event, icons));
       stream.write(writer.generateKMLFolderStart(self._event.name, false));

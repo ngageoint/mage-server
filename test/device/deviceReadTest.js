@@ -13,18 +13,13 @@ var DeviceModel = mongoose.model('Device');
 
 describe("device read tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate')
@@ -35,7 +30,7 @@ describe("device read tests", function() {
   it("should get devices", function(done) {
     mockTokenWithPermission('READ_DEVICE');
 
-    sandbox.mock(DeviceModel)
+    sinon.mock(DeviceModel)
       .expects('find')
       .chain('exec')
       .resolves([{
@@ -65,12 +60,12 @@ describe("device read tests", function() {
     },{
       uid: '456'
     }];
-    sandbox.mock(DeviceModel)
+    sinon.mock(DeviceModel)
       .expects('find')
       .chain('exec')
       .resolves(mockDevices);
 
-    sandbox.mock(DeviceModel)
+    sinon.mock(DeviceModel)
       .expects('populate')
       .withArgs(mockDevices, 'userId')
       .yields(null, [{
@@ -98,7 +93,7 @@ describe("device read tests", function() {
   it("should get registered devices", function(done) {
     mockTokenWithPermission('READ_DEVICE');
 
-    sandbox.mock(DeviceModel)
+    sinon.mock(DeviceModel)
       .expects('find')
       .withArgs({ registered: true })
       .chain('exec')
@@ -125,7 +120,7 @@ describe("device read tests", function() {
   it("should get unregistered devices", function(done) {
     mockTokenWithPermission('READ_DEVICE');
 
-    sandbox.mock(DeviceModel)
+    sinon.mock(DeviceModel)
       .expects('find')
       .withArgs({ registered: false })
       .chain('exec')
@@ -152,7 +147,7 @@ describe("device read tests", function() {
   it("should get device by id", function(done) {
     mockTokenWithPermission('READ_DEVICE');
 
-    sandbox.mock(DeviceModel)
+    sinon.mock(DeviceModel)
       .expects('findById')
       .chain('exec')
       .resolves({
@@ -177,7 +172,7 @@ describe("device read tests", function() {
   it("should count devices", function(done) {
     mockTokenWithPermission('READ_DEVICE');
 
-    sandbox.mock(DeviceModel)
+    sinon.mock(DeviceModel)
       .expects('count')
       .chain('exec')
       .resolves(2);

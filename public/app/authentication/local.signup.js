@@ -51,8 +51,7 @@ function LocalSignupController($scope, UserService) {
       email: this.user.email,
       phone: this.user.phone,
       password: this.user.password,
-      passwordconfirm: this.user.passwordconfirm,
-      avatar: this.user.avatar
+      passwordconfirm: this.user.passwordconfirm
     };
 
     // TODO throw in progress
@@ -98,29 +97,4 @@ function LocalSignupController($scope, UserService) {
     this.statusLevel = statusLevel;
     this.showStatus = true;
   };
-
-  this.onAvatar = function(event) {
-    var avatar = event.avatar;
-
-    this.user.avatar = avatar;
-    if (!avatar) {
-      this.user.avatarData = null;
-      return;
-    }
-
-    var self = this;
-    if (window.FileReader) {
-      var reader = new FileReader();
-      reader.onload = (function() {
-        return function(e) {
-          $scope.$apply(function() {
-            self.user.avatarData = e.target.result;
-          });
-        };
-      })(avatar);
-
-      reader.readAsDataURL(avatar);
-    }
-  };
-
 }

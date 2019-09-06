@@ -16,11 +16,6 @@ var observationModel = Observation.observationModel;
 
 describe("observation important tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   beforeEach(function() {
 
     var mockEvent = new EventModel({
@@ -55,18 +50,18 @@ describe("observation important tests", function() {
       acl: {}
     });
 
-    sandbox.mock(EventModel)
+    sinon.mock(EventModel)
       .expects('findById')
       .yields(null, mockEvent);
   });
 
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermissions(permissions) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -100,12 +95,12 @@ describe("observation important tests", function() {
       }
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
       .yields(null, mockObservation);
 
-    var observationMock = sandbox.mock(ObservationModel)
+    var observationMock = sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .withArgs(observationId, sinon.match( { 'important': sinon.match({ userId: userId }) }), sinon.match.any)
       .yields(null, mockObservation);
@@ -141,23 +136,7 @@ describe("observation important tests", function() {
     });
 
     var observationId = mongoose.Types.ObjectId();
-    var mockObservation = new ObservationModel({
-      _id: observationId,
-      type: 'Feature',
-      geometry: {
-        type: "Point",
-        coordinates: [0, 0]
-      },
-      properties: {
-        timestamp: '2016-01-01T00:00:00'
-      },
-      important: {
-        userId: userId,
-        description: 'test'
-      }
-    });
-
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
       .yields(null, null);
@@ -183,7 +162,7 @@ describe("observation important tests", function() {
     });
 
     var observationId = mongoose.Types.ObjectId();
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
       .yields(null, {});
@@ -222,12 +201,12 @@ describe("observation important tests", function() {
       favoriteUserIds: []
     });
 
-    sandbox.mock(ObservationModel)
+    sinon.mock(ObservationModel)
       .expects('findById')
       .withArgs(observationId.toString())
       .yields(null, mockObservation);
 
-    var observationMock = sandbox.mock(ObservationModel)
+    var observationMock = sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .withArgs(observationId, sinon.match( { '$unset': {important: 1} } ), sinon.match.any)
       .yields(null, mockObservation);

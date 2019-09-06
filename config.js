@@ -14,6 +14,20 @@ module.exports = {
       "local": {
         "passwordMinLength": 14
       }
+      // ldap: {
+      //   title: "LDAP",
+      //   type: "ldap",
+      //   url: '',
+      //   baseDN: '',
+      //   username: '',
+      //   password: '',
+      //   ldapUsernameField: '',
+      //   ldapDisplayNameField: '',
+      //   ldapEmailField: '',
+      //   textColor: "#000000",
+      //   buttonColor: "#FFFFFF",
+      //   icon: ""
+      // }
       // "google": {
       //   "url": " ",
       //   "callbackURL": " ",

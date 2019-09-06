@@ -16,18 +16,13 @@ require('sinon-mongoose');
 
 describe("user read tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -38,7 +33,7 @@ describe("user read tests", function() {
   it('should count users', function(done) {
     mockTokenWithPermission('READ_USER');
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('count')
       .yields(null, 5);
 
@@ -65,7 +60,7 @@ describe("user read tests", function() {
       username: 'test2'
     }];
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('find')
       .chain('exec')
       .yields(null, mockUsers);
@@ -89,7 +84,7 @@ describe("user read tests", function() {
   it('should get all active users', function(done) {
     mockTokenWithPermission('READ_USER');
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('find')
       .withArgs({ active: true })
       .chain('exec')
@@ -113,7 +108,7 @@ describe("user read tests", function() {
   it('should get all inactive users', function(done) {
     mockTokenWithPermission('READ_USER');
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('find')
       .withArgs({ active: false })
       .chain('exec')
@@ -136,7 +131,7 @@ describe("user read tests", function() {
   it('should get all users and populate role', function(done) {
     mockTokenWithPermission('READ_USER');
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('find')
       .chain('populate')
       .withArgs([{ path: "roleId" }])
@@ -163,7 +158,7 @@ describe("user read tests", function() {
 
     var id = mongoose.Types.ObjectId();
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('findById')
       .chain('exec')
       .yields(null, new UserModel({
@@ -221,7 +216,7 @@ describe("user read tests", function() {
       }
     });
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('findById')
       .withArgs(id.toString())
       .chain('populate')
@@ -254,7 +249,7 @@ describe("user read tests", function() {
       }
     });
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('findById')
       .withArgs(id.toString())
       .chain('populate')
@@ -287,7 +282,7 @@ describe("user read tests", function() {
       }
     });
 
-    sandbox.mock(UserModel)
+    sinon.mock(UserModel)
       .expects('findById')
       .withArgs(id.toString())
       .chain('populate')

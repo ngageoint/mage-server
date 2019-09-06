@@ -12,18 +12,13 @@ var TeamModel = mongoose.model('Team');
 
 describe("team create tests", function() {
 
-  var sandbox;
-  before(function() {
-    sandbox = sinon.sandbox.create();
-  });
-
   afterEach(function() {
-    sandbox.restore();
+    sinon.restore();
   });
 
   var userId = mongoose.Types.ObjectId();
   function mockTokenWithPermission(permission) {
-    sandbox.mock(TokenModel)
+    sinon.mock(TokenModel)
       .expects('findOne')
       .withArgs({token: "12345"})
       .chain('populate', 'userId')
@@ -44,7 +39,7 @@ describe("team create tests", function() {
 
     var acl = {};
     acl[userId.toString()] = 'OWNER';
-    sandbox.mock(TeamModel)
+    sinon.mock(TeamModel)
       .expects('create')
       .withArgs(sinon.match.has('acl', acl))
       .yields(null, mockTeam);

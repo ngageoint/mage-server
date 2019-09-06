@@ -46,12 +46,13 @@ module.exports = function(app, passport, provisioning) {
 
         if (!user) {
           log.warn('Failed login attempt: User with username ' + username + ' not found');
-          return done(null, false, {message: 'Please check your username and password and try again.'});
+          return done(null, false, { message: 'Please check your username and password and try again.' });
         }
 
         if (!user.active) {
           log.warn('Failed user login attempt: User ' + user.username + ' is not active');
-          return done(null, false, {message: 'Please check your username and password and try again.'});
+          return done(null, false, { message: 'User account is not approved, please contact your MAGE administrator to approve your account.' });
+
         }
 
         if (!user.enabled) {

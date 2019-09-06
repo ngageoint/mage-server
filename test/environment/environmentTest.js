@@ -1,7 +1,7 @@
 const
-expect = require('chai').expect,
-path = require('path'),
-proxyquire = require('proxyquire').noPreserveCache();
+  expect = require('chai').expect,
+  path = require('path'),
+  proxyquire = require('proxyquire').noPreserveCache();
 
 describe("environment", function() {
 
@@ -52,7 +52,7 @@ describe("environment", function() {
   });
 
   describe("in default runtime", function() {
-    
+
     it('loads values from env vars', function() {
 
       Object.assign(process.env, {
@@ -164,7 +164,7 @@ describe("environment", function() {
   });
 
   describe("in cloud foundry", function() {
-    
+
     it("loads values from vcap env vars", function() {
 
       process.env.PORT = '2424';
