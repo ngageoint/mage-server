@@ -2,10 +2,10 @@ class MageInfoController {
 
   constructor() {
     var backgrounds = [
-      'olympic-park-bg',
-      'burkina-faso-bg',
-      'philadelphia-bg',
-      'rio-olympics-bg'
+      'mage-1-bg',
+      'mage-2-bg',
+      'mage-3-bg',
+      'mage-4-bg'
     ];
 
     this.backgroundClass = backgrounds[Math.floor(Math.random() * 4)];

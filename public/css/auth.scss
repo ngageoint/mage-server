@@ -1,11 +1,11 @@
 $bg-mask-color: rgba(16, 69, 130, .5);
 $primary-dark: #1565C0;
 $password-strengths: ('danger': #d9534f, 'warning': #f0ad4e, 'info': #5bc0de, 'primary': #1E88E5, 'success': #5cb85c);
-$background-images: 'olympic-park', 'burkina-faso', 'philadelphia', 'rio-olympics';
+$background-images: '1', '2', '3', '4';
 $small-screen-breakpoint: 1025px;
 
 @each $image in $background-images {
-  .#{$image}-bg {
+  .mage-#{$image}-bg {
     background-image: url('../img/#{$image}.jpg');
   }
 }
