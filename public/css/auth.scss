@@ -43,8 +43,14 @@ $small-screen-breakpoint: 1025px;
   background-color: $bg-mask-color;
 }
 
-.mage-info-inner {
+mage-info {
   width: 80%;
+}
+
+authentication {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .authentication-info-container {
@@ -172,6 +178,7 @@ $small-screen-breakpoint: 1025px;
   width: 75%;
   min-width: 285px;
   padding-bottom: 16px;
+  margin: auto;
 }
 
 .about-container {
@@ -183,7 +190,8 @@ $small-screen-breakpoint: 1025px;
 
 .signup-container, 
 signin {
-  width: 285px;
+  min-width: 285px;
+  width: 75%;
   margin: auto;
   text-align: left;
 }

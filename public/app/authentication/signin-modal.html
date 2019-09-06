@@ -3,16 +3,6 @@
     <h3 class="modal-title">Log in to continue to MAGE</h3>
   </div>
   <div class="modal-body">
-    <div ng-if="action == 'signin'" class="ng-animatable fade-in">
-      <signin api="api" on-signin="onSignin(user)" hide-signup="hideSignup" ></signin>
-    </div>
-    <div ng-if="action == 'device-id'" class="ng-animatable fade-in">
-      <authorize user="user" on-authorized="onAuthenticate(device)" on-cancel="returnToSignin()"></authorize>
-    </div>
-    <div ng-if="action == 'disclaimer'" class="ng-animatable fade-in">
-      <disclaimer disclaimer="api.disclaimer" 
-        on-accept="acceptDisclaimer()" 
-        on-cancel="returnToSignin()"></disclaimer>
-    </div>
+    <authentication api="api" hide-signup="hideSignup" on-success="onSuccess()" on-failure="logout()"></authentication>
   </div>
 </form>

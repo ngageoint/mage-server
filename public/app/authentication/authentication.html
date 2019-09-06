@@ -1,89 +1,10 @@
 <div class="outer-container">
 <div class="authentication-container">
   <div class="mage-info-container">
-    <div class="sliding-bg" ng-class="$ctrl.backgroundClass"></div>
-    <div class="mage-info-inner">
-      <div class="mage-info-title-container">
-        <div class="mage-info-title" ng-click="$ctrl.showAbout()">MAGE</div>
-        <div class="mage-info-subtitle">Mobile Awareness GEOINT Environment</div>
-      </div>
-      <div class="mage-feature-list">
-        <div class="mage-info-feature">
-        <div class="mage-info-feature-icon">
-          <i class="material-icons-outlined">photo_camera</i>
-        </div>
-        <div class="mage-info-feature-description">
-          <div class="mage-info-feature-title">Share what you see</div>
-          <div class="mage-info-feature-subtitle">Attach photos, videos, and voice to your observations from the field</div>
-        </div>
-      </div>
-      <div class="mage-info-feature">
-        <div class="mage-info-feature-icon">
-          <i class="material-icons-outlined">place</i>
-        </div>
-        <div class="mage-info-feature-description">
-          <div class="mage-info-feature-title">Location, location, location</div>
-          <div class="mage-info-feature-subtitle">See your obserations and your team's locations on the map</div>
-        </div>
-      </div>
-      <div class="mage-info-feature">
-        <div class="mage-info-feature-icon">
-          <i class="material-icons-outlined">signal_cellular_alt</i>
-        </div>
-        <div class="mage-info-feature-description">
-          <div class="mage-info-feature-title">No connection, no problem</div>
-          <div class="mage-info-feature-subtitle">Keep collecting observations even when you have no service</div>
-        </div>
-      </div>
-    </div>
-    </div>
+    <mage-info></mage-info>
   </div>
   <div class="authentication-info-container">
-      <div ng-if="$ctrl.action === 'disclaimer'" class="disclaimer-info-container ng-animatable fade-in">
-        <disclaimer disclaimer="$ctrl.api.disclaimer" 
-          on-accept="$ctrl.acceptDisclaimer()" 
-          on-cancel="$ctrl.returnToSignin()"></disclaimer>
-      </div>
-      <div ng-if="$ctrl.action === 'device-id'" class="device-id-container ng-animatable fade-in">
-        <authorize user="$ctrl.user" on-authorized="$ctrl.authorized(device)" on-cancel="$ctrl.returnToSignin()"></authorize>
-      </div>
-      <div ng-if="$ctrl.action === 'signup'" class="section-container ng-animatable fade-in">
-        <div class="signup-container">
-          <div class="wand-container">
-            <img class="mage-wand" src="images/bluewand.png"/>
-          </div>
-          <local-signup strategy="$ctrl.localAuthenticationStrategy" on-cancel="$ctrl.returnToSignin()" on-success="$ctrl.showSignupSuccess()"></local-signup>
-        </div>
-      </div>
-      <div ng-if="$ctrl.action === 'signup-confirm'" class="section-container ng-animatable fade-in">
-        <div class="signup-container">
-          <div class="wand-container">
-            <img class="mage-wand" src="images/bluewand.png"/>
-          </div>
-          <p>Thank you for signing up!</p>
-          <p>An administrator will need to approve your account before you can login.</p>
-          <div class="auth-button-container">
-            <button class="top-gap mdc-button mdc-button--raised return-to-login-button" ng-click="$ctrl.returnToSignin()">Return to Login</button>
-          </div>
-        </div>
-      </div>
-      <div ng-if="$ctrl.action === 'signin' || !$ctrl.action" class="section-container ng-animatable fade-in">
-        <signin api="$ctrl.api" on-signin="$ctrl.onSignin(user, strategy)" on-signup="$ctrl.onSignup(strategy)"></signin>
-      </div>
-      <div ng-if="$ctrl.action === 'about'" class="about-container ng-animatable fade-in">
-        <about></about>
-        <div class="auth-button-container">
-          <button class="top-gap mdc-button mdc-button--raised return-to-login-button" ng-click="$ctrl.returnToSignin()">Return to Login</button>
-        </div>
-      </div>
-      <div class="app-store-container" ng-if="$ctrl.action === 'signin' || !$ctrl.action">
-        <p>iOS or Android user? Check out our mobile app</p>
-        <div class="app-store-badges">
-          <a class="app-store-badge" href="https://itunes.apple.com/us/app/m.a.g.e./id1032815042?mt=8"><img src="images/ios_app_store_black.svg" height="49"></img></a>
-          <a class="app-store-badge" href="https://play.google.com/store/apps/details?id=mil.nga.giat.mage&hl=en"><img src="images/google-play-badge.png" height="49"></img></a>
-        </div>
-        <a class="about-link" href="javascript:void(0)" ng-click="$ctrl.showAbout()">About MAGE v{{$ctrl.api.version.major}}.{{$ctrl.api.version.minor}}.{{$ctrl.api.version.micro}}</a>
-      </div>
+    <authentication api="$ctrl.api" on-success="$ctrl.onSuccess()"></authentication>
   </div>
 </div>
 </div>

@@ -368,50 +368,19 @@ function run($rootScope, $route, $uibModal, $templateCache, UserService, $locati
             $uibModalInstance.scope = $scope;
             $scope.api = api;
             $scope.hideSignup = true;
-            $scope.action = 'signin';
-            function localStrategyFilter(strategy, name) {
-              return name === 'local';
-            }
 
-            $scope.thirdPartyStrategies = _.map(_.omit(api.authenticationStrategies, localStrategyFilter), function(strategy, name) {
-              strategy.name = name;
-              return strategy;
-            });
-
-            $scope.localAuthenticationStrategy = api.authenticationStrategies.local;
-
-            $scope.onAuthenticate = function() {
-              var disclaimer = $scope.api.disclaimer || {}
-              if (!disclaimer.show) {
-                authService.loginConfirmed()
-                UserService.acceptDisclaimer();
-                $location.path('/map');
-                $rootScope.loginDialogPresented = false;
-                successful = true;
-                $uibModalInstance.close($scope);
-                return;
-              }
-              $scope.action = 'disclaimer';
-            };
-
-            $scope.acceptDisclaimer = function() {
+            $scope.onSuccess = function() {
               authService.loginConfirmed()
-              UserService.acceptDisclaimer();
-              $location.path('/map');
               $rootScope.loginDialogPresented = false;
               successful = true;
               $uibModalInstance.close($scope);
             }
 
-            $scope.onSignin = function(user) {
-              $scope.user = user;
-              $scope.action = 'device-id';
-            };
-
-            $scope.cancel = function () {
+            $scope.logout = function() {
               $rootScope.loginDialogPresented = false;
-              $uibModalInstance.dismiss('cancel');
-            };
+              successful = true;
+              $uibModalInstance.close($scope);
+            }
           }]
         };
         var modalInstance = $uibModal.open(options);

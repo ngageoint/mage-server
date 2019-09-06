@@ -3,6 +3,7 @@ import AuthenticationController from './authentication.controller'
 var angular = require('angular');
 
 angular.module('mage')
+  .component('authentication', require('./authentication.component.js'))
   .component('localSignin', require('./local.signin.js'))
   .component('localSignup', require('./local.signup.js'))
   .component('oauthSignin', require('./oauth.signin.js'))
