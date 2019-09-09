@@ -1,0 +1,26 @@
+<header id="edit-app-bar" class="mdc-top-app-bar mdc-elevation--z4 feed-top-bar">
+  <div class="mdc-top-app-bar__row">
+    <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+      <i ng-click="$ctrl.onFormClose()" class="material-icons mdc-top-app-bar__navigation-icon">close</i>
+      <span class="mdc-top-app-bar__title">
+        <span>Choose a Form To Create</span>
+      </span>
+    </section>
+  </div>
+</header>
+
+<div class="mdc-card mdc-card__primary-action" ng-repeat="form in $ctrl.forms track by form.id" class="pointer" ng-click="$ctrl.onFormPicked({form})">
+  <div class="observation-header">
+    <div class="observation-thumbnail">
+      <i class="material-icons form-icon" ng-style="{'color': form.color}">place</i>
+    </div>
+    <div class="observation-header-content">
+      <div class="observation-header-text">
+        {{form.name}}
+      </div>
+      <div class="observation-subhead">
+        {{form.description}}
+      </div>
+    </div>
+  </div>
+</div>

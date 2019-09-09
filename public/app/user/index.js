@@ -8,4 +8,5 @@ angular.module('mage')
   .directive('iconUser', require('./user-icon.directive'))
   .directive('iconUserEdit', require('./user-icon-edit.directive'))
   .directive('locationPopup', require('./user-popup.directive'))
-  .directive('userNewsItem', require('./user-feed.directive'));
+  .directive('userNewsItem', require('./user-feed.directive'))
+  .directive('userView', require('./user-view.directive'));

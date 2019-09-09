@@ -1,11 +1,12 @@
 module.exports = function(app, security) {
-  var Event = require('../models/event')
+  const Event = require('../models/event')
     , access = require('../access')
     , api = require('../api')
     , fs = require('fs-extra')
     , async = require('async')
     , util = require('util')
     , fileType = require('file-type')
+    , {default: upload} = require('../upload')
     , userTransformer = require('../transformers/user');
 
   var passport = security.authentication.passport;
@@ -281,12 +282,13 @@ module.exports = function(app, security) {
     '/api/events/:eventId/forms',
     passport.authenticate('bearer'),
     authorizeAccess('UPDATE_EVENT', 'update'),
+    upload.single('form'),
     function(req, res, next) {
 
       if (!req.is('multipart/form-data')) return next();
 
       function validateForm(callback) {
-        new api.Form().validate(req.files.form, callback);
+        new api.Form().validate(req.file, callback);
       }
 
       function updateEvent(form, callback) {
@@ -298,7 +300,7 @@ module.exports = function(app, security) {
       }
 
       function importIcons(form, callback) {
-        new api.Form(req.event).importIcons(req.files.form, form, function(err) {
+        new api.Form(req.event).importIcons(req.file, form, function(err) {
           callback(err, form);
         });
       }
@@ -529,8 +531,9 @@ module.exports = function(app, security) {
     '/api/events/:eventId/icons/:formId?/:primary?/:variant?',
     passport.authenticate('bearer'),
     authorizeAccess('UPDATE_EVENT', 'update'),
+    upload.single('icon'),
     function(req, res, next) {
-      new api.Icon(req.event._id, req.params.formId, req.params.primary, req.params.variant).create(req.files.icon, function(err, icon) {
+      new api.Icon(req.event._id, req.params.formId, req.params.primary, req.params.variant).create(req.file, function(err, icon) {
         if (err) return next(err);
 
         return res.json(icon);

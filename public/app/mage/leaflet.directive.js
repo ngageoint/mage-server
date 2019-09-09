@@ -25,9 +25,9 @@ require('leaflet-editable');
 require('leaflet-groupedlayercontrol');
 require('leaflet.markercluster');
 
-LeafletController.$inject = ['$rootScope', '$scope', '$interval', '$timeout', 'MapService', 'LocalStorageService', 'GeometryService'];
+LeafletController.$inject = ['$scope', 'MapService', 'LocalStorageService', 'EventService'];
 
-function LeafletController($rootScope, $scope, $interval, $timeout, MapService, LocalStorageService, GeometryService) {
+function LeafletController($scope, MapService, LocalStorageService, EventService) {
 
   var layers = {};
   var geopackageLayers = {};
@@ -78,12 +78,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     position: 'topleft'
   }).addTo(map);
 
-  new L.Control.MageFeature({
-    onClick: function(latlng) {
-      $scope.$emit('observation:latlng', latlng.wrap());
-    }
-  }).addTo(map);
-
   var userLocationControl = new L.Control.MageUserLocation({
     onBroadcastLocationClick: function(callback) {
       MapService.onBroadcastLocation(callback);
@@ -112,16 +106,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   map.on('overlayadd', function(overlay) {
     var layer = layers[overlay.name];
     MapService.overlayAdded(layer);
-  });
-
-  // Edit layer, houses features that are being created or modified
-  createGeoJsonLayer({
-    name: 'Edit',
-    type: 'geojson',
-    options: {
-      selected: true,
-      hidden: true
-    }
   });
 
   function onLocation(location, broadcast) {
@@ -157,17 +141,20 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     onLayerRemoved: onLayerRemoved,
     onLayersChanged: onLayersChanged,
     onFeaturesChanged: onFeaturesChanged,
-    onCreate: onCreate,
-    onEdit: onEdit,
     onFeatureZoom: onFeatureZoom,
-    onPoll: onPoll,
     onLocationStop: onLocationStop,
     onHideFeed: onHideFeed
   };
   MapService.addListener(listener);
 
+  var pollListener = {
+    onPoll: onPoll
+  };
+  EventService.addPollListener(pollListener);
+
   $scope.$on('$destroy', function() {
     MapService.removeListener(listener);
+    EventService.removePollListener(pollListener);
   });
 
   function createMarker(marker) {
@@ -319,13 +306,12 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
 
   function createGeoJsonForLayer(json, layerInfo, editMode) {
     var popup = layerInfo.options.popup;
-
     var geojson = L.geoJson(json, {
       onEachFeature: function (feature, layer) {
         if (popup) {
           if (_.isFunction(popup.html)) {
             var options = {autoPan: false, maxWidth: 400};
-            if (popup.closeButton) options.closeButton = popup.closeButton;
+            if (popup.closeButton !== undefined) options.closeButton = popup.closeButton;
             layer.bindPopup(popup.html(feature), options);
           }
 
@@ -351,7 +337,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
             layer.setAccuracy(null);
           });
         }
-
         layerInfo.featureIdToLayer[feature.id] = layer;
       },
       pointToLayer: function (feature, latlng) {
@@ -385,6 +370,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
   function createGeoJsonLayer(data) {
     var layerInfo = {
       type: 'geojson',
+      name: data.name,
       featureIdToLayer: {},
       options: data.options
     };
@@ -399,6 +385,7 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
       });
     } else {
       layerInfo.layer = geojson;
+      
     }
 
     layers[data.name] = layerInfo;
@@ -409,294 +396,6 @@ function LeafletController($rootScope, $scope, $interval, $timeout, MapService, 
     if (!data.options.hidden) {
       layerControl.addOverlay(layerInfo.layer, data.name, data.group);
     }
-  }
-
-  function onEdit(edit) {
-    switch(edit.type) {
-    case 'start':
-      onEditStarted(edit);
-      break;
-    case 'geometry':
-      onEditGeometry(edit);
-      break;
-    case 'shape':
-      onEditShape(edit);
-      break;
-    case 'icon':
-      onEditIcon(edit);
-      break;
-    case 'complete':
-    case 'delete':
-      onEditComplete(edit);
-      break;
-    }
-  }
-
-  function onEditStarted(edit) {
-    var layer = layers[edit.name].featureIdToLayer[edit.feature.id];
-    delete layers[edit.name].featureIdToLayer[edit.feature.id];
-    layers[edit.name].layer.removeLayer(layer);
-
-    if (layers['Edit'].featureIdToLayer[layer.feature.id]) return;
-
-    layers['Observations'].layer.removeLayer(layer);
-
-    layers['Edit'].layer.addLayer(layer);
-    layers['Edit'].featureIdToLayer[layer.feature.id] = layer;
-
-    if (layer.feature.geometry.type === 'Point') {
-      layer.setZIndexOffset(1000);
-
-      layer.setIcon(L.fixedWidthIcon({
-        iconUrl: layer.feature.style.iconUrl,
-        tooltip: true
-      }));
-
-      layer.dragging.enable();
-      layer.on('dragend', function(event) {
-        $scope.$broadcast('feature:moved', layer.feature, event.target.toGeoJSON().geometry);
-        $scope.$apply();
-      });
-    } else {
-      initiateShapeEdit(layer);
-    }
-  }
-
-  function onEditGeometry(edit) {
-    var feature = edit.feature;
-    var layer = layers['Edit'].featureIdToLayer[feature.id];
-    if (!layer) {
-      return;
-    }
-
-    // update the shape coordinates
-    if (layer.feature.geometry.coordinates && !_.isEqual(feature.geometry.coordinates, layer.feature.geometry.coordinates)) {
-      if (layer.feature.geometry.type === 'Point') {
-        layer.setLatLng(L.GeoJSON.coordsToLatLng(feature.geometry.coordinates));
-      } else {
-        var geojson = L.GeoJSON.coordsToLatLngs(feature.geometry.coordinates, feature.geometry.type === 'Polygon' ? 1 : 0);
-        layer.setLatLngs(geojson);
-        layer.editor.reset();
-
-        // preserve selected marker
-        layer.editor.editLayer.eachLayer(function(l) {
-          if (l.getIndex && l.getIndex() === layer.selectedVertex.getIndex()) {
-            L.DomUtil.addClass(l.getElement(), 'selected-marker');
-          }
-        });
-      }
-    }
-  }
-
-  function onEditShape(edit) {
-    var layer = layers['Edit'].featureIdToLayer[edit.feature.id];
-    if (!layer) {
-      return;
-    }
-
-    layer.disableEdit();
-    map.removeLayer(layer);
-    layers['Edit'].layer.removeLayer(layer);
-
-    if (edit.feature.geometry.type === 'Point') {
-      var center = map.getCenter();
-      edit.feature.geometry.coordinates = [center.lng, center.lat];
-      var feature = layer.feature;
-      feature.geometry = edit.feature.geometry;
-      createGeoJsonForLayer(feature, layers['Edit'], true);
-      layer = layers['Edit'].featureIdToLayer[edit.feature.id];
-      layers['Edit'].layer.addLayer(layer);
-      layer.setZIndexOffset(1000);
-
-      layer.dragging.enable();
-      layer.on('dragend', function(event) {
-        $scope.$broadcast('feature:moved', layer.feature, event.target.toGeoJSON().geometry);
-        $scope.$apply();
-      });
-
-      $scope.$broadcast('feature:moved', layer.feature, layer.toGeoJSON().geometry);
-    } else {
-      initiateShapeDraw(edit.feature);
-    }
-  }
-
-  function onEditIcon(edit) {
-    var feature = edit.feature;
-    if (feature.geometry.type !== 'Point') return;
-
-    var layer = layers['Edit'].featureIdToLayer[feature.id];
-    if (!layer) {
-      return;
-    }
-
-    layer.feature.style = {
-      iconUrl: edit.iconUrl
-    };
-
-    layer.setIcon(L.fixedWidthIcon({
-      iconUrl: layer.feature.style.iconUrl,
-      tooltip: true
-    }));
-  }
-
-  function onEditComplete(edit) {
-    var feature = edit.feature;
-
-    var layer = layers['Edit'].featureIdToLayer[feature.id];
-    layer.disableEdit();
-
-    layers['Edit'].layer.removeLayer(layer);
-    delete layers['Edit'].featureIdToLayer[feature.id];
-
-    if (edit.type === 'complete') {
-      // We removed the marker and substitued an editable marker.
-      // Lets put back the non editable marker.
-      createGeoJsonForLayer(feature, layers['Observations']);
-      layer = layers['Observations'].featureIdToLayer[feature.id];
-      layers['Observations'].layer.addLayer(layer);
-    }
-  }
-
-  function onCreate(create) {
-    switch(create.type) {
-    case 'start':
-      onCreateStarted(create);
-      break;
-    case 'complete':
-      onCreateComplete(create);
-      break;
-    }
-  }
-
-  function onCreateStarted(create) {
-    var feature = create.feature;
-
-    if (feature.geometry.type === 'Point') {
-      createGeoJsonForLayer(feature, layers['Edit'], true);
-      var layer = layers['Edit'].featureIdToLayer['new'];
-      layers['Edit'].layer.addLayer(layer);
-
-      layer.dragging.enable();
-      layer.on('dragend', function(event) {
-        $scope.$broadcast('feature:moved', layer.feature, event.target.toGeoJSON().geometry);
-        $scope.$apply();
-      });
-    } else {
-      initiateShapeDraw(layer.feature);
-    }
-  }
-
-  function onCreateComplete() {
-    var layer = layers['Edit'].featureIdToLayer['new'];
-    layer.disableEdit();
-
-    layers['Edit'].layer.removeLayer(layer);
-    delete layers['Edit'].featureIdToLayer['new'];
-  }
-
-  function initiateShapeDraw(feature) {
-    var editLayer = feature.geometry.type === 'Polygon' ? map.editTools.startPolygon() : map.editTools.startPolyline();
-    editLayer.feature = feature;
-    layers['Edit'].featureIdToLayer[feature.id] = editLayer;
-
-    editLayer.on('editable:drawing:commit', function(e) {
-      e.layer.disableEdit();
-      map.removeLayer(e.layer);
-
-      var geojson = e.layer.toGeoJSON();
-      geojson.id = editLayer.feature.id;
-
-      createGeoJsonForLayer(geojson, layers['Edit'], true);
-      var newLayer = layers['Edit'].featureIdToLayer[geojson.id];
-      layers['Edit'].layer.addLayer(newLayer);
-
-      initiateShapeEdit(newLayer);
-
-      $scope.$broadcast('feature:moved', newLayer.feature, geojson.geometry);
-      $scope.$apply();
-    });
-
-    editLayer.on('editable:vertex:contextmenu', function(e) {
-      // delete on right click
-      if (editLayer.editor.vertexCanBeDeleted(e.vertex)) {
-        e.vertex.delete();
-      }
-    });
-
-    editLayer.on('editable:vertex:rawclick', function(e) {
-      // don't delete on click
-      e.cancel();
-    });
-
-    editLayer.on('editable:drawing:clicked', function() {
-      if (GeometryService.featureHasIntersections(editLayer.toGeoJSON())) {
-        editLayer.editor.pop();
-      }
-    });
-  }
-
-  function initiateShapeEdit(layer) {
-    layer.enableEdit();
-    layer.selectedVertex = layer.editor.editLayer.getLayers()[0];
-    L.DomUtil.addClass(layer.selectedVertex.getElement(), 'selected-marker');
-
-    function geometryChanged(e) {
-      $scope.$broadcast('feature:moved', e.layer.feature, e.layer.toGeoJSON().geometry);
-      $scope.$apply();
-    }
-
-    function selectVertex(vertex) {
-      layer.editor.editLayer.eachLayer(function(layer) {
-        L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
-      });
-
-      L.DomUtil.addClass(vertex.getElement(), 'selected-marker');
-      layer.selectedVertex = vertex;
-    }
-
-    layer.on('editable:vertex:new', geometryChanged);
-    layer.on('editable:vertex:deleted', geometryChanged);
-
-    layer.on('editable:vertex:contextmenu', function(e) {
-      var marker = e.vertex;
-      if (layer.editor.vertexCanBeDeleted(marker)) {
-        marker.delete();
-      }
-    });
-
-    layer.on('editable:vertex:rawclick', function(e) {
-      e.cancel(); // turn of delete when clicking a vertex
-      selectVertex(e.vertex);
-
-      $scope.$broadcast('mage:map:edit:vertex', layer.feature, layer.toGeoJSON().geometry, e.vertex.getIndex());
-      $scope.$apply();
-    });
-
-    var previousLatLngs;
-    layer.on('editable:vertex:dragstart', function(e) {
-      layer.selectedVertex = e.vertex;
-      previousLatLngs = angular.copy(layer.getLatLngs());
-    });
-
-    layer.on('editable:vertex:dragend', function(e) {
-      selectVertex(e.vertex);
-
-      if (GeometryService.featureHasIntersections(layer.toGeoJSON()) && previousLatLngs) {
-        layer.setLatLngs(previousLatLngs);
-        layer.editor.reset();
-
-        layer.editor.editLayer.eachLayer(function(l) {
-          if (l.getIndex && l.getIndex() === layer.selectedVertex.getIndex()) {
-            L.DomUtil.addClass(l.getElement(), 'selected-marker');
-          }
-        });
-
-        return;
-      }
-
-      $scope.$broadcast('mage:map:edit:vertex', layer.feature, layer.toGeoJSON().geometry, e.vertex.getIndex());
-      $scope.$apply();
-    });
   }
 
   function onLayersChanged(changed) {

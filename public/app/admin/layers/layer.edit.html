@@ -98,7 +98,7 @@
                 </span>
               </div>
 
-              <div ng-if="saving && layer.type === 'GeoPackage' && layer.geopackage" class="top-gap">
+              <div ng-if="saving && layer.type === 'GeoPackage' && layer.geopackage" class="form-group">
                 <uib-progressbar max="total" value="progress"><span style="color:white; white-space:nowrap;">{{progress | filesize}} / {{total | filesize}}</span></uib-progressbar>
               </div>
 

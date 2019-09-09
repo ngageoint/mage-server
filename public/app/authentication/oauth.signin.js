@@ -71,6 +71,7 @@ function OAuthSigninController($uibModal, UserService) {
   };
 
   this.initializeGoogleButton = function(strategy) {
+    console.log('strategy', strategy)
     gapi.load('auth2', function() {
       gapi.auth2.init({
         client_id: strategy.webClientID

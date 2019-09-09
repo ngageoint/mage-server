@@ -1,20 +1,23 @@
 var angular = require('angular')
-  , mgrs= require('mgrs');
+  , mgrs= require('mgrs')
+  , MDCSelect = require('material-components-web').select.MDCSelect;
+
 
 module.exports = {
   template: require('./geometry.edit.html'),
   bindings: {
     form: '<',
     field: '<',
+    geometryStyle: '<',
     onFieldChanged: '&',
     onShapeChanged: '&'
   },
   controller: GeometryEditController
 };
 
-GeometryEditController.$inject = ['GeometryService', 'LocalStorageService'];
+GeometryEditController.$inject = ['GeometryService', 'LocalStorageService', '$timeout', '$element'];
 
-function GeometryEditController(GeometryService, LocalStorageService) {
+function GeometryEditController(GeometryService, LocalStorageService, $timeout, $element) {
 
   this.shapes = [{
     display: 'Point',
@@ -27,13 +30,64 @@ function GeometryEditController(GeometryService, LocalStorageService) {
     value: 'Polygon'
   }];
 
-  this.field.value = this.field.value || {type: 'Point', coordinates: []};
-
   this.shape = {
-    type: this.field.value.type
+    type: 'Point'
   };
 
   this.coordinateSystem = LocalStorageService.getCoordinateSystemEdit();
+
+  this.startGeometryEdit = function(field) {
+    this.editLocationField = angular.copy(field);
+    this.editGeometryStyle = this.geometryStyle
+    this.scrollTop = $element[0].closest('.feed-scroll').scrollTop;
+    $element[0].closest('.feed-scroll').scrollTop = 0;
+    $element[0].closest('.feed-scroll').style['overflow-y'] = 'hidden'
+  }
+
+  this.saveLocationEdit = function(value) {
+    this.field.value = value;
+    this.editLocationField = undefined;
+    $element[0].closest('.feed-scroll').scrollTop = this.scrollTop;
+    $element[0].closest('.feed-scroll').style['overflow-y'] = 'auto'
+  }
+
+  this.cancelLocationEdit = function() {
+    this.editLocationField = undefined;
+    $element[0].closest('.feed-scroll').scrollTop = this.scrollTop;
+    $element[0].closest('.feed-scroll').style['overflow-y'] = 'auto'
+  }
+
+  this.editGeometry = function(event) {
+    event.stopPropagation();
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const mapPos = LocalStorageService.getMapPosition();
+    this.field.value = this.field.value || {type: 'Point', coordinates: [mapPos.center.lng, mapPos.center.lat]}
+    this.startGeometryEdit(this.field)
+    this.select.selectedIndex = 0;
+  }
+
+  this.$postLink = function() {
+    this.initializeDropDown();
+  }
+  
+  this.initializeDropDown = function() {
+    $timeout(function() {
+      if (!this.select) {
+        this.select = new MDCSelect($element.find('.mdc-select')[0]);
+      }
+      if (this.field.value && this.field.value.coordinates.length) {
+        this.select.selectedIndex = 0;
+        this.select.value = " ";
+      }
+    }.bind(this))
+  }
+
+  this.$doCheck = function() {
+    if (!this.field.value && this.select) {
+      this.select.selectedIndex = -1;
+    }
+  }
 
   this.$onChanges = function() {
     if (this.field && this.coordinateSystem === 'mgrs') {
@@ -108,6 +162,7 @@ function GeometryEditController(GeometryService, LocalStorageService) {
   };
 
   function toMgrs(field) {
+    if (!field.value) return;
     switch (field.value.type) {
     case 'Point':
       return mgrs.forward(field.value.coordinates);

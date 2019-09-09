@@ -15,6 +15,7 @@ module.exports = function(app, security) {
     , turfCentroid = require('@turf/centroid')
     , geometryFormat = require('../format/geoJsonFormat')
     , observationXform = require('../transformers/observation')
+    , {default: upload} = require('../upload')
     , passport = security.authentication.passport;
 
   var sortColumnWhitelist = ["lastModified"];
@@ -326,9 +327,10 @@ module.exports = function(app, security) {
         user: req.observationUser
       });
       archive.append(html, { name: req.observation._id + '/index.html' });
-
+      
       if (req.observationIcon) {
-        archive.file(req.observationIcon, {name: req.observation._id + '/media/icon.png'});
+        const iconPath = path.join(environment.iconBaseDirectory, req.observationIcon.relativePath);
+        archive.file(iconPath, {name: req.observation._id + '/media/icon.png'});
       }
 
       req.observation.attachments.forEach(function(attachment) {
@@ -558,11 +560,11 @@ module.exports = function(app, security) {
     '/api/events/:eventId/observations/:observationId/attachments',
     passport.authenticate('bearer'),
     access.authorize('CREATE_OBSERVATION'),
+    upload.single('attachment'),
     function(req, res, next) {
-      var attachment = req.files.attachment;
-      if (!attachment) return res.status(400).send("no attachment");
+      if (!req.file) return res.status(400).send("no attachment");
 
-      new api.Attachment(req.event, req.observation).create(req.observationId, req.files.attachment, function(err, attachment) {
+      new api.Attachment(req.event, req.observation).create(req.observationId, req.file, function(err, attachment) {
         if (err) return next(err);
 
         var observation = req.observation;
@@ -576,8 +578,9 @@ module.exports = function(app, security) {
     '/api/events/:eventId/observations/:observationId/attachments/:attachmentId',
     passport.authenticate('bearer'),
     validateObservationUpdateAccess,
+    upload.single('attachment'),
     function(req, res, next) {
-      new api.Attachment(req.event, req.observation).update(req.params.attachmentId, req.files.attachment, function(err, attachment) {
+      new api.Attachment(req.event, req.observation).update(req.params.attachmentId, req.file, function(err, attachment) {
         if (err) return next(err);
 
         var observation = req.observation;

@@ -1,15 +1,17 @@
-module.exports = DisclaimerController;
+class DisclaimerController {
 
-DisclaimerController.$inject = ['$scope', '$uibModalInstance', 'disclaimer'];
+}
 
-function DisclaimerController($scope, $uibModalInstance, disclaimer) {
-  $scope.disclaimer = disclaimer;
+var template = require('./disclaimer.html')
+var bindings = {
+  disclaimer: '<',
+  onAccept: '&',
+  onCancel: '&'
+}
+var controller = DisclaimerController;
 
-  $scope.accept = function() {
-    $uibModalInstance.close();
-  };
-
-  $scope.exit = function() {
-    $uibModalInstance.dismiss();
-  };
+export {
+  template,
+  bindings,
+  controller
 }

@@ -5,6 +5,11 @@ module.exports = 'http-auth-interceptor';
 angular
   .module('http-auth-interceptor', ['http-auth-interceptor-buffer'])
   .factory('authService', ['$rootScope','httpBuffer', function($rootScope, httpBuffer) {
+    var loginData;
+    $rootScope.$on('event:auth-login', function(event, data) {
+      loginData = data;
+    })
+
     return {
       /**
        * call this function to indicate that authentication was successfull and trigger a
@@ -13,9 +18,10 @@ angular
        * example if you need to pass through details of the user that was logged in
        */
       loginConfirmed: function(data, configUpdater) {
+        console.log('login confirmed is being fired', loginData)
         var updater = configUpdater || function(config) {return config;};
-        $rootScope.$broadcast('event:auth-loginConfirmed', data);
-        if (!data.newUser) {
+        $rootScope.$broadcast('event:auth-loginConfirmed', loginData);
+        if (loginData && !loginData.newUser) {
           httpBuffer.retryAll(updater);
         } else {
           httpBuffer.retryAllGets(updater);

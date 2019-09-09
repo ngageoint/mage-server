@@ -117,7 +117,7 @@ Icon.prototype.saveDefaultIconToEventForm = function(callback) {
 };
 
 Icon.prototype.create = function(icon, callback) {
-  var relativePath = createIconPath(this, icon.name);
+  var relativePath = createIconPath(this, icon.originalname);
   var newIcon = {
     eventId: this._eventId,
     formId: this._formId,
@@ -130,7 +130,7 @@ Icon.prototype.create = function(icon, callback) {
   fs.mkdirp(path.dirname(iconPath), function(err) {
     if (err) return callback(err);
 
-    fs.rename(icon.path, iconPath, function(err) {
+    fs.move(icon.path, iconPath, {overwrite: true}, function(err) {
       if (err) return callback(err);
 
       IconModel.create(newIcon, function(err, oldIcon) {

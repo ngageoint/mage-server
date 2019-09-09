@@ -52,7 +52,7 @@
               </form>
             </div>
 
-            <div class="col-md-10 col-md-offset-2 top-gap" ng-show="showUserStatus">
+            <div class="col-md-10 col-md-offset-2 form-group" ng-show="showUserStatus">
               <div class="alert alert-block" ng-class="statusLevel">
                 <button type="button" class="close" ng-click="showUserStatus = false">&times;</button>
                 <h4>{{statusTitle}}</h4>
@@ -130,7 +130,7 @@
               </span>
 
               <div class="form-group">
-                <div class="top-gap clearfix col-md-offset-2 col-sm-10" ng-if="passwordStatus.msg">
+                <div class="form-group clearfix col-md-offset-2 col-sm-10" ng-if="passwordStatus.msg">
                   <div class="alert alert-{{passwordStatus.status}}">
                     <p>{{passwordStatus.msg}}<p>
                   </div>

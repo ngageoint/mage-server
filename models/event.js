@@ -77,6 +77,8 @@ var FormSchema = new Schema({
   archived: { type: Boolean, required: true, default: false },
   primaryField: { type: String, required: false },
   variantField: { type: String, required: false },
+  primaryFeedField: { type: String, required: false },
+  secondaryFeedField: { type: String, required: false },
   userFields: [String],
   fields: [FieldSchema],
   style: { type: Schema.Types.Mixed, required: false }

@@ -1,27 +1,39 @@
-<div class="user-popup">
-
-  <div avatar-user="user"/>
-
-  <div class="user-popup-content">
-    <div class="observation-popup-title">
-      <strong>{{user.displayName}}</strong>
+<div class="user-card mdc-typography">
+  <div class="user-header">
+    <div class="user-thumbnail">
+      <div avatar-user="user" avatar-width="40" avatar-height="40"></div>
     </div>
-    <div class="observation-popup-subtitle">
-      <span ng-if="date">{{date}}</span>
+    <div class="user-header-content">
+      <div class="user-header-text">
+        <div>
+        {{user.displayName}}
+        </div>
+      </div>
+      <div class="user-subhead ellipsis">
+        <a ng-href="mailto:{{user.email}}">{{user.email}}</a>
+      </div>
+      <div class="user-subhead">
+        <a ng-href="tel:{{user.phones[0].number}}">{{user.phones[0].number}}</a>
+      </div>
     </div>
-    <div class="observation-popup-subtitle ellipsis">
-      <span class="muted" title="{{user.email}}">{{user.email}}</span>
-    </div>
-    <div class="observation-popup-subtitle">
-      <span class="muted" ng-if="user.phones && user.phones.length && user.phones[0].number">{{user.phones[0].number}}</span>
-    </div>
-  </div>
-
-  <div class="user-popup-actions">
-    <div>
-      <a href="javascript:void(0)" title="Show in feed" class="location-popup-info" ng-click="onInfoClicked()"><i class="fa fa-info-circle right-gap"></i></a>
-      <a href="javascript:void(0)" title="Zoom to" class="location-popup-info" ng-click="onZoomClicked()"><i class="fa fa-crosshairs"></i></a>
+    <div class="user-header-content-right">
+      <div class="user-time user-subhead">{{user.location.properties.timestamp | moment}}</div>
     </div>
   </div>
-
+  <div class="mdc-card__actions">
+    <div class="mdc-card__action-buttons">
+        <button class="mdc-button mdc-card__action mdc-card__action--button" ng-class="{'mdc-button--raised':followingUser.id == user.id}" ng-click="followUser($event, user)">
+            <span class="mdc-button__label" ng-show="followingUser.id == user.id">Following</span>
+            <span class="mdc-button__label" ng-hide="followingUser.id == user.id">Follow</span>
+          </button>
+    </div>
+    <div class="mdc-card__action-icons">
+      <button class="material-icons mdc-icon-button mdc-card__action mdc-card__action--icon" ng-click="onUserLocationClick(user)">
+        <i class="material-icons mdc-icon-button__icon">my_location</i>
+      </button>
+      <button class="material-icons-outlined mdc-icon-button mdc-card__action mdc-card__action--icon"
+      title="View" 
+      ng-click="onInfoClicked()">info</button>
+    </div>
+  </div>
 </div>

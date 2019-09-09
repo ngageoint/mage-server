@@ -1,0 +1,22 @@
+<div class="delete-dialog">
+  <div class="modal-header">
+    <h3 class="modal-title"><i class="fa fa-filter"></i> Delete Observation?</h3>
+  </div>
+
+  <div class="modal-body">
+    <div class="observation-header-text">
+      Are you sure you would like to delete the following observation?
+    </div>
+    <div ng-if="observation && event"
+      observation-news-item="observation"
+      event="event"
+      selectedobservation-form="event.forms[0]"></div>
+  </div>
+
+  <div class="modal-footer ng-scope">
+    <button class="mdc-button delete-button" ng-click="delete()">
+      Delete Observation
+    </button>
+    <button class="mdc-button" ng-click="closeModal()">No, do not delete the observation</button>
+  </div>
+</div>

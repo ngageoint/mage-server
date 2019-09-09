@@ -4,10 +4,12 @@ module.exports = function mapClip() {
   var directive = {
     restrict: 'A',
     scope: {
-      feature: '=mapClip'
+      feature: '=mapClip',
+      featureStyle: '=',
+      disableInteraction: '='
     },
     replace: true,
-    template: '<div id="map" class="leaflet-map"></div>',
+    template: '<div class="leaflet-map"></div>',
     controller: MapClipController
   };
 
@@ -24,6 +26,7 @@ function MapClipController($rootScope, $scope, $element, MapService) {
   var controlsOn = false;
   var layers = {};
   var observation = null;
+  var marker = null;
 
   initialize();
 
@@ -37,8 +40,12 @@ function MapClipController($rootScope, $scope, $element, MapService) {
   });
 
   $scope.$watch('feature', function() {
-
-    map.removeLayer(observation);
+    if (observation) {
+      map.removeLayer(observation);
+    }
+    if (marker) {
+      map.removeLayer(marker)
+    }
     addObservation($scope.feature);
 
   }, true);
@@ -74,15 +81,23 @@ function MapClipController($rootScope, $scope, $element, MapService) {
     return baseLayer;
   }
 
-  function addObservation(feature) {
+  $scope.$watch('featureStyle.iconUrl', function() {
+    if (!$scope.featureStyle || !$scope.featureStyle.iconUrl) return;
+    marker.setIcon(L.fixedWidthIcon({
+      iconUrl: $scope.featureStyle.iconUrl
+    }));
+  })
 
+  function addObservation(feature) {
+    if (!feature || !feature.geometry || !feature.geometry.coordinates.length) return;
     if(feature.geometry){
       if(feature.geometry.type === 'Point'){
-        observation= L.geoJson(feature, {
+        observation = L.geoJson(feature, {
           pointToLayer: function (feature, latlng) {
-            return L.fixedWidthMarker(latlng, {
-              iconUrl: feature.style.iconUrl
+            marker = L.fixedWidthMarker(latlng, {
+              iconUrl: feature.style ? feature.style.iconUrl : ($scope.featureStyle ? $scope.featureStyle.iconUrl : '')
             });
+            return marker;
           }
         });
         observation.addTo(map);
@@ -90,7 +105,7 @@ function MapClipController($rootScope, $scope, $element, MapService) {
       }else{
         observation = L.geoJson(feature, {
           style: function(feature) {
-            return feature.style;
+            return feature.style || $scope.featureStyle;
           }
         });
         observation.addTo(map);
@@ -116,12 +131,17 @@ function MapClipController($rootScope, $scope, $element, MapService) {
       attributionControl: false
     });
 
-    if ($scope.feature) {
-      addObservation($scope.feature);
+    if ($scope.disableInteraction) {
+      map.scrollWheelZoom.disable()
+      map.dragging.disable()
+      map.touchZoom.disable()
+      map.doubleClickZoom.disable()
+      map.boxZoom.disable()
+      map.keyboard.disable()
     }
 
     map.on('mouseover', function() {
-      if (!controlsOn) {
+      if (!controlsOn && !$scope.disableInteraction) {
         controlsOn = true;
         map.addControl(zoomControl);
         map.addControl(worldExtentControl);
@@ -129,17 +149,13 @@ function MapClipController($rootScope, $scope, $element, MapService) {
     });
 
     map.on('mouseout', function() {
-      if (controlsOn) {
+      if (controlsOn && !$scope.disableInteraction) {
         map.removeControl(zoomControl);
         map.removeControl(worldExtentControl);
         controlsOn = false;
       }
     });
 
-    $scope.$watch('feature.style.iconUrl', function(iconUrl) {
-      marker.setIcon(L.fixedWidthIcon({
-        iconUrl: iconUrl
-      }));
-    });
+
   }
 }

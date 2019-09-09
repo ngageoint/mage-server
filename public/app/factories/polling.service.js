@@ -33,8 +33,10 @@ function PollingService(LocalStorageService) {
   }
 
   function setPollingInterval(interval) {
-    pollingInterval = interval;
-    LocalStorageService.setPollingInterval(pollingInterval);
+    if (parseInt(interval) !== 0) {
+      pollingInterval = interval;
+    }
+    LocalStorageService.setPollingInterval(interval);
     _.each(listeners, function(listener) {
       if (_.isFunction(listener.onPollingIntervalChanged)) {
         listener.onPollingIntervalChanged(interval);

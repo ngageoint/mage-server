@@ -1,24 +1,39 @@
-<form class="form" method="post" autocomplete="off">
-  <h3 class="modal-title">Enter your device ID to continue to MAGE</h3>
+<form class="form" method="post" autocomplete="off" ng-submit="$ctrl.authorize()">
+  <h2>Enter your device ID to continue to MAGE</h2>
 
-  <div class="row">
-    <div class="col-md-10 col-md-offset-1">
+  <p class="top-gap">To access MAGE you will need to enter a device ID.  If you do not have a device ID please ask you MAGE administrator to provide you with one.</p>
 
-      <p class="help-block">To access MAGE you will need to enter a device ID.  If you do not have a device ID please ask you MAGE administrator to provide you with one.</p>
-
-      <div class="form-group" ng-class="{'has-error': status > 399}">
-        <input ng-model="uid" name="uid" type="text" placeholder="Device ID" autocapitalize="off" class="form-control"/>
-      </div>
-
-      <button class="btn btn-primary pull-right top-gap" type="submit" ng-click="authorize({uid: uid})">Continue to MAGE</button>
-    </div>
-
-    <div class="col-md-10 col-md-offset-1">
-      <div class="top-gap-s alert alert-danger" ng-show="status > 399">
-        <strong>Invalid Device ID</strong>
-        <p>Device ID is invalid, please check your device ID, and try again.</p>
+  <div class="top-gap" ng-class="{'has-error': $ctrl.status > 399}">
+    <div class="mdc-text-field mdc-text-field--outlined" style="width: 100%">
+      <input type="text" 
+        id="uid" 
+        name="uid" 
+        placeholder="Device ID" 
+        autocapitalize="off"
+        ng-model="$ctrl.uid" 
+        class="mdc-text-field__input">
+      <div class="mdc-notched-outline">
+        <div class="mdc-notched-outline__leading"></div>
+        <div class="mdc-notched-outline__notch">
+          <label for="uid" class="mdc-floating-label">Device ID</label>
+        </div>
+        <div class="mdc-notched-outline__trailing"></div>
       </div>
     </div>
   </div>
+  <div class="auth-button-container device-id-button-container">
+      <button class="top-gap mdc-button mdc-button--raised primary-button" type="submit">Continue to MAGE</button>
+  </div>
 
 </form>
+
+<div class="mdc-snackbar">
+  <div class="mdc-snackbar__surface">
+    <div class="mdc-snackbar__label"
+          role="status">
+      <h4>{{$ctrl.statusTitle}}</h4>
+      {{$ctrl.statusMessage}}
+    </div>
+    <button class="mdc-icon-button mdc-snackbar__dismiss material-icons" title="Dismiss">close</button>
+  </div>
+</div>

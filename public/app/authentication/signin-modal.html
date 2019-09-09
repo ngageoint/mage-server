@@ -2,28 +2,7 @@
   <div class="modal-header">
     <h3 class="modal-title">Log in to continue to MAGE</h3>
   </div>
-
   <div class="modal-body">
-
-    <div class="top-gap bottom-gap-l">
-      <div ng-repeat="strategy in thirdPartyStrategies" class="top-gap">
-        <oauth-signin strategy="strategy" strategy-type="signin" on-authenticate="onAuthenticate()"></oauth-signin>
-      </div>
-    </div>
-
-    <div ng-if="localAuthenticationStrategy">
-      <div ng-if="thirdPartyStrategies.length" class="top-gap-l bottom-gap-s">
-        <div class="or-container">
-          <hr class="or-hr">
-          <div id="or">or Sign in with your MAGE account</div>
-        </div>
-      </div>
-
-      <div class="top-gap">
-        <local-signin strategy="localAuthenticationStrategy" on-signin="onSignin()"></local-signin>
-      </div>
-    </div>
-
+    <authentication api="api" hide-signup="hideSignup" on-success="onSuccess()" on-failure="logout()"></authentication>
   </div>
-
 </form>

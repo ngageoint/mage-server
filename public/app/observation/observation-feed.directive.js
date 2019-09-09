@@ -1,13 +1,17 @@
 var _ = require('underscore')
   , $ = require('jquery')
-  , moment = require('moment');
+  , moment = require('moment')
+  , MDCRipple = require('material-components-web').ripple.MDCRipple
+  , MDCTextField = require('material-components-web').textField.MDCTextField;
 
 module.exports = function observationNewsItem() {
   var directive = {
     restrict: "A",
     template:  require('./observation-feed.directive.html'),
     scope: {
-      observation: '=observationNewsItem'
+      observation: '=observationNewsItem',
+      event: '=event',
+      form: '=selectedObservationForm'
     },
     controller: ObservationNewsItemController
   };
@@ -15,20 +19,26 @@ module.exports = function observationNewsItem() {
   return directive;
 };
 
-ObservationNewsItemController.$inject = ['$scope', '$window', '$uibModal', 'EventService', 'UserService', 'FilterService', 'LocalStorageService'];
+ObservationNewsItemController.$inject = ['$scope', '$window', '$uibModal', 'EventService', 'UserService', 'LocalStorageService', '$element', '$timeout', 'MapService'];
 
-function ObservationNewsItemController($scope, $window, $uibModal, EventService, UserService, FilterService, LocalStorageService) {
+function ObservationNewsItemController($scope, $window, $uibModal, EventService, UserService, LocalStorageService, $element, $timeout, MapService) {
+  const iconButtonRipple = new MDCRipple(document.querySelector('.mdc-icon-button'));
+  iconButtonRipple.unbounded = true;
   $scope.edit = false;
-  $scope.isUserFavorite = _.contains($scope.observation.favoriteUserIds, UserService.myself.id);
-  $scope.canEdit = UserService.hasPermission('UPDATE_OBSERVATION_EVENT') || UserService.hasPermission('UPDATE_OBSERVATION_ALL');
-
-  var myAccess = FilterService.getEvent().acl[UserService.myself.id];
-  var aclPermissions = myAccess ? myAccess.permissions : [];
-  $scope.canEditImportant = _.contains(UserService.myself.role.permissions, 'UPDATE_EVENT') || _.contains(aclPermissions, 'update');
+  $scope.isUserFavorite = false;
+  $scope.canEdit = false;
+  $scope.canEditImportant = false;
+  var importantEditField;
 
   UserService.getUser($scope.observation.userId).then(function(user) {
     $scope.observationUser = user;
   });
+
+  if ($scope.observation.important) {
+    UserService.getUser($scope.observation.important.userId).then(function(user) {
+      $scope.observationImportantUser = user;
+    });
+  }
 
   $scope.toggleFavorite = function() {
     if ($scope.isUserFavorite) {
@@ -64,26 +74,29 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
     });
   };
 
-  $scope.importantPopover = {
+  $scope.importantEditor = {
     isOpen: false,
     description: $scope.observation.important ? $scope.observation.important.description : null,
     template: require('./observation-important.html')
   };
 
-  $scope.closeImportantPopover = function() {
-    $scope.importantPopover.isOpen = false;
-  };
+  $scope.onFlagAsImportant = function() {
+    $scope.importantEditor.isOpen = true;
+    $timeout(function() {
+      importantEditField = importantEditField || new MDCTextField($element.find('.important-textarea')[0])
+    })
+  }
 
   $scope.markAsImportant = function() {
-    EventService.markObservationAsImportant($scope.observation, {description: $scope.importantPopover.description}).then(function() {
-      $scope.importantPopover.isOpen = false;
+    EventService.markObservationAsImportant($scope.observation, {description: $scope.importantEditor.description}).then(function() {
+      $scope.importantEditor.isOpen = false;
     });
   };
 
   $scope.clearImportant = function() {
     EventService.clearObservationAsImportant($scope.observation).then(function() {
-      $scope.importantPopover.isOpen = false;
-      delete $scope.importantPopover.description;
+      $scope.importantEditor.isOpen = false;
+      delete $scope.importantEditor.description;
     });
   };
 
@@ -96,38 +109,18 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
       });
   };
 
+  $scope.viewObservation = function() {
+    $scope.onObservationLocationClick($scope.observation);
+    $scope.$emit('observation:view', $scope.observation);
+  }
+
   $scope.editObservation = function() {
     $scope.onObservationLocationClick($scope.observation);
-    $scope.edit = true;
-
-    var formMap = _.indexBy(EventService.getForms($scope.observation), 'id');
-    var form = {
-      geometryField: {
-        title: 'Location',
-        type: 'geometry',
-        name: 'geometry',
-        value: $scope.observation.geometry
-      },
-      timestampField: {
-        title: 'Date',
-        type: 'date',
-        name: 'timestamp',
-        value: moment($scope.observation.properties.timestamp).toDate()
-      },
-      forms: []
-    };
-
-    _.each($scope.observation.properties.forms, function(propertyForm) {
-      var observationForm = EventService.createForm($scope.observation, formMap[propertyForm.formId]);
-      observationForm.name = formMap[propertyForm.formId].name;
-      form.forms.push(observationForm);
-    });
-
-    $scope.editForm = form;
+    $scope.$emit('observation:edit', $scope.observation);
   };
 
   $scope.onObservationLocationClick = function(observation) {
-    $scope.$emit('observation:zoom', observation, {panToLocation: true, zoomToLocation: true});
+    MapService.zoomToFeatureInLayer(observation, 'Observations');
   };
 
   $scope.$on('observation:editDone', function() {
@@ -135,27 +128,42 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
     $scope.editForm = null;
   });
 
-  $scope.$watch('observation', function(observation) {
-    var formMap = _.indexBy(EventService.getForms(observation), 'id');
+  $scope.$watch('event', observationOrEventChanged)
+  $scope.$watch('form', observationOrEventChanged, true)
+  $scope.$watch('observation', observationOrEventChanged, true)
+
+  function observationOrEventChanged() {
+    if (!$scope.observation || !$scope.event) return;
+    $scope.isUserFavorite = _.contains($scope.observation.favoriteUserIds, UserService.myself.id);
+    $scope.canEdit = UserService.hasPermission('UPDATE_OBSERVATION_EVENT') || UserService.hasPermission('UPDATE_OBSERVATION_ALL');
+
+    var myAccess = $scope.event.acl[UserService.myself.id];
+    var aclPermissions = myAccess ? myAccess.permissions : [];
+    $scope.canEditImportant = _.contains(UserService.myself.role.permissions, 'UPDATE_EVENT') || _.contains(aclPermissions, 'update');
+
+    var formMap = _.indexBy(EventService.getFormsForEvent($scope.event), 'id');
     $scope.observationForm = {
       geometryField: {
         title: 'Location',
         type: 'geometry',
-        value: observation.geometry
+        value: $scope.observation.geometry
       },
       timestampField: {
         title: 'Date',
         type: 'date',
-        value: moment(observation.properties.timestamp).toDate()
+        value: moment($scope.observation.properties.timestamp).toDate()
       },
       forms: []
     };
 
-    _.each(observation.properties.forms, function(form) {
-      var observationForm = EventService.createForm(observation, formMap[form.formId]);
+    _.each($scope.observation.properties.forms, function(form) {
+      var observationForm = EventService.createForm($scope.observation, formMap[form.formId]);
       observationForm.name = formMap[form.formId].name;
       $scope.observationForm.forms.push(observationForm);
     });
+
+    $scope.primaryFeedField = {};
+    $scope.secondaryFeedField = {};
 
     if ($scope.observation.properties.forms.length > 0) {
       var firstForm = $scope.observation.properties.forms[0];
@@ -163,26 +171,26 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
         return observationForm.id === firstForm.formId;
       });
 
-      if (observationForm.primaryField && firstForm[observationForm.primaryField]) {
-        $scope.primaryField = {
-          value: firstForm[observationForm.primaryField]
+      if (observationForm.primaryFeedField && firstForm[observationForm.primaryFeedField]) {
+        $scope.primaryFeedField = {
+          value: firstForm[observationForm.primaryFeedField]
         };
       }
 
-      if (observationForm.variantField && firstForm[observationForm.variantField]) {
-        $scope.variantField = {
-          value: firstForm[observationForm.variantField]
+      if (observationForm.secondaryFeedField && firstForm[observationForm.secondaryFeedField]) {
+        $scope.secondaryFeedField = {
+          value: firstForm[observationForm.secondaryFeedField]
         };
       }
     }
 
-    $scope.isUserFavorite = _.contains(observation.favoriteUserIds, UserService.myself.id);
-  }, true);
+    $scope.isUserFavorite = _.contains($scope.observation.favoriteUserIds, UserService.myself.id);
+  }
 
   $scope.$watch('observation.important', function(important) {
     if (!important) return;
 
-    $scope.importantPopover.description = important.description;
+    $scope.importantEditor.description = important.description;
     UserService.getUser(important.userId).then(function(user) {
       $scope.importantUser = user;
     });

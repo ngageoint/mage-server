@@ -1,78 +1,33 @@
-<div class="field form-group">
-  <label>{{$ctrl.field.title}}</label> <span class="required-error" ng-show="$ctrl.field.required">*</span>
-  <div class="row">
-    <div class="col-md-12">
-      <div class="btn-group">
-         <div class="btn-group" role="group">
-          <button type="button" class="btn btn-default" ng-class="{'active':$ctrl.shape.type === 'Point'}" ng-click="$ctrl.shapeTypeChanged('Point')">Point</button>
-          <button type="button" class="btn btn-default" ng-class="{'active':$ctrl.shape.type === 'LineString'}" ng-click="$ctrl.shapeTypeChanged('LineString')">Line</button>
-          <button type="button" class="btn btn-default" ng-class="{'active':$ctrl.shape.type === 'Polygon'}" ng-click="$ctrl.shapeTypeChanged('Polygon')">Polygon</button>
-        </div>
-      </div>
-    </div>
-  </div>
+<location-edit 
+  class="slide-left edit-location-card feed-card ng-animatable" 
+  ng-if="$ctrl.editLocationField" 
+  field="$ctrl.editLocationField" 
+  geometry-style="$ctrl.editGeometryStyle" 
+  save-edit="$ctrl.saveLocationEdit(value)"
+  cancel-edit="$ctrl.cancelLocationEdit()"></location-edit>
 
-  <div class="observation-geometry" ng-if="$ctrl.field.value.type === 'Point'">
-    <div class="observation-geometry-coordinate" ng-if="$ctrl.coordinateSystem === 'wgs84'" ng-class="{'has-error': $ctrl.form[$ctrl.field.name + '-longitude'].$invalid}">
-      <input class="form-control" type="number" min="-180" max="180" name="{{$ctrl.field.name}}-longitude" ng-model="$ctrl.field.value.coordinates[0]" ng-required="$ctrl.field.required" ng-change="$ctrl.onLatLngChange()">
-      <div class="help-block" ng-messages="$ctrl.form[$ctrl.field.name + '-longitude'].$error">
-        <div ng-message="min" uib-tooltip="Longitude cannot be less than -180" tooltip-placement="bottom">Invalid Longitude</div>
-        <div ng-message="max" uib-tooltip="Longitude cannot be greater than 180" tooltip-placement="bottom">Invalid Longitude</div>
+<div class="field top-gap">
+  <div
+    class="mdc-select mdc-select--outlined location-field-select"
+    ng-click="$ctrl.editGeometry($event)">
+    <div class="mdc-select__selected-text-mine">
+      <div class="map-clip" id="map-outlined" ng-if="$ctrl.field.value && $ctrl.field.value.coordinates.length">
+        <div
+          map-clip="{type: 'Feature', geometry: $ctrl.field.value}"
+          feature-style="$ctrl.geometryStyle"
+          disable-interaction="true"></div>
       </div>
+      <div class="map-spacer" ng-if="!$ctrl.field.value || !$ctrl.field.value.coordinates.length"></div>
     </div>
-
-    <div class="observation-geometry-coordinate" ng-if="$ctrl.coordinateSystem === 'wgs84'" ng-class="{'has-error': $ctrl.form[$ctrl.field.name + '-latitude'].$invalid}">
-      <input class="form-control" type="number" min="-90" max="90" name="{{$ctrl.field.name}}-latitude" ng-model="$ctrl.field.value.coordinates[1]" ng-required="$ctrl.field.required" ng-change="$ctrl.onLatLngChange()">
-      <div class="help-block" ng-messages="$ctrl.form[$ctrl.field.name + '-latitude'].$error">
-        <div ng-message="min" uib-tooltip="Latitude cannot be less than -90" tooltip-placement="bottom">Invalid Latitude</div>
-        <div ng-message="max" uib-tooltip="Latitude cannot be greater than 90" tooltip-placement="bottom">Invalid Latitude</div>
+    <select class="mdc-select__native-control" ng-required="$ctrl.field.required">
+      <option disabled selected value=" "> </option>
+    </select>
+    <div class="mdc-notched-outline">
+      <div class="mdc-notched-outline__leading"></div>
+      <div class="mdc-notched-outline__notch">
+        <label class="mdc-floating-label">{{$ctrl.field.title}}</label>
       </div>
-    </div>
-
-    <div class="observation-geometry-coordinate" ng-if="$ctrl.coordinateSystem === 'mgrs'" ng-class="{'has-error': $ctrl.form.mgrs.$invalid}">
-      <input class="form-control" type="text" name="mgrs" ng-model="$ctrl.mgrs" value="{{$ctrl.mgrs}}" ng-required="$ctrl.field.required" ng-change="$ctrl.onMgrsChange()">
-      <div class="help-block" ng-messages="$ctrl.form.mgrs.$error">
-        <div ng-message="invalid">Invalid MGRS code</div>
-      </div>
-    </div>
-
-    <div class="observation-geometry-control">
-      <div class="btn-group">
-        <label class="btn btn-default btn-xs" ng-model="$ctrl.coordinateSystem" ng-change="$ctrl.onCoordinateSystemChange('wgs84')" uib-btn-radio="'wgs84'">Lat/Lng</label>
-        <label class="btn btn-default btn-xs" ng-model="$ctrl.coordinateSystem" ng-change="$ctrl.onCoordinateSystemChange('mgrs')" uib-btn-radio="'mgrs'">MGRS</label>
-      </div>
-    </div>
-  </div>
-
-  <div class="observation-geometry" ng-if="$ctrl.field.value.type !== 'Point'">
-    <div class="observation-geometry-coordinate" ng-if="$ctrl.coordinateSystem === 'wgs84'" ng-class="{'has-error': $ctrl.form[$ctrl.field.name + '-edit-longitude'].$invalid}">
-      <input class="form-control" type="number" min="-180" max="180" name="{{$ctrl.field.name}}-edit-longitude" ng-model="$ctrl.field.edit[0]" ng-required="$ctrl.field.required" ng-change="$ctrl.onLatLngChange()">
-      <div class="help-block" ng-messages="$ctrl.form[$ctrl.field.name + '-edit-longitude'].$error">
-        <div ng-message="min" uib-tooltip="Longitude cannot be less than -180" tooltip-placement="bottom">Invalid Longitude</div>
-        <div ng-message="max" uib-tooltip="Longitude cannot be greater than 180" tooltip-placement="bottom">Invalid Longitude</div>
-      </div>
-    </div>
-
-    <div class="observation-geometry-coordinate" ng-if="$ctrl.coordinateSystem === 'wgs84'" ng-class="{'has-error': $ctrl.form[$ctrl.field.name + '-edit-latitude'].$invalid}">
-      <input class="form-control" type="number" min="-90" max="90" name="{{$ctrl.field.name}}-edit-latitude" ng-model="$ctrl.field.edit[1]" ng-required="$ctrl.field.required" ng-change="$ctrl.onLatLngChange()">
-      <div class="help-block" ng-messages="$ctrl.form[$ctrl.field.name + '-edit-latitude'].$error">
-        <div ng-message="min" uib-tooltip="Latitude cannot be less than -90" tooltip-placement="bottom">Invalid Latitude</div>
-        <div ng-message="max" uib-tooltip="Latitude cannot be greater than 90" tooltip-placement="bottom">Invalid Latitude</div>
-      </div>
-    </div>
-
-    <div class="observation-geometry-coordinate" ng-if="$ctrl.coordinateSystem === 'mgrs'" ng-class="{'has-error': $ctrl.form.mgrs.$invalid}">
-      <input class="form-control" type="text" name="mgrs" ng-model="$ctrl.mgrs" ng-required="$ctrl.field.required" ng-change="$ctrl.onMgrsChange()">
-      <div class="help-block" ng-messages="$ctrl.form.mgrs.$error">
-        <div ng-message="invalid">Invalid MGRS code</div>
-      </div>
-    </div>
-
-    <div class="observation-geometry-control">
-      <div class="btn-group">
-        <label class="btn btn-default btn-xs" ng-model="$ctrl.coordinateSystem" ng-change="$ctrl.onCoordinateSystemChange('wgs84')" uib-btn-radio="'wgs84'">WGS84</label>
-        <label class="btn btn-default btn-xs" ng-model="$ctrl.coordinateSystem" ng-change="$ctrl.onCoordinateSystemChange('mgrs')" uib-btn-radio="'mgrs'">MGRS</label>
-      </div>
+      <div class="mdc-notched-outline__trailing"></div>  
     </div>
   </div>
 </div>

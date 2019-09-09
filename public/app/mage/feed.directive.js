@@ -9,9 +9,7 @@ function NewsFeed() {
     restrict: "A",
     template:  require('./feed.directive.html'),
     scope: {
-      observations: '=feedObservations',
-      feedObservationsChanged: '=',
-      users: '=feedUsers',
+      event: '=',
       feedUsersChanged: '='
     },
     controller: NewsFeedController
@@ -20,27 +18,29 @@ function NewsFeed() {
   return directive;
 }
 
-NewsFeedController.$inject = ['$rootScope', '$scope', '$element', '$filter', '$timeout', 'EventService', 'UserService', 'FilterService'];
+NewsFeedController.$inject = ['$scope', '$element', 'MapService', 'EventService', 'FilterService', 'LocalStorageService', 'UserService', 'Observation', '$uibModal'];
 
-function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, EventService, UserService, FilterService) {
+function NewsFeedController($scope, $element, MapService, EventService, FilterService, LocalStorageService, UserService, Observation, $uibModal) {
+  var contentEls = $element.find('.content');
 
-  $scope.currentFeedPanel = 'observationsTab';
+  $scope.tabs = [{
+    tabName: 'Observations',
+    tabId: 'observations',
+    icon: 'place'
+  }, {
+    tabName: 'People',
+    tabId: 'people',
+    icon: 'supervisor_account'
+  }]
 
-  $scope.actionFilter = 'all';
+  $scope.onTabSwitched = function(index) {
+    $scope.currentFeedPanel = $scope.tabs[index].tabId;
+    let active = $element.find('.content--active')[0];
+    active.classList.remove('content--active');
+    contentEls[index].classList.add('content--active');
+  }
 
-  $scope.currentObservationPage = 0;
-  $scope.observationsChanged = 0;
-  $scope.observationPages = null;
-  var observationsPerPage = 25;
-
-  $scope.currentUserPage = 0;
-  $scope.usersChanged = 0;
-  $scope.userPages = null;
-  $scope.followUserId = null;
-  var usersPerPage = 25;
-
-  calculateObservationPages($scope.observations);
-  calculateUserPages($scope.users);
+  $scope.currentFeedPanel = 'observations';
 
   var newObservation;
 
@@ -69,6 +69,7 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
       observationForm.name = form.name;
       $scope.newObservationForm.forms.push(observationForm);
     }
+
   };
 
   $scope.cancelNewObservation = function() {
@@ -76,9 +77,106 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
     $scope.$emit('observation:cancel');
   };
 
-  $scope.$on('observation:feed', function(e, observation) {
-    newObservation = observation;
-    var newObservationForms = EventService.getForms(observation, {archived: false});
+  $scope.$on('observation:delete', function(e, observation) {
+    $scope.newObservation = null;
+    $scope.editObservation = null;
+    $scope.viewObservation = null;
+    MapService.edit({
+      type: 'delete',
+      name: 'Observations',
+      feature: observation
+    });
+  })
+
+  $scope.$on('user:view', function(e, user) {
+    $scope.viewUser = user
+    $scope.newObservation = null;
+    $scope.editObservation = null;
+    $scope.viewObservation = null;
+    $scope.$emit('feed:show');
+  });
+
+  $scope.$on('user:viewDone', function(e, user) {
+    $scope.viewUser = null;
+  })
+
+  $scope.$on('observation:view', function(e, observation) {
+    $scope.viewObservation = observation
+    $scope.newObservation = null;
+    $scope.editObservation = null;
+    $scope.viewUser = null;
+    $scope.$emit('feed:show');
+  });
+
+  $scope.$on('observation:viewDone', function(e, observation) {
+    $scope.viewObservation = null;
+  })
+
+  $scope.$on('observation:edit', function(e, observation) {
+    $scope.edit = true;
+
+    var formMap = _.indexBy(EventService.getForms(observation), 'id');
+    var form = {
+      geometryField: {
+        title: 'Location',
+        type: 'geometry',
+        name: 'geometry',
+        value: observation.geometry
+      },
+      timestampField: {
+        title: 'Date',
+        type: 'date',
+        name: 'timestamp',
+        value: moment(observation.properties.timestamp).toDate()
+      },
+      forms: []
+    };
+
+    _.each(observation.properties.forms, function(propertyForm) {
+      var observationForm = EventService.createForm(observation, formMap[propertyForm.formId]);
+      observationForm.name = formMap[propertyForm.formId].name;
+      form.forms.push(observationForm);
+    });
+
+    $scope.editForm = form;
+    $scope.editObservation = observation;
+  });
+
+  $scope.createNewObservation = function() {
+
+    const mapPos = LocalStorageService.getMapPosition();
+
+    var event = FilterService.getEvent();
+    if (!EventService.isUserInEvent(UserService.myself, event)) {
+      $uibModal.open({
+        template: require('../error/not.in.event.html'),
+        controller: 'NotInEventController',
+        resolve: {
+          title: function() {
+            return 'Cannot Create Observation';
+          }
+        }
+      });
+
+      return;
+    }
+
+    newObservation = new Observation({
+      eventId: event.id,
+      type: 'Feature',
+      id: 'new',
+      geometry: {
+        type: 'Point',
+        coordinates: [mapPos.center.lng, mapPos.center.lat]
+      },
+      properties: {
+        timestamp: new Date(),
+        forms: []
+      },
+      style: {}
+    });
+
+    var newObservationForms = EventService.getForms(newObservation, {archived: false});
 
     if (newObservationForms.length === 0) {
       $scope.createObservation();
@@ -87,41 +185,38 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
     } else {
       $scope.newObservationForms = newObservationForms;
     }
-  });
+  }
 
   $scope.$on('observation:editDone', function(event, observation) {
     $scope.newObservation = null;
-    $timeout(function() {
-      // scroll to observation in that page
-      var offset = $($element.find(".feed-items-container")).prop('offsetTop');
-      var feedElement = $($element.find(".feed-items"));
-      feedElement.animate({scrollTop: $('#' + observation.id).prop('offsetTop') - offset}, "slow");
-    });
+    $scope.editObservation = null;
   });
 
   $scope.$on('observation:cancel', function() {
     $scope.newObservation = null;
   });
 
+  $scope.$watch('event', function() {
+    $scope.newObservation = null;
+    $scope.editObservation = null;
+    $scope.viewObservation = null;
+    $scope.viewUser = null;
+  })
+
   $scope.$watch('currentFeedPanel', function(currentFeedPanel) {
-    if (currentFeedPanel === 'observationsTab') {
-      $scope.feedObservationsChanged = {count: 0};
+    if (currentFeedPanel === 'observations') {
       $scope.observationsChanged = 0;
       $scope.$broadcast('map:visible');
-    } else if (currentFeedPanel === 'peopleTab') {
+    } else if (currentFeedPanel === 'people') {
       $scope.feedUsersChanged = {};
       $scope.usersChanged = 0;
     }
   });
 
-  $scope.$watch('actionFilter', function(actionFilter) {
-    FilterService.setFilter({actionFilter: actionFilter});
-  });
-
   $scope.$watch('feedObservationsChanged', function(feedObservationsChanged) {
     if (!feedObservationsChanged) return;
 
-    if ($scope.currentFeedPanel === 'peopleTab') {
+    if ($scope.currentFeedPanel === 'people') {
       $scope.observationsChanged = feedObservationsChanged.count;
     }
   }, true);
@@ -129,118 +224,16 @@ function NewsFeedController($rootScope, $scope, $element, $filter, $timeout, Eve
   $scope.$watch('feedUsersChanged', function(feedUsersChanged) {
     if (!feedUsersChanged) return;
 
-    if ($scope.currentFeedPanel === 'observationsTab') {
+    if ($scope.currentFeedPanel === 'observations') {
       $scope.usersChanged = _.keys(feedUsersChanged).length;
     }
   }, true);
 
-  $scope.$on('observation:select', function(e, observation, options) {
-    $scope.selectedObservation = observation;
-    if (!options || !options.scrollTo) return;
-
-    // locate the page this observation is on
-    var page;
-    for (page = 0; page < $scope.observationPages.length; page++) {
-      var last = _.last($scope.observationPages[page]);
-      if (last.properties.timestamp <= observation.properties.timestamp) {
-        break;
-      }
-    }
-
-    $scope.currentObservationPage = page;
-    $scope.currentFeedPanel = 'observationsTab';
-    $scope.hideFeed = false;
-
-    $timeout(function() {
-      // scroll to observation in that page
-      var offset = $($element.find(".feed-items-container")).prop('offsetTop');
-      var feedElement = $($element.find(".feed-items"));
-      feedElement.animate({scrollTop: $('#' + observation.id).prop('offsetTop') - offset}, "slow");
-    });
-  });
-
-  $scope.$on('observation:deselect', function(e, observation) {
-    if ($scope.selectedObservation && $scope.selectedObservation.id === observation.id) {
-      $scope.selectedObservation = null;
-    }
-  });
-
   $scope.$on('user:select', function(e, user) {
-    $scope.selectedUser = user;
-
-    // locate the page this user is on
-    var page;
-    for (page = 0; page < $scope.userPages.length; page++) {
-      var last = _.last($scope.userPages[page]);
-      if (last.location.properties.timestamp <= user.location.properties.timestamp) {
-        break;
-      }
-    }
-
-    $scope.currentUserPage = page;
-    $scope.currentFeedPanel = 'peopleTab';
-    $scope.hideFeed = false;
-
-    $timeout(function() {
-      // scroll to observation in that page
-      var offset = $($element.find(".feed-items-container")).prop('offsetTop');
-      var feedElement = $($element.find(".feed-items"));
-      feedElement.animate({scrollTop: $('#' + user.id).prop('offsetTop') - offset}, "slow");
-    });
+    $scope.viewUser = user;
+    $scope.viewObservation = null;
+    $scope.editObservation = null;
+    $scope.newObservation = null;
+    $scope.$emit('feed:show');
   });
-
-  $scope.$on('user:deselect', function(e, user) {
-    if ($scope.selectedUser && $scope.selectedUser.id === user.id) {
-      $scope.selectedUser = null;
-    }
-  });
-
-  $scope.$on('user:follow', function(e, user) {
-    $scope.followUserId = $scope.followUserId === user.id ? null : user.id;
-  });
-
-  $scope.$watch('observations', function(observations) {
-    calculateObservationPages(observations);
-  });
-
-  $scope.$watch('users', function(users) {
-    calculateUserPages(users);
-  });
-
-  function calculateObservationPages(observations) {
-    if (!observations) return;
-
-    // sort the observations
-    observations = $filter('orderBy')(observations, function(observation) {
-      return moment(observation.properties.timestamp).valueOf() * -1;
-    });
-
-    // slice into pages
-    var pages = [];
-    for (var i = 0, j = observations.length; i < j; i += observationsPerPage) {
-      pages.push(observations.slice(i, i + observationsPerPage));
-    }
-
-    $scope.observationPages = pages;
-    $scope.currentObservationPage = $scope.currentObservationPage || 0;
-  }
-
-  function calculateUserPages(users) {
-    if (!users) return;
-
-    // sort the locations
-    users = $filter('orderBy')(users, function(user) {
-      return moment(user.location.properties.timestamp).valueOf() * -1;
-    });
-
-    // slice into pages
-    var pages = [];
-    for (var i = 0, j = users.length; i < j; i += usersPerPage) {
-      pages.push(users.slice(i, i + usersPerPage));
-    }
-
-    $scope.userPages = pages;
-    $scope.currentUserPage = $scope.currentUserPage || 0;
-
-  }
 }

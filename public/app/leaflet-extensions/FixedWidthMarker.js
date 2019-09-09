@@ -6,7 +6,7 @@ L.FixedWidthMarker = L.Marker.extend({
   initialize: function(latlng, options) {
     var self = this;
     if (options.iconUrl) {
-      options.icon = L.fixedWidthIcon({
+      options.icon = this.fixedWidthIcon = L.fixedWidthIcon({
         iconUrl: options.iconUrl,
         tooltip: options.tooltip,
         onIconLoad: function() {

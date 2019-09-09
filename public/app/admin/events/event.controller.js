@@ -201,52 +201,19 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     });
   };
 
-  $scope.addForm = function() {
-    $location.path('/admin/events/' + $scope.event.id + '/forms/new');
+  $scope.createForm = function() {
+    $scope.formCreateOpen = {opened: true};
   };
 
-  $scope.importForm = function() {
-    //present upload modalInstance
-    var modalInstance = $uibModal.open({
-      template: require('./event-form-upload.html'),
-      resolve: {
-        event: function () {
-          return $scope.event;
-        }
-      },
-      controller: ['$scope', '$uibModalInstance', 'Form', 'event', function ($scope, $uibModalInstance, Form, event) {
-        $scope.event = event;
-        $scope.form = new Form({
-          eventId: $scope.event.id,
-          color: '#' + (Math.random()*0xFFFFFF<<0).toString(16)
-        });
-
-        $scope.$on('uploadFile', function(e, uploadFile) {
-          $scope.form.formArchiveFile = uploadFile;
-        });
-
-        $scope.upload = function() {
-          $scope.generalForm.$submitted = true;
-          if ($scope.generalForm.$invalid) {
-            return;
-          }
-
-          $scope.form.$save({}, function(form) {
-            $uibModalInstance.close(form);
-          });
-        };
-
-        $scope.cancel = function () {
-          $uibModalInstance.dismiss('cancel');
-        };
-      }]
-    });
-
-    modalInstance.result.then(function (form) {
+  $scope.onFormCreateClose = function(form) {
+    $scope.formCreateOpen = {opened: false};
+    if (form.id) {
       $location.path('/admin/events/' + $scope.event.id + '/forms/' + form.id);
-    });
-
-  };
+    } else {
+      $location.search('form', JSON.stringify(form))
+      $location.path('/admin/events/' + $scope.event.id + '/forms/new/fields');
+    }
+  }
 
   $scope.moveFormUp = function($event, form) {
     $event.stopPropagation();

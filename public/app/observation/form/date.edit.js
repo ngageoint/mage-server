@@ -10,52 +10,20 @@ module.exports = {
   controller: DateEditController
 };
 
-DateEditController.$inject = ['LocalStorageService'];
+DateEditController.$inject = [];
 
-function DateEditController(LocalStorageService) {
+function DateEditController() {
 
-  this.$onInit = function() {
+  this.$onChanges = function() {
     this.date = angular.copy(this.field.value);
-
-    this.timeZone = LocalStorageService.getTimeZoneEdit();
-    this.localOffset = moment().format('Z');
-    this.datePopup = { open: false };
-
-    this.formatDate();
   };
 
-  this.$onChanges = function(changes) {
-    if (changes.formField) {
-      this.formatDate();
+  this.formatDate = function(date, timeZone) {
+    var momentDate = moment(date)
+    if (timeZone === 'gmt') {
+      momentDate.add(momentDate.utcOffset(), 'minutes')
     }
-  };
-
-  this.onTimeZoneChange = function() {
-    this.timeZone = this.timeZone === 'local' ? 'gmt' : 'local';
-    LocalStorageService.setTimeZoneEdit(this.timeZone);
-    this.formatDate();
-  };
-
-  this.openDate = function($event) {
-    $event.preventDefault();
-    $event.stopPropagation();
-
-    this.datePopup.open = true;
-  };
-
-  this.onDateChanged = function() {
-    this.formatDate();
-  };
-
-  this.formatDate = function() {
-    if (this.formField && this.formField.$valid) {
-      var date = moment(this.date);
-      if (this.timeZone === 'gmt') {
-        date.add(date.utcOffset(), 'minutes');
-      }
-
-      this.field.value = date.toDate();
-    }
+    this.field.value = momentDate.toDate();
   };
 
   this.today = function() {

@@ -1,0 +1,88 @@
+<div>
+  <li class="mdc-list-divider" role="separator" ng-if="$ctrl.expandMenu"></li>
+  <a ng-class="{'mdc-button': !$ctrl.drawer, 'top-app-bar-button': !$ctrl.drawer, 'mdc-list-item': $ctrl.drawer}"
+    ng-click="$ctrl.openPreferencesChooser()"
+    tabindex="0">
+    <i class="material-icons">build</i>
+    <span style="padding-left: 10px;" class="mdc-button__label">Preferences</span>
+    <i ng-if="!$ctrl.drawer" class="material-icons">arrow_drop_down</i>
+    <i ng-if="$ctrl.drawer && !$ctrl.expandMenu" class="material-icons">keyboard_arrow_down</i>
+    <i ng-if="$ctrl.drawer && $ctrl.expandMenu" class="material-icons">keyboard_arrow_up</i>
+  </a>
+  <div ng-class="{'mdc-menu-surface--anchor': !$ctrl.drawer}" ng-if="!$ctrl.drawer || $ctrl.expandMenu" class="ng-animatable slide-down">
+    <div  ng-class="{'preferences-menu': !$ctrl.drawer, 'mdc-menu-surface': !$ctrl.drawer}">
+      <ul class="mdc-list" role="menu">
+        <li>
+          <div class="mdc-list-group">
+            <h3 class="mdc-list-group__subheader"><i class="fa fa-fw fa-clock-o"></i>Time Format</h3>
+            <ul class="mdc-list" role="menu" aria-label="Time Format">
+              <li class="mdc-list-item" role="menuitem">
+                <span class="mdc-list-item__text">
+                  <div>
+                    <div class="btn-group">
+                      <label class="btn btn-default btn-xs" 
+                        ng-model="$ctrl.preferences.timeFormat" 
+                        ng-change="$ctrl.onTimeFormatChange('absolute')" 
+                        uib-btn-radio="'absolute'">Absolute</label>
+                      <label class="btn btn-default btn-xs" 
+                        ng-model="$ctrl.preferences.timeFormat" 
+                        ng-change="$ctrl.onTimeFormatChange('relative')" 
+                        uib-btn-radio="'relative'">Relative</label>
+                    </div>
+                  </div>
+                </span>
+              </li>
+            </ul>
+          </div>
+          <div class="mdc-list-group" ng-if="$ctrl.preferences.timeFormat !== 'relative'">
+            <h3 class="mdc-list-group__subheader"><i class="fa fa-fw fa-globe"></i>Time Zone</h3>
+            <ul class="mdc-list" role="menu" aria-label="Time Zone">
+              <li class="mdc-list-item" role="menuitem">
+                <span class="mdc-list-item__text">
+                  <div>
+                    <div class="btn-group">
+                      <label class="btn btn-default btn-xs" 
+                        ng-model="$ctrl.preferences.timeZone" 
+                        ng-change="$ctrl.onTimeZoneChange('local')" 
+                        uib-btn-radio="'local'">Local</label>
+                      <label class="btn btn-default btn-xs" 
+                        ng-model="$ctrl.preferences.timeZone" 
+                        ng-change="$ctrl.onTimeZoneChange('gmt')" 
+                        uib-btn-radio="'gmt'">GMT</label>
+                    </div>
+                  </div>
+                </span>
+              </li>
+            </ul>
+          </div>
+        </li>
+        <li class="mdc-list-divider" role="separator"></li>
+        <li>
+        <div class="mdc-list-group">
+          <h3 class="mdc-list-group__subheader"><i class="fa fa-fw fa-map-o"></i>Coordinate System</h3>
+          <ul class="mdc-list" role="menu" aria-label="Coordinate System">
+            
+            <li class="mdc-list-item" role="menuitem">
+              <span class="mdc-list-item__text">
+                <div>
+                  <div class="btn-group">
+                    <label class="btn btn-default btn-xs" 
+                      ng-model="$ctrl.preferences.coordinateSystem" 
+                      ng-change="$ctrl.onCoordinateSystemChange('wgs84')" 
+                      uib-btn-radio="'wgs84'">Lat/Lng</label>
+                    <label class="btn btn-default btn-xs" 
+                      ng-model="$ctrl.preferences.coordinateSystem" 
+                      ng-change="$ctrl.onCoordinateSystemChange('mgrs')" 
+                      uib-btn-radio="'mgrs'">MGRS</label>
+                  </div>
+                </div>
+              </span>
+            </li>
+          </ul>
+        </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <li class="mdc-list-divider" role="separator" ng-if="$ctrl.expandMenu"></li>
+</div>

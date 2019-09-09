@@ -1,0 +1,35 @@
+.slide-left {
+  position:absolute;
+  left:0;
+  width: 100%;
+  z-index: 3;
+  overflow-y: auto;
+}
+.slide-left.ng-enter, .slide-left.ng-leave,
+.record.ng-anchor {
+  transition:0.3s linear all;
+}
+.slide-left.ng-enter {
+  transform:translateX(100%);
+}
+.slide-left.ng-enter.ng-enter-active, .slide-left.ng-leave {
+  transform:translateX(0%);
+}
+.slide-left.ng-leave.ng-leave-active {
+  transform:translateX(100%);
+}
+
+.fade-in.ng-enter {
+  -webkit-animation: zoomIn 0.5s;
+  -moz-animation: zoomIn 0.5s;
+  -ms-animation: zoomIn 0.5s;
+  animation: zoomIn 0.5s;
+}
+
+.fade-in.ng-leave {
+  display: none;
+  -webkit-animation: zoomOut 0.5s;
+  -moz-animation: zoomOut 0.5s;
+  -ms-animation: zoomOut 0.5s;
+  animation: zoomOut 0.5s;
+}

@@ -1,0 +1,68 @@
+{
+	"name": "md-date-time-picker",
+	"description": "An implementation of the Material Design Picker components in vanilla CSS, JS and HTML",
+	"main": [
+		"dist/js/md-date-time-picker.js",
+		"dist/css/md-date-time-picker.css",
+		"dist/js/md-date-time-picker.min.js",
+		"dist/css/md-date-time-picker.min.css"
+	],
+	"authors": ["Puranjay Jain <me+bower@puranjayjain.com>"],
+	"license": "MIT",
+	"keywords": [
+		"material",
+		"design",
+		"date",
+		"time",
+		"picker",
+		"pickers",
+		"dialog",
+		"calendar",
+		"clock",
+		"input"
+	],
+	"devDependencies": {
+		"babel-core": "^6.10.4",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-transform-es2015-modules-umd": "^6.8.0",
+    "babel-plugin-transform-member-expression-literals": "^6.8.0",
+    "babel-plugin-transform-merge-sibling-variables": "^6.8.0",
+    "babel-plugin-transform-minify-booleans": "^6.8.0",
+    "babel-plugin-transform-property-literals": "^6.8.0",
+    "babel-preset-es2015": "^6.9.0",
+    "browser-sync": "^2.13.0",
+    "chokidar": "^1.6.0",
+    "del": "^2.2.1",
+    "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^3.0.2",
+    "gulp-babel": "^6.1.2",
+    "gulp-cache": "^0.4.5",
+    "gulp-concat": "^2.5.2",
+    "gulp-imagemin": "^3.0.1",
+    "gulp-minify-css": "1.2.4",
+    "gulp-plumber": "1.1.0",
+    "gulp-rename": "^1.2.0",
+    "gulp-replace": "^0.5.4",
+    "gulp-sass": "^2.3.2",
+    "gulp-uglify": "^1.5.4",
+    "require-dir": "^0.3.0",
+    "run-sequence": "^1.2.2"
+	},
+	"dependencies": {
+		"moment": "^2.13.0",
+    "draggabilly": "^2.1.1"
+	},
+	"homepage": "https://puranjayjain.github.io/md-date-time-picker",
+	"moduleType": "globals",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/puranjayjain/md-date-time-picker.git"
+	},
+	"ignore": [
+		"**/.*",
+		"node_modules",
+		"bower_components",
+		"test",
+		"tests"
+	]
+}

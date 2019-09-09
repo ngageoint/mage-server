@@ -1,31 +1,95 @@
 var $ = require('jquery')
+  , MDCDialog = require('material-components-web').dialog.MDCDialog
+  , MDCSelect = require('material-components-web').select.MDCSelect
+  , MDCCheckbox = require('material-components-web').checkbox.MDCCheckbox
+  , MDCFormField = require('material-components-web').formField.MDCFormField
   , moment = require('moment');
 
-module.exports = ExportController;
+  module.exports = {
+    template: require('./export.html'),
+    bindings: {
+      open: '<',
+      events: '<',
+      onExportClose: '&'
+    },
+    controller: ExportController
+  };
 
-ExportController.$inject = ['$scope', '$uibModalInstance', 'LocalStorageService', 'FilterService', 'events'];
+ExportController.$inject = ['LocalStorageService', 'FilterService', '$timeout', '$element'];
 
-function ExportController($scope, $uibModalInstance, LocalStorageService, FilterService, events) {
-  $scope.exportEvent = {selected: FilterService.getEvent()};
-  $scope.events = events;
+function ExportController(LocalStorageService, FilterService, $timeout, $element) {
+  var exportPanel;
+  var eventSelectMdc;
+  var intervalSelectMdc;
 
-  $scope.exportLocations = {value: true};
-  $scope.exportObservations = {value: true};
-  $scope.exportFavoriteObservations = {value: false};
-  $scope.exportImportantObservations = {value: false};
-  $scope.exportObservationsWithAttachments = {value: false};
+  this.$onChanges = function() {
+    if (this.events) {
+      if (this.open && this.open.opened && exportPanel && !exportPanel.isOpen) {
+        exportPanel.open();
+      }
+    }    
+  }.bind(this)
 
-  $scope.localOffset = moment().format('Z');
-  $scope.localTime = true;
+  this.$onInit = function() {
+    
+    exportPanel = new MDCDialog(angular.element.find('.export-panel')[0])
+    exportPanel.listen('MDCDialog:closing', function() {
+      this.onExportClose()
+    }.bind(this))
+    exportPanel.listen('MDCDialog:opening', function() {
+      this.exportEvent = {selected: FilterService.getEvent()};
+      this.initializeEventPanel()
+    }.bind(this))
 
-  $scope.startDate = moment().startOf('day').toDate();
-  $scope.endDate = moment().endOf('day').toDate();
+    if (this.events) {
+      if (this.open && this.open.opened && !exportPanel.isOpen) {
+        exportPanel.open();
+      }
+    }  
+  }
 
-  $scope.startDatePopup = {open: false};
-  $scope.endDatePopup = {open: false};
+  this.initializeEventPanel = function() {
+    if (this.events && !this.eventSelectMdc) {
+      $timeout(function() {
+        intervalSelectMdc = new MDCSelect($element.find('.interval-select')[0])
+        intervalSelectMdc.listen('MDCSelect:change', function(event) {
+          $timeout(function() {
+            this.exportTime = this.exportOptions.find(function(choice) {
+              return choice.label === event.detail.value
+            })
+          }.bind(this))
+        }.bind(this))
+        eventSelectMdc = new MDCSelect($element.find('.event-select')[0])
+        eventSelectMdc.listen('MDCSelect:change', function(event) {
+          var eventId = event.detail.value;
+          $timeout(function(){ 
+            eventId = Number(eventId)
+            this.exportEvent.selected = this.events.find(function(value, index) {
+              return value.id === eventId;
+            })
+          }.bind(this))
+        }.bind(this))
+      }.bind(this))
+    }
+  }
+
+  this.exportLocations = {value: true};
+  this.exportObservations = {value: true};
+  this.exportFavoriteObservations = {value: false};
+  this.exportImportantObservations = {value: false};
+  this.exportObservationsWithAttachments = {value: false};
+
+  this.localOffset = moment().format('Z');
+  this.localTime = true;
+
+  this.startDate = moment().startOf('day').toDate();
+  this.endDate = moment().endOf('day').toDate();
+
+  this.startDatePopup = {open: false};
+  this.endDatePopup = {open: false};
 
   /* Export existing points to  */
-  $scope.exportOptions = [{
+  this.exportOptions = [{
     value: 300,
     label: 'Last 5 minutes'
   },{
@@ -46,68 +110,59 @@ function ExportController($scope, $uibModalInstance, LocalStorageService, Filter
     value: null,
     label: 'Custom (Choose your own start/end)'
   }];
-  $scope.exportTime = $scope.exportOptions[0];
+  this.exportTime = this.exportOptions[0];
 
-  $scope.closeModal = function () {
-    $uibModalInstance.dismiss('cancel');
-  };
+  this.onStartDate = function(date, localTime) {
+    this.startDate = date;
+    this.localTime = localTime;
+  }
 
-  $scope.openStartDate = function($event) {
-    $event.preventDefault();
-    $event.stopPropagation();
+  this.onEndDate = function(date, localTime) {
+    this.endDate = date;
+    this.localTime = localTime;
+  }
 
-    $scope.startDatePopup.open = true;
-  };
-
-  $scope.openEndDate = function($event) {
-    $event.preventDefault();
-    $event.stopPropagation();
-
-    $scope.endDatePopup.open = true;
-  };
-
-  $scope.exportData = function($event, type) {
-    if (!$scope.exportEvent.selected) {
+  this.exportData = function($event, type) {
+    if (!this.exportEvent.selected) {
       $event.preventDefault();
-      $scope.showEventError = true;
+      this.showEventError = true;
       return false;
     }
 
-    $scope.showEventError = false;
+    this.showEventError = false;
 
     var start;
-    if ($scope.exportTime.custom) {
-      var startDate = moment($scope.startDate);
+    if (this.exportTime.custom) {
+      var startDate = moment(this.startDate);
       if (startDate) {
-        startDate = $scope.localTime ? startDate.utc() : startDate;
+        startDate = this.localTime ? startDate.utc() : startDate;
         start = startDate.format("YYYY-MM-DD HH:mm:ss");
       }
 
-      var endDate = moment($scope.endDate);
+      var endDate = moment(this.endDate);
       if (endDate) {
-        endDate = $scope.localTime ? endDate.utc() : endDate;
+        endDate = this.localTime ? endDate.utc() : endDate;
         var end = endDate.format("YYYY-MM-DD HH:mm:ss");
       }
-    } else if ($scope.exportTime.value) {
-      start = moment().subtract('seconds', $scope.exportTime.value).utc().format("YYYY-MM-DD HH:mm:ss");
+    } else if (this.exportTime.value) {
+      start = moment().subtract('seconds', this.exportTime.value).utc().format("YYYY-MM-DD HH:mm:ss");
     }
 
     var params = {
-      eventId: $scope.exportEvent.selected.id,
-      observations: $scope.exportObservations.value,
-      locations: $scope.exportLocations.value,
+      eventId: this.exportEvent.selected.id,
+      observations: this.exportObservations.value,
+      locations: this.exportLocations.value,
       access_token: LocalStorageService.getToken() //eslint-disable-line camelcase
     };
 
     if (start) params.startDate = start;
     if (end) params.endDate = end;
 
-    if ($scope.exportObservations.value) {
-      params.attachments = $scope.exportObservationsWithAttachments.value;
-      params.favorites = $scope.exportFavoriteObservations.value;
-      params.important = $scope.exportImportantObservations.value;
+    if (this.exportObservations.value) {
+      params.attachments = this.exportObservationsWithAttachments.value;
+      params.favorites = this.exportFavoriteObservations.value;
+      params.important = this.exportImportantObservations.value;
     }
-
     var url = "api/" + type + "?" + $.param(params);
     $.fileDownload(url)
       .done(function() {

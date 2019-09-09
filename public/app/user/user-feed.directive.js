@@ -12,10 +12,10 @@ module.exports = function userNewsItem() {
   return directive;
 };
 
-UserNewsItemController.$inject = ['$scope', 'LocalStorageService'];
+UserNewsItemController.$inject = ['$scope', 'LocalStorageService', 'MapService'];
 
-function UserNewsItemController($scope, LocalStorageService) {
-  $scope.followingUserId = null;
+function UserNewsItemController($scope, LocalStorageService, MapService) {
+  $scope.followingUser = MapService.followedFeature;
 
   if ($scope.user.avatarUrl) {
     $scope.avatarUrl = $scope.user.avatarUrl + "?access_token=" + LocalStorageService.getToken();
@@ -25,11 +25,16 @@ function UserNewsItemController($scope, LocalStorageService) {
 
   $scope.followUser = function(e, user) {
     e.stopPropagation();
-    $scope.$emit('user:follow', user);
+    MapService.followFeatureInLayer(user, 'People')
   };
 
   $scope.onUserLocationClick = function(user) {
-    $scope.$emit('user:zoom', user, {panToLocation: true, zoomToLocation: true});
+    MapService.zoomToFeatureInLayer(user, 'People');
   };
+
+  $scope.viewUser = function() {
+    $scope.onUserLocationClick($scope.user);
+    $scope.$emit('user:view', $scope.user);
+  }
 
 }
