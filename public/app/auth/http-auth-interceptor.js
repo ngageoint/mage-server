@@ -18,7 +18,6 @@ angular
        * example if you need to pass through details of the user that was logged in
        */
       loginConfirmed: function(data, configUpdater) {
-        console.log('login confirmed is being fired', loginData)
         var updater = configUpdater || function(config) {return config;};
         $rootScope.$broadcast('event:auth-loginConfirmed', loginData);
         if (loginData && !loginData.newUser) {
@@ -40,7 +39,14 @@ angular
     var interceptor = ['$rootScope', '$location', '$q', 'httpBuffer', 'LocalStorageService', function($rootScope, $location, $q, httpBuffer, LocalStorageService) {
       return {
         'request': function(request) {
-          if (!request.ignoreAuthModule && request.url.startsWith('/api/') && request.url.lastIndexOf('.html') !== request.url.length - 5) {
+          console.log(`check this ${$location.protocol()}://${$location.host()}`, request.url)
+          if (!request.ignoreAuthModule 
+              && (request.url.startsWith('/api/') 
+                || (request.url.startsWith(`${$location.protocol()}://${$location.host()}`)
+                  && (request.url.indexOf('/api/') != -1)
+                )
+              )
+              && request.url.lastIndexOf('.html') !== request.url.length - 5) {
             request.headers.authorization = "Bearer " + LocalStorageService.getToken();
           }
           return request;
@@ -79,6 +85,7 @@ angular
     var $http;
 
     function retryHttpRequest(config, deferred) {
+      console.log('retry request', config);
       function successCallback(response) {
         deferred.resolve(response);
       }
