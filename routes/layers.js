@@ -2,7 +2,10 @@ module.exports = function(app, security) {
   const fs = require('fs-extra')
     , path = require('path')
     , geojsonvt = require('geojson-vt')
+    , request = require('request')
     , vtpbf = require('vt-pbf')
+    , WMSCapabilities = require('wms-capabilities')
+    , DOMParser = require('xmldom').DOMParser
     , Event = require('../models/event')
     , access = require('../access')
     , api = require('../api')
@@ -260,6 +263,20 @@ module.exports = function(app, security) {
           res.json(response);
         })
         .catch(err => next(err));
+    }
+  );
+
+  app.post(
+    '/api/layers/wms/getcapabilities',
+    function(req, res) {
+      request.get({url: req.body.url + '?SERVICE=WMS&REQUEST=GetCapabilities', gzip: true}, function(err, response, body) {
+        if (err) {
+          return res.sendStatus(400);
+        }
+
+        var json = new WMSCapabilities(body, DOMParser).toJSON();
+        res.json(json);
+      });
     }
   );
 

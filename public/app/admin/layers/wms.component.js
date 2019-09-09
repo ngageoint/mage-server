@@ -1,5 +1,4 @@
-var angular = require('angular')
-  , xml2js = require('xml2js');
+var angular = require('angular');
 
 module.exports = {
   template: require('./wms.component.html'),
@@ -14,6 +13,8 @@ WmsEditController.$inject = ['$http'];
 function WmsEditController($http) {
   var layer;
 
+  this.wmsLayer = {};
+
   this.$onInit = function() {
     layer = angular.copy(this.layer);
   };
@@ -26,14 +27,39 @@ function WmsEditController($http) {
   };
 
   this.onUrlChange = function() {
-    var url = layer.url + '?request=GetCapabilities&service=WMS';
-    $http.get(url, {
+    var options = {
+      headers: {
+        'content-type': 'application/json'
+      }
+    };
 
-    }).then(function(response) {
-      console.log('wms success', response);
-    }, function(response) {
+    $http.post('/api/layers/wms/getcapabilities', {url: layer.url}, options).then(function(response) {
+      var layer = response.data.Capability.Layer;
+      var layers = [];
+      this.parseLayer(layer, layers);
+
+      layers.forEach(function(layer) {
+        console.log('Layer w/ title', layer.Title);
+      });
+
+      this.layer.wms = {
+        layers: layers
+      };
+    }.bind(this), function(response) {
       console.log('wms fail', response);
-    });
+    })
   };
 
+  this.parseLayer = function(layer, layers) {
+    var children = layer.Layer;
+    if (!children) return;
+
+    children.forEach(function(child) {
+      if (child.Layer) {
+        this.parseLayer(child, layers);
+      } else {
+        layers.push(child);
+      }
+    }.bind(this));
+  };
 }

@@ -1,4 +1,4 @@
-<div class="form-group">
+<!-- <div class="form-group">
   <label class="control-label">Layers</label>
   <input class="form-control" class="input-xlarge" type="text" placeholder="Comma seperated list of layer names" ng-model="layer.wms.layers"/>
 </div>
@@ -24,4 +24,35 @@
 <div class="form-group">
   <label class="control-label" for="type">Version</label>
   <select class="form-control" ng-model="layer.wms.version" ng-options="version for version in wmsVersions"></select>
+</div> -->
+
+Layers: {{$ctrl.layer.wms.capabilities.Layer.Layer}}
+
+<div ng-if="$ctrl.layer.wms.layers">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="form-group">
+        <label>Available layers on this WMS server.  Choose a layer to create your map with:</label>
+        <div ng-repeat="layer in $ctrl.layer.wms.layers">
+          <div class="pointer">
+            <div class="admin-device-container">
+              <div class="right-gap">
+                <i class="fa admin-device-icon" ng-class="iconClass(d)"></i>
+              </div>
+
+              <div class="admin-device-info">
+                <div><strong>{{layer.Title}}</strong></div>
+                <div class="muted small" ng-if="layer.Abstract">{{layer.Abstract}}</div>
+              </div>
+
+              <div>
+                <!-- <button class="btn btn-sm btn-default pull-right" ng-if="hasDeviceEditPermission" ng-click="editDevice($event, d)">Edit</button> -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
 </div>
