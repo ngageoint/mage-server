@@ -1,5 +1,5 @@
-<form class="form" method="post" autocomplete="off">
-  <div class="top-gap" ng-class="{'has-error': $ctrl.status > 399}">
+<form class="form" method="post" ng-submit="$ctrl.signin()">
+  <div class="top-gap">
     <div class="mdc-text-field mdc-text-field--outlined" style="width: 100%">
       <input type="text" 
         id="username" 
@@ -8,7 +8,7 @@
         autocomplete="username" 
         autocapitalize="off"
         ng-model="$ctrl.username" 
-        value="{{$ctrl.username}}" 
+        ng-value="$ctrl.username"
         class="mdc-text-field__input">
       <div class="mdc-notched-outline">
         <div class="mdc-notched-outline__leading"></div>
@@ -20,7 +20,7 @@
     </div>
   </div>
 
-  <div class="top-gap" ng-class="{'has-error': $ctrl.status > 399}">
+  <div class="top-gap">
     <div class="mdc-text-field mdc-text-field--outlined" style="width: 100%">
       <input type="password" 
         id="password" 
@@ -29,7 +29,7 @@
         autocomplete="password" 
         autocapitalize="off"
         ng-model="$ctrl.password" 
-        value="{{$ctrl.password}}" 
+        ng-value="$ctrl.password"
         class="mdc-text-field__input">
       <div class="mdc-notched-outline">
         <div class="mdc-notched-outline__leading"></div>
@@ -40,23 +40,20 @@
       </div>
     </div>
   </div>
-
-  <div class="text-right">
-    <button class="top-gap mdc-button mdc-button--raised" ng-click="$ctrl.signin()">Sign In</button>
+  <div class="auth-button-container">
+    <div ng-if="$ctrl.hideSignup"></div>
+    <button ng-if="!$ctrl.hideSignup" class="top-gap mdc-button mdc-button--raised secondary-button" ng-click="$ctrl.onSignup()" type="button">Sign Up</button>
+    <button class="top-gap mdc-button mdc-button--raised primary-button" type="submit">Sign In</button>
   </div>
 </form>
 
-<div class="top-gap" ng-if="$ctrl.signinType === 'main'">
-  <span class="pull-right"><p class="muted">Don't have a MAGE account?&nbsp&nbsp<a href="/#/signup">Create one here</a></p></span>
-</div>
-
-<!-- Status message area -->
-<div class="row top-gap" ng-show="$ctrl.showStatus">
-  <div class="col-md-12">
-    <div class="alert" ng-class="$ctrl.statusLevel">
-      <button type="button" class="close" ng-click="$ctrl.showStatus = false">&times;</button>
+<div class="mdc-snackbar">
+  <div class="mdc-snackbar__surface">
+    <div class="mdc-snackbar__label"
+          role="status">
       <h4>{{$ctrl.statusTitle}}</h4>
       {{$ctrl.statusMessage}}
     </div>
+    <button class="mdc-icon-button mdc-snackbar__dismiss material-icons" title="Dismiss">close</button>
   </div>
 </div>

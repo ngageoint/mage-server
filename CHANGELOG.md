@@ -11,6 +11,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Upgrade multer, file uploads are now configured per route.
 * Display for the feed can now be configured per form
 * Updated to use material design
+* New login and signup page flow!
 
 ##### Bug Fixes
 * Fix kml to geojson icon style.

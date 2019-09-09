@@ -1,72 +1,48 @@
-const MDCTextField = require('material-components-web').textField.MDCTextField;
+import {textField, snackbar} from 'material-components-web'
 
-module.exports = {
-  template: require('./local.signin.html'),
-  bindings: {
-    strategy: '<',
-    signinType: '@',
-    onSignin: '&'
-  },
-  controller: LocalSigninController
-};
+class LocalSigninController {
 
-LocalSigninController.$inject = ['$uibModal', 'UserService', '$element'];
-
-function LocalSigninController($uibModal, UserService, $element) {
-
-  this.$postLink = function() {
-    this.usernameField = new MDCTextField($element.find('.mdc-text-field')[0]);
-    this.passwordField = new MDCTextField($element.find('.mdc-text-field')[1]);
+  constructor(UserService, $element, $timeout) {
+    this._UserService = UserService;
+    this._$element = $element;
+    this._$timeout = $timeout;
   }
 
-  this.signin = function() {
-    var self = this;
-    UserService.signin({username: this.username, password: this.password}).then(function(response) {
+  $postLink() {
+    this.usernameField = new textField.MDCTextField(this._$element.find('.mdc-text-field')[0]);
+    this.passwordField = new textField.MDCTextField(this._$element.find('.mdc-text-field')[1]);
+    this.snackbar = new snackbar.MDCSnackbar(this._$element.find('.mdc-snackbar')[0]);
+  }
+
+  signin() {
+    this._UserService.signin({username: this.username, password: this.password}).then(response => {
       var user = response.user;
-
-      // User has an account, but its not active
-      if (!user.active) {
-        self.showStatus = true;
-        self.statusTitle = 'Account Created';
-        self.statusMessage = 'Please contact a MAGE administrator to activate your account.';
-        self.statusLevel = 'alert-success';
-        return;
-      }
-
-      self.onSignin();
-
-      $uibModal.open({
-        template: require('./authorize-modal.html'),
-        controller: ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
-          $scope.user = user;
-          $scope.authorize = function (params) {
-            UserService.authorize('local', user, false, {uid: params.uid}).success(function(data) {
-              if (data.device.registered) {
-                $uibModalInstance.close($scope);
-              } else {
-                $scope.status = 400;
-                $scope.statusTitle = 'Invalid Device ID';
-                $scope.statusMessage = 'Please check your device ID and try again.';
-                $scope.statusLevel = 'alert-warning';
-              }
-            }).error(function (data, status) {
-              $scope.status = status;
-              $scope.statusTitle = 'Invalid Device ID';
-              $scope.statusMessage = data.errorMessage;
-              $scope.statusLevel = 'alert-warning';
-            });
-          };
-
-          $scope.cancel = function () {
-            $uibModalInstance.dismiss('cancel');
-          };
-        }]
-      });
-    }, function(response) {
-      self.showStatus = true;
-      self.statusTitle = 'Error signing in';
-      self.statusMessage = response.data || 'Please check your username and password and try again.';
-      self.statusLevel = 'alert-danger';
+      this.onSignin({user: user});
+    }, response => {
+      this.showStatus = true;
+      this.statusTitle = 'Error signing in';
+      this.statusMessage = response.data || 'Please check your username and password and try again.';
+      this.usernameField.valid = false;
+      this.passwordField.valid = false;
+      this.snackbar.open();
     });
-  };
+  }
+}
+
+var template = require('./local.signin.html')
+var bindings = {
+  strategy: '<',
+  signinType: '@',
+  onSignin: '&',
+  onSignup: '&',
+  hideSignup: '<'
+};
+var controller = LocalSigninController
+
+LocalSigninController.$inject = ['UserService', '$element', '$timeout'];
+
+export {
+  template,
+  bindings,
+  controller
 }
