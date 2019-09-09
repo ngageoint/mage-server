@@ -29,6 +29,9 @@ var bindings = {
   onSignup: '&',
   hideSignup: '<'
 };
+
+SigninController.$inject = ['UserService', '$element'];
+
 var controller = SigninController
 
 export {
