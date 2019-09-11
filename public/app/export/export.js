@@ -1,19 +1,18 @@
 var $ = require('jquery')
   , MDCDialog = require('material-components-web').dialog.MDCDialog
   , MDCSelect = require('material-components-web').select.MDCSelect
-  , MDCCheckbox = require('material-components-web').checkbox.MDCCheckbox
-  , MDCFormField = require('material-components-web').formField.MDCFormField
-  , moment = require('moment');
+  , moment = require('moment')
+  , angular = require('angular');
 
-  module.exports = {
-    template: require('./export.html'),
-    bindings: {
-      open: '<',
-      events: '<',
-      onExportClose: '&'
-    },
-    controller: ExportController
-  };
+module.exports = {
+  template: require('./export.html'),
+  bindings: {
+    open: '<',
+    events: '<',
+    onExportClose: '&'
+  },
+  controller: ExportController
+};
 
 ExportController.$inject = ['LocalStorageService', 'FilterService', '$timeout', '$element'];
 
@@ -28,50 +27,50 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
         exportPanel.open();
       }
     }    
-  }.bind(this)
+  }.bind(this);
 
   this.$onInit = function() {
     
-    exportPanel = new MDCDialog(angular.element.find('.export-panel')[0])
+    exportPanel = new MDCDialog(angular.element.find('.export-panel')[0]);
     exportPanel.listen('MDCDialog:closing', function() {
-      this.onExportClose()
-    }.bind(this))
+      this.onExportClose();
+    }.bind(this));
     exportPanel.listen('MDCDialog:opening', function() {
       this.exportEvent = {selected: FilterService.getEvent()};
-      this.initializeEventPanel()
-    }.bind(this))
+      this.initializeEventPanel();
+    }.bind(this));
 
     if (this.events) {
       if (this.open && this.open.opened && !exportPanel.isOpen) {
         exportPanel.open();
       }
     }  
-  }
+  };
 
   this.initializeEventPanel = function() {
     if (this.events && !this.eventSelectMdc) {
       $timeout(function() {
-        intervalSelectMdc = new MDCSelect($element.find('.interval-select')[0])
+        intervalSelectMdc = new MDCSelect($element.find('.interval-select')[0]);
         intervalSelectMdc.listen('MDCSelect:change', function(event) {
           $timeout(function() {
             this.exportTime = this.exportOptions.find(function(choice) {
-              return choice.label === event.detail.value
-            })
-          }.bind(this))
-        }.bind(this))
-        eventSelectMdc = new MDCSelect($element.find('.event-select')[0])
+              return choice.label === event.detail.value;
+            });
+          }.bind(this));
+        }.bind(this));
+        eventSelectMdc = new MDCSelect($element.find('.event-select')[0]);
         eventSelectMdc.listen('MDCSelect:change', function(event) {
           var eventId = event.detail.value;
           $timeout(function(){ 
-            eventId = Number(eventId)
+            eventId = Number(eventId);
             this.exportEvent.selected = this.events.find(function(value, index) {
               return value.id === eventId;
-            })
-          }.bind(this))
-        }.bind(this))
-      }.bind(this))
+            });
+          }.bind(this));
+        }.bind(this));
+      }.bind(this));
     }
-  }
+  };
 
   this.exportLocations = {value: true};
   this.exportObservations = {value: true};
@@ -115,12 +114,12 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
   this.onStartDate = function(date, localTime) {
     this.startDate = date;
     this.localTime = localTime;
-  }
+  };
 
   this.onEndDate = function(date, localTime) {
     this.endDate = date;
     this.localTime = localTime;
-  }
+  };
 
   this.exportData = function($event, type) {
     if (!this.exportEvent.selected) {

@@ -10,12 +10,12 @@ module.exports = {
 
     this.$postLink = function() {
       this.initializeDropDown();
-    }
+    };
     
     this.initializeDropDown = function() {
       $timeout(function() {
         if (!this.select && this.field)
-        this.select = new MDCSelect($element.find('.mdc-select')[0]);
+          this.select = new MDCSelect($element.find('.mdc-select')[0]);
         
         this.select.listen('MDCSelect:change', function() {
           $timeout(function() {
@@ -24,9 +24,9 @@ module.exports = {
             } else {
               this.field.value = undefined;
             }
-          }.bind(this))
+          }.bind(this));
         }.bind(this));
-      }.bind(this))
-    }
+      }.bind(this));
+    };
   }]
 };

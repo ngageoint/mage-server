@@ -1,8 +1,8 @@
 var _ = require('underscore');
 
-SignupController.$inject = ['$scope', '$location', 'UserService', 'Api'];
+SignupController.$inject = ['$scope', 'Api'];
 
-function SignupController($scope, $location, UserService, Api) {
+function SignupController($scope, Api) {
   $scope.user = {};
   $scope.showStatus = false;
   $scope.statusTitle = '';

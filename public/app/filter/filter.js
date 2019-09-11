@@ -45,69 +45,69 @@ function FilterController(FilterService, $element, $timeout) {
         this.filterPanel.open();
       }
     }    
-  }.bind(this)
+  }.bind(this);
 
   this.$onInit = function() {
-    this.filterPanel = new MDCDialog($element.find('.filter-panel')[0])
+    this.filterPanel = new MDCDialog($element.find('.filter-panel')[0]);
     this.filterPanel.listen('MDCDialog:closing', function() {
-      this.onFilterClose()
-    }.bind(this))
+      this.onFilterClose();
+    }.bind(this));
     this.filterPanel.listen('MDCDialog:opening', function() {
       if (!this.intervalSelectMdc) {
         $timeout(function() {
-          this.intervalSelectMdc = new MDCSelect($element.find('.interval-select')[0])
+          this.intervalSelectMdc = new MDCSelect($element.find('.interval-select')[0]);
           this.intervalSelectMdc.listen('MDCSelect:change', function(event) {
             $timeout(function() {
               this.intervalChoice = this.intervalChoices.find(function(choice) {
-                return choice.label === event.detail.value
-              })
-            }.bind(this))
-          }.bind(this))
-        }.bind(this))
+                return choice.label === event.detail.value;
+              });
+            }.bind(this));
+          }.bind(this));
+        }.bind(this));
       }
-    }.bind(this))
-  }
+    }.bind(this));
+  };
 
   this.eventSelected = function(event) {
     this.filterEvent.selected = event;
     this.filterTeams.selected = [];
-  }
+  };
 
   this.teamsSelected = function(teams) {
     this.filterTeams.selected = teams;
-  }
+  };
 
   this.removeTeam = function(index) {
     this.filterTeams.selected.splice(index, 1);
     if (!this.filterTeams.selected.length) {
       this.teamSelectMdc.selectedIndex = -1;
     }
-  }
+  };
 
   this.isTeamChosen = function(teamId) {
     return this.filterTeams.selected.find(function(team) {
       return team.id === teamId;
-    })
-  }
+    });
+  };
 
   this.onStartDate = function(date, localTime) {
     this.startDate = date;
     this.localTime = localTime;
-  }
+  };
 
   this.onEndDate = function(date, localTime) {
     this.endDate = date;
     this.localTime = localTime;
-  }
+  };
 
   this.onEventChange = function(eventId) {
     $timeout(function() {
-      eventId = Number(eventId)
-      this.filterEvent.selected = this.events.find(function(value, index) {
+      eventId = Number(eventId);
+      this.filterEvent.selected = this.events.find(function(value) {
         return value.id === eventId;
-      })
+      });
       this.filterTeams.selected = [];
-    }.bind(this))
+    }.bind(this));
   };
 
   this.performFilter = function() {

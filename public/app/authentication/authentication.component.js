@@ -1,5 +1,3 @@
-import _ from 'underscore'
-
 class AuthenticationComponentController {
 
   constructor($routeParams, UserService, $location, authService) {
@@ -13,7 +11,7 @@ class AuthenticationComponentController {
 
   hideStatus() {
     this.showStatus = false;
-  };
+  }
 
   returnToSignin() {
     this._UserService.logout();
@@ -21,7 +19,7 @@ class AuthenticationComponentController {
     this.onFailure();
   }
 
-  onSignup(strategy) {
+  onSignup() {
     this.action = 'signup';
   }
 
@@ -34,9 +32,9 @@ class AuthenticationComponentController {
   }
 
   authorized() {
-    var disclaimer = this.api.disclaimer || {}
+    var disclaimer = this.api.disclaimer || {};
     if (!disclaimer.show) {
-      this._authService.loginConfirmed()
+      this._authService.loginConfirmed();
       this._UserService.acceptDisclaimer();
       this.onSuccess();
       return;
@@ -49,7 +47,7 @@ class AuthenticationComponentController {
     this.onSuccess();
   }
 
-  onSignin(user, strategy) {
+  onSignin(user) {
     this.user = user;
     this.action = 'device-id';
   }
@@ -63,11 +61,11 @@ var bindings = {
   hideSignup: '<',
   onSuccess: '&',
   onFailure: '&'
-}
+};
 var controller = AuthenticationComponentController;
 
 export {
   template,
   bindings,
   controller
-}
+};

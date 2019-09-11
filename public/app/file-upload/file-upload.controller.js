@@ -1,3 +1,5 @@
+import $ from 'jquery';
+
 FileUploadController.$inject = ['$scope', '$element'];
 
 function FileUploadController($scope, $element) {

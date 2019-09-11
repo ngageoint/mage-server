@@ -1,4 +1,4 @@
-import {textField, snackbar} from 'material-components-web'
+import {textField, snackbar} from 'material-components-web';
 
 class AuthorizeController {
 
@@ -8,8 +8,8 @@ class AuthorizeController {
   }
 
   $postLink() {
-    this.deviceIdField = new textField.MDCTextField(this._$element.find('.mdc-text-field')[0])
-    this.snackbar = new snackbar.MDCSnackbar(this._$element.find('.mdc-snackbar')[0])
+    this.deviceIdField = new textField.MDCTextField(this._$element.find('.mdc-text-field')[0]);
+    this.snackbar = new snackbar.MDCSnackbar(this._$element.find('.mdc-snackbar')[0]);
   }
 
   authorize() {
@@ -39,13 +39,13 @@ class AuthorizeController {
   }
 }
 
-var template = require('./authorize.html')
+var template = require('./authorize.html');
 var bindings = {
   user: '<',
   onCancel: '&',
   onAuthorized: '&'
 };
-var controller = AuthorizeController
+var controller = AuthorizeController;
 
 AuthorizeController.$inject = ['UserService', '$element'];
 
@@ -53,4 +53,4 @@ export {
   template,
   bindings,
   controller
-}
+};

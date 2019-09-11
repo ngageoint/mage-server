@@ -1,8 +1,8 @@
-AdminLayerEditController.$inject = ['$scope', '$location', '$routeParams', 'LocalStorageService', 'Layer', 'LayerService'];
+AdminLayerEditController.$inject = ['$scope', '$location', '$routeParams', 'Layer', 'LayerService'];
 
 module.exports = AdminLayerEditController;
 
-function AdminLayerEditController($scope, $location, $routeParams, LocalStorageService, Layer, LayerService) {
+function AdminLayerEditController($scope, $location, $routeParams, Layer, LayerService) {
   $scope.saving = false;
   $scope.wmsFormats = ['image/jpeg', 'image/png'];
   $scope.wmsVersions = ['1.1.1', '1.3.0'];

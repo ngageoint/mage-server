@@ -4,9 +4,9 @@ var _ = require('underscore')
 
 module.exports = AdminUserEditController;
 
-AdminUserEditController.$inject = ['$scope', '$filter', '$routeParams', '$location', 'Api', 'LocalStorageService', 'UserService', 'UserIconService'];
+AdminUserEditController.$inject = ['$scope', '$routeParams', '$location', 'Api', 'LocalStorageService', 'UserService', 'UserIconService'];
 
-function AdminUserEditController($scope, $filter, $routeParams, $location, Api, LocalStorageService, UserService, UserIconService) {
+function AdminUserEditController($scope, $routeParams, $location, Api, LocalStorageService, UserService, UserIconService) {
   $scope.token = LocalStorageService.getToken();
   $scope.roles = [];
   $scope.canEditRole = _.contains(UserService.myself.role.permissions, 'UPDATE_USER_ROLE');

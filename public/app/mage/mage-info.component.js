@@ -19,4 +19,4 @@ var controller = MageInfoController;
 export {
   template,
   controller
-}
+};

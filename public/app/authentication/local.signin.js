@@ -1,4 +1,4 @@
-import {textField, snackbar} from 'material-components-web'
+import {textField, snackbar} from 'material-components-web';
 
 class LocalSigninController {
 
@@ -29,7 +29,7 @@ class LocalSigninController {
   }
 }
 
-var template = require('./local.signin.html')
+var template = require('./local.signin.html');
 var bindings = {
   strategy: '<',
   signinType: '@',
@@ -37,7 +37,7 @@ var bindings = {
   onSignup: '&',
   hideSignup: '<'
 };
-var controller = LocalSigninController
+var controller = LocalSigninController;
 
 LocalSigninController.$inject = ['UserService', '$element', '$timeout'];
 
@@ -45,4 +45,4 @@ export {
   template,
   bindings,
   controller
-}
+};

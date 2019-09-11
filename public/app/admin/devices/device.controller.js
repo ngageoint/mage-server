@@ -3,9 +3,9 @@ var _ = require('underscore')
 
 module.exports = AdminDeviceController;
 
-AdminDeviceController.$inject = ['$scope', '$uibModal', '$filter', '$routeParams', '$location', 'LocalStorageService', 'DeviceService', 'UserService', 'LoginService'];
+AdminDeviceController.$inject = ['$scope', '$uibModal', '$routeParams', '$location', 'LocalStorageService', 'DeviceService', 'UserService', 'LoginService'];
 
-function AdminDeviceController($scope, $uibModal, $filter, $routeParams, $location, LocalStorageService, DeviceService, UserService, LoginService) {
+function AdminDeviceController($scope, $uibModal, $routeParams, $location, LocalStorageService, DeviceService, UserService, LoginService) {
   $scope.token = LocalStorageService.getToken();
 
   $scope.hasDeviceEditPermission =  _.contains(UserService.myself.role.permissions, 'UPDATE_DEVICE');

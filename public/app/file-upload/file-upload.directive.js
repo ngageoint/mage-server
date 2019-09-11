@@ -1,5 +1,3 @@
-var $ = require('jquery');
-
 module.exports = function fileUpload() {
   var directive = {
     restrict: "A",

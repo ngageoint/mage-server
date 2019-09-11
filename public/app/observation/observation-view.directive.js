@@ -26,7 +26,7 @@ function ObservationViewController($scope, $element, $uibModal, EventService, Us
 
   var scrollElement = $element[0].parentElement;
   const topAppBar = new MDCTopAppBar($element.find('.mdc-top-app-bar')[0]);
-  topAppBar.setScrollTarget(scrollElement)
+  topAppBar.setScrollTarget(scrollElement);
 
   $scope.edit = false;
   $scope.isUserFavorite = false;
@@ -46,7 +46,7 @@ function ObservationViewController($scope, $element, $uibModal, EventService, Us
 
   $scope.closeObservationView = function() {
     $scope.$emit('observation:viewDone', $scope.observation);
-  }
+  };
 
   $scope.toggleFavorite = function() {
     if ($scope.isUserFavorite) {
@@ -91,9 +91,9 @@ function ObservationViewController($scope, $element, $uibModal, EventService, Us
   $scope.onFlagAsImportant = function() {
     $scope.importantEditor.isOpen = true;
     $timeout(function() {
-      importantEditField = importantEditField || new MDCTextField($element.find('.important-textarea')[0])
-    })
-  }
+      importantEditField = importantEditField || new MDCTextField($element.find('.important-textarea')[0]);
+    });
+  };
 
   $scope.markAsImportant = function() {
     EventService.markObservationAsImportant($scope.observation, {description: $scope.importantEditor.description}).then(function() {
@@ -120,7 +120,7 @@ function ObservationViewController($scope, $element, $uibModal, EventService, Us
   $scope.viewObservation = function() {
     $scope.onObservationLocationClick($scope.observation);
     $scope.$emit('observation:view', $scope.observation);
-  }
+  };
 
   $scope.editObservation = function() {
     $scope.onObservationLocationClick($scope.observation);
@@ -136,8 +136,8 @@ function ObservationViewController($scope, $element, $uibModal, EventService, Us
     $scope.editForm = null;
   });
 
-  $scope.$watch('event', observationOrEventChanged, true)
-  $scope.$watch('observation', observationOrEventChanged, true)
+  $scope.$watch('event', observationOrEventChanged, true);
+  $scope.$watch('observation', observationOrEventChanged, true);
 
   function observationOrEventChanged() {
     if (!$scope.observation || !$scope.event) return;

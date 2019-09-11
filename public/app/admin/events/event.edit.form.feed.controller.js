@@ -1,24 +1,68 @@
 var _ = require('underscore')
   , $ = require('jquery')
-  , moment = require('moment')
-  , angular = require('angular');
+  , moment = require('moment');
 
 module.exports = AdminEventEditFormFeedController;
 
-AdminEventEditFormFeedController.$inject = ['$rootScope', '$scope', '$location', '$filter', '$routeParams', '$q', '$timeout', '$uibModal', 'LocalStorageService', 'EventService', 'Event', 'Form', 'FormIcon', 'UserService'];
+AdminEventEditFormFeedController.$inject = ['$rootScope', '$scope', '$location', '$routeParams', '$uibModal', 'LocalStorageService', 'Event', 'Form', 'UserService'];
 
-function AdminEventEditFormFeedController($rootScope, $scope, $location, $filter, $routeParams, $q, $timeout, $uibModal, LocalStorageService, EventService, Event, Form, FormIcon, UserService) {
+function AdminEventEditFormFeedController($rootScope, $scope, $location, $routeParams, $uibModal, LocalStorageService, Event, Form, UserService) {
   $scope.unSavedChanges = false;
   $scope.unSavedUploads = false;
   $scope.token = LocalStorageService.getToken();
-
-  var fakeObservationFormFields = {
-    "formId": Number($routeParams.formId)
-  }
   
   var formSaved = false;
   $scope.filesToUpload = [];
   $scope.saveTime = 0;
+
+  function getObservationIconUrl(observation, form) {
+    if (observation.properties.forms.length) {
+      var firstForm = observation.properties.forms[0];
+      var primaryField = firstForm[form.primaryField];
+      var variantField = firstForm[form.variantField];
+    }
+
+    return getObservationIconUrlForEvent($routeParams.eventId, $routeParams.formId, primaryField, variantField);
+  }
+
+  function getObservationIconUrlForEvent(eventId, formId, primary, variant) {
+    var url = '/api/events/' + eventId + '/icons';
+
+    if (formId) {
+      url += '/' + formId;
+    }
+
+    if (primary) {
+      url += '/' + primary;
+    }
+
+    if (variant) {
+      url += '/' + variant;
+    }
+
+    return url + '?' + $.param({access_token: LocalStorageService.getToken()});
+  }
+
+  function createFakeObservation(fakeObservationFormFields) {
+    _.each($scope.form.fields, function(field) {
+      if (field.value) {
+        fakeObservationFormFields[field.name] = field.value;
+      } else {
+        switch(field.type) {
+        case 'dropdown':
+        case 'multiselectdropdown':
+          fakeObservationFormFields[field.name] = field.choices[Math.floor(Math.random() * field.choices.length)].title;
+          break;
+        case 'date':
+          fakeObservationFormFields[field.name] = moment(new Date()).toISOString();
+          break;
+        default:
+          fakeObservationFormFields[field.name] = 'Sample';
+        }
+      }
+    });
+    return fakeObservationFormFields;
+  }
 
   Event.get({id: $routeParams.eventId}, function(event) {
     $scope.event = new Event(event);
@@ -33,57 +77,10 @@ function AdminEventEditFormFeedController($rootScope, $scope, $location, $filter
         if (field.name === $scope.form.primaryField) {
           $scope.primaryField = field;
         }
-      })
+      });
 
-      function getObservationIconUrl(observation) {
-        if (observation.properties.forms.length) {
-          var firstForm = observation.properties.forms[0];
-          primaryField = firstForm[form.primaryField];
-          variantField = firstForm[form.variantField];
-        }
-  
-        return getObservationIconUrlForEvent($routeParams.eventId, $routeParams.formId, primaryField, variantField);
-      }
-
-      function getObservationIconUrlForEvent(eventId, formId, primary, variant) {
-        var url = '/api/events/' + eventId + '/icons';
-    
-        if (formId) {
-          url += '/' + formId;
-        }
-    
-        if (primary) {
-          url += '/' + primary;
-        }
-    
-        if (variant) {
-          url += '/' + variant;
-        }
-    
-        return url + '?' + $.param({access_token: LocalStorageService.getToken()});
-      }
-
-      function createFakeObservation(fakeObservationFormFields) {
-        _.each($scope.form.fields, function(field) {
-          if (field.value) {
-            fakeObservationFormFields[field.name] = field.value
-          } else {
-            switch(field.type) {
-              case 'dropdown':
-              case 'multiselectdropdown':
-                fakeObservationFormFields[field.name] = field.choices[Math.floor(Math.random() * field.choices.length)].title
-                break;
-              case 'date':
-                fakeObservationFormFields[field.name] = moment(new Date()).toISOString()
-                break;
-              default:
-                fakeObservationFormFields[field.name] = 'Sample'
-            }
-          }
-        });
-        return fakeObservationFormFields;
-      }
-      $scope.event.forms = [$scope.form]
+      
+      $scope.event.forms = [$scope.form];
       UserService.getMyself().then(function(myself) {
         $scope.observations = [{
           "id": 0,
@@ -148,13 +145,13 @@ function AdminEventEditFormFeedController($rootScope, $scope, $location, $filter
           },
           "type": "Feature",
           "userId": myself.id
-        }]
+        }];
         $scope.observations.forEach(function(obs) {
           obs.style = {
-            iconUrl: getObservationIconUrl(obs)
-          }
+            iconUrl: getObservationIconUrl(obs, form)
+          };
         });
-      })
+      });
     } else {
       $scope.form = new Form();
       $scope.form.archived = false;

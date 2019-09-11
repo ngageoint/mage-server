@@ -10,9 +10,9 @@ module.exports = {
   controller: EventFormUploadController
 };
 
-EventFormUploadController.$inject = ['$element', '$timeout', 'Form'];
+EventFormUploadController.$inject = ['$element', 'Form'];
 
-function EventFormUploadController($element, $timeout, Form) {
+function EventFormUploadController($element, Form) {
   var formPanel;
 
   this.$onChanges = function() {
@@ -23,23 +23,22 @@ function EventFormUploadController($element, $timeout, Form) {
       });
       formPanel.open();
     }
-    console.log('EventFormUploadController $onChanges')
-  }.bind(this)
+  }.bind(this);
 
   this.$onInit = function() {
-    formPanel = new MDCDialog($element.find('.form-create-panel')[0])
+    formPanel = new MDCDialog($element.find('.form-create-panel')[0]);
     formPanel.listen('MDCDialog:closing', function(event) {
       if (event.detail.action !== 'cancel') {
-        this.onFormCreateClose({form: this.form})
+        this.onFormCreateClose({form: this.form});
       }
-    }.bind(this))
+    }.bind(this));
     formPanel.listen('MDCDialog:opening', function() {
-    }.bind(this))
-  }
+    }.bind(this));
+  };
 
   this.formFilePicked = function(uploadFile) {
     this.form.formArchiveFile = uploadFile;
-  }
+  };
 
   this.upload = function() {
     this.generalForm.$submitted = true;

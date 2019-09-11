@@ -5,7 +5,7 @@ module.exports = {
   },
   controller: function() {
     this.$onChanges = function() {
-      this.initialSelectedOptions = []
+      this.initialSelectedOptions = [];
       if (this.field.value) {
         this.field.value.forEach(function(value) {
           for (var i = 0; i < this.field.choices.length; i++) {
@@ -13,9 +13,9 @@ module.exports = {
               this.initialSelectedOptions.push(this.field.choices[i]);
             }
           }
-        }.bind(this))
+        }.bind(this));
       }
-    }
+    };
 
     this.optionsSelected = function(options) {
       var values = [];
@@ -23,6 +23,6 @@ module.exports = {
         values.push(option.title);
       });
       this.field.value = values;
-    }
+    };
   }
 };

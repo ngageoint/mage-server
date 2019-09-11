@@ -1,4 +1,4 @@
-import {menuSurface, textField} from 'material-components-web'
+import {menuSurface, textField} from 'material-components-web';
 
 class TypeaheadSelectController {
 
@@ -13,28 +13,28 @@ class TypeaheadSelectController {
   $onChanges() {
     this._$timeout(() => {
       this.initializeOptions();
-    })
+    });
   }
 
   $postLink() {
     this._$timeout(() => {
-      this.initializeTypeahead()
-    })
+      this.initializeTypeahead();
+    });
   }
 
   initializeTypeahead() {
     this.idPropery = this.idProperty|| 'id';
     this.displayProperty = this.displayProperty || 'name';
-    this._textField = new textField.MDCTextField(this._$element.find('.mdc-text-field')[0])
-    this._menu = new menuSurface.MDCMenuSurface(this._$element.find('.mdc-menu-surface')[0])
-    this._menu.hoistMenuToBody()
-    this.initializeOptions()
+    this._textField = new textField.MDCTextField(this._$element.find('.mdc-text-field')[0]);
+    this._menu = new menuSurface.MDCMenuSurface(this._$element.find('.mdc-menu-surface')[0]);
+    this._menu.hoistMenuToBody();
+    this.initializeOptions();
   }
 
   typeaheadChange() {
-    this.openDropdown()
-    var lowerCaseOption = this.selectedOptionDisplay.toLowerCase()
-    this.sortedOptions = this.options.filter(option => option[this.displayProperty].toLowerCase().indexOf(lowerCaseOption) !== -1)
+    this.openDropdown();
+    var lowerCaseOption = this.selectedOptionDisplay.toLowerCase();
+    this.sortedOptions = this.options.filter(option => option[this.displayProperty].toLowerCase().indexOf(lowerCaseOption) !== -1);
   }
 
   openDropdown() {
@@ -48,7 +48,7 @@ class TypeaheadSelectController {
     this.selectedOption = option;
     this.selectedOptionDisplay = option.name;
     this._textField.value = this.selectedOptionDisplay;
-    this.onSelect({event: option})
+    this.onSelect({event: option});
   }
 
   initializeOptions() {
@@ -57,9 +57,9 @@ class TypeaheadSelectController {
         if (a[this.displayProperty] < b[this.displayProperty]) return -1;
         if (a[this.displayProperty] > b[this.displayProperty]) return 1;
         return 0;
-      })
+      });
       if (this.initialValue) {
-        this.setSelectedOption(this.filteredOptions().find(option => this.initialValue[this.displayProperty] === option[this.displayProperty]))
+        this.setSelectedOption(this.filteredOptions().find(option => this.initialValue[this.displayProperty] === option[this.displayProperty]));
       }
     }
   }
@@ -72,20 +72,20 @@ class TypeaheadSelectController {
 TypeaheadSelectController.$inject = ['$element', '$timeout'];
 
 var template = require('./typeahead.select.component.html'),
-bindings = {
-  options: '<',
-  initialValue: '<',
-  fieldLabel: '@',
-  idProperty: '@',
-  displayProperty: '@',
-  secondaryDisplayProperty: '@',
-  width: '@',
-  onSelect: '&'
-},
-controller = TypeaheadSelectController
+  bindings = {
+    options: '<',
+    initialValue: '<',
+    fieldLabel: '@',
+    idProperty: '@',
+    displayProperty: '@',
+    secondaryDisplayProperty: '@',
+    width: '@',
+    onSelect: '&'
+  },
+  controller = TypeaheadSelectController;
 
 export {
   template,
   bindings,
   controller
-}
+};

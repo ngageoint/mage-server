@@ -14,16 +14,16 @@ module.exports = function fileBrowser() {
 FileBrowserController.$inject = ['$scope', '$timeout', '$element'];
 
 function FileBrowserController($scope, $timeout, $element) {
-  console.log('$scope.onFileChosen', $scope.onFileChosen)
+  console.log('$scope.onFileChosen', $scope.onFileChosen);
   $element.find(':file').bind('change', function() {
     var file = this.files[0];
     $timeout(function() {
       $scope.file = file;
       $scope.$emit('uploadFile', file);
-      console.log('gonna send it')
+      console.log('gonna send it');
       if ($scope.onFileChosen) {
-        console.log('sent it')
-        $scope.onFileChosen({file:file})
+        console.log('sent it');
+        $scope.onFileChosen({file:file});
       }
     });
   });

@@ -1,4 +1,4 @@
-import AuthenticationController from './authentication.controller'
+import AuthenticationController from './authentication.controller';
 
 var angular = require('angular');
 

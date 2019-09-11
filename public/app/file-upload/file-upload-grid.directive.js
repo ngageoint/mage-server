@@ -46,7 +46,7 @@ function FileUploadController($scope, $element) {
   });
 
   $element.find(':file').bind('change', function() {
-    var files = Array.from(this.files)
+    var files = Array.from(this.files);
     files.reduce(function(sequence, file) {
       return sequence.then(function() {
         var newId = id++;
@@ -54,34 +54,34 @@ function FileUploadController($scope, $element) {
           file: file,
           id: newId,
           preview: ''
-        }
-        $scope.attachmentsToUpload = Object.keys($scope.files).length
+        };
+        $scope.attachmentsToUpload = Object.keys($scope.files).length;
         if ($scope.attachmentsToUpload === 1) {
-          $scope.firstFile = $scope.files[newId]
+          $scope.firstFile = $scope.files[newId];
         }
         $scope.$apply(function() {
           $scope.$emit('uploadFile', newId, $scope.files[newId], $scope.url);
         });
-        console.log('file', file)
+        console.log('file', file);
         if (file.type.match('image')) {
-          return previewImage($scope.files[newId])
+          return previewImage($scope.files[newId]);
         } else if (file.type.match('video')) {
-          return previewVideo($scope.files[newId])
+          return previewVideo($scope.files[newId]);
         }
-      })
-    }, Promise.resolve())
+      });
+    }, Promise.resolve());
   });
 
   $scope.removeAttachment = function(id) {
-    delete $scope.files[id]
-    $scope.attachmentsToUpload = Object.keys($scope.files).length
+    delete $scope.files[id];
+    $scope.attachmentsToUpload = Object.keys($scope.files).length;
     if ($scope.attachmentsToUpload > 0) {
-      $scope.firstFile = $scope.files[Object.keys($scope.files)[0]]
+      $scope.firstFile = $scope.files[Object.keys($scope.files)[0]];
     } else {
       $scope.firstFile = undefined;
     }
-    $scope.$emit('removeUpload', id)
-  }
+    $scope.$emit('removeUpload', id);
+  };
 
   $scope.$watch('url', function(url) {
     if (!url) return;
@@ -95,11 +95,11 @@ function FileUploadController($scope, $element) {
       if (window.FileReader) {
         var reader = new FileReader();
   
-        reader.onload = (function(theFile) {
-          return function(e) {
+        reader.onload = (function() {
+          return function() {
             $scope.uploadImageMissing = false;
-            var blob = new Blob([reader.result], {type: fileInfo.file.type})
-            var url = URL.createObjectURL(blob)
+            var blob = new Blob([reader.result], {type: fileInfo.file.type});
+            var url = URL.createObjectURL(blob);
 
             var video = document.createElement('video');
             var timeupdate = function() {
@@ -122,7 +122,7 @@ function FileUploadController($scope, $element) {
               fileInfo.preview = image;
               URL.revokeObjectURL(url);
               $scope.$apply();
-              resolve()
+              resolve();
               return true;
             };
             video.addEventListener('timeupdate', timeupdate);
@@ -136,26 +136,26 @@ function FileUploadController($scope, $element) {
   
         reader.readAsArrayBuffer(fileInfo.file);
       }
-    })
-  }
+    });
+  };
 
   var previewImage = function(fileInfo) {
     return new Promise(function(resolve) {
       if (window.FileReader) {
         var reader = new FileReader();
   
-        reader.onload = (function(theFile) {
+        reader.onload = (function() {
           return function(e) {
             $scope.uploadImageMissing = false;
-            fileInfo.preview = e.target.result
+            fileInfo.preview = e.target.result;
             $scope.$apply();
-            resolve()
+            resolve();
           };
         })(fileInfo.file);
   
         reader.readAsDataURL(fileInfo.file);
       }
-    })
+    });
     
   };
 
@@ -193,7 +193,7 @@ function FileUploadController($scope, $element) {
     Object.keys($scope.files).reduce(function(sequence, fileId) {
       return sequence.then(function() {
         var formData = new FormData();
-        var file = $scope.files[fileId]
+        var file = $scope.files[fileId];
         formData.append($scope.uploadFileFormName, file.file);
     
         $.ajax({
@@ -213,8 +213,8 @@ function FileUploadController($scope, $element) {
           contentType: false,
           processData: false
         });
-      })
-    }, Promise.resolve())
+      });
+    }, Promise.resolve());
     
   };
 

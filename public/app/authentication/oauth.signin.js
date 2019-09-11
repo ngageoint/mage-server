@@ -11,7 +11,6 @@ module.exports = {
 OAuthSigninController.$inject = ['$uibModal', 'UserService'];
 
 function OAuthSigninController($uibModal, UserService) {
-  var self = this;
 
   this.$onInit = function() {
     this.buttonText = this.type === 'signin' ? 'Sign In With ' + this.strategy.title : 'Sign Up With ' + this.strategy.title;
@@ -70,47 +69,47 @@ function OAuthSigninController($uibModal, UserService) {
     });
   };
 
-  this.initializeGoogleButton = function(strategy) {
-    console.log('strategy', strategy)
-    gapi.load('auth2', function() {
-      gapi.auth2.init({
-        client_id: strategy.webClientID
-      }).then(function() {
-        var auth2 = gapi.auth2.getAuthInstance();
-        auth2.signOut().then(function () {
-          gapi.signin2.render('google-signin', {
-            scope: 'profile email',
-            prompt: 'select_account',
-            onsuccess: onWin,
-            onfail: onFail,
-            theme: 'dark',
-            longtitle: true
-          });
-        });
-      });
-    });
-  };
+  // this.initializeGoogleButton = function(strategy) {
+  //   console.log('strategy', strategy);
+  //   gapi.load('auth2', function() {
+  //     gapi.auth2.init({
+  //       client_id: strategy.webClientID
+  //     }).then(function() {
+  //       var auth2 = gapi.auth2.getAuthInstance();
+  //       auth2.signOut().then(function () {
+  //         gapi.signin2.render('google-signin', {
+  //           scope: 'profile email',
+  //           prompt: 'select_account',
+  //           onsuccess: onWin,
+  //           onfail: onFail,
+  //           theme: 'dark',
+  //           longtitle: true
+  //         });
+  //       });
+  //     });
+  //   });
+  // };
 
-  function onFail(z) {
-    alert('Fail' + JSON.stringify(z));
-  }
+  // function onFail(z) {
+  //   alert('Fail' + JSON.stringify(z));
+  // }
 
-  function onWin(googleUser){
-    var idToken = googleUser.getAuthResponse().id_token;
-    UserService.googleSignin({uid: self.uid, token: idToken}).then(function() {
-      // success
-    }, function(data) {
-      self.showStatus = true;
+  // function onWin(googleUser){
+  //   var idToken = googleUser.getAuthResponse().id_token;
+  //   UserService.googleSignin({uid: self.uid, token: idToken}).then(function() {
+  //     // success
+  //   }, function(data) {
+  //     self.showStatus = true;
 
-      if (data.device && !data.device.registered) {
-        self.statusTitle = 'Device Pending Registration';
-        self.statusMessage = data.errorMessage;
-        self.statusLevel = 'alert-warning';
-      } else {
-        self.statusTitle = 'Error signing in';
-        self.statusMessage = data.data;
-        self.statusLevel = 'alert-danger';
-      }
-    });
-  }
+  //     if (data.device && !data.device.registered) {
+  //       self.statusTitle = 'Device Pending Registration';
+  //       self.statusMessage = data.errorMessage;
+  //       self.statusLevel = 'alert-warning';
+  //     } else {
+  //       self.statusTitle = 'Error signing in';
+  //       self.statusMessage = data.data;
+  //       self.statusLevel = 'alert-danger';
+  //     }
+  //   });
+  // }
 }

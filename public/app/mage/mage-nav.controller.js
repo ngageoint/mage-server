@@ -2,9 +2,9 @@ var _ = require('underscore');
 
 module.exports = NavController;
 
-NavController.$inject =  ['$rootScope', '$scope', '$location', 'UserService', 'FilterService', 'PollingService', 'Event', 'Settings'];
+NavController.$inject =  ['$rootScope', '$scope', '$location', 'UserService', 'FilterService', 'PollingService', 'Event'];
 
-function NavController($rootScope, $scope, $location, UserService, FilterService, PollingService, Event, Settings) {
+function NavController($rootScope, $scope, $location, UserService, FilterService, PollingService, Event) {
   var events = [];
   $scope.location = $location;
 

@@ -8,7 +8,7 @@ angular
     var loginData;
     $rootScope.$on('event:auth-login', function(event, data) {
       loginData = data;
-    })
+    });
 
     return {
       /**
@@ -18,7 +18,6 @@ angular
        * example if you need to pass through details of the user that was logged in
        */
       loginConfirmed: function(data, configUpdater) {
-        console.log('login confirmed is being fired', loginData)
         var updater = configUpdater || function(config) {return config;};
         $rootScope.$broadcast('event:auth-loginConfirmed', loginData);
         if (loginData && !loginData.newUser) {

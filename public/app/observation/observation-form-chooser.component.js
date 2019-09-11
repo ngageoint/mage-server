@@ -1,8 +1,3 @@
-var moment = require('moment')
-  , MDCDialog = require('material-components-web').dialog.MDCDialog
-  , MDCTextField = require('material-components-web').textField.MDCTextField
-  , MDDateTimePicker = require('../../vendor/md-date-time-picker');
-
 module.exports = {
   template: require('./observation-form-chooser.component.html'),
   bindings: {
@@ -13,7 +8,7 @@ module.exports = {
   controller: ObservationFormChooserController
 };
 
-ObservationFormChooserController.$inject = ['$element', '$timeout'];
+ObservationFormChooserController.$inject = [];
 
-function ObservationFormChooserController($element, $timeout) {
+function ObservationFormChooserController() {
 }

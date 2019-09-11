@@ -11,9 +11,9 @@ module.exports = {
   }
 };
 
-ObservationFeedController.$inject = ['$element', '$timeout', 'EventService', '$filter', 'FilterService', '$rootScope', 'LocalStorageService'];
+ObservationFeedController.$inject = ['$element', '$timeout', 'EventService', '$filter', 'FilterService'];
 
-function ObservationFeedController($element, $timeout, EventService, $filter, FilterService, $rootScope, LocalStorageService) {
+function ObservationFeedController($element, $timeout, EventService, $filter, FilterService) {
 
   let observationSelectMdc;
 
@@ -48,19 +48,19 @@ function ObservationFeedController($element, $timeout, EventService, $filter, Fi
 
     this.observationPages = pages;
     this.currentObservationPage = this.currentObservationPage || 0;
-    this.currentObservationPage = Math.min(this.currentObservationPage, pages.length - 1)
+    this.currentObservationPage = Math.min(this.currentObservationPage, pages.length - 1);
     $timeout(function() {
       if (!observationSelectMdc) {
-        observationSelectMdc = new MDCSelect($element.find('.observation-select')[0])
+        observationSelectMdc = new MDCSelect($element.find('.observation-select')[0]);
         observationSelectMdc.listen('MDCSelect:change', function() {
           $timeout(function() {
-            this.currentObservationPage = observationSelectMdc.selectedIndex
-          }.bind(this))
-        }.bind(this)) 
+            this.currentObservationPage = observationSelectMdc.selectedIndex;
+          }.bind(this));
+        }.bind(this)); 
       }
       observationSelectMdc.selectedIndex = this.currentObservationPage;
-    }.bind(this))
-  }
+    }.bind(this));
+  };
 
   this.onObservationsChanged = function(changed) {
     this.event = FilterService.getEvent();
@@ -83,19 +83,19 @@ function ObservationFeedController($element, $timeout, EventService, $filter, Fi
     firstObservationChange = false;
 
     this.calculateObservationPages(this.feedObservations);
-  }
+  };
 
   this.onFilterChanged = function() {
     this.currentObservationPage = 0;
-  }
+  };
 
   this.actionFilterChanged = function(actionFilter) {
     this.actionFilter = actionFilter;
     FilterService.setFilter({actionFilter: actionFilter});
-  }
+  };
 
   this.$postLink = function() {
-    const chipSet = new MDCChipSet($element.find('.mdc-chip-set')[0])
+    new MDCChipSet($element.find('.mdc-chip-set')[0]);
 
     var observationsChangedListener = {
       onObservationsChanged: this.onObservationsChanged.bind(this)
@@ -106,5 +106,5 @@ function ObservationFeedController($element, $timeout, EventService, $filter, Fi
       onFilterChanged: this.onFilterChanged.bind(this)
     };
     FilterService.addListener(filterChangedListener);
-  }
+  };
 }

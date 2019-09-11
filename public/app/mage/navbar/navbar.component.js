@@ -1,5 +1,3 @@
-var MDCTopAppBar = require('material-components-web').topAppBar.MDCTopAppBar;
-var MDCDrawer = require('material-components-web').drawer.MDCDrawer;
 var MDCMenuSurface = require('material-components-web').menuSurface.MDCMenuSurface;
 
 module.exports = {
@@ -17,12 +15,12 @@ function NavbarController($element, $location, UserService) {
   this.location = $location;
 
   this.$postLink = function() {
-  }
+  };
 
   this.openDrawer = function() {
     pollingMenu = pollingMenu || new MDCMenuSurface($element.find('.nav-menu')[0]);
     pollingMenu.open = !pollingMenu.open;
-  }
+  };
 
   this.logout = function() {
     UserService.logout();

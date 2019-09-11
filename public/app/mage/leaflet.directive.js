@@ -1,6 +1,5 @@
 var _ = require('underscore')
   , L = require('leaflet')
-  , angular = require('angular')
   , moment = require('moment');
 
 module.exports = function leaflet() {

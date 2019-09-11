@@ -23,7 +23,7 @@ FormDirectiveController.$inject = ['$scope', 'ObservationService', 'EventService
 function FormDirectiveController($scope, ObservationService, EventService, FilterService, UserService, LocalStorageService, $element, $uibModal) {
   var scrollElement = $element[0].parentElement;
   const topAppBar = new MDCTopAppBar($element.find('.mdc-top-app-bar')[0]);
-  topAppBar.setScrollTarget(scrollElement)
+  topAppBar.setScrollTarget(scrollElement);
 
   var uploadId = 0;
   var initialObservation;
@@ -31,7 +31,6 @@ function FormDirectiveController($scope, ObservationService, EventService, Filte
   if ($scope.observation) {
     initialObservation = JSON.parse(JSON.stringify($scope.observation));
     $scope.event = EventService.getEventById($scope.observation.eventId);
-    var editedVertex = 0;
     var geometryField = $scope.form.geometryField;
     $scope.shape = geometryField.value.type;
     var copy = JSON.parse(JSON.stringify(geometryField.value));
@@ -109,10 +108,10 @@ function FormDirectiveController($scope, ObservationService, EventService, Filte
   $scope.$watch('form.forms', function() {
     var newPrimary = _.find($scope.form.forms[0].fields, function(field) {
       return field.name === $scope.form.forms[0].primaryField;
-    })
+    });
     var newSecondary = _.find($scope.form.forms[0].fields, function(field) {
       return field.name === $scope.form.forms[0].variantField;
-    })
+    });
     $scope.currentObservationStyle.iconUrl = ObservationService.getObservationIconUrlForEvent($scope.observation.eventId, $scope.form.forms[0].id, newPrimary.value, newSecondary.value);
   }, true);
 

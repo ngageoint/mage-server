@@ -1,4 +1,5 @@
-var L = require('leaflet');
+var L = require('leaflet')
+  , angular = require('angular');
 
 MageFeatureEdit.prototype.createEditLayer = function() {
   var editObservationLayer = {
@@ -20,17 +21,16 @@ MageFeatureEdit.prototype.createEditLayer = function() {
       if (feature.style && feature.style.iconUrl) {
         options.iconUrl = feature.style.iconUrl;
       }
-      options.tooltip = editMode;
       return L.fixedWidthMarker(latlng, options);
     },
     style: function(feature) {
       return feature.style;
     }
-  })
+  });
 
   editObservationLayer.layer = this.editLayer;
-  this.editLayer.addTo(this.map)
-}
+  this.editLayer.addTo(this.map);
+};
 
 MageFeatureEdit.prototype.stopEdit = function() {
   this.editedFeature.disableEdit();
@@ -38,7 +38,7 @@ MageFeatureEdit.prototype.stopEdit = function() {
 
   this.editLayer.removeLayer(this.editedFeature);
   this.editedFeature = undefined;
-}
+};
 
 MageFeatureEdit.prototype.startEdit = function(layerToEdit, selectedVertexIndex) {
   if (this.editedFeature) {
@@ -58,19 +58,19 @@ MageFeatureEdit.prototype.startEdit = function(layerToEdit, selectedVertexIndex)
     layerToEdit.on('dragend', function(event) {
       this.newGeometry = event.target.toGeoJSON().geometry;
       
-      this.geometryChangedListener(this.newGeometry)
+      this.geometryChangedListener(this.newGeometry);
     }.bind(this));
   } else {
     this.initiateShapeEdit(layerToEdit, selectedVertexIndex);
   }
-}
+};
 
 MageFeatureEdit.prototype.initiateShapeDraw = function(feature) {
   this.editedFeature = feature.geometry.type === 'Polygon' ? this.map.editTools.startPolygon() : this.map.editTools.startPolyline();
 
   this.editedFeature.on('editable:drawing:commit', function(e) {
     this.newGeometry = e.layer.toGeoJSON().geometry;
-    this.geometryChangedListener(this.newGeometry)
+    this.geometryChangedListener(this.newGeometry);
   }.bind(this));
 
   this.editedFeature.on('editable:vertex:contextmenu', function(e) {
@@ -98,19 +98,19 @@ MageFeatureEdit.prototype.initiateShapeDraw = function(feature) {
       this.editedFeature.editor.pop();
     }
   }.bind(this));
-}
+};
 
 MageFeatureEdit.prototype.initiateShapeEdit = function(layer, selectVertexIndex) {
   layer.enableEdit();
   layer.selectedVertex = layer.editor.editLayer.getLayers()[selectVertexIndex || 0];
   L.DomUtil.addClass(layer.selectedVertex.getElement(), 'selected-marker');
 
-  geometryChanged = function(e) {
-    this.newGeometry = e.layer.toGeoJSON().geometry
-    this.geometryChangedListener(this.newGeometry)
-  }.bind(this)
+  var geometryChanged = function(e) {
+    this.newGeometry = e.layer.toGeoJSON().geometry;
+    this.geometryChangedListener(this.newGeometry);
+  }.bind(this);
 
-  selectVertex = function(vertex) {
+  var selectVertex = function(vertex) {
     layer.editor.editLayer.eachLayer(function(layer) {
       L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
     });
@@ -118,7 +118,7 @@ MageFeatureEdit.prototype.initiateShapeEdit = function(layer, selectVertexIndex)
     L.DomUtil.addClass(vertex.getElement(), 'selected-marker');
     layer.selectedVertex = vertex;
     this.vertexClickListener(vertex);
-  }.bind(this)
+  }.bind(this);
 
   layer.on('editable:vertex:new', geometryChanged);
   layer.on('editable:vertex:deleted', geometryChanged);
@@ -156,10 +156,10 @@ MageFeatureEdit.prototype.initiateShapeEdit = function(layer, selectVertexIndex)
 
       return;
     }
-    this.newGeometry = layer.toGeoJSON().geometry
-    this.geometryChangedListener(this.newGeometry)
+    this.newGeometry = layer.toGeoJSON().geometry;
+    this.geometryChangedListener(this.newGeometry);
   }.bind(this));
-}
+};
 
 function MageFeatureEdit(map, MapService, GeometryService, geometryChangedListener, vertexClickListener) {
   this.map = map;

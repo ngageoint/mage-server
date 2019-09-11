@@ -10,6 +10,6 @@ class AuthenticationController {
   }
 }
 
-AuthenticationController.$inject = ['api', '$location']
+AuthenticationController.$inject = ['api', '$location'];
 
-export default AuthenticationController
+export default AuthenticationController;

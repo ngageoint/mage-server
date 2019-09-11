@@ -10,7 +10,7 @@ L.Control.MageFeature = L.Control.extend({
     var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
     this._link = L.DomUtil.create('a', '', container);
     this._icon = L.DomUtil.create('i', 'material-icons leaflet-mage-icon', this._link);
-    this._icon.innerHTML = 'add_location'
+    this._icon.innerHTML = 'add_location';
 
     this._link.href = '#';
     this._link.title = 'New Observation';
@@ -41,7 +41,7 @@ L.Control.MageUserLocation = L.Control.extend({
 
     this._locateLink = L.DomUtil.create('a', '', container);
     this._locateIcon = L.DomUtil.create('i', 'material-icons leaflet-mage-icon', this._locateLink);
-    this._locateIcon.innerHTML = 'near_me'
+    this._locateIcon.innerHTML = 'near_me';
     this._locateLink.href = '#';
     this._locateLink.title = 'Locate Me';
     this._locate = false;
@@ -55,7 +55,7 @@ L.Control.MageUserLocation = L.Control.extend({
 
     this._broadcastLink = L.DomUtil.create('a', '', container);
     this._broadcastIcon = L.DomUtil.create('i', 'material-icons leaflet-mage-icon', this._broadcastLink);
-    this._broadcastIcon.innerHTML = 'my_location'
+    this._broadcastIcon.innerHTML = 'my_location';
     this._broadcastLink.href = '#';
     this._broadcastLink.title = 'Report Location';
     this._broadcast = false;
@@ -169,7 +169,7 @@ L.Control.MageListTools = L.Control.extend({
 
     var iconClass = this.options.enabled ? 'material-icons leaflet-mage-icon-inverse' : 'material-icons leaflet-mage-icon';
     this._icon = L.DomUtil.create('i', iconClass, this._link);
-    this._icon.innerHTML = 'menu'
+    this._icon.innerHTML = 'menu';
 
     this._link.href = '#';
     this._link.title = 'Feed';
