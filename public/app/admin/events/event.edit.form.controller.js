@@ -1,12 +1,10 @@
-var _ = require('underscore')
-  , $ = require('jquery')
-  , angular = require('angular');
+var _ = require('underscore');
 
 module.exports = AdminEventEditFormController;
 
-AdminEventEditFormController.$inject = ['$rootScope', '$scope', '$location', '$filter', '$routeParams', '$q', '$timeout', '$uibModal', 'LocalStorageService', 'EventService', 'Event', 'Form', 'FormIcon'];
+AdminEventEditFormController.$inject = ['$rootScope', '$scope', '$location', '$routeParams', '$uibModal', 'LocalStorageService', 'Event', 'Form'];
 
-function AdminEventEditFormController($rootScope, $scope, $location, $filter, $routeParams, $q, $timeout, $uibModal, LocalStorageService, EventService, Event, Form, FormIcon) {
+function AdminEventEditFormController($rootScope, $scope, $location, $routeParams, $uibModal, LocalStorageService, Event, Form) {
   $scope.unSavedChanges = false;
   $scope.unSavedUploads = false;
   $scope.token = LocalStorageService.getToken();

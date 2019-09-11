@@ -1,10 +1,10 @@
-var moment = require('moment');
+var angular = require('angular');
 
 module.exports = DeleteObservationController;
 
-DeleteObservationController.$inject = ['$scope', '$uibModalInstance', 'EventService', 'FilterService', 'observation'];
+DeleteObservationController.$inject = ['$scope', '$uibModalInstance', 'EventService', 'observation'];
 
-function DeleteObservationController($scope, $uibModalInstance, EventService, FilterService, observation) {
+function DeleteObservationController($scope, $uibModalInstance, EventService, observation) {
   $scope.observation = observation;
   $scope.event = angular.copy(EventService.getEventById($scope.observation.eventId));
 
@@ -16,5 +16,5 @@ function DeleteObservationController($scope, $uibModalInstance, EventService, Fi
     EventService.archiveObservation($scope.observation).then(function() {
       $scope.$emit('observation:delete',  $scope.observation);
     });
-  }
+  };
 }

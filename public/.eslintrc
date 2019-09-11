@@ -6,5 +6,8 @@
       "browser": true,
       "node": true,
       "amd": true
+    },
+    "parserOptions": {
+      "sourceType": "module"
     }
 }

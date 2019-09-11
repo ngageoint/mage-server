@@ -35,7 +35,7 @@ function Form($rootScope, $resource, LocalStorageService) {
         var formData = new FormData();
         formData.append('form', this.formArchiveFile);
         for (var key in this) {
-          if (this.hasOwnProperty(key) && key !== 'formArchiveFile' ) {
+          if (Object.prototype.hasOwnProperty.call(this, key) && key !== 'formArchiveFile' ) {
             formData.append(key, this[key]);
           }
         }

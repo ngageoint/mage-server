@@ -19,9 +19,9 @@ function DateEditController() {
   };
 
   this.formatDate = function(date, timeZone) {
-    var momentDate = moment(date)
+    var momentDate = moment(date);
     if (timeZone === 'gmt') {
-      momentDate.add(momentDate.utcOffset(), 'minutes')
+      momentDate.add(momentDate.utcOffset(), 'minutes');
     }
     this.field.value = momentDate.toDate();
   };

@@ -1,10 +1,11 @@
-var _ = require('underscore');
+var _ = require('underscore')
+  , angular = require('angular');
 
 module.exports = MapService;
 
-MapService.$inject = ['EventService', 'LocationService', 'FeatureService', '$compile', '$rootScope'];
+MapService.$inject = ['EventService', 'LocationService', 'FeatureService', '$compile', '$rootScope', 'LocalStorageService'];
 
-function MapService(EventService, LocationService, FeatureService, $compile, $rootScope) {
+function MapService(EventService, LocationService, FeatureService, $compile, $rootScope, LocalStorageService) {
 
   var followedFeature = {
     id: undefined,
@@ -82,7 +83,7 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
           return {};
         },
         onEachFeature: function(feature, layer) {
-          observationLayer.featureIdToLayer[feature.id] = layer
+          observationLayer.featureIdToLayer[feature.id] = layer;
         },
         popup: {
           html: function(observation) {
@@ -91,7 +92,7 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
             var newScope = $rootScope.$new(true);
             newScope.observation = observation;
             newScope.onInfo = function(observation) {
-              $rootScope.$broadcast('observation:view', observation)
+              $rootScope.$broadcast('observation:view', observation);
             };
   
             newScope.onZoom = function(observation) {

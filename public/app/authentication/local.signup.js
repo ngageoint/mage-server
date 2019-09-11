@@ -1,5 +1,5 @@
 import {textField, linearProgress, snackbar} from 'material-components-web';
-import zxcvbn from 'zxcvbn'
+import zxcvbn from 'zxcvbn';
 
 var passwordStrengthMap = {
   0: {
@@ -34,13 +34,13 @@ class LocalSignupController {
 
   $onInit() {
     this.user = {};
-  };
+  }
 
   $postLink() {
     var elements = this._$element.find('.mdc-text-field');
     for (var i = 0; i < elements.length; i++) {
       if (i === elements.length - 1) {
-        this.passwordconfirm = new textField.MDCTextField(elements[i])
+        this.passwordconfirm = new textField.MDCTextField(elements[i]);
       } else {
         new textField.MDCTextField(elements[i]);
       }
@@ -65,7 +65,7 @@ class LocalSignupController {
     this._UserService.signup(user, this.signupComplete.bind(this), this.signupFailed.bind(this));
   }
 
-  signupComplete(data) {
+  signupComplete() {
     this._$timeout(() => {
       this.user = {};
       this.passwordStrengthScore = 0;
@@ -86,13 +86,13 @@ class LocalSignupController {
     this.passwordStrengthType = passwordStrengthMap[score].type;
     this.passwordStrength = passwordStrengthMap[score].text;
     this.passwordStrengthProgress.progress = this.passwordStrengthScore/5;
-  };
+  }
 
   showStatusMessage(title, message) {
     this.statusTitle = title;
     this.statusMessage = message;
     this.snackbar.open();
-  };
+  }
 }
 
 LocalSignupController.$inject = ['UserService', '$element', '$timeout'];
@@ -109,4 +109,4 @@ export {
   template,
   bindings,
   controller
-}
+};

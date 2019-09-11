@@ -1,4 +1,4 @@
-import _ from 'underscore'
+import _ from 'underscore';
 
 class SigninController {
 
@@ -22,7 +22,7 @@ class SigninController {
   }
 }
 
-var template = require('./signin.component.html')
+var template = require('./signin.component.html');
 var bindings = {
   api: '<',
   onSignin: '&',
@@ -32,10 +32,10 @@ var bindings = {
 
 SigninController.$inject = ['UserService', '$element'];
 
-var controller = SigninController
+var controller = SigninController;
 
 export {
   template,
   bindings,
   controller
-}
+};

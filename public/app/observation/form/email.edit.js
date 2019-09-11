@@ -11,7 +11,7 @@ module.exports = {
       this.textField = new MDCTextField($element.find('.mdc-text-field')[0]);
       if (this.field.value)
         this.textField.value = this.field.value;
-    }
+    };
 
     this.$onChanges = function() {
       $timeout(function() {
@@ -19,6 +19,6 @@ module.exports = {
           this.textField.value = this.field.value;
         }
       }.bind(this));
-    }
+    };
   }]
 };

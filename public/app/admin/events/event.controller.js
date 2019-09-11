@@ -2,9 +2,9 @@ var _ = require('underscore');
 
 module.exports = AdminEventController;
 
-AdminEventController.$inject = ['$scope', '$location', '$filter', '$routeParams', '$q', '$uibModal', 'LocalStorageService', 'UserService', 'EventService', 'Event', 'Team', 'Layer'];
+AdminEventController.$inject = ['$scope', '$location', '$filter', '$routeParams', '$q', '$uibModal', 'LocalStorageService', 'UserService', 'Event', 'Team', 'Layer'];
 
-function AdminEventController($scope, $location, $filter, $routeParams, $q, $uibModal, LocalStorageService, UserService, EventService, Event, Team, Layer) {
+function AdminEventController($scope, $location, $filter, $routeParams, $q, $uibModal, LocalStorageService, UserService, Event, Team, Layer) {
   $scope.token = LocalStorageService.getToken();
 
   $scope.showArchivedForms = false;
@@ -210,10 +210,10 @@ function AdminEventController($scope, $location, $filter, $routeParams, $q, $uib
     if (form.id) {
       $location.path('/admin/events/' + $scope.event.id + '/forms/' + form.id);
     } else {
-      $location.search('form', JSON.stringify(form))
+      $location.search('form', JSON.stringify(form));
       $location.path('/admin/events/' + $scope.event.id + '/forms/new/fields');
     }
-  }
+  };
 
   $scope.moveFormUp = function($event, form) {
     $event.stopPropagation();

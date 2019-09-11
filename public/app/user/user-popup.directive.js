@@ -36,8 +36,8 @@ function LocationPopupController($scope, LocalStorageService, MapService) {
   };
 
   $scope.followUser = function() {
-    MapService.followFeatureInLayer($scope.user, 'People')
-  }
+    MapService.followFeatureInLayer($scope.user, 'People');
+  };
 
   $scope.$watch('user', function() {
     $scope.date = moment($scope.user.location.properties.timestamp).format("YYYY-MM-DD HH:mm:ss");

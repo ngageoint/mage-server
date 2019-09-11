@@ -26,13 +26,13 @@ angular
   .directive('fileUploadGrid', require('./file-upload/file-upload-grid.directive'))
   .animation('.slide-down', function() {
     return {
-      enter: function(element, done) {
+      enter: function(element) {
         element.hide().slideDown();
       },
-      leave: function(element, done) {
+      leave: function(element) {
         element.slideUp();
       }
-    }
+    };
   })
   .config(config)
   .run(run);
@@ -370,26 +370,26 @@ function run($rootScope, $route, $uibModal, $templateCache, UserService, $locati
             $scope.hideSignup = true;
 
             $scope.onSuccess = function() {
-              authService.loginConfirmed()
+              authService.loginConfirmed();
               $rootScope.loginDialogPresented = false;
               successful = true;
               $uibModalInstance.close($scope);
-            }
+            };
 
             $scope.logout = function() {
               $rootScope.loginDialogPresented = false;
               successful = true;
               $uibModalInstance.close($scope);
-            }
+            };
           }]
         };
         var modalInstance = $uibModal.open(options);
         var modalClosed = function() {
           if (!successful) {
-            modalInstance = $uibModal.open(options)
+            modalInstance = $uibModal.open(options);
             modalInstance.closed.then(modalClosed);
           }
-        }
+        };
         modalInstance.closed.then(modalClosed);
         
       });

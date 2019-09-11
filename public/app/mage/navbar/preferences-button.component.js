@@ -26,7 +26,7 @@ function PreferencesButtonController($element, LocalStorageService) {
     } else {
       this.expandMenu = !this.expandMenu;
     }
-  }
+  };
 
   this.onCoordinateSystemChange = function(coordinateSystem) {
     LocalStorageService.setCoordinateSystemView(coordinateSystem);

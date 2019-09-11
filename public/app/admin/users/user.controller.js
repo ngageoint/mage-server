@@ -3,9 +3,9 @@ var _ = require('underscore')
 
 module.exports = AdminUserController;
 
-AdminUserController.$inject = ['$scope', '$uibModal', '$filter', '$routeParams', '$location', '$q', 'LocalStorageService', 'UserService', 'LoginService', 'DeviceService', 'Team'];
+AdminUserController.$inject = ['$scope', '$uibModal', '$routeParams', '$location', '$q', 'LocalStorageService', 'UserService', 'LoginService', 'DeviceService', 'Team'];
 
-function AdminUserController($scope, $uibModal, $filter, $routeParams, $location, $q, LocalStorageService, UserService, LoginService, DeviceService, Team) {
+function AdminUserController($scope, $uibModal, $routeParams, $location, $q, LocalStorageService, UserService, LoginService, DeviceService, Team) {
   $scope.userTeams = [];
   $scope.nonTeams = [];
   $scope.teamsPage = 0;

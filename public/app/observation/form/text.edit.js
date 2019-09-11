@@ -9,7 +9,7 @@ module.exports = {
   controller: ['$element', '$timeout', function($element, $timeout) {
     this.$postLink = function() {
       this.textField = new MDCTextField($element.find('.mdc-text-field')[0]);
-    }
+    };
 
     this.$onChanges = function() {
       $timeout(function() {
@@ -17,6 +17,6 @@ module.exports = {
           this.textField.value = this.field.value;
         }
       }.bind(this));
-    }
+    };
   }]
 };

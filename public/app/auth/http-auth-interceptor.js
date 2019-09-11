@@ -8,7 +8,7 @@ angular
     var loginData;
     $rootScope.$on('event:auth-login', function(event, data) {
       loginData = data;
-    })
+    });
 
     return {
       /**

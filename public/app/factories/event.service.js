@@ -46,7 +46,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
     });
   }
 
-  function onTeamsChanged(teams) {
+  function onTeamsChanged() {
     var event = FilterService.getEvent();
     if (!event) return;
 
@@ -314,7 +314,7 @@ function EventService($rootScope, $q, $timeout, $http, Event, ObservationService
 
   function getForms(observation, options) {
     var event = eventsById[observation.eventId];
-    return getFormsForEvent(event, options)
+    return getFormsForEvent(event, options);
   }
 
   function getFormsForEvent(event, options) {

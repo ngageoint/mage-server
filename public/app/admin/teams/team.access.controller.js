@@ -2,7 +2,7 @@ var _ = require('underscore');
 
 module.exports = AdminTeamAccessController;
 
-AdminTeamAccessController.$inject = ['$scope', '$location', '$routeParams', '$q', '$filter', 'Team', 'TeamAccess', 'UserService',];
+AdminTeamAccessController.$inject = ['$scope', '$location', '$routeParams', '$q', '$filter', 'Team', 'TeamAccess', 'UserService'];
 
 function AdminTeamAccessController($scope, $location, $routeParams, $q, $filter, Team, TeamAccess, UserService) {
 

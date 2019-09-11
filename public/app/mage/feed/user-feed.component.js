@@ -7,9 +7,9 @@ module.exports = {
   controller: UserFeedController
 };
 
-UserFeedController.$inject = ['$element', '$timeout', 'EventService', '$filter'];
+UserFeedController.$inject = ['$element', '$timeout', 'EventService', '$filter', 'FilterService'];
 
-function UserFeedController($element, $timeout, EventService, $filter) {
+function UserFeedController($element, $timeout, EventService, $filter, FilterService) {
   let userSelectMdc;
 
   this.currentUserPage = 0;
@@ -19,7 +19,6 @@ function UserFeedController($element, $timeout, EventService, $filter) {
   var usersPerPage = 50;
 
   var usersById = {};
-  var followingUserId = null;
   var firstUserChange = true;
   this.feedUsers = [];
   this.feedChangedUsers = {};
@@ -34,11 +33,11 @@ function UserFeedController($element, $timeout, EventService, $filter) {
       onFilterChanged: this.onFilterChanged.bind(this)
     };
     FilterService.addListener(filterChangedListener);
-  }
+  };
 
   this.filterChangedListener = function() {
     this.currentUserPage = 0;
-  }
+  };
 
   this.calculateUserPages = function(users) {
     if (!users) return;
@@ -59,16 +58,16 @@ function UserFeedController($element, $timeout, EventService, $filter) {
 
     $timeout(() => {
       if (!userSelectMdc) {
-        userSelectMdc = new MDCSelect($element.find('.user-select')[0])
+        userSelectMdc = new MDCSelect($element.find('.user-select')[0]);
         userSelectMdc.listen('MDCSelect:change', () => {
           $timeout(() => {
-            this.currentUserPage = userSelectMdc.selectedIndex
-          })
-        })
+            this.currentUserPage = userSelectMdc.selectedIndex;
+          });
+        });
       }
-      userSelectMdc.selectedIndex = this.currentUserPage
-    })
-  }
+      userSelectMdc.selectedIndex = this.currentUserPage;
+    });
+  };
 
   this.onUsersChanged = function(changed) {
     _.each(changed.added, function(added) {
@@ -96,5 +95,5 @@ function UserFeedController($element, $timeout, EventService, $filter) {
     firstUserChange = false;
 
     this.calculateUserPages(this.feedUsers);
-  }
+  };
 }

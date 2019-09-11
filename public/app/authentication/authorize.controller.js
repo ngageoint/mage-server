@@ -11,7 +11,7 @@ function AuthorizeController($scope, UserService) {
   $scope.authorize = function (authData) {
     UserService.authorize('login-gov', authData.uid).success(function(data) {
       console.log('success', data);
-    }).error(function (data, status) {
+    }).error(function (data) {
       $scope.statusTitle = 'Invalid Device ID';
       $scope.statusMessage = data.errorMessage;
       $scope.statusLevel = 'alert-warning';

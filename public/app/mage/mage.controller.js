@@ -16,10 +16,6 @@ MageController.$inject = [
 
 function MageController($scope, $animate, $document, $uibModal, UserService, FilterService, EventService, MapService, Location) {
   $scope.hideFeed = false;
-
-  var firstObservationChange = true;
-
-  var firstUserChange = true;
   $scope.feedChangedUsers = {};
 
   $scope.filteredEvent = FilterService.getEvent();
@@ -49,9 +45,6 @@ function MageController($scope, $animate, $document, $uibModal, UserService, Fil
 
   function onFilterChanged(filter) {
     $scope.feedChangedUsers = {};
-
-    firstUserChange = true;
-    firstObservationChange = true;
 
     if (filter.event) {
       $scope.filteredEvent = FilterService.getEvent();
@@ -120,7 +113,7 @@ function MageController($scope, $animate, $document, $uibModal, UserService, Fil
 
   $scope.$on('feed:show', function() {
     $scope.hideFeed = false;
-  })
+  });
 
   $scope.$on('feed:toggle', function() {
     $scope.hideFeed = !$scope.hideFeed;

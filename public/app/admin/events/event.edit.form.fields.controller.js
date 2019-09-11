@@ -1,18 +1,15 @@
-var _ = require('underscore')
-  , $ = require('jquery')
-  , angular = require('angular');
+var _ = require('underscore');
 
 module.exports = AdminEventEditFormFieldsController;
 
-AdminEventEditFormFieldsController.$inject = ['$rootScope', '$scope', '$location', '$filter', '$routeParams', '$q', '$timeout', '$uibModal', 'LocalStorageService', 'EventService', 'Event', 'Form', 'FormIcon'];
+AdminEventEditFormFieldsController.$inject = ['$rootScope', '$scope', '$location', '$routeParams', '$uibModal', 'LocalStorageService', 'Event', 'Form'];
 
-function AdminEventEditFormFieldsController($rootScope, $scope, $location, $filter, $routeParams, $q, $timeout, $uibModal, LocalStorageService, EventService, Event, Form, FormIcon) {
+function AdminEventEditFormFieldsController($rootScope, $scope, $location, $routeParams, $uibModal, LocalStorageService, Event, Form) {
   $scope.unSavedChanges = false;
   $scope.unSavedUploads = false;
   $scope.token = LocalStorageService.getToken();
   var locationForm = $location.search().form;
 
-  var icons = {};
   $scope.iconMap = {};
   $scope.styleMap = {};
 
@@ -35,7 +32,7 @@ function AdminEventEditFormFieldsController($rootScope, $scope, $location, $filt
         }
       });
     } else if (locationForm) {
-      locationForm = JSON.parse(locationForm)
+      locationForm = JSON.parse(locationForm);
       $scope.form = new Form();
       $scope.form.archived = false;
       $scope.form.color = locationForm.color;
@@ -220,11 +217,6 @@ function AdminEventEditFormFieldsController($rootScope, $scope, $location, $filt
           if ($scope.isMemberField(field)) {
             field.choices = [];
           }
-        });
-
-        // Upload icons if any
-        _.each($scope.filesToUpload, function(fileUpload) {
-          upload(fileUpload);
         });
 
         $scope.saving = false;

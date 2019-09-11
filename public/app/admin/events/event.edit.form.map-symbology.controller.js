@@ -4,9 +4,9 @@ var _ = require('underscore')
 
 module.exports = AdminEventEditFormMapSymbologyController;
 
-AdminEventEditFormMapSymbologyController.$inject = ['$rootScope', '$scope', '$location', '$filter', '$routeParams', '$q', '$timeout', '$uibModal', 'LocalStorageService', 'EventService', 'Event', 'Form', 'FormIcon'];
+AdminEventEditFormMapSymbologyController.$inject = ['$rootScope', '$scope', '$location', '$filter', '$routeParams', '$uibModal', 'LocalStorageService', 'Event', 'Form', 'FormIcon'];
 
-function AdminEventEditFormMapSymbologyController($rootScope, $scope, $location, $filter, $routeParams, $q, $timeout, $uibModal, LocalStorageService, EventService, Event, Form, FormIcon) {
+function AdminEventEditFormMapSymbologyController($rootScope, $scope, $location, $filter, $routeParams, $uibModal, LocalStorageService, Event, Form, FormIcon) {
   $scope.unSavedChanges = false;
   $scope.unSavedUploads = false;
   $scope.token = LocalStorageService.getToken();

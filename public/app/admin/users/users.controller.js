@@ -2,9 +2,9 @@ var _ = require('underscore');
 
 module.exports = AdminUsersController;
 
-AdminUsersController.$inject = ['$scope', '$uibModal', '$filter', '$location', 'LocalStorageService', 'UserService'];
+AdminUsersController.$inject = ['$scope', '$uibModal', '$location', 'LocalStorageService', 'UserService'];
 
-function AdminUsersController($scope, $uibModal, $filter, $location, LocalStorageService, UserService) {
+function AdminUsersController($scope, $uibModal, $location, LocalStorageService, UserService) {
   $scope.token = LocalStorageService.getToken();
   $scope.filter = "all"; // possible values all, active, inactive
   $scope.users = [];

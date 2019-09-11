@@ -25,7 +25,7 @@ function UserNewsItemController($scope, LocalStorageService, MapService) {
 
   $scope.followUser = function(e, user) {
     e.stopPropagation();
-    MapService.followFeatureInLayer(user, 'People')
+    MapService.followFeatureInLayer(user, 'People');
   };
 
   $scope.onUserLocationClick = function(user) {
@@ -35,6 +35,6 @@ function UserNewsItemController($scope, LocalStorageService, MapService) {
   $scope.viewUser = function() {
     $scope.onUserLocationClick($scope.user);
     $scope.$emit('user:view', $scope.user);
-  }
+  };
 
 }

@@ -1,5 +1,4 @@
 var moment = require('moment')
-  , MDCDialog = require('material-components-web').dialog.MDCDialog
   , MDCTextField = require('material-components-web').textField.MDCTextField
   , MDDateTimePicker = require('../../vendor/md-date-time-picker');
 
@@ -28,11 +27,11 @@ function DateTimeController($element, $timeout, LocalStorageService) {
       if (dateInputField) {
         $timeout(function() {
           dateInputField.value = this.dateInputValue = moment(this.date).format('MM/DD/YYYY hh:mm:ss');
-        }.bind(this))
+        }.bind(this));
       }
     }
     this.localOffset = moment().format('Z');
-  }
+  };
 
   this.$onChanges = function() {
     if (this.date) {
@@ -43,18 +42,18 @@ function DateTimeController($element, $timeout, LocalStorageService) {
         }.bind(this));
       }
     }
-  }
+  };
 
   this.inputChanged = function() {
-    var isValid = moment(this.dateInputValue).isValid()
+    var isValid = moment(this.dateInputValue).isValid();
     if (isValid) {
       this.pickedDate = moment(this.dateInputValue).format('MM/DD/YYYY hh:mm:ss');
       this.onDatePicked({
         date: this.pickedDate,
         timeZone: this.timeZone
-      })
+      });
     }
-  }
+  };
 
   this.openPicker = function() {
     var dialog = new MDDateTimePicker.default({
@@ -63,7 +62,7 @@ function DateTimeController($element, $timeout, LocalStorageService) {
       future: moment().add(5, 'years'),
       trigger: $element.find('.date-input')[0],
       orientation: 'LANDSCAPE'
-    })
+    });
     $element.find('.date-input')[0].addEventListener('onOk', function() {
       this.pickedDate = dialog.time.toDate();
       dateInputField.value = this.dateInputValue = dialog.time.format('MM/DD/YYYY hh:mm:ss');
@@ -71,9 +70,9 @@ function DateTimeController($element, $timeout, LocalStorageService) {
         date: this.pickedDate,
         timeZone: this.timeZone
       });
-    }.bind(this))
+    }.bind(this));
     dialog.show();
-  }
+  };
 
   this.updateTimeZone = function() {
     this.timeZone = this.timeZone === 'gmt' ? 'local' : 'gmt';
@@ -81,6 +80,6 @@ function DateTimeController($element, $timeout, LocalStorageService) {
       date: this.pickedDate,
       timeZone: this.timeZone
     });
-  }
+  };
 
 }

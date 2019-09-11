@@ -16,9 +16,9 @@ module.exports = function attachment() {
   return directive;
 };
 
-AttachmentController.$inject = ['$scope', '$filter', 'UserService', 'LocalStorageService'];
+AttachmentController.$inject = ['$scope', 'UserService', 'LocalStorageService'];
 
-function AttachmentController($scope, $filter, UserService, LocalStorageService) {
+function AttachmentController($scope, UserService, LocalStorageService) {
   $scope.amAdmin = UserService.amAdmin;
   $scope.token = LocalStorageService.getToken();
 

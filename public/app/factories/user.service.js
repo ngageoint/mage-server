@@ -3,9 +3,9 @@ var _ = require('underscore')
 
 module.exports = UserService;
 
-UserService.$inject = ['$rootScope', '$q', '$uibModal', '$http', '$location', '$timeout', '$window', 'LocalStorageService'];
+UserService.$inject = ['$rootScope', '$q', '$http', '$location', '$window', 'LocalStorageService'];
 
-function UserService($rootScope, $q, $uibModal, $http, $location, $timeout, $window, LocalStorageService) {
+function UserService($rootScope, $q, $http, $location, $window, LocalStorageService) {
 
   var service = {
     myself: null,
@@ -16,7 +16,6 @@ function UserService($rootScope, $q, $uibModal, $http, $location, $timeout, $win
     googleSignup,
     oauthSignin,
     ldapSignin,
-    oauthSignin,
     authorize,
     acceptDisclaimer,
     logout,
@@ -90,8 +89,6 @@ function UserService($rootScope, $q, $uibModal, $http, $location, $timeout, $win
 
   function oauthSignin(strategy) {
     var deferred = $q.defer();
-
-    var oldUsername = service.myself && service.myself.username || null;
 
     var windowLeft = window.screenLeft ? window.screenLeft : window.screenX;
     var windowTop = window.screenTop ? window.screenTop : window.screenY;

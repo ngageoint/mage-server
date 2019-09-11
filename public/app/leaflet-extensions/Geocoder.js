@@ -43,7 +43,7 @@ L.Control.ClearableGeocoder = L.Control.Geocoder.extend({
     return this;
   },
 
-  clearSearch: function(e) {
+  clearSearch: function() {
     if (this._marker) {
       this._map.removeLayer(this._marker);
     }

@@ -1,5 +1,4 @@
-var $ = require('jquery')
-  , _ = require('underscore')
+var _ = require('underscore')
   , moment = require('moment');
 
 module.exports = NewsFeed;
@@ -31,14 +30,14 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
     tabName: 'People',
     tabId: 'people',
     icon: 'supervisor_account'
-  }]
+  }];
 
   $scope.onTabSwitched = function(index) {
     $scope.currentFeedPanel = $scope.tabs[index].tabId;
     let active = $element.find('.content--active')[0];
     active.classList.remove('content--active');
     contentEls[index].classList.add('content--active');
-  }
+  };
 
   $scope.currentFeedPanel = 'observations';
 
@@ -86,31 +85,31 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
       name: 'Observations',
       feature: observation
     });
-  })
+  });
 
   $scope.$on('user:view', function(e, user) {
-    $scope.viewUser = user
+    $scope.viewUser = user;
     $scope.newObservation = null;
     $scope.editObservation = null;
     $scope.viewObservation = null;
     $scope.$emit('feed:show');
   });
 
-  $scope.$on('user:viewDone', function(e, user) {
+  $scope.$on('user:viewDone', function() {
     $scope.viewUser = null;
-  })
+  });
 
   $scope.$on('observation:view', function(e, observation) {
-    $scope.viewObservation = observation
+    $scope.viewObservation = observation;
     $scope.newObservation = null;
     $scope.editObservation = null;
     $scope.viewUser = null;
     $scope.$emit('feed:show');
   });
 
-  $scope.$on('observation:viewDone', function(e, observation) {
+  $scope.$on('observation:viewDone', function() {
     $scope.viewObservation = null;
-  })
+  });
 
   $scope.$on('observation:edit', function(e, observation) {
     $scope.edit = true;
@@ -185,9 +184,9 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
     } else {
       $scope.newObservationForms = newObservationForms;
     }
-  }
+  };
 
-  $scope.$on('observation:editDone', function(event, observation) {
+  $scope.$on('observation:editDone', function() {
     $scope.newObservation = null;
     $scope.editObservation = null;
   });
@@ -201,7 +200,7 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
     $scope.editObservation = null;
     $scope.viewObservation = null;
     $scope.viewUser = null;
-  })
+  });
 
   $scope.$watch('currentFeedPanel', function(currentFeedPanel) {
     if (currentFeedPanel === 'observations') {

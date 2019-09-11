@@ -13,11 +13,11 @@ function ExportButtonController(Event) {
   this.export = function() {
     Event.query().$promise.then(function(events) {
       this.events = events; 
-    }.bind(this))
+    }.bind(this));
     this.exportOpen = {opened: true};
   };
 
   this.onExportClose = function() {
     this.exportOpen = {opened: false};
-  }
+  };
 }

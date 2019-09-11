@@ -19,9 +19,9 @@ module.exports = function observationNewsItem() {
   return directive;
 };
 
-ObservationNewsItemController.$inject = ['$scope', '$window', '$uibModal', 'EventService', 'UserService', 'LocalStorageService', '$element', '$timeout', 'MapService'];
+ObservationNewsItemController.$inject = ['$scope', '$uibModal', 'EventService', 'UserService', 'LocalStorageService', '$element', '$timeout', 'MapService'];
 
-function ObservationNewsItemController($scope, $window, $uibModal, EventService, UserService, LocalStorageService, $element, $timeout, MapService) {
+function ObservationNewsItemController($scope, $uibModal, EventService, UserService, LocalStorageService, $element, $timeout, MapService) {
   const iconButtonRipple = new MDCRipple(document.querySelector('.mdc-icon-button'));
   iconButtonRipple.unbounded = true;
   $scope.edit = false;
@@ -83,9 +83,9 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
   $scope.onFlagAsImportant = function() {
     $scope.importantEditor.isOpen = true;
     $timeout(function() {
-      importantEditField = importantEditField || new MDCTextField($element.find('.important-textarea')[0])
-    })
-  }
+      importantEditField = importantEditField || new MDCTextField($element.find('.important-textarea')[0]);
+    });
+  };
 
   $scope.markAsImportant = function() {
     EventService.markObservationAsImportant($scope.observation, {description: $scope.importantEditor.description}).then(function() {
@@ -112,7 +112,7 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
   $scope.viewObservation = function() {
     $scope.onObservationLocationClick($scope.observation);
     $scope.$emit('observation:view', $scope.observation);
-  }
+  };
 
   $scope.editObservation = function() {
     $scope.onObservationLocationClick($scope.observation);
@@ -128,9 +128,9 @@ function ObservationNewsItemController($scope, $window, $uibModal, EventService,
     $scope.editForm = null;
   });
 
-  $scope.$watch('event', observationOrEventChanged)
-  $scope.$watch('form', observationOrEventChanged, true)
-  $scope.$watch('observation', observationOrEventChanged, true)
+  $scope.$watch('event', observationOrEventChanged);
+  $scope.$watch('form', observationOrEventChanged, true);
+  $scope.$watch('observation', observationOrEventChanged, true);
 
   function observationOrEventChanged() {
     if (!$scope.observation || !$scope.event) return;

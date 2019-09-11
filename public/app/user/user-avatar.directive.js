@@ -26,7 +26,7 @@ function AvatarUserController($scope, $element, $http, LocalStorageService) {
   var imageElement = $(image);
   imageElement.classList = $element[0].classList;
   for (var i = 0; i < $element[0].classList.length; i++) {
-    imageElement.addClass($element[0].classList[i])
+    imageElement.addClass($element[0].classList[i]);
   }
   imageElement.addClass('center-crop');
   imageElement.attr('width', $scope.avatarWidth);

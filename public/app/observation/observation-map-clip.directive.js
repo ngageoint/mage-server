@@ -44,7 +44,7 @@ function MapClipController($rootScope, $scope, $element, MapService) {
       map.removeLayer(observation);
     }
     if (marker) {
-      map.removeLayer(marker)
+      map.removeLayer(marker);
     }
     addObservation($scope.feature);
 
@@ -86,7 +86,7 @@ function MapClipController($rootScope, $scope, $element, MapService) {
     marker.setIcon(L.fixedWidthIcon({
       iconUrl: $scope.featureStyle.iconUrl
     }));
-  })
+  });
 
   function addObservation(feature) {
     if (!feature || !feature.geometry || !feature.geometry.coordinates.length) return;
@@ -132,12 +132,12 @@ function MapClipController($rootScope, $scope, $element, MapService) {
     });
 
     if ($scope.disableInteraction) {
-      map.scrollWheelZoom.disable()
-      map.dragging.disable()
-      map.touchZoom.disable()
-      map.doubleClickZoom.disable()
-      map.boxZoom.disable()
-      map.keyboard.disable()
+      map.scrollWheelZoom.disable();
+      map.dragging.disable();
+      map.touchZoom.disable();
+      map.doubleClickZoom.disable();
+      map.boxZoom.disable();
+      map.keyboard.disable();
     }
 
     map.on('mouseover', function() {

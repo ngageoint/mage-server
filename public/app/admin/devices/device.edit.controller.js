@@ -3,9 +3,9 @@ var _ = require('underscore')
 
 module.exports = AdminDeviceEditController;
 
-AdminDeviceEditController.$inject = ['$scope', '$filter', '$routeParams', '$location', 'LocalStorageService', 'DeviceService', 'UserService'];
+AdminDeviceEditController.$inject = ['$scope', '$routeParams', '$location', 'LocalStorageService', 'DeviceService', 'UserService'];
 
-function AdminDeviceEditController($scope, $filter, $routeParams, $location, LocalStorageService, DeviceService, UserService) {
+function AdminDeviceEditController($scope, $routeParams, $location, LocalStorageService, DeviceService, UserService) {
   $scope.token = LocalStorageService.getToken();
 
   if ($routeParams.deviceId) {
