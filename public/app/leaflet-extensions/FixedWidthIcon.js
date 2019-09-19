@@ -14,6 +14,11 @@ L.FixedWidthIcon = L.DivIcon.extend({
     var s = document.createElement('img');
     s.className = "mage-icon-image";
     s.src = this.options.iconUrl;
+    if (this.options.iconUrl) {
+      s.src = this.options.iconUrl;
+    } else {
+      s.src = 'images/marker-icon.png';
+    }
     $(s).on('load', function() {
       if (self.options.onIconLoad) self.options.onIconLoad(self);
     });
