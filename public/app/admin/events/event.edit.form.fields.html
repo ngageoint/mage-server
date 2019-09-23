@@ -70,11 +70,11 @@
                         </div>
                         <div class="row">
                           <div class="col-md-6">
-                            <div class="top-gap">
-                              <label>Title</label>
-                              <input type="text" ng-model="field.title" name="title-{{field.id}}" value="{{field.title}}" class="form-control" required="true">
+                            <div class="top-gap" ng-class="{ 'has-error': eventForm['title{{field.id}}'].$invalid }">
+                              <label class="control-label">Title</label>
+                              <input type="text" ng-model="field.title" name="title{{field.id}}" value="{{field.title}}" class="form-control" required="true">
                             </div>
-                            <div ng-messages="eventForm['title-' + field.id].$error" class="has-error">
+                            <div ng-messages="eventForm['title' + field.id].$error" class="has-error">
                               <p class="help-block" ng-message="required">Title is required</p>
                             </div>
                           </div>
@@ -213,8 +213,8 @@
                     </div>
                     <div class="row">
                       <div class="col-md-6">
-                        <div class="top-gap">
-                          <label>Title</label>
+                        <div class="top-gap" ng-class="{ 'has-error': newFieldForm.title.$invalid }">
+                          <label class="control-label">Title</label>
                           <input type="text" ng-model="newField.title" value="{{newField.title}}" name="title" class="form-control" required="true">
                         </div>
                         <div ng-messages="newFieldForm.title.$error" class="has-error">
