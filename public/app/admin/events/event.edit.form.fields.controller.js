@@ -138,6 +138,10 @@ function AdminEventEditFormFieldsController($rootScope, $scope, $location, $rout
 
   // create new field button click
   $scope.addNewField = function() {
+    if ($scope.newFieldForm.$invalid) {
+      return;
+    }
+
     var fields = $scope.form.fields;
     var id = _.isEmpty(fields) ? 1 : _.max(fields, function(field) { return field.id; }).id + 1;
 
