@@ -1,58 +1,142 @@
-<!-- <div class="form-group">
-  <label class="control-label">Layers</label>
-  <input class="form-control" class="input-xlarge" type="text" placeholder="Comma seperated list of layer names" ng-model="layer.wms.layers"/>
+<div class="wms-server-info">
+  <div ng-if="$ctrl.wmsFailureMessage">
+    <h5 style="color: red;">Failed to load WMS Capabilities document: {{$ctrl.wmsFailureMessage}}</h5>
+  </div>
+  <h4>{{$ctrl.wmsResponse.Service.Title}}</h4>
+  <div ng-if="$ctrl.wmsResponse.Service.Abstract">{{$ctrl.wmsResponse.Service.Abstract}}</div>
+  <div>WMS Version: {{$ctrl.wmsResponse.version}}</div>
+  <div ng-if="$ctrl.wmsResponse.Service.ContactInformation && $ctrl.wmsResponse.Service.ContactInformation.ContactPersonPrimary">
+    <div>Contact Person: {{$ctrl.wmsResponse.Service.ContactInformation.ContactPersonPrimary.ContactPerson}}</div>
+    <div>Contact Organization: {{$ctrl.wmsResponse.Service.ContactInformation.ContactPersonPrimary.ContactOrganization}}</div>
+    <div ng-if="$ctrl.wmsResponse.Service.ContactInformation.ContactVoiceTelephone">Contact Telephone: <a href="tel:{{$ctrl.wmsResponse.Service.ContactInformation.ContactVoiceTelephone}}">{{$ctrl.wmsResponse.Service.ContactInformation.ContactVoiceTelephone}}</a></div>
+    <div ng-if="$ctrl.wmsResponse.Service.ContactInformation.ContactElectronicMailAddress">Contact Email: <a href="mailto:{{$ctrl.wmsResponse.Service.ContactInformation.ContactElectronicMailAddress}}">{{$ctrl.wmsResponse.Service.ContactInformation.ContactElectronicMailAddress}}</a></div>
+  </div>
 </div>
 
-<div class="form-group">
-  <label class="control-label">Styles</label>
-  <input class="form-control" class="input-xlarge" type="text" placeholder="Comma seperated list of layer styles" ng-model="layer.wms.styles"/>
-</div>
+<div ng-if="$ctrl.layers">
+  <div ng-if="$ctrl.layers.length">
+  <h5>Available EPSG:3857 layers on this WMS server.  Choose layers to create your map with:</h5>
+  <div ng-repeat="layer in $ctrl.layers">
+    <div class="mdc-form-field">
+      <div class="mdc-checkbox">
+        <input 
+          type="checkbox"
+          ng-model="layer.on"
+          ng-change="$ctrl.layerToggle(layer)"
+          value="{{layer.Name}}" 
+          class="mdc-checkbox__native-control"
+          id="{{layer.Name + 'cb'}}"/>
+        <div class="mdc-checkbox__background">
+          <svg class="mdc-checkbox__checkmark"
+              viewBox="0 0 24 24">
+            <path 
+              class="mdc-checkbox__checkmark-path"
+              fill="none"
+              d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+          </svg>
+          <div class="mdc-checkbox__mixedmark"></div>
+        </div>
+      </div>
+      <label for="{{layer.Name + 'cb'}}">{{layer.Title}}
+        <div class="muted small" ng-if="layer.Abstract">{{layer.Abstract}}</div></label>
+    </div>
+  </div>
+  </div>
 
-<div class="form-group">
-  <label class="control-label" for="type">Format</label>
-  <select class="form-control" ng-model="layer.wms.format" ng-options="format for format in wmsFormats"></select>
-</div>
-
-<div class="form-group">
- <div class="checkbox">
-   <label>
-     <input type="checkbox" name="layer-wms-transparency" ng-model="layer.wms.transparent"> Transparent
-   </label>
- </div>
-</div>
-
-<div class="form-group">
-  <label class="control-label" for="type">Version</label>
-  <select class="form-control" ng-model="layer.wms.version" ng-options="version for version in wmsVersions"></select>
-</div> -->
-
-Layers: {{$ctrl.layer.wms.capabilities.Layer.Layer}}
-
-<div ng-if="$ctrl.layer.wms.layers">
-  <div class="row">
-    <div class="col-md-12">
-      <div class="form-group">
-        <label>Available layers on this WMS server.  Choose a layer to create your map with:</label>
-        <div ng-repeat="layer in $ctrl.layer.wms.layers">
-          <div class="pointer">
-            <div class="admin-device-container">
-              <div class="right-gap">
-                <i class="fa admin-device-icon" ng-class="iconClass(d)"></i>
-              </div>
-
-              <div class="admin-device-info">
-                <div><strong>{{layer.Title}}</strong></div>
-                <div class="muted small" ng-if="layer.Abstract">{{layer.Abstract}}</div>
-              </div>
-
-              <div>
-                <!-- <button class="btn btn-sm btn-default pull-right" ng-if="hasDeviceEditPermission" ng-click="editDevice($event, d)">Edit</button> -->
-              </div>
-            </div>
+  <div ng-if="$ctrl.otherLayers.length">
+    <h5 style="color: red">These layers appear to not be available in EPSG:3857.  MAGE clients can only show EPSG:3857 layers.</h5>
+    <div ng-repeat="layer in $ctrl.otherLayers">
+      <div class="mdc-form-field">
+        <div class="mdc-checkbox">
+          <input 
+            type="checkbox"
+            ng-model="layer.on"
+            ng-change="$ctrl.layerToggle(layer)"
+            value="{{layer.Name}}" 
+            class="mdc-checkbox__native-control"
+            disabled="true"
+            id="{{layer.Name + 'cb'}}"/>
+          <div class="mdc-checkbox__background">
+            <svg class="mdc-checkbox__checkmark"
+                viewBox="0 0 24 24">
+              <path 
+                class="mdc-checkbox__checkmark-path"
+                fill="none"
+                d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+            </svg>
+            <div class="mdc-checkbox__mixedmark"></div>
           </div>
         </div>
-
+        <label for="{{layer.Name + 'cb'}}">{{layer.Title}}
+          <div class="muted small" ng-if="layer.Abstract">{{layer.Abstract}}</div></label>
       </div>
     </div>
+  </div>
+</div>
+
+<div class="wms-server-info top-gap">
+  <div class="wms-advanced-options">
+    <h4><a href="javascript:void(0)" ng-click="$ctrl.advancedOptionsToggle()">Advanced</a></h4>
+    <div ng-if="$ctrl.advancedOptionsExpanded">
+      <div class="top-gap">
+        <div class="mdc-text-field mdc-text-field--outlined w-100">
+          <input type="text" id="wms-version" placeholder="i.e. 1.3.0" ng-model="$ctrl.wmsVersion" ng-value="$ctrl.wmsVersion" class="mdc-text-field__input" required>
+          <div class="mdc-notched-outline">
+            <div class="mdc-notched-outline__leading"></div>
+            <div class="mdc-notched-outline__notch">
+              <label for="wms-version" class="mdc-floating-label">WMS Version</label>
+            </div>
+            <div class="mdc-notched-outline__trailing"></div>
+          </div>
+        </div>
+      </div>
+      <div class="mdc-form-field">
+        <div class="mdc-checkbox">
+          <input 
+            type="checkbox"
+            ng-model="$ctrl.wmsTransparency"
+            ng-change="$ctrl.wmsTransparencyToggle()"
+            value="{{$ctrl.wmsTransparency}}" 
+            class="mdc-checkbox__native-control"
+            id="wms-transparency"/>
+          <div class="mdc-checkbox__background">
+            <svg class="mdc-checkbox__checkmark"
+                viewBox="0 0 24 24">
+              <path 
+                class="mdc-checkbox__checkmark-path"
+                fill="none"
+                d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+            </svg>
+            <div class="mdc-checkbox__mixedmark"></div>
+          </div>
+        </div>
+        <label for="wms-transparency">Transparent</label>
+      </div>
+      <div class="top-gap">
+        <div class="mdc-text-field mdc-text-field--outlined w-100">
+          <input type="text"
+            id="wms-styles"
+            placeholder="Comma seperated list of layer styles"
+            ng-model="$ctrl.wmsStyles"
+            ng-value="$ctrl.wmsStyles"
+            ng-change="$ctrl.wmsStyleChange()"
+            class="mdc-text-field__input">
+          <div class="mdc-notched-outline">
+            <div class="mdc-notched-outline__leading"></div>
+            <div class="mdc-notched-outline__notch">
+              <label for="wms-version" class="mdc-floating-label">Styles</label>
+            </div>
+            <div class="mdc-notched-outline__trailing"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wms-capabilities-response top-gap">
+    <h4><a href="javascript:void(0)" ng-click="$ctrl.wmsResponseExpanded = !$ctrl.wmsResponseExpanded">Show WMS Capabilities Document</a></h4>
+    <pre ng-if="$ctrl.wmsResponseExpanded">
+    {{$ctrl.wmsResponse | json}}
+    </pre>
   </div>
 </div>

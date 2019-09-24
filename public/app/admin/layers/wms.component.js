@@ -1,65 +1,136 @@
-var angular = require('angular');
+import angular from 'angular';
+import { textField } from 'material-components-web';
 
-module.exports = {
-  template: require('./wms.component.html'),
-  bindings: {
-    layer: '='
-  },
-  controller: WmsEditController
-};
+class WmsEditController {
 
-WmsEditController.$inject = ['$http'];
+  constructor($http, $element, $timeout) {
+    this._$http = $http;
+    this._$element = $element;
+    this._$timeout = $timeout;
+    this.wmsLayer = {};
+    this.layerNames = {};
+  }
 
-function WmsEditController($http) {
-  var layer;
+  $onInit() {
+    this.oldUrl = angular.copy(this.layerUrl);
+  }
 
-  this.wmsLayer = {};
+  $postLink() {
+    this.onUrlChange();
+  }
 
-  this.$onInit = function() {
-    layer = angular.copy(this.layer);
-  };
-
-  this.$doCheck = function() {
-    if (layer.url !== this.layer.url) {
-      layer.url = this.layer.url;
+  $doCheck() {
+    if (this.oldUrl !== this.layerUrl) {
+      this.oldUrl = this.layerUrl;
       this.onUrlChange();
     }
-  };
+  }
 
-  this.onUrlChange = function() {
+  advancedOptionsToggle() {
+    this.advancedOptionsExpanded = !this.advancedOptionsExpanded;
+    this._$timeout(() => {
+      var elements = this._$element.find('.mdc-text-field');
+      for (var i = 0; i < elements.length; i++) {
+        new textField.MDCTextField(elements[i]);
+      }
+    });
+  }
+
+  wmsTransparencyToggle() {
+    this.optionsUpdated();
+  }
+
+  wmsStyleChange() {
+    this.optionsUpdated();
+  }
+
+  optionsUpdated(layer) {
+    this.onWmsOptionsUpdate({options: {
+      layers: Object.keys(this.layerNames).join(','),
+      version: this.wmsVersion,
+      transparent: this.wmsTransparency,
+      format: this.wmsTransparency ? 'image/png' : 'image/jpeg',
+      styles: this.wmsStyles,
+      extent: layer ? layer.EX_GeographicBoundingBox : undefined,
+    }});
+  }
+
+  onUrlChange() {
     var options = {
       headers: {
         'content-type': 'application/json'
       }
     };
 
-    $http.post('/api/layers/wms/getcapabilities', {url: layer.url}, options).then(function(response) {
-      var layer = response.data.Capability.Layer;
-      var layers = [];
-      this.parseLayer(layer, layers);
+    this._$http.post('/api/layers/wms/getcapabilities', {url: this.layerUrl.split('?')[0]}, options).then(response => {
+      this.wmsResponse = response.data;
+      this.wmsVersion = this.wmsResponse.version;
+      this.wmsTransparency = true;
+      this.wmsStyles = "";
+      this.response = response;
+      this.layers = [];
+      this.otherLayers = [];
+      if (response.data.Capability) {
+        var layer = response.data.Capability.Layer;
+        this.parseLayer(layer, this.layers, this.otherLayers);
+      } else {
+        this.wmsFailureMessage = 'Invalid response recieved from WMS Server';
+      }
+    }, response => this.wmsFailureMessage = response);
+  }
 
-      layers.forEach(function(layer) {
-        console.log('Layer w/ title', layer.Title);
-      });
+  layerToggle(layer) {
+    if (this.layerNames[layer.Name]) {
+      delete this.layerNames[layer.Name];
+    } else {
+      this.layerNames[layer.Name] = layer;
+    }
+    this.optionsUpdated(layer);
+  }
 
-      this.layer.wms = {
-        layers: layers
-      };
-    }.bind(this), function(response) {
-      console.log('wms fail', response);
-    })
-  };
-
-  this.parseLayer = function(layer, layers) {
+  parseLayer(layer, layers, otherLayers, layerHierarchy) {
     var children = layer.Layer;
     if (!children) return;
 
-    children.forEach(function(child) {
+    children.forEach(child => {
       if (child.Layer) {
-        this.parseLayer(child, layers);
-      } else {
+        child.Title = layerHierarchy ? layerHierarchy + ' - ' + child.Title : child.Title;
+        this.parseLayer(child, layers, otherLayers, child.Title);
+      } else if (this.checkLayer(child)) {
+        child.Title = layerHierarchy ? layerHierarchy + ' - ' + child.Title : child.Title;
         layers.push(child);
+      } else {
+        child.Title = layerHierarchy ? layerHierarchy + ' - ' + child.Title : child.Title;
+        otherLayers.push(child);
       }
-    }.bind(this));
-  };
+    });
+  }
+
+  checkLayer(layer) {
+    var ok = false;
+    if (layer.CRS) {
+      
+      layer.CRS.forEach(crs => {
+        if (crs.indexOf('EPSG:3857') !== -1 || crs.indexOf('EPSG:900913') !== -1) {
+          ok = true;
+        }
+      });
+    }
+    return ok;
+  }
 }
+
+WmsEditController.$inject = ['$http', '$element', '$timeout'];
+
+var template = require('./wms.component.html');
+var bindings = {
+  layerUrl: '<',
+  onWmsOptionsUpdate: '&'
+};
+var controller = WmsEditController;
+
+export {
+  template,
+  bindings,
+  controller
+};

@@ -26,6 +26,7 @@
 @import "./material-select-theme.scss";
 @import "./mdDateTimePicker-overrides.css";
 @import "./leaflet-overrides.css";
+@import "./layer-edit.scss";
 
 .vertical-middle {
   vertical-align: middle;
@@ -520,6 +521,7 @@ a {
   position: absolute;
   width: 100%;
   height: 100%;
+  background-color: rgb(192, 217, 228);
 }
 
 @media (max-width: 768px) {
