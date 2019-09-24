@@ -5,7 +5,7 @@
 <div class="modal-body">
   <div class="row bottom-gap" ng-show="model.errors">
     <div class="col-md-12">
-      <li class="text-danger" ng-repeat="(key, value) in model.errors">{{value.message}}</li>
+      <li class="text-danger" ng-repeat="(key, value) in model.errors">{{key}} : {{value.message}}</li>
     </div>
   </div>
 

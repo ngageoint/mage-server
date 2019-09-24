@@ -31,6 +31,9 @@
 .mage-tooltip span:first-child.tooltiptext {
   bottom: 100%;
 } 
+.mage-tooltip span:last-child.tooltiptext {
+  top: 100%;
+} 
 
 .mage-tooltip:hover span.tooltiptext {
   visibility: visible;

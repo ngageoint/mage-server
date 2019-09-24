@@ -1,6 +1,6 @@
 <div class="admin">
     <div admin-tab="'events'"></div>
-  
+
     <div class="admin-main">
       <div class="admin-nav-gap">
         <div class="container-fluid">
@@ -32,7 +32,7 @@
               </div>
             </div>
           </div>
-  
+
           <div class="row top-gap-l">
             <div class="col-md-12">
               <nav class="navbar navbar-default admin-dashboard-navbar">
@@ -53,7 +53,7 @@
                 <uib-accordion close-others="accordion.oneAtATime">
                   <div uib-accordion-group class="panel-default" ng-repeat="field in form.fields | filter:{archived: '!true'} | orderBy: 'id'">
                     <uib-accordion-heading>
-                      {{field.title}}
+                      {{field.title|| 'No title set'}}
                       <i class="pull-right fa fa-arrow-up" ng-if="!$first" ng-click="moveFieldUp($event, field)"></i>
                       <i class="pull-right fa fa-arrow-down" ng-if="!$last" ng-click="moveFieldDown($event, field)"></i>
                     </uib-accordion-heading>
@@ -70,9 +70,12 @@
                         </div>
                         <div class="row">
                           <div class="col-md-6">
-                            <div class="top-gap">
-                              <label>Title</label>
-                              <input type="text" ng-model="field.title" value="{{field.title}}" class="form-control">
+                            <div class="top-gap" ng-class="{ 'has-error': eventForm['title{{field.id}}'].$invalid }">
+                              <label class="control-label">Title</label>
+                              <input type="text" ng-model="field.title" name="title{{field.id}}" value="{{field.title}}" class="form-control" required="true">
+                            </div>
+                            <div ng-messages="eventForm['title' + field.id].$error" class="has-error">
+                              <p class="help-block" ng-message="required">Title is required</p>
                             </div>
                           </div>
                         </div>
@@ -92,7 +95,7 @@
                             </div>
                           </div>
                         </div>
-  
+
                         <div class="row" ng-show="showAddOptions(field) && !isMemberField(field)">
                           <div class="col-md-6" ng-if="field.type === 'dropdown'">
                             <div class="top-gap">
@@ -102,7 +105,7 @@
                               </select>
                             </div>
                           </div>
-  
+
                           <div class="col-md-6" ng-if="field.type === 'multiselectdropdown'">
                             <div class="top-gap">
                               <label>Default Value</label>
@@ -114,7 +117,7 @@
                               </ui-select>
                             </div>
                           </div>
-  
+
                         </div>
                         <div class="row" ng-if="field.type === 'numberfield'">
                           <div class="col-md-6">
@@ -178,14 +181,14 @@
                           <input type="checkbox" ng-model="field.required"> Required
                           </label>
                         </div>
-  
+
                         <button ng-show="deletableField(field)" class="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i class="fa fa-trash icon-white"></i> Delete Field</button>
                       </form>
-  
+
                     </div>
                   </div>
                 </uib-accordion>
-  
+
                 <div class="row top-gap-l">
                   <div class="col-md-12">
                     <nav class="navbar navbar-default admin-dashboard-navbar">
@@ -210,13 +213,16 @@
                     </div>
                     <div class="row">
                       <div class="col-md-6">
-                        <div class="top-gap">
-                          <label>Title</label>
-                          <input type="text" ng-model="newField.title" value="{{newField.title}}" class="form-control">
+                        <div class="top-gap" ng-class="{ 'has-error': newFieldForm.title.$invalid }">
+                          <label class="control-label">Title</label>
+                          <input type="text" ng-model="newField.title" value="{{newField.title}}" name="title" class="form-control" required="true">
+                        </div>
+                        <div ng-messages="newFieldForm.title.$error" class="has-error">
+                          <p class="help-block" ng-message="required">Title is required</p>
                         </div>
                       </div>
                     </div>
-  
+
                     <div class="row" ng-if="newField.type === 'dropdown' || isUserDropdown(newField)">
                       <div class="col-md-6">
                         <div class="checkbox">
@@ -227,7 +233,7 @@
                         </div>
                       </div>
                     </div>
-  
+
                     <div class="row" ng-if="newField.type !== 'checkbox' && newField.type !== 'numberfield' && newField.type !== 'textarea'">
                       <div class="col-md-6">
                         <div class="top-gap" ng-hide="hideAddOptions(newField)">
@@ -236,7 +242,7 @@
                         </div>
                       </div>
                     </div>
-  
+
                     <div class="row" ng-show="newField.type === 'textarea'">
                       <div class="col-md-6">
                         <div class="top-gap">
@@ -245,7 +251,7 @@
                         </div>
                       </div>
                     </div>
-  
+
                     <div class="row" ng-if="newField.type === 'numberfield'">
                       <div class="col-md-6">
                         <div class="top-gap" ng-class="{'has-error': form.newField.value.$invalid}">
@@ -286,7 +292,7 @@
                           </select>
                         </div>
                       </div>
-  
+
                       <div class="col-md-6" ng-if="newField.$multiselect">
                         <div class="top-gap">
                           <label>Default Value</label>
@@ -331,19 +337,19 @@
                       </label>
                       <p class="help-block">Choose required if users must enter a value.</p>
                     </div>
-  
+
                     <hr>
-  
+
                     <button type="submit" ng-disabled="form.newField.value.$invalid" class="btn btn-primary" ng-click="addNewField()"><i class="fa fa-plus-square-o"></i> Add Field</button>
                   </form>
                 </div>
-  
+
               </div>
             </div>
           </div>
         </div>
       </div>
-  
+
       <div class="bottom-gap-l top-gap-xl">
         <div class="container" ng-if="event">
           <div class="row">
@@ -355,7 +361,6 @@
           </div>
         </div>
       </div>
-  
+
     </div>
   </div>
-  

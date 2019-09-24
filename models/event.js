@@ -331,6 +331,7 @@ EventSchema.set("toObject", {
 
 // Creates the Model for the Layer Schema
 var Event = mongoose.model('Event', EventSchema);
+var Form = mongoose.model('Form', FormSchema);
 exports.Model = Event;
 
 function convertProjection(field, keys, projection) {
@@ -665,20 +666,24 @@ exports.addForm = function(eventId, form, callback) {
 };
 
 exports.updateForm = function(event, form, callback) {
-  var update = {
-    $set: {
-      'forms.$': form
-    }
-  };
-
-  Event.findOneAndUpdate({'forms._id': form._id}, update, {new: true, runValidators: true}, function(err, event) {
+  new Form(form).validate(function(err) {
     if (err) return callback(err);
 
-    var forms = event.forms.filter(function(f) {
-      return f._id === form._id;
-    });
+    var update = {
+      $set: {
+        'forms.$': form
+      }
+    };
 
-    callback(err, event, forms.length ? forms[0] : null);
+    Event.findOneAndUpdate({'forms._id': form._id}, update, {new: true, runValidators: true}, function(err, event) {
+      if (err) return callback(err);
+
+      var forms = event.forms.filter(function(f) {
+        return f._id === form._id;
+      });
+
+      callback(err, event, forms.length ? forms[0] : null);
+    });
   });
 };
 
