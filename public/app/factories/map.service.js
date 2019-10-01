@@ -35,6 +35,7 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
     updateFeatureForLayer: updateFeatureForLayer,
     removeFeatureFromLayer: removeFeatureFromLayer,
     zoomToFeatureInLayer: zoomToFeatureInLayer,
+    deselectFeatureInLayer: deselectFeatureInLayer,
     followFeatureInLayer: followFeatureInLayer,
     onLocation: onLocation,
     onLocationStop: onLocationStop,
@@ -104,10 +105,7 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
   
             return el[0];
           },
-          closeButton: false,
-          onClose: function(observation) {
-            $rootScope.$broadcast('observation:deselect', observation);
-          }
+          closeButton: false
         }
       }
     };
@@ -394,6 +392,17 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
     featuresChanged({
       name: layerId,
       removed: [feature]
+    });
+  }
+
+  function deselectFeatureInLayer(feature, layerId) {
+    _.each(listeners, function(listener) {
+      if (_.isFunction(listener.onFeatureDeselect)) {
+        listener.onFeatureDeselect({
+          name: layerId,
+          feature: feature
+        });
+      }
     });
   }
 
