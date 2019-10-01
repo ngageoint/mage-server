@@ -1,7 +1,7 @@
 <header id="edit-app-bar" class="mdc-top-app-bar mdc-elevation--z4">
   <div class="mdc-top-app-bar__row">
     <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
-      <i ng-click="cancelEdit()" class="material-icons mdc-top-app-bar__navigation-icon">close</i>
+      <button ng-click="cancelEdit()" class="material-icons mdc-top-app-bar__navigation-icon mdc-icon-button">close</button>
       <span class="mdc-top-app-bar__title">
         <span ng-if="observation.id !== 'new'">Edit Observation</span>
         <span ng-if="observation.id === 'new'">Create Observation</span>
