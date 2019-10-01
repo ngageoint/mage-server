@@ -1086,25 +1086,51 @@ textarea {
 /* form edit styles */
 .form-section-card {
   width: 100%;
+  height: 200px;
   position: relative;
-  padding: 25px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   cursor: pointer; cursor: hand;
-  color: #1E88E5;
-  font-size: 2.5rem;
+  font-size: 1.5rem;
 }
 
 .form-section-card .fa {
-  font-size: 45px;
   margin-bottom: 15px;
 }
 
 .form-section-card .card-content {
   text-align: center;
+}
+
+.form-section-fields {
+  color: #66BB6A;
+}
+
+.form-section-fields-icon {
+  font-size: 26px;
+}
+
+.form-section-map {
+  color: #29B6F6;
+}
+
+.form-section-feed {
+  color: #FFCA28;
+}
+
+.form-section-feed-icon {
+  font-size: 24px;
+}
+
+.form-section-title {
+  opacity: 87;
+  color: black;
+  margin-top: 8px;
+}
+
+.form-section-description {
+  margin-top: 8px;
+  font-size: 1rem;
+  color: black;
+  opacity: .54;
 }
 
 .cssFade {

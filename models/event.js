@@ -139,71 +139,8 @@ function validateTeamIds(eventId, teamIds, next) {
   });
 }
 
-function getUserFields(form) {
-  return form.fields.filter(function(field) {
-    if (field.archived) return false;
-
-    return form.userFields.some(function(memberField) {
-      return memberField === field.name;
-    });
-  });
-}
-
-function compareDisplayName(a, b) {
-  var aNames = a.split(" ");
-  var aFirstName = aNames.shift();
-  var aLastName = aNames.pop();
-
-  var bNames = b.split(" ");
-  var bFirstName = bNames.shift();
-  var bLastName = bNames.pop();
-
-  if (aLastName < bLastName) return -1;
-
-  if (aLastName > bLastName) return 1;
-
-  if (aFirstName < bFirstName) return -1;
-
-  if (aFirstName > bFirstName) return 1;
-
-  return 0;
-}
-
 function populateUserFields(event, callback) {
-  // Get all users in this event
-  Team.getTeams({teamIds: event.teamIds}, function(err, teams) {
-    if (err) return callback(err);
-
-    var choices = [];
-    var users = {};
-
-    teams.forEach(function(team) {
-      team.userIds.forEach(function(user) {
-        users[user.displayName] = user.displayName;
-      });
-    });
-
-    users = Object.keys(users);
-    users.sort(compareDisplayName);
-    for (var i = 0; i < users.length; i++) {
-      choices.push({
-        id: i,
-        value: i,
-        title: users[i]
-      });
-    }
-
-    event.forms.forEach(function(form) {
-      var userFields = getUserFields(form);
-      if (!userFields.length) return;
-
-      userFields.forEach(function(userField) {
-        userField.choices = choices;
-      });
-    });
-
-    callback();
-  });
+  new api.Form(event).populateUserFields(callback);
 }
 
 EventSchema.pre('init', function(next, event) {
