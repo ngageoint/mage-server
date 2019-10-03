@@ -172,13 +172,17 @@ function ObservationNewsItemController($scope, $uibModal, EventService, UserServ
       });
 
       if (observationForm.primaryFeedField && firstForm[observationForm.primaryFeedField]) {
+        var field = observationForm.fields.find(field => { return field.name === observationForm.primaryField });
         $scope.primaryFeedField = {
+          field: field,
           value: firstForm[observationForm.primaryFeedField]
         };
       }
 
       if (observationForm.secondaryFeedField && firstForm[observationForm.secondaryFeedField]) {
+        var field = observationForm.fields.find(field => { return field.name === observationForm.secondaryFeedField });
         $scope.secondaryFeedField = {
+          field: field,
           value: firstForm[observationForm.secondaryFeedField]
         };
       }
