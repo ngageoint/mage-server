@@ -35,7 +35,7 @@ function UserFeedController($element, $timeout, EventService, $filter, FilterSer
     FilterService.addListener(filterChangedListener);
   };
 
-  this.filterChangedListener = function() {
+  this.onFilterChanged = function() {
     this.currentUserPage = 0;
   };
 
@@ -54,7 +54,12 @@ function UserFeedController($element, $timeout, EventService, $filter, FilterSer
     }
 
     this.userPages = pages;
-    this.currentUserPage = this.currentUserPage || 0;
+    // if a new page showed up that wasn't there before, switch to it
+    if (this.currentUserPage === -1 && pages.length) {
+      this.currentUserPage = 0;
+    }
+    // ensure the page that they were on did not go away
+    this.currentUserPage = Math.min(this.currentUserPage, pages.length - 1);
 
     $timeout(() => {
       if (!userSelectMdc) {
@@ -70,13 +75,13 @@ function UserFeedController($element, $timeout, EventService, $filter, FilterSer
   };
 
   this.onUsersChanged = function(changed) {
-    _.each(changed.added, function(added) {
+    _.each(changed.added, added => {
       usersById[added.id] = added;
 
       if (!firstUserChange) this.feedChangedUsers[added.id] = true;
     });
 
-    _.each(changed.updated, function(updated) {
+    _.each(changed.updated, updated => {
       var user = usersById[updated.id];
       if (user) {
         usersById[updated.id] = updated;

@@ -47,7 +47,11 @@ function ObservationFeedController($element, $timeout, EventService, $filter, Fi
     }
 
     this.observationPages = pages;
-    this.currentObservationPage = this.currentObservationPage || 0;
+    // if a new page showed up that wasn't there before, switch to it
+    if (this.currentObservationPage === -1 && pages.length) {
+      this.currentObservationPage = 0;
+    }
+    // ensure the page that they were on did not go away
     this.currentObservationPage = Math.min(this.currentObservationPage, pages.length - 1);
     $timeout(function() {
       if (!observationSelectMdc) {
