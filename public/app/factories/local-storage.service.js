@@ -123,7 +123,7 @@ function LocalStorageService() {
   }
 
   function getTimeZoneEdit() {
-    return getLocalItem(timeZoneEditKey) || getLocalItem(timeZoneViewKey);
+    return getLocalItem(timeZoneEditKey) || getTimeZoneView();
   }
 
   function setTimeZoneEdit(timeZone) {
