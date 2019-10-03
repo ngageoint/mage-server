@@ -10,7 +10,7 @@ function AdminEventEditFormFeedController($rootScope, $scope, $location, $routeP
   $scope.unSavedChanges = false;
   $scope.unSavedUploads = false;
   $scope.token = LocalStorageService.getToken();
-  
+
   var formSaved = false;
   $scope.filesToUpload = [];
   $scope.saveTime = 0;
@@ -43,25 +43,88 @@ function AdminEventEditFormFeedController($rootScope, $scope, $location, $routeP
     return url + '?' + $.param({access_token: LocalStorageService.getToken()});
   }
 
-  function createFakeObservation(fakeObservationFormFields) {
-    _.each($scope.form.fields, function(field) {
-      if (field.value) {
-        fakeObservationFormFields[field.name] = field.value;
-      } else {
-        switch(field.type) {
-        case 'dropdown':
-        case 'multiselectdropdown':
-          fakeObservationFormFields[field.name] = field.choices[Math.floor(Math.random() * field.choices.length)].title;
-          break;
-        case 'date':
-          fakeObservationFormFields[field.name] = moment(new Date()).toISOString();
-          break;
-        default:
-          fakeObservationFormFields[field.name] = 'Sample';
+  function createFakeObservation(observationId, formId, userId) {
+    return {
+      id: observationId,
+      createdAt: moment(new Date()).toISOString(),
+      geometry: {
+        type: 'Point',
+        coordinates: [
+          180 - (360 * Math.random()),
+          80 - (160 * Math.random())
+        ]
+      },
+      lastModified: moment(new Date()).toISOString(),
+      properties: {
+        timestamp: moment(new Date()).toISOString(),
+        forms: [createFakeForm(formId)]
+      },
+      type: 'Feature',
+      userId: userId
+    };
+  }
+
+  function createFakeForm(formId) {
+    var form = {
+      formId: formId
+    };
+
+    $scope.form.fields.forEach(field => {
+      switch(field.type) {
+      case 'radio':
+      case 'dropdown':
+        if (field.choices.length) {
+          form[field.name] = field.choices[Math.floor(Math.random() * field.choices.length)].title;
+        } else {
+          form[field.name] = '';
         }
+        break;
+      case 'multiselectdropdown':
+        if (field.choices.length) {
+          var choices = new Set();
+          for (var i = 0; i < Math.floor(Math.random() * field.choices.length); i++) {
+            choices.add(field.choices[Math.floor(Math.random() * field.choices.length)].title);
+          }
+
+          form[field.name] = Array.from(choices).join(', ');
+        } else {
+          form[field.name] = '';
+        }
+        break;
+      case 'checkbox':
+        var randomChecked = Math.floor(Math.random() * 2);
+        form[field.name] = randomChecked === 1 ? field.title : '';
+        break;
+      case 'numberfield':
+        form[field.name] = Math.floor(Math.random() * 100) + 1;
+        break;
+      case 'date':
+        form[field.name] = moment(new Date()).toISOString();
+        break;
+      case 'textarea':
+        form[field.name] = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Nam at lectus urna duis convallis convallis tellus.';
+        break;
+      case 'password':
+        form[field.name] = '**********';
+        break;
+      case 'email':
+        form[field.name] = 'mage@email.com';
+        break;
+      case 'geometry':
+        form[field.name] = {
+          type: 'Point',
+          coordinates: [
+            180 - (360 * Math.random()),
+            80 - (160 * Math.random())
+          ]
+        };
+        break;
+      default:
+        form[field.name] = 'Lorem ipsum';
       }
     });
-    return fakeObservationFormFields;
+
+    return form;
   }
 
   Event.get({id: $routeParams.eventId}, function(event) {
@@ -73,84 +136,18 @@ function AdminEventEditFormFeedController($rootScope, $scope, $location, $routeP
       });
       $scope.form = new Form(form);
 
-      _.each($scope.form.fields, function(field) {
-        if (field.name === $scope.form.primaryField) {
-          $scope.primaryField = field;
-        }
-      });
+      $scope.primaryField = $scope.form.fields.find(field => { return field.name === $scope.form.primaryField; });
 
-      
       $scope.event.forms = [$scope.form];
       UserService.getMyself().then(function(myself) {
-        $scope.observations = [{
-          "id": 0,
-          "createdAt": moment(new Date()).toISOString(),
-          "geometry": {
-            "type": "Point",
-            "coordinates": [
-              180 - (360 * Math.random()),
-              80 - (160 * Math.random())
-            ]
-          },
-          "lastModified": moment(new Date()).toISOString(),
-          "properties": {
-            "timestamp": moment(new Date()).toISOString(),
-            "forms": [
-              createFakeObservation({
-                formId: Number($routeParams.formId)
-              })
-            ]
-          },
-          "type": "Feature",
-          "userId": myself.id
-        },{
-          "id": 1,
-          "createdAt": moment(new Date()).toISOString(),
-          "geometry": {
-            "type": "Point",
-            "coordinates": [
-              180 - (360 * Math.random()),
-              80 - (160 * Math.random())
-            ]
-          },
-          "lastModified": moment(new Date()).toISOString(),
-          "properties": {
-            "timestamp": moment(new Date()).toISOString(),
-            "forms": [
-              createFakeObservation({
-                formId: Number($routeParams.formId)
-              })
-            ]
-          },
-          "type": "Feature",
-          "userId": myself.id
-        },{
-          "id": 2,
-          "createdAt": moment(new Date()).toISOString(),
-          "geometry": {
-            "type": "Point",
-            "coordinates": [
-              180 - (360 * Math.random()),
-              80 - (160 * Math.random())
-            ]
-          },
-          "lastModified": moment(new Date()).toISOString(),
-          "properties": {
-            "timestamp": moment(new Date()).toISOString(),
-            "forms": [
-              createFakeObservation({
-                formId: Number($routeParams.formId)
-              })
-            ]
-          },
-          "type": "Feature",
-          "userId": myself.id
-        }];
-        $scope.observations.forEach(function(obs) {
-          obs.style = {
-            iconUrl: getObservationIconUrl(obs, form)
+        $scope.observations = [];
+        for (var i = 0; i < 3; i++) {
+          var observation = createFakeObservation(i, Number($routeParams.formId), myself.id);
+          observation.style = {
+            iconUrl: getObservationIconUrl(observation, form)
           };
-        });
+          $scope.observations.push(observation);
+        }
       });
     } else {
       $scope.form = new Form();
