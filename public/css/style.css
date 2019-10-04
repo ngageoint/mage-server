@@ -413,13 +413,13 @@ a {
   z-index: 0;
 }
 
-.route-content .about-content {
+.route-content > .about-content {
   margin: auto;
   width: 50vw;
 }
 
 @media(max-width:900px) {
-  .route-content .about-content {
+  .route-content > .about-content {
     margin: 32px;
     width: unset;
   }
