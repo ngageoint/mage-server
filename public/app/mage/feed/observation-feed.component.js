@@ -72,6 +72,10 @@ function ObservationFeedController($element, $timeout, EventService, $filter, Fi
       observationsById[added.id] = added;
     });
 
+    _.each(changed.updated, function(updated) {
+      observationsById[updated.id] = updated;
+    });
+
     _.each(changed.removed, function(removed) {
       delete observationsById[removed.id];
     });
