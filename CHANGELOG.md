@@ -6,21 +6,30 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+
+##### Bug Fixes
+
+## [5.3.0](https://github.com/ngageoint/mage-server/releases/tag/5.3.0)
+
+##### Features
 * GeoServer plugin which creates OGC WMS/WFS endpoints from MAGE.
 * Sort observation fields in CSV export in form order.
 * Upgrade multer, file uploads are now configured per route.
 * Display for the feed can now be configured per form
-* Updated to use material design
+* Updated to use material design.
+* Observation new and edit views moved outside of observation feed.
+* Added user information view.
 * New login and signup page flow!
 
 ##### Bug Fixes
-* Fix kml to geojson icon style.
+* Fix KML to GeoJSON icon style.
 * Export observations based on timestamp, not last updated.
 * CSV export properly handles commas in values.
 * Fix permission error when event user posts recent event.
 * Fix bug preventing single observation download from web.
+* Fix issue with form fields save marking form as dirty after save if it contains a user select field.
 
-## [5.2.6](https://github.com/ngageoint/mage-server/releases/tag/5.2.6) (TBD)
+## [5.2.6](https://github.com/ngageoint/mage-server/releases/tag/5.2.6)
 
 ##### Features
 * Increase JSON upload limit.
@@ -33,7 +42,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Remove user token when user is disabled.
 * Separated geoaxis authentication url from api url
 
-## [5.2.5](https://github.com/ngageoint/mage-server/releases/tag/5.2.5) (03-13-2019)
+## [5.2.5](https://github.com/ngageoint/mage-server/releases/tag/5.2.5)
 
 ##### Features
 * Added Ubuntu upstart scripts
@@ -43,7 +52,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Sort observation form fields in KML export.
 * Catch 'disconnect' event on mage-image child process and shutdown.  This should prevent the mage-image process from being orphaned.
 
-## [5.2.4](https://github.com/ngageoint/mage-server/releases/tag/5.2.4) (01-14-2019)
+## [5.2.4](https://github.com/ngageoint/mage-server/releases/tag/5.2.4)
 
 ##### Features
 * Added user create permission to EVENT_ADMIN_ROLE.
@@ -54,7 +63,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Add baseUrl to avatar and icon for team route when populating users.
 * Upgrade GeoPackageJS libs to fix a problem creating vector tiles.
 
-## [5.2.3](https://github.com/ngageoint/mage-server/releases/tag/5.2.3) (12-07-2018)
+## [5.2.3](https://github.com/ngageoint/mage-server/releases/tag/5.2.3)
 
 ##### Features
 * Added new environment variable and configuration to support secure login session cookie.  NOTE:
@@ -65,14 +74,14 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Work around for leaflet GridLayer space between tiles.
 * Fixed bug preventing navbar options from displaying all elements on mobile.
 
-## [5.2.2](https://github.com/ngageoint/mage-server/releases/tag/5.2.2) (10-30-2018)
+## [5.2.2](https://github.com/ngageoint/mage-server/releases/tag/5.2.2)
 
 ##### Features
 
 ##### Bug Fixes
 * Fixed bug with date/time fields not saving.
 
-## [5.2.1](https://github.com/ngageoint/mage-server/releases/tag/5.2.1) (10-23-2018)
+## [5.2.1](https://github.com/ngageoint/mage-server/releases/tag/5.2.1)
 
 ##### Features
 * New more featureful geocoder control
@@ -84,7 +93,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Fix bug in observation edit where initial timezone format was not being picked up.
 * Fix bug in shapefile column name that esri could not read.
 
-## [5.2.0](https://github.com/ngageoint/mage-server/releases/tag/5.2.0) (09-17-2018)
+## [5.2.0](https://github.com/ngageoint/mage-server/releases/tag/5.2.0)
 
 ##### Features
 * Users can view or edit coordinates as MGRS.
@@ -94,7 +103,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 
-## [5.1.4](https://github.com/ngageoint/mage-server/releases/tag/5.1.4) (08-06-2018)
+## [5.1.4](https://github.com/ngageoint/mage-server/releases/tag/5.1.4)
 
 ##### Features
 * Added GeoPackage layer support. Added server side XYZ urls to retrieve imagery from GeoPackages. The web client will use these URLs to display imagery tiles from a GeoPackage.  Added server side url to retrieve vector tiles from feature GeoPackages. The web client will use these to display vector tiles (with the aid of a leaflet plugin).
@@ -113,7 +122,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Fixed secondary icon uploading for in event/form admin
 * Show line breaks in disclaimer dialog.
 
-## [5.1.3](https://github.com/ngageoint/mage-server/releases/tag/5.1.3) (05-28-2018)
+## [5.1.3](https://github.com/ngageoint/mage-server/releases/tag/5.1.3)
 
 ##### Features
 
@@ -125,7 +134,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Fix team filter on map page
 * Initial save for banner/disclaimer settings fixed
 
-## [5.1.2](https://github.com/ngageoint/mage-server/releases/tag/5.1.2) (04-20-2018)
+## [5.1.2](https://github.com/ngageoint/mage-server/releases/tag/5.1.2)
 
 ##### Features
 * mage-image plugin now uses mongo environment config.
@@ -134,7 +143,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Fix a bug when non admin user queries for users or teams in an event.
 * mage-image plugin now processes each attachment asynchronously.
 
-## [5.1.1](https://github.com/ngageoint/mage-server/releases/tag/5.1.1) (04-12-2018)
+## [5.1.1](https://github.com/ngageoint/mage-server/releases/tag/5.1.1)
 
 ##### Features
 * Added init.d script for mage application
@@ -146,7 +155,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Don't show observation properties that are archived
 * Don't submit observation properties that are archived
 
-## [5.1.0](https://github.com/ngageoint/mage-server/releases/tag/5.1.0) (02-27-2018)
+## [5.1.0](https://github.com/ngageoint/mage-server/releases/tag/5.1.0)
 
 ##### Features
 * Upgraded min/max nodejs version 6/8.
@@ -160,7 +169,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Handle historic form import for pre 5.x forms.  This will remove the timestamp and geometry fields from the imported form definition as
   those fields belong to the observation, not the form.
 
-## [5.0.1](https://github.com/ngageoint/mage-server/releases/tag/5.0.1) (01-30-2018)
+## [5.0.1](https://github.com/ngageoint/mage-server/releases/tag/5.0.1)
 
 ##### Features
 * Added password strength meters to admin user password change and sign up page.
@@ -179,7 +188,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Modify event projection query to contain acl and teamIds which allows for event CRUD permissions check.
 * Don't allow event team to be removed from its event.
 
-## [5.0.0](https://github.com/ngageoint/mage-server/releases/tag/5.0.0) (01-23-2018)
+## [5.0.0](https://github.com/ngageoint/mage-server/releases/tag/5.0.0)
 
 ##### Features
 * Support for multiple forms per event
@@ -190,7 +199,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 
-## [4.5.2](https://github.com/ngageoint/mage-server/releases/tag/4.5.2) (08-14-2017)
+## [4.5.2](https://github.com/ngageoint/mage-server/releases/tag/4.5.2)
 
 ##### Features
 * Event and Team access control lists.
@@ -199,14 +208,14 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Base layers will never show on top of overlay layers.
 * Last overlay layer clicked will be on top of other overlays.
 
-## [4.5.1](https://github.com/ngageoint/mage-server/releases/tag/4.5.1) (07-11-2017)
+## [4.5.1](https://github.com/ngageoint/mage-server/releases/tag/4.5.1)
 
 ##### Features
 * Added createdAt timestamp for observations
 
 ##### Bug Fixes
 
-## [4.5.0](https://github.com/ngageoint/mage-server/releases/tag/4.5.0) (05-26-2017)
+## [4.5.0](https://github.com/ngageoint/mage-server/releases/tag/4.5.0)
 
 ##### Features
 * New routes to create observations. POST to /id will now generate the observation location (the id of the observation)
@@ -218,7 +227,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Multi select checkbox for dropdowns fixed
 * Fix a bug with observations duplicating on the map when changing favorite/important filter.
 
-## [4.4.3](https://github.com/ngageoint/mage-server/releases/tag/4.4.3) (02-20-2017)
+## [4.4.3](https://github.com/ngageoint/mage-server/releases/tag/4.4.3)
 
 ##### Features
 * Admin can reorder select field options.
@@ -227,21 +236,21 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 
-## [4.4.2](https://github.com/ngageoint/mage-server/releases/tag/4.4.2) (01-27-2017)
+## [4.4.2](https://github.com/ngageoint/mage-server/releases/tag/4.4.2)
 
 ##### Features
 
 ##### Bug Fixes
 * Fixed issue with viewing already created form fields for an event
 
-## [4.4.1](https://github.com/ngageoint/mage-server/releases/tag/4.4.1) (01-26-2017)
+## [4.4.1](https://github.com/ngageoint/mage-server/releases/tag/4.4.1)
 
 ##### Features
 
 ##### Bug Fixes
 * Fix migrations module to work with mongodb SSL connection
 
-## [4.4.0](https://github.com/ngageoint/mage-server/releases/tag/4.4.0) (01-11-2017)
+## [4.4.0](https://github.com/ngageoint/mage-server/releases/tag/4.4.0)
 
 #### This release include database migrations.
 * Please run `npm run migrate`
@@ -254,7 +263,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Bug Fixes
 * Changed default form type to textarea for textarea fields.  This will enable users to add new lines to default.
 
-## [4.3.0](https://github.com/ngageoint/mage-server/releases/tag/4.3.0) (09-22-2016)
+## [4.3.0](https://github.com/ngageoint/mage-server/releases/tag/4.3.0)
 
 ##### Features
 * Multi select support for dropdown and user dropdown fields.
@@ -266,16 +275,16 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Added form import error handling on web client.
 * Fixed feed layout height in Firefox.
 
-## [4.2.1](https://github.com/ngageoint/mage-server/releases/tag/4.2.1) (04-22-2016)
+## [4.2.1](https://github.com/ngageoint/mage-server/releases/tag/4.2.1)
 ##### Features
-* OSM geocoder added.  Search addresses from the MAGE map.  On successful search the map will pan an zoom to that location.
+* OSM geocoder added.  Search addresses from the MAGE map. On successful search the map will pan an zoom to that location.
 
 ##### Bug Fixes
 * Only allow ISO8601 times for observation timestamps.  Invalid time will result in a 400 response.
 * Insert empty option for non required user fields in a form.  This will allow to to select no user, or clear a currently selected user.
 * Map should no longer hang on invalid XYZ/TMS data sources.
 
-## [4.2.0](https://github.com/ngageoint/mage-server/releases/tag/4.2.0) (04-14-2016)
+## [4.2.0](https://github.com/ngageoint/mage-server/releases/tag/4.2.0)
 ##### Features
 * New numberfield in event form
 * Rework observation/people feed to show map and feed on smaller devices
@@ -284,7 +293,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 
 ##### Bug Fixes
 
-## [4.1.1](https://github.com/ngageoint/mage-server/releases/tag/4.1.1) (03-23-2016)
+## [4.1.1](https://github.com/ngageoint/mage-server/releases/tag/4.1.1)
 ##### Features
 * Added user agent and application version to device list on devices page.
 * Maintain aspect ration for user avatars.
@@ -294,7 +303,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Fixed flexbox layout issues for map popups in IE 11.
 * Fixed observation edit not allowing save in some situations.
 
-## [4.1.0](https://github.com/ngageoint/mage-server/releases/tag/4.1.0) (03-17-2016)
+## [4.1.0](https://github.com/ngageoint/mage-server/releases/tag/4.1.0)
 ##### Features
 * 'Event Users' dropdown in form builder.  This dropdown is dynamically populated with all users in the event.
 * Create your own user icon from the user edit page.
@@ -305,11 +314,11 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Bug Fixes
 * Fixed a bug where canceling an observation edit did not also clear attachment delete flag.  This made it look like the attachment may still have been deleted after clicking cancel.
 
-## [4.0.1](https://github.com/ngageoint/mage-server/releases/tag/4.0.1) (02-26-2016)
+## [4.0.1](https://github.com/ngageoint/mage-server/releases/tag/4.0.1)
 
 * You can now add users directly to an event
 * Events can be marked as complete.  Complete events will not be returned for the default events route.
 
-## [4.0.0](https://github.com/ngageoint/mage-server/releases/tag/4.0.0) (02-03-2016)
+## [4.0.0](https://github.com/ngageoint/mage-server/releases/tag/4.0.0)
 
 * Google oauth support
