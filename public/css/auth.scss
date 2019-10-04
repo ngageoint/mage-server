@@ -31,6 +31,7 @@ $small-screen-breakpoint: 1025px;
   display: flex;
   flex-direction: row;
   min-height: 100%;
+  height: 100vh;
 }
 
 .mage-info-container {
@@ -179,7 +180,8 @@ authentication {
 }
 
 .disclaimer-info-container,
-.device-id-container {
+.device-id-container,
+.setup-container {
   width: 75%;
   min-width: 285px;
   padding-bottom: 16px;
