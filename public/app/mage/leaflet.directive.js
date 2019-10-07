@@ -160,6 +160,7 @@ function LeafletController($scope, MapService, LocalStorageService, EventService
     onLayersChanged: onLayersChanged,
     onFeaturesChanged: onFeaturesChanged,
     onFeatureZoom: onFeatureZoom,
+    onFeatureDeselect: onFeatureDeselect,
     onLocationStop: onLocationStop,
     onHideFeed: onHideFeed
   };
@@ -535,6 +536,13 @@ function LeafletController($scope, MapService, LocalStorageService, EventService
     } else {
       openPopup(layer, {zoomToLocation: true});
     }
+  }
+
+  function onFeatureDeselect(deselected) {
+    var featureLayer = layers[deselected.name];
+    var layer = featureLayer.featureIdToLayer[deselected.feature.id];
+    if (!map.hasLayer(featureLayer.layer)) return;
+    layer.closePopup();
   }
 
   function onPoll() {

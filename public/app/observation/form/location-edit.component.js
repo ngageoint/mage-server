@@ -65,7 +65,7 @@ class LocationEditController {
     this.saveEdit({value: undefined});
   }
 
-  cacel() {
+  cancel() {
     this._MapService.removeListener(this.mapListener);
     this.cancelEdit();
   }

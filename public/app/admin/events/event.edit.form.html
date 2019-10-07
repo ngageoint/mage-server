@@ -22,7 +22,7 @@
         </div>
 
         <div class="row top-gap-l">
-          <div class="col-md-6 col-xs-12">
+          <div class="col-xs-12">
 
             <form name="generalForm">
               <div class="top-gap" ng-class="{'has-error': generalForm.$submitted && generalForm.name.$invalid}">
@@ -44,18 +44,81 @@
 
             <div class="row top-gap">
               <div class="col-xs-12">
-                <button class="btn btn-success pull-right" ng-if="(unSavedChanges || unSavedUploads) && !saving" ng-click="saveForm(event)" ng-disabled="form.fields.$invalid">Save Form</button>
-                <button class="btn btn-success pull-right" ng-if="!unSavedUploads && !unSavedChanges && !saving" disabled="disabled">Save Form</button>
-                <button class="btn btn-success pull-right" ng-if="saving" disabled="disabled"><i class="fa fa-spinner fa-spin"></i> Saving Form</button>
+                <button class="btn btn-success pull-right" ng-if="(unSavedChanges || unSavedUploads) && !saving" ng-click="saveForm(event)" ng-disabled="form.fields.$invalid">Save</button>
+                <button class="btn btn-success pull-right" ng-if="!unSavedUploads && !unSavedChanges && !saving" disabled="disabled">Save</button>
+                <button class="btn btn-success pull-right" ng-if="saving" disabled="disabled"><i class="fa fa-spinner fa-spin"></i> Saving</button>
               </div>
             </div>
           </div>
+        </div>
 
-          <div class="col-md-6">
+        <hr>
+
+        <div class="row top-gap-l bottom-gap-l">
+          <div class="col-md-4">
+            <a ng-href="#/admin/events/{{event.id}}/forms/{{form.id}}/fields">
+              <div class="card form-section-card">
+                <div class="card-content">
+                  <span class="fa-stack fa-lg form-section-fields">
+                    <i class="fa fa-fw fa-circle fa-stack-2x"></i>
+                    <i class="fa fa-fw fa-file-text fa-stack-1x fa-inverse form-section-fields-icon"></i>
+                  </span>
+                  <div class="form-section-title">
+                    Fields
+                  </div>
+                  <div class="form-section-description">
+                    <p>Create custom form fields that include your organization's unique information.</p>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+          <div class="col-md-4">
+            <a ng-href="#/admin/events/{{event.id}}/forms/{{form.id}}/map">
+              <div class="card form-section-card">
+                <div class="card-content">
+                  <span class="fa-stack fa-lg form-section-map">
+                    <i class="fa fa-fw fa-circle fa-stack-2x"></i>
+                    <i class="fa fa-fw fa-map-marker fa-stack-1x fa-inverse fa-fw"></i>
+                  </span>
+                  <div class="form-section-title">
+                    Map
+                  </div>
+                  <div class="form-section-description">
+                    <p>Quickly recognize information geospatially by using your organization's symbology.</p>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+          <div class="col-md-4">
+            <a ng-href="#/admin/events/{{event.id}}/forms/{{form.id}}/feed">
+              <div class="card form-section-card">
+                <div class="card-content">
+                  <span class="fa-stack fa-lg form-section-feed">
+                    <i class="fa fa-fw fa-circle fa-stack-2x"></i>
+                    <i class="fa fa-fw fa-list-ul fa-stack-1x fa-inverse form-section-feed-icon"></i>
+                  </span>
+                  <div class="form-section-title">
+                    Feed
+                  </div>
+                  <div class="form-section-description">
+                    <p>Call attention to important details by customizing what users see in the consolodated feed. </p>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="row top-gap-l bottom-gap-l">
+          <div class="col-xs-12">
             <div class="card">
               <div class="card-content">
                 <strong class="text-info">Export Form</strong>
-                <p class="text-info">Export this form for use in another event.</p>
+                <p class="text-info top-gap-s">Export this form for use in another event.</p>
                 <a class="btn btn-info top-gap" ng-href="{{'/api/events/' + event.id + '/' + form.id + '/form.zip?access_token=' + token}}">
                   <i class="fa fa-download"></i> Export
                 </a>
@@ -67,7 +130,7 @@
             <div class="card top-gap" ng-if="!form.archived">
               <div class="card-content">
                 <strong class="text-danger">Archive Form</strong>
-                <p class="text-danger">Archiving a form will remove it from the list of forms a users sees when creating an observation. The form can be restored at any time.</p>
+                <p class="text-danger top-gap-s">Archiving a form will remove it from the list of forms a users sees when creating an observation. The form can be restored at any time.</p>
                 <button class="btn btn-danger top-gap" ng-click="archiveForm()"> <i class="fa fa-trash"></i> Archive</button>
               </div>
             </div>
@@ -75,514 +138,13 @@
             <div class="card top-gap" ng-if="form.archived">
               <div class="card-content">
                 <strong class="text-success">Restore Form</strong>
-                <p class="text-success">Restoring a form will add it back to the list of forms a users sees when creating an observation.</p>
+                <p class="text-success top-gap-s">Restoring a form will add it back to the list of forms a users sees when creating an observation.</p>
                 <button class="btn btn-success top-gap" ng-click="restoreForm()"> <i class="fa fa-check"></i> Restore</button>
               </div>
             </div>
           </div>
         </div>
-
-        <hr>
-
-        <div class="row top-gap-l">
-          <div class="col-md-4">
-            <a ng-href="#/admin/events/{{event.id}}/forms/{{form.id}}/fields">
-            <div class="card form-section-card">
-              <div class="card-content">
-                <i class="fa fa-file"></i>
-                <div>
-                  Fields
-                </div>
-              </div>
-            </div>
-            </a>
-          </div>
-          <div class="col-md-4">
-            <a ng-href="#/admin/events/{{event.id}}/forms/{{form.id}}/map">
-              <div class="card form-section-card">
-                <div class="card-content">
-                  <i class="fa fa-map"></i>
-                  <div>
-                    Map
-                  </div>
-                </div>
-              </div>
-            </a>
-          </div>
-          <div class="col-md-4">
-            <a ng-href="#/admin/events/{{event.id}}/forms/{{form.id}}/feed">
-              <div class="card form-section-card">
-                <div class="card-content">
-                  <i class="fa fa-rss"></i>
-                  <div>
-                    Feed
-                  </div>
-                </div>
-              </div>
-            </a>
-          </div>
-        </div>
-<!--
-         <div class="row top-gap-l">
-          <div class="col-md-12">
-            <nav class="navbar navbar-default admin-dashboard-navbar">
-              <div class="container-fluid">
-                <div class="navbar-header" style="width: 100%;">
-                  <a class="navbar-brand">Form Fields</a>
-                </div>
-                <div class="has-error" ng-if="generalForm.$submitted && (form.fields | filter:{archived: '!true'}).length < 1">
-                  <span class="help-block">Form must contain at least one field.</span>
-                </div>
-              </div>
-            </nav>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-sm-12">
-            <div class="admin-table admin-table-content">
-              <uib-accordion close-others="accordion.oneAtATime">
-                <div uib-accordion-group class="panel-default" ng-repeat="field in form.fields | filter:{archived: '!true'} | orderBy: 'id'">
-                  <uib-accordion-heading>
-                    {{field.title}}
-                    <i class="pull-right fa fa-arrow-up" ng-if="!$first" ng-click="moveFieldUp($event, field)"></i>
-                    <i class="pull-right fa fa-arrow-down" ng-if="!$last" ng-click="moveFieldDown($event, field)"></i>
-                  </uib-accordion-heading>
-                  <div class="accordion-edit">
-                    <form name="eventForm" novalidate>
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div class="top-gap">
-                            <label>Type</label>
-                            <input type="text" value="{{getTypeValue(field)}}" class="form-control" disabled>
-                            <p class="help-block" ng-if="isMemberField(field)">The 'User Select' type is a dynamic list of all users that are part of the event.  As such you cannot add/remove choices, users will be automatically populated.</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div class="top-gap">
-                            <label>Title</label>
-                            <input type="text" ng-model="field.title" value="{{field.title}}" class="form-control">
-                          </div>
-                        </div>
-                      </div>
-                      <div class="row" ng-hide="showAddOptions(field) || field.type === 'numberfield' || field.type === 'checkbox' || field.type === 'textarea'">
-                        <div class="col-md-6">
-                          <div class="top-gap">
-                            <label>Default Value</label>
-                            <input type="text" ng-model="field.value" value="{{field.value}}" class="form-control">
-                          </div>
-                        </div>
-                      </div>
-                      <div class="row" ng-show="field.type === 'textarea'">
-                        <div class="col-md-6">
-                          <div class="top-gap">
-                            <label>Default Value</label>
-                            <textarea class="form-control" type="text" ng-model="field.value" value="{{field.value}}"></textarea>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="row" ng-show="showAddOptions(field) && !isMemberField(field)">
-                        <div class="col-md-6" ng-if="field.type === 'dropdown'">
-                          <div class="top-gap">
-                            <label>Default Value</label>
-                            <select ng-model="field.value" ng-options="choice.title as choice.title for choice in field.choices" class="form-control">
-                              <option value="">No Default</option>
-                            </select>
-                          </div>
-                        </div>
-
-                        <div class="col-md-6" ng-if="field.type === 'multiselectdropdown'">
-                          <div class="top-gap">
-                            <label>Default Value</label>
-                            <ui-select multiple ng-model="field.value" theme="bootstrap">
-                              <ui-select-match>{{$item.title}}</ui-select-match>
-                              <ui-select-choices repeat="choice.title as choice in field.choices">
-                                <div ng-bind-html="choice.title"></div>
-                              </ui-select-choices>
-                            </ui-select>
-                          </div>
-                        </div>
-
-                      </div>
-                      <div class="row" ng-if="field.type === 'numberfield'">
-                        <div class="col-md-6">
-                          <div class="top-gap" ng-class="{'has-error': form.fields.{{field.name}}.$invalid}">
-                            <label>Default Value</label>
-                            <input type="number" ng-model="field.value" name="{{field.name}}" value="{{field.value}}" min="{{field.min}}" max="{{field.max}}" class="form-control">
-                            <div class="help-block" ng-messages="form.fields[field.name].$error" ng-if="form.fields[field.name].$invalid">
-                              <p ng-message="min">value is less than min</p>
-                              <p ng-message="max">value is greater than max</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="checkbox" ng-show="field.type=='checkbox'">
-                        <label>
-                          <input ng-model="field.value" id="{{field.id}}" type="checkbox" ng-checked="field.value == true"/> Default Value
-                        </label>
-                      </div>
-                      <div class="row" ng-show="field.type === 'numberfield'">
-                        <div class="col-md-6">
-                          <div class="top-gap">
-                            <label>Min</label>
-                            <input type="number" ng-model="field.min" value="{{field.min}}" class="form-control">
-                          </div>
-                        </div>
-                        <div class="col-md-6">
-                          <div class="top-gap">
-                            <label>Max</label>
-                            <input type="number" ng-model="field.max" value="{{field.max}}" class="form-control">
-                          </div>
-                        </div>
-                      </div>
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div class="top-gap" ng-show="showAddOptions(field) && !isMemberField(field)">
-                            <label>Field Options</label>
-                            <div ng-repeat="option in field.choices" class="row bottom-gap">
-                              <div class="col-sm-12">
-                                <div class="admin-option-container">
-                                  <a class="admin-option-action text-primary" ng-click="reorderOption(field, option)"><i class="fa fa-sort"></i></i></a>
-                                  <div class="admin-option-text right-gap">
-                                    <span>{{option.title}}</span>
-                                  </div>
-                                  <a class="admin-table-delete-btn pointer" ng-click="deleteOption(field, option)"><i class="fa fa-trash-o text-danger"></i></a>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="row top-gap-l">
-                              <div class="col-md-10">
-                                <input type="text" ng-model="newOptionTitle" class="form-control">
-                              </div>
-                              <div class="col-md-2">
-                                <button class="btn btn-sm btn-primary" type="button" ng-click="addOption(field, newOptionTitle); newOptionTitle = '';"><i class="fa fa-plus"></i> Add Option</button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="checkbox" ng-show="field.name != 'timestamp' &amp;&amp; field.name != 'geometry'">
-                        <label>
-                        <input type="checkbox" ng-model="field.required"> Required
-                        </label>
-                      </div>
-
-                      <button ng-show="deletableField(field)" class="btn btn-danger pull-right" type="button" ng-click="deleteField(field.id)"><i class="fa fa-trash icon-white"></i> Delete Field</button>
-                    </form>
-
-                  </div>
-                </div>
-              </uib-accordion>
-
-              <div class="row top-gap-l">
-                <div class="col-md-12">
-                  <nav class="navbar navbar-default admin-dashboard-navbar">
-                    <div class="container-fluid">
-                      <div class="navbar-header">
-                        <a class="navbar-brand">Add a new form field</a>
-                      </div>
-                    </div>
-                  </nav>
-                </div>
-              </div>
-              <div class="admin-table admin-table-content">
-                <form name="newFieldForm" novalidate>
-                  <div class="row">
-                    <div class="col-md-6">
-                      <div class="top-gap">
-                        <label>Type</label>
-                        <select ng-model="newField.type" ng-options="type.name as type.title for type in fieldTypes | filter: {hidden: '!'}" class="form-control"></select>
-                        <p class="help-block" ng-if="isUserDropdown(newField)">The 'User Select' type is a dynamic list of all users that are part of the event.  As such you cannot add/remove options from this list, users will be automatically populated.</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-md-6">
-                      <div class="top-gap">
-                        <label>Title</label>
-                        <input type="text" ng-model="newField.title" value="{{newField.title}}" class="form-control">
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="row" ng-if="newField.type === 'dropdown' || isUserDropdown(newField)">
-                    <div class="col-md-6">
-                      <div class="checkbox">
-                        <label>
-                          <input ng-model="newField.$multiselect" type="checkbox" ng-checked="newField.$multiselect == true"/> Multiselect
-                        </label>
-                        <p class="help-block">Choose multiselect if you would like users to be able to select more than one choice.</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="row" ng-if="newField.type !== 'checkbox' && newField.type !== 'numberfield' && newField.type !== 'textarea'">
-                    <div class="col-md-6">
-                      <div class="top-gap" ng-hide="hideAddOptions(newField)">
-                        <label>Default Value</label>
-                        <input type="text" ng-model="newField.value" value="{{newField.value}}" class="form-control">
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="row" ng-show="newField.type === 'textarea'">
-                    <div class="col-md-6">
-                      <div class="top-gap">
-                        <label>Default Value</label>
-                        <textarea class="form-control" type="text" ng-model="newField.value" value="{{newField.value}}"></textarea>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="row" ng-if="newField.type === 'numberfield'">
-                    <div class="col-md-6">
-                      <div class="top-gap" ng-class="{'has-error': form.newField.value.$invalid}">
-                        <label>Default Value</label>
-                        <input type="number" ng-model="newField.value" name="value" value="{{newField.value}}" min="{{newField.min}}" max="{{newField.max}}" class="form-control">
-                        <div class="help-block" ng-messages="form.newField.value.$error" ng-if="form.newField.value.$invalid">
-                          <p ng-message="min">value is less than min</p>
-                          <p ng-message="max">value is greater than max</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="row" ng-show="newField.type === 'numberfield'">
-                    <div class="col-md-6">
-                      <div class="top-gap">
-                        <label>Min</label>
-                        <input type="number" ng-model="newField.min" value="{{newField.min}}" class="form-control">
-                      </div>
-                    </div>
-                    <div class="col-md-6">
-                      <div class="top-gap">
-                        <label>Max</label>
-                        <input type="number" ng-model="newField.max" value="{{newField.max}}" class="form-control">
-                      </div>
-                    </div>
-                  </div>
-                  <div class="checkbox" ng-if="newField.type=='checkbox'">
-                    <label>
-                      <input ng-model="newField.value" type="checkbox" ng-checked="newField.value == true"/> Default Value
-                    </label>
-                  </div>
-                  <div class="row" ng-if="showAddOptions(newField)">
-                    <div class="col-md-6" ng-if="!newField.$multiselect">
-                      <div class="top-gap">
-                        <label>Default Value</label>
-                        <select ng-model="newField.value" ng-options="choice.title as choice.title for choice in newField.choices" class="form-control">
-                          <option value="">No Default</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div class="col-md-6" ng-if="newField.$multiselect">
-                      <div class="top-gap">
-                        <label>Default Value</label>
-                        <ui-select multiple ng-model="newField.value" theme="bootstrap">
-                          <ui-select-match>{{$item.title}}</ui-select-match>
-                          <ui-select-choices repeat="choice.title as choice in newField.choices">
-                            <div ng-bind-html="choice.title"></div>
-                          </ui-select-choices>
-                        </ui-select>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-md-6">
-                      <div class="top-gap" ng-show="showAddOptions(newField)">
-                        <label>Field Options</label>
-                        <div ng-repeat="option in newField.choices" class="row bottom-gap">
-                          <div class="col-sm-12">
-                            <div class="admin-option-container">
-                              <a class="right-gap pointer" ng-click="reorderOption(newField, option)"><i class="fa fa-sort"></i></i></a>
-                              <div class="admin-option-text right-gap">
-                                <span>{{option.title}}</span>
-                              </div>
-                              <a class="admin-table-delete-btn pointer" ng-click="deleteOption(newField, option)"><i class="fa fa-trash-o text-danger"></i></a>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="row">
-                          <div class="col-md-9">
-                            <input type="text" ng-model="newFieldNewOptionTitle" class="form-control">
-                          </div>
-                          <div class="col-md-3">
-                            <button class="btn btn-primary" type="button" ng-click="addOption(newField, newFieldNewOptionTitle); newFieldNewOptionTitle = '';"><i class="fa fa-plus"></i> Add Option</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="checkbox">
-                    <label>
-                      <input type="checkbox" ng-model="newField.required"> Required
-                    </label>
-                    <p class="help-block">Choose required if users must enter a value.</p>
-                  </div>
-
-                  <hr>
-
-                  <button type="submit" ng-disabled="form.newField.value.$invalid" class="btn btn-primary" ng-click="addNewField()"><i class="fa fa-plus-square-o"></i> Add Field</button>
-                </form>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <div class="row top-gap-l">
-          <div class="col-md-12">
-            <nav class="navbar navbar-default admin-dashboard-navbar">
-              <div class="container-fluid">
-                <div class="navbar-header">
-                  <a class="navbar-brand">Map Symbology</a>
-                </div>
-              </div>
-            </nav>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-sm-12">
-            <div class="admin-table admin-table-content">
-              <div class="row">
-                <form-style title="Default Symbology"
-                  style="styleMap.style"
-                  icon="iconMap.icon"
-                  on-style-changed="onStyleChanged($event)"
-                  on-icon-added="onIconAdded($event)"></form-style>
-              </div>
-              <hr>
-
-              <strong>Choose a field to be used for map symbology:</strong>
-              <div class="row bottom-gap">
-                <div class="col-md-2">
-                  <select ng-model="form.primaryField" ng-change="primaryChanged()" ng-options="field.name as field.title for field in form.fields | filter: symbologyFilter(variantField)" class="form-control">
-                    <option value="">None</option>
-                  </select>
-                </div>
-              </div>
-              <div ng-show="showPrimaryNumberVariants" class="bottom-gap">
-                <h4>You have chosen a date field for your map icon symbology.  Please define the ranges.</h4>
-                <div ng-repeat="primary in variants" class="row bottom-gap">
-                  <div class="col-md-12">
-                    <span class="strong">{{primary.title}}
-                    <span ng-show="variants[$index+1]">
-                    - {{variants[$index+1].title}}
-                    </span>
-                    <span ng-hide="variants[$index+1]">+</span>
-                    minutes old
-                    <button class="btn btn-sm btn-danger" ng-click="removeVariant(primary)">Remove Variant</button>
-                    </span>
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="col-md-12">
-                    <form class="form-inline">
-                      <div class="top-gap">
-                        <p class="form-control-static">More than</p>
-                      </div>
-                      <div class="top-gap">
-                        <input type="number" ng-model="newVariantMin" class="form-control"/>
-                      </div>
-                      <div class="top-gap">
-                        <p class="form-control-static">minutes old</p>
-                      </div>
-                      <button class="btn btn-sm btn-primary" ng-click="addVariantOption(newVariantMin)">Add Variant</button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-
-              <div ng-show="form.primaryField">
-                <strong>Choose a secondary field to be used for map symbology:</strong>
-                <div class="row bottom-gap">
-                  <div class="col-md-2">
-                    <select ng-model="form.variantField" ng-change="variantChanged()" ng-options="field.name as field.title for field in form.fields | filter: symbologyFilter(primaryField)" class="form-control">
-                      <option value="">None</option>
-                    </select>
-                  </div>
-                </div>
-                <div ng-show="showNumberVariants" class="bottom-gap">
-                  <h4>You have chosen a date field for your icon variants.  Please define the ranges for each variant.</h4>
-                  <div ng-repeat="variant in variants" class="row bottom-gap">
-                    <div class="col-md-12">
-                      <span class="strong">{{variant.title}}
-                      <span ng-show="variants[$index+1]">
-                      - {{variants[$index+1].title}}
-                      </span>
-                      <span ng-hide="variants[$index+1]">+</span>
-                      minutes old
-                      <button class="btn btn-sm btn-danger" ng-click="removeVariant(variant)">Remove Variant</button>
-                      </span>
-                    </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-md-12">
-                      <form class="form-inline">
-                        <div class="top-gap">
-                          <p class="form-control-static">More than</p>
-                        </div>
-                        <div class="top-gap">
-                          <input type="number" ng-model="newVariantMin" class="form-control"/>
-                        </div>
-                        <div class="top-gap">
-                          <p class="form-control-static">minutes old</p>
-                        </div>
-                        <button class="btn btn-sm btn-primary" ng-click="addVariantOption(newVariantMin)">Add Variant</button>
-                      </form>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <hr>
-
-              <div ng-repeat="option in primaryField.choices">
-                <div class="row bottom-gap-s">
-                  <div class="col-md-12">
-                    <strong>{{option.title}}</strong>
-                  </div>
-                </div>
-                <div class="row bottom-gap-l">
-                  <form-style title="Default"
-                    style="styleMap[option.title].style"
-                    icon="iconMap[option.title].icon"
-                    primary="{{option.title}}"
-                    on-style-changed="onStyleChanged($event)"
-                    on-icon-added="onIconAdded($event)"></form-style>
-
-                  <div ng-repeat="variant in variants">
-                    <form-style title="{{variant.title}}"
-                      style="styleMap[option.title][variant.title].style"
-                      icon="iconMap[option.title][variant.title].icon"
-                      primary="{{option.title}}"
-                      variant="{{variant.title}}"
-                      on-style-changed="onStyleChanged($event)"
-                      on-icon-added="onIconAdded($event)"></form-style>
-                  </div>
-                </div>
-                <hr>
-              </div>
-            </div>
-          </div>
-        -->
-        </div>
       </div>
     </div>
-<!--
-    <div class="bottom-gap-l top-gap-xl">
-      <div class="container" ng-if="event">
-        <div class="row">
-          <div class="col-xs-12">
-            <button class="btn btn-success pull-right" ng-if="(unSavedChanges || unSavedUploads) && !saving" ng-click="saveForm(event)" ng-disabled="form.fields.$invalid">Save Form</button>
-            <button class="btn btn-success pull-right" ng-if="!unSavedUploads && !unSavedChanges && !saving" disabled="disabled">Save Form</button>
-            <button class="btn btn-success pull-right" ng-if="saving" disabled="disabled"><i class="fa fa-spinner fa-spin"></i> Saving Form</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  -->
   </div>
 </div>

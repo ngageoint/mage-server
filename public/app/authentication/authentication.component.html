@@ -1,3 +1,9 @@
+<div ng-if="$ctrl.action === 'setup'" class="setup-info-container ng-animatable fade-in">
+  <setup api="$ctrl.api" on-setup-complete="$ctrl.authorized(device)"></setup>
+  <!-- <disclaimer disclaimer="$ctrl.api.disclaimer" 
+    on-accept="$ctrl.acceptDisclaimer()" 
+    on-cancel="$ctrl.returnToSignin()"></disclaimer> -->
+</div>
 <div ng-if="$ctrl.action === 'disclaimer'" class="disclaimer-info-container ng-animatable fade-in">
   <disclaimer disclaimer="$ctrl.api.disclaimer" 
     on-accept="$ctrl.acceptDisclaimer()" 

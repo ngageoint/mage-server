@@ -1,3 +1,5 @@
+// import SetupController from './setup/setup.controller';
+
 var _ = require('underscore')
   , angular = require('angular');
 
@@ -13,14 +15,12 @@ angular
   .component('observationFormChooser', require('./observation/observation-form-chooser.component'))
   .component('about', require('./about/about.component'))
   .component('disclaimer', require('./disclaimer/disclaimer.controller'))
+  .component('setup', require('./setup/setup.controller'))
   .controller('NavController', require('./mage/mage-nav.controller'))
   .controller('NotInEventController', require('./error/not.in.event.controller'))
   .controller('MageController', require('./mage/mage.controller'))
-  // .controller('ExportController', require('./export/export'))
-  .controller('SetupController', require('./setup/setup.controller'))
   .controller('UserController', require('./user/user.controller'))
   .controller('AboutController', require('./about/about.controller'))
-  // .controller('DisclaimerController', require('./disclaimer/disclaimer.controller'))
   .directive('fileBrowser', require('./file-upload/file-browser.directive'))
   .directive('fileUpload', require('./file-upload/file-upload.directive'))
   .directive('fileUploadGrid', require('./file-upload/file-upload-grid.directive'))
@@ -95,33 +95,8 @@ function config($provide, $httpProvider, $routeProvider, $animateProvider) {
 
   $routeProvider.when('/', {
     resolve: {
-      api: ['$location', 'Api', function($location, Api) {
-        Api.get(function(api) {
-          if (api.initial) {
-            $location.path('/setup');
-          } else {
-            $location.path('/signin');
-          }
-        });
-      }]
-    }
-  });
-
-  $routeProvider.when('/setup', {
-    template: require('./setup/setup.html'),
-    controller: 'SetupController',
-    resolve: {
-      api: ['$q', '$location', 'Api', function($q, $location, Api) {
-        var deferred = $q.defer();
-        Api.get(function(api) {
-          if (!api.initial) {
-            $location.path('/');
-          } else {
-            deferred.resolve(api);
-          }
-        });
-
-        return deferred.promise;
+      api: ['$location', function($location) {
+        $location.path('/signin');
       }]
     }
   });
@@ -131,14 +106,10 @@ function config($provide, $httpProvider, $routeProvider, $animateProvider) {
     controller: 'AuthenticationController',
     controllerAs: '$ctrl',
     resolve: {
-      api: ['$q', '$location', 'Api', function($q, $location, Api) {
+      api: ['$q', 'Api', function($q,  Api) {
         var deferred = $q.defer();
         Api.get(function(api) {
-          if (api.initial) {
-            $location.path('/setup');
-          } else {
-            deferred.resolve(api);
-          }
+          deferred.resolve(api);
         });
 
         return deferred.promise;
@@ -154,7 +125,7 @@ function config($provide, $httpProvider, $routeProvider, $animateProvider) {
         var deferred = $q.defer();
         Api.get(function(api) {
           if (api.initial) {
-            $location.path('/setup');
+            $location.path('/signin?action=setup');
           } else {
             deferred.resolve(api);
           }

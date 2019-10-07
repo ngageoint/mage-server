@@ -6,12 +6,24 @@
       </div>
       <div class="observation-header-content">
         <div class="observation-header-text">
-          <div>
-          {{primaryFeedField.value}}
+          <div ng-switch="primaryFeedField.field.type">
+            <div ng-switch-when="geometry">
+              {{primaryFeedField.value | geometry:5}}
+            </div>
+            <div ng-switch-default>
+              {{primaryFeedField.value}}
+            </div>
           </div>
         </div>
         <div class="observation-subhead">
-          {{secondaryFeedField.value}}
+          <span ng-switch="secondaryFeedField.field.type">
+            <span ng-switch-when="geometry">
+              {{secondaryFeedField.value | geometry:5}}
+            </span>
+            <span ng-switch-default>
+              {{secondaryFeedField.value}}
+            </span>
+          </span>
         </div>
         <div class="observation-subhead">
           {{observationUser.displayName}}
@@ -37,10 +49,10 @@
   </div>
   <div ng-show="importantEditor.isOpen" class="important-editor observation-supporting-text-container slide-animate">
     <div class="mdc-text-field mdc-text-field--textarea mdc-text-field--fullwidth important-textarea">
-      <textarea id="fav-textarea" 
-        class="mdc-text-field__input" 
-        type="text" 
-        ng-model="importantEditor.description" 
+      <textarea id="fav-textarea"
+        class="mdc-text-field__input"
+        type="text"
+        ng-model="importantEditor.description"
         value="{{importantEditor.description}}"></textarea>
       <div class="mdc-notched-outline">
         <div class="mdc-notched-outline__leading"></div>
@@ -75,7 +87,7 @@
       </div>
       <div class="mage-tooltip">
         <span class="tooltiptext">Add to favorites</span>
-        <button 
+        <button
           ng-class="{'observation-action-favorite-active mdc-icon-button--on': isUserFavorite}"
           ng-click="toggleFavorite()"
           class="mdc-icon-button mdc-card__action mdc-card__action--icon"
@@ -89,7 +101,7 @@
       <div class="mage-tooltip">
         <span class="tooltiptext">Download</span>
         <button class="material-icons mdc-icon-button mdc-card__action mdc-card__action--icon"
-          title="Download" 
+          title="Download"
           ng-click="download()">save_alt</button>
       </div>
    </div>

@@ -9,6 +9,12 @@ class AuthenticationComponentController {
     this.action = $routeParams.action;
   }
 
+  $onInit() {
+    if (this.api.initial) {
+      this.action = 'setup';
+    }
+  }
+
   hideStatus() {
     this.showStatus = false;
   }

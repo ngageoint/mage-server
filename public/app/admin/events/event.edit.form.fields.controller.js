@@ -10,6 +10,7 @@ function AdminEventEditFormFieldsController($rootScope, $scope, $location, $rout
   $scope.token = LocalStorageService.getToken();
   var locationForm = $location.search().form;
 
+  $scope.fieldForms = {};
   $scope.iconMap = {};
   $scope.styleMap = {};
 
@@ -54,7 +55,13 @@ function AdminEventEditFormFieldsController($rootScope, $scope, $location, $rout
 
     if ($scope.saving) return;
 
-    if (!newForm.id || oldForm.id) {
+    var isFieldArchived = field => { return field.archived; };
+
+    var removedField = _.filter(newForm.fields, isFieldArchived).length > _.filter(oldForm.fields, isFieldArchived).length;
+    var addedField = newForm.fields.length > oldForm.fields.length;
+    var dirty = _.some(Object.values($scope.fieldForms), form => { return form && form.$dirty; });
+
+    if (dirty || removedField || addedField) {
       $scope.unSavedChanges = true;
     }
 
@@ -270,6 +277,11 @@ function AdminEventEditFormFieldsController($rootScope, $scope, $location, $rout
     if (formSaved) {
       $scope.saving = false;
       $scope.unSavedChanges = false;
+
+      Object.values($scope.fieldForms).forEach(form => {
+        if (form) form.$setPristine();
+      });
+
       delete $scope.exportError;
 
       if ($location.path().indexOf('/forms/new') !== -1) {

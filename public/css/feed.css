@@ -1,7 +1,7 @@
 @import "./variables.css";
 
 .feed {
-  background: #FFFFFF;
+  background: #E1E2E1;
   order: 1;
   display: flex;
   flex-direction: column;
@@ -21,6 +21,18 @@
 .content--active {
   display: block;
   overflow-y: auto;
+}
+
+.observation-feed-container {
+  background: #E1E2E1;
+}
+
+.feed-header {
+  background: #FFFFFF;
+}
+
+.tab-bg {
+  background: #FFFFFF;
 }
 
 .feed.ng-hide {

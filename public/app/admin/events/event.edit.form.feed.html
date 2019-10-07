@@ -1,6 +1,6 @@
 <div class="admin">
     <div admin-tab="'events'"></div>
-  
+
     <div class="admin-main">
       <div class="admin-nav-gap">
         <div class="container-fluid">
@@ -12,7 +12,7 @@
           </ol>
         </div>
       </div>
-  
+
       <div class="admin-content">
         <div class="container" ng-show="event">
           <div class="row">
@@ -21,18 +21,6 @@
             </div>
           </div>
 
-          <div>
-            <div ng-if="event">
-              <div class="row">
-                <div class="col-xs-12">
-                  <button class="btn btn-success pull-right" ng-if="(unSavedChanges || unSavedUploads) && !saving" ng-click="saveForm(event)" ng-disabled="form.fields.$invalid">Save Form</button>
-                  <button class="btn btn-success pull-right" ng-if="!unSavedUploads && !unSavedChanges && !saving" disabled="disabled">Save Form</button>
-                  <button class="btn btn-success pull-right" ng-if="saving" disabled="disabled"><i class="fa fa-spinner fa-spin"></i> Saving Form</button>
-                </div>
-              </div>
-            </div>
-          </div>
-  
           <div class="row top-gap-l">
             <div class="col-md-12">
               <nav class="navbar navbar-default admin-dashboard-navbar">
@@ -46,7 +34,7 @@
           </div>
           <div class="row">
             <div class="col-sm-12">
-              <div class="admin-table admin-table-content">  
+              <div class="admin-table admin-table-content">
                 <strong>Choose a primary field to be used in the feed:</strong>
                 <div class="row bottom-gap">
                   <div class="col-md-2">
@@ -67,24 +55,27 @@
               </div>
             </div>
           </div>
+
           <div class="row top-gap-l">
-            <div ng-repeat="observation in observations track by observation.id" observation-news-item="observation" event="event" selected-observation-form="form" container-element="side-bar"></div>
-          </div>
-        </div>
-      </div>
-  
-      <div class="bottom-gap-l top-gap-xl">
-        <div class="container" ng-if="event">
-          <div class="row">
-            <div class="col-xs-12">
-              <button class="btn btn-success pull-right" ng-if="(unSavedChanges || unSavedUploads) && !saving" ng-click="saveForm(event)" ng-disabled="form.fields.$invalid">Save Form</button>
-              <button class="btn btn-success pull-right" ng-if="!unSavedUploads && !unSavedChanges && !saving" disabled="disabled">Save Form</button>
-              <button class="btn btn-success pull-right" ng-if="saving" disabled="disabled"><i class="fa fa-spinner fa-spin"></i> Saving Form</button>
+            <div class="col-md-12">
+              <h4>Sample Observation Feed</h4>
+              <div ng-repeat="observation in observations track by observation.id" observation-news-item="observation" event="event" selected-observation-form="form" container-element="side-bar"></div>
             </div>
           </div>
         </div>
       </div>
-  
+
+      <div class="bottom-gap-l top-gap-xl">
+        <div class="container" ng-if="event">
+          <div class="row">
+            <div class="col-xs-12">
+              <button class="btn btn-success pull-right" ng-if="(unSavedChanges || unSavedUploads) && !saving" ng-click="saveForm(event)" ng-disabled="form.fields.$invalid">Save</button>
+              <button class="btn btn-success pull-right" ng-if="!unSavedUploads && !unSavedChanges && !saving" disabled="disabled">Save</button>
+              <button class="btn btn-success pull-right" ng-if="saving" disabled="disabled"><i class="fa fa-spinner fa-spin"></i> Saving</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
-  

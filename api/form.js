@@ -56,7 +56,7 @@ Form.prototype.populateUserFields = function(callback) {
   // None of the forms in this event contain user fields
   if (!formsUserFields.length) return callback();
 
-  var teamIds = event.populated('teamIds') || event.teamIds;
+  var teamIds = (event.populated && event.populated('teamIds')) || event.teamIds;
   Team.getTeams({teamIds: teamIds}, function(err, teams) {
     if (err) return callback(err);
 
@@ -73,8 +73,8 @@ Form.prototype.populateUserFields = function(callback) {
     users.sort(compareDisplayName);
     for (var i = 0; i < users.length; i++) {
       choices.push({
-        id: i,
-        value: i,
+        id: i + 1,
+        value: i + 1,
         title: users[i]
       });
     }
@@ -82,10 +82,10 @@ Form.prototype.populateUserFields = function(callback) {
     // Update the choices for user field
     formsUserFields.forEach(function(userFields) {
       userFields.forEach(function(userField) {
-        userField.choices = choices;
+        userField.choices = choices.slice();
 
         if (!userField.required && userField.type === 'dropdown') {
-          userField.choices.unshift("");
+          userField.choices.unshift({id: 0, value: 0, title: ""});
         }
       });
     });
