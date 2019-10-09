@@ -1,6 +1,6 @@
 {
   "name": "mage-server",
-  "version": "5.3.0",
+  "version": "5.3.1",
   "displayName": "MAGE Server",
   "description": "Geospatial situation awareness application.",
   "keywords": [
@@ -58,7 +58,7 @@
     "passport-local": "1.0.0",
     "pem-jwk": "1.5.1",
     "pem2jwk": "1.0.1",
-    "pug": "2.0.0-beta11",
+    "pug": "2.0.4",
     "shp-write": "https://github.com/newmanw/shp-write.git#fix-polygon-export",
     "terraformer": "1.0.4",
     "terraformer-arcgis-parser": "1.0.4",

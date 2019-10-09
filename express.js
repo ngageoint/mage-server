@@ -25,6 +25,7 @@ app.use(function(req, res, next) {
 app.set('config', config);
 app.enable('trust proxy');
 
+app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
 
 app.use(function(req, res, next) {

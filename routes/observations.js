@@ -3,7 +3,6 @@ module.exports = function(app, security) {
   var async = require('async')
     , api = require('../api')
     , log = require('winston')
-    , pug = require('pug')
     , archiver = require('archiver')
     , path = require('path')
     , environment = require('../environment/env')
@@ -319,25 +318,27 @@ module.exports = function(app, security) {
 
       var archive = archiver('zip');
       archive.pipe(res);
-      var html = pug.renderFile('views/observation.pug', {
+
+      app.render('observation', {
         event: req.event,
         formMap: formMap,
         observation: req.observation,
         center: turfCentroid(req.observation).geometry,
         user: req.observationUser
-      });
-      archive.append(html, { name: req.observation._id + '/index.html' });
-      
-      if (req.observationIcon) {
-        const iconPath = path.join(environment.iconBaseDirectory, req.observationIcon.relativePath);
-        archive.file(iconPath, {name: req.observation._id + '/media/icon.png'});
-      }
+      }, function (err, html) {
+        archive.append(html, { name: req.observation._id + '/index.html' });
 
-      req.observation.attachments.forEach(function(attachment) {
-        archive.file(path.join(environment.attachmentBaseDirectory, attachment.relativePath), {name: req.observation._id + '/media/' + attachment.name});
-      });
+        if (req.observationIcon) {
+          const iconPath = path.join(environment.iconBaseDirectory, req.observationIcon.relativePath);
+          archive.file(iconPath, {name: req.observation._id + '/media/icon.png'});
+        }
 
-      archive.finalize();
+        req.observation.attachments.forEach(function(attachment) {
+          archive.file(path.join(environment.attachmentBaseDirectory, attachment.relativePath), {name: req.observation._id + '/media/' + attachment.name});
+        });
+
+        archive.finalize();
+      });
     }
   );
 

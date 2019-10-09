@@ -8,6 +8,8 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+* KML import file browser fixed.
+* Update express default template renderer directory and remove pug specific rendering.
 
 ## [5.3.0](https://github.com/ngageoint/mage-server/releases/tag/5.3.0)
 
