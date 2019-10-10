@@ -381,7 +381,7 @@ exports.addAttachment = function(event, id, file, callback) {
   var attachment = new Attachment({
     contentType: file.mimetype,
     size: file.size,
-    name: file.name,
+    name: file.filename,
     relativePath: file.relativePath,
     lastModified: new Date()
   });

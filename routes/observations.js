@@ -563,7 +563,7 @@ module.exports = function(app, security) {
     access.authorize('CREATE_OBSERVATION'),
     upload.single('attachment'),
     function(req, res, next) {
-      if (!req.file) return res.status(400).send("no attachment");
+      if (!req.file) return res.status(400).send('no attachment');
 
       new api.Attachment(req.event, req.observation).create(req.observationId, req.file, function(err, attachment) {
         if (err) return next(err);
