@@ -176,7 +176,7 @@ module.exports = function(app, security) {
   }
 
   function getIconForObservation(req, res, next) {
-    var form;
+    var form = {};
     var primary;
     var secondary;
     if (req.observation.properties.forms.length) {
