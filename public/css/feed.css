@@ -68,6 +68,10 @@
   padding-top: 1px;
 }
 
+.observation-card-background-container {
+  margin-bottom: 92px;
+}
+
 .feed-tab:last-child {
 	margin-left: 0;
 }
