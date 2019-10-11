@@ -27,17 +27,22 @@ module.exports = {
       use: [
         MiniCssExtractPlugin.loader,
         {
-          loader: 'css-loader'
+          loader: 'css-loader',
+          options: {
+            sourceMap: true
+          }
         },
         {
           loader: 'sass-loader',
           options: {
+            sourceMap: true,
             includePaths: ['./css', './node_modules']
           }
         },
         {
           loader: 'postcss-loader',
           options: {
+            sourceMap: true,
             plugins: () => [
               postcssCustomProperties({
                 importFrom: ['./css/variables.css']
