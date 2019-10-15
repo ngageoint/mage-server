@@ -1,0 +1,14 @@
+<div class="mdc-snackbar" ng-class="{'mdc-snackbar--leading': $ctrl.options.leading, 'mdc-snackbar--stacked': $ctrl.options.stacked}">
+  <div class="mdc-snackbar__surface">
+    <div class="mdc-snackbar__label">
+      {{$ctrl.options.message}}
+    </div>
+
+    <div ng-if="$ctrl.options.dismiss">
+      <div class="mdc-snackbar__actions">
+        <button class="mdc-icon-button mdc-snackbar__dismiss material-icons">close</button>
+      </div>
+    <div>
+
+  </div>
+</div>
