@@ -153,7 +153,7 @@ or via Git
 ```bash
 $ mkdir /opt/mage
 $ cd /opt/mage
-$ git clone git@github.com:ngageoint/mage-server.git /opt/mage
+$ git clone https://github.com/ngageoint/mage-server.git /opt/mage
 ```
 
 The rest of the installation steps assume you are in the `<MAGE_ROOT>` directory, .e.g. `/opt/mage`.
