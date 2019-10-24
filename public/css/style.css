@@ -957,6 +957,14 @@ textarea {
   margin: 20px 0 20px;
 }
 
+.admin-fab--absolute {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+}
+
 .admin-table {
 	color: #555;
 	background-color: white;

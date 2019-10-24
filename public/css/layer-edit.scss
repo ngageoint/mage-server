@@ -45,6 +45,7 @@
   flex-direction: column;
   overflow-y: auto;
   padding-right: 8px;
+  margin-bottom: 50px;
 }
 
 .form-input-inner {
@@ -69,4 +70,8 @@
 
 .preview-map-container {
   height: 100%;
+}
+
+.layer-save-fab {
+  left: 25% !important;
 }
