@@ -20,7 +20,7 @@ var Observation = require('../../models/observation');
 var observationModel = Observation.observationModel;
 var AttachmentModel = mongoose.model('Attachment');
 
-describe.only('updating attachments', function() {
+describe('updating attachments', function() {
 
   beforeEach(function() {
     var mockEvent = new EventModel({
