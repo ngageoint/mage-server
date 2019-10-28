@@ -3,10 +3,10 @@ const sinon = require('sinon');
 const mongoose = require('mongoose');
 const mockfs = require('mock-fs');
 const expect = require('chai').expect;
-const os = require('os');
 const MockToken = require('../mockToken');
 const app = require('../../express');
 const TokenModel = mongoose.model('Token');
+const env = require('../../environment/env');
 
 require('chai').should();
 require('sinon-mongoose');
@@ -54,12 +54,11 @@ describe("creating attachments", function() {
     let mockObservation;
 
     beforeEach(function() {
-      const tmp = os.tmpdir();
       const fs = {
         'mock/path/attachment.jpeg': new Buffer([8, 6, 7, 5, 3, 0, 9]),
         'var/lib/mage': {}
       };
-      fs[tmp] = {};
+      fs[env.tempDirectory] = {};
       mockfs(fs);
 
       sinon.mock(TeamModel)
@@ -141,17 +140,9 @@ describe("creating attachments", function() {
     });
   });
 
-  it("fails without a request body", function(done) {
+  it("fails without a request body", async function() {
 
     mockTokenWithPermission('UPDATE_OBSERVATION_ALL');
-
-    const tmp = os.tmpdir();
-    const fs = {
-      'mock/path/attachment.jpeg': new Buffer([8, 6, 7, 5, 3, 0, 9]),
-      'var/lib/mage': {}
-    };
-    fs[tmp] = {};
-    mockfs(fs);
 
     sinon.mock(TeamModel)
       .expects('find')
@@ -167,13 +158,13 @@ describe("creating attachments", function() {
         }]
       });
 
-    var ObservationModel = observationModel({
+    const ObservationModel = observationModel({
       _id: 1,
       name: 'Event 1',
       collectionName: 'observations1'
     });
-    var observationId = mongoose.Types.ObjectId();
-    var mockObservation = new ObservationModel({
+    const observationId = mongoose.Types.ObjectId();
+    const mockObservation = new ObservationModel({
       _id: observationId,
       type: 'Feature',
       geometry: {
@@ -194,16 +185,11 @@ describe("creating attachments", function() {
       .expects('update')
       .yields(null, mockObservation);
 
-    request(app)
+    const res = await request(app)
       .post('/api/events/1/observations/' + observationId + '/attachments')
-      .set('Authorization', 'Bearer 12345')
-      .expect(400)
-      .expect(function(res) {
-        res.text.should.equal("no attachment");
-      })
-      .end(function(err) {
-        mockfs.restore(err);
-        done();
-      });
+      .set('Authorization', 'Bearer 12345');
+
+    expect(res.status).to.equal(400);
+    expect(res.text).to.equal('no attachment');
   });
 });
