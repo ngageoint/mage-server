@@ -1,13 +1,15 @@
-var express = require("express")
+const express = require("express")
   , crypto = require('crypto')
   , cookieSession = require('cookie-session')
+  , fs = require('fs')
   , passport = require('passport')
   , path = require('path')
   , config = require('./config.js')
   , provision = require('./provision')
   , log = require('./logger')
   , api = require('./api')
-  , env = require('./environment/env');
+  , env = require('./environment/env')
+  , yaml = require('yaml');
 
 var app = express();
 app.use(function(req, res, next) {
@@ -61,6 +63,14 @@ app.use(require('body-parser')({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public/dist')));
+app.get('/api/docs/openapi.yaml', async function(req, res) {
+  const docPath = path.resolve(__dirname, 'docs', 'openapi.yaml');
+  fs.readFile(docPath, (err, contents) => {
+    const doc = yaml.parse(contents.toString('utf-8'));
+    doc.servers = [{ url: req.getRoot() }];
+    res.contentType('text/yaml; charset=utf-8').send(yaml.stringify(doc));
+  });
+});
 app.use('/api/docs', express.static(path.join(__dirname, 'docs')));
 app.use('/private',
   passport.authenticate('bearer'),

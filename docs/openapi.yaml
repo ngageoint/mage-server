@@ -9,8 +9,7 @@ info:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0
   version: 5.2.6
-servers:
-- url: http://localhost:4242
+servers: []
 paths:
   /api/logins:
     get:
@@ -1035,7 +1034,7 @@ paths:
       tags: [ Layer ]
       operationId: getLayersForEvent
       description: >
-        Return an array of all layers for specified event.  
+        Return an array of all layers for specified event.
         The client must have 'READ_LAYER_ALL' permission of `READ_LAYER_EVENT`
         permission and an ACL entry on the event with `read` permission.
       parameters:
@@ -1080,7 +1079,7 @@ paths:
     get:
       tags: [ Layer ]
       description: >
-        Return the layer for the event specified with the ID specified 
+        Return the layer for the event specified with the ID specified
         in the path.  The requesting user must have `READ_LAYER_ALL` permission
         or `READ_LAYER_EVENT` permission and an ACL entry on the evebnt with
         `update` permission.
@@ -1709,7 +1708,7 @@ paths:
       operationId: getFeaturesForLayer
       description: >
         Return an array of features for specified layer.
-        The requesting client must have `READ_LAYER_ALL`.      
+        The requesting client must have `READ_LAYER_ALL`.
       responses:
         200:
           description: Success - return an arrary of features.
@@ -1728,8 +1727,8 @@ paths:
       operationId: getFeaturesForEventAndLayer
       description: >
         Return an array of features for specified layer for specified event.
-        The requesting client must have `READ_LAYER_ALL` permission or 
-        `READ_LAYER_EVENT` and an ACL entry on the event with `read` permission.      
+        The requesting client must have `READ_LAYER_ALL` permission or
+        `READ_LAYER_EVENT` and an ACL entry on the event with `read` permission.
       responses:
         200:
           description: Success - return an arrary of features.
@@ -1747,7 +1746,7 @@ paths:
       operationId: getLocations
       description: >
         Return an array of locations for the specified event.
-        The requesting client must have `READ_LOCATION_ALL` permission or 
+        The requesting client must have `READ_LOCATION_ALL` permission or
         `READ_LOCATION_EVENT` and an ACL entry on the event with `read` permission.
       parameters:
       - name: startDate
@@ -1784,7 +1783,7 @@ paths:
       operationId: createLocation
       description: >
         Create a new location for user with token in the specified event.
-        The requesting client must have `CREATE_LOCATION` permission. 
+        The requesting client must have `CREATE_LOCATION` permission.
       requestBody:
         description: create location response
         content:
@@ -1803,7 +1802,7 @@ paths:
       operationId: getLocationsByUser
       description: >
         Return an array of user locations for the specified event.
-        The requesting client must have `READ_LOCATION_ALL` permission or 
+        The requesting client must have `READ_LOCATION_ALL` permission or
         `READ_LOCATION_EVENT` and an ACL entry on the event with `read` permission.
       parameters:
       - name: startDate
@@ -1974,7 +1973,7 @@ paths:
       tags: [ Export ]
       operationId: export
       description: >
-        Export mage data (GeoJSON, KML, Shapefiles, CSV). The requesting user must have 
+        Export mage data (GeoJSON, KML, Shapefiles, CSV). The requesting user must have
         `READ_OBSERVATION_ALL` permission or `READ_OBSERVATION_EVENT` and an ACL entry in the
         event with `read`.
       parameters:
@@ -2530,7 +2529,7 @@ components:
           type: string
           format: binary
     Layer:
-      title: Layer        
+      title: Layer
       type: object
       properties:
         id:
