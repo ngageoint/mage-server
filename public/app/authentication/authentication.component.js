@@ -1,12 +1,10 @@
-class AuthenticationComponentController {
+class AuthenticationController {
 
-  constructor($routeParams, UserService, $location, authService) {
-    this._$routeParams = $routeParams;
+  constructor($stateParams, UserService, authService) {
     this._UserService = UserService;
-    this._$location = $location;
     this._authService = authService;
 
-    this.action = $routeParams.action;
+    this.action = $stateParams.action;
   }
 
   $onInit() {
@@ -49,7 +47,7 @@ class AuthenticationComponentController {
   }
 
   acceptDisclaimer() {
-    this._UserService.acceptDisclaimer();
+    this._UserService.acceptDisclaimer(); 
     this.onSuccess();
   }
 
@@ -59,19 +57,15 @@ class AuthenticationComponentController {
   }
 }
 
-AuthenticationComponentController.$inject = ['$routeParams', 'UserService', '$location', 'authService'];
+AuthenticationController.$inject = ['$stateParams', 'UserService',  'authService'];
 
-var template = require('./authentication.component.html');
-var bindings = {
-  api: '<',
-  hideSignup: '<',
-  onSuccess: '&',
-  onFailure: '&'
-};
-var controller = AuthenticationComponentController;
-
-export {
-  template,
-  bindings,
-  controller
+export default {
+  template: require('./authentication.component.html'),
+  bindings: {
+    api: '<',
+    hideSignup: '<',
+    onSuccess: '&',
+    onFailure: '&'
+  },
+  controller: AuthenticationController
 };

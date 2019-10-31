@@ -191,7 +191,8 @@ function UserService($rootScope, $q, $http, $location, $window, LocalStorageServ
 
   function updateMyPassword(authentication) {
     var promise = $http.put('/api/users/myself/password', $.param(authentication), {
-      headers: {"Content-Type": "application/x-www-form-urlencoded"}
+      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+      ignoreAuthModule:true
     });
 
     promise.success(function() {

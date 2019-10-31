@@ -261,24 +261,33 @@ module.exports = function(app, security) {
     '/api/users/myself/password',
     passport.authenticate('local'),
     function(req, res, next) {
+      console.log('********* verify new password');
       if (req.user.authentication.type === 'local') {
         var password = req.param('newPassword');
         var passwordconfirm = req.param('newPasswordConfirm');
 
         if (!password) {
+          console.log('********* verify new password 1');
+
           return res.status(400).send('newPassword is required');
         }
 
         if (!passwordconfirm) {
+          console.log('********* verify new password 1=2');
+
           return res.status(400).send('newPasswordConfirm is required');
         }
 
         if (password && passwordconfirm) {
           if (password !== passwordconfirm) {
+            console.log('********* verify new password 3');
+
             return res.status(400).send('passwords do not match');
           }
 
           if (password.length < passwordLength) {
+            console.log('********* verify new password 4');
+
             return res.status(400).send('password does not meet minimum length requirment of ' + passwordLength + ' characters');
           }
 

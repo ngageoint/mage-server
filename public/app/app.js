@@ -19,7 +19,6 @@ angular
   .controller('NavController', require('./mage/mage-nav.controller'))
   .controller('NotInEventController', require('./error/not.in.event.controller'))
   .controller('MageController', require('./mage/mage.controller'))
-  .controller('UserController', require('./user/user.controller'))
   .controller('AboutController', require('./about/about.controller'))
   .directive('fileBrowser', require('./file-upload/file-browser.directive'))
   .directive('fileUpload', require('./file-upload/file-upload.directive'))
@@ -47,9 +46,9 @@ require('./user');
 require('./admin');
 require('./material-components');
 
-config.$inject = ['$provide', '$httpProvider', '$routeProvider', '$animateProvider'];
+config.$inject = ['$provide', '$httpProvider', '$stateProvider', '$urlRouterProvider', '$animateProvider'];
 
-function config($provide, $httpProvider, $routeProvider, $animateProvider) {
+function config($provide, $httpProvider, $stateProvider, $urlRouterProvider,  $animateProvider) {
   $httpProvider.defaults.withCredentials = true;
   $httpProvider.defaults.headers.post  = {'Content-Type': 'application/x-www-form-urlencoded'};
 
@@ -89,22 +88,12 @@ function config($provide, $httpProvider, $routeProvider, $animateProvider) {
     };
   }
 
-  $routeProvider.otherwise({
-    redirectTo: '/'
-  });
+  $urlRouterProvider.otherwise('/signin');
 
-  $routeProvider.when('/', {
-    resolve: {
-      api: ['$location', function($location) {
-        $location.path('/signin');
-      }]
-    }
-  });
-
-  $routeProvider.when('/signin', {
-    template: require('./authentication/authentication.html'),
-    controller: 'AuthenticationController',
-    controllerAs: '$ctrl',
+  $stateProvider.state({
+    name: 'landing',
+    url: '/signin?action',
+    component: 'landing',
     resolve: {
       api: ['$q', 'Api', function($q,  Api) {
         var deferred = $q.defer();
@@ -117,9 +106,11 @@ function config($provide, $httpProvider, $routeProvider, $animateProvider) {
     }
   });
 
-  $routeProvider.when('/signup', {
-    template: require('./authentication/signup.html'),
-    controller: 'SignupController',
+  // TODO really think we should redirect to sign?action=signup
+  $stateProvider.state({
+    name: 'signup',
+    url: '/signup',
+    component: 'signup',
     resolve: {
       api: ['$q', '$location', 'Api', function($q, $location, Api) {
         var deferred = $q.defer();
@@ -136,189 +127,210 @@ function config($provide, $httpProvider, $routeProvider, $animateProvider) {
     }
   });
 
-  $routeProvider.when('/authorize', {
-    template: require('./authentication/authorize.html'),
-    controller:  'AuthorizeController'
+  // TODO do we still have an authorize route
+  $stateProvider.state({
+    name: 'authorize',
+    url: '/authorize',
+    component: 'authorize'
   });
 
-  $routeProvider.when('/admin', {
-    template: require('./admin/admin.html'),
-    controller:  'AdminController',
+  $stateProvider.state('admin', {
+    redirectTo: 'admin.dashboard',
+    url: '/admin',
+    component: 'admin'
+  });
+
+  $stateProvider.state('admin.dashboard', {
+    url: '/dashboard',
+    component: 'adminDashboard',
     resolve: resolveAdmin()
   });
 
-  // Admin user routes
-  $routeProvider.when('/admin/users', {
-    template: require('./admin/users/users.html'),
-    controller: "AdminUsersController",
+  $stateProvider.state('admin.users', {
+    url: '/users',
+    component: 'adminUsers',
     resolve: resolveAdmin()
   });
-  $routeProvider.when('/admin/users/new', {
-    template: require('./admin/users/user.edit.html'),
-    controller: "AdminUserEditController",
+
+  $stateProvider.state('admin.createUser', {
+    url: '/users/new',
+    component: 'adminEditUser',
     resolve: resolveAdmin()
   });
-  $routeProvider.when('/admin/users/bulk', {
-    template: require('./admin/users/user.bulk.html'),
-    controller: "AdminUserBulkController",
+
+  $stateProvider.state('admin.bulkUser', {
+    url: '/users/bulk',
+    component: "adminBulkUser",
     resolve: resolveAdmin()
   });
-  $routeProvider.when('/admin/users/:userId', {
-    template: require('./admin/users/user.html'),
-    controller: "AdminUserController",
+
+  $stateProvider.state('admin.user', {
+    url: '/users/:userId',
+    component: "adminUser",
     resolve: resolveAdmin()
   });
-  $routeProvider.when('/admin/users/:userId/edit', {
-    template: require('./admin/users/user.edit.html'),
-    controller: "AdminUserEditController",
+
+  $stateProvider.state('admin.editUser', {
+    url: '/users/:userId/edit',
+    component: "adminEditUser",
     resolve: resolveAdmin()
   });
 
   // Admin team routes
-  $routeProvider.when('/admin/teams', {
-    template: require('./admin/teams/teams.html'),
-    controller: "AdminTeamsController",
-    resolve: resolveAdmin()
-  });
-  $routeProvider.when('/admin/teams/new', {
-    template: require('./admin/teams/team.edit.html'),
-    controller: "AdminTeamEditController",
-    resolve: resolveAdmin()
-  });
-  $routeProvider.when('/admin/teams/:teamId', {
-    template: require('./admin/teams/team.html'),
-    controller: "AdminTeamController",
-    resolve: resolveAdmin()
-  });
-  $routeProvider.when('/admin/teams/:teamId/edit', {
-    template: require('./admin/teams/team.edit.html'),
-    controller: "AdminTeamEditController",
-    resolve: resolveAdmin()
-  });
-  $routeProvider.when('/admin/teams/:teamId/access', {
-    template: require('./admin/teams/team.access.html'),
-    controller: "AdminTeamAccessController",
+  $stateProvider.state('admin.teams', {
+    url: '/admin/teams',
+    component: "adminTeams",
     resolve: resolveAdmin()
   });
 
-  // Admin event routes
-  $routeProvider.when('/admin/events', {
-    template: require('./admin/events/events.html'),
-    controller: "AdminEventsController",
-    resolve: resolveAdmin()
-  });
-  $routeProvider.when('/admin/events/new', {
-    template: require('./admin/events/event.edit.html'),
-    controller: "AdminEventEditController",
-    resolve: resolveAdmin()
-  });
-  $routeProvider.when('/admin/events/:eventId', {
-    template: require('./admin/events/event.html'),
-    controller: "AdminEventController",
-    resolve: resolveAdmin()
-  });
-  $routeProvider.when('/admin/events/:eventId/edit', {
-    template: require('./admin/events/event.edit.html'),
-    controller: "AdminEventEditController",
-    resolve: resolveAdmin()
-  });
-  $routeProvider.when('/admin/events/:eventId/access', {
-    template: require('./admin/events/event.access.html'),
-    controller: "AdminEventAccessController",
-    resolve: resolveAdmin()
-  });
-  $routeProvider.when('/admin/events/:eventId/forms/new', {
-    template: require('./admin/events/event.edit.form.html'),
-    controller: "AdminEventEditFormController",
-    resolve: resolveAdmin()
-  });
-  $routeProvider.when('/admin/events/:eventId/forms/:formId', {
-    template: require('./admin/events/event.edit.form.html'),
-    controller: "AdminEventEditFormController",
-    resolve: resolveAdmin()
-  });
-  $routeProvider.when('/admin/events/:eventId/forms/:formId/fields', {
-    template: require('./admin/events/event.edit.form.fields.html'),
-    controller: "AdminEventEditFormFieldsController",
-    resolve: resolveAdmin()
-  });
-  $routeProvider.when('/admin/events/:eventId/forms/:formId/map', {
-    template: require('./admin/events/event.edit.form.map-symbology.html'),
-    controller: "AdminEventEditFormMapSymbologyController",
-    resolve: resolveAdmin()
-  });
-  $routeProvider.when('/admin/events/:eventId/forms/:formId/feed', {
-    template: require('./admin/events/event.edit.form.feed.html'),
-    controller: "AdminEventEditFormFeedController",
-    resolve: resolveAdmin()
-  });
+  // $routeProvider.when('/admin/teams/new', {
+  //   template: require('./admin/teams/team.edit.html'),
+  //   controller: "AdminTeamEditController",
+  //   resolve: resolveAdmin()
+  // });
+  // $routeProvider.when('/admin/teams/:teamId', {
+  //   template: require('./admin/teams/team.html'),
+  //   controller: "AdminTeamController",
+  //   resolve: resolveAdmin()
+  // });
+  // $routeProvider.when('/admin/teams/:teamId/edit', {
+  //   template: require('./admin/teams/team.edit.html'),
+  //   controller: "AdminTeamEditController",
+  //   resolve: resolveAdmin()
+  // });
+  // $routeProvider.when('/admin/teams/:teamId/access', {
+  //   template: require('./admin/teams/team.access.html'),
+  //   controller: "AdminTeamAccessController",
+  //   resolve: resolveAdmin()
+  // });
 
-  // Admin device routes
-  $routeProvider.when('/admin/devices', {
-    template: require('./admin/devices/devices.html'),
-    controller: "AdminDevicesController",
-    resolve: resolveAdmin()
-  });
-  $routeProvider.when('/admin/devices/new', {
-    template: require('./admin/devices/device.edit.html'),
-    controller: "AdminDeviceEditController",
-    resolve: resolveAdmin()
-  });
-  $routeProvider.when('/admin/devices/:deviceId', {
-    template: require('./admin/devices/device.html'),
-    controller: "AdminDeviceController",
-    resolve: resolveAdmin()
-  });
-  $routeProvider.when('/admin/devices/:deviceId/edit', {
-    template: require('./admin/devices/device.edit.html'),
-    controller: "AdminDeviceEditController",
-    resolve: resolveAdmin()
-  });
+  // // Admin event routes
+  // $routeProvider.when('/admin/events', {
+  //   template: require('./admin/events/events.html'),
+  //   controller: "AdminEventsController",
+  //   resolve: resolveAdmin()
+  // });
+  // $routeProvider.when('/admin/events/new', {
+  //   template: require('./admin/events/event.edit.html'),
+  //   controller: "AdminEventEditController",
+  //   resolve: resolveAdmin()
+  // });
+  // $routeProvider.when('/admin/events/:eventId', {
+  //   template: require('./admin/events/event.html'),
+  //   controller: "AdminEventController",
+  //   resolve: resolveAdmin()
+  // });
+  // $routeProvider.when('/admin/events/:eventId/edit', {
+  //   template: require('./admin/events/event.edit.html'),
+  //   controller: "AdminEventEditController",
+  //   resolve: resolveAdmin()
+  // });
+  // $routeProvider.when('/admin/events/:eventId/access', {
+  //   template: require('./admin/events/event.access.html'),
+  //   controller: "AdminEventAccessController",
+  //   resolve: resolveAdmin()
+  // });
+  // $routeProvider.when('/admin/events/:eventId/forms/new', {
+  //   template: require('./admin/events/event.edit.form.html'),
+  //   controller: "AdminEventEditFormController",
+  //   resolve: resolveAdmin()
+  // });
+  // $routeProvider.when('/admin/events/:eventId/forms/:formId', {
+  //   template: require('./admin/events/event.edit.form.html'),
+  //   controller: "AdminEventEditFormController",
+  //   resolve: resolveAdmin()
+  // });
+  // $routeProvider.when('/admin/events/:eventId/forms/:formId/fields', {
+  //   template: require('./admin/events/event.edit.form.fields.html'),
+  //   controller: "AdminEventEditFormFieldsController",
+  //   resolve: resolveAdmin()
+  // });
+  // $routeProvider.when('/admin/events/:eventId/forms/:formId/map', {
+  //   template: require('./admin/events/event.edit.form.map-symbology.html'),
+  //   controller: "AdminEventEditFormMapSymbologyController",
+  //   resolve: resolveAdmin()
+  // });
+  // $routeProvider.when('/admin/events/:eventId/forms/:formId/feed', {
+  //   template: require('./admin/events/event.edit.form.feed.html'),
+  //   controller: "AdminEventEditFormFeedController",
+  //   resolve: resolveAdmin()
+  // });
 
-  // Admin layer routes
-  $routeProvider.when('/admin/layers', {
-    template: require('./admin/layers/layers.html'),
-    controller: "AdminLayersController",
-    resolve: resolveAdmin()
-  });
-  $routeProvider.when('/admin/layers/new', {
-    template: require('./admin/layers/layer.edit.html'),
-    controller: "AdminLayerEditController",
-    resolve: resolveAdmin()
-  });
-  $routeProvider.when('/admin/layers/:layerId', {
-    template: require('./admin/layers/layer.html'),
-    controller: "AdminLayerController",
-    resolve: resolveAdmin()
-  });
-  $routeProvider.when('/admin/layers/:layerId/edit', {
-    template: require('./admin/layers/layer.edit.html'),
-    controller: "AdminLayerEditController",
-    resolve: resolveAdmin()
-  });
+  // // Admin device routes
+  // $routeProvider.when('/admin/devices', {
+  //   template: require('./admin/devices/devices.html'),
+  //   controller: "AdminDevicesController",
+  //   resolve: resolveAdmin()
+  // });
+  // $routeProvider.when('/admin/devices/new', {
+  //   template: require('./admin/devices/device.edit.html'),
+  //   controller: "AdminDeviceEditController",
+  //   resolve: resolveAdmin()
+  // });
+  // $routeProvider.when('/admin/devices/:deviceId', {
+  //   template: require('./admin/devices/device.html'),
+  //   controller: "AdminDeviceController",
+  //   resolve: resolveAdmin()
+  // });
+  // $routeProvider.when('/admin/devices/:deviceId/edit', {
+  //   template: require('./admin/devices/device.edit.html'),
+  //   controller: "AdminDeviceEditController",
+  //   resolve: resolveAdmin()
+  // });
 
-  // Admin settings routes
-  $routeProvider.when('/admin/settings', {
-    template: require('./admin/settings/settings.html'),
-    controller: "AdminSettingsController",
-    resolve: resolveAdmin()
-  });
+  // // Admin layer routes
+  // $routeProvider.when('/admin/layers', {
+  //   template: require('./admin/layers/layers.html'),
+  //   controller: "AdminLayersController",
+  //   resolve: resolveAdmin()
+  // });
+  // $routeProvider.when('/admin/layers/new', {
+  //   template: require('./admin/layers/layer.edit.html'),
+  //   controller: "AdminLayerEditController",
+  //   resolve: resolveAdmin()
+  // });
+  // $routeProvider.when('/admin/layers/:layerId', {
+  //   template: require('./admin/layers/layer.html'),
+  //   controller: "AdminLayerController",
+  //   resolve: resolveAdmin()
+  // });
+  // $routeProvider.when('/admin/layers/:layerId/edit', {
+  //   template: require('./admin/layers/layer.edit.html'),
+  //   controller: "AdminLayerEditController",
+  //   resolve: resolveAdmin()
+  // });
 
-  $routeProvider.when('/map', {
-    template: require('./mage/mage.html'),
-    controller: "MageController",
+  // // Admin settings routes
+  // $routeProvider.when('/admin/settings', {
+  //   template: require('./admin/settings/settings.html'),
+  //   controller: "AdminSettingsController",
+  //   resolve: resolveAdmin()
+  // });
+
+  // $routeProvider.when('/map', {
+  //   template: require('./mage/mage.html'),
+  //   controller: "MageController",
+  //   resolve: resolveLogin()
+  // });
+
+  $stateProvider.state('profile', {
+    url: '/profile',
+    component: "userProfile",
     resolve: resolveLogin()
   });
-  $routeProvider.when('/user', {
-    template: require("./user/user.html"),
-    controller: "UserController",
-    resolve: resolveLogin()
-  });
-  $routeProvider.when('/about', {
-    template: require("./about/about.html"),
-    controller: "AboutController",
-    resolve: resolveLogin()
-  });
+
+  // $routeProvider.when('/user', {
+  //   template: require("./user/user.html"),
+  //   controller: "UserController",
+  //   resolve: resolveLogin()
+  // });
+
+  
+  // $routeProvider.when('/about', {
+  //   template: require("./about/about.html"),
+  //   controller: "AboutController",
+  //   resolve: resolveLogin()
+  // });
 }
 
 run.$inject = ['$rootScope', '$route', '$uibModal', '$templateCache', 'UserService', '$location', 'authService', 'LocalStorageService', 'Api'];
