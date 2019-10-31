@@ -8,6 +8,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+* Fixed bug parsing KML polygon and polyline styles.
 
 ## [5.3.1](https://github.com/ngageoint/mage-server/releases/tag/5.3.1)
 
