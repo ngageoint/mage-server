@@ -70,13 +70,12 @@ class AdminTeamsController {
     $event.stopPropagation();
 
     var modalInstance = this.$uibModal.open({
-      template: require('./team-delete.html'),
       resolve: {
-        team: function () {
+        team: () => {
           return team;
         }
       },
-      controller: 'AdminTeamDeleteController'
+      component: 'adminTeamDelete'
     });
 
     modalInstance.result.then(team => {

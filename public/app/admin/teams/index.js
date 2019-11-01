@@ -1,9 +1,13 @@
 var angular = require('angular');
 import adminTeams from './teams.component';
+import adminTeam from './team.component';
+import adminTeamEdit from './team.edit.component';
+import adminTeamAccess from './team.access.component';
+import adminTeamDelete from './team.delete.component';
 
 angular.module('mage')
   .component('adminTeams', adminTeams)
-  .controller('AdminTeamController', require('./team.controller'))
-  .controller('AdminTeamAccessController', require('./team.access.controller'))
-  .controller('AdminTeamDeleteController', require('./team.delete.controller'))
-  .controller('AdminTeamEditController', require('./team.edit.controller'));
+  .component('adminTeam', adminTeam)
+  .component('adminTeamEdit', adminTeamEdit)
+  .component('adminTeamAccess', adminTeamAccess)
+  .component('adminTeamDelete', adminTeamDelete);

@@ -260,9 +260,7 @@ exports.updateTeam = function(id, update, callback) {
     update.userIds = update.users.map(function(user) { return mongoose.Types.ObjectId(user.id); });
   }
 
-  Team.findByIdAndUpdate(id, update, {new: true}, function(err, team) {
-    Team.populate(team, {path: 'userIds'}, callback);
-  });
+  Team.findByIdAndUpdate(id, update, {new: true, populate: 'userIds'}, callback);
 };
 
 exports.deleteTeam = function(team, callback) {

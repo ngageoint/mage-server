@@ -154,7 +154,7 @@ function config($provide, $httpProvider, $stateProvider, $urlRouterProvider,  $a
 
   $stateProvider.state('admin.createUser', {
     url: '/users/new',
-    component: 'adminEditUser',
+    component: 'adminUserEdit',
     resolve: resolveAdmin()
   });
 
@@ -172,37 +172,40 @@ function config($provide, $httpProvider, $stateProvider, $urlRouterProvider,  $a
 
   $stateProvider.state('admin.editUser', {
     url: '/users/:userId/edit',
-    component: "adminEditUser",
+    component: "adminUserEdit",
     resolve: resolveAdmin()
   });
 
   // Admin team routes
   $stateProvider.state('admin.teams', {
-    url: '/admin/teams',
+    url: '/teams',
     component: "adminTeams",
     resolve: resolveAdmin()
   });
 
-  // $routeProvider.when('/admin/teams/new', {
-  //   template: require('./admin/teams/team.edit.html'),
-  //   controller: "AdminTeamEditController",
-  //   resolve: resolveAdmin()
-  // });
-  // $routeProvider.when('/admin/teams/:teamId', {
-  //   template: require('./admin/teams/team.html'),
-  //   controller: "AdminTeamController",
-  //   resolve: resolveAdmin()
-  // });
-  // $routeProvider.when('/admin/teams/:teamId/edit', {
-  //   template: require('./admin/teams/team.edit.html'),
-  //   controller: "AdminTeamEditController",
-  //   resolve: resolveAdmin()
-  // });
-  // $routeProvider.when('/admin/teams/:teamId/access', {
-  //   template: require('./admin/teams/team.access.html'),
-  //   controller: "AdminTeamAccessController",
-  //   resolve: resolveAdmin()
-  // });
+  $stateProvider.state('admin.createTeam', {
+    url: '/teams/new',
+    component: "adminTeamEdit",
+    resolve: resolveAdmin()
+  });
+  
+  $stateProvider.state('admin.team', {
+    url: '/teams/:teamId',
+    component: "adminTeam",
+    resolve: resolveAdmin()
+  });
+
+  $stateProvider.state('admin.editTeam', {
+    url: '/teams/:teamId/edit',
+    component: "adminTeamEdit",
+    resolve: resolveAdmin()
+  });
+
+  $stateProvider.state('admin.teamAccess', {
+    url: '/teams/:teamId/access',
+    component: "adminTeamAccess",
+    resolve: resolveAdmin()
+  });
 
   // // Admin event routes
   // $routeProvider.when('/admin/events', {

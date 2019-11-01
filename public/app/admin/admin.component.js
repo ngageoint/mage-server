@@ -1,9 +1,10 @@
 import _ from 'underscore';
 
 class AdminController {
-  constructor($state, $stateParams, UserService, DeviceService) {
+  constructor($state, $stateParams, $transitions, UserService, DeviceService) {
     this.$state = $state;
     this.$stateParams = $stateParams;
+    this.$transitions = $transitions;
     this.UserService = UserService;
     this.DeviceService = DeviceService;
 
@@ -27,6 +28,10 @@ class AdminController {
         return !device.registered;
       });
     });
+
+    this.$transitions.onSuccess({}, () => {
+      this.setState();
+    });
   }
 
   setState() {
@@ -34,9 +39,7 @@ class AdminController {
   }
 
   onTabChanged($event) {
-    this.$state.go($event.state).then(() => {
-      this.setState();
-    });
+    this.$state.go($event.state);
   }
 
   userActivated($event) {
@@ -56,7 +59,7 @@ class AdminController {
   }
 }
 
-AdminController.$inject = ['$state', '$stateParams', 'UserService', 'DeviceService'];
+AdminController.$inject = ['$state', '$stateParams', '$transitions', 'UserService', 'DeviceService'];
 
 export default {
   template: require('./admin.html'),
