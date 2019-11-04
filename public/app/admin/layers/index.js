@@ -1,6 +1,11 @@
-var angular = require('angular');
+import angular from 'angular';
+import adminLayer from './layer.component';
+import adminLayers from './layers.component';
+import adminLayerEdit from './layer.edit.component';
+import adminLayerDelete from './layer.delete.component';
 
 angular.module('mage')
-  .controller('AdminLayerController', require('./layer.controller'))
-  .controller('AdminLayerEditController', require('./layer.edit.controller'))
-  .controller('AdminLayersController', require('./layers.controller'));
+  .component('adminLayer', adminLayer)
+  .component('adminLayers', adminLayers)
+  .component('adminLayerEdit', adminLayerEdit)
+  .component('adminLayerDelete', adminLayerDelete);

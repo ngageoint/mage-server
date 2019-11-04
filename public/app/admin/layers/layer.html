@@ -6,7 +6,7 @@
       <div class="container-fluid">
         <ol class="breadcrumb">
           <li><i class="fa fa-map admin-dashboard"></i> <a href="#/admin/layers">Layers</li></a>
-          <li class="active">{{layer.name}}</li>
+          <li class="active">{{$ctrl.layer.name}}</li>
         </ol>
       </div>
     </div>
@@ -14,15 +14,15 @@
     <div class="admin-content">
       <div class="container-fluid">
         <div class="row">
-          <div class="col-md-offset-1 col-md-10" ng-show="layer">
+          <div class="col-md-offset-1 col-md-10" ng-show="$ctrl.layer">
 
             <div class="row">
               <div class="col-md-10">
-                <h2>Layer: {{layer.name}}</h2>
+                <h2>Layer: {{$ctrl.layer.name}}</h2>
               </div>
-              <div class="col-md-2" ng-if="hasLayerEditPermission">
+              <div class="col-md-2" ng-if="$ctrl.hasLayerEditPermission">
                 <h2>
-                  <button class="btn btn-default pull-right" ng-click="editLayer(layer)"><i class="fa fa-edit"></i> Edit</button>
+                  <button class="btn btn-default pull-right" ng-click="$ctrl.editLayer($ctrl.layer)"><i class="fa fa-edit"></i> Edit</button>
                 </h2>
               </div>
             </div>
@@ -36,7 +36,7 @@
                     <span class="muted">Name:&nbsp;</span>
                   </div>
                   <div class="col-md-9">
-                    <span>{{layer.name}}</span>
+                    <span>{{$ctrl.layer.name}}</span>
                   </div>
                 </div>
 
@@ -45,79 +45,79 @@
                     <span class="muted">Type:&nbsp;</span>
                   </div>
                   <div class="col-md-9">
-                    <span>{{layer.type}}</span>
+                    <span>{{$ctrl.layer.type}}</span>
                   </div>
                 </div>
 
-                <div class="row top-gap-s" ng-show="layer.type == 'Imagery'">
+                <div class="row top-gap-s" ng-show="$ctrl.layer.type == 'Imagery'">
                   <div class="col-md-3">
                     <span class="muted">Base Layer:&nbsp;</span>
                   </div>
                   <div class="col-md-9">
-                    <span>{{layer.base}}</span>
+                    <span>{{$ctrl.layer.base}}</span>
                   </div>
                 </div>
 
-                <div class="row top-gap-s" ng-show="layer.type == 'Imagery'">
+                <div class="row top-gap-s" ng-show="$ctrl.layer.type == 'Imagery'">
                   <div class="col-md-3">
                     <span class="muted">Format:&nbsp;</span>
                   </div>
                   <div class="col-md-9">
-                    <span>{{layer.format}}</span>
+                    <span>{{$ctrl.layer.format}}</span>
                   </div>
                 </div>
 
-                <div class="row top-gap-s" ng-show="layer.type == 'Imagery'">
+                <div class="row top-gap-s" ng-show="$ctrl.layer.type == 'Imagery'">
                   <div class="col-md-3">
                     <span class="muted">URL:&nbsp;</span>
                   </div>
                   <div class="col-md-9">
-                    <span>{{layer.url}}</span>
+                    <span>{{$ctrl.layer.url}}</span>
                   </div>
                 </div>
 
-                <div class="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+                <div class="row top-gap-s" ng-show="$ctrl.layer.format == 'WMS' && $ctrl.layer.type == 'Imagery'">
                   <div class="col-md-3">
                     <span class="muted">Layers:&nbsp;</span>
                   </div>
                   <div class="col-md-9">
-                    <span>{{layer.wms.layers}}</span>
+                    <span>{{$ctrl.layer.wms.layers}}</span>
                   </div>
                 </div>
 
-                <div class="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+                <div class="row top-gap-s" ng-show="$ctrl.layer.format == 'WMS' && $ctrl.layer.type == 'Imagery'">
                   <div class="col-md-3">
                     <span class="muted">Styles:&nbsp;</span>
                   </div>
                   <div class="col-md-9">
-                    <span>{{layer.wms.styles}}</span>
+                    <span>{{$ctrl.layer.wms.styles}}</span>
                   </div>
                 </div>
 
-                <div class="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+                <div class="row top-gap-s" ng-show="$ctrl.layer.format == 'WMS' && $ctrl.layer.type == 'Imagery'">
                   <div class="col-md-3">
                     <span class="muted">Format:&nbsp;</span>
                   </div>
                   <div class="col-md-9">
-                    <span>{{layer.wms.format}}</span>
+                    <span>{{$ctrl.layer.wms.format}}</span>
                   </div>
                 </div>
 
-                <div class="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+                <div class="row top-gap-s" ng-show="$ctrl.layer.format == 'WMS' && $ctrl.layer.type == 'Imagery'">
                   <div class="col-md-3">
                     <span class="muted">Transparent:&nbsp;</span>
                   </div>
                   <div class="col-md-9">
-                    <span>{{layer.wms.transparent}}</span>
+                    <span>{{$ctrl.layer.wms.transparent}}</span>
                   </div>
                 </div>
 
-                <div class="row top-gap-s" ng-show="layer.format == 'WMS' && layer.type == 'Imagery'">
+                <div class="row top-gap-s" ng-show="$ctrl.layer.format == 'WMS' && $ctrl.layer.type == 'Imagery'">
                   <div class="col-md-3">
                     <span class="muted">Version:&nbsp;</span>
                   </div>
                   <div class="col-md-9">
-                    <span>{{layer.wms.version}}</span>
+                    <span>{{$ctrl.layer.wms.version}}</span>
                   </div>
                 </div>
 
@@ -126,17 +126,17 @@
                     <span class="muted">Description:&nbsp;</span>
                   </div>
                   <div class="col-md-9">
-                    <span>{{layer.description}}</span>
+                    <span>{{$ctrl.layer.description}}</span>
                   </div>
                 </div>
               </div>
 
               <div class="col-md-6">
-                <div class="card" ng-if="hasLayerDeletePermission">
+                <div class="card" ng-if="$ctrl.hasLayerDeletePermission">
                   <div class="card-content">
                     <strong class="text-danger">Delete layer</strong>
                     <p class="text-danger">Deleting layer will remove all information. This cannot be undone, all layer data will be unrecoverable.</p>
-                    <button class="btn btn-danger top-gap" ng-click="deleteLayer(layer)"> <i class="fa fa-trash-o"></i> Delete</button>
+                    <button class="btn btn-danger top-gap" ng-click="$ctrl.deleteLayer($ctrl.layer)"> <i class="fa fa-trash-o"></i> Delete</button>
                   </div>
                 </div>
               </div>
@@ -163,9 +163,9 @@
                   <div class="well-item">
                     <div class="row">
                       <div class="col-md-12">
-                        <ui-select ng-model="event.selected" theme="bootstrap">
+                        <ui-select ng-model="$ctrl.event.selected" theme="bootstrap">
                           <ui-select-match placeholder="Select an event">{{$select.selected.name}}</ui-select-match>
-                          <ui-select-choices repeat="event in nonLayerEvents | orderBy: 'name' | filter: $select.search">
+                          <ui-select-choices repeat="event in $ctrl.nonLayerEvents | orderBy: 'name' | filter: $select.search">
                             <div ng-bind-html="event.name | highlight: $select.search"></div>
                           </ui-select-choices>
                         </ui-select>
@@ -176,7 +176,7 @@
 
                     <div class="row">
                        <div class="col-md-12">
-                         <button class="btn btn-success" ng-click="addEventToLayer(event.selected)" ng-disabled="event.selected == null"><i class="fa fa-plus"></i> Add Event</button>
+                         <button class="btn btn-success" ng-click="$ctrl.addEventToLayer($ctrl.event.selected)" ng-disabled="$ctrl.event.selected == null"><i class="fa fa-plus"></i> Add Event</button>
                        </div>
                     </div>
                   </div>
@@ -187,16 +187,16 @@
                     <nav class="navbar navbar-default admin-dashboard-navbar">
                       <div class="container-fluid">
                         <div class="navbar-header">
-                          <a class="navbar-brand">Events for {{layer.name}}</a>
+                          <a class="navbar-brand">Events for {{$ctrl.layer.name}}</a>
                         </div>
 
                         <form class="navbar-form navbar-left">
                           <div class="form-group">
-                            <input type="text" class="form-control" placeholder="Search" ng-model="eventSearch">
+                            <input type="text" class="form-control" placeholder="Search" ng-model="$ctrl.eventSearch">
                           </div>
                         </form>
                         <div class="navbar-form navbar-right right-gap-s">
-                          <button class="btn btn-default navbar-right" ng-click="editEvent = !editEvent">Edit</button>
+                          <button class="btn btn-default navbar-right" ng-click="$ctrl.editEvent = !$ctrl.editEvent">Edit</button>
                         </div>
                       </div>
                     </nav>
@@ -207,11 +207,11 @@
                   <div class="col-sm-12">
                     <div class="admin-table">
                       <div class="well-item"
-                          ng-repeat="e in (filteredEvents = (layerEvents | filter:filterEvents)) | orderBy:'name' | offset: eventsPage*eventsPerPage | limitTo:eventsPerPage" >
-                        <div class="row pointer" ng-click="gotoEvent(e)">
+                          ng-repeat="e in ($ctrl.filteredEvents = ($ctrl.layerEvents | filter:$ctrl.filterEvents)) | orderBy:'name' | offset: $ctrl.eventsPage*$ctrl.eventsPerPage | limitTo:$ctrl.eventsPerPage" >
+                        <div class="row pointer" ng-click="$ctrl.gotoEvent(e)">
                           <div class="col-md-12">
-                            <span class="pull-right" ng-show="editEvent">
-                              <a class="btn btn-xs btn-danger" ng-click="removeEventFromLayer($event, e)"><i class="fa fa-minus"></i></a>
+                            <span class="pull-right" ng-show="$ctrl.editEvent">
+                              <a class="btn btn-xs btn-danger" ng-click="$ctrl.removeEventFromLayer($event, e)"><i class="fa fa-minus"></i></a>
                             </span>
 
                             <div class="right-gap pull-left">
@@ -228,18 +228,18 @@
                 <div class="row">
                   <div class="col-md-12">
                     <ul class="pager pull-right">
-                      <li ng-class="{'disabled': eventsPage == 0}">
-                        <a href="javascript:void(0);" ng-click="eventsPage == 0 || (eventsPage=eventsPage-1)">&larr; Previous</a>
+                      <li ng-class="{'disabled': $ctrl.eventsPage == 0}">
+                        <a href="javascript:void(0);" ng-click="$ctrl.eventsPage == 0 || ($ctrl.eventsPage=$ctrl.eventsPage-1)">&larr; Previous</a>
                       </li>
-                      <li ng-class="{'disabled': eventsPage >= (filteredEvents.length/eventsPerPage) - 1}">
-                        <a href="javascript:void(0);" ng-click="eventsPage >= (filteredEvents.length/eventsPerPage) - 1 || (eventsPage=eventsPage+1)">Next&rarr;</a>
+                      <li ng-class="{'disabled': $ctrl.eventsPage >= ($ctrl.filteredEvents.length/$ctrl.eventsPerPage) - 1}">
+                        <a href="javascript:void(0);" ng-click="$ctrl.eventsPage >= ($ctrl.filteredEvents.length/$ctrl.eventsPerPage) - 1 || ($ctrl.eventsPage=$ctrl.eventsPage+1)">Next&rarr;</a>
                       </li>
                     </ul>
                   </div>
                 </div>
               </div>
 
-              <div class="col-md-6 col-xs-12" ng-if="layer.type === 'Feature' && hasLayerEditPermission">
+              <div class="col-md-6 col-xs-12" ng-if="$ctrl.layer.type === 'Feature' && $ctrl.hasLayerEditPermission">
                 <div class="row">
                   <div class="col-md-12">
                     <nav class="navbar navbar-default admin-dashboard-navbar">
@@ -254,12 +254,11 @@
 
                 <div class="admin-table">
                   <div class="well-item">
-                    <div ng-show="layer.type == 'Feature'">
-                      <div ng-repeat="upload in uploads" class="bottom-gap">
-                        <form enctype="multipart/form-data" file-upload url="{{fileUploadOptions.url}}" allow-upload="uploadConfirmed" upload-file-form-name="'file'" upload-id="$index">
-                        </form>
+                    <div ng-show="$ctrl.layer.type == 'Feature'">
+                      <div ng-repeat="upload in $ctrl.uploads" class="bottom-gap">
+                        <file-upload url="{{$ctrl.fileUploadOptions.url}}" allow-upload="$ctrl.uploadConfirmed" upload-file-form-name="'file'" upload-id="$index" on-upload-complete="$ctrl.uploadComplete()"></file-upload>
 
-                        <div ng-if="status[$index]"><span>Created {{status[$index].features}} features from file {{status[$index].name}} </span></div>
+                        <div ng-if="$ctrl.status[$index]"><span>Created {{$ctrl.status[$index].features}} features from file {{$ctrl.status[$index].name}} </span></div>
                       </div>
                     </div>
 
@@ -267,8 +266,8 @@
 
                     <div class="row">
                       <div class="col-md-12">
-                        <button class="btn btn-primary" ng-click="addUploadFile()">Add KML File</button>
-                        <button class="btn btn-success" ng-click="confirmUpload()">Upload File(s)</button>
+                        <button class="btn btn-primary" ng-click="$ctrl.addUploadFile()">Add KML File</button>
+                        <button class="btn btn-success" ng-click="$ctrl.confirmUpload()">Upload File(s)</button>
                       </div>
                     </div>
                   </div>

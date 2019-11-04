@@ -69,25 +69,12 @@ class AdminUsersController {
     $event.stopPropagation();
 
     var modalInstance = this.$uibModal.open({
-      template: require('./user-delete.html'),
       resolve: {
-        user: function () {
+        user: () => {
           return user;
         }
       },
-      controller: ['$scope', '$uibModalInstance', 'UserService', 'user', function ($scope, $uibModalInstance, UserService, user) {
-        $scope.user = user;
-
-        $scope.deleteUser = function(user) {
-          UserService.deleteUser(user).then(function() {
-            $uibModalInstance.close(user);
-          });
-        };
-
-        $scope.cancel = function () {
-          $uibModalInstance.dismiss('cancel');
-        };
-      }]
+      component: "adminUserDelete"
     });
 
     modalInstance.result.then(user => {

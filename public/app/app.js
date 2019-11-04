@@ -1,7 +1,7 @@
-// import SetupController from './setup/setup.controller';
-
-var _ = require('underscore')
-  , angular = require('angular');
+import _ from 'underscore';
+import angular from 'angular';
+import fileUpload from './file-upload/file.upload.component';
+import fileBrowser from './file-upload/file.browser.component';
 
 /* Fix for IE */
 if (!Date.now) { Date.now = function() { return +(new Date); }; }
@@ -16,12 +16,12 @@ angular
   .component('about', require('./about/about.component'))
   .component('disclaimer', require('./disclaimer/disclaimer.controller'))
   .component('setup', require('./setup/setup.controller'))
+  .component('fileUpload', fileUpload)
+  .component('fileBrowser', fileBrowser)
   .controller('NavController', require('./mage/mage-nav.controller'))
   .controller('NotInEventController', require('./error/not.in.event.controller'))
   .controller('MageController', require('./mage/mage.controller'))
   .controller('AboutController', require('./about/about.controller'))
-  .directive('fileBrowser', require('./file-upload/file-browser.directive'))
-  .directive('fileUpload', require('./file-upload/file-upload.directive'))
   .directive('fileUploadGrid', require('./file-upload/file-upload-grid.directive'))
   .animation('.slide-down', function() {
     return {
@@ -284,27 +284,30 @@ function config($provide, $httpProvider, $stateProvider, $urlRouterProvider,  $a
     resolve: resolveAdmin()
   });
 
-  // // Admin layer routes
-  // $routeProvider.when('/admin/layers', {
-  //   template: require('./admin/layers/layers.html'),
-  //   controller: "AdminLayersController",
-  //   resolve: resolveAdmin()
-  // });
-  // $routeProvider.when('/admin/layers/new', {
-  //   template: require('./admin/layers/layer.edit.html'),
-  //   controller: "AdminLayerEditController",
-  //   resolve: resolveAdmin()
-  // });
-  // $routeProvider.when('/admin/layers/:layerId', {
-  //   template: require('./admin/layers/layer.html'),
-  //   controller: "AdminLayerController",
-  //   resolve: resolveAdmin()
-  // });
-  // $routeProvider.when('/admin/layers/:layerId/edit', {
-  //   template: require('./admin/layers/layer.edit.html'),
-  //   controller: "AdminLayerEditController",
-  //   resolve: resolveAdmin()
-  // });
+  // Admin layer routes
+  $stateProvider.state('admin.layers', {
+    url: '/layers',
+    component: "adminLayers",
+    resolve: resolveAdmin()
+  });
+
+  $stateProvider.state('admin.layerCreate', {
+    url: '/layers/new',
+    component: "adminLayerEdit",
+    resolve: resolveAdmin()
+  });
+
+  $stateProvider.state('admin.layer', {
+    url: '/layers/:layerId',
+    component: "adminLayer",
+    resolve: resolveAdmin()
+  });
+
+  $stateProvider.state('admin.layerEdit', {
+    url: '/layers/:layerId/edit',
+    component: "adminLayerEdit",
+    resolve: resolveAdmin()
+  });
 
   // // Admin settings routes
   // $routeProvider.when('/admin/settings', {
