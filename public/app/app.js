@@ -309,12 +309,12 @@ function config($provide, $httpProvider, $stateProvider, $urlRouterProvider,  $a
     resolve: resolveAdmin()
   });
 
-  // // Admin settings routes
-  // $routeProvider.when('/admin/settings', {
-  //   template: require('./admin/settings/settings.html'),
-  //   controller: "AdminSettingsController",
-  //   resolve: resolveAdmin()
-  // });
+  // Admin settings routes
+  $stateProvider.state('admin.settings', {
+    url: '/settings',
+    component: "adminSettings",
+    resolve: resolveAdmin()
+  });
 
   // $routeProvider.when('/map', {
   //   template: require('./mage/mage.html'),
