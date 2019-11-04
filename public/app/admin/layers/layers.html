@@ -1,5 +1,4 @@
-<div class="admin">
-  <div admin-tab="'layers'"></div>
+<div>
 
   <div class="admin-main">
     <div class="admin-nav-gap">
@@ -10,75 +9,73 @@
       </div>
     </div>
 
-    <div class="admin-content">
-      <div class="container">
+    <div class="container">
 
-        <div class="row">
-          <div class="col-md-3">
-            <ul class="nav nav-pills nav-stacked">
-              <li ng-click="$ctrl.page = 0; $ctrl.filter='all'" ng-class="{active: $ctrl.filter == 'all'}"><a href="javascript:void(0);">All Layers <span class="badge pull-right">{{$ctrl.filteredLayers.length}}</span></a></li>
-              <li ng-click="$ctrl.page = 0; $ctrl.filter='online'" ng-class="{active: $ctrl.filter == 'online'}"><a href="javascript:void(0);">Online Layers <span class="badge pull-right">{{($ctrl.filteredLayers | filter:{type: 'Imagery'}).length}}</span></a></li>
-              <li ng-click="$ctrl.page = 0; $ctrl.filter='offline'" ng-class="{active: $ctrl.filter == 'offline'}"><a href="javascript:void(0);">Downloadable Layers <span class="badge pull-right">{{($ctrl.filteredLayers | filter:{type: '!Imagery'}).length}}</span></a></li>
-            </ul>
+      <div class="row">
+        <div class="col-md-3">
+          <ul class="nav nav-pills nav-stacked">
+            <li ng-click="$ctrl.page = 0; $ctrl.filter='all'" ng-class="{active: $ctrl.filter == 'all'}"><a href="javascript:void(0);">All Layers <span class="badge pull-right">{{$ctrl.filteredLayers.length}}</span></a></li>
+            <li ng-click="$ctrl.page = 0; $ctrl.filter='online'" ng-class="{active: $ctrl.filter == 'online'}"><a href="javascript:void(0);">Online Layers <span class="badge pull-right">{{($ctrl.filteredLayers | filter:{type: 'Imagery'}).length}}</span></a></li>
+            <li ng-click="$ctrl.page = 0; $ctrl.filter='offline'" ng-class="{active: $ctrl.filter == 'offline'}"><a href="javascript:void(0);">Downloadable Layers <span class="badge pull-right">{{($ctrl.filteredLayers | filter:{type: '!Imagery'}).length}}</span></a></li>
+          </ul>
 
-            <hr>
-            <form class="form">
-              <div class="form-group">
-                <label>Search</label>
-                <input type="text" class="form-control" placeholder="layer name, description" ng-model="$ctrl.layerSearch" ng-change="$ctrl.page=0">
+          <hr>
+          <form class="form">
+            <div class="form-group">
+              <label>Search</label>
+              <input type="text" class="form-control" placeholder="layer name, description" ng-model="$ctrl.layerSearch" ng-change="$ctrl.page=0">
+            </div>
+          </form>
+          <hr>
+
+          <button class="btn btn-default pull-right" ng-click="$ctrl.reset()">Reset</button>
+        </div>
+
+        <div class="col-md-9">
+          <nav class="navbar navbar-default admin-dashboard-navbar">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <a class="navbar-brand">Layers</a>
               </div>
-            </form>
-            <hr>
 
-            <button class="btn btn-default pull-right" ng-click="$ctrl.reset()">Reset</button>
-          </div>
+              <form class="navbar-form navbar-right" role="search" ng-if="$ctrl.hasLayerCreatePermission">
+                <button type="submit" class="btn btn-default" ng-click="$ctrl.newLayer()">New Layer</button>
+              </form>
+            </div>
+          </nav>
 
-          <div class="col-md-9">
-            <nav class="navbar navbar-default admin-dashboard-navbar">
-              <div class="container-fluid">
-                <div class="navbar-header">
-                  <a class="navbar-brand">Layers</a>
-                </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div class="admin-table">
+                <div class="well-item"
+                    ng-repeat="l in ($ctrl.filteredLayers = ($ctrl.layers | filter:$ctrl.filterLayers)) | filter:$ctrl.filterType | orderBy:'name' | offset: $ctrl.page*$ctrl.itemsPerPage | limitTo:$ctrl.itemsPerPage" >
 
-                <form class="navbar-form navbar-right" role="search" ng-if="$ctrl.hasLayerCreatePermission">
-                  <button type="submit" class="btn btn-default" ng-click="$ctrl.newLayer()">New Layer</button>
-                </form>
-              </div>
-            </nav>
-
-            <div class="row">
-              <div class="col-md-12">
-                <div class="admin-table">
-                  <div class="well-item"
-                      ng-repeat="l in ($ctrl.filteredLayers = ($ctrl.layers | filter:$ctrl.filterLayers)) | filter:$ctrl.filterType | orderBy:'name' | offset: $ctrl.page*$ctrl.itemsPerPage | limitTo:$ctrl.itemsPerPage" >
-
-                      <div class="row pointer" ng-click="$ctrl.gotoLayer(l)">
-                        <div class="col-md-8">
-                          <div class="right-gap pull-left">
-                            <i class="fa fa-map admin-layer-icon"></i>
-                          </div>
-                          <div class="strong">{{l.name}}</div>
-                          <div class="muted"><span class="right-gap">{{l.type}}</span><span>{{l.url}}</span></div>
+                    <div class="row pointer" ng-click="$ctrl.gotoLayer(l)">
+                      <div class="col-md-8">
+                        <div class="right-gap pull-left">
+                          <i class="fa fa-map admin-layer-icon"></i>
                         </div>
-                        <div class="col-md-4">
-                          <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-if="$ctrl.hasLayerDeletePermission" ng-click="$ctrl.deleteLayer($event, l)">Delete</button>
-                          <button class="btn btn-sm btn-default pull-right" ng-if="$ctrl.hasLayerEditPermission" ng-click="$ctrl.editLayer($event, l)">Edit</button>
-                        </div>
+                        <div class="strong">{{l.name}}</div>
+                        <div class="muted"><span class="right-gap">{{l.type}}</span><span>{{l.url}}</span></div>
                       </div>
+                      <div class="col-md-4">
+                        <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-if="$ctrl.hasLayerDeletePermission" ng-click="$ctrl.deleteLayer($event, l)">Delete</button>
+                        <button class="btn btn-sm btn-default pull-right" ng-if="$ctrl.hasLayerEditPermission" ng-click="$ctrl.editLayer($event, l)">Edit</button>
+                      </div>
+                    </div>
 
-                  </div>
                 </div>
-                <div class="row">
-                  <div class="col-md-12">
-                    <ul class="pager pull-right">
-                      <li ng-class="{'disabled': $ctrl.page == 0}">
-                        <a href="javascript:void(0);" ng-click="$ctrl.page == 0 || ($ctrl.page=$ctrl.page-1)">&larr; Previous</a>
-                      </li>
-                      <li ng-class="{'disabled': $ctrl.page >= ($ctrl.filteredLayers.length/$ctrl.itemsPerPage) - 1}">
-                        <a href="javascript:void(0);" ng-click="$ctrl.page >= ($ctrl.filteredLayers.length/$ctrl.itemsPerPage) - 1 || ($ctrl.page=$ctrl.page+1)">Next&rarr;</a>
-                      </li>
-                    </ul>
-                  </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <ul class="pager pull-right">
+                    <li ng-class="{'disabled': $ctrl.page == 0}">
+                      <a href="javascript:void(0);" ng-click="$ctrl.page == 0 || ($ctrl.page=$ctrl.page-1)">&larr; Previous</a>
+                    </li>
+                    <li ng-class="{'disabled': $ctrl.page >= ($ctrl.filteredLayers.length/$ctrl.itemsPerPage) - 1}">
+                      <a href="javascript:void(0);" ng-click="$ctrl.page >= ($ctrl.filteredLayers.length/$ctrl.itemsPerPage) - 1 || ($ctrl.page=$ctrl.page+1)">Next&rarr;</a>
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>

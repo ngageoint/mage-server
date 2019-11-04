@@ -1,5 +1,4 @@
 <div class="admin">
-  <div admin-tab="'devices'"></div>
 
   <div class="admin-main">
     <div class="admin-nav-gap">
@@ -10,82 +9,80 @@
       </div>
     </div>
 
-    <div class="admin-content">
-      <div class="container">
+    <div class="container">
 
-        <div class="row">
-          <div class="col-md-3">
-            <ul class="nav nav-pills nav-stacked">
-              <li ng-click="page = 0; $ctrl.filter='all'" ng-class="{active: $ctrl.filter=='all'}"><a href="javascript:void(0);">All <span class="badge pull-right">{{$ctrl.filteredDevices.length}}</span></a></li>
-              <li ng-click="page = 0; $ctrl.filter='registered'" ng-class="{active: $ctrl.filter=='registered'}"><a href="javascript:void(0);">Registered <span class="badge pull-right">{{($ctrl.filteredDevices | filter:{registered: true}).length}}</span></a></li>
-              <li ng-click="page = 0; $ctrl.filter='unregistered'" ng-class="{active: $ctrl.filter=='unregistered'}"><a href="javascript:void(0);">Unregistered <span class="badge pull-right">{{($ctrl.filteredDevices | filter:{registered: !true}).length}}</span></a></li>
-            </ul>
+      <div class="row">
+        <div class="col-md-3">
+          <ul class="nav nav-pills nav-stacked">
+            <li ng-click="page = 0; $ctrl.filter='all'" ng-class="{active: $ctrl.filter=='all'}"><a href="javascript:void(0);">All <span class="badge pull-right">{{$ctrl.filteredDevices.length}}</span></a></li>
+            <li ng-click="page = 0; $ctrl.filter='registered'" ng-class="{active: $ctrl.filter=='registered'}"><a href="javascript:void(0);">Registered <span class="badge pull-right">{{($ctrl.filteredDevices | filter:{registered: true}).length}}</span></a></li>
+            <li ng-click="page = 0; $ctrl.filter='unregistered'" ng-class="{active: $ctrl.filter=='unregistered'}"><a href="javascript:void(0);">Unregistered <span class="badge pull-right">{{($ctrl.filteredDevices | filter:{registered: !true}).length}}</span></a></li>
+          </ul>
 
-            <hr>
-            <form class="form">
-              <div class="form-group">
-                <label>Search</label>
-                <input type="text" class="form-control" placeholder="device, user" ng-model="$ctrl.deviceSearch" ng-change="$ctrl.page=0">
+          <hr>
+          <form class="form">
+            <div class="form-group">
+              <label>Search</label>
+              <input type="text" class="form-control" placeholder="device, user" ng-model="$ctrl.deviceSearch" ng-change="$ctrl.page=0">
+            </div>
+          </form>
+          <hr>
+
+          <button class="btn btn-default pull-right" ng-click="$ctrl.reset()">Reset</button>
+        </div>
+
+        <div class="col-md-9">
+          <nav class="navbar navbar-default admin-dashboard-navbar">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <a class="navbar-brand">Devices</a>
               </div>
-            </form>
-            <hr>
 
-            <button class="btn btn-default pull-right" ng-click="$ctrl.reset()">Reset</button>
-          </div>
+              <form class="navbar-form navbar-right" role="search" ng-if="$ctrl.hasDeviceCreatePermission">
+                <button type="submit" class="btn btn-default" ng-click="$ctrl.newDevice()">New Device</button>
+              </form>
+            </div>
+          </nav>
 
-          <div class="col-md-9">
-            <nav class="navbar navbar-default admin-dashboard-navbar">
-              <div class="container-fluid">
-                <div class="navbar-header">
-                  <a class="navbar-brand">Devices</a>
-                </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div class="admin-table">
+                <div class="well-item"
+                    ng-repeat="d in ($ctrl.filteredDevices = ($ctrl.devices | filter:$ctrl.filterDevices)) | filter:$ctrl.filterRegistered | orderBy:'uid' | offset: $ctrl.page*$ctrl.itemsPerPage | limitTo:$ctrl.itemsPerPage" >
 
-                <form class="navbar-form navbar-right" role="search" ng-if="$ctrl.hasDeviceCreatePermission">
-                  <button type="submit" class="btn btn-default" ng-click="$ctrl.newDevice()">New Device</button>
-                </form>
-              </div>
-            </nav>
+                  <div class="pointer" ng-click="$ctrl.gotoDevice(d)">
+                    <div class="admin-device-container">
+                      <div class="right-gap">
+                        <i class="fa admin-device-icon" ng-class="$ctrl.iconClass(d)"></i>
+                      </div>
 
-            <div class="row">
-              <div class="col-md-12">
-                <div class="admin-table">
-                  <div class="well-item"
-                      ng-repeat="d in ($ctrl.filteredDevices = ($ctrl.devices | filter:$ctrl.filterDevices)) | filter:$ctrl.filterRegistered | orderBy:'uid' | offset: $ctrl.page*$ctrl.itemsPerPage | limitTo:$ctrl.itemsPerPage" >
+                      <div class="admin-device-info">
+                        <div ng-if="d.user"><strong>{{d.user.displayName}}</strong></div>
+                        <div class="muted small" ng-if="d.name">{{d.name}}</div>
+                        <div class="muted small ellipsis" ng-if="d.userAgent">{{d.userAgent}}</div>
+                        <div class="muted small" ng-if="d.appVersion">v{{d.appVersion}}</div>
+                        <span class="muted small">{{d.uid}}</span>
+                      </div>
 
-                    <div class="pointer" ng-click="$ctrl.gotoDevice(d)">
-                      <div class="admin-device-container">
-                        <div class="right-gap">
-                          <i class="fa admin-device-icon" ng-class="$ctrl.iconClass(d)"></i>
-                        </div>
-
-                        <div class="admin-device-info">
-                          <div ng-if="d.user"><strong>{{d.user.displayName}}</strong></div>
-                          <div class="muted small" ng-if="d.name">{{d.name}}</div>
-                          <div class="muted small ellipsis" ng-if="d.userAgent">{{d.userAgent}}</div>
-                          <div class="muted small" ng-if="d.appVersion">v{{d.appVersion}}</div>
-                          <span class="muted small">{{d.uid}}</span>
-                        </div>
-
-                        <div>
-                          <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-if="$ctrl.hasDeviceDeletePermission" ng-click="$ctrl.deleteDevice($event, d)">Delete</button>
-                          <button class="btn btn-sm btn-success pull-right admin-user-button" ng-if="!d.registered && $ctrl.hasDeviceEditPermission" ng-click="$ctrl.registerDevice($event, d)">Register</button>
-                          <button class="btn btn-sm btn-default pull-right" ng-if="$ctrl.hasDeviceEditPermission" ng-click="$ctrl.editDevice($event, d)">Edit</button>
-                        </div>
+                      <div>
+                        <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-if="$ctrl.hasDeviceDeletePermission" ng-click="$ctrl.deleteDevice($event, d)">Delete</button>
+                        <button class="btn btn-sm btn-success pull-right admin-user-button" ng-if="!d.registered && $ctrl.hasDeviceEditPermission" ng-click="$ctrl.registerDevice($event, d)">Register</button>
+                        <button class="btn btn-sm btn-default pull-right" ng-if="$ctrl.hasDeviceEditPermission" ng-click="$ctrl.editDevice($event, d)">Edit</button>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div class="row">
-                  <div class="col-md-12">
-                    <ul class="pager pull-right">
-                      <li ng-class="{'disabled': page == 0}">
-                        <a href="javascript:void(0);" ng-click="$ctrl.page == 0 || ($ctrl.page=$ctrl.page-1)">&larr; Previous</a>
-                      </li>
-                      <li ng-class="{'disabled': $ctrl.page >= ($ctrl.filteredDevices.length/$ctrl.itemsPerPage) - 1}">
-                        <a href="javascript:void(0);" ng-click="$ctrl.page >= ($ctrl.filteredDevices.length/$ctrl.itemsPerPage) - 1 || ($ctrl.page=$ctrl.page+1)">Next&rarr;</a>
-                      </li>
-                    </ul>
-                  </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <ul class="pager pull-right">
+                    <li ng-class="{'disabled': page == 0}">
+                      <a href="javascript:void(0);" ng-click="$ctrl.page == 0 || ($ctrl.page=$ctrl.page-1)">&larr; Previous</a>
+                    </li>
+                    <li ng-class="{'disabled': $ctrl.page >= ($ctrl.filteredDevices.length/$ctrl.itemsPerPage) - 1}">
+                      <a href="javascript:void(0);" ng-click="$ctrl.page >= ($ctrl.filteredDevices.length/$ctrl.itemsPerPage) - 1 || ($ctrl.page=$ctrl.page+1)">Next&rarr;</a>
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>
