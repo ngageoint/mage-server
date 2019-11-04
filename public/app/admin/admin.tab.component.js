@@ -28,7 +28,7 @@ export default {
   bindings: {
     state: '@',
     inactiveUsers: '<',
-    inactiveDevices: '<',
+    unregisteredDevices: '<',
     onTabChanged: '&'
   }
 };

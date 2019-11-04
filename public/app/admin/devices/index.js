@@ -1,6 +1,11 @@
-var angular = require('angular');
+import angular from 'angular';
+import adminDevice from './device.component';
+import adminDevices from './devices.component';
+import adminDeviceEdit from './device.edit.component';
+import adminDeviceDelete from './device.delete.component';
 
 angular.module('mage')
-  .controller('AdminDeviceController', require('./device.controller'))
-  .controller('AdminDeviceEditController', require('./device.edit.controller'))
-  .controller('AdminDevicesController', require('./devices.controller'));
+  .component('adminDevice', adminDevice)
+  .component('adminDevices', adminDevices)
+  .component('adminDeviceEdit', adminDeviceEdit)
+  .component('adminDeviceDelete', adminDeviceDelete);

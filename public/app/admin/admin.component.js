@@ -48,13 +48,13 @@ class AdminController {
     });
   }
 
-  deviceEnabled($event) {
+  deviceRegistered($event) {
     this.unregisteredDevices = _.filter(this.unregisteredDevices, unregisteredDevice => {
       return unregisteredDevice.id !== $event.device.id;
     });
   }
 
-  deviceDisabled($event) {
+  deviceUnregistered($event) {
     this.unregisteredDevices.push($event.device);
   }
 }

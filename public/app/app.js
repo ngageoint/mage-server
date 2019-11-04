@@ -259,27 +259,30 @@ function config($provide, $httpProvider, $stateProvider, $urlRouterProvider,  $a
   //   resolve: resolveAdmin()
   // });
 
-  // // Admin device routes
-  // $routeProvider.when('/admin/devices', {
-  //   template: require('./admin/devices/devices.html'),
-  //   controller: "AdminDevicesController",
-  //   resolve: resolveAdmin()
-  // });
-  // $routeProvider.when('/admin/devices/new', {
-  //   template: require('./admin/devices/device.edit.html'),
-  //   controller: "AdminDeviceEditController",
-  //   resolve: resolveAdmin()
-  // });
-  // $routeProvider.when('/admin/devices/:deviceId', {
-  //   template: require('./admin/devices/device.html'),
-  //   controller: "AdminDeviceController",
-  //   resolve: resolveAdmin()
-  // });
-  // $routeProvider.when('/admin/devices/:deviceId/edit', {
-  //   template: require('./admin/devices/device.edit.html'),
-  //   controller: "AdminDeviceEditController",
-  //   resolve: resolveAdmin()
-  // });
+  // Admin device routes
+  $stateProvider.state('admin.devices', {
+    url: '/devices',
+    component: "adminDevices",
+    resolve: resolveAdmin()
+  });
+  
+  $stateProvider.state('admin.deviceCreate', {
+    url: '/devices/new',
+    component: "adminDeviceEdit",
+    resolve: resolveAdmin()
+  });
+
+  $stateProvider.state('admin.device', {
+    url: '/devices/:deviceId',
+    component: "adminDevice",
+    resolve: resolveAdmin()
+  });
+
+  $stateProvider.state('admin.deviceEdit', {
+    url: '/devices/:deviceId/edit',
+    component: "adminDeviceEdit",
+    resolve: resolveAdmin()
+  });
 
   // // Admin layer routes
   // $routeProvider.when('/admin/layers', {

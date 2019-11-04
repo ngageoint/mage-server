@@ -1,8 +1,11 @@
-<admin-tab state="{{$ctrl.state}}" inactive-users="$ctrl.inactiveUsers" unregistered-devices="unregisteredDevices" on-tab-changed="$ctrl.onTabChanged($event)"></admin-tab>
+<admin-tab state="{{$ctrl.state}}" inactive-users="$ctrl.inactiveUsers" unregistered-devices="$ctrl.unregisteredDevices" on-tab-changed="$ctrl.onTabChanged($event)"></admin-tab>
 
 <div class="admin-main">
   <div class="admin-main-content">
-    <ui-view on-user-activated="$ctrl.userActivated($event)" on-device-enabled="$ctrl.deviceEnabled($event)" on-device-disabled="$ctrl.deviceDisabled($event)">
+    <ui-view 
+        on-user-activated="$ctrl.userActivated($event)" 
+        on-device-registered="$ctrl.deviceRegistered($event)" 
+        on-device-unregistered="$ctrl.deviceUnregistered($event)">
       <admin-dashboard></admin-dashboard>
     </ui-view>
   </div>
