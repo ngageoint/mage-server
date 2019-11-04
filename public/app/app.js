@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import angular from 'angular';
+import about from './about/about.component';
 import fileUpload from './file-upload/file.upload.component';
 import fileBrowser from './file-upload/file.browser.component';
 
@@ -13,15 +14,14 @@ angular
   .component('eventFilter', require('./filter/event.filter.component'))
   .component('dateTime', require('./datetime/datetime.component'))
   .component('observationFormChooser', require('./observation/observation-form-chooser.component'))
-  .component('about', require('./about/about.component'))
   .component('disclaimer', require('./disclaimer/disclaimer.controller'))
   .component('setup', require('./setup/setup.controller'))
+  .component('about', about)
   .component('fileUpload', fileUpload)
   .component('fileBrowser', fileBrowser)
   .controller('NavController', require('./mage/mage-nav.controller'))
   .controller('NotInEventController', require('./error/not.in.event.controller'))
   .controller('MageController', require('./mage/mage.controller'))
-  .controller('AboutController', require('./about/about.controller'))
   .directive('fileUploadGrid', require('./file-upload/file-upload-grid.directive'))
   .animation('.slide-down', function() {
     return {
@@ -106,33 +106,11 @@ function config($provide, $httpProvider, $stateProvider, $urlRouterProvider,  $a
     }
   });
 
-  // TODO really think we should redirect to sign?action=signup
-  $stateProvider.state({
-    name: 'signup',
-    url: '/signup',
-    component: 'signup',
-    resolve: {
-      api: ['$q', '$location', 'Api', function($q, $location, Api) {
-        var deferred = $q.defer();
-        Api.get(function(api) {
-          if (api.initial) {
-            $location.path('/signin?action=setup');
-          } else {
-            deferred.resolve(api);
-          }
-        });
-
-        return deferred.promise;
-      }]
-    }
-  });
-
-  // TODO do we still have an authorize route
-  $stateProvider.state({
-    name: 'authorize',
-    url: '/authorize',
-    component: 'authorize'
-  });
+  // $routeProvider.when('/map', {
+  //   template: require('./mage/mage.html'),
+  //   controller: "MageController",
+  //   resolve: resolveLogin()
+  // });
 
   $stateProvider.state('admin', {
     redirectTo: 'admin.dashboard',
@@ -316,30 +294,17 @@ function config($provide, $httpProvider, $stateProvider, $urlRouterProvider,  $a
     resolve: resolveAdmin()
   });
 
-  // $routeProvider.when('/map', {
-  //   template: require('./mage/mage.html'),
-  //   controller: "MageController",
-  //   resolve: resolveLogin()
-  // });
-
   $stateProvider.state('profile', {
     url: '/profile',
     component: "userProfile",
     resolve: resolveLogin()
   });
 
-  // $routeProvider.when('/user', {
-  //   template: require("./user/user.html"),
-  //   controller: "UserController",
-  //   resolve: resolveLogin()
-  // });
-
-  
-  // $routeProvider.when('/about', {
-  //   template: require("./about/about.html"),
-  //   controller: "AboutController",
-  //   resolve: resolveLogin()
-  // });
+  $stateProvider.state('about', {
+    url: '/about',
+    component: "about",
+    resolve: resolveLogin()
+  });
 }
 
 run.$inject = ['$rootScope', '$route', '$uibModal', '$templateCache', 'UserService', '$location', 'authService', 'LocalStorageService', 'Api'];

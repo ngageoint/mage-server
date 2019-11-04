@@ -1,11 +1,18 @@
-import AboutController from './about.controller';
+class AboutController {
+  constructor(Api) {
+    this.Api = Api;
+  }
 
-var template = require('./about.html');
-var bindings = {};
-var controller = AboutController;
+  $onInit() {
+    this.Api.get(api => {
+      this.name = api.name;
+      this.serverVersion = api.version;
+      this.apk = api.apk;
+    });
+  }
+}
 
-export {
-  template,
-  bindings,
-  controller
+export default {
+  template: require('./about.html'),
+  controller: AboutController
 };
