@@ -1,9 +1,7 @@
 import 'swagger-ui/dist/swagger-ui.css';
 import SwaggerUI from 'swagger-ui';
-import { MageAuthPopup } from './mage-auth-popup';
-
 import { createSelector } from 'reselect';
-import React from 'react';
+import { MageAuthPopup } from './mage-auth-popup';
 
 const SECURITY_SCHEME_NAME = 'mageToken';
 const EVENT_AUTH_ERROR = 'mage.auth_err';
@@ -12,10 +10,21 @@ const ACTION_FETCH_TOKEN_USER = 'mage.fetch_token_user';
 const mageAuthPluginGetSystem = function() {
   return this;
 }
+
 const mageAuthPluginAfterLoad = function(system) {
   window.addEventListener('storage', this.onStorage.bind(this));
   window.addEventListener(EVENT_AUTH_ERROR, this.onAuthErr.bind(this));
   this.unsubscribeStore = system.getStore().subscribe(this.checkTokenWhenStoreReady.bind(this));
+};
+
+const mageAuthorizePayload = function(scheme, token) {
+  return {
+    [SECURITY_SCHEME_NAME]: {
+      name: SECURITY_SCHEME_NAME,
+      schema: scheme.get(SECURITY_SCHEME_NAME),
+      value: token
+    }
+  };
 };
 
 class MageAuthPlugin {
@@ -32,6 +41,9 @@ class MageAuthPlugin {
           mageToken
         },
         actions: {
+          authorize: (token) => {
+
+          },
           fetchTokenUser: () => {
             return {
               type: ACTION_FETCH_TOKEN_USER
@@ -46,29 +58,23 @@ class MageAuthPlugin {
       }
     };
     this.wrapComponents = {
-      // authorizationPopup(Original, system) {
-      //   return MageAuthPopup;
-      // }
+      authorizationPopup(Original, system) {
+        return MageAuthPopup;
+      }
     };
   }
 
   checkTokenWhenStoreReady() {
-    const system = this.getSystem();
-    const scheme = system.mageAuthSelectors.mageScheme();
+    const { authActions, mageAuthSelectors } = this.getSystem();
+    const scheme = mageAuthSelectors.mageScheme();
     if (!scheme) {
       return;
     }
     this.unsubscribeStore();
     const token = window.localStorage.getItem('token');
     if (token) {
-      const auth = {
-        [SECURITY_SCHEME_NAME]: {
-          name: SECURITY_SCHEME_NAME,
-          schema: scheme.get(SECURITY_SCHEME_NAME),
-          value: token
-        }
-      };
-      system.authActions.authorize(auth);
+      const payload = mageAuthorizePayload(scheme, token);
+      authActions.authorize(payload);
     }
   }
 
@@ -81,15 +87,12 @@ class MageAuthPlugin {
       return;
     }
     const token = e.newValue;
-    const system = this.getSystem();
-    const authActions = system.authActions;
-    const authSelectors = system.authSelectors;
-    const def = authSelectors.definitionsToAuthorize().get('mageToken');
+    const { authActions, mageAuthSelectors } = this.getSystem();
     if (token) {
-      authActions.authorize(def.set('value', token));
+      authActions.authorize(mageAuthorizePayload(mageAuthSelectors.mageScheme(), token));
     }
     else {
-      authActions.logout(['mageToken']);
+      authActions.logout([SECURITY_SCHEME_NAME]);
     }
   }
 
@@ -105,16 +108,12 @@ function authPlugin(system) {
 SwaggerUI({
   dom_id: '#api_docs',
   url: '/api/docs/openapi.yaml',
-  // presets: [
-  //   SwaggerUI.presets.apis,
-  //   authPlugin,
-  // ],
   plugins: [
     authPlugin
   ],
   responseInterceptor(res) {
     console.log(res);
-    if (res.status === 401 || res.status === 403) {
+    if (res.status === 401) {
       window.dispatchEvent(new CustomEvent(EVENT_AUTH_ERROR, { detail: res }));
     }
     return res;
