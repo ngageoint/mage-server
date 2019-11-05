@@ -10,6 +10,9 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0
   version: 5.2.6
 servers: []
+security:
+  - mageToken: []
+
 paths:
   /api/logins:
     get:
@@ -2017,7 +2020,7 @@ paths:
           description: export response
 components:
   securitySchemes:
-    authToken:
+    mageToken:
       type: http
       description: >
         MAGE generates an authentication token when a client authenticates

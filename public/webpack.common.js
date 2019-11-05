@@ -15,52 +15,59 @@ module.exports = {
     filename: '[name].js'
   },
   module: {
-    rules: [{
-      test: /\.js$/,
-      use: {
-        loader: 'babel-loader',
-        options: {
-          presets: ['@babel/preset-env']
-        }
+    rules: [
+      {
+        test: /\.(js|jsx)$/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env', '@babel/preset-react']
+          }
+        },
+        resolve: { extensions: [".js", ".jsx"] }
+      },
+      {
+        test: /\.(css|scss)$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: {
+              sourceMap: true
+            }
+          },
+          {
+            loader: 'sass-loader',
+            options: {
+              sourceMap: true,
+              includePaths: ['./css', './node_modules']
+            }
+          },
+          {
+            loader: 'postcss-loader',
+            options: {
+              sourceMap: true,
+              plugins: () => [
+                postcssCustomProperties({
+                  importFrom: ['./css/variables.css']
+                })
+              ]
+            }
+          }
+        ]
+      },
+      {
+        test: /\.(eot|svg|ttf|woff|woff2)$/,
+        loader: 'file-loader?name=fonts/[name].[ext]'
+      },
+      {
+        test: /\.(png|jpg|ico|gif|svg)$/,
+        loader: 'file-loader?name=images/[name].[ext]'
+      },
+      {
+        test: /\.html$/, loader: 'raw-loader'
       }
-    },{
-      test: /\.(css|scss)$/,
-      use: [
-        MiniCssExtractPlugin.loader,
-        {
-          loader: 'css-loader',
-          options: {
-            sourceMap: true
-          }
-        },
-        {
-          loader: 'sass-loader',
-          options: {
-            sourceMap: true,
-            includePaths: ['./css', './node_modules']
-          }
-        },
-        {
-          loader: 'postcss-loader',
-          options: {
-            sourceMap: true,
-            plugins: () => [
-              postcssCustomProperties({
-                importFrom: ['./css/variables.css']
-              })
-            ]
-          }
-        }
-      ]
-    },{
-      test: /\.(eot|svg|ttf|woff|woff2)$/,
-      loader: 'file-loader?name=fonts/[name].[ext]'
-    },{
-      test: /\.(png|jpg|ico|gif|svg)$/,
-      loader: 'file-loader?name=images/[name].[ext]'
-    },{
-      test: /\.html$/, loader: 'raw-loader'
-    }]
+    ]
   },
   optimization: {
     splitChunks: {
