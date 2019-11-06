@@ -30,12 +30,9 @@ export class MageCurrentUser extends React.Component {
     }
     console.log('unknown error fetching current user: ', user);
     return (
-      <div>
-        <Row>
-          Unknown error fetching current user
-        </Row>
-        <Row></Row>
-      </div>
+      <Row>
+        Unknown error fetching current user
+      </Row>
     )
   }
 }
