@@ -1,11 +1,14 @@
 import 'swagger-ui/dist/swagger-ui.css';
 import SwaggerUI from 'swagger-ui';
 import { createSelector } from 'reselect';
-import { MageAuthPopup } from './mage-auth-popup';
+import { MageAuthPopup, MageCurrentUser, MageSignInPrompt } from './mage-auth-popup';
 
 const SECURITY_SCHEME_NAME = 'mageToken';
 const EVENT_AUTH_ERROR = 'mage.auth_err';
+const ACTION_BEGIN_FETCH_TOKEN_USER = 'mage.begin_fetch_token_user';
 const ACTION_FETCH_TOKEN_USER = 'mage.fetch_token_user';
+const ACTION_RECEIVE_TOKEN_USER = 'mage.receive_token_user';
+const ACTION_RECEIVE_TOKEN_USER_ERR = 'mage.receive_token_user_err';
 
 const mageAuthPluginGetSystem = function() {
   return this;
@@ -32,27 +35,96 @@ class MageAuthPlugin {
   constructor(system) {
     this.systemRef = mageAuthPluginGetSystem.bind(system);
     this.afterLoad = mageAuthPluginAfterLoad.bind(this);
+    const state = state => state;
     const mageScheme = createSelector(system.authSelectors.definitionsToAuthorize, defList => defList.first());
-    const mageToken = createSelector(mageScheme, scheme => scheme.get('value'));
+    const mageToken = createSelector(system.authSelectors.authorized, scheme => scheme.getIn([SECURITY_SCHEME_NAME, 'value']));
+    const tokenUser = state => {
+      return state.getIn(['mageAuth', 'tokenUser']);
+    };
+    const tokenUserFetching = state => {
+      return state.getIn(['mageAuth', 'tokenUserFetching'], true);
+    };
     this.statePlugins = {
       mageAuth: {
         selectors: {
           mageScheme,
-          mageToken
+          mageToken,
+          tokenUser,
+          tokenUserFetching
         },
         actions: {
-          authorize: (token) => {
-
+          beginFetchTokenUser: () => {
+            return {
+              type: ACTION_BEGIN_FETCH_TOKEN_USER
+            }
           },
           fetchTokenUser: () => {
+            return async system => {
+              system.mageAuthActions.beginFetchTokenUser();
+              try {
+                const token = system.mageAuthSelectors.mageToken();
+                const res = await system.fn.fetch({
+                  url: '/api/users/myself',
+                  credentials: 'same-origin',
+                  headers: {
+                    Authorization: `Bearer ${token}`
+                  }
+                });
+                return system.mageAuthActions.receiveTokenUser(res.body);
+              }
+              catch(err) {
+                return system.mageAuthActions.receiveTokenUserErr(err);
+              }
+            }
+          },
+          receiveTokenUser: userDoc => {
             return {
-              type: ACTION_FETCH_TOKEN_USER
+              type: ACTION_RECEIVE_TOKEN_USER,
+              payload: userDoc
+            };
+          },
+          receiveTokenUserErr: res => {
+            return {
+              type: ACTION_RECEIVE_TOKEN_USER_ERR,
+              payload: res
             };
           }
         },
         reducers: {
-          [ACTION_FETCH_TOKEN_USER]: (state, action) => {
-
+          [ACTION_BEGIN_FETCH_TOKEN_USER]: (state, action) => {
+            return state.merge({
+              mageAuth: {
+                tokenUser: null,
+                tokenUserFetching: true
+              }
+            });
+          },
+          [ACTION_RECEIVE_TOKEN_USER]: (state, action) => {
+            return state.merge({
+              mageAuth: {
+                tokenUser: action.payload,
+                tokenUserFetching: false
+              }
+            });
+          },
+          [ACTION_RECEIVE_TOKEN_USER_ERR]: (state, action) => {
+            return state.merge({
+              mageAuth: {
+                tokenUser: action.payload,
+                tokenUserFetching: false
+              }
+            })
+          }
+        },
+      },
+      auth: {
+        wrapActions: {
+          showDefinitions: (wrapped, system) => securityDefs => {
+            const action = wrapped(securityDefs);
+            if (!securityDefs) {
+              return action;
+            }
+            return system.mageAuthActions.fetchTokenUser();
           }
         }
       }
@@ -61,6 +133,10 @@ class MageAuthPlugin {
       authorizationPopup(Original, system) {
         return MageAuthPopup;
       }
+    };
+    this.components = {
+      MageCurrentUser,
+      MageSignInPrompt
     };
   }
 
@@ -87,9 +163,10 @@ class MageAuthPlugin {
       return;
     }
     const token = e.newValue;
-    const { authActions, mageAuthSelectors } = this.getSystem();
+    const { authActions, mageAuthActions, mageAuthSelectors } = this.getSystem();
     if (token) {
       authActions.authorize(mageAuthorizePayload(mageAuthSelectors.mageScheme(), token));
+      mageAuthActions.fetchTokenUser();
     }
     else {
       authActions.logout([SECURITY_SCHEME_NAME]);
@@ -102,7 +179,7 @@ class MageAuthPlugin {
 }
 
 function authPlugin(system) {
-  return new MageAuthPlugin(system)
+  return new MageAuthPlugin(system);
 };
 
 SwaggerUI({
@@ -112,7 +189,6 @@ SwaggerUI({
     authPlugin
   ],
   responseInterceptor(res) {
-    console.log(res);
     if (res.status === 401) {
       window.dispatchEvent(new CustomEvent(EVENT_AUTH_ERROR, { detail: res }));
     }
