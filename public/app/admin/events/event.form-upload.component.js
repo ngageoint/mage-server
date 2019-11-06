@@ -28,7 +28,7 @@ function EventFormUploadController($element, Form) {
   this.$onInit = function() {
     formPanel = new MDCDialog($element.find('.form-create-panel')[0]);
     formPanel.listen('MDCDialog:closing', function(event) {
-      if (event.detail.action !== 'cancel') {
+      if (event.detail.action !== 'close') {
         this.onFormCreateClose({form: this.form});
       }
     }.bind(this));
