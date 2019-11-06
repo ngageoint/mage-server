@@ -47,10 +47,12 @@ function EventFormUploadController($element, Form) {
     }
 
     if (this.form.formArchiveFile) {
-      this.form.$save({}, function(form) {
+      this.form.$save({}, form => {
         this.form.id = form.id;
         formPanel.close();
-      }.bind(this));
+      }, response => { // error
+        this.error = response.responseText;
+      });
     } else {
       formPanel.close();
     }

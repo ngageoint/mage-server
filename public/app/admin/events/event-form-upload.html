@@ -1,8 +1,4 @@
-<div class="form-create-panel mdc-dialog"
-role="alertdialog"
-aria-modal="true"
-aria-labelledby="my-dialog-title"
-aria-describedby="my-dialog-content">
+<div class="form-create-panel mdc-dialog" role="alertdialog" aria-modal="true" aria-labelledby="my-dialog-title" aria-describedby="my-dialog-content">
   <div class="mdc-dialog__container">
     <div class="mdc-dialog__surface">
       <div class="modal-header">
@@ -50,6 +46,20 @@ aria-describedby="my-dialog-content">
           <span class="mdc-button__label">Create Form</span>
         </button>
       </footer>
+
+      <div class="mdc-card" >
+        <div class="error-card ng-animatable" ng-if="$ctrl.error">
+          <div class="error-card__primary">
+            <div class="error-card--title">Error Creating Form</div>
+            <div class="error-card--subtitle mdc-typography mdc-typography--body2">{{$ctrl.error}}</div>
+          </div>
+
+          <div class="error-card__actions">  
+            <button class="material-icons mdc-icon-button error-card__action--icon" ng-click="$ctrl.error = null">close</button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
   <div class="mdc-dialog__scrim"></div>

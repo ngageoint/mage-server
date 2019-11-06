@@ -28,6 +28,7 @@
 @import "./leaflet-overrides.css";
 
 @import "./admin/index.scss";
+@import "./card/index.scss";
 
 .dropdown-menu {
   margin-top: 56px;
