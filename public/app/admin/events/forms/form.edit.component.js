@@ -35,16 +35,13 @@ class AdminFormEditController {
   }
 
   showError(error) {
-    // TODO make component
     this.$uibModal.open({
-      template: require('./event.edit.form.error.html'),
-      controller: ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
-        $scope. model = error;
-
-        $scope.ok = function() {
-          $uibModalInstance.dismiss();
-        };
-      }]
+      component: 'adminFormEditError',
+      resolve: {
+        model: () => {
+          return error;
+        }
+      }
     });
   }
 

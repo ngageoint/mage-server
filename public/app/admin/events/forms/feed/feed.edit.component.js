@@ -65,7 +65,7 @@ class FormFeedController {
     this.$transitions.onStart({}, transition => { 
       if (this.unSavedChanges) {
         var modalInstance = this.$uibModal.open({
-          template: require('./event.edit.form.unsaved.html')
+          template: require('../event.edit.form.unsaved.html')
         });
   
         modalInstance.result.then(result => {
@@ -232,16 +232,13 @@ class FormFeedController {
   }
 
   showError(error) {
-    // TODO make component
     this.$uibModal.open({
-      template: require('./event.edit.form.error.html'),
-      controller: ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
-        $scope. model = error;
-
-        $scope.ok = function() {
-          $uibModalInstance.dismiss();
-        };
-      }]
+      component: 'adminFormEditError',
+      resolve: {
+        model: () => {
+          return error;
+        }
+      }
     });
   }
 }
@@ -249,6 +246,6 @@ class FormFeedController {
 FormFeedController.$inject = ['$stateParams', '$uibModal', '$transitions', 'LocalStorageService', 'Event', 'Form', 'UserService'];
 
 export default {
-  template: require('./form.feed.edit.html'),
+  template: require('./feed.edit.html'),
   controller: FormFeedController
 };

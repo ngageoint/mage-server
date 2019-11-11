@@ -226,9 +226,6 @@ class AdminEventController {
       this.$state.go('admin.formEdit', { eventId: this.event.id, formId: form.id });
     } else {
       this.$state.go('admin.fieldsCreate', { eventId: this.event.id, form: form });
-      // TODO make sure above state works
-      // $location.search('form', JSON.stringify(form));
-      // $location.path('/admin/events/' + $scope.event.id + '/forms/new/fields');
     }
   }
 

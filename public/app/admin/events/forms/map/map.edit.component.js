@@ -62,7 +62,7 @@ class AdminFormMapEditController {
     this.$transitions.onStart({}, transition => { 
       if (this.unSavedChanges) {
         var modalInstance = this.$uibModal.open({
-          template: require('./event.edit.form.unsaved.html')
+          template: require('../event.edit.form.unsaved.html')
         });
   
         modalInstance.result.then(result => {
@@ -80,32 +80,23 @@ class AdminFormMapEditController {
   }
 
   fetchIcons() {
-    if (!this.$stateParams.formId) {
-      // TODO can you get here with no form id?
-      this.FormIcon.get({eventId: this.$stateParams.eventId}, icon => {
-        this.icons = icon;
-        this.mapIcons();
-      });
-    } else {
-      // TODO do we need to || with new, not sure you can get here with new
-      this.FormIcon.query({eventId: this.$stateParams.eventId, formId: this.$stateParams.formId || 'new'}, formIcons => {
-        _.each(formIcons, icon => {
-          if (icon.primary && icon.variant) {
-            if (!this.icons[icon.primary]) {
-              this.icons[icon.primary] = {};
-            }
-
-            this.icons[icon.primary][icon.variant] = _.extend(this.icons[icon.primary][icon.variant] || {}, icon);
-          } else if (icon.primary) {
-            this.icons[icon.primary] = _.extend(this.icons[icon.primary] || {}, icon);
-          } else {
-            this.icons = icon;
+    this.FormIcon.query({eventId: this.$stateParams.eventId, formId: this.$stateParams.formId}, formIcons => {
+      _.each(formIcons, icon => {
+        if (icon.primary && icon.variant) {
+          if (!this.icons[icon.primary]) {
+            this.icons[icon.primary] = {};
           }
-        });
 
-        this.mapIcons();
+          this.icons[icon.primary][icon.variant] = _.extend(this.icons[icon.primary][icon.variant] || {}, icon);
+        } else if (icon.primary) {
+          this.icons[icon.primary] = _.extend(this.icons[icon.primary] || {}, icon);
+        } else {
+          this.icons = icon;
+        }
       });
-    }
+
+      this.mapIcons();
+    });
   }
 
   mapIcons() {
@@ -313,22 +304,17 @@ class AdminFormMapEditController {
   }
 
   showError(error) {
-    // TODO make component
     this.$uibModal.open({
-      template: require('./event.edit.form.error.html'),
-      controller: ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
-        $scope.model = error;
-
-        $scope.ok = function() {
-          $uibModalInstance.dismiss();
-        };
-      }]
+      component: 'adminFormEditError',
+      resolve: {
+        model: () => {
+          return error;
+        }
+      }
     });
   }
 
   populateVariants() {
-    // TODO account for primary variantField
-
     if (!this.form) return;
 
     this.primaryField = _.find(this.form.fields, field => {
@@ -413,7 +399,7 @@ class AdminFormMapEditController {
 AdminFormMapEditController.$inject = ['$state', '$stateParams', '$filter', '$uibModal', '$transitions', '$timeout', 'LocalStorageService', 'Event', 'Form', 'FormIcon'];
 
 export default {
-  template: require('./form.map.edit.html'),
+  template: require('./map.edit.html'),
   controller: AdminFormMapEditController
 };
 

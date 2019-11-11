@@ -14,8 +14,8 @@
     <div class="container" ng-show="$ctrl.event">
       <div class="row">
         <div class="col-md-12">
-          <h2 ng-if="form.id">Edit form: {{$ctrl.form.name}}</h2>
-          <h2 ng-if="!form.id">New form</h2>
+          <h2 ng-if="$ctrl.form.id">Edit form: {{$ctrl.form.name}}</h2>
+          <h2 ng-if="!$ctrl.form.id">New form</h2>
         </div>
       </div>
 

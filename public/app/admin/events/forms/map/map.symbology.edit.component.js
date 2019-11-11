@@ -37,7 +37,7 @@ class AdminFormMapSymbologyPickerController {
 }
 
 export default {
-  template: require('./form.map.icon.picker.html'),
+  template: require('./map.symbology.edit.html'),
   bindings: {
     resolve: '<',
     modalInstance: '<'

@@ -115,7 +115,7 @@ class AdminFormFieldsEditController {
     this.$transitions.onStart({}, transition => { 
       if (this.unSavedChanges) {
         var modalInstance = this.$uibModal.open({
-          template: require('./event.edit.form.unsaved.html')
+          template: require('../event.edit.form.unsaved.html')
         });
   
         modalInstance.result.then(result => {
@@ -133,15 +133,11 @@ class AdminFormFieldsEditController {
   }
 
   $doCheck() {
-    if (!this.form ) return;
+    if (!this.form) return;
     if (this.saving) return;
 
-    var isFieldArchived = field => { return field.archived; };
-    var removedField = _.filter(this.form.fields, isFieldArchived).length > _.filter(this.previousForm.fields, isFieldArchived).length;
-    var addedField = this.form.fields.length > this.previousForm.fields.length;
     var dirty = _.some(Object.values(this.fieldForms), form => { return form && form.$dirty; });
-
-    if (dirty || removedField || addedField) {
+    if (dirty) {
       this.unSavedChanges = true;
     }
 
@@ -150,7 +146,7 @@ class AdminFormFieldsEditController {
 
   createField() {
     return {
-      title : "New field",
+      title : 'New field',
       type : 'textfield',
       required : false,
       choices: []
@@ -169,7 +165,7 @@ class AdminFormFieldsEditController {
     return this.fieldNameMap[field.type].title;
   }
 
-  addNewField() {
+  addField() {
     if (this.newFieldForm.$invalid) {
       return;
     }
@@ -192,6 +188,17 @@ class AdminFormFieldsEditController {
     fields.push(this.newField);
 
     this.newField = this.createField();
+
+    this.unSavedChanges = true;
+  }
+
+  removeField(id) {
+    var deletedField = _.find(this.form.fields, field => { return id === field.id; });
+    if (deletedField) {
+      deletedField.archived = true;
+    }
+
+    this.unSavedChanges = true;
   }
 
   moveFieldUp(e, fieldToMoveUp) {
@@ -218,6 +225,8 @@ class AdminFormFieldsEditController {
       fieldToMoveDown.id = fieldToMoveUp.id;
       fieldToMoveUp.id = fieldToMoveDownId;
     }
+
+    this.unSavedChanges = true;
   }
 
   moveFieldDown(e, fieldToMoveDown) {
@@ -244,19 +253,18 @@ class AdminFormFieldsEditController {
       fieldToMoveUp.id = fieldToMoveDown.id;
       fieldToMoveDown.id = fieldToMoveUpId;
     }
+
+    this.unSavedChanges = true;
   }
 
   showError(error) {
-    // TODO make component
     this.$uibModal.open({
-      template: require('./event.edit.form.error.html'),
-      controller: ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
-        $scope. model = error;
-
-        $scope.ok = function() {
-          $uibModalInstance.dismiss();
-        };
-      }]
+      component: 'adminFormEditError',
+      resolve: {
+        model: () => {
+          return error;
+        }
+      }
     });
   }
 
@@ -270,35 +278,28 @@ class AdminFormFieldsEditController {
 
     this.formSaved = false;
     this.saving = true;
-    this.debouncedAutoSave();
-  }
 
-  debouncedAutoSave() {
-    _.debounce(() => {
-      this.$timeout(() => {
-        this.form.$save({eventId: this.event.id, id: this.form.id}, () => {
-          _.each(this.form.fields, field => {
-            if (this.isMemberField(field)) {
-              field.choices = [];
-            }
-          });
-  
-          this.saving = false;
-          this.formSaved = true;
-          this.completeSave();
-        }, response => {
-          var data = response.data || {};
-          this.showError({
-            title:  'Error Saving Form',
-            message: data.errors ?
-              "If the problem persists please contact your MAGE administrator for help." :
-              "Please try again later, if the problem persists please contact your MAGE administrator for help.",
-            errors: data.errors
-          });
-          this.saving = false;
-        });
+    this.form.$save({eventId: this.event.id, id: this.form.id}, () => {
+      _.each(this.form.fields, field => {
+        if (this.isMemberField(field)) {
+          field.choices = [];
+        }
       });
-    }, 1000)();
+
+      this.saving = false;
+      this.formSaved = true;
+      this.completeSave();
+    }, response => {
+      var data = response.data || {};
+      this.showError({
+        title:  'Error Saving Form',
+        message: data.errors ?
+          "If the problem persists please contact your MAGE administrator for help." :
+          "Please try again later, if the problem persists please contact your MAGE administrator for help.",
+        errors: data.errors
+      });
+      this.saving = false;
+    });
   }
 
   completeSave() {
@@ -319,13 +320,6 @@ class AdminFormFieldsEditController {
     }
   }
 
-  deleteField(id) {
-    var deletedField = _.find(this.form.fields, field => { return id === field.id; });
-    if (deletedField) {
-      deletedField.archived = true;
-    }
-  }
-
   addOption(field, optionTitle) {
     field.choices = field.choices || new Array();
 
@@ -335,6 +329,8 @@ class AdminFormFieldsEditController {
       title: optionTitle,
       value: field.choices.length
     });
+
+    this.unSavedChanges = true;
   }
 
   deleteOption(field, option) {
@@ -344,43 +340,26 @@ class AdminFormFieldsEditController {
         break;
       }
     }
+
+    this.unSavedChanges = true;
   }
 
   reorderOption(field, option) {
-    // TODO make component
     var modalInstance = this.$uibModal.open({
-      template: require('./event.field.option.reorder.html'),
-      controller: ['$scope', '$uibModalInstance', function ($scope, $uibModalInstance) {
-        $scope.model = {
-          option: option,
-          choices: field.choices.slice()
-        };
-
-        $scope.move = function(choiceIndex) {
-          var optionIndex = _.findIndex($scope.model.choices, function(c) {
-            return c.title === $scope.model.option.title;
-          });
-
-          // Moving down subtract an index
-          if (choiceIndex > optionIndex) {
-            choiceIndex--;
-          }
-
-          $scope.model.choices.splice(choiceIndex, 0, $scope.model.choices.splice(optionIndex, 1)[0]);
-        };
-
-        $scope.done = function() {
-          $uibModalInstance.close($scope.model.choices);
-        };
-
-        $scope.cancel = function () {
-          $uibModalInstance.dismiss('cancel');
-        };
-      }]
+      component: 'adminFormFieldOptionReorder',
+      resolve: {
+        option: () => {
+          return option;
+        },
+        field: () => {
+          return field;
+        }
+      }
     });
 
-    modalInstance.result.then(function (choices) {
+    modalInstance.result.then(choices => {
       field.choices = choices;
+      this.unSavedChanges = true;
     });
   }
 
@@ -406,6 +385,6 @@ class AdminFormFieldsEditController {
 AdminFormFieldsEditController.$inject = ['$state', '$stateParams', '$uibModal', '$timeout', '$transitions', 'LocalStorageService', 'Event', 'Form'];
 
 export default {
-  template: require('./form.fields.edit.html'),
+  template: require('./fields.edit.html'),
   controller: AdminFormFieldsEditController
 };

@@ -46,7 +46,7 @@
           <div class="col-sm-12">
             <div class="admin-table admin-table-content">
               <div class="row">
-                <admin-form-map-symbology-view
+                <admin-event-form-map-symbology
                   title="Default Symbology"
                   style="$ctrl.styleMap.style"
                   icon="$ctrl.iconMap.icon"
@@ -147,7 +147,7 @@
                   </div>
                 </div>
                 <div class="row bottom-gap-l">
-                  <admin-form-map-symbology-view 
+                  <admin-event-form-map-symbology 
                     title="Default"
                     style="$ctrl.styleMap[option.title].style"
                     icon="$ctrl.iconMap[option.title].icon"
@@ -156,7 +156,7 @@
                     on-icon-added="$ctrl.onIconAdded($event)"/>
 
                   <div ng-repeat="variant in $ctrl.variants">
-                    <admin-form-map-symbology-view 
+                    <admin-event-form-map-symbology 
                       title="{{variant.title}}"
                       style="$ctrl.styleMap[option.title][variant.title].style"
                       icon="$ctrl.iconMap[option.title][variant.title].icon"

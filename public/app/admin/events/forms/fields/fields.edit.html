@@ -6,7 +6,8 @@
           <ol class="breadcrumb">
             <li><i class="fa fa-calendar admin-dashboard"></i> <a href="#/admin/events">Events</li></a>
             <li><a ng-href="#/admin/events/{{$ctrl.event.id}}">{{$ctrl.event.name}}</a></li>
-            <li><a ng-href="#/admin/events/{{$ctrl.event.id}}/forms/{{$ctrl.form.id}}">{{$ctrl.form.name}}</a></li>
+            <li ng-if="$ctrl.form.id !== new"><a ng-href="#/admin/events/{{$ctrl.event.id}}/forms/{{$ctrl.form.id}}">{{$ctrl.form.name}}</a></li>
+            <li ng-if="$ctrl.form.id === new" class="active">{{$ctrl.form.name}}</li>
             <li class="active">Fields <span class="text-danger" ng-show="$ctrl.unSavedChanges"> (unsaved changes)</span></li>
           </ol>
         </div>
@@ -24,7 +25,7 @@
           <div ng-if="$ctrl.event">
             <div class="row">
               <div class="col-xs-12">
-                <button class="btn btn-success pull-right" ng-if="($ctrl.unSavedChanges || $ctrl.unSavedUploads) && !$ctrl.saving" ng-click="$ctrl.saveForm($ctrl.event)" ng-disabled="$ctrl.form.fields.$invalid">Save</button>
+                <button class="btn btn-success pull-right" ng-if="($ctrl.unSavedChanges || $ctrl.unSavedUploads) && !$ctrl.saving" ng-click="$ctrl.save($ctrl.event)" ng-disabled="$ctrl.form.fields.$invalid">Save</button>
                 <button class="btn btn-success pull-right" ng-if="!$ctrl.unSavedUploads && !$ctrl.unSavedChanges && !$ctrl.saving" disabled="disabled">Save</button>
                 <button class="btn btn-success pull-right" ng-if="$ctrl.saving" disabled="disabled"><i class="fa fa-spinner fa-spin"></i> Saving</button>
               </div>
@@ -201,7 +202,7 @@
                       </div>
 
                       <!-- remove field-->
-                      <button ng-show="$ctrl.deletableField(field)" class="btn btn-danger pull-right" type="button" ng-click="$ctrl.deleteField(field.id)"><i class="fa fa-trash icon-white"></i> Delete Field</button>
+                      <button ng-show="$ctrl.deletableField(field)" class="btn btn-danger pull-right" type="button" ng-click="$ctrl.removeField(field.id)"><i class="fa fa-trash icon-white"></i> Delete Field</button>
                     </form>
 
                   </div>
@@ -359,7 +360,7 @@
 
                   <hr>
 
-                  <button type="submit" ng-disabled="$ctrl.form.newField.value.$invalid" class="btn btn-primary" ng-click="$ctrl.addNewField()"><i class="fa fa-plus-square-o"></i> Add Field</button>
+                  <button type="submit" ng-disabled="$ctrl.form.newField.value.$invalid" class="btn btn-primary" ng-click="$ctrl.addField()"><i class="fa fa-plus-square-o"></i> Add Field</button>
                 </form>
               </div>
 
@@ -372,7 +373,7 @@
         <div class="container" ng-if="$ctrl.event">
           <div class="row">
             <div class="col-xs-12">
-              <button class="btn btn-success pull-right" ng-if="($ctrl.unSavedChanges || $ctrl.unSavedUploads) && !$ctrl.saving" ng-click="$ctrl.saveForm($ctrl.event)" ng-disabled="$ctrl.form.fields.$invalid">Save</button>
+              <button class="btn btn-success pull-right" ng-if="($ctrl.unSavedChanges || $ctrl.unSavedUploads) && !$ctrl.saving" ng-click="$ctrl.save($ctrl.event)" ng-disabled="$ctrl.form.fields.$invalid">Save</button>
               <button class="btn btn-success pull-right" ng-if="!$ctrl.unSavedUploads && !$ctrl.unSavedChanges && !$ctrl.saving" disabled="disabled">Save</button>
               <button class="btn btn-success pull-right" ng-if="$ctrl.saving" disabled="disabled"><i class="fa fa-spinner fa-spin"></i> Saving</button>
             </div>

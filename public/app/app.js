@@ -218,7 +218,7 @@ function config($provide, $httpProvider, $stateProvider, $urlRouterProvider,  $a
 
   $stateProvider.state('admin.fieldsCreate', {
     url: '/events/:eventId/forms/new',
-    component: "adminFieldsEdit",
+    component: "adminFormFieldsEdit",
     params: {
       form: null
     },

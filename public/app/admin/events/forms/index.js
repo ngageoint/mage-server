@@ -3,19 +3,14 @@ import angular from 'angular';
 import adminFormPreview from './form.preview.component';
 import adminFormCreate from './form.create.component';
 import adminFormEdit from './form.edit.component';
-import adminFormFieldsEdit from './form.fields.edit.component';
-import adminFormMapEdit from './form.map.edit.component';
-import adminFormFeedEdit from './form.feed.edit.component';
-import adminFormMapIconPicker from './form.map.icon.picker.component';
-import adminFormMapSymbologyView from './style.component';
+import adminFormEditError from './form.edit.error.component';
 
 angular.module('mage')
-  .directive('stylePreview', require('./style-preview.directive'))
   .component('adminFormPreview', adminFormPreview)
   .component('adminFormEdit', adminFormEdit)
-  .component('adminFormFeedEdit', adminFormFeedEdit)
-  .component('adminFormFieldsEdit', adminFormFieldsEdit)
-  .component('adminFormMapEdit', adminFormMapEdit)
-  .component('adminFormMapSymbologyView', adminFormMapSymbologyView)
-  .component('formMapIconPicker', adminFormMapIconPicker)
-  .component('formCreate', adminFormCreate);
+  .component('formCreate', adminFormCreate)
+  .component('adminFormEditError', adminFormEditError);
+
+import './map/index.js';
+import './feed/index.js';
+import './fields/index.js';

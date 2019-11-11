@@ -10,7 +10,6 @@ angular.module('mage')
   .component('adminEvents', adminEvents)
   .component('adminEventEdit', adminEventEdit)
   .component('adminEventDelete', adminEventDelete)
-  .component('adminEventAccess', adminEventAccess)
-  .filter('events', require('./events.filter'));
+  .component('adminEventAccess', adminEventAccess);
 
 import './forms/index.js';

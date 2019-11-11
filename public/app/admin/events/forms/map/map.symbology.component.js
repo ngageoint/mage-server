@@ -14,7 +14,7 @@ class MapStyleController {
 
   updateSymbology() {
     var modalInstance = this.$uibModal.open({
-      component: 'formMapIconPicker',
+      component: 'adminEventFormMapSymbologyEdit',
       size: 'lg',
       resolve: {
         icon: () => {
@@ -41,11 +41,7 @@ class MapStyleController {
         }
       });
 
-      this.style.fill = result.style.fill;
-      this.style.stroke = result.style.stroke;
-      this.style.fillOpacity = result.style.fillOpacity;
-      this.style.strokeOpacity = result.style.strokeOpacity;
-      this.style.strokeWidth = result.style.strokeWidth;
+      this.style = result.style;
 
       if (result.file) {
         var reader = new FileReader();
@@ -75,7 +71,7 @@ class MapStyleController {
 MapStyleController.$inject = ['$uibModal', '$timeout'];
 
 export default {
-  template: require('./style.component.html'),
+  template: require('./map.symbology.html'),
   bindings: {
     title: '@',
     primary: '@',
