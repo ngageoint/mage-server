@@ -243,11 +243,11 @@ function config($provide, $httpProvider, $stateProvider, $urlRouterProvider,  $a
     resolve: resolveAdmin()
   });
 
-  // $routeProvider.when('/admin/events/:eventId/forms/:formId/feed', {
-  //   template: require('./admin/events/event.edit.form.feed.html'),
-  //   controller: "AdminEventEditFormFeedController",
-  //   resolve: resolveAdmin()
-  // });
+  $stateProvider.state('admin.formFeedEdit', {
+    url: '/events/:eventId/forms/:formId/feed',
+    component: "adminFormFeedEdit",
+    resolve: resolveAdmin()
+  });
 
   // Admin device routes
   $stateProvider.state('admin.devices', {
