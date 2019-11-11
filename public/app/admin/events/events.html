@@ -1,5 +1,4 @@
-<div class="admin">
-  <div admin-tab="'events'"></div>
+<div>
 
   <div class="admin-main">
     <div class="admin-nav-gap">
@@ -10,78 +9,76 @@
       </div>
     </div>
 
-    <div class="admin-content">
-      <div class="container">
+    <div class="container">
 
-        <div class="row">
-          <div class="col-md-3">
-            <ul class="nav nav-pills nav-stacked">
-              <li ng-click="page = 0; filter='active'" ng-class="{active: filter=='active'}"><a href="javascript:void(0);">Active <span class="badge pull-right">{{(filteredEvents | filter:{complete: '!true'}).length}}</span></a></li>
-              <li ng-click="page = 0; filter='complete'" ng-class="{active: filter=='complete'}"><a href="javascript:void(0);">Complete <span class="badge pull-right">{{(filteredEvents | filter:{complete: true}).length}}</span></a></li>
-              <li ng-click="page = 0; filter='all'" ng-class="{active: filter=='all'}"><a href="javascript:void(0);">All <span class="badge pull-right">{{filteredEvents.length}}</span></a></li>
-            </ul>
+      <div class="row">
+        <div class="col-md-3">
+          <ul class="nav nav-pills nav-stacked">
+            <li ng-click="$ctrl.page = 0; $ctrl.filter='active'" ng-class="{active: $ctrl.filter=='active'}"><a href="javascript:void(0);">Active <span class="badge pull-right">{{($ctrl.filteredEvents | filter:{complete: '!true'}).length}}</span></a></li>
+            <li ng-click="$ctrl.page = 0; $ctrl.filter='complete'" ng-class="{active: $ctrl.filter=='complete'}"><a href="javascript:void(0);">Complete <span class="badge pull-right">{{($ctrl.filteredEvents | filter:{complete: true}).length}}</span></a></li>
+            <li ng-click="$ctrl.page = 0; $ctrl.filter='all'" ng-class="{active: $ctrl.filter=='all'}"><a href="javascript:void(0);">All <span class="badge pull-right">{{$ctrl.filteredEvents.length}}</span></a></li>
+          </ul>
 
-            <hr>
-            <form class="form">
-              <div class="top-gap">
-                <label>Search</label>
-                <input type="text" class="form-control" placeholder="event name, description" ng-model="eventSearch" ng-change="page=0">
+          <hr>
+          <form class="form">
+            <div class="top-gap">
+              <label>Search</label>
+              <input type="text" class="form-control" placeholder="event name, description" ng-model="$ctrl.eventSearch" ng-change="page=0">
+            </div>
+          </form>
+          <hr>
+
+          <button class="btn btn-default pull-right" ng-click="$ctrl.reset()">Reset</button>
+        </div>
+
+        <div class="col-md-9">
+          <nav class="navbar navbar-default admin-dashboard-navbar">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <a class="navbar-brand">Events</a>
               </div>
-            </form>
-            <hr>
 
-            <button class="btn btn-default pull-right" ng-click="reset()">Reset</button>
-          </div>
+              <form class="navbar-form navbar-right" role="search">
+                <button type="submit" class="btn btn-default" ng-click="$ctrl.newEvent()">New Event</button>
+              </form>
+            </div>
+          </nav>
 
-          <div class="col-md-9">
-            <nav class="navbar navbar-default admin-dashboard-navbar">
-              <div class="container-fluid">
-                <div class="navbar-header">
-                  <a class="navbar-brand">Events</a>
-                </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div class="admin-table">
+                <div class="well-item"
+                    ng-repeat="e in ($ctrl.filteredEvents = ($ctrl.events | filter:$ctrl.filterEvents)) | filter:$ctrl.filterComplete | orderBy:'name' | offset: $ctrl.page*$ctrl.itemsPerPage | limitTo:$ctrl.itemsPerPage" >
 
-                <form class="navbar-form navbar-right" role="search">
-                  <button type="submit" class="btn btn-default" ng-click="newEvent()">New Event</button>
-                </form>
-              </div>
-            </nav>
-
-            <div class="row">
-              <div class="col-md-12">
-                <div class="admin-table">
-                  <div class="well-item"
-                      ng-repeat="e in (filteredEvents = (events | filter:filterEvents)) | filter:filterComplete | orderBy:'name' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
-
-                      <div class="row pointer" ng-click="gotoEvent(e)">
-                        <div class="col-md-8">
-                          <div class="right-gap pull-left">
-                            <i class="fa fa-calendar admin-layer-icon"></i>
-                          </div>
-                          <div class="strong">{{e.name}}</div>
-                          <div class="muted">{{e.description}}</div>
+                    <div class="row pointer" ng-click="$ctrl.gotoEvent(e)">
+                      <div class="col-md-8">
+                        <div class="right-gap pull-left">
+                          <i class="fa fa-calendar admin-layer-icon"></i>
                         </div>
-                        <div class="col-md-4">
-                          <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-if="hasDeletePermission(e)" ng-click="deleteEvent($event, e)">Delete</button>
-                          <button class="btn btn-sm btn-default pull-right" ng-if="hasUpdatePermission(e)" ng-click="editEvent($event, e)">Edit</button>
-                        </div>
+                        <div class="strong">{{e.name}}</div>
+                        <div class="muted">{{e.description}}</div>
                       </div>
+                      <div class="col-md-4">
+                        <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-if="$ctrl.hasDeletePermission(e)" ng-click="$ctrl.deleteEvent($event, e)">Delete</button>
+                        <button class="btn btn-sm btn-default pull-right" ng-if="$ctrl.hasUpdatePermission(e)" ng-click="$ctrl.editEvent($event, e)">Edit</button>
+                      </div>
+                    </div>
 
-                  </div>
                 </div>
-                <div class="row">
-                  <div class="col-md-12">
-                    <ul class="pager pull-right">
-                      <li ng-class="{'disabled': page == 0}">
-                        <a href="javascript:void(0);" ng-click="page == 0 || (page=page-1)">&larr; Previous</a>
-                      </li>
-                      <li ng-class="{'disabled': page >= (filteredEvents.length/itemsPerPage) - 1}">
-                        <a href="javascript:void(0);" ng-click="page >= (filteredEvents.length/itemsPerPage) - 1 || (page=page+1)">Next&rarr;</a>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
               </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <ul class="pager pull-right">
+                    <li ng-class="{'disabled': $ctrl.page == 0}">
+                      <a href="javascript:void(0);" ng-click="$ctrl.page == 0 || ($ctrl.page=$ctrl.page-1)">&larr; Previous</a>
+                    </li>
+                    <li ng-class="{'disabled': $ctrl.page >= ($ctrl.filteredEvents.length/$ctrl.itemsPerPage) - 1}">
+                      <a href="javascript:void(0);" ng-click="$ctrl.page >= ($ctrl.filteredEvents.length/$ctrl.itemsPerPage) - 1 || ($ctrl.page=$ctrl.page+1)">Next&rarr;</a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>

@@ -1,4 +1,80 @@
-module.exports = {
+import angular from 'angular';
+
+class MapStyleController {
+  constructor($uibModal, $timeout) {
+    this.$uibModal = $uibModal;
+    this.$timeout = $timeout;
+  }
+
+  $onChanges(changes) {
+    if (changes.style) {
+      this.style = angular.copy(this.style);
+    }
+  }
+
+  updateSymbology() {
+    var modalInstance = this.$uibModal.open({
+      component: 'formMapIconPicker',
+      size: 'lg',
+      resolve: {
+        icon: () => {
+          return this.icon;
+        },
+        style: () => {
+          return this.style;
+        },
+        primary: () => {
+          return this.primary;
+        },
+        variant: () => {
+          this.variant;
+        }
+      },
+    });
+
+    modalInstance.result.then(result => {
+      this.onStyleChanged({
+        $event: {
+          style: result.style,
+          primary: this.primary,
+          variant: this.variant
+        }
+      });
+
+      this.style.fill = result.style.fill;
+      this.style.stroke = result.style.stroke;
+      this.style.fillOpacity = result.style.fillOpacity;
+      this.style.strokeOpacity = result.style.strokeOpacity;
+      this.style.strokeWidth = result.style.strokeWidth;
+
+      if (result.file) {
+        var reader = new FileReader();
+
+        reader.onload = (() => {
+          return e => {
+            this.$timeout(() => {
+              this.icon = e.target.result;
+              this.onIconAdded({
+                $event: {
+                  icon: e.target.result,
+                  file: result.file,
+                  primary: this.primary,
+                  variant: this.variant
+                }
+              });
+            });
+          };
+        })(result.file);
+
+        reader.readAsDataURL(result.file);
+      }
+    });
+  }
+}
+
+MapStyleController.$inject = ['$uibModal', '$timeout'];
+
+export default {
   template: require('./style.component.html'),
   bindings: {
     title: '@',
@@ -9,96 +85,5 @@ module.exports = {
     onStyleChanged: '&',
     onIconAdded: '&'
   },
-  controller: StyleController
+  controller: MapStyleController
 };
-
-var angular = require('angular');
-
-StyleController.$inject = ['$rootScope', '$uibModal'];
-
-function StyleController($rootScope, $uibModal) {
-
-  this.$onChanges = function(changes) {
-    if (changes.style) {
-      this.style = angular.copy(this.style);
-    }
-  };
-
-  var self = this;
-  this.updateSymbology = function() {
-    var modalInstance = $uibModal.open({
-      template: require('./event.symbology.chooser.html'),
-      size: 'lg',
-      controllerAs: 'vm',
-      controller: ['$uibModalInstance', function ($uibModalInstance) {
-        var fileToUpload;
-
-        this.icon = self.icon;
-        this.style = self.style;
-        this.primary = self.primary;
-        this.variant = self.variant;
-
-        this.minicolorSettings = {
-          position: 'bottom left'
-        };
-
-        $rootScope.$on('uploadFile', function(e, uploadId, file) {
-          fileToUpload = file;
-        });
-
-        this.done = function(styleForm) {
-          styleForm.$submitted = true;
-          if (styleForm.$invalid) {
-            return;
-          }
-
-          $uibModalInstance.close({
-            style: self.style,
-            file: fileToUpload,
-          });
-        };
-
-        this.cancel = function () {
-          $uibModalInstance.dismiss({reason:'cancel'});
-        };
-      }]
-    });
-
-    modalInstance.result.then(function (result) {
-      self.onStyleChanged({
-        $event: {
-          style: result.style,
-          primary: self.primary,
-          variant: self.variant
-        }
-      });
-
-      self.style.fill = result.style.fill;
-      self.style.stroke = result.style.stroke;
-      self.style.fillOpacity = result.style.fillOpacity;
-      self.style.strokeOpacity = result.style.strokeOpacity;
-      self.style.strokeWidth = result.style.strokeWidth;
-
-      if (result.file) {
-        var reader = new FileReader();
-
-        reader.onload = (function() {
-          return function(e) {
-            self.icon = e.target.result;
-            self.onIconAdded({
-              $event: {
-                icon: e.target.result,
-                file: result.file,
-                primary: self.primary,
-                variant: self.variant
-              }
-            });
-            $rootScope.$apply();
-          };
-        })(result.file);
-
-        reader.readAsDataURL(result.file);
-      }
-    });
-  };
-}

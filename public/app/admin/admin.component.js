@@ -39,7 +39,7 @@ class AdminController {
   }
 
   onTabChanged($event) {
-    this.$state.go($event.state);
+    // this.$state.go($event.state);
   }
 
   userActivated($event) {

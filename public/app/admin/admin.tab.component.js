@@ -1,7 +1,8 @@
 import _ from 'underscore';
 
 class AdminTabController {
-  constructor(UserService) {
+  constructor($state, UserService) {
+    this.$state = $state;
     this.UserService = UserService;
   }
 
@@ -10,17 +11,11 @@ class AdminTabController {
   }
 
   tabChanged(state) {
-    this.state = state;
-    
-    this.onTabChanged({
-      $event: {
-        state: state
-      }
-    });
+    this.$state.go(state);
   }
 }
 
-AdminTabController.$inject = ['UserService'];
+AdminTabController.$inject = ['$state', 'UserService'];
 
 export default {
   template: require('./admin.tab.html'),
@@ -28,8 +23,7 @@ export default {
   bindings: {
     state: '@',
     inactiveUsers: '<',
-    unregisteredDevices: '<',
-    onTabChanged: '&'
+    unregisteredDevices: '<'
   }
 };
 

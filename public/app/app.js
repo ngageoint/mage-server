@@ -185,52 +185,64 @@ function config($provide, $httpProvider, $stateProvider, $urlRouterProvider,  $a
     resolve: resolveAdmin()
   });
 
-  // // Admin event routes
-  // $routeProvider.when('/admin/events', {
-  //   template: require('./admin/events/events.html'),
-  //   controller: "AdminEventsController",
-  //   resolve: resolveAdmin()
-  // });
-  // $routeProvider.when('/admin/events/new', {
-  //   template: require('./admin/events/event.edit.html'),
-  //   controller: "AdminEventEditController",
-  //   resolve: resolveAdmin()
-  // });
-  // $routeProvider.when('/admin/events/:eventId', {
-  //   template: require('./admin/events/event.html'),
-  //   controller: "AdminEventController",
-  //   resolve: resolveAdmin()
-  // });
-  // $routeProvider.when('/admin/events/:eventId/edit', {
-  //   template: require('./admin/events/event.edit.html'),
-  //   controller: "AdminEventEditController",
-  //   resolve: resolveAdmin()
-  // });
-  // $routeProvider.when('/admin/events/:eventId/access', {
-  //   template: require('./admin/events/event.access.html'),
-  //   controller: "AdminEventAccessController",
-  //   resolve: resolveAdmin()
-  // });
-  // $routeProvider.when('/admin/events/:eventId/forms/new', {
-  //   template: require('./admin/events/event.edit.form.html'),
-  //   controller: "AdminEventEditFormController",
-  //   resolve: resolveAdmin()
-  // });
-  // $routeProvider.when('/admin/events/:eventId/forms/:formId', {
-  //   template: require('./admin/events/event.edit.form.html'),
-  //   controller: "AdminEventEditFormController",
-  //   resolve: resolveAdmin()
-  // });
-  // $routeProvider.when('/admin/events/:eventId/forms/:formId/fields', {
-  //   template: require('./admin/events/event.edit.form.fields.html'),
-  //   controller: "AdminEventEditFormFieldsController",
-  //   resolve: resolveAdmin()
-  // });
-  // $routeProvider.when('/admin/events/:eventId/forms/:formId/map', {
-  //   template: require('./admin/events/event.edit.form.map-symbology.html'),
-  //   controller: "AdminEventEditFormMapSymbologyController",
-  //   resolve: resolveAdmin()
-  // });
+  // Admin event routes
+  $stateProvider.state('admin.events', {
+    url: '/events',
+    component: "adminEvents",
+    resolve: resolveAdmin()
+  });
+
+  $stateProvider.state('admin.eventCreate', {
+    url: '/events/new',
+    component: "adminEventEdit",
+    resolve: resolveAdmin()
+  });
+
+  $stateProvider.state('admin.event', {
+    url: '/events/:eventId',
+    component: "adminEvent",
+    resolve: resolveAdmin()
+  });
+
+  $stateProvider.state('admin.eventEdit', {
+    url: '/events/:eventId/edit',
+    component: "adminEventEdit",
+    resolve: resolveAdmin()
+  });
+
+  $stateProvider.state('admin.eventAccess', {
+    url: '/events/:eventId/access',
+    component: "adminEventAccess",
+    resolve: resolveAdmin()
+  });
+
+  $stateProvider.state('admin.fieldsCreate', {
+    url: '/events/:eventId/forms/new',
+    component: "adminFieldsEdit",
+    params: {
+      form: null
+    },
+    resolve: resolveAdmin()
+  });
+
+  $stateProvider.state('admin.formEdit', {
+    url: '/events/:eventId/forms/:formId',
+    component: "adminFormEdit",
+    resolve: resolveAdmin()
+  });
+
+  $stateProvider.state('admin.formFieldsEdit', {
+    url: '/events/:eventId/forms/:formId/fields',
+    component: "adminFormFieldsEdit",
+    resolve: resolveAdmin()
+  });
+
+  $stateProvider.state('admin.formMapEdit', {
+    url: '/events/:eventId/forms/:formId/map',
+    component: "adminFormMapEdit",
+    resolve: resolveAdmin()
+  });
+
   // $routeProvider.when('/admin/events/:eventId/forms/:formId/feed', {
   //   template: require('./admin/events/event.edit.form.feed.html'),
   //   controller: "AdminEventEditFormFeedController",

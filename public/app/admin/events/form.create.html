@@ -31,8 +31,7 @@ aria-describedby="my-dialog-content">
               <div class="top-gap" ng-class="{'has-error': $ctrl.generalForm.$submitted && $ctrl.generalForm.color.$invalid}">
                 <p class="help-block">If you would like to create this form based on a previously archived MAGE form please upload it here.</p>
                 <label class="control-label">Form (optional)</label>
-                <!-- TODO fix me-->
-                <!-- <div file-browser on-file-chosen="$ctrl.formFilePicked(file)"></div> -->
+                <file-browser on-file-chosen="$ctrl.formFilePicked($event)"></file-browser>
               </div>
             </form>
           </div>

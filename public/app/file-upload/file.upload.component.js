@@ -42,6 +42,11 @@ class FileUploadController {
     if (changes.allowUpload.currentValue === true) {
       this.upload();
     }
+
+    if (changes.url.currentValue !== this.url) {
+      this.uploadImageMissing = false;
+      this.$element.find('.preview').html(['<img class="preview-image" src="', this.icon || this.url, '"/>'].join(''));
+    }
   }
 
   onFile(file) {
@@ -171,17 +176,3 @@ export default {
   },
   controller: FileUploadController
 };
-
-// TODO
-// $scope.$watch('url', function(url) {
-//   if (!url) return;
-
-//   $scope.uploadImageMissing = false;
-//   $element.find('.preview').html(['<img class="preview-image" src="', $scope.icon || $scope.url, '"/>'].join(''));
-// });
-
-// $scope.$watch('allowUpload', function(newValue, old) {
-//   if (newValue && old !== newValue) {
-//     upload();
-//   }
-// });
