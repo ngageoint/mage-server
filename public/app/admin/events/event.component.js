@@ -262,7 +262,7 @@ class AdminEventController {
           return form;
         }
       },
-      component: "formPreview"
+      component: "adminEventFormPreview"
     });
   }
 

@@ -8,11 +8,17 @@ module.exports = {
   controller: NavbarController
 };
 
-NavbarController.$inject = ['$element', '$location', 'UserService'];
+NavbarController.$inject = ['$element', '$state', '$transitions', 'UserService'];
 
-function NavbarController($element, $location, UserService) {
+function NavbarController($element, $state, $transitions, UserService) {
   var pollingMenu;
-  this.location = $location;
+
+  this.$onInit = function() {
+    this.state = $state.current.name;
+    $transitions.onBefore({}, transition => { 
+      this.state = transition.to().name;
+    });
+  };
 
   this.$postLink = function() {
   };

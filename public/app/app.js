@@ -1,5 +1,6 @@
 import _ from 'underscore';
 import angular from 'angular';
+import mage from './mage/mage.component';
 import about from './about/about.component';
 import fileUpload from './file-upload/file.upload.component';
 import fileBrowser from './file-upload/file.browser.component';
@@ -19,9 +20,9 @@ angular
   .component('about', about)
   .component('fileUpload', fileUpload)
   .component('fileBrowser', fileBrowser)
+  .component('mage', mage)
   .controller('NavController', require('./mage/mage-nav.controller'))
   .controller('NotInEventController', require('./error/not.in.event.controller'))
-  .controller('MageController', require('./mage/mage.controller'))
   .directive('fileUploadGrid', require('./file-upload/file-upload-grid.directive'))
   .animation('.slide-down', function() {
     return {
@@ -46,9 +47,9 @@ require('./user');
 require('./admin');
 require('./material-components');
 
-config.$inject = ['$provide', '$httpProvider', '$stateProvider', '$urlRouterProvider', '$animateProvider'];
+config.$inject = ['$httpProvider', '$stateProvider', '$urlRouterProvider', '$animateProvider'];
 
-function config($provide, $httpProvider, $stateProvider, $urlRouterProvider,  $animateProvider) {
+function config($httpProvider, $stateProvider, $urlRouterProvider,  $animateProvider) {
   $httpProvider.defaults.withCredentials = true;
   $httpProvider.defaults.headers.post  = {'Content-Type': 'application/x-www-form-urlencoded'};
 
@@ -106,11 +107,12 @@ function config($provide, $httpProvider, $stateProvider, $urlRouterProvider,  $a
     }
   });
 
-  // $routeProvider.when('/map', {
-  //   template: require('./mage/mage.html'),
-  //   controller: "MageController",
-  //   resolve: resolveLogin()
-  // });
+  $stateProvider.state('map', {
+    // template: require('./mage/mage.html'),
+    url: '/map',
+    component: "mage",
+    resolve: resolveLogin()
+  });
 
   $stateProvider.state('admin', {
     redirectTo: 'admin.dashboard',
@@ -218,7 +220,7 @@ function config($provide, $httpProvider, $stateProvider, $urlRouterProvider,  $a
 
   $stateProvider.state('admin.fieldsCreate', {
     url: '/events/:eventId/forms/new',
-    component: "adminFormFieldsEdit",
+    component: "adminEventFormFieldsEdit",
     params: {
       form: null
     },
@@ -227,25 +229,25 @@ function config($provide, $httpProvider, $stateProvider, $urlRouterProvider,  $a
 
   $stateProvider.state('admin.formEdit', {
     url: '/events/:eventId/forms/:formId',
-    component: "adminFormEdit",
+    component: "adminEventFormEdit",
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.formFieldsEdit', {
     url: '/events/:eventId/forms/:formId/fields',
-    component: "adminFormFieldsEdit",
+    component: "adminEventFormFieldsEdit",
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.formMapEdit', {
     url: '/events/:eventId/forms/:formId/map',
-    component: "adminFormMapEdit",
+    component: "adminEventFormMapEdit",
     resolve: resolveAdmin()
   });
 
   $stateProvider.state('admin.formFeedEdit', {
     url: '/events/:eventId/forms/:formId/feed',
-    component: "adminFormFeedEdit",
+    component: "adminEventFormFeedEdit",
     resolve: resolveAdmin()
   });
 
@@ -319,15 +321,15 @@ function config($provide, $httpProvider, $stateProvider, $urlRouterProvider,  $a
   });
 }
 
-run.$inject = ['$rootScope', '$route', '$uibModal', '$templateCache', 'UserService', '$location', 'authService', 'LocalStorageService', 'Api'];
+run.$inject = ['$rootScope', '$uibModal', '$templateCache', '$state', 'Api'];
 
-function run($rootScope, $route, $uibModal, $templateCache, UserService, $location, authService, LocalStorageService, Api) {
+function run($rootScope, $uibModal, $templateCache, $state, Api) {
   $templateCache.put("observation/observation-important.html", require("./observation/observation-important.html"));
 
   $rootScope.$on('event:auth-loginRequired', function(e, response) {
-    var pathExceptions = ['/', '/signin', '/signup', '/setup', '/authorize'];
+    var stateExceptions = ['landing'];
     var requestExceptions = ['/api/users/myself/password'];
-    if (!$rootScope.loginDialogPresented && !_(pathExceptions).contains($location.path()) && !_(requestExceptions).contains(response.config.url)) {
+    if (!$rootScope.loginDialogPresented && !_(stateExceptions).contains($state.current.name) && !_(requestExceptions).contains(response.config.url)) {
       $rootScope.loginDialogPresented = true;
       Api.get(function(api) {
         var successful = false;

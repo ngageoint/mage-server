@@ -1,9 +1,9 @@
 <div class="admin">
-  <form-create ng-show="$ctrl.formCreateOpen" 
+  <admin-event-form-create 
+    ng-show="$ctrl.formCreateOpen" 
     open="$ctrl.formCreateOpen" 
     on-form-create-close="$ctrl.onFormCreateClose(form)" 
-    event="$ctrl.event">
-  </form-create>
+    event="$ctrl.event"/>
 
   <div class="admin-main">
     <div class="admin-nav-gap">

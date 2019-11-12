@@ -62,14 +62,12 @@ class AdminFormMapEditController {
     this.$transitions.onStart({}, transition => { 
       if (this.unSavedChanges) {
         var modalInstance = this.$uibModal.open({
-          template: require('../event.edit.form.unsaved.html')
+          component: 'adminEventFormEditUnsaved'
         });
   
-        modalInstance.result.then(result => {
-          if (result === 'ok') {
-            this.unSavedChanges = false;
-            this.$state.go(transition.to());
-          }
+        modalInstance.result.then(() => {
+          this.unSavedChanges = false;
+          transition.run();
         });
 
         return false;
@@ -305,7 +303,7 @@ class AdminFormMapEditController {
 
   showError(error) {
     this.$uibModal.open({
-      component: 'adminFormEditError',
+      component: 'adminEventFormEditError',
       resolve: {
         model: () => {
           return error;

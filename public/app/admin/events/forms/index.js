@@ -1,15 +1,17 @@
 import angular from 'angular';
 
-import adminFormPreview from './form.preview.component';
-import adminFormCreate from './form.create.component';
-import adminFormEdit from './form.edit.component';
-import adminFormEditError from './form.edit.error.component';
+import formPreview from './form.preview.component';
+import formCreate from './form.create.component';
+import formEdit from './form.edit.component';
+import formEditError from './form.edit.error.component';
+import formEditUnsaved from './form.edit.unsaved.component';
 
 angular.module('mage')
-  .component('adminFormPreview', adminFormPreview)
-  .component('adminFormEdit', adminFormEdit)
-  .component('formCreate', adminFormCreate)
-  .component('adminFormEditError', adminFormEditError);
+  .component('adminEventFormPreview', formPreview)
+  .component('adminEventFormEdit', formEdit)
+  .component('adminEventFormCreate', formCreate)
+  .component('adminEventFormEditError', formEditError)
+  .component('adminEventFormEditUnsaved', formEditUnsaved);
 
 import './map/index.js';
 import './feed/index.js';

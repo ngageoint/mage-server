@@ -1,24 +1,25 @@
 <div class="filter-banner hidden-xs">
   <div class="filter-text">
     <div class="col-xs-12 text-center">
-      <span class="filter-event">{{filteredEvent.name}}</span>
-      <span ng-if="filteredTeams" class="filter-teams"><span> > {{filteredTeams}}</span></span>
-      <span ng-if="filteredInterval" class="filter-interval"> {{filteredInterval}}</span>
+      <span class="filter-event">{{$ctrl.filteredEvent.name}}</span>
+      <span ng-if="$ctrl.filteredTeams" class="filter-teams"><span> > {{$ctrl.filteredTeams}}</span></span>
+      <span ng-if="$ctrl.filteredInterval" class="filter-interval"> {{$ctrl.filteredInterval}}</span>
     </div>
   </div>
 </div>
 
 <div class="main-container">
 
-  <div class="feed ng-animatable" ng-hide="hideFeed"
+  <div class="feed ng-animatable" 
+    ng-hide="$ctrl.hideFeed"
     news-feed
-    event="filteredEvent"
-    feed-observations-changed="feedChangedObservations"
-    feed-users-changed="feedChangedUsers">
+    event="$ctrl.filteredEvent"
+    feed-observations-changed="$ctrl.feedChangedObservations"
+    feed-users-changed="$ctrl.feedChangedUsers">
   </div>
 
   <div class="map">
-    <div leaflet on-observation-create="onObservationCreate(latlng)"></div>
+    <div leaflet on-observation-create="$ctrl.onObservationCreate(latlng)"></div>
   </div>
 
 </div>

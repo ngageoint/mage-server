@@ -3,9 +3,9 @@ var _ = require('underscore')
 
 module.exports = UserService;
 
-UserService.$inject = ['$rootScope', '$q', '$http', '$location', '$window', 'LocalStorageService'];
+UserService.$inject = ['$rootScope', '$q', '$http', '$location', '$state', '$window', 'LocalStorageService'];
 
-function UserService($rootScope, $q, $http, $location, $window, LocalStorageService) {
+function UserService($rootScope, $q, $http, $location, $state, $window, LocalStorageService) {
 
   var service = {
     myself: null,
@@ -166,7 +166,7 @@ function UserService($rootScope, $q, $http, $location, $window, LocalStorageServ
 
     promise.success(function() {
       clearUser();
-      $location.path("/signin");
+      $state.go("landing");
     });
 
     return promise;

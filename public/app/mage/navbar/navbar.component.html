@@ -6,7 +6,7 @@
         <span class="mdc-top-app-bar__title"><i class="icon-magic icon-brand app-bar-brand-icon"></i>MAGE</span>
       </button>
     </section>
-    <section class="mdc-top-app-bar__section map-app-bar-section" ng-if="$ctrl.location.path() === '/map'" ng-cloak>
+    <section class="mdc-top-app-bar__section map-app-bar-section" ng-if="$ctrl.state === 'map'" ng-cloak>
       <filter-button></filter-button>
       <polling-button></polling-button>
       <preferences-button></preferences-button>

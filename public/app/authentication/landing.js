@@ -1,15 +1,15 @@
 class LandingController {
 
-  constructor($location) {
-    this._$location = $location;
+  constructor($state) {
+    this.$state = $state;
   }
 
   onSuccess() {
-    this._$location.path('/map');
+    this.$state.go('map');
   }
 }
 
-LandingController.$inject = ['$location'];
+LandingController.$inject = ['$state'];
 
 export default {
   template: require('./landing.html'),

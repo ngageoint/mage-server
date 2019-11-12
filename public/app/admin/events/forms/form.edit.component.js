@@ -36,7 +36,7 @@ class AdminFormEditController {
 
   showError(error) {
     this.$uibModal.open({
-      component: 'adminFormEditError',
+      component: 'adminEventFormEditError',
       resolve: {
         model: () => {
           return error;

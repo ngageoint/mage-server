@@ -1,10 +1,10 @@
 module.exports = UserResetPasswordController;
 
-UserResetPasswordController.$inject =  ['$scope', '$timeout', '$location', 'Api', 'UserService', 'user'];
+UserResetPasswordController.$inject =  ['$scope', '$timeout', '$state', 'Api', 'UserService', 'user'];
 
-function UserResetPasswordController($scope, $timeout, $location, Api, UserService, user) {
+function UserResetPasswordController($scope, $timeout, $state, Api, UserService, user) {
   if (!user) {
-    $location.path('/signin');
+    $state.go('landing');
   }
 
   $scope.user = user;
@@ -37,7 +37,7 @@ function UserResetPasswordController($scope, $timeout, $location, Api, UserServi
       $scope.statusLevel = 'alert-success';
 
       $timeout(function() {
-        $location.path('/signin');
+        $state.go('landing');
       }, 3000);
     }).error(function() {
       $scope.showStatus = true;

@@ -12,7 +12,6 @@ class AdminFormFieldsEditController {
     this.Form = Form;
 
     this.unSavedChanges = false;
-    this.unSavedUploads = false;
     this.token = LocalStorageService.getToken();
   
     this.fieldForms = {};
@@ -115,14 +114,12 @@ class AdminFormFieldsEditController {
     this.$transitions.onStart({}, transition => { 
       if (this.unSavedChanges) {
         var modalInstance = this.$uibModal.open({
-          template: require('../event.edit.form.unsaved.html')
+          component: 'adminEventFormEditUnsaved'
         });
   
-        modalInstance.result.then(result => {
-          if (result === 'ok') {
-            this.unSavedChanges = false;
-            this.$state.go(transition.to());
-          }
+        modalInstance.result.then(() => {
+          this.unSavedChanges = false;
+          transition.run();
         });
 
         return false;
@@ -259,7 +256,7 @@ class AdminFormFieldsEditController {
 
   showError(error) {
     this.$uibModal.open({
-      component: 'adminFormEditError',
+      component: 'adminEventFormEditError',
       resolve: {
         model: () => {
           return error;
@@ -346,7 +343,7 @@ class AdminFormFieldsEditController {
 
   reorderOption(field, option) {
     var modalInstance = this.$uibModal.open({
-      component: 'adminFormFieldOptionReorder',
+      component: 'adminEventFormFieldOptionReorder',
       resolve: {
         option: () => {
           return option;

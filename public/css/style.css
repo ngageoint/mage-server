@@ -29,6 +29,12 @@
 
 @import "./admin/index.scss";
 
+mage {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .dropdown-menu {
   margin-top: 56px;
 }
