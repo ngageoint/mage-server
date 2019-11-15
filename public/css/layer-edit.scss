@@ -62,10 +62,30 @@
   flex: 1;
 }
 
-.leaflet-preview-map {
+.layer-preview-leaflet {
   height: 100%;
   width: 100%;
   background-color: rgb(192, 217, 228);
+}
+
+.layer-preview-none {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #E5E5E5;
+}
+
+.layer-preview-none-icon {
+  font-size: 250px;
+  opacity: .54;
+}
+
+.layer-preview-none-text {
+  color: black;
+  opacity: .66;
 }
 
 .preview-map-container {

@@ -3,14 +3,12 @@ import L from 'leaflet';
 
 class LayerPreviewController {
 
-  constructor($http, $element) {
-    this._$http = $http;
-    this._$element = $element;
-    this.layers = {};
+  constructor($element) {
+    this.$element = $element;
   }
 
   $postLink() {
-    this.map = L.map(this._$element.find('.leaflet-preview-map')[0], {
+    this.map = L.map(this.$element.find('.layer-preview-leaflet')[0], {
       center: [0,0],
       zoom: 3,
       minZoom: 0,
@@ -22,10 +20,10 @@ class LayerPreviewController {
       worldCopyJump: true
     });
 
-    this.map.createPane('newLayer');
-    this.map.getPane('newLayer').style.zIndex = 650;
+    this.map.createPane('offlinePane').style.zIndex = 100;
 
     this.map.addLayer(L.geoJSON(countries, {
+      pane: 'offlinePane',
       style: function () {
         return {
           color: '#BBBBBB',
@@ -36,80 +34,64 @@ class LayerPreviewController {
         };
       }
     }));
+
+    this.updateMap();
   }
 
-  $doCheck() {
-    if (this.layer && this.map && this.needsRefresh()) {
-      if (this.mapLayer) {
-        this.map.removeLayer(this.mapLayer);
-      }
-      this.mapLayer = this.createRasterLayer(this.layer);
-      if (this.mapLayer) {
-        this.showMap = true;
-        this.map.addLayer(this.mapLayer);
-        if (this.layer.wms && this.layer.wms.extent) {
-          this.map.fitBounds([
-            [this.layer.wms.extent[1], this.layer.wms.extent[0]],
-            [this.layer.wms.extent[3], this.layer.wms.extent[2]]
-          ]);
-        }
-      } else {
-        this.showMap = false;
-      }
-      this.oldUrl = this.layer.url;
-      this.oldFormat = this.layer.format;
-      this.oldWmsLayersLength = this.layer.wms ? this.layer.wms.layers.length : 0;
-      this.oldTransparent = this.layer.wms.transparent;
-      this.oldWmsFormat = this.layer.wms.format;
+  $onChanges() {
+    this.updateMap();
+  }
+
+  updateMap() {
+    if (!this.map) return;
+
+    if (this.mapLayer) {
+      this.map.removeLayer(this.mapLayer);
+    }
+
+    if (!this.url || !this.format) return;
+
+    if (this.format === 'XYZ' || this.format === 'TMS') {
+      this.mapLayer = this.createTileLayer(this.url, this.format === 'TMS');
+    } else if (this.format === 'WMS') {
+      this.mapLayer = this.createWmsLayer(this.url, this.wms);
     }
   }
 
-  needsRefresh() {
-    return this.layer.format !== this.oldFormat 
-    || this.layer.url !== this.oldUrl 
-    || (this.layer.wms && this.layer.wms.layers.length !== this.oldWmsLayersLength)
-    || (this.layer.wms && this.layer.wms.transparent !== this.oldTransparent)
-    || (this.layer.wms && this.layer.wms.format !== this.oldWmsFormat);
+  createTileLayer(url, tms) {
+    let options = { tms: tms, maxZoom: 18 };
+    return new L.TileLayer(url, options).addTo(this.map);
   }
 
-  onBaseLayerSelected(baseLayer) {
-    var layer = this.layers[baseLayer.name];
-    if (layer) this.map.removeLayer(layer.layer);
+  createWmsLayer(url, wms) {
+    let options = {
+      layers: wms.layers,
+      version: wms.version,
+      format: wms.format,
+      transparent: wms.transparent
+    };
 
-    layer = this.createRasterLayer(baseLayer);
-    this.layers[baseLayer.name] = {type: 'tile', layer: baseLayer, rasterLayer: layer};
+    if (wms.styles) options.styles = wms.styles;
 
-    layer.addTo(this.map);
-  }
-
-  createRasterLayer(layer) {
-    var baseLayer = null;
-    var options = {};
-    if (layer.format === 'XYZ' || layer.format === 'TMS') {
-      options = { tms: layer.format === 'TMS', maxZoom: 18, pane: 'newLayer'};
-      baseLayer = new L.TileLayer(layer.url, options);
-    } else if (layer.format === 'WMS' && layer.wms) {
-      options = {
-        layers: layer.wms.layers,
-        version: layer.wms.version,
-        format: layer.wms.format,
-        transparent: layer.wms.transparent,
-        pane: 'newLayer'
-      };
-
-      if (layer.wms.styles) options.styles = layer.wms.styles;
-      baseLayer = new L.TileLayer.WMS(layer.url, options);
+    if (wms.extent) {
+      this.map.fitBounds([
+        [wms.extent[1], wms.extent[0]],
+        [wms.extent[3], wms.extent[2]]
+      ]);
     }
 
-    return baseLayer;
+    return new L.TileLayer.WMS(url, options).addTo(this.map);
   }
 }
 
-LayerPreviewController.$inject = ['$http', '$element'];
+LayerPreviewController.$inject = ['$element'];
 
-var template = '<div class="preview-map-container"><div class="leaflet-preview-map"></div></div>';
+var template = require('./layer-preview.html');
 var bindings = {
-  layer: '<'
+  url: '@',
+  type: '@',
+  format: '@',
+  wms: '<'
 };
 var controller = LayerPreviewController;
 

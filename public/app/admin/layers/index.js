@@ -1,7 +1,8 @@
-var angular = require('angular');
+import angular from 'angular';
+import wms from './wms.component';
 
 angular.module('mage')
-  .component('wmsLayer', require('./wms.component'))
+  .component('wmsLayer',wms)
   .component('layerPreview', require('./layer-preview.component'))
   .component('layerEdit', require('./layer-edit.component'))
   .controller('AdminLayerController', require('./layer.controller'))

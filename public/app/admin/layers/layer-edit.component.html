@@ -14,7 +14,7 @@
             <form ng-submit="$ctrl.saveLayer()" class="form">
               <div class="top-gap">
                 <div class="mdc-text-field mdc-text-field--outlined w-100">
-                  <input type="text" id="layer-name" placeholder="i.e. HurricaneSandy" ng-model="$ctrl.layer.name" ng-value="$ctrl.layer.name" class="mdc-text-field__input" required>
+                  <input type="text" id="layer-name" placeholder="i.e. HurricaneSandy" ng-model="$ctrl.layer.name" value="${{ctrl.layer.name}}" class="mdc-text-field__input" required>
                   <div class="mdc-notched-outline">
                     <div class="mdc-notched-outline__leading"></div>
                     <div class="mdc-notched-outline__notch">
@@ -27,7 +27,7 @@
 
               <div class="top-gap">
                 <div class="mdc-text-field mdc-text-field--textarea text-area-field">
-                  <textarea id="textarea" class="mdc-text-field__input" type="text" ng-model="$ctrl.layer.description" ng-value="$ctrl.layer.description"></textarea>
+                  <textarea id="textarea" class="mdc-text-field__input" type="text" ng-model="$ctrl.layer.description">${{ctrl.layer.description}}</textarea>
                   <div class="mdc-notched-outline">
                     <div class="mdc-notched-outline__leading"></div>
                     <div class="mdc-notched-outline__notch">
@@ -46,6 +46,7 @@
                       class="mdc-radio__native-control" 
                       type="radio" 
                       ng-model="$ctrl.layer.type" 
+                      ng-change="$ctrl.layerTypeChange()"
                       value="Imagery" 
                       id="imagery_option" 
                       name="layer-type">
@@ -62,6 +63,7 @@
                       class="mdc-radio__native-control" 
                       type="radio" 
                       ng-model="$ctrl.layer.type" 
+                      ng-change="$ctrl.layerTypeChange()"
                       value="Feature" 
                       id="feature_option" 
                       name="layer-type">
@@ -78,6 +80,7 @@
                       class="mdc-radio__native-control" 
                       type="radio" 
                       ng-model="$ctrl.layer.type" 
+                      ng-change="$ctrl.layerTypeChange()"
                       value="GeoPackage" 
                       id="geopackage_option" 
                       name="layer-type">
@@ -100,8 +103,8 @@
                   <input type="text" 
                       id="layer-url" 
                       placeholder="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
+                      value="{{$ctrl.layer.url}}"
                       ng-model="$ctrl.layer.url" 
-                      ng-value="$ctrl.layer.url" 
                       ng-change="$ctrl.urlChange()"
                       class="mdc-text-field__input" required>
                   <div class="mdc-notched-outline">
@@ -143,7 +146,8 @@
                     <input 
                       class="mdc-radio__native-control" 
                       type="radio" 
-                      ng-model="$ctrl.layer.format" 
+                      ng-model="$ctrl.layer.format"
+                      ng-change="$ctrl.layerFormatChange()"
                       value="XYZ" 
                       id="xyz_option" 
                       name="layer-format">
@@ -159,7 +163,8 @@
                     <input 
                       class="mdc-radio__native-control" 
                       type="radio" 
-                      ng-model="$ctrl.layer.format" 
+                      ng-model="$ctrl.layer.format"
+                      ng-change="$ctrl.layerFormatChange()"
                       value="TMS" 
                       id="tms_option" 
                       name="layer-format">
@@ -175,7 +180,8 @@
                     <input 
                       class="mdc-radio__native-control" 
                       type="radio" 
-                      ng-model="$ctrl.layer.format" 
+                      ng-model="$ctrl.layer.format"
+                      ng-change="$ctrl.layerFormatChange()"
                       value="WMS" 
                       id="wms_option" 
                       name="layer-format">
@@ -188,10 +194,10 @@
                 </div>
               </div>
 
-              <wms-layer 
-                on-wms-options-update="$ctrl.wmsOptionsUpdate(options)" 
-                ng-if="$ctrl.layer.format === 'WMS' && $ctrl.layer.type === 'Imagery'" 
-                layer-url="$ctrl.layer.url"></wms-layer>
+              <wms-layer ng-if="$ctrl.layer.format === 'WMS' && $ctrl.layer.type === 'Imagery'"
+                layer-url="{{$ctrl.layer.url}}"
+                wms-options="$ctrl.wmsOptions"
+                on-wms-options-update="$ctrl.wmsOptionsUpdate(options)"/>
 
               <div ng-if="$ctrl.saving && $ctrl.layer.type === 'GeoPackage' && $ctrl.layer.geopackage" class="form-group">
                 <uib-progressbar max="$ctrl.total" value="$ctrl.progress"><span style="color:white; white-space:nowrap;">{{$ctrl.progress | filesize}} / {{$ctrl.total | filesize}}</span></uib-progressbar>
@@ -207,7 +213,7 @@
         </div>
         <div class="form-preview">
           <div class="form-preview-inner">
-          <layer-preview layer="$ctrl.layer"></layer-preview>
+          <layer-preview url="{{$ctrl.layer.url}}" type="{{$ctrl.layer.type}}" format="{{$ctrl.layer.format}}" wms="$ctrl.wmsOptions"></layer-preview>
           </div>
         </div>
       </div>
