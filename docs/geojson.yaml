@@ -1,0 +1,375 @@
+# adapted from http://json.schemastore.org/geojson
+
+$schema: 'http://json-schema.org/draft-04/schema#'
+title: GeoJSON Object
+type: object
+description: >
+  This object represents a geometry, feature, or collection of features.
+oneOf:
+  - $ref: '#/definitions/geometryObject'
+  - $ref: '#/definitions/feature'
+  - $ref: '#/definitions/featureCollection'
+additionalProperties: true
+definitions:
+  geoJsonBase:
+    description: >
+      This schema is solely an abstract definition to share the common GeoJSON
+      attributes to the concrete GeoJSON types.
+    type: object
+    properties:
+      type:
+        $ref: '#/definitions/geoJsonType'
+      bbox:
+        $ref: '#/definitions/boundingBox'
+    required: [ type ]
+  position:
+    title: Position
+    type: array
+    description: >-
+      A position is the fundamental geometry construct. The `coordinates`
+      member of a geometry object is composed of one position (in the case
+      of a Point geometry), an array of positions (LineString or MultiPoint
+      geometries), an array of arrays of positions (Polygons,
+      MultiLineStrings), or a multidimensional array of positions
+      (MultiPolygon).
+
+      A position is represented by an array of numbers. There must be at
+      least two elements, and may be more. The order of elements must
+      follow x, y, z order (easting, northing, altitude for coordinates in
+      a projected coordinate reference system, or longitude, latitude,
+      altitude for coordinates in a geographic coordinate reference
+      system). Any number of additional elements are allowed --
+      interpretation and meaning of additional elements is beyond the scope
+      of this specification.
+    minItems: 2
+    maxItems: 3
+    items:
+      type: number
+  point:
+    title: Point
+    description: >
+      For type `Point`, the `coordinates` member must be a single position.
+    type: object
+    properties:
+      type:
+        type: string
+        enum:
+          - Point
+      coordinates:
+        $ref: '#/definitions/pointCoordinates'
+    allOf:
+      - $ref: '#/definitions/locatedGeometryBase'
+  multiPoint:
+    title: Multi-Point
+    description: >
+      The `MultiPoint` geometry type has a `coordinates` member must be an array
+      of positions.
+    type: object
+    properties:
+      type:
+        type: string
+        enum:
+          - MultiPoint
+      coordinates:
+        $ref: '#/definitions/multiPointCoordinates'
+    allOf:
+      - $ref: '#/definitions/locatedGeometryBase'
+  lineString:
+    title: Line String
+    description: >-
+      For type `LineString`, the `coordinates` member must be an array of
+      two or more positions.
+
+      A LinearRing is closed LineString with 4 or more positions. The first
+      and last positions are equivalent (they represent equivalent points).
+      Though a LinearRing is not explicitly represented as a GeoJSON
+      geometry type, it is referred to in the Polygon geometry type
+      definition.
+    type: object
+    properties:
+      type:
+        type: string
+        enum:
+          - LineString
+      coordinates:
+        $ref: '#/definitions/lineStringCoordinates'
+    allOf:
+      - $ref: '#/definitions/locatedGeometryBase'
+  multiLineString:
+    title: MultiLineString
+    description: >
+      For type `MultiLineString`, the `coordinates` member must be an array of
+      LineString coordinate arrays.
+    type: object
+    properties:
+      type:
+        type: string
+        enum:
+          - MultiLineString
+      coordinates:
+        $ref: '#/definitions/multiLineStringCoordinates'
+    allOf:
+      - $ref: '#/definitions/locatedGeometryBase'
+  polygon:
+    title: Polygon
+    description: >
+      For type `Polygon`, the `coordinates` member must be an array of
+      LinearRing coordinate arrays. For Polygons with multiple rings, the first
+      must be the exterior ring and any others must be interior rings or holes.
+    type: object
+    properties:
+      type:
+        type: string
+        enum:
+          - Polygon
+      coordinates:
+        $ref: '#/definitions/polygonCoordinates'
+    allOf:
+      - $ref: '#/definitions/locatedGeometryBase'
+  multiPolygon:
+    title: Multi-Polygon Geometry
+    description: >
+      For type `MultiPolygon`, the `coordinates` member must be an array of
+      Polygon coordinate arrays.
+    type: object
+    properties:
+      type:
+        type: string
+        enum:
+          - MultiPolygon
+      coordinates:
+        $ref: "#/definitions/multiPolygonCoordinates"
+    allOf:
+      - $ref: '#/definitions/locatedGeometryBase'
+  geometryCollection:
+    title: Geometry Collection
+    description: >-
+      A GeoJSON object with type `GeometryCollection` is a geometry object
+      which represents a collection of geometry objects.
+
+      A geometry collection must have a member with the name `geometries`.
+      The value corresponding to `geometries` is an array. Each element in
+      this array is a GeoJSON geometry object.
+    type: object
+    properties:
+      type:
+        type: string
+        enum:
+          - GeometryCollection
+      geometries:
+        title: Geometries
+        type: array
+        items:
+          $ref: '#/definitions/geometryObject'
+    required: [ geometries ]
+    allOf:
+      - $ref: '#/definitions/geoJsonBase'
+  feature:
+    title: Feature
+    description: >-
+      A GeoJSON object with the type `Feature` is a feature object.
+      * A feature object must have a member with the name `geometry`. The
+      value of the geometry member is a geometry object as defined above or
+      a JSON null value.
+      * A feature object must have a member with the name `properties`. The
+      value of the properties member is an object (any JSON object or
+      a JSON null value).
+      * If a feature has a commonly used identifier, that identifier should
+      be included as a member of the feature object with the name `id`.
+    type: object
+    required:
+      - geometry
+      - properties
+    properties:
+      type:
+        type: string
+        enum:
+          - Feature
+      geometry:
+        title: Feature Geometry
+        description: >
+          The `geometry` member specifies the location Geometry Object of the
+          feature.  If the feature has no location, the value should be null.
+        allOf:
+          - type: object
+            nullable: true
+          - $ref: '#/definitions/geometryObject'
+      properties:
+        title: Feature Properties
+        description: >
+          The `properties` member is an object containing application-specific
+          attributes of the feature.
+        type: object
+        nullable: true
+      id:
+        description: >
+          The `id` member is an optional, commonly used identifier of the
+          feature.
+        oneOf:
+          - type: string
+          - type: number
+    allOf:
+      - $ref: '#/definitions/geoJsonBase'
+  featureCollection:
+    title: Feature Collection
+    description: >-
+      A GeoJSON object with the type `FeatureCollection` is a feature
+      collection object.
+
+      An object of type `FeatureCollection` must have a member with the
+      name `features`. The value corresponding to `features` is an array.
+      Each element in the array is a feature object as defined above.
+    required: [ features ]
+    properties:
+      type:
+        type: string
+        enum:
+          - FeatureCollection
+      features:
+        title: Features
+        type: array
+        items:
+          $ref: '#/definitions/feature'
+    allOf:
+      - $ref: '#/definitions/geoJsonBase'
+  boundingBox:
+    title: Bounding Box
+    type: array
+    description: >
+      To include information on the coordinate range for geometries, features,
+      or feature collections, a GeoJSON object may have a member named `bbox`.
+      The value of the bbox member must be a 2*n array where n is the number of
+      dimensions represented in the contained geometries, with the lowest
+      values for all axes followed by the highest values. The axes order of a
+      bbox follows the axes order of geometries. In addition, the coordinate
+      reference system for the bbox is assumed to match the coordinate
+      reference system of the GeoJSON object of which it is a member.
+    minItems: 4
+    items:
+      type: number
+  coordinates:
+    title: Coordinates
+    # must be anyOf, not oneOf because instances of polygonCoordinates also
+    # satisfy lineStringCoordinates
+    anyOf:
+      - $ref: '#/definitions/pointCoordinates'
+      - $ref: '#/definitions/lineStringCoordinates'
+      - $ref: '#/definitions/polygonCoordinates'
+      - $ref: '#/definitions/multiPointCoordinates'
+      - $ref: '#/definitions/multiLineStringCoordinates'
+      - $ref: '#/definitions/multiPolygonCoordinates'
+  locatedGeometryBase:
+    description: >
+      This schema defines the shared attributes of all the Geometry Object
+      types that have a `coordinates` member specifying the location(s) of the
+      geometry.  This schema is solely an abstract definition to share common
+      characteristics to the concrete Geometry Object types.
+    type: object
+    properties:
+      type:
+        $ref: '#/definitions/locatedGeometryType'
+      coordinates:
+        $ref: '#/definitions/coordinates'
+    required: [ type, coordinates ]
+    allOf:
+      - $ref: '#/definitions/geoJsonBase'
+  locatedGeometryObject:
+    title: Located Geometry Object
+    description: >
+      This type includes the GeoJSON Geometry Objects that include a
+      `coordinates` member specifying a location.  This simply excludes the
+      GeometryCollection object.  This schema restricts the range of concrete
+      Geometry Object types to those the GeoJSON specification defines.
+    oneOf:
+      - $ref: '#/definitions/point'
+      - $ref: '#/definitions/multiPoint'
+      - $ref: '#/definitions/lineString'
+      - $ref: '#/definitions/multiLineString'
+      - $ref: '#/definitions/polygon'
+      - $ref: '#/definitions/multiPolygon'
+  geometryObject:
+    title: Geometry Object
+    description: >
+      A `GeometryObject` is a GeoJSON object wnose `type` member value is one of
+      the following strings: `Point`, `MultiPoint`, `LineString`,
+      `MultiLineString`, `Polygon`, `MultiPolygon`, or `GeometryCollection`.
+      All geometry object types except `GeometryCollection` must have a
+      `coordinates` member.
+    oneOf:
+      - $ref: '#/definitions/locatedGeometryObject'
+      - $ref: '#/definitions/geometryCollection'
+  pointCoordinates:
+    title: Point Coordinates
+    $ref: '#/definitions/position'
+  multiPointCoordinates:
+    type: array
+    items:
+      $ref: '#/definitions/pointCoordinates'
+  lineStringCoordinates:
+    title: Line String Coordinates
+    description: >
+      For type `LineString`, the `coordinates` member must be an array of two
+      or more positions.
+    type: array
+    minItems: 2
+    items:
+      $ref: '#/definitions/position'
+  multiLineStringCoordinates:
+    type: array
+    items:
+      $ref: '#/definitions/lineStringCoordinates'
+  linearRingCoordinates:
+    title: Linear Ring Coordinates
+    description: >
+      A LinearRing is a closed LineString with 4 or more positions. The first
+      and last positions are equivalent (they represent equivalent points).
+      Though a LinearRing is not explicitly represented as a GeoJSON geometry
+      type, it is referenced in the Polygon geometry type definition.  Note
+      that JSON Schema cannot express the constraint that the first and last
+      position of a LinearRing must be equivalent, so instances that are valid
+      with respect to this schema may not actually be valid with respect to the
+      GeoJSON specification.
+    type: array
+    minItems: 4
+    items:
+      $ref: '#/definitions/position'
+  polygonCoordinates:
+    title: Polygon Coordinates
+    description: >
+      For type `Polygon`, the `coordinates` member must be an array of
+      LinearRing coordinate arrays. For Polygons with multiple rings, the first
+      must be the exterior ring and any others must be interior rings or holes.
+    type: array
+    items:
+      $ref: '#/definitions/linearRingCoordinates'
+  multiPolygonCoordinates:
+    type: array
+    items:
+      $ref: '#/definitions/polygonCoordinates'
+  locatedGeometryType:
+    description: >
+      This type enumerates the GeoJSON geometry types that have a coordinates
+      member to specify a location.  This simply excludes the
+      `GeometryCollection` geometry type.
+    type: string
+    enum:
+      - Point
+      - LineString
+      - Polygon
+      - MultiPoint
+      - MultiLineString
+      - MultiPolygon
+  geometryType:
+    type: string
+    oneOf:
+      - $ref: '#/definitions/locatedGeometryType'
+      - type: string
+        enum: [ GeometryCollection ]
+  containerType:
+    type: string
+    enum: [ Feature, FeatureCollection ]
+  geoJsonType:
+    type: string
+    oneOf:
+      - $ref: '#/definitions/geometryType'
+      - $ref: '#/definitions/containerType'

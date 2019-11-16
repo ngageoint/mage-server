@@ -54,24 +54,11 @@ module.exports = function(app, security) {
     require('./' + route)(app, security);
   });
 
-  // add regex function to parse params
-  app.param(function(name, fn) {
-    if (fn instanceof RegExp) {
-      return function(req, res, next, val) {
-        var captures;
-        if (captures = fn.exec(String(val))) {
-          req.params[name] = captures;
-          next();
-        } else {
-          next('route');
-        }
-      };
-    }
-  });
-
-  // Grab the user for any endpoint that uses eventId
-  app.param('eventId', /^[0-9]+$/); //ensure eventId is a number
+  // Grab the event for any endpoint that uses eventId
   app.param('eventId', function(req, res, next, eventId) {
+    if (!/^[0-9]+$/.test(eventId)) {
+      return res.status(400).send('Invalid event ID in request path');
+    }
     Event.getById(eventId, {populate: false}, function(err, event) {
       if (!event) return res.status(404).send('Event not found');
       req.event = event;
@@ -80,8 +67,10 @@ module.exports = function(app, security) {
   });
 
   // Grab the user for any endpoint that uses userId
-  app.param('userId', /^[0-9a-f]{24}$/); //ensure userId is a mongo id
   app.param('userId', function(req, res, next, userId) {
+    if (!/^[0-9a-f]{24}$/.test(userId)) {
+      return res.status(400).send('Invalid user ID in request path');
+    }
     new api.User().getById(userId, function(err, user) {
       if (!user) return res.status(404).send('User not found');
       req.userParam = user;
@@ -143,10 +132,12 @@ module.exports = function(app, security) {
   app.param('observationId', function(req, res, next, observationId) {
     req.observationId = observationId;
     new api.Observation(req.event).getById(observationId, function(err, observation) {
-      if (err) return next(err);
-
-      if (!observation) return res.status(404).send('Observation (ID: ' + observationId + ') not found');
-
+      if (err) {
+        return next(err);
+      }
+      if (!observation) {
+        return res.status(404).send(`Observation ID ${observationId} not found`);
+      }
       req.observation = observation;
       next();
     });

@@ -26,9 +26,8 @@ function AdminLayersController($scope, $filter, $uibModal, $location, Layer, Use
   $scope.filterType = function (layer) {
     switch ($scope.filter) {
     case 'all': return true;
-    case 'base': return layer.base && layer.type === 'Imagery';
-    case 'imagery': return !layer.base && layer.type === 'Imagery';
-    case 'feature': return !layer.base && layer.type === 'Feature';
+    case 'online': return layer.type === 'Imagery';
+    case 'offline': return layer.type !== 'Imagery';
     }
   };
 

@@ -311,10 +311,9 @@ exports.removeDevice = function(device, callback) {
 };
 
 exports.addState = function(event, id, state, callback) {
-  var condition = {_id: mongoose.Types.ObjectId(id), 'states.0.name': {'$ne': state.name}};
-
+  const condition = { _id: mongoose.Types.ObjectId(id), 'states.0.name': { '$ne': state.name } };
   state._id = mongoose.Types.ObjectId();
-  var update = {
+  const update = {
     '$push': {
       states: {
         '$each': [state],

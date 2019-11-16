@@ -21,5 +21,5 @@ function Upload(limits = {}) {
   });
 }
 
-exports.Upoload = Upload;
+exports.Upload = Upload;
 exports.default = Upload();

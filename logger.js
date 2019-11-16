@@ -17,7 +17,7 @@ var mongooseLogger = winston.loggers.add('mongoose', {
   ]
 });
 
-winston.addColors({mongoose: 'cyan'});
-mongooseLogger.setLevels({ mongoose: 0});
+winston.addColors({ mongoose: 'cyan' });
+mongooseLogger.setLevels({ mongoose: 0 });
 
 module.exports = winston;

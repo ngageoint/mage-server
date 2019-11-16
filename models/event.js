@@ -84,7 +84,6 @@ var FormSchema = new Schema({
   style: { type: Schema.Types.Mixed, required: false }
 });
 
-// Creates the Schema for the Attachments object
 const EventSchema = new Schema(
   {
     _id: { type: Number, required: true },
@@ -223,7 +222,7 @@ function transform(event, ret, options) {
       delete ret.layerIds;
     }
 
-    // if read only permissions in event acl on return users acl
+    // if read only permissions in event acl, only return users acl
     if (options.access) {
       var userAccess = ret.acl[options.access.user._id];
       var roles = rolesWithPermission('update').concat(rolesWithPermission('delete'));
@@ -241,6 +240,7 @@ function transform(event, ret, options) {
       };
     }
 
+    // TODO: this should be done at query time
     // make sure only projected fields are returned
     if (options.projection) {
       var projection = convertProjection(options.projection);
@@ -302,7 +302,7 @@ function filterEventsByUserId(events, userId, callback) {
       }
 
       // Check if user has read access to the event based on
-      // being in the events access control listen
+      // being in the events access control list
       if (event.acl[userId] && rolesWithPermission('read').some(function(role) { return role === event.acl[userId]; })) {
         return true;
       }
@@ -393,7 +393,7 @@ exports.getEvents = function(options, callback) {
 
     var filters = [];
 
-    // First filter out events user my not have access to
+    // First filter out events user cannot access
     if (options.access && options.access.user) {
       filters.push(function(done) {
         filterEventsByUserId(events, options.access.user._id, function(err, filteredEvents) {
@@ -532,20 +532,14 @@ exports.create = function(event, user, options, callback) {
             done(err);
           });
         }
-
         done(err, event);
       });
     }
   ], function(err, newEvent) {
-    if (err) return callback(err);
-
-    if (options.populate) {
-      Event.populate(newEvent, {path: 'teamIds'}, function(err, event) {
-        Event.populate(event, {path: 'teamIds.userIds', model: 'User'}, callback);
-      });
-    } else {
-      callback(err, newEvent);
+    if (err) {
+      return callback(err);
     }
+    callback(err, newEvent);
   });
 };
 
@@ -556,11 +550,13 @@ exports.update = function(id, event, options, callback) {
   }
 
   var update = ['name', 'description', 'complete', 'forms'].reduce(function(o, k) {
-    if (event.hasOwnProperty(k)) o[k] = event[k];
+    if (event.hasOwnProperty(k)) {
+      o[k] = event[k];
+    }
     return o;
   }, {});
 
-  // Preserve form ids
+  // preserve form ids
   if (event.forms) {
     event.forms.forEach(function(form) {
       form._id = form.id;
@@ -568,15 +564,10 @@ exports.update = function(id, event, options, callback) {
   }
 
   Event.findByIdAndUpdate(id, update, {new: true, runValidators: true, context: 'query'}, function(err, updatedEvent) {
-    if (err) return callback(err);
-
-    if (options.populate) {
-      Event.populate(updatedEvent, {path: 'teamIds'}, function(err, event) {
-        Event.populate(event, {path: 'teamIds.userIds', model: 'User'}, callback);
-      });
-    } else {
-      callback(err, updatedEvent);
+    if (err) {
+      return callback(err);
     }
+    callback(err, updatedEvent);
   });
 };
 

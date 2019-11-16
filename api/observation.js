@@ -155,15 +155,13 @@ Observation.prototype.removeImportant = function(observation, callback) {
 };
 
 Observation.prototype.addState = function(observationId, state, callback) {
-  var self = this;
-
+  const self = this;
   ObservationModel.addState(this._event, observationId, state, function(err, state) {
     if (!err) {
       if (state.name === 'archive') {
         EventEmitter.emit(ObservationEvents.events.remove, observationId, self._event);
       }
     }
-
     callback(err, state);
   });
 };

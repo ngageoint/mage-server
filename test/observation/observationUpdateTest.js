@@ -342,7 +342,7 @@ describe("observation update tests", function() {
       })
       .expect(404)
       .expect(function(res) {
-        res.text.should.equal('Observation with id ' +  observationId + ' does not exist');
+        res.text.should.equal('Observation with ID ' +  observationId + ' does not exist');
       })
       .end(done);
   });

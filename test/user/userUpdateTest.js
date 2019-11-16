@@ -133,7 +133,7 @@ describe("user update tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal('passwords do not match');
+        res.text.should.equal('Passwords do not match');
       })
       .end(done);
   });
@@ -180,7 +180,7 @@ describe("user update tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal('password does not meet minimum length requirment of 14 characters');
+        res.text.should.equal('Password must be at least 14 characters');
       })
       .end(done);
   });
@@ -380,9 +380,50 @@ describe("user update tests", function() {
       .end(done);
   });
 
+  it('fails to update the user password without the passwordconfirm parameter', function(done) {
+
+    mockTokenWithPermission('UPDATE_USER');
+
+    var id = mongoose.Types.ObjectId();
+    var mockUser = new UserModel({
+      _id: id,
+      username: 'test',
+      displayName: 'test',
+      active: true,
+      authentication: {
+        type: 'local'
+      }
+    });
+
+    sinon.mock(UserModel)
+      .expects('findById')
+      .chain('exec')
+      .yields(null, mockUser);
+
+    sinon.mock(User)
+      .expects('updateUser').never();
+
+    request(app)
+      .put('/api/users/' + id.toString())
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345')
+      .send({
+        username: 'test',
+        displayName: 'test',
+        email: 'test@test.com',
+        phone: '000-000-0000',
+        active: true,
+        password: 'passwordpassword',
+      })
+      .expect(400)
+      .expect(res => {
+        expect(res.text).to.equal(`Invalid user document: missing required parameter 'passwordconfirm'`);
+      })
+      .end(done);
+  });
 
   it('should fail to update user role w/o UPDATE_USER_ROLE', function(done) {
-    mockTokenWithPermission('UPDATE_USER');
+    mockTokenWithPermission(['UPDATE_USER']);
 
     var id = mongoose.Types.ObjectId();
     var mockUser = new UserModel({
@@ -680,7 +721,7 @@ describe("user update tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal('password does not meet minimum length requirment of 14 characters');
+        res.text.should.equal('Password must be at least 14 characters');
       })
       .end(done);
   });

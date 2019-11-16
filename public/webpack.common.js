@@ -7,71 +7,71 @@ const webpack = require('webpack'),
 module.exports = {
   context: __dirname,
   entry: {
-    app: './main.js'
+    app: './main.js',
+    api_docs: './api_docs/index.js'
   },
   output: {
     path: __dirname + '/dist',
     filename: '[name].js'
   },
   module: {
-    rules: [{
-      test: /\.js$/,
-      use: {
-        loader: 'babel-loader',
-        options: {
-          presets: ['@babel/preset-env']
-        }
+    rules: [
+      {
+        test: /\.(js|jsx)$/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env', '@babel/preset-react']
+          }
+        },
+        resolve: { extensions: [".js", ".jsx"] }
+      },
+      {
+        test: /\.(css|scss)$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: {
+              sourceMap: true
+            }
+          },
+          {
+            loader: 'sass-loader',
+            options: {
+              sourceMap: true,
+              includePaths: ['./css', './node_modules']
+            }
+          },
+          {
+            loader: 'postcss-loader',
+            options: {
+              sourceMap: true,
+              plugins: () => [
+                postcssCustomProperties({
+                  importFrom: ['./css/variables.css']
+                })
+              ]
+            }
+          }
+        ]
+      },
+      {
+        test: /\.(eot|svg|ttf|woff|woff2)$/,
+        loader: 'file-loader?name=fonts/[name].[ext]'
+      },
+      {
+        test: /\.(png|jpg|ico|gif|svg)$/,
+        loader: 'file-loader?name=images/[name].[ext]'
+      },
+      {
+        test: /\.html$/, loader: 'raw-loader'
       }
-    },{
-      test: /\.(css|scss)$/,
-      use: [
-        MiniCssExtractPlugin.loader,
-        {
-          loader: 'css-loader',
-          options: {
-            sourceMap: true
-          }
-        },
-        {
-          loader: 'sass-loader',
-          options: {
-            sourceMap: true,
-            includePaths: ['./css', './node_modules']
-          }
-        },
-        {
-          loader: 'postcss-loader',
-          options: {
-            sourceMap: true,
-            plugins: () => [
-              postcssCustomProperties({
-                importFrom: ['./css/variables.css']
-              })
-            ]
-          }
-        }
-      ]
-    },{
-      test: /\.(eot|svg|ttf|woff|woff2)$/,
-      loader: 'file-loader?name=fonts/[name].[ext]'
-    },{
-      test: /\.(png|jpg|ico|gif|svg)$/,
-      loader: 'file-loader?name=images/[name].[ext]'
-    },{
-      test: /\.html$/, loader: 'raw-loader'
-    }]
+    ]
   },
   optimization: {
     splitChunks: {
-      chunks: 'all',
-      cacheGroups: {
-        vendor: {
-          test: /node_modules/,
-          chunks: 'initial',
-          name: 'vendor',
-          enforce: true
-        }
-      }
+      chunks: 'all'
     }
   },
   plugins: [
@@ -83,7 +83,13 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       filename: 'index.html',
-      template: './index.html'
+      template: './index.html',
+      excludeChunks: [ 'api_docs' ]
+    }),
+    new HtmlWebpackPlugin({
+      filename: 'api_docs/index.html',
+      template: './api_docs/index.html',
+      excludeChunks: [ 'app' ]
     }),
     new webpack.ProvidePlugin({
       'window.jQuery': 'jquery',
