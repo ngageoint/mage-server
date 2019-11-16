@@ -103,7 +103,7 @@ function thumbnail(event, observationId, attachment, callback) {
 
     if (thumbWidth > attachment.width || thumbHeight > attachment.height) return done();
 
-    log.info('thumbnailing attachment ' + attachment.name + ' for size ' + thumbSize);
+    log.info('thumbnailing attachment ' + attachment.relativePath + ' for size ' + thumbSize);
     var start = new Date().valueOf();
     gm(file)
       .in("-size")
@@ -119,10 +119,10 @@ function thumbnail(event, observationId, attachment, callback) {
           log.info('Finished thumbnailing ' + thumbSize + " in " + (end - start)/1000 + " seconds");
 
           var stat = fs.statSync(thumbPath);
-
+          
           Observation.addAttachmentThumbnail(event, observationId, attachment._id, {
             size: stat.size,
-            name: path.basename(attachment.name, path.extname(attachment.name)) + "_" + thumbSize + path.extname(attachment.name),
+            name: path.basename(attachment.relativePath, path.extname(attachment.relativePath)) + "_" + thumbSize + path.extname(attachment.relativePath),
             relativePath: path.join(path.dirname(attachment.relativePath), path.basename(attachment.relativePath, path.extname(attachment.relativePath))) + "_" + thumbSize + path.extname(attachment.relativePath),
             contentType: attachment.contentType,
             minDimension: thumbSize,

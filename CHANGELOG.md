@@ -8,6 +8,18 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+* Fixed bug parsing KML polygon and polyline styles.
+* Improve error checking for invalid event form upload archives.
+
+## [5.3.1](https://github.com/ngageoint/mage-server/releases/tag/5.3.1)
+
+##### Features
+* Bulk user import UI rework.
+
+##### Bug Fixes
+* KML import file browser fixed.
+* Update express default template renderer directory and remove pug specific rendering.
+* Uploaded observation attachments preserve filename property after multer upgrade.
 
 ## [5.3.0](https://github.com/ngageoint/mage-server/releases/tag/5.3.0)
 

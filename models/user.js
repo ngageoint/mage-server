@@ -204,6 +204,7 @@ UserSchema.pre('remove', function(next) {
   });
 });
 
+// eslint-disable-next-line complexity
 var transform = function(user, ret, options) {
   if ('function' !== typeof user.ownerDocument) {
     ret.id = ret._id;

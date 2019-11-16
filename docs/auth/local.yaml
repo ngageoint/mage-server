@@ -1,0 +1,90 @@
+openapi: 3.0.1
+info:
+  title: MAGE Local Auth
+  description: Mobile Awareness GEOINT Environment Local Authentication API
+  contact:
+    name: MAGE Support
+    email: mage@nga.mil
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0
+  version: 0.0.0
+servers:
+- url: http://localhost:4242
+paths:
+  /auth/local/signin:
+    post:
+      tags: [ Auth ]
+      description: Authenticate with username and password against the local MAGE database
+      operationId: login
+      requestBody:
+        description: login request body
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/LocalCredentials'
+        required: true
+      responses:
+        200:
+          description: authentication response
+          content:
+            application/json:
+              schema: { $ref: '../openapi.yaml#/components/schemas/User' }
+  /auth/local/authorize:
+    post:
+      tags: [ Auth ]
+      description: Authorize device ID
+      operationId: authorize
+      requestBody:
+        description: Device ID to authorize
+        content:
+          application/json:
+            schema:
+              required:
+              - uid
+              type: object
+              properties:
+                uid:
+                  type: string
+        required: true
+      responses:
+        200:
+          description: Authorize response
+          content:
+            application/json:
+              schema:
+                $ref: '../openapi.yaml#/components/schemas/LoginResponse'
+  /api/devices:
+    get:
+      tags:
+      - Device
+      description: Returns all devices
+      operationId: getDevices
+      responses:
+        200:
+          description: device response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '../openapi.yaml#/components/schemas/Device'
+    post:
+      tags:
+      - Device
+      description: add new device
+      operationId: addDevice
+      requestBody:
+        description: new device body
+        content:
+          application/json:
+            schema:
+              $ref: '../openapi.yaml#/components/schemas/DeviceCreate'
+        required: true
+      responses:
+        200:
+          description: new device response
+          content:
+            application/json:
+              schema:
+                $ref: '../openapi.yaml#/components/schemas/Device'

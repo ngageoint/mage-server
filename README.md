@@ -1,5 +1,5 @@
-Master [![Build Status Master Branch](https://travis-ci.org/ngageoint/mage-server.svg?branch=master)](https://travis-ci.org/ngageoint/mage-server/branches)  
-Develop [![Build Status Develop Branch](https://travis-ci.org/ngageoint/mage-server.svg?branch=develop)](https://travis-ci.org/ngageoint/mage-server/branches)  
+Master [![Build Status Master Branch](https://travis-ci.org/ngageoint/mage-server.svg?branch=master)](https://travis-ci.org/ngageoint/mage-server/branches)
+Develop [![Build Status Develop Branch](https://travis-ci.org/ngageoint/mage-server.svg?branch=develop)](https://travis-ci.org/ngageoint/mage-server/branches)
 
 # MAGE server & Web client
 
@@ -21,13 +21,13 @@ MAGE is built using the [MEAN stack](https://en.wikipedia.org/wiki/MEAN_(softwar
 
 ## API & documentation
 
-The MAGE RESTful API is documented using [Swagger](http://swagger.io/).  MAGE [swagger API docs](docs/swagger.json) are served out from [*/api/api-docs*](http://localhost:4242/api/api-docs).
+The MAGE ReSTful API is documented using [OpenAPI](https://swagger.io/specification/).  MAGE [swagger API docs](docs/openapi.yaml) are served out from [*/api_docs*](http://localhost:4242/api_docs).
 
-If you want to explore the interactive documentation there is a link from the About page in the MAGE web client.  Your API token is automatically inserted into interactive docs.  Have fun and remember that the documentation is hitting the server's API, so be careful with modifying requests such as POST/PUT/DELETE.
+If you want to explore the interactive documentation there is a link from the About page in the MAGE web client.  Your API token is automatically inserted into interactive docs.  Have fun and remember that the documentation is hitting the server's API, so be careful trying POST/PUT/DELETE operations that modify data.
 
 ### Code generation
 
-Want to use the API to build your own client?  Swagger has many tools to generate method stubs based on the API.  [Swagger Codegen](https://github.com/swagger-api/swagger-codegen/blob/master/README.md) is a good place to start.
+Want to use the API to build your own client?  Swagger and many other tools exist to generate client stubs based on the API.  [OpenAPI.Tools](https://openapi.tools/) is a good place to start.
 
 #### Android & iOS
 
@@ -153,7 +153,7 @@ or via Git
 ```bash
 $ mkdir /opt/mage
 $ cd /opt/mage
-$ git clone git@github.com:ngageoint/mage-server.git /opt/mage
+$ git clone https://github.com/ngageoint/mage-server.git /opt/mage
 ```
 
 The rest of the installation steps assume you are in the `<MAGE_ROOT>` directory, .e.g. `/opt/mage`.
@@ -167,8 +167,8 @@ $ npm install
 
 ### MAGE local media directory
 
-By default MAGE will store media attachments (video, images, etc), as well as user and map icons locally on the MAGE server.  
-The default base directory for these files is '/var/lib/mage', so you will need to create that.  If you would like to change 
+By default MAGE will store media attachments (video, images, etc), as well as user and map icons locally on the MAGE server.
+The default base directory for these files is '/var/lib/mage', so you will need to create that.  If you would like to change
 where MAGE stores these files, please see the relevant material in [MAGE Setup](#setting-up-mage-for-local-deployment).
 
 ``` bash
@@ -191,9 +191,9 @@ MAGE will run with the default MongoDB configuration, but feel free to modify th
 
 ### MAGE database setup
 
-The database patches are Node.js modules in [`<MAGE_ROOT>/migrations`](migrations).  MAGE uses 
-[mongodb-migrations](https://github.com/emirotin/mongodb-migrations) to apply database migrations.  The MAGE server applies 
-the migrations present in the `migrations` directory automatically every time it starts.  The MAGE server will not accept 
+The database patches are Node.js modules in [`<MAGE_ROOT>/migrations`](migrations).  MAGE uses
+[mongodb-migrations](https://github.com/emirotin/mongodb-migrations) to apply database migrations.  The MAGE server applies
+the migrations present in the `migrations` directory automatically every time it starts.  The MAGE server will not accept
 any client requests until all migrations are complete, so clients cannot modify the database while the server is migrating
 the database.
 
@@ -201,21 +201,21 @@ If you need to run database migrations manually, you can type
 ```bash
 $ npm run migrate
 ```
-from `<MAGE_ROOT>`.  Most of the time this should not be necessary, but if you must, stopping your MAGE server would be a 
+from `<MAGE_ROOT>`.  Most of the time this should not be necessary, but if you must, stopping your MAGE server would be a
 good idea to avoid corrupting your database.
 
 #### Custom migrations
 
-You can add your own custom database migrations to the `migrations` directory.  Just make sure they conform to 
+You can add your own custom database migrations to the `migrations` directory.  Just make sure they conform to
 [mongodb-migrations](https://github.com/emirotin/mongodb-migrations) requirements.  Be aware that mongodb-migrations
-runs the migration scripts in lexical order of the script file names, so name your custom scripts accordingly.  
+runs the migration scripts in lexical order of the script file names, so name your custom scripts accordingly.
 Also consider that mongodb-migrations ensures that your migrations will only run once during the life of your database,
 so you will need to continuously be sure that any custom migrations are compatible with migrations new releases may
 introduce when you [upgrade](#upgrading-mage-server).
 
 ### Web dependencies and build
 
-Initially you will need to pull the web app dependencies (via npm).   Make sure you run this again if you add any new 
+Initially you will need to pull the web app dependencies (via npm).   Make sure you run this again if you add any new
 [dependencies in the web client](public/package.json).
 ```bash
 $ npm run build
@@ -223,11 +223,11 @@ $ npm run build
 
 ### MAGE environment settings
 
-MAGE environment configuration is loaded from a Node module, [environment/env.js](environment/env.js).  That module reads 
-several environment variables to configure MAGE, and provides sensible defaults for any that are not present.  For 
-convenience, MAGE provides a [shell script](environment/magerc.sh) that exports all the MAGE environment variables.  You 
-can copy this script to a convenient, persistent location external to `<MAGE_ROOT>` on the machine that runs your MAGE 
-server Node process and `source` it to initialize the MAGE server enironment with your settings.  The home directory of 
+MAGE environment configuration is loaded from a Node module, [environment/env.js](environment/env.js).  That module reads
+several environment variables to configure MAGE, and provides sensible defaults for any that are not present.  For
+convenience, MAGE provides a [shell script](environment/magerc.sh) that exports all the MAGE environment variables.  You
+can copy this script to a convenient, persistent location external to `<MAGE_ROOT>` on the machine that runs your MAGE
+server Node process and `source` it to initialize the MAGE server enironment with your settings.  The home directory of
 a user that runs the MAGE server Node process, or `/etc/mage` are good candidates.
 
 ### Running the server
@@ -236,16 +236,16 @@ At this point you should be able to fire up your MAGE node server
 ```bash
 $ node app.js
 ```
-If for some reason you've forgotten to [start MongoDB](#starting-mongodb), the MAGE server app will continue trying to 
+If for some reason you've forgotten to [start MongoDB](#starting-mongodb), the MAGE server app will continue trying to
 connect to the database until a [configured timeout](#mage-environment-settings) or a successful connection.
 
-The node MAGE server runs on port 4242 by default.  You can access the MAGE web app in your web browser at 
-[localhost:4242](http://localhost:4242).  
+The node MAGE server runs on port 4242 by default.  You can access the MAGE web app in your web browser at
+[localhost:4242](http://localhost:4242).
 
 ### Running with `forever`
 
-The best way to handle critical errors in Node.js is to let the node server crash immediately.  Upon crash the server 
-should be restarted.  There are many tools to monitor your node process to ensure its running.  We are currently using 
+The best way to handle critical errors in Node.js is to let the node server crash immediately.  Upon crash the server
+should be restarted.  There are many tools to monitor your node process to ensure its running.  We are currently using
 a simple node script called [forever](https://github.com/foreverjs/forever) to accomplish this.
 
 Use npm (Node Package Manager) to install forever. The `-g` option will install globally in the `/usr/bin` directory.
@@ -275,8 +275,8 @@ This will run a [webpack](https://webpack.js.org/) dev server that provides live
 #### Cloud Foundry deployment
 
 MAGE uses the [cfenv](https://github.com/cloudfoundry-community/node-cfenv) Node module to read settings from Cloud Foundry's
-[environment variables](https://docs.cloudfoundry.org/devguide/deploy-apps/environment-variable.html).  If Cloud Foundry's 
-environment variables are present, they will take precendence over any of their counterparts derived from the 
+[environment variables](https://docs.cloudfoundry.org/devguide/deploy-apps/environment-variable.html).  If Cloud Foundry's
+environment variables are present, they will take precendence over any of their counterparts derived from the
 [magerc.sh](environment/env.js) file.  This pertains mostly to defining the connection to the MongoDB server as a bound service
 in Cloud Foundry, for which Cloud Foundry should supply the connection string and credentials in the `VCAP_SERVICES` value.
 
@@ -341,7 +341,7 @@ Upgrading the MAGE server essentially consists of the same process as [installin
 
 ## Plugins
 
-MAGE plugins are separate node scripts located in the plugins folder.  For more information about MAGE plugins please see the 
+MAGE plugins are separate node scripts located in the plugins folder.  For more information about MAGE plugins please see the
 [MAGE Plugins README](plugins/README.md).
 
 ## Web application
@@ -351,11 +351,11 @@ directory.  See the [MAGE Web Application README](public/README.md) for more inf
 
 ## Pull requests
 
-If you'd like to contribute to this project, please make a pull request. We'll review the pull request and discuss the changes. All pull 
+If you'd like to contribute to this project, please make a pull request. We'll review the pull request and discuss the changes. All pull
 request contributions to this project will be released under the [Apache license](#license).
 
-Software source code previously released under an open source license and then modified by NGA staff is considered a "joint work" 
-(see 17 USC § 101); it is partially copyrighted, partially public domain, and as a whole is protected by the copyrights of the 
+Software source code previously released under an open source license and then modified by NGA staff is considered a "joint work"
+(see 17 USC § 101); it is partially copyrighted, partially public domain, and as a whole is protected by the copyrights of the
 non-government authors and must be released according to the terms of the original open source license.
 
 ## License

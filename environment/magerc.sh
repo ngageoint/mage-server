@@ -11,7 +11,7 @@ export MAGE_USER_DIR=/var/lib/mage/users
 # directory where mage stores map symbology icons
 export MAGE_ICON_DIR=/var/lib/mage/icons
 # directory where mage stores observation attachments
-export MAGE_ATTACHEMENT_DIR=/var/lib/mage/attachments
+export MAGE_ATTACHMENT_DIR=/var/lib/mage/attachments
 # directory where mage stores layers
 export MAGE_LAYER_DIR=/var/lib/mage/layers
 # directory where mage stores temporary files

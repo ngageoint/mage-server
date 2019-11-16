@@ -27,7 +27,11 @@ class TypeaheadSelectController {
     this.displayProperty = this.displayProperty || 'name';
     this._textField = new textField.MDCTextField(this._$element.find('.mdc-text-field')[0]);
     this._menu = new menuSurface.MDCMenuSurface(this._$element.find('.mdc-menu-surface')[0]);
-    this._menu.hoistMenuToBody();
+
+    if (this.hoistMenuToBody !== undefined) {
+      this._menu.hoistMenuToBody();
+    }
+
     this.initializeOptions();
   }
 
@@ -51,6 +55,14 @@ class TypeaheadSelectController {
     this.onSelect({event: option});
   }
 
+  clearSelectedOption(option) {
+    this._menu.close();
+    this.selectedOption = null;
+    this.selectedOptionDisplay = "";
+    this._textField.value = this.selectedOptionDisplay;
+    this.onSelect({event: option});
+  }
+
   initializeOptions() {
     if (this._menu && this.options) {
       this.sortedOptions = this.options.sort((a, b) => {
@@ -60,6 +72,8 @@ class TypeaheadSelectController {
       });
       if (this.initialValue) {
         this.setSelectedOption(this.filteredOptions().find(option => this.initialValue[this.displayProperty] === option[this.displayProperty]));
+      } else {
+        this.clearSelectedOption();
       }
     }
   }
@@ -75,7 +89,9 @@ var template = require('./typeahead.select.component.html'),
   bindings = {
     options: '<',
     initialValue: '<',
+    hoistMenuToBody: '@hoistMenuToBody',
     fieldLabel: '@',
+    helperText: '@',
     idProperty: '@',
     displayProperty: '@',
     secondaryDisplayProperty: '@',

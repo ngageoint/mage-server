@@ -11,152 +11,146 @@
       </div>
     </div>
 
+    clear select typeahead values
+
     <div class="admin-content">
-      <div class="container bottom-gap-l">
+      <div class="admin-user-import-content">
 
-        <div class="row">
-          <div class="col-md-12">
-            <p class="muted">Please select a team you would like to import users into.</p>
+        <div class="admin-user-import-input">
+          <div class="admin-user-import-team">
+            <div class="mdc-text-field-container">
+              <typeahead-select
+                options="teams"
+                field-label="Team"
+                helper-text="Select a team you would like to import users into"
+                initial-value="team.selected"
+                display-property="name"
+                secondary-display-property="description"
+                id-property="id"
+                on-select="teamSelected(event)"/>
+            </div>
           </div>
-        </div>
 
-        <div class="row">
-          <div class="col-md-12">
-            <ui-select ng-model="team.selected" theme="bootstrap">
-              <ui-select-match placeholder="Select a team">{{$select.selected.name}}</ui-select-match>
-              <ui-select-choices repeat="team in teams | orderBy: 'name' | filter: $select.search">
-                <div ng-bind-html="team.name | highlight: $select.search"></div>
-              </ui-select-choices>
-            </ui-select>
+          <div class="admin-user-import-role">
+            <typeahead-select
+              options="roles"
+              field-label="Role"
+              helper-text="Select a role you would like assign to all imported users"
+              initial-value="role.selected"
+              display-property="name"
+              secondary-display-property="description"
+              id-property="id"
+              on-select="roleSelected(event)"/>
           </div>
-        </div>
 
-        <div class="row top-gap">
-          <div class="col-md-12">
-            <p class="muted">Please select a role you would like assign to all imported users.</p>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="col-md-12">
-            <ui-select ng-model="role.selected" theme="bootstrap">
-              <ui-select-match placeholder="Select a role">{{$select.selected.name}}</ui-select-match>
-              <ui-select-choices repeat="role in roles | filter: $select.search">
-                <div ng-bind-html="role.name | highlight: $select.search"></div>
-              </ui-select-choices>
-            </ui-select>
-          </div>
-        </div>
-
-        <div class="row top-gap-l" ng-if="team.selected && role.selected">
-          <div class="col-md-12">
-            <p class="muted">Grab a csv file that contains users you would like to import into MAGE.</p>
-            <span class="btn btn-default btn-file" ng-disabled="columns != null">
-                <i class="fa fa-file-o"></i> Import CSV <input type="file" file-change="importFile" >
-            </span>
+          <div>
+            <input name="csv-input" id="csv-input" class="admin-user-import-file-input" type="file" file-change="importFile">
+            <label class="mdc-button mdc-button--outlined mdc-ripple-upgraded admin-user-import-file-button" for="csv-input" ng-if="team.selected && role.selected">
+              <i class="material-icons-outlined mdc-button__icon">insert_drive_file</i>
+              <span class="mdc-button__label">User CSV</span>
+            </label>
+            <button class="mdc-button mdc-button--outlined mdc-ripple-upgraded" ng-if="!team.selected || !role.selected" disabled>
+              <i class="material-icons-outlined mdc-button__icon">insert_drive_file</i>
+              <span class="mdc-button__label">User CSV</span>
+            </button>
           </div>
         </div>
 
         <div ng-if="columns">
-          <div class="row top-gap-xl">
-            <div class="col-md-12">
 
-              <div ng-if="unmappedFields.length" class="bottom-gap">
-                <div ng-repeat="unmappedField in unmappedFields">
-                  <div class="text-danger"><i class="fa fa-warning"></i> {{unmappedField}} is not mapped.  Please map the column that contains {{unmappedField}} in the table below.</div>
-                </div>
-              </div>
+          <div ng-if="unmappedFields.length" class="admin-user-import-mapping-error">
+            <div ng-repeat="unmappedField in unmappedFields">
+              <i class="material-icons vertical-middle admin-user-import-error">error</i>
+              <span class="admin-user-import-error">{{unmappedField.title}} is not mapped, please map the column that contains {{unmappedField.title}} in the table below.</span>
+            </div>
+          </div>
 
-              <div class="row">
-                <div class="col-md-12">
-                  <nav class="navbar navbar-default admin-dashboard-navbar">
-                    <div class="container-fluid">
-                      <div class="navbar-header">
-                        <a class="navbar-brand">Users To Import
-                          <sup><span class="badge">{{numberOfUsersToImport()}}</span></sup>
-                        </a>
-                      </div>
+          <div class="mdc-data-table admin-user-import-table">
+            <table class="mdc-data-table__table">
+              <thead>
+                <tr>
+                  <header class="admin-user-import-toolbar__muted">
+                    <div class="mdc-top-app-bar__row">
+                      <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+                        <span class="mdc-top-app-bar__title">{{users.length}} Users</span>
+                      </section>
                     </div>
-                  </nav>
-                </div>
-              </div>
+                  </header>
+                </tr>
+              </thead>
+              <tbody class="mdc-data-table__content">
+                <tr class="mdc-data-table__row">
+                  <td class="mdc-data-table__header-cell"></td>
+                  <td class="mdc-data-table__header-cell">Team</td>
+                  <td class="mdc-data-table__header-cell">Role</td>
+                  <td ng-repeat="column in columns track by $index" class="mdc-data-table__header-cell">
+                    <mdc-menu title="{{column}}" options="columnOptions" on-option="onColumnOption($event, $index)" selected="[selected($index)]"></mdc-menu>
+                  </td>
+                </tr>
 
-            <div class="admin-table">
-              <div class="well-item">
-                <div class="admin-bulk-user-content">
-                  <table class="table table-striped table-responsive">
-                    <thead>
-                      <tr>
-                        <th></th>
-                        <th class="admin-bulk-column">Team</th>
-                        <th class="admin-bulk-column">Role</th>
-                        <th ng-repeat="column in columns track by $index" class="admin-bulk-column">
-                          <div class="dropdown pointer">
-                            <span class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                              {{column}} <span class="caret"></span>
-                            </span>
-                            <ul class="dropdown-menu">
-                              <li><a ng-click="mapColumn('username', $index)"><i class="fa" ng-class="columnMap['username'] === $index ? 'fa-check text-success' : 'fa-fw'"></i> username</a></li>
-                              <li><a ng-click="mapColumn('displayname', $index)"><i class="fa" ng-class="columnMap['displayname'] === $index ? 'fa-check text-success' : 'fa-fw'"></i> display name</a></li>
-                              <li><a ng-click="mapColumn('email', $index)"><i class="fa" ng-class="columnMap['email'] === $index ? 'fa-check text-success' : 'fa-fw'"></i> email</a></li>
-                              <li><a ng-click="mapColumn('phone', $index)"><i class="fa" ng-class="columnMap['phone'] === $index ? 'fa-check text-success' : 'fa-fw'"></i> phone number</a></li>
-                              <li><a ng-click="mapColumn('password', $index)"><i class="fa" ng-class="columnMap['password'] === $index ? 'fa-check text-success' : 'fa-fw'"></i> password</a></li>
-                              <li><a ng-click="mapColumn('iconInitials', $index)"><i class="fa" ng-class="columnMap['iconInitials'] === $index ? 'fa-check text-success' : 'fa-fw'"></i> icon initials</a></li>
-                              <li><a ng-click="mapColumn('iconColor', $index)"><i class="fa" ng-class="columnMap['iconColor'] === $index ? 'fa-check text-success' : 'fa-fw'"></i> icon color</a></li>
-                            </ul>
-                          </div>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr ng-repeat="user in users" class="ng-animatable cssFade" ng-class="!importing && (results[$index] && results[$index].status !== 200) ? 'danger' : ''" ng-hide="results[$index].status === 200">
-                        <td><i class="fa fa-edit text-primary" ng-click="edit.row !== $index ? edit.row = $index : edit.row = null"></i></td>
+                <tr ng-repeat-start="user in users" class="mdc-data-table__row ng-animatable cssFade" ng-hide="user.result.status === 200">
+                  <td class="mdc-data-table__cell">
+                    <span style="display: inline-flex">
+                      <i class="fa fa-spinner fa-spin" ng-if="importing && results[$index].status !== 200"></i>
+                      <button class="mdc-icon-button material-icons" ng-if="!importing" ng-click="edit.row !== $index ? edit.row = $index : edit.row = null">edit</button>
+                    </span>
+                  </td>
 
-                          <td>
-                            <span ng-if="edit.row !== $index">{{user.team.selected.name}}</span>
-                            <ui-select ng-model="user.team.selected" theme="bootstrap" ng-if="edit.row === $index">
-                              <ui-select-match placeholder="Select a team">{{$select.selected.name}}</ui-select-match>
-                              <ui-select-choices repeat="team in teams | orderBy: 'name' | filter: $select.search">
-                                <div ng-bind-html="team.name | highlight: $select.search"></div>
-                              </ui-select-choices>
-                            </ui-select>
-                          </td>
+                    <td class="mdc-data-table__cell">
+                      <span ng-if="edit.row !== $index">{{user.team.selected.name}}</span>
+                      <typeahead-select ng-if="edit.row === $index"
+                        options="teams"
+                        field-label="Team"
+                        initial-value="user.team.selected"
+                        display-property="name"
+                        id-property="id"
+                        on-select="teamSelectedForUser(event, user)"/>
+                    </td>
 
-                          <td>
-                            <span ng-if="edit.row !== $index">{{user.role.name}}</span>
-                            <select ng-if="edit.row === $index" class="form-control" ng-model="user.role" ng-options="role as role.name for role in roles"></select>
-                          </td>
+                    <td class="mdc-data-table__cell">
+                      <span ng-if="edit.row !== $index">{{user.role.selected.name}}</span>
+                      <typeahead-select ng-if="edit.row === $index"
+                        options="roles"
+                        field-label="Role"
+                        initial-value="user.role.selected"
+                        display-property="name"
+                        id-property="id"
+                        on-select="roleSelectedForUser(event, user)"/>
+                    </td>
 
-                          <td ng-repeat="userColumn in user track by $index">
-                            <span ng-if="edit.row !== $parent.$index">{{userColumn}}</span>
-                            <input ng-if="edit.row === $parent.$index" type="text" ng-model="user[$index]" class="form-control">
-                          </td>
+                    <td class="mdc-data-table__cell" ng-repeat="userColumn in user as columns track by $index">
+                      <span ng-if="edit.row !== $parent.$index">{{userColumn}}</span>
 
-                          <td>
-                            <i class="fa fa-spinner fa-spin" ng-if="importing && results[$index].status !== 200"></i>
-                            <i class="fa fa-exclamation-triangle text-danger"
-                              ng-if="!importing && (results[$index] && results[$index].status !== 200)"
-                              uib-tooltip="{{results[$index].message}}"></i>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
+                      <div class="mdc-text-field mdc-text-field--outlined admin-user-import-textfield" ng-if="edit.row === $parent.$index">
+                        <input type="text" class="mdc-text-field__input" ng-model="user[$index]">
+                        <div class="mdc-notched-outline">
+                          <div class="mdc-notched-outline__leading"></div>
+                          <div class="mdc-notched-outline__trailing"></div>
+                        </div>
+                      </div>
+                    </td>
+
+                  </tr>
+                  <tr ng-repeat-end ng-if="user.result && user.result.status !== 200" class="mdc-data-table__row admin-user-import-table-no-border">
+                    <td class="mdc-data-table__cell"></td>
+                    <td colspan="{{columns.length + 2}}" class="mdc-data-table__cell">
+                      <i class="material-icons vertical-middle admin-user-import-error">error</i>
+                      <span class="admin-user-import-error">{{user.result.message}}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
           </div>
 
-          <div class="row top-gap-l">
-            <div class="col-md-12">
-              <span ng-if="numberOfUsersImported() > 0" class="pull-left text-success"><i class="fa fa-check"></i> Successfully created {{numberOfUsersImported()}} users</span>
-
-              <button ng-if="!imported" class="btn btn-primary pull-right" ng-disabled="importing || unmappedFields.length" ng-click="import()">Create Users</button>
-              <button ng-if="errors.length" class="btn btn-primary pull-right" ng-disabled="importing || unmappedFields.length" ng-click="retry()">Retry {{errors.length}} Users</button>
-            </div>
-          </div>
+          <button ng-if="users.length && !importStatus && !importing && !unmappedFields.length" ng-click="import()" class="mdc-fab mdc-fab--extended app-fab--absolute-center">
+            <span class="material-icons mdc-fab__icon">check</span>
+            <span class="mdc-fab__label">Import {{users.length}} Users</span>
+          </button>
         </div>
       </div>
+
+      <mdc-snackbar options="importStatus" on-close="onStatusClosed()"/>
+
     </div>
   </div>
 </div>

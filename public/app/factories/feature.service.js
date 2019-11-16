@@ -25,7 +25,6 @@ function FeatureService($q, $http) {
     }).success(function(featureCollection) {
       featureCollectionsByLayer[layer.name] = featureCollection;
 
-      // TODO add other styles
       _.each(featureCollection.features, function(feature) {
         var style = feature.properties.style;
         if (!style) return;
@@ -35,12 +34,13 @@ function FeatureService($q, $http) {
           feature.style.iconUrl = style.iconStyle.icon.href;
         }
 
-        if (style.lineStyle) {
-          feature.style.color = feature.properties.style.lineStyle.color.rgb;
+        if (style.lineStyle && style.lineStyle.color) {
+          feature.style.color = style.lineStyle.color.rgb;
         }
-        if (style.polyStyle) {
-          feature.style.fillColor = feature.properties.style.polyStyle.color.rgb;
-          feature.style.fillOpacity = feature.properties.style.polyStyle.color.opacity / 255;
+
+        if (style.polyStyle && style.polyStyle.color) {
+          feature.style.fillColor = style.polyStyle.color.rgb;
+          feature.style.fillOpacity = style.polyStyle.color.opacity / 255;
         }
       });
 

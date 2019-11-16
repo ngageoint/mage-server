@@ -28,6 +28,13 @@
 @import "./leaflet-overrides.css";
 @import "./layer-edit.scss";
 
+@import "./admin/index.scss";
+@import "./card/index.scss";
+
+.dropdown-menu {
+  margin-top: 56px;
+}
+
 .vertical-middle {
   vertical-align: middle;
 }
@@ -977,6 +984,10 @@ textarea {
 
 .admin-user-button {
   margin-left: 10px;
+}
+
+.admin-user-import-error {
+  border-top: none !important;
 }
 
 .admin-password-container {

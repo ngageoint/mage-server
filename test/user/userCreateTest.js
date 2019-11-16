@@ -216,7 +216,7 @@ describe("user create tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal("Cannot create user, invalid parameters.  'username' parameter is required");
+        res.text.should.equal("Invalid user document: missing required parameter 'username'");
       })
       .end(done);
   });
@@ -235,7 +235,7 @@ describe("user create tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal("Cannot create user, invalid parameters.  'displayName' parameter is required");
+        res.text.should.equal("Invalid user document: missing required parameter 'displayName'");
       })
       .end(done);
   });
@@ -256,7 +256,7 @@ describe("user create tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal('Please enter a valid email address');
+        res.text.should.equal('Invalid email address');
       })
       .end(done);
   });
@@ -275,7 +275,7 @@ describe("user create tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal("Cannot create user, invalid parameters.  'password' parameter is required");
+        res.text.should.equal("Invalid user document: missing required parameter 'password'");
       })
       .end(done);
   });
@@ -294,7 +294,7 @@ describe("user create tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal("Cannot create user, invalid parameters.  'passwordconfirm' parameter is required");
+        res.text.should.equal("Invalid user document: missing required parameter 'passwordconfirm'");
       })
       .end(done);
   });
@@ -314,7 +314,7 @@ describe("user create tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal('passwords do not match');
+        res.text.should.equal('Passwords do not match');
       })
       .end(done);
   });
@@ -341,7 +341,7 @@ describe("user create tests", function() {
       })
       .expect(400)
       .expect(function(res) {
-        res.text.should.equal('password does not meet minimum length requirement of 14 characters');
+        res.text.should.equal('Password must be at least 14 characters');
       })
       .end(done);
   });

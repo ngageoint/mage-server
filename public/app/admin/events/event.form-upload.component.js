@@ -28,7 +28,7 @@ function EventFormUploadController($element, Form) {
   this.$onInit = function() {
     formPanel = new MDCDialog($element.find('.form-create-panel')[0]);
     formPanel.listen('MDCDialog:closing', function(event) {
-      if (event.detail.action !== 'cancel') {
+      if (event.detail.action !== 'close') {
         this.onFormCreateClose({form: this.form});
       }
     }.bind(this));
@@ -47,10 +47,12 @@ function EventFormUploadController($element, Form) {
     }
 
     if (this.form.formArchiveFile) {
-      this.form.$save({}, function(form) {
+      this.form.$save({}, form => {
         this.form.id = form.id;
         formPanel.close();
-      }.bind(this));
+      }, response => { // error
+        this.error = response.responseText;
+      });
     } else {
       formPanel.close();
     }
