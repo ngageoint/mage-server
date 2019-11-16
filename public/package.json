@@ -33,7 +33,7 @@
     "@turf/center": "4.3.0",
     "@turf/helpers": "4.3.0",
     "@turf/kinks": "4.3.0",
-    "angular": "1.5.11",
+    "angular": "1.6.0",
     "angular-animate": "1.5.11",
     "angular-messages": "1.5.11",
     "angular-minicolors": "0.0.7",
