@@ -108,7 +108,6 @@ function config($httpProvider, $stateProvider, $urlRouterProvider,  $animateProv
   });
 
   $stateProvider.state('map', {
-    // template: require('./mage/mage.html'),
     url: '/map',
     component: "mage",
     resolve: resolveLogin()
@@ -140,7 +139,7 @@ function config($httpProvider, $stateProvider, $urlRouterProvider,  $animateProv
 
   $stateProvider.state('admin.bulkUser', {
     url: '/users/bulk',
-    component: "adminBulkUser",
+    component: "adminUserBulk",
     resolve: resolveAdmin()
   });
 
