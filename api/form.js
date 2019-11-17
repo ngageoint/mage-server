@@ -1,5 +1,6 @@
 var api = require('../api')
   , Zip = require('adm-zip')
+  , log = require('winston')
   , archiver = require('archiver')
   , walk = require('walk')
   , path = require('path')
@@ -122,35 +123,33 @@ Form.prototype.export = function(formId, callback) {
 };
 
 Form.prototype.validate = function(file, callback) {
-  var err;
+  let archiveError = new Error('Form archive file is invalid, please choose a valid file.');
+  archiveError.status = 400;
 
-  if (file.mimetype !== 'application/zip') {
-    err = new Error('Form import file must be of type "zip"');
-    err.status = 400;
-    return callback(err);
+  try {
+    var zip = new Zip(file.path);
+  } catch (e) {
+    log.warn('Invalid zip archive', e);
+    return callback(archiveError);
   }
 
-  var zip = new Zip(file.path);
   var form = zip.readAsText('form/form.json');
   if (!form) {
-    err = new Error('Invalid zip archive, no form/form.json');
-    err.status = 400;
-    return callback(err);
+    log.warn('Invalid zip archive, no form/form.json');
+    return callback(archiveError);
   }
 
   try {
     form = JSON.parse(form);
   } catch (e) {
-    err = new Error('Error parsing form.json, please insure its valid JSON');
-    err.status = 400;
-    return callback(err);
+    log.warn('Error parsing form.json, please insure its valid JSON');
+    return callback(archiveError);
   }
 
   var iconsEntry = zip.getEntry('form/icons/');
   if (!iconsEntry) {
-    err = new Error('Error parsing icons directory...');
-    err.status = 400;
-    callback(err);
+    log.warn('Invalid zip archive, no form/icons');
+    return callback(archiveError);
   }
 
   form = cleanForm(form);
@@ -175,6 +174,7 @@ Form.prototype.importIcons = function(file, form, callback) {
       var variant = null;
       var regex = new RegExp(iconPath + path.sep + "+(.*)");
       var match = regex.exec(filePath);
+      // TODO: what if there's a slash in the select field value?
       if (match && match[1]) {
         var variants = match[1].split("/");
         primary = variants.shift();

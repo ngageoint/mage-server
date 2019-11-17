@@ -31,6 +31,7 @@ module.exports = function(app, security) {
   );
 
   // get device
+  // TODO: check for READ_USER also
   app.get('/api/devices/:id',
     passport.authenticate('bearer'),
     access.authorize('READ_DEVICE'),
@@ -59,6 +60,9 @@ DeviceResource.prototype.ensurePermission = function(permission) {
   };
 };
 
+/**
+ * TODO: this should return a 201 and a location header
+ */
 DeviceResource.prototype.create = function(req, res, next) {
   // Automatically register any device created by an ADMIN
   req.newDevice.registered = true;
@@ -76,6 +80,15 @@ DeviceResource.prototype.count = function (req, res, next) {
     .catch(err => next(err));
 };
 
+/**
+ * TODO:
+ * * the /users route uses the `populate` query param while this uses
+ *   `expand`; should be consistent
+ * * openapi supports array query parameters using the pipe `|` delimiter;
+ *   use that instead of comma for the `expand` query param. on the other hand,
+ *   this only actually supports a singular `expand` key, so why bother with
+ *   the split anyway?
+ */
 DeviceResource.prototype.getDevices = function (req, res, next) {
   var filter = {};
   if (req.query.registered === 'true' || req.query.registered === 'false') {

@@ -1,11 +1,12 @@
-var request = require('supertest')
-  , sinon = require('sinon')
-  , mongoose = require('mongoose')
-  , mockfs = require('mock-fs')
-  , os = require('os')
-  , MockToken = require('../mockToken')
-  , app = require('../../express')
-  , TokenModel = mongoose.model('Token');
+const { expect } = require('chai');
+const request = require('supertest');
+const sinon = require('sinon');
+const mongoose = require('mongoose');
+const mockfs = require('mock-fs');
+const MockToken = require('../mockToken');
+const app = require('../../express');
+const TokenModel = mongoose.model('Token');
+const env = require('../../environment/env');
 
 require('sinon-mongoose');
 
@@ -19,7 +20,7 @@ var Observation = require('../../models/observation');
 var observationModel = Observation.observationModel;
 var AttachmentModel = mongoose.model('Attachment');
 
-describe("attachment update tests", function() {
+describe('updating attachments', function() {
 
   beforeEach(function() {
     var mockEvent = new EventModel({
@@ -34,9 +35,11 @@ describe("attachment update tests", function() {
 
   afterEach(function() {
     sinon.restore();
+    mockfs.restore();
   });
 
-  var userId = mongoose.Types.ObjectId();
+  const userId = mongoose.Types.ObjectId();
+
   function mockTokenWithPermission(permission) {
     sinon.mock(TokenModel)
       .expects('findOne')
@@ -46,15 +49,14 @@ describe("attachment update tests", function() {
       .yields(null, MockToken(userId, [permission]));
   }
 
-  it("should update attachment for event I am a part of", function(done) {
+  it("updates an attachment with event update permission", async function() {
     mockTokenWithPermission('UPDATE_OBSERVATION_EVENT');
 
-    var tmp = os.tmpdir();
     var fs = {
       'mock/path/attachment.jpeg': new Buffer([8, 6, 7, 5, 3, 0, 9]),
       'var/lib/mage': {}
     };
-    fs[tmp] = {};
+    fs[env.tempDirectory] = {};
     mockfs(fs);
 
     sinon.mock(TeamModel)
@@ -109,14 +111,11 @@ describe("attachment update tests", function() {
       .expects('findOneAndUpdate')
       .yields(null, mockObservation);
 
-    request(app)
+    const res = await request(app)
       .put('/api/events/1/observations/' + observationId + '/attachments/' + attachmentId)
       .attach('attachment', 'mock/path/attachment.jpeg')
-      .set('Authorization', 'Bearer 12345')
-      .expect(200)
-      .end(function() {
-        mockfs.restore();
-        done();
-      });
+      .set('Authorization', 'Bearer 12345');
+
+    expect(res.status).to.equal(200);
   });
 });

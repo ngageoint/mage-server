@@ -255,6 +255,7 @@ exports.createTeamForEvent = function(event, user, callback) {
   });
 };
 
+// TODO: should this do something with ACL?
 exports.updateTeam = function(id, update, callback) {
   if (update.users) {
     update.userIds = update.users.map(function(user) { return mongoose.Types.ObjectId(user.id); });

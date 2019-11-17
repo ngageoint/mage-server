@@ -36,10 +36,17 @@ angular
    */
   .config(['$httpProvider', function($httpProvider) {
 
-    var interceptor = ['$rootScope', '$q', 'httpBuffer', 'LocalStorageService', function($rootScope, $q, httpBuffer, LocalStorageService) {
+    var interceptor = ['$rootScope', '$location', '$q', 'httpBuffer', 'LocalStorageService', function($rootScope, $location, $q, httpBuffer, LocalStorageService) {
       return {
         'request': function(request) {
-          if (!request.ignoreAuthModule && request.url.lastIndexOf('.html') !== request.url.length - 5) {
+          console.log(`check this ${$location.protocol()}://${$location.host()}`, request.url)
+          if (!request.ignoreAuthModule 
+              && (request.url.startsWith('/api/') 
+                || (request.url.startsWith(`${$location.protocol()}://${$location.host()}`)
+                  && (request.url.indexOf('/api/') != -1)
+                )
+              )
+              && request.url.lastIndexOf('.html') !== request.url.length - 5) {
             request.headers.authorization = "Bearer " + LocalStorageService.getToken();
           }
           return request;
@@ -78,6 +85,7 @@ angular
     var $http;
 
     function retryHttpRequest(config, deferred) {
+      console.log('retry request', config);
       function successCallback(response) {
         deferred.resolve(response);
       }

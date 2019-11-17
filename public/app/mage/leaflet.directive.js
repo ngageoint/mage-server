@@ -2,6 +2,8 @@ var _ = require('underscore')
   , L = require('leaflet')
   , moment = require('moment');
 
+var countries = require('./countries-land-10km.geo.json');
+
 module.exports = function leaflet() {
   var directive = {
     restrict: "A",
@@ -62,6 +64,23 @@ function LeafletController($scope, MapService, LocalStorageService, EventService
   map.getPane(FEATURE_LAYER_PANE).style.zIndex = 300;
 
   L.Icon.Default.imagePath = 'images/';
+
+  // Add in a base layer of styled GeoJSON in case the tiles do not load
+  var FALLBACK_LAYER_PANE = 'fallbackLayerPane';
+  map.createPane(FALLBACK_LAYER_PANE);
+  map.getPane(FALLBACK_LAYER_PANE).style.zIndex = 99;
+  map.addLayer(L.geoJSON(countries, {
+    style: function () {
+      return {
+        color: '#BBBBBB',
+        weight: .5,
+        fill: true,
+        fillColor: '#F9F9F6',
+        fillOpacity: 1
+      };
+    },
+    pane: FALLBACK_LAYER_PANE
+  }));
 
   map.on('moveend', saveMapPosition);
 

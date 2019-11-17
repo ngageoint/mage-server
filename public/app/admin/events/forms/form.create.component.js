@@ -22,7 +22,7 @@ class FormUploadController {
   $onInit() {
     this.formPanel = new dialog.MDCDialog(this.$element.find('.form-create-panel')[0]);
     this.formPanel.listen('MDCDialog:closing', event => {
-      if (event.detail.action !== 'cancel') {
+      if (event.detail.action !== 'close') {
         this.onFormCreateClose({form: this.form});
       }
     });
@@ -44,6 +44,8 @@ class FormUploadController {
       this.form.$save({}, form => {
         this.form.id = form.id;
         this.formPanel.close();
+      }, response => {
+        this.error = response.responseText;
       });
     } else {
       this.formPanel.close();

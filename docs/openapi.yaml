@@ -1,0 +1,3102 @@
+openapi: 3.0.1
+info:
+  title: MAGE (Mobile Awareness GEOINT Environment) API
+  description: MAGE API
+  contact:
+    name: MAGE Support
+    email: mage@nga.mil
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0
+  version: 5.2.6
+servers: []
+security:
+  - mageToken: []
+
+paths:
+  /api/logins:
+    get:
+      tags: [ Auth ]
+      description: >
+        Return an array of user login events.  This operation requires
+        `READ_USER` permission.
+      operationId: getUserLogins
+      parameters:
+        - name: userId
+          in: query
+          description: Return only logins for the given `userId`
+          schema: { $ref: '#/components/schemas/User/properties/id' }
+        - name: deviceId
+          in: query
+          description: Return only logins from the given `deviceId`
+          schema: { $ref: '#/components/schemas/Device/properties/id' }
+        - name: startDate
+          in: query
+          description: ISO 8601 start date to filter (inclusive)
+          schema:
+            type: string
+            format: date-time
+        - name: endDate
+          in: query
+          description: ISO 8601 end date filter (exclusive)
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          description: >
+            Limit the number of results to the given value.  The default value
+            is `10`.
+          schema:
+            type: integer
+        - name: firstLoginId
+          in: query
+          description: The ID of the first login in the range of results
+          schema: { $ref: '#/components/schemas/Login/properties/id' }
+        - name: lastLoginId
+          in: query
+          description: The ID of the last login in the range of results
+          schema: { $ref: '#/components/schemas/Login/properties/id' }
+      responses:
+        200:
+          description: >
+            Success - return the array of login events according to the given
+            query parameters.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [ logins ]
+                properties:
+                  next:
+                    type: string
+                    format: uri
+                    description: Link to the next chunk of results
+                  prev:
+                    type: string
+                    format: uri
+                    description: Link to the previous chunk of results
+                  logins:
+                    type: array
+                    items: { $ref: '#/components/schemas/Login' }
+
+  /api/logout:
+    post:
+      tags:
+      - Auth
+      description: Invaldate the auth token for the requesting user.
+      operationId: logout
+      responses:
+        200:
+          description: logout response
+
+  /api/users:
+    post:
+      tags: [ User ]
+      description: >
+        Create a new user.  Duplicate usernames are not allowed.
+        If the requesting user is an admin, i.e., has the `CREATE_USER`
+        permission, the user record will be active.  Otherwise, the user will
+        be inactive and an admin must activate the user later.  Additionally,
+        the `roleId` key is required when the requesting user is an admin.
+        Otherwise, the created user receives a default role.  When the request
+        body contains `multipart/form-data`, MAGE will handle the `icon` and/or
+        `avatar` file form parameters.  The server only sets the user's map
+        icon if the requesting user has the `CREATE_USER` permission.
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserCreate' }
+          multipart/form-data:
+            schema: { $ref: '#/components/schemas/UserCreate' }
+      responses:
+        200:
+          description: The created user document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    get:
+      tags: [ User ]
+      description: >
+        Return an array of all users.  The client must have `READ_USER` permission.
+      operationId: getUsers
+      parameters:
+        - in: query
+          name: active
+          description: Return only active or inactive users.
+          schema:
+            type: boolean
+        - in: query
+          name: populate
+          description: >
+            Pre-populate the given relation keys in the result user documents.
+            Currently, this only supports 'roleId'.
+          schema: { $ref: '#/components/schemas/CommaSeparatedTokens' }
+      responses:
+        200:
+          description: An array of user documents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+  /api/users/count:
+    get:
+      tags: [ User ]
+      description: >
+        Return the number of users in the database.  The client must
+        have `READ_USER` permission.
+      operationId: getUserCount
+      responses:
+        200:
+          description: A successful request
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Count' }
+  /api/users/myself:
+    get:
+      tags: [ User ]
+      description: >
+        Return the user document for the requesting user based on the
+        provided authentication token.
+      operationId: getMyself
+      responses:
+        200:
+          description: The user document for the requesting user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    put:
+      tags: [ User ]
+      description: >
+        Update the user document for the requesting user based on the
+        provided authentication token.  This operation does not support
+        changing the requesting user's password; use
+        `PUT /api/users/myself/password` for that.
+      operationId: updateMyself
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserUpdateSelf' }
+          multipart/form-data:
+            schema: { $ref: '#/components/schemas/UserUpdateSelf' }
+      responses:
+        200:
+          description: The updated user document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /api/users/myself/password:
+    put:
+      tags: [ User ]
+      description: Update the password for the requesting user.
+      operationId: updateMyPassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPassword:
+                  type: string
+                  format: password
+                newPasswordConfirm:
+                  type: string
+                  format: password
+      responses:
+        200:
+          description: Successful password update; return the user document
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+  /api/users/myself/status:
+    put:
+      tags: [ User ]
+      description: Update the status of the requesting user.
+      operationId: updateMyStatus
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+              required: [ status ]
+      responses:
+        200:
+          description: Successful status update
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+    delete:
+      tags: [ User ]
+      description: Delete the status of the requesting user.
+      operationId: deleteMyStatus
+      responses:
+        200:
+          description: Successfully deleted status
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+  /api/users/{userId}:
+    parameters:
+      - { $ref: '#/components/parameters/userIdInPath' }
+    get:
+      tags:
+      - User
+      description: >
+        Return the user document whose `id` equals the `userId` path parameter.
+        The client must have `READ_USER` permission.
+      operationId: getUserById
+      responses:
+        200:
+          description: The updated user document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    put:
+      tags: [ User ]
+      description: >
+        Update the user document whose `id` equals the `userId` path parameter.
+        The client must have `UPDATE_USER` permission.
+      operationId: updateUserById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserIn' }
+          multipart/form-data:
+            schema: { $ref: '#/components/schemas/UserIn' }
+      responses:
+        200:
+          description: user update response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    delete:
+      tags: [ User ]
+      description: >
+        Delete the user document whose `id` equals the `userId` path parameter.
+        The client must have `DELETE_USER` permission.
+      operationId: deleteUser
+      responses:
+        204:
+          description: Success - user deleted
+  /api/users/{userId}/avatar:
+    parameters:
+      - { $ref: '#/components/parameters/userIdInPath' }
+    get:
+      tags: [ User ]
+      description: Returns users avatar based on user id
+      operationId: getUserAvatar
+      responses:
+        200:
+          description: user avatar response
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+  /api/users/{userId}/icon:
+    parameters:
+      - { $ref: '#/components/parameters/userIdInPath' }
+    get:
+      tags: [ User ]
+      description: Returns users map icon based on user id
+      operationId: getUserIcon
+      responses:
+        200:
+          description: user icon response
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+  /api/users/{userId}/events/{eventId}/recent:
+    parameters:
+      - { $ref: '#/components/parameters/userIdInPath' }
+      - { $ref: '#/components/parameters/eventIdInPath' }
+    post:
+      tags: [ User ]
+      description: >
+        Add the given event to top of recent list for the given user.  The list
+        is capped at 5.
+      operationId: addRecentEventForUser
+      responses:
+        200:
+          description: user response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /api/devices:
+    post:
+      tags:
+        - Device
+      description: >
+        Save a new device document in the database.  The request client must
+        have `CREATE_DEVICE` permission.
+      operationId: createDevice
+      requestBody:
+        $ref: '#/components/requestBodies/DeviceIn'
+      responses:
+        200:
+          description: new device response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+    get:
+      tags:
+        - Device
+      description: >
+        Return an array of all the device documents in the database.  The
+        requesting client must have `READ_DEVICE` permission.
+      operationId: getDevices
+      parameters:
+        - in: query
+          name: registered
+          description: Return only registered or unregistered devices.
+          schema: { $ref: '#/components/schemas/Device/properties/registered' }
+        - in: query
+          name: expand
+          description: >
+            Comma-separated list of relation keys to populate with related
+            documents.  Currently the API only supports the `user` key.
+          schema: { $ref: '#/components/schemas/CommaSeparatedTokens' }
+      responses:
+        200:
+          description: Success - an array of device documents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Device'
+  /api/devices/count:
+    get:
+      tags:
+        - Device
+      operationId: getDeviceCount
+      description: Return the number of devices in the database.
+      responses:
+        200:
+          description: Success - return the device count
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+  /api/devices/{deviceId}:
+    parameters:
+      - $ref: '#/components/parameters/deviceIdInPath'
+    get:
+      tags:
+        - Device
+      description: >
+        Return the device document whose ID matches the path parameter for the
+        device ID.  The requesting client must have READ_DEVICE permission.
+      operationId: getDeviceById
+      responses:
+        200:
+          description: device response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+    put:
+      tags:
+        - Device
+      description: >
+        Update a device document whose ID matches the path parameter for the
+        device ID.  The requesting client must have `UPDATE_DEVICE` permission.
+      operationId: updateDeviceById
+      requestBody:
+        $ref: '#/components/requestBodies/DeviceIn'
+      responses:
+        200:
+          description: device update response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+    delete:
+      tags:
+        - Device
+      description: >
+        Delete a device document whose ID matches the path parameter for the
+        device ID.  The requesting client must have `DELETE_DEVICE` permission.
+      operationId: deleteDeviceByIds
+      responses:
+        204:
+          description: user deleted
+
+  /api/teams:
+    post:
+      tags: [ Team ]
+      description: >
+        Save a new team document to the database.  The requesting user must
+        have `CREATE_TEAM` permission.
+      operationId: createTeam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TeamCreate' }
+          application/x-www-form-urlencoded:
+            schema: { $ref: '#/components/schemas/TeamCreate' }
+      responses:
+        200:
+          description: Success - the created team document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+    get:
+      tags: [ Team ]
+      description: >
+        Return all the teams.  The requesting client must have `READ_TEAM`
+        permission.
+      operationId: getTeams
+      responses:
+        200:
+          description: Success - an array of team documents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Team'
+  /api/teams/count:
+    get:
+      tags: [ Team ]
+      description: >
+        Get the number of teams in the database.  The requesting user must have
+        have `READ_TEAM` permission.
+      operationId: getTeamCount
+      responses:
+        200:
+          description: Success - return the number of teams
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Count' }
+  /api/teams/{teamId}:
+    parameters:
+      - $ref: '#/components/parameters/teamIdInPath'
+    get:
+      tags: [ Team ]
+      description: >
+        Return the team document whose ID matches the team ID path parameter.
+        The requesting client must have `READ_TEAM` permission.
+      operationId: getTeamById
+      responses:
+        200:
+          description: Success - a team document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+    put:
+      tags: [ Team ]
+      description: >
+        Update the team document whose ID matches the team ID in the path.
+        The requesting user must have `UPDATE_TEAM` permission.
+      operationId: updateTeamById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TeamIn' }
+          application/x-www-form-urlencoded:
+            schema: { $ref: '#/components/schemas/TeamIn' }
+      responses:
+        200:
+          description: Success - return the updated team document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+    delete:
+      tags: [ Team ]
+      description: >
+        Delete the team document whose ID matches the team ID in the path.  The
+        request user must have `DELETE_TEAM` permission.
+      operationId: deleteTeam
+      responses:
+        204:
+          description: Success - team deleted
+  /api/teams/{teamId}/users:
+    parameters:
+      - { $ref: '#/components/parameters/teamIdInPath' }
+    post:
+      tags: [ Team ]
+      operationId: addUserToTeam
+      description: >
+        Add a user to a team.  The request user must have `UPDATE_TEAM`
+        permission as well as an ACL entry in the team document with `update`
+        permission.
+      requestBody:
+        description: The user ID reference to add to the target team
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRef'
+        required: true
+      responses:
+        200:
+          description: Success - return the updated team document.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Team' }
+  /api/teams/{teamId}/users/{userId}:
+    parameters:
+      - { $ref: '#/components/parameters/teamIdInPath' }
+      - { $ref: '#/components/parameters/userIdInPath' }
+    delete:
+      tags: [ Team ]
+      operationId: removeUserFromTeam
+      description: >
+        Remove a user from a team.  The requesting user must have `UPDATE_TEAM`
+        permission as well as an ACL entry in the team document with `update`
+        permission.
+      responses:
+        200:
+          description: Success - return the updated team document.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Team' }
+  /api/teams/{teamId}/acl/{userId}:
+    parameters:
+      - { $ref: '#/components/parameters/teamIdInPath' }
+      - { $ref: '#/components/parameters/userIdInPath' }
+    put:
+      tags: [ Team ]
+      operationId: setUserAccessForTeam
+      description: >
+        Update a team ACL entry.  The requesting user must have `UPDATE_TEAM`
+        permission, as well as an ACL entry in the team document with `update`
+        permission.
+      requestBody:
+        $ref: '#/components/requestBodies/ACLRoleUpdate'
+      responses:
+        200:
+          description: Success - return the updated team document.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Team' }
+    delete:
+      tags: [ Team ]
+      operationId: removeUserAccessFromTeam
+      description: >
+        Delete a team ACL entry.  The requesting user must have `UPDATE_TEAM`
+        permission, as well as an ACL entry in the team document with `update`
+        permission.
+      responses:
+        200:
+          description: Success - return the updated team document.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Team' }
+
+  /api/events:
+    post:
+      tags: [ Event ]
+      operationId: createEvent
+      description: >
+        Create a new event.  The requesting user must have `CREATE_EVENT`
+        permission.  MAGE assigns the requesting user to the event's ACL with
+        the `OWNER` role.  Creating a new event implicitly creates a team
+        coupled to the event by the team's `teamEventId` property.  One can
+        add users to this team to allow access to the event on an individual
+        basis.  This allows team and user access management to remain
+        consistent across the API without having to maintain a list of users
+        separately for each event.
+      requestBody:
+        description: The new event document
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventCreate'
+        required: true
+      responses:
+        201:
+          description: Success - return the created event.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+    get:
+      tags: [ Event ]
+      description: >
+        Get all of the MAGE server's events.  The requesting user must have
+        `READ_EVENT_ALL` permission and an ACL entry on the even with `read`
+        permission.
+      operationId: getEvents
+      parameters:
+        - in: query
+          name: projection
+          schema:
+            type: string
+        - in: query
+          name: state
+          schema:
+            type: string
+            enum: [ active, complete ]
+        - in: query
+          name: userId
+          schema:
+            $ref: '#/components/schemas/User/properties/id'
+          description: >
+            Return only events the given user can access.
+        - in: query
+          name: populate
+          schema:
+            type: boolean
+          description: >
+            When omitted or not `false`, populate the teams and layers related
+            to each event.  Otherwise, the event documents will only contain
+            the IDs of the related teams and layers.  When populated, the
+            event documents will contain the `teams` and `layers` keys mapped to
+            arrays of their respective documents.  When not populated, the
+            event documents will contain the `eventIds` and `layerIds` keys
+            mapped to arrays of ID strings.  Populated team documents will NOT
+            contain populated user documents.
+      responses:
+        200:
+          description: Success - return an array of event documents.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+  /api/events/count:
+    get:
+      tags: [ Event ]
+      description: >
+        Get the number of events in the database.  The requesting user must
+        have `READ_EVENT_ALL` permission.
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+  /api/events/{eventId}:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+    get:
+      tags: [ Event ]
+      description: >
+        Return the event with the ID specified in the path.  The requesting
+        user must have `READ_EVENT_ALL` permission and an ACL entry with `read`
+        permission on the even.
+      operationId: getEventById
+      parameters:
+        - in: query
+          name: populate
+          schema:
+            type: boolean
+          description: >
+            When omitted or not `false`, populate the teams and layers related
+            to each event.  Otherwise, the event documents will only contain
+            the IDs of the related teams and layers.  When populated, the
+            event documents will contain the `teams` and `layers` keys mapped to
+            with arrays of their respective documents.  When not populated, the
+            event documents will contain the `eventIds` and `layerIds` keys
+            mapped to arrays of ID strings.  Populated team documents will NOT
+            contain populated user documents.
+        - in: query
+          name: projection
+          schema:
+            type: string
+      responses:
+        200:
+          description: Sucess - return the event document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+    put:
+      tags: [ Event ]
+      description: >
+        Update the event with the ID specified in the path.  The requesting
+        user must have `UPDATE_EVENT` permission and an ACL entry on the event
+        with `update` permission.
+      operationId: updateEventById
+      requestBody:
+        description: event update body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventUpdate'
+        required: true
+      responses:
+        200:
+          description: Success - return the update event document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+    delete:
+      tags: [ Event ]
+      description: >
+        Delete the event with the ID specified in the path.  The requesting
+        user must have `DELETE_EVENT` permission and an ACL entry on the event
+        with `delete` permission.
+      operationId: deleteEvent
+      responses:
+        204:
+          description: Success - event deleted
+  /api/events/{eventId}/forms:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+    post:
+      tags: [ Event ]
+      description: >
+        Add a form to the specified event.  The requesting user must have
+        `UPDATE_EVENT` permission and an ACL entry on the event with `update`
+        permission.
+      operationId: addFormToEvent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FormCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FormImport'
+      responses:
+        201:
+          description: Success - return the updated event document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+  /api/events/{eventId}/forms/{formId}:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+      - $ref: '#/components/parameters/formIdInPath'
+    put:
+      tags: [ Event ]
+      operationId: updateFormById
+      description: >
+        Update the specified form for the specified event.  The requesting
+        client must have `UPDATE_EVENT` permission and an ACL entry on the
+        event with `update` permission.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Form'
+      responses:
+        200:
+          description: Success - return the updated form document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Form'
+  /api/events/{eventId}/{formId}/form.zip:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+      - $ref: '#/components/parameters/formIdInPath'
+    get:
+      tags: [ Event ]
+      operationId: exportForm
+      description: >
+        Export a zip archive of the form.  The zip file includes metadata and
+        map symbology icons in the following layout.
+        ```
+        form/form.json # the form document
+        icons/ # a directory that contains the form's icon image files
+        icons/icon.png
+        # icon for 'primary_1' primary value with no variant value
+        icons/<primary_1>/icon.png
+        # icon for 'primary_1' primary value with 'variant_1' variant value
+        icons/<primary_1>/<variant_1>/icon.png
+        # icon for 'primary_1' primary value with 'variant_2' variant value
+        icons/<primary_1>/<variant_2>/icon.png
+        ...
+        # and so on for any combination of primary and variant field values
+        # that one wishes to have a specific map icon
+        icons/<primary_n>/<variant_n>/icon.png
+        ```
+        The `<primary_x>` and `<variant_x>` directory components above are
+        named after the choice values of the form's primary and variant
+        select fields, respectively.  Each `primary_x/variant_x` directory
+        contains the map icon image that MAGE clients will use to represent
+        observations with those values on a map.  MAGE clients will use the
+        form's default icon image to represent primary/variant combinations
+        that are not present in the `icons` directory.  The requesting user
+        must have `READ_EVENT_ALL` permission and an ACL entry with `read`
+        permission on the event.
+      responses:
+        200:
+          description: >
+            Success - return a zip file of the form meta-data and icons.
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+  /api/events/{eventId}/form/icons.zip:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+    get:
+      tags: [ Event ]
+      operationId: getEventIcons
+      description: >
+        Get a zip file containing all the map icons for the forms of an event.
+        The requesting user must have `READ_EVENT_ALL` permission and an ACL
+        entry with `read` permission on the event.  The top level of the zip
+        file will contain one directory entry, `icons/`, which contains the
+        icon files under directories named according to primary and variant
+        field values as described above in the `exportForm` operation.
+      responses:
+        200:
+          description: Success - return a zip file of icon images for the event.
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+  /api/events/{eventId}/icons/{formId}.json:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+      - $ref: '#/components/parameters/formIdInPath'
+    get:
+      tags: [ Event ]
+      operationId: getFormIcons
+      description: >
+        Return all the icons for the specified form as base-64 strings in a
+        JSON document.  The requesting user must have `READ_EVENT_ALL`
+        permission and an ACL entry with `read` permission on the event.
+      responses:
+        200:
+          description: Success - return the array of form icons.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FormIconEmbedded'
+  /api/events/{eventId}/icons:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+    post:
+      tags: [ Event ]
+      operationId: uploadEventIcon
+      description: >
+        Upload the default icon for the specified event.  The requesting user
+        must have `UPDATE_EVENT` permission and an ACL entry on the event with
+        `update` permission.
+      requestBody:
+        $ref: '#/components/requestBodies/FormIconUpload'
+      responses:
+        200:
+          $ref: '#/components/responses/FormIconInfo'
+    get:
+      tags: [ Event ]
+      operationId: getEventIcon
+      description: >
+        Get the default icon image for the specified event.  The requesting user
+        must have `READ_EVENT_ALL` permission and an ACL entry on the event with
+        `read` permission.
+      responses:
+        200:
+          $ref: '#/components/responses/FormIconContent'
+    delete:
+      tags: [ Event ]
+      operationId: deleteEventIcon
+      description: >
+        Delete the default icon from the specified event.  The requesting user
+        must have `UPDATE_EVENT` permission and an ACL entry on the event with
+        `update` permission.
+      responses:
+        204:
+          description: Success - icon deleted.
+  /api/events/{eventId}/icons/{formId}:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+      - $ref: '#/components/parameters/formIdInPath'
+    post:
+      tags: [ Event ]
+      operationId: uploadDefaultFormIcon
+      description: >
+        Upload the default icon for the specified form.  The requesting user
+        must have 'UPDATE_EVENT' permission and an ACL entry on the event with
+        `update` permission.
+      requestBody:
+        $ref: '#/components/requestBodies/FormIconUpload'
+      responses:
+        200:
+          $ref: '#/components/responses/FormIconInfo'
+    get:
+      tags: [ Event ]
+      operationId: getDefaultFormIcon
+      description: >
+        Get the default icon for the specified form.  The requesting user must
+        have `READ_EVENT_ALL` permission and an ACL entry on the event with
+        `read` permission.
+      responses:
+        200:
+          $ref: '#/components/responses/FormIconContent'
+    delete:
+      tags: [ Event ]
+      operationId: deleteDefaultFormIcon
+      description: >
+        Delete the default icon from the form.  The requesting user must have
+        `UPDATE_EVENT` permission and an ACL entry on the event with `update`
+        permission.
+      responses:
+        204:
+          description: Success - icon deleted.
+  /api/events/{eventId}/icons/{formId}/{primary}:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+      - $ref: '#/components/parameters/formIdInPath'
+      - $ref: '#/components/parameters/primaryFieldValueInPath'
+    post:
+      tags: [ Event ]
+      operationId: uploadPrimaryFormIcon
+      requestBody:
+        $ref: '#/components/requestBodies/FormIconUpload'
+      responses:
+        200:
+          $ref: '#/components/responses/FormIconInfo'
+    get:
+      tags: [ Event ]
+      operationId: getPrimaryFormIcon
+      description: >
+        Get the default icon for the specified form.  The requesting user must
+        have `READ_EVENT_ALL` permission and an ACL entry on the event with
+        `read` permission.
+      responses:
+        200:
+          $ref: '#/components/responses/FormIconContent'
+    delete:
+      tags: [ Event ]
+      operationId: deletePrimaryFormIcon
+      description: >
+        Delete the primary icon from the form.  The requesting user must have
+        `UPDATE_EVENT` permission and an ACL entry on the event with `update`
+        permission.
+      responses:
+        204:
+          description: Success - icon deleted.
+  /api/events/{eventId}/icons/{formId}/{primary}/{variant}:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+      - $ref: '#/components/parameters/formIdInPath'
+      - $ref: '#/components/parameters/primaryFieldValueInPath'
+      - $ref: '#/components/parameters/variantFieldValueInPath'
+    post:
+      tags: [ Event ]
+      operationId: uploadVariantFormIcon
+      description: >
+        Upload the icon image associated with the specified primary + variant
+        field value combination.
+      responses:
+        200:
+          $ref: '#/components/responses/FormIconInfo'
+    get:
+      tags: [ Event ]
+      operationId: getVariantFormIcon
+      description: >
+        Get the variant icon for the specified form.  The requesting user must
+        have `READ_EVENT_ALL` permission and an ACL entry on the event with
+        `read` permission.
+      responses:
+        200:
+          $ref: '#/components/responses/FormIconContent'
+    delete:
+      tags: [ Event ]
+      operationId: deleteVariantFormIcon
+      description: >
+        Delete the variant icon from the form.  The requesting user  must have
+        `UPDATE_EVENT` permission and an ACL entry on the event with `update`
+        permission.
+      responses:
+        204:
+          description: Success - icon deleted.
+  /api/events/{eventId}/layers:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+    get:
+      tags: [ Layer ]
+      operationId: getLayersForEvent
+      description: >
+        Return an array of all layers for specified event.
+        The client must have 'READ_LAYER_ALL' permission of `READ_LAYER_EVENT`
+        permission and an ACL entry on the event with `read` permission.
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [ Imagery, Feature, GeoPackage ]
+      responses:
+        200:
+          description: Success - return an array of layer documents for specified event.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Layer'
+    post:
+      tags: [ Event ]
+      operationId: addLayerToEvent
+      description: >
+        Add a layer to the specified event.  The requesting user must have
+        `UPDATE_EVENT` permission and an ACL entry on the event with `update`
+        permission.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LayerRef'
+        required: true
+      responses:
+        200:
+          description: Success - return the updated event document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+  /api/events/{eventId}/layers/{layerId}:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+      - $ref: '#/components/parameters/layerIdInPath'
+    get:
+      tags: [ Layer ]
+      description: >
+        Return the layer for the event specified with the ID specified
+        in the path.  The requesting user must have `READ_LAYER_ALL` permission
+        or `READ_LAYER_EVENT` permission and an ACL entry on the evebnt with
+        `update` permission.
+      operationId: getLayerForEventById
+      responses:
+        200:
+          description: layer response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Layer'
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+    delete:
+      tags: [ Event ]
+      operationId: removeLayerFromEvent
+      description: >
+        Remove the specified layer from the specified event.  The requesting
+        user must have `UPDATE_EVENT` permission and an ACL entry on the event
+        with `update` permission.
+      responses:
+        200:
+          description: Success - return the updated event document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+  /api/events/{eventId}/layers/{layerId}/{tableName}:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+      - $ref: '#/components/parameters/layerIdInPath'
+    get:
+      tags: [ Layer ]
+      operationId: getXYZTileForGeoPackage
+      description: >
+        Get an XYZ map tile for the specified layer in the specified event.
+      parameters:
+        - in: path
+          name: tableName
+          description: GeoPackage table name
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Success - XYZ map tile.
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+                description: JPEG map tile
+            pbf:
+              schema:
+                type: string
+                format: binary
+                description: Google protobuf vector tile
+
+  /api/events/{eventId}/users:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+    get:
+      tags: [ Event ]
+      operationId: getUsersForEvent
+      description: >
+        Get a flat list of all the users of all the teams with access to the
+        specified event.  The requesting user must have `READ_EVENT_ALL`
+        permission and an ACL entry on the event with `read` permission.
+      responses:
+        200:
+          description: Success - return an array of user documents.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+  /api/events/{eventId}/teams:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+    post:
+      tags: [ Event ]
+      operationId: addTeamToEvent
+      description: >
+        Add a team to the specified event.  The requesting user must have
+        `UPDATE_EVENT` permission and an ACL entry on the event with `update`
+        permission.  All of the team's members will have access to the event.
+      requestBody:
+        description: >
+          Document referencing the ID of the team to add to the event
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamRef'
+        required: true
+      responses:
+        200:
+          description: Success - return the updated event.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+    get:
+      tags: [ Event ]
+      operationId: getTeamsForEvent
+      description: >
+        Get the teams with access to the specified event.  The requesting user
+        must have `READ_EVENT_ALL` permission and an ACL entry on the event
+        with `read` permission.
+      parameters:
+        - in: query
+          name: populate
+          description: >
+            The `populate` parameter is a comma-separated list of keys in the
+            returned team documents to populate with their referenced documents.
+            When the value of `populate` includes `users`, MAGE will populate
+            the returned team documents with the user documents they reference,
+            replacing the `userIds` key in each team document with `users`.
+          schema:
+            type: string
+            enum:
+              - users
+      responses:
+        200:
+          description: Success - return an array of team documents.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Team'
+  /api/events/{eventId}/teams/{teamId}:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+      - $ref: '#/components/parameters/teamIdInPath'
+    delete:
+      tags: [ Event ]
+      operationId: removeTeamFromEvent
+      description: >
+        Remove the specified team from the specified event.  The requesting
+        user must have `UPDATE_EVENT` permission and an ACL entry on the event
+        with `update` permission.
+      responses:
+        200:
+          description: Success - return the updated team document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+  /api/events/{eventId}/acl/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+      - $ref: '#/components/parameters/userIdInPath'
+    put:
+      tags: [ Event ]
+      operationId: setUserAccessForEvent
+      description: >
+        Set the specified user's ACL role on the specified event.  The
+        requesting user must have `UPDATE_EVENT` permission and an ACL entry on
+        the event with `update` permission.
+      requestBody:
+        $ref: '#/components/requestBodies/ACLRoleUpdate'
+      responses:
+        200:
+          description: Success - return the updated event document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+    delete:
+      tags: [ Event ]
+      operationId: removeUserAccessFromEvent
+      description: >
+        Remove the specified user's ACL role from the specified event.  The
+        requesting user must have `UPDATE_EVENT` permission and an ACL entry on
+        the event with `update` permission.
+      responses:
+        200:
+          description: Success - return the updated event document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+  /api/events/{eventId}/observations/id:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+    post:
+      tags: [ Observation ]
+      operationId: createObservationId
+      description: >
+        Generate a new observation ID with which to save a new observation.
+      responses:
+        201:
+          description: >
+            Success - return a stub observation document including the `id`,
+            `eventId`, and `url` properties.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Observation'
+          links:
+            createObservation:
+              operationId: saveObservation
+              parameters:
+                eventId: $request.path.eventId
+                ovservationId: $response.body#/id
+  /api/events/{eventId}/observations/{observationId}:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+      - $ref: '#/components/parameters/observationIdInPath'
+    put:
+      tags: [ Observation ]
+      operationId: saveObservation
+      description: >
+        Create or update an observation with the specified observation ID for
+        the specified event.  To create an observation, the requesting user
+        must have `CREATE_OBSERVATION` permission and must be a member of a
+        team with access to the event.  To update an observation, the
+        requesting user must have `UPDATE_OBSERVATION_ALL` permission, or have
+        `UPDATE_OBSERVATION_EVENT` permission as well as an ACL entry on the
+        event with `read` permission, or be a member of a team with access to
+        the event.
+      requestBody:
+        description: The observation properties
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ObservationIn'
+        required: true
+      responses:
+        200:
+          description: Success - return the updated observation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Observation'
+    get:
+      tags: [ Observation ]
+      operationId: getObservationById
+      description: >
+        Get the specified observation in the specified event.  The requesting
+        user must have `READ_OBSERVATION_ALL` permission, or have
+        `READ_OBSERVATION_EVENT` permission and an ACL entry on the event with
+        `read` permission.
+      parameters: &obsQueryParams
+        - $ref: '#/components/parameters/observationQuery.fields'
+        - $ref: '#/components/parameters/observationQuery.startDate'
+        - $ref: '#/components/parameters/observationQuery.endDate'
+        - $ref: '#/components/parameters/observationQuery.observationStartDate'
+        - $ref: '#/components/parameters/observationQuery.observationEndDate'
+        - $ref: '#/components/parameters/observationQuery.bbox'
+        - $ref: '#/components/parameters/observationQuery.geometry'
+        - $ref: '#/components/parameters/observationQuery.states'
+        - $ref: '#/components/parameters/observationQuery.sort'
+      responses:
+        200:
+          description: observation response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Observation'
+  /api/events/{eventId}/observations/{observationId}.zip:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+      - $ref: '#/components/parameters/observationIdInPath'
+    get:
+      tags: [ Observation ]
+      operationId: getObservationArchive
+      description: >
+        Get a zip archive of the specified observation content.  The requesting
+        user must have `READ_OBSERVATION_ALL` permission, or have
+        `READ_OBSERVATION_EVENT` permission and an ACL entry on the event with
+        `read` permission.  The returned archive contains an entry named
+        `<observation_id>/index.html`, as well as related resources for any
+        media attached to the observation.
+      responses:
+        200:
+          description: Success - return the observation zip archive.
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+  /api/events/{eventId}/observations:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+    get:
+      tags: [ Observation ]
+      description: >
+        Get all the observations for the specified event that match the
+        specified query parameters.  The requesting user must have
+        `READ_OBSERVATION_ALL` permission, or have `READ_OBSERVATION_EVENT`
+        permission and an ACL entry on the event with `read` permission.
+      operationId: getObservationsForEvent
+      parameters: *obsQueryParams
+      responses:
+        200:
+          description: >
+            Success - return the observation documents matching the query.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Observation'
+  /api/events/{eventId}/observations/{observationId}/favorite:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+      - $ref: '#/components/parameters/observationIdInPath'
+    put:
+      tags: [ Observation ]
+      operationId: addObservationFavorite
+      description: >
+        Mark the specified observation as a favorite of the requesting user by
+        adding the user's ID to the `favoriteUserIds` array on the observation.
+        The requesting user must have `UPDATE_OBSERVATION_ALL` permission, or
+        have `UPDATE_OBSERVATION_EVENT` permission and an ACL entry on the
+        event with `read` permission.
+      responses:
+        200:
+          description: Success - return the updated observation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Observation'
+    delete:
+      tags: [ Observation ]
+      operationId: removeObservationFavorite
+      description: >
+        Remove the requesting user's ID from the `favoriteUserIds` of the
+        specified observation.  The requesting user must have
+        `UPDATE_OBSERVATION_ALL` permission, or have `UPDATE_OBSERVATION_EVENT`
+        permission and an ACL entry on the event with `read` permission.
+      responses:
+        200:
+          description: Success - return the updated observation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Observation'
+  /api/events/{eventId}/observations/{observationId}/important:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+      - $ref: '#/components/parameters/observationIdInPath'
+    put:
+      tags: [ Observation ]
+      operationId: setObservationImportant
+      description: >
+        Mark the specified observation as important.  This operation allows
+        administrators and event managers to flag important observations for
+        all users with access to the event.  The requesting user must have
+        `UPDATE_EVENT` permission and an ACL entry on the event with `update`
+        permission.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ObservationImportantCreate'
+        required: true
+      responses:
+        200:
+          description: Success - return the updated observation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Observation'
+    delete:
+      tags: [ Observation ]
+      operationId: removeObservationImportant
+      description: >
+        Remove the important flag from the specified observation.  The
+        requesting user must have `UPDATE_EVENT` permission and an ACL entry on
+        the event with `update` permission.
+      responses:
+        200:
+          description: Success - return the updated observation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Observation'
+  /api/events/{eventId}/observations/{observationId}/states:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+      - $ref: '#/components/parameters/observationIdInPath'
+    post:
+      tags: [ Observation ]
+      operationId: addObservationState
+      description: >
+        Set the current state of the specified observation.  The state is
+        appended to a list of states on the observation, the head of which is
+        the current state.  The requesting user must be the user that created
+        the observation, have `UPDATE_EVENT` permission, or have an ACL entry on
+        the event with `update` permission.
+      requestBody:
+        description: >
+          The request body contains the name of the state to set on the
+          target observation.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ObservationStateCreate'
+        required: true
+      responses:
+        201:
+          description: Success - return the added state document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObservationState'
+  /api/events/{eventId}/observations/{observationId}/attachments:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+      - $ref: '#/components/parameters/observationIdInPath'
+    post:
+      tags: [ Observation ]
+      operationId: addAttachment
+      description: >
+        Add the given attachment to the specified observation.  The requesting
+        user must have `UPDATE_OBSERVATION_ALL` permission, or have
+        `UPDATE_OBSERVATION_EVENT` permission and an ACL entry on the event
+        with `read` permission.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                attachment:
+                  type: string
+                  format: binary
+              required:
+                - attachment
+        required: true
+      responses:
+        200:
+          description: Success - return the attachment descriptor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attachment'
+    get:
+      tags: [ Observation ]
+      operationId: getAttachments
+      description: >
+        Get the attachment descriptors for the specified observation.  The
+        requesting user must have `READ_OBSERVATION_ALL` permission, or have
+        `READ_OBSERVATION_EVENT` permission and an ACL entry on the event with
+        `read` permission.
+      responses:
+        200:
+          description: Success - return an array of attachment descriptors.
+          content:
+            application/octet-stream:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Attachment'
+  /api/events/{eventId}/observations/{observationId}/attachments/{attachmentId}:
+    parameters:
+      - $ref: '#/components/parameters/eventIdInPath'
+      - $ref: '#/components/parameters/observationIdInPath'
+      - $ref: '#/components/parameters/attachmentIdInPath'
+    put:
+      tags: [ Observation ]
+      operationId: updateAttachment
+      description: >
+        Update the specified attachment for the specified observation.  The
+        requesting user must have `UPDATE_OBSERVATION_ALL` permission, or have
+        `UPDATE_OBSERVATION_EVENT` permission and an ACL entry on the event
+        with `read` permission.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                attachment:
+                  type: string
+                  format: binary
+              required: [ attachment ]
+        required: true
+      responses:
+        200:
+          description: Success - return the updated attachment descriptor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attachment'
+    get:
+      tags: [ Observation ]
+      operationId: getAttachment
+      description: >
+        Get the specified attachment content.  This operation returns the
+        actual bytes of the attachment, not the attachment descriptor document.
+        The requesting user must have `READ_OBSERVATION_ALL` permission, or have
+        `READ_OBSERVATION_EVENT` permission and an ACL entry on the event with
+        `read` permission.
+      responses:
+        200:
+          description: attachment response
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+    delete:
+      tags: [ Observation ]
+      operationId: deleteAttachment
+      description: >
+        Delete the specified attachment from the specified observation.  The
+        requesting user must be the user that created the observation, have
+        `UPDATE_EVENT` permission, or have an ACL entry on the event with
+        `update` permission.
+      responses:
+        204:
+          description: Success - the attachment was deleted.
+  /api/layers:
+    get:
+      tags: [ Layer ]
+      operationId: getLayers
+      description: >
+        Return an array of all layers.  The client must have 'READ_LAYER_ALL' permission.
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [ Imagery, Feature, GeoPackage ]
+      responses:
+        200:
+          description: Success - return an array of layer documents.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Layer'
+    post:
+      tags: [ Layer ]
+      operationId: createLayer
+      description: >
+        Create a new layer. The requesting user must have `CREATE_LAYER`
+        permission.
+      requestBody:
+        description: The new layer document
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LayerCreate'
+        required: true
+      responses:
+        201:
+          description: Success - return the created event.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Layer'
+  /api/layers/count:
+    get:
+      tags: [ Layer ]
+      operationId: getLayerCount
+      description: Return the number of layers in the database.
+      responses:
+        200:
+          description: Success - return the layer count
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Count'
+  /api/layers/{layerId}:
+    parameters:
+      - { $ref: '#/components/parameters/layerIdInPath' }
+    get:
+      tags: [ Layer ]
+      description: >
+        Return the layer with the ID specified in the path.  The requesting
+        user must have `READ_LAYER_ALL` permission.
+      operationId: getLayerById
+      responses:
+        200:
+          description: layer response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Layer'
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+    put:
+      tags: [ Layer ]
+      operationId: updateLayerById
+      description: >
+        Update the layer with the ID specified in the path.  The requesting
+        user must have `UPDATE_LAYER` permission
+      requestBody:
+        description: layer update body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LayerCreate'
+        required: true
+      responses:
+        200:
+          description: Success - return the update layer document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Layer'
+    delete:
+      tags: [ Layer ]
+      operationId: deleteLayer
+      description: >
+        Delete the event with the ID specified in the path.  The requesting
+        user must have `DELETE_LAYER`.
+      responses:
+        204:
+          description: Success - layer deleted
+  /api/layers/{layerId}/features:
+    parameters:
+      - { $ref: '#/components/parameters/layerIdInPath' }
+    get:
+      tags: [ Layer ]
+      operationId: getFeaturesForLayer
+      description: >
+        Return an array of features for specified layer.
+        The requesting client must have `READ_LAYER_ALL`.
+      responses:
+        200:
+          description: Success - return an arrary of features.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'geojson.yaml#/definitions/feature'
+  /api/events/{eventId}/layers/{layerId}/features:
+    parameters:
+      - { $ref: '#/components/parameters/eventIdInPath' }
+      - { $ref: '#/components/parameters/layerIdInPath' }
+    get:
+      tags: [ Layer ]
+      operationId: getFeaturesForEventAndLayer
+      description: >
+        Return an array of features for specified layer for specified event.
+        The requesting client must have `READ_LAYER_ALL` permission or
+        `READ_LAYER_EVENT` and an ACL entry on the event with `read` permission.
+      responses:
+        200:
+          description: Success - return an arrary of features.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'geojson.yaml#/definitions/feature'
+  /api/events/{eventId}/locations:
+    parameters:
+      - { $ref: '#/components/parameters/eventIdInPath' }
+    get:
+      tags: [ Location ]
+      operationId: getLocations
+      description: >
+        Return an array of locations for the specified event.
+        The requesting client must have `READ_LOCATION_ALL` permission or
+        `READ_LOCATION_EVENT` and an ACL entry on the event with `read` permission.
+      parameters:
+      - name: startDate
+        in: query
+        schema:
+          type: string
+          format: date-time
+      - name: endDate
+        in: query
+        schema:
+          type: string
+          format: date-time
+      - name: lastLocationId
+        in: query
+        description: locationId of last item in previous page (paging)
+        schema:
+          type: string
+      - name: limit
+        in: query
+        description: limit locations (paging)
+        schema:
+          type: number
+      responses:
+        200:
+          description: Success - array of user locations.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'geojson.yaml#/definitions/feature'
+    post:
+      tags: [ Location ]
+      operationId: createLocation
+      description: >
+        Create a new location for user with token in the specified event.
+        The requesting client must have `CREATE_LOCATION` permission.
+      requestBody:
+        description: create location response
+        content:
+          application/json:
+            schema:
+              $ref: 'geojson.yaml#/definitions/feature'
+        required: true
+      responses:
+        200:
+          description: Success - the created location document.
+  /api/events/{eventId}/locations/users:
+    parameters:
+      - { $ref: '#/components/parameters/eventIdInPath' }
+    get:
+      tags: [ Location ]
+      operationId: getLocationsByUser
+      description: >
+        Return an array of user locations for the specified event.
+        The requesting client must have `READ_LOCATION_ALL` permission or
+        `READ_LOCATION_EVENT` and an ACL entry on the event with `read` permission.
+      parameters:
+      - name: startDate
+        in: query
+        schema:
+          type: string
+          format: date-time
+      - name: endDate
+        in: query
+        schema:
+          type: string
+          format: date-time
+      - name: lastLocationId
+        in: query
+        description: locationId of last item in previous page (paging)
+        schema:
+          type: string
+      - name: limit
+        in: query
+        description: limit locations (paging)
+        schema:
+          type: number
+      responses:
+        200:
+          description: Success - array of user locations.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'geojson.yaml#/definitions/feature'
+  /api/roles:
+    get:
+      tags: [ Role ]
+      operationId: getRoles
+      description: >
+        Return an array of all roles.  The client must have `READ_ROLE` permission.
+      responses:
+        200:
+          description: Success - an array of role documents.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Role' }
+    post:
+      tags: [ Role ]
+      operationId: createRole
+      description: >
+        Create a new role. The client must have `CREATE_ROLE` permission.
+      responses:
+        200:
+          description: Success - the created role document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+  /api/roles/{roleId}:
+    parameters:
+      - { $ref: '#/components/parameters/roleIdInPath' }
+    get:
+      tags: [ Role ]
+      operationId: getRoleById
+      description: >
+        Return the role document whose `id` equals the `roleId` path parameter.
+        The client must have `READ_ROLE` permission.
+      responses:
+        200:
+          description: Success - role document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+    put:
+      tags: [ Role ]
+      operationId: updateRoleById
+      description: >
+        Update the user document whose `id` equals the `roleId` path parameter.
+        The client must have `UPDATE_ROLE` permission.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RoleIn' }
+      responses:
+        200:
+          description: Success - The updated role document.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+    delete:
+      tags: [ Device ]
+      description: >
+        Delete a role document whose ID matches the path parameter for the
+        role ID.  The requesting client must have `DELETE_ROLE` permission.
+      operationId: deleteRoleById
+      responses:
+        200:
+          description: Success - role deleted
+  /api/settings:
+    get:
+      tags: [ Settings ]
+      operationId: getSettings
+      description: >
+        Return an array of all the settings documents in the database.  The
+        requesting client must have `READ_SETTINGS` permission.
+      responses:
+        200:
+          description: Success - an array of settings documents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Setting'
+  /api/settings/{type}:
+    get:
+      tags: [ Settings ]
+      operationId: getSettingByType
+      description: >
+        Return a settings document by the referenced `type`.  The
+        requesting client must have `READ_SETTINGS` permission.
+      parameters:
+      - name: type
+        in: path
+        description: type name to update
+        required: true
+        schema:
+          type: string
+          enum:
+          - banner
+          - disclaimer
+          - security
+      responses:
+        200:
+          description: Success - setting document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Setting'
+    put:
+      tags: [ Settings ]
+      operationId: updateSettingByType
+      description: >
+        Update the settings document whose `type` matches the type in the path.
+        The requesting user must have `UPDATE_SETTINGS` permission.
+      parameters:
+      - name: type
+        in: path
+        description: type name to update
+        required: true
+        schema:
+          type: string
+          enum:
+          - banner
+          - disclaimer
+          - security
+      responses:
+        200:
+          description: Success - the update settings document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Setting'
+  /api/{exportType}:
+    get:
+      tags: [ Export ]
+      operationId: export
+      description: >
+        Export mage data (GeoJSON, KML, Shapefiles, CSV). The requesting user must have
+        `READ_OBSERVATION_ALL` permission or `READ_OBSERVATION_EVENT` and an ACL entry in the
+        event with `read`.
+      parameters:
+      - name: exportType
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+          - geojson
+          - kml
+          - shapefile
+          - csv
+      - name: eventId
+        in: query
+        required: true
+        schema:
+          type: number
+      - name: startDate
+        in: query
+        schema:
+          type: string
+          format: date-time
+      - name: endDate
+        in: query
+        schema:
+          type: string
+          format: date-time
+      - name: observations
+        in: query
+        description: Boolean flag indicating wheter or not to export observations
+        schema:
+          type: boolean
+      - name: locations
+        in: query
+        description: Boolean flag indicating wheter or not to export user locations
+        schema:
+          type: boolean
+      responses:
+        200:
+          description: export response
+components:
+  securitySchemes:
+    mageToken:
+      type: http
+      description: >
+        MAGE generates an authentication token when a client authenticates
+        initially.  The client can use the token for subsequent requests until
+        it expires.
+      scheme: bearer
+  schemas:
+    CommaSeparatedTokens:
+      type: string
+      pattern: '\w+(,\w+)*'
+    ColorHex:
+      description: >
+        This is a 3 or 4 byte hexadecimal string prefixed with '#' representing
+        an RGB or RGBA color value, e.g. '#ff4545',
+      type: string
+      pattern: '#([a-fA-F0-9]{2}){3,4}'
+    Count:
+      type: object
+      required: [ count ]
+      properties:
+        count:
+          type: integer
+    NormalizedRange:
+      type: number
+      format: float
+      minimum: 0.0
+      maximum: 1.0
+    SortKey:
+      description: >
+        A `SortKey` is a string comprising the name of a document key,
+        optionally suffixed with a sort direction modifier of `+DESC` or `+ASC`
+        for descending or ascending, respectively.
+      type: string
+      pattern: ^\w+(\+(ASC|DESC))?
+    User:
+      description: >
+        The `User` schema defines the structure of persisted user documents as
+        they exist in the database and as the server returns them in various
+        responses.
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        displayName:
+          type: string
+        status:
+          type: string
+        email:
+          type: string
+          format: email
+        createdAt:
+          type: string
+          format: date-time
+        lastUpdated:
+          type: string
+          format: date-time
+        active:
+          type: boolean
+        enabled:
+          type: boolean
+        avatarUrl:
+          type: string
+        iconUrl:
+          type: string
+        authentication:
+          $ref: '#/components/schemas/AuthStatus'
+        role:
+          $ref: '#/components/schemas/Role'
+        roleId:
+          $ref: '#/components/schemas/Role/properties/id'
+        icon:
+          $ref: '#/components/schemas/UserIcon'
+        phones:
+          type: array
+          items:
+            $ref: '#/components/schemas/Phone'
+        recentEventIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/Event/properties/id'
+      oneOf:
+        - { type: object, required: [ role ], not: { type: object, required: [ roleId ] } }
+        - { type: object, required: [ roleId ], not: { type: object, required: [ role ] } }
+        - { type: object, not: { type: object, required: [ role, roleId ] } }
+    UserRef:
+      description: >
+        `UserRef` is an object that references an existing user document with
+        the required `id` property.  MAGE ignores any properties other than
+        `id`.
+      type: object
+      allOf:
+        - { $ref: '#/components/schemas/User' }
+        - { type: object, required: [ id ] }
+    UserIn:
+      type: object
+      properties:
+        username: { $ref: '#/components/schemas/User/properties/username' }
+        displayName: { $ref: '#/components/schemas/User/properties/displayName' }
+        email: { $ref: '#/components/schemas/User/properties/email' }
+        phone:
+          type: string
+          format: phone
+        roleId: { $ref: '#/components/schemas/User/properties/roleId' }
+        iconMetadata:
+          type: object
+          properties:
+            type: { $ref: '#/components/schemas/UserIcon/properties/type' }
+            color: { $ref: '#/components/schemas/UserIcon/properties/color' }
+            text: { $ref: '#/components/schemas/UserIcon/properties/text' }
+        icon:
+          description: >
+            This key is valid only when encoded as `multipart/form-data`.
+            This is a binary image file attachment.
+          type: string
+          format: binary
+        avatar:
+          description: >
+            This key is valid only when encoded as `multipart/form-data`.
+            This is a binary image file attachment.
+          type: string
+          format: binary
+      allOf:
+        - { $ref: '#/components/schemas/UserPasswordPair' }
+    UserCreate:
+      allOf:
+        - { $ref: '#/components/schemas/UserIn' }
+        - { type: object, required: [ username, displayName, password, passwordconfirm ] }
+    UserUpdateSelf:
+      allOf:
+        - { $ref: '#/components/schemas/UserIn' }
+        - type: object
+          not:
+            type: object
+            required: [ password, passwordconfirm, icon, iconMetadata ]
+    UserIcon:
+      description: >
+        A user icon is the small image that appears on a map to show the user's
+        location.
+      type: object
+      properties:
+        type:
+          description: The origin of the icon
+          type: string
+          enum:
+            - create
+            - upload
+            - none
+        color:
+          description: Color is only applicable for `create` type icons.
+          $ref: '#/components/schemas/ColorHex'
+        text:
+          description: >
+            Two-letter text label that appears on the map icon; only applies to
+            `create` type icons
+          type: string
+        contentType:
+          description: The MIME type of the icon image
+          type: string
+        size:
+          description: The image size in bytes
+          type: integer
+    UserPasswordPair:
+      type: object
+      properties:
+        password:
+          type: string
+        passwordconfirm:
+          type: string
+      oneOf:
+        - { type: object, required: [ password, passwordconfirm ] }
+        - { type: object, not: { type: object, required: [ password, passwordconfirm ] } }
+    AuthStatus:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+        security:
+          type: object
+          properties:
+            locked:
+              type: boolean
+            lockedUntil:
+              type: string
+              format: date-time
+            invalidLoginAttempts:
+              type: number
+            numberOfTimesLocked:
+              type: number
+    ACL:
+      description: >
+        The ACL (Access Control List) is a mapping of user IDs to the roles and
+        permissions users have to access the parent resource of the ACL.
+      type: object
+      additionalProperties:
+        description: >
+          The keys of the ACL object are user ID strings.  The values specify
+          the role and permissions that the user matching the associated key
+          has to access a resource.
+        type: object
+        properties:
+          role: { $ref: '#/components/schemas/ACLRole' }
+          permissions:
+            description: >
+              The permissions of an ACL entry are currently a static mapping
+              from the role.  The ACL entry includes the permissions associated
+              with the role to be more explicit about what the role means and
+              how the user of the ACL entry can access the resource.
+            type: array
+            items: { $ref: '#/components/schemas/ACLPermission' }
+    ACLRole:
+      type: string
+      enum:
+        - OWNER
+        - MANAGER
+        - GUEST
+    ACLPermission:
+      type: string
+      enum:
+        - read
+        - update
+        - delete
+    Device:
+      required:
+        - id
+        - uid
+        - name
+        - description
+      type: object
+      properties:
+        id:
+          type: string
+        uid:
+          type: string
+          description: >
+            The device UID is an identifier string assigned at the application
+            level.  This is usually a UUID, but can be any string the creator
+            of the device chooses.
+        name:
+          type: string
+        description:
+          type: string
+        registered:
+          type: boolean
+        userAgent:
+          type: string
+        appVersion:
+          type: string
+        userId:
+          $ref: '#/components/schemas/User/properties/id'
+        user:
+          $ref: '#/components/schemas/User'
+      oneOf:
+        - { type: object, required: [ userId ], not: { type: object, required: [ user ] } }
+        - { type: object, required: [ user ], not: { type: object, required: [ userId ] } }
+    DeviceIn:
+      type: object
+      required: [ uid ]
+      properties:
+        uid:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        userId:
+          $ref: '#/components/schemas/User/properties/id'
+    Team:
+      description: >
+        A team is simply a grouping of users that commonly operate together.
+        Teams facilitate adding groups of users to events.
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        description:
+          type: string
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRef'
+        teamEventId:
+          $ref: '#/components/schemas/Event/properties/id'
+          description: >
+            MAGE adds this property to indicate that a team is the implicitly
+            created team paired with an event for grouping the event's users
+            on an individual basis.  This property references the ID of the
+            event document to which the team belongs.  To add an individual
+            user to an event, add the user to the team with the `teamEventId`
+            property that references the target event.
+        acl:
+          $ref: '#/components/schemas/ACL'
+    TeamIn:
+      type: object
+      properties:
+        name: { $ref: '#/components/schemas/Team/properties/name' }
+        description: { $ref: '#/components/schemas/Team/properties/description' }
+        users:
+          type: array
+          items: { $ref: '#/components/schemas/UserRef' }
+    TeamCreate:
+      allOf:
+        - $ref: '#/components/schemas/TeamIn'
+        - { type: object, required: [ name ] }
+    TeamRef:
+      allOf:
+        - $ref: '#/components/schemas/Team'
+        - { type: object, required: [ id ] }
+    Event:
+      required:
+        - id
+        - name
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        complete:
+          description: >
+            When `true`, the `complete` flag indicates the event is no longer
+            active.  One can reactivate a complete event at any time.
+          type: boolean
+        style:
+          description: >
+            The event's geometry style is the default style applied to each
+            form of the event.  Individual forms can override the default
+            style.
+          $ref: '#/components/schemas/GeometryStyle'
+        forms:
+          type: array
+          items:
+            $ref: '#/components/schemas/Form'
+        teams:
+          type: array
+          items:
+            $ref: '#/components/schemas/Team'
+        layers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Layer'
+        acl:
+          $ref: '#/components/schemas/ACL'
+    EventCreate:
+      required:
+        - name
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/Event/properties/name'
+        description:
+          $ref: '#/components/schemas/Event/properties/description'
+    EventUpdate:
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/Event/properties/name'
+        description:
+          $ref: '#/components/schemas/Event/properties/description'
+        complete:
+          $ref: '#/components/schemas/Event/properties/complete'
+        forms:
+          $ref: '#/components/schemas/Event/properties/forms'
+    Form:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        color:
+          $ref: '#/components/schemas/ColorHex'
+          description: >
+            The form's color is a visual discriminator that displays in the
+            observation form selector when an event has multiple forms.
+        primaryField:
+          type: string
+          description: >
+            The primary field must be a single-select-type field whose choices
+            determine the map symbology used to represent the observation on a
+            map.
+        variantField:
+          type: string
+          description: >
+            The variant field must be another single-select-type field whose
+            values can further refine the map symbology associated with the
+            primary field's value of in an observation.
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/Field'
+          minItems: 1
+        userFields:
+          type: array
+          items:
+            $ref: '#/components/schemas/Field/properties/name'
+          description: >
+            A list of field names that will be drop-downs whose choices are
+            dynamically populated with the names of users in the event.
+    FormCreate:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Form'
+        - type: object
+          required: [ name, color, fields ]
+    FormImport:
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/Form/properties/name'
+        color:
+          $ref: '#/components/schemas/Form/properties/color'
+        form:
+          type: string
+          format: binary
+          description: |
+            The form is a zip file the user uploads.  THe layout of the zip
+            file is the same as described in the `exportForm` operation.
+      required: [ name, color, form ]
+    GeometryStyle:
+      type: object
+      properties:
+        strokeWidth:
+          type: integer
+        strokeOpacity:
+          $ref: '#/components/schemas/NormalizedRange'
+        stroke:
+          type: string
+    Field:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+        value:
+          type: string
+        required:
+          type: boolean
+        choices:
+          type: array
+          items:
+            $ref: '#/components/schemas/Choice'
+    Choice:
+      type: object
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        value:
+          type: string
+    FormIcon:
+      description: >
+        `FormIcon` documents are the meta-data about icon images that MAGE
+        clients use to mark the location on the map display of observations
+        with the associated form.
+      type: object
+      properties:
+        eventId:
+          $ref: '#/components/schemas/Event/properties/id'
+        formId:
+          $ref: '#/components/schemas/Form/properties/id'
+        primary:
+          type: string
+          nullable: true
+          description: >
+            The value of the primary form field associated with the icon
+        variant:
+          type: string
+          nullable: true
+          description: >
+            The value of the variant form field associated with the icon
+        relativePath:
+          type: string
+          pattern: ^/\\d+/\\d+(/[^/]+){0,2}$
+          description: >
+            The relative path of the icon image URL, which looks like
+            `<event_id>/<form_id>[/<primary>[/variant]]`
+    FormIconEmbedded:
+      allOf:
+        - $ref: '#/components/schemas/FormIcon'
+        - type: object
+          properties:
+            icon:
+              type: string
+              pattern: ^data:image/[^;]+;base64,[A-Za-z0-9+/]+$
+              description: >
+                The base-64-encoded image bytes of the icon, formatted as a
+                data URL suitable for use as the value of the HTML `img` tag's
+                `src` attribute
+    FormIconUpload:
+      type: object
+      properties:
+        icon:
+          type: string
+          format: binary
+    Layer:
+      title: Layer
+      type: object
+      properties:
+        id:
+          type: number
+          description: The unique layer ID
+        name:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [ Feature, Imagery, GeoPackage ]
+        url:
+          type: string
+        base:
+          type: boolean
+        format:
+          type: string
+          enum: [ WMS, XYZ, TMS ]
+    WMSLayer:
+      title: WMSLayer
+      type: object
+      properties:
+        layers:
+          type: string
+          description: Comma seperated list of WMS layer names
+        styles:
+          type: string
+          description: Comma seperated list of WMS style names
+        format:
+          type: string
+          description: WMS map tile format.
+        version:
+          type: string
+          description: WMS service version.
+    LayerRef:
+      allOf:
+        - $ref: '#/components/schemas/Layer'
+        - type: object
+          required: [ id ]
+    ObservationIn:
+      description: >
+        This schema defines the observation properties a client sends to save
+        a new or updated observation.
+      allOf:
+        - $ref: 'geojson.yaml#/definitions/feature'
+        - type: object
+          properties:
+            properties:
+              $ref: '#/components/schemas/ObservationFeatureProperties'
+        - type: object
+          required: [ type, geometry, properties ]
+    Observation:
+      title: Observation
+      description: >
+        The `Observation` is the operative concept of MAGE's geospatial data
+        collection functionality.  Observation documents are the geo-tagged
+        form and media records that MAGE users submit to the MAGE server.
+        Observation documents are extensions of GeoJSON feature documents, so
+        all observations have a `type` property whose value is `Feature`, as
+        well as a `geometry` property that holds the geospatial geometry of the
+        observation, such as point or polygon coordinates.  The values of the
+        observation's form fields reside under the GeoJSON `properties` key.
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique observation ID
+        createdAt:
+          type: string
+          format: date-time
+        lastModified:
+          type: string
+          format: date-time
+        userId:
+          $ref: '#/components/schemas/User/properties/id'
+        deviceId:
+          $ref: '#/components/schemas/Device/properties/id'
+        eventId:
+          $ref: '#/components/schemas/Event/properties/id'
+        state:
+          $ref: '#/components/schemas/ObservationState'
+        url:
+          type: string
+          format: uri
+          description: >
+            This is the absolute URL of the observation where the client can
+            fetch and update the observation document.
+        favoriteUserIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/User/properties/id'
+        attachements:
+          type: array
+          items:
+            $ref: '#/components/schemas/Attachment'
+      allOf:
+        - $ref: '#/components/schemas/ObservationIn'
+      example: {
+        "createdAt": "2019-09-25T19:50:05.065Z",
+        "deviceId": "5d697f88951c51a926e9dba4",
+        "geometry": {
+          "type": "Point",
+          "coordinates": [
+            -0.08910298347473145,
+            51.527068718503244
+          ],
+        },
+        "lastModified": "2019-10-01T04:24:45.466Z",
+        "properties": {
+          "timestamp": "2019-09-25T19:48:55.859Z",
+          "forms": [
+            {
+              "formId": 3,
+              "field1": [
+                "Umbarela"
+              ],
+            }
+          ],
+        },
+        "type": "Feature",
+        "userId": "5d697f88b8ed5f29bef7b10c",
+        "favoriteUserIds": [
+          "5d697f88b8ed5f29bef7b10c"
+        ],
+        "important": {
+          "description": "Come back later",
+          "timestamp": "2019-10-01T04:24:45.466Z",
+          "userId": "5d697f88b8ed5f29bef7b10c"
+        },
+        "attachments": [
+          {
+            "contentType": "image/jpeg",
+            "size": 24875,
+            "name": "c1816efcab6e00c39623ddd8262b852e.jpg",
+            "relativePath": "observations2/2019/9/25/c1816efcab6e00c39623ddd8262b852e.jpg",
+            "lastModified": "2019-09-25T19:50:22.383Z",
+            "oriented": false,
+            "id": "5d8bc4fe038559417fffbb55",
+            "url": "http://localhost:4242/api/events/2/observations/5d8bc4ed038559417fffbb53/attachments/5d8bc4fe038559417fffbb55"
+          }
+        ],
+        "id": "5d8bc4ed038559417fffbb53",
+        "eventId": 2,
+        "url": "http://localhost:4242/api/events/2/observations/5d8bc4ed038559417fffbb53",
+        "state": {
+          "userId": "5d697f88b8ed5f29bef7b10c",
+          "name": "active",
+          "id": "5d8bc4ed038559417fffbb54",
+          "url": "http://localhost:4242/api/events/2/observations/5d8bc4ed038559417fffbb53/states/5d8bc4ed038559417fffbb54"
+        }
+      }
+    ObservationFeatureProperties:
+      description: >
+        This schema defines the specific keys that MAGE recognizes under the
+        GeoJSON feature's `properties` entry.
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        forms:
+          type: array
+          items:
+            type: object
+            properties:
+              formId:
+                $ref: '#/components/schemas/Form/properties/id'
+            additionalProperties: true
+      required: [ timestamp ]
+    ObservationImportant:
+      type: object
+      properties:
+        userId:
+          $ref: '#/components/schemas/User/properties/id'
+        timestamp:
+          type: string
+          format: date-time
+        description:
+          type: string
+          description: The reason for flagging an observation important
+    ObservationImportantCreate:
+      allOf:
+        - $ref: '#/components/schemas/ObservationImportant'
+        - type: object
+          required: [ description ]
+    ObservationState:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          $ref: '#/components/schemas/ObservationStateName'
+        userId:
+          $ref: '#/components/schemas/User/properties/id'
+          description: >
+            The ID of the user that set this state on the parent observation.
+    ObservationStateCreate:
+      allOf:
+        - $ref: '#/components/schemas/ObservationState'
+        - type: object
+          required: [ name ]
+    ObservationStateName:
+      type: string
+      enum: [ active, archive ]
+      description: >
+        Setting an observation's state to `archive` effectively deletes the
+        observation from client views, but preserves the observation data.
+    Attachment:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        relativePath:
+          type: string
+        contentType:
+          type: string
+        url:
+          type: string
+          format: uri
+        oriented:
+          type: boolean
+    LocalCredentials:
+      required:
+        - password
+        - username
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    Thumbnail:
+      type: object
+      properties:
+        name:
+          type: string
+        contentType:
+          type: string
+        height:
+          type: number
+        width:
+          type: number
+        size:
+          type: number
+        minDimension:
+          type: number
+    Phone:
+      type: object
+      properties:
+        type:
+          description: >
+            The type of phone number currently defaults to `Main` and is
+            static.
+          type: string
+        number:
+          type: string
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        expirationDate:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+        role:
+          $ref: '#/components/schemas/Role'
+    Login:
+      type: object
+      properties:
+        id:
+          type: string
+        timestamp:
+          type: string
+        device:
+          $ref: '#/components/schemas/Device'
+        deviceId:
+          $ref: '#/components/schemas/Device/properties/id'
+        user:
+          $ref: '#/components/schemas/User'
+        userId:
+          $ref: '#/components/schemas/User/properties/id'
+      required:
+        - id
+        - timestamp
+      allOf:
+        - oneOf:
+          - { type: object, required: [ deviceId ], not: { type: object, required: [ device ] } }
+          - { type: object, required: [ device ], not: { type: object, required: [ deviceId ] } }
+        - oneOf:
+          - { type: object, required: [ userId ], not: { type: object, required: [ user ] } }
+          - { type: object, required: [ user ], not: { type: object, required: [ userId ] } }
+    Role:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - name
+        - description
+        - permissions
+    RoleIn:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        permissions:
+          type: array
+          items:
+            type: string
+    LayerCreate:
+      required:
+        - name
+        - type
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/Layer/properties/name'
+        description:
+          $ref: '#/components/schemas/Layer/properties/description'
+        type:
+          $ref: '#/components/schemas/Layer/properties/type'
+        url:
+          $ref: '#/components/schemas/Layer/properties/url'
+        base:
+          $ref: '#/components/schemas/Layer/properties/base'
+        format:
+          $ref: '#/components/schemas/Layer/properties/format'
+        wms:
+          $ref: '#/components/schemas/WMSLayer'
+        geopackage:
+          type: string
+          format: binary
+          description: |
+            The geopackage is a GeoPackage file the user uploads.  If uploading this file the `type` must
+            be GeoPackage
+    Setting:
+      required:
+        - type
+      type: object
+      properties:
+        type:
+          type: string
+        settings:
+          type: object
+  parameters:
+    userIdInPath:
+      in: path
+      name: userId
+      description: The ID of the target user document
+      required: true
+      example: 5d0b2bfeeec24262f1a5fdf3
+      schema: { $ref: '#/components/schemas/User/properties/id' }
+    eventIdInPath:
+      in: path
+      name: eventId
+      description: The ID of the target event document
+      required: true
+      example: 1234
+      schema: { $ref: '#/components/schemas/Event/properties/id' }
+    formIdInPath:
+      in: path
+      name: formId
+      description: The ID of a form within an event
+      required: true
+      schema: { $ref: '#/components/schemas/Form/properties/id' }
+    primaryFieldValueInPath:
+      in: path
+      name: primary
+      description: The value of the primary form field
+      required: true
+      schema:
+        type: string
+    variantFieldValueInPath:
+      in: path
+      name: variant
+      description: The value of the variant form field
+      required: true
+      schema:
+        type: string
+    layerIdInPath:
+      in: path
+      name: layerId
+      description: The ID of the target layer document
+      required: true
+      schema: { $ref: '#/components/schemas/Layer/properties/id' }
+    deviceIdInPath:
+      in: path
+      name: deviceId
+      description: The ID of the target device document
+      required: true
+      schema: { $ref: '#/components/schemas/Device/properties/id' }
+    roleIdInPath:
+      in: path
+      name: roleId
+      description: The ID of the target role document
+      required: true
+      schema: { $ref: '#/components/schemas/Device/properties/id' }
+    teamIdInPath:
+      in: path
+      name: teamId
+      description: The ID of the target team document
+      required: true
+      schema: { $ref: '#/components/schemas/Team/properties/id' }
+    observationIdInPath:
+      in: path
+      name: observationId
+      description: The ID of the target observation document
+      required: true
+      schema: { $ref: '#/components/schemas/Observation/properties/id' }
+    attachmentIdInPath:
+      in: path
+      name: attachmentId
+      description: The ID of the target attachment document
+      required: true
+      schema: { $ref: '#/components/schemas/Attachment/properties/id' }
+    observationQuery.fields:
+      in: query
+      name: fields
+      description: >
+        The form fields to project in the result observation documents (JSON)
+      explode: false
+      schema:
+        type: array
+        items:
+          type: string
+    observationQuery.startDate:
+      in: query
+      name: startDate
+      schema:
+        type: string
+        format: date-time
+      description: >
+        The low end of the range for the observations' `lastModified`
+        property
+    observationQuery.endDate:
+      in: query
+      name: endDate
+      schema:
+        type: string
+        format: date-time
+      description: >
+        The high end of the range for the observations' `lastModified`
+        property
+    observationQuery.observationStartDate:
+      in: query
+      name: observationStartDate
+      schema:
+        type: string
+        format: date-time
+      description: >
+        The low end of the range for the observations' `timestamp`
+        property
+    observationQuery.observationEndDate:
+      in: query
+      name: observationEndDate
+      schema:
+        type: string
+        format: date-time
+      description: >
+        The low end of the range for the observations' `lastModified`
+        property
+    observationQuery.bbox:
+      in: query
+      name: bbox
+      description: >
+        Bounding box array as a JSON string, e.g.
+        `[xMin, yMin, xMax, yMax]`
+      explode: false
+      schema:
+        $ref: 'geojson.yaml#/definitions/boundingBox'
+    observationQuery.geometry:
+      in: query
+      name: geometry
+      description: >
+        A URL-encoded, stringified JSON object that is a GeoJSON geometry
+        as defined in geojson.yaml#/definitions/geometryObject
+      schema:
+        type: string
+        format: json
+    observationQuery.states:
+      in: query
+      name: states
+      explode: false
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/ObservationStateName'
+    observationQuery.sort:
+      in: query
+      name: sort
+      description: >
+        The `sort` query parameter is a comma-separated list of sort keys.
+        Currently, this operation only supports sorting on the
+        `lastModified` key.
+      explode: false
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/SortKey'
+
+  responses:
+    FormIconInfo:
+      description: Return the meta-data about a form icon.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FormIcon'
+    FormIconContent:
+      description: >
+        Return the form icon as a base-64-encoded string value within the icon
+        meta-data document, or as a binary image.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/FormIconEmbedded'
+        image/*:
+          schema:
+            type: string
+            format: binary
+
+  requestBodies:
+    DeviceIn:
+      description: >
+        A `DeviceIn` request body specifies the keys and values to save to a
+        `Device` document in the database.
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/DeviceIn' }
+        application/x-www-form-urlencoded:
+          schema: { $ref: '#/components/schemas/DeviceIn' }
+    FormIconUpload:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            $ref: '#/components/schemas/FormIconUpload'
+          encoding:
+            icon:
+              contentType: image/*
+    ACLRoleUpdate:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              role:
+                $ref: '#/components/schemas/ACLRole'
+            required: [ role ]
+
+

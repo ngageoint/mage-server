@@ -1,5 +1,5 @@
 module.exports = function(app, security) {
-  var api = require('../api')
+  const api = require('../api')
     , log = require('winston')
     , Role = require('../models/role')
     , Event = require('../models/event')
@@ -9,14 +9,11 @@ module.exports = function(app, security) {
     , {default: upload} = require('../upload')
     , passport = security.authentication.passport;
 
-  var passwordLength = null;
-  Object.keys(security.authentication.strategies).forEach(function(name) {
-    if (security.authentication.strategies[name].passwordMinLength) {
-      passwordLength = security.authentication.strategies[name].passwordMinLength;
-    }
-  });
+  const passwordLength = Object.keys(security.authentication.strategies).reduce((prev, authName) => {
+    return security.authentication.strategies[authName].passwordMinLength || prev;
+  }, null);
 
-  var emailRegex = /^[^\s@]+@[^\s@]+\./;
+  const emailRegex = /^[^\s@]+@[^\s@]+\./;
 
   function isAuthenticated(strategy) {
     return function(req, res, next) {
@@ -64,36 +61,42 @@ module.exports = function(app, security) {
     next();
   }
 
+  /**
+   * * TODO: express.Request.param() is deprecated
+   *   https://expressjs.com/en/4x/api.html#req.param
+   * * TODO: seems like a lot of duplication of the PUT /api/users/{userId}
+   *   route.
+   */
   function validateUser(req, res, next) {
-    function invalidResponse(param) {
-      return "Cannot create user, invalid parameters.  '" + param + "' parameter is required";
+
+    function missingRequired(param) {
+      return `Invalid user document: missing required parameter '${param}'`;
     }
 
-    var user = {};
+    const user = {};
 
-    var username = req.param('username');
+    const username = req.param('username');
     if (!username) {
-      return res.status(400).send(invalidResponse('username'));
+      return res.status(400).send(missingRequired('username'));
     }
     user.username = username.trim();
 
-    var displayName = req.param('displayName');
+    const displayName = req.param('displayName');
     if (!displayName) {
-      return res.status(400).send(invalidResponse('displayName'));
+      return res.status(400).send(missingRequired('displayName'));
     }
     user.displayName = displayName;
 
-    var email = req.param('email');
+    const email = req.param('email');
     if (email) {
       // validate they at least tried to enter a valid email
       if (!email.match(emailRegex)) {
-        return res.status(400).send('Please enter a valid email address');
+        return res.status(400).send('Invalid email address');
       }
-
       user.email = email;
     }
 
-    var phone = req.param('phone');
+    const phone = req.param('phone');
     if (phone) {
       user.phones = [{
         type: "Main",
@@ -101,22 +104,22 @@ module.exports = function(app, security) {
       }];
     }
 
-    var password = req.param('password');
+    const password = req.param('password');
     if (!password) {
-      return res.status(400).send(invalidResponse('password'));
+      return res.status(400).send(missingRequired('password'));
     }
 
-    var passwordconfirm = req.param('passwordconfirm');
+    const passwordconfirm = req.param('passwordconfirm');
     if (!passwordconfirm) {
-      return res.status(400).send(invalidResponse('passwordconfirm'));
+      return res.status(400).send(missingRequired('passwordconfirm'));
     }
 
     if (password !== passwordconfirm) {
-      return res.status(400).send('passwords do not match');
+      return res.status(400).send('Passwords do not match');
     }
 
     if (password.length < passwordLength) {
-      return res.status(400).send('password does not meet minimum length requirement of ' + passwordLength + ' characters');
+      return res.status(400).send(`Password must be at least ${passwordLength} characters`);
     }
 
     user.authentication = {
@@ -128,186 +131,6 @@ module.exports = function(app, security) {
 
     next();
   }
-
-  // logout
-  app.post(
-    '/api/logout',
-    isAuthenticated('bearer'),
-    function(req, res, next) {
-      if (req.user) {
-        log.info('logout w/ user', req.user._id.toString());
-        new api.User().logout(req.token, function(err) {
-          if (err) return next(err);
-          res.status(200).send('successfully logged out');
-        });
-      } else {
-        // call to logout with an invalid token, nothing to do
-        res.sendStatus(200);
-      }
-    }
-  );
-
-  app.get(
-    '/api/users/count',
-    passport.authenticate('bearer'),
-    access.authorize('READ_USER'),
-    function(req, res, next) {
-      new api.User().count(function(err, count) {
-        if (err) return next(err);
-
-        res.json({count: count});
-      });
-    }
-  );
-
-  // get all uses
-  app.get(
-    '/api/users',
-    passport.authenticate('bearer'),
-    access.authorize('READ_USER'),
-    function(req, res, next) {
-      var filter = {};
-      if (req.query.active === 'true' || req.query.active === 'false') {
-        filter.active = req.query.active === 'true';
-      }
-
-      var populate = null;
-      if (req.query.populate) {
-        populate = req.query.populate.split(",");
-      }
-
-      new api.User().getAll({filter: filter, populate: populate}, function (err, users) {
-        if (err) return next(err);
-
-        users = userTransformer.transform(users, {path: req.getRoot()});
-        res.json(users);
-      });
-    }
-  );
-
-  // get info for the user bearing a token, i.e get info for myself
-  app.get(
-    '/api/users/myself',
-    passport.authenticate('bearer'),
-    function(req, res) {
-      var user = userTransformer.transform(req.user, {path: req.getRoot()});
-      res.json(user);
-    }
-  );
-
-  // get user by id
-  app.get(
-    '/api/users/:userId',
-    passport.authenticate('bearer'),
-    access.authorize('READ_USER'),
-    function(req, res) {
-      var user = userTransformer.transform(req.userParam, {path: req.getRoot()});
-      res.json(user);
-    }
-  );
-
-  // get user avatar/icon by id
-  app.get(
-    '/api/users/:userId/:content(avatar|icon)',
-    passport.authenticate('bearer'),
-    access.authorize('READ_USER'),
-    function(req, res, next) {
-      new api.User()[req.params.content](req.userParam, function(err, content) {
-        if (err) return next(err);
-
-        if (!content) return res.sendStatus(404);
-
-        var stream = fs.createReadStream(content.path);
-        stream.on('open', function() {
-          res.type(content.contentType);
-          res.header('Content-Length', content.size);
-          stream.pipe(res);
-        });
-        stream.on('error', function() {
-          res.sendStatus(404);
-        });
-      });
-    }
-  );
-
-  // update myself
-  app.put(
-    '/api/users/myself',
-    passport.authenticate('bearer'),
-    upload.single('avatar'),
-    function(req, res, next) {
-      if (req.param('username')) req.user.username = req.param('username');
-      if (req.param('displayName')) req.user.displayName = req.param('displayName');
-      if (req.param('email')) req.user.email = req.param('email');
-
-      var phone = req.param('phone');
-      if (phone) {
-        req.user.phones = [{
-          type: "Main",
-          number: phone
-        }];
-      }
-
-      new api.User().update(req.user, {avatar: req.file}, function(err, updatedUser) {
-        if (err) return next(err);
-
-        updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
-        res.json(updatedUser);
-      });
-    }
-  );
-
-  app.put(
-    '/api/users/myself/password',
-    passport.authenticate('local'),
-    function(req, res, next) {
-      console.log('********* verify new password');
-      if (req.user.authentication.type === 'local') {
-        var password = req.param('newPassword');
-        var passwordconfirm = req.param('newPasswordConfirm');
-
-        if (!password) {
-          console.log('********* verify new password 1');
-
-          return res.status(400).send('newPassword is required');
-        }
-
-        if (!passwordconfirm) {
-          console.log('********* verify new password 1=2');
-
-          return res.status(400).send('newPasswordConfirm is required');
-        }
-
-        if (password && passwordconfirm) {
-          if (password !== passwordconfirm) {
-            console.log('********* verify new password 3');
-
-            return res.status(400).send('passwords do not match');
-          }
-
-          if (password.length < passwordLength) {
-            console.log('********* verify new password 4');
-
-            return res.status(400).send('password does not meet minimum length requirment of ' + passwordLength + ' characters');
-          }
-
-          req.user.authentication = {
-            type: 'local',
-            password: password
-          };
-        }
-
-        new api.User().update(req.user, function(err, updatedUser) {
-          if (err) return next(err);
-
-          updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
-          res.json(updatedUser);
-        });
-      } else {
-        return res.status(400).send('no local password, cannot update.');
-      }
-    }
-  );
 
   // Create a new user (ADMIN)
   // If authentication for admin fails go to next route and
@@ -364,6 +187,123 @@ module.exports = function(app, security) {
     }
   );
 
+  /**
+   * TODO:
+   * * openapi supports array query parameters using the pipe `|` delimiter;
+   *   use that instead of comma for the `populate` query param. on the other hand,
+   *   this only actually supports a singular `populate` key, so why bother with
+   *   the split anyway?
+   */
+  app.get(
+    '/api/users',
+    passport.authenticate('bearer'),
+    access.authorize('READ_USER'),
+    function(req, res, next) {
+      var filter = {};
+      if (req.query.active === 'true' || req.query.active === 'false') {
+        filter.active = req.query.active === 'true';
+      }
+
+      var populate = null;
+      if (req.query.populate) {
+        populate = req.query.populate.split(",");
+      }
+
+      new api.User().getAll({filter: filter, populate: populate}, function (err, users) {
+        if (err) return next(err);
+
+        users = userTransformer.transform(users, {path: req.getRoot()});
+        res.json(users);
+      });
+    }
+  );
+
+  app.get(
+    '/api/users/count',
+    passport.authenticate('bearer'),
+    access.authorize('READ_USER'),
+    function(req, res, next) {
+      new api.User().count(function(err, count) {
+        if (err) return next(err);
+
+        res.json({count: count});
+      });
+    }
+  );
+
+  // get info for the user bearing a token, i.e get info for myself
+  app.get(
+    '/api/users/myself',
+    passport.authenticate('bearer'),
+    function(req, res) {
+      var user = userTransformer.transform(req.user, {path: req.getRoot()});
+      res.json(user);
+    }
+  );
+
+  // TODO: should be patch
+  // update myself
+  app.put(
+    '/api/users/myself',
+    passport.authenticate('bearer'),
+    upload.single('avatar'),
+    function(req, res, next) {
+      if (req.param('username')) req.user.username = req.param('username');
+      if (req.param('displayName')) req.user.displayName = req.param('displayName');
+      if (req.param('email')) req.user.email = req.param('email');
+
+      var phone = req.param('phone');
+      if (phone) {
+        req.user.phones = [{
+          type: "Main",
+          number: phone
+        }];
+      }
+
+      new api.User().update(req.user, {avatar: req.file}, function(err, updatedUser) {
+        if (err) return next(err);
+
+        updatedUser = userTransformer.transform(updatedUser, {path: req.getRoot()});
+        res.json(updatedUser);
+      });
+    }
+  );
+
+  app.put(
+    '/api/users/myself/password',
+    passport.authenticate('local'),
+    function(req, res, next) {
+      if (req.user.authentication.type !== 'local') {
+        return res.status(400).send('User does not use local authentication');
+      }
+      const password = req.param('newPassword');
+      const confirm = req.param('newPasswordConfirm');
+      if (!password) {
+        return res.status(400).send('newPassword is required');
+      }
+      if (!confirm) {
+        return res.status(400).send('newPasswordConfirm is required');
+      }
+      if (password !== confirm) {
+        return res.status(400).send('Passwords do not match');
+      }
+      if (password.length < passwordLength) {
+        return res.status(400).send(`Password must be at least ${passwordLength} characters`);
+      }
+      req.user.authentication = {
+        type: 'local',
+        password: password
+      };
+      new api.User().update(req.user, function(err, updatedUser) {
+        if (err) {
+          return next(err);
+        }
+        updatedUser = userTransformer.transform(updatedUser, { path: req.getRoot() });
+        res.json(updatedUser);
+      });
+    }
+  );
+
   // update status for myself
   app.put(
     '/api/users/myself/status',
@@ -393,6 +333,17 @@ module.exports = function(app, security) {
     }
   );
 
+  // get user by id
+  app.get(
+    '/api/users/:userId',
+    passport.authenticate('bearer'),
+    access.authorize('READ_USER'),
+    function(req, res) {
+      var user = userTransformer.transform(req.userParam, {path: req.getRoot()});
+      res.json(user);
+    }
+  );
+
   // Update a specific user
   app.put(
     '/api/users/:userId',
@@ -401,7 +352,7 @@ module.exports = function(app, security) {
     upload.fields([{name: 'avatar'}, {name: 'icon'}]),
     parseIconUpload,
     function(req, res, next) {
-      var user = req.userParam;
+      const user = req.userParam;
 
       if (req.param('username')) user.username = req.param('username');
       if (req.param('displayName')) user.displayName = req.param('displayName');
@@ -422,7 +373,7 @@ module.exports = function(app, security) {
         user.roleId = req.param('roleId');
       }
 
-      var phone = req.param('phone');
+      const phone = req.param('phone');
       if (phone) {
         user.phones = [{
           type: "Main",
@@ -430,15 +381,18 @@ module.exports = function(app, security) {
         }];
       }
 
-      var password = req.param('password');
-      var passwordconfirm = req.param('passwordconfirm');
-      if (user.authentication.type === 'local' && password && passwordconfirm)  {
-        if (password !== passwordconfirm) {
-          return res.status(400).send('passwords do not match');
-        } else if (password.length < passwordLength) {
-          return res.status(400).send('password does not meet minimum length requirment of ' + passwordLength + ' characters');
+      const password = req.param('password');
+      if (password && user.authentication.type === 'local')  {
+        const confirm = req.param('passwordconfirm');
+        if (!confirm) {
+          return res.status(400).send(`Invalid user document: missing required parameter 'passwordconfirm'`)
         }
-
+        else if (password !== confirm) {
+          return res.status(400).send('passwords do not match');
+        }
+        else if (password.length < passwordLength) {
+          return res.status(400).send(`Password must be at least ${passwordLength} characters`);
+        }
         // Need UPDATE_USER_PASSWORD to change a users password
         // TODO this needs to be update to use the UPDATE_USER_PASSWORD permission when Android is updated to handle that permission
         if (access.userHasPermission(req.user, 'UPDATE_USER_ROLE')) {
@@ -472,6 +426,30 @@ module.exports = function(app, security) {
     }
   );
 
+  // get user avatar/icon by id
+  app.get(
+    '/api/users/:userId/:content(avatar|icon)',
+    passport.authenticate('bearer'),
+    access.authorize('READ_USER'),
+    function(req, res, next) {
+      new api.User()[req.params.content](req.userParam, function(err, content) {
+        if (err) return next(err);
+
+        if (!content) return res.sendStatus(404);
+
+        var stream = fs.createReadStream(content.path);
+        stream.on('open', function() {
+          res.type(content.contentType);
+          res.header('Content-Length', content.size);
+          stream.pipe(res);
+        });
+        stream.on('error', function() {
+          res.sendStatus(404);
+        });
+      });
+    }
+  );
+
   app.post(
     '/api/users/:userId/events/:eventId/recent',
     passport.authenticate('bearer'),
@@ -493,4 +471,21 @@ module.exports = function(app, security) {
     }
   );
 
+  // logout
+  app.post(
+    '/api/logout',
+    isAuthenticated('bearer'),
+    function(req, res, next) {
+      if (req.user) {
+        log.info('logout w/ user', req.user._id.toString());
+        new api.User().logout(req.token, function(err) {
+          if (err) return next(err);
+          res.status(200).send('successfully logged out');
+        });
+      } else {
+        // call to logout with an invalid token, nothing to do
+        res.sendStatus(200);
+      }
+    }
+  );
 };
