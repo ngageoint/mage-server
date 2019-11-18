@@ -11,13 +11,6 @@ class LayerEditController {
 
     this.imageryLayer = {};
     this.wmsOptions = {};
-
-    this.urlPattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
-      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
-      '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
-      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
-      '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
-      '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
   }
 
   $onInit() {
@@ -59,11 +52,7 @@ class LayerEditController {
       if (this.layer.url.indexOf('{x}') !== -1 || 
         this.layer.url.indexOf('{y}') !== -1 || 
         this.layer.url.indexOf('{z}') !== -1) {
-        this.layer.format = 'XYZ';   
-        if (this.validateURL(this.layer.url)) {
-          // TODO what does this call?
-          this.onValidLayer(this.layer);
-        }
+        this.layer.format = 'XYZ';
       } else if (this.layer.url.toLowerCase().indexOf('wms') !== -1) {
         this.layer.format = 'WMS'; 
       }
@@ -72,10 +61,6 @@ class LayerEditController {
 
   wmsOptionsUpdate(options) {
     this.wmsOptions = options;
-  }
-
-  validateURL(str) {
-    return !!this.urlPattern.test(str);
   }
 
   saveLayer() {
@@ -110,7 +95,6 @@ class LayerEditController {
       });
     }
   }
-
 }
 
 LayerEditController.$inject = ['$element', '$state', '$stateParams', 'Layer', 'LayerService'];
@@ -118,9 +102,7 @@ LayerEditController.$inject = ['$element', '$state', '$stateParams', 'Layer', 'L
 export default {
   template: require('./layer.edit.html'),
   bindings: {
-    layer: '<',
-    onValidLayer: '&',
-    onInvalidLayer: '&'
+    layer: '<'
   },
   controller: LayerEditController
 };
