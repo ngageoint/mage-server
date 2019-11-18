@@ -116,7 +116,7 @@ class LayerEditController {
 LayerEditController.$inject = ['$element', '$state', '$stateParams', 'Layer', 'LayerService'];
 
 export default {
-  template: require('./layer-edit.component.html'),
+  template: require('./layer.edit.html'),
   bindings: {
     layer: '<',
     onValidLayer: '&',

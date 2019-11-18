@@ -87,7 +87,7 @@ class LayerPreviewController {
 LayerPreviewController.$inject = ['$element'];
 
 export default {
-  template: require('./layer-preview.html'),
+  template: require('./layer.preview.html'),
   bindings: {
     url: '@',
     type: '@',

@@ -39,11 +39,10 @@ angular
     var interceptor = ['$rootScope', '$location', '$q', 'httpBuffer', 'LocalStorageService', function($rootScope, $location, $q, httpBuffer, LocalStorageService) {
       return {
         'request': function(request) {
-          console.log(`check this ${$location.protocol()}://${$location.host()}`, request.url)
           if (!request.ignoreAuthModule 
               && (request.url.startsWith('/api/') 
                 || (request.url.startsWith(`${$location.protocol()}://${$location.host()}`)
-                  && (request.url.indexOf('/api/') != -1)
+                  && (request.url.indexOf('/api/') !== -1)
                 )
               )
               && request.url.lastIndexOf('.html') !== request.url.length - 5) {

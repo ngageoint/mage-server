@@ -9,7 +9,8 @@ module.exports = merge(common, {
       {
         test: /\.js?$/,
         use: ['source-map-loader'],
-        enforce: 'pre'
+        enforce: 'pre',
+        exclude: [/node_modules/, /build/, /__test__/]
       }
     ]
   },

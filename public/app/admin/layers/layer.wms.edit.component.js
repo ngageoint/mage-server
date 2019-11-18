@@ -135,7 +135,7 @@ class WmsEditController {
 WmsEditController.$inject = ['$http', '$element', '$timeout'];
 
 export default {
-  template: require('./wms.component.html'),
+  template: require('./layer.wms.edit.html'),
   bindings: {
     layerUrl: '@',
     wmsOptions: '<',
