@@ -9,7 +9,8 @@ function NewsFeed() {
     template:  require('./feed.directive.html'),
     scope: {
       event: '=',
-      feedUsersChanged: '='
+      feedUsersChanged: '=',
+      onToggleFeed: '&'
     },
     controller: NewsFeedController
   };
@@ -92,7 +93,12 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
     $scope.newObservation = null;
     $scope.editObservation = null;
     $scope.viewObservation = null;
-    $scope.$emit('feed:show');
+
+    $scope.onToggleFeed({
+      $event: {
+        hidden: false
+      }
+    });
   });
 
   $scope.$on('user:viewDone', function() {
@@ -104,7 +110,12 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
     $scope.newObservation = null;
     $scope.editObservation = null;
     $scope.viewUser = null;
-    $scope.$emit('feed:show');
+
+    $scope.onToggleFeed({
+      $event: {
+        hidden: false
+      }
+    });
   });
 
   $scope.$on('observation:viewDone', function() {
@@ -234,6 +245,11 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
     $scope.viewObservation = null;
     $scope.editObservation = null;
     $scope.newObservation = null;
-    $scope.$emit('feed:show');
+
+    $scope.onToggleFeed({
+      $event: {
+        hidden: false
+      }
+    });
   });
 }

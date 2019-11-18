@@ -9,6 +9,9 @@ module.exports = function leaflet() {
     restrict: "A",
     replace: true,
     template: '<div id="map" class="leaflet-map"></div>',
+    scope: {
+      onToggleFeed: '&'
+    },
     controller: LeafletController
   };
 
@@ -26,9 +29,9 @@ require('leaflet-editable');
 require('leaflet-groupedlayercontrol');
 require('leaflet.markercluster');
 
-LeafletController.$inject = ['$scope', 'MapService', 'LocalStorageService', 'EventService'];
+LeafletController.$inject = ['$scope', '$timeout', 'MapService', 'LocalStorageService', 'EventService'];
 
-function LeafletController($scope, MapService, LocalStorageService, EventService) {
+function LeafletController($scope, $timeout, MapService, LocalStorageService, EventService) {
 
   var layers = {};
   var geopackageLayers = {};
@@ -107,7 +110,13 @@ function LeafletController($scope, MapService, LocalStorageService, EventService
 
   var feedControl = new L.Control.MageListTools({
     onToggle: function(toggle) {
-      $scope.$emit('feed:toggle', toggle);
+      $timeout(() => {
+        $scope.onToggleFeed({
+          $event: {
+            hidden: !toggle
+          }
+        });
+      });
     }
   });
   map.addControl(feedControl);

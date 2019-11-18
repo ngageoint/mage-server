@@ -19,17 +19,21 @@ class MageController {
   }
 
   $onInit() {
-    this.$animate.on('addClass', this.$document.find('.feed'), this.resolveMapAfterFeaturesPaneTransition);
-    this.$animate.on('removeClass', this.$document.find('.feed'), this.resolveMapAfterFeaturesPaneTransition);
+    this.$animate.on('addClass', this.$document.find('.feed'), ($mapPane, animationPhase) => {
+      this.resolveMapAfterFeaturesPaneTransition(animationPhase);
+    });
+    this.$animate.on('removeClass', this.$document.find('.feed'), ($mapPane, animationPhase) => {
+      this.resolveMapAfterFeaturesPaneTransition(animationPhase);
+    });
 
     this.MapService.initialize();
 
-    var filterChangedListener = {
+    this.filterChangedListener = {
       onFilterChanged: filter => {
         this.onFilterChanged(filter);
       }
     };
-    this.FilterService.addListener(filterChangedListener);
+    this.FilterService.addListener(this.filterChangedListener);
   
     var locationListener = {
       onLocation: location => {
@@ -42,7 +46,12 @@ class MageController {
     this.MapService.addListener(locationListener);
   }
 
-  resolveMapAfterFeaturesPaneTransition($mapPane, animationPhase) {
+  $onDestroy() {
+    this.FilterService.removeListener(this.filterChangedListener);
+    this.MapService.destroy();
+  }
+
+  resolveMapAfterFeaturesPaneTransition(animationPhase) {
     if (animationPhase === 'close') {
       this.MapService.hideFeed(this.hideFeed);
     }
@@ -72,6 +81,14 @@ class MageController {
         this.filteredInterval = null;
       }
     }
+  }
+
+  toggleFeed($event) {
+    this.hideFeed = $event.hidden;
+  }
+
+  showFeed() {
+    this.hideFeed = false;
   }
 
   onLocation(location) {
@@ -112,20 +129,6 @@ class MageController {
     }
   }
 }
-
-// TODO 
-// $scope.$on('$destroy', function() {
-//   FilterService.removeListener(filterChangedListener);
-//   MapService.destroy();
-// });
-
-// $scope.$on('feed:show', function() {
-//   $scope.hideFeed = false;
-// });
-
-// $scope.$on('feed:toggle', function() {
-//   $scope.hideFeed = !$scope.hideFeed;
-// });
 
 MageController.$inject = ['$animate', '$document', '$uibModal', 'UserService', 'FilterService', 'EventService', 'MapService', 'Location'];
 
