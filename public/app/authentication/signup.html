@@ -13,13 +13,13 @@
       </div>
 
       <div class="top-gap-xl bottom-gap-l">
-        <div ng-repeat="strategy in thirdPartyStrategies" class="top-gap">
+        <div ng-repeat="strategy in $ctrl.thirdPartyStrategies" class="top-gap">
           <oauth-signin strategy="strategy"></oauth-signin>
         </div>
       </div>
 
-      <div ng-if="localAuthenticationStrategy">
-        <div ng-if="thirdPartyStrategies.length" class="top-gap-l bottom-gap-s">
+      <div ng-if="$ctrl.localAuthenticationStrategy">
+        <div ng-if="$ctrl.thirdPartyStrategies.length" class="top-gap-l bottom-gap-s">
           <div class="or-container">
             <hr class="or-hr">
             <div id="or">or create a MAGE account</div>
@@ -27,7 +27,7 @@
         </div>
 
         <div class="top-gap">
-          <local-signup strategy="localAuthenticationStrategy"></local-signup>
+          <local-signup strategy="$ctrl.localAuthenticationStrategy"></local-signup>
         </div>
       </div>
   </div>

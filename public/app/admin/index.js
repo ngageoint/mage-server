@@ -1,9 +1,13 @@
-var angular = require('angular');
+import angular from 'angular';
+import admin from './admin.component';
+import adminTab from './admin.tab.component';
+import adminDashboard from './admin.dashboard.component';
 
 angular
   .module('mage')
-  .controller('AdminController', require('./admin.controller'))
-  .directive('adminTab', require('./admin.tab.directive'));
+  .component('admin', admin)
+  .component('adminTab', adminTab)
+  .component('adminDashboard', adminDashboard);
 
 require('./users');
 require('./devices');

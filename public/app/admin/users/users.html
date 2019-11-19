@@ -1,90 +1,81 @@
-<div class="admin">
-  <div admin-tab="'users'"></div>
+<div class="admin-nav-gap">
+  <div class="container-fluid">
+    <ol class="breadcrumb">
+      <li class="active"><i class="fa fa-user"></i> Users</li>
+    </ol>
+  </div>
+</div>
 
-  <div class="admin-main">
-    <div class="admin-nav-gap">
-      <div class="container-fluid">
-        <ol class="breadcrumb">
-          <li class="active"><i class="fa fa-user"></i> Users</li>
-        </ol>
-      </div>
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <ul class="nav nav-pills nav-stacked">
+        <li ng-click="$ctrl.page = 0; $ctrl.filter='all'" ng-class="{active: $ctrl.filter=='all'}"><a href="javascript:void(0);">All <span class="badge pull-right">{{$ctrl.filteredUsers.length}}</span></a></li>
+        <li ng-click="$ctrl.page = 0; $ctrl.filter='active'" ng-class="{active: $ctrl.filter=='active'}"><a href="javascript:void(0);">Active <span class="badge pull-right">{{($ctrl.filteredUsers | filter:{active: true}).length}}</span></a></li>
+        <li ng-click="$ctrl.page = 0; $ctrl.filter='inactive'" ng-class="{active: $ctrl.filter=='inactive'}"><a href="javascript:void(0);">Inactive <span class="badge pull-right">{{($ctrl.filteredUsers | filter:{active: !true}).length}}</span></a></li>
+        <!-- TODO only if local is enabled -->
+        <li ng-click="$ctrl.page = 0; $ctrl.filter='disabled'" ng-class="{active: $ctrl.filter=='disabled'}"><a href="javascript:void(0);">Disabled <span class="badge pull-right">{{($ctrl.filteredUsers | filter:{enabled: !true}).length}}</span></a></li>
+      </ul>
+
+      <hr>
+      <form class="form">
+        <div class="top-gap">
+          <label>Search</label>
+          <input type="text" class="form-control" placeholder="name, email" ng-model="$ctrl.userSearch" ng-change="$ctrl.page=0">
+        </div>
+      </form>
+      <hr>
+
+      <button class="btn btn-default pull-right" ng-click="$ctrl.reset()">Reset</button>
     </div>
 
-    <div class="admin-content">
-
-      <div class="container">
-        <div class="row">
-          <div class="col-md-3">
-            <ul class="nav nav-pills nav-stacked">
-              <li ng-click="page = 0; filter='all'" ng-class="{active: filter=='all'}"><a href="javascript:void(0);">All <span class="badge pull-right">{{filteredUsers.length}}</span></a></li>
-              <li ng-click="page = 0; filter='active'" ng-class="{active: filter=='active'}"><a href="javascript:void(0);">Active <span class="badge pull-right">{{(filteredUsers | filter:{active: true}).length}}</span></a></li>
-              <li ng-click="page = 0; filter='inactive'" ng-class="{active: filter=='inactive'}"><a href="javascript:void(0);">Inactive <span class="badge pull-right">{{(filteredUsers | filter:{active: !true}).length}}</span></a></li>
-<!-- TODO only if local is enabled -->
-              <li ng-click="page = 0; filter='disabled'" ng-class="{active: filter=='disabled'}"><a href="javascript:void(0);">Disabled <span class="badge pull-right">{{(filteredUsers | filter:{enabled: !true}).length}}</span></a></li>
-            </ul>
-
-            <hr>
-            <form class="form">
-              <div class="top-gap">
-                <label>Search</label>
-                <input type="text" class="form-control" placeholder="name, email" ng-model="userSearch" ng-change="page=0">
-              </div>
-            </form>
-            <hr>
-
-            <button class="btn btn-default pull-right" ng-click="reset()">Reset</button>
+    <div class="col-md-9">
+      <nav class="navbar navbar-default admin-dashboard-navbar">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand">Users</a>
           </div>
 
-          <div class="col-md-9">
-            <nav class="navbar navbar-default admin-dashboard-navbar">
-              <div class="container-fluid">
-                <div class="navbar-header">
-                  <a class="navbar-brand">Users</a>
-                </div>
+          <form class="navbar-form navbar-right" role="search">
+            <button type="submit" class="btn btn-default" ng-if="$ctrl.hasUserCreatePermission" ng-click="$ctrl.bulkImport()"><i class="fa fa-users"></i> Bulk Import</button>
+            <button type="submit" class="btn btn-default" ng-if="$ctrl.hasUserCreatePermission" ng-click="$ctrl.newUser()"><i class="fa fa-user"></i> New User</button>
+          </form>
+        </div>
+      </nav>
 
-                <form class="navbar-form navbar-right" role="search">
-                  <button type="submit" class="btn btn-default" ng-if="hasUserCreatePermission" ng-click="bulkImport()"><i class="fa fa-users"></i> Bulk Import</button>
-                  <button type="submit" class="btn btn-default" ng-if="hasUserCreatePermission" ng-click="newUser()"><i class="fa fa-user"></i> New User</button>
-                </form>
-              </div>
-            </nav>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="admin-table">
+            <div class="well-item"
+                ng-repeat="u in ($ctrl.filteredUsers = ($ctrl.users | user:['displayName','email']:$ctrl.userSearch)) | filter:$ctrl.filterActive | orderBy:'displayName' | offset: $ctrl.page*$ctrl.itemsPerPage | limitTo:$ctrl.itemsPerPage" >
 
-            <div class="row">
-              <div class="col-md-12">
-                <div class="admin-table">
-                  <div class="well-item"
-                      ng-repeat="u in (filteredUsers = (users | user:['displayName','email']:userSearch)) | filter:filterActive | orderBy:'displayName' | offset: page*itemsPerPage | limitTo:itemsPerPage" >
+                <div class="row pointer" ng-click="$ctrl.gotoUser(u)">
+                  <div class="col-md-8">
+                    <div class="pull-left right-gap" avatar-user="u" avatar-width="40" avatar-height="40"></div>
 
-                      <div class="row pointer" ng-click="gotoUser(u)">
-                        <div class="col-md-8">
-                          <div class="pull-left right-gap" avatar-user="u" avatar-width="40" avatar-height="40"></div>
-
-                          <div class="strong">{{u.displayName}}</div>
-                          <div class="muted">{{u.email}}</div>
-                        </div>
-                        <div class="col-md-4">
-                          <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-if="hasUserDeletePermission" ng-click="deleteUser($event, u)">Delete</button>
-                          <button class="btn btn-sm btn-success pull-right admin-user-button" ng-if="hasUserEditPermission" ng-hide="u.active" ng-click="activateUser($event, u)">Activate</button>
-                          <button class="btn btn-sm btn-warning pull-right admin-user-button" ng-if="hasUserEditPermission" ng-hide="u.enabled" ng-click="enableUser($event, u)">Enable</button>
-                          <button class="btn btn-sm btn-default pull-right" ng-if="hasUserEditPermission"  ng-click="editUser($event, u)">Edit</button>
-                        </div>
-                      </div>
-
+                    <div class="strong">{{u.displayName}}</div>
+                    <div class="muted">{{u.email}}</div>
+                  </div>
+                  <div class="col-md-4">
+                    <button class="btn btn-sm btn-danger pull-right admin-user-button" ng-if="$ctrl.hasUserDeletePermission" ng-click="$ctrl.deleteUser($event, u)">Delete</button>
+                    <button class="btn btn-sm btn-success pull-right admin-user-button" ng-if="$ctrl.hasUserEditPermission" ng-hide="u.active" ng-click="$ctrl.activateUser($event, u)">Activate</button>
+                    <button class="btn btn-sm btn-warning pull-right admin-user-button" ng-if="$ctrl.hasUserEditPermission" ng-hide="u.enabled" ng-click="$ctrl.enableUser($event, u)">Enable</button>
+                    <button class="btn btn-sm btn-default pull-right" ng-if="$ctrl.hasUserEditPermission"  ng-click="$ctrl.editUser($event, u)">Edit</button>
                   </div>
                 </div>
-                <div class="row">
-                  <div class="col-md-12">
-                    <ul class="pager pull-right">
-                      <li ng-class="{'disabled': page == 0}">
-                        <a href="javascript:void(0);" ng-click="page == 0 || (page=page-1)">&larr; Previous</a>
-                      </li>
-                      <li ng-class="{'disabled': page >= (filteredUsers.length/itemsPerPage) - 1}">
-                        <a href="javascript:void(0);" ng-click="page >= (filteredUsers.length/itemsPerPage) - 1 || (page=page+1)">Next&rarr;</a>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
+
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <ul class="pager pull-right">
+                <li ng-class="{'disabled': $ctrl.page == 0}">
+                  <a href="javascript:void(0);" ng-click="$ctrl.page == 0 || ($ctrl.page=$ctrl.page-1)">&larr; Previous</a>
+                </li>
+                <li ng-class="{'disabled': $ctrl.page >= ($ctrl.filteredUsers.length/$ctrl.itemsPerPage) - 1}">
+                  <a href="javascript:void(0);" ng-click="$ctrl.page >= ($ctrl.filteredUsers.length/$ctrl.itemsPerPage) - 1 || ($ctrl.page=$ctrl.page+1)">Next&rarr;</a>
+                </li>
+              </ul>
             </div>
           </div>
         </div>

@@ -1,12 +1,15 @@
-var angular = require('angular');
+import angular from 'angular';
+import avatarEdit from './avatar.edit.component';
+import iconEdit from './icon.edit.component';
+import profile from './profile.component';
 
 angular.module('mage')
-  .controller('UserController', require('./user.controller'))
   .controller('UserResetPasswordController', require('./user.reset.password.controller'))
+  .component('userAvatarEdit', avatarEdit)
+  .component('userIconEdit', iconEdit)
+  .component('userProfile', profile)
   .directive('avatarUser', require('./user-avatar.directive'))
-  .directive('avatarUserEdit', require('./user-avatar-edit.directive'))
   .directive('iconUser', require('./user-icon.directive'))
-  .directive('iconUserEdit', require('./user-icon-edit.directive'))
   .directive('locationPopup', require('./user-popup.directive'))
   .directive('userNewsItem', require('./user-feed.directive'))
   .directive('userView', require('./user-view.directive'));

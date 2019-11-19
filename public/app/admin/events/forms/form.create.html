@@ -1,0 +1,71 @@
+<div class="form-create-panel mdc-dialog"
+  role="alertdialog"
+  aria-modal="true"
+  aria-labelledby="my-dialog-title"
+  aria-describedby="my-dialog-content">
+  
+  <div class="mdc-dialog__container">
+    <div class="mdc-dialog__surface">
+      <div class="modal-header">
+        <h3 class="modal-title">Create New Form For "{{$ctrl.event.name}}"</h3>
+      </div>
+      <div class="mdc-dialog__content" id="my-dialog-content">
+        <div class="row bottom-gap top-gap">
+          <div class="col-md-12">
+            <form name="$ctrl.generalForm" >
+              <div class="top-gap" ng-class="{'has-error': $ctrl.generalForm.$submitted && $ctrl.generalForm.name.$invalid}">
+                <label class="control-label">Name</label>
+                <input class="form-control" type="text" placeholder="Form name" name="name" ng-model="$ctrl.form.name" ng-required="true"/>
+                <span class="help-block" ng-if=" $ctrl.generalForm.$submitted && $ctrl.generalForm.name.$invalid">Name is required</span>
+              </div>
+              <div class="top-gap">
+                <label class="control-label">Description</label>
+                <textarea class="form-control" type="text" placeholder="Brief description of the form." ng-model="$ctrl.form.description"/>
+              </div>
+
+              <div class="top-gap" ng-class="{'has-error': $ctrl.generalForm.$submitted && $ctrl.generalForm.color.$invalid}">
+                <label class="control-label">Color</label>
+                <input minicolors="{letterCase: 'uppercase'}" class="form-control" type="text" ng-model="$ctrl.form.color" name="color" ng-required="true">
+                <span class="help-block" ng-if="$ctrl.generalForm.$submitted && $ctrl.generalForm.color.$invalid">Color is invalid</span>
+              </div>
+
+              <div class="top-gap" ng-class="{'has-error': $ctrl.generalForm.$submitted && $ctrl.generalForm.color.$invalid}">
+                <p class="help-block">If you would like to create this form based on a previously archived MAGE form please upload it here.</p>
+                <label class="control-label">Form (optional)</label>
+                <file-browser on-file-chosen="$ctrl.formFilePicked($event)"></file-browser>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <footer class="mdc-dialog__actions">
+        <button type="button" 
+          class="mdc-button mdc-dialog__button" 
+          data-mdc-dialog-action="close">
+          <span class="mdc-button__label">Cancel</span>
+        </button>
+        <button type="button" 
+          class="mdc-button mdc-dialog__button mdc-button--raised" 
+          ng-click="$ctrl.upload()"
+          tabindex="1">
+          <span class="mdc-button__label">Create Form</span>
+        </button>
+      </footer>
+
+      <div class="mdc-card" >
+        <div class="error-card ng-animatable" ng-if="$ctrl.error">
+          <div class="error-card__primary">
+            <div class="error-card--title">Error Creating Form</div>
+            <div class="error-card--subtitle mdc-typography mdc-typography--body2">{{$ctrl.error}}</div>
+          </div>
+
+          <div class="error-card__actions">  
+            <button class="material-icons mdc-icon-button error-card__action--icon" ng-click="$ctrl.error = null">close</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="mdc-dialog__scrim"></div>
+</div>

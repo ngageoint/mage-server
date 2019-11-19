@@ -1,4 +1,5 @@
-var angular = require('angular');
+import angular from 'angular';
+import adminSettings from './settings.component';
 
 angular.module('mage')
-  .controller('AdminSettingsController', require('./settings.controller'));
+  .component('adminSettings', adminSettings);

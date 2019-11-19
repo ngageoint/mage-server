@@ -6,7 +6,7 @@
         <span class="mdc-top-app-bar__title"><i class="icon-magic icon-brand app-bar-brand-icon"></i>MAGE</span>
       </button>
     </section>
-    <section class="mdc-top-app-bar__section map-app-bar-section" ng-if="$ctrl.location.path() === '/map'" ng-cloak>
+    <section class="mdc-top-app-bar__section map-app-bar-section" ng-if="$ctrl.state === 'map'" ng-cloak>
       <filter-button></filter-button>
       <polling-button></polling-button>
       <preferences-button></preferences-button>
@@ -14,7 +14,7 @@
     </section>
     <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end">
       <div class="mage-tooltip">
-        <button class="mdc-button top-app-bar-button" onclick="window.location.href='#/user'">
+        <button class="mdc-button top-app-bar-button" onclick="window.location.href='#/profile'">
           <span class="mdc-button__icon">
           <span avatar-user="$ctrl.myself" avatar-width="25" avatar-height="25"></span>
           </span>

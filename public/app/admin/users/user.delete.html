@@ -1,0 +1,25 @@
+<div class="modal-header">
+  <h3 class="modal-title">Delete "{{$ctrl.user.displayName}}"</h3>
+</div>
+
+<div class="modal-body">
+  <div class="row">
+    <div class="col-md-12">
+      <p>User "{{$ctrl.user.displayName}}" will be deleted.
+        <strong>This cannot be undone, all user data will be unrecoverable.</strong>.
+      </p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <p>Do you want to delete the "{{$ctrl.user.displayName}}" user?<p>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-default" ng-click="$ctrl.cancel()">Cancel</button>
+  <button class="btn btn-danger" ng-click="$ctrl.deleteUser($ctrl.user, true)"><i class="icon-trash"> </i>Delete User</button>
+</div>

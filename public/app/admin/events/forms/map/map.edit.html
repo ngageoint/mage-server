@@ -1,0 +1,184 @@
+<div class="admin-nav-gap">
+  <div class="container-fluid">
+    <ol class="breadcrumb">
+      <li><i class="fa fa-calendar admin-dashboard"></i> <a href="#/admin/events">Events</li></a>
+      <li><a ng-href="#/admin/events/{{$ctrl.event.id}}">{{$ctrl.event.name}}</a></li>
+      <li><a ng-href="#/admin/events/{{$ctrl.event.id}}/forms/{{$ctrl.form.id}}">{{$ctrl.form.name}}</a></li>
+      <li class="active">Map Symbology <span class="text-danger" ng-show="$ctrl.unSavedChanges"> (unsaved changes)</span></li>
+    </ol>
+  </div>
+</div>
+
+<div class="container" ng-show="$ctrl.event">
+  <div class="row">
+    <div class="col-md-12">
+      <h2 ng-if="$ctrl.form.id">Edit Map Symbology for form: {{form.name}}</h2>
+    </div>
+  </div>
+
+  <div>
+    <div ng-if="$ctrl.event">
+      <div class="row">
+        <div class="col-xs-12">
+          <button class="btn btn-success pull-right" ng-if="($ctrl.unSavedChanges || $ctrl.unSavedUploads) && !$ctrl.saving" ng-click="$ctrl.save(event)" ng-disabled="$ctrl.form.fields.$invalid">Save</button>
+          <button class="btn btn-success pull-right" ng-if="!$ctrl.unSavedUploads && !$ctrl.unSavedChanges && !$ctrl.saving" disabled="disabled">Save</button>
+          <button class="btn btn-success pull-right" ng-if="$ctrl.saving" disabled="disabled"><i class="fa fa-spinner fa-spin"></i> Saving</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row top-gap-l">
+    <div class="col-md-12">
+      <nav class="navbar navbar-default admin-dashboard-navbar">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand">Map Symbology</a>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="admin-table admin-table-content">
+        <div class="row">
+          <admin-event-form-map-symbology
+            title="Default Symbology"
+            style="$ctrl.styleMap.style"
+            icon="$ctrl.iconMap.icon"
+            on-style-changed="$ctrl.onStyleChanged($event)"
+            on-icon-added="$ctrl.onIconAdded($event)"/>
+        </div>
+
+        <hr>
+
+        <strong>Choose a field to be used for map symbology:</strong>
+        <div class="row bottom-gap">
+          <div class="col-md-2">
+            <select ng-model="$ctrl.form.primaryField" ng-change="$ctrl.primaryChanged()" ng-options="field.name as field.title for field in $ctrl.form.fields | filter: $ctrl.symbologyFilter($ctrl.variantField)" class="form-control">
+              <option value="">None</option>
+            </select>
+          </div>
+        </div>
+        <!-- TODO fix date/timestamp variants-->
+        <!-- <div ng-show="$ctrl.showPrimaryNumberVariants" class="bottom-gap">
+          <h4>You have chosen a date field for your map icon symbology.  Please define the ranges.</h4>
+          <div ng-repeat="primary in $ctrl.variants" class="row bottom-gap">
+            <div class="col-md-12">
+              <span class="strong">{{primary.title}}
+              <span ng-show="$ctrl.variants[$index+1]">
+              - {{$ctrl.variants[$index+1].title}}
+              </span>
+              <span ng-hide="$ctrl.variants[$index+1]">+</span>
+              minutes old
+              <button class="btn btn-sm btn-danger" ng-click="$ctrl.removeVariant(primary)">Remove Variant</button>
+              </span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <form class="form-inline">
+                <div class="top-gap">
+                  <p class="form-control-static">More than</p>
+                </div>
+                <div class="top-gap">
+                  <input type="number" ng-model="$ctrl.newVariantMin" class="form-control"/>
+                </div>
+                <div class="top-gap">
+                  <p class="form-control-static">minutes old</p>
+                </div>
+                <button class="btn btn-sm btn-primary" ng-click="$ctrl.addVariantOption($ctrl.newVariantMin)">Add Variant</button>
+              </form>
+            </div>
+          </div>
+        </div> -->
+
+        <div ng-show="$ctrl.form.primaryField">
+          <strong>Choose a secondary field to be used for map symbology:</strong>
+          <div class="row bottom-gap">
+            <div class="col-md-2">
+              <select ng-model="$ctrl.form.variantField" ng-change="$ctrl.variantChanged()" ng-options="field.name as field.title for field in $ctrl.form.fields | filter: $ctrl.symbologyFilter($ctrl.primaryField)" class="form-control">
+                <option value="">None</option>
+              </select>
+            </div>
+          </div>
+          <div ng-show="$ctrl.showNumberVariants" class="bottom-gap">
+            <h4>You have chosen a date field for your icon variants.  Please define the ranges for each variant.</h4>
+            <div ng-repeat="variant in $ctrl.variants" class="row bottom-gap">
+              <div class="col-md-12">
+                <span class="strong">{{variant.title}}
+                <span ng-show="$ctrl.variants[$index+1]">
+                - {{variants[$index+1].title}}
+                </span>
+                <span ng-hide="$ctrl.variants[$index+1]">+</span>
+                minutes old
+                <button class="btn btn-sm btn-danger" ng-click="$ctrl.removeVariant(variant)">Remove Variant</button>
+                </span>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <form class="form-inline">
+                  <div class="top-gap">
+                    <p class="form-control-static">More than</p>
+                  </div>
+                  <div class="top-gap">
+                    <input type="number" ng-model="$ctrl.newVariantMin" class="form-control"/>
+                  </div>
+                  <div class="top-gap">
+                    <p class="form-control-static">minutes old</p>
+                  </div>
+                  <button class="btn btn-sm btn-primary" ng-click="$ctrl.addVariantOption($ctrl.newVariantMin)">Add Variant</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <hr>
+
+        <div ng-repeat="option in $ctrl.primaryField.choices">
+          <div class="row bottom-gap-s">
+            <div class="col-md-12">
+              <strong>{{option.title}}</strong>
+            </div>
+          </div>
+          <div class="row bottom-gap-l">
+            <admin-event-form-map-symbology 
+              title="Default"
+              style="$ctrl.styleMap[option.title].style"
+              icon="$ctrl.iconMap[option.title].icon"
+              primary="{{option.title}}"
+              on-style-changed="$ctrl.onStyleChanged($event)"
+              on-icon-added="$ctrl.onIconAdded($event)"/>
+
+            <div ng-repeat="variant in $ctrl.variants">
+              <admin-event-form-map-symbology 
+                title="{{variant.title}}"
+                style="$ctrl.styleMap[option.title][variant.title].style"
+                icon="$ctrl.iconMap[option.title][variant.title].icon"
+                primary="{{option.title}}"
+                variant="{{variant.title}}"
+                on-style-changed="$ctrl.onStyleChanged($event)"
+                on-icon-added="$ctrl.onIconAdded($event)"/>
+            </div>
+          </div>
+          <hr>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-gap-l top-gap-xl">
+  <div class="container" ng-if="$ctrl.event">
+    <div class="row">
+      <div class="col-xs-12">
+        <button class="btn btn-success pull-right" ng-if="($ctrl.unSavedChanges ||$ctrl.unSavedUploads) && !$ctrl.saving" ng-click="$ctrl.save()" ng-disabled="$ctrl.form.fields.$invalid">Save</button>
+        <button class="btn btn-success pull-right" ng-if="!$ctrl.unSavedUploads && !$ctrl.unSavedChanges && !$ctrl.saving" disabled="disabled">Save</button>
+        <button class="btn btn-success pull-right" ng-if="$ctrl.saving" disabled="disabled"><i class="fa fa-spinner fa-spin"></i> Saving</button>
+      </div>
+    </div>
+  </div>
+</div>
