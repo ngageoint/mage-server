@@ -8,28 +8,47 @@ services:
       - ./database/data:/data/mage
       - ./database/log:/var/log/mongodb
     command: [mongod, --dbpath, /data/mage, --logpath, /var/log/mongodb/mongod.log, --smallfiles]
-    # uncomment the following to allow the mongo client on your host machine to connect the MongoDB in the Docker container
-    # ports: 
+    # Uncomment the following ports block to allow the mongo client on your
+    # host machine to connect to MongoDB in the Docker container.
+    # ports:
     #   - 27017:27017
-    networks: 
+    networks:
       - mage.net
 
   mage-server:
     depends_on: [mage-db]
-    image: "mage-server:${MAGE_VER:-5.1.0}"
+    image: "mage-server:${MAGE_VER:-5.3.1}"
     build:
       context: ./server
-      args: 
-        MAGE_VER: "${MAGE_VER:-5.1.0}"
+      args:
+        MAGE_VER: "${MAGE_VER:-5.3.1}"
     volumes:
       - ./server/resources:/var/lib/mage
+    # Comment the ports block to disallow connections directly to the node
+    # server when running the mage-web-proxy below.
     ports:
       - 4242:4242
     networks:
       - mage.net
-    environment: 
+    environment:
       MAGE_MONGO_URL: mongodb://mage-db:27017/magedb
+      MAGE_TOKEN_EXPIRATION: "2419200"
+      # Comment this when running the mage-web-proxy with TLS connections below.
+      MAGE_SESSION_COOKIE_SECURE: "false"
 
-networks: 
+  # Uncomment the following block to enable the TLS reverse proxy.  You will
+  # also need to generate the key and certificate as the README describes.
+  # mage-web-proxy:
+  #   image: nginx
+  #   volumes:
+  #     - ./web/nginx.conf:/etc/nginx/nginx.conf
+  #     - ./web/mage-web.crt:/etc/nginx/ssl/mage-web.crt
+  #     - ./web/mage-web.key:/etc/nginx/ssl/mage-web.key
+  #   ports:
+  #     - 5443:443
+  #   networks:
+  #     - mage.net
+
+networks:
   mage.net:
     driver: bridge
