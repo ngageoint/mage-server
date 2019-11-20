@@ -1,0 +1,21 @@
+<div class="modal-header">
+  <h3 class="modal-title">{{$ctrl.model.title}}</h3>
+</div>
+
+<div class="modal-body">
+  <div class="row bottom-gap" ng-show="$ctrl.model.errors">
+    <div class="col-md-12">
+      <li class="text-danger" ng-repeat="(key, value) in $ctrl.model.errors">{{key}} : {{value.message}}</li>
+    </div>
+  </div>
+
+  <div class="row top-gap">
+    <div class="col-md-12">
+      <p class="help-block text-center">{{$ctrl.model.message}}</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-default" ng-click="$ctrl.ok()">Ok</button>
+</div>

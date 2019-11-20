@@ -1,0 +1,379 @@
+<div class="admin-nav-gap">
+  <div class="container-fluid">
+    <ol class="breadcrumb">
+      <li><i class="fa fa-calendar admin-dashboard"></i> <a href="#/admin/events">Events</li></a>
+      <li><a ng-href="#/admin/events/{{$ctrl.event.id}}">{{$ctrl.event.name}}</a></li>
+      <li ng-if="$ctrl.form.id !== new"><a ng-href="#/admin/events/{{$ctrl.event.id}}/forms/{{$ctrl.form.id}}">{{$ctrl.form.name}}</a></li>
+      <li ng-if="$ctrl.form.id === new" class="active">{{$ctrl.form.name}}</li>
+      <li class="active">Fields <span class="text-danger" ng-show="$ctrl.unSavedChanges"> (unsaved changes)</span></li>
+    </ol>
+  </div>
+</div>
+
+<div class="container" ng-show="$ctrl.event">
+  <div class="row">
+    <div class="col-md-12">
+      <h2 ng-if="$ctrl.form.id">Edit fields for form: {{$ctrl.form.name}}</h2>
+      <h2 ng-if="!$ctrl.form.id">Please add fields to your new form</h2>
+    </div>
+  </div>
+
+  <div>
+    <div ng-if="$ctrl.event">
+      <div class="row">
+        <div class="col-xs-12">
+          <button class="btn btn-success pull-right" ng-if="($ctrl.unSavedChanges || $ctrl.unSavedUploads) && !$ctrl.saving" ng-click="$ctrl.save($ctrl.event)" ng-disabled="$ctrl.form.fields.$invalid">Save</button>
+          <button class="btn btn-success pull-right" ng-if="!$ctrl.unSavedUploads && !$ctrl.unSavedChanges && !$ctrl.saving" disabled="disabled">Save</button>
+          <button class="btn btn-success pull-right" ng-if="$ctrl.saving" disabled="disabled"><i class="fa fa-spinner fa-spin"></i> Saving</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row top-gap-l">
+    <div class="col-md-12">
+      <nav class="navbar navbar-default admin-dashboard-navbar">
+        <div class="container-fluid">
+          <div class="navbar-header" style="width: 100%;">
+            <a class="navbar-brand">Form Fields</a>
+          </div>
+          <div class="has-error" ng-if="$ctrl.generalForm.$submitted && ($ctrl.form.fields | filter:{archived: '!true'}).length < 1">
+            <span class="help-block">Form must contain at least one field.</span>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="admin-table admin-table-content">
+        <uib-accordion close-others="$ctrl.accordion.oneAtATime">
+          <div uib-accordion-group class="panel-default" ng-repeat="field in $ctrl.form.fields | filter:{archived: '!true'} | orderBy: 'id'">
+            <uib-accordion-heading>
+              {{field.title|| 'No title set'}}
+              <i class="pull-right fa fa-arrow-up" ng-if="!$first" ng-click="$ctrl.moveFieldUp($event, field)"></i>
+              <i class="pull-right fa fa-arrow-down" ng-if="!$last" ng-click="$ctrl.moveFieldDown($event, field)"></i>
+            </uib-accordion-heading>
+            <div class="accordion-edit">
+              <form name="$ctrl.fieldForms[field.id]" novalidate>
+
+                <!-- Type -->
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="top-gap">
+                      <label>Type</label>
+                      <input type="text" value="{{$ctrl.getTypeValue(field)}}" class="form-control" disabled>
+                      <p class="help-block" ng-if="$ctrl.isMemberField(field)">The 'User Select' type is a dynamic list of all users that are part of the event.  As such you cannot add/remove choices, users will be automatically populated.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Title -->
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="top-gap" ng-class="{ 'has-error': $ctrl.eventForm['title{{field.id}}'].$invalid }">
+                      <label class="control-label">Title</label>
+                      <input type="text" ng-model="field.title" name="title{{field.id}}" value="{{field.title}}" class="form-control" required="true">
+                    </div>
+                    <div ng-messages="$ctrl.eventForm['title' + field.id].$error" class="has-error">
+                      <p class="help-block" ng-message="required">Title is required</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Default value for text -->
+                <div class="row" ng-hide="$ctrl.showAddOptions(field) || field.type === 'numberfield' || field.type === 'checkbox' || field.type === 'textarea'">
+                  <div class="col-md-6">
+                    <div class="top-gap">
+                      <label>Default Value</label>
+                      <input type="text" ng-model="field.value" value="{{field.value}}" class="form-control">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Default value for textarea -->
+                <div class="row" ng-show="field.type === 'textarea'">
+                  <div class="col-md-6">
+                    <div class="top-gap">
+                      <label>Default Value</label>
+                      <textarea class="form-control" type="text" ng-model="field.value" value="{{field.value}}"></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Default value for single select option fields -->
+                <div class="row" ng-show="$ctrl.showAddOptions(field) && !$ctrl.isMemberField(field)">
+                  <div class="col-md-6" ng-if="field.type === 'dropdown'">
+                    <div class="top-gap">
+                      <label>Default Value</label>
+                      <select ng-model="field.value" ng-options="choice.title as choice.title for choice in field.choices" class="form-control">
+                        <option value="">No Default</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Default value for multi select option fields -->
+                  <div class="col-md-6" ng-if="field.type === 'multiselectdropdown'">
+                    <div class="top-gap">
+                      <label>Default Value</label>
+                      <ui-select multiple ng-model="field.value" theme="bootstrap">
+                        <ui-select-match>{{$item.title}}</ui-select-match>
+                        <ui-select-choices repeat="choice.title as choice in field.choices">
+                          <div ng-bind-html="choice.title"></div>
+                        </ui-select-choices>
+                      </ui-select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Default value for number fields -->
+                <div class="row" ng-if="field.type === 'numberfield'">
+                  <div class="col-md-6">
+                    <div class="top-gap" ng-class="{'has-error': form.fields.{{field.name}}.$invalid}">
+                      <label>Default Value</label>
+                      <input type="number" ng-model="field.value" name="{{field.name}}" value="{{field.value}}" min="{{field.min}}" max="{{field.max}}" class="form-control">
+                      <div class="help-block" ng-messages="$ctrl.form.fields[field.name].$error" ng-if="$ctrl.form.fields[field.name].$invalid">
+                        <p ng-message="min">value is less than min</p>
+                        <p ng-message="max">value is greater than max</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Default value for checkbox fields -->
+                <div class="checkbox" ng-show="field.type=='checkbox'">
+                  <label>
+                    <input ng-model="field.value" id="{{field.id}}" type="checkbox" ng-checked="field.value == true"/> Default Value
+                  </label>
+                </div>
+
+                <!-- Min/Max values for number field-->
+                <div class="row" ng-show="field.type === 'numberfield'">
+                  <div class="col-md-6">
+                    <div class="top-gap">
+                      <label>Min</label>
+                      <input type="number" ng-model="field.min" value="{{field.min}}" class="form-control">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="top-gap">
+                      <label>Max</label>
+                      <input type="number" ng-model="field.max" value="{{field.max}}" class="form-control">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Select field options -->
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="top-gap" ng-show="$ctrl.showAddOptions(field) && !$ctrl.isMemberField(field)">
+                      <label>Field Options</label>
+                      <div ng-repeat="option in field.choices" class="row bottom-gap">
+                        <div class="col-sm-12">
+                          <div class="admin-option-container">
+                            <a class="admin-option-action text-primary" ng-click="$ctrl.reorderOption(field, option)"><i class="fa fa-sort"></i></i></a>
+                            <div class="admin-option-text right-gap">
+                              <span>{{option.title}}</span>
+                            </div>
+                            <a class="admin-table-delete-btn pointer" ng-click="$ctrl.deleteOption(field, option)"><i class="fa fa-trash-o text-danger"></i></a>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row top-gap-l">
+                        <div class="col-md-10">
+                          <input type="text" ng-model="$ctrl.newOptionTitle" class="form-control">
+                        </div>
+                        <div class="col-md-2">
+                          <button class="btn btn-sm btn-primary" type="button" ng-click="$ctrl.addOption(field, $ctrl.newOptionTitle); $ctrl.newOptionTitle = '';"><i class="fa fa-plus"></i> Add Option</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Field required -->
+                <div class="checkbox" ng-show="field.name != 'timestamp' &amp;&amp; field.name != 'geometry'">
+                  <label>
+                  <input type="checkbox" ng-model="field.required"> Required
+                  </label>
+                </div>
+
+                <!-- remove field-->
+                <button ng-show="$ctrl.deletableField(field)" class="btn btn-danger pull-right" type="button" ng-click="$ctrl.removeField(field.id)"><i class="fa fa-trash icon-white"></i> Delete Field</button>
+              </form>
+
+            </div>
+          </div>
+        </uib-accordion>
+
+        <div class="row top-gap-l">
+          <div class="col-md-12">
+            <nav class="navbar navbar-default admin-dashboard-navbar">
+              <div class="container-fluid">
+                <div class="navbar-header">
+                  <a class="navbar-brand">Add a new form field</a>
+                </div>
+              </div>
+            </nav>
+          </div>
+        </div>
+        <div class="admin-table admin-table-content">
+          <form name="$ctrl.newFieldForm" novalidate>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="top-gap">
+                  <label>Type</label>
+                  <select ng-model="$ctrl.newField.type" ng-options="type.name as type.title for type in $ctrl.fieldTypes | filter: {hidden: '!'}" class="form-control"></select>
+                  <p class="help-block" ng-if="$ctrl.isUserDropdown($ctrl.newField)">The 'User Select' type is a dynamic list of all users that are part of the event.  As such you cannot add/remove options from this list, users will be automatically populated.</p>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="top-gap" ng-class="{ 'has-error': $ctrl.newFieldForm.title.$invalid }">
+                  <label class="control-label">Title</label>
+                  <input type="text" ng-model="$ctrl.newField.title" value="{{$ctrl.newField.title}}" name="title" class="form-control" required="true">
+                </div>
+                <div ng-messages="$ctrl.newFieldForm.title.$error" class="has-error">
+                  <p class="help-block" ng-message="required">Title is required</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="row" ng-if="$ctrl.newField.type === 'dropdown' || $ctrl.isUserDropdown($ctrl.newField)">
+              <div class="col-md-6">
+                <div class="checkbox">
+                  <label>
+                    <input ng-model="$ctrl.newField.$multiselect" type="checkbox" ng-checked="$ctrl.newField.$multiselect == true"/> Multiselect
+                  </label>
+                  <p class="help-block">Choose multiselect if you would like users to be able to select more than one choice.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="row" ng-if="$ctrl.newField.type !== 'checkbox' && $ctrl.newField.type !== 'numberfield' && $ctrl.newField.type !== 'textarea'">
+              <div class="col-md-6">
+                <div class="top-gap" ng-hide="$ctrl.hideAddOptions($ctrl.newField)">
+                  <label>Default Value</label>
+                  <input type="text" ng-model="$ctrl.newField.value" value="{{$ctrl.newField.value}}" class="form-control">
+                </div>
+              </div>
+            </div>
+
+            <div class="row" ng-show="$ctrl.newField.type === 'textarea'">
+              <div class="col-md-6">
+                <div class="top-gap">
+                  <label>Default Value</label>
+                  <textarea class="form-control" type="text" ng-model="$ctrl.newField.value" value="{{$ctrl.newField.value}}"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="row" ng-if="$ctrl.newField.type === 'numberfield'">
+              <div class="col-md-6">
+                <div class="top-gap" ng-class="{'has-error': $ctrl.form.newField.value.$invalid}">
+                  <label>Default Value</label>
+                  <input type="number" ng-model="$ctrl.newField.value" name="value" value="{{$ctrl.newField.value}}" min="{{$ctrl.newField.min}}" max="{{$ctrl.newField.max}}" class="form-control">
+                  <div class="help-block" ng-messages="$ctrl.form.newField.value.$error" ng-if="$ctrl.form.newField.value.$invalid">
+                    <p ng-message="min">value is less than min</p>
+                    <p ng-message="max">value is greater than max</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row" ng-show="$ctrl.newField.type === 'numberfield'">
+              <div class="col-md-6">
+                <div class="top-gap">
+                  <label>Min</label>
+                  <input type="number" ng-model="$ctrl.newField.min" value="{{$ctrl.newField.min}}" class="form-control">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="top-gap">
+                  <label>Max</label>
+                  <input type="number" ng-model="$ctrl.newField.max" value="{{$ctrl.newField.max}}" class="form-control">
+                </div>
+              </div>
+            </div>
+            <div class="checkbox" ng-if="$ctrl.newField.type=='checkbox'">
+              <label>
+                <input ng-model="$ctrl.newField.value" type="checkbox" ng-checked="$ctrl.newField.value == true"/> Default Value
+              </label>
+            </div>
+            <div class="row" ng-if="$ctrl.showAddOptions($ctrl.newField)">
+              <div class="col-md-6" ng-if="!$ctrl.newField.$multiselect">
+                <div class="top-gap">
+                  <label>Default Value</label>
+                  <select ng-model="$ctrl.newField.value" ng-options="choice.title as choice.title for choice in $ctrl.newField.choices" class="form-control">
+                    <option value="">No Default</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="col-md-6" ng-if="$ctrl.newField.$multiselect">
+                <div class="top-gap">
+                  <label>Default Value</label>
+                  <ui-select multiple ng-model="$ctrl.newField.value" theme="bootstrap">
+                    <ui-select-match>{{$item.title}}</ui-select-match>
+                    <ui-select-choices repeat="choice.title as choice in $ctrl.newField.choices">
+                      <div ng-bind-html="choice.title"></div>
+                    </ui-select-choices>
+                  </ui-select>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="top-gap" ng-show="$ctrl.showAddOptions($ctrl.newField)">
+                  <label>Field Options</label>
+                  <div ng-repeat="option in $ctrl.newField.choices" class="row bottom-gap">
+                    <div class="col-sm-12">
+                      <div class="admin-option-container">
+                        <a class="right-gap pointer" ng-click="$ctrl.reorderOption($ctrl.newField, option)"><i class="fa fa-sort"></i></i></a>
+                        <div class="admin-option-text right-gap">
+                          <span>{{option.title}}</span>
+                        </div>
+                        <a class="admin-table-delete-btn pointer" ng-click="$ctrl.deleteOption($ctrl.newField, option)"><i class="fa fa-trash-o text-danger"></i></a>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-9">
+                      <input type="text" ng-model="$ctrl.newFieldNewOptionTitle" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                      <button class="btn btn-primary" type="button" ng-click="$ctrl.addOption($ctrl.newField, $ctrl.newFieldNewOptionTitle); $ctrl.newFieldNewOptionTitle = '';"><i class="fa fa-plus"></i> Add Option</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" ng-model="$ctrl.newField.required"> Required
+              </label>
+              <p class="help-block">Choose required if users must enter a value.</p>
+            </div>
+
+            <hr>
+
+            <button type="submit" ng-disabled="$ctrl.form.newField.value.$invalid" class="btn btn-primary" ng-click="$ctrl.addField()"><i class="fa fa-plus-square-o"></i> Add Field</button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-gap-l top-gap-xl">
+  <div class="container" ng-if="$ctrl.event">
+    <div class="row">
+      <div class="col-xs-12">
+        <button class="btn btn-success pull-right" ng-if="($ctrl.unSavedChanges || $ctrl.unSavedUploads) && !$ctrl.saving" ng-click="$ctrl.save($ctrl.event)" ng-disabled="$ctrl.form.fields.$invalid">Save</button>
+        <button class="btn btn-success pull-right" ng-if="!$ctrl.unSavedUploads && !$ctrl.unSavedChanges && !$ctrl.saving" disabled="disabled">Save</button>
+        <button class="btn btn-success pull-right" ng-if="$ctrl.saving" disabled="disabled"><i class="fa fa-spinner fa-spin"></i> Saving</button>
+      </div>
+    </div>
+  </div>
+</div>

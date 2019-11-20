@@ -5,11 +5,14 @@ var angular = require('angular');
 require('jquery-file-download');
 require('jquery-minicolors');
 require('angular-minicolors');
-require('select2')
+require('select2');
 require('./vendor/bootstrap/js/bootstrap.min.js');
+
+import '@uirouter/angularjs';
 
 angular.module('mage', [
   require('angular-ui-bootstrap'),
+  'ui.router',
   require('ui-select'),
   'minicolors',
   require('angular-animate'),

@@ -1,0 +1,240 @@
+import _ from 'underscore';
+import angular from 'angular';
+import zxcvbn from 'zxcvbn';
+
+class AdminUserEditController {
+  constructor($state, $stateParams, $timeout, Api, LocalStorageService, UserService, UserIconService) {
+    this.$state = $state;
+    this.$stateParams = $stateParams;
+    this.$timeout = $timeout;
+    this.Api = Api;
+    this.LocalStorageService = LocalStorageService;
+    this.UserService = UserService;
+    this.UserIconService = UserIconService;
+
+    this.token = LocalStorageService.getToken();
+    this.roles = [];
+    this.canEditRole = _.contains(UserService.myself.role.permissions, 'UPDATE_USER_ROLE');
+    this.canUpdatePassword = _.contains(UserService.myself.role.permissions, 'UPDATE_USER_ROLE');
+
+    this.passwordStrengthScore = 0;
+    this.passwordStrengthMap = {
+      0: {
+        type: 'danger',
+        text: 'Weak'
+      },
+      1: {
+        type: 'warning',
+        text: 'Fair'
+      },
+      2: {
+        type: 'info',
+        text: 'Good'
+      },
+      3: {
+        type: 'primary',
+        text: 'Strong'
+      },
+      4: {
+        type: 'success',
+        text: 'Excellent'
+      }
+    };
+  }
+
+  $onInit() {
+    this.Api.get(api =>  {
+      var authenticationStrategies = api.authenticationStrategies || {};
+      if (authenticationStrategies.local && authenticationStrategies.local.passwordMinLength) {
+        this.passwordPlaceholder = authenticationStrategies.local.passwordMinLength + ' characters, alphanumeric';
+      }
+    });
+
+    this.UserService.getRoles().success(roles => {
+      this.roles = roles;
+    });
+
+    if (this.$stateParams.userId) {
+      this.UserService.getUser(this.$stateParams.userId).then(user => {
+        this.user = angular.copy(user);
+  
+        this.iconMetadata = {
+          type: this.user.icon.type,
+          text: this.user.icon.text,
+          color: this.user.icon.color
+        };
+      });
+    } else {
+      this.user = {};
+      this.iconMetadata = {
+        type: 'none'
+      };
+    }
+  }
+
+  cancel() {
+    if (this.user.id) {
+      this.$state.go('admin.user', {userId: this.user.id});
+    } else {
+      this.$state.go('admin.users');
+    }
+  }
+
+  saveUser() {
+    this.saving = true;
+    this.error = false;
+
+    if (this.iconMetadata.type === 'create') {
+      var canvas = this.iconMetadata.getCanvas();
+      this.user.icon = this.UserIconService.canvasToPng(canvas);
+    }
+
+    var user = {
+      username: this.user.username,
+      displayName: this.user.displayName,
+      email: this.user.email,
+      password: this.user.password,
+      passwordconfirm: this.user.passwordconfirm,
+      avatar: this.user.avatar,
+      icon: this.user.icon,
+      iconMetadata: JSON.stringify(this.iconMetadata)
+    };
+
+    if (this.user.phones && this.user.phones.length) {
+      user.phone = this.user.phones[0].number;
+    }
+
+    if (this.user.role) {
+      user.roleId = this.user.role.id;
+    }
+
+    var failure = response => {
+      this.$timeout(() => {
+        this.saving = false;
+        this.error = response.responseText;
+      });
+    };
+
+    var progress = e => {
+      if(e.lengthComputable){
+        this.$timeout(() => {
+          this.uploading = true;
+          this.uploadProgress = (e.loaded/e.total) * 100;
+        });
+      }
+    };
+
+    if (this.user.id) {
+      this.UserService.updateUser(this.user.id, user, () => {
+        this.$state.go('admin.user', {userId: this.user.id});
+      }, failure, progress);
+    } else {
+      this.UserService.createUser(user, newUser => {
+        this.$state.go('admin.user', { userId: newUser.id });
+      }, failure, progress);
+    }
+  }
+
+  avatarChanged($event) {
+    var avatar = $event.avatar;
+    if (!avatar) {
+      this.user.avatarData = null;
+      this.user.avatar = null;
+
+      return;
+    }
+
+    this.user.avatar = avatar;
+
+    if (window.FileReader) {
+      var reader = new FileReader();
+      reader.onload = (() => {
+        return (e) => {
+          this.$timeout(() => {
+            this.user.avatarData = e.target.result;
+          });
+        };
+      })(avatar);
+
+      reader.readAsDataURL(avatar);
+    }
+  }
+
+  iconChanged($event) {
+    var icon = $event.icon;
+    this.user.icon = icon;
+
+    if (window.FileReader) {
+      var reader = new FileReader();
+      reader.onload = (() => {
+        return e => {
+          this.$timeout(() => {
+            this.user.iconData = e.target.result;
+          });
+        };
+      })(icon);
+
+      reader.readAsDataURL(icon);
+    }
+  }
+
+  iconTypeChanged(icon) {
+    if (icon.type === 'create') {
+      this.setIconInitials(this.user.displayName, icon);
+      this.setIconColor(icon);
+    } else if (icon.type === 'upload') {
+      if (this.user.icon && this.user.icon.type !== 'upload') {
+        this.user.iconUrl = null;
+      }
+    }
+  }
+
+  setIconInitials(name, icon) {
+    if (icon.text) return;
+
+    var initials = name.match(/\b\w/g) || [];
+    icon.text = ((initials.shift() || '') + (initials.pop() || '')).toUpperCase();
+  }
+
+  setIconColor(icon) {
+    if (icon.color) return;
+
+    icon.color = '#' + Math.floor(Math.random() * 16777215).toString(16);
+  }
+  
+  passwordChanged(password) {
+    var score = password && password.length ? zxcvbn(password, [this.user.username, this.user.displayName, this.user.email]).score : 0;
+    this.passwordStrengthScore = score + 1;
+    this.passwordStrengthType = this.passwordStrengthMap[score].type;
+    this.passwordStrength = this.passwordStrengthMap[score].text;
+  }
+
+  updatePassword(form) {
+    form.passwordconfirm.$setValidity("nomatch", this.user.password === this.user.passwordconfirm);
+
+    if (!form.$valid) return;
+
+    var user = {
+      password: this.user.password,
+      passwordconfirm: this.user.passwordconfirm
+    };
+
+    this.UserService.updateUser(this.user.id, user, () => {
+      this.user.password = "";
+      this.user.passwordconfirm = "";
+      form.$setPristine(true);
+      this.passwordStatus = {status: 'success', msg: "Password successfully updated."};
+    }, data => {
+      this.$timeout(() => {
+        this.passwordStatus = {status: "danger", msg: data.responseText};
+      });
+    });
+  }
+}
+
+AdminUserEditController.$inject = ['$state', '$stateParams', '$timeout', 'Api', 'LocalStorageService', 'UserService', 'UserIconService'];
+
+export default {
+  template: require('./user.edit.html'),
+  controller: AdminUserEditController
+};

@@ -31,6 +31,12 @@
 @import "./admin/index.scss";
 @import "./card/index.scss";
 
+mage {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .dropdown-menu {
   margin-top: 56px;
 }
@@ -421,13 +427,13 @@ a {
   z-index: 0;
 }
 
-.route-content > .about-content {
+.about-content {
   margin: auto;
   width: 50vw;
 }
 
 @media(max-width:900px) {
-  .route-content > .about-content {
+  .about-content {
     margin: 32px;
     width: unset;
   }
@@ -855,22 +861,25 @@ textarea {
   margin-right: 5px;
 }
 
-.admin {
+admin {
+  height: 100%;
   display: flex;
-  flex: 1;
 }
 
 .admin-main {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
+}
+
+.admin-main-content {
+  overflow-y: auto;
+  height: 100%;
 }
 
 .admin-actions {
   background-color: #555;
   display: flex;
   flex-direction: column;
+  height: 100%
 }
 
 .admin-actions-content {

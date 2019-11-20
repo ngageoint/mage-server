@@ -1,4 +1,4 @@
-var angular = require('angular');
+import angular from 'angular';
 
 angular.module('mage')
   .component('mageInfo', require('./mage-info.component.js'))

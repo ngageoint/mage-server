@@ -1,6 +1,6 @@
-FROM node:8.11.1
+FROM node:10.17.0
 
-ARG MAGE_VER=5.1.0
+ARG MAGE_VER=5.3.1
 
 LABEL author="NGA"
 
@@ -10,7 +10,7 @@ RUN apt-get update && apt-get -y install \
         unzip \
         curl \
         graphicsmagick \
-    && rm -rf /var/lib/apt/lists/* 
+    && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -r mage \
     && useradd -m -r -s /bin/bash -g mage mage \

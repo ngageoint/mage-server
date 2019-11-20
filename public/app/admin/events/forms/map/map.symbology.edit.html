@@ -1,0 +1,82 @@
+<div class="modal-header">
+  <h4 class="modal-title">Symbology<span ng-if="$ctrl.primary"> for {{$ctrl.primary}} {{$ctrl.variant}}</span></h4>
+</div>
+<div class="modal-body admin-option-modal-content">
+  <div class="row" style="min-height: 200px">
+    <div class="col-md-2 col-md-offset-1 text-center">
+      <strong>Point Icon</strong>
+      <file-upload type="button" icon="{{$ctrl.icon}}" allow-upload="$ctrl.updateStyle" preview="true" upload-file-form-name="'icon'" on-upload-file="$ctrl.onFile($event)"></file-upload>
+    </div>
+
+    <form name="styleForm">
+      <div class="col-md-4">
+        <div>
+          <strong>Line Color</strong>
+          <div>
+            <input minicolors="$ctrl.minicolorSettings" class="form-control" type="text" name="lineColor" ng-min="0" ng-max="1" ng-model="$ctrl.style.stroke" required="true">
+          </div>
+
+          <div ng-messages="styleForm.lineColor.$error" class="has-error" ng-if="styleForm.lineColor.$invalid && styleForm.$submitted">
+            <p class="help-block" ng-message="required">Line color is required.</p>
+          </div>
+        </div>
+
+        <div class="top-gap-s">
+          <strong>Line Opacity (0.0 - 1.0)</strong>
+          <div>
+            <input class="form-control" type="number" name="lineOpacity" ng-model="$ctrl.style.strokeOpacity" ng-min="0" ng-max="1" required="true">
+          </div>
+
+          <div ng-messages="styleForm.lineOpacity.$error" class="has-error" ng-if="styleForm.lineOpacity.$invalid && styleForm.$submitted">
+            <p class="help-block" ng-message="min">Line opacity must be greater than 0.</p>
+            <p class="help-block" ng-message="max">Line opacity must be less than 1.</p>
+            <p class="help-block" ng-message="required">Line opacity is required.</p>
+          </div>
+        </div>
+
+        <div class="top-gap-s">
+          <strong>Line Width</strong>
+          <div>
+            <input class="form-control" type="number" name="lineWidth" ng-model="$ctrl.style.strokeWidth" ng-min="0" required="true">
+          </div>
+
+          <div ng-messages="styleForm.lineWidth.$error" class="has-error" ng-if="styleForm.lineWidth.$invalid && styleForm.$submitted">
+            <p class="help-block" ng-message="required">Line width is required.</p>
+            <p class="help-block" ng-message="min">Line width must be greater than 0.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div>
+          <strong>Fill Color</strong>
+          <div>
+            <input minicolors="$ctrl.minicolorSettings" class="form-control" type="text" name="fillColor" ng-model="$ctrl.style.fill" required="true">
+          </div>
+
+          <div ng-messages="styleForm.fillColor.$error" class="has-error" ng-if="styleForm.fillColor.$invalid && styleForm.$submitted">
+            <p class="help-block" ng-message="required">Fill color is required.</p>
+          </div>
+        </div>
+
+        <div class="top-gap-s">
+          <strong>Fill Opacity (0.0 - 1.0)</strong>
+          <div>
+            <input class="form-control" type="number" name="fillOpacity" ng-model="$ctrl.style.fillOpacity" ng-min="0" ng-max="1" required="true">
+          </div>
+
+          <div ng-messages="styleForm.fillOpacity.$error" class="has-error" ng-if="styleForm.fillOpacity.$invalid && styleForm.$submitted">
+            <p class="help-block" ng-message="min">Fill opacity must be greater than 0.</p>
+            <p class="help-block" ng-message="max">Fill opacity must be less than 1.</p>
+            <p class="help-block" ng-message="required">Fill opacity is required.</p>
+          </div>
+        </div>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-default" ng-click="$ctrl.cancel()">Cancel</button>
+  <button class="btn btn-primary" ng-click="$ctrl.done(styleForm)">Set Symbology</button>
+</div>

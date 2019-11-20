@@ -1,0 +1,34 @@
+<div class="modal-header">
+  <h4 class="modal-title">Reorder "{{$ctrl.option.title}}"</h4>
+</div>
+
+<div class="modal-body admin-option-modal-content">
+  <div class="bottom-gap text-center">
+    <span class="muted"><i class="fa fa-info-circle text-success right-gap"></i>  Tip: Click to change the field you are reording</span>
+  </div>
+
+  <div ng-repeat="choice in $ctrl.choices">
+    <div class="row" ng-if="$first">
+      <div class="col-md-1"><i class="fa pointer text-primary admin-option-reorder" ng-click="$ctrl.move($index)" ng-class="choice.title !== $ctrl.option.title ? 'fa-long-arrow-right pointer' : ''"></i></div>
+      <div class="col-md-11 admin-option-border"></div>
+    </div>
+    <div class="row">
+      <div class="col-md-offset-1 col-md-11">
+        <strong ng-if="choice.title === $ctrl.option.title">{{choice.title}}</strong>
+        <span ng-if="choice.title !== $ctrl.option.title" class="pointer admin-option-model-text" ng-click="$ctrl.option = choice">{{choice.title}}</span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-1">
+        <i class="fa pointer text-primary admin-option-reorder" ng-click="$ctrl.move($index + 1)" ng-class="(choice.title !== $ctrl.option.title && ($last || $ctrl.choices[$index + 1].title !== $ctrl.option.title)) ? 'fa-long-arrow-right pointer' : ''"></i>
+      </div>
+      <div class="col-md-11 admin-option-border"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-default" ng-click="$ctrl.cancel()">Cancel</button>
+  <button class="btn btn-primary" ng-click="$ctrl.done()">Reorder</button>
+</div>

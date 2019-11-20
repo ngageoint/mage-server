@@ -1,0 +1,21 @@
+<a href="javascript:void(0)" ng-click="$ctrl.updateSymbology()">
+  <div class="col-md-2">
+    <div class="card symbology-card">
+
+      <div class="row">
+        <div class="col-md-12"><strong>{{$ctrl.title}}<strong></div>
+      </div>
+
+      <img ng-src="{{$ctrl.icon}}" class="preview-image"></img>
+
+      <div class="shape-style">
+        <admin-event-form-map-shape style="$ctrl.style" type="Polygon" primary="$ctrl.primary" secondary="$ctrl.secondary"/>
+      </div>
+
+      <div class="shape-style">
+        <admin-event-form-map-shape style="$ctrl.style" type="LineString" primary="$ctrl.primary" secondary="$ctrl.secondary"/>
+      </div>
+      
+    </div>
+  </div>
+</a>
