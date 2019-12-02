@@ -72,8 +72,11 @@
   },
   "devDependencies": {
     "@types/async": "^3.0.3",
+    "@types/chai": "^4.2.5",
     "@types/fs-extra": "^8.0.1",
+    "@types/mocha": "^5.2.7",
     "@types/mongoose": "^4.7.51",
+    "@types/supertest": "^2.0.8",
     "ajv": "^6.10.2",
     "assert": "2.0.0",
     "chai": "4.2.0",

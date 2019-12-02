@@ -1,7 +1,8 @@
 module.exports = function(app, security) {
-  var fs = require('fs-extra')
+  const fs = require('fs-extra')
     , extend = require('util')._extend
     , async = require('async')
+    , log = require('../logger')
     , config = require('../config')
     , api = require('../api')
     , User = require('../models/user')
@@ -49,9 +50,13 @@ module.exports = function(app, security) {
 
   // Dynamically import all routes
   fs.readdirSync(__dirname).forEach(function(file) {
-    if (file[0] === '.' || file === 'index.js') return;
-    var route = file.substr(0, file.indexOf('.'));
-    require('./' + route)(app, security);
+    if (file[0] === '.' || file === 'index.js') {
+      return;
+    }
+    const moduleName = file.substr(0, file.indexOf('.'));
+    log.debug(`loading routes ${moduleName}`);
+    const initRoutes = require('./' + moduleName);
+    initRoutes(app, security);
   });
 
   // Grab the event for any endpoint that uses eventId
