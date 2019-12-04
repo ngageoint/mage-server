@@ -1,5 +1,6 @@
 @import "./variables.css";
 @import "../vendor/bootstrap/css/bootstrap.min.css";
+@import "../vendor/material-design-icons/icons.css";
 @import "./material-theme.scss";
 @import "material-components-web/material-components-web.scss";
 
