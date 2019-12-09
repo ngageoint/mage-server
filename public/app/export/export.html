@@ -3,43 +3,17 @@
   <div class="mdc-dialog__container">
     <div class="mdc-dialog__surface">
       <div class="modal-header">
-        <h2 style="color: white;" class="mdc-dialog__title"><i class="icon-download"></i> Export</h2>
+        <h2 style="color: white;" class="mdc-dialog__title"><i class="icon-download"></i> {{$ctrl.exportEvent.selected.name}} Export</h2>
       </div>
       <div class="mdc-dialog__content" id="my-dialog-content">
         <form>
           <div ng-show="showEventError" class="alert-error" bs-alert>
             <span>Please Select an Event</span>
           </div>
-
-          <div class="top-gap">
-            <div class="event-select mdc-select mdc-select--outlined filter-dropdown">
-              <input type="hidden" name="enhanced-select">
-              <i class="mdc-select__dropdown-icon"></i>
-              <div class="mdc-select__selected-text">{{$ctrl.exportEvent.selected.name}}</div>
-              <div class="mdc-select__menu mdc-menu mdc-menu-surface filter-dropdown">
-                <ul class="mdc-list">
-                  <li ng-repeat="event in $ctrl.events | orderBy: 'name'" class="mdc-list-item"
-                    ng-class="{'mdc-list-item--selected': $ctrl.exportEvent.selected.id === event.id}"
-                    data-value="{{event.id}}">
-                    {{event.name}}
-                  </li>
-                </ul>
-              </div>
-              <div class="mdc-notched-outline">
-                <div class="mdc-notched-outline__leading"></div>
-                <div class="mdc-notched-outline__notch">
-                  <label class="mdc-floating-label">Event</label>
-                </div>
-                <div class="mdc-notched-outline__trailing"></div>
-              </div>
-            </div>
-          </div>
-
           <div class="top-gap">
             <div class="mdc-form-field">
               <div class="mdc-checkbox">
                 <input 
-                  tabindex="0"
                   type="checkbox"
                   ng-model="$ctrl.exportObservations.value"
                   value="{{$ctrl.exportObservations.value}}" 
@@ -201,7 +175,7 @@
       </div>
       <footer class="mdc-dialog__actions">
         <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
-          <span class="mdc-button__label">Close</span>
+          <span class="mdc-button__label">Cancel</span>
         </button>
         <button type="button" class="mdc-button mdc-dialog__button export-button" data-mdc-dialog-action="yes"
           ng-click="$ctrl.exportData($event, 'kml')">
