@@ -87,7 +87,34 @@
                 on-date-picked="$ctrl.onEndDate(date, localTime)"></date-time>
             </div>
           </div>
-
+          <div class="top-gap">
+            <div class="mdc-chip-set mdc-chip-set--choice" role="grid">
+              <div class="mdc-chip mdc-chip--selected" role="row" ng-click="$ctrl.type.value = 'kml'" ng-class="{'mdc-chip--selected': $ctrl.type.value === 'kml'}">
+                <div class="mdc-chip__ripple"></div>
+                  <span role="gridcell">
+                    <span role="button" tabindex="0" class="mdc-chip__text">KML</span>
+                  </span>
+              </div>
+              <div class="mdc-chip" role="row" ng-click="$ctrl.type.value = 'geojson'" ng-class="{'mdc-chip--selected': $ctrl.type.value === 'geojson'}">
+                <div class="mdc-chip__ripple"></div>
+                  <span role="gridcell">
+                    <span role="button" tabindex="0" class="mdc-chip__text">GEOJSON</span>
+                  </span>
+              </div>
+              <div class="mdc-chip" role="row"  ng-click="$ctrl.type.value = 'csv'" ng-class="{'mdc-chip--selected': $ctrl.type.value === 'csv'}">
+                <div class="mdc-chip__ripple"></div>
+                  <span role="gridcell">
+                    <span role="button" tabindex="0" class="mdc-chip__text">CSV</span>
+                  </span>
+              </div>
+              <div class="mdc-chip" role="row"  ng-click="$ctrl.type.value = 'shapefile'" ng-class="{'mdc-chip--selected': $ctrl.type.value === 'shapefile'}">
+                <div class="mdc-chip__ripple"></div>
+                  <span role="gridcell">
+                    <span role="button" tabindex="0" class="mdc-chip__text">SHAPEFILE</span>
+                  </span>
+              </div>  
+            </div>
+          </div>
           <div class="top-gap">
             <div class="mdc-form-field">
               <label for="advanced-export">Advanced</label>
@@ -177,21 +204,9 @@
         <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
           <span class="mdc-button__label">Cancel</span>
         </button>
-        <button type="button" class="mdc-button mdc-dialog__button export-button" data-mdc-dialog-action="yes"
-          ng-click="$ctrl.exportData($event, 'kml')">
-          <span class="mdc-button__label">KML</span>
-        </button>
-        <button type="button" class="mdc-button mdc-dialog__button export-button" data-mdc-dialog-action="yes"
-          ng-click="$ctrl.exportData($event, 'geojson')">
-          <span class="mdc-button__label">GeoJSON</span>
-        </button>
-        <button type="button" class="mdc-button mdc-dialog__button export-button" data-mdc-dialog-action="yes"
-          ng-click="$ctrl.exportData($event, 'csv')">
-          <span class="mdc-button__label">CSV</span>
-        </button>
-        <button type="button" class="mdc-button mdc-dialog__button export-button" data-mdc-dialog-action="yes"
-          ng-click="$ctrl.exportData($event, 'shapefile')">
-          <span class="mdc-button__label">Shapefile</span>
+        <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="yes"
+          ng-click="$ctrl.exportData($event)">
+          <span class="mdc-button__label">OK</span>
         </button>
       </footer>
     </div>

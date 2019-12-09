@@ -77,7 +77,7 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
   this.exportFavoriteObservations = {value: false};
   this.exportImportantObservations = {value: false};
   this.exportObservationsWithAttachments = {value: false};
-  this.advancedExpand = {value:false};
+  this.advancedExpand = {value: false};
 
   this.localOffset = moment().format('Z');
   this.localTime = true;
@@ -87,6 +87,8 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
 
   this.startDatePopup = {open: false};
   this.endDatePopup = {open: false};
+
+  this.type = {value: 'kml'};
 
   /* Export existing points to  */
   this.exportOptions = [{
@@ -122,7 +124,7 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
     this.localTime = localTime;
   };
 
-  this.exportData = function($event, type) {
+  this.exportData = function($event) {
     if (!this.exportEvent.selected) {
       $event.preventDefault();
       this.showEventError = true;
@@ -163,7 +165,7 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
       params.favorites = this.exportFavoriteObservations.value;
       params.important = this.exportImportantObservations.value;
     }
-    var url = "api/" + type + "?" + $.param(params);
+    var url = "api/" + this.type.value + "?" + $.param(params);
     $.fileDownload(url)
       .done(function() {
       })
