@@ -123,11 +123,11 @@
                 id="advanced-export"
                 aria-hidden="true"
                 aria-pressed="false">
-                <i class="material-icons mdc-icon-button__icon mdc-icon-button__icon--on">expand_less</i>
-                <i class="material-icons mdc-icon-button__icon">expand_more</i>
+                <i class="material-icons mdc-icon-button__icon" ng-show="$ctrl.advancedExpand.value" ng-click="$ctrl.advancedExpand.value = false">expand_less</i>
+                <i class="material-icons mdc-icon-button__icon" ng-show="!$ctrl.advancedExpand.value" ng-click="$ctrl.advancedExpand.value = true">expand_more</i>
               </button>
             </div>
-            <div class="export-actions" ng-show="$ctrl.exportObservations.value">
+            <div class="export-actions" ng-show="$ctrl.advancedExpand.value">
                 <div class="mdc-form-field">
                   <div class="mdc-checkbox">
                     <input 
@@ -150,7 +150,7 @@
                   <label for="observation-attachments-export">Export attachments (If any)</label>
                 </div>
               </div>
-              <div class="export-actions" ng-show="$ctrl.exportObservations.value">
+              <div class="export-actions" ng-show="$ctrl.advancedExpand.value">
                 <div class="mdc-form-field">
                   <div class="mdc-checkbox">
                     <input 
@@ -173,7 +173,7 @@
                   <label for="observation-favorites-export">Export only your favorite observations</label>
                 </div>
               </div>
-              <div class="export-actions" ng-show="$ctrl.exportObservations.value">
+              <div class="export-actions" ng-show="$ctrl.advancedExpand.value">
                 <div class="mdc-form-field">
                   <div class="mdc-checkbox">
                     <input 
