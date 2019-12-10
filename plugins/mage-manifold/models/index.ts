@@ -1,20 +1,24 @@
 
 import mongoose from 'mongoose';
+import { AdapterDescriptor, SourceDescriptor } from '../api';
 
-
-/**
- * A medium represents a specific type of data source and the translation from
- * that type of data source to data that MAGE can understand, and vice versa.
- */
-export interface AdapterDescriptor extends mongoose.Document {
-  id: string
-  title: string
-  summary: string
-}
-
-export interface SourceDescriptor extends mongoose.Document {
-  id: string
-  adapterId: string
-  title: string
-  summary: string
+export const ManifoldModels = {
+  AdapterDescriptor: 'AdapterDescriptor',
+  SourceDescriptor: 'SourceDescriptor'
 };
+
+const AdapterDescriptorSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  summary: { type: String, required: false }
+});
+
+const SourceDescriptorSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  summary: { type: String, required: false },
+});
+
+export type AdapterDescriptorDocument = AdapterDescriptor & mongoose.Document;
+export type SourceDescriptorDocument = SourceDescriptor & mongoose.Document;
+
+export const AdapterDescriptorModel = mongoose.model<AdapterDescriptorDocument>(ManifoldModels.AdapterDescriptor, AdapterDescriptorSchema);
+export const SourceDescriptorModel = mongoose.model<SourceDescriptorDocument>(ManifoldModels.SourceDescriptor, SourceDescriptorSchema);

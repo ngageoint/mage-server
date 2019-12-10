@@ -1,10 +1,10 @@
 
 import mongoose from 'mongoose';
-import { IPluginDescriptor } from '../api/plugins'
+import { PluginDescriptor } from '../api/plugins'
 
 const PluginDescriptorSchema = new mongoose.Schema({
   version: { type: Number, required: false, default: 0 },
-  displayName: { type: String, required: true },
+  title: { type: String, required: true },
   summary: { type: String, required: false, default: null },
   iconClass: { type: String, required: false, default: null },
   iconPath: { type: String, required: false, default: null },
@@ -13,4 +13,5 @@ const PluginDescriptorSchema = new mongoose.Schema({
   enabled: { type: Boolean, required: false, default: false }
 });
 
-export const PluginDescriptorModel = mongoose.model<mongoose.Document & IPluginDescriptor>('PluginDescriptor', PluginDescriptorSchema);
+export type PluginDescriptorDocument = mongoose.Document & PluginDescriptor;
+export const PluginDescriptorModel = mongoose.model<PluginDescriptorDocument>('PluginDescriptor', PluginDescriptorSchema);
