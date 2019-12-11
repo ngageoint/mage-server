@@ -161,7 +161,7 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
     if (end) params.endDate = end;
 
     if (this.exportObservations.value) {
-      params.attachments = this.exportObservationsWithAttachments.value;
+      params.attachments = !this.exportObservationsWithAttachments.value;
       params.favorites = this.exportFavoriteObservations.value;
       params.important = this.exportImportantObservations.value;
     }

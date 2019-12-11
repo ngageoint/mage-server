@@ -11,6 +11,7 @@
             <span>Please Select an Event</span>
           </div>
           <div class="top-gap">
+            <div class="mdc-typography--subtitle1">What to Export</div>
             <div class="mdc-form-field">
               <div class="mdc-checkbox">
                 <input 
@@ -55,6 +56,7 @@
             <label for="location-export">Locations</label>
           </div>
           <div class="top-gap">
+            <div class="mdc-typography--subtitle1">Export Format</div>
             <div class="mdc-chip-set mdc-chip-set--choice" role="grid">
               <div class="mdc-chip mdc-chip--selected" role="row" ng-click="$ctrl.type.value = 'kml'" ng-class="{'mdc-chip--selected': $ctrl.type.value === 'kml'}">
                 <div class="mdc-chip__ripple"></div>
@@ -148,7 +150,7 @@
                       <div class="mdc-checkbox__mixedmark"></div>
                     </div>
                   </div>
-                  <label for="observation-attachments-export">Export attachments (If any)</label>
+                  <label for="observation-attachments-export">Exclude all attachments</label>
                 </div>
               </div>
               <div class="export-actions" ng-show="$ctrl.advancedExpand.value">
