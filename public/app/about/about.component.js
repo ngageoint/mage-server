@@ -12,6 +12,8 @@ class AboutController {
   }
 }
 
+AboutController.$inject = ['Api'];
+
 export default {
   template: require('./about.html'),
   controller: AboutController
