@@ -109,7 +109,7 @@
 
               <div class="form-group" ng-if="$ctrl.layer.type === 'GeoPackage' && !$ctrl.layer.id">
                 <label class="control-label">Choose GeoPackage File</label>
-                <div enctype="multipart/form-data" file-browser></div>
+                <file-browser on-file-chosen="$ctrl.onGeoPackageFile($event)" enctype="multipart/form-data"></file-browser>
               </div>
 
               <div class="top-gap"> 

@@ -63,6 +63,10 @@ class LayerEditController {
     this.wmsOptions = options;
   }
 
+  onGeoPackageFile($event) {
+    this.layer.geopackage = $event.file;
+  }
+
   saveLayer() {
     if (this.layer.type === 'GeoPackage' && !this.layer.id) {
       var geopackage = {
