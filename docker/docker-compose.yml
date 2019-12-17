@@ -38,16 +38,17 @@ services:
 
   # Uncomment the following block to enable the TLS reverse proxy.  You will
   # also need to generate the key and certificate as the README describes.
-  # mage-web-proxy:
-  #   image: nginx
-  #   volumes:
-  #     - ./web/nginx.conf:/etc/nginx/nginx.conf
-  #     - ./web/mage-web.crt:/etc/nginx/ssl/mage-web.crt
-  #     - ./web/mage-web.key:/etc/nginx/ssl/mage-web.key
-  #   ports:
-  #     - 5443:443
-  #   networks:
-  #     - mage.net
+  mage-web-proxy:
+    image: nginx
+    volumes:
+      - ./web/nginx.conf:/etc/nginx/nginx.conf
+      - ./web/mage-web.crt:/etc/nginx/ssl/web.crt
+      - ./web/mage-web.key:/etc/nginx/ssl/web.key
+    ports:
+      - 4280:80
+      - 4243:4243
+    networks:
+      - mage.net
 
 networks:
   mage.net:
