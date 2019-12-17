@@ -29,9 +29,9 @@ require('leaflet-editable');
 require('leaflet-groupedlayercontrol');
 require('leaflet.markercluster');
 
-LeafletController.$inject = ['$scope', '$timeout', 'MapService', 'LocalStorageService', 'EventService'];
+LeafletController.$inject = ['$scope', '$timeout', 'MapService', 'LocalStorageService', 'EventService', 'FilterService'];
 
-function LeafletController($scope, $timeout, MapService, LocalStorageService, EventService) {
+function LeafletController($scope, $timeout, MapService, LocalStorageService, EventService, FilterService) {
 
   var layers = {};
   var geopackageLayers = {};
@@ -224,6 +224,7 @@ function LeafletController($scope, $timeout, MapService, LocalStorageService, Ev
   }
 
   function createGeoPackageLayer(layerInfo) {
+    const filteredEvent = FilterService.getEvent();
     _.each(layerInfo.tables, function(table) {
       if (table.type === 'feature') {
         var styles = {};
@@ -232,7 +233,7 @@ function LeafletController($scope, $timeout, MapService, LocalStorageService, Ev
           radius: 3
         };
 
-        table.layer = L.vectorGrid.protobuf('api/events/' + $scope.filteredEvent.id + '/layers/' + layerInfo.id + '/' + table.name +'/{z}/{x}/{y}.pbf?access_token={token}', {
+        table.layer = L.vectorGrid.protobuf('api/events/' + filteredEvent.id + '/layers/' + layerInfo.id + '/' + table.name +'/{z}/{x}/{y}.pbf?access_token={token}', {
           token: LocalStorageService.getToken(),
           maxNativeZoom: 18,
           pane: FEATURE_LAYER_PANE,
@@ -273,7 +274,7 @@ function LeafletController($scope, $timeout, MapService, LocalStorageService, Ev
           popup.openOn(map);
         });
       } else {
-        table.layer = L.tileLayer('api/events/' + $scope.filteredEvent.id + '/layers/' + layerInfo.id + '/' + table.name +'/{z}/{x}/{y}.png?access_token={token}', {
+        table.layer = L.tileLayer('api/events/' + filteredEvent.id + '/layers/' + layerInfo.id + '/' + table.name +'/{z}/{x}/{y}.png?access_token={token}', {
           token: LocalStorageService.getToken(),
           minZoom: table.minZoom,
           maxZoom: table.maxZoom,
