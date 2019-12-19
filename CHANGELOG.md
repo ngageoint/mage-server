@@ -10,6 +10,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Bug Fixes
 * Fixed bug parsing KML polygon and polyline styles.
 * Improve error checking for invalid event form upload archives.
+* Fix lag on observation delete.
 
 ## [5.3.1](https://github.com/ngageoint/mage-server/releases/tag/5.3.1)
 

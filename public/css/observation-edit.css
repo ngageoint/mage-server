@@ -29,7 +29,6 @@
 .delete-button.mdc-button:not(:disabled) {
   color: white;
   background-color: #D32F2F !important;
-  margin-right: 16px;
 }
 
 .observation-feed-container > .slide-left.ng-animate {
