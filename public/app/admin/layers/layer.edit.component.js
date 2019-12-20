@@ -1,4 +1,4 @@
-import { textField } from 'material-components-web';
+import { textField, snackbar } from 'material-components-web';
 
 class LayerEditController {
 
@@ -28,7 +28,9 @@ class LayerEditController {
   }
 
   $postLink() {
-    var elements = this.$element.find('.mdc-text-field');
+    this.errorSnackbar = new snackbar.MDCSnackbar(document.querySelector('#error-snackbar'));
+
+    const elements = this.$element.find('.mdc-text-field');
     for (var i = 0; i < elements.length; i++) {
       new textField.MDCTextField(elements[i]);
     }
@@ -83,8 +85,10 @@ class LayerEditController {
       this.LayerService.uploadGeopackage(geopackage).then(newLayer => {
         this.saving = false;
         this.$state.go('admin.layer', { layerId: newLayer.id });
-      }, () => { // failure
+      }, response => { // failure
         this.saving = false;
+        this.errorMessage = response.data;
+        this.errorSnackbar.open();
       }, e => { //progress
         this.progress = e.loaded;
         this.total = e.total;
@@ -96,6 +100,9 @@ class LayerEditController {
 
       this.layer.$save({}, () => {
         this.$state.go('admin.layer', { layerId: this.layer.id });
+      }, response => {
+        this.errorMessage = response.data;
+        this.errorSnackbar.open();
       });
     }
   }
