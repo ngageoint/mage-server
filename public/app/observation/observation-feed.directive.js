@@ -119,8 +119,8 @@ function ObservationNewsItemController($scope, $uibModal, EventService, UserServ
     $scope.$emit('observation:edit', $scope.observation);
   };
 
-  $scope.onObservationLocationClick = function(observation) {
-    MapService.zoomToFeatureInLayer(observation, 'Observations');
+  $scope.onObservationLocationClick = function() {
+    MapService.zoomToFeatureInLayer($scope.observation, 'Observations');
   };
 
   $scope.$on('observation:editDone', function() {

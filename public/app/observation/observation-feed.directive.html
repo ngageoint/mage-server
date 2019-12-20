@@ -1,39 +1,47 @@
 <div class="observation-card mdc-typography">
   <div class="mdc-card__primary-action" ng-click="viewObservation()">
     <div class="observation-header">
-      <div class="observation-thumbnail">
-        <img ng-src="{{observation.style.iconUrl}}"/>
-      </div>
       <div class="observation-header-content">
-        <div class="observation-header-text">
-          <div ng-switch="primaryFeedField.field.type">
-            <div ng-switch-when="geometry">
-              {{primaryFeedField.value | geometry:5}}
-            </div>
-            <div ng-switch-default>
-              {{primaryFeedField.value}}
+        <div class="observation-overline">
+          <div class="">
+            <span>{{observationUser.displayName}}</span>
+            <span class="">·</span>
+            <span class="">{{observation.properties.timestamp | moment}}</span>
+          </div>
+        </div>
+    
+        <div ng-if="primaryFeedField.value">
+          <div class="observation-header-text">
+            <div ng-switch="primaryFeedField.field.type">
+              <div ng-switch-when="geometry">
+                {{primaryFeedField.value | geometry:5}}
+              </div>
+              <div ng-switch-default>
+                {{primaryFeedField.value}}
+              </div>
             </div>
           </div>
         </div>
-        <div class="observation-subhead">
-          <span ng-switch="secondaryFeedField.field.type">
-            <span ng-switch-when="geometry">
-              {{secondaryFeedField.value | geometry:5}}
+    
+        <div ng-if="secondaryFeedField.value">
+          <div class="observation-subhead">
+            <span ng-switch="secondaryFeedField.field.type">
+              <span ng-switch-when="geometry">
+                {{secondaryFeedField.value | geometry:5}}
+              </span>
+              <span ng-switch-default>
+                {{secondaryFeedField.value}}
+              </span>
             </span>
-            <span ng-switch-default>
-              {{secondaryFeedField.value}}
-            </span>
-          </span>
-        </div>
-        <div class="observation-subhead">
-          {{observationUser.displayName}}
+          </div>
         </div>
       </div>
-      <div class="observation-header-content-right">
-        <div class="observation-time user-subhead">{{observation.properties.timestamp | moment}}</div>
-        <div class="observation-time user-subhead">{{observation.geometry | geometry:5}}</div>
-      </div>
+
+      <div class="observation-thumbnail">
+          <img ng-src="{{observation.style.iconUrl}}" />
+        </div>
     </div>
+
     <div ng-if="observation.attachments && observation.attachments.length > 0" class="mdc-card__media observation-media">
       <div attachment-no-link="observation.attachments[0]" attachment-observation="observation" edit="false" label="observation.attachments.length > 1 ? '1 of ' + observation.attachments.length : false"></div>
     </div>
@@ -72,6 +80,11 @@
   </div>
   <div class="mdc-card__actions">
     <div class="mdc-card__action-buttons">
+      <button class="mdc-button  mdc-ripple-upgraded" ng-click="onObservationLocationClick()">
+        <span class="mdc-button__ripple"></span>
+        <i class="material-icons mdc-button__icon">my_location</i>
+        <span class="mdc-button__label">{{observation.geometry | geometry:5}}</span>
+      </button>
     </div>
     <div class="mdc-card__action-icons">
       <div class="mage-tooltip">
