@@ -265,7 +265,7 @@ class AdminFormFieldsEditController {
     });
   }
 
-  saveForm() {
+  save() {
     var unarchivedFields = _.filter(this.form.fields, field => {
       return !field.archived;
     });

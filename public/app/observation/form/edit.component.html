@@ -9,12 +9,11 @@
       <date-edit ng-switch-when="date" field="field" form-field="$ctrl.form[field.name]"></date-edit>
       <dropdown-edit ng-switch-when="dropdown" field="field"></dropdown-edit>
       <email-edit ng-switch-when="email" field="field"></email-edit>
-      <geometry-edit 
-        ng-switch-when="geometry" 
-        form="$ctrl.formDefinition" 
+      <geometry-edit ng-switch-when="geometry" 
+        feature="{type: 'Feature', geometry: field.value, style: $ctrl.geometryStyle}" 
         field="field" 
-        geometry-style="$ctrl.geometryStyle"
-        start-geometry-edit="$ctrl.startGeometryEdit(field)"></geometry-edit>
+        on-feature-changed="$ctrl.onGeometryChanged($event, field)" 
+        on-feature-edit="$ctrl.onGeometryEdit($event)"></geometry-edit>
       <multiselectdropdown-edit ng-switch-when="multiselectdropdown" field="field"></multiselectdropdown-edit>
       <number-edit ng-switch-when="numberfield" field="field"></number-edit>
       <password-edit ng-switch-when="password" field="field"></password-edit>

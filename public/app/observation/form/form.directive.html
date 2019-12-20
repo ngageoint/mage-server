@@ -1,61 +1,60 @@
-<header id="edit-app-bar" class="mdc-top-app-bar mdc-elevation--z4">
-  <div class="mdc-top-app-bar__row">
-    <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
-      <button ng-click="cancelEdit()" class="material-icons mdc-top-app-bar__navigation-icon mdc-icon-button">close</button>
-      <span class="mdc-top-app-bar__title">
-        <span ng-if="observation.id !== 'new'">Edit Observation</span>
-        <span ng-if="observation.id === 'new'">Create Observation</span>
-      </span>
-    </section>
-    <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
-      <button class="mdc-button mdc-card__action mdc-card__action--button"
-        ng-click="save()" ng-disabled="observationForm.$invalid || saving">
-        <i ng-if="saving" class="mdc-button__icon material-icons spin-ccw">sync</i>
-        <span class="mdc-button__label">Save</span>
-      </button>
-    </section>
+<div class="feed-card-content">
+  <header id="edit-app-bar" class="mdc-top-app-bar mdc-elevation--z4">
+    <div class="mdc-top-app-bar__row">
+      <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-start">
+        <button ng-click="cancelEdit()" class="material-icons mdc-top-app-bar__navigation-icon mdc-icon-button">close</button>
+        <span class="mdc-top-app-bar__title">
+          <span ng-if="observation.id !== 'new'">Edit Observation</span>
+          <span ng-if="observation.id === 'new'">Create Observation</span>
+        </span>
+      </section>
+      <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
+        <button class="mdc-button mdc-card__action mdc-card__action--button"
+            ng-click="save()" ng-disabled="observationForm.$invalid || saving || mask">
+          <i ng-if="saving" class="mdc-button__icon material-icons spin-ccw">sync</i>
+          <span class="mdc-button__label">Save</span>
+        </button>
+      </section>
+    </div>
+  </header>
+  
+  <div ng-if="error" class="alert alert-danger">
+    <div><strong>Failed To Save Observation</strong></div>
+    <div>{{error.message}}</div>
   </div>
-</header>
-<div ng-if="error" class="alert alert-danger">
-  <div><strong>Failed To Save Observation</strong></div>
-  <div>{{error.message}}</div>
-</div>
-<form name="observationForm" id="myForm" class="form" novalidate>
-  <div class="mdc-card observation-view-card observation-form-card">
-    <date-edit field="form.timestampField" form-field="observationForm[form.timestampField.name]"></date-edit>
-    <geometry-edit 
-        geometry-style="currentObservationStyle"
-        form="observationForm"
-        field="form.geometryField"
-        start-geometry-edit="startGeometryEdit(form.geometryField)"></geometry-edit>
-  </div>
-  <div ng-repeat="formDefinition in form.forms">
-    <observation-form-edit
-        form-definition="formDefinition"
-        form="observationForm"
-        geometry-style="currentObservationStyle"></observation-form-edit>
-  </div>
-  <div class="top-gap" ng-if="preview !== true">
-    <div class="mdc-card top-gap media-card">
-      <div ng-if="observation.attachments && (observation.attachments.length % 2) === 1" class="mdc-card__media observation-media media-tile">
-        <div attachment="observation.attachments[0]" attachment-observation="observation" edit="true"></div>
-      </div>
-      <div class="attachments">
-        <div class="attachment media-tile" ng-repeat="attachment in observation.attachments track by attachment.id" ng-if="!$first || (observation.attachments.length % 2 === 0)">
-          <div attachment="attachment" attachment-observation="observation" edit="true"></div>
+  
+  <form name="observationForm" id="myForm" class="form" novalidate>
+    <div class="mdc-card observation-view-card observation-form-card">
+      <date-edit field="form.timestampField" form-field="observationForm[form.timestampField.name]"></date-edit>
+      <geometry-edit feature="geometryFeature" field="form.geometryField" on-feature-changed="onGeometryChanged($event)" on-feature-edit="onGeometryEdit($event)"></geometry-edit>
+    </div>
+    <div ng-repeat="formDefinition in form.forms">
+      <observation-form-edit form-definition="formDefinition" form="observationForm" on-feature-edit="onGeometryEdit($event)" geometry-style="geometryFeature.style"></observation-form-edit>
+    </div>
+    <div class="top-gap" ng-if="preview !== true">
+      <div class="mdc-card top-gap media-card">
+        <div ng-if="observation.attachments && (observation.attachments.length % 2) === 1" class="mdc-card__media observation-media media-tile">
+          <div attachment="observation.attachments[0]" attachment-observation="observation" edit="true"></div>
         </div>
+        <div class="attachments">
+          <div class="attachment media-tile" ng-repeat="attachment in observation.attachments track by attachment.id" ng-if="!$first || (observation.attachments.length % 2 === 0)">
+            <div attachment="attachment" attachment-observation="observation" edit="true"></div>
+          </div>
+        </div>
+        <div enctype="multipart/form-data" 
+          file-upload-grid 
+          url="{{observation.url + '/attachments?access_token=' + getToken()}}" 
+          allow-upload="uploadAttachments" 
+          upload-file-form-name="'attachment'" 
+          preview="true" upload-id="id"></div>
       </div>
-      <div enctype="multipart/form-data" 
-      file-upload-grid 
-      url="{{observation.url + '/attachments?access_token=' + getToken()}}" 
-      allow-upload="uploadAttachments" 
-      upload-file-form-name="'attachment'" 
-      preview="true" upload-id="id"></div>
+      <div ng-if="observation.id && canDeleteObservation" class="delete-observation-button-container">
+        <button class="mdc-button delete-button delete-observation-button" ng-click="deleteObservation(observation)">
+          Delete Observation
+        </button>
+      </div>
     </div>
-    <div ng-if="observation.id && canDeleteObservation" class="delete-observation-button-container">
-      <button class="mdc-button delete-button delete-observation-button" ng-click="deleteObservation(observation)">
-        Delete Observation
-      </button>
-    </div>
-  </div>
-</form>
+  </form>
+    
+  <div ng-if="mask" class="form-mask ng-animatable"></div>
+</div>
