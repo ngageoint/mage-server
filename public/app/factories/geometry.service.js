@@ -14,7 +14,7 @@ function GeometryService() {
   return service;
 
   function featureHasIntersections(feature) {
-    if (feature.geometry.coordinates[0].length < 4) {
+    if (!Array.isArray(feature.geometry.coordinates[0]) || feature.geometry.coordinates[0].length < 4) {
       return false;
     }
 

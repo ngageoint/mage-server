@@ -26,7 +26,7 @@ L.FixedWidthIcon = L.DivIcon.extend({
     div.appendChild(s);
     if (this.options.tooltip) {
       var tooltip = L.DomUtil.create('div', 'marker-tooltip');
-      tooltip.innerHTML = '<b>Edit Observation</b><p>Drag this marker to re-position</p>';
+      tooltip.innerHTML = '<b>Edit Observation</b><div>Drag this marker to re-position</div>';
       div.insertBefore(tooltip, div.firstChild);
     }
 

@@ -245,10 +245,19 @@ a:hover, a:focus {
   color: rgba(0, 0, 0, 0.38);
 }
 
- .location-field-select .map-clip {
-  width: 370px;
-  margin: 16px;
-  height: 150px;
+.location-field-select {
+  width: 400px;
+  height: 240px;
+  perspective: 1000px;
+}
+
+ .location-field-select .map-select {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: 1;
 }
 
 .location-field-select .map-spacer {
@@ -261,6 +270,32 @@ a:hover, a:focus {
   display: none;
 }
 
+.location-field-card {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+}
+
+.location-field-card__edit {
+  transform: rotateY(180deg);
+}
+
+.location-field-card.location-field-card__flip {
+  transform: rotateY(180deg) translateZ(1px);
+}
+
+.location-field-card__edit, .location-field-card__view {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  right: 8px;
+  left: 8px;
+  z-index: 0;
+  backface-visibility: hidden;
+}
+
 .location-field-select.mdc-select--outlined:not(.mdc-select--disabled):not(.mdc-select--focused) .mdc-select__selected-text-mine:hover~.mdc-notched-outline .mdc-notched-outline__leading,
 .location-field-select.mdc-select--outlined:not(.mdc-select--disabled):not(.mdc-select--focused) .mdc-select__selected-text-mine:hover~.mdc-notched-outline .mdc-notched-outline__trailing,
 .location-field-select.mdc-select--outlined:not(.mdc-select--disabled):not(.mdc-select--focused) .mdc-select__selected-text-mine:hover~.mdc-notched-outline .mdc-notched-outline__notch
@@ -269,7 +304,7 @@ a:hover, a:focus {
 }
 
 .location-field-select.mdc-select {
-  height: unset;
+  /* height: unset; */
   cursor: pointer;
 }
 

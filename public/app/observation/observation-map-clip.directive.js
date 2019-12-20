@@ -5,7 +5,6 @@ module.exports = function mapClip() {
     restrict: 'A',
     scope: {
       feature: '=mapClip',
-      featureStyle: '=',
       disableInteraction: '='
     },
     replace: true,
@@ -16,9 +15,9 @@ module.exports = function mapClip() {
   return directive;
 };
 
-MapClipController.$inject = ['$rootScope', '$scope', '$element', 'MapService'];
+MapClipController.$inject = ['$scope', '$element', 'MapService', 'LocalStorageService'];
 
-function MapClipController($rootScope, $scope, $element, MapService) {
+function MapClipController($scope, $element, MapService, LocalStorageService) {
   var zoomControl = L.control.zoom();
   var worldExtentControl = L.control.worldExtent();
 
@@ -81,31 +80,36 @@ function MapClipController($rootScope, $scope, $element, MapService) {
     return baseLayer;
   }
 
-  $scope.$watch('featureStyle.iconUrl', function() {
-    if (!$scope.featureStyle || !$scope.featureStyle.iconUrl) return;
+  $scope.$watch('feature.style.iconUrl', function() {
+    if (!$scope.feature.geometry || !$scope.feature.style || !$scope.feature.style.iconUrl) return;
     marker.setIcon(L.fixedWidthIcon({
-      iconUrl: $scope.featureStyle.iconUrl
+      iconUrl: $scope.feature.style.iconUrl
     }));
   });
 
   function addObservation(feature) {
-    if (!feature || !feature.geometry || !feature.geometry.coordinates.length) return;
-    if(feature.geometry){
+    if (!feature || !feature.geometry || !feature.geometry.coordinates.length) {
+      const mapPosition = LocalStorageService.getMapPosition();
+      map.setView(mapPosition.center, 1);
+      return;
+    }
+
+    if (feature.geometry) {
       if(feature.geometry.type === 'Point'){
         observation = L.geoJson(feature, {
           pointToLayer: function (feature, latlng) {
             marker = L.fixedWidthMarker(latlng, {
-              iconUrl: feature.style ? feature.style.iconUrl : ($scope.featureStyle ? $scope.featureStyle.iconUrl : '')
+              iconUrl: feature.style ? feature.style.iconUrl : ($scope.feature.style ? $scope.feature.style.iconUrl : '')
             });
             return marker;
           }
         });
         observation.addTo(map);
         map.setView(L.GeoJSON.coordsToLatLng(feature.geometry.coordinates), 15);
-      }else{
+      } else {
         observation = L.geoJson(feature, {
           style: function(feature) {
-            return feature.style || $scope.featureStyle;
+            return feature.style;
           }
         });
         observation.addTo(map);
@@ -120,9 +124,11 @@ function MapClipController($rootScope, $scope, $element, MapService) {
   }
 
   function initialize() {
+    const mapPosition = LocalStorageService.getMapPosition();
+
     map = L.map($element[0], {
-      center: [0,0],
-      zoom: 3,
+      center: mapPosition.center,
+      zoom: 1,
       minZoom: 0,
       maxZoom: 18,
       zoomControl: false,

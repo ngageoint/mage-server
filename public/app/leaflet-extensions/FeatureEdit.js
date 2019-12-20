@@ -1,173 +1,194 @@
-var L = require('leaflet')
-  , angular = require('angular');
+var L = require('leaflet');
 
-MageFeatureEdit.prototype.createEditLayer = function() {
-  var editObservationLayer = {
-    name: 'Edit',
-    group: 'MAGE',
-    type: 'geojson',
-    options: {
-      selected: true
-    },
-    featureIdToLayer: {}
-  };
+class MageFeatureEdit {
+  constructor(map, feature, delegate) {
+    this.map = map;
+    this.geometryChangedListener = delegate.geometryChanged || function () { };
+    this.vertexClickListener = delegate.vertexClick || function () { };
 
-  this.editLayer = L.geoJson(null, {
-    onEachFeature: function(feature, layer) {
-      editObservationLayer.featureIdToLayer[feature.id] = layer;
-    },
-    pointToLayer: function (feature, latlng) {
-      var options = {};
-      if (feature.style && feature.style.iconUrl) {
-        options.iconUrl = feature.style.iconUrl;
+    this.tooltip = new L.tooltip({
+      className: 'overlay-tooltip',
+      offset: L.point(20, 0),
+      direction: 'right',
+      permanent: true
+    });
+
+    map.on('editable:drawing:start', this.addTooltip, this);
+    map.on('editable:drawing:end', this.removeTooltip, this);
+    map.on('editable:drawing:clicked', this.updateTooltip, this);
+
+    if (feature.geometry.type === 'Point') {
+      if (feature.geometry.coordinates.length) {
+        this.map.setView(L.GeoJSON.coordsToLatLng(feature.geometry.coordinates), 17);
+      } else {
+        let center = this.map.getCenter();
+        feature.geometry.coordinates = [center.lng, center.lat];
       }
-      return L.fixedWidthMarker(latlng, options);
-    },
-    style: function(feature) {
-      return feature.style;
+
+      this.layer = L.geoJson(feature, {
+        pointToLayer: (_, latlng) => {
+          return L.fixedWidthMarker(latlng, {
+            icon: L.fixedWidthIcon({
+              iconUrl: feature.style ? feature.style.iconUrl : '',
+              tooltip: true
+            }),
+            tooltip: true
+          });
+        }
+      }).getLayers()[0];
+      this.layer.addTo(this.map);
+      this.initiatePointEdit();
+    } else {     
+      if (feature.geometry.coordinates.length) {
+        this.layer = L.geoJson(feature, {
+          style: () => {
+            return feature.style;
+          }
+        }).getLayers()[0];
+        this.layer.addTo(this.map);
+
+        this.map.fitBounds(this.layer.getBounds());
+        this.initiateShapeEdit();
+      } else {
+        this.layer = feature.geometry.type === 'Polygon' ? this.map.editTools.startPolygon() : this.map.editTools.startPolyline();
+        this.initiateShapeDraw();
+      }
     }
-  });
-
-  editObservationLayer.layer = this.editLayer;
-  this.editLayer.addTo(this.map);
-};
-
-MageFeatureEdit.prototype.stopEdit = function() {
-  this.editedFeature.disableEdit();
-  this.map.removeLayer(this.editedFeature);
-
-  this.editLayer.removeLayer(this.editedFeature);
-  this.editedFeature = undefined;
-};
-
-MageFeatureEdit.prototype.startEdit = function(layerToEdit, selectedVertexIndex) {
-  if (this.editedFeature) {
-    return;
   }
-  this.editedFeature = layerToEdit;
-  this.editLayer.addLayer(layerToEdit);
-  if (layerToEdit.feature.geometry.type === 'Point') {
-    layerToEdit.setZIndexOffset(1000);
 
-    layerToEdit.setIcon(L.fixedWidthIcon({
-      iconUrl: layerToEdit.feature.style.iconUrl,
-      tooltip: true
-    }));
+  stopEdit() {
+    this.map.off('editable:drawing:start', this.addTooltip, this);
+    this.map.off('editable:drawing:end', this.removeTooltip, this);
+    this.map.off('editable:drawing:clicked', this.updateTooltip, this);
+    this.removeTooltip();
 
-    layerToEdit.dragging.enable();
-    layerToEdit.on('dragend', function(event) {
-      this.newGeometry = event.target.toGeoJSON().geometry;
-      
-      this.geometryChangedListener(this.newGeometry);
-    }.bind(this));
-  } else {
-    this.initiateShapeEdit(layerToEdit, selectedVertexIndex);
+    this.layer.disableEdit();
+    this.map.removeLayer(this.layer);
+    return this.layer.toGeoJSON();
   }
-};
 
-MageFeatureEdit.prototype.initiateShapeDraw = function(feature) {
-  this.editedFeature = feature.geometry.type === 'Polygon' ? this.map.editTools.startPolygon() : this.map.editTools.startPolyline();
-
-  this.editedFeature.on('editable:drawing:commit', function(e) {
-    this.newGeometry = e.layer.toGeoJSON().geometry;
-    this.geometryChangedListener(this.newGeometry);
-  }.bind(this));
-
-  this.editedFeature.on('editable:vertex:contextmenu', function(e) {
-    // delete on right click
-    if (this.editedFeature.editor.vertexCanBeDeleted(e.vertex)) {
-      e.vertex.delete();
-    }
-  }.bind(this));
-
-  this.editedFeature.on('editable:vertex:rawclick', function(e) {
-    // don't delete on click
-    e.cancel();
-    let vertex = e.vertex;
-    this.editLayer.editor.editLayer.eachLayer(function(layer) {
-      L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
+  initiatePointEdit() {
+    this.layer.dragging.enable();
+    this.layer.on('dragend', event => {
+      this.geometryChangedListener(event.target.toGeoJSON().geometry);
     });
 
-    L.DomUtil.addClass(vertex.getElement(), 'selected-marker');
-    this.editLayer.selectedVertex = vertex;
-    this.vertexClickListener(vertex);
-  });
+    this.geometryChangedListener(this.layer.toGeoJSON().geometry);
+  }
 
-  this.editedFeature.on('editable:drawing:clicked', function() {
-    if (this.GeometryService.featureHasIntersections(this.editedFeature.toGeoJSON())) {
-      this.editedFeature.editor.pop();
-    }
-  }.bind(this));
-};
+  initiateShapeDraw() {
+    this.layer.on('editable:drawing:commit', e => {
+      this.layer.off('editable:vertex:rawclick');
+      this.layer.off('editable:vertex:contextmenu');
+      this.layer.off('editable:drawing:commit');
 
-MageFeatureEdit.prototype.initiateShapeEdit = function(layer, selectVertexIndex) {
-  layer.enableEdit();
-  layer.selectedVertex = layer.editor.editLayer.getLayers()[selectVertexIndex || 0];
-  L.DomUtil.addClass(layer.selectedVertex.getElement(), 'selected-marker');
+      // TODO select last vertex, or first vertex
 
-  var geometryChanged = function(e) {
-    this.newGeometry = e.layer.toGeoJSON().geometry;
-    this.geometryChangedListener(this.newGeometry);
-  }.bind(this);
-
-  var selectVertex = function(vertex) {
-    layer.editor.editLayer.eachLayer(function(layer) {
-      L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
+      this._addEditEvents(this.layer);
+      this.geometryChangedListener(e.layer.toGeoJSON().geometry);
     });
 
+    this.layer.on('editable:vertex:rawclick', e => {
+      e.cancel();  // don't delete vertex on click
+    });
+
+    this.layer.on('editable:vertex:contextmenu', e => {
+      var marker = e.vertex;
+      if (this.editedFeature.editor.vertexCanBeDeleted(marker)) {
+        marker.delete();
+      }
+    });
+  }
+
+  initiateShapeEdit(selectVertexIndex) {
+    this.layer.enableEdit();
+    this.layer.selectedVertex = this.layer.editor.editLayer.getLayers()[selectVertexIndex || 0];
+    L.DomUtil.addClass(this.layer.selectedVertex.getElement(), 'selected-marker');
+
+    this._addEditEvents(this.layer);
+  }
+
+  _addEditEvents(layer) {
+    var geometryChanged = e => {
+      this.geometryChangedListener(e.layer.toGeoJSON().geometry);
+    };
+
+    layer.on('editable:vertex:new', geometryChanged);
+    layer.on('editable:vertex:deleted', geometryChanged);
+
+    layer.on('editable:vertex:dragend', e => {
+      this._selectVertex(layer, e.vertex);
+      this.geometryChangedListener(layer.toGeoJSON().geometry);
+    });
+
+    layer.on('editable:vertex:rawclick', e => {
+      e.cancel();  // don't delete vertex on click
+      this._selectVertex(layer, e.vertex);
+    });
+
+    layer.on('editable:vertex:contextmenu', e => {
+      var marker = e.vertex;
+      if (layer.editor.vertexCanBeDeleted(marker)) {
+        // TODO select first vertex
+        marker.delete();
+      }
+    });
+  }
+
+  _selectVertex(layer, vertex) {
+    layer.editor.editLayer.eachLayer(function (layer) {
+      L.DomUtil.removeClass(layer.getElement(), 'selected-marker');
+    });
     L.DomUtil.addClass(vertex.getElement(), 'selected-marker');
     layer.selectedVertex = vertex;
-    this.vertexClickListener(vertex);
-  }.bind(this);
+    this.vertexClickListener({
+      index: vertex.getIndex(),
+      geometry: vertex.toGeoJSON().geometry
+    });
+  }
 
-  layer.on('editable:vertex:new', geometryChanged);
-  layer.on('editable:vertex:deleted', geometryChanged);
+  addTooltip (e) {
+    this.map.on('mousemove', this.moveTooltip, this);
 
-  layer.on('editable:vertex:contextmenu', function(e) {
-    var marker = e.vertex;
-    if (layer.editor.vertexCanBeDeleted(marker)) {
-      marker.delete();
+    if (e.layer.editor instanceof L.Editable.PolylineEditor) {
+      this.tooltip.setContent('<b>Edit Observation</b><div>Click on the map to start a line</div>');
+    } else {
+      this.tooltip.setContent('<b>Edit Observation</b><div>Click on the map to start a polygon</div>');
     }
-  });
 
-  layer.on('editable:vertex:rawclick', function(e) {
-    e.cancel(); // turn off delete when clicking a vertex
-    selectVertex(e.vertex);
-  }.bind(this));
+    const center = this.map.getCenter();
+    let point = this.map.latLngToLayerPoint(center);
+    point.y -= 25;
+    point.x -= 3;
+    let latLng = this.map.layerPointToLatLng(point);
+    this.tooltip.setLatLng(latLng);
+    this.tooltip.addTo(this.map);
+  }
 
-  var previousLatLngs;
-  layer.on('editable:vertex:dragstart', function(e) {
-    layer.selectedVertex = e.vertex;
-    previousLatLngs = angular.copy(layer.getLatLngs());
-  });
+  removeTooltip () {
+    this.tooltip.remove();
+    this.map.off('mousemove', this.moveTooltip, this);
+  }
 
-  layer.on('editable:vertex:dragend', function(e) {
-    selectVertex(e.vertex);
+  moveTooltip (e) {
+    this.tooltip.setLatLng(e.latlng);
+  }
 
-    if (this.GeometryService.featureHasIntersections(layer.toGeoJSON()) && previousLatLngs) {
-      layer.setLatLngs(previousLatLngs);
-      layer.editor.reset();
-
-      layer.editor.editLayer.eachLayer(function(l) {
-        if (l.getIndex && l.getIndex() === layer.selectedVertex.getIndex()) {
-          L.DomUtil.addClass(l.getElement(), 'selected-marker');
-        }
-      });
-
-      return;
+  updateTooltip (e) {
+    if (e.layer.editor._drawnLatLngs.length < e.layer.editor.MIN_VERTEX) {
+      if (e.layer.editor instanceof L.Editable.PolylineEditor) {
+        this.tooltip.setContent('<b>Edit Observation</b><p>Click on the map to continue line</p>');
+      } else {
+        this.tooltip.setContent('<b>Edit Observation</b><p>Click on the map to continue polygon</p>');
+      }
+    } else {
+      if (e.layer.editor instanceof L.Editable.PolylineEditor) {
+        this.tooltip.setContent('<b>Edit Observation</b><p>Click on last point to finish line</p>');
+      } else {
+        this.tooltip.setContent('<b>Edit Observation</b><p>Click on last point to finish polygon</p>');
+      }
     }
-    this.newGeometry = layer.toGeoJSON().geometry;
-    this.geometryChangedListener(this.newGeometry);
-  }.bind(this));
-};
-
-function MageFeatureEdit(map, MapService, GeometryService, geometryChangedListener, vertexClickListener) {
-  this.map = map;
-  this.MapService = MapService;
-  this.GeometryService = GeometryService;
-  this.geometryChangedListener = geometryChangedListener || function() {};
-  this.vertexClickListener = vertexClickListener || function() {};
-  this.createEditLayer();
+  }
 }
 
 module.exports = MageFeatureEdit;

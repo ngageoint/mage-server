@@ -19,8 +19,8 @@ module.exports = function observationPopup() {
 ObservationPopupDirective.$inject = ['$scope', 'EventService', 'UserService'];
 
 function ObservationPopupDirective($scope, EventService, UserService) {
-
-  if ($scope.observation.properties.forms.length > 0) {
+  let properties = $scope.observation.properties || {};
+  if (properties.forms && properties.forms.length > 0) {
     var form = _.find(EventService.getForms($scope.observation), function(form) {
       return form.id === $scope.observation.properties.forms[0].formId;
     });
