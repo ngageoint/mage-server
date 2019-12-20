@@ -18,9 +18,9 @@ function NewsFeed() {
   return directive;
 }
 
-NewsFeedController.$inject = ['$scope', '$element', 'MapService', 'EventService', 'FilterService', 'LocalStorageService', 'UserService', 'Observation', '$uibModal'];
+NewsFeedController.$inject = ['$scope', '$element', 'MapService', 'EventService', 'ObservationService', 'FilterService', 'LocalStorageService', 'UserService', 'Observation', '$uibModal'];
 
-function NewsFeedController($scope, $element, MapService, EventService, FilterService, LocalStorageService, UserService, Observation, $uibModal) {
+function NewsFeedController($scope, $element, MapService, EventService, ObservationService, FilterService, LocalStorageService, UserService, Observation, $uibModal) {
   var contentEls = $element.find('.content');
 
   $scope.tabs = [{
@@ -81,11 +81,7 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
     $scope.newObservation = null;
     $scope.editObservation = null;
     $scope.viewObservation = null;
-    MapService.edit({
-      type: 'delete',
-      name: 'Observations',
-      feature: observation
-    });
+    MapService.removeFeatureFromLayer(observation, 'Observations');
   });
 
   $scope.$on('user:view', function(e, user) {
@@ -154,9 +150,6 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
   });
 
   $scope.createNewObservation = function() {
-
-    const mapPos = LocalStorageService.getMapPosition();
-
     var event = FilterService.getEvent();
     if (!EventService.isUserInEvent(UserService.myself, event)) {
       $uibModal.open({
@@ -172,10 +165,11 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
       return;
     }
 
+    const mapPos = LocalStorageService.getMapPosition();
     newObservation = new Observation({
+      id: 'new',
       eventId: event.id,
       type: 'Feature',
-      id: 'new',
       geometry: {
         type: 'Point',
         coordinates: [mapPos.center.lng, mapPos.center.lat]
@@ -183,11 +177,13 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
       properties: {
         timestamp: new Date(),
         forms: []
-      },
-      style: {}
+      }
     });
 
     var newObservationForms = EventService.getForms(newObservation, {archived: false});
+    newObservation.style = {
+      iconUrl: getIconUrl(event, newObservationForms)
+    };
 
     if (newObservationForms.length === 0) {
       $scope.createObservation();
@@ -197,6 +193,20 @@ function NewsFeedController($scope, $element, MapService, EventService, FilterSe
       $scope.newObservationForms = newObservationForms;
     }
   };
+
+  function getIconUrl(event, forms) {
+    const primaryForm = forms.length ? forms[0] : {};
+    const fields = forms.length ? forms[0].fields : [];
+    var primary = _.find(fields, function(field) {
+      return field.name === primaryForm.primaryField;
+    }) || {};
+
+    var secondary = _.find(fields, function(field) {
+      return field.name === primaryForm.variantField;
+    }) || {};
+
+    return ObservationService.getObservationIconUrlForEvent(event.id, primaryForm.id, primary.value, secondary.value);
+  }
 
   $scope.$on('observation:editDone', function() {
     $scope.newObservation = null;

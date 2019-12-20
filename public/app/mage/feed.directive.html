@@ -8,10 +8,8 @@
   </div>
 </div>
 
-<div class="slide-left new-obs-card view-obs-card feed-card ng-animatable feed-scroll" ng-if="newObservation">
-  <div class="feed-card-content">
-    <form-directive form="newObservationForm" form-observation="newObservation"></form-directive>
-  </div>
+<div class="slide-left new-obs-card view-obs-card feed-card ng-animatable" ng-if="newObservation">
+  <form-directive form="newObservationForm" form-observation="newObservation"></form-directive>
 </div>
 
 <user-view 
@@ -27,9 +25,7 @@
     observation="viewObservation" 
     event="event"></observation-view>
 
-<form-directive
-    class="slide-left new-obs-card view-obs-card feed-card ng-animatable feed-scroll"
-    ng-if="editObservation"
+<form-directive ng-if="editObservation" class="slide-left new-obs-card view-obs-card feed-card ng-animatable feed-scroll"
     form="editForm"
     form-observation="editObservation"></form-directive>
 

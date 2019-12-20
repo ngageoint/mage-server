@@ -6,6 +6,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+* Geometry edit moved to main map to provide more space to edit complex geometries while retaining the context of other user data on the map.
 
 ##### Bug Fixes
 * Fixed bug parsing KML polygon and polyline styles.

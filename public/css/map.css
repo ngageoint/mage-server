@@ -17,7 +17,6 @@
   color: #1E88E5;
 }
 
-
 .leaflet-control-geocoder-icon::before {
    font-family: "FontAwesome";
    content: "\f002";
@@ -120,26 +119,61 @@
 .marker-tooltip {
   transform: translate(0, -100%);
   position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   background-color: gray;
   color: white;
-  padding-top: 7px;
   margin-left: 40px;
-  margin-top: 3px;
-  opacity: .7;
+  opacity: .87;
   border-radius: 3px;
+  height: 50px;
   width: 200px;
-  text-align: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.overlay-tooltip {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: gray;
+  color: white;
+  opacity: 0.87;
+  padding: 10px;
+  border-radius: 3px;
+  height: 50px;
+  width: 200px;
+  border: none;
+}
+
+.leaflet-tooltip-left.overlay-tooltip::before {
+  border-left-color: transparent;
+}
+
+.leaflet-tooltip-right.overlay-tooltip::before {
+  border-right-color: transparent;
 }
 
 .leaflet-vertex-icon {
   background: #fff;
-  border-radius: 10px;
+  height: 12px !important;
+  width: 12px !important;
+  margin-left: -6px !important;
+  margin-top: -6px !important;
+  border-radius: 6px;
   border: 1px solid #999;
 }
 
 .leaflet-middle-icon {
   background: #fff;
-  border-radius: 10px;
+  height: 12px !important;
+  width: 12px !important;
+  margin-left: -6px !important;
+  margin-top: -6px !important;
+  border-radius: 6px;
   border: 1px solid #999;
 }
 

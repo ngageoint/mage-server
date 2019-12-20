@@ -7,12 +7,16 @@ MapService.$inject = ['EventService', 'LocationService', 'FeatureService', '$com
 
 function MapService(EventService, LocationService, FeatureService, $compile, $rootScope, LocalStorageService) {
 
+  // Map Service should delegate to some map provider that implements delegate interface
+  // In this case should delegate to leaflet directive.  See if this is possible
+
   var followedFeature = {
     id: undefined,
     layer: undefined
   };
 
   var service = {
+    setDelegate: setDelegate,
     addListener: addListener,
     removeListener: removeListener,
     getRasterLayers: getRasterLayers,
@@ -24,13 +28,13 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
     getVectorLayers: getVectorLayers,
     createRasterLayer: createRasterLayer,
     createVectorLayer: createVectorLayer,
-    createMarker: createMarker,
-    removeMarker: removeMarker,
-    updateMarker: updateMarker,
-    updateShapeType: updateShapeType,
-    edit: edit,
-    create: create,
-    updateIcon: updateIcon,
+    createFeature: createFeature,
+    // removeFeature: removeFeature,
+    // updateFeature: updateFeature,
+    // updateShapeType: updateShapeType,
+    // edit: edit,
+    // create: create,
+    // updateIcon: updateIcon,
     addFeaturesToLayer: addFeaturesToLayer,
     updateFeatureForLayer: updateFeatureForLayer,
     removeFeatureFromLayer: removeFeatureFromLayer,
@@ -44,6 +48,7 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
     followedFeature: followedFeature
   };
 
+  var delegate = null;
   var baseLayer = null;
   var rasterLayers = {};
   var vectorLayers = {};
@@ -264,6 +269,10 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
       }
     });
   }
+    
+  function setDelegate(theDelegate) {
+    delegate = theDelegate;
+  }
 
   function addListener(listener) {
     listeners.push(listener);
@@ -313,58 +322,53 @@ function MapService(EventService, LocationService, FeatureService, $compile, $ro
     vectorLayers[layer.name] = layer;
   }
 
-  function createMarker(marker, options) {
-    if (options) marker.options = options;
-
-    layersChanged({
-      name: marker.id,
-      added: [marker]
-    });
+  function createFeature(feature, style, listeners) {
+    if (delegate) return delegate.createFeature(feature, style, listeners);
   }
 
-  function removeMarker(marker, markerId) {
-    layersChanged({
-      name: markerId,
-      removed: [marker]
-    });
-  }
+  // function removeFeature(feature, featureId) {
+  //   layersChanged({
+  //     name: featureId,
+  //     removed: [feature]
+  //   });
+  // }
 
-  function updateMarker(marker, markerId) {
-    layersChanged({
-      name: markerId,
-      updated: [marker]
-    });
-  }
+  // function updateFeature(feature, featureId) {
+  //   layersChanged({
+  //     name: featureId,
+  //     updated: [feature]
+  //   });
+  // }
 
-  function create(create) {
-    _.each(listeners, function(listener) {
-      if (_.isFunction(listener.onCreate)) {
-        listener.onCreate(create);
-      }
-    });
-  }
+  // function create(create) {
+  //   _.each(listeners, function(listener) {
+  //     if (_.isFunction(listener.onCreate)) {
+  //       listener.onCreate(create);
+  //     }
+  //   });
+  // }
 
-  function edit(edit) {
-    _.each(listeners, function(listener) {
-      if (_.isFunction(listener.onEdit)) {
-        listener.onEdit(edit);
-      }
-    });
-  }
+  // function edit(edit) {
+  //   _.each(listeners, function(listener) {
+  //     if (_.isFunction(listener.onEdit)) {
+  //       listener.onEdit(edit);
+  //     }
+  //   });
+  // }
 
-  function updateIcon(marker, iconUrl) {
-    layersChanged({
-      id: marker.id,
-      updateIcon: [{id:marker.id, marker: marker, iconUrl:iconUrl}]
-    });
-  }
+  // function updateIcon(marker, iconUrl) {
+  //   layersChanged({
+  //     id: marker.id,
+  //     updateIcon: [{id:marker.id, marker: marker, iconUrl:iconUrl}]
+  //   });
+  // }
 
-  function updateShapeType(marker) {
-    layersChanged({
-      id: marker.id,
-      updateShapeType: [{id: marker.id, marker: marker}]
-    });
-  }
+  // function updateShapeType(marker) {
+  //   layersChanged({
+  //     id: marker.id,
+  //     updateShapeType: [{id: marker.id, marker: marker}]
+  //   });
+  // }
 
   function addFeaturesToLayer(features, layerId) {
     var vectorLayer = vectorLayers[layerId];

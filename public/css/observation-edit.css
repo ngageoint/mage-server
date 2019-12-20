@@ -1,13 +1,84 @@
-
-.edit-location-card {
-  background-color: #E1E2E1;
+.form-mask {
+  background: black;
   position: absolute;
   top: 0;
-  width: 100%;
   bottom: 0;
-  overflow-y: auto;
-  z-index: 5;
+  right: 0;
+  left: 0;
+  transition: opacity ease-in-out 0.8s;
+  opacity: .2;
 }
+
+.form-mask.ng-enter,
+.form-mask.ng-leave.ng-leave-active {
+  opacity: 0;
+}
+
+.form-mask.ng-leave,
+.form-mask.ng-enter.ng-enter-active {
+  opacity: .2;
+}
+
+.geometry-edit__active {
+  position: relative;
+  z-index: 1;
+}
+
+.geometry-edit__active:after {
+  position: absolute;
+  background: var(--mdc-theme-surface);
+  border-radius: 4px;
+  top: -8px;
+  bottom: -4px;
+  right: -4px;
+  left: -6px;
+  content: "";
+  z-index: -1;
+}
+
+.edit-location__geometry-type {
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
+}
+
+.edit-location__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.edit-location__actions > button + button {
+  margin-left: 8px;
+}
+
+.edit-location__coordinates {
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
+}
+
+.edit-location__coordinates-select {
+  width: 130px;
+}
+
+.edit-location-button {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 1;
+  transition: opacity ease-in-out 150ms;
+}
+
+.edit-location-button.ng-enter,
+.edit-location-button.ng-leave.ng-leave-active {
+  opacity: 0;
+}
+
+.edit-location-button.ng-leave,
+.edit-location-button.ng-enter.ng-enter-active {
+  opacity: 1;
+}
+
 .map-container {
   width: 100%;
   height: 400px;
@@ -33,24 +104,26 @@
 
 .observation-feed-container > .slide-left.ng-animate {
   position:relative;
-  /* top:0;
-  left:0; */
   width: 100%;
   flex:1;
   height:100%;
 }
+
 .record.ng-anchor-out {
   background:blue;
 }
+
 .add-attachment-button.mdc-button:not(:disabled) {
   background-color: #1E88E5 !important;
   color: white;
   width: 100%;
 }
+
 .add-attachment-button-container {
   padding-right: 4px;
   margin: 16px;
 }
+
 .add-attachment-input {
   width: 0.1px;
   height: 0.1px;

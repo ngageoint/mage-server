@@ -115,15 +115,7 @@
 
 .feed-filter-action {
   flex: 0 0 24%;
-  /* padding: 5px 0; */
-  /* align-items: center; */
-  /* color: #fff;
-  background: rgba(0, 0, 0, 0.0);
-  border-color: #fff;
-  border-style: solid;
-  border-width: 2px; */
   text-align: center;
-  /* border-radius: 3px 3px 3px 3px; */
   cursor: pointer; cursor: hand;
 }
 
@@ -157,10 +149,6 @@
 
 .feed-card {
   background-color: #fff;
-  /* margin: 0 7px 10px; */
-  /* box-shadow: 0 3px 7px rgba(0,0,0,.35); */
-  /* padding: 16px; */
-  /* width: 344px; */
 }
 
 .inactive-feed-card {
@@ -173,7 +161,8 @@
 }
 
 .feed-card-content {
-  /* padding: 16px; */
+  position: relative;
+  padding-bottom: 16px;
 }
 
 .feed-content-padding-container {
