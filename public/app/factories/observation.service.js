@@ -16,7 +16,8 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
     clearObservationAsImportantForEvent: clearObservationAsImportantForEvent,
     addAttachmentToObservationForEvent: addAttachmentToObservationForEvent,
     deleteAttachmentInObservationForEvent: deleteAttachmentInObservationForEvent,
-    getObservationIconUrlForEvent: getObservationIconUrlForEvent
+    getObservationIconUrlForEvent: getObservationIconUrlForEvent,
+    getObservationStyleForForm: getObservationStyleForForm
   };
 
   return service;
@@ -132,30 +133,17 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
 
     var formMap = _.indexBy(event.forms, 'id');
     _.each(observations, function(observation) {
-      var formId = null;
-      var formStyle = null;
-      var primaryField = null;
-      var variantField = null;
-
+      let form;
       if (observation.properties.forms.length) {
-        var firstForm = observation.properties.forms[0];
-        var form = formMap[firstForm.formId];
-        formId = form.id;
-        formStyle = form.style;
-        primaryField = firstForm[form.primaryField];
-        variantField = firstForm[form.variantField];
+        form = formMap[observation.properties.forms[0].formId];
       }
 
-      var style = getObservationStyle(event.style, formStyle, primaryField, variantField);
-      style.iconUrl = getObservationIconUrlForEvent(event.id, formId, primaryField, variantField);
-
-      observation.style = style;
+      observation.style = getObservationStyleForForm(observation, event, form);
       if (observation.geometry.type === 'Polygon') {
         minimizePolygon(observation.geometry.coordinates);
       } else if (observation.geometry.type === 'LineString') {
         minimizeLineString(observation.geometry.coordinates);
       }
-
     });
   }
 
@@ -182,8 +170,28 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
     }
   }
 
+  function getObservationStyleForForm(observation, event, form) {
+    var formId = null;
+    var formStyle = null;
+    var primaryField = null;
+    var variantField = null;
+
+    if (observation.properties.forms.length) {
+      var firstForm = observation.properties.forms[0];
+      formId = form.id;
+      formStyle = form.style;
+      primaryField = firstForm[form.primaryField];
+      variantField = firstForm[form.variantField];
+    }
+
+    let style = getObservationStyle(event.style, formStyle, primaryField, variantField);
+    style.iconUrl = getObservationIconUrlForEvent(event.id, formId, primaryField, variantField);
+
+    return style;
+  }
+
   function getObservationStyle(eventStyle, formStyle, primary, variant) {
-    var style = eventStyle;
+    var style = eventStyle || {};
     if (formStyle) {
       if (primary && formStyle[primary] && variant && formStyle[primary][variant]) {
         style = formStyle[primary][variant];
@@ -201,7 +209,6 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
       opacity: style.strokeOpacity,
       weight: style.strokeWidth
     };
-
   }
 
   function getObservationIconUrlForEvent(eventId, formId, primary, variant) {

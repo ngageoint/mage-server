@@ -19,18 +19,24 @@ module.exports = function observationPopup() {
 ObservationPopupDirective.$inject = ['$scope', 'EventService', 'UserService'];
 
 function ObservationPopupDirective($scope, EventService, UserService) {
-
-  if ($scope.observation.properties.forms.length > 0) {
+  let properties = $scope.observation.properties || {};
+  if (properties.forms && properties.forms.length > 0) {
     var form = _.find(EventService.getForms($scope.observation), function(form) {
       return form.id === $scope.observation.properties.forms[0].formId;
     });
 
     $scope.primary = null;
+    $scope.primaryFeedField = {
+      value: form.primaryFeedField
+    };
     if (form.primaryFeedField) {
       $scope.primary = $scope.observation.properties.forms[0][form.primaryFeedField];
     }
 
     $scope.variant = null;
+    $scope.secondaryFeedField = {
+      value: form.secondaryFeedField
+    };
     if (form.secondaryFeedField) {
       $scope.variant = $scope.observation.properties.forms[0][form.secondaryFeedField];
     }

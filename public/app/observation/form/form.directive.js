@@ -8,6 +8,8 @@ module.exports = function formDirective() {
     restrict: 'E',
     transclude: true,
     scope: {
+      map: '=',
+      another: '=',
       form: '=',
       observation: '=formObservation',
       preview: '=formPreview'
@@ -18,12 +20,14 @@ module.exports = function formDirective() {
   return directive;
 };
 
-FormDirectiveController.$inject = ['$scope', 'ObservationService', 'EventService', 'FilterService', 'UserService', 'LocalStorageService', '$element', '$uibModal'];
+FormDirectiveController.$inject = ['$scope', 'MapService', 'ObservationService', 'EventService', 'FilterService', 'UserService', 'LocalStorageService', '$element', '$uibModal'];
 
-function FormDirectiveController($scope, ObservationService, EventService, FilterService, UserService, LocalStorageService, $element, $uibModal) {
+function FormDirectiveController($scope, MapService, ObservationService, EventService, FilterService, UserService, LocalStorageService, $element, $uibModal) {
   var scrollElement = $element[0].parentElement;
   const topAppBar = new MDCTopAppBar($element.find('.mdc-top-app-bar')[0]);
   topAppBar.setScrollTarget(scrollElement);
+
+  $scope.inactive = true;
 
   var uploadId = 0;
   var initialObservation;
@@ -31,12 +35,36 @@ function FormDirectiveController($scope, ObservationService, EventService, Filte
   if ($scope.observation) {
     initialObservation = JSON.parse(JSON.stringify($scope.observation));
     $scope.event = EventService.getEventById($scope.observation.eventId);
+
+    // TODO figure out if I still need this?
     var geometryField = $scope.form.geometryField;
     $scope.shape = geometryField.value.type;
     var copy = JSON.parse(JSON.stringify(geometryField.value));
     geometryField.value = copy;
+    $scope.geometryFeature = {
+      id: $scope.observation.id,
+      type: 'Feature',
+      geometry: copy,
+      style: angular.copy($scope.observation.style),
+      properties: angular.copy($scope.observation.properties)
+    };
 
-    $scope.currentObservationStyle = angular.copy($scope.observation.style);
+    if ($scope.observation.id === 'new') {
+      MapService.addFeaturesToLayer([$scope.observation], 'Observations');
+    }
+  }
+
+  let primaryField;
+  let secondaryField;  
+  if ($scope.form) {
+    const primaryForm = $scope.form.forms.length ? $scope.form.forms[0] : {fields: []};
+    primaryField = _.find(primaryForm.fields, function(field) {
+      return field.name === primaryForm.primaryField;
+    }) || {};
+
+    secondaryField = _.find(primaryForm.fields, function(field) {
+      return field.name === primaryForm.variantField;
+    }) || {};
   }
 
   $scope.getToken = LocalStorageService.getToken;
@@ -105,15 +133,33 @@ function FormDirectiveController($scope, ObservationService, EventService, Filte
       observation.properties.forms.push(propertiesForm);
     });
   }
-  $scope.$watch('form.forms', function() {
-    var newPrimary = _.find($scope.form.forms[0].fields, function(field) {
-      return field.name === $scope.form.forms[0].primaryField;
-    });
-    var newSecondary = _.find($scope.form.forms[0].fields, function(field) {
-      return field.name === $scope.form.forms[0].variantField;
-    });
-    $scope.currentObservationStyle.iconUrl = ObservationService.getObservationIconUrlForEvent($scope.observation.eventId, $scope.form.forms[0].id, newPrimary.value, newSecondary.value);
+
+  let primaryFieldValue;
+  let secondaryFieldValue;
+  $scope.$watch('form.forms[0]', function() {
+    if (primaryField.value !== primaryFieldValue || secondaryField.value !== secondaryFieldValue) {
+      primaryFieldValue = primaryField.value;
+      secondaryFieldValue = secondaryField.value;
+
+      let observation = angular.copy($scope.observation);
+      formToObservation($scope.form, observation);
+  
+      const style = ObservationService.getObservationStyleForForm(observation, $scope.event, $scope.form.forms[0]);
+      observation.style = style;
+      $scope.geometryFeature.style = style;
+  
+      MapService.updateFeatureForLayer(observation, 'Observations');
+    }
   }, true);
+
+  $scope.onGeometryEdit = function($event) {
+    $scope.mask = $event.action === 'edit';
+  };
+
+  $scope.onGeometryChanged = function($event) {
+    $scope.geometryFeature = $event.feature;
+    $scope.form.geometryField.value = $event.feature ? $event.feature.geometry : null;
+  };
 
   $scope.save = function() {
     if (!$scope.form.geometryField.value) {
@@ -126,10 +172,18 @@ function FormDirectiveController($scope, ObservationService, EventService, Filte
     var markedForDelete = _.filter($scope.observation.attachments, function(a){ return a.markedForDelete; });
     formToObservation($scope.form, $scope.observation);
     // TODO look at this: this is a hack that will be corrected when we pull ids from the server
-    if ($scope.observation.id === 'new') {
+    const id = $scope.observation.id;
+    if (id === 'new') {
       delete $scope.observation.id;
     }
     EventService.saveObservation($scope.observation).then(function() {
+      // If this feature was added to the map as a new observation, remove it
+      // as the event service will add it back to the map based on it new id
+      // if it passes the current filter.
+      if (id === 'new') {
+        MapService.removeFeatureFromLayer({id: id}, 'Observations');
+      }
+
       $scope.error = null;
 
       if (_.some(_.values($scope.attachmentUploads), function(v) {return v;})) {
@@ -149,6 +203,10 @@ function FormDirectiveController($scope, ObservationService, EventService, Filte
         $scope.saving = false;
       }
     }, function(err) {
+      if (id === 'new') {
+        $scope.observation.id = 'new';
+      }
+
       $scope.saving = false;
       $scope.error = {
         message: err.data
@@ -159,6 +217,12 @@ function FormDirectiveController($scope, ObservationService, EventService, Filte
   $scope.cancelEdit = function() {
     $scope.observation.geometry = initialObservation.geometry;
     $scope.$emit('observation:editDone', $scope.observation);
+
+    if ($scope.observation.id !== 'new') {
+      MapService.updateFeatureForLayer($scope.observation, 'Observations');
+    } else {
+      MapService.removeFeatureFromLayer($scope.observation, 'Observations');
+    }
 
     _.map($scope.observation.attachments, function(attachment) {
       delete attachment.markedForDelete;

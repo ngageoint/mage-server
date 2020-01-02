@@ -57,6 +57,10 @@ class MageController {
     }
   }
 
+  onMap($event) {
+    this.map = $event.map;
+  }
+
   onFilterChanged(filter) {
     this.feedChangedUsers = {};
 

@@ -48,6 +48,11 @@
   margin-bottom: 50px;
 }
 
+.form-inputs .mdc-snackbar {
+  transform: translateX(-25%);
+  bottom: 75px;
+}
+
 .form-input-inner {
   flex: 1;
 }

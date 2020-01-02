@@ -109,13 +109,13 @@
 
               <div class="form-group" ng-if="$ctrl.layer.type === 'GeoPackage' && !$ctrl.layer.id">
                 <label class="control-label">Choose GeoPackage File</label>
-                <div enctype="multipart/form-data" file-browser></div>
+                <file-browser on-file-chosen="$ctrl.onGeoPackageFile($event)" enctype="multipart/form-data"></file-browser>
               </div>
 
               <div class="top-gap"> 
                 <div class="mdc-text-field mdc-text-field--outlined" ng-show="$ctrl.layer.type === 'Imagery'" style="width: 100%">
                   <input type="text" 
-                      id="layer-url" 
+                      id="layer-url"
                       placeholder="http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
                       value="{{$ctrl.layer.url}}"
                       ng-model="$ctrl.layer.url" 
@@ -224,6 +224,18 @@
             <span class="material-icons mdc-fab__icon">save</span>
             <span class="mdc-fab__label">Save Layer</span>
           </button>
+
+          <div id="error-snackbar" class="mdc-snackbar">
+            <div class="mdc-snackbar__surface">
+              <div class="mdc-snackbar__label">
+                {{$ctrl.errorMessage}}
+              </div>
+              <div class="mdc-snackbar__actions">
+                <button class="mdc-icon-button mdc-snackbar__dismiss material-icons" title="Dismiss">close</button>
+              </div>
+            </div>
+          </div>
+
         </div>
         <div class="form-preview">
           <div class="form-preview-inner">

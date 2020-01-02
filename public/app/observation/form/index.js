@@ -1,6 +1,7 @@
 import angular from 'angular';
-import geometryEdit from './geometry.edit';
-import locationEdit from './location-edit.component';
+import geometryEdit from './geometry.edit.component';
+import geometryEditMap from './geometry.edit.map.component';
+import geometryEditForm from './geometry.edit.form.component';
 
 angular.module('mage')
   .directive('formDirective', require('./form.directive'))
@@ -17,4 +18,5 @@ angular.module('mage')
   .component('textEdit', require('./text.edit'))
   .component('textareaEdit', require('./textarea.edit'))
   .component('geometryEdit', geometryEdit)
-  .component('locationEdit', locationEdit);
+  .component('geometryEditMap', geometryEditMap)
+  .component('geometryEditForm', geometryEditForm);

@@ -1,4 +1,5 @@
 import angular from 'angular';
+import leaflet from './leaflet.component';
 
 angular.module('mage')
   .component('mageInfo', require('./mage-info.component.js'))
@@ -6,7 +7,7 @@ angular.module('mage')
   .directive('colorPicker', require('./color.picker.directive'))
   .directive('equals', require('./equals.directive'))
   .directive('newsFeed', require('./feed.directive'))
-  .directive('leaflet', require('./leaflet.directive'));
+  .component('leaflet', leaflet);
 
 require('./navbar');
 require('./feed');
