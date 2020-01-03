@@ -11,7 +11,7 @@
             <span>Please Select an Event</span>
           </div>
           <div class="top-gap">
-            <div class="mdc-typography--subtitle1">What to Export</div>
+            <div class="mdc-typography--headline6">What to Export</div>
             <div class="mdc-form-field">
               <div class="mdc-checkbox">
                 <input 
@@ -30,6 +30,7 @@
                   </svg>
                   <div class="mdc-checkbox__mixedmark"></div>
                 </div>
+                <div class="mdc-checkbox__ripple"></div>
               </div>
               <label for="observation-export">Observations</label>
             </div>
@@ -52,11 +53,12 @@
                 </svg>
                 <div class="mdc-checkbox__mixedmark"></div>
               </div>
+              <div class="mdc-checkbox__ripple"></div>
             </div>
             <label for="location-export">Locations</label>
           </div>
           <div class="top-gap">
-            <div class="mdc-typography--subtitle1">Export Format</div>
+            <div class="mdc-typography--headline6">Export Format</div>
             <div class="mdc-chip-set mdc-chip-set--choice" role="grid">
               <div class="mdc-chip mdc-chip--selected" role="row" ng-click="$ctrl.type.value = 'kml'" ng-class="{'mdc-chip--selected': $ctrl.type.value === 'kml'}">
                 <div class="mdc-chip__ripple"></div>
@@ -119,7 +121,7 @@
           </div>
           <div class="top-gap">
             <div class="mdc-form-field">
-              <label for="advanced-export">Advanced</label>
+              <label for="advanced-export" class="mdc-typography--subtitle1">Advanced</label>
               <button class="mdc-icon-button"
                 aria-label="Advanced"
                 title="Advanced"
@@ -149,6 +151,7 @@
                       </svg>
                       <div class="mdc-checkbox__mixedmark"></div>
                     </div>
+                    <div class="mdc-checkbox__ripple"></div>
                   </div>
                   <label for="observation-attachments-export">Exclude all attachments</label>
                 </div>
@@ -172,6 +175,7 @@
                       </svg>
                       <div class="mdc-checkbox__mixedmark"></div>
                     </div>
+                    <div class="mdc-checkbox__ripple"></div>
                   </div>
                   <label for="observation-favorites-export">Export only your favorite observations</label>
                 </div>
@@ -195,6 +199,7 @@
                       </svg>
                       <div class="mdc-checkbox__mixedmark"></div>
                     </div>
+                    <div class="mdc-checkbox__ripple"></div>
                   </div>
                   <label for="observation-important-export">Export only observations flagged as important</label>
                 </div>
