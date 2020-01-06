@@ -77,7 +77,7 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
   this.exportFavoriteObservations = {value: false};
   this.exportImportantObservations = {value: false};
   this.exportObservationsWithAttachments = {value: false};
-  this.advancedOptionsExpand = {value: false};
+  this.advancedOptionsExpanded = {value: false};
 
   this.localOffset = moment().format('Z');
   this.localTime = true;

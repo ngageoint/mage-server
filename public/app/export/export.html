@@ -128,11 +128,12 @@
                 id="advanced-export"
                 aria-hidden="true"
                 aria-pressed="false">
-                <i class="material-icons mdc-icon-button__icon" ng-show="$ctrl.advancedOptionsExpand.value" ng-click="$ctrl.advancedOptionsExpand.value = false">expand_less</i>
-                <i class="material-icons mdc-icon-button__icon" ng-show="!$ctrl.advancedOptionsExpand.value" ng-click="$ctrl.advancedOptionsExpand.value = true">expand_more</i>
+                <i class="material-icons mdc-icon-button__icon" ng-show="$ctrl.advancedOptionsExpanded.value" ng-click="$ctrl.advancedOptionsExpanded.value = false">expand_less</i>
+                <i class="material-icons mdc-icon-button__icon" ng-show="!$ctrl.advancedOptionsExpanded.value" ng-click="$ctrl.advancedOptionsExpanded.value = true">expand_more</i>
               </button>
             </div>
-            <div class="export-actions" ng-show="$ctrl.advancedOptionsExpand.value">
+            <div ng-if="$ctrl.advancedOptionsExpanded.value" class="ng-animatable fade-in">
+              <div class="export-actions">
                 <div class="mdc-form-field">
                   <div class="mdc-checkbox">
                     <input 
@@ -152,60 +153,61 @@
                       <div class="mdc-checkbox__mixedmark"></div>
                     </div>
                     <div class="mdc-checkbox__ripple"></div>
-                  </div>
-                  <label for="observation-attachments-export">Exclude all attachments</label>
                 </div>
+                <label for="observation-attachments-export">Exclude all attachments</label>
               </div>
-              <div class="export-actions" ng-show="$ctrl.advancedOptionsExpand.value">
-                <div class="mdc-form-field">
-                  <div class="mdc-checkbox">
-                    <input 
-                      type="checkbox"
-                      ng-model="$ctrl.exportFavoriteObservations.value"
-                      value="{{$ctrl.exportFavoriteObservations.value}}" 
-                      class="mdc-checkbox__native-control"
-                      id="observation-favorites-export"/>
-                    <div class="mdc-checkbox__background">
-                      <svg class="mdc-checkbox__checkmark"
-                          viewBox="0 0 24 24">
-                        <path 
-                          class="mdc-checkbox__checkmark-path"
-                          fill="none"
-                          d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
-                      </svg>
-                      <div class="mdc-checkbox__mixedmark"></div>
-                    </div>
-                    <div class="mdc-checkbox__ripple"></div>
+            </div>
+            <div class="export-actions">
+              <div class="mdc-form-field">
+                <div class="mdc-checkbox">
+                  <input 
+                    type="checkbox"
+                    ng-model="$ctrl.exportFavoriteObservations.value"
+                    value="{{$ctrl.exportFavoriteObservations.value}}" 
+                    class="mdc-checkbox__native-control"
+                    id="observation-favorites-export"/>
+                  <div class="mdc-checkbox__background">
+                    <svg class="mdc-checkbox__checkmark"
+                        viewBox="0 0 24 24">
+                      <path 
+                        class="mdc-checkbox__checkmark-path"
+                        fill="none"
+                        d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+                    </svg>
+                    <div class="mdc-checkbox__mixedmark"></div>
                   </div>
-                  <label for="observation-favorites-export">Export only your favorite observations</label>
+                  <div class="mdc-checkbox__ripple"></div>
                 </div>
+                <label for="observation-favorites-export">Export only your favorite observations</label>
               </div>
-              <div class="export-actions" ng-show="$ctrl.advancedOptionsExpand.value">
-                <div class="mdc-form-field">
-                  <div class="mdc-checkbox">
-                    <input 
-                      type="checkbox"
-                      ng-model="$ctrl.exportImportantObservations.value"
-                      value="{{$ctrl.exportImportantObservations.value}}" 
-                      class="mdc-checkbox__native-control"
-                      id="observation-important-export"/>
-                    <div class="mdc-checkbox__background">
-                      <svg class="mdc-checkbox__checkmark"
-                          viewBox="0 0 24 24">
-                        <path 
-                          class="mdc-checkbox__checkmark-path"
-                          fill="none"
-                          d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
-                      </svg>
-                      <div class="mdc-checkbox__mixedmark"></div>
-                    </div>
-                    <div class="mdc-checkbox__ripple"></div>
+            </div>
+            <div class="export-actions">
+              <div class="mdc-form-field">
+                <div class="mdc-checkbox">
+                  <input 
+                    type="checkbox"
+                    ng-model="$ctrl.exportImportantObservations.value"
+                    value="{{$ctrl.exportImportantObservations.value}}" 
+                    class="mdc-checkbox__native-control"
+                    id="observation-important-export"/>
+                  <div class="mdc-checkbox__background">
+                    <svg class="mdc-checkbox__checkmark"
+                        viewBox="0 0 24 24">
+                      <path 
+                        class="mdc-checkbox__checkmark-path"
+                        fill="none"
+                        d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+                    </svg>
+                    <div class="mdc-checkbox__mixedmark"></div>
                   </div>
-                  <label for="observation-important-export">Export only observations flagged as important</label>
+                  <div class="mdc-checkbox__ripple"></div>
                 </div>
+                <label for="observation-important-export">Export only observations flagged as important</label>
               </div>
+            </div>
           </div>
-        </form>
+        </div>
+      </form>
       </div>
       <footer class="mdc-dialog__actions">
         <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
