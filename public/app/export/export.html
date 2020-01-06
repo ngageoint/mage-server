@@ -128,11 +128,11 @@
                 id="advanced-export"
                 aria-hidden="true"
                 aria-pressed="false">
-                <i class="material-icons mdc-icon-button__icon" ng-show="$ctrl.advancedExpand.value" ng-click="$ctrl.advancedExpand.value = false">expand_less</i>
-                <i class="material-icons mdc-icon-button__icon" ng-show="!$ctrl.advancedExpand.value" ng-click="$ctrl.advancedExpand.value = true">expand_more</i>
+                <i class="material-icons mdc-icon-button__icon" ng-show="$ctrl.advancedOptionsExpand.value" ng-click="$ctrl.advancedOptionsExpand.value = false">expand_less</i>
+                <i class="material-icons mdc-icon-button__icon" ng-show="!$ctrl.advancedOptionsExpand.value" ng-click="$ctrl.advancedOptionsExpand.value = true">expand_more</i>
               </button>
             </div>
-            <div class="export-actions" ng-show="$ctrl.advancedExpand.value">
+            <div class="export-actions" ng-show="$ctrl.advancedOptionsExpand.value">
                 <div class="mdc-form-field">
                   <div class="mdc-checkbox">
                     <input 
@@ -156,7 +156,7 @@
                   <label for="observation-attachments-export">Exclude all attachments</label>
                 </div>
               </div>
-              <div class="export-actions" ng-show="$ctrl.advancedExpand.value">
+              <div class="export-actions" ng-show="$ctrl.advancedOptionsExpand.value">
                 <div class="mdc-form-field">
                   <div class="mdc-checkbox">
                     <input 
@@ -180,7 +180,7 @@
                   <label for="observation-favorites-export">Export only your favorite observations</label>
                 </div>
               </div>
-              <div class="export-actions" ng-show="$ctrl.advancedExpand.value">
+              <div class="export-actions" ng-show="$ctrl.advancedOptionsExpand.value">
                 <div class="mdc-form-field">
                   <div class="mdc-checkbox">
                     <input 
