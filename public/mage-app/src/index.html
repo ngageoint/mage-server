@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>MAGE</title>
+  <link rel="shortcut icon" href="images/favicon.ico"/>
+  <meta id="view" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+</head>
+
+<body class="mdc-typography" ng-controller="NavController">
+  <banner ng-if="myself" class="banner" type="header"></banner>
+  <navbar myself="myself" ng-show="myself"></navbar>
+  <ui-view class="route-content"></ui-view>
+  <banner ng-if="myself" class="banner" type="footer"></banner>
+</body>
+
+</html>
