@@ -2007,12 +2007,27 @@ paths:
           format: date-time
       - name: observations
         in: query
-        description: Boolean flag indicating wheter or not to export observations
+        description: Boolean flag indicating whether or not to export observations
         schema:
           type: boolean
       - name: locations
         in: query
-        description: Boolean flag indicating wheter or not to export user locations
+        description: Boolean flag indicating whether or not to export user locations
+        schema:
+          type: boolean
+      - name: attachments
+        in: query
+        description: Boolean flag indicating whether or not to exclude observation attachments (if any)
+        schema:
+          type: boolean
+      - name: favorites
+        in: query
+        description: Boolean flag indicating whether or not to export only favorite observations 
+        schema:
+          type: boolean
+      - name: important
+        in: query
+        description: Boolean flag indicating whether or not to export only observations flagged important
         schema:
           type: boolean
       responses:
