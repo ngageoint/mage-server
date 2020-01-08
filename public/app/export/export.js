@@ -76,7 +76,7 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
   this.exportObservations = {value: true};
   this.exportFavoriteObservations = {value: false};
   this.exportImportantObservations = {value: false};
-  this.exportObservationsWithAttachments = {value: false};
+  this.excludeObservationsAttachments = {value: false};
   this.advancedOptionsExpanded = {value: false};
 
   this.localOffset = moment().format('Z');
@@ -161,7 +161,7 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
     if (end) params.endDate = end;
 
     if (this.exportObservations.value) {
-      params.attachments = !this.exportObservationsWithAttachments.value;
+      params.attachments = this.excludeObservationsAttachments.value;
       params.favorites = this.exportFavoriteObservations.value;
       params.important = this.exportImportantObservations.value;
     }

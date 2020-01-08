@@ -241,7 +241,7 @@ exports.getObservations = function(event, o, callback) {
   }
 
   var fields = parseFields(o.fields);
-  if (filter.attachments === false) {
+  if (filter.attachments === true) {
     fields.attachments = {$slice: 0};
   }
 
