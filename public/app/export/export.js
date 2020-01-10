@@ -1,6 +1,7 @@
 var $ = require('jquery')
   , MDCDialog = require('material-components-web').dialog.MDCDialog
   , MDCSelect = require('material-components-web').select.MDCSelect
+  , MDCChipSet = require('material-components-web').chips.MDCChipSet
   , moment = require('moment')
   , angular = require('angular');
 
@@ -18,7 +19,6 @@ ExportController.$inject = ['LocalStorageService', 'FilterService', '$timeout', 
 
 function ExportController(LocalStorageService, FilterService, $timeout, $element) {
   var exportPanel;
-  var eventSelectMdc;
   var intervalSelectMdc;
 
   this.$onChanges = function() {
@@ -30,6 +30,7 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
   }.bind(this);
 
   this.$onInit = function() {
+    new MDCChipSet($element.find('.mdc-chip-set')[0]);
     
     exportPanel = new MDCDialog(angular.element.find('.export-panel')[0]);
     exportPanel.listen('MDCDialog:closing', function() {
@@ -55,16 +56,6 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
           $timeout(function() {
             this.exportTime = this.exportOptions.find(function(choice) {
               return choice.label === event.detail.value;
-            });
-          }.bind(this));
-        }.bind(this));
-        eventSelectMdc = new MDCSelect($element.find('.event-select')[0]);
-        eventSelectMdc.listen('MDCSelect:change', function(event) {
-          var eventId = event.detail.value;
-          $timeout(function(){ 
-            eventId = Number(eventId);
-            this.exportEvent.selected = this.events.find(function(value, index) {
-              return value.id === eventId;
             });
           }.bind(this));
         }.bind(this));

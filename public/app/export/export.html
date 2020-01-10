@@ -59,30 +59,22 @@
           </div>
           <div class="top-gap">
             <div class="mdc-typography--headline6">Export Format</div>
-            <div class="mdc-chip-set mdc-chip-set--choice" role="grid">
-              <div class="mdc-chip mdc-chip--selected" role="row" ng-click="$ctrl.type.value = 'kml'" ng-class="{'mdc-chip--selected': $ctrl.type.value === 'kml'}">
+            <div class="mdc-chip-set mdc-chip-set--choice">
+              <div class="mdc-chip mdc-chip--selected" ng-click="$ctrl.type.value = 'kml'" ng-class="{'active': $ctrl.type.value === 'kml'}">
                 <div class="mdc-chip__ripple"></div>
-                  <span role="gridcell">
-                    <span role="button" tabindex="0" class="mdc-chip__text">KML</span>
-                  </span>
+                  <span class="mdc-chip__text">KML</span>
               </div>
-              <div class="mdc-chip" role="row" ng-click="$ctrl.type.value = 'geojson'" ng-class="{'mdc-chip--selected': $ctrl.type.value === 'geojson'}">
+              <div class="mdc-chip" ng-click="$ctrl.type.value = 'geojson'" ng-class="{'active': $ctrl.type.value === 'geojson'}">
                 <div class="mdc-chip__ripple"></div>
-                  <span role="gridcell">
-                    <span role="button" tabindex="0" class="mdc-chip__text">GeoJSON</span>
-                  </span>
+                  <span class="mdc-chip__text">GeoJSON</span>
               </div>
-              <div class="mdc-chip" role="row"  ng-click="$ctrl.type.value = 'csv'" ng-class="{'mdc-chip--selected': $ctrl.type.value === 'csv'}">
+              <div class="mdc-chip" ng-click="$ctrl.type.value = 'csv'" ng-class="{'active': $ctrl.type.value === 'csv'}">
                 <div class="mdc-chip__ripple"></div>
-                  <span role="gridcell">
-                    <span role="button" tabindex="0" class="mdc-chip__text">CSV</span>
-                  </span>
+                  <span class="mdc-chip__text">CSV</span>
               </div>
-              <div class="mdc-chip" role="row"  ng-click="$ctrl.type.value = 'shapefile'" ng-class="{'mdc-chip--selected': $ctrl.type.value === 'shapefile'}">
+              <div class="mdc-chip" ng-click="$ctrl.type.value = 'shapefile'" ng-class="{'active': $ctrl.type.value === 'shapefile'}">
                 <div class="mdc-chip__ripple"></div>
-                  <span role="gridcell">
-                    <span role="button" tabindex="0" class="mdc-chip__text">Shapefile</span>
-                  </span>
+                  <span class="mdc-chip__text">Shapefile</span>
               </div>  
             </div>
           </div>
@@ -122,12 +114,7 @@
           <div class="top-gap">
             <div class="mdc-form-field">
               <label for="advanced-export" class="mdc-typography--subtitle1">Advanced</label>
-              <button class="mdc-icon-button"
-                aria-label="Advanced"
-                title="Advanced"
-                id="advanced-export"
-                aria-hidden="true"
-                aria-pressed="false">
+              <button class="mdc-icon-button left-gap">
                 <i class="material-icons mdc-icon-button__icon" ng-show="$ctrl.advancedOptionsExpanded.value" ng-click="$ctrl.advancedOptionsExpanded.value = false">expand_less</i>
                 <i class="material-icons mdc-icon-button__icon" ng-show="!$ctrl.advancedOptionsExpanded.value" ng-click="$ctrl.advancedOptionsExpanded.value = true">expand_more</i>
               </button>
