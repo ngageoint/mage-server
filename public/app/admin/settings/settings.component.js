@@ -8,6 +8,28 @@ class AdminSettingsController {
 
     this.token = LocalStorageService.getToken();
     this.pill = 'security';
+
+    this.autoApproveUser = {};
+    this.autoApproveUserChoices = [{
+      title: 'Off',
+      description: 'Do not auto-approve MAGE user accounts.',
+      value: false
+    },{
+      title: 'On',
+      description: 'Auto-approve MAGE user accounts.',
+      value: true
+    }];
+
+    this.autoApproveDevice = {};
+    this.autoApproveDeviceChoices = [{
+      title: 'Off',
+      description: 'Do not auto-approve MAGE user devices.',
+      value: false
+    },{
+      title: 'On',
+      description: 'Auto-approve MAGE user devices.',
+      value: true
+    }];
   
     this.accountLock = {};
     this.accountLockChoices = [{
@@ -62,6 +84,18 @@ class AdminSettingsController {
   
       if (!this.security.accountLock) {
         this.security.accountLock = {
+          enabled: false
+        };
+      }
+
+      if (!this.security.autoApproveUser) {
+        this.security.autoApproveUser = {
+          enabled: false
+        };
+      }
+
+      if (!this.security.autoApproveDevice) {
+        this.security.autoApproveDevice = {
           enabled: false
         };
       }

@@ -36,6 +36,52 @@
                     <div class="card-content">
                       <div class="row">
                         <div class="col-md-12 bottom-gap">
+                          <h3>User and Device Settings</h3>
+                          <hr>
+                        </div>
+                      </div>
+    
+                      <div class="row">
+                        <div class="col-sm-12">
+                          <div class="form-group">
+                            <label class="control-label" for="type">Auto-Approve User Accounts</label>
+                            <ui-select ng-model="$ctrl.security.autoApproveUser.enabled" theme="bootstrap">
+                            <ui-select-match>{{$select.selected.title}}</ui-select-match>
+                            <ui-select-choices repeat="autoApproveUserChoice.value as autoApproveUserChoice in $ctrl.autoApproveUserChoices">
+                              <div ng-bind-html="autoApproveUserChoice.title"></div>
+                              <small ng-bind-html="autoApproveUserChoice.description"></small>
+                            </ui-select-choices>
+                            </ui-select>
+                          </div>
+                        </div>
+                      </div>
+    
+                      <div class="row">
+                          <div class="col-sm-12">
+                            <div class="form-group">
+                              <label class="control-label" for="type">Auto-Approve User Devices</label>
+                              <ui-select ng-model="$ctrl.security.autoApproveDevice.enabled" theme="bootstrap">
+                              <ui-select-match>{{$select.selected.title}}</ui-select-match>
+                              <ui-select-choices repeat="autoApproveDeviceChoice.value as autoApproveDeviceChoice in $ctrl.autoApproveDeviceChoices">
+                                <div ng-bind-html="autoApproveDeviceChoice.title"></div>
+                                <small ng-bind-html="autoApproveDeviceChoice.description"></small>
+                              </ui-select-choices>
+                              </ui-select>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                  </div>
+    
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-sm-11">
+                  <div class="card">
+                    <div class="card-content">
+                      <div class="row">
+                        <div class="col-md-12 bottom-gap">
                           <h3>Account Lock</h3>
                           <hr>
                         </div>
