@@ -13,7 +13,7 @@
 
       <div class="row">
         <div class="col-md-3">
-          <ul class="nav nav-pills nav-stacked" ng-show="$ctrl.local">
+          <ul class="nav nav-pills nav-stacked">
             <li ng-class="{active: $ctrl.pill === 'security'}"><a ng-click="$ctrl.pill = 'security'" href="javascript:void(0);">Security</a></li>
           </ul>
           <ul class="nav nav-pills nav-stacked">
@@ -79,7 +79,7 @@
                 </div>
               </div>
 
-              <div class="row">
+              <div class="row" ng-show="$ctrl.local">
                 <div class="col-sm-11">
                   <div class="card">
                     <div class="card-content">
