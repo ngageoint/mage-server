@@ -208,7 +208,7 @@
                 </div>
               </div>
 
-              <wms-layer ng-if="$ctrl.layer.format === 'WMS' && $ctrl.layer.type === 'Imagery'"
+              <admin-layer-wms-edit ng-if="$ctrl.layer.format === 'WMS' && $ctrl.layer.type === 'Imagery'"
                 layer-url="{{$ctrl.layer.url}}"
                 wms-options="$ctrl.wmsOptions"
                 on-wms-options-update="$ctrl.wmsOptionsUpdate(options)"/>
