@@ -11,23 +11,23 @@ class AdminSettingsController {
 
     this.autoApproveUser = {};
     this.autoApproveUserChoices = [{
-      title: 'Off',
+      title: 'Disabled',
       description: 'Do not auto-approve MAGE user accounts.',
       value: false
     },{
-      title: 'On',
+      title: 'Enabled',
       description: 'Auto-approve MAGE user accounts.',
       value: true
     }];
 
-    this.autoApproveDevice = {};
-    this.autoApproveDeviceChoices = [{
-      title: 'Off',
-      description: 'Do not auto-approve MAGE user devices.',
+    this.autoRegisterDevice = {};
+    this.autoRegisterDeviceChoices = [{
+      title: 'Disabled',
+      description: 'Do not auto-register MAGE user devices.',
       value: false
     },{
-      title: 'On',
-      description: 'Auto-approve MAGE user devices.',
+      title: 'Enabled',
+      description: 'Auto-register MAGE user devices.',
       value: true
     }];
   
@@ -94,8 +94,8 @@ class AdminSettingsController {
         };
       }
 
-      if (!this.security.autoApproveDevice) {
-        this.security.autoApproveDevice = {
+      if (!this.security.autoRegisterDevice) {
+        this.security.autoRegisterDevice = {
           enabled: false
         };
       }

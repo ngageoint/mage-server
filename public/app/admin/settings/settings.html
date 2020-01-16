@@ -36,7 +36,7 @@
                     <div class="card-content">
                       <div class="row">
                         <div class="col-md-12 bottom-gap">
-                          <h3>User and Device Settings</h3>
+                          <h3>Users and Devices</h3>
                           <hr>
                         </div>
                       </div>
@@ -52,6 +52,8 @@
                               <small ng-bind-html="autoApproveUserChoice.description"></small>
                             </ui-select-choices>
                             </ui-select>
+                            <p class="help-block">If this option is enabled, admin approval is <b>NOT</b> required for user accounts to be enabled. Typically, this is only enabled when 3rd-party authenitication has been performed.
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -59,14 +61,15 @@
                       <div class="row">
                           <div class="col-sm-12">
                             <div class="form-group">
-                              <label class="control-label" for="type">Auto-Approve User Devices</label>
-                              <ui-select ng-model="$ctrl.security.autoApproveDevice.enabled" theme="bootstrap">
+                              <label class="control-label" for="type">Auto-Register User Devices</label>
+                              <ui-select ng-model="$ctrl.security.autoRegisterDevice.enabled" theme="bootstrap">
                               <ui-select-match>{{$select.selected.title}}</ui-select-match>
-                              <ui-select-choices repeat="autoApproveDeviceChoice.value as autoApproveDeviceChoice in $ctrl.autoApproveDeviceChoices">
-                                <div ng-bind-html="autoApproveDeviceChoice.title"></div>
-                                <small ng-bind-html="autoApproveDeviceChoice.description"></small>
+                              <ui-select-choices repeat="autoRegisterDeviceChoice.value as autoRegisterDeviceChoice in $ctrl.autoRegisterDeviceChoices">
+                                <div ng-bind-html="autoRegisterDeviceChoice.title"></div>
+                                <small ng-bind-html="autoRegisterDeviceChoice.description"></small>
                               </ui-select-choices>
                               </ui-select>
+                              <p class="help-block">If this option is enabled, admin approval is <b>NOT</b> required to register devices.</p>
                             </div>
                           </div>
                         </div>
