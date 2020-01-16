@@ -11,23 +11,23 @@ class AdminSettingsController {
 
     this.autoApproveUser = {};
     this.autoApproveUserChoices = [{
-      title: 'Disabled',
-      description: 'Do not auto-approve MAGE user accounts.',
+      title: 'No',
+      description: 'Do not auto-activate MAGE user accounts.',
       value: false
     },{
-      title: 'Enabled',
-      description: 'Auto-approve MAGE user accounts.',
+      title: 'Yes',
+      description: 'Auto-activate MAGE user accounts.',
       value: true
     }];
 
     this.autoRegisterDevice = {};
     this.autoRegisterDeviceChoices = [{
-      title: 'Disabled',
-      description: 'Do not auto-register MAGE user devices.',
+      title: 'No',
+      description: 'Do not auto-register MAGE devices.',
       value: false
     },{
-      title: 'Enabled',
-      description: 'Auto-register MAGE user devices.',
+      title: 'Yes',
+      description: 'Auto-register MAGE devices.',
       value: true
     }];
   

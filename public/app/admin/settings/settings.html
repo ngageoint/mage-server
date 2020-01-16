@@ -44,7 +44,19 @@
                       <div class="row">
                         <div class="col-sm-12">
                           <div class="form-group">
-                            <label class="control-label" for="type">Auto-Approve User Accounts</label>
+                            <label class="control-label" for="type">User Authentication Strategy</label>
+                            <div class="form-group">
+                              <input type="text" placeholder="local" ng-model="$ctrl.banner.headerText" class="form-control" ng-disabled="true">
+                            </div>
+                            <p class="help-block">Method used to authenticate users. Configuration controlled elsewhere.</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="col-sm-12">
+                          <div class="form-group">
+                            <label class="control-label" for="type">Auto-Activate User Accounts</label>
                             <ui-select ng-model="$ctrl.security.autoApproveUser.enabled" theme="bootstrap">
                             <ui-select-match>{{$select.selected.title}}</ui-select-match>
                             <ui-select-choices repeat="autoApproveUserChoice.value as autoApproveUserChoice in $ctrl.autoApproveUserChoices">
@@ -52,7 +64,9 @@
                               <small ng-bind-html="autoApproveUserChoice.description"></small>
                             </ui-select-choices>
                             </ui-select>
-                            <p class="help-block">If this option is enabled, admin approval is <b>NOT</b> required for user accounts to be enabled. Typically, this is only enabled when 3rd-party authenitication has been performed.
+                            <p class="help-block">If this option is enabled, admin approval is <b>NOT</b> required for user accounts to be activated. 
+                              <i>For <b>local authentication</b>, this essentially has the effect of disabling user security</i>.  For all other forms of authentication,
+                              this eliminates the extra step of requiring an admin to approve each each user.
                             </p>
                           </div>
                         </div>
@@ -61,7 +75,7 @@
                       <div class="row">
                           <div class="col-sm-12">
                             <div class="form-group">
-                              <label class="control-label" for="type">Auto-Register User Devices</label>
+                              <label class="control-label" for="type">Auto-Register Devices</label>
                               <ui-select ng-model="$ctrl.security.autoRegisterDevice.enabled" theme="bootstrap">
                               <ui-select-match>{{$select.selected.title}}</ui-select-match>
                               <ui-select-choices repeat="autoRegisterDeviceChoice.value as autoRegisterDeviceChoice in $ctrl.autoRegisterDeviceChoices">
