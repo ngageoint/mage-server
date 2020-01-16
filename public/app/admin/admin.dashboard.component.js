@@ -11,6 +11,9 @@ class AdminDashboardController {
     this._Team = Team;
     this._Event = Event;
     this._Layer = Layer;
+
+    // For some reason angular is not calling into filter function with correct context
+    this.filterDevices = this._filterDevices.bind(this);
   }
 
   $onInit() {
@@ -130,7 +133,7 @@ class AdminDashboardController {
     });
   }
 
-  filterDevices(device) {
+  _filterDevices(device) {
     var filteredDevices = this._$filter('filter')([device], this.deviceSearch);
     return filteredDevices && filteredDevices.length;
   }
