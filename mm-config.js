@@ -1,6 +1,5 @@
-const 
+const
 environment = require('./environment/env'),
-mongoose = require('mongoose');
 
 const mongo = environment.mongo;
 const migrateConfig = {
