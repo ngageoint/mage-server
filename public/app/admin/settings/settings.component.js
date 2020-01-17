@@ -66,6 +66,8 @@ class AdminSettingsController {
       footerTextColor: '#000000',
       footerBackgroundColor: 'FFFFFF'
     };
+
+    this.strategyName = "unknown"
   }
 
   $onInit() {
@@ -73,6 +75,7 @@ class AdminSettingsController {
       var authenticationStrategies = api.authenticationStrategies || {};
       this.local = authenticationStrategies.local;
       this.pill = authenticationStrategies.local ? 'security' : 'banner';
+      this.strategyName = authenticationStrategies.local ? 'local' : 'third-party';
     });
 
     this.Settings.query(settings => {
