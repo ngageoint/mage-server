@@ -75,7 +75,17 @@ class AdminSettingsController {
       var authenticationStrategies = api.authenticationStrategies || {};
       this.local = authenticationStrategies.local;
       this.pill = authenticationStrategies.local ? 'security' : 'banner';
-      this.strategyName = authenticationStrategies.local ? 'local' : 'third-party';
+      this.strategyName = 'third-party';
+      //TODO for sure there is a less dumb way to do this
+      if(authenticationStrategies.local){
+        this.strategyName = 'local';
+      }else if (authenticationStrategies.ldap) {
+        this.strategyName = 'ldap';
+      }else if(authenticationStrategies.google){
+        this.strategyName = 'google';
+      }else if(authenticationStrategies.geoaxis){
+        this.strategyName = 'geoaxis';
+      } 
     });
 
     this.Settings.query(settings => {
