@@ -3,7 +3,6 @@ import request from 'supertest';
 import { expect } from 'chai';
 import express from 'express';
 import initializePluginsRoutes from '../../../routes/plugins';
-import { contentTypeOf } from '../../utils';
 import mageApp from '../../../express'
 import { PluginService } from '../../../api/plugins';
 
@@ -26,7 +25,7 @@ describe('plugins routes', function() {
         const res: request.Response = await request(app).get('/plugins');
 
         expect(res.status).to.equal(200);
-        expect(contentTypeOf(res)).to.match(/application\/json/);
+        expect(res.type).to.match(/application\/json/);
         const body = res.body as object[];
         expect(body).to.be('array');
         expect(body).to.deep.equal([
