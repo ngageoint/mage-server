@@ -1,0 +1,94 @@
+openapi: 3.0.1
+info:
+  title: MAGE Manifold API
+  description: >
+    MAGE Manifold is an add-on API to the MAGE Server for configuring external
+    data sources that can provide relevant contextual data to MAGE clients in
+    a feed and/or on the map.
+  contact:
+    name: MAGE Support
+    email: mage@nga.mil
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0
+  version: 0.0.1
+servers: []
+x-controller: manifold
+paths:
+  /adapters:
+    get:
+      operationId: getAdapters
+      responses:
+        200:
+          description: Success - return a list of adapter descriptors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdapterDescriptor'
+  /sources:
+    get:
+      operationId: getSources
+      responses:
+        200:
+          description: Success - return a list source descriptors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SourceDescriptor'
+  /sources/{sourceId}/api:
+    parameters:
+      - $ref: '#/components/parameters/sourceIdInPath'
+    get:
+      operationId: getSourceApi
+      responses:
+        200:
+          description: >
+            Success - return the OpenAPI definition document for the speicified
+            source.  The returned document will be compliant with the
+            [OGC API - Features - Part1: Core](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html)
+            specification.
+          content:
+            application/json:
+              schema:
+                type: object
+                externalDocs:
+                  url: https://github.com/OAI/OpenAPI-Specification
+components:
+  schemas:
+    AdapterDescriptor:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+    SourceDescriptor:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+          format: uri
+        adapter:
+          oneOf:
+            - $ref: '#/components/schemas/AdapterDescriptor/properties/id'
+            - $ref: '#/components/schemas/AdapterDescriptor'
+  parameters:
+    sourceIdInPath:
+      in: path
+      name: sourceId
+      required: true
+      schema:
+        $ref: '#/components/schemas/SourceDescriptor/properties/id'
+
