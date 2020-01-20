@@ -88,17 +88,20 @@ User.prototype.getById = function(id, callback) {
   });
 };
 
-User.prototype.create = function(user, options, callback) {
-  return Setting.getSetting('security')
-    .then((securitySettings = {settings: {autoApproveUser: {}}}) => {
-     let userAutoEnabled = securitySettings.settings.autoApproveUser;
-     user.enabled = userAutoEnabled;
-     user.active = userAutoEnabled;
-     return this.create2(user, options, callback);
-    });
+User.prototype.create = async function(user, options, callback) {
+  const securitySettings = await Setting.getSetting('security');
+  console.log("TESTING", securitySettings);
+  if(securitySettings && securitySettings.settings){
+    let userAutoEnabled = securitySettings.settings.autoApproveUser;
+    if(userAutoEnabled){
+      user.enabled = userAutoEnabled.enabled;
+      user.active = userAutoEnabled.enabled;
+    }
+  }
+  return this.doCreate(user, options, callback);
 };
 
-User.prototype.create2 = function(user, options, callback) {
+User.prototype.doCreate = function(user, options, callback) {
   var operations = [];
 
   operations.push(function(done) {
