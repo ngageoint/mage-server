@@ -1,18 +1,14 @@
 # MAGE Web Application
 
-The MAGE web client is built on [AngularJS](https://angularjs.org/).
+The MAGE web client is a hybrid app built on [AngularJS](https://angularjs.org/) and [Angular](https://angular.io/).
 
 ## Building
 
-The MAGE web client uses [npm](https://www.npmjs.com/) and [webpack](https://webpack.js.org/) to manage dependencies and bundle assets.
-From the MAGE base directory, run
-```bash
-$ npm run build
-```
-or from the `public` directory
+The MAGE web client uses [npm](https://www.npmjs.com/) and [Angular CLI](https://cli.angular.io/) to manage dependencies and bundle assets.
+From the `public/mage-app` directory
 ```bash
 $ npm install
-$ npm run build
+$ ng build
 ```
 
 ## Running MAGE web client
@@ -21,18 +17,19 @@ For the web client to be useful, you'll want to [start a local MAGE server](../R
 
 ### Debug build
 
-From the `public` directory run
+From the `public/mage-app` directory
 ```bash
-$ npm run start
+$ npm install
+$ ng serve
 ```
-This command uses the [development](webpack.dev.js) webpack config to start a server running on http://localhost:3000.  That 
+This command uses Angular CLI to start a server running on http://localhost:4200.  That 
 configuration also proxies all requests for `/api` to the local MAGE server, which the configuration assumes is bound to
-http://localhost:4242.  This debug webpack server will watch and hot-load any changes to the resources in the `public` 
+http://localhost:4242.  This debug Angular CLI server will watch and hot-load any changes to the resources in the `public` 
 directory, and apply source maps so you can inspect the content in your browser's development console.
 
 ### Production build
 
-The `npm run build` command you ran earlier uses the webpack [production](webpack.prod.js) to minify, obfuscate, and bundle 
+The `ngn build` command you ran earlier uses Angular CLI to minify, obfuscate, and bundle 
 all of the MAGE web app's JavaScript and CSS assets into the `dist` directory.  The MAGE server [Express](../express.js) 
 configuration will serve the assets from that directory.  You can also potentially serve the contents of that directory 
 from a separate reverse proxy server, such as nginx or Apache httpd, as they are just static web resources.
