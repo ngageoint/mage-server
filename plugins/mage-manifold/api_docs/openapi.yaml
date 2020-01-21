@@ -15,30 +15,43 @@ info:
 servers: []
 x-controller: manifold
 paths:
+  /descriptor:
+    get:
+      operationId: getManifoldDescriptor
+      responses:
+        200:
+          description: >
+            Success - return the descriptor of the current Manifold
+            configuration.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManifoldDescriptor'
   /adapters:
-    get:
-      operationId: getAdapters
+    post:
+      operationId: createAdapter
       responses:
-        200:
-          description: Success - return a list of adapter descriptors
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AdapterDescriptor'
+        201:
+          $ref: '#/components/responses/manifoldDescriptor'
   /sources:
-    get:
-      operationId: getSources
+    post:
+      operationId: createSource
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - $ref: '#/components/schemas/SourceDescriptor'
+                - type: object
+                  required: [ adapterId ]
+                - type: object
+                  not:
+                    type: object
+                    required: [ id, adapter ]
       responses:
-        200:
-          description: Success - return a list source descriptors
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SourceDescriptor'
+        201:
+          $ref: '#/components/responses/manifoldDescriptor'
   /sources/{sourceId}/api:
     parameters:
       - $ref: '#/components/parameters/sourceIdInPath'
@@ -84,6 +97,22 @@ components:
           oneOf:
             - $ref: '#/components/schemas/AdapterDescriptor/properties/id'
             - $ref: '#/components/schemas/AdapterDescriptor'
+    ManifoldDescriptor:
+      description: >
+        The Manifold Descriptor object contains all available adapters as well
+        as configured sources.  The adapters and sources entries are each
+        objects whose keys are IDs and values are the corresponding objects.
+      type: object
+      properties:
+        adapters:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/AdapterDescriptor'
+        sources:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SourceDescriptor'
+
   parameters:
     sourceIdInPath:
       in: path
@@ -92,3 +121,16 @@ components:
       schema:
         $ref: '#/components/schemas/SourceDescriptor/properties/id'
 
+  responses:
+    manifoldDescriptor:
+      description: Return the current manifold descriptor.
+      headers:
+        location:
+          required: false
+          schema:
+            type: string
+            format: uri
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ManifoldDescriptor'
