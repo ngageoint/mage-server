@@ -27,7 +27,7 @@ describe.only('manifold routes', function() {
     manifoldService
   }
   const enforcer = loadApi(injection)
-  app.use(enforcer.middleware())
+  app.use('/manifold', enforcer.middleware())
   app.use((err: any, req: Request, res: Response, next: NextFunction): any => {
     if (err) {
       log.error(err)
@@ -69,7 +69,7 @@ describe.only('manifold routes', function() {
           sources: {
             'a1s1': {
               id: 'a1s1',
-              adapterId: 'a1',
+              adapter: 'a1',
               title: 'Adapter 1 Source 1',
               description: 'Adapter 1 Source 1 details',
               isReadable: true,
@@ -80,7 +80,7 @@ describe.only('manifold routes', function() {
         }
         when(manifoldServiceMock.getManifoldDescriptor()).thenResolve(descriptor)
 
-        const res = await request(app).get('/descriptor')
+        const res = await request(app).get('/manifold/descriptor')
 
         expect(res.status).to.equal(200)
         expect(res.type).to.match(/^application\/json/)
@@ -96,7 +96,7 @@ describe.only('manifold routes', function() {
       it('creates a source', async function() {
 
         const source = {
-          adapterId: 'adapter123',
+          adapter: 'adapter123',
           title: 'Source 123',
           description: 'A test source',
           isReadable: true,
@@ -108,7 +108,7 @@ describe.only('manifold routes', function() {
         when(sourceRepoMock.create(source)).thenResolve(created)
 
         let res = await request(app)
-          .post('/sources')
+          .post('/manifold/sources')
           .accept('application/json')
           .send(source)
 

@@ -22,7 +22,7 @@ export interface AdapterDescriptor {
  */
 export interface SourceDescriptor {
   id?: string
-  adapterId: string
+  adapter: string | AdapterDescriptor
   title: string
   description: string
   isReadable: boolean
@@ -56,9 +56,6 @@ const SourceDescriptorSchema = new mongoose.Schema(
       getters: true,
       transform: (entity: SourceDescriptorEntity, json: any & SourceDescriptor, options: SchemaOptions) => {
         delete json._id
-        if (entity.populated('adapterId')) {
-          const adapter = entity.adapterId
-        }
       }
     }
   })
