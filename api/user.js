@@ -6,8 +6,7 @@ var UserModel = require('../models/user')
   , path = require('path')
   , fs = require('fs-extra')
   , async = require('async')
-  , environment = require('../environment/env')
-  , Setting = require('../models/setting');
+  , environment = require('../environment/env');
 
 var userBase = environment.userBaseDirectory;
 
@@ -86,22 +85,7 @@ User.prototype.getById = function(id, callback) {
   });
 };
 
-User.prototype.create = async function(user, options, callback) {
-  const securitySettings = await Setting.getSetting('security');
-  if(securitySettings && securitySettings.settings) {
-    let userAutoEnabled = securitySettings.settings.autoApproveUser;
-    if(userAutoEnabled) {
-      user.enabled = userAutoEnabled.enabled;
-      user.active = userAutoEnabled.enabled;
-    }
-  }
-  return this.doCreate(user, options, callback);
-};
-
-/**
- * Perform the actual user creation.
- */
-User.prototype.doCreate = function(user, options, callback) {
+User.prototype.create = function(user, options, callback) {
   var operations = [];
 
   operations.push(function(done) {

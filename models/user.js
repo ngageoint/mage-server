@@ -9,7 +9,9 @@ var mongoose = require('mongoose')
   , Team = require('./team')
   , Observation = require('./observation')
   , Location = require('./location')
-  , CappedLocation = require('./cappedLocation');
+  , CappedLocation = require('./cappedLocation')
+  , Setting = require('../models/setting')
+  , log = require('winston');
 
 // Creates a new Mongoose Schema object
 var Schema = mongoose.Schema;
@@ -307,7 +309,7 @@ exports.getUsers = function(options, callback) {
   });
 };
 
-exports.createUser = function(user, callback) {
+exports.createUser = async function(user, callback) {
   var create = {
     username: user.username,
     displayName: user.displayName,
@@ -320,7 +322,18 @@ exports.createUser = function(user, callback) {
     authentication: user.authentication
   };
 
-  User.create(create, function(err, user) {
+  log.info("Reading security settings");
+  const securitySettings = await Setting.getSetting('security');
+  if(securitySettings && securitySettings.settings) {
+    let userAutoActive = securitySettings.settings.autoApproveUser;
+    if(userAutoActive) {
+      log.info("Auto-Activate Users is " + userAutoActive.enabled);
+      create.active = userAutoActive.enabled;
+    }
+  }
+
+  log.info("Creating new user " + create.username);
+  await User.create(create, function(err, user) {
     if (err) return callback(err);
 
     user.populate('roleId', function(err, user) {
