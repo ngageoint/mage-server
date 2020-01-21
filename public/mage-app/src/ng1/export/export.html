@@ -3,43 +3,18 @@
   <div class="mdc-dialog__container">
     <div class="mdc-dialog__surface">
       <div class="modal-header">
-        <h2 style="color: white;" class="mdc-dialog__title"><i class="icon-download"></i> Export</h2>
+        <h2 style="color: white;" class="mdc-dialog__title"><i class="icon-download"></i> {{$ctrl.exportEvent.selected.name}} Export</h2>
       </div>
       <div class="mdc-dialog__content" id="my-dialog-content">
         <form>
           <div ng-show="showEventError" class="alert-error" bs-alert>
             <span>Please Select an Event</span>
           </div>
-
           <div class="top-gap">
-            <div class="event-select mdc-select mdc-select--outlined filter-dropdown">
-              <input type="hidden" name="enhanced-select">
-              <i class="mdc-select__dropdown-icon"></i>
-              <div class="mdc-select__selected-text">{{$ctrl.exportEvent.selected.name}}</div>
-              <div class="mdc-select__menu mdc-menu mdc-menu-surface filter-dropdown">
-                <ul class="mdc-list">
-                  <li ng-repeat="event in $ctrl.events | orderBy: 'name'" class="mdc-list-item"
-                    ng-class="{'mdc-list-item--selected': $ctrl.exportEvent.selected.id === event.id}"
-                    data-value="{{event.id}}">
-                    {{event.name}}
-                  </li>
-                </ul>
-              </div>
-              <div class="mdc-notched-outline">
-                <div class="mdc-notched-outline__leading"></div>
-                <div class="mdc-notched-outline__notch">
-                  <label class="mdc-floating-label">Event</label>
-                </div>
-                <div class="mdc-notched-outline__trailing"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="top-gap">
+            <div class="mdc-typography--headline6">What to Export</div>
             <div class="mdc-form-field">
               <div class="mdc-checkbox">
                 <input 
-                  tabindex="0"
                   type="checkbox"
                   ng-model="$ctrl.exportObservations.value"
                   value="{{$ctrl.exportObservations.value}}" 
@@ -55,83 +30,11 @@
                   </svg>
                   <div class="mdc-checkbox__mixedmark"></div>
                 </div>
+                <div class="mdc-checkbox__ripple"></div>
               </div>
               <label for="observation-export">Observations</label>
             </div>
-
-            <div class="export-actions" ng-show="$ctrl.exportObservations.value">
-              <div class="mdc-form-field">
-                <div class="mdc-checkbox">
-                  <input 
-                    type="checkbox"
-                    ng-model="$ctrl.exportObservationsWithAttachments.value"
-                    value="{{$ctrl.exportObservationsWithAttachments.value}}" 
-                    class="mdc-checkbox__native-control"
-                    id="observation-attachments-export"/>
-                  <div class="mdc-checkbox__background">
-                    <svg class="mdc-checkbox__checkmark"
-                        viewBox="0 0 24 24">
-                      <path 
-                        class="mdc-checkbox__checkmark-path"
-                        fill="none"
-                        d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
-                    </svg>
-                    <div class="mdc-checkbox__mixedmark"></div>
-                  </div>
-                </div>
-                <label for="observation-attachments-export">Export only observations with attachments</label>
-              </div>
-            </div>
-
-            <div class="export-actions" ng-show="$ctrl.exportObservations.value">
-              <div class="mdc-form-field">
-                <div class="mdc-checkbox">
-                  <input 
-                    type="checkbox"
-                    ng-model="$ctrl.exportFavoriteObservations.value"
-                    value="{{$ctrl.exportFavoriteObservations.value}}" 
-                    class="mdc-checkbox__native-control"
-                    id="observation-favorites-export"/>
-                  <div class="mdc-checkbox__background">
-                    <svg class="mdc-checkbox__checkmark"
-                        viewBox="0 0 24 24">
-                      <path 
-                        class="mdc-checkbox__checkmark-path"
-                        fill="none"
-                        d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
-                    </svg>
-                    <div class="mdc-checkbox__mixedmark"></div>
-                  </div>
-                </div>
-                <label for="observation-favorites-export">Export only your favorite observations</label>
-              </div>
-            </div>
-
-            <div class="export-actions" ng-show="$ctrl.exportObservations.value">
-              <div class="mdc-form-field">
-                <div class="mdc-checkbox">
-                  <input 
-                    type="checkbox"
-                    ng-model="$ctrl.exportImportantObservations.value"
-                    value="{{$ctrl.exportImportantObservations.value}}" 
-                    class="mdc-checkbox__native-control"
-                    id="observation-important-export"/>
-                  <div class="mdc-checkbox__background">
-                    <svg class="mdc-checkbox__checkmark"
-                        viewBox="0 0 24 24">
-                      <path 
-                        class="mdc-checkbox__checkmark-path"
-                        fill="none"
-                        d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
-                    </svg>
-                    <div class="mdc-checkbox__mixedmark"></div>
-                  </div>
-                </div>
-                <label for="observation-important-export">Export only observations flagged as important</label>
-              </div>
-            </div>
           </div>
-
           <div class="mdc-form-field">
             <div class="mdc-checkbox">
               <input 
@@ -150,11 +53,33 @@
                 </svg>
                 <div class="mdc-checkbox__mixedmark"></div>
               </div>
+              <div class="mdc-checkbox__ripple"></div>
             </div>
             <label for="location-export">Locations</label>
           </div>
-
           <div class="top-gap">
+            <div class="mdc-typography--headline6">Export Format</div>
+            <div class="mdc-chip-set mdc-chip-set--choice">
+              <div class="mdc-chip mdc-chip--selected" ng-click="$ctrl.type.value = 'kml'" ng-class="{'active': $ctrl.type.value === 'kml'}">
+                <div class="mdc-chip__ripple"></div>
+                  <span class="mdc-chip__text">KML</span>
+              </div>
+              <div class="mdc-chip" ng-click="$ctrl.type.value = 'geojson'" ng-class="{'active': $ctrl.type.value === 'geojson'}">
+                <div class="mdc-chip__ripple"></div>
+                  <span class="mdc-chip__text">GeoJSON</span>
+              </div>
+              <div class="mdc-chip" ng-click="$ctrl.type.value = 'csv'" ng-class="{'active': $ctrl.type.value === 'csv'}">
+                <div class="mdc-chip__ripple"></div>
+                  <span class="mdc-chip__text">CSV</span>
+              </div>
+              <div class="mdc-chip" ng-click="$ctrl.type.value = 'shapefile'" ng-class="{'active': $ctrl.type.value === 'shapefile'}">
+                <div class="mdc-chip__ripple"></div>
+                  <span class="mdc-chip__text">Shapefile</span>
+              </div>  
+            </div>
+          </div>
+          <div class="top-gap">
+            <div class="mdc-typography--headline6">Time</div>
             <div class="interval-select mdc-select mdc-select--outlined filter-dropdown">
               <input type="hidden" name="enhanced-select">
               <i class="mdc-select__dropdown-icon"></i>
@@ -171,7 +96,6 @@
               <div class="mdc-notched-outline">
                 <div class="mdc-notched-outline__leading"></div>
                 <div class="mdc-notched-outline__notch">
-                  <label class="mdc-floating-label">Time</label>
                 </div>
                 <div class="mdc-notched-outline__trailing"></div>
               </div>
@@ -187,27 +111,98 @@
                 on-date-picked="$ctrl.onEndDate(date, localTime)"></date-time>
             </div>
           </div>
-        </form>
+          <div class="top-gap">
+            <div class="mdc-form-field">
+              <label for="advanced-export" class="mdc-typography--subtitle1">Advanced</label>
+              <button class="mdc-icon-button left-gap">
+                <i class="material-icons mdc-icon-button__icon" ng-show="$ctrl.advancedOptionsExpanded.value" ng-click="$ctrl.advancedOptionsExpanded.value = false">expand_less</i>
+                <i class="material-icons mdc-icon-button__icon" ng-show="!$ctrl.advancedOptionsExpanded.value" ng-click="$ctrl.advancedOptionsExpanded.value = true">expand_more</i>
+              </button>
+            </div>
+            <div ng-if="$ctrl.advancedOptionsExpanded.value" class="ng-animatable slide-down">
+              <div class="export-actions">
+                <div class="mdc-form-field">
+                  <div class="mdc-checkbox">
+                    <input 
+                      type="checkbox"
+                      ng-model="$ctrl.excludeObservationsAttachments.value"
+                      value="{{$ctrl.excludeObservationsAttachments.value}}" 
+                      class="mdc-checkbox__native-control"
+                      id="observation-attachments-exclude"/>
+                    <div class="mdc-checkbox__background">
+                      <svg class="mdc-checkbox__checkmark"
+                          viewBox="0 0 24 24">
+                        <path 
+                          class="mdc-checkbox__checkmark-path"
+                          fill="none"
+                          d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+                      </svg>
+                      <div class="mdc-checkbox__mixedmark"></div>
+                    </div>
+                    <div class="mdc-checkbox__ripple"></div>
+                </div>
+                <label for="observation-attachments-exclude">Exclude all attachments</label>
+              </div>
+            </div>
+            <div class="export-actions">
+              <div class="mdc-form-field">
+                <div class="mdc-checkbox">
+                  <input 
+                    type="checkbox"
+                    ng-model="$ctrl.exportFavoriteObservations.value"
+                    value="{{$ctrl.exportFavoriteObservations.value}}" 
+                    class="mdc-checkbox__native-control"
+                    id="observation-favorites-export"/>
+                  <div class="mdc-checkbox__background">
+                    <svg class="mdc-checkbox__checkmark"
+                        viewBox="0 0 24 24">
+                      <path 
+                        class="mdc-checkbox__checkmark-path"
+                        fill="none"
+                        d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+                    </svg>
+                    <div class="mdc-checkbox__mixedmark"></div>
+                  </div>
+                  <div class="mdc-checkbox__ripple"></div>
+                </div>
+                <label for="observation-favorites-export">Export only your favorite observations</label>
+              </div>
+            </div>
+            <div class="export-actions">
+              <div class="mdc-form-field">
+                <div class="mdc-checkbox">
+                  <input 
+                    type="checkbox"
+                    ng-model="$ctrl.exportImportantObservations.value"
+                    value="{{$ctrl.exportImportantObservations.value}}" 
+                    class="mdc-checkbox__native-control"
+                    id="observation-important-export"/>
+                  <div class="mdc-checkbox__background">
+                    <svg class="mdc-checkbox__checkmark"
+                        viewBox="0 0 24 24">
+                      <path 
+                        class="mdc-checkbox__checkmark-path"
+                        fill="none"
+                        d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
+                    </svg>
+                    <div class="mdc-checkbox__mixedmark"></div>
+                  </div>
+                  <div class="mdc-checkbox__ripple"></div>
+                </div>
+                <label for="observation-important-export">Export only observations flagged important</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
       </div>
       <footer class="mdc-dialog__actions">
         <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="close">
-          <span class="mdc-button__label">Close</span>
+          <span class="mdc-button__label">Cancel</span>
         </button>
         <button type="button" class="mdc-button mdc-dialog__button export-button" data-mdc-dialog-action="yes"
-          ng-click="$ctrl.exportData($event, 'kml')">
-          <span class="mdc-button__label">KML</span>
-        </button>
-        <button type="button" class="mdc-button mdc-dialog__button export-button" data-mdc-dialog-action="yes"
-          ng-click="$ctrl.exportData($event, 'geojson')">
-          <span class="mdc-button__label">GeoJSON</span>
-        </button>
-        <button type="button" class="mdc-button mdc-dialog__button export-button" data-mdc-dialog-action="yes"
-          ng-click="$ctrl.exportData($event, 'csv')">
-          <span class="mdc-button__label">CSV</span>
-        </button>
-        <button type="button" class="mdc-button mdc-dialog__button export-button" data-mdc-dialog-action="yes"
-          ng-click="$ctrl.exportData($event, 'shapefile')">
-          <span class="mdc-button__label">Shapefile</span>
+          ng-click="$ctrl.exportData($event)" data-mdc-dialog-button-default data-mdc-dialog-initial-focus>
+          <span class="mdc-button__label">OK</span>
         </button>
       </footer>
     </div>

@@ -20,7 +20,7 @@ Shapefile.prototype.export = function(stream) {
   var self = this;
 
   stream.type('application/zip');
-  stream.attachment('mage-shapfile.zip');
+  stream.attachment('mage-shapefile.zip');
 
   var archive = archiver('zip');
   archive.pipe(stream);

@@ -145,7 +145,9 @@ function convertFieldForQuery(field, keys, fields) {
       convertFieldForQuery(field[childField], keys, fields);
     } else {
       var key = keys.join(".");
-      if (field[childField]) fields[key] = field[childField];
+      if (field[childField]) {
+        fields[key] = field[childField];
+      }
       keys.pop();
     }
   }
@@ -233,16 +235,16 @@ exports.getObservations = function(event, o, callback) {
     conditions['important'] = {$exists: true};
   }
 
-  if (filter.attachments) {
-    conditions['attachments'] = {$gt: []};
-  }
-
   var options = {};
   if (o.sort) {
     options.sort = o.sort;
   }
 
   var fields = parseFields(o.fields);
+  if (filter.attachments === true) {
+    fields.attachments = {$slice: 0};
+  }
+
   observationModel(event).find(conditions, fields, options, callback);
 };
 

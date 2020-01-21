@@ -1,6 +1,7 @@
 var $ = require('jquery')
   , MDCDialog = require('material-components-web').dialog.MDCDialog
   , MDCSelect = require('material-components-web').select.MDCSelect
+  , MDCChipSet = require('material-components-web').chips.MDCChipSet
   , moment = require('moment')
   , angular = require('angular');
 
@@ -18,7 +19,6 @@ ExportController.$inject = ['LocalStorageService', 'FilterService', '$timeout', 
 
 function ExportController(LocalStorageService, FilterService, $timeout, $element) {
   var exportPanel;
-  var eventSelectMdc;
   var intervalSelectMdc;
 
   this.$onChanges = function() {
@@ -30,6 +30,7 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
   }.bind(this);
 
   this.$onInit = function() {
+    new MDCChipSet($element.find('.mdc-chip-set')[0]);
     
     exportPanel = new MDCDialog(angular.element.find('.export-panel')[0]);
     exportPanel.listen('MDCDialog:closing', function() {
@@ -58,16 +59,6 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
             });
           }.bind(this));
         }.bind(this));
-        eventSelectMdc = new MDCSelect($element.find('.event-select')[0]);
-        eventSelectMdc.listen('MDCSelect:change', function(event) {
-          var eventId = event.detail.value;
-          $timeout(function(){ 
-            eventId = Number(eventId);
-            this.exportEvent.selected = this.events.find(function(value, index) {
-              return value.id === eventId;
-            });
-          }.bind(this));
-        }.bind(this));
       }.bind(this));
     }
   };
@@ -76,7 +67,8 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
   this.exportObservations = {value: true};
   this.exportFavoriteObservations = {value: false};
   this.exportImportantObservations = {value: false};
-  this.exportObservationsWithAttachments = {value: false};
+  this.excludeObservationsAttachments = {value: false};
+  this.advancedOptionsExpanded = {value: false};
 
   this.localOffset = moment().format('Z');
   this.localTime = true;
@@ -86,6 +78,8 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
 
   this.startDatePopup = {open: false};
   this.endDatePopup = {open: false};
+
+  this.type = {value: 'kml'};
 
   /* Export existing points to  */
   this.exportOptions = [{
@@ -121,7 +115,7 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
     this.localTime = localTime;
   };
 
-  this.exportData = function($event, type) {
+  this.exportData = function($event) {
     if (!this.exportEvent.selected) {
       $event.preventDefault();
       this.showEventError = true;
@@ -158,11 +152,11 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
     if (end) params.endDate = end;
 
     if (this.exportObservations.value) {
-      params.attachments = this.exportObservationsWithAttachments.value;
+      params.attachments = this.excludeObservationsAttachments.value;
       params.favorites = this.exportFavoriteObservations.value;
       params.important = this.exportImportantObservations.value;
     }
-    var url = "api/" + type + "?" + $.param(params);
+    var url = "api/" + this.type.value + "?" + $.param(params);
     $.fileDownload(url)
       .done(function() {
       })

@@ -6,12 +6,25 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 
 ##### Features
+
+##### Bug Fixes
+
+## [5.3.3](https://github.com/ngageoint/mage-server/releases/tag/5.3.3)
+
+##### Features
 * Geometry edit moved to main map to provide more space to edit complex geometries while retaining the context of other user data on the map.
+* Added export option to exclude observation attachments.
 
 ##### Bug Fixes
 * Fixed bug parsing KML polygon and polyline styles.
 * Improve error checking for invalid event form upload archives.
 * Fix lag on observation delete.
+
+## [5.3.2](https://github.com/ngageoint/mage-server/releases/tag/5.3.2)
+
+##### Bug Fixes
+* Bundle and host the Material Design CSS and fonts instead of pulling them
+from the Google CDN so the MAGE webapp does not need an Internet connection.
 
 ## [5.3.1](https://github.com/ngageoint/mage-server/releases/tag/5.3.1)
 
