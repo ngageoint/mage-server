@@ -1,0 +1,178 @@
+@import "./variables.scss";
+
+.feed {
+  background: #E1E2E1;
+  order: 1;
+  display: flex;
+  flex-direction: column;
+  width: 450px;
+  position: relative;
+  transition: margin-left 0.3s linear;
+  z-index: 1;
+}
+
+.feed.ng-hide {
+  margin-left: -450px;
+}
+
+.content {
+  display: none;
+}
+
+.content--active {
+  display: block;
+  overflow-y: auto;
+}
+
+.observation-feed-container {
+  background: #E1E2E1;
+}
+
+.feed-header {
+  background: #FFFFFF;
+}
+
+.tab-bg {
+  background: #FFFFFF;
+}
+
+.edit-panel {
+  background: #FFFFFF;
+  order: 1;
+  display: flex;
+  flex-direction: column;
+  width: 0;
+  flex:1;
+  position: relative;
+  transition: width 0.3s linear;
+}
+
+.edit-panel.ng-show {
+  width: 450px;
+}
+
+.app-fab--absolute {
+  position: absolute !important;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 2;
+}
+
+.card-background-container {
+  background: #E1E2E1;
+  padding-top: 1px;
+}
+
+.observation-card-background-container {
+  margin-bottom: 92px;
+}
+
+.feed-tab:last-child {
+	margin-left: 0;
+}
+
+.feed-tab {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px 3px 0 0;
+  margin: 10px 10px 0 10px;
+  box-shadow: 3px -5px 5px -5px rgba(0,0,0,.35),
+              5px 0px 5px -5px rgba(0,0,0,.35);
+}
+
+.feed-tab:hover a {
+	text-decoration: none;
+	color: #EEE;
+}
+
+.feed-tab-active {
+	background-color: #5278a2;
+}
+
+.feed-tab-inactive {
+	background-color: #7C9DC2;
+}
+
+.feed-tab-active a {
+	color: #fff;
+}
+
+.feed-tab-inactive a {
+	color: #fff;
+}
+
+.feed-badge {
+  margin-left: 5px;
+  background: #666;
+}
+
+.feed-filter {
+  display: flex;
+  justify-content: space-between;
+}
+
+.feed-filter-action {
+  flex: 0 0 24%;
+  text-align: center;
+  cursor: pointer; cursor: hand;
+}
+
+.feed-filter-action:active, .feed-filter-action.active{
+  border-color: #fff;
+  color: #5278a2;
+  background: rgba(255, 255, 255, 1.0);
+}
+
+.badge-accent {
+   background: #F8A173;
+}
+
+.badge-notif {
+   position: absolute;
+   top: -6px;
+   right: -17px;
+}
+
+.feed-items {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0px;
+  margin-top: 10px;
+}
+
+.feed-page {
+  margin: 7px 6px 0;
+  flex: 0 0 34px;
+}
+
+.feed-card {
+  background-color: #fff;
+}
+
+.inactive-feed-card {
+  opacity: .2;
+}
+
+.people-feed-container,
+.people-card-background-container {
+  height: 100%;
+}
+
+.feed-card-content {
+  position: relative;
+  padding-bottom: 16px;
+}
+
+.feed-content-padding-container {
+  padding: 8px;
+}
+
+.feed-select-width {
+  width: 430px;
+}
+
+.page-select-width {
+  width: 100%;
+}

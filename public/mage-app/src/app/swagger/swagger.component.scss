@@ -1,0 +1,19 @@
+:host ::ng-deep pre {
+  background-color: unset;
+  border: unset;
+  border-radius: unset;
+}
+
+:host ::ng-deep .loading::after {
+  width: unset;
+  height: unset;
+  animation: unset;
+}
+
+:host ::ng-deep .scheme-container {
+  display: none;
+}
+
+:host ::ng-deep .info {
+  margin: 50px 0 16px;
+}
