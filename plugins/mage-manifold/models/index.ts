@@ -56,6 +56,9 @@ const SourceDescriptorSchema = new mongoose.Schema(
       getters: true,
       transform: (entity: SourceDescriptorEntity, json: any & SourceDescriptor, options: SchemaOptions) => {
         delete json._id
+        if (!entity.populated('adapter') && entity.adapter instanceof mongoose.mongo.ObjectID) {
+          json.adapter = json.adapter.toHexString()
+        }
       }
     }
   })

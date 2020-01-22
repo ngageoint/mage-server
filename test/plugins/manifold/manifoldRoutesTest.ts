@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { mock, reset, instance, when } from 'ts-mockito'
+import { mock, reset, instance, when, deepEqual } from 'ts-mockito'
 import request from 'supertest'
 import express, { Request, Response, NextFunction } from 'express'
 import { ManifoldController, loadApi } from '../../../plugins/mage-manifold'
@@ -27,7 +27,7 @@ describe.only('manifold routes', function() {
     manifoldService
   }
   const enforcer = loadApi(injection)
-  app.use('/manifold', enforcer.middleware())
+  app.use('/manifold', enforcer)
   app.use((err: any, req: Request, res: Response, next: NextFunction): any => {
     if (err) {
       log.error(err)
@@ -45,7 +45,7 @@ describe.only('manifold routes', function() {
 
     describe('GET', function() {
 
-      it.only('returns the manifold descriptor', async function() {
+      it('returns the manifold descriptor', async function() {
 
         const descriptor: ManifoldDescriptor = {
           adapters: {
@@ -95,8 +95,8 @@ describe.only('manifold routes', function() {
 
       it('creates a source', async function() {
 
-        const source = {
-          adapter: 'adapter123',
+        const source: SourceDescriptor = {
+          adapter: mongoose.Types.ObjectId().toHexString(),
           title: 'Source 123',
           description: 'A test source',
           isReadable: true,
@@ -105,23 +105,20 @@ describe.only('manifold routes', function() {
         }
         const created = parseEntity(SourceDescriptorModel, source)
 
-        when(sourceRepoMock.create(source)).thenResolve(created)
+        when(sourceRepoMock.create(deepEqual(source))).thenResolve(created)
 
         let res = await request(app)
           .post('/manifold/sources')
           .accept('application/json')
           .send(source)
 
-        expect(res.status).to.equal(200)
+        expect(res.status).to.equal(201)
         expect(res.type).to.match(/^application\/json/)
+        expect(res.header.location).to.equal(`/manifold/sources/${created.id}`)
         expect(res.body).to.deep.equal({
           ...source,
           id: created.id
         })
-      })
-
-      it('returns multiple sources', async function() {
-
       })
     })
   })

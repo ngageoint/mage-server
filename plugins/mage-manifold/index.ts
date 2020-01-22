@@ -1,5 +1,5 @@
 
-import { Request, Response, NextFunction, Application } from 'express'
+import { Request, Response, NextFunction, Application, Router } from 'express'
 import path from 'path'
 import OpenapiEnforcerMiddleware from 'openapi-enforcer-middleware'
 import { SourceRepository, AdapterRepository } from './repositories'
@@ -11,10 +11,7 @@ import { AdapterDescriptor, SourceDescriptor } from './models'
 export type ManifoldController = {
 
   getManifoldDescriptor(req: Request, res: Response, next: NextFunction): Promise<Response>
-  getAdapters(req: Request, res: Response, next: NextFunction): Promise<Response>
-  getSources(req: Request, res: Response, next: NextFunction): Promise<Response>
   getSourceApi(req: Request, res: Response, next: NextFunction): Promise<Response>
-  createAdapter(req: Request, res: Response, next: NextFunction): Promise<Response>
   createSource(req: Request, res: Response, next: NextFunction): Promise<Response>
 }
 
@@ -27,9 +24,12 @@ export namespace ManifoldController {
   }
 }
 
-export function loadApi(injection: ManifoldController.Injection): OpenapiEnforcerMiddleware {
+export function loadApi(injection: ManifoldController.Injection): Router {
   const apiDocPath = path.resolve(__dirname, 'api_docs', 'openapi.yaml')
   const enforcer = new OpenapiEnforcerMiddleware(apiDocPath, {
+    // TODO: validate in test env only
+    resValidate: true,
+    resSerialize: false,
     componentOptions: {
       exceptionSkipCodes: [ 'WSCH001' ]
     }
@@ -37,11 +37,13 @@ export function loadApi(injection: ManifoldController.Injection): OpenapiEnforce
   enforcer.controllers({
     manifold: manifoldController(injection)
   })
-  return enforcer
+  const router = Router()
+  router.use(enforcer.middleware())
+  return router
 }
 
 export function manifoldController(injection: ManifoldController.Injection): ManifoldController {
-  const { adapterRepo, sourceRepo, manifoldService } = injection
+  const { sourceRepo, manifoldService } = injection
 
   return {
 
@@ -50,22 +52,9 @@ export function manifoldController(injection: ManifoldController.Injection): Man
       return res.send(desc)
     },
 
-    async getSources(req: Request, res: Response, next: NextFunction): Promise<Response> {
-      const sources = await sourceRepo.readAll()
-      return res.send(sources.map(x => x.toJSON()))
-    },
-
-    async getAdapters(req: Request, res: Response, next: NextFunction): Promise<Response> {
-      const adapters = await adapterRepo.readAll()
-      return res.send(adapters)
-    },
-
-    async createAdapter(req, res, next): Promise<Response> {
-      throw Error('unimplemented')
-    },
-
     async createSource(req: Request, res: Response, next: NextFunction): Promise<Response> {
-      throw Error('unimplemented')
+      const created = await sourceRepo.create(req.body)
+      return res.status(201).location(`${req.baseUrl}/sources/${created.id}`).send(created.toJSON())
     },
 
     async getSourceApi(req: Request, res: Response, next: NextFunction): Promise<Response> {
@@ -79,6 +68,6 @@ export default function initialize(app: Application, callback: (err?: Error | nu
   const sourceRepo = new SourceRepository()
   const manifoldService = new ManifoldService(adapterRepo, sourceRepo)
   const enforcer = loadApi({ adapterRepo, sourceRepo, manifoldService })
-  app.use('/plugins/manifold/api/*', enforcer.middleware)
+  app.use('/plugins/manifold/api', enforcer)
   setImmediate(() => callback())
 }

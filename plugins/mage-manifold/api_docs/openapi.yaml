@@ -27,12 +27,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ManifoldDescriptor'
-  /adapters:
-    post:
-      operationId: createAdapter
-      responses:
-        201:
-          $ref: '#/components/responses/manifoldDescriptor'
   /sources:
     post:
       operationId: createSource
@@ -44,14 +38,23 @@ paths:
               allOf:
                 - $ref: '#/components/schemas/SourceDescriptor'
                 - type: object
-                  required: [ adapterId ]
-                - type: object
-                  not:
-                    type: object
-                    required: [ id, adapter ]
+                  required: [ adapter ]
+                # - type: object
+                #   not:
+                #     type: object
+                #     required: [ id ]
       responses:
         201:
-          $ref: '#/components/responses/manifoldDescriptor'
+          description: >
+            Success - return the descriptor of the created source.
+          headers:
+            location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceDescriptor'
   /sources/{sourceId}/api:
     parameters:
       - $ref: '#/components/parameters/sourceIdInPath'
@@ -93,15 +96,14 @@ components:
         url:
           type: string
           format: uri
-        # TODO: a bug in openapi enforcer prevents this from being just a single
-        # 'adapter' property with a oneOf constraint
-        # https://github.com/byu-oit/openapi-enforcer/issues/58
-        # adapter:
-        #   oneOf:
-        #     - type: string
-        #     - $ref: '#/components/schemas/AdapterDescriptor'
         adapter:
-          $ref: '#/components/schemas/AdapterDescriptor/properties/id'
+          oneOf:
+            - $ref: '#/components/schemas/AdapterDescriptor/properties/id'
+            - $ref: '#/components/schemas/AdapterDescriptor'
+        isReadable:
+          type: boolean
+        isWritable:
+          type: boolean
     ManifoldDescriptor:
       description: >
         The Manifold Descriptor object contains all available adapters as well
