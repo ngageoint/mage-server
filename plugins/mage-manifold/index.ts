@@ -3,20 +3,16 @@ import { Request, Response, NextFunction, Application, Router } from 'express'
 import path from 'path'
 import OpenapiEnforcerMiddleware from 'openapi-enforcer-middleware'
 import { SourceRepository, AdapterRepository } from './repositories'
-import log from  '../../logger'
-import { ManifoldService, ManifoldDescriptor } from './services'
-import { AdapterDescriptor, SourceDescriptor } from './models'
+import { ManifoldService } from './services'
 
 
 export type ManifoldController = {
-
   getManifoldDescriptor(req: Request, res: Response, next: NextFunction): Promise<Response>
   getSourceApi(req: Request, res: Response, next: NextFunction): Promise<Response>
   createSource(req: Request, res: Response, next: NextFunction): Promise<Response>
 }
 
 export namespace ManifoldController {
-
   export type Injection = {
     adapterRepo: AdapterRepository,
     sourceRepo: SourceRepository,
@@ -44,9 +40,7 @@ export function loadApi(injection: ManifoldController.Injection): Router {
 
 export function manifoldController(injection: ManifoldController.Injection): ManifoldController {
   const { sourceRepo, manifoldService } = injection
-
   return {
-
     async getManifoldDescriptor(req: Request, res: Response, next: NextFunction): Promise<Response> {
       const desc = await manifoldService.getManifoldDescriptor()
       return res.send(desc)
@@ -68,6 +62,7 @@ export default function initialize(app: Application, callback: (err?: Error | nu
   const sourceRepo = new SourceRepository()
   const manifoldService = new ManifoldService(adapterRepo, sourceRepo)
   const enforcer = loadApi({ adapterRepo, sourceRepo, manifoldService })
+  // TODO: instead make plugins return a Router that the app can mount
   app.use('/plugins/manifold/api', enforcer)
   setImmediate(() => callback())
 }
