@@ -62,7 +62,7 @@ app.use(require('body-parser')({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(express.static(path.join(__dirname, 'public/mage-app/dist')));
+app.use(express.static(path.join(__dirname, 'web-app/dist')));
 app.get('/api/docs/openapi.yaml', async function(req, res) {
   const docPath = path.resolve(__dirname, 'docs', 'openapi.yaml');
   fs.readFile(docPath, (err, contents) => {
