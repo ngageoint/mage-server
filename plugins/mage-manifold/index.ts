@@ -1,15 +1,30 @@
 
-import { Request, Response, NextFunction, Application, Router } from 'express'
+import { Request, Response, NextFunction, Application, Router, ErrorRequestHandler, Handler, RequestParamHandler, RequestHandler } from 'express'
 import path from 'path'
-import OpenapiEnforcerMiddleware from 'openapi-enforcer-middleware'
+import OpenapiEnforcerMiddleware, { MiddlewareFunction } from 'openapi-enforcer-middleware'
 import { SourceRepository, AdapterRepository } from './repositories'
 import { ManifoldService } from './services'
+import OgcApiFeatures from './ogc_api_features'
+import { SourceDescriptorEntity } from './models'
+import OpenApiEnforcerMiddleware from 'openapi-enforcer-middleware'
+const log = require('../../logger')
 
+declare global {
+  namespace Express {
+    interface Request {
+      manifold: {
+        contextSource?: SourceDescriptorEntity
+        adapter?: OgcApiFeatures.FeaturesAdapter
+      }
+    }
+  }
+}
 
 export type ManifoldController = {
   getManifoldDescriptor(req: Request, res: Response, next: NextFunction): Promise<Response>
-  getSourceApi(req: Request, res: Response, next: NextFunction): Promise<Response>
   createSource(req: Request, res: Response, next: NextFunction): Promise<Response>
+  getSource(req: Request, res: Response, next: NextFunction): Promise<Response>
+  getSourceApi(req: Request, res: Response, next: NextFunction): Promise<Response>
 }
 
 export namespace ManifoldController {
@@ -20,7 +35,33 @@ export namespace ManifoldController {
   }
 }
 
-export function loadApi(injection: ManifoldController.Injection): Router {
+
+export function createRouter(injection: ManifoldController.Injection): Router {
+  const enforcer = loadManifoldApi(injection)
+  const setContextSource = contextSourceParamHandler(injection)
+  const mainRoutes = enforcer.middleware()
+  const root = Router()
+  root.use((req, res, next) => {
+    req.manifold = {}
+    next()
+  })
+  /*
+   TODO:
+   using an all() handler for a path parameter is not really the preferred way,
+   but for now, openapi-enforcer-middleware has no way to 1) run middleware
+   before the controller methods; 2) allow express to process the path
+   parameters to set them on the Request.params object.  creating this route
+   path on the parent Router allows express to compile the parameterized path
+   for the route and set the parameter on Request.params before dropping into
+   the OpenApiEnforcerMiddleware handler.
+   */
+  root.all('/sources/:sourceId', setContextSource)
+  root.use('/sources/:sourceId/*', sourceRouter)
+  root.use(mainRoutes)
+  return root
+}
+
+function loadManifoldApi(injection: ManifoldController.Injection): OpenApiEnforcerMiddleware {
   const apiDocPath = path.resolve(__dirname, 'api_docs', 'openapi.yaml')
   const enforcer = new OpenapiEnforcerMiddleware(apiDocPath, {
     // TODO: validate in test env only
@@ -33,12 +74,10 @@ export function loadApi(injection: ManifoldController.Injection): Router {
   enforcer.controllers({
     manifold: manifoldController(injection)
   })
-  const router = Router()
-  router.use(enforcer.middleware())
-  return router
+  return enforcer
 }
 
-export function manifoldController(injection: ManifoldController.Injection): ManifoldController {
+function manifoldController(injection: ManifoldController.Injection): ManifoldController {
   const { sourceRepo, manifoldService } = injection
   return {
     async getManifoldDescriptor(req: Request, res: Response, next: NextFunction): Promise<Response> {
@@ -51,18 +90,59 @@ export function manifoldController(injection: ManifoldController.Injection): Man
       return res.status(201).location(`${req.baseUrl}/sources/${created.id}`).send(created.toJSON())
     },
 
+    async getSource(req: Request, res: Response, next: NextFunction): Promise<Response> {
+      if (!req.manifold.contextSource) {
+        return res.status(404).json('not found')
+      }
+      return res.send(req.manifold.contextSource.toJSON())
+    },
+
     async getSourceApi(req: Request, res: Response, next: NextFunction): Promise<Response> {
       return res.send({})
     }
   }
 }
 
+function contextSourceParamHandler(injection: ManifoldController.Injection): RequestHandler {
+  const { sourceRepo } = injection
+  return async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.params.hasOwnProperty('sourceId')) {
+      return next()
+    }
+    const sourceId = req.params.sourceId
+    const sourceDesc = sourceId ? await sourceRepo.findById(sourceId) : null
+    if (sourceDesc === null) {
+      return res.status(404).json('not found')
+    }
+    req.manifold.contextSource = sourceDesc
+    next()
+  }
+}
+
+const sourceRouter = Router()
+sourceRouter.route('/conformance')
+sourceRouter.route('/collections')
+sourceRouter.route('/collections/:collectionId')
+  .get(async (req, res, next) => {
+    const adapter = req.manifold.adapter
+    if (!adapter) {
+      return next(new Error(`no adapter on request ${req.path}`))
+    }
+    const collectionId = req.params.collectionId as string
+    const collections = await adapter.getCollections()
+    const collectionDesc = collections.get(collectionId)
+    return res.json(collectionDesc)
+  })
+sourceRouter.route('/collections/:collectionId/items')
+sourceRouter.route('/collections/:collectionId/items/:featureId')
+
 export default function initialize(app: Application, callback: (err?: Error | null) => void) {
   const adapterRepo = new AdapterRepository()
   const sourceRepo = new SourceRepository()
   const manifoldService = new ManifoldService(adapterRepo, sourceRepo)
-  const enforcer = loadApi({ adapterRepo, sourceRepo, manifoldService })
+  const injection = { adapterRepo, sourceRepo, manifoldService }
   // TODO: instead make plugins return a Router that the app can mount
-  app.use('/plugins/manifold/api', enforcer)
+  const router = createRouter(injection)
+  app.use('/plugins/manifold', router)
   setImmediate(() => callback())
 }

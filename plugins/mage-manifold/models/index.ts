@@ -1,6 +1,5 @@
 
 import mongoose, { Model, SchemaOptions } from 'mongoose'
-import { transform } from 'async'
 
 /**
  * An AdapterDescriptor represents a type of data source and the translation
@@ -35,12 +34,23 @@ export const ManifoldModels = {
   SourceDescriptor: 'SourceDescriptor'
 }
 
-const AdapterDescriptorSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: { type: String, required: false },
-  isReadable: { type: Boolean, required: false, default: true },
-  isWritable: { type: Boolean, required: false, default: false }
-})
+const AdapterDescriptorSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true },
+    description: { type: String, required: false },
+    isReadable: { type: Boolean, required: false, default: true },
+    isWritable: { type: Boolean, required: false, default: false },
+    libPath: { type: String, require: true }
+  },
+  {
+    toJSON: {
+      getters: true,
+      transform: (entity: AdapterDescriptorEntity, json: any & AdapterDescriptor, options: SchemaOptions) => {
+        delete json._id
+        delete json.libPath
+      }
+    }
+  })
 
 const SourceDescriptorSchema = new mongoose.Schema(
   {
@@ -56,7 +66,7 @@ const SourceDescriptorSchema = new mongoose.Schema(
       getters: true,
       transform: (entity: SourceDescriptorEntity, json: any & SourceDescriptor, options: SchemaOptions) => {
         delete json._id
-        if (!entity.populated('adapter') && entity.adapter instanceof mongoose.mongo.ObjectID) {
+        if (!entity.populated('adapter') && entity.adapter instanceof mongoose.Types.ObjectId) {
           json.adapter = json.adapter.toHexString()
         }
       }

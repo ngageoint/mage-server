@@ -55,6 +55,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SourceDescriptor'
+  /sources/{sourceId}:
+    parameters:
+      - $ref: '#/components/parameters/sourceIdInPath'
+    get:
+      operationId: getSource
+      responses:
+        200:
+          description: >
+            Success - return the source descriptor for the specified ID.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceDescriptor'
   /sources/{sourceId}/api:
     parameters:
       - $ref: '#/components/parameters/sourceIdInPath'

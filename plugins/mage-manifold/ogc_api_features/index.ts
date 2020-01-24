@@ -3,7 +3,7 @@ import { FeatureCollection } from "geojson"
 
 namespace OgcApiFeatures {
 
-  export interface OgcApiFeaturesAdapter {
+  export interface FeaturesAdapter {
 
     id: string
     title: string
@@ -14,7 +14,6 @@ namespace OgcApiFeatures {
   }
 
   export class CollectionDescriptor {
-
     id: string
     title: string
     description: string
@@ -147,7 +146,7 @@ namespace OgcApiFeatures {
     }
   }
 
-  interface CollectionParams {
+  export interface CollectionParams {
     bbox?: BoundingBox | null
     limit?: number | null
     page?: number | null

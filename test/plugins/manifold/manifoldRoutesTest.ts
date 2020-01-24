@@ -2,11 +2,11 @@ import { expect } from 'chai'
 import { mock, reset, instance, when, deepEqual } from 'ts-mockito'
 import request from 'supertest'
 import express, { Request, Response, NextFunction } from 'express'
-import { ManifoldController, loadApi } from '../../../plugins/mage-manifold'
 import { SourceRepository, AdapterRepository } from '../../../plugins/mage-manifold/repositories'
-import { SourceDescriptor, SourceDescriptorEntity, SourceDescriptorModel } from '../../../plugins/mage-manifold/models'
+import { SourceDescriptor, SourceDescriptorModel, AdapterDescriptorModel } from '../../../plugins/mage-manifold/models'
+import { createRouter, ManifoldController } from '../../../plugins/mage-manifold'
 import mongoose from 'mongoose'
-import { parseEntity } from '../../utils'
+import { parseEntity, transformObject as transformJson } from '../../utils'
 import { ManifoldDescriptor, ManifoldService } from '../../../plugins/mage-manifold/services'
 const log = require('../../../logger')
 
@@ -26,8 +26,8 @@ describe.only('manifold routes', function() {
     sourceRepo,
     manifoldService
   }
-  const enforcer = loadApi(injection)
-  app.use('/manifold', enforcer)
+  const manifold = createRouter(injection)
+  app.use('/manifold', manifold)
   app.use((err: any, req: Request, res: Response, next: NextFunction): any => {
     if (err) {
       log.error(err)
@@ -123,4 +123,40 @@ describe.only('manifold routes', function() {
     })
   })
 
+  describe('path /sources/{sourceId}', function() {
+
+    describe('GET', function() {
+
+      it('returns the source descriptor', async () => {
+
+        const source: SourceDescriptor = {
+          id: mongoose.Types.ObjectId().toHexString(),
+          adapter: {
+            id: mongoose.Types.ObjectId().toHexString(),
+            title: 'Adapter 123',
+            description: 'A test adapter',
+            isReadable: true,
+            isWritable: false,
+            libPath: '/var/lib/mage/manifold/adapter123'
+          },
+          title: 'Source 123',
+          description: 'A test source',
+          isReadable: true,
+          isWritable: false,
+          url: 'http://test.com/source123'
+        }
+        const sourceEntity = parseEntity(SourceDescriptorModel, source)
+        sourceEntity.adapter = parseEntity(AdapterDescriptorModel, source.adapter)
+
+        when(sourceRepoMock.findById(source.id!)).thenResolve(sourceEntity)
+
+        const res = await request(app).get(`/manifold/sources/${source.id}`)
+        expect(res.status).to.equal(200)
+        expect(res.type).to.match(/^application\/json/)
+        expect(res.body).to.deep.equal(transformJson(source, {
+          adapter: transformJson(source.adapter, { libPath: transformJson.DELETE_KEY })
+        }))
+      })
+    })
+  })
 })

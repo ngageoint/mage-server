@@ -1,11 +1,25 @@
 
 import mongoose, { Document } from 'mongoose'
 
-export const DELETE_KEY: '4b3e8386-3951-11ea-ab3f-83a298287f14' = '4b3e8386-3951-11ea-ab3f-83a298287f14'
 
-export type ParseEntityTransform = {
-  [K: string]: any | typeof DELETE_KEY
+const DELETE_KEY: '4b3e8386-3951-11ea-ab3f-83a298287f14' = '4b3e8386-3951-11ea-ab3f-83a298287f14'
+export function transformObject<T>(x: any, transform: any, target: any = {}): T {
+  const out = Object.assign(target || {}, x)
+  for (const key of Object.keys(transform)) {
+    if (transform[key] === DELETE_KEY) {
+      delete out[key]
+    }
+    else if (typeof transform[key] === 'function') {
+      out[key] = transform[key](x[key])
+    }
+    else {
+      out[key] = transform[key]
+    }
+  }
+  return out as T
 }
+transformObject.DELETE_KEY = DELETE_KEY
+
 
 /**
  * Create a (fake) persisted Mongoose document from the given value object.
@@ -16,7 +30,7 @@ export type ParseEntityTransform = {
  * @param m the Mongoose `Model` constructor
  * @param x the value object
  */
-export function parseEntity<V extends any, D extends Document>(m: {new(x: V): D}, x: V, transform?: ParseEntityTransform): D {
+export function parseEntity<V extends any, D extends Document>(m: {new(x: V): D}, x: V): D {
   const persisted: any = Object.assign({}, x)
   let id = x.id
   delete persisted.id
@@ -30,16 +44,6 @@ export function parseEntity<V extends any, D extends Document>(m: {new(x: V): D}
   }
   if (!id) {
     id = mongoose.Types.ObjectId()
-  }
-  if (transform) {
-    for (const key in Object.keys(transform)) {
-      if (transform[key] === DELETE_KEY) {
-        delete persisted[key]
-      }
-      else {
-        persisted[key] = transform[key]
-      }
-    }
   }
   persisted._id = id
   return new m(persisted)
