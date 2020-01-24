@@ -1,5 +1,4 @@
-var _ = require('underscore')
-  , $ = require('jquery');
+var _ = require('underscore');
 
 module.exports = {
   Form: Form,
@@ -41,7 +40,7 @@ function Form($rootScope, $resource, LocalStorageService) {
         }
 
         var self = this;
-        $.ajax({
+        jQuery.ajax({
           url: '/api/events/' + this.eventId + '/forms',
           type: 'POST',
           headers: {

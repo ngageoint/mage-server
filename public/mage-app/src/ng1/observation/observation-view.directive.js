@@ -1,5 +1,4 @@
 var _ = require('underscore')
-  , $ = require('jquery')
   , moment = require('moment')
   , MDCRipple = require('material-components-web').ripple.MDCRipple
   , MDCTopAppBar = require('material-components-web').topAppBar.MDCTopAppBar
@@ -110,7 +109,7 @@ function ObservationViewController($scope, $element, $uibModal, EventService, Us
 
   $scope.download = function() {
     var url = '/api/events/' + $scope.observation.eventId + '/observations/' + $scope.observation.id + '.zip?access_token=' +  LocalStorageService.getToken();
-    $.fileDownload(url)
+    jQuery.fileDownload(url)
       .done(function() {
       })
       .fail(function() {

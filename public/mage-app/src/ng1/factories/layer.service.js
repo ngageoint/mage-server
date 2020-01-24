@@ -1,5 +1,3 @@
-var $ = require('jquery');
-
 module.exports = LayerService;
 
 LayerService.$inject = ['$q', 'Layer', 'LocalStorageService'];
@@ -31,14 +29,14 @@ function LayerService($q, Layer, LocalStorageService) {
       }
     }
 
-    $.ajax({
+    jQuery.ajax({
       url: '/api/layers',
       type: 'POST',
       headers: {
         'Authorization': 'Bearer ' + LocalStorageService.getToken()
       },
       xhr: function() {
-        var myXhr = $.ajaxSettings.xhr();
+        var myXhr = jQuery.ajaxSettings.xhr();
         if (myXhr.upload) {
           myXhr.upload.addEventListener('progress', function(e) {
             deferred.notify(e);

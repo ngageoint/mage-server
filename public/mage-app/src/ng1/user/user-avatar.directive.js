@@ -1,5 +1,4 @@
-var $ = require('jquery')
-  , EXIF = require('exif-js');
+var EXIF = require('exif-js');
 
 module.exports = function avatarUser() {
   var directive = {

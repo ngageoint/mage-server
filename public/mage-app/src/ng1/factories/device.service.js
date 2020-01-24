@@ -1,11 +1,10 @@
-var $ = require('jquery')
-  , _ = require('underscore');
+var _ = require('underscore');
 
 module.exports = DeviceService;
 
-DeviceService.$inject = ['$http', '$q'];
+DeviceService.$inject = ['$http', '$q', '$httpParamSerializer'];
 
-function DeviceService($http, $q) {
+function DeviceService($http, $q, $httpParamSerializer) {
 
   var service = {
     count: count,
@@ -89,7 +88,7 @@ function DeviceService($http, $q) {
   function createDevice(device) {
     var deferred = $q.defer();
 
-    $http.post('/api/devices', $.param(device), {
+    $http.post('/api/devices', $httpParamSerializer(device), {
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
     }).success(function(updatedDevice) {
       getDeviceMap().then(function(deviceMap) {
@@ -107,7 +106,7 @@ function DeviceService($http, $q) {
   function updateDevice(device) {
     var deferred = $q.defer();
 
-    $http.put('/api/devices/' + device.id, $.param(device), {
+    $http.put('/api/devices/' + device.id, $httpParamSerializer(device), {
       headers: {"Content-Type": "application/x-www-form-urlencoded"}
     }).success(function() {
       getDeviceMap().then(function(deviceMap) {

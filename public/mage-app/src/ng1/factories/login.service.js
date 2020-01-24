@@ -1,11 +1,10 @@
-var $ = require('jquery')
-  , moment = require('moment');
+var moment = require('moment');
 
 module.exports = LoginService;
 
-LoginService.$inject = ['$http'];
+LoginService.$inject = ['$http', '$httpParamSerializer'];
 
-function LoginService($http) {
+function LoginService($http, $httpParamSerializer) {
 
   var service = {
     query: query
@@ -35,6 +34,6 @@ function LoginService($http) {
     }
 
 
-    return $http.get(options.url || '/api/logins?' + $.param(parameters));
+    return $http.get(options.url || '/api/logins?' + $httpParamSerializer(parameters));
   }
 }

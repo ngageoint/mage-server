@@ -40,7 +40,12 @@
                 "node_modules"
               ]
             },
-            "scripts": []
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/jquery-minicolors/jquery.minicolors.min.js",
+              "node_modules/jquery-file-download/src/Scripts/jquery.fileDownload.js",
+              "src/ng1/vendor/bootstrap/js/bootstrap.min.js"
+            ]
           },
           "configurations": {
             "production": {

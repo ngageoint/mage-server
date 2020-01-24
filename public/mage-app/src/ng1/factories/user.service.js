@@ -1,11 +1,10 @@
-var _ = require('underscore')
-  , $ = require('jquery');
+var _ = require('underscore');
 
 module.exports = UserService;
 
-UserService.$inject = ['$rootScope', '$q', '$http', '$location', '$state', '$window', 'LocalStorageService'];
+UserService.$inject = ['$rootScope', '$q', '$http', '$httpParamSerializer', '$location', '$state', '$window', 'LocalStorageService'];
 
-function UserService($rootScope, $q, $http, $location, $state, $window, LocalStorageService) {
+function UserService($rootScope, $q, $http, $httpParamSerializer, $location, $state, $window, LocalStorageService) {
 
   var service = {
     myself: null,
@@ -56,7 +55,7 @@ function UserService($rootScope, $q, $http, $location, $state, $window, LocalSto
     var oldUsername = service.myself && service.myself.username || null;
 
     data.appVersion = 'Web Client';
-    var promise = $http.post('/auth/google/signin', $.param(data), {
+    var promise = $http.post('/auth/google/signin', $httpParamSerializer(data), {
       headers: {"Content-Type": "application/x-www-form-urlencoded"},
       ignoreAuthModule:true
     });
@@ -124,7 +123,7 @@ function UserService($rootScope, $q, $http, $location, $state, $window, LocalSto
       appVersion: 'Web Client'
     };
 
-    var promise = $http.post('/auth/' + strategy + '/authorize', $.param(data), {
+    var promise = $http.post('/auth/' + strategy + '/authorize', $httpParamSerializer(data), {
       headers: {"Content-Type": "application/x-www-form-urlencoded"},
       ignoreAuthModule:true
     });
@@ -149,7 +148,7 @@ function UserService($rootScope, $q, $http, $location, $state, $window, LocalSto
     var deferred = $q.defer();
 
     data.appVersion = 'Web Client';
-    $http.post('/auth/local/signin', $.param(data), {
+    $http.post('/auth/local/signin', $httpParamSerializer(data), {
       headers: {"Content-Type": "application/x-www-form-urlencoded"},
       ignoreAuthModule:true
     }).then(function(response) {
@@ -190,7 +189,7 @@ function UserService($rootScope, $q, $http, $location, $state, $window, LocalSto
   }
 
   function updateMyPassword(authentication) {
-    var promise = $http.put('/api/users/myself/password', $.param(authentication), {
+    var promise = $http.put('/api/users/myself/password', $httpParamSerializer(authentication), {
       headers: {"Content-Type": "application/x-www-form-urlencoded"},
       ignoreAuthModule:true
     });
@@ -393,11 +392,11 @@ function UserService($rootScope, $q, $http, $location, $state, $window, LocalSto
       }
     }
 
-    $.ajax({
+    jQuery.ajax({
       url: options.url,
       type: options.type,
       xhr: function() {
-        var myXhr = $.ajaxSettings.xhr();
+        var myXhr = jQuery.ajaxSettings.xhr();
         if(myXhr.upload){
           myXhr.upload.addEventListener('progress', progress, false);
         }

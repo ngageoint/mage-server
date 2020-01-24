@@ -1,5 +1,4 @@
 import _ from 'underscore';
-import $ from 'jquery';
 import moment from 'moment';
 
 class FormFeedController {
@@ -109,7 +108,7 @@ class FormFeedController {
       url += '/' + variant;
     }
 
-    return url + '?' + $.param({access_token: this.LocalStorageService.getToken()});
+    return url + '?access_token=' + this.LocalStorageService.getToken();
   }
 
   createObservation(observationId, formId, userId) {

@@ -1,5 +1,4 @@
 import _ from 'underscore';
-import $ from 'jquery';
 import angular from 'angular';
 
 class AdminFormMapEditController {
@@ -275,14 +274,14 @@ class AdminFormMapEditController {
     var formData = new FormData();
     formData.append('icon', fileUpload.file);
 
-    $.ajax({
+    jQuery.ajax({
       url: url,
       type: 'POST',
       headers: {
         'Authorization':'Bearer ' + this.LocalStorageService.getToken(),
       },
       xhr: () => {
-        var myXhr = $.ajaxSettings.xhr();
+        var myXhr = jQuery.ajaxSettings.xhr();
         return myXhr;
       },
       success: () => {

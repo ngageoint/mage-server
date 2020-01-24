@@ -8,6 +8,10 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 ##### Features
 
 ##### Bug Fixes
+* Fix mobile web export.
+* Fix observation download bug.
+* Fix bug where unregistered devices were not shown on admin dashboard.
+* Fix WMS layer getcapabilites fetch request when creating new WMS layer.
 
 ## [5.3.3](https://github.com/ngageoint/mage-server/releases/tag/5.3.3)
 

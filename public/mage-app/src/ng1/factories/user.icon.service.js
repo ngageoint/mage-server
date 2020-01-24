@@ -43,7 +43,7 @@ function UserIconService() {
 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = '400 14px "RobotoMono"';
+    ctx.font = '500 14px "RobotoMono"';
     ctx.fillStyle = hexToRgb(color, 1);
     ctx.fillText(text, 22, 17);
   }

@@ -1,5 +1,4 @@
-var L = require('leaflet')
-  , $ = require('jquery');
+var L = require('leaflet');
 
 L.FixedWidthMarker = L.Marker.extend({
 

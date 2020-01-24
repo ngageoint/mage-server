@@ -1,5 +1,3 @@
-var $ = require('jquery');
-
 module.exports = function fileUploadGrid() {
   var directive = {
     restrict: "A",
@@ -196,11 +194,11 @@ function FileUploadController($scope, $element) {
         var file = $scope.files[fileId];
         formData.append($scope.uploadFileFormName, file.file);
     
-        $.ajax({
+        jQuery.ajax({
           url: $scope.url,
           type: 'POST',
           xhr: function() {
-            var myXhr = $.ajaxSettings.xhr();
+            var myXhr = jQuery.ajaxSettings.xhr();
             if (myXhr.upload) {
               myXhr.upload.addEventListener('progress', uploadProgress.bind({fileId: file.id}), false);
             }

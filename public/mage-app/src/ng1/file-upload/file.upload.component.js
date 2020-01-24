@@ -1,5 +1,3 @@
-import $ from 'jquery';
-
 class FileUploadController {
   constructor($element, $timeout) {
     this.$element = $element;
@@ -131,11 +129,11 @@ class FileUploadController {
     var formData = new FormData();
     formData.append(this.uploadFileFormName, this.file);
 
-    $.ajax({
+    jQuery.ajax({
       url: this.url,
       type: 'POST',
       xhr: () => {
-        var myXhr = $.ajaxSettings.xhr();
+        var myXhr = jQuery.ajaxSettings.xhr();
         if (myXhr.upload) {
           myXhr.upload.addEventListener('progress', e => {
             this.uploadProgress(e);

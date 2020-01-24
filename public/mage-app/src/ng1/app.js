@@ -5,17 +5,12 @@ import about from './about/about.component';
 import fileUpload from './file-upload/file.upload.component';
 import fileBrowser from './file-upload/file.browser.component';
 import  '@uirouter/angular-hybrid';
-import {SwaggerComponent} from "../app/swagger/swagger.component";
-
-window.jQuery = window.$ = require('jquery');
+import { SwaggerComponent } from "../app/swagger/swagger.component";
 
 import './img';
 
-require('jquery-file-download');
-require('jquery-minicolors');
 require('angular-minicolors');
 require('select2');
-require('./vendor/bootstrap/js/bootstrap.min.js');
 
 const app = angular.module('mage', [
   require('angular-ui-bootstrap'),
@@ -30,8 +25,7 @@ const app = angular.module('mage', [
   require('./auth/http-auth-interceptor')
 ]);
 
-angular
-  .module('mage')
+app
   .component('filterPanel', require('./filter/filter'))
   .component('exportPanel', require('./export/export'))
   .component('eventFilter', require('./filter/event.filter.component'))

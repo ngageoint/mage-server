@@ -1,5 +1,4 @@
-var $ = require('jquery')
-  , MDCDialog = require('material-components-web').dialog.MDCDialog
+var MDCDialog = require('material-components-web').dialog.MDCDialog
   , MDCSelect = require('material-components-web').select.MDCSelect
   , MDCChipSet = require('material-components-web').chips.MDCChipSet
   , moment = require('moment')
@@ -15,9 +14,9 @@ module.exports = {
   controller: ExportController
 };
 
-ExportController.$inject = ['LocalStorageService', 'FilterService', '$timeout', '$element'];
+ExportController.$inject = ['LocalStorageService', 'FilterService', '$timeout', '$element', '$httpParamSerializer'];
 
-function ExportController(LocalStorageService, FilterService, $timeout, $element) {
+function ExportController(LocalStorageService, FilterService, $timeout, $element, $httpParamSerializer) {
   var exportPanel;
   var intervalSelectMdc;
 
@@ -156,8 +155,8 @@ function ExportController(LocalStorageService, FilterService, $timeout, $element
       params.favorites = this.exportFavoriteObservations.value;
       params.important = this.exportImportantObservations.value;
     }
-    var url = "api/" + this.type.value + "?" + $.param(params);
-    $.fileDownload(url)
+    var url = "api/" + this.type.value + "?" + $httpParamSerializer(params);
+    jQuery.fileDownload(url)
       .done(function() {
       })
       .fail(function() {

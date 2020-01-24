@@ -1,11 +1,10 @@
-var _ = require('underscore')
-  , $ = require('jquery');
+var _ = require('underscore');
 
 module.exports = ObservationService;
 
-ObservationService.$inject = ['$q', 'Observation', 'ObservationAttachment', 'ObservationState', 'ObservationImportant', 'ObservationFavorite', 'LocalStorageService'];
+ObservationService.$inject = ['$q', '$httpParamSerializer', 'Observation', 'ObservationAttachment', 'ObservationState', 'ObservationImportant', 'ObservationFavorite', 'LocalStorageService'];
 
-function ObservationService($q, Observation, ObservationAttachment, ObservationState, ObservationImportant, ObservationFavorite, LocalStorageService) {
+function ObservationService($q, $httpParamSerializer, Observation, ObservationAttachment, ObservationState, ObservationImportant, ObservationFavorite, LocalStorageService) {
   var service = {
     getObservationsForEvent: getObservationsForEvent,
     saveObservationForEvent: saveObservationForEvent,
@@ -226,6 +225,6 @@ function ObservationService($q, Observation, ObservationAttachment, ObservationS
       url += '/' + variant;
     }
 
-    return url + '?' + $.param({access_token: LocalStorageService.getToken()});
+    return url + '?' + $httpParamSerializer({access_token: LocalStorageService.getToken()});
   }
 }

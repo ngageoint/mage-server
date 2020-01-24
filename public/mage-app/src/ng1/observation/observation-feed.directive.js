@@ -1,5 +1,4 @@
 var _ = require('underscore')
-  , $ = require('jquery')
   , moment = require('moment')
   , MDCRipple = require('material-components-web').ripple.MDCRipple
   , MDCTextField = require('material-components-web').textField.MDCTextField;
@@ -102,7 +101,7 @@ function ObservationNewsItemController($scope, $uibModal, EventService, UserServ
 
   $scope.download = function() {
     var url = '/api/events/' + $scope.observation.eventId + '/observations/' + $scope.observation.id + '.zip?access_token=' +  LocalStorageService.getToken();
-    $.fileDownload(url)
+    jQuery.fileDownload(url)
       .done(function() {
       })
       .fail(function() {

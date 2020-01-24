@@ -251,7 +251,7 @@
             <div class="well-item">
               <div ng-show="$ctrl.layer.type == 'Feature'">
                 <div ng-repeat="upload in $ctrl.uploads" class="bottom-gap">
-                  <file-upload url="{{$ctrl.fileUploadOptions.url}}" allow-upload="$ctrl.uploadConfirmed" upload-file-form-name="'file'" upload-id="$index" on-upload-complete="$ctrl.uploadComplete()"></file-upload>
+                  <file-upload url="{{$ctrl.fileUploadOptions.url}}" allow-upload="$ctrl.uploadConfirmed" upload-file-form-name="'file'" upload-id="$index" on-upload-complete="$ctrl.uploadComplete($event)"></file-upload>
 
                   <div ng-if="$ctrl.status[$index]"><span>Created {{$ctrl.status[$index].features}} features from file {{$ctrl.status[$index].name}} </span></div>
                 </div>
