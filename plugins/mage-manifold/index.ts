@@ -4,7 +4,7 @@ import path from 'path'
 import OpenapiEnforcerMiddleware, { MiddlewareFunction } from 'openapi-enforcer-middleware'
 import { SourceRepository, AdapterRepository } from './repositories'
 import { ManifoldService } from './services'
-import OgcApiFeatures from './ogc_api_features'
+import OgcApiFeatures from './ogcapi-features'
 import { SourceDescriptorEntity } from './models'
 import OpenApiEnforcerMiddleware from 'openapi-enforcer-middleware'
 const log = require('../../logger')
@@ -14,7 +14,7 @@ declare global {
     interface Request {
       manifold: {
         contextSource?: SourceDescriptorEntity
-        adapter?: OgcApiFeatures.FeaturesAdapter
+        adapter?: OgcApiFeatures.ServiceAdapter
       }
     }
   }
@@ -102,7 +102,7 @@ function manifoldController(injection: ManifoldController.Injection): ManifoldCo
 }
 
 function contextSourceParamHandler(injection: ManifoldController.Injection): RequestHandler {
-  const { sourceRepo } = injection
+  const { sourceRepo, manifoldService } = injection
   return async (req: Request, res: Response, next: NextFunction) => {
     if (!req.params.hasOwnProperty('sourceId')) {
       return next()
@@ -113,6 +113,8 @@ function contextSourceParamHandler(injection: ManifoldController.Injection): Req
       return res.status(404).json('not found')
     }
     req.manifold.contextSource = sourceDesc
+    const adapter = await manifoldService.getAdapterForSource(sourceDesc)
+    req.manifold.adapter = adapter
     next()
   }
 }
