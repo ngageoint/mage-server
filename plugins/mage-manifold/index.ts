@@ -39,24 +39,22 @@ export namespace ManifoldController {
 export function createRouter(injection: ManifoldController.Injection): Router {
   const enforcer = loadManifoldApi(injection)
   const setContextSource = contextSourceParamHandler(injection)
+  // this is a way to force middleware to run on the enforcer middleware
+  // before getting to the actual controller
+  // const enforcerMiddlewares = (enforcer as any).options.middleware as any[]
+  // const m = function(req: object, res: object, next: (err?: any) => void): void {
+  //   log.debug(`in enforcer for ${(req as any)['path']}`)
+  //   next()
+  // }
+  // enforcerMiddlewares.unshift(m)
   const mainRoutes = enforcer.middleware()
   const root = Router()
   root.use((req, res, next) => {
     req.manifold = {}
     next()
   })
-  /*
-   TODO:
-   using an all() handler for a path parameter is not really the preferred way,
-   but for now, openapi-enforcer-middleware has no way to 1) run middleware
-   before the controller methods; 2) allow express to process the path
-   parameters to set them on the Request.params object.  creating this route
-   path on the parent Router allows express to compile the parameterized path
-   for the route and set the parameter on Request.params before dropping into
-   the OpenApiEnforcerMiddleware handler.
-   */
-  root.all('/sources/:sourceId', setContextSource)
-  root.use('/sources/:sourceId/*', sourceRouter)
+  root.use('/sources/:sourceId', setContextSource)
+  root.use('/sources/:sourceId/', sourceRouter)
   root.use(mainRoutes)
   return root
 }
