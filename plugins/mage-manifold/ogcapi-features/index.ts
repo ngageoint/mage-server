@@ -188,7 +188,10 @@ namespace OgcApiFeatures {
     }
 
     toJSON() {
-      return [ this.start, this.end ]
+      return [
+        this.start ? new Date(this.start).toISOString() : null,
+        this.end ? new Date(this.end).toISOString() : null
+      ]
     }
   }
     /**
