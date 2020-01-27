@@ -62,10 +62,10 @@ describe.only('manifold source routes', function() {
           title: 'Collection 1',
           description: 'A test collection',
           links: [],
-          crs: [ OgcApiFeatures.Crs.Wgs84.uri ],
+          crs: [ OgcApiFeatures.CrsWgs84 ],
           extent: {
             spatial: {
-              crs: OgcApiFeatures.Crs.Wgs84.uri,
+              crs: OgcApiFeatures.CrsWgs84,
               bbox: [[ 1, 1, 2, 2 ]]
             }
           }
@@ -79,12 +79,11 @@ describe.only('manifold source routes', function() {
           url: 'https://source1.test.net'
         })
         const collectionDescriptors = new Map([
-          [ colId, OgcApiFeatures.CollectionDescriptor.fromJson(colDesc) ]
+          [ colId, colDesc ]
         ])
         const featuresAdapterPromise = Promise.resolve(featuresAdapter)
         when(sourceRepoMock.findById(source.id as string)).thenResolve(source)
         when(manifoldServiceMock.getAdapterForSource(source)).thenCall(() => {
-          // return Promise.resolve({resolved:true})
           return featuresAdapterPromise
         })
         when(featuresAdapterMock.getCollections()).thenResolve(collectionDescriptors)
