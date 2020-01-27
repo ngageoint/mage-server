@@ -134,6 +134,15 @@ sourceRouter.route('/collections/:collectionId')
     return res.json(collectionDesc)
   })
 sourceRouter.route('/collections/:collectionId/items')
+  .get(async (req, res, next) => {
+    const adapter = req.manifold.adapter
+    if (!adapter) {
+      return next(new Error(`no adapter on request ${req.path}`))
+    }
+    const collectionId = req.params.collectionId as string
+    const page = await adapter.getItemsInCollection(collectionId)
+    return res.type('application/geo+json').json(page.items)
+  })
 sourceRouter.route('/collections/:collectionId/items/:featureId')
 
 export default function initialize(app: Application, callback: (err?: Error | null) => void) {

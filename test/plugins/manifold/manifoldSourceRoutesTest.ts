@@ -9,6 +9,7 @@ import { parseEntity } from '../../utils'
 import { ManifoldService } from '../../../plugins/mage-manifold/services'
 import { ManifoldController, createRouter } from '../../../plugins/mage-manifold'
 import OgcApiFeatures from '../../../plugins/mage-manifold/ogcapi-features'
+import { FeatureCollection } from 'geojson'
 const log = require('../../../logger')
 
 describe.only('manifold source routes', function() {
@@ -54,7 +55,7 @@ describe.only('manifold source routes', function() {
 
     describe('GET', function() {
 
-      it.only('returns the collection descriptor', async function() {
+      it('returns the collection descriptor', async function() {
 
         const colId = 'col1'
         const colDesc: OgcApiFeatures.CollectionDescriptorJson = {
@@ -99,6 +100,65 @@ describe.only('manifold source routes', function() {
 
   describe('path /{sourceId}/collections/{collectionId}/items', function() {
 
+    describe('GET', function() {
+
+      it('returns all the features', async function() {
+
+        const sourceEntity = new SourceDescriptorModel({
+          adapter: new mongoose.Types.ObjectId().toHexString(),
+          title: 'Source A',
+          description: 'All the As',
+          url: 'https://a.test/data'
+        })
+        const page: OgcApiFeatures.CollectionPage = {
+          collectionId: 'a1',
+          items: {
+            type: 'FeatureCollection',
+            features: [
+              {
+                type: 'Feature',
+                geometry: {
+                  type: 'Point',
+                  coordinates: [ 100, 30 ]
+                },
+                properties: {
+                  lerp: 'ner'
+                }
+              },
+              {
+                type: 'Feature',
+                geometry: {
+                  type: 'Point',
+                  coordinates: [ 101, 29 ]
+                },
+                properties: {
+                  squee: 'bouf'
+                }
+              },
+              {
+                type: 'Feature',
+                geometry: {
+                  type: 'Point',
+                  coordinates: [ 102, 27 ]
+                },
+                properties: {
+                  noich: 'sna'
+                }
+              }
+            ]
+          }
+        }
+        when(sourceRepoMock.findById(sourceEntity.id)).thenResolve(sourceEntity)
+        when(manifoldServiceMock.getAdapterForSource(sourceEntity)).thenResolve(featuresAdapter)
+        when(featuresAdapterMock.getItemsInCollection(page.collectionId)).thenResolve(page)
+
+        const res = await request(app).get(`/manifold/sources/${sourceEntity.id}/collections/${page.collectionId}/items`)
+
+        expect(res.status).to.equal(200)
+        expect(res.type).to.match(/^application\/geo\+json/)
+        expect(res.body).to.deep.equal(page.items)
+      })
+    })
   })
 
   describe('path /{sourceId}/collections/{collectoinId}/items/{featureId}', function() {

@@ -10,7 +10,7 @@ namespace OgcApiFeatures {
     description: string
 
     getCollections(): Promise<Map<string, CollectionDescriptorJson>>
-    getItemsInCollection(collectionId: string, params: CollectionParams): Promise<CollectionPage>
+    getItemsInCollection(collectionId: string, params?: CollectionParams): Promise<CollectionPage>
   }
 
   export type CollectionDescriptorJson = {
@@ -99,7 +99,7 @@ namespace OgcApiFeatures {
   export type CrsUri = string
   export const CrsWgs84: CrsUri & 'http://www.opengis.net/def/crs/OGC/1.3/CRS84' = 'http://www.opengis.net/def/crs/OGC/1.3/CRS84'
 
-  export class CollectionPage {
+  export type CollectionPage = {
     /**
      * Collection ID
      */
@@ -109,11 +109,6 @@ namespace OgcApiFeatures {
     pageCount?: number
     totalItemCount?: number
     items: FeatureCollection
-
-    constructor(collectionId: string, items: FeatureCollection) {
-      this.collectionId = collectionId
-      this.items = items
-    }
   }
 
   export interface FeatureCollection extends geojson.FeatureCollection {
