@@ -101,11 +101,13 @@
     "coverage": "nyc mocha",
     "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "create-migration": "mm create --config=mm-config.js",
-    "build": "npm --prefix public install && npm --prefix public run build",
     "prestart": "sh bin/prestart.sh",
     "poststop": "sh bin/poststop.sh",
     "migrate": "node -e \"require('./migrate').runDatabaseMigrations().then(() => process.exit(0), err => {throw err})\"",
-    "start": "node app.js"
+    "start": "node app.js",
+    "debug": "node --inspect-brk=9229 app.js",
+    "build-web": "npm --prefix web-app run build",
+    "start-web": "npm --prefix web-app run start"
   },
   "bundleDependencies": [],
   "private": true,
