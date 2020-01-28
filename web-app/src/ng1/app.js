@@ -7,6 +7,7 @@ import fileBrowser from './file-upload/file.browser.component';
 import uiRouter from "@uirouter/angularjs";
 import { SwaggerComponent } from "../app/swagger/swagger.component";
 import { downgradeComponent } from '@angular/upgrade/static';
+import cookies from 'js-cookie';
 
 import {
   MatIcon,
@@ -384,9 +385,9 @@ function config($httpProvider, $stateProvider, $urlRouterProvider, $urlServicePr
   });
 }
 
-run.$inject = ['$rootScope', '$uibModal', '$templateCache', '$state', 'Api'];
+run.$inject = ['$rootScope', '$uibModal', '$templateCache', '$state', 'Api', 'LocalStorageService', 'UserService'];
 
-function run($rootScope, $uibModal, $templateCache, $state, Api) {
+function run($rootScope, $uibModal, $templateCache, $state, Api, LocalStorageService, UserService) {
   $templateCache.put("observation/observation-important.html", require("./observation/observation-important.html"));
 
   $rootScope.$on('event:auth-loginRequired', function(e, response) {
@@ -429,6 +430,19 @@ function run($rootScope, $uibModal, $templateCache, $state, Api) {
       });
     }
   });
+
+  trySSO(LocalStorageService, UserService);
+}
+
+function trySSO(LocalStorageService, UserService) {
+  const ssoTokenCookie = cookies.get('mage-sso-token');
+
+  // if SSO token exists, set it in local storage and fetch current user
+  if (ssoTokenCookie) {
+    LocalStorageService.setToken(ssoTokenCookie);
+
+    return UserService.getMyself();
+  }
 }
 
 export default app;
