@@ -277,10 +277,12 @@ a:hover, a:focus {
 
 .location-field-card__edit {
   transform: rotateY(180deg);
+  -webkit-transform: rotateY(180deg);
 }
 
 .location-field-card.location-field-card__flip {
   transform: rotateY(180deg) translateZ(1px);
+  -webkit-transform: rotateY(180deg) translateZ(1px);
 }
 
 .location-field-card__edit, .location-field-card__view {
@@ -291,6 +293,7 @@ a:hover, a:focus {
   left: 8px;
   z-index: 0;
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .location-field-select.mdc-select--outlined:not(.mdc-select--disabled):not(.mdc-select--focused) .mdc-select__selected-text-mine:hover~.mdc-notched-outline .mdc-notched-outline__leading,
