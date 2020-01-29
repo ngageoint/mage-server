@@ -47,12 +47,24 @@ export namespace NgaMsi {
       return Promise.resolve(this.collections);
     }
 
-    getItemsInCollection(collectionId: string, params?: OgcApiFeatures.CollectionParams): Promise<OgcApiFeatures.CollectionPage> {
-      throw new Error("Method not implemented.");
+    async getItemsInCollection(collectionId: string, params?: OgcApiFeatures.CollectionParams): Promise<OgcApiFeatures.CollectionPage> {
+      if (collectionId !== 'asam') {
+        throw new Error(`unknown collection: ${collectionId}`)
+      }
+      const page: OgcApiFeatures.CollectionPage = {
+        collectionId,
+        items: {
+          type: 'FeatureCollection',
+          features: [
+
+          ]
+        }
+      }
+      return page
     }
   }
 
-  type AsamResponse = {
+  export type AsamResponse = {
     asam: Asam[]
   }
 
@@ -74,7 +86,7 @@ export namespace NgaMsi {
    * }
    * ```
    */
-  type Asam = {
+  export type Asam = {
     /**
      * This appears to be the unique identifier for ASAM records.
      */
