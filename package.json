@@ -88,6 +88,7 @@
     "mocha": "6.2.1",
     "mock-fs": "4.10.1",
     "mongodb-memory-server": "^6.2.4",
+    "nock": "^11.7.2",
     "nyc": "^14.1.1",
     "proxyquire": "2.1.0",
     "sinon": "7.5.0",
