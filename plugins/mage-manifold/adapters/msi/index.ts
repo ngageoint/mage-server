@@ -1,12 +1,55 @@
 import { Feature } from "geojson"
+import  { ManifoldAdapter, SourceConnection } from '..'
+import OgcApiFeatures from '../../ogcapi-features'
+import { SourceDescriptor } from "../../models";
 
 /**
  * MSI is NGA's Maritime Safety Information API.
  */
-namespace NgaMsi {
+export namespace NgaMsi {
 
-  class MsiAdapter {
+  export class MsiAdapter implements ManifoldAdapter {
+    async connectTo(source: SourceDescriptor): Promise<SourceConnection> {
+      return new MsiConnection(source)
+    }
+  }
 
+  class MsiConnection implements SourceConnection {
+
+    readonly source: SourceDescriptor
+    get id(): string {
+      return this.source.id!
+    }
+    get title(): string {
+      return this.source.title
+    }
+    get description(): string {
+      return this.source.description
+    }
+    readonly collections: Map<string, OgcApiFeatures.CollectionDescriptorJson>
+
+    constructor(source: SourceDescriptor) {
+      this.source = source
+      this.collections = new Map<string, OgcApiFeatures.CollectionDescriptorJson>([
+        [ 'asam', {
+          id: 'asam',
+          links: [],
+          title: 'Anti-Shipping Activity Messages (ASAM)',
+          description:
+            'ASAM records include locations and accounts of hostile acts ' +
+            'against ships and mariners.  This data can help vessels ' +
+            'recognize and avoid potential hostile activity at sea.'
+        }]
+      ])
+    }
+
+    getCollections(): Promise<Map<string, OgcApiFeatures.CollectionDescriptorJson>> {
+      return Promise.resolve(this.collections);
+    }
+
+    getItemsInCollection(collectionId: string, params?: OgcApiFeatures.CollectionParams): Promise<OgcApiFeatures.CollectionPage> {
+      throw new Error("Method not implemented.");
+    }
   }
 
   type AsamResponse = {

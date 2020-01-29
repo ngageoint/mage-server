@@ -1,6 +1,7 @@
 import { AdapterDescriptor, SourceDescriptor } from "../models"
 import { AdapterRepository, SourceRepository } from "../repositories"
 import OgcApiFeatures from "../ogcapi-features"
+import { ManifoldAdapter } from "../adapters"
 
 
 /**
@@ -43,7 +44,7 @@ export class ManifoldService {
     return desc
   }
 
-  async getAdapterForSource(source: SourceDescriptor): Promise<OgcApiFeatures.ServiceAdapter> {
+  async getAdapterForSource(source: SourceDescriptor): Promise<ManifoldAdapter> {
     if (typeof source.adapter === 'string') {
 
     }

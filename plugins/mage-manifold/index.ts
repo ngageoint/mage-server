@@ -7,6 +7,7 @@ import { ManifoldService } from './services'
 import OgcApiFeatures from './ogcapi-features'
 import { SourceDescriptorEntity } from './models'
 import OpenApiEnforcerMiddleware from 'openapi-enforcer-middleware'
+import { ManifoldAdapter } from './adapters'
 const log = require('../../logger')
 
 declare global {
@@ -14,7 +15,8 @@ declare global {
     interface Request {
       manifold: {
         contextSource?: SourceDescriptorEntity
-        adapter?: OgcApiFeatures.ServiceAdapter
+        adapter?: ManifoldAdapter
+        readonly requiredAdapter: ManifoldAdapter
       }
     }
   }
@@ -50,7 +52,15 @@ export function createRouter(injection: ManifoldController.Injection): Router {
   const mainRoutes = enforcer.middleware()
   const root = Router()
   root.use((req, res, next) => {
-    req.manifold = {}
+    req.manifold = {
+      get requiredAdapter(): ManifoldAdapter {
+        const adapter = req.manifold.adapter
+        if (!adapter) {
+          throw new Error(`no adapter on request ${req.path}`)
+        }
+        return adapter
+      }
+    }
     next()
   })
   root.use('/sources/:sourceId', setContextSource)
@@ -124,23 +134,19 @@ sourceRouter.route('/conformance')
 sourceRouter.route('/collections')
 sourceRouter.route('/collections/:collectionId')
   .get(async (req, res, next) => {
-    const adapter = req.manifold.adapter
-    if (!adapter) {
-      return next(new Error(`no adapter on request ${req.path}`))
-    }
+    const adapter = req.manifold.requiredAdapter
     const collectionId = req.params.collectionId as string
-    const collections = await adapter.getCollections()
+    const conn = await adapter.connectTo(req.manifold.contextSource!)
+    const collections = await conn.getCollections()
     const collectionDesc = collections.get(collectionId)
     return res.json(collectionDesc)
   })
 sourceRouter.route('/collections/:collectionId/items')
   .get(async (req, res, next) => {
-    const adapter = req.manifold.adapter
-    if (!adapter) {
-      return next(new Error(`no adapter on request ${req.path}`))
-    }
+    const adapter = req.manifold.requiredAdapter
     const collectionId = req.params.collectionId as string
-    const page = await adapter.getItemsInCollection(collectionId)
+    const conn = await adapter.connectTo(req.manifold.contextSource!)
+    const page = await conn.getItemsInCollection(collectionId)
     return res.type('application/geo+json').json(page.items)
   })
 sourceRouter.route('/collections/:collectionId/items/:featureId')

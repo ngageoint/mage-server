@@ -5,9 +5,9 @@ namespace OgcApiFeatures {
 
   export interface ServiceAdapter {
 
-    id: string
-    title: string
-    description: string
+    readonly id: string
+    readonly title: string
+    readonly description: string
 
     getCollections(): Promise<Map<string, CollectionDescriptorJson>>
     getItemsInCollection(collectionId: string, params?: CollectionParams): Promise<CollectionPage>

@@ -10,21 +10,24 @@ import { ManifoldService } from '../../../plugins/mage-manifold/services'
 import { ManifoldController, createRouter } from '../../../plugins/mage-manifold'
 import OgcApiFeatures from '../../../plugins/mage-manifold/ogcapi-features'
 import { FeatureCollection } from 'geojson'
+import { ManifoldAdapter, SourceConnection } from '../../../plugins/mage-manifold/adapters'
 const log = require('../../../logger')
 
 describe.only('manifold source routes', function() {
 
-  const sourceBase = '/manifold/sources/abc123'
   const adapterRepoMock = mock<AdapterRepository>()
   const adapterRepo = instance(adapterRepoMock)
   const sourceRepoMock = mock<SourceRepository>()
   const sourceRepo = instance(sourceRepoMock)
   const manifoldServiceMock = mock<ManifoldService>()
   const manifoldService = instance(manifoldServiceMock)
-  const featuresAdapterMock = mock<OgcApiFeatures.ServiceAdapter>()
-  const featuresAdapter = instance(featuresAdapterMock)
+  const manifoldAdapterMock = mock<ManifoldAdapter>()
+  const manifoldAdapter = instance(manifoldAdapterMock)
+  const connectionMock = mock<SourceConnection>()
+  const connection = instance(connectionMock)
   // TODO: workaround for https://github.com/NagRock/ts-mockito/issues/163
-  ;(featuresAdapterMock as any).__tsmockitoMocker.excludedPropertyNames.push('then')
+  ;(manifoldAdapterMock as any).__tsmockitoMocker.excludedPropertyNames.push('then')
+  ;(connectionMock as any).__tsmockitoMocker.excludedPropertyNames.push('then')
   const app = express()
   app.use(express.json())
   const injection: ManifoldController.Injection = {
@@ -45,6 +48,8 @@ describe.only('manifold source routes', function() {
     reset(adapterRepoMock)
     reset(sourceRepoMock)
     reset(manifoldServiceMock)
+    reset(manifoldAdapterMock)
+    reset(connectionMock)
   })
 
   describe('path /{sourceId}/collections', function() {
@@ -82,12 +87,10 @@ describe.only('manifold source routes', function() {
         const collectionDescriptors = new Map([
           [ colId, colDesc ]
         ])
-        const featuresAdapterPromise = Promise.resolve(featuresAdapter)
         when(sourceRepoMock.findById(source.id as string)).thenResolve(source)
-        when(manifoldServiceMock.getAdapterForSource(source)).thenCall(() => {
-          return featuresAdapterPromise
-        })
-        when(featuresAdapterMock.getCollections()).thenResolve(collectionDescriptors)
+        when(manifoldServiceMock.getAdapterForSource(source)).thenResolve(manifoldAdapter)
+        when(manifoldAdapterMock.connectTo(source)).thenResolve(connection)
+        when(connectionMock.getCollections()).thenResolve(collectionDescriptors)
 
         const res = await request(app).get(`/manifold/sources/${source.id}/collections/${colId}`)
 
@@ -149,8 +152,9 @@ describe.only('manifold source routes', function() {
           }
         }
         when(sourceRepoMock.findById(sourceEntity.id)).thenResolve(sourceEntity)
-        when(manifoldServiceMock.getAdapterForSource(sourceEntity)).thenResolve(featuresAdapter)
-        when(featuresAdapterMock.getItemsInCollection(page.collectionId)).thenResolve(page)
+        when(manifoldServiceMock.getAdapterForSource(sourceEntity)).thenResolve(manifoldAdapter)
+        when(manifoldAdapterMock.connectTo(sourceEntity)).thenResolve(connection)
+        when(connectionMock.getItemsInCollection(page.collectionId)).thenResolve(page)
 
         const res = await request(app).get(`/manifold/sources/${sourceEntity.id}/collections/${page.collectionId}/items`)
 
