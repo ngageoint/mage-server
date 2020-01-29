@@ -92,8 +92,9 @@ paths:
    
   /auth/local/signin:
     post:
-      tags: [ Local Auth ]
-      description: Authenticate a user using a local strategy.  
+      tags: [ Local Authentication & Authorization ]
+      summary: Authentication 
+      description: Authenticate a user using a local strategy. 
       operationId: authenticate
       requestBody:
         required: true
@@ -108,7 +109,8 @@ paths:
 
   /auth/local/authorize:
     post:
-      tags: [ Local Auth ]
+      tags: [ Local Authentication & Authorization  ]
+      summary: Authorization
       description: Authorize a user using a local strategy.  A device may also be created via this method.
       operationId: authorize
       parameters:
@@ -140,7 +142,7 @@ paths:
         200:
           description: Successfuly provisioned device. If this was a new device, then it was successfuly created and auto-registration is turned on.
         401:
-          description:  User is not authorized.
+          description:  User is not authorized.  Typically this means you need to authenticate `/auth/local/signin`.
         403:
           description: Failure to provision the device.  This typically means the device needs to be registered.
 
