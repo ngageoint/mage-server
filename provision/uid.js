@@ -12,6 +12,7 @@ module.exports = function(provision) {
       Device.getDeviceByUid(uid)
         .then(device => {
           if (!device) {
+            //TODO should we verify user has permission to create a device?
             log.info("Device " + uid + " does not exist. Checking request parameters to see if device can be created.");
             var newDevice = {
                 uid: req.param('uid'),
@@ -22,6 +23,7 @@ module.exports = function(provision) {
                 appVersion: req.param('appVersion'),
                 userId: req.user.id
             };
+            //TODO is this all we need to create a device?
             if(!newDevice.appVersion) {
               log.warn('Failed device provision attempt: Device uid ' + uid + ' cannot be created due to lacks of request parameters.');
               return done(null, false);
@@ -33,7 +35,7 @@ module.exports = function(provision) {
                 return done(null, false);
               }
               else if (!device.registered) {
-                log.warn('Successfully created device ' + uid + '. Device registration is not set, so device provision attempt has failed.');
+                log.warn('Successfully created device ' + uid + '. Device is not registered, so device provision attempt has failed.');
                 return done(null, false);
               }
               done(null, device);
