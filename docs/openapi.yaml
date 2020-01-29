@@ -110,7 +110,7 @@ paths:
   /auth/local/authorize:
     post:
       tags: [ Local Authentication & Authorization  ]
-      summary: Authorization
+      summary: Authorization and device creation
       description: Authorize a user using a local strategy.  A device may also be created via this method.
       operationId: authorize
       parameters:
@@ -400,6 +400,7 @@ paths:
     post:
       tags:
         - Device
+      summary: Create a device
       description: >
         Save a new device document in the database.  The request client must
         have `CREATE_DEVICE` permission. `DEPRECATED`: Clients should be creating devices via authorize `/auth/{strategy}/authorize`
