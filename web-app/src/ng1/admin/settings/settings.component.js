@@ -30,6 +30,8 @@ class AdminSettingsController {
       description: 'Auto-register MAGE devices.',
       value: true
     }];
+
+    this.newUserEvent = {};
   
     this.accountLock = {};
     this.accountLockChoices = [{
