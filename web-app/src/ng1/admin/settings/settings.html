@@ -48,7 +48,7 @@
                             <div class="form-group">
                               <input type="text" placeholder="unknown" ng-model="$ctrl.strategyName" class="form-control" ng-disabled="true">
                             </div>
-                            <p class="help-block">Method used to authenticate users. This configuration is controlled by <code>config.js</code>, which located 
+                            <p class="help-block">Method used to authenticate users. This configuration is controlled by <code>config.js</code>, which is located 
                               in the base install directory.
                             </p>
                           </div>
@@ -66,10 +66,15 @@
                               <small ng-bind-html="autoApproveUserChoice.description"></small>
                             </ui-select-choices>
                             </ui-select>
-                            <p class="help-block">If this option is enabled, admin approval is <b>NOT</b> required for user accounts to be activated. 
-                              <br><br><strong>If the user authentication strategy is local, then this essentially has the effect of disabling user security</strong>.  
-                              For all other forms of authentication, this eliminates the extra step of requiring an admin to approve each each user.
-                            </p>
+                            <div ng-if= "$ctrl.strategyName == 'local'">
+                                <p class="help-block">
+                                  <strong>If enabled, this essentially has the effect of disabling user security</strong>.  
+                                </p>
+                            </div>
+                            <div ng-if= "$ctrl.strategyName != 'local'">
+                                <p class="help-block">If enabled, this eliminates the extra step of requiring an admin to approve each each user.
+                                </p>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -77,7 +82,7 @@
                       <div ng-show="$ctrl.security.autoApproveUser.enabled">
                         <div class="row">
                           <div class="col-sm-12">
-                            <label class="control-label" for="type">New User Event (Not Currently Implemented)</label>
+                            <label class="control-label" for="type">Automatically Add New Users to Event (Not Currently Implemented)</label>
                             <div class="form-group">
                               <input type="number" ng-model="$ctrl.security.newUserEvent" class="form-control" ng-disabled="true">
                               <p class="help-block">When new users are created, this is the event that they will be added to by default.</p>
