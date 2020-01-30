@@ -48,7 +48,9 @@
                             <div class="form-group">
                               <input type="text" placeholder="unknown" ng-model="$ctrl.strategyName" class="form-control" ng-disabled="true">
                             </div>
-                            <p class="help-block">Method used to authenticate users. Configuration controlled by <i>config.js</i>.</p>
+                            <p class="help-block">Method used to authenticate users. This configuration is controlled by <code>config.js</code>, which located 
+                              in the base install directory.
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -65,8 +67,8 @@
                             </ui-select-choices>
                             </ui-select>
                             <p class="help-block">If this option is enabled, admin approval is <b>NOT</b> required for user accounts to be activated. 
-                              <i>For <b>local authentication</b>, this essentially has the effect of disabling user security</i>.  For all other forms of authentication,
-                              this eliminates the extra step of requiring an admin to approve each each user.
+                              <br><br><strong>If the user authentication strategy is local, then this essentially has the effect of disabling user security</strong>.  
+                              For all other forms of authentication, this eliminates the extra step of requiring an admin to approve each each user.
                             </p>
                           </div>
                         </div>
