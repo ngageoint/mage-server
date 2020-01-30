@@ -1,10 +1,11 @@
 import _ from 'underscore';
 
 class AdminSettingsController {
-  constructor($timeout, Api, Settings, LocalStorageService) {
+  constructor($timeout, Api, Settings, LocalStorageService, Event) {
     this.$timeout = $timeout;
     this.Api = Api;
     this.Settings = Settings;
+    this.Event = Event;
 
     this.token = LocalStorageService.getToken();
     this.pill = 'security';
@@ -31,6 +32,7 @@ class AdminSettingsController {
       value: true
     }];
 
+    this.events = [];
     this.newUserEvent = {};
   
     this.accountLock = {};
@@ -117,6 +119,11 @@ class AdminSettingsController {
   
       this.maxLock.enabled = this.security.accountLock && this.security.accountLock.max !== undefined;
     });
+
+    
+    this.Event.query({state: 'all',  populate: false, projection: JSON.stringify(this.projection)}, events => {
+      this.events = events;
+    });
   }
 
   saveBanner() {
@@ -168,7 +175,7 @@ class AdminSettingsController {
   }
 }
 
-AdminSettingsController.$inject = ['$timeout', 'Api', 'Settings', 'LocalStorageService'];
+AdminSettingsController.$inject = ['$timeout', 'Api', 'Settings', 'LocalStorageService', 'Event'];
 
 export default {
   template: require('./settings.html'),

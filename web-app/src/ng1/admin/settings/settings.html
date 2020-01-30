@@ -82,9 +82,14 @@
                       <div ng-show="$ctrl.security.autoApproveUser.enabled">
                         <div class="row">
                           <div class="col-sm-12">
-                            <label class="control-label" for="type">Automatically Add New Users to Event (Not Currently Implemented)</label>
+                            <label class="control-label" for="type">Automatically Add New Users to Event</label>
                             <div class="form-group">
-                              <input type="number" ng-model="$ctrl.security.newUserEvent" class="form-control" ng-disabled="true">
+                              <ui-select ng-model="$ctrl.newUserEvent" theme="bootstrap">
+                              <ui-select-match>{{$select.selected.name}}</ui-select-match>
+                              <ui-select-choices repeat="event.value as event in $ctrl.events">
+                                <div ng-bind-html="event.name"></div>
+                                <small ng-bind-html="event.description"></small>
+                              </ui-select-choices>
                               <p class="help-block">When new users are created, this is the event that they will be added to by default.</p>
                             </div>
 
