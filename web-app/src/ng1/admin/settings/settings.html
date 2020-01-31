@@ -60,11 +60,11 @@
                           <div class="form-group">
                             <label class="control-label" for="type">Auto-Activate User Accounts</label>
                             <ui-select ng-model="$ctrl.security.autoApproveUser.enabled" theme="bootstrap">
-                            <ui-select-match>{{$select.selected.title}}</ui-select-match>
-                            <ui-select-choices repeat="autoApproveUserChoice.value as autoApproveUserChoice in $ctrl.autoApproveUserChoices">
-                              <div ng-bind-html="autoApproveUserChoice.title"></div>
-                              <small ng-bind-html="autoApproveUserChoice.description"></small>
-                            </ui-select-choices>
+                              <ui-select-match>{{$select.selected.title}}</ui-select-match>
+                              <ui-select-choices repeat="autoApproveUserChoice.value as autoApproveUserChoice in $ctrl.autoApproveUserChoices">
+                                <div ng-bind-html="autoApproveUserChoice.title"></div>
+                                <small ng-bind-html="autoApproveUserChoice.description"></small>
+                              </ui-select-choices>
                             </ui-select>
                             <div ng-if= "$ctrl.strategyName == 'local'">
                                 <p class="help-block">
@@ -84,12 +84,12 @@
                           <div class="col-sm-12">
                             <label class="control-label" for="type">Automatically Add New Users to Event</label>
                             <div class="form-group">
-                              <ui-select ng-model="$ctrl.newUserEvent" theme="bootstrap">
-                              <ui-select-match>{{$select.selected.name}}</ui-select-match>
-                              <ui-select-choices repeat="event.value as event in $ctrl.events">
-                                <div ng-bind-html="event.name"></div>
-                                <small ng-bind-html="event.description"></small>
-                              </ui-select-choices>
+                              <ui-select ng-model="$ctrl.security.newUserEvent" theme="bootstrap">
+                                <ui-select-match placeholder="Select an event">{{$select.selected.name}}</ui-select-match>
+                                <ui-select-choices repeat="event.id as event in $ctrl.events">
+                                  <div ng-bind-html="event.name"></div>
+                                  <small ng-bind-html="event.description"></small>
+                                </ui-select-choices>
                               </ui-select>
                               <p class="help-block">When new users are created, this is the event that they will be added to by default.</p>
                             </div>
@@ -102,11 +102,11 @@
                             <div class="form-group">
                               <label class="control-label" for="type">Auto-Register Devices</label>
                               <ui-select ng-model="$ctrl.security.autoRegisterDevice.enabled" theme="bootstrap">
-                              <ui-select-match>{{$select.selected.title}}</ui-select-match>
-                              <ui-select-choices repeat="autoRegisterDeviceChoice.value as autoRegisterDeviceChoice in $ctrl.autoRegisterDeviceChoices">
-                                <div ng-bind-html="autoRegisterDeviceChoice.title"></div>
-                                <small ng-bind-html="autoRegisterDeviceChoice.description"></small>
-                              </ui-select-choices>
+                                <ui-select-match>{{$select.selected.title}}</ui-select-match>
+                                <ui-select-choices repeat="autoRegisterDeviceChoice.value as autoRegisterDeviceChoice in $ctrl.autoRegisterDeviceChoices">
+                                  <div ng-bind-html="autoRegisterDeviceChoice.title"></div>
+                                  <small ng-bind-html="autoRegisterDeviceChoice.description"></small>
+                                </ui-select-choices>
                               </ui-select>
                               <p class="help-block">If this option is enabled, admin approval is <b>NOT</b> required to register devices.</p>
                             </div>
