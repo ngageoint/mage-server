@@ -1,4 +1,5 @@
 import { Feature } from "geojson"
+import fetch from 'node-fetch'
 import  { ManifoldAdapter, SourceConnection } from '..'
 import OgcApiFeatures from '../../ogcapi-features'
 import { SourceDescriptor } from "../../models";
@@ -7,6 +8,16 @@ import { SourceDescriptor } from "../../models";
  * MSI is NGA's Maritime Safety Information API.
  */
 export namespace NgaMsi {
+
+  export enum AsamQueryParams {
+    dateMin = 'minOccurDate',
+    dateMax = 'maxOccurDate',
+    id = 'reference',
+    navArea = 'navArea',
+    subregion = 'subreg',
+    orderBy = 'sort',
+    responseType = 'output',
+  }
 
   export class MsiAdapter implements ManifoldAdapter {
     async connectTo(source: SourceDescriptor): Promise<SourceConnection> {
@@ -51,13 +62,21 @@ export namespace NgaMsi {
       if (collectionId !== 'asam') {
         throw new Error(`unknown collection: ${collectionId}`)
       }
+      const oneMonth = 1000 * 60 * 60 * 24 * 28
+      const now = new Date(Date.now())
+      const twoMonthsAgo = new Date(now.getTime() - 2 * oneMonth)
+      const url = new URL('/api/publications/asam', this.source.url)
+      url.searchParams.append(AsamQueryParams.orderBy, 'date')
+      url.searchParams.append(AsamQueryParams.responseType, 'json')
+      url.searchParams.append(AsamQueryParams.dateMin, twoMonthsAgo.toISOString().substring(0, 10))
+      url.searchParams.append(AsamQueryParams.dateMax, now.toISOString().substring(0, 10))
+      const response = await fetch(url)
+      const asamResponse: AsamResponse = await response.json()
       const page: OgcApiFeatures.CollectionPage = {
         collectionId,
         items: {
           type: 'FeatureCollection',
-          features: [
-
-          ]
+          features: asamResponse.asam.map(geoJsonFromAsam)
         }
       }
       return page
@@ -100,14 +119,15 @@ export namespace NgaMsi {
     position: string,
     navArea: string,
     subreg: string,
-    hostility: string,
-    victim: string | null,
+    hostility?: string | null,
+    victim?: string | null,
     description: string
   }
 
   function geoJsonFromAsam(x: Asam): Feature {
     const feature: Feature = {
       type: 'Feature',
+      id: x.reference,
       properties: x,
       geometry: {
         type: 'Point',

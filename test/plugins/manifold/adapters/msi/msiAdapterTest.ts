@@ -1,11 +1,45 @@
 
-import { expect } from 'chai'
+import { expect, assert } from 'chai'
 import nock from 'nock'
+import { ParsedUrlQuery } from 'querystring'
 import NgaMsi from '../../../../../plugins/mage-manifold/adapters/msi'
 import { SourceDescriptor } from '../../../../../plugins/mage-manifold/models'
 import OgcApiFeatures from '../../../../../plugins/mage-manifold/ogcapi-features'
 
+type QueryStringMatcher = (query: ParsedUrlQuery) => boolean
 
+const oneMonth = 1000 * 60 * 60 * 24 * 28
+
+function queryStringConditions(...conditions: QueryStringMatcher[]): QueryStringMatcher {
+  return (query: ParsedUrlQuery): boolean => {
+    for (const c of conditions) {
+      if (!c(query)) {
+        return false
+      }
+    }
+    return true
+  }
+}
+
+function queryHasOutputAndSort(query: ParsedUrlQuery): boolean {
+  return query.output === 'json' && query.sort === 'date'
+}
+
+function asamDateQueryCloseTo(start: number | null, until?: number): (query: ParsedUrlQuery) => boolean
+function asamDateQueryCloseTo(start: number | null, until: number | null, tolerance: number): (query: ParsedUrlQuery) => boolean
+function asamDateQueryCloseTo(...range: [(number | null)?, (number | null)?, (number)?]): ((query: ParsedUrlQuery) => boolean) {
+  const [ from, until = Date.now(), tolerance = 1000 * 60 * 60 * 24 ] = range
+  return (function (query: ParsedUrlQuery): boolean {
+    const queryKeys = Object.keys(query)
+    const queryFrom  = query[NgaMsi.AsamQueryParams.dateMin] as string
+    const queryTo = query[NgaMsi.AsamQueryParams.dateMax] as string
+    const queryFromDate = Date.parse(queryFrom)
+    const queryToDate = Date.parse(queryTo)
+    const closeToFrom = from ? Math.abs(from - queryFromDate) < tolerance : !queryKeys.includes(NgaMsi.AsamQueryParams.dateMin)
+    const closeToTo = until ? Math.abs(until - queryToDate) < tolerance : !queryKeys.includes(NgaMsi.AsamQueryParams.dateMax)
+    return closeToFrom && closeToTo
+  })
+}
 
 describe.only('msi adapter', function() {
 
@@ -40,7 +74,7 @@ describe.only('msi adapter', function() {
         })
       })
 
-      it('fetches asam items for the last month', async function() {
+      it.only('fetches recent asam records', async function() {
 
         const asamResponse: NgaMsi.AsamResponse = {
           asam: [
@@ -72,32 +106,43 @@ describe.only('msi adapter', function() {
         }
         source1Api
           .get('/api/publications/asam')
+          .query(
+            queryStringConditions(
+              queryHasOutputAndSort,
+              asamDateQueryCloseTo(Date.now() - 2 * oneMonth)
+            )
+          )
           .reply(200, asamResponse, { 'content-type': 'application/json;charset=UTF-8' })
         const conn = await msi.connectTo(source1)
         const items = await conn.getItemsInCollection('asam')
 
         expect(items).to.deep.equal({
-          collectionId: source1.id!,
+          collectionId: 'asam'!,
           items: {
             type: 'FeatureCollection',
             features: [
               {
+                id: asamResponse.asam[0].reference,
                 type: 'Feature',
                 geometry: {
                   type: 'Point',
                   coordinates: [ asamResponse.asam[0].longitude, asamResponse.asam[0].latitude ]
-                }
+                },
+                properties: asamResponse.asam[0]
               },
               {
+                id: asamResponse.asam[1].reference,
                 type: 'Feature',
                 geometry: {
                   type: 'Point',
                   coordinates: [ asamResponse.asam[1].longitude, asamResponse.asam[1].latitude ]
-                }
+                },
+                properties: asamResponse.asam[1]
               }
             ]
           }
         } as OgcApiFeatures.CollectionPage)
+        expect(source1Api.isDone()).to.be.true
       })
   })
 })
