@@ -3,7 +3,7 @@ import { mock, reset, instance, when, deepEqual } from 'ts-mockito'
 import request from 'supertest'
 import express, { Request, Response, NextFunction } from 'express'
 import { SourceRepository, AdapterRepository } from '../../../plugins/mage-manifold/repositories'
-import { SourceDescriptor, SourceDescriptorModel, AdapterDescriptorModel } from '../../../plugins/mage-manifold/models'
+import { SourceDescriptor, SourceDescriptorModel, AdapterDescriptorModel, ManifoldModels, SourceDescriptorSchema, AdapterDescriptorSchema } from '../../../plugins/mage-manifold/models'
 import { createRouter, ManifoldController } from '../../../plugins/mage-manifold'
 import mongoose from 'mongoose'
 import { parseEntity, transformObject as transformJson } from '../../utils'
@@ -13,6 +13,8 @@ const log = require('../../../logger')
 
 describe.only('manifold routes', function() {
 
+  const AdapterDescriptorModel: AdapterDescriptorModel = mongoose.model(ManifoldModels.AdapterDescriptor, AdapterDescriptorSchema)
+  const SourceDescriptorModel: SourceDescriptorModel = mongoose.model(ManifoldModels.SourceDescriptor, SourceDescriptorSchema)
   const adapterRepoMock = mock<AdapterRepository>()
   const sourceRepoMock = mock<SourceRepository>()
   const manifoldServiceMock = mock<ManifoldService>()

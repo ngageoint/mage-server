@@ -1,11 +1,12 @@
 
-import { Request, Response, NextFunction, Application, Router, ErrorRequestHandler, Handler, RequestParamHandler, RequestHandler } from 'express'
 import path from 'path'
+import { Request, Response, NextFunction, Application, Router, ErrorRequestHandler, Handler, RequestParamHandler, RequestHandler } from 'express'
 import OpenapiEnforcerMiddleware, { MiddlewareFunction } from 'openapi-enforcer-middleware'
+import mongoose from 'mongoose'
 import { SourceRepository, AdapterRepository } from './repositories'
 import { ManifoldService } from './services'
 import OgcApiFeatures from './ogcapi-features'
-import { SourceDescriptorEntity } from './models'
+import { SourceDescriptorEntity, ManifoldModels, AdapterDescriptorSchema, AdapterDescriptorModel } from './models'
 import OpenApiEnforcerMiddleware from 'openapi-enforcer-middleware'
 import { ManifoldAdapter } from './adapters'
 const log = require('../../logger')
@@ -152,7 +153,8 @@ sourceRouter.route('/collections/:collectionId/items')
 sourceRouter.route('/collections/:collectionId/items/:featureId')
 
 export default function initialize(app: Application, callback: (err?: Error | null) => void) {
-  const adapterRepo = new AdapterRepository()
+  const AdapterDescriptorModel: AdapterDescriptorModel = mongoose.model(ManifoldModels.AdapterDescriptor, AdapterDescriptorSchema)
+  const adapterRepo = new AdapterRepository(AdapterDescriptorModel)
   const sourceRepo = new SourceRepository()
   const manifoldService = new ManifoldService(adapterRepo, sourceRepo)
   const injection = { adapterRepo, sourceRepo, manifoldService }

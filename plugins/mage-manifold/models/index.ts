@@ -34,7 +34,7 @@ export const ManifoldModels = {
   SourceDescriptor: 'SourceDescriptor'
 }
 
-const AdapterDescriptorSchema = new mongoose.Schema(
+export const AdapterDescriptorSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
     description: { type: String, required: false },
@@ -52,7 +52,7 @@ const AdapterDescriptorSchema = new mongoose.Schema(
     }
   })
 
-const SourceDescriptorSchema = new mongoose.Schema(
+export const SourceDescriptorSchema = new mongoose.Schema(
   {
     adapter: { type: mongoose.SchemaTypes.ObjectId, required: true, ref: ManifoldModels.AdapterDescriptor },
     title: { type: String, required: true },
@@ -75,7 +75,5 @@ const SourceDescriptorSchema = new mongoose.Schema(
 
 export type AdapterDescriptorEntity = AdapterDescriptor & mongoose.Document
 export type SourceDescriptorEntity = SourceDescriptor & mongoose.Document
-export const AdapterDescriptorModel: Model<AdapterDescriptorEntity> = mongoose.model<AdapterDescriptorEntity>(ManifoldModels.AdapterDescriptor, AdapterDescriptorSchema)
 export type AdapterDescriptorModel = Model<AdapterDescriptorEntity>
-export const SourceDescriptorModel: Model<SourceDescriptorEntity> = mongoose.model<SourceDescriptorEntity>(ManifoldModels.SourceDescriptor, SourceDescriptorSchema)
 export type SourceDescriptorModel = Model<SourceDescriptorEntity>
