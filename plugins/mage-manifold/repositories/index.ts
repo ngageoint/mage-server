@@ -4,8 +4,14 @@ import { SourceDescriptor, SourceDescriptorModel, AdapterDescriptorModel, Adapte
 
 export class AdapterRepository {
 
+  readonly model: AdapterDescriptorModel
+
+  constructor(model: AdapterDescriptorModel) {
+    this.model = model
+  }
+
   async create(attrs: AdapterDescriptor): Promise<AdapterDescriptorEntity> {
-    throw new Error('unimplemented')
+    return await this.model.create(attrs)
   }
 
   async readAll(): Promise<AdapterDescriptorEntity[]> {

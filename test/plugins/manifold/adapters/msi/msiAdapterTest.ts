@@ -1,5 +1,5 @@
 
-import { expect, assert } from 'chai'
+import { expect } from 'chai'
 import nock from 'nock'
 import { ParsedUrlQuery } from 'querystring'
 import NgaMsi from '../../../../../plugins/mage-manifold/adapters/msi'
@@ -41,7 +41,7 @@ function asamDateQueryCloseTo(...range: [(number | null)?, (number | null)?, (nu
   })
 }
 
-describe.only('msi adapter', function() {
+describe('msi adapter', function() {
 
   const source1: SourceDescriptor = {
     adapter: 'abc123',
@@ -74,7 +74,7 @@ describe.only('msi adapter', function() {
         })
       })
 
-      it.only('fetches recent asam records', async function() {
+      it('fetches recent asam records', async function() {
 
         const asamResponse: NgaMsi.AsamResponse = {
           asam: [
