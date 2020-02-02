@@ -15,7 +15,7 @@ export class AdapterRepository {
   }
 
   async readAll(): Promise<AdapterDescriptorEntity[]> {
-    throw new Error('unimplemented')
+    return await this.model.find()
   }
 
   async update(attrs: Partial<AdapterDescriptor>): Promise<AdapterDescriptorEntity> {
