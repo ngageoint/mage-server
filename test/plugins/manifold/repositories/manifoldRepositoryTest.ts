@@ -3,8 +3,8 @@ import mongoose from 'mongoose'
 import { describe, it, before, beforeEach, after, afterEach } from 'mocha'
 import { expect } from 'chai'
 import { MongoMemoryServer } from 'mongodb-memory-server'
-import { AdapterRepository, BaseRepository, EntityReference } from '../../../../plugins/mage-manifold/repositories'
-import { AdapterDescriptor, AdapterDescriptorModel, ManifoldModels, AdapterDescriptorSchema } from '../../../../plugins/mage-manifold/models';
+import { AdapterRepository, BaseRepository, EntityReference, SourceRepository } from '../../../../plugins/mage-manifold/repositories'
+import { AdapterDescriptor, AdapterDescriptorModel, ManifoldModels, AdapterDescriptorSchema, SourceDescriptor, SourceDescriptorModel, SourceDescriptorSchema } from '../../../../plugins/mage-manifold/models';
 
 describe.only('manifold repositories', function() {
 
@@ -275,5 +275,17 @@ describe.only('manifold repositories', function() {
 
   describe('source repository', function() {
 
+    const collection = 'test_source_descriptors'
+    let model: SourceDescriptorModel
+    let repo: SourceRepository
+
+    beforeEach(function() {
+      model = conn.model(ManifoldModels.SourceDescriptor, SourceDescriptorSchema, collection)
+      repo = new SourceRepository(model)
+    })
+
+    it('does what base repository can do', async function() {
+      expect(repo).to.be.instanceOf(BaseRepository)
+    })
   })
 })
