@@ -1,9 +1,9 @@
 <div class="admin-nav-gap">
   <div class="container-fluid">
     <ol class="breadcrumb">
-      <li><i class="fa fa-calendar admin-dashboard"></i> <a href="#/admin/events">Events</li></a>
-      <li><a ng-href="#/admin/events/{{$ctrl.event.id}}">{{$ctrl.event.name}}</a></li>
-      <li><a ng-href="#/admin/events/{{$ctrl.event.id}}/forms/{{$ctrl.form.id}}">{{$ctrl.form.name}}</a></li>
+      <li><i class="fa fa-calendar admin-dashboard"></i><a ui-sref="admin.events">Events</a></li>
+      <li><a ui-sref="admin.event({ eventId: $ctrl.event.id })">{{ $ctrl.event.name }}</a></li>
+      <li><a ui-sref="admin.formEdit({ eventId: $ctrl.event.id, formId: $ctrl.form.id })">{{ $ctrl.form.name }}</a></li>
       <li class="active">Feed Configuration <span class="text-danger" ng-show="$ctrl.unSavedChanges"> (unsaved changes)</span></li>
     </ol>
   </div>

@@ -1,12 +1,12 @@
 <div class="admin-nav-gap">
   <div class="container-fluid">
     <ol class="breadcrumb" ng-if="$ctrl.user.id">
-      <li><i class="fa fa-user admin-dashboard"></i> <a href="#/admin/users">Users</li></a>
-      <li><a ng-href="#/admin/users/{{$ctrl.user.id}}">{{$ctrl.user.displayName}}</a></li>
+      <li><i class="fa fa-user admin-dashboard"></i><a ui-sref="admin.users">Users</a></li>
+      <li><a ui-sref="admin.user({ userId: $ctrl.user.id })">{{ $ctrl.user.displayName }}</a></li>
       <li class="active">Edit</li>
     </ol>
     <ol class="breadcrumb" ng-if="!$ctrl.user.id">
-      <li><i class="fa fa-user admin-dashboard"></i> <a href="#/admin/users">Users</li></a>
+      <li><i class="fa fa-user admin-dashboard"></i><a ui-sref="admin.users">Users</a></li>
       <li class="active">New</li>
     </ol>
   </div>

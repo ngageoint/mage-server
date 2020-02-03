@@ -1,12 +1,12 @@
 <div class="admin-nav-gap">
   <div class="container-fluid">
     <ol class="breadcrumb" ng-if="$ctrl.layer.id">
-      <li><i class="fa fa-map admin-dashboard"></i> <a href="#/admin/layers">Layers</li></a>
-      <li><a ng-href="#/admin/layers/{{$ctrl.layer.id}}">{{$ctrl.layer.name}}</a></li>
+      <li><i class="fa fa-map admin-dashboard"></i><a ui-sref="admin.layers">Layers</a></li>
+      <li><a ui-sref="admin.layer({ layerId: $ctrl.layer.id })">{{ $ctrl.layer.name }}</a></li>
       <li class="active">Edit</li>
     </ol>
     <ol class="breadcrumb" ng-if="!$ctrl.layer.id">
-      <li><i class="fa fa-map admin-dashboard"></i> <a href="#/admin/layers">Layers</li></a>
+      <li><i class="fa fa-map admin-dashboard"></i><a ui-sref="admin.layers">Layers</a></li>
       <li class="active">New</li>
     </ol>
   </div>

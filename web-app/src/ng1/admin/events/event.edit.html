@@ -1,12 +1,12 @@
 <div class="admin-nav-gap">
   <div class="container-fluid">
     <ol class="breadcrumb" ng-if="$ctrl.event.id">
-      <li><i class="fa fa-calendar admin-dashboard"></i> <a href="#/admin/events">Events</li></a>
-      <li><a ng-href="#/admin/events/{{$ctrl.event.id}}">{{$ctrl.event.name}}</a></li>
+      <li><i class="fa fa-calendar admin-dashboard"></i><a ui-sref="admin.events">Events</a></li>
+      <li><a ui-sref="admin.event({ eventId: $ctrl.event.id })">{{ $ctrl.event.name }}</a></li>
       <li class="active">Edit</li>
     </ol>
     <ol class="breadcrumb" ng-if="!$ctrl.event.id">
-      <li><i class="fa fa-calendar admin-dashboard"></i> <a href="#/admin/events">Events</li></a>
+      <li><i class="fa fa-calendar admin-dashboard"></i><a ui-sref="admin.events">Events</a></li>
       <li class="active">New</li>
     </ol>
   </div>
