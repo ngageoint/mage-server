@@ -40,7 +40,7 @@ export const AdapterDescriptorSchema = new mongoose.Schema(
     description: { type: String, required: false },
     isReadable: { type: Boolean, required: false, default: true },
     isWritable: { type: Boolean, required: false, default: false },
-    libPath: { type: String, require: true }
+    libPath: { type: String, required: true }
   },
   {
     toJSON: {
