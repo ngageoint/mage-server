@@ -6,7 +6,7 @@ import mongoose from 'mongoose'
 import { SourceRepository, AdapterRepository } from './repositories'
 import { ManifoldService } from './services'
 import OgcApiFeatures from './ogcapi-features'
-import { SourceDescriptorEntity, ManifoldModels, AdapterDescriptorSchema, AdapterDescriptorModel } from './models'
+import { SourceDescriptorEntity, ManifoldModels, AdapterDescriptorSchema, AdapterDescriptorModel, SourceDescriptorModel, SourceDescriptorSchema } from './models'
 import OpenApiEnforcerMiddleware from 'openapi-enforcer-middleware'
 import { ManifoldAdapter } from './adapters'
 const log = require('../../logger')
@@ -153,9 +153,10 @@ sourceRouter.route('/collections/:collectionId/items')
 sourceRouter.route('/collections/:collectionId/items/:featureId')
 
 export default function initialize(app: Application, callback: (err?: Error | null) => void) {
-  const AdapterDescriptorModel: AdapterDescriptorModel = mongoose.model(ManifoldModels.AdapterDescriptor, AdapterDescriptorSchema)
-  const adapterRepo = new AdapterRepository(AdapterDescriptorModel)
-  const sourceRepo = new SourceRepository()
+  const adapterDescriptorModel: AdapterDescriptorModel = mongoose.model(ManifoldModels.AdapterDescriptor, AdapterDescriptorSchema)
+  const sourceDescriptorModel: SourceDescriptorModel = mongoose.model(ManifoldModels.SourceDescriptor, SourceDescriptorSchema)
+  const adapterRepo = new AdapterRepository(adapterDescriptorModel)
+  const sourceRepo = new SourceRepository(sourceDescriptorModel)
   const manifoldService = new ManifoldService(adapterRepo, sourceRepo)
   const injection = { adapterRepo, sourceRepo, manifoldService }
   // TODO: instead make plugins return a Router that the app can mount

@@ -1,54 +1,56 @@
 
 import { SourceDescriptor, SourceDescriptorModel, AdapterDescriptorModel, AdapterDescriptor, SourceDescriptorEntity, AdapterDescriptorEntity } from '../models'
+import mongoose from 'mongoose'
 
 
-export class AdapterRepository {
+export type EntityReference = {
+  id: any
+}
 
-  readonly model: AdapterDescriptorModel
 
-  constructor(model: AdapterDescriptorModel) {
+export class BaseRepository<D extends mongoose.Document, M extends mongoose.Model<D>, V> {
+
+  readonly model: M
+
+  constructor(model: M) {
     this.model = model
   }
 
-  async create(attrs: AdapterDescriptor): Promise<AdapterDescriptorEntity> {
+  async create(attrs: V): Promise<D> {
     return await this.model.create(attrs)
   }
 
-  async readAll(): Promise<AdapterDescriptorEntity[]> {
+  async readAll(): Promise<D[]> {
     return await this.model.find()
   }
 
-  async update(attrs: Partial<AdapterDescriptor>): Promise<AdapterDescriptorEntity> {
+  async findById(id: any): Promise<D> {
+    throw new Error('unimplemented')
+  }
+
+  async update(attrs: Partial<V> & EntityReference): Promise<D> {
     const entity = (await this.model.findById(attrs.id!))!
     entity.set(attrs)
     return await entity.save()
   }
 
-  async deleteById(id: string): Promise<void> {
+  async deleteById(id: any): Promise<void> {
     await this.model.findByIdAndRemove(id)
   }
 }
 
 
-export class SourceRepository {
+export class AdapterRepository extends BaseRepository<AdapterDescriptorEntity, AdapterDescriptorModel, AdapterDescriptor> {
 
-  async create(attrs: SourceDescriptor): Promise<SourceDescriptorEntity> {
-    throw new Error('unimplemented')
+  constructor(model: AdapterDescriptorModel) {
+    super(model)
   }
+}
 
-  async readAll(): Promise<SourceDescriptorEntity[]> {
-    throw new Error('unimplemented')
-  }
 
-  async findById(sourceId: string): Promise<SourceDescriptorEntity | null> {
-    throw new Error('unimplemented')
-  }
+export class SourceRepository extends BaseRepository<SourceDescriptorEntity, SourceDescriptorModel, SourceDescriptor> {
 
-  async update(attrs: Partial<SourceDescriptor>): Promise<SourceDescriptorEntity> {
-    throw new Error('unimplemented')
-  }
-
-  async delete(attrs: SourceDescriptor): Promise<void> {
-    throw new Error('unimplemented')
+  constructor(model: SourceDescriptorModel) {
+    super(model)
   }
 }
