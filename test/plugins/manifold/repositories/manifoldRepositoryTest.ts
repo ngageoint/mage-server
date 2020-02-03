@@ -29,6 +29,7 @@ describe.only('manifold repositories', function() {
     })
 
     after(async function() {
+      await conn.close()
       const stopped = await db.stop()
       expect(stopped).to.be.true
     })
