@@ -330,8 +330,16 @@ exports.createUser = async function(user, callback) {
       log.info("Auto-Activate Users is " + userAutoActive.enabled);
       create.active = userAutoActive.enabled;
     }
+    let defaultEventId = securitySettings.settings.newUserEvent;
+    if(defaultEventId) {
+      Event.getById(defaultEventId, {}, function(err, event) {
+        if (err) return callback(err);
+        log.info("Adding user " + user.username + " to default event " + event.name);
+        //TODO add to team or event??
+      });
+    }
   }
-
+        
   log.info("Creating new user " + create.username);
   await User.create(create, function(err, user) {
     if (err) return callback(err);
