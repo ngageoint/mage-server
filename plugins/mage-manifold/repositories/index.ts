@@ -19,11 +19,13 @@ export class AdapterRepository {
   }
 
   async update(attrs: Partial<AdapterDescriptor>): Promise<AdapterDescriptorEntity> {
-    throw new Error('unimplemented')
+    const entity = (await this.model.findById(attrs.id!))!
+    entity.set(attrs)
+    return await entity.save()
   }
 
-  async delete(attrs: Partial<AdapterDescriptor>): Promise<void> {
-    throw new Error('unimplemented')
+  async deleteById(id: string): Promise<void> {
+    await this.model.findByIdAndRemove(id)
   }
 }
 
