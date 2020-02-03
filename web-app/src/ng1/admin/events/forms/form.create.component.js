@@ -12,7 +12,7 @@ class FormUploadController {
     if (this.open && this.open.opened && !this.formPanel.isOpen) {
       this.form = new this.Form({
         eventId: this.event.id,
-        color: '#' + (Math.random()*0xFFFFFF<<0).toString(16)
+        color: '#' + ('000000' + Math.floor(Math.random() * 0xFFFFFF).toString(16)).slice(-6)
       });
 
       this.formPanel.open();

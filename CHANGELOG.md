@@ -12,6 +12,7 @@ MAGE adheres to [Semantic Versioning](http://semver.org/).
 * Fix observation download bug.
 * Fix bug where unregistered devices were not shown on admin dashboard.
 * Fix WMS layer getcapabilites fetch request when creating new WMS layer.
+* Form create modal would sometimes generate an invalid random color.
 
 ## [5.3.4](https://github.com/ngageoint/mage-server/releases/tag/5.3.3)
 
