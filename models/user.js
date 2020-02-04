@@ -310,22 +310,6 @@ exports.getUsers = function(options, callback) {
 };
 
 exports.createUser = async function(user, callback) {
-  var create = await updateUserWithSettings(user);
-        
-  log.info("Creating new user " + create.username);
-  await User.create(create, function(err, user) {
-    if (err) return callback(err);
-
-    user.populate('roleId', function(err, user) {
-      callback(err, user);
-    });
-  });
-};
-
-/*
-Set any user properties that are controlled via settings
-*/
-async function updateUserWithSettings(user) {
   var update = {
     username: user.username,
     displayName: user.displayName,
@@ -340,27 +324,34 @@ async function updateUserWithSettings(user) {
 
   log.info("Reading security settings");
   let securitySettings = await Setting.getSetting('security');
+  var defaultEventId;
   if(securitySettings && securitySettings.settings) {
     let userAutoActive = securitySettings.settings.autoApproveUser;
     if(userAutoActive) {
       log.info("Auto-Activate Users is " + userAutoActive.enabled);
       update.active = userAutoActive.enabled;
     }
-    let defaultEventId = securitySettings.settings.newUserEvent;
-    if(defaultEventId) {
-      await addUserToTeamByEventId(defaultEventId, update);
-    }
+    defaultEventId = securitySettings.settings.newUserEvent;
   }
+        
+  log.info("Creating new user " + update.username);
+  var newUser = await User.create(update, function(err, user) {
+    if (err) return callback(err);
 
-  return update;
+    user.populate('roleId', function(err, user) {
+      callback(err, user);
+    });
+  });
+
+  if(defaultEventId) {
+    await addUserToTeamByEventId(defaultEventId, newUser);
+  }
 };
 
 async function addUserToTeamByEventId(eventId, user) {
   var team = await Team.getTeamByEventId(eventId);
 
-  //TODO add user to team
-  //Team.addUser(team, user, {});
-  return team.name;
+  await Team.addUserWithPromise(team, user);
 };
 
 exports.updateUser = function(user, callback) {
