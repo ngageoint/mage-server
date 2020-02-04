@@ -110,6 +110,32 @@ describe.only('manifold repositories', function() {
       expect(all[1]).to.deep.include(seed2)
     })
 
+    it('finds a record by id', async function() {
+
+      const seed1: BaseValueObject = {
+        derp: 'bam',
+        lerp: 'plop',
+        squee: true,
+        noo: 11
+      }
+      const seed2: BaseValueObject = {
+        derp: 'sloo',
+        lerp: 'tum',
+        squee: false,
+        noo: 22
+      }
+      const created = await Promise.all([
+        repo.create(seed1),
+        repo.create(seed2)
+      ])
+      const found = (await repo.findById(created[1].id))!
+
+      expect(created.length).to.equal(2)
+      expect(found).to.deep.include(seed2)
+      expect(found.id).to.equal(created[1].id)
+      expect(found.id).to.not.equal(created[0].id)
+    })
+
     it('updates a record', async function() {
 
       const seed: BaseValueObject = {

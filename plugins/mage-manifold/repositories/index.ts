@@ -24,8 +24,8 @@ export class BaseRepository<D extends mongoose.Document, M extends mongoose.Mode
     return await this.model.find()
   }
 
-  async findById(id: any): Promise<D> {
-    throw new Error('unimplemented')
+  async findById(id: any): Promise<D | null> {
+    return await this.model.findById(id)
   }
 
   async update(attrs: Partial<V> & EntityReference): Promise<D> {
